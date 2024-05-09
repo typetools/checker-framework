@@ -42,6 +42,9 @@ public class OptionalTransfer extends CFTransfer {
   /** The @{@link Present} annotation. */
   private final AnnotationMirror PRESENT;
 
+  /** The @{@link NonEmpty} annotation. */
+  private final AnnotationMirror NON_EMPTY;
+
   /** The element for java.util.Optional.ifPresent(). */
   private final ExecutableElement optionalIfPresent;
 
@@ -76,6 +79,7 @@ public class OptionalTransfer extends CFTransfer {
     optionalTypeFactory = (OptionalAnnotatedTypeFactory) analysis.getTypeFactory();
     Elements elements = optionalTypeFactory.getElementUtils();
     PRESENT = AnnotationBuilder.fromClass(elements, Present.class);
+    NON_EMPTY = AnnotationBuilder.fromClass(elements, NonEmpty.class);
     ProcessingEnvironment env = optionalTypeFactory.getProcessingEnv();
     optionalIfPresent = TreeUtils.getMethod("java.util.Optional", "ifPresent", 1, env);
     optionalIfPresentOrElse =
@@ -161,22 +165,36 @@ public class OptionalTransfer extends CFTransfer {
     if (relevantStreamMethods.stream()
         .anyMatch(
             op -> NodeUtils.isMethodInvocation(n, op, optionalTypeFactory.getProcessingEnv()))) {
-      JavaExpression receiver = JavaExpression.getReceiver(TreeUtils.getReceiverTree(n.getTree()));
-      VariableTree receiverDeclaration =
-          getReceiverDeclaration(TreePathUtil.enclosingMethod(n.getTreePath()), receiver);
-      List<? extends AnnotationTree> receiverAnnotationTrees =
-          receiverDeclaration.getModifiers().getAnnotations();
-      List<AnnotationMirror> annotationMirrors =
-          TreeUtils.annotationsFromTypeAnnotationTrees(receiverAnnotationTrees);
-      if (annotationMirrors.stream()
-          .anyMatch(am -> AnnotationUtils.areSameByName(am, NonEmpty.class.getCanonicalName()))) {
+      if (isReceiverNonEmpty(n)) {
         // TODO: the receiver of the stream operation is @Non-Empty, therefore the result is
         // @Present
         JavaExpression internalRepr = JavaExpression.fromNode(n);
+        System.out.printf("Non-empty detected for = %s\n", internalRepr);
         insertIntoStores(result, internalRepr, PRESENT);
       }
     }
-    assert result != null;
+  }
+
+  /**
+   * Returns true if the receiver of the given method invocation is annotated with @{@link
+   * NonEmpty}.
+   *
+   * @param methodInvok a method invocation node
+   * @return true if the receiver of the given method invocation is annotated with @{@link NonEmpty}
+   */
+  private boolean isReceiverNonEmpty(MethodInvocationNode methodInvok) {
+    JavaExpression receiver =
+        JavaExpression.getReceiver(TreeUtils.getReceiverTree(methodInvok.getTree()));
+    VariableTree receiverDeclaration =
+        getReceiverDeclaration(TreePathUtil.enclosingMethod(methodInvok.getTreePath()), receiver);
+    if (receiverDeclaration == null) {
+      return false;
+    }
+    List<? extends AnnotationTree> receiverAnnotationTrees =
+        receiverDeclaration.getModifiers().getAnnotations();
+    List<AnnotationMirror> annotationMirrors =
+        TreeUtils.annotationsFromTypeAnnotationTrees(receiverAnnotationTrees);
+    return AnnotationUtils.containsSame(annotationMirrors, NON_EMPTY);
   }
 
   /**
@@ -189,7 +207,11 @@ public class OptionalTransfer extends CFTransfer {
    * @param receiver the receiver for which to look up a declaration
    * @return the declaration of the receiver of the method call, if found. Otherwise, null
    */
-  private @Nullable VariableTree getReceiverDeclaration(MethodTree tree, JavaExpression receiver) {
+  private @Nullable VariableTree getReceiverDeclaration(
+      @Nullable MethodTree tree, JavaExpression receiver) {
+    if (tree == null) {
+      return null;
+    }
     List<? extends VariableTree> params = tree.getParameters();
     for (VariableTree param : params) {
       if (param.getName().toString().equals(receiver.toString())) {
