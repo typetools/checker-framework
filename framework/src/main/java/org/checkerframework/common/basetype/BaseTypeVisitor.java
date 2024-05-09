@@ -1174,11 +1174,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Returns true if the given method is explicitly annotated with both {@link SideEffectFree} and
-   * {@link Deterministic}.
+   * Returns true if the given method is explicitly annotated with both @{@link SideEffectFree}
+   * and @{@link Deterministic}.
    *
    * @param tree a method
-   * @return true if a method is explicitly annotated with both {@link SideEffectFree} and {@link
+   * @return true if a method is explicitly annotated with both @{@link SideEffectFree} and @{@link
    *     Deterministic}
    */
   private boolean isExplicitlySideEffectFreeAndDeterministic(MethodTree tree) {
