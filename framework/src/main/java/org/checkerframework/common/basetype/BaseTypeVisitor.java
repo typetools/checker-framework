@@ -1087,6 +1087,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       return;
     }
 
+    if (isExplicitlySideEffectFreeAndDeterministic(tree)) {
+      checker.reportWarning(tree, "purity.more.pure", tree.getName());
+    }
+
     // `body` is lazily assigned.
     TreePath body = null;
     boolean bodyAssigned = false;
@@ -1122,6 +1126,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       if (suggestPureMethods && !TreeUtils.isSynthetic(tree)) {
         // Issue a warning if the method is pure, but not annotated as such.
         EnumSet<Pure.Kind> additionalKinds = r.getKinds().clone();
+
         if (!infer) {
           // During WPI, propagate all purity kinds, even those that are already
           // present (because they were inferred in a previous WPI round).
@@ -1167,6 +1172,21 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       bodyAssigned = true;
     }
     // ...
+  }
+
+  /**
+   * Returns true if the given method is explicitly annotated with both {@link SideEffectFree} and
+   * {@link Deterministic}.
+   *
+   * @param tree a method
+   * @return true if a method is explicitly annotated with both {@link SideEffectFree} and {@link
+   *     Deterministic}
+   */
+  private boolean isExplicitlySideEffectFreeAndDeterministic(MethodTree tree) {
+    List<AnnotationMirror> annotationMirrors =
+        TreeUtils.annotationsFromTypeAnnotationTrees(tree.getModifiers().getAnnotations());
+    return AnnotationUtils.containsSame(annotationMirrors, SIDE_EFFECT_FREE)
+        && AnnotationUtils.containsSame(annotationMirrors, DETERMINISTIC);
   }
 
   /**
