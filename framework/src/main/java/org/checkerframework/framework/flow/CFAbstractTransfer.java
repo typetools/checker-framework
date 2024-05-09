@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -308,7 +309,7 @@ public abstract class CFAbstractTransfer<
         // If the lambda is leaked or the lambda is impure, remove any information about modifiable
         // method values from the initial store.
         TreePath lambdaBody = atypeFactory.getPath(lambda.getLambdaTree().getBody());
-        if (isLambdaLeaked(lambda, atypeFactory)
+        if (isAnyMethodCallLeakedWithinLambda(lambda, atypeFactory)
             || !isExpressionOrStatementPure(lambdaBody, atypeFactory)) {
           store.methodCallExpressions.keySet().removeIf(MethodCall::isModifiableByOtherCode);
         }
@@ -380,15 +381,24 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
-   * Determine whether a lambda expression is leaked.
+   * Determine whether any method calls within a given lambda expression are leaked.
    *
-   * <p>This currently checks for the {@link NonLeaked} annotation, which is trusted.
+   * <p>This method is currently limited in that it can only determine whether leaks occur in lambda
+   * expressions that are <i>immediately</i> passed to a method (e.g., {@link
+   * java.lang.Iterable#forEach(Consumer)}).
+   *
+   * <p>Whether a method is leaked or not is determined by the presence of a {@link NonLeaked}
+   * annotation, which is trusted. The presence of the {@link NonLeaked} annotation is checked at
+   * the declaration of the method to which the lambda is passed. For example, in the declaration of
+   * {@link java.lang.Iterable#forEach(Consumer)}, the {@code Consumer} parameter is annotated with
+   * {@link NonLeaked}.
    *
    * @param lambda the lambda expression
    * @param aTypeFactory an annotated type factory
    * @return true if the lambda expression is found to be annotated with {@link NonLeaked}
    */
-  private boolean isLambdaLeaked(CFGLambda lambda, AnnotatedTypeFactory aTypeFactory) {
+  private boolean isAnyMethodCallLeakedWithinLambda(
+      CFGLambda lambda, AnnotatedTypeFactory aTypeFactory) {
     LambdaExpressionTree lambdaTree = lambda.getLambdaTree();
     TreePath lambdaPath = aTypeFactory.getPath(lambdaTree);
     Tree lambdaParent = lambdaPath.getParentPath().getLeaf();
