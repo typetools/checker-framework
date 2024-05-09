@@ -1126,7 +1126,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       if (suggestPureMethods && !TreeUtils.isSynthetic(tree)) {
         // Issue a warning if the method is pure, but not annotated as such.
         EnumSet<Pure.Kind> additionalKinds = r.getKinds().clone();
-
         if (!infer) {
           // During WPI, propagate all purity kinds, even those that are already
           // present (because they were inferred in a previous WPI round).
