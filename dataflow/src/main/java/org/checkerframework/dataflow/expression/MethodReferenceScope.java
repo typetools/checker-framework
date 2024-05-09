@@ -84,6 +84,32 @@ public class MethodReferenceScope {
     return this.isSuper;
   }
 
+  /**
+   * Return the first subexpression in this method reference scope whose class is the given class,
+   * or null.
+   *
+   * @param clazz the class
+   * @return the first subexpression in this method reference scope whose class is the given class,
+   *     or null
+   * @param <T> the class
+   */
+  public <T extends JavaExpression> @Nullable T containedOfClass(Class<T> clazz) {
+    if (isSuper()) {
+      return null;
+    }
+    T result = null;
+    if (getExpression() != null) {
+      result = getExpression().containedOfClass(clazz);
+      if (result != null) {
+        return result;
+      }
+    }
+    if (getType() != null) {
+      result = getType().containedOfClass(clazz);
+    }
+    return result;
+  }
+
   @Override
   public String toString() {
     if (isSuper()) {

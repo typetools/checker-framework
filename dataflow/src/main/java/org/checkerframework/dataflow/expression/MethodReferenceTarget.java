@@ -79,6 +79,29 @@ public class MethodReferenceTarget {
     return this.isConstructorCall;
   }
 
+  /**
+   * Return the first subexpression in this method reference target whose class is the given class,
+   * or null.
+   *
+   * @param clazz the class
+   * @return the first subexpression in this method reference target whose class is the given class,
+   *     or null
+   * @param <T> the class
+   */
+  public <T extends JavaExpression> @Nullable T containedOfClass(Class<T> clazz) {
+    T result = null;
+    if (getTypeArguments() != null) {
+      result = getTypeArguments().containedOfClass(clazz);
+      if (result != null) {
+        return result;
+      }
+    }
+    if (getIdentifier() != null) {
+      result = getIdentifier().containedOfClass(clazz);
+    }
+    return result;
+  }
+
   @Override
   @SuppressWarnings(
       "nullness:dereference.of.nullable") // If the target is not a constructor call, the identifier

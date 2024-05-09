@@ -32,53 +32,8 @@ public class MethodReference extends JavaExpression {
 
   @Override
   public <T extends JavaExpression> @Nullable T containedOfClass(Class<T> clazz) {
-    T result = containedOfClassForScope(clazz);
-    return result != null ? result : containedOfClassForTarget(clazz);
-  }
-
-  /**
-   * Return the first subexpression in {@link scope} whose class is the given class, or null.
-   *
-   * @param clazz the class
-   * @return the first subexpression in {@link scope} whose class is the given class, or null
-   * @param <T> the class
-   */
-  private <T extends JavaExpression> @Nullable T containedOfClassForScope(Class<T> clazz) {
-    if (scope.isSuper()) {
-      return null;
-    }
-    T result = null;
-    if (scope.getExpression() != null) {
-      result = scope.getExpression().containedOfClass(clazz);
-      if (result != null) {
-        return result;
-      }
-    }
-    if (scope.getType() != null) {
-      result = scope.getType().containedOfClass(clazz);
-    }
-    return result;
-  }
-
-  /**
-   * Return the first subexpression in {@link target} whose class is the given class, or null.
-   *
-   * @param clazz the class
-   * @return the first subexpression in {@link target} whose class is the given class, or null
-   * @param <T> the class
-   */
-  private <T extends JavaExpression> @Nullable T containedOfClassForTarget(Class<T> clazz) {
-    T result = null;
-    if (target.getTypeArguments() != null) {
-      result = target.getTypeArguments().containedOfClass(clazz);
-      if (result != null) {
-        return result;
-      }
-    }
-    if (target.getIdentifier() != null) {
-      result = target.getIdentifier().containedOfClass(clazz);
-    }
-    return result;
+    T result = scope.containedOfClass(clazz);
+    return result != null ? result : target.containedOfClass(clazz);
   }
 
   @Override
