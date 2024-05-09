@@ -103,7 +103,39 @@ public abstract class JavaExpressionConverter extends JavaExpressionVisitor<Java
 
   @Override
   protected JavaExpression visitMethodReference(MethodReference methodReferenceExpr, Void unused) {
-    return methodReferenceExpr; // Stub?
+    MethodReferenceScope scope = convert(methodReferenceExpr.scope);
+    MethodReferenceTarget target = convert(methodReferenceExpr.target);
+    return new MethodReference(
+        methodReferenceExpr.type,
+        scope,
+        target); // TODO: where is the type of a method reference even set?
+  }
+
+  /**
+   * Converts a method reference scope for use in the creation of a method reference JavaExpression.
+   *
+   * @param scope the method reference scope
+   * @return a method reference scope to be used in the creation of a method reference
+   *     JavaExpression
+   */
+  private MethodReferenceScope convert(MethodReferenceScope scope) {
+    JavaExpression expression = convert(scope.getExpression());
+    JavaExpression type = convert(scope.getType());
+    return new MethodReferenceScope(expression, type, scope.isSuper());
+  }
+
+  /**
+   * Converts a method reference target for use in the creation of a method reference
+   * JavaExpression.
+   *
+   * @param target the method reference target
+   * @return a method reference target to be used in the creation of a method reference
+   *     JavaExpression
+   */
+  private MethodReferenceTarget convert(MethodReferenceTarget target) {
+    JavaExpression typeArguments = convert(target.getTypeArguments());
+    JavaExpression identifier = convert(target.getIdentifier());
+    return new MethodReferenceTarget(typeArguments, identifier, target.isConstructorCall());
   }
 
   @Override

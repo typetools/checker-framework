@@ -16,6 +16,8 @@ public class MethodReference extends JavaExpression {
   /** The target of this method reference, which follows "::". */
   protected final MethodReferenceTarget target;
 
+  // TODO: should we keep a reference to the method, e.g., an ExecutableElement?
+
   /**
    * Creates a new method reference.
    *
@@ -52,7 +54,8 @@ public class MethodReference extends JavaExpression {
 
   @Override
   public boolean containsSyntacticEqualJavaExpression(JavaExpression other) {
-    return false;
+    // TODO: probably need to look at the scope and the target, here
+    return syntacticEquals(other);
   }
 
   @Override
