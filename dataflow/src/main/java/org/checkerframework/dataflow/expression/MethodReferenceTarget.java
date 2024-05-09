@@ -2,6 +2,7 @@ package org.checkerframework.dataflow.expression;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.javacutil.BugInCF;
 
 /**
  * The part of a <a
@@ -37,6 +38,12 @@ public class MethodReferenceTarget {
       @Nullable JavaExpression typeArguments,
       @Nullable JavaExpression identifier,
       boolean isConstructorCall) {
+    if (isConstructorCall) {
+      // If the target is a constructor call, the identifier must be null
+      if (identifier != null) {
+        throw new BugInCF("Malformed MethodReferenceTarget");
+      }
+    }
     this.typeArguments = typeArguments;
     this.identifier = identifier;
     this.isConstructorCall = isConstructorCall;

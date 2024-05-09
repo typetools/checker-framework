@@ -44,6 +44,12 @@ public class MethodReferenceScope {
    */
   public MethodReferenceScope(
       @Nullable JavaExpression expression, @Nullable JavaExpression type, boolean isReceiverSuper) {
+    if (isReceiverSuper) {
+      // If the scope is "super", the expression and type must both be null
+      if (!(expression == null && type == null)) {
+        throw new BugInCF("Malformed MethodReferenceScope");
+      }
+    }
     this.expression = expression;
     this.type = type;
     this.isSuper = isReceiverSuper;
