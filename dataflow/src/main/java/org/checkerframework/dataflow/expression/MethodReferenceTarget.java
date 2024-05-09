@@ -4,11 +4,9 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 
 /**
- * The right-hand side of a <a
+ * The part of a <a
  * href="https://docs.oracle.com/javase/specs/jls/se8/html/jls-15.html#jls-15.13">Java Method
- * Reference expression</a>
- *
- * <p>The right-hand side of a Java method Reference expression can have the following forms:
+ * Reference expression</a> that follows "::". It can have the following forms:
  *
  * <ul>
  *   <li>{@literal [TypeArguments] Identifier}, which may be represented by a standard {@link
@@ -25,7 +23,7 @@ public class MethodReferenceTarget {
   /** The identifier for this method reference target. */
   private final @Nullable JavaExpression identifier;
 
-  /** Whether this method reference target is a constructor call. */
+  /** True if this method reference target is a constructor call. */
   private final boolean isConstructorCall;
 
   /**
@@ -45,7 +43,7 @@ public class MethodReferenceTarget {
   }
 
   /**
-   * Return the type arguments for this method reference target.
+   * Return the type arguments for this method reference target, or null if there are none.
    *
    * @return the type arguments for this method reference target
    */
@@ -55,7 +53,8 @@ public class MethodReferenceTarget {
   }
 
   /**
-   * Return the identifier for this method reference target.
+   * Return the identifier for this method reference target, or null if it's not an identifier (that
+   * is, the method reference is for a constructor call).
    *
    * @return the identifier for this method reference target
    */

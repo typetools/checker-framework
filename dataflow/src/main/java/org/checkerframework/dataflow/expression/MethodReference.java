@@ -5,15 +5,15 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.AnnotationProvider;
 
 /**
- * A <a href="https://docs.oracle.com/javase/specs/jls/se8/html/jls-15.html#jls-15.13">Java Method
- * Reference expression</a>
+ * A <a href="https://docs.oracle.com/javase/specs/jls/se21/html/jls-15.html#jls-15.13">Java Method
+ * Reference expression</a>.
  */
 public class MethodReference extends JavaExpression {
 
-  /** The scope of this method reference. */
+  /** The scope of this method reference, which precedes "::". */
   protected final MethodReferenceScope scope;
 
-  /** The target of this method reference. */
+  /** The target of this method reference, which follows "::". */
   protected final MethodReferenceTarget target;
 
   /**
@@ -44,7 +44,7 @@ public class MethodReference extends JavaExpression {
    * @param <T> the class
    */
   private <T extends JavaExpression> @Nullable T containedOfClassForScope(Class<T> clazz) {
-    if (scope.isScopeSuper()) {
+    if (scope.isSuper()) {
       return null;
     }
     T result = null;

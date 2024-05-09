@@ -4,11 +4,9 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 
 /**
- * The left-hand side of a <a
+ * The part of a <a
  * href="https://docs.oracle.com/javase/specs/jls/se8/html/jls-15.html#jls-15.13">Java Method
- * Reference expression</a>
- *
- * <p>The left-hand side of a Java method Reference expression can have the following forms:
+ * Reference expression</a> that precedes "::". It can have the following forms:
  *
  * <ul>
  *   <li>{@literal ExpressionName}
@@ -29,11 +27,11 @@ public class MethodReferenceScope {
 
   /**
    * Non-null if this method reference scope is one of {@literal ReferenceType}, {@literal
-   * ClassType}, {@literal ArrayType}.
+   * ClassType}, or {@literal ArrayType}.
    */
   private final @Nullable JavaExpression type;
 
-  /** Whether this method reference scope is "super". */
+  /** True if this method reference scope is "super". */
   private final boolean isSuper;
 
   /**
@@ -51,7 +49,7 @@ public class MethodReferenceScope {
   }
 
   /**
-   * Return the expression for this method reference scope.
+   * Return the expression for this method reference scope, or null if it's not an expression.
    *
    * @return the expression for this method reference scope
    */
@@ -61,7 +59,7 @@ public class MethodReferenceScope {
   }
 
   /**
-   * Return the type for this method reference scope.
+   * Return the type for this method reference scope, or null if it's not a type.
    *
    * @return the type for this method reference scope
    */
@@ -75,22 +73,20 @@ public class MethodReferenceScope {
    *
    * @return true if this method reference scope is "super"
    */
-  public boolean isScopeSuper() {
+  public boolean isSuper() {
     return this.isSuper;
   }
 
   @Override
-  @SuppressWarnings(
-      "nullness:dereference.of.nullable") // Invariant: one of expression or type must be non-null
   public String toString() {
-    if (isScopeSuper()) {
+    if (isSuper()) {
       return "super";
-    }
-    if (expression != null) {
+    } else if (expression != null) {
       return expression.toString();
+    } else if (type != null) {
+      return type.toString();
+    } else {
+      throw new BugInCF("Malformed MethodReferenceScope");
     }
-    // One of expression or type has to be non-null
-    assert type != null;
-    return type.toString();
   }
 }
