@@ -119,8 +119,14 @@ public abstract class JavaExpressionConverter extends JavaExpressionVisitor<Java
    *     JavaExpression
    */
   private MethodReferenceScope convert(MethodReferenceScope scope) {
-    JavaExpression expression = convert(scope.getExpression());
-    JavaExpression type = convert(scope.getType());
+    JavaExpression expression = null;
+    if (scope.getExpression() != null) {
+      expression = convert(scope.getExpression());
+    }
+    JavaExpression type = null;
+    if (scope.getType() != null) {
+      type = scope.getType();
+    }
     return new MethodReferenceScope(expression, type, scope.isSuper());
   }
 
@@ -133,8 +139,14 @@ public abstract class JavaExpressionConverter extends JavaExpressionVisitor<Java
    *     JavaExpression
    */
   private MethodReferenceTarget convert(MethodReferenceTarget target) {
-    JavaExpression typeArguments = convert(target.getTypeArguments());
-    JavaExpression identifier = convert(target.getIdentifier());
+    JavaExpression typeArguments = null;
+    if (target.getTypeArguments() != null) {
+      typeArguments = convert(target.getTypeArguments());
+    }
+    JavaExpression identifier = null;
+    if (target.getIdentifier() != null) {
+      identifier = convert(target.getIdentifier());
+    }
     return new MethodReferenceTarget(typeArguments, identifier, target.isConstructorCall());
   }
 
