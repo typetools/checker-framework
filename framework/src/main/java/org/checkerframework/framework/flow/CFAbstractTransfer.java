@@ -288,6 +288,7 @@ public abstract class CFAbstractTransfer<
       }
 
     } else if (underlyingAST.getKind() == UnderlyingAST.Kind.LAMBDA) {
+      CFGLambda lambda = (CFGLambda) underlyingAST;
       if (fixedInitialStore != null) {
         // Create a copy and keep only the field values (nothing else applies).
         store = analysis.createCopiedStore(fixedInitialStore);
@@ -307,7 +308,6 @@ public abstract class CFAbstractTransfer<
         store.initializeMethodParameter(p, analysis.createAbstractValue(anno));
       }
 
-      CFGLambda lambda = (CFGLambda) underlyingAST;
       @SuppressWarnings("interning:assignment") // used in == tests
       @InternedDistinct Tree enclosingTree =
           TreePathUtil.enclosingOfKind(
