@@ -2,6 +2,7 @@ package org.checkerframework.dataflow.expression;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.javacutil.BugInCF;
 
 /**
  * The part of a <a
