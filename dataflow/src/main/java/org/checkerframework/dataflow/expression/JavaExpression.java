@@ -4,7 +4,9 @@ import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
@@ -17,6 +19,7 @@ import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
@@ -34,6 +37,7 @@ import org.checkerframework.dataflow.cfg.node.BinaryOperationNode;
 import org.checkerframework.dataflow.cfg.node.ClassNameNode;
 import org.checkerframework.dataflow.cfg.node.ExplicitThisNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
+import org.checkerframework.dataflow.cfg.node.FunctionalInterfaceNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.NarrowingConversionNode;
@@ -72,6 +76,7 @@ import org.plumelib.util.CollectionsPlume;
  * @see <a href="https://checkerframework.org/manual/#java-expressions-as-arguments">the syntax of
  *     Java expressions supported by the Checker Framework</a>
  */
+@SuppressWarnings("all")
 public abstract class JavaExpression {
   /** The type of this expression. */
   protected final TypeMirror type;
@@ -383,9 +388,11 @@ public abstract class JavaExpression {
     } else if (receiverNode instanceof ExplicitThisNode) {
       result = new ThisReference(receiverNode.getType());
     } else if (receiverNode instanceof ThisNode) {
+      System.out.printf("RECEIVER NODE BEFORE CONVERSTION TO THISREF = %s\n", receiverNode);
       result = new ThisReference(receiverNode.getType());
     } else if (receiverNode instanceof SuperNode) {
-      result = new ThisReference(receiverNode.getType());
+      System.out.printf("SUPER RECEIVER NODE BEFORE CONVERSTION TO THISREF = %s\n", receiverNode);
+      result = new SuperReference(receiverNode.getType());
     } else if (receiverNode instanceof LocalVariableNode) {
       LocalVariableNode lv = (LocalVariableNode) receiverNode;
       result = new LocalVariable(lv);
@@ -440,12 +447,38 @@ public abstract class JavaExpression {
         methodReceiver = fromNode(mn.getTarget().getReceiver());
       }
       result = new MethodCall(mn.getType(), invokedMethod, methodReceiver, parameters);
+    } else if (receiverNode instanceof FunctionalInterfaceNode) {
+      FunctionalInterfaceNode functionalInterfaceNode = (FunctionalInterfaceNode) receiverNode;
+      Tree tree = functionalInterfaceNode.getTree();
+      if (tree instanceof LambdaExpressionTree) {
+        // TODO: implement me
+      } else if (tree instanceof MemberReferenceTree) {
+        MemberReferenceTree memberReferenceTree = (MemberReferenceTree) tree;
+        createMethodReferenceScope(memberReferenceTree);
+        createMethodReferenceTarget(memberReferenceTree);
+      } else {
+        throw new BugInCF("Unexpected type of tree for node: " + functionalInterfaceNode);
+      }
     }
 
     if (result == null) {
       result = new Unknown(receiverNode);
     }
     return result;
+  }
+
+  private static MethodReferenceScope createMethodReferenceScope(MemberReferenceTree tree) {
+    JavaExpression expression = JavaExpression.fromTree(tree.getQualifierExpression());
+    TypeMirror type = TreeUtils.typeOf(tree.getQualifierExpression());
+    return new MethodReferenceScope(expression, type, expression instanceof SuperReference);
+  }
+
+  private static MethodReferenceTarget createMethodReferenceTarget(MemberReferenceTree tree) {
+    List<TypeMirror> typeArguments =
+        tree.getTypeArguments().stream().map(TreeUtils::typeOf).collect(Collectors.toList());
+    Name methodName = tree.getName();
+    boolean isConstructorCall = methodName.equals("new");
+    return null; // stub: need to convert methodName to JavaExpression, somehow?
   }
 
   /**
@@ -534,7 +567,10 @@ public abstract class JavaExpression {
         TypeMirror typeOfId = TreeUtils.typeOf(identifierTree);
         Name identifierName = identifierTree.getName();
         if (identifierName.contentEquals("this") || identifierName.contentEquals("super")) {
-          result = new ThisReference(typeOfId);
+          result =
+              identifierName.contentEquals("this")
+                  ? new ThisReference(typeOfId)
+                  : new SuperReference(typeOfId);
           break;
         }
         assert TreeUtils.isUseOfElement(identifierTree) : "@AssumeAssertion(nullness): tree kind";

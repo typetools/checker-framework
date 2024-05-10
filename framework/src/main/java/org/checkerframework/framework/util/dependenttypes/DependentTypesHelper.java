@@ -38,6 +38,7 @@ import org.checkerframework.dataflow.expression.FormalParameter;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.JavaExpressionConverter;
 import org.checkerframework.dataflow.expression.LocalVariable;
+import org.checkerframework.dataflow.expression.SuperReference;
 import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.expression.Unknown;
 import org.checkerframework.framework.source.SourceChecker;
@@ -725,6 +726,12 @@ public class DependentTypesHelper {
 
                 @Override
                 public JavaExpression visitThisReference(ThisReference thisRef, Void unused) {
+                  throw new FoundLocalException();
+                }
+
+                @Override
+                protected JavaExpression visitSuperReference(
+                    SuperReference superExpr, Void unused) {
                   throw new FoundLocalException();
                 }
               };

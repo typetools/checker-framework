@@ -1,5 +1,6 @@
 package org.checkerframework.dataflow.expression;
 
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.javacutil.BugInCF;
@@ -30,7 +31,7 @@ public class MethodReferenceScope {
    * Non-null if this method reference scope is one of {@literal ReferenceType}, {@literal
    * ClassType}, or {@literal ArrayType}.
    */
-  private final @Nullable JavaExpression type;
+  private final @Nullable TypeMirror type;
 
   /** True if this method reference scope is "super". */
   private final boolean isSuper;
@@ -43,7 +44,7 @@ public class MethodReferenceScope {
    * @param isReceiverSuper whether a method reference scope is "super"
    */
   public MethodReferenceScope(
-      @Nullable JavaExpression expression, @Nullable JavaExpression type, boolean isReceiverSuper) {
+      @Nullable JavaExpression expression, @Nullable TypeMirror type, boolean isReceiverSuper) {
     if (isReceiverSuper) {
       // If the scope is "super", the expression and type must both be null
       if (!(expression == null && type == null)) {
@@ -71,7 +72,7 @@ public class MethodReferenceScope {
    * @return the type for this method reference scope
    */
   @Pure
-  public @Nullable JavaExpression getType() {
+  public @Nullable TypeMirror getType() {
     return this.type;
   }
 
@@ -104,10 +105,7 @@ public class MethodReferenceScope {
         return result;
       }
     }
-    if (getType() != null) {
-      result = getType().containedOfClass(clazz);
-    }
-    return result;
+    return null;
   }
 
   @Override

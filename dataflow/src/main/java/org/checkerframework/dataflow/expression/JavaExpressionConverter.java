@@ -1,6 +1,7 @@
 package org.checkerframework.dataflow.expression;
 
 import java.util.List;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.plumelib.util.CollectionsPlume;
@@ -102,6 +103,11 @@ public abstract class JavaExpressionConverter extends JavaExpressionVisitor<Java
   }
 
   @Override
+  protected JavaExpression visitSuperReference(SuperReference superReference, Void unused) {
+    return superReference;
+  }
+
+  @Override
   protected JavaExpression visitMethodReference(MethodReference methodReferenceExpr, Void unused) {
     MethodReferenceScope scope = convert(methodReferenceExpr.scope);
     MethodReferenceTarget target = convert(methodReferenceExpr.target);
@@ -123,7 +129,7 @@ public abstract class JavaExpressionConverter extends JavaExpressionVisitor<Java
     if (scope.getExpression() != null) {
       expression = convert(scope.getExpression());
     }
-    JavaExpression type = null;
+    TypeMirror type = null;
     if (scope.getType() != null) {
       type = scope.getType();
     }
@@ -139,15 +145,12 @@ public abstract class JavaExpressionConverter extends JavaExpressionVisitor<Java
    *     JavaExpression
    */
   private MethodReferenceTarget convert(MethodReferenceTarget target) {
-    JavaExpression typeArguments = null;
-    if (target.getTypeArguments() != null) {
-      typeArguments = convert(target.getTypeArguments());
-    }
     JavaExpression identifier = null;
     if (target.getIdentifier() != null) {
       identifier = convert(target.getIdentifier());
     }
-    return new MethodReferenceTarget(typeArguments, identifier, target.isConstructorCall());
+    return new MethodReferenceTarget(
+        target.getTypeArguments(), identifier, target.isConstructorCall());
   }
 
   @Override

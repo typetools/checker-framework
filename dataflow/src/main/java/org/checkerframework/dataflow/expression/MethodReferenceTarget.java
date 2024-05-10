@@ -1,5 +1,7 @@
 package org.checkerframework.dataflow.expression;
 
+import java.util.List;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.javacutil.BugInCF;
@@ -19,7 +21,7 @@ import org.checkerframework.javacutil.BugInCF;
 public class MethodReferenceTarget {
 
   /** The type arguments for this method reference target. */
-  private final @Nullable JavaExpression typeArguments;
+  private final List<TypeMirror> typeArguments;
 
   /** The identifier for this method reference target. */
   private final @Nullable JavaExpression identifier;
@@ -35,7 +37,7 @@ public class MethodReferenceTarget {
    * @param isConstructorCall whether a method reference target is a constructor call
    */
   public MethodReferenceTarget(
-      @Nullable JavaExpression typeArguments,
+      List<TypeMirror> typeArguments,
       @Nullable JavaExpression identifier,
       boolean isConstructorCall) {
     if (isConstructorCall) {
@@ -55,7 +57,7 @@ public class MethodReferenceTarget {
    * @return the type arguments for this method reference target
    */
   @Pure
-  public @Nullable JavaExpression getTypeArguments() {
+  public List<TypeMirror> getTypeArguments() {
     return this.typeArguments;
   }
 
@@ -90,8 +92,9 @@ public class MethodReferenceTarget {
    */
   public <T extends JavaExpression> @Nullable T containedOfClass(Class<T> clazz) {
     T result = null;
-    if (getTypeArguments() != null) {
-      result = getTypeArguments().containedOfClass(clazz);
+    if (!getTypeArguments().isEmpty()) {
+      // TODO" look through type arguments and find the class
+      result = null;
       if (result != null) {
         return result;
       }
