@@ -304,6 +304,7 @@ public abstract class CFAbstractTransfer<
         // Allow that local variables are retained; they are effectively final,
         // otherwise Java wouldn't allow access from within the lambda.
         // TODO: what about the other information? Can code further down be simplified?
+        // store.localVariableValues.clear();
         store.classValues.clear();
         store.arrayValues.clear();
         // If the lambda is leaked or the lambda is impure, remove any information about modifiable
