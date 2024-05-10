@@ -419,12 +419,10 @@ public abstract class CFAbstractTransfer<
               .getChecker()
               .getTypeFactoryOfSubcheckerOrNull(AliasingChecker.class);
       if (aliasingAtf != null) {
-        // Check whether any parameter is NOT annotated with @NonLeaked
-        return methodElt.getParameters().stream()
-            .anyMatch(
-                param ->
-                    aliasingAtf.getAnnotatedType(param).getPrimaryAnnotation(NonLeaked.class)
-                        == null);
+        int indexOfLambdaActual = invok.getArguments().indexOf(lambdaTree);
+        VariableElement lambdaFormal = methodElt.getParameters().get(indexOfLambdaActual);
+        return aliasingAtf.getAnnotatedType(lambdaFormal).getEffectiveAnnotation(NonLeaked.class)
+            == null;
       }
     }
     return true;

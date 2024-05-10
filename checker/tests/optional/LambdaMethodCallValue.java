@@ -2,6 +2,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 import org.checkerframework.checker.optional.qual.*;
+import org.checkerframework.common.aliasing.qual.*;
 import org.checkerframework.dataflow.qual.*;
 
 class Main {
@@ -57,6 +58,12 @@ class Main {
     }
   }
 
+  void test7(OptContainer container) {
+    if (container.getOpt().isPresent()) {
+      container.forEachLeaksSome("Test", s -> container.getOpt().get()); // Legal
+    }
+  }
+
   class OptContainer {
 
     @SuppressWarnings("optional:field") // Don't care about this warning, unrelated to the test case
@@ -85,6 +92,10 @@ class Main {
 
     <T> void forEach(Consumer<T> op) {
       // op may leak!
+    }
+
+    <T> void forEachLeaksSome(String s, @NonLeaked Consumer<T> op) {
+      // s leaks, op does not
     }
   }
 }
