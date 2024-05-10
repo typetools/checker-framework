@@ -409,8 +409,7 @@ public abstract class CFAbstractTransfer<
    */
   private boolean doesLambdaLeak(CFGLambda lambda, AnnotatedTypeFactory aTypeFactory) {
     LambdaExpressionTree lambdaTree = lambda.getLambdaTree();
-    TreePath lambdaPath = aTypeFactory.getPath(lambdaTree);
-    Tree lambdaParent = lambdaPath.getParentPath().getLeaf();
+    Tree lambdaParent = aTypeFactory.getPath(lambdaTree).getParentPath().getLeaf();
     if (lambdaParent.getKind() == Tree.Kind.METHOD_INVOCATION) {
       MethodInvocationTree invok = (MethodInvocationTree) lambdaParent;
       ExecutableElement methodElt = TreeUtils.elementFromUse(invok);
