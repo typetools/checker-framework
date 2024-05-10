@@ -16,7 +16,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Consumer;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -382,24 +381,18 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
-   * Determines whether a given lambda expression is leaked outside the method to which it is
-   * passed.
+   * Determines whether a given lambda expression may be leaked outside the method in which it
+   * appears.
    *
-   * <p>This method is currently limited in that it can only determine whether lambdas that are
-   * <i>immediately</i>passed a method (e.g., {@link java.lang.Iterable#forEach(Consumer)}) are
-   * leaked.
-   *
-   * <p>Whether a lambda is leaked or not is determined by the presence of a @{@link NonLeaked}
-   * annotation, which is trusted.
-   *
-   * <p>The presence of the @{@link NonLeaked} annotation is checked at the <i>declaration</i> of
-   * the method to which the lambda is passed.
+   * <p>Currently, a lambda is considered leaked unless it is an argument to a method whose
+   * corresponding formal parameter is annotated as @{@link NonLeaked}. The @{@link NonLeaked}
+   * annotation is trusted, not checked.
    *
    * <p>For example, given the following code:
    *
    * <pre><code>
    *   void operateOver(Container container) {
-   *      container.forEach(item -> {...});
+   *      container.forEach(item -&gt; {...});
    *   }
    *
    *   class Container {
@@ -412,7 +405,7 @@ public abstract class CFAbstractTransfer<
    *
    * @param lambda the lambda
    * @param aTypeFactory an annotated type factory
-   * @return true if the lambda is leaked
+   * @return true if the lambda may be leaked
    */
   private boolean doesLambdaLeak(CFGLambda lambda, AnnotatedTypeFactory aTypeFactory) {
     LambdaExpressionTree lambdaTree = lambda.getLambdaTree();
