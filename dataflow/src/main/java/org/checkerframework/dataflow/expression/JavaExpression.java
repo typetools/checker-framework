@@ -474,8 +474,11 @@ public abstract class JavaExpression {
   }
 
   private static MethodReferenceTarget createMethodReferenceTarget(MemberReferenceTree tree) {
-    List<TypeMirror> typeArguments =
-        tree.getTypeArguments().stream().map(TreeUtils::typeOf).collect(Collectors.toList());
+    List<TypeMirror> typeArguments = Collections.emptyList();
+    if (tree.getTypeArguments() != null) {
+      typeArguments =
+          tree.getTypeArguments().stream().map(TreeUtils::typeOf).collect(Collectors.toList());
+    }
     Name methodName = tree.getName();
     boolean isConstructorCall = methodName.equals("new");
     return null; // stub: need to convert methodName to JavaExpression, somehow?
