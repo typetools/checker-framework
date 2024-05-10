@@ -1,5 +1,6 @@
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 import org.checkerframework.checker.optional.qual.*;
 import org.checkerframework.dataflow.qual.*;
 
@@ -49,6 +50,13 @@ class Main {
     }
   }
 
+  void test6(OptContainer container) {
+    if (container.getOpt().isPresent()) {
+      // :: error: (method.invocation)
+      container.forEach(s -> container.getOpt().get());
+    }
+  }
+
   class OptContainer {
 
     @SuppressWarnings("optional:field") // Don't care about this warning, unrelated to the test case
@@ -74,5 +82,9 @@ class Main {
     }
 
     public void sideEffect() {}
+
+    <T> void forEach(Consumer<T> op) {
+      // op may leak!
+    }
   }
 }

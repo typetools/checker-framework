@@ -309,7 +309,7 @@ public abstract class CFAbstractTransfer<
         // If the lambda is leaked or the lambda is impure, remove any information about modifiable
         // method values from the initial store.
         TreePath lambdaBody = atypeFactory.getPath(lambda.getLambdaTree().getBody());
-        if (isAnyMethodCallLeakedWithinLambda(lambda, atypeFactory)
+        if (doesLambdaLeak(lambda, atypeFactory)
             || !isExpressionOrStatementPure(lambdaBody, atypeFactory)) {
           store.methodCallExpressions.keySet().removeIf(MethodCall::isModifiableByOtherCode);
         }
@@ -381,24 +381,39 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
-   * Determine whether any method calls within a given lambda expression are leaked.
+   * Determines whether a given lambda expression is leaked outside the method to which it is
+   * passed.
    *
-   * <p>This method is currently limited in that it can only determine whether leaks occur in lambda
-   * expressions that are <i>immediately</i> passed to a method (e.g., {@link
-   * java.lang.Iterable#forEach(Consumer)}).
+   * <p>This method is currently limited in that it can only determine whether lambdas that are
+   * <i>immediately</i>passed a method (e.g., {@link java.lang.Iterable#forEach(Consumer)}) are
+   * leaked.
    *
-   * <p>Whether a method is leaked or not is determined by the presence of a {@link NonLeaked}
-   * annotation, which is trusted. The presence of the {@link NonLeaked} annotation is checked at
-   * the declaration of the method to which the lambda is passed. For example, in the declaration of
-   * {@link java.lang.Iterable#forEach(Consumer)}, the {@code Consumer} parameter is annotated with
-   * {@link NonLeaked}.
+   * <p>Whether a lambda is leaked or not is determined by the presence of a @{@link NonLeaked}
+   * annotation, which is trusted.
    *
-   * @param lambda the lambda expression
+   * <p>The presence of the @{@link NonLeaked} annotation is checked at the <i>declaration</i> of
+   * the method to which the lambda is passed.
+   *
+   * <p>For example, given the following code:
+   *
+   * <pre><code>
+   *   void operateOver(Container container) {
+   *      container.forEach(item -> {...});
+   *   }
+   *
+   *   class Container {
+   *     void forEach(@NonLeaked Consumer&lt;T&gt;)
+   *   }
+   * </code></pre>
+   *
+   * The lambda passed to {@code Container.forEach} is not leaked, as the parameter is annotated
+   * with @{@link NonLeaked}.
+   *
+   * @param lambda the lambda
    * @param aTypeFactory an annotated type factory
-   * @return true if the lambda expression is found to be annotated with {@link NonLeaked}
+   * @return true if the lambda is leaked
    */
-  private boolean isAnyMethodCallLeakedWithinLambda(
-      CFGLambda lambda, AnnotatedTypeFactory aTypeFactory) {
+  private boolean doesLambdaLeak(CFGLambda lambda, AnnotatedTypeFactory aTypeFactory) {
     LambdaExpressionTree lambdaTree = lambda.getLambdaTree();
     TreePath lambdaPath = aTypeFactory.getPath(lambdaTree);
     Tree lambdaParent = lambdaPath.getParentPath().getLeaf();
