@@ -1,8 +1,10 @@
 package org.checkerframework.dataflow.expression;
 
 import javax.lang.model.type.TypeMirror;
+import com.sun.tools.javac.code.Symbol;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.AnnotationProvider;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * A <a href="https://docs.oracle.com/javase/specs/jls/se21/html/jls-15.html#jls-15.13">Java Method
@@ -66,5 +68,15 @@ public class MethodReference extends JavaExpression {
   @Override
   public String toString() {
     return this.scope.toString() + "::" + this.target.toString();
+  }
+
+  @Override
+  public boolean isAssignableByOtherCode() {
+    return false; // stub StackOverflowException
+  }
+
+  @Override
+  public boolean isModifiableByOtherCode() {
+    return false; // stub to prevent StackOverflowException
   }
 }

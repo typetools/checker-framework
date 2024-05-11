@@ -145,12 +145,8 @@ public abstract class JavaExpressionConverter extends JavaExpressionVisitor<Java
    *     JavaExpression
    */
   private MethodReferenceTarget convert(MethodReferenceTarget target) {
-    JavaExpression identifier = null;
-    if (target.getIdentifier() != null) {
-      identifier = convert(target.getIdentifier());
-    }
     return new MethodReferenceTarget(
-        target.getTypeArguments(), identifier, target.isConstructorCall());
+        target.getTypeArguments(), target.getIdentifier(), target.isConstructorCall());
   }
 
   @Override

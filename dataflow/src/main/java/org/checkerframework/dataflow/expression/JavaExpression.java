@@ -388,10 +388,8 @@ public abstract class JavaExpression {
     } else if (receiverNode instanceof ExplicitThisNode) {
       result = new ThisReference(receiverNode.getType());
     } else if (receiverNode instanceof ThisNode) {
-      System.out.printf("RECEIVER NODE BEFORE CONVERSTION TO THISREF = %s\n", receiverNode);
       result = new ThisReference(receiverNode.getType());
     } else if (receiverNode instanceof SuperNode) {
-      System.out.printf("SUPER RECEIVER NODE BEFORE CONVERSTION TO THISREF = %s\n", receiverNode);
       result = new SuperReference(receiverNode.getType());
     } else if (receiverNode instanceof LocalVariableNode) {
       LocalVariableNode lv = (LocalVariableNode) receiverNode;
@@ -454,10 +452,9 @@ public abstract class JavaExpression {
         // TODO: implement me
       } else if (tree instanceof MemberReferenceTree) {
         MemberReferenceTree memberReferenceTree = (MemberReferenceTree) tree;
-        createMethodReferenceScope(memberReferenceTree);
-        createMethodReferenceTarget(memberReferenceTree);
-      } else {
-        throw new BugInCF("Unexpected type of tree for node: " + functionalInterfaceNode);
+        MethodReferenceScope scope = createMethodReferenceScope(memberReferenceTree);
+        MethodReferenceTarget target = createMethodReferenceTarget(memberReferenceTree);
+        return new MethodReference(scope.getType(), scope, target);
       }
     }
 
@@ -481,7 +478,7 @@ public abstract class JavaExpression {
     }
     Name methodName = tree.getName();
     boolean isConstructorCall = methodName.equals("new");
-    return null; // stub: need to convert methodName to JavaExpression, somehow?
+    return new MethodReferenceTarget(typeArguments, methodName, isConstructorCall);
   }
 
   /**

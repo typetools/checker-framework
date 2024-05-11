@@ -96,7 +96,6 @@ public abstract class JavaExpressionScanner<P> extends JavaExpressionVisitor<Voi
   @Override
   protected Void visitMethodReference(MethodReference methodReferenceExpr, P p) {
     visitMethodReferenceScope(methodReferenceExpr.scope, p);
-    visitMethodReferenceTarget(methodReferenceExpr.target, p);
     return null;
   }
 
@@ -109,21 +108,6 @@ public abstract class JavaExpressionScanner<P> extends JavaExpressionVisitor<Voi
   private void visitMethodReferenceScope(MethodReferenceScope scope, P p) {
     if (scope.getExpression() != null) {
       visit(scope.getExpression(), p);
-    }
-  }
-
-  /**
-   * Visits the parts of a method reference target.
-   *
-   * @param target a method reference target
-   * @param p generic parameter
-   */
-  private void visitMethodReferenceTarget(MethodReferenceTarget target, P p) {
-    if (target.isConstructorCall()) {
-      return;
-    }
-    if (target.getIdentifier() != null) {
-      visit(target.getIdentifier(), p);
     }
   }
 

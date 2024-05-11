@@ -1,6 +1,7 @@
 package org.checkerframework.dataflow.expression;
 
 import java.util.List;
+import javax.lang.model.element.Name;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
@@ -13,9 +14,9 @@ import org.checkerframework.javacutil.BugInCF;
  *
  * <ul>
  *   <li>{@literal [TypeArguments] Identifier}, which may be represented by a standard {@link
- *       JavaExpression}
+ *       javax.lang.model.element.Name}
  *   <li>{@literal [TypeArguments] "new"}, which is a constructor call and cannot be represented by
- *       an arbitrary {@link JavaExpression}
+ *       an arbitrary {@link javax.lang.model.element.Name}
  * </ul>
  */
 public class MethodReferenceTarget {
@@ -24,7 +25,7 @@ public class MethodReferenceTarget {
   private final List<TypeMirror> typeArguments;
 
   /** The identifier for this method reference target. */
-  private final @Nullable JavaExpression identifier;
+  private final @Nullable Name identifier;
 
   /** True if this method reference target is a constructor call. */
   private final boolean isConstructorCall;
@@ -38,7 +39,7 @@ public class MethodReferenceTarget {
    */
   public MethodReferenceTarget(
       List<TypeMirror> typeArguments,
-      @Nullable JavaExpression identifier,
+      @Nullable Name identifier,
       boolean isConstructorCall) {
     if (isConstructorCall) {
       // If the target is a constructor call, the identifier must be null
@@ -68,7 +69,7 @@ public class MethodReferenceTarget {
    * @return the identifier for this method reference target
    */
   @Pure
-  public @Nullable JavaExpression getIdentifier() {
+  public @Nullable Name getIdentifier() {
     return this.identifier;
   }
 
@@ -99,9 +100,6 @@ public class MethodReferenceTarget {
         return result;
       }
     }
-    if (getIdentifier() != null) {
-      result = getIdentifier().containedOfClass(clazz);
-    }
     return result;
   }
 
@@ -111,9 +109,9 @@ public class MethodReferenceTarget {
   // is non-null
   public String toString() {
     String targetName = isConstructorCall() ? "new" : identifier.toString();
-    if (typeArguments != null) {
-      return typeArguments + targetName;
+    if (typeArguments.isEmpty()) {
+      return targetName;
     }
-    return targetName;
+    return typeArguments + targetName;
   }
 }
