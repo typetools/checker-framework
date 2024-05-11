@@ -38,9 +38,7 @@ public class MethodReferenceTarget {
    * @param isConstructorCall whether a method reference target is a constructor call
    */
   public MethodReferenceTarget(
-      List<TypeMirror> typeArguments,
-      @Nullable Name identifier,
-      boolean isConstructorCall) {
+      List<TypeMirror> typeArguments, @Nullable Name identifier, boolean isConstructorCall) {
     if (isConstructorCall) {
       // If the target is a constructor call, the identifier must be null
       if (identifier != null) {
