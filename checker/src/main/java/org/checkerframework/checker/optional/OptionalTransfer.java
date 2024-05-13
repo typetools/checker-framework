@@ -184,7 +184,8 @@ public class OptionalTransfer extends CFTransfer {
    */
   private boolean isReceiverNonEmpty(MethodInvocationNode methodInvok) {
     JavaExpression receiver =
-        JavaExpression.getReceiver(TreeUtils.getReceiverTree(methodInvok.getTree()));
+        JavaExpression.getInitialReceiverOfMethodInvocation(
+            TreeUtils.getReceiverTree(methodInvok.getTree()));
     VariableTree receiverDeclaration =
         getReceiverDeclaration(TreePathUtil.enclosingMethod(methodInvok.getTreePath()), receiver);
     if (receiverDeclaration == null) {

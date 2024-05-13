@@ -735,6 +735,24 @@ public abstract class JavaExpression {
   }
 
   /**
+   * Returns the initial receiver of a method invocation.
+   *
+   * <p>For example, for a given method invocation sequence {@code a.b().c.d().e()}, return {@code
+   * a}.
+   *
+   * @param tree a tree
+   * @return the initial receiver of a method invocation
+   */
+  public static JavaExpression getInitialReceiverOfMethodInvocation(ExpressionTree tree) {
+    assert tree instanceof MethodInvocationTree;
+    ExpressionTree receiverTree = TreeUtils.getReceiverTree(tree);
+    while (receiverTree instanceof MethodInvocationNode) {
+      receiverTree = TreeUtils.getReceiverTree(receiverTree);
+    }
+    return getReceiver(receiverTree);
+  }
+
+  /**
    * Returns the implicit receiver of ele.
    *
    * <p>Returns either a new ClassName or a new ThisReference depending on whether ele is static or
