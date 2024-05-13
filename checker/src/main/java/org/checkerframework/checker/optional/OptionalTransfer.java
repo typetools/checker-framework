@@ -141,8 +141,6 @@ public class OptionalTransfer extends CFTransfer {
       return result;
     }
     refineStreamOperations(n, result);
-    System.out.printf(
-        "Visiting method invocation = %s, with store = %s\n", n, in.getRegularStore());
     return result;
   }
 

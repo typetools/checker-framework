@@ -563,20 +563,15 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   protected boolean shouldInsert(
       JavaExpression expr, @Nullable V value, boolean permitNondeterministic) {
     if (value == null) {
-      System.out.printf("expr = %s, value = %s, value is null\n", expr, value);
       // No need to insert a null abstract value because it represents
       // top and top is also the default value.
       return false;
     }
     if (expr.containsUnknown()) {
-      System.out.printf("expr = %s, value = %s, expr.containsUnknown() is true\n", expr, value);
       // Expressions containing unknown expressions are not stored.
       return false;
     }
     if (!(permitNondeterministic || expr.isDeterministic(analysis.getTypeFactory()))) {
-      System.out.printf(
-          "expr = %s, value = %s, permitNonDeterministic = %s\n",
-          expr, value, permitNondeterministic);
       // Nondeterministic expressions may not be stored.
       // (They are likely to be quickly evicted, as soon as a side-effecting method is
       // called.)
@@ -608,7 +603,6 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         expr,
         value,
         (old, newValue) -> {
-          System.out.printf("Store replacement :: old value = %s, new value = %s\n", old, newValue);
           return newValue.mostSpecific(old, null);
         },
         permitNondeterministic);
@@ -630,7 +624,6 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       BinaryOperator<V> merger,
       boolean permitNondeterministic) {
     if (!shouldInsert(expr, value, permitNondeterministic)) {
-      System.out.printf("NOT EVEN BOTHERING TO INSERT\n");
       return;
     }
 
