@@ -109,8 +109,7 @@ public abstract class JavaExpressionConverter extends JavaExpressionVisitor<Java
 
   @Override
   protected JavaExpression visitLambda(Lambda lambdaExpr, Void unused) {
-    List<JavaExpression> params = convert(lambdaExpr.getParameters());
-    return new Lambda(lambdaExpr.getType(), params, lambdaExpr.getBody());
+    return lambdaExpr;
   }
 
   @Override

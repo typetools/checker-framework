@@ -450,11 +450,8 @@ public abstract class JavaExpression {
       Tree tree = functionalInterfaceNode.getTree();
       if (tree instanceof LambdaExpressionTree) {
         LambdaExpressionTree lambdaTree = (LambdaExpressionTree) tree;
-        List<JavaExpression> parameters = createLambdaParameters(lambdaTree);
-        return new Lambda(
-            functionalInterfaceNode.getType(),
-            parameters,
-            TreeUtils.elementFromTree(lambdaTree.getBody()));
+        List<LocalVariable> parameters = createLambdaParameters(lambdaTree);
+        return new Lambda(functionalInterfaceNode.getType(), parameters, lambdaTree.getBody());
       } else if (tree instanceof MemberReferenceTree) {
         MemberReferenceTree memberReferenceTree = (MemberReferenceTree) tree;
         MethodReferenceScope scope = createMethodReferenceScope(memberReferenceTree);
@@ -469,9 +466,10 @@ public abstract class JavaExpression {
     return result;
   }
 
-  private static List<JavaExpression> createLambdaParameters(LambdaExpressionTree lambdaTree) {
+  private static List<LocalVariable> createLambdaParameters(LambdaExpressionTree lambdaTree) {
     return lambdaTree.getParameters().stream()
-        .map(JavaExpression::fromVariableTree)
+        .map(TreeUtils::elementFromDeclaration)
+        .map(LocalVariable::new)
         .collect(Collectors.toList());
   }
 

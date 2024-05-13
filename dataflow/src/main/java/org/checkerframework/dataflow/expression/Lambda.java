@@ -1,8 +1,8 @@
 package org.checkerframework.dataflow.expression;
 
+import com.sun.source.tree.Tree;
 import java.util.List;
 import java.util.stream.Collectors;
-import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
@@ -15,7 +15,7 @@ import org.checkerframework.javacutil.AnnotationProvider;
 public class Lambda extends JavaExpression {
 
   /** The parameter(s) of this lambda expression. */
-  protected List<JavaExpression> parameters;
+  protected List<LocalVariable> parameters;
 
   /**
    * The body of this lambda expression.
@@ -27,9 +27,9 @@ public class Lambda extends JavaExpression {
    * or <a
    * href="https://docs.oracle.com/javase/specs/jls/se21/html/jls-14.html#jls-Block">block</a>.
    */
-  protected Element body;
+  protected Tree body;
 
-  public Lambda(TypeMirror type, List<JavaExpression> parameters, Element body) {
+  public Lambda(TypeMirror type, List<LocalVariable> parameters, Tree body) {
     super(type);
     this.parameters = parameters;
     this.body = body;
@@ -41,7 +41,7 @@ public class Lambda extends JavaExpression {
    * @return the parameter(s) for this lambda expression
    */
   @Pure
-  public List<JavaExpression> getParameters() {
+  public List<LocalVariable> getParameters() {
     return parameters;
   }
 
@@ -51,7 +51,7 @@ public class Lambda extends JavaExpression {
    * @return the body for this lambda expression
    */
   @Pure
-  public Element getBody() {
+  public Tree getBody() {
     return body;
   }
 
