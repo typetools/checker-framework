@@ -123,6 +123,8 @@ import org.plumelib.util.UtilPlume;
   "onlyUses",
   "skipDefs",
   "onlyDefs",
+  "skipMethods",
+  "onlyMethods",
   "skipFiles",
   "onlyFiles",
   "skipDirs", // Obsolete as of 2024-03-15, replaced by "skipFiles".
@@ -2635,6 +2637,17 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * Tests whether the method definition should not be checked because it matches the {@code
    * checker.skipDefs} property.
    *
+   * @param tree method to potentially skip
+   * @return true if checker should not test {@code tree}
+   */
+  public final boolean shouldSkipDefs(MethodTree tree) {
+    return false; // stub
+  }
+
+  /**
+   * Tests whether the method definition should not be checked because it matches the {@code
+   * checker.skipDefs} property.
+   *
    * <p>TODO: currently only uses the class definition. Refine pattern. Same for skipUses.
    *
    * @param cls class to potentially skip
@@ -2642,7 +2655,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @return true if checker should not test {@code meth}
    */
   public final boolean shouldSkipDefs(ClassTree cls, MethodTree meth) {
-    return shouldSkipDefs(cls);
+    return shouldSkipDefs(cls) || shouldSkipDefs(meth);
   }
 
   ///////////////////////////////////////////////////////////////////////////
