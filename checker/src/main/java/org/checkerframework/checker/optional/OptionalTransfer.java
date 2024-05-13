@@ -19,6 +19,7 @@ import javax.lang.model.util.Elements;
 import org.checkerframework.checker.nonempty.qual.NonEmpty;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.optional.qual.Present;
+import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
@@ -170,9 +171,22 @@ public class OptionalTransfer extends CFTransfer {
         // @Present
         JavaExpression internalRepr = JavaExpression.fromNode(n);
         System.out.printf("Non-empty detected for = %s\n", internalRepr);
-        insertIntoStores(result, internalRepr, PRESENT);
+        if (isAssumePureOrAssumeDeterministicEnabled()) {
+          insertIntoStoresPermitNonDeterministic(result, internalRepr, PRESENT);
+        } else {
+          insertIntoStores(result, internalRepr, PRESENT);
+        }
       }
     }
+  }
+
+  /**
+   * Determine whether this analysis is being executed with the {@literal -AassumePure  or {@literal -AassumeDeterministic} flags.
+   * @return true if the {@literal -AassumePure} or {@literal -AassumeDeterministic} flags are passed to this analysis
+   */
+  private boolean isAssumePureOrAssumeDeterministicEnabled() {
+    BaseTypeChecker checker = analysis.getTypeFactory().getChecker();
+    return checker.hasOption("assumePure") || checker.hasOption("assumeDeterministic");
   }
 
   /**
