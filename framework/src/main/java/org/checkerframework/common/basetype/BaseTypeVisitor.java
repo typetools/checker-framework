@@ -1088,7 +1088,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     if (isExplicitlySideEffectFreeAndDeterministic(tree)) {
-      checker.reportWarning(tree, "purity.more.pure", tree.getName());
+      checker.reportWarning(tree, "purity.effectively.pure", tree.getName());
     }
 
     // `body` is lazily assigned.
