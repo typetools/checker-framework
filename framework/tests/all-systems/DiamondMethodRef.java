@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class DiamondMethodRef {
+  @SuppressWarnings("lock:methodref.receiver") // True positive.
   void method(CharacterDisplay display) {
     display.getClassSet().stream()
         .map(
