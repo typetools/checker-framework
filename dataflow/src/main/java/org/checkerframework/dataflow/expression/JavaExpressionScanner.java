@@ -2,6 +2,7 @@ package org.checkerframework.dataflow.expression;
 
 import java.util.List;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.cfg.builder.Label;
 
 /**
  * A simple scanner for {@link JavaExpression}.
@@ -90,6 +91,12 @@ public abstract class JavaExpressionScanner<P> extends JavaExpressionVisitor<Voi
 
   @Override
   protected Void visitSuperReference(SuperReference superExpr, P p) {
+    return null;
+  }
+
+  @Override
+  protected Void visitLambda(Lambda lambdaExpr, P p) {
+    scan(lambdaExpr.getParameters(), p);
     return null;
   }
 

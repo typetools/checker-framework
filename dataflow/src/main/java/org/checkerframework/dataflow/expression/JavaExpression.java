@@ -449,12 +449,17 @@ public abstract class JavaExpression {
       FunctionalInterfaceNode functionalInterfaceNode = (FunctionalInterfaceNode) receiverNode;
       Tree tree = functionalInterfaceNode.getTree();
       if (tree instanceof LambdaExpressionTree) {
-        // TODO: implement me
+        LambdaExpressionTree lambdaTree = (LambdaExpressionTree) tree;
+        List<JavaExpression> parameters = createLambdaParameters(lambdaTree);
+        return new Lambda(
+            functionalInterfaceNode.getType(),
+            parameters,
+            TreeUtils.elementFromTree(lambdaTree.getBody()));
       } else if (tree instanceof MemberReferenceTree) {
         MemberReferenceTree memberReferenceTree = (MemberReferenceTree) tree;
         MethodReferenceScope scope = createMethodReferenceScope(memberReferenceTree);
         MethodReferenceTarget target = createMethodReferenceTarget(memberReferenceTree);
-        return new MethodReference(scope.getType(), scope, target);
+        return new MethodReference(functionalInterfaceNode.getType(), scope, target);
       }
     }
 
@@ -462,6 +467,12 @@ public abstract class JavaExpression {
       result = new Unknown(receiverNode);
     }
     return result;
+  }
+
+  private static List<JavaExpression> createLambdaParameters(LambdaExpressionTree lambdaTree) {
+    return lambdaTree.getParameters().stream()
+        .map(JavaExpression::fromVariableTree)
+        .collect(Collectors.toList());
   }
 
   private static MethodReferenceScope createMethodReferenceScope(MemberReferenceTree tree) {
@@ -477,8 +488,7 @@ public abstract class JavaExpression {
           tree.getTypeArguments().stream().map(TreeUtils::typeOf).collect(Collectors.toList());
     }
     Name methodName = tree.getName();
-    boolean isConstructorCall = methodName.equals("new");
-    return new MethodReferenceTarget(typeArguments, methodName, isConstructorCall);
+    return new MethodReferenceTarget(typeArguments, methodName, methodName.equals("new"));
   }
 
   /**

@@ -110,6 +110,15 @@ public abstract class JavaExpressionVisitor<R, P> {
   protected abstract R visitSuperReference(SuperReference superExpr, P p);
 
   /**
+   * Visit a {@link Lambda}.
+   *
+   * @param lambdaExpr the JavaExpression to visit
+   * @param p the parameter to pass to the visit method
+   * @return the result of visiting {@code lambdaExpr}
+   */
+  protected abstract R visitLambda(Lambda lambdaExpr, P p);
+
+  /**
    * Visit a {@link MethodReference}.
    *
    * @param methodReferenceExpr the JavaExpression to visit
