@@ -175,7 +175,7 @@ public class PuritySuggestionsClass {
 
   @SideEffectFree
   @Deterministic
-  // :: warning: (purity.more.pure)
+  // :: warning: (purity.effectively.pure)
   String shouldBeMarkedPure() {
     return "";
   }
