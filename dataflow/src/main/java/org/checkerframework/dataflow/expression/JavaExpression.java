@@ -749,7 +749,7 @@ public abstract class JavaExpression {
     while (receiverTree instanceof MethodInvocationNode) {
       receiverTree = TreeUtils.getReceiverTree(receiverTree);
     }
-    return getReceiver(receiverTree);
+    return JavaExpression.fromTree(receiverTree);
   }
 
   /**
