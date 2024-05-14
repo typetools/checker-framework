@@ -21,7 +21,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -41,6 +40,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeValidator;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -102,6 +102,20 @@ public class OptionalVisitor
   @Override
   protected BaseTypeValidator createTypeValidator() {
     return new OptionalTypeValidator(checker, this, atypeFactory);
+  }
+
+  /**
+   * Gets the set of methods that should be verified using the {@link
+   * org.checkerframework.checker.nonempty.NonEmptyChecker}.
+   *
+   * <p>This should only really be called by the Non-Empty Checker.
+   *
+   * @return the set of methods that should be verified using the {@link
+   *     org.checkerframework.checker.nonempty.NonEmptyChecker}
+   */
+  @Pure
+  public Set<MethodTree> getMethodsForNonEmptyChecker() {
+    return methodsForNonEmptyChecker;
   }
 
   /**
