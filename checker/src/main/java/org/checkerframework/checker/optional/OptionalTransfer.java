@@ -136,11 +136,15 @@ public class OptionalTransfer extends CFTransfer {
   @Override
   public TransferResult<CFValue, CFStore> visitMethodInvocation(
       MethodInvocationNode n, TransferInput<CFValue, CFStore> in) {
-    TransferResult<CFValue, CFStore> result = super.visitMethodInvocation(n, in);
+    TransferResult<CFValue, CFStore> result =
+        super.visitMethodInvocation(
+            n, in); // Is the error being emitted because this happens first? Before the store is
+    // updated?
     if (n.getTree() == null) {
       return result;
     }
     refineStreamOperations(n, result);
+    System.out.printf("Store after Stream operation refinement = %s\n", result);
     return result;
   }
 
