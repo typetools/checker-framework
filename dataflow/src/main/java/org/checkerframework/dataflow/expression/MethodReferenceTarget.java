@@ -1,11 +1,15 @@
 package org.checkerframework.dataflow.expression;
 
+import com.sun.source.tree.MemberReferenceTree;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.lang.model.element.Name;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * The part of a <a
@@ -99,6 +103,27 @@ public class MethodReferenceTarget {
       }
     }
     return result;
+  }
+
+  /**
+   * Creates a {@link MethodReferenceTarget} given a {@link MemberReferenceTree}
+   *
+   * <p>A {@link MethodReference} is of the form {@literal
+   * MethodReferenceScope::MethodReferenceTarget}, this method constructs the part that follows
+   * "::", i.e., the {@link MethodReferenceTarget}.
+   *
+   * @param tree a member reference tree
+   * @return a method reference target
+   */
+  public static MethodReferenceTarget fromMemberReferenceTree(MemberReferenceTree tree) {
+    List<TypeMirror> typeArguments = Collections.emptyList();
+    if (tree.getTypeArguments() != null) {
+      typeArguments =
+          tree.getTypeArguments().stream().map(TreeUtils::typeOf).collect(Collectors.toList());
+    }
+    Name methodName = tree.getName();
+    return new MethodReferenceTarget(
+        typeArguments, methodName, methodName.toString().equals("new"));
   }
 
   @Override

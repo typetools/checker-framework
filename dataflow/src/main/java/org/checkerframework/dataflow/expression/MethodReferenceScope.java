@@ -1,9 +1,11 @@
 package org.checkerframework.dataflow.expression;
 
+import com.sun.source.tree.MemberReferenceTree;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * The part of a <a
@@ -100,6 +102,22 @@ public class MethodReferenceScope {
       }
     }
     return null;
+  }
+
+  /**
+   * Creates a {@link MethodReferenceScope} given a {@link MemberReferenceTree}
+   *
+   * <p>A {@link MethodReference} is of the form {@literal
+   * MethodReferenceScope::MethodReferenceTarget}, this method constructs the part that precedes
+   * "::", i.e., the {@link MethodReferenceScope}.
+   *
+   * @param tree a member reference tree
+   * @return a method reference scope
+   */
+  public static MethodReferenceScope fromMemberReferenceTree(MemberReferenceTree tree) {
+    JavaExpression expression = JavaExpression.fromTree(tree.getQualifierExpression());
+    TypeMirror type = TreeUtils.typeOf(tree.getQualifierExpression());
+    return new MethodReferenceScope(expression, type, expression instanceof SuperReference);
   }
 
   @Override

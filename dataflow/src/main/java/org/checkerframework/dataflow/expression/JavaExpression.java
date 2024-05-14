@@ -19,7 +19,6 @@ import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
@@ -450,12 +449,14 @@ public abstract class JavaExpression {
       Tree tree = functionalInterfaceNode.getTree();
       if (tree instanceof LambdaExpressionTree) {
         LambdaExpressionTree lambdaTree = (LambdaExpressionTree) tree;
-        List<LocalVariable> parameters = createLambdaParameters(lambdaTree);
+        List<LocalVariable> parameters = Lambda.createLambdaParameters(lambdaTree);
         return new Lambda(functionalInterfaceNode.getType(), parameters, lambdaTree.getBody());
       } else if (tree instanceof MemberReferenceTree) {
         MemberReferenceTree memberReferenceTree = (MemberReferenceTree) tree;
-        MethodReferenceScope scope = createMethodReferenceScope(memberReferenceTree);
-        MethodReferenceTarget target = createMethodReferenceTarget(memberReferenceTree);
+        MethodReferenceScope scope =
+            MethodReferenceScope.fromMemberReferenceTree(memberReferenceTree);
+        MethodReferenceTarget target =
+            MethodReferenceTarget.fromMemberReferenceTree(memberReferenceTree);
         return new MethodReference(functionalInterfaceNode.getType(), scope, target);
       }
     }
@@ -464,29 +465,6 @@ public abstract class JavaExpression {
       result = new Unknown(receiverNode);
     }
     return result;
-  }
-
-  private static List<LocalVariable> createLambdaParameters(LambdaExpressionTree lambdaTree) {
-    return lambdaTree.getParameters().stream()
-        .map(TreeUtils::elementFromDeclaration)
-        .map(LocalVariable::new)
-        .collect(Collectors.toList());
-  }
-
-  private static MethodReferenceScope createMethodReferenceScope(MemberReferenceTree tree) {
-    JavaExpression expression = JavaExpression.fromTree(tree.getQualifierExpression());
-    TypeMirror type = TreeUtils.typeOf(tree.getQualifierExpression());
-    return new MethodReferenceScope(expression, type, expression instanceof SuperReference);
-  }
-
-  private static MethodReferenceTarget createMethodReferenceTarget(MemberReferenceTree tree) {
-    List<TypeMirror> typeArguments = Collections.emptyList();
-    if (tree.getTypeArguments() != null) {
-      typeArguments =
-          tree.getTypeArguments().stream().map(TreeUtils::typeOf).collect(Collectors.toList());
-    }
-    Name methodName = tree.getName();
-    return new MethodReferenceTarget(typeArguments, methodName, methodName.equals("new"));
   }
 
   /**
@@ -776,6 +754,24 @@ public abstract class JavaExpression {
       }
       return getImplicitReceiver(ele);
     }
+  }
+
+  /**
+   * Returns the initial receiver of a method invocation.
+   *
+   * <p>For example, for a given method invocation sequence {@code a.b().c.d().e()}, return {@code
+   * a}.
+   *
+   * @param tree a tree
+   * @return the initial receiver of a method invocation
+   */
+  public static JavaExpression getInitialReceiverOfMethodInvocation(ExpressionTree tree) {
+    assert tree instanceof MethodInvocationTree;
+    ExpressionTree receiverTree = TreeUtils.getReceiverTree(tree);
+    while (receiverTree instanceof MethodInvocationNode) {
+      receiverTree = TreeUtils.getReceiverTree(receiverTree);
+    }
+    return JavaExpression.fromTree(receiverTree);
   }
 
   /**

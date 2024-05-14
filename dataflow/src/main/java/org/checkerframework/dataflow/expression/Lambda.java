@@ -1,5 +1,6 @@
 package org.checkerframework.dataflow.expression;
 
+import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.Tree;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -7,6 +8,7 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.javacutil.AnnotationProvider;
+import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * A <a href="https://docs.oracle.com/javase/specs/jls/se21/html/jls-15.html#jls-15.27">Java Lambda
@@ -69,6 +71,20 @@ public class Lambda extends JavaExpression {
       }
     }
     return null;
+  }
+
+  /**
+   * Creates a list of {@link LocalVariable} from the parameters of the given {@link
+   * LambdaExpressionTree}.
+   *
+   * @param lambdaTree a lambda expression tree
+   * @return a list of {@link LocalVariable} from the parameters of the lambda expression tree
+   */
+  public static List<LocalVariable> createLambdaParameters(LambdaExpressionTree lambdaTree) {
+    return lambdaTree.getParameters().stream()
+        .map(TreeUtils::elementFromDeclaration)
+        .map(LocalVariable::new)
+        .collect(Collectors.toList());
   }
 
   @Override
