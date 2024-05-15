@@ -1,13 +1,10 @@
 package org.checkerframework.checker.nonempty;
 
 import com.sun.source.tree.MethodTree;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Collections;
 import java.util.Set;
-import java.util.stream.Collectors;
 import org.checkerframework.checker.optional.OptionalChecker;
 import org.checkerframework.checker.optional.OptionalVisitor;
-import org.checkerframework.checker.regex.qual.Regex;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 
 /**
@@ -26,25 +23,27 @@ public class NonEmptyChecker extends DelegationChecker {
   }
 
   @Override
-  public Map<String, String> getOptions() {
-    Map<String, String> options = new HashMap<>(super.getOptions());
-    OptionalChecker optionalChecker = this.getSubchecker(OptionalChecker.class);
-    if (optionalChecker != null && optionalChecker.getVisitor() instanceof OptionalVisitor) {
-      OptionalVisitor optionalVisitor = (OptionalVisitor) optionalChecker.getVisitor();
-      Set<MethodTree> methodsToCheck = optionalVisitor.getMethodsForNonEmptyChecker();
-      String namesOfMethodsToCheck = getNamesOfMethodsToCheck(methodsToCheck);
-      options.put("onlyDefs", namesOfMethodsToCheck);
-    }
-    return options;
+  public boolean shouldSkipDefs(MethodTree tree) {
+    return !getMethodsToCheck().contains(tree);
   }
 
   /**
-   * Create a regex that matches the names of all methods in the given set of methods.
+   * Obtains the methods to check w.r.t. the Non-Empty type system from the Optional Checker.
    *
-   * @param methodsToCheck the set of methods that should be checked by the Non-Empty Checker
-   * @return a regex that matches the names of all methods in the given set of methods
+   * <p>The Optional Checker uses explicitly-written (i.e., programmer-written) annotations from the
+   * Non-Empty type system to refine its analysis with respect to operations on containers (e.g.,
+   * Streams, Collections) that result in values of type Optional.
+   *
+   * <p>This method provides access to the Non-Empty Checker for methods that should be verified
+   *
+   * @return a set of methods to be checked by the Non-Empty Checker
    */
-  private @Regex String getNamesOfMethodsToCheck(Set<MethodTree> methodsToCheck) {
-    return methodsToCheck.stream().map(MethodTree::getName).collect(Collectors.joining("|"));
+  private Set<MethodTree> getMethodsToCheck() {
+    OptionalChecker optionalChecker = getSubchecker(OptionalChecker.class);
+    if (optionalChecker != null && optionalChecker.getVisitor() instanceof OptionalVisitor) {
+      OptionalVisitor optionalVisitor = (OptionalVisitor) optionalChecker.getVisitor();
+      return optionalVisitor.getMethodsForNonEmptyChecker();
+    }
+    return Collections.emptySet();
   }
 }
