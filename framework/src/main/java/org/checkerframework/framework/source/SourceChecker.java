@@ -123,8 +123,6 @@ import org.plumelib.util.UtilPlume;
   "onlyUses",
   "skipDefs",
   "onlyDefs",
-  "skipMethods",
-  "onlyMethods",
   "skipFiles",
   "onlyFiles",
   "skipDirs", // Obsolete as of 2024-03-15, replaced by "skipFiles".
