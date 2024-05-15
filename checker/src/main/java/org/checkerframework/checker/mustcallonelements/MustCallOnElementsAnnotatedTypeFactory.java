@@ -356,9 +356,9 @@ public class MustCallOnElementsAnnotatedTypeFactory extends BaseAnnotatedTypeFac
   }
 
   /**
-   * Returns whether the given Tree is a java.util.Collection type by checking whether the raw
-   * type of the element is assignable from java.util.Collection. Returns false if tree is null,
-   * or has no valid type.
+   * Returns whether the given Tree is a java.util.Collection type by checking whether the raw type
+   * of the element is assignable from java.util.Collection. Returns false if tree is null, or has
+   * no valid type.
    *
    * @param tree the tree
    * @param atf an AnnotatedTypeFactory to get the annotated type of the element

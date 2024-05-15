@@ -220,7 +220,6 @@ public class MustCallOnElementsTransfer extends CFTransfer {
   }
 
   /**
-   *
    * The abstract transformer for Collection.add(E)
    *
    * @param node the {@code MethodInvocationNode}
@@ -263,8 +262,8 @@ public class MustCallOnElementsTransfer extends CFTransfer {
   // }
 
   /**
-   * Responsible for abstract transformers of all methods called on a collection.
-   * If the transformer for a method is not specifically implemented, it reports a checker error.
+   * Responsible for abstract transformers of all methods called on a collection. If the transformer
+   * for a method is not specifically implemented, it reports a checker error.
    *
    * @param node a {@code MethodInvocationNode}
    * @param res the {@code TransferResult} containing the store to be edited

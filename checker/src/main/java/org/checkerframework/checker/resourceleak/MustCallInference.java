@@ -251,7 +251,9 @@ public class MustCallInference {
         // the postAnalyze method of the ResourceLeakAnnotatedTypeFactory, once the
         // consistency analyzer has completed its process.
         if (node instanceof MethodInvocationNode || node instanceof ObjectCreationNode) {
-          mcca.updateObligationsWithInvocationResult(obligations, node);
+          if (mcca.shouldTrackInvocationResult(obligations, node, true)) {
+            mcca.updateObligationsWithInvocationResult(obligations, node);
+          }
           inferOwningFromInvocation(obligations, node);
         } else if (node instanceof AssignmentNode) {
           analyzeAssignmentNode(obligations, (AssignmentNode) node);
@@ -564,8 +566,7 @@ public class MustCallInference {
     for (String mustCallValue : methodToFields.keySet()) {
       Set<String> fields = methodToFields.get(mustCallValue);
       AnnotationMirror am =
-          createEnsuresCalledMethods(
-              fields.toArray(new String[fields.size()]), new String[] {mustCallValue});
+          createEnsuresCalledMethods(fields.toArray(new String[0]), new String[] {mustCallValue});
       WholeProgramInference wpi = resourceLeakAtf.getWholeProgramInference();
       wpi.addMethodDeclarationAnnotation(methodElt, am);
     }

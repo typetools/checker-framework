@@ -440,7 +440,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
    */
   private AnnotationMirror createMustCallImpl(List<String> methodList) {
     AnnotationBuilder builder = new AnnotationBuilder(processingEnv, MustCall.class);
-    String[] methodArray = methodList.toArray(new String[methodList.size()]);
+    String[] methodArray = methodList.toArray(new String[0]);
     Arrays.sort(methodArray);
     builder.setValue("value", methodArray);
     return builder.build();

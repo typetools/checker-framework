@@ -537,8 +537,8 @@ class MustCallConsistencyAnalyzer {
      *
      * <ul>
      *   <li>it is passed to another method or constructor in an @MustCallAlias position, and then
-     *       the containing method returns that method’s result, or the call is a super()
-     *       constructor call annotated with {@link MustCallAlias}, or
+     *       the enclosing method returns that method’s result, or the call is a super() constructor
+     *       call annotated with {@link MustCallAlias}, or
      *   <li>it is stored in an owning field of the class under analysis
      * </ul>
      */
@@ -792,7 +792,7 @@ class MustCallConsistencyAnalyzer {
       incrementNumMustCall(node);
     }
 
-    if (!shouldTrackInvocationResult(obligations, node)) {
+    if (!shouldTrackInvocationResult(obligations, node, false)) {
       return;
     }
 
@@ -1101,9 +1101,11 @@ class MustCallConsistencyAnalyzer {
    * @param obligations the current set of Obligations, which may be side-effected
    * @param node the invocation node to check; must be {@link MethodInvocationNode} or {@link
    *     ObjectCreationNode}
+   * @param isMustCallInference true if this method is invoked as part of a MustCall inference
    * @return true iff the result of {@code node} should be tracked in {@code obligations}
    */
-  private boolean shouldTrackInvocationResult(Set<Obligation> obligations, Node node) {
+  public boolean shouldTrackInvocationResult(
+      Set<Obligation> obligations, Node node, boolean isMustCallInference) {
     Tree callTree = node.getTree();
     if (callTree.getKind() == Tree.Kind.NEW_CLASS) {
       // Constructor results from new expressions are tracked as long as the declared type has
@@ -1119,8 +1121,12 @@ class MustCallConsistencyAnalyzer {
     // Now callTree.getKind() == Tree.Kind.METHOD_INVOCATION.
     MethodInvocationTree methodInvokeTree = (MethodInvocationTree) callTree;
 
-    if (TreeUtils.isSuperConstructorCall(methodInvokeTree)
-        || TreeUtils.isThisConstructorCall(methodInvokeTree)) {
+    // For must call inference, we do not want to bail out on tracking the obligations for 'this()'
+    // or 'super()' calls because this tracking is necessary to correctly infer the @MustCallAlias
+    // annotation for the constructor and its aliasing parameter.
+    if (!isMustCallInference
+        && (TreeUtils.isSuperConstructorCall(methodInvokeTree)
+            || TreeUtils.isThisConstructorCall(methodInvokeTree))) {
       List<Node> mustCallAliasArguments = getMustCallAliasArgumentNodes(node);
       // If there is a MustCallAlias argument that is also in the set of Obligations, then
       // remove it; its must-call obligation has been fulfilled by being passed on to the
@@ -1240,7 +1246,7 @@ class MustCallConsistencyAnalyzer {
             Obligation localObligation = getObligationForVar(obligations, local);
             // Passing to an owning parameter is not sufficient to resolve the
             // obligation created from a MustCallAlias parameter, because the
-            // containing method must actually return the value.
+            // enclosing method must actually return the value.
             if (!localObligation.derivedFromMustCallAlias()) {
               // Transfer ownership!
               obligations.remove(localObligation);
@@ -1549,11 +1555,11 @@ class MustCallConsistencyAnalyzer {
     boolean isOwningArray = !noLightweightOwnership && typeFactory.hasOwningArray(lhsElement);
     boolean rhsIsOwningArray = rhsElement != null && typeFactory.hasOwningArray(rhsElement);
     boolean lhsIsField = lhsElement.getKind() == ElementKind.FIELD;
-    MethodTree containingMethod = cfg.getContainingMethod(assignmentNode.getTree());
-    boolean inConstructor = containingMethod != null && TreeUtils.isConstructor(containingMethod);
+    MethodTree enclosingMethod = cfg.getEnclosingMethod(assignmentNode.getTree());
+    boolean inConstructor = enclosingMethod != null && TreeUtils.isConstructor(enclosingMethod);
 
     if (isOwningArray) {
-      if (containingMethod == null) {
+      if (enclosingMethod == null) {
         // this is a declaration-definition of an @OwningArray field. nothing to check.
       } else if (inConstructor && lhsIsField) {
         // assigning @OwningArray field to an @OwningArray argument in constructor is allowed
@@ -1752,6 +1758,7 @@ class MustCallConsistencyAnalyzer {
           && (typeFactory.canCreateObligations() || ElementUtils.isFinal(lhsElement))) {
 
         LocalVariableNode rhsVar = (LocalVariableNode) rhs;
+
         // Determine which obligations this field assignment can clear.  In a constructor,
         // assignments to `this.field` only clears obligations on normal return, since
         // on exception `this` becomes inaccessible.
@@ -2077,7 +2084,7 @@ class MustCallConsistencyAnalyzer {
 
     // TODO: it would be better to defer getting the path until after checking
     // for a CreatesMustCallFor annotation, because getting the path can be expensive.
-    // It might be possible to exploit the CFG structure to find the containing
+    // It might be possible to exploit the CFG structure to find the enclosing
     // method (rather than using the path, as below), because if a method is being
     // analyzed then it should be the root of the CFG (I think).
     TreePath currentPath = typeFactory.getPath(node.getTree());
@@ -3237,7 +3244,7 @@ class MustCallConsistencyAnalyzer {
     // Create this annotation and use a subtype test because there's no guarantee that
     // cmAnno is actually an instance of CalledMethods: it could be CMBottom or CMPredicate.
     AnnotationMirror cmAnnoForMustCallMethods =
-        typeFactory.createCalledMethods(mustCallValues.toArray(new String[mustCallValues.size()]));
+        typeFactory.createCalledMethods(mustCallValues.toArray(new String[0]));
     return typeFactory
         .getQualifierHierarchy()
         .isSubtypeQualifiersOnly(cmAnno, cmAnnoForMustCallMethods);

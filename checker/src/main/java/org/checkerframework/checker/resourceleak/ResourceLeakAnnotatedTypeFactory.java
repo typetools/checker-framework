@@ -557,16 +557,19 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
    * @return whether that method is one of the must-call methods for its enclosing class
    */
   private boolean isMustCallMethod(ExecutableElement elt) {
-    TypeElement containingClass = ElementUtils.enclosingTypeElement(elt);
+    TypeElement enclosingClass = ElementUtils.enclosingTypeElement(elt);
     MustCallAnnotatedTypeFactory mustCallAnnotatedTypeFactory =
         getTypeFactoryOfSubchecker(MustCallChecker.class);
     AnnotationMirror mcAnno =
         mustCallAnnotatedTypeFactory
-            .getAnnotatedType(containingClass)
+            .getAnnotatedType(enclosingClass)
             .getPrimaryAnnotationInHierarchy(mustCallAnnotatedTypeFactory.TOP);
     List<String> mcValues =
         AnnotationUtils.getElementValueArray(
-            mcAnno, mustCallAnnotatedTypeFactory.getMustCallValueElement(), String.class);
+            mcAnno,
+            mustCallAnnotatedTypeFactory.getMustCallValueElement(),
+            String.class,
+            Collections.emptyList());
     String methodName = elt.getSimpleName().toString();
     return mcValues.contains(methodName);
   }

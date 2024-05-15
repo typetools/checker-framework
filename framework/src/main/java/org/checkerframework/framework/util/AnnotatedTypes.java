@@ -658,7 +658,7 @@ public class AnnotatedTypes {
   }
 
   /**
-   * Given a method and all supertypes (recursively) of the method's containing class, returns the
+   * Given a method and all supertypes (recursively) of the method's enclosing class, returns the
    * methods that the method overrides.
    *
    * @param method the overriding method

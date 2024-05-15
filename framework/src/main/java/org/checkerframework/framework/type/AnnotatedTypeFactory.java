@@ -1008,7 +1008,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       }
       if (candidateAjavaFiles.size() == 1) {
         currentFileAjavaTypes = new AnnotationFileElementTypes(this);
-        String ajavaPath = candidateAjavaFiles.toArray(new String[candidateAjavaFiles.size()])[0];
+        String ajavaPath = candidateAjavaFiles.toArray(new String[0])[0];
         try {
           currentFileAjavaTypes.parseAjavaFileWithTree(ajavaPath, root);
         } catch (Throwable e) {
@@ -2734,6 +2734,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // reference tree.
     AnnotatedTypeMirror constructorReturnType =
         fromTypeTree(memberReferenceTree.getQualifierExpression());
+    if (TreeUtils.needsTypeArgInference(memberReferenceTree)) {
+      // If the method reference is missing type arguments, e.g. LinkedHashMap::new, then the
+      // constructorReturnType will be raw.  So, use the return type from the constructor instead.
+      AnnotatedTypeMirror re = constructorType.getReturnType().deepCopy(false);
+      re.clearPrimaryAnnotations();
+      re.addAnnotations(constructorReturnType.getPrimaryAnnotations());
+      constructorReturnType = re;
+    }
 
     if (constructorReturnType.getKind() == TypeKind.DECLARED) {
       // Keep only explicit annotations and those from @Poly

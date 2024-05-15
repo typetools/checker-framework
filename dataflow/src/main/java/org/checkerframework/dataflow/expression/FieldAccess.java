@@ -148,9 +148,13 @@ public class FieldAccess extends JavaExpression {
         ((Symbol) field).owner);
   }
 
+  @SuppressWarnings("unchecked") // generic cast
   @Override
-  public boolean containsOfClass(Class<? extends JavaExpression> clazz) {
-    return getClass() == clazz || receiver.containsOfClass(clazz);
+  public <T extends JavaExpression> @Nullable T containedOfClass(Class<T> clazz) {
+    if (getClass() == clazz) {
+      return (T) this;
+    }
+    return receiver.containedOfClass(clazz);
   }
 
   @Override
@@ -159,13 +163,13 @@ public class FieldAccess extends JavaExpression {
   }
 
   @Override
-  public boolean isUnassignableByOtherCode() {
-    return isFinal() && getReceiver().isUnassignableByOtherCode();
+  public boolean isAssignableByOtherCode() {
+    return !isFinal() || getReceiver().isAssignableByOtherCode();
   }
 
   @Override
-  public boolean isUnmodifiableByOtherCode() {
-    return isUnassignableByOtherCode() && TypesUtils.isImmutableTypeInJdk(getReceiver().type);
+  public boolean isModifiableByOtherCode() {
+    return isAssignableByOtherCode() || !TypesUtils.isImmutableTypeInJdk(getReceiver().type);
   }
 
   @Override

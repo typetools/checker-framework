@@ -304,12 +304,38 @@ public abstract class AbstractAnalysis<
    *
    * @param t the given tree
    * @return the contained method tree of the given tree
+   * @deprecated use {@link #getEnclosingMethod}
    */
+  @Deprecated // 2024-05-01
   public @Nullable MethodTree getContainingMethod(Tree t) {
+    return getEnclosingMethod(t);
+  }
+
+  /**
+   * Get the {@link MethodTree} of the current CFG if the argument {@link Tree} maps to a {@link
+   * Node} in the CFG or {@code null} otherwise.
+   *
+   * @param t the given tree
+   * @return the contained method tree of the given tree
+   */
+  public @Nullable MethodTree getEnclosingMethod(Tree t) {
     if (cfg == null) {
       return null;
     }
-    return cfg.getContainingMethod(t);
+    return cfg.getEnclosingMethod(t);
+  }
+
+  /**
+   * Get the {@link ClassTree} of the current CFG if the argument {@link Tree} maps to a {@link
+   * Node} in the CFG or {@code null} otherwise.
+   *
+   * @param t the given tree
+   * @return the contained class tree of the given tree
+   * @deprecated use {@link #getEnclosingClass}
+   */
+  @Deprecated // 2024-05-01
+  public @Nullable ClassTree getContainingClass(Tree t) {
+    return getEnclosingClass(t);
   }
 
   /**
@@ -319,11 +345,11 @@ public abstract class AbstractAnalysis<
    * @param t the given tree
    * @return the contained class tree of the given tree
    */
-  public @Nullable ClassTree getContainingClass(Tree t) {
+  public @Nullable ClassTree getEnclosingClass(Tree t) {
     if (cfg == null) {
       return null;
     }
-    return cfg.getContainingClass(t);
+    return cfg.getEnclosingClass(t);
   }
 
   /**

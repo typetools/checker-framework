@@ -2,6 +2,8 @@ package org.checkerframework.framework.flow;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.LambdaExpressionTree;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
@@ -9,6 +11,7 @@ import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +27,9 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
+import org.checkerframework.common.aliasing.AliasingAnnotatedTypeFactory;
+import org.checkerframework.common.aliasing.AliasingChecker;
+import org.checkerframework.common.aliasing.qual.NonLeaked;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.ForwardTransferFunction;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
@@ -60,9 +66,11 @@ import org.checkerframework.dataflow.cfg.node.WideningConversionNode;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.LocalVariable;
+import org.checkerframework.dataflow.expression.MethodCall;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.util.NodeUtils;
+import org.checkerframework.dataflow.util.PurityChecker;
 import org.checkerframework.framework.flow.CFAbstractAnalysis.FieldInitialValue;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -288,6 +296,7 @@ public abstract class CFAbstractTransfer<
       }
 
     } else if (underlyingAST.getKind() == UnderlyingAST.Kind.LAMBDA) {
+      CFGLambda lambda = (CFGLambda) underlyingAST;
       if (fixedInitialStore != null) {
         // Create a copy and keep only the field values (nothing else applies).
         store = analysis.createCopiedStore(fixedInitialStore);
@@ -297,7 +306,13 @@ public abstract class CFAbstractTransfer<
         // store.localVariableValues.clear();
         store.classValues.clear();
         store.arrayValues.clear();
-        store.methodValues.clear();
+        // If the lambda is leaked or the lambda is impure, remove any information about modifiable
+        // method values from the initial store.
+        TreePath lambdaBody = atypeFactory.getPath(lambda.getLambdaTree().getBody());
+        if (doesLambdaLeak(lambda, atypeFactory)
+            || !isExpressionOrStatementPure(lambdaBody, atypeFactory)) {
+          store.methodCallExpressions.keySet().removeIf(MethodCall::isModifiableByOtherCode);
+        }
       } else {
         store = analysis.createEmptyStore(sequentialSemantics);
       }
@@ -307,7 +322,6 @@ public abstract class CFAbstractTransfer<
         store.initializeMethodParameter(p, analysis.createAbstractValue(anno));
       }
 
-      CFGLambda lambda = (CFGLambda) underlyingAST;
       @SuppressWarnings("interning:assignment") // used in == tests
       @InternedDistinct Tree enclosingTree =
           TreePathUtil.enclosingOfKind(
@@ -364,6 +378,73 @@ public abstract class CFAbstractTransfer<
     }
 
     return store;
+  }
+
+  /**
+   * Determines whether a given lambda expression may be leaked outside the method in which it
+   * appears.
+   *
+   * <p>Currently, a lambda is considered leaked unless it is an argument to a method whose
+   * corresponding formal parameter is annotated as @{@link NonLeaked}. The @{@link NonLeaked}
+   * annotation is trusted, not checked.
+   *
+   * <p>For example, given the following code:
+   *
+   * <pre><code>
+   *   void operateOver(Container container) {
+   *      container.forEach(item -&gt; {...});
+   *   }
+   *
+   *   class Container {
+   *     void forEach(@NonLeaked Consumer&lt;T&gt;)
+   *   }
+   * </code></pre>
+   *
+   * The lambda passed to {@code Container.forEach} is not leaked, as the parameter is annotated
+   * with @{@link NonLeaked}.
+   *
+   * @param lambda the lambda
+   * @param aTypeFactory an annotated type factory
+   * @return true if the lambda may be leaked
+   */
+  private boolean doesLambdaLeak(CFGLambda lambda, AnnotatedTypeFactory aTypeFactory) {
+    LambdaExpressionTree lambdaTree = lambda.getLambdaTree();
+    Tree lambdaParent = aTypeFactory.getPath(lambdaTree).getParentPath().getLeaf();
+    if (lambdaParent.getKind() == Tree.Kind.METHOD_INVOCATION) {
+      MethodInvocationTree invok = (MethodInvocationTree) lambdaParent;
+      ExecutableElement methodElt = TreeUtils.elementFromUse(invok);
+      AliasingAnnotatedTypeFactory aliasingAtf =
+          analysis
+              .atypeFactory
+              .getChecker()
+              .getTypeFactoryOfSubcheckerOrNull(AliasingChecker.class);
+      if (aliasingAtf != null) {
+        int indexOfLambdaActual = invok.getArguments().indexOf(lambdaTree);
+        VariableElement lambdaFormal = methodElt.getParameters().get(indexOfLambdaActual);
+        return aliasingAtf.getAnnotatedType(lambdaFormal).getEffectiveAnnotation(NonLeaked.class)
+            == null;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Returns true if the given expression or statement is pure.
+   *
+   * @param expressionOrStatement an expression or statement
+   * @param aTypeFactory an annotated type factory
+   * @return true if the given expression or statement is pure
+   */
+  private boolean isExpressionOrStatementPure(
+      TreePath expressionOrStatement, AnnotatedTypeFactory aTypeFactory) {
+    PurityChecker.PurityResult result =
+        PurityChecker.checkPurity(
+            expressionOrStatement,
+            aTypeFactory,
+            aTypeFactory.getChecker().hasOption("assumeSideEffectFree"),
+            aTypeFactory.getChecker().hasOption("assumeDeterministic"),
+            aTypeFactory.getChecker().hasOption("assumePureGetters"));
+    return result.isPure(EnumSet.allOf(Pure.Kind.class));
   }
 
   /**
@@ -867,7 +948,7 @@ public abstract class CFAbstractTransfer<
 
     if (shouldPerformWholeProgramInference(n.getTree())) {
       // Retrieves class containing the method
-      ClassTree classTree = analysis.getContainingClass(n.getTree());
+      ClassTree classTree = analysis.getEnclosingClass(n.getTree());
       // classTree is null e.g. if this is a return statement in a lambda.
       if (classTree == null) {
         return result;
@@ -875,7 +956,7 @@ public abstract class CFAbstractTransfer<
       ClassSymbol classSymbol = (ClassSymbol) TreeUtils.elementFromDeclaration(classTree);
 
       ExecutableElement methodElem =
-          TreeUtils.elementFromDeclaration(analysis.getContainingMethod(n.getTree()));
+          TreeUtils.elementFromDeclaration(analysis.getEnclosingMethod(n.getTree()));
 
       Map<AnnotatedDeclaredType, ExecutableElement> overriddenMethods =
           AnnotatedTypes.overriddenMethods(
@@ -886,7 +967,7 @@ public abstract class CFAbstractTransfer<
           .atypeFactory
           .getWholeProgramInference()
           .updateFromReturn(
-              n, classSymbol, analysis.getContainingMethod(n.getTree()), overriddenMethods);
+              n, classSymbol, analysis.getEnclosingMethod(n.getTree()), overriddenMethods);
     }
 
     return result;
