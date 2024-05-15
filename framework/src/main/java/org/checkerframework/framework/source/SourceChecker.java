@@ -2640,7 +2640,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @param tree method to potentially skip
    * @return true if checker should not test {@code tree}
    */
-  public final boolean shouldSkipDefs(MethodTree tree) {
+  public boolean shouldSkipDefs(MethodTree tree) {
     return false; // stub
   }
 
