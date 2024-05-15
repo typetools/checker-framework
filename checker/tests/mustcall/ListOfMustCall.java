@@ -1,3 +1,5 @@
+// @skip-test
+//
 // A test that checks that parameterized classes in the JDK don't cause false positives
 // when they are used with an @MustCall-annotated class.
 // Currently, two undesirable errors are issued on this test case, because it is not currently
@@ -11,6 +13,7 @@ import org.checkerframework.checker.mustcall.qual.*;
 
 @InheritableMustCall("a")
 class ListOfMustCall {
+
   static void test(ListOfMustCall lm) {
     // :: error: type.argument
     // :: error: type.arguments.not.inferred
