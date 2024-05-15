@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.StringJoiner;
+import java.util.stream.Collectors;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
@@ -78,6 +79,7 @@ import org.checkerframework.dataflow.cfg.node.ClassNameNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.LessThanNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
+import org.checkerframework.dataflow.cfg.node.MethodAccessNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NullLiteralNode;
@@ -719,6 +721,53 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
+   * Checks whether node corresponds to a MethodInvocationNode of a method call on a Collection. In
+   * this case, it updates the obligations based on the method called on the Collection.
+   *
+   * @param obligations set of currently tracked obligations
+   * @param node the node corresponding to a method call
+   */
+  private void updateObligationsForMethodInvocationOnCollection(
+      Set<Obligation> obligations, Node node) {
+    if (node instanceof MethodInvocationNode) {
+      MethodInvocationNode min = (MethodInvocationNode) node;
+      MethodAccessNode man = min.getTarget();
+      Node receiver = man.getReceiver();
+      boolean isCollection =
+          receiver.getTree() != null
+              && MustCallOnElementsAnnotatedTypeFactory.isCollection(
+                  receiver.getTree(), cmoeTypeFactory);
+      boolean isOwningArray =
+          receiver.getTree() != null
+              && TreeUtils.elementFromTree(receiver.getTree()) != null
+              && typeFactory.hasOwningArray(TreeUtils.elementFromTree(receiver.getTree()));
+      if (isCollection && isOwningArray) {
+        ExecutableElement method = man.getMethod();
+        List<? extends VariableElement> parameters = method.getParameters();
+        List<Node> args = min.getArguments();
+        String methodSignature =
+            method.getSimpleName().toString()
+                + parameters.stream()
+                    .map(param -> param.asType().toString())
+                    .collect(Collectors.joining(",", "(", ")"));
+        switch (methodSignature) {
+          case "add(E)":
+            assert args.size() == 1
+                : "expected one argument for Collection.add(E), but args are: " + args;
+            assert (args.get(0) instanceof LocalVariableNode)
+                : "arg of Collection.add(E) expected to be LocalVariableNode, but is: "
+                    + args.get(0).getClass();
+            removeObligationForNode(obligations, (LocalVariableNode) args.get(0));
+            break;
+            // case "add(int,E)":
+            //   res = transformCollectionAddWithIdx(node, res, parameters);
+            //   break;
+        }
+      }
+    }
+  }
+
+  /**
    * Update a set of Obligations to account for a method or constructor invocation.
    *
    * @param obligations the Obligations to update
@@ -730,6 +779,9 @@ class MustCallConsistencyAnalyzer {
   private void updateObligationsForInvocation(
       Set<Obligation> obligations, Node node, @Nullable TypeMirror exceptionType) {
     removeObligationsAtOwnershipTransferToParameters(obligations, node, exceptionType);
+
+    updateObligationsForMethodInvocationOnCollection(obligations, node);
+
     if (node instanceof MethodInvocationNode
         && typeFactory.canCreateObligations()
         && typeFactory.hasCreatesMustCallFor((MethodInvocationNode) node)) {
@@ -1377,6 +1429,9 @@ class MustCallConsistencyAnalyzer {
     if (arrTree instanceof AssignmentTree) {
       arrTree = ((AssignmentTree) arrTree).getVariable();
     }
+    if (arrTree instanceof ArrayAccessTree) {
+      arrTree = ((ArrayAccessTree) arrTree).getExpression();
+    }
     if (!(arrTree instanceof VariableTree) && !(arrTree instanceof IdentifierTree)) {
       throw new BugInCF(
           "MCOE obligation %s must be either from definition or declaration, but is %s",
@@ -1435,19 +1490,6 @@ class MustCallConsistencyAnalyzer {
         obligations, rhsVar, MustCallAliasHandling.NO_SPECIAL_HANDLING, toClear);
   }
 
-  // /**
-  //  * Removes all obligations containing the specified tree.
-  //  *
-  //  * @param obligations the set of currently tracked obligations
-  //  * @param tree the variable tree
-  //  */
-  // private void removeObligationForTree(Set<Obligation> obligations, Tree tree) {
-  //   LocalVariableNode rhsVar = node;
-  //   Set<MethodExitKind> toClear = MethodExitKind.ALL;
-  //   removeObligationsContainingVar(
-  //       obligations, rhsVar, MustCallAliasHandling.NO_SPECIAL_HANDLING, toClear);
-  // }
-
   /**
    * Updates a set of Obligations to account for an assignment and enforces the assignment rules for
    * the MustCallOnElements checker.
@@ -1482,6 +1524,8 @@ class MustCallConsistencyAnalyzer {
    *   <li>5. The elements of an {@code @OwningArray} may only be assigned in an allocating loop.
    *   <li>6. The elements of an {@code @OwningArray} field may only be assigned once in the
    *       constructor.
+   *   <li>7. A read-only alias (array with {@code @MustCallOnElementsUnknown} type) may not
+   *       reassign its elements.
    * </ul>
    *
    * @param obligations the set of Obligations to update
@@ -1501,6 +1545,7 @@ class MustCallConsistencyAnalyzer {
     Element rhsElement = TreeUtils.elementFromTree(rhs.getTree());
 
     // update obligations for assignments to @OwningArray array
+    CFStore mcoeStore = mcoeTypeFactory.getStoreBefore(assignmentNode.getTree());
     boolean isOwningArray = !noLightweightOwnership && typeFactory.hasOwningArray(lhsElement);
     boolean rhsIsOwningArray = rhsElement != null && typeFactory.hasOwningArray(rhsElement);
     boolean lhsIsField = lhsElement.getKind() == ElementKind.FIELD;
@@ -1587,7 +1632,6 @@ class MustCallConsistencyAnalyzer {
             // signifying a state
             // of revoked ownership add obligation back, and with that, ownership
             IdentifierTree owningArrayDefinitionTree = (IdentifierTree) lhs.getTree();
-            CFStore mcoeStore = mcoeTypeFactory.getStoreBefore(assignmentNode.getTree());
             boolean isMcoeUnknown =
                 getMustCallOnElementsObligations(mcoeStore, lhs.getTree()) == null;
             if ((rhs instanceof ArrayCreationNode) && isMcoeUnknown) {
@@ -1672,6 +1716,21 @@ class MustCallConsistencyAnalyzer {
                   + " of kind "
                   + lhs.getTree().getKind());
         }
+      }
+    } else if (lhs.getTree().getKind() == Tree.Kind.ARRAY_ACCESS) {
+      // enforces 7. assignment rule:
+      // check whether lhs has MCOEUnknown type, meaning it's a read-only-alias - its may not assign
+      // its elements
+      ExpressionTree arrayTree = ((ArrayAccessTree) lhs.getTree()).getExpression();
+      JavaExpression arrayJavaExpression = JavaExpression.fromTree(arrayTree);
+      boolean lhsIsMcoeUnknown =
+          mcoeStore.getValue(arrayJavaExpression) != null
+              && getMustCallOnElementsObligations(mcoeStore, lhs.getTree()) == null;
+      // System.out.println("isunknown? " + arrayJavaExpression + " " + lhsIsMcoeUnknown);
+      // System.out.println("lhs is read-only-alias " + lhs);
+      if (lhsIsMcoeUnknown) {
+        checker.reportError(
+            assignmentNode.getTree(), "assigning.elements.of.readonly.alias", arrayTree);
       }
     }
 

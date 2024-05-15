@@ -3,16 +3,21 @@ package org.checkerframework.checker.mustcallonelements;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
+import org.checkerframework.checker.mustcall.qual.InheritableMustCall;
+import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.checkerframework.checker.mustcallonelements.qual.OwningArray;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
@@ -20,7 +25,9 @@ import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
+import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.LessThanNode;
+import org.checkerframework.dataflow.cfg.node.MethodAccessNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
@@ -32,6 +39,7 @@ import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.CollectionsPlume;
 
 /** Transfer function for the MustCallOnElements type system. */
@@ -122,6 +130,35 @@ public class MustCallOnElementsTransfer extends CFTransfer {
   // }
 
   /*
+   * Sets type of LHS to @MustCallOnElementsUnknown if rhs is @OwningArray and lhs is not.
+   * The semantics is that LHS is then a read-only copy
+   */
+  @Override
+  public TransferResult<CFValue, CFStore> visitAssignment(
+      AssignmentNode node, TransferInput<CFValue, CFStore> input) {
+    TransferResult<CFValue, CFStore> res = super.visitAssignment(node, input);
+    CFStore store = input.getRegularStore();
+    Node lhs = node.getTarget();
+    Node rhs = node.getExpression();
+    boolean lhsIsOwningArray =
+        lhs != null
+            && lhs.getTree() != null
+            && TreeUtils.elementFromTree(lhs.getTree()) != null
+            && TreeUtils.elementFromTree(lhs.getTree()).getAnnotation(OwningArray.class) != null;
+    boolean rhsIsOwningArray =
+        rhs != null
+            && rhs.getTree() != null
+            && TreeUtils.elementFromTree(rhs.getTree()) != null
+            && TreeUtils.elementFromTree(rhs.getTree()).getAnnotation(OwningArray.class) != null;
+    if (!lhsIsOwningArray && rhsIsOwningArray) {
+      JavaExpression lhsJavaExpression = JavaExpression.fromNode(lhs);
+      store.clearValue(lhsJavaExpression);
+      store.insertValue(lhsJavaExpression, getMustCallOnElementsUnknown());
+    }
+    return new RegularTransferResult<CFValue, CFStore>(res.getResultValue(), store);
+  }
+
+  /*
    * Empties the @MustCallOnElements() type of arguments passed as @OwningArray parameters to the
    * constructor and enforces that only @OwningArray arguments are passed to @OwningArray parameters.
    */
@@ -151,14 +188,144 @@ public class MustCallOnElementsTransfer extends CFTransfer {
     return res;
   }
 
+  /**
+   * Returns a list of {@code @MustCall} values of the given node. Returns the empty list if the
+   * node has no {@code @MustCall} values or is null.
+   *
+   * @param node the node
+   * @return a list of {@code @MustCall} values of the given node
+   */
+  private List<String> getMustCallValues(Node node) {
+    if (node.getTree() == null || TreeUtils.elementFromTree(node.getTree()) == null) {
+      return new ArrayList<>();
+    }
+    Element elt = TreeUtils.elementFromTree(node.getTree());
+    elt = TypesUtils.getTypeElement(elt.asType());
+    MustCallAnnotatedTypeFactory mcAtf =
+        new MustCallAnnotatedTypeFactory(atypeFactory.getChecker());
+    AnnotationMirror imcAnnotation = mcAtf.getDeclAnnotation(elt, InheritableMustCall.class);
+    AnnotationMirror mcAnnotation = mcAtf.getDeclAnnotation(elt, MustCall.class);
+    Set<String> mcValues = new HashSet<>();
+    if (mcAnnotation != null) {
+      mcValues.addAll(
+          AnnotationUtils.getElementValueArray(
+              mcAnnotation, mcAtf.getMustCallValueElement(), String.class));
+    }
+    if (imcAnnotation != null) {
+      mcValues.addAll(
+          AnnotationUtils.getElementValueArray(
+              imcAnnotation, mcAtf.getInheritableMustCallValueElement(), String.class));
+    }
+    return new ArrayList<>(mcValues);
+  }
+
+  /**
+   *
+   * The abstract transformer for Collection.add(E)
+   *
+   * @param node the {@code MethodInvocationNode}
+   * @param res the {@code TransferResult} containing the store to be edited
+   * @param receiver JavaExpression of the collection, whose type should be changed
+   * @return updated {@code TransferResult}
+   */
+  private TransferResult<CFValue, CFStore> transformCollectionAdd(
+      MethodInvocationNode node, TransferResult<CFValue, CFStore> res, JavaExpression receiver) {
+    List<Node> args = node.getArguments();
+    assert args.size() == 1
+        : "calling abstract transformer for Collection.add(E), but params are: " + args;
+    Node arg = args.get(0);
+    List<String> mcValues = getMustCallValues(arg);
+    CFStore store = res.getRegularStore();
+    CFValue oldTypeValue = store.getValue(receiver);
+    assert oldTypeValue != null : "Collection " + receiver + " not in Store.";
+    AnnotationMirror oldType = oldTypeValue.getAnnotations().first();
+    List<String> mcoeMethods = Collections.emptyList();
+    if (oldType.getElementValues().get(atypeFactory.getMustCallOnElementsValueElement()) != null) {
+      mcoeMethods =
+          AnnotationUtils.getElementValueArray(
+              oldType, atypeFactory.getMustCallOnElementsValueElement(), String.class);
+    }
+    mcoeMethods.addAll(mcValues);
+    AnnotationMirror newType = getMustCallOnElementsType(mcoeMethods);
+    store.clearValue(receiver);
+    store.insertValue(receiver, newType);
+    return new RegularTransferResult<CFValue, CFStore>(res.getResultValue(), store);
+  }
+
   /*
-   * Empties the @MustCallOnElements type of arguments passed as @OwningArray parameters to the
-   * method and enforces that only @OwningArray arguments are passed to @OwningArray parameters.
+   * The abstract transformer for Collection.add(int,E)
+   */
+  // private TransferResult<CFValue, CFStore> transformCollectionAddWithIdx(
+  //     MethodAccessNode node, TransferResult<CFValue, CFStore> res, List<? extends
+  // VariableElement> params) {
+  //   System.out.println("collectionAddwithIdx: " + node + params);
+  //   return res;
+  // }
+
+  /**
+   * Responsible for abstract transformers of all methods called on a collection.
+   * If the transformer for a method is not specifically implemented, it reports a checker error.
+   *
+   * @param node a {@code MethodInvocationNode}
+   * @param res the {@code TransferResult} containing the store to be edited
+   * @return updated {@code TransferResult}
+   */
+  private TransferResult<CFValue, CFStore> updateStoreForMethodInvocationOnCollection(
+      MethodInvocationNode node, TransferResult<CFValue, CFStore> res) {
+    MethodAccessNode methodAccessNode = node.getTarget();
+    Node receiver = methodAccessNode.getReceiver();
+    boolean isCollection =
+        receiver.getTree() != null
+            && MustCallOnElementsAnnotatedTypeFactory.isCollection(
+                receiver.getTree(), atypeFactory);
+    if (isCollection) {
+      JavaExpression receiverJx = JavaExpression.fromNode(receiver);
+      ExecutableElement method = methodAccessNode.getMethod();
+      List<? extends VariableElement> parameters = method.getParameters();
+      String methodSignature =
+          method.getSimpleName().toString()
+              + parameters.stream()
+                  .map(param -> param.asType().toString())
+                  .collect(Collectors.joining(",", "(", ")"));
+      System.out.println("methodsignature: " + methodSignature);
+      switch (methodSignature) {
+        case "add(E)":
+          res = transformCollectionAdd(node, res, receiverJx);
+          break;
+          // case "add(int,E)":
+          //   res = transformCollectionAddWithIdx(node, res, parameters);
+          //   break;
+        default:
+          atypeFactory.getChecker().reportError(node.getTree(), "unsafe.method", methodSignature);
+      }
+    }
+    return res;
+  }
+
+  /*
+   * Responsible for:
+   *
+   * Abstract transformers of all methods called on a collection.
+   * If the transformer for a method is not specifically implemented, it reports a checker error.
+   *
+   * Emptying the @MustCallOnElements type of arguments passed as @OwningArray parameters to the
+   * method.
+   *
+   * Enforcing that only @OwningArray arguments are passed to @OwningArray parameters.
    */
   @Override
   public TransferResult<CFValue, CFStore> visitMethodInvocation(
       MethodInvocationNode node, TransferInput<CFValue, CFStore> input) {
     TransferResult<CFValue, CFStore> res = super.visitMethodInvocation(node, input);
+
+    // checks if method is called on a collection, in which case it calls the transformer of the
+    // respective
+    // method on the collection
+    res = updateStoreForMethodInvocationOnCollection(node, res);
+
+    // ensure method call args respects ownership consistency (only @OwningArray arg for
+    // @OwningArray param)
+    // also, empty mcoe type of @OwningArray args that are passed as @OwningArray params
     ExecutableElement method = node.getTarget().getMethod();
     List<? extends VariableElement> params = method.getParameters();
     List<Node> args = node.getArguments();

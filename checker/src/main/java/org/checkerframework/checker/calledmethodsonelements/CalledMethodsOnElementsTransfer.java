@@ -348,8 +348,6 @@ public class CalledMethodsOnElementsTransfer extends CFTransfer {
 
     res = updateTransferResultForAllocatingForLoop(node, res);
     return updateTransferResultForFulfillingForLoop(node, res);
-
-    // return res;
   }
 
   /**

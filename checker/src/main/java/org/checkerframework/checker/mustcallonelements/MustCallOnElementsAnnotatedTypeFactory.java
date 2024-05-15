@@ -41,6 +41,7 @@ import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.framework.flow.CFStore;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
@@ -352,6 +353,26 @@ public class MustCallOnElementsAnnotatedTypeFactory extends BaseAnnotatedTypeFac
     assert (condition.getKind() == Tree.Kind.LESS_THAN)
         : "Trying to associate Tree as condition of an obligation changing for-loop, but is not a LESS_THAN tree";
     return arrayTreeForLoopWithThisCondition.get(condition);
+  }
+
+  /**
+   * Returns whether the given Tree is a java.util.Collection type by checking whether the raw
+   * type of the element is assignable from java.util.Collection. Returns false if tree is null,
+   * or has no valid type.
+   *
+   * @param tree the tree
+   * @param atf an AnnotatedTypeFactory to get the annotated type of the element
+   * @return whether the given Tree is a Java.util.Collection type
+   */
+  public static boolean isCollection(Tree tree, AnnotatedTypeFactory atf) {
+    if (tree == null) return false;
+    Element element = TreeUtils.elementFromTree(tree);
+    if (element == null) return false;
+    AnnotatedTypeMirror elementTypeMirror = atf.getAnnotatedType(element);
+    if (elementTypeMirror == null || elementTypeMirror.getUnderlyingType() == null) return false;
+    Class<?> elementRawType = TypesUtils.getClassFromType(elementTypeMirror.getUnderlyingType());
+    if (elementRawType == null) return false;
+    return Collection.class.isAssignableFrom(elementRawType);
   }
 
   /*
