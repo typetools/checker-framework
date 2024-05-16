@@ -2575,7 +2575,10 @@ class MustCallConsistencyAnalyzer {
    * consider a previous alias "arr2" with a non-empty {@code @CalledMethodsOnElements} type. If the
    * old obligation, where the two arrays alias would be propagated, we would think that this method
    * was called on the elements of "arr". However, this is not the case, since the elements were
-   * reassigned and no methods were called on them yet.
+   * reassigned and no methods were called on them yet. Replacing the obligation is necessary for
+   * soundness, but we give up some precision, since the arrays do stay aliases. Ideally, we would
+   * be emptying the {@code @CalledMethodsOnElements} type of ALL aliases when encountering such an
+   * allocating loop. However, the set of aliases is not yet known at the time of the type analysis.
    *
    * @param arrayTree the tree corresponding to the array in the loop
    * @param obligations the set of obligations tracked in the analysis
