@@ -3032,10 +3032,13 @@ class MustCallConsistencyAnalyzer {
     Set<String> cmoeValues = new HashSet<>();
     for (ResourceAlias alias : obligation.resourceAliases) {
       List<String> mcoeValuesOfAlias = getMustCallOnElementsObligations(mcoeStore, alias.tree);
-      if (mcoeValuesOfAlias == null) {
-        // mcoe type is @MustCallOnElementsUnknown - a state of revoked ownership.
+      boolean isOwningArray = alias.element != null && typeFactory.hasOwningArray(alias.element);
+      boolean hasRevokedOwnership = mcoeValuesOfAlias == null && isOwningArray;
+      boolean isReadOnlyAlias = mcoeValuesOfAlias == null && !isOwningArray;
+      if (hasRevokedOwnership) {
         if (isExit) {
-          // since the obligation is revoked in this case, this has to be a manual mcoeUnknown
+          // since the obligation is revoked in the case of an exit, this has to be a manual
+          // mcoeUnknown
           // annotation to mask obligations. report an error for unfulfilled obligations.
           checker.reportError(
               alias.tree,
@@ -3051,8 +3054,11 @@ class MustCallConsistencyAnalyzer {
           return false;
         }
       }
-      mcoeValues.addAll(mcoeValuesOfAlias);
-      cmoeValues.addAll(getCalledMethodsOnElements(cmoeStore, alias.tree));
+      // mcoeValuesOfAlias is null for read-only aliases
+      if (!isReadOnlyAlias) {
+        mcoeValues.addAll(mcoeValuesOfAlias);
+        cmoeValues.addAll(getCalledMethodsOnElements(cmoeStore, alias.tree));
+      }
     }
     ResourceAlias firstAlias = obligation.resourceAliases.iterator().next();
     if (isExit) {
