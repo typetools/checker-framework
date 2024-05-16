@@ -137,7 +137,8 @@ public class MustCallOnElementsTransfer extends CFTransfer {
   public TransferResult<CFValue, CFStore> visitAssignment(
       AssignmentNode node, TransferInput<CFValue, CFStore> input) {
     TransferResult<CFValue, CFStore> res = super.visitAssignment(node, input);
-    CFStore store = input.getRegularStore();
+    // return res;
+    CFStore store = res.getRegularStore();
     Node lhs = node.getTarget();
     Node rhs = node.getExpression();
     boolean lhsIsOwningArray =
@@ -174,7 +175,8 @@ public class MustCallOnElementsTransfer extends CFTransfer {
     while (paramIterator.hasNext() && argIterator.hasNext()) {
       VariableElement param = paramIterator.next();
       Node arg = argIterator.next();
-      if (param.getAnnotation(OwningArray.class) != null) {
+      boolean paramIsOwningArray = param.getAnnotation(OwningArray.class) != null;
+      if (paramIsOwningArray) {
         if (TreeUtils.elementFromTree(arg.getTree()).getAnnotation(OwningArray.class) == null) {
           atypeFactory.getChecker().reportError(node.getTree(), "unexpected.argument.ownership");
         }
@@ -201,6 +203,9 @@ public class MustCallOnElementsTransfer extends CFTransfer {
     }
     Element elt = TreeUtils.elementFromTree(node.getTree());
     elt = TypesUtils.getTypeElement(elt.asType());
+    if (elt == null) {
+      return new ArrayList<>();
+    }
     MustCallAnnotatedTypeFactory mcAtf =
         new MustCallAnnotatedTypeFactory(atypeFactory.getChecker());
     AnnotationMirror imcAnnotation = mcAtf.getDeclAnnotation(elt, InheritableMustCall.class);
@@ -277,8 +282,18 @@ public class MustCallOnElementsTransfer extends CFTransfer {
         receiver.getTree() != null
             && MustCallOnElementsAnnotatedTypeFactory.isCollection(
                 receiver.getTree(), atypeFactory);
-    if (isCollection) {
-      JavaExpression receiverJx = JavaExpression.fromNode(receiver);
+    boolean isOwningArray =
+        receiver.getTree() != null
+            && TreeUtils.elementFromTree(receiver.getTree()) != null
+            && TreeUtils.elementFromTree(receiver.getTree()).getAnnotation(OwningArray.class)
+                != null;
+    JavaExpression receiverJx = JavaExpression.fromNode(receiver);
+    Tree receiverTree = receiver.getTree();
+    boolean isAlias =
+        receiverTree != null // ensure tree for collection is valid
+            && res.getRegularStore() != null // ensure store exists
+            && atypeFactory.isMustCallOnElementsUnknown(res.getRegularStore(), receiverTree);
+    if (isCollection && (isOwningArray || isAlias)) {
       ExecutableElement method = methodAccessNode.getMethod();
       List<? extends VariableElement> parameters = method.getParameters();
       String methodSignature =
@@ -318,8 +333,7 @@ public class MustCallOnElementsTransfer extends CFTransfer {
     TransferResult<CFValue, CFStore> res = super.visitMethodInvocation(node, input);
 
     // checks if method is called on a collection, in which case it calls the transformer of the
-    // respective
-    // method on the collection
+    // respective method on the collection
     res = updateStoreForMethodInvocationOnCollection(node, res);
 
     // ensure method call args respects ownership consistency (only @OwningArray arg for

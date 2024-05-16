@@ -1,10 +1,12 @@
 package org.checkerframework.checker.mustcallonelements;
 
+import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,6 +22,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -40,7 +43,9 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.flow.CFStore;
+import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -53,6 +58,8 @@ import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.CollectionsPlume;
@@ -373,6 +380,130 @@ public class MustCallOnElementsAnnotatedTypeFactory extends BaseAnnotatedTypeFac
     Class<?> elementRawType = TypesUtils.getClassFromType(elementTypeMirror.getUnderlyingType());
     if (elementRawType == null) return false;
     return Collection.class.isAssignableFrom(elementRawType);
+  }
+
+  /**
+   * Returns whether the given tree has a {@code MustCallOnElementsUnknown} annotation in the given
+   * store. Assumes the arguments are non-null.
+   *
+   * @param mcoeStore store containing MustCallOnElements type annotation information
+   * @param arrTree the array variable/identifier tree
+   * @return list of the MustCallOnElements obligations of the given array
+   */
+  public boolean isMustCallOnElementsUnknown(CFStore mcoeStore, Tree arrTree) {
+    if (arrTree instanceof AssignmentTree) {
+      arrTree = ((AssignmentTree) arrTree).getVariable();
+    }
+    if (arrTree instanceof ArrayAccessTree) {
+      arrTree = ((ArrayAccessTree) arrTree).getExpression();
+    }
+    if (!(arrTree instanceof VariableTree) && !(arrTree instanceof IdentifierTree)) {
+      return false;
+    }
+    JavaExpression arrayJX =
+        (arrTree instanceof VariableTree)
+            ? JavaExpression.fromVariableTree((VariableTree) arrTree)
+            : JavaExpression.fromTree((IdentifierTree) arrTree);
+    CFValue cfval = getValueFromStoreSafely(mcoeStore, arrayJX);
+    if (cfval == null) return false;
+    Element arrElm =
+        (arrTree instanceof VariableTree)
+            ? TreeUtils.elementFromDeclaration((VariableTree) arrTree)
+            : TreeUtils.elementFromTree((IdentifierTree) arrTree);
+    if (arrElm.getKind() == ElementKind.FIELD && arrElm.getAnnotation(OwningArray.class) != null) {
+      if (ElementUtils.isFinal(arrElm)) {
+        if (cfval == null) {
+          // entry block doesn't have final field in store yet
+          return false;
+        }
+      } else {
+        // nonfinal OwningArray field is illegal. An error was already issued.
+        // Prevent program crash and return here.
+        return false;
+      }
+    }
+    AnnotationMirror mcoeAnnoUnknown =
+        AnnotationUtils.getAnnotationByClass(
+            cfval.getAnnotations(), MustCallOnElementsUnknown.class);
+    return mcoeAnnoUnknown != null;
+  }
+
+  /**
+   * Wrapper to accessing a store, which throws a BugInCF when receiving an unexpected
+   * JavaExpression.
+   *
+   * @param store the store to access
+   * @param jx the JavaExpression value that is queried
+   * @return the CFValue of jx in store or null if it doesn't exist
+   */
+  private CFValue getValueFromStoreSafely(CFStore store, JavaExpression jx) {
+    try {
+      return store.getValue(jx);
+    } catch (BugInCF e) {
+      return null;
+    }
+  }
+
+  /**
+   * Returns a list of methods that have to be "called on elements" on the {@code @OwningArray}
+   * array specified by the given tree (expected to be an array identifier) or null if there is a
+   * {@code @MustCallOnElementsUnknown} annotation. The list is extracted from the store passed as
+   * an argument.
+   *
+   * @param mcoeStore store containing MustCallOnElements type annotation information
+   * @param arrTree the array variable/identifier tree
+   * @return list of the MustCallOnElements obligations of the given array
+   */
+  public List<String> getMustCallOnElementsObligations(CFStore mcoeStore, Tree arrTree) {
+    if (arrTree instanceof AssignmentTree) {
+      arrTree = ((AssignmentTree) arrTree).getVariable();
+    }
+    if (arrTree instanceof ArrayAccessTree) {
+      arrTree = ((ArrayAccessTree) arrTree).getExpression();
+    }
+    if (!(arrTree instanceof VariableTree) && !(arrTree instanceof IdentifierTree)) {
+      throw new BugInCF(
+          "MCOE obligation %s must be either from definition or declaration, but is %s",
+          arrTree, arrTree.getClass().getCanonicalName());
+    }
+    JavaExpression arrayJX =
+        (arrTree instanceof VariableTree)
+            ? JavaExpression.fromVariableTree((VariableTree) arrTree)
+            : JavaExpression.fromTree((IdentifierTree) arrTree);
+    CFValue cfval = mcoeStore.getValue(arrayJX);
+    Element arrElm =
+        (arrTree instanceof VariableTree)
+            ? TreeUtils.elementFromDeclaration((VariableTree) arrTree)
+            : TreeUtils.elementFromTree((IdentifierTree) arrTree);
+    if (arrElm.getKind() == ElementKind.FIELD && arrElm.getAnnotation(OwningArray.class) != null) {
+      if (ElementUtils.isFinal(arrElm)) {
+        if (cfval == null) {
+          // entry block doesn't have final field in store yet
+          return Collections.emptyList();
+        }
+      } else {
+        // nonfinal OwningArray field is illegal. An error was already issued.
+        // Prevent program crash and return here.
+        return Collections.emptyList();
+      }
+    }
+    assert cfval != null : "No mcoe annotation for " + arrTree + " in store.";
+    AnnotationMirror mcoeAnno =
+        AnnotationUtils.getAnnotationByClass(cfval.getAnnotations(), MustCallOnElements.class);
+    AnnotationMirror mcoeAnnoUnknown =
+        AnnotationUtils.getAnnotationByClass(
+            cfval.getAnnotations(), MustCallOnElementsUnknown.class);
+    assert mcoeAnno != null || mcoeAnnoUnknown != null
+        : "No mcoe annotation for " + arrTree + " in store.";
+    if (mcoeAnnoUnknown != null) {
+      return null;
+    } else {
+      AnnotationValue av =
+          mcoeAnno.getElementValues().get(this.getMustCallOnElementsValueElement());
+      return av == null
+          ? Collections.emptyList()
+          : AnnotationUtils.annotationValueToList(av, String.class);
+    }
   }
 
   /*
