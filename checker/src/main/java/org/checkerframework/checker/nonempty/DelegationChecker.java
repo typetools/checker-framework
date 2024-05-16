@@ -65,26 +65,25 @@ public class DelegationChecker extends BaseTypeChecker {
     }
 
     @Override
-    public Void visitMethod(MethodTree tree, Void p) {
-      Void result = super.visitMethod(tree, p);
+    public void processMethodTree(MethodTree tree) {
+      super.processMethodTree(tree);
       if (delegate == null || !isMarkedWithOverride(tree)) {
-        return result;
+        return;
       }
       MethodInvocationTree candidateDelegateCall = getLastExpression(tree.getBody());
       boolean hasExceptionalExit =
           hasExceptionalExit(tree.getBody(), UnsupportedOperationException.class);
       if (hasExceptionalExit) {
-        return result;
+        return;
       }
       if (candidateDelegateCall == null) {
         checker.reportWarning(tree, "invalid.delegate", tree.getName(), delegate.getName());
-        return result;
+        return;
       }
       Name enclosingMethodName = tree.getName();
       if (!isValidDelegateCall(enclosingMethodName, candidateDelegateCall)) {
         checker.reportWarning(tree, "invalid.delegate", tree.getName(), delegate.getName());
       }
-      return result;
     }
 
     /**

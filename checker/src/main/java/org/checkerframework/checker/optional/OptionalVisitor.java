@@ -396,7 +396,7 @@ public class OptionalVisitor
   }
 
   @Override
-  public Void visitMethod(MethodTree tree, Void p) {
+  public void processMethodTree(MethodTree tree) {
     if (this.isAnnotatedWithNonEmptyPrecondition(tree)
         || this.isAnyFormalAnnotatedWithNonEmpty(tree)) {
       updateMethodToCheckWithNonEmptyCheckerGivenPreconditions(tree);
@@ -404,7 +404,7 @@ public class OptionalVisitor
     if (this.isReturnTypeAnnotatedWithNonEmpty(tree)) {
       methodsForNonEmptyChecker.add(tree);
     }
-    return super.visitMethod(tree, p);
+    super.processMethodTree(tree);
   }
 
   /**
