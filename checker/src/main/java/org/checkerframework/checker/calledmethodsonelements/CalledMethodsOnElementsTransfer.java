@@ -7,7 +7,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
@@ -197,8 +196,10 @@ public class CalledMethodsOnElementsTransfer extends CFTransfer {
                 // Assuming the value is a list of strings (which it should be for a String array
                 // annotation element)
                 List<?> values = (List<?>) value.getValue();
-                List<String> stringValues =
-                    values.stream().map(Object::toString).collect(Collectors.toList());
+                List<String> stringValues = new ArrayList<>();
+                for (Object obj : values) {
+                  stringValues.add(obj.toString());
+                }
                 mcoeObligationsOfComponent =
                     CollectionsPlume.concatenate(mcoeObligationsOfComponent, stringValues);
               }
