@@ -437,12 +437,23 @@ public abstract class CFAbstractTransfer<
    */
   private boolean isExpressionOrStatementPure(
       TreePath expressionOrStatement, AnnotatedTypeFactory aTypeFactory) {
+    // TODO: almost certainly should not have to do this here. It is not enough to check for the
+    // existence of the assume SideEffectFree/Deterministic flags at this point. The checker is
+    // queried for these options, but the parsing of the assumePure flag into these flags are done
+    // at the visitor-level. As a result, it's possible for only the assumePure flag to exist here,
+    // which entails assumeSideEffectFree and assumeDeterministic
+    boolean isAssumeSideEffectFreeEnabled =
+        aTypeFactory.getChecker().hasOption("assumeSideEffectFree")
+            || aTypeFactory.getChecker().hasOption("assumePure");
+    boolean isAssumeDeterministicEnabled =
+        aTypeFactory.getChecker().hasOption("assumeDeterministic")
+            || aTypeFactory.getChecker().hasOption("assumePure");
     PurityChecker.PurityResult result =
         PurityChecker.checkPurity(
             expressionOrStatement,
             aTypeFactory,
-            aTypeFactory.getChecker().hasOption("assumeSideEffectFree"),
-            aTypeFactory.getChecker().hasOption("assumeDeterministic"),
+            isAssumeSideEffectFreeEnabled,
+            isAssumeDeterministicEnabled,
             aTypeFactory.getChecker().hasOption("assumePureGetters"));
     return result.isPure(EnumSet.allOf(Pure.Kind.class));
   }
