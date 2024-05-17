@@ -359,6 +359,9 @@ public class MustCallOnElementsTransfer extends CFTransfer {
         store.clearValue(array);
         store.insertValue(array, getMustCallOnElementsType(Collections.emptyList()));
         return new RegularTransferResult<CFValue, CFStore>(res.getResultValue(), store);
+      } else if (argIsOwningArray) {
+        // param non-@OwningArray and arg @OwningArray would imply we have an alias
+        atypeFactory.getChecker().reportError(arg.getTree(), "unexpected.argument.ownership");
       }
     }
     return res;
