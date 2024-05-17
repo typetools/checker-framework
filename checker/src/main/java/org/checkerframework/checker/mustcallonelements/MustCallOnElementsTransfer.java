@@ -336,8 +336,7 @@ public class MustCallOnElementsTransfer extends CFTransfer {
     // respective method on the collection
     res = updateStoreForMethodInvocationOnCollection(node, res);
 
-    // ensure method call args respects ownership consistency (only @OwningArray arg for
-    // @OwningArray param)
+    // ensure method call args respects ownership consistency
     // also, empty mcoe type of @OwningArray args that are passed as @OwningArray params
     ExecutableElement method = node.getTarget().getMethod();
     List<? extends VariableElement> params = method.getParameters();
@@ -350,6 +349,13 @@ public class MustCallOnElementsTransfer extends CFTransfer {
       Element argElt = arg.getTree() != null ? TreeUtils.elementFromTree(arg.getTree()) : null;
       boolean argIsOwningArray = argElt != null && argElt.getAnnotation(OwningArray.class) != null;
       boolean paramIsOwningArray = param != null && param.getAnnotation(OwningArray.class) != null;
+      boolean argIsMcoeUnknown =
+          atypeFactory.isMustCallOnElementsUnknown(res.getRegularStore(), arg.getTree());
+      if (argIsMcoeUnknown) {
+        atypeFactory
+            .getChecker()
+            .reportError(arg.getTree(), "nonowning.argument.passed", arg.getTree());
+      }
       if (paramIsOwningArray) {
         if (!argIsOwningArray) {
           atypeFactory.getChecker().reportError(arg.getTree(), "unexpected.argument.ownership");
