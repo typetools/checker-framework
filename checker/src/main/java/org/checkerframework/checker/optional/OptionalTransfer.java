@@ -1,6 +1,7 @@
 package org.checkerframework.checker.optional;
 
 import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
@@ -199,9 +200,13 @@ public class OptionalTransfer extends CFTransfer {
    * @return true if the receiver of the given method invocation is annotated with @{@link NonEmpty}
    */
   private boolean isReceiverNonEmpty(MethodInvocationNode methodInvok) {
-    JavaExpression receiver =
-        JavaExpression.getInitialReceiverOfMethodInvocation(
-            TreeUtils.getReceiverTree(methodInvok.getTree()));
+    ExpressionTree receiverTree = TreeUtils.getReceiverTree(methodInvok.getTree());
+    JavaExpression receiver;
+    if (receiverTree instanceof MethodInvocationTree) {
+      receiver = JavaExpression.getInitialReceiverOfMethodInvocation(receiverTree);
+    } else {
+      receiver = JavaExpression.fromTree(receiverTree);
+    }
     VariableTree receiverDeclaration =
         getReceiverDeclaration(TreePathUtil.enclosingMethod(methodInvok.getTreePath()), receiver);
     if (receiverDeclaration == null) {
