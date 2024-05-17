@@ -23,6 +23,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.mustcall.qual.CreatesMustCallFor;
 import org.checkerframework.checker.mustcall.qual.InheritableMustCall;
@@ -42,6 +43,7 @@ import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
@@ -155,6 +157,34 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     // GenericAnnotatedTypeFactory, but this works here because we know the Must Call Checker is
     // always the first subchecker that's sharing tempvars.
     tempVars.clear();
+  }
+
+  /*
+   * Change the default @MustCallOnElements type value of @OwningArray fields and @OwningArray method parameters
+   * to contain the @MustCall methods of the component, if no manual annotation is present.
+   * For example the type of: final @OwningArray Socket[] s is changed to @MustCallOnElements("close").
+   */
+  @Override
+  public void addComputedTypeAnnotations(Element elt, AnnotatedTypeMirror type) {
+    super.addComputedTypeAnnotations(elt, type);
+    if (elt instanceof VariableElement) {
+      if (type instanceof AnnotatedDeclaredType) {
+        AnnotatedDeclaredType adt = (AnnotatedDeclaredType) type;
+        for (AnnotatedTypeMirror typeArg : adt.getTypeArguments()) {
+          if (typeArg == null) continue;
+          AnnotationMirror mcAnno = typeArg.getEffectiveAnnotation();
+          boolean typeArgIsMcoeUnknown =
+              mcAnno != null
+                  && processingEnv
+                      .getTypeUtils()
+                      .isSameType(mcAnno.getAnnotationType(), TOP.getAnnotationType());
+          if (typeArgIsMcoeUnknown) {
+            // System.out.println("top: " + typeArg);
+            typeArg.replaceAnnotation(BOTTOM);
+          }
+        }
+      }
+    }
   }
 
   @Override
