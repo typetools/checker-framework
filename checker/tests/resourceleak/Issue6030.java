@@ -1,6 +1,7 @@
 // Test case for https://github.com/typetools/checker-framework/issues/6030
 
 import java.util.*;
+import org.checkerframework.checker.mustcall.qual.NotOwning;
 import org.checkerframework.checker.mustcall.qual.Owning;
 
 public class Issue6030 {
@@ -16,7 +17,7 @@ public class Issue6030 {
       return iterator.hasNext();
     }
 
-    public T next() {
+    public @NotOwning T next() {
       return null;
     }
 

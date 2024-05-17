@@ -25,15 +25,13 @@ class EnhancedFor {
     }
   }
 
-  // :: error: type.argument
+  // not an error anymore with the changed upper bound
   void test3(List<Socket> list) {
-    // This error is issued because `s` is a local variable, and
-    // the foreach loop under the hood assigns the result of a call
-    // to Iterator#next into it (which is owning by default, because it's
-    // a method return type). Both this error and the type.argument error
-    // above can be suppressed by writing @MustCall on the Socket type, as in
-    // test4 below (but note that this will make call sites difficult to verify).
-    // :: error: (required.method.not.called)
+    // This is not an error. Even though List<Socket> results in list being
+    // List<@MustCall("close") Socket>, s is assigned by a desugared
+    // iterator.next(), which is @NonOwning, since it doesn't remove the
+    // element from the collection and the collection has the ownership over
+    // the elements and the obligation to fulfill their calling requirements.
     for (Socket s : list) {}
   }
 
@@ -42,6 +40,9 @@ class EnhancedFor {
   }
 
   void test5(List<? extends Socket> list) {
+    // even though the type variable resolves to @MustCall("close") Socket,
+    // this is no error, since s is assigned in a desugared iterator.next(),
+    // which is @NonOwning
     for (Socket s : list) {}
   }
 
