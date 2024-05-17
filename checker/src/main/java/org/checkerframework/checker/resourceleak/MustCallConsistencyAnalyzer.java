@@ -1566,7 +1566,8 @@ class MustCallConsistencyAnalyzer {
             // of revoked ownership add obligation back, and with that, ownership
             IdentifierTree owningArrayDefinitionTree = (IdentifierTree) lhs.getTree();
             boolean isMcoeUnknown =
-                mcoeTypeFactory.getMustCallOnElementsObligations(mcoeStore, lhs.getTree()) == null;
+                mcoeStore != null
+                    && mcoeTypeFactory.isMustCallOnElementsUnknown(mcoeStore, lhs.getTree());
             if ((rhs instanceof ArrayCreationNode) && isMcoeUnknown) {
               Obligation newObligation =
                   new CollectionObligation(
@@ -1613,13 +1614,12 @@ class MustCallConsistencyAnalyzer {
       }
     } else if (lhs.getTree().getKind() == Tree.Kind.ARRAY_ACCESS) {
       // enforces 7. assignment rule:
-      // check whether lhs has MCOEUnknown type, meaning it's a read-only-alias - its may not assign
+      // check whether lhs has MCOEUnknown type, meaning it's a read-only-alias - it must not assign
       // its elements
       ExpressionTree arrayTree = ((ArrayAccessTree) lhs.getTree()).getExpression();
-      JavaExpression arrayJavaExpression = JavaExpression.fromTree(arrayTree);
       boolean lhsIsMcoeUnknown =
-          mcoeStore.getValue(arrayJavaExpression) != null
-              && mcoeTypeFactory.getMustCallOnElementsObligations(mcoeStore, lhs.getTree()) == null;
+          mcoeStore != null
+              && mcoeTypeFactory.isMustCallOnElementsUnknown(mcoeStore, lhs.getTree());
       // System.out.println("isunknown? " + arrayJavaExpression + " " + lhsIsMcoeUnknown);
       // System.out.println("lhs is read-only-alias " + lhs);
       if (lhsIsMcoeUnknown) {
