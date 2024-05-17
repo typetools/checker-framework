@@ -660,6 +660,8 @@ We've seen in the previous Section~\ref{resource-leak-arrays-declaration} that a
 Socket[] s_alias = s_owning; // this assignment is allowed
 \end{verbatim}
 
+Such aliases are read-only. They may not assign their elements, since that would make it impossible to fulfill the obligations of overwritten elements.
+
 \subsectionAndLabel{Must-call and called-methods for arrays}{resource-leak-arrays-mcoe-cmoe}
 Must-call-on-elements and called-methods-on-elements provide similar semantics for arrays as must-call and called-methods do for objects.
 
