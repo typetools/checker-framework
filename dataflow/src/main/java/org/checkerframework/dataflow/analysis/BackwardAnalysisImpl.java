@@ -28,7 +28,7 @@ import org.checkerframework.javacutil.BugInCF;
  *
  * @param <V> the abstract value type to be tracked by the analysis
  * @param <S> the store type used in the analysis
- * @param <T> the transfer function type that is used to approximate runtime behavior
+ * @param <T> the transfer function type that is used to approximate run-time behavior
  */
 public class BackwardAnalysisImpl<
         V extends AbstractValue<V>, S extends Store<S>, T extends BackwardTransferFunction<V, S>>
