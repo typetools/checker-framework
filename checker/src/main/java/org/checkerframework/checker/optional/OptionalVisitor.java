@@ -381,17 +381,19 @@ public class OptionalVisitor
   private void updateMethodNamesToEnclosingMethods(MethodInvocationTree tree) {
     String invokedMethodName = tree.getMethodSelect().toString();
     MethodTree enclosingMethod = TreePathUtil.enclosingMethod(this.getCurrentPath());
-    Set<String> namesOfMethodsForNonEmptyChecker =
-        methodsForNonEmptyChecker.stream()
-            .map(MethodTree::getName)
-            .map(Name::toString)
-            .collect(Collectors.toSet());
-    if (namesOfMethodsForNonEmptyChecker.contains(invokedMethodName)) {
-      methodNamesToEnclosingMethods.get(invokedMethodName).add(enclosingMethod);
-    } else {
-      Set<MethodTree> enclosingMethodsForInvokedMethod = new HashSet<>();
-      enclosingMethodsForInvokedMethod.add(enclosingMethod);
-      methodNamesToEnclosingMethods.put(invokedMethodName, enclosingMethodsForInvokedMethod);
+    if (enclosingMethod != null) {
+      Set<String> namesOfMethodsForNonEmptyChecker =
+          methodsForNonEmptyChecker.stream()
+              .map(MethodTree::getName)
+              .map(Name::toString)
+              .collect(Collectors.toSet());
+      if (namesOfMethodsForNonEmptyChecker.contains(invokedMethodName)) {
+        methodNamesToEnclosingMethods.get(invokedMethodName).add(enclosingMethod);
+      } else {
+        Set<MethodTree> enclosingMethodsForInvokedMethod = new HashSet<>();
+        enclosingMethodsForInvokedMethod.add(enclosingMethod);
+        methodNamesToEnclosingMethods.put(invokedMethodName, enclosingMethodsForInvokedMethod);
+      }
     }
   }
 
@@ -635,7 +637,10 @@ public class OptionalVisitor
         TreeUtils.annotationsFromTypeAnnotationTrees(tree.getModifiers().getAnnotations()).stream()
             .anyMatch(am -> atypeFactory.areSameByClass(am, NonEmpty.class));
     if (isAnnotatedWithNonEmpty) {
-      methodsForNonEmptyChecker.add(TreePathUtil.enclosingMethod(this.getCurrentPath()));
+      MethodTree enclosingMethod = TreePathUtil.enclosingMethod(this.getCurrentPath());
+      if (enclosingMethod != null) {
+        methodsForNonEmptyChecker.add(enclosingMethod);
+      }
     }
   }
 

@@ -1,11 +1,11 @@
 package org.checkerframework.checker.optional;
 
 import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
@@ -207,8 +207,7 @@ public class OptionalTransfer extends CFTransfer {
     } else {
       receiver = JavaExpression.fromTree(receiverTree);
     }
-    VariableTree receiverDeclaration =
-        getReceiverDeclaration(TreePathUtil.enclosingMethod(methodInvok.getTreePath()), receiver);
+    VariableTree receiverDeclaration = getReceiverDeclaration(methodInvok, receiver);
     if (receiverDeclaration == null) {
       return false;
     }
@@ -220,34 +219,28 @@ public class OptionalTransfer extends CFTransfer {
   }
 
   /**
-   * Find the declaration of the receiver of a method call in a method tree.
+   * Returns the declaration of the initial receiver of the given method invocation node.
    *
-   * <p>The receiver should appear in one of two places, either as a formal parameter to the method,
-   * or as a local variable.
+   * <p>An attempt is first made to find the declaration of the receiver in the method that
+   * immediately encloses the given method invocation node. If this is unsuccessful, an attempt is
+   * made to look for the receiver in the fields of the class that immediately encloses the given
+   * method invocation node.
    *
-   * @param tree the method tree
-   * @param receiver the receiver for which to look up a declaration
-   * @return the declaration of the receiver of the method call, if found. Otherwise, null
+   * @param methodInvok a method invocation node
+   * @param initialReceiver the initial receiver in the method invocation node
+   * @return the declaration of the receiver if found, else null
    */
   private @Nullable VariableTree getReceiverDeclaration(
-      @Nullable MethodTree tree, JavaExpression receiver) {
-    if (tree == null) {
-      return null;
+      MethodInvocationNode methodInvok, JavaExpression initialReceiver) {
+    // Look in the method, first
+    MethodTree methodTree = TreePathUtil.enclosingMethod(methodInvok.getTreePath());
+    VariableTree declarationInMethod =
+        JavaExpression.getReceiverDeclarationInMethod(methodTree, initialReceiver);
+    if (declarationInMethod != null) {
+      return declarationInMethod;
     }
-    List<? extends VariableTree> params = tree.getParameters();
-    for (VariableTree param : params) {
-      if (param.getName().toString().equals(receiver.toString())) {
-        return param;
-      }
-    }
-    for (StatementTree statement : tree.getBody().getStatements()) {
-      if (statement instanceof VariableTree) {
-        VariableTree localVariableTree = (VariableTree) statement;
-        if (localVariableTree.getName().toString().equals(receiver.toString())) {
-          return localVariableTree;
-        }
-      }
-    }
-    return null;
+    // If the declaration can't be found in the method, look in the class
+    ClassTree classTree = TreePathUtil.enclosingClass(methodInvok.getTreePath());
+    return JavaExpression.getReceiverDeclarationInClass(classTree, initialReceiver);
   }
 }
