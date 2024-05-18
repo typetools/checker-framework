@@ -63,8 +63,8 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
   protected final IdentityHashMap<Block, TransferInput<V, S>> stores;
 
   /**
-   * Caches of the analysis results. It maps from the TransferInput for a <b>block</b> to a map. The
-   * inner map is from a node within the block to the TransferResult for that node.
+   * Caches of the analysis results. It maps from the TransferInput for a Block to a map. The inner
+   * map is from a node within the block to the TransferResult for that node.
    *
    * @see #runAnalysisFor(Node, Analysis.BeforeOrAfter, TransferInput, IdentityHashMap, Map)
    */
