@@ -36,7 +36,7 @@ import org.plumelib.util.UniqueId;
  *
  * @param <V> the abstract value type to be tracked by the analysis
  * @param <S> the store type used in the analysis
- * @param <T> the transfer function type that is used to approximate runtime behavior
+ * @param <T> the transfer function type that is used to approximate run-time behavior
  * @see DOTCFGVisualizer
  * @see StringCFGVisualizer
  */
