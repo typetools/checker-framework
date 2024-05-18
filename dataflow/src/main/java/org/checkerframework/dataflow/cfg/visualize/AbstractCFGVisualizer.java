@@ -290,7 +290,8 @@ public abstract class AbstractCFGVisualizer<
   }
 
   /**
-   * Visualize the transfer input before or after the given block.
+   * Visualize the transfer input before, or the transfer result after, the given block. The
+   * transfer input and the transfer result contain stores and other information.
    *
    * @param where either BEFORE or AFTER
    * @param bb a block
@@ -312,6 +313,7 @@ public abstract class AbstractCFGVisualizer<
     S regularStore;
     S thenStore = null;
     S elseStore = null;
+    V resultValue = null;
     boolean isTwoStores = false;
 
     UniqueId storesFrom;
@@ -319,6 +321,7 @@ public abstract class AbstractCFGVisualizer<
     if (analysisDirection == Direction.FORWARD && where == VisualizeWhere.AFTER) {
       regularStore = analysis.getResult().getStoreAfter(bb);
       storesFrom = analysis.getResult();
+      resultValue = analysis.getResult().lookupResult(bb.getLastNode()).getResultValue();
     } else if (analysisDirection == Direction.BACKWARD && where == VisualizeWhere.BEFORE) {
       regularStore = analysis.getResult().getStoreBefore(bb);
       storesFrom = analysis.getResult();
@@ -342,6 +345,11 @@ public abstract class AbstractCFGVisualizer<
       sbStore.append((storesFrom == null ? "null" : storesFrom.getClassAndUid()) + separator);
     }
     sbStore.append(where == VisualizeWhere.BEFORE ? "Before: " : "After: ");
+
+    if (verbose && resultValue != null) {
+      sbStore.append("resultValue=" + resultValue);
+      sbStore.append(separator);
+    }
 
     if (regularStore == null) {
       sbStore.append("()");
