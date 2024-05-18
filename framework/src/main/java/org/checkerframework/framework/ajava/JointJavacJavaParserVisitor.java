@@ -647,8 +647,25 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
     CompilationUnit node = castNode(CompilationUnit.class, javaParserNode, javacTree);
     processCompilationUnit(javacTree, node);
     visitOptional(javacTree.getPackage(), node.getPackageDeclaration());
+
+    // This is the fix for https://github.com/typetools/checker-framework/issues/6570.
+    // If the input java file contains semicolons between classes, then
+    // the javac tree will contain "type declarations" for those semicolons
+    // (for some reason? a javac bug?) but an ajava file will not (JavaParser
+    // appears to strip them out? frankly, we're not sure why). This code works
+    // around the problem by filtering any "type declarations" that contain only
+    // a single semicolon from the javacTypeDecls list before passing the list
+    // to the rest of the visitor.
+    List<? extends Tree> javacTypeDecls = javacTree.getTypeDecls();
+    List<Tree> javacTypeDeclsWithoutSemicolons = new ArrayList<>();
+    for (Tree javacTypeDecl : javacTypeDecls) {
+      if (javacTypeDecl.getKind() != Tree.Kind.EMPTY_STATEMENT) {
+        javacTypeDeclsWithoutSemicolons.add(javacTypeDecl);
+      }
+    }
+
     visitLists(javacTree.getImports(), node.getImports());
-    visitLists(javacTree.getTypeDecls(), node.getTypes());
+    visitLists(javacTypeDeclsWithoutSemicolons, node.getTypes());
     return null;
   }
 

@@ -84,7 +84,7 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
   }
 
   @Override
-  public Void visitMethod(MethodTree tree, Void p) {
+  public void processMethodTree(MethodTree tree) {
     ExecutableElement elt = TreeUtils.elementFromDeclaration(tree);
     MustCallAnnotatedTypeFactory mcAtf =
         rlTypeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
@@ -99,7 +99,7 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
     } else {
       checkMustCallAliasAnnotationForMethod(tree, mcAtf);
     }
-    return super.visitMethod(tree, p);
+    super.processMethodTree(tree);
   }
 
   /**
