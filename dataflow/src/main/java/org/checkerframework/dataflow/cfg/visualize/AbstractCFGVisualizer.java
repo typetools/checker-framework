@@ -192,8 +192,8 @@ public abstract class AbstractCFGVisualizer<
    * @param bb the block
    * @param analysis the current analysis
    * @param separator the line separator. Examples: "\\l" for left justification in {@link
-   *     DOTCFGVisualizer} (this is really a terminator, not a separator), "\n" to add a new line in
-   *     {@link StringCFGVisualizer}
+   *     DOTCFGVisualizer} (this is really a terminator, not a separator), "\n" or {@code
+   *     System.lineSeparator()} to add a new line in {@link StringCFGVisualizer}
    * @return the String representation of the block
    */
   protected String visualizeBlockWithSeparator(
@@ -296,8 +296,8 @@ public abstract class AbstractCFGVisualizer<
    * @param bb a block
    * @param analysis the current analysis
    * @param separator the line separator. Examples: "\\l" for left justification in {@link
-   *     DOTCFGVisualizer} (which is actually a line TERMINATOR, not a separator!), "\n" to add a
-   *     new line in {@link StringCFGVisualizer}
+   *     DOTCFGVisualizer} (which is actually a line TERMINATOR, not a separator!), "\n" or {@code
+   *     System.lineSeparator()} to add a new line in {@link StringCFGVisualizer}
    * @return the visualization of the transfer input before or after the given block
    */
   protected String visualizeBlockTransferInputHelper(

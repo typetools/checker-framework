@@ -286,7 +286,7 @@ public final class CFGVisualizeLauncher {
       if (res != null && res.get("stringGraph") != null) {
         out.write(res.get("stringGraph").toString());
       }
-      out.write("\n");
+      out.write(System.lineSeparator());
     } catch (IOException e) {
       e.printStackTrace();
     }
