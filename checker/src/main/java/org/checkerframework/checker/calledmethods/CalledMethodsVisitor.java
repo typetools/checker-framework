@@ -57,7 +57,7 @@ public class CalledMethodsVisitor extends AccumulationVisitor {
   }
 
   @Override
-  public Void visitMethod(MethodTree tree, Void p) {
+  public void processMethodTree(MethodTree tree) {
     ExecutableElement elt = TreeUtils.elementFromDeclaration(tree);
     AnnotationMirror ecmva = atypeFactory.getDeclAnnotation(elt, EnsuresCalledMethodsVarArgs.class);
     if (ecmva != null) {
@@ -69,7 +69,7 @@ public class CalledMethodsVisitor extends AccumulationVisitor {
         ((CalledMethodsAnnotatedTypeFactory) atypeFactory).getExceptionalPostconditions(elt)) {
       checkExceptionalPostcondition(postcond, tree);
     }
-    return super.visitMethod(tree, p);
+    super.processMethodTree(tree);
   }
 
   /**

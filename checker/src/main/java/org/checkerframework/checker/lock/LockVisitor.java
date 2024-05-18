@@ -159,7 +159,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
    * @param tree the MethodTree of the method definition to visit
    */
   @Override
-  public Void visitMethod(MethodTree tree, Void p) {
+  public void processMethodTree(MethodTree tree) {
     ExecutableElement methodElement = TreeUtils.elementFromDeclaration(tree);
 
     issueErrorIfMoreThanOneLockPreconditionMethodAnnotationPresent(methodElement, tree);
@@ -211,7 +211,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
       checker.reportError(tree, "lockingfree.synchronized.method", sea);
     }
 
-    return super.visitMethod(tree, p);
+    super.processMethodTree(tree);
   }
 
   /**
