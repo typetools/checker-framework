@@ -24,6 +24,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.mustcall.qual.CreatesMustCallFor;
 import org.checkerframework.checker.mustcall.qual.InheritableMustCall;
@@ -159,6 +160,64 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     tempVars.clear();
   }
 
+  /**
+   * Called in addComputedTypeAnnotations. Changes the type parameter of collection from
+   * {@code @MustCallUnknown} to {@code @MustCall} for method return types and variables.
+   *
+   * <p>This is necessary as the type variable upper bounds for collections is
+   * {@code @MustCallUnknown}. When the type variable is a generic or wildcard, the type parameter
+   * does default to {@code @MustCallUnknown}, which causes problems, since these usually don't have
+   * anything to do with resources at all.
+   *
+   * @param elt the element
+   * @param type the type of the element
+   */
+  private void changeCollectionTypeParameters(Element elt, AnnotatedTypeMirror type) {
+    if (elt instanceof VariableElement) {
+      // change it for variables
+      if (type.getKind() == TypeKind.DECLARED) {
+        AnnotatedDeclaredType adt = (AnnotatedDeclaredType) type;
+        if (isCollection(adt.getUnderlyingType())) {
+          for (AnnotatedTypeMirror typeArg : adt.getTypeArguments()) {
+            if (typeArg == null) continue;
+            AnnotationMirror mcAnno = typeArg.getEffectiveAnnotation();
+            boolean typeArgIsMcoeUnknown =
+                mcAnno != null
+                    && processingEnv
+                        .getTypeUtils()
+                        .isSameType(mcAnno.getAnnotationType(), TOP.getAnnotationType());
+            if (typeArgIsMcoeUnknown) {
+              typeArg.replaceAnnotation(BOTTOM);
+            }
+          }
+        }
+      }
+    } else if (elt instanceof ExecutableElement) {
+      // change it for method return types
+      if (type.getKind() == TypeKind.EXECUTABLE) {
+        AnnotatedExecutableType methodType = (AnnotatedExecutableType) type;
+        AnnotatedTypeMirror returnType = methodType.getReturnType();
+        if (isCollection(returnType.getUnderlyingType())) {
+          if (returnType.getKind() == TypeKind.DECLARED) {
+            AnnotatedDeclaredType adt = (AnnotatedDeclaredType) returnType;
+            for (AnnotatedTypeMirror typeArg : adt.getTypeArguments()) {
+              if (typeArg == null) continue;
+              AnnotationMirror mcAnno = typeArg.getEffectiveAnnotation();
+              boolean typeArgIsMcoeUnknown =
+                  mcAnno != null
+                      && processingEnv
+                          .getTypeUtils()
+                          .isSameType(mcAnno.getAnnotationType(), TOP.getAnnotationType());
+              if (typeArgIsMcoeUnknown) {
+                typeArg.replaceAnnotation(BOTTOM);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
   /*
    * Change the default @MustCallOnElements type value of @OwningArray fields and @OwningArray method parameters
    * to contain the @MustCall methods of the component, if no manual annotation is present.
@@ -167,24 +226,22 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   @Override
   public void addComputedTypeAnnotations(Element elt, AnnotatedTypeMirror type) {
     super.addComputedTypeAnnotations(elt, type);
-    if (elt instanceof VariableElement) {
-      if (type instanceof AnnotatedDeclaredType) {
-        AnnotatedDeclaredType adt = (AnnotatedDeclaredType) type;
-        for (AnnotatedTypeMirror typeArg : adt.getTypeArguments()) {
-          if (typeArg == null) continue;
-          AnnotationMirror mcAnno = typeArg.getEffectiveAnnotation();
-          boolean typeArgIsMcoeUnknown =
-              mcAnno != null
-                  && processingEnv
-                      .getTypeUtils()
-                      .isSameType(mcAnno.getAnnotationType(), TOP.getAnnotationType());
-          if (typeArgIsMcoeUnknown) {
-            // System.out.println("top: " + typeArg);
-            typeArg.replaceAnnotation(BOTTOM);
-          }
-        }
-      }
-    }
+    changeCollectionTypeParameters(elt, type);
+  }
+
+  /**
+   * Returns whether the given {@link TypeMirror} is an instance of a collection (subclass). This is
+   * determined by getting the class of the TypeMirror and checking whether it is assignable from
+   * Collection.
+   *
+   * @param type the TypeMirror
+   * @return whether type is an instance of a collection (subclass)
+   */
+  private boolean isCollection(TypeMirror type) {
+    if (type == null) return false;
+    Class<?> elementRawType = TypesUtils.getClassFromType(type);
+    if (elementRawType == null) return false;
+    return Collection.class.isAssignableFrom(elementRawType);
   }
 
   @Override
