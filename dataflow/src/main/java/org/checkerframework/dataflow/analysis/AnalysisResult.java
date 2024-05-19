@@ -466,7 +466,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
    */
   public @Nullable TransferResult<V, S> lookupResult(Node node) {
     Block block = node.getBlock();
-    TransferInput<V, S> blockInput = inputs.get(block);
+    TransferInput<V, S> blockInput = stores.get(block);
     if (blockInput == null) {
       return null;
     }
