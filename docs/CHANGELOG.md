@@ -16,6 +16,8 @@ Deprecated methods:
  * `JavaExpression.isUnassignableByOtherCode()` => `isAssignableByOtherCode()`
  * `JavaExpression.isUnmodifiableByOtherCode()` => `isModifiableByOtherCode()`
 
+`BaseTypeVisitor#visitMethod(MethodTree, Void)` is now `final`.
+Subclasses should override `BaseTypeVisitor#processMethodTree(MethodTree)`.
 
 **Closed issues:**
 

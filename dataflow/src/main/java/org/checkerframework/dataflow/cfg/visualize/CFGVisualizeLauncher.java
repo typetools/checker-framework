@@ -168,7 +168,7 @@ public final class CFGVisualizeLauncher {
    *
    * @param <V> the abstract value type to be tracked by the analysis
    * @param <S> the store type used in the analysis
-   * @param <T> the transfer function type that is used to approximated runtime behavior
+   * @param <T> the transfer function type that is used to approximate run-time behavior
    * @param inputFile a Java source file, used as input
    * @param outputDir source output directory
    * @param method name of the method to generate the CFG for
@@ -313,7 +313,7 @@ public final class CFGVisualizeLauncher {
    *
    * @param <V> the abstract value type to be tracked by the analysis
    * @param <S> the store type used in the analysis
-   * @param <T> the transfer function type that is used to approximated runtime behavior
+   * @param <T> the transfer function type that is used to approximate run-time behavior
    * @param inputFile a Java source file, used as input
    * @param method name of the method to generate the CFG for
    * @param clas name of the class which includes the method to generate the CFG for

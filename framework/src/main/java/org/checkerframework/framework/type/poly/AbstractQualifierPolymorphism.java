@@ -476,7 +476,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
      * Creates a mapping of polymorphic qualifiers to their instantiations by visiting each
      * composite type in {@code type}.
      *
-     * @param type the AnnotateTypeMirror used to find instantiations
+     * @param type the AnnotatedTypeMirror used to find instantiations
      * @param polyType the AnnotatedTypeMirror that may have polymorphic qualifiers
      * @return a mapping of polymorphic qualifiers to their instantiations
      */
