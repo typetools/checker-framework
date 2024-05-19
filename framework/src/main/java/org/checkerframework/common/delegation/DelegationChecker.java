@@ -1,4 +1,4 @@
-package org.checkerframework.checker.nonempty;
+package org.checkerframework.common.delegation;
 
 import com.sun.source.tree.*;
 import java.util.*;
@@ -7,12 +7,12 @@ import javax.lang.model.element.*;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.ElementFilter;
-import org.checkerframework.checker.nonempty.qual.Delegate;
-import org.checkerframework.checker.nonempty.qual.DelegatorMustOverride;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
+import org.checkerframework.common.delegation.qual.Delegate;
+import org.checkerframework.common.delegation.qual.DelegatorMustOverride;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;

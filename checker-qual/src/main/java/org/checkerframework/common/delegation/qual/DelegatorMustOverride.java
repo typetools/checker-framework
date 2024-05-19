@@ -1,4 +1,4 @@
-package org.checkerframework.checker.nonempty.qual;
+package org.checkerframework.common.delegation.qual;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
