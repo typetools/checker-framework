@@ -431,8 +431,8 @@ public abstract class AbstractAnalysis<
   }
 
   /**
-   * Updates the value of node {@code node} to the value of the {@code transferResult}. Returns true
-   * if the node's value changed, or a store was updated.
+   * Updates the value of node {@code node} in {@link #nodeValues} to the value of the {@code
+   * transferResult}. Returns true if the node's value changed, or a store was updated.
    *
    * @param node the node to update
    * @param transferResult the transfer result being updated

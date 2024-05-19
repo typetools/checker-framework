@@ -2361,12 +2361,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     return null;
   }
 
-  /**
-   * If the computation of the type of the ConditionalExpressionTree in
-   * org.checkerframework.framework.type.TypeFromTree.TypeFromExpression.visitConditionalExpression(ConditionalExpressionTree,
-   * AnnotatedTypeFactory) is correct, the following checks are redundant. However, let's add
-   * another failsafe guard and do the checks.
-   */
   @Override
   public Void visitConditionalExpression(ConditionalExpressionTree tree, Void p) {
     if (TreeUtils.isPolyExpression(tree)) {
@@ -2377,6 +2371,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       return super.visitConditionalExpression(tree, p);
     }
 
+    // If the computation of the type of the ConditionalExpressionTree in
+    // org.checkerframework.framework.type.TypeFromTree.TypeFromExpression.visitConditionalExpression(ConditionalExpressionTree,
+    // AnnotatedTypeFactory) is correct, the following checks are redundant. However, let's add
+    // another failsafe guard and do the checks.
     AnnotatedTypeMirror cond = atypeFactory.getAnnotatedType(tree);
     this.commonAssignmentCheck(cond, tree.getTrueExpression(), "conditional");
     this.commonAssignmentCheck(cond, tree.getFalseExpression(), "conditional");
