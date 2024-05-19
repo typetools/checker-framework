@@ -62,7 +62,14 @@ public class NodeUtils {
         && fieldAccess.getReceiver().getType().getKind() == TypeKind.ARRAY;
   }
 
-  /** Returns true iff {@code node} is an invocation of the given method. */
+  /**
+   * Returns true if {@code node} is an invocation of the given method.
+   *
+   * @param node a node, not necessarily a method invocation
+   * @param method a method
+   * @param env a processing environment
+   * @return true if {@code node} is an invocation of one of the given methods
+   */
   public static boolean isMethodInvocation(
       Node node, ExecutableElement method, ProcessingEnvironment env) {
     if (!(node instanceof MethodInvocationNode)) {
@@ -70,6 +77,23 @@ public class NodeUtils {
     }
     ExecutableElement invoked = ((MethodInvocationNode) node).getTarget().getMethod();
     return ElementUtils.isMethod(invoked, method, env);
+  }
+
+  /**
+   * Returns true iff {@code node} is an invocation of one of the given methods.
+   *
+   * @param node a node, not necessarily a method invocation
+   * @param methods a list of methods
+   * @param env a processing environment
+   * @return true if {@code node} is an invocation of one of the given methods
+   */
+  public static boolean isMethodInvocation(
+      Node node, List<ExecutableElement> methods, ProcessingEnvironment env) {
+    if (!(node instanceof MethodInvocationNode)) {
+      return false;
+    }
+    ExecutableElement invoked = ((MethodInvocationNode) node).getTarget().getMethod();
+    CollectionsPlume.anyMatch(methods, method -> ElementUtils.isMethod(invoked, method, env));
   }
 
   /**
