@@ -37,11 +37,11 @@ public class NonEmptyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   protected boolean isAnnotatedWithNonEmpty(Tree tree) {
     System.out.printf(
-        "NonEmptyAnnotatedTypeFactory::Checking if tree = [%s] is annotated with @NonEmpty\n",
+        "NonEmptyAnnotatedTypeFactory::Checking if tree = [%s] is annotated with @NonEmpty%n",
         tree);
     AnnotatedTypeMirror annotatedTypeMirror = this.getAnnotatedType(tree);
     System.out.printf(
-        "Explicit Annotations for [%s] = %s\n", tree, annotatedTypeMirror.getExplicitAnnotations());
+        "Explicit Annotations for [%s] = %s%n", tree, annotatedTypeMirror.getExplicitAnnotations());
     return false; // stub
   }
 
