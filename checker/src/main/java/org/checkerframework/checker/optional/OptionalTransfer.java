@@ -41,6 +41,9 @@ import org.checkerframework.javacutil.TreeUtils;
 /** The transfer function for the Optional Checker. */
 public class OptionalTransfer extends CFTransfer {
 
+  /** The {@link OptionalAnnotatedTypeFactory} instance for this transfer class. */
+  private final OptionalAnnotatedTypeFactory optionalTypeFactory;
+
   /** The @{@link Present} annotation. */
   private final AnnotationMirror PRESENT;
 
@@ -68,8 +71,8 @@ public class OptionalTransfer extends CFTransfer {
   /** The element for java.util.stream.Stream.findAny(), or null. */
   private final @Nullable ExecutableElement streamFindAny;
 
-  /** The {@link OptionalAnnotatedTypeFactory} instance for this transfer class. */
-  private final OptionalAnnotatedTypeFactory optionalTypeFactory;
+  /** Stream methods such that if the input is @NonEmpty, the result is @Present. */
+  private final List<ExecutableElement> nonEmptyToPresentStreamMethods;
 
   /**
    * Create an OptionalTransfer.
@@ -91,6 +94,8 @@ public class OptionalTransfer extends CFTransfer {
     streamReduceNoIdentity = TreeUtils.getMethodOrNull("java.util.stream.Stream", "reduce", 1, env);
     streamFindFirst = TreeUtils.getMethodOrNull("java.util.stream.Stream", "findFirst", 0, env);
     streamFindAny = TreeUtils.getMethodOrNull("java.util.stream.Stream", "findAny", 0, env);
+    nonEmptyToPresentStreamMethods =
+        Arrays.asList(streamMax, streamMin, streamReduceNoIdentity, streamFindFirst, streamFindAny);
   }
 
   @Override
@@ -137,10 +142,7 @@ public class OptionalTransfer extends CFTransfer {
   @Override
   public TransferResult<CFValue, CFStore> visitMethodInvocation(
       MethodInvocationNode n, TransferInput<CFValue, CFStore> in) {
-    TransferResult<CFValue, CFStore> result =
-        super.visitMethodInvocation(
-            n, in); // Is the error being emitted because this happens first? Before the store is
-    // updated?
+    TransferResult<CFValue, CFStore> result = super.visitMethodInvocation(n, in);
     if (n.getTree() == null) {
       return result;
     }
@@ -167,14 +169,11 @@ public class OptionalTransfer extends CFTransfer {
    */
   private void refineStreamOperations(
       MethodInvocationNode n, TransferResult<CFValue, CFStore> result) {
-    List<ExecutableElement> relevantStreamMethods =
-        Arrays.asList(streamMax, streamMin, streamReduceNoIdentity, streamFindFirst, streamFindAny);
-    if (relevantStreamMethods.stream()
+    if (nonEmptyToPresentStreamMethods.stream()
         .anyMatch(
             op -> NodeUtils.isMethodInvocation(n, op, optionalTypeFactory.getProcessingEnv()))) {
       if (isReceiverNonEmpty(n)) {
-        // TODO: the receiver of the stream operation is @Non-Empty, therefore the result is
-        // @Present
+        // The receiver of the stream operation is @Non-Empty, therefore the result is @Present.
         JavaExpression internalRepr = JavaExpression.fromNode(n);
         System.out.printf(
             "OptionalTransfer.refineStreamOperations: Has non-empty receiver: %s%n", internalRepr);
