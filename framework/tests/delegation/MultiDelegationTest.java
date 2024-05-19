@@ -1,4 +1,4 @@
-import org.checkerframework.checker.nonempty.qual.Delegate;
+import org.checkerframework.common.delegation.qual.*;
 
 class MultiDelegationTest {
 

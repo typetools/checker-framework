@@ -1,7 +1,6 @@
 import java.util.IdentityHashMap;
 import java.util.Map;
-import org.checkerframework.checker.nonempty.qual.Delegate;
-import org.checkerframework.checker.nonempty.qual.EnsuresNonEmptyIf;
+import org.checkerframework.common.delegation.qual.*;
 
 public class DelegatedCallThrowsException<K, V> extends IdentityHashMap<K, V> {
 
@@ -20,7 +19,6 @@ public class DelegatedCallThrowsException<K, V> extends IdentityHashMap<K, V> {
   }
 
   @Override
-  @EnsuresNonEmptyIf(result = false, expression = "this")
   public boolean isEmpty(DelegatedCallThrowsException<K, V> this) {
     return map.isEmpty();
   }
@@ -31,13 +29,11 @@ public class DelegatedCallThrowsException<K, V> extends IdentityHashMap<K, V> {
   }
 
   @Override
-  @EnsuresNonEmptyIf(result = true, expression = "this")
   public boolean containsKey(DelegatedCallThrowsException<K, V> this, Object key) {
     return map.containsKey(key);
   }
 
   @Override
-  @EnsuresNonEmptyIf(result = true, expression = "this")
   public boolean containsValue(DelegatedCallThrowsException<K, V> this, Object value) {
     return map.containsValue(value);
   }

@@ -48,7 +48,6 @@ public class DelegationChecker extends BaseTypeChecker {
     }
 
     @Override
-    @SuppressWarnings("UnusedVariable")
     public void processClassTree(ClassTree tree) {
       delegate = null; // Unset the previous delegate whenever a new class is visited
       // TODO: what about inner classes?
