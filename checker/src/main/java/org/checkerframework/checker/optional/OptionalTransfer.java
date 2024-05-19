@@ -145,7 +145,10 @@ public class OptionalTransfer extends CFTransfer {
       return result;
     }
     refineStreamOperations(n, result);
-    System.out.printf("Store after Stream operation refinement = %s\n", result);
+    System.out.printf(
+        "OptionalTransfer.visitMethodInvocation(%s):%n"
+            + "  TransferResult after Stream operation refinement = %s%n",
+        n, result);
     return result;
   }
 
@@ -173,7 +176,11 @@ public class OptionalTransfer extends CFTransfer {
         // TODO: the receiver of the stream operation is @Non-Empty, therefore the result is
         // @Present
         JavaExpression internalRepr = JavaExpression.fromNode(n);
-        System.out.printf("Non-empty detected for = %s\n", internalRepr);
+        System.out.printf(
+            "OptionalTransfer.refineStreamOperations: Has non-empty receiver: %s%n", internalRepr);
+        System.out.printf(
+            "isAssumePureOrAssumeDeterministicEnabled() = %s%n",
+            isAssumePureOrAssumeDeterministicEnabled());
         if (isAssumePureOrAssumeDeterministicEnabled()) {
           insertIntoStoresPermitNonDeterministic(result, internalRepr, PRESENT);
         } else {
