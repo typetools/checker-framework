@@ -131,8 +131,4 @@ public class OptionalAnnotatedTypeFactory extends NonEmptyAnnotatedTypeFactory {
       CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
     return new OptionalTransfer(analysis);
   }
-
-  public boolean isTreeAnnotatedWithNonEmpty(ExpressionTree tree) {
-    return super.isAnnotatedWithNonEmpty(tree);
-  }
 }
