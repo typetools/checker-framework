@@ -464,10 +464,16 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
    * @param node the node for which to look up a result
    * @return the TransferResult at the given node
    */
-  public TransferResult<V, S> lookupResult(Node node) {
+  public @Nullable TransferResult<V, S> lookupResult(Node node) {
     Block block = node.getBlock();
-    TransferInput<V, S> blockInput = stores.get(block);
+    TransferInput<V, S> blockInput = inputs.get(block);
+    if (blockInput == null) {
+      return null;
+    }
     IdentityHashMap<Node, TransferResult<V, S>> cache = analysisCaches.get(blockInput);
+    if (cache == null) {
+      return null;
+    }
     TransferResult<V, S> result = cache.get(node);
     return result;
   }
