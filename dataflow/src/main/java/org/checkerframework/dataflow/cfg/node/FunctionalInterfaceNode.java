@@ -8,7 +8,6 @@ import java.util.Collections;
 import java.util.Objects;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.SideEffectFree;
-import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -55,14 +54,7 @@ public class FunctionalInterfaceNode extends Node {
 
   @Override
   public String toString() {
-    if (tree instanceof LambdaExpressionTree) {
-      return "FunctionalInterfaceNode:" + ((LambdaExpressionTree) tree).getBodyKind();
-    } else if (tree instanceof MemberReferenceTree) {
-      return "FunctionalInterfaceNode:" + ((MemberReferenceTree) tree).getName();
-    } else {
-      // This should never happen.
-      throw new BugInCF("Invalid tree in FunctionalInterfaceNode");
-    }
+    return tree.toString();
   }
 
   @Override
