@@ -3,7 +3,6 @@ package org.checkerframework.checker.regex;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
-import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.ClassNameNode;
@@ -114,11 +113,7 @@ public class RegexTransfer extends CFTransfer {
         groupCount = 0;
       }
       regexAnnotation = factory.createRegexAnnotation(groupCount);
-
-      CFValue newResultValue =
-          analysis.createSingleAnnotationValue(
-              regexAnnotation, result.getResultValue().getUnderlyingType());
-      return new RegularTransferResult<>(newResultValue, result.getRegularStore());
+      return recreateTransferResult(regexAnnotation, result);
     }
     return result;
   }

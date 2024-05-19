@@ -653,14 +653,30 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
-   * Creates a TransferResult just like the given one, but with the given value.
+   * Creates a TransferResult with the given annotation as its value.
    *
    * <p>This default implementation returns the input information unchanged, or in the case of
    * conditional input information, merged.
    *
+   * @param anno the annotation
+   * @param in the transfer input
+   * @return the input information, as a TransferResult
+   * @see #createTransferResult(CFAbstractValue value, TransferInput in) {
+   */
+  @SideEffectFree
+  protected TransferResult<V, S> createTransferResult(
+      AnnotationMirror anno, TypeMirror tm, TransferInput<V, S> in) {
+    return createTransferResult(analysis.createSingleAnnotationValue(anno, tm), in);
+  }
+
+  /**
+   * Creates a TransferResult just like the given one, but with the given value.
+   *
+   * <p>This default implementation returns the input information unchanged.
+   *
    * @param value the value; possibly null
    * @param in the TransferResult to copy
-   * @return the input information
+   * @return the copied and modified TransferResult
    */
   @SideEffectFree
   protected TransferResult<V, S> recreateTransferResult(
@@ -674,6 +690,22 @@ public abstract class CFAbstractTransfer<
       S store = in.getRegularStore();
       return new RegularTransferResult<>(finishValue(value, store), store);
     }
+  }
+
+  /**
+   * Creates a TransferResult just like the given one, but with the given annotation as its value.
+   *
+   * <p>This default implementation returns the input information unchanged.
+   *
+   * @param anno the annotation
+   * @param in the TransferResult to copy
+   * @return the copied and modified TransferResult
+   */
+  @SideEffectFree
+  protected TransferResult<V, S> recreateTransferResult(
+      AnnotationMirror anno, TransferResult<V, S> in) {
+    return recreateTransferResult(
+        analysis.createSingleAnnotationValue(anno, in.getResultValue().getUnderlyingType()), in);
   }
 
   @Override

@@ -17,8 +17,6 @@ import org.checkerframework.common.value.qual.StringVal;
 import org.checkerframework.common.value.util.NumberMath;
 import org.checkerframework.common.value.util.NumberUtils;
 import org.checkerframework.common.value.util.Range;
-import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
-import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.BitwiseAndNode;
@@ -438,31 +436,11 @@ public class ValueTransfer extends CFTransfer {
     return isIntegralUnknownVal(node, getValueAnnotation(p.getValueOfSubNode(node)));
   }
 
-  /**
-   * Create a new transfer result based on the original result and the new annotation.
-   *
-   * @param result the original result
-   * @param resultAnno the new annotation
-   * @return the new transfer result
-   */
-  private TransferResult<CFValue, CFStore> createNewResult(
-      TransferResult<CFValue, CFStore> result, AnnotationMirror resultAnno) {
-    CFValue newResultValue =
-        analysis.createSingleAnnotationValue(
-            resultAnno, result.getResultValue().getUnderlyingType());
-    return new RegularTransferResult<>(newResultValue, result.getRegularStore());
-  }
-
   /** Create a boolean transfer result. */
   private TransferResult<CFValue, CFStore> createNewResultBoolean(
-      CFStore thenStore, CFStore elseStore, List<Boolean> resultValues, TypeMirror underlyingType) {
+      TransferResult<CFValue, CFStore> result, List<Boolean> resultValues) {
     AnnotationMirror boolVal = atypeFactory.createBooleanAnnotation(resultValues);
-    CFValue newResultValue = analysis.createSingleAnnotationValue(boolVal, underlyingType);
-    if (elseStore != null) {
-      return new ConditionalTransferResult<>(newResultValue, thenStore, elseStore);
-    } else {
-      return new RegularTransferResult<>(newResultValue, thenStore);
-    }
+    return recreateTransferResult(boolVal, result);
   }
 
   @Override
@@ -753,13 +731,9 @@ public class ValueTransfer extends CFTransfer {
       Node rightOperand,
       TransferInput<CFValue, CFStore> p,
       TransferResult<CFValue, CFStore> result) {
-
     AnnotationMirror resultAnno =
         createAnnotationForStringConcatenation(leftOperand, rightOperand, p);
-
-    TypeMirror underlyingType = result.getResultValue().getUnderlyingType();
-    CFValue newResultValue = analysis.createSingleAnnotationValue(resultAnno, underlyingType);
-    return new RegularTransferResult<>(newResultValue, result.getRegularStore());
+    return recreateTransferResult(resultAnno, result);
   }
 
   /** Binary operations that are analyzed by the value checker. */
@@ -921,7 +895,7 @@ public class ValueTransfer extends CFTransfer {
     AnnotationMirror resultAnno =
         calculateNumericalBinaryOp(
             n.getLeftOperand(), n.getRightOperand(), NumericalBinaryOps.ADDITION, p);
-    return createNewResult(transferResult, resultAnno);
+    return recreateTransferResult(resultAnno, transferResult);
   }
 
   @Override
@@ -931,7 +905,7 @@ public class ValueTransfer extends CFTransfer {
     AnnotationMirror resultAnno =
         calculateNumericalBinaryOp(
             n.getLeftOperand(), n.getRightOperand(), NumericalBinaryOps.SUBTRACTION, p);
-    return createNewResult(transferResult, resultAnno);
+    return recreateTransferResult(resultAnno, transferResult);
   }
 
   @Override
@@ -941,7 +915,7 @@ public class ValueTransfer extends CFTransfer {
     AnnotationMirror resultAnno =
         calculateNumericalBinaryOp(
             n.getLeftOperand(), n.getRightOperand(), NumericalBinaryOps.MULTIPLICATION, p);
-    return createNewResult(transferResult, resultAnno);
+    return recreateTransferResult(resultAnno, transferResult);
   }
 
   @Override
@@ -951,7 +925,7 @@ public class ValueTransfer extends CFTransfer {
     AnnotationMirror resultAnno =
         calculateNumericalBinaryOp(
             n.getLeftOperand(), n.getRightOperand(), NumericalBinaryOps.DIVISION, p);
-    return createNewResult(transferResult, resultAnno);
+    return recreateTransferResult(resultAnno, transferResult);
   }
 
   @Override
@@ -961,7 +935,7 @@ public class ValueTransfer extends CFTransfer {
     AnnotationMirror resultAnno =
         calculateNumericalBinaryOp(
             n.getLeftOperand(), n.getRightOperand(), NumericalBinaryOps.DIVISION, p);
-    return createNewResult(transferResult, resultAnno);
+    return recreateTransferResult(resultAnno, transferResult);
   }
 
   @Override
@@ -971,7 +945,7 @@ public class ValueTransfer extends CFTransfer {
     AnnotationMirror resultAnno =
         calculateNumericalBinaryOp(
             n.getLeftOperand(), n.getRightOperand(), NumericalBinaryOps.REMAINDER, p);
-    return createNewResult(transferResult, resultAnno);
+    return recreateTransferResult(resultAnno, transferResult);
   }
 
   @Override
@@ -981,7 +955,7 @@ public class ValueTransfer extends CFTransfer {
     AnnotationMirror resultAnno =
         calculateNumericalBinaryOp(
             n.getLeftOperand(), n.getRightOperand(), NumericalBinaryOps.REMAINDER, p);
-    return createNewResult(transferResult, resultAnno);
+    return recreateTransferResult(resultAnno, transferResult);
   }
 
   @Override
@@ -991,7 +965,7 @@ public class ValueTransfer extends CFTransfer {
     AnnotationMirror resultAnno =
         calculateNumericalBinaryOp(
             n.getLeftOperand(), n.getRightOperand(), NumericalBinaryOps.SHIFT_LEFT, p);
-    return createNewResult(transferResult, resultAnno);
+    return recreateTransferResult(resultAnno, transferResult);
   }
 
   @Override
@@ -1001,7 +975,7 @@ public class ValueTransfer extends CFTransfer {
     AnnotationMirror resultAnno =
         calculateNumericalBinaryOp(
             n.getLeftOperand(), n.getRightOperand(), NumericalBinaryOps.SIGNED_SHIFT_RIGHT, p);
-    return createNewResult(transferResult, resultAnno);
+    return recreateTransferResult(resultAnno, transferResult);
   }
 
   @Override
@@ -1011,7 +985,7 @@ public class ValueTransfer extends CFTransfer {
     AnnotationMirror resultAnno =
         calculateNumericalBinaryOp(
             n.getLeftOperand(), n.getRightOperand(), NumericalBinaryOps.UNSIGNED_SHIFT_RIGHT, p);
-    return createNewResult(transferResult, resultAnno);
+    return recreateTransferResult(resultAnno, transferResult);
   }
 
   @Override
@@ -1021,7 +995,7 @@ public class ValueTransfer extends CFTransfer {
     AnnotationMirror resultAnno =
         calculateNumericalBinaryOp(
             n.getLeftOperand(), n.getRightOperand(), NumericalBinaryOps.BITWISE_AND, p);
-    return createNewResult(transferResult, resultAnno);
+    return recreateTransferResult(resultAnno, transferResult);
   }
 
   @Override
@@ -1031,7 +1005,7 @@ public class ValueTransfer extends CFTransfer {
     AnnotationMirror resultAnno =
         calculateNumericalBinaryOp(
             n.getLeftOperand(), n.getRightOperand(), NumericalBinaryOps.BITWISE_OR, p);
-    return createNewResult(transferResult, resultAnno);
+    return recreateTransferResult(resultAnno, transferResult);
   }
 
   @Override
@@ -1041,7 +1015,7 @@ public class ValueTransfer extends CFTransfer {
     AnnotationMirror resultAnno =
         calculateNumericalBinaryOp(
             n.getLeftOperand(), n.getRightOperand(), NumericalBinaryOps.BITWISE_XOR, p);
-    return createNewResult(transferResult, resultAnno);
+    return recreateTransferResult(resultAnno, transferResult);
   }
 
   /** Unary operations that are analyzed by the value checker. */
@@ -1137,7 +1111,7 @@ public class ValueTransfer extends CFTransfer {
     TransferResult<CFValue, CFStore> transferResult = super.visitNumericalMinus(n, p);
     AnnotationMirror resultAnno =
         calculateNumericalUnaryOp(n.getOperand(), NumericalUnaryOps.MINUS, p);
-    return createNewResult(transferResult, resultAnno);
+    return recreateTransferResult(resultAnno, transferResult);
   }
 
   @Override
@@ -1146,7 +1120,7 @@ public class ValueTransfer extends CFTransfer {
     TransferResult<CFValue, CFStore> transferResult = super.visitNumericalPlus(n, p);
     AnnotationMirror resultAnno =
         calculateNumericalUnaryOp(n.getOperand(), NumericalUnaryOps.PLUS, p);
-    return createNewResult(transferResult, resultAnno);
+    return recreateTransferResult(resultAnno, transferResult);
   }
 
   @Override
@@ -1155,7 +1129,7 @@ public class ValueTransfer extends CFTransfer {
     TransferResult<CFValue, CFStore> transferResult = super.visitBitwiseComplement(n, p);
     AnnotationMirror resultAnno =
         calculateNumericalUnaryOp(n.getOperand(), NumericalUnaryOps.BITWISE_COMPLEMENT, p);
-    return createNewResult(transferResult, resultAnno);
+    return recreateTransferResult(resultAnno, transferResult);
   }
 
   enum ComparisonOperators {
@@ -1400,8 +1374,7 @@ public class ValueTransfer extends CFTransfer {
             ComparisonOperators.LESS_THAN,
             thenStore,
             elseStore);
-    TypeMirror underlyingType = transferResult.getResultValue().getUnderlyingType();
-    return createNewResultBoolean(thenStore, elseStore, resultValues, underlyingType);
+    return createNewResultBoolean(transferResult, resultValues);
   }
 
   @Override
@@ -1419,8 +1392,7 @@ public class ValueTransfer extends CFTransfer {
             ComparisonOperators.LESS_THAN_EQ,
             thenStore,
             elseStore);
-    TypeMirror underlyingType = transferResult.getResultValue().getUnderlyingType();
-    return createNewResultBoolean(thenStore, elseStore, resultValues, underlyingType);
+    return createNewResultBoolean(transferResult, resultValues);
   }
 
   @Override
@@ -1438,8 +1410,7 @@ public class ValueTransfer extends CFTransfer {
             ComparisonOperators.GREATER_THAN,
             thenStore,
             elseStore);
-    TypeMirror underlyingType = transferResult.getResultValue().getUnderlyingType();
-    return createNewResultBoolean(thenStore, elseStore, resultValues, underlyingType);
+    return createNewResultBoolean(transferResult, resultValues);
   }
 
   @Override
@@ -1457,8 +1428,7 @@ public class ValueTransfer extends CFTransfer {
             ComparisonOperators.GREATER_THAN_EQ,
             thenStore,
             elseStore);
-    TypeMirror underlyingType = transferResult.getResultValue().getUnderlyingType();
-    return createNewResultBoolean(thenStore, elseStore, resultValues, underlyingType);
+    return createNewResultBoolean(transferResult, resultValues);
   }
 
   @Override
@@ -1489,8 +1459,7 @@ public class ValueTransfer extends CFTransfer {
         // Happens for case labels
         return transferResult;
       }
-      TypeMirror underlyingType = transferResult.getResultValue().getUnderlyingType();
-      return createNewResultBoolean(thenStore, elseStore, resultValues, underlyingType);
+      return createNewResultBoolean(transferResult, resultValues);
     }
     return super.strengthenAnnotationOfEqualTo(
         transferResult, firstNode, secondNode, firstValue, secondValue, notEqualTo);
@@ -1638,11 +1607,7 @@ public class ValueTransfer extends CFTransfer {
     TransferResult<CFValue, CFStore> transferResult = super.visitConditionalNot(n, p);
     List<Boolean> resultValues =
         calculateConditionalOperator(n.getOperand(), null, ConditionalOperators.NOT, p);
-    return createNewResultBoolean(
-        transferResult.getThenStore(),
-        transferResult.getElseStore(),
-        resultValues,
-        transferResult.getResultValue().getUnderlyingType());
+    return createNewResultBoolean(transferResult, resultValues);
   }
 
   @Override
@@ -1652,11 +1617,7 @@ public class ValueTransfer extends CFTransfer {
     List<Boolean> resultValues =
         calculateConditionalOperator(
             n.getLeftOperand(), n.getRightOperand(), ConditionalOperators.AND, p);
-    return createNewResultBoolean(
-        transferResult.getThenStore(),
-        transferResult.getElseStore(),
-        resultValues,
-        transferResult.getResultValue().getUnderlyingType());
+    return createNewResultBoolean(transferResult, resultValues);
   }
 
   @Override
@@ -1666,10 +1627,6 @@ public class ValueTransfer extends CFTransfer {
     List<Boolean> resultValues =
         calculateConditionalOperator(
             n.getLeftOperand(), n.getRightOperand(), ConditionalOperators.OR, p);
-    return createNewResultBoolean(
-        transferResult.getThenStore(),
-        transferResult.getElseStore(),
-        resultValues,
-        transferResult.getResultValue().getUnderlyingType());
+    return createNewResultBoolean(transferResult, resultValues);
   }
 }
