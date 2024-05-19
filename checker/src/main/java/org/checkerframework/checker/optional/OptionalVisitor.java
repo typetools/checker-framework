@@ -8,7 +8,6 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IfTree;
 import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
@@ -18,23 +17,17 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Name;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
-import org.checkerframework.checker.nonempty.qual.NonEmpty;
-import org.checkerframework.checker.nonempty.qual.RequiresNonEmpty;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.optional.qual.OptionalCreator;
 import org.checkerframework.checker.optional.qual.OptionalEliminator;
@@ -44,12 +37,9 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeValidator;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.dataflow.expression.JavaExpression;
-import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import org.checkerframework.javacutil.AnnotationMirrorSet;
-import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.IPair;
@@ -81,12 +71,6 @@ public class OptionalVisitor
   /** The element for java.util.stream.Stream.map(). */
   private final ExecutableElement streamMap;
 
-  /** Set of methods to be checked by the Non-Empty Checker. */
-  private final Set<MethodTree> methodsForNonEmptyChecker;
-
-  /** Map of the names of methods to the methods in which they are invoked. */
-  private final Map<String, Set<MethodTree>> methodNamesToEnclosingMethods;
-
   /**
    * Create an OptionalVisitor.
    *
@@ -103,27 +87,11 @@ public class OptionalVisitor
 
     streamFilter = TreeUtils.getMethod("java.util.stream.Stream", "filter", 1, env);
     streamMap = TreeUtils.getMethod("java.util.stream.Stream", "map", 1, env);
-    methodsForNonEmptyChecker = new HashSet<>();
-    methodNamesToEnclosingMethods = new HashMap<>();
   }
 
   @Override
   protected BaseTypeValidator createTypeValidator() {
     return new OptionalTypeValidator(checker, this, atypeFactory);
-  }
-
-  /**
-   * Gets the set of methods that should be verified using the {@link
-   * org.checkerframework.checker.nonempty.NonEmptyChecker}.
-   *
-   * <p>This should only really be called by the Non-Empty Checker.
-   *
-   * @return the set of methods that should be verified using the {@link
-   *     org.checkerframework.checker.nonempty.NonEmptyChecker}
-   */
-  @Pure
-  public Set<MethodTree> getMethodsForNonEmptyChecker() {
-    return methodsForNonEmptyChecker;
   }
 
   /**
@@ -360,115 +328,7 @@ public class OptionalVisitor
   public Void visitMethodInvocation(MethodInvocationTree tree, Void p) {
     handleCreationElimination(tree);
     handleNestedOptionalCreation(tree);
-    updateMethodNamesToEnclosingMethods(tree);
     return super.visitMethodInvocation(tree, p);
-  }
-
-  /**
-   * Updates {@link methodNamesToEnclosingMethods} given a method invocation.
-   *
-   * <p>Check whether the method is in the set of methods that must be checked by the Non-Empty
-   * checker whenever a method invocation is encountered. If the method is in the set, the method
-   * that immediately encloses the method invocation should also be added to the set of methods to
-   * be checked by the Non-Empty Checker.
-   *
-   * <p>This ensures that the <i>clients</i> of any methods that must be checked by the Non-Empty
-   * Checker (i.e., methods that have preconditions related to the Non-Empty type system) are
-   * included in the set of methods to check.
-   *
-   * @param tree a method invocation tree
-   */
-  private void updateMethodNamesToEnclosingMethods(MethodInvocationTree tree) {
-    String invokedMethodName = tree.getMethodSelect().toString();
-    MethodTree enclosingMethod = TreePathUtil.enclosingMethod(this.getCurrentPath());
-    if (enclosingMethod != null) {
-      Set<String> namesOfMethodsForNonEmptyChecker =
-          methodsForNonEmptyChecker.stream()
-              .map(MethodTree::getName)
-              .map(Name::toString)
-              .collect(Collectors.toSet());
-      if (namesOfMethodsForNonEmptyChecker.contains(invokedMethodName)) {
-        methodNamesToEnclosingMethods.get(invokedMethodName).add(enclosingMethod);
-      } else {
-        Set<MethodTree> enclosingMethodsForInvokedMethod = new HashSet<>();
-        enclosingMethodsForInvokedMethod.add(enclosingMethod);
-        methodNamesToEnclosingMethods.put(invokedMethodName, enclosingMethodsForInvokedMethod);
-      }
-    }
-  }
-
-  @Override
-  public void processMethodTree(MethodTree tree) {
-    if (this.isAnnotatedWithNonEmptyPrecondition(tree)
-        || this.isAnyFormalAnnotatedWithNonEmpty(tree)) {
-      updateMethodToCheckWithNonEmptyCheckerGivenPreconditions(tree);
-    }
-    if (this.isReturnTypeAnnotatedWithNonEmpty(tree)) {
-      methodsForNonEmptyChecker.add(tree);
-    }
-    super.processMethodTree(tree);
-  }
-
-  /**
-   * Updates {@link methodsForNonEmptyChecker} when a method with a precondition from the Non-Empty
-   * type system (e.g., {@link RequiresNonEmpty}) or a formal annotated with {@link NonEmpty} is
-   * visited.
-   *
-   * <p>If the method being visited is in {@link methodNamesToEnclosingMethods}, the methods to
-   * check with the Non-Empty Checker should be updated with all the methods that dispatch calls to
-   * this method.
-   *
-   * @param tree a method tree
-   */
-  private void updateMethodToCheckWithNonEmptyCheckerGivenPreconditions(MethodTree tree) {
-    String methodName = tree.getName().toString();
-    if (methodNamesToEnclosingMethods.containsKey(methodName)) {
-      methodsForNonEmptyChecker.addAll(methodNamesToEnclosingMethods.get(methodName));
-    }
-    methodsForNonEmptyChecker.add(tree);
-  }
-
-  /**
-   * Returns true if a method is explicitly annotated with {@link RequiresNonEmpty}.
-   *
-   * @param tree a method tree
-   * @return true if a method is explicitly annotated with {@link RequiresNonEmpty}
-   */
-  private boolean isAnnotatedWithNonEmptyPrecondition(MethodTree tree) {
-    return TreeUtils.annotationsFromTypeAnnotationTrees(tree.getModifiers().getAnnotations())
-        .stream()
-        .anyMatch(am -> atypeFactory.areSameByClass(am, RequiresNonEmpty.class));
-  }
-
-  /**
-   * Returns true if any formal parameter of a method is explicitly annotated with {@link NonEmpty}.
-   *
-   * @param tree a method tree
-   * @return true if any formal parameter of a method is explicitly annotated with {@link NonEmpty}
-   */
-  private boolean isAnyFormalAnnotatedWithNonEmpty(MethodTree tree) {
-    List<? extends VariableTree> params = tree.getParameters();
-    AnnotationMirrorSet annotationMirrors = new AnnotationMirrorSet();
-    for (VariableTree vt : params) {
-      annotationMirrors.addAll(
-          TreeUtils.annotationsFromTypeAnnotationTrees(vt.getModifiers().getAnnotations()));
-    }
-    return annotationMirrors.stream()
-        .anyMatch(am -> atypeFactory.areSameByClass(am, NonEmpty.class));
-  }
-
-  /**
-   * Returns true if the return type of a method is explicitly annotated with {@link NonEmpty}.
-   *
-   * @param tree a method tree
-   * @return true if the return type of a method is explicitly annotated with {@link NonEmpty}
-   */
-  private boolean isReturnTypeAnnotatedWithNonEmpty(MethodTree tree) {
-    if (tree.getReturnType() == null) {
-      return false;
-    }
-    return TreeUtils.typeOf(tree.getReturnType()).getAnnotationMirrors().stream()
-        .anyMatch(am -> atypeFactory.areSameByClass(am, NonEmpty.class));
   }
 
   @Override
@@ -612,7 +472,6 @@ public class OptionalVisitor
    */
   @Override
   public Void visitVariable(VariableTree tree, Void p) {
-    handleNonEmptyVariableDeclaration(tree);
     VariableElement ve = TreeUtils.elementFromDeclaration(tree);
     TypeMirror tm = ve.asType();
     if (isOptionalType(tm)) {
@@ -630,18 +489,6 @@ public class OptionalVisitor
       }
     }
     return super.visitVariable(tree, p);
-  }
-
-  private void handleNonEmptyVariableDeclaration(VariableTree tree) {
-    boolean isAnnotatedWithNonEmpty =
-        TreeUtils.annotationsFromTypeAnnotationTrees(tree.getModifiers().getAnnotations()).stream()
-            .anyMatch(am -> atypeFactory.areSameByClass(am, NonEmpty.class));
-    if (isAnnotatedWithNonEmpty) {
-      MethodTree enclosingMethod = TreePathUtil.enclosingMethod(this.getCurrentPath());
-      if (enclosingMethod != null) {
-        methodsForNonEmptyChecker.add(enclosingMethod);
-      }
-    }
   }
 
   /**
