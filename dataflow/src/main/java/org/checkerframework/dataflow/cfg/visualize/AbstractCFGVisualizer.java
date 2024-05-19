@@ -323,7 +323,10 @@ public abstract class AbstractCFGVisualizer<
       storesFrom = analysis.getResult();
       Node lastNode = bb.getLastNode();
       if (lastNode != null) {
-        resultValue = analysis.getResult().lookupResult(lastNode).getResultValue();
+        TransferResult<V, S> tResult = analysis.getResult().lookupResult(lastNode);
+        if (tResult != null) {
+          resultValue = tResult.getResultValue();
+        }
       }
     } else if (analysisDirection == Direction.BACKWARD && where == VisualizeWhere.BEFORE) {
       regularStore = analysis.getResult().getStoreBefore(bb);
