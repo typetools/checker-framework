@@ -1645,8 +1645,8 @@ override the visitor method that handles the \refclass{dataflow/cfg/node}{Node}s
 relevant to your run-time check or run-time operation.
 Leave the body of the overriding method empty for now.
 
-For example, the Regex Checker refines the type of a run-time test method
-call.  A method call is represented by a
+For example, the Regex Checker refines the type based on a call to the
+\<RegexUtil.isRegex> method.  A method call is represented by a
 \refclass{dataflow/cfg/node}{MethodInvocationNode}.  Therefore,
 \refclass{checker/regex}{RegexTransfer} overrides the
 \code{visitMethodInvocation} method:
