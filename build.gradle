@@ -927,9 +927,10 @@ subprojects {
             }
           } catch (Exception ex) {
             if (ex.getCause() != null && ex.getCause().getCause()!= null) {
-              String msg = ex.getCause().getLocalizedMessage() + ':\n'
-              msg += ex.getCause().getCause().getLocalizedMessage() + '\n'
-              msg += 'Have you installed jtreg?'
+              String msg = String.join(System.lineSeparator(),
+                  ex.getCause().getLocalizedMessage() + ':',
+                  ex.getCause().getCause().getLocalizedMessage(),
+                  'Have you installed jtreg?')
               println msg
             }
             throw ex
