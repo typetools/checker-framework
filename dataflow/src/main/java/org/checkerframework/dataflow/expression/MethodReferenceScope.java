@@ -50,6 +50,8 @@ public class MethodReferenceScope {
     this.expression = expression;
     this.type = type;
     this.isSuper = isReceiverSuper;
+    // Exactly one of the three fields is set.
+    assert (expression != null ? 1 : 0) + (type != null ? 1 : 0) + (isReceiverSuper ? 1 : 0) == 1;
   }
 
   /**

@@ -123,11 +123,10 @@ public abstract class JavaExpressionConverter extends JavaExpressionVisitor<Java
   }
 
   /**
-   * Converts a method reference scope for use in the creation of a method reference JavaExpression.
+   * Converts a method reference scope for use in the creation of a MethodReference JavaExpression.
    *
    * @param scope the method reference scope
-   * @return a method reference scope to be used in the creation of a method reference
-   *     JavaExpression
+   * @return a method reference scope to be used in the creation of a MethodReference JavaExpression
    */
   private MethodReferenceScope convert(MethodReferenceScope scope) {
     JavaExpression expression = null;
@@ -151,7 +150,7 @@ public abstract class JavaExpressionConverter extends JavaExpressionVisitor<Java
    */
   private MethodReferenceTarget convert(MethodReferenceTarget target) {
     return new MethodReferenceTarget(
-        target.getTypeArguments(), target.getIdentifier(), target.isConstructorCall());
+        target.getTypeArguments(), target.getIdentifier(), target.isConstructor());
   }
 
   @Override

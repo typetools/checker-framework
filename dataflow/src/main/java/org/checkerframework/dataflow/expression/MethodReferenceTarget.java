@@ -3,12 +3,12 @@ package org.checkerframework.dataflow.expression;
 import com.sun.source.tree.MemberReferenceTree;
 import java.util.Collections;
 import java.util.List;
+import java.util.StringJoiner;
 import java.util.stream.Collectors;
 import javax.lang.model.element.Name;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
-import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -19,8 +19,8 @@ import org.checkerframework.javacutil.TreeUtils;
  * <ul>
  *   <li>{@literal [TypeArguments] Identifier}, which may be represented by a standard {@link
  *       javax.lang.model.element.Name}
- *   <li>{@literal [TypeArguments] "new"}, which is a constructor call and cannot be represented by
- *       an arbitrary {@link javax.lang.model.element.Name}
+ *   <li>{@literal [TypeArguments] "new"}, which is a constructor and cannot be represented by an
+ *       arbitrary {@link javax.lang.model.element.Name}
  * </ul>
  */
 public class MethodReferenceTarget {
@@ -28,30 +28,25 @@ public class MethodReferenceTarget {
   /** The type arguments for this method reference target. */
   private final List<TypeMirror> typeArguments;
 
-  /** The identifier for this method reference target. */
+  /** The identifier for this method reference target, or null if it is a constructor. */
   private final @Nullable Name identifier;
 
-  /** True if this method reference target is a constructor call. */
-  private final boolean isConstructorCall;
+  /** True if this method reference target is a constructor. */
+  private final boolean isConstructor;
 
   /**
    * Creates a new method reference target.
    *
    * @param typeArguments the type arguments
    * @param identifier the identifier
-   * @param isConstructorCall whether a method reference target is a constructor call
+   * @param isConstructor whether a method reference target is a constructor
    */
   public MethodReferenceTarget(
-      List<TypeMirror> typeArguments, @Nullable Name identifier, boolean isConstructorCall) {
-    if (isConstructorCall) {
-      // If the target is a constructor call, the identifier must be null
-      if (identifier != null) {
-        throw new BugInCF("Malformed MethodReferenceTarget");
-      }
-    }
+      List<TypeMirror> typeArguments, @Nullable Name identifier, boolean isConstructor) {
+    assert (identifier != null ? 1 : 0) + (isConstructor ? 1 : 0) == 1;
     this.typeArguments = typeArguments;
     this.identifier = identifier;
-    this.isConstructorCall = isConstructorCall;
+    this.isConstructor = isConstructor;
   }
 
   /**
@@ -66,7 +61,7 @@ public class MethodReferenceTarget {
 
   /**
    * Return the identifier for this method reference target, or null if it's not an identifier (that
-   * is, the method reference is for a constructor call).
+   * is, the method reference is for a constructor).
    *
    * @return the identifier for this method reference target
    */
@@ -76,12 +71,12 @@ public class MethodReferenceTarget {
   }
 
   /**
-   * Return true if this method reference target is a constructor call (i.e., "new").
+   * Return true if this method reference target is a constructor (i.e., "new").
    *
-   * @return true if this method reference target is a constructor call
+   * @return true if this method reference target is a constructor
    */
-  public boolean isConstructorCall() {
-    return this.isConstructorCall;
+  public boolean isConstructor() {
+    return this.isConstructor;
   }
 
   /**
@@ -127,14 +122,16 @@ public class MethodReferenceTarget {
   }
 
   @Override
-  @SuppressWarnings(
-      "nullness:dereference.of.nullable") // If the target is not a constructor call, the identifier
-  // is non-null
   public String toString() {
-    String targetName = isConstructorCall() ? "new" : identifier.toString();
+    @SuppressWarnings("nullness:dereference.of.nullable") // !isConstructor() => identifier != null
+    String targetName = isConstructor() ? "new" : identifier.toString();
     if (typeArguments.isEmpty()) {
       return targetName;
     }
-    return typeArguments + targetName;
+    StringJoiner typeArgString = new StringJoiner(", ", "<", ">");
+    for (TypeMirror typeArg : typeArguments) {
+      typeArgString.add(typeArg.toString());
+    }
+    return typeArgString.toString() + targetName;
   }
 }

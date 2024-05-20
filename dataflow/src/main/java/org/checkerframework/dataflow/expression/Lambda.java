@@ -16,7 +16,7 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public class Lambda extends JavaExpression {
 
-  /** The parameter(s) of this lambda expression. */
+  /** The formal parameters of this lambda expression. */
   protected List<LocalVariable> parameters;
 
   /**
@@ -31,6 +31,13 @@ public class Lambda extends JavaExpression {
    */
   protected Tree body;
 
+  /**
+   * Creates a new Lambda expression.
+   *
+   * @param type the type of the lamdba expression, which is a functional interface type
+   * @param parameters the formal parameters of the lambda expression
+   * @param body the body of the lambda expression
+   */
   public Lambda(TypeMirror type, List<LocalVariable> parameters, Tree body) {
     super(type);
     this.parameters = parameters;
