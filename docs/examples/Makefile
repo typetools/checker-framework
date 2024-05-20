@@ -6,13 +6,13 @@ all: compile
 
 compile:
 	$(JAVAC) *.java
-	cd fenum-extension && $(MAKE)
-	cd subtyping-extension && $(MAKE)
-	cd units-extension && $(MAKE)
+	$(MAKE) -C fenum-extension
+	$(MAKE) -C subtyping-extension
+	$(MAKE) -C units-extension
 # The Maven example downloads a lot.  Try twice in case of network lossage.
-	cd MavenExample && ($(MAKE) || (sleep 60 && echo "Trying again:" && $(MAKE)))
-	cd lombok && $(MAKE)
-	cd errorprone && $(MAKE)
+	$(MAKE) -C MavenExample || (sleep 60 && echo "Trying again:" && $(MAKE) -C MavenExample)
+	$(MAKE) -C lombok
+	$(MAKE) -C errorprone
 
 # TODO: type check the different files with the right checker;
 #   some tests expect errors, compare against expected errors.

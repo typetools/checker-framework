@@ -1042,12 +1042,14 @@ final checkerPom(publication) {
   // Don't use publication.from components.java which would publish the skinny jar as checker.jar.
   publication.pom {
     name = 'Checker Framework'
-    description = 'The Checker Framework enhances Java\'s type system to\n' +
-        'make it more powerful and useful. This lets software developers\n' +
-        'detect and prevent errors in their Java programs.\n' +
-        'The Checker Framework includes compiler plug-ins ("checkers")\n' +
-        'that find bugs or verify their absence. It also permits you to\n' +
-        'write your own compiler plug-ins.'
+    description =
+        String.join(System.lineSeparator(),
+        'The Checker Framework enhances Java\'s type system to',
+        'make it more powerful and useful. This lets software developers',
+        'detect and prevent errors in their Java programs.',
+        'The Checker Framework includes compiler plug-ins ("checkers")',
+        'that find bugs or verify their absence. It also permits you to',
+        'write your own compiler plug-ins.')
     licenses {
       license {
         name = 'GNU General Public License, version 2 (GPL2), with the classpath exception'

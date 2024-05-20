@@ -487,12 +487,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     String withAnnotations;
     try (InputStream annotationInputStream = root.getSourceFile().openInputStream()) {
-      // This check only runs on files from the Checker Framework test suite, which should all
-      // use UNIX line separators. Using System.lineSeparator instead of "\n" could cause the
-      // test to fail on Mac or Windows.
       withAnnotations =
           new InsertAjavaAnnotations(elements)
-              .insertAnnotations(annotationInputStream, withoutAnnotations, "\n");
+              .insertAnnotations(annotationInputStream, withoutAnnotations, System.lineSeparator());
     } catch (IOException e) {
       throw new BugInCF("Error while reading Java file: " + root.getSourceFile().toUri(), e);
     }
@@ -501,7 +498,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     try {
       modifiedAst = JavaParserUtil.parseCompilationUnit(withAnnotations);
     } catch (ParseProblemException e) {
-      throw new BugInCF("Failed to parse code after annotation insertion:\n" + withAnnotations, e);
+      throw new BugInCF("Failed to parse code after annotation insertion: " + withAnnotations, e);
     }
 
     AnnotationEqualityVisitor visitor = new AnnotationEqualityVisitor();
@@ -2361,12 +2358,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     return null;
   }
 
-  /**
-   * If the computation of the type of the ConditionalExpressionTree in
-   * org.checkerframework.framework.type.TypeFromTree.TypeFromExpression.visitConditionalExpression(ConditionalExpressionTree,
-   * AnnotatedTypeFactory) is correct, the following checks are redundant. However, let's add
-   * another failsafe guard and do the checks.
-   */
   @Override
   public Void visitConditionalExpression(ConditionalExpressionTree tree, Void p) {
     if (TreeUtils.isPolyExpression(tree)) {
@@ -2377,6 +2368,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       return super.visitConditionalExpression(tree, p);
     }
 
+    // If the computation of the type of the ConditionalExpressionTree in
+    // org.checkerframework.framework.type.TypeFromTree.TypeFromExpression.visitConditionalExpression(ConditionalExpressionTree,
+    // AnnotatedTypeFactory) is correct, the following checks are redundant. However, let's add
+    // another failsafe guard and do the checks.
     AnnotatedTypeMirror cond = atypeFactory.getAnnotatedType(tree);
     this.commonAssignmentCheck(cond, tree.getTrueExpression(), "conditional");
     this.commonAssignmentCheck(cond, tree.getFalseExpression(), "conditional");

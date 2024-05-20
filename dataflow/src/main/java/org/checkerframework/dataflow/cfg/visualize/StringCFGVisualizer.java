@@ -48,7 +48,7 @@ public class StringCFGVisualizer<
 
   @Override
   public String getSeparator() {
-    return "\n";
+    return System.lineSeparator();
   }
 
   @Override

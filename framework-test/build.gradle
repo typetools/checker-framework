@@ -23,8 +23,9 @@ final frameworkTest(publication) {
   publication.from components.java
   publication.pom {
     name = 'Checker Framework Testing Library'
-    description = 'framework-test contains utility classes for testing type-checkers\n' +
-        'that are built on the Checker Framework.'
+    description = String.join(System.lineSeparator(),
+        'framework-test contains utility classes for testing type-checkers' +
+        'that are built on the Checker Framework.')
     licenses {
       license {
         name = 'GNU General Public License, version 2 (GPL2), with the classpath exception'
