@@ -213,6 +213,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
    *     available
    */
   public @Nullable V getValue(Tree t) {
+    // This is a set because one Tree might correspond to multiple Nodes.
     Set<Node> nodes = treeLookup.get(t);
 
     if (nodes == null) {
@@ -221,10 +222,12 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
     V merged = null;
     for (Node aNode : nodes) {
       V a = getValue(aNode);
-      if (merged == null) {
-        merged = a;
-      } else if (a != null) {
-        merged = merged.leastUpperBound(a);
+      if (a != null) {
+        if (merged == null) {
+          merged = a;
+        } else {
+          merged = merged.leastUpperBound(a);
+        }
       }
     }
     return merged;
