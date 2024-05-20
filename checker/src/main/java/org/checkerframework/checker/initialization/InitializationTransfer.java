@@ -20,7 +20,6 @@ import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
-import org.checkerframework.dataflow.cfg.node.SuperNode;
 import org.checkerframework.dataflow.cfg.node.ThisNode;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
@@ -108,7 +107,7 @@ public class InitializationTransfer<
 
     // Case 4: After a call to the constructor of the super class, all
     // invariant fields of any super class are guaranteed to be initialized.
-    if (isConstructor && receiver instanceof SuperNode && methodString.equals("super")) {
+    if (isConstructor && receiver instanceof ThisNode && methodString.equals("super")) {
       ClassTree clazz = TreePathUtil.enclosingClass(analysis.getTypeFactory().getPath(tree));
       TypeElement clazzElem = TreeUtils.elementFromDeclaration(clazz);
       TypeMirror superClass = clazzElem.getSuperclass();
