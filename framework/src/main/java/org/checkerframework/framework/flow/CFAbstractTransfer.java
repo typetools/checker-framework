@@ -658,7 +658,8 @@ public abstract class CFAbstractTransfer<
    * <p>This default implementation returns the input information unchanged, or in the case of
    * conditional input information, merged.
    *
-   * @param anno the annotation
+   * @param anno the annotation for the result value
+   * @param tm the type for the result value
    * @param in the transfer input
    * @return the input information, as a TransferResult
    * @see #createTransferResult(CFAbstractValue value, TransferInput in) {

@@ -436,10 +436,16 @@ public class ValueTransfer extends CFTransfer {
     return isIntegralUnknownVal(node, getValueAnnotation(p.getValueOfSubNode(node)));
   }
 
-  /** Create a boolean transfer result. */
+  /**
+   * Create a boolean transfer result.
+   *
+   * @param result the transfer result to use (except its return value)
+   * @param booleanValues the possible values that the result might evaluate to
+   * @return a transfer result like {@code result}, but permitting only the given boolean values
+   */
   private TransferResult<CFValue, CFStore> createNewResultBoolean(
-      TransferResult<CFValue, CFStore> result, List<Boolean> resultValues) {
-    AnnotationMirror boolVal = atypeFactory.createBooleanAnnotation(resultValues);
+      TransferResult<CFValue, CFStore> result, List<Boolean> booleanValues) {
+    AnnotationMirror boolVal = atypeFactory.createBooleanAnnotation(booleanValues);
     return recreateTransferResult(boolVal, result);
   }
 
