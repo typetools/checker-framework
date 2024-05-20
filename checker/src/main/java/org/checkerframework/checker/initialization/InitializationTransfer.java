@@ -179,7 +179,11 @@ public class InitializationTransfer<
       // such as @NonNull.
       if (fieldAnno.hasPrimaryAnnotation(atypeFactory.getFieldInvariantAnnotation())) {
         AnnotationMirror inv = atypeFactory.getFieldInvariantAnnotation();
-        return recreateTransferResult(inv, result);
+        V oldResultValue = result.getResultValue();
+        V refinedResultValue =
+            analysis.createSingleAnnotationValue(inv, oldResultValue.getUnderlyingType());
+        V newResultValue = refinedResultValue.mostSpecific(oldResultValue, null);
+        return recreateTransferResult(newResultValue, result);
       }
     }
     return result;
