@@ -1312,47 +1312,6 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Verifies whether a loop, specified through the passed LessThanNode loop condition, is:
-   *
-   * <ul>
-   *   <li>1. an allocating loop (a pattern-matched loop that creates obligations for an
-   *       {@code @OwningArray} array)
-   *   <li>2. whether the array, for which the loop creates mcoe obligations, has open mcoe
-   *       obligations
-   * </ul>
-   *
-   * If both are true, the loop is illegal, since the mcoe obligations of a previous allocation were
-   * not fulfilled. In this case, an error is reported.
-   *
-   * @param node the node that is the condition for the for loop
-   * @param obligations the set of obligations tracked in the analysis
-   */
-  // private void verifyAllocatingForLoop(LessThanNode node, Set<Obligation> obligations) {
-  //   BinaryTree tree = node.getTree();
-  //   // check whether the loop specified through the condition was pattern-matched as an
-  // allocating
-  //   // loop
-  //   if
-  // (MustCallOnElementsAnnotatedTypeFactory.whichObligationsDoesLoopWithThisConditionCreate(tree)
-  //       == null) {
-  //     // not an allocating loop
-  //     return;
-  //   }
-  //   ExpressionTree arr =
-  //       MustCallOnElementsAnnotatedTypeFactory.getArrayTreeForLoopWithThisCondition(tree);
-  //   assert arr != null
-  //       : "array tree of allocating for-loop not in expected datastructure: fix in
-  // MustCallVisitor.java";
-  //   checkMustCallOnElements(
-  //       getObligationForVar(obligations, arr),
-  //       mcoeTypeFactory.getStoreForTree(arr),
-  //       cmoeTypeFactory.getStoreForTree(arr),
-  //       false,
-  //       arr,
-  //       "");
-  // }
-
-  /**
    * Returns a list of methods considered "called on elements" of the given tree (expected to be an
    * array identifier) The list is extracted from the store passed as an argument.
    *
@@ -1457,8 +1416,6 @@ class MustCallConsistencyAnalyzer {
    *   <li>5. The elements of an {@code @OwningArray} may only be assigned in an allocating loop.
    *   <li>6. The elements of an {@code @OwningArray} field may only be assigned once in the
    *       constructor.
-   *   <li>7. A read-only alias (array with {@code @MustCallOnElementsUnknown} type) may not
-   *       reassign its elements.
    * </ul>
    *
    * @param obligations the set of Obligations to update
@@ -1484,7 +1441,9 @@ class MustCallConsistencyAnalyzer {
     boolean lhsIsField = lhsElement.getKind() == ElementKind.FIELD;
     MethodTree enclosingMethod = cfg.getEnclosingMethod(assignmentNode.getTree());
     boolean inConstructor = enclosingMethod != null && TreeUtils.isConstructor(enclosingMethod);
-
+    if (!isOwningArray && rhsIsOwningArray) {
+      checker.reportError(assignmentNode.getTree(), "illegal.aliasing");
+    }
     if (isOwningArray) {
       if (enclosingMethod == null) {
         // this is a declaration-definition of an @OwningArray field. nothing to check.
@@ -1611,20 +1570,6 @@ class MustCallConsistencyAnalyzer {
                   + " of kind "
                   + lhs.getTree().getKind());
         }
-      }
-    } else if (lhs.getTree().getKind() == Tree.Kind.ARRAY_ACCESS) {
-      // enforces 7. assignment rule:
-      // check whether lhs has MCOEUnknown type, meaning it's a read-only-alias - it must not assign
-      // its elements
-      ExpressionTree arrayTree = ((ArrayAccessTree) lhs.getTree()).getExpression();
-      boolean lhsIsMcoeUnknown =
-          mcoeStore != null
-              && mcoeTypeFactory.isMustCallOnElementsUnknown(mcoeStore, lhs.getTree());
-      // System.out.println("isunknown? " + arrayJavaExpression + " " + lhsIsMcoeUnknown);
-      // System.out.println("lhs is read-only-alias " + lhs);
-      if (lhsIsMcoeUnknown) {
-        checker.reportError(
-            assignmentNode.getTree(), "assigning.elements.of.readonly.alias", arrayTree);
       }
     }
 
@@ -2499,50 +2444,26 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Is called only from propagateObligationsToSuccessorBlocks. Assumes that arrayTree is an
-   * ExpressionTree of an array, whose elements are assigned in an allocating loop.
+   * Is called only from propagateObligationsToSuccessorBlocks. Assumes that arrayTree is an {@link
+   * ExpressionTree} of an array, whose elements are assigned in an allocating loop.
    *
    * <p>Calls {@code @checkMustCallOnElements()}, which checks that the given arrayTree has no open
    * calling obligations, that is, its {@code @MustCallOnElements} value is a subset of its
    * {@code @CalledMethodsOnElements} value. Else, an error is reported.
    *
-   * <p>If the above check is successful, the existing obligation is removed and a new one is
-   * created, with the given array "arr" being the only alias. To see why this is necessary,
-   * consider a previous alias "arr2" with a non-empty {@code @CalledMethodsOnElements} type. If the
-   * old obligation, where the two arrays alias would be propagated, we would think that this method
-   * was called on the elements of "arr". However, this is not the case, since the elements were
-   * reassigned and no methods were called on them yet. Replacing the obligation is necessary for
-   * soundness, but we give up some precision, since the arrays do stay aliases. Ideally, we would
-   * be emptying the {@code @CalledMethodsOnElements} type of ALL aliases when encountering such an
-   * allocating loop. However, the set of aliases is not yet known at the time of the type analysis.
-   *
    * @param arrayTree the tree corresponding to the array in the loop
    * @param obligations the set of obligations tracked in the analysis
    */
   private void verifyAllocatingForLoop(ExpressionTree arrayTree, Set<Obligation> obligations) {
-    if (!(arrayTree instanceof IdentifierTree)) {
-      throw new BugInCF(
-          "array in ArrayAccessTree expected to be IdentifierTree, but is " + arrayTree.getKind());
-    }
     Obligation currentObligation = getObligationForVar(obligations, arrayTree);
-    if (currentObligation != null
-        && checkMustCallOnElements(
-            currentObligation,
-            mcoeTypeFactory.getStoreForTree(arrayTree),
-            cmoeTypeFactory.getStoreForTree(arrayTree),
-            false,
-            arrayTree,
-            "")) {
-      obligations.remove(currentObligation);
-      Obligation newObligation =
-          new CollectionObligation(
-              ImmutableSet.of(
-                  new ResourceAlias(
-                      JavaExpression.fromTree(arrayTree),
-                      TreeUtils.elementFromTree(arrayTree),
-                      arrayTree)),
-              Collections.singleton(MethodExitKind.NORMAL_RETURN));
-      obligations.add(newObligation);
+    if (currentObligation != null) {
+      checkMustCallOnElements(
+          currentObligation,
+          mcoeTypeFactory.getStoreForTree(arrayTree),
+          cmoeTypeFactory.getStoreForTree(arrayTree),
+          false,
+          arrayTree,
+          "");
     }
   }
 
@@ -2942,6 +2863,9 @@ class MustCallConsistencyAnalyzer {
    * passed with the {@code @isExit} flag. Returns true if the check is successful, i.e. either the
    * obligation is not a {@code @CollectionObligation} anyways or the {@code MustCallOnElements}
    * values are a subset of the {@code @CalledMethodsOnElements} values.
+   *
+   * <p>This is now overkill, since we don't allow aliasing of {@code @OwningArray} anymore.
+   * However, it it sound and doesn't throw additional errors if code does end up aliasing.
    *
    * @param obligation the Obligation
    * @param mcoeStore the mustCallOnElements store
