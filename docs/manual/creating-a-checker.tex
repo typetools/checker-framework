@@ -1645,8 +1645,8 @@ override the visitor method that handles the \refclass{dataflow/cfg/node}{Node}s
 relevant to your run-time check or run-time operation.
 Leave the body of the overriding method empty for now.
 
-For example, the Regex Checker refines the type of a run-time test method
-call.  A method call is represented by a
+For example, the Regex Checker refines the type based on a call to the
+\<RegexUtil.isRegex> method.  A method call is represented by a
 \refclass{dataflow/cfg/node}{MethodInvocationNode}.  Therefore,
 \refclass{checker/regex}{RegexTransfer} overrides the
 \code{visitMethodInvocation} method:
@@ -2160,7 +2160,7 @@ command-line options. \\
 \item \code{-Aflowdotdir=\emph{somedir}}:
   Specify directory for \<.dot> files visualizing the CFG\@.
   Shorthand for\\
-  \<-Acfgviz=org.checkerframework.dataflow.cfg.DOTCFGVisualizer,outdir=\emph{somedir}>.
+  \<-Acfgviz=org.checkerframework.dataflow.cfg.visualize.DOTCFGVisualizer,outdir=\emph{somedir}>.
   % TODO: create the directory if it doesn't exist.
   The directory must already exist.
 
@@ -2178,7 +2178,7 @@ command-line options. \\
 
   The argument is a comma-separated sequence.
   The first element is the fully-qualified name of the
-  \<org.checkerframework.dataflow.cfg.CFGVisualizer> implementation
+  \<org.checkerframework.dataflow.cfg.visualize.>\refclass{org/checkerframework/dataflow/cfg/visualize}{CFGVisualizer} implementation
   that should be used. Currently, the possibilities are:
   \begin{itemize}
   \item \<org.checkerframework.dataflow.cfg.visualize.>\refclass{org/checkerframework/dataflow/cfg/visualize}{DOTCFGVisualizer}

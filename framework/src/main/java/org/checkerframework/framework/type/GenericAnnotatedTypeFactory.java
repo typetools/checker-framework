@@ -2306,6 +2306,9 @@ public abstract class GenericAnnotatedTypeFactory<
 
       CFGVisualizer<Value, Store, TransferFunction> res =
           BaseTypeChecker.invokeConstructorFor(vizClassName, null, null);
+      if (res == null) {
+        throw new UserError("Can't load " + vizClassName);
+      }
       res.init(args);
       return res;
     }
