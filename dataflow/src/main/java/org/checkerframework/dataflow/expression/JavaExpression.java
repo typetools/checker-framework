@@ -385,7 +385,7 @@ public abstract class JavaExpression {
     } else if (receiverNode instanceof ThisNode) {
       result = new ThisReference(receiverNode.getType());
     } else if (receiverNode instanceof SuperNode) {
-      result = new ThisReference(receiverNode.getType());
+      result = new SuperReference(receiverNode.getType());
     } else if (receiverNode instanceof LocalVariableNode) {
       LocalVariableNode lv = (LocalVariableNode) receiverNode;
       result = new LocalVariable(lv);
