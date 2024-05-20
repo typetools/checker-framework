@@ -187,11 +187,13 @@ final dataflowShadedPom(MavenPublication publication, String shadedPkgName) {
   publication.artifactId = "dataflow-${shadedPkgName}"
   publication.pom {
     name = "Dataflow (${shadedPkgName})"
-    description = "dataflow-${shadedPkgName} is a dataflow framework based on the javac compiler.\n" +
-        '\n' +
-        'It differs from the org.checkerframework:dataflow artifact in two ways.\n' +
-        "First, the packages in this artifact have been renamed to org.checkerframework.${shadedPkgName}.*.\n" +
-        'Second, unlike the dataflow artifact, this artifact contains the dependencies it requires.'
+    description =
+        String.join(System.lineSeparator(),
+        "dataflow-${shadedPkgName} is a dataflow framework based on the javac compiler.",
+        '',
+        'It differs from the org.checkerframework:dataflow artifact in two ways.',
+        "First, the packages in this artifact have been renamed to org.checkerframework.${shadedPkgName}.*.",
+        'Second, unlike the dataflow artifact, this artifact contains the dependencies it requires.')
     licenses {
       license {
         name = 'GNU General Public License, version 2 (GPL2), with the classpath exception'

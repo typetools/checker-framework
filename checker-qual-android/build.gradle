@@ -38,14 +38,16 @@ final checkerQualAndroidPom(publication) {
   publication.from components.java
   publication.pom {
     name = 'Checker Qual Android'
-    description = 'checker-qual-android contains annotations (type qualifiers) that a programmer\n' +
-        'writes to specify Java code for type-checking by the Checker Framework.\n' +
-        '\n' +
-        'The checker-qual-android artifact is identical to the checker-qual\n' +
-        'artifact, except that in checker-qual-android annotations have classfile\n' +
-        'retention.  The default Android Gradle plugin retains types annotated with\n' +
-        'runtime annotations in the main dex, but strips out class-retention\n' +
-        'annotations.\n'
+    description =
+        String.join(System.lineSeparator(),
+        'checker-qual-android contains annotations (type qualifiers) that a programmer',
+        'writes to specify Java code for type-checking by the Checker Framework.',
+        '',
+        'The checker-qual-android artifact is identical to the checker-qual',
+        'artifact, except that in checker-qual-android annotations have classfile',
+        'retention.  The default Android Gradle plugin retains types annotated with',
+        'runtime annotations in the main dex, but strips out class-retention',
+        'annotations.')
     licenses {
       license {
         name = 'The MIT License'
