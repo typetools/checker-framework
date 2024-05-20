@@ -183,7 +183,7 @@ public class InferenceFactory {
           return new ProperType(res, TreeUtils.typeOf(var), this.context);
         } else {
           throw new BugInCF(
-              "Unexpected assignment context.\nKind: %s\nTree: %s", context.getKind(), context);
+              "Unexpected assignment context.%nKind: %s%nTree: %s", context.getKind(), context);
         }
     }
   }
