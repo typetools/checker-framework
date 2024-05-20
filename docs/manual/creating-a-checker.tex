@@ -2160,7 +2160,7 @@ command-line options. \\
 \item \code{-Aflowdotdir=\emph{somedir}}:
   Specify directory for \<.dot> files visualizing the CFG\@.
   Shorthand for\\
-  \<-Acfgviz=org.checkerframework.dataflow.cfg.DOTCFGVisualizer,outdir=\emph{somedir}>.
+  \<-Acfgviz=org.checkerframework.dataflow.cfg.visualize.DOTCFGVisualizer,outdir=\emph{somedir}>.
   % TODO: create the directory if it doesn't exist.
   The directory must already exist.
 
@@ -2178,7 +2178,7 @@ command-line options. \\
 
   The argument is a comma-separated sequence.
   The first element is the fully-qualified name of the
-  \<org.checkerframework.dataflow.cfg.CFGVisualizer> implementation
+  \<org.checkerframework.dataflow.cfg.visualize.>\refclass{org/checkerframework/dataflow/cfg/visualize}{CFGVisualizer} implementation
   that should be used. Currently, the possibilities are:
   \begin{itemize}
   \item \<org.checkerframework.dataflow.cfg.visualize.>\refclass{org/checkerframework/dataflow/cfg/visualize}{DOTCFGVisualizer}
