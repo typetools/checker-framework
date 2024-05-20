@@ -599,7 +599,10 @@ public class DependentTypesHelper {
 
   /** Thrown when a non-parameter local variable is found. */
   @SuppressWarnings("serial")
-  private static class FoundLocalException extends RuntimeException {}
+  private static class FoundLocalVarException extends RuntimeException {
+    /** Creates a FoundLocalVarException. */
+    public FoundLocalVarException() {}
+  }
 
   /**
    * Viewpoint-adapt all dependent type annotations to the method declaration, {@code
@@ -642,14 +645,14 @@ public class DependentTypesHelper {
                     LocalVariable localVarExpr, Void unused) {
                   int index = paramsAsLocals.indexOf(localVarExpr);
                   if (index == -1) {
-                    throw new FoundLocalException();
+                    throw new FoundLocalVarException();
                   }
                   return parameters.get(index);
                 }
               };
           try {
             return jec.convert(javaExpr);
-          } catch (FoundLocalException ex) {
+          } catch (FoundLocalVarException ex) {
             return null;
           }
         };
@@ -720,18 +723,18 @@ public class DependentTypesHelper {
                 // accomplishes.
                 @Override
                 public JavaExpression visitLocalVariable(LocalVariable local, Void unused) {
-                  throw new FoundLocalException();
+                  throw new FoundLocalVarException();
                 }
 
                 @Override
                 public JavaExpression visitThisReference(ThisReference thisRef, Void unused) {
-                  throw new FoundLocalException();
+                  throw new FoundLocalVarException();
                 }
               };
 
           try {
             return jec.convert(expr);
-          } catch (FoundLocalException ex) {
+          } catch (FoundLocalVarException ex) {
             return null;
           }
         };
