@@ -1,9 +1,28 @@
 package org.checkerframework.checker.nonempty;
 
-import com.sun.source.tree.*;
-import java.util.*;
+import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.ExpressionStatementTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ReturnTree;
+import com.sun.source.tree.StatementTree;
+import com.sun.source.tree.ThrowTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
-import javax.lang.model.element.*;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Name;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.ElementFilter;
@@ -105,9 +124,9 @@ public class DelegationChecker extends BaseTypeChecker {
       VariableElement delegatedField = TreeUtils.asFieldAccess(fieldAccessTree.getExpression());
       Name delegatedMethodName = TreeUtils.methodName(delegatedMethodCall);
       // TODO: is there a better way to check? Comparing names seems fragile.
-      return enclosingMethodName.equals(delegatedMethodName)
+      return enclosingMethodName == delegatedMethodName
           && delegatedField != null
-          && delegatedField.getSimpleName().equals(delegate.getName());
+          && delegatedField.getSimpleName() == delegate.getName();
     }
 
     /**
@@ -177,7 +196,7 @@ public class DelegationChecker extends BaseTypeChecker {
       ThrowTree throwStmt = (ThrowTree) lastStmt;
       AnnotatedTypeMirror throwType = atypeFactory.getAnnotatedType(throwStmt.getExpression());
       Class<?> exceptionClass = TypesUtils.getClassFromType(throwType.getUnderlyingType());
-      return exceptionClass.equals(clazz);
+      return exceptionClass == clazz;
     }
 
     /**
