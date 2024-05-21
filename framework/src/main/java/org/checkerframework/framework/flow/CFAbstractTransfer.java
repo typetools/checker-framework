@@ -448,6 +448,11 @@ public abstract class CFAbstractTransfer<
     boolean isAssumeDeterministicEnabled =
         aTypeFactory.getChecker().hasOption("assumeDeterministic")
             || aTypeFactory.getChecker().hasOption("assumePure");
+    if (isAssumeSideEffectFreeEnabled && isAssumeDeterministicEnabled) {
+      // Under the side effect free and deterministic assumptions, we can conclude
+      // That the expression or statement is pure.
+      return true;
+    }
     PurityChecker.PurityResult result =
         PurityChecker.checkPurity(
             expressionOrStatement,
