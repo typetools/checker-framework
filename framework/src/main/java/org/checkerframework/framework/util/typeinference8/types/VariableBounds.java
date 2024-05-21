@@ -287,6 +287,28 @@ public class VariableBounds {
         }
       }
     }
+    if (s.isUseOfVariable()) {
+      UseOfVariable otherVar = (UseOfVariable) s;
+      switch (kind) {
+        case EQUAL:
+          otherVar.addQualifierBound(BoundKind.EQUAL, qualifierBounds.get(BoundKind.EQUAL));
+          break;
+        case LOWER:
+          otherVar.addQualifierBound(BoundKind.UPPER, qualifierBounds.get(BoundKind.EQUAL));
+          break;
+        case UPPER:
+          otherVar.addQualifierBound(BoundKind.LOWER, qualifierBounds.get(BoundKind.EQUAL));
+          break;
+      }
+
+      if (kind == BoundKind.EQUAL || kind == BoundKind.UPPER) {
+        otherVar.addQualifierBound(BoundKind.LOWER, qualifierBounds.get(BoundKind.LOWER));
+      }
+
+      if (kind == BoundKind.EQUAL || kind == BoundKind.LOWER) {
+        otherVar.addQualifierBound(BoundKind.UPPER, qualifierBounds.get(BoundKind.UPPER));
+      }
+    }
   }
 
   /**
