@@ -63,7 +63,8 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
   protected final IdentityHashMap<Block, TransferInput<V, S>> inputs;
 
   /**
-   * Caches of the analysis results for each input for the block of the node and each node.
+   * Caches of the analysis results. It maps from the TransferInput for a Block to a map. The inner
+   * map is from a node within the block to the TransferResult for that node.
    *
    * @see #runAnalysisFor(Node, Analysis.BeforeOrAfter, TransferInput, IdentityHashMap, Map)
    */
@@ -458,6 +459,26 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
     }
     return transferInput.analysis.runAnalysisFor(
         node, preOrPost, transferInput, nodeValues, analysisCaches);
+  }
+
+  /**
+   * Returns the cached TransferResult for a given node.
+   *
+   * @param node the node for which to look up a result
+   * @return the TransferResult at the given node
+   */
+  public @Nullable TransferResult<V, S> lookupResult(Node node) {
+    Block block = node.getBlock();
+    TransferInput<V, S> blockInput = inputs.get(block);
+    if (blockInput == null) {
+      return null;
+    }
+    IdentityHashMap<Node, TransferResult<V, S>> cache = analysisCaches.get(blockInput);
+    if (cache == null) {
+      return null;
+    }
+    TransferResult<V, S> result = cache.get(node);
+    return result;
   }
 
   /**

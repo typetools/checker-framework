@@ -46,7 +46,7 @@ a   [ LocalVariable ]
 b = a   [ Assignment ]
 expression statement b = a   [ ExpressionStatement ]
 ~~~~~~~~~
-AnalysisResult#3
+AnalysisResult#4
 After:   constant propagation = {a=0, b=0}
 
 10:
@@ -59,7 +59,7 @@ b   [ LocalVariable ]
 b = 4   [ Assignment ]
 expression statement b = 4   [ ExpressionStatement ]
 ~~~~~~~~~
-AnalysisResult#5
+AnalysisResult#7
 After:   constant propagation = {a=0, b=4}
 
 11:
@@ -70,7 +70,7 @@ Before:   constant propagation = {a=0, b=T}
 b   [ LocalVariable ]
 return b   [ Return ]
 ~~~~~~~~~
-AnalysisResult#7
+AnalysisResult#10
 After:   constant propagation = {a=0, b=T}
 
 0:
