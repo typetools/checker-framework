@@ -71,18 +71,16 @@ public interface Analysis<
   /**
    * Runs the analysis again within the block of {@code node} and returns the store at the location
    * of {@code node}. If {@code before} is true, then the store immediately before the {@link Node}
-   * {@code node} is returned. Otherwise, the store immediately after {@code node} is returned. If
-   * {@code analysisCaches} is not null, this method uses a cache. {@code analysisCaches} is a map
-   * of a block of node to the cached analysis result. If the cache for {@code transferInput} is not
-   * in {@code analysisCaches}, this method creates new cache and stores it in {@code
-   * analysisCaches}. The cache is a map of nodes to the analysis results of the nodes.
+   * {@code node} is returned. Otherwise, the store immediately after {@code node} is returned.
    *
    * @param node the node to analyze
    * @param preOrPost which store to return: the store immediately before {@code node} or the store
    *     after {@code node}
    * @param blockTransferInput the transfer input of the block of this node
    * @param nodeValues abstract values of nodes
-   * @param analysisCaches caches of analysis results
+   * @param analysisCaches caches of analysis results. If it is not null, this method uses and
+   *     updates it. It is a map from a TransferInput for a Block to a map. The inner map is from
+   *     from a node within the block to a TransferResult.
    * @return the store before or after {@code node} (depends on the value of {@code before}) after
    *     running the analysis
    */
