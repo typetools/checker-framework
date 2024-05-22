@@ -178,7 +178,7 @@ class EvilOwningArrayWrapperClient {
     }
     // this method call is not allowed either, due to the missing ownership over localarr
     // :: error: argument
-    // :: error: nonowning.argument.passed
+    // :: error: argument.with.revoked.ownership
     methodWithOwningArrayParameter(localarr);
 
     // reassign localarr to a new array, which is legal.

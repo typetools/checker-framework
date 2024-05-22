@@ -354,9 +354,8 @@ public class MustCallOnElementsTransfer extends CFTransfer {
       if (argIsMcoeUnknown) {
         atypeFactory
             .getChecker()
-            .reportError(arg.getTree(), "nonowning.argument.passed", arg.getTree());
-      }
-      if (paramIsOwningArray) {
+            .reportError(arg.getTree(), "argument.with.revoked.ownership", arg.getTree());
+      } else if (paramIsOwningArray) {
         if (!argIsOwningArray) {
           atypeFactory.getChecker().reportError(arg.getTree(), "unexpected.argument.ownership");
         }
