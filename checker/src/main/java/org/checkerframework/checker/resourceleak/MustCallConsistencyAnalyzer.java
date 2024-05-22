@@ -1453,6 +1453,7 @@ class MustCallConsistencyAnalyzer {
 
     // update obligations for assignments to @OwningArray array
     CFStore mcoeStore = mcoeTypeFactory.getStoreBefore(assignmentNode.getTree());
+    CFStore cmoeStore = cmoeTypeFactory.getStoreBefore(assignmentNode.getTree());
     boolean isOwningArray = !noLightweightOwnership && typeFactory.hasOwningArray(lhsElement);
     boolean rhsIsOwningArray = rhsElement != null && typeFactory.hasOwningArray(rhsElement);
     boolean lhsIsField = lhsElement.getKind() == ElementKind.FIELD;
@@ -1542,6 +1543,16 @@ class MustCallConsistencyAnalyzer {
             // definition of local @OwningArray. Always add an obligation, since there's no
             // aliasing, the old array is checked, it goes out of scope. The new one needs an
             // obligation.
+            Obligation obligation = getObligationForVar(obligations, lhs.getTree());
+            if (obligation != null) {
+              checkMustCallOnElements(
+                  obligation,
+                  mcoeStore,
+                  cmoeStore,
+                  true,
+                  lhs.getTree(),
+                  "array is reassigned at " + assignmentNode.getTree());
+            }
             IdentifierTree owningArrayDefinitionTree = (IdentifierTree) lhs.getTree();
             if (rhs instanceof ArrayCreationNode) {
               Obligation newObligation =
@@ -3022,7 +3033,7 @@ class MustCallConsistencyAnalyzer {
             firstAlias.tree,
             "unfulfilled.mustcallonelements.obligations",
             formatMissingMustCallMethods(new ArrayList<>(mcoeValues)),
-            firstAlias.tree.toString(),
+            firstAlias.tree,
             exitReasonForErrorMessage);
         return false;
       } else {
