@@ -91,6 +91,11 @@ public class ViewpointAdaptJavaExpression extends JavaExpressionConverter {
   }
 
   @Override
+  protected JavaExpression visitSuperReference(SuperReference superExpr, Void unused) {
+    return null; // stub
+  }
+
+  @Override
   protected JavaExpression visitFormalParameter(FormalParameter parameterExpr, Void unused) {
     if (args != null) {
       int index = parameterExpr.getIndex() - 1;

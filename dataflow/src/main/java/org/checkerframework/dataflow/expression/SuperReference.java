@@ -56,7 +56,7 @@ public class SuperReference extends JavaExpression {
 
   @Override
   public <R, P> R accept(JavaExpressionVisitor<R, P> visitor, P p) {
-    return null;
+    return visitor.visitSuperReference(this, p);
   }
 
   @Override
