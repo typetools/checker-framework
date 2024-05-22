@@ -13,6 +13,8 @@ class PatternMatchOwningArrayLoops {
   public void owningArrayNonArray() {
     // :: error: owningarray.nonarray
     @OwningArray Socket s;
+    // :: error: owningarray.nonarray
+    @OwningArray Socket[][] sMultiDimensional;
   }
 
   public void illegalOwningArrayAssignment() {

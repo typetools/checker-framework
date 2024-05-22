@@ -43,6 +43,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.calledmethods.qual.CalledMethods;
@@ -1540,9 +1541,9 @@ class MustCallConsistencyAnalyzer {
                     Collections.singleton(MethodExitKind.NORMAL_RETURN));
             obligations.add(newObligation);
           } else {
-            // definition of local @OwningArray. Always add an obligation, since there's no
-            // aliasing, the old array is checked, it goes out of scope. The new one needs an
-            // obligation.
+            // definition of local @OwningArray. If the array was previously assigned, the old
+            // (in-memory) array goes out of scope and must be checked.
+            // The new one needs an obligation, add it.
             Obligation obligation = getObligationForVar(obligations, lhs.getTree());
             if (obligation != null) {
               checkMustCallOnElements(
@@ -1552,6 +1553,7 @@ class MustCallConsistencyAnalyzer {
                   true,
                   lhs.getTree(),
                   "array is reassigned at " + assignmentNode.getTree());
+              obligations.remove(obligation);
             }
             IdentifierTree owningArrayDefinitionTree = (IdentifierTree) lhs.getTree();
             if (rhs instanceof ArrayCreationNode) {
@@ -2495,9 +2497,13 @@ class MustCallConsistencyAnalyzer {
     boolean isOwning = elt != null && typeFactory.hasOwning(elt);
     boolean isArray =
         elt != null && elt.asType() != null && elt.asType().getKind() == TypeKind.ARRAY;
+    boolean is1dArray =
+        isArray
+            && ((ArrayType) elt.asType()).getComponentType() != null
+            && ((ArrayType) elt.asType()).getComponentType().getKind() != TypeKind.ARRAY;
     boolean isCollection =
         elt != null && MustCallOnElementsAnnotatedTypeFactory.isCollection(tree, mcoeTypeFactory);
-    if (isOwningArray && !(isArray || isCollection)) {
+    if (isOwningArray && !(is1dArray || isCollection)) {
       checker.reportError(tree, "owningarray.nonarray", tree);
     } else if (isOwning && (isArray || isCollection)) {
       checker.reportError(tree, "owning.array", tree);
