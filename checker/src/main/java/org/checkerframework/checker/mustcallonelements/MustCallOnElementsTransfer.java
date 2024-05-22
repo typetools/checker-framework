@@ -393,8 +393,13 @@ public class MustCallOnElementsTransfer extends CFTransfer {
     if (newMustCallMethods != null) {
       // this is an obligation-creating loop
       AnnotationMirror newType = getMustCallOnElementsType(newMustCallMethods);
-      elseStore.clearValue(receiverReceiver);
-      elseStore.insertValue(receiverReceiver, newType);
+      CFValue oldCFVal = elseStore.getValue(receiverReceiver);
+      CFValue newCFVal = analysis.createSingleAnnotationValue(newType, receiverReceiver.getType());
+      newCFVal =
+          oldCFVal == null
+              ? newCFVal
+              : oldCFVal.leastUpperBound(newCFVal, receiverReceiver.getType());
+      elseStore.replaceValue(receiverReceiver, newCFVal);
       return new ConditionalTransferResult<>(res.getResultValue(), res.getThenStore(), elseStore);
     } else if (calledMethods != null && calledMethods.size() > 0) {
       // this loop fulfills an obligation - remove that methodname from

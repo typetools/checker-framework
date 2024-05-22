@@ -19,6 +19,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.calledmethods.CalledMethodsVisitor;
 import org.checkerframework.checker.calledmethods.EnsuresCalledMethodOnExceptionContract;
@@ -528,34 +529,45 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
   }
 
   /**
-   * Returns the {@code @MustCallOnElements} obligations of an element that is a
+   * Returns the {@code @MustCallOnElements} obligations of an element that is an
    * {@code @OwningArray} field. If the passed element has no {@code @MustCallOnElements}
-   * annotation, the obligations of its component are returned and if it has an annotation, its
-   * value is returned.
+   * annotation, the obligations of its component (in the case of an array), or type parameter (in
+   * the case of a collection), or the empty list if the field is neither, are returned and if it
+   * has an annotation, its value is returned.
    *
    * @param field an Element corresponding to an {@code @OwningArray} field
    * @return list of {@code @MustCallOnElements} obligations of the field
    */
   private List<String> getMcoeObligationsForField(Element field) {
-    List<String> mcList = Collections.emptyList();
-    boolean noMcoeAnno = true;
-    for (AnnotationMirror anno : field.asType().getAnnotationMirrors()) {
-      if (AnnotationUtils.areSameByName(anno, MustCallOnElements.class.getCanonicalName())) {
-        MustCallOnElementsAnnotatedTypeFactory mcoeAtf =
-            rlTypeFactory.getTypeFactoryOfSubchecker(MustCallOnElementsChecker.class);
-        AnnotationValue av =
-            anno.getElementValues().get(mcoeAtf.getMustCallOnElementsValueElement());
-        if (av != null) {
-          mcList = AnnotationUtils.annotationValueToList(av, String.class);
+    boolean isArray = field.asType() != null && field.asType().getKind() == TypeKind.ARRAY;
+    boolean isCollection = MustCallOnElementsAnnotatedTypeFactory.isCollection(field, atypeFactory);
+    if (isCollection) {
+      // TODO
+      return new ArrayList<>();
+    } else if (isArray) {
+      List<String> mcList = Collections.emptyList();
+      boolean noMcoeAnno = true;
+      for (AnnotationMirror anno : field.asType().getAnnotationMirrors()) {
+        if (AnnotationUtils.areSameByName(anno, MustCallOnElements.class.getCanonicalName())) {
+          MustCallOnElementsAnnotatedTypeFactory mcoeAtf =
+              rlTypeFactory.getTypeFactoryOfSubchecker(MustCallOnElementsChecker.class);
+          AnnotationValue av =
+              anno.getElementValues().get(mcoeAtf.getMustCallOnElementsValueElement());
+          if (av != null) {
+            mcList = AnnotationUtils.annotationValueToList(av, String.class);
+          }
+          noMcoeAnno = false;
+          break;
         }
-        noMcoeAnno = false;
-        break;
       }
+      if (noMcoeAnno) {
+        mcList = getMustCallValuesForType(((ArrayType) field.asType()).getComponentType());
+      }
+      return mcList;
+    } else {
+      // it's not an array/collection. an error has been thrown. don't do anything.
+      return new ArrayList<>();
     }
-    if (noMcoeAnno) {
-      mcList = getMustCallValuesForType(((ArrayType) field.asType()).getComponentType());
-    }
-    return mcList;
   }
 
   /**
@@ -606,7 +618,7 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
               + ElementUtils.getQualifiedName(enclosingElement)
               + " has an empty @MustCall annotation";
     } else {
-      error = " [[checkOwningField() did not find a reason!]]"; // should be reassigned
+      error = " [[checkOwningArrayField() did not find a reason!]]"; // should be reassigned
       List<? extends Element> siblingsOfOwningField = enclosingElement.getEnclosedElements();
       for (Element siblingElement : siblingsOfOwningField) {
         if (siblingElement.getKind() == ElementKind.METHOD
@@ -672,13 +684,11 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
       for (DestructorObligation obligation : unsatisfiedMustCallObligationsOfOwningField) {
         missingMethods.add(obligation.mustCallMethod);
       }
-
       checker.reportError(
           field,
-          "required.method.not.called",
+          "unfulfilled.mustcallonelements.obligations",
           MustCallConsistencyAnalyzer.formatMissingMustCallMethods(new ArrayList<>(missingMethods)),
           "field " + field.getSimpleName().toString(),
-          field.asType().toString(),
           error);
     }
   }

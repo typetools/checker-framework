@@ -383,6 +383,24 @@ public class MustCallOnElementsAnnotatedTypeFactory extends BaseAnnotatedTypeFac
   }
 
   /**
+   * Returns whether the given Element is a java.util.Collection type by checking whether the raw
+   * type of the element is assignable from java.util.Collection. Returns false if element is null,
+   * or has no valid type.
+   *
+   * @param element the element
+   * @param atf an AnnotatedTypeFactory to get the annotated type of the element
+   * @return whether the given element is a Java.util.Collection type
+   */
+  public static boolean isCollection(Element element, AnnotatedTypeFactory atf) {
+    if (element == null) return false;
+    AnnotatedTypeMirror elementTypeMirror = atf.getAnnotatedType(element);
+    if (elementTypeMirror == null || elementTypeMirror.getUnderlyingType() == null) return false;
+    Class<?> elementRawType = TypesUtils.getClassFromType(elementTypeMirror.getUnderlyingType());
+    if (elementRawType == null) return false;
+    return Collection.class.isAssignableFrom(elementRawType);
+  }
+
+  /**
    * Returns whether the given tree has a {@code MustCallOnElementsUnknown} annotation in the given
    * store. Assumes the arguments are non-null.
    *

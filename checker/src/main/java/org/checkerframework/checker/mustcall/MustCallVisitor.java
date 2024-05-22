@@ -2,12 +2,14 @@ package org.checkerframework.checker.mustcall;
 
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
+import com.sun.source.tree.AssertTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.BreakTree;
 import com.sun.source.tree.CatchTree;
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.ForLoopTree;
@@ -218,8 +220,50 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
             return super.visitBlock(tree, o);
           }
 
-          /** Sets the blockIsIllegal boolean for any throw, return, break or method invocation */
+          /**
+           * Sets the blockIsIllegal boolean for any throw, return, break, method invocation,
+           * assignment, compound assignment and assert.
+           */
           class StatementScanner extends TreeScanner<Void, Void> {
+            @Override
+            public Void visitUnary(UnaryTree node, Void p) {
+              switch (node.getKind()) {
+                case PREFIX_DECREMENT:
+                  blockIsIllegal.set(true);
+                  break;
+                case POSTFIX_DECREMENT:
+                  blockIsIllegal.set(true);
+                  break;
+                case PREFIX_INCREMENT:
+                  blockIsIllegal.set(true);
+                  break;
+                case POSTFIX_INCREMENT:
+                  blockIsIllegal.set(true);
+                  break;
+                default:
+                  break;
+              }
+              return super.visitUnary(node, p);
+            }
+
+            @Override
+            public Void visitCompoundAssignment(CompoundAssignmentTree node, Void p) {
+              blockIsIllegal.set(true);
+              return super.visitCompoundAssignment(node, p);
+            }
+
+            @Override
+            public Void visitAssert(AssertTree node, Void p) {
+              blockIsIllegal.set(true);
+              return super.visitAssert(node, p);
+            }
+
+            @Override
+            public Void visitAssignment(AssignmentTree node, Void p) {
+              blockIsIllegal.set(true);
+              return super.visitAssignment(node, p);
+            }
+
             @Override
             public Void visitThrow(ThrowTree tt, Void p) {
               blockIsIllegal.set(true);
@@ -389,12 +433,11 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
       List<String> mcValues =
           AnnotationUtils.getElementValueArray(
               mcAnno, mcTypeFactory.getMustCallValueElement(), String.class);
-      System.out.println("detected mustcall: " + mcValues);
+      // System.out.println("detected mustcall: " + mcValues);
       // check whether the RHS actually has must-call obligations
       if (mcValues != null) {
         ExpressionTree condition = tree.getCondition();
         ExpressionTree arrayTree = arrayAccess.getExpression();
-        assert (arrayTree instanceof IdentifierTree) : "array expected to be identifier";
         MustCallOnElementsAnnotatedTypeFactory.createArrayObligationForAssignment(assgn);
         MustCallOnElementsAnnotatedTypeFactory.createArrayObligationForLessThan(
             condition, mcValues);
@@ -405,7 +448,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
       MethodInvocationTree mit = (MethodInvocationTree) stmtTree;
       Set<String> methodNames = getCoeMethodNames(mit);
       if (methodNames == null || methodNames.size() == 0) return super.visitForLoop(tree, p);
-      System.out.println("detected calledmethods: " + methodNames);
+      // System.out.println("detected calledmethods: " + methodNames);
       ExpressionTree condition = tree.getCondition();
       ExpressionTree arrayTree = arrayAccess.getExpression();
       MustCallOnElementsAnnotatedTypeFactory.fulfillArrayObligationForMethodAccess(
@@ -538,10 +581,12 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
    * @return Name of the array the expression evaluates to or null if it doesn't
    */
   protected Name arrayNameFromExpression(ExpressionTree arrayExpr) {
-    if (arrayExpr.getKind() == Tree.Kind.IDENTIFIER) {
-      return ((IdentifierTree) arrayExpr).getName();
+    switch (arrayExpr.getKind()) {
+      case IDENTIFIER:
+        return ((IdentifierTree) arrayExpr).getName();
+      default:
+        return null;
     }
-    return null;
   }
 
   @Override
