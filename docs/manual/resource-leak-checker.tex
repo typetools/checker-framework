@@ -645,22 +645,7 @@ An \<@OwningArray> reference may be reassigned after an initial assignment, but 
 s2 = s1; // prohibited assignment
 \end{verbatim}
 
-\noindent However, the following is allowed:
-
-\begin{verbatim}
-@OwningArray Socket[] s = new Socket[n]; // initial assignment
-s = new Socket[n]; // no open obligations for s, hence this is allowed
-\end{verbatim}
-
-\subsectionAndLabel{Aliasing of \<@OwningArray> references}{resource-leak-arrays-aliasing}
-We've seen in the previous Section~\ref{resource-leak-arrays-declaration} that an \<@OwningArray> reference may not alias, i.e. be assigned to, another \<@OwningArray> reference. However, it is allowed for a non-\<@OwningArray> reference to be assigned to, and alias, an \<@OwningArray> reference:
-
-\begin{verbatim}
-@OwningArray Socket[] s_owning = new Socket[n];
-Socket[] s_alias = s_owning; // this assignment is allowed
-\end{verbatim}
-
-Such aliases are read-only. They may not assign their elements, since that would make it impossible to fulfill the obligations of overwritten elements.
+In general is aliasing of any kind for \<@OwningArray> variables not permitted. In particular, a non-\<@OwningArray> variable may also not be assigned to an \<@OwningArray> variable. This implies that an \<@OwningArray> variable is always the only reference to the underlying array within a procedure. The exception occurs when an \<@OwningArray> referenc is passed as an argument. More on that later.
 
 \subsectionAndLabel{Must-call and called-methods for arrays}{resource-leak-arrays-mcoe-cmoe}
 Must-call-on-elements and called-methods-on-elements provide similar semantics for arrays as must-call and called-methods do for objects.
@@ -737,7 +722,7 @@ void m1(@OwningArray Socket[] s) {
 }
 \end{verbatim}
 
-To call a method with an \<@OwningArray> parameter, the argument must also be \<@OwningArray>. The called method only borrows the ownership of the \<@OwningArray> parameter, since the \<@OwningArray> parameter cannot leave the method scope and its obligations have to be fulfilled by the time of method exit. Thus, not only can the caller keep the ownership for the passed argument, but due to the calling guarantees, the call also resets the \<@MustCallOnElements> type to an empty value and add the methods guaranteed to have been called to the \<CalledMethodsOnElements> type:
+To call a method with an \<@OwningArray> parameter, the argument must also be \<@OwningArray>. The called method only borrows the ownership of the \<@OwningArray> parameter, since the \<@OwningArray> parameter cannot leave the method scope and its obligations have to be fulfilled by the time of method exit. Thus, not only can the caller keep the ownership for the passed argument after the method call returned, but due to the calling guarantees, the call also resets the \<@MustCallOnElements> type to an empty value and adds the methods guaranteed to have been called to the \<CalledMethodsOnElements> type:
 
 \begin{verbatim}
 // 1. @MustCallOnElements({"close"}) @CalledMethodsOnElements({})
@@ -745,7 +730,7 @@ m1(arr);
 // 2. @MustCallOnElements({}) @CalledMethodsOnElements({"close"})
 \end{verbatim}
 
-After calling \texttt{m1}, \textit{arr} behaves like a freshly allocated array and its elements may be reassigned.
+After calling \texttt{m1}, the elements of \textit{arr} may be reassigned.
 
 \subsectionAndLabel{\<@OwningArray> fields}{resource-leak-arrays-fields}
 \<@OwningArray> fields must be final and non-static. Thus, they can only be defined either in the constructor or at the declaration point.
