@@ -653,7 +653,7 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
-   * Creates a TransferResult with the given annotation as its value.
+   * Creates a TransferResult just like the given one, but with the given annotation as its value.
    *
    * <p>This default implementation returns the input information unchanged, or in the case of
    * conditional input information, merged.

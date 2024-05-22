@@ -17,6 +17,8 @@ import org.checkerframework.common.value.qual.StringVal;
 import org.checkerframework.common.value.util.NumberMath;
 import org.checkerframework.common.value.util.NumberUtils;
 import org.checkerframework.common.value.util.Range;
+import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
+import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.BitwiseAndNode;
@@ -437,16 +439,22 @@ public class ValueTransfer extends CFTransfer {
   }
 
   /**
-   * Create a boolean transfer result.
+   * Create a new boolean transfer result based on the original result and the new annotation.
    *
    * @param result the transfer result to use (except its return value)
    * @param booleanValues the possible values that the result might evaluate to
    * @return a transfer result like {@code result}, but permitting only the given boolean values
    */
+  // TODO: What is the point of `underlyingType`?  Won't it always be `boolean`?
   private TransferResult<CFValue, CFStore> createNewResultBoolean(
-      TransferResult<CFValue, CFStore> result, List<Boolean> booleanValues) {
-    AnnotationMirror boolVal = atypeFactory.createBooleanAnnotation(booleanValues);
-    return recreateTransferResult(boolVal, result);
+      CFStore thenStore, CFStore elseStore, List<Boolean> resultValues, TypeMirror underlyingType) {
+    AnnotationMirror boolVal = atypeFactory.createBooleanAnnotation(resultValues);
+    CFValue newResultValue = analysis.createSingleAnnotationValue(boolVal, underlyingType);
+    if (elseStore != null) {
+      return new ConditionalTransferResult<>(newResultValue, thenStore, elseStore);
+    } else {
+      return new RegularTransferResult<>(newResultValue, thenStore);
+    }
   }
 
   @Override
@@ -1380,7 +1388,8 @@ public class ValueTransfer extends CFTransfer {
             ComparisonOperators.LESS_THAN,
             thenStore,
             elseStore);
-    return createNewResultBoolean(transferResult, resultValues);
+    TypeMirror underlyingType = transferResult.getResultValue().getUnderlyingType();
+    return createNewResultBoolean(thenStore, elseStore, resultValues, underlyingType);
   }
 
   @Override
@@ -1398,7 +1407,8 @@ public class ValueTransfer extends CFTransfer {
             ComparisonOperators.LESS_THAN_EQ,
             thenStore,
             elseStore);
-    return createNewResultBoolean(transferResult, resultValues);
+    TypeMirror underlyingType = transferResult.getResultValue().getUnderlyingType();
+    return createNewResultBoolean(thenStore, elseStore, resultValues, underlyingType);
   }
 
   @Override
@@ -1416,7 +1426,8 @@ public class ValueTransfer extends CFTransfer {
             ComparisonOperators.GREATER_THAN,
             thenStore,
             elseStore);
-    return createNewResultBoolean(transferResult, resultValues);
+    TypeMirror underlyingType = transferResult.getResultValue().getUnderlyingType();
+    return createNewResultBoolean(thenStore, elseStore, resultValues, underlyingType);
   }
 
   @Override
@@ -1434,7 +1445,8 @@ public class ValueTransfer extends CFTransfer {
             ComparisonOperators.GREATER_THAN_EQ,
             thenStore,
             elseStore);
-    return createNewResultBoolean(transferResult, resultValues);
+    TypeMirror underlyingType = transferResult.getResultValue().getUnderlyingType();
+    return createNewResultBoolean(thenStore, elseStore, resultValues, underlyingType);
   }
 
   @Override
@@ -1465,7 +1477,8 @@ public class ValueTransfer extends CFTransfer {
         // Happens for case labels
         return transferResult;
       }
-      return createNewResultBoolean(transferResult, resultValues);
+      TypeMirror underlyingType = transferResult.getResultValue().getUnderlyingType();
+      return createNewResultBoolean(thenStore, elseStore, resultValues, underlyingType);
     }
     return super.strengthenAnnotationOfEqualTo(
         transferResult, firstNode, secondNode, firstValue, secondValue, notEqualTo);
@@ -1613,7 +1626,11 @@ public class ValueTransfer extends CFTransfer {
     TransferResult<CFValue, CFStore> transferResult = super.visitConditionalNot(n, p);
     List<Boolean> resultValues =
         calculateConditionalOperator(n.getOperand(), null, ConditionalOperators.NOT, p);
-    return createNewResultBoolean(transferResult, resultValues);
+    return createNewResultBoolean(
+        transferResult.getThenStore(),
+        transferResult.getElseStore(),
+        resultValues,
+        transferResult.getResultValue().getUnderlyingType());
   }
 
   @Override
@@ -1623,7 +1640,11 @@ public class ValueTransfer extends CFTransfer {
     List<Boolean> resultValues =
         calculateConditionalOperator(
             n.getLeftOperand(), n.getRightOperand(), ConditionalOperators.AND, p);
-    return createNewResultBoolean(transferResult, resultValues);
+    return createNewResultBoolean(
+        transferResult.getThenStore(),
+        transferResult.getElseStore(),
+        resultValues,
+        transferResult.getResultValue().getUnderlyingType());
   }
 
   @Override
@@ -1633,6 +1654,10 @@ public class ValueTransfer extends CFTransfer {
     List<Boolean> resultValues =
         calculateConditionalOperator(
             n.getLeftOperand(), n.getRightOperand(), ConditionalOperators.OR, p);
-    return createNewResultBoolean(transferResult, resultValues);
+    return createNewResultBoolean(
+        transferResult.getThenStore(),
+        transferResult.getElseStore(),
+        resultValues,
+        transferResult.getResultValue().getUnderlyingType());
   }
 }
