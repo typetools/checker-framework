@@ -56,6 +56,26 @@ class PatternMatchOwningArrayLoops {
     }
   }
 
+  public void reassignOwningArrayWithOpenObligations() {
+    // try to trick the checker by closing the elements of the array
+    // after reassigning it.
+    // :: error: unfulfilled.mustcallonelements.obligations
+    @OwningArray Socket[] arr = new Socket[n];
+    for (int i = 0; i < n; i++) {
+      try {
+        arr[i] = new Socket(myHost, myPort);
+      } catch (Exception e) {
+      }
+    }
+    arr = new Socket[n];
+    for (int i = 0; i < n; i++) {
+      try {
+        arr[i].close();
+      } catch (Exception e) {
+      }
+    }
+  }
+
   // test that opening and subsequent closing is alright
   public void validClosing() {
     @OwningArray Socket[] arr = new Socket[n];
