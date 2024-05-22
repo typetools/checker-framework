@@ -92,7 +92,7 @@ public class ViewpointAdaptJavaExpression extends JavaExpressionConverter {
 
   @Override
   protected JavaExpression visitSuperReference(SuperReference superExpr, Void unused) {
-    return null; // stub
+    return null; // TODO
   }
 
   @Override
