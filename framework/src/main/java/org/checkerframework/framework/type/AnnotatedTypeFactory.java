@@ -5743,7 +5743,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   /**
    * Output a message about {@link #getAnnotatedType}, if logging is on.
    *
-   * <p>Set the value of {@link debugGat} to {@literal true} to enable logging.
+   * <p>Set the value of {@link #debugGat} to {@literal true} to enable logging.
    *
    * @param format a format string
    * @param args arguments to the format string
