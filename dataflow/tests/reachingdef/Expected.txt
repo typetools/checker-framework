@@ -58,7 +58,7 @@ c   [ LocalVariable ]
 (a + c)   [ NumericalAddition ]
 d = (a + c)   [ Assignment ]
 ~~~~~~~~~
-AnalysisResult#3
+AnalysisResult#4
 After:   reaching definitions = { a = 1, b = 2, c = 3, x = "a", y = "b", d = (a + c) }
 
 10:
@@ -72,7 +72,7 @@ b   [ LocalVariable ]
 (a + b)   [ NumericalAddition ]
 e = (a + b)   [ Assignment ]
 ~~~~~~~~~
-AnalysisResult#5
+AnalysisResult#7
 After:   reaching definitions = { a = 1, b = 2, c = 3, x = "a", y = "b", e = (a + b) }
 
 11:
@@ -96,7 +96,7 @@ expression statement x += y   [ ExpressionStatement ]
 a   [ LocalVariable ]
 return a   [ Return ]
 ~~~~~~~~~
-AnalysisResult#7
+AnalysisResult#10
 After:   reaching definitions = { c = 3, y = "b", e = (a + b), d = (a + c), b = 0, a = b, x = (x + y) }
 
 0:
