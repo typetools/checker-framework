@@ -353,7 +353,7 @@ public abstract class AbstractCFGVisualizer<
     }
     sbStore.append(where == VisualizeWhere.BEFORE ? "Before: " : "After: ");
 
-    if (verbose && resultValue != null) {
+    if (verbose) {
       sbStore.append("resultValue=" + resultValue);
       sbStore.append(separator);
     }
