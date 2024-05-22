@@ -441,14 +441,18 @@ public class ValueTransfer extends CFTransfer {
   /**
    * Create a new boolean transfer result based on the original result and the new annotation.
    *
-   * @param result the transfer result to use (except its return value)
+   * @param thenStore the then store for the result
+   * @param elseStore the else store for the result
    * @param booleanValues the possible values that the result might evaluate to
    * @return a transfer result like {@code result}, but permitting only the given boolean values
    */
   // TODO: What is the point of `underlyingType`?  Won't it always be `boolean`?
   private TransferResult<CFValue, CFStore> createNewResultBoolean(
-      CFStore thenStore, CFStore elseStore, List<Boolean> resultValues, TypeMirror underlyingType) {
-    AnnotationMirror boolVal = atypeFactory.createBooleanAnnotation(resultValues);
+      CFStore thenStore,
+      CFStore elseStore,
+      List<Boolean> booleanValues,
+      TypeMirror underlyingType) {
+    AnnotationMirror boolVal = atypeFactory.createBooleanAnnotation(booleanValues);
     CFValue newResultValue = analysis.createSingleAnnotationValue(boolVal, underlyingType);
     if (elseStore != null) {
       return new ConditionalTransferResult<>(newResultValue, thenStore, elseStore);
