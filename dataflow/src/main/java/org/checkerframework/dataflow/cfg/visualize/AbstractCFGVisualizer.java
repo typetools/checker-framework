@@ -320,8 +320,8 @@ public abstract class AbstractCFGVisualizer<
     UniqueId storesFrom;
 
     if (analysisDirection == Direction.FORWARD && where == VisualizeWhere.AFTER) {
-      regularStore = analysis.getResult().getStoreAfter(bb);
       storesFrom = analysis.getResult();
+      regularStore = storesFrom.getStoreAfter(bb);
       Node lastNode = bb.getLastNode();
       if (lastNode != null) {
         TransferResult<V, S> tResult = analysis.getResult().lookupResult(lastNode);
@@ -330,14 +330,14 @@ public abstract class AbstractCFGVisualizer<
         }
       }
     } else if (analysisDirection == Direction.BACKWARD && where == VisualizeWhere.BEFORE) {
-      regularStore = analysis.getResult().getStoreBefore(bb);
       storesFrom = analysis.getResult();
+      regularStore = storesFrom.getStoreBefore(bb);
     } else {
       TransferInput<V, S> input = analysis.getInput(bb);
       // Per the documentation of AbstractAnalysis#inputs, null means no information.
       if (input == null) {
-        regularStore = null;
         storesFrom = null;
+        regularStore = null;
       } else {
         storesFrom = input;
         isTwoStores = input.containsTwoStores();
@@ -349,7 +349,10 @@ public abstract class AbstractCFGVisualizer<
 
     StringBuilder sbStore = new StringBuilder();
     if (verbose) {
-      sbStore.append((storesFrom == null ? "null" : storesFrom.getClassAndUid()) + separator);
+      sbStore.append(
+          "storesFrom = "
+              + (storesFrom == null ? "null" : storesFrom.getClassAndUid())
+              + separator);
     }
     sbStore.append(where == VisualizeWhere.BEFORE ? "Before: " : "After: ");
 
