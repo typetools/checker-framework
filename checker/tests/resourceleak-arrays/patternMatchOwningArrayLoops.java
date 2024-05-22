@@ -9,7 +9,7 @@ class PatternMatchOwningArrayLoops {
   // :: error: owning.array
   @Owning Socket[] s;
 
-  // @OwningArray non-(array/collection) is not allowed
+  // @OwningArray non-(1dArray/collection) is not allowed
   public void owningArrayNonArray() {
     // :: error: owningarray.nonarray
     @OwningArray Socket s;
