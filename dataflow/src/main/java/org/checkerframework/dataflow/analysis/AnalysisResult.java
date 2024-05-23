@@ -68,8 +68,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
    *
    * @see #runAnalysisFor(Node, Analysis.BeforeOrAfter, TransferInput, IdentityHashMap, Map)
    */
-  protected final Map<TransferInput<V, S>, IdentityHashMap<Node, TransferResult<V, S>>>
-      analysisCaches;
+  public final Map<TransferInput<V, S>, IdentityHashMap<Node, TransferResult<V, S>>> analysisCaches;
 
   /** The unique ID for the next-created object. */
   private static final AtomicLong nextUid = new AtomicLong(0);

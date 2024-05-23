@@ -455,7 +455,10 @@ public abstract class AbstractAnalysis<
    * @param b the block to add to {@link #worklist}
    */
   protected void addToWorklist(Block b) {
-    // TODO: use a more efficient way to check if b is already present
+    // TODO: This costs linear (!) time.  Use a more efficient way to check if b is already present.
+    // Two possibilities:
+    //  * add unconditionally, and detect duplicates when removing from the queue.
+    //  * maintain a HashSet of the elements that are already in the queue.
     if (!worklist.contains(b)) {
       worklist.add(b);
     }
@@ -508,7 +511,7 @@ public abstract class AbstractAnalysis<
       } else if (direction == Direction.BACKWARD) {
         queue = new PriorityQueue<>(new BackwardDFOComparator());
       } else {
-        throw new BugInCF("Unexpected Direction meet: " + direction.name());
+        throw new BugInCF("Unexpected Direction: " + direction.name());
       }
     }
 

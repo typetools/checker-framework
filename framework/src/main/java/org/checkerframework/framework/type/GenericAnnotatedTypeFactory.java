@@ -1537,6 +1537,14 @@ public abstract class GenericAnnotatedTypeFactory<
       boolean updateInitializationStore,
       boolean isStatic,
       @Nullable Store capturedStore) {
+    System.out.flush();
+    SystemPlume.sleep(1);
+    // System.out.printf("GATF.analyze: analysis.getResult() = %s%n",
+    //   analysis.getResult().toStringDebug());
+    System.out.printf("GATF.analyze: flowResult = %s%n", flowResult.toStringDebug());
+    System.out.flush();
+    SystemPlume.sleep(1);
+
     ControlFlowGraph cfg = CFCFGBuilder.build(root, ast, checker, this, processingEnv);
     cfg.getAllNodes(this::isIgnoredExceptionType)
         .forEach(
@@ -1561,8 +1569,27 @@ public abstract class GenericAnnotatedTypeFactory<
     analysis.performAnalysis(cfg, fieldValues);
     AnalysisResult<Value, Store> result = analysis.getResult();
 
+    System.out.flush();
+    SystemPlume.sleep(1);
+    System.out.printf(
+        "GATF.analyze: after performAnalysis, analysis.getResult() = %s%n", result.toStringDebug());
+    System.out.printf(
+        "GATF.analyze: after performAnalysis, flowResult = %s%n", flowResult.toStringDebug());
+    System.out.flush();
+    SystemPlume.sleep(1);
+
     // store result
     flowResult.combine(result);
+
+    System.out.flush();
+    SystemPlume.sleep(1);
+    System.out.printf(
+        "GATF.analyze: after combining, analysis.getResult() = %s%n", result.toStringDebug());
+    System.out.printf(
+        "GATF.analyze: after combining, flowResult = %s%n", flowResult.toStringDebug());
+    System.out.flush();
+    SystemPlume.sleep(1);
+
     if (ast.getKind() == UnderlyingAST.Kind.METHOD) {
       // store exit store (for checking postconditions)
       CFGMethod mast = (CFGMethod) ast;
@@ -1659,6 +1686,15 @@ public abstract class GenericAnnotatedTypeFactory<
    */
   protected void handleCFGViz(ControlFlowGraph cfg) {
     if (handleCFGViz) {
+      SystemPlume.sleep(1);
+      System.out.flush();
+      System.out.printf("GATF.handleCFGViz: analysis = %s%n", analysis);
+      AnalysisResult<Value, Store> aResult = analysis.getResult();
+      System.out.printf("GATF.handleCFGViz: analysis.getResult = %s%n", aResult);
+      System.out.printf("GATF.shouldCache = %s%n", shouldCache);
+      System.out.printf("GATF.handleCFGViz: analysis.getResult = %s%n", aResult.toStringDebug());
+      SystemPlume.sleep(1);
+      System.out.flush();
       getCFGVisualizer().visualizeWithAction(cfg, cfg.getEntryBlock(), analysis);
     }
   }
@@ -2416,6 +2452,7 @@ public abstract class GenericAnnotatedTypeFactory<
   @FormatMethod
   private static void log(String format, Object... args) {
     if (debug) {
+      System.out.flush();
       SystemPlume.sleep(1); // logging can interleave with typechecker output
       System.out.printf(format, args);
     }
