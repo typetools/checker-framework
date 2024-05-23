@@ -609,7 +609,7 @@ The assignment throws an error, because the scope of the constructed Socket ends
 
 \begin{verbatim}
 Example.java:31: error: [required.method.not.called] @MustCall method close may not have been invoked on new Socket(myHost, myPort) or any of its aliases.
-            arr[0] = new Socket(myHost, myPort);
+            s[0] = new Socket(myHost, myPort);
                      ^
   The type of object is: java.net.Socket.
   Reason for going out of scope: regular method exit
@@ -633,7 +633,7 @@ for (int i = 0; i < s.length; i++) {
 }
 // 2. @MustCallOnElements({"close"}) @CalledMethodsOnElements({})
 \end{verbatim}
-The loop must iterate from 0 to \<s.length> or \<n>, where \<n> is the effectively final variable used for the initialization of the array size. The update must be either a pre-increment or post-increment.  There must be exactly one statement in the body (which may be a try-catch construct) that contains the assignment. The right-hand side of the assignment must be the immediate construction of the object (not simply any expression evaluating to one). If there is a try-catch construct, the catch and finally blocks may not throw any exceptions, break out of the loop, call any methods or return for successful pattern-matching. In order to assign the elements of an \<@OwningArray>, the array must have no open calling obligations on its elements.
+The loop must iterate from 0 to \<s.length> or \<n>, where \<n> is the effectively final variable used for the initialization of the array size. The update must be either a pre-increment or post-increment.  There must be exactly one statement in the body (which may be a try-catch construct) that contains the assignment. The right-hand side of the assignment must be the immediate construction of the object (not simply any expression evaluating to one). If there is a try-catch construct, the catch and finally blocks may not throw any exceptions, break out of the loop, call any methods, have any writes or return for successful pattern-matching. In order to assign the elements of an \<@OwningArray>, the array must have no open calling obligations on its elements before the loop, meaning that its \<@MustCallOnElements> values must be a subset of the \<@CalledMethodsOnElements> values.
 
 \noindent Any other assignment to the elements of an \<@OwningArray>, outside of such a loop, is prohibited.
 
@@ -681,7 +681,9 @@ The MustCallOnElements obligations can be fulfilled in the following way:
 \begin{verbatim}
 // 1. @MustCallOnElements({"close"}) @CalledMethodsOnElements({})
 for (int i = 0; i < arr.length; i++) {
-    arr[i].close();
+    try {
+      arr[i].close();
+    } catch (Exception e) {}
 }
 // 2. @MustCallOnElements({}) @CalledMethodsOnElements({"close"})
 \end{verbatim}
