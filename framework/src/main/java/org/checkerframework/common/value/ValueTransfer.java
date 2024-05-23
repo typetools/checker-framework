@@ -444,10 +444,10 @@ public class ValueTransfer extends CFTransfer {
    * @param thenStore the then store for the result
    * @param elseStore the else store for the result
    * @param booleanValues the possible values that the result might evaluate to
-   * @param underlyingType the (boolean) result type
+   * @param underlyingType the (boolean) result type. This is always boolean; it is an argument
+   *     because there is no easy way to get a TypeMirror for a specific type.
    * @return a transfer result like {@code result}, but permitting only the given boolean values
    */
-  // TODO: What is the point of `underlyingType`?  Won't it always be `boolean`?
   private TransferResult<CFValue, CFStore> createNewResultBoolean(
       CFStore thenStore,
       CFStore elseStore,
