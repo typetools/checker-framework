@@ -349,10 +349,7 @@ public abstract class AbstractCFGVisualizer<
 
     StringBuilder sbStore = new StringBuilder();
     if (verbose) {
-      sbStore.append(
-          "storesFrom = "
-              + (storesFrom == null ? "null" : storesFrom.getClassAndUid())
-              + separator);
+      sbStore.append((storesFrom == null ? "null" : storesFrom.getClassAndUid()) + separator);
     }
     sbStore.append(where == VisualizeWhere.BEFORE ? "Before: " : "After: ");
 
