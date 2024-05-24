@@ -39,7 +39,7 @@ class TypeFromTree {
     try {
       type = expressionVisitor.visit(tree, typeFactory);
     } catch (Throwable t) {
-      throw BugInCF.addLocation(t, tree);
+      throw BugInCF.addLocation(tree, t);
     }
     ifExecutableCheckElement(typeFactory, tree, type);
 
@@ -58,7 +58,7 @@ class TypeFromTree {
     try {
       type = memberVisitor.visit(tree, typeFactory);
     } catch (Throwable t) {
-      throw BugInCF.addLocation(t, tree);
+      throw BugInCF.addLocation(tree, t);
     }
     ifExecutableCheckElement(typeFactory, tree, type);
     return type;
@@ -76,7 +76,7 @@ class TypeFromTree {
     try {
       type = typeTreeVisitor.visit(tree, typeFactory);
     } catch (Throwable t) {
-      throw BugInCF.addLocation(t, tree);
+      throw BugInCF.addLocation(tree, t);
     }
     abortIfTypeIsExecutable(typeFactory, tree, type);
     return type;
