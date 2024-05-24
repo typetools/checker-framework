@@ -53,7 +53,7 @@ public class BugInCF extends RuntimeException {
   }
 
   public BugInCF(Tree location, Throwable cause) {
-    this(location, cause.getMessage(), new Throwable());
+    this(location, cause.getMessage(), cause);
   }
 
   /**
