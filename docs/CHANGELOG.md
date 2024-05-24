@@ -5,6 +5,9 @@ Version 3.44.0 (June 3, 2024)
 
 **Implementation details:**
 
+Removed methods:
+ * `AbstractAnalysis.readFromStore()`:  use `Map.get()`
+
 Renamed methods:
  * `CFAbstractStore.methodValues()` => `methodCallExpressions()`
 

@@ -186,22 +186,24 @@ public class VariableBounds {
   public void addConstraintsFromComplementaryQualifierBounds(
       BoundKind kind, Set<? extends AbstractQualifier> qualifiers) {
     Set<AbstractQualifier> equalBounds = qualifierBounds.get(BoundKind.EQUAL);
-    if (kind == BoundKind.EQUAL) {
-      addQualifierConstraint(qualifiers, equalBounds, Kind.QUALIFIER_EQUALITY);
-    } else if (kind == BoundKind.LOWER) {
-      addQualifierConstraint(qualifiers, equalBounds, Kind.QUALIFIER_SUBTYPE);
-    } else { // UPPER
-      addQualifierConstraint(equalBounds, qualifiers, Kind.QUALIFIER_SUBTYPE);
-    }
-
-    if (kind == BoundKind.EQUAL || kind == BoundKind.UPPER) {
-      addQualifierConstraint(
-          qualifierBounds.get(BoundKind.LOWER), qualifiers, Kind.QUALIFIER_SUBTYPE);
-    }
-
-    if (kind == BoundKind.EQUAL || kind == BoundKind.LOWER) {
-      addQualifierConstraint(
-          qualifiers, qualifierBounds.get(BoundKind.UPPER), Kind.QUALIFIER_SUBTYPE);
+    switch (kind) {
+      case EQUAL:
+        addQualifierConstraint(qualifiers, equalBounds, Kind.QUALIFIER_EQUALITY);
+        addQualifierConstraint(
+            qualifierBounds.get(BoundKind.LOWER), qualifiers, Kind.QUALIFIER_SUBTYPE);
+        addQualifierConstraint(
+            qualifiers, qualifierBounds.get(BoundKind.UPPER), Kind.QUALIFIER_SUBTYPE);
+        break;
+      case LOWER:
+        addQualifierConstraint(qualifiers, equalBounds, Kind.QUALIFIER_SUBTYPE);
+        addQualifierConstraint(
+            qualifiers, qualifierBounds.get(BoundKind.UPPER), Kind.QUALIFIER_SUBTYPE);
+        break;
+      default: // UPPER
+        addQualifierConstraint(equalBounds, qualifiers, Kind.QUALIFIER_SUBTYPE);
+        addQualifierConstraint(
+            qualifierBounds.get(BoundKind.LOWER), qualifiers, Kind.QUALIFIER_SUBTYPE);
+        break;
     }
   }
 
@@ -229,48 +231,52 @@ public class VariableBounds {
    * Add constraints created via incorporation of the bound. See JLS 18.3.1.
    *
    * @param kind the kind of bound
-   * @param s the type of the bound
+   * @param boundType the type of the bound
    */
   @SuppressWarnings("interning:not.interned") // Checking for exact object.
-  public void addConstraintsFromComplementaryBounds(BoundKind kind, AbstractType s) {
+  public void addConstraintsFromComplementaryBounds(BoundKind kind, AbstractType boundType) {
     switch (kind) {
       case EQUAL:
         for (AbstractType t : bounds.get(BoundKind.EQUAL)) {
-          if (s != t) {
-            constraints.add(new Typing(s, t, Kind.TYPE_EQUALITY));
+          if (boundType != t) {
+            constraints.add(new Typing(boundType, t, Kind.TYPE_EQUALITY));
+          }
+        }
+        for (AbstractType t : bounds.get(BoundKind.LOWER)) {
+          if (boundType != t) {
+            constraints.add(new Typing(t, boundType, Kind.SUBTYPE));
+          }
+        }
+        for (AbstractType t : bounds.get(BoundKind.UPPER)) {
+          if (boundType != t) {
+            constraints.add(new Typing(boundType, t, Kind.SUBTYPE));
           }
         }
         break;
       case LOWER:
         for (AbstractType t : bounds.get(BoundKind.EQUAL)) {
-          if (s != t) {
-            constraints.add(new Typing(s, t, Kind.SUBTYPE));
+          if (boundType != t) {
+            constraints.add(new Typing(boundType, t, Kind.SUBTYPE));
+          }
+        }
+        for (AbstractType t : bounds.get(BoundKind.UPPER)) {
+          if (boundType != t) {
+            constraints.add(new Typing(boundType, t, Kind.SUBTYPE));
           }
         }
         break;
       case UPPER:
         for (AbstractType t : bounds.get(BoundKind.EQUAL)) {
-          if (s != t) {
-            constraints.add(new Typing(t, s, Kind.SUBTYPE));
+          if (boundType != t) {
+            constraints.add(new Typing(t, boundType, Kind.SUBTYPE));
+          }
+        }
+        for (AbstractType t : bounds.get(BoundKind.LOWER)) {
+          if (boundType != t) {
+            constraints.add(new Typing(t, boundType, Kind.SUBTYPE));
           }
         }
         break;
-    }
-
-    if (kind == BoundKind.EQUAL || kind == BoundKind.UPPER) {
-      for (AbstractType t : bounds.get(BoundKind.LOWER)) {
-        if (s != t) {
-          constraints.add(new Typing(t, s, Kind.SUBTYPE));
-        }
-      }
-    }
-
-    if (kind == BoundKind.EQUAL || kind == BoundKind.LOWER) {
-      for (AbstractType t : bounds.get(BoundKind.UPPER)) {
-        if (s != t) {
-          constraints.add(new Typing(s, t, Kind.SUBTYPE));
-        }
-      }
     }
 
     if (kind == BoundKind.UPPER) {
@@ -279,12 +285,30 @@ public class VariableBounds {
       // a supertype of T of the form G<T1,..., Tn> (for some generic class or interface, G),
       // then for all i (1 <= i <= n), if Si and Ti are types (not wildcards),
       // the constraint formula <Si = Ti> is implied.
-      if (s.isInferenceType() || s.isProper()) {
+      if (boundType.isInferenceType() || boundType.isProper()) {
         for (AbstractType t : bounds.get(BoundKind.LOWER)) {
           if (t.isProper() || t.isInferenceType()) {
-            constraints.addAll(getConstraintsFromParameterized(s, t));
+            constraints.addAll(getConstraintsFromParameterized(boundType, t));
           }
         }
+      }
+    }
+    if (boundType.isUseOfVariable()) {
+      UseOfVariable boundVar = (UseOfVariable) boundType;
+      switch (kind) {
+        case EQUAL:
+          boundVar.addQualifierBound(BoundKind.EQUAL, qualifierBounds.get(BoundKind.EQUAL));
+          boundVar.addQualifierBound(BoundKind.LOWER, qualifierBounds.get(BoundKind.LOWER));
+          boundVar.addQualifierBound(BoundKind.UPPER, qualifierBounds.get(BoundKind.UPPER));
+          break;
+        case LOWER:
+          boundVar.addQualifierBound(BoundKind.UPPER, qualifierBounds.get(BoundKind.EQUAL));
+          boundVar.addQualifierBound(BoundKind.LOWER, qualifierBounds.get(BoundKind.LOWER));
+          break;
+        case UPPER:
+          boundVar.addQualifierBound(BoundKind.LOWER, qualifierBounds.get(BoundKind.EQUAL));
+          boundVar.addQualifierBound(BoundKind.UPPER, qualifierBounds.get(BoundKind.UPPER));
+          break;
       }
     }
   }
