@@ -39,12 +39,7 @@ class TypeFromTree {
     try {
       type = expressionVisitor.visit(tree, typeFactory);
     } catch (Throwable t) {
-      throw new BugInCF(
-          t,
-          "Error in AnnotatedTypeMirror.fromExpression(%s, %s): %s",
-          typeFactory.getClass().getSimpleName(),
-          tree,
-          t.getMessage());
+      throw BugInCF.addLocation(t, tree);
     }
     ifExecutableCheckElement(typeFactory, tree, type);
 
@@ -59,8 +54,12 @@ class TypeFromTree {
    */
   public static AnnotatedTypeMirror fromMember(AnnotatedTypeFactory typeFactory, Tree tree) {
     abortIfTreeIsNull(typeFactory, tree);
-
-    AnnotatedTypeMirror type = memberVisitor.visit(tree, typeFactory);
+    AnnotatedTypeMirror type;
+    try {
+      type = memberVisitor.visit(tree, typeFactory);
+    } catch (Throwable t) {
+      throw BugInCF.addLocation(t, tree);
+    }
     ifExecutableCheckElement(typeFactory, tree, type);
     return type;
   }
@@ -73,8 +72,12 @@ class TypeFromTree {
    */
   public static AnnotatedTypeMirror fromTypeTree(AnnotatedTypeFactory typeFactory, Tree tree) {
     abortIfTreeIsNull(typeFactory, tree);
-
-    AnnotatedTypeMirror type = typeTreeVisitor.visit(tree, typeFactory);
+    AnnotatedTypeMirror type;
+    try {
+      type = typeTreeVisitor.visit(tree, typeFactory);
+    } catch (Throwable t) {
+      throw BugInCF.addLocation(t, tree);
+    }
     abortIfTypeIsExecutable(typeFactory, tree, type);
     return type;
   }
