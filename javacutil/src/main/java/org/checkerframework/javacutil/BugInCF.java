@@ -108,7 +108,7 @@ public class BugInCF extends RuntimeException {
    *
    * @return the tree at which to report the exception
    */
-  public Tree getLocation() {
+  public @Nullable Tree getLocation() {
     return location;
   }
 

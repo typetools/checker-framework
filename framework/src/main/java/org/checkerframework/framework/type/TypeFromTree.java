@@ -28,6 +28,7 @@ class TypeFromTree {
   /**
    * Returns an AnnotatedTypeMirror representing the input expression tree.
    *
+   * @param typeFactory type factory
    * @param tree must be an ExpressionTree
    * @return an AnnotatedTypeMirror representing the input expression tree
    */
@@ -49,6 +50,7 @@ class TypeFromTree {
   /**
    * Returns an AnnotatedTypeMirror representing the input tree.
    *
+   * @param typeFactory type factory
    * @param tree must represent a class member
    * @return an AnnotatedTypeMirror representing the input tree
    */
@@ -67,6 +69,7 @@ class TypeFromTree {
   /**
    * Returns an AnnotatedTypeMirror representing the input type tree.
    *
+   * @param typeFactory type factory
    * @param tree must be a type tree
    * @return an AnnotatedTypeMirror representing the input type tree
    */
@@ -85,13 +88,19 @@ class TypeFromTree {
   /**
    * Returns an AnnotatedDeclaredType representing the input ClassTree.
    *
+   * @param typeFactory type factory
+   * @param tree class tree
    * @return an AnnotatedDeclaredType representing the input ClassTree
    */
   public static AnnotatedDeclaredType fromClassTree(
       AnnotatedTypeFactory typeFactory, ClassTree tree) {
     abortIfTreeIsNull(typeFactory, tree);
-
-    AnnotatedDeclaredType type = (AnnotatedDeclaredType) classVisitor.visit(tree, typeFactory);
+    AnnotatedDeclaredType type;
+    try {
+      type = (AnnotatedDeclaredType) classVisitor.visit(tree, typeFactory);
+    } catch (Throwable t) {
+      throw BugInCF.addLocation(tree, t);
+    }
     abortIfTypeIsExecutable(typeFactory, tree, type);
     return type;
   }
