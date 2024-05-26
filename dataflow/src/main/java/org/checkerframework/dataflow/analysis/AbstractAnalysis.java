@@ -160,7 +160,8 @@ public abstract class AbstractAnalysis<
     return this.direction;
   }
 
-  private AnalysisResult<V, S> getResultCache;
+  /** A cache for {@link #getResult()}. */
+  private @Nullable AnalysisResult<V, S> getResultCache;
 
   @Override
   @SuppressWarnings("nullness:contracts.precondition.override") // implementation field
