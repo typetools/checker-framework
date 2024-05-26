@@ -189,6 +189,7 @@ public class BackwardAnalysisImpl<
     exceptionStores.clear();
     // storeAtEntry is null before analysis begin
     storeAtEntry = null;
+    assert this.cfg != null : "@AssumeAssertion(nullness)";
   }
 
   @Override
