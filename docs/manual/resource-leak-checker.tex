@@ -85,7 +85,7 @@ for example on an element with compile-time type \<Object> that might contain a 
 See Section~\ref{must-call-annotations}.
 
 \item[\refqualclasswithparams{checker/mustcallonelements/qual}{MustCallOnElements}{String[] value}]
-expresses the calling obligations of the elements of an array. Rarely written, most common use case is to specify the obligations of an \<@OwningArray> method parameter. See Section~\ref{resource-leak-arrays-mcoe-cmoe}.
+expresses the must-call obligations of the elements of an array. Rarely written, most common use case is to specify the obligations of an \<@OwningArray> method parameter. See Section~\ref{resource-leak-arrays-mcoe-cmoe}.
 
 \item[\refqualclasswithparams{checker/mustcall/qual}{InheritableMustCall}{String[] value}]
 on any classes defined in your program that have must-call obligations. See Section~\ref{must-call-on-class}.
@@ -97,7 +97,7 @@ See Section~\ref{called-methods-ensurescalledmethods}.
 
 \item[\refqualclass{checker/calledmethodsonelements/qual}{EnsuresCalledMethodsOnElements} and/or
       \refqualclass{checker/calledmethodsonelements/qual}{EnsuresCalledMethodsOnElementsOnException}]
-on a method in your code that fulfills a must-call-on-elements obligation of one of its array parameters or of an \<@OwningArray> field.
+on a method in your code that fulfills a \<@MustCallOnElements> obligation of one of its array parameters or of an \<@OwningArray> field. See Section~\ref{resource-leak-arrays-mcoe-cmoe}.
 
 \end{description}
 
@@ -115,8 +115,7 @@ aliasing patterns related to resource leaks:
   \<@Owning>.  Formal parameters and fields default to \<@NotOwning>.
   For more details, see Section~\ref{resource-leak-ownership}.
 \item[\refqualclass{checker/mustcallonelements/qual}{OwningArray}]
-  expresses ownership over an array of resources. Everything not explicitly annotated \<@OwningArray> is not owning and its elements may not be assigned to objects with calling obligations.
-  For more details, see Section~\ref{resource-leak-arrays}.
+  Every array that is not explicitly annotated as \<@OwningArray> is not owning. It is a compile-time error if an expression with a must-call obligation is assigned into an element of an array that does not have an \<@OwningArray> annotation. For more details, see Section~\ref{resource-leak-arrays}.
 
 \item[\refqualclass{checker/mustcall/qual}{MustCallAlias}]
   represents a ``resource-aliasing'' relationship.  Resource aliases are
@@ -598,14 +597,16 @@ will only use \<@MustCallUnknown> as a default when encountering a language
 feature that it is unable to reason about.
 
 \sectionAndLabel{Arrays of resources}{resource-leak-arrays}
-To understand how the checker handles arrays, let us first remind ourselves what happens if we assign resources with non-empty must-call type to an array:
+Arrays of resources are a particular challenge for static analysis, due to the inherently dynamic nature that arrays are accessed with.
+
+To understand how the checker handles arrays, consider the following snippet, demonstrating what happens if we assign resources with non-empty must-call type to an array:
 
 \begin{verbatim}
 Socket[] s = new Socket[n];
 s[0] = new Socket(myHost, myPort);
 \end{verbatim}
 
-The assignment throws an error, because the scope of the constructed Socket ends, without its must-call obligations having been fulfilled.
+The checker throws an error for this assignment, because the scope of the constructed Socket ends, without its must-call obligations having been fulfilled.
 
 \begin{verbatim}
 Example.java:31: error: [required.method.not.called] @MustCall method close may not have been invoked on new Socket(myHost, myPort) or any of its aliases.
@@ -616,7 +617,7 @@ Example.java:31: error: [required.method.not.called] @MustCall method close may 
 1 error
 \end{verbatim}
 
-We need a way for the array to take on this obligation for the resource. This functionality is jointly provided by the \<MustCallOnElements> and \<CalledMethodsOnElements> subcheckers.
+The checker provides a way for arrays to take on  must-call obligations of resources to prevent such errors.
 
 \subsectionAndLabel{Declaration and assignment of resource-holding arrays}{resource-leak-arrays-declaration}
 Annotating the array with the \<@OwningArray> declaration annotation allows it to take on such obligations by using a pattern-matched assignment syntax:
@@ -633,11 +634,11 @@ for (int i = 0; i < s.length; i++) {
 }
 // 2. @MustCallOnElements({"close"}) @CalledMethodsOnElements({})
 \end{verbatim}
-The loop must iterate from 0 to \<s.length> or \<n>, where \<n> is the effectively final variable used for the initialization of the array size. The update must be either a pre-increment or post-increment.  There must be exactly one statement in the body (which may be a try-catch construct) that contains the assignment. The right-hand side of the assignment must be the immediate construction of the object (not simply any expression evaluating to one). If there is a try-catch construct, the catch and finally blocks may not throw any exceptions, break out of the loop, call any methods, have any writes or return for successful pattern-matching. In order to assign the elements of an \<@OwningArray>, the array must have no open calling obligations on its elements before the loop, meaning that its \<@MustCallOnElements> values must be a subset of the \<@CalledMethodsOnElements> values.
+The loop must iterate from 0 to \<s.length> or \<n>, where \<n> is the effectively final variable used for the initialization of the array size. The update must be either a pre-increment or post-increment.  There must be exactly one statement in the body (which may be a try-catch construct) that contains the assignment. The right-hand side of the assignment must be the immediate construction of the object (not simply any expression evaluating to one). If there is a try-catch construct, the catch and finally blocks may not throw any exceptions, break out of the loop, call any methods, have any writes or return statements. In order to assign the elements of an \<@OwningArray>, the array must have no open must-call obligations on its elements before the loop, meaning that its \<@MustCallOnElements> values must be a subset of the \<@CalledMethodsOnElements> values.
 
 \noindent Any other assignment to the elements of an \<@OwningArray>, outside of such a loop, is prohibited.
 
-An \<@OwningArray> reference may be reassigned after an initial assignment, but only to allocate a new array (and of course only if the array has no open must-call-on-elements obligations). Any other assignment with the left-hand side being an \<@OwningArray> reference is prohibited. In particular is an aliasing of two \<@OwningArray> references prohibited:
+An \<@OwningArray> reference may be reassigned after an initial assignment, but only to allocate a new array (and of course only if the array has no open \<@MustCallOnElements> obligations). Any other assignment with the left-hand side being an \<@OwningArray> reference is prohibited. In particular, an aliasing of two \<@OwningArray> references is prohibited:
 
 \begin{verbatim}
 @OwningArray Socket[] s1 = new Socket[n];
@@ -645,10 +646,10 @@ An \<@OwningArray> reference may be reassigned after an initial assignment, but 
 s2 = s1; // prohibited assignment
 \end{verbatim}
 
-In general is aliasing of any kind for \<@OwningArray> variables not permitted. In particular, a non-\<@OwningArray> variable may also not be assigned to an \<@OwningArray> variable. This implies that an \<@OwningArray> variable is always the only reference to the underlying array within a procedure. The exception occurs when an \<@OwningArray> referenc is passed as an argument. More on that later.
+In general, aliasing of any kind for \<@OwningArray> variables is not permitted. In particular, a non-\<@OwningArray> variable may also not be assigned to an \<@OwningArray> variable. This implies that an \<@OwningArray> variable is always the only reference to the underlying array within a procedure. The exception occurs when an \<@OwningArray> reference is passed as an argument to a method call, which is discussed in detail in Section~\ref{resource-leak-arrays-parameters}. In short, if the \<@OwningArray> is passed to a constructor, the passed argument gives up the ownership and it cannot write to its elements anymore. If the method is not a constructor, it promises to fulfill all obligations before the method ends (unlike a constructor, which may store the \<@OwningArray> parameter in a field), which means that at the call-site, the \<@OwningArray> may still reassign its elements.
 
-\subsectionAndLabel{Must-call and called-methods for arrays}{resource-leak-arrays-mcoe-cmoe}
-Must-call-on-elements and called-methods-on-elements provide similar semantics for arrays as must-call and called-methods do for objects.
+\subsectionAndLabel{\<@MustCall> and \<@CalledMethods> for arrays}{resource-leak-arrays-mcoe-cmoe}
+\<@MustCallOnElements> and \<@CalledMethodsOnElements> provide similar semantics for arrays as \<@MustCall> and \<@CalledMethods> do for objects.
 
 The type hierarchy is the following:
 
@@ -661,7 +662,7 @@ MustCallOnElements({"b"})       MustCallOnElements({"a"})
                \                    /
                MustCallOnElements({})
 \end{verbatim}
-The default type is \<@MustCallOnElements({})> (bottom) for everything except \<@OwningArray> fields and \<@OwningArray> parameters. For those, the default \<@MustCallOnElements> value is the \<@MustCall> value of the component type. For example, the default type of an \<@OwningArray> Socket[] is \<@MustCallOnElements({``close''})>, since Socket has \<@MustCall(``close'')> type.
+The default type is \<@MustCallOnElements(\{\})> (bottom) for everything except \<@OwningArray> fields and \<@OwningArray> parameters. For those, the default \<@MustCallOnElements> value is the \<@MustCall> value of the component type. For example, the default type of an \<@OwningArray> Socket[] is \<@MustCallOnElements({``close''})>, since Socket has \<@MustCall(``close'')> type.
 
 The fulfilled obligations are stored in the \<@CalledMethodsOnElements> type annotation with the following type hierarchy:
 \begin{verbatim}
@@ -673,11 +674,11 @@ CalledMethodsOnElements({"b"})           CalledMethodsOnElements({"a"})
                                    |
                     CalledMethodsOnElementsBottom
 \end{verbatim}
-The default type is \<@CalledMethodsOnElements({})> (top) for any declaration.
+The default type is \<@CalledMethodsOnElements(\{\})> (top) for any declaration.
 
-\subsectionAndLabel{Directly fulfilling calling obligations on \<@OwningArray> arrays}{resource-leak-array-fulfilling-obligations}
+\subsectionAndLabel{Directly fulfilling \<@MustCallOnElements> obligations on \<@OwningArray> arrays}{resource-leak-array-fulfilling-obligations}
 
-The MustCallOnElements obligations can be fulfilled in the following way:
+The \<@MustCallOnElements> obligations can be fulfilled in the following way:
 \begin{verbatim}
 // 1. @MustCallOnElements({"close"}) @CalledMethodsOnElements({})
 for (int i = 0; i < arr.length; i++) {
@@ -710,7 +711,7 @@ void method(Socket s) {
 \end{verbatim}
 
 \subsectionAndLabel{\<@OwningArray> method parameters }{resource-leak-arrays-parameters}
-When \<@OwningArray> is written on a method parameter, the default of the parameter is \<@MustCallOnElements(\textit{obligations})>, where \textit{obligations} is the set of \<@MustCall> obligations of the component type. It is allowed to put any manual \<@MustCallOnElements> annotation to override this default however.
+When \<@OwningArray> is written on a method parameter, the default of the parameter is \<@MustCallOnElements(\textit{obligations})>, where \textit{obligations} is the set of \<@MustCall> obligations of the component type. The user is allowed to put any manual \<@MustCallOnElements> annotation to override this default however.
 
 \begin{verbatim}
 void m1(@OwningArray Socket[] s) {
@@ -724,7 +725,7 @@ void m1(@OwningArray Socket[] s) {
 }
 \end{verbatim}
 
-To call a method with an \<@OwningArray> parameter, the argument must also be \<@OwningArray>. The called method only borrows the ownership of the \<@OwningArray> parameter, since the \<@OwningArray> parameter cannot leave the method scope and its obligations have to be fulfilled by the time of method exit. Thus, not only can the caller keep the ownership for the passed argument after the method call returned, but due to the calling guarantees, the call also resets the \<@MustCallOnElements> type to an empty value and adds the methods guaranteed to have been called to the \<CalledMethodsOnElements> type:
+To call a method with an \<@OwningArray> parameter, the argument must also be \<@OwningArray>. The called method only borrows the ownership of the \<@OwningArray> parameter. This is because the \<@OwningArray> parameter cannot leave the method scope and its obligations have to be fulfilled by the time of method exit. Thus, not only can the caller keep the ownership for the passed argument after the method call returned, but due to the calling guarantees, the call also resets the \<@MustCallOnElements> type to an empty value and adds the methods guaranteed to have been called to the \<CalledMethodsOnElements> type:
 
 \begin{verbatim}
 // 1. @MustCallOnElements({"close"}) @CalledMethodsOnElements({})
@@ -733,6 +734,8 @@ m1(arr);
 \end{verbatim}
 
 After calling \texttt{m1}, the elements of \textit{arr} may be reassigned.
+
+If the parameter is non-\<@OwningArray>, the argument must also be non-\<@OwningArray>.
 
 \subsectionAndLabel{\<@OwningArray> fields}{resource-leak-arrays-fields}
 \<@OwningArray> fields must be final and non-static. Thus, they can only be defined either in the constructor or at the declaration point.
