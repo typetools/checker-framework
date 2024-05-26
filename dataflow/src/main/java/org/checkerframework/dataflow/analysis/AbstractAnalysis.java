@@ -160,6 +160,8 @@ public abstract class AbstractAnalysis<
     return this.direction;
   }
 
+  private AnalysisResult<V, S> getResultCache;
+
   @Override
   @SuppressWarnings("nullness:contracts.precondition.override") // implementation field
   @RequiresNonNull("cfg")
@@ -168,8 +170,16 @@ public abstract class AbstractAnalysis<
       throw new BugInCF(
           "AbstractAnalysis::getResult() shouldn't be called when the analysis is running.");
     }
-    return new AnalysisResult<>(
-        nodeValues, inputs, cfg.getTreeLookup(), cfg.getPostfixNodeLookup(), finalLocalValues);
+    if (getResultCache == null) {
+      getResultCache =
+          new AnalysisResult<>(
+              nodeValues,
+              inputs,
+              cfg.getTreeLookup(),
+              cfg.getPostfixNodeLookup(),
+              finalLocalValues);
+    }
+    return getResultCache;
   }
 
   @Override
@@ -427,6 +437,7 @@ public abstract class AbstractAnalysis<
     nodeValues.clear();
     finalLocalValues.clear();
     this.cfg = cfg;
+    getResultCache = null;
   }
 
   /**
