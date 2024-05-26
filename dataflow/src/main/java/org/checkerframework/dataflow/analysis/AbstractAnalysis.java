@@ -476,6 +476,9 @@ public abstract class AbstractAnalysis<
      * forward analysis.
      */
     public class ForwardDfoComparator implements Comparator<Block> {
+      /** Creates a new ForwardDfoComparator. */
+      public BackwardDfoComparator() {}
+
       @SuppressWarnings("nullness:unboxing.of.nullable")
       @Override
       public int compare(Block b1, Block b2) {
@@ -488,6 +491,9 @@ public abstract class AbstractAnalysis<
      * backward analysis.
      */
     public class BackwardDfoComparator implements Comparator<Block> {
+      /** Creates a new BackwardDfoComparator. */
+      public BackwardDfoComparator() {}
+
       @SuppressWarnings("nullness:unboxing.of.nullable")
       @Override
       public int compare(Block b1, Block b2) {
@@ -581,7 +587,9 @@ public abstract class AbstractAnalysis<
     @Pure
     public @Nullable Block poll() {
       Block result = queue.poll();
-      queueSet.remove(result);
+      if (result != null) {
+        queueSet.remove(result);
+      }
       return result;
     }
 
