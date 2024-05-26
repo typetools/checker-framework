@@ -477,7 +477,7 @@ public abstract class AbstractAnalysis<
      */
     public class ForwardDfoComparator implements Comparator<Block> {
       /** Creates a new ForwardDfoComparator. */
-      public BackwardDfoComparator() {}
+      public ForwardDfoComparator() {}
 
       @SuppressWarnings("nullness:unboxing.of.nullable")
       @Override
