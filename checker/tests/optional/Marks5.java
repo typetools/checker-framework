@@ -14,7 +14,7 @@ public class Marks5 {
   // unless BOTH are empty, in which case return an empty Optional.
 
   Optional<BigDecimal> clever(Optional<BigDecimal> first, Optional<BigDecimal> second) {
-    @SuppressWarnings({"methodref.inference.unimplemented", "methodref.receiver"})
+    @SuppressWarnings("methodref.receiver")
     Optional<BigDecimal> result =
         Stream.of(first, second)
             .filter(Optional::isPresent)
