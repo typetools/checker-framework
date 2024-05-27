@@ -6,7 +6,6 @@ import com.sun.source.tree.Tree;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
-import java.util.Map;
 import java.util.Objects;
 import java.util.PriorityQueue;
 import java.util.Set;
@@ -447,19 +446,6 @@ public abstract class AbstractAnalysis<
       nodeValueChanged = !Objects.equals(oldVal, newVal);
     }
     return nodeValueChanged || transferResult.storeChanged();
-  }
-
-  /**
-   * Read the store for a particular basic block from a map of stores (or {@code null} if none
-   * exists yet).
-   *
-   * @param stores a map of stores
-   * @param b the target block
-   * @param <S> method return type should be a subtype of {@link Store}
-   * @return the store for the target block
-   */
-  protected static <S> @Nullable S readFromStore(Map<Block, S> stores, Block b) {
-    return stores.get(b);
   }
 
   /**
