@@ -1,7 +1,6 @@
 package org.checkerframework.checker.mustcallonelements;
 
 import com.sun.source.tree.AnnotationTree;
-import com.sun.source.tree.MethodInvocationTree;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -12,9 +11,9 @@ import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.ElementUtils;
 
 /**
- * The visitor for the Must Call Checker. This visitor is similar to BaseTypeVisitor, but overrides
- * methods that don't work well with the MustCall type hierarchy because it doesn't use the top type
- * as the default type.
+ * The visitor for the MustCallOnElements Checker. This visitor is similar to BaseTypeVisitor, but
+ * overrides methods that don't work well with the MustCallOnElements type hierarchy because it
+ * doesn't use the top type as the default type.
  */
 public class MustCallOnElementsVisitor
     extends BaseTypeVisitor<MustCallOnElementsAnnotatedTypeFactory> {
@@ -28,23 +27,12 @@ public class MustCallOnElementsVisitor
     super(checker);
   }
 
-  @Override
-  protected boolean skipReceiverSubtypeCheck(
-      MethodInvocationTree tree,
-      AnnotatedTypeMirror methodDefinitionReceiver,
-      AnnotatedTypeMirror methodCallReceiver) {
-    // It does not make sense for receivers to have must-call obligations. If the receiver of a
-    // method were to have a non-empty must-call obligation, then actually this method should
-    // be part of the must-call annotation on the class declaration! So skipping this check is
-    // always sound.
-    return true;
-  }
-
   /**
    * This method typically issues a warning if the result type of the constructor is not top,
-   * because in top-default type systems that indicates a potential problem. The Must Call Checker
-   * does not need this warning, because it expects the type of all constructors to be {@code
-   * MustCall({})} (by default) or some other {@code MustCall} type, not the top type.
+   * because in top-default type systems that indicates a potential problem. The MustCallOnElements
+   * Checker does not need this warning, because it expects the type of all constructors to be
+   * {@code MustCallOnElements()} default) or some other {@code MustCallOnElements} type, not the
+   * top type.
    *
    * <p>Instead, this method checks that the result type of a constructor is a supertype of the
    * declared type on the class, if one exists.
@@ -87,7 +75,7 @@ public class MustCallOnElementsVisitor
    * Does not issue any warnings.
    *
    * <p>This implementation prevents recursing into annotation arguments. Annotation arguments are
-   * literals, which don't have must-call obligations.
+   * literals, which don't have MustCallOnElements obligations.
    *
    * <p>Annotation arguments are treated as return locations for the purposes of defaulting, rather
    * than parameter locations. This causes them to default incorrectly when the annotation is
