@@ -537,9 +537,9 @@ public class ForwardAnalysisImpl<
   protected @Nullable S getStoreBefore(Block b, Store.Kind kind) {
     switch (kind) {
       case THEN:
-        return readFromStore(thenStores, b);
+        return thenStores.get(b);
       case ELSE:
-        return readFromStore(elseStores, b);
+        return elseStores.get(b);
       default:
         throw new BugInCF("Unexpected Store.Kind: " + kind);
     }

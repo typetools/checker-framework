@@ -2153,8 +2153,16 @@ for dotfile in *.dot; do dot -Tpdf -o "$dotfile.pdf" "$dotfile"; done
 \end{Verbatim}
 
 \noindent
+or (for more verbose output)
+
+\begin{Verbatim}
+javacheck -processor mypackage.MyProcessor -Acfgviz=org.checkerframework.dataflow.cfg.visualize.DOTCFGVisualizer,outdir=.,verbose MyClass.java
+for dotfile in *.dot; do dot -Tpdf -o "$dotfile.pdf" "$dotfile"; done
+\end{Verbatim}
+
+\noindent
 where the first command creates file \<MyClass.dot> that
-represents the CFG, and the last command draws the CFG in a PDF file.
+represents the CFG, and the second command writes the CFG to a PDF file.
 The \<dot> program is part of \href{http://www.graphviz.org}{Graphviz}.
 
 In the output, conditional basic blocks are represented as octagons with
@@ -2201,6 +2209,8 @@ command-line options. \\
   passed to \<CFGVisualizer.init>.  Supported keys include
   \begin{itemize}
   \item \<verbose>
+    outputs the store after each basic block (in addition to before);
+    shows transfer result values, unique IDs, and the processing order
   \item \<outdir> directory into which to write files
   \item \<checkerName>
   \end{itemize}
