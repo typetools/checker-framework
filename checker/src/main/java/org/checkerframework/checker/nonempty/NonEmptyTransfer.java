@@ -1,16 +1,10 @@
 package org.checkerframework.checker.nonempty;
 
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.Tree;
 import java.util.Arrays;
 import java.util.List;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
-import org.checkerframework.checker.nonempty.qual.Delegate;
-import org.checkerframework.checker.nonempty.qual.EnsuresNonEmpty;
-import org.checkerframework.checker.nonempty.qual.EnsuresNonEmptyIf;
 import org.checkerframework.checker.nonempty.qual.NonEmpty;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
@@ -32,7 +26,6 @@ import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
-import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -64,29 +57,6 @@ public class NonEmptyTransfer extends CFTransfer {
     this.mapSize = TreeUtils.getMethod("java.util.Map", "size", 0, this.env);
     this.indexOf = TreeUtils.getMethod("java.util.List", "indexOf", 1, this.env);
     this.aTypeFactory = (NonEmptyAnnotatedTypeFactory) analysis.getTypeFactory();
-  }
-
-  @Override
-  public TransferResult<CFValue, CFStore> visitMethodInvocation(
-      MethodInvocationNode n, TransferInput<CFValue, CFStore> in) {
-    TransferResult<CFValue, CFStore> result = super.visitMethodInvocation(n, in);
-    MethodTree enclosingMethodTree = TreePathUtil.enclosingMethod(n.getTreePath());
-    if (enclosingMethodTree == null || TreeUtils.isConstructor(enclosingMethodTree)) {
-      return result;
-    }
-    Tree receiverTree = n.getTarget().getReceiver().getTree();
-    if (receiverTree == null) {
-      return result;
-    }
-    Element receiver = TreeUtils.elementFromTree(receiverTree);
-    if (receiver == null
-        || !shouldRefineStoreForDelegationInvocation(receiver, enclosingMethodTree)) {
-      return result;
-    }
-    JavaExpression thisExpr = JavaExpression.getImplicitReceiver(receiver);
-    refineStoreForDelegationInvocation(
-        thisExpr, JavaExpression.fromNode(n.getTarget().getReceiver()), result);
-    return result;
   }
 
   @Override
@@ -163,61 +133,6 @@ public class NonEmptyTransfer extends CFTransfer {
     Node switchNode = assign.getExpression();
     refineSwitchStatement(switchNode, caseOperands, result.getThenStore(), result.getElseStore());
     return result;
-  }
-
-  /**
-   * Return true if the transfer store for "this" should be updated, depending on whether a delegate
-   * method invocation is found within a method body.
-   *
-   * <p>Note: the Non-Empty Checker trusts the {@link Delegate} annotations it finds. The {@link
-   * DelegationChecker} verifies correct use of the delegation pattern. Since it is run alongside
-   * the Non-Empty Checker, the annotations it finds should be correct.
-   *
-   * @param receiver the receiver of a candidate delegate method call found in a method body
-   * @param enclosingMethodTree the method enclosing the candidate delegate call
-   * @return true if the receiver is annotated with {@link Delegate} and the method is annotated
-   *     with a postcondition annotation from the Non-Empty type system.
-   */
-  private boolean shouldRefineStoreForDelegationInvocation(
-      Element receiver, MethodTree enclosingMethodTree) {
-    Element enclosingMethod = TreeUtils.elementFromDeclaration(enclosingMethodTree);
-    AnnotationMirror delegateAnno = aTypeFactory.getDeclAnnotation(receiver, Delegate.class);
-    AnnotationMirror postConditionAnno =
-        aTypeFactory.getDeclAnnotation(enclosingMethod, EnsuresNonEmpty.class);
-    AnnotationMirror conditionalPostconditionAnno =
-        aTypeFactory.getDeclAnnotation(enclosingMethod, EnsuresNonEmptyIf.class);
-    return delegateAnno != null
-        && (postConditionAnno != null || conditionalPostconditionAnno != null);
-  }
-
-  /**
-   * Updates the value in the store for the target expression when a delegate call is detected.
-   *
-   * <p>For example, if a field {@code map} is marked with {@link Delegate}, and the enclosing class
-   * delegates a call to it (e.g., a call to {@code containsValue(Object)}), then an instance of the
-   * enclosing class should have the same postconditions that hold for {@code map}.
-   *
-   * @param targetExpr the value for which the store should be updated
-   * @param delegate the delegate field
-   * @param result the transfer result
-   */
-  private void refineStoreForDelegationInvocation(
-      JavaExpression targetExpr, JavaExpression delegate, TransferResult<CFValue, CFStore> result) {
-    if (result.containsTwoStores()) {
-      // Update the "then" store
-      CFStore thenStore = result.getThenStore();
-      CFValue delegateThenStoreValue = thenStore.getValue(delegate);
-      thenStore.replaceValue(targetExpr, delegateThenStoreValue);
-
-      // Update the "else" store
-      CFStore elseStore = result.getElseStore();
-      CFValue delegateElseStoreValue = elseStore.getValue(delegate);
-      elseStore.replaceValue(targetExpr, delegateElseStoreValue);
-    } else {
-      CFStore store = result.getRegularStore();
-      CFValue delegateStoreValue = store.getValue(delegate);
-      store.replaceValue(targetExpr, delegateStoreValue);
-    }
   }
 
   /**
