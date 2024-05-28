@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.Set;
 import org.checkerframework.checker.optional.OptionalChecker;
 import org.checkerframework.checker.optional.OptionalVisitor;
+import org.checkerframework.common.aliasing.AliasingChecker;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 
 /**
@@ -19,6 +20,7 @@ public class NonEmptyChecker extends DelegationChecker {
   protected Set<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
     Set<Class<? extends BaseTypeChecker>> checkers = super.getImmediateSubcheckerClasses();
     checkers.add(OptionalChecker.class);
+    checkers.add(AliasingChecker.class);
     return checkers;
   }
 
