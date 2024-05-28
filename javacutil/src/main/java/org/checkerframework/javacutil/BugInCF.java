@@ -53,9 +53,11 @@ public class BugInCF extends RuntimeException {
    * @param location where to report the bug
    * @param cause the cause; its detail message will be used and must be non-null
    */
-  @SuppressWarnings("nullness")
   public BugInCF(@Nullable Tree location, Throwable cause) {
-    this(location, cause.getMessage(), cause);
+    this(
+        location,
+        cause.getMessage() != null ? cause.getMessage() : cause.getClass().getSimpleName(),
+        cause);
   }
 
   /**
