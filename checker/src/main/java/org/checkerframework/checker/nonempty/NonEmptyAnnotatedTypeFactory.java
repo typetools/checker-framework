@@ -37,6 +37,11 @@ public class NonEmptyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /** The tree annotator for the Non-Empty Checker. */
   private class NonEmptyTreeAnnotator extends TreeAnnotator {
 
+    /**
+     * Create a new {@link NonEmptyTreeAnnotator}.
+     *
+     * @param aTypeFactory the type factory for this tree annotator
+     */
     public NonEmptyTreeAnnotator(AnnotatedTypeFactory aTypeFactory) {
       super(aTypeFactory);
     }

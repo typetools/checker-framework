@@ -49,6 +49,11 @@ public class NonEmptyTransfer extends CFTransfer {
   /** A {@link NonEmptyAnnotatedTypeFactory} instance. */
   protected final NonEmptyAnnotatedTypeFactory aTypeFactory;
 
+  /**
+   * Create a new {@link NonEmptyTransfer}.
+   *
+   * @param analysis the analysis for this transfer function
+   */
   public NonEmptyTransfer(CFAnalysis analysis) {
     super(analysis);
 
