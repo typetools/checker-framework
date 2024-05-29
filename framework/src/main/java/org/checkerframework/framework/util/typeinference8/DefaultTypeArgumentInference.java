@@ -126,7 +126,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
             true,
             "An exception occurred: " + ex.getLocalizedMessage());
       }
-      throw ex;
+      throw BugInCF.addLocation(outerTree, ex);
     } finally {
       if (!java8InferenceStack.isEmpty()) {
         java8Inference = java8InferenceStack.pop();
