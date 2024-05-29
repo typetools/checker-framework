@@ -189,7 +189,6 @@ allprojects { currentProj ->
       'bin-devel/.git-scripts/**',
       'bin-devel/.plume-scripts/**',
       'dist/**',
-      'jdk/**',
       'tests/ainfer-*/annotated/*',
       'tests/build/**',
       'tests/calledmethods-delomboked/*',
