@@ -25,7 +25,7 @@ public class Shadowing {
     void baz(@Present Optional<String> present) {
       super.g = present;
       @Present Optional<String> ok1 = this.g;
-      @Present Optional<String> ok2  = super.g;
+      @Present Optional<String> ok2 = super.g;
     }
 
     // @RequiresPresent("super.f")
