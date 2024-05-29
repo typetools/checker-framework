@@ -55,6 +55,16 @@ public class SuperReference extends JavaExpression {
   }
 
   @Override
+  public boolean equals(@Nullable Object obj) {
+    return obj instanceof SuperReference;
+  }
+
+  @Override
+  public int hashCode() {
+    return 0;
+  }
+
+  @Override
   public <R, P> R accept(JavaExpressionVisitor<R, P> visitor, P p) {
     return visitor.visitSuperReference(this, p);
   }

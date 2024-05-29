@@ -533,8 +533,11 @@ public abstract class JavaExpression {
         IdentifierTree identifierTree = (IdentifierTree) tree;
         TypeMirror typeOfId = TreeUtils.typeOf(identifierTree);
         Name identifierName = identifierTree.getName();
-        if (identifierName.contentEquals("this") || identifierName.contentEquals("super")) {
+        if (identifierName.contentEquals("this")) {
           result = new ThisReference(typeOfId);
+          break;
+        } else if (identifierName.contentEquals("super")) {
+          result = new SuperReference(typeOfId);
           break;
         }
         assert TreeUtils.isUseOfElement(identifierTree) : "@AssumeAssertion(nullness): tree kind";
