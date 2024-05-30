@@ -112,7 +112,6 @@ public class JavaParserUtil {
   public static CompilationUnit parseCompilationUnit(String javaSource) {
     ParserConfiguration parserConfiguration = new ParserConfiguration();
     parserConfiguration.setLanguageLevel(DEFAULT_LANGUAGE_LEVEL);
-    parserConfiguration.setPreprocessUnicodeEscapes(true);
     JavaParser javaParser = new JavaParser(parserConfiguration);
     ParseResult<CompilationUnit> parseResult = javaParser.parse(javaSource);
     if (parseResult.isSuccessful() && parseResult.getResult().isPresent()) {
