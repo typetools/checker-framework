@@ -48,9 +48,9 @@ public class ConstantPropagationTransfer
     Node target = n.getTarget();
     Constant info = null;
     if (target instanceof LocalVariableNode) {
-      LocalVariableNode n = (LocalVariableNode) target;
+      LocalVariableNode lvn = (LocalVariableNode) target;
       info = p.getInformation(n.getExpression());
-      p.setInformation(n, info);
+      p.setInformation(lvn, info);
     }
     return new RegularTransferResult<>(info, p);
   }
