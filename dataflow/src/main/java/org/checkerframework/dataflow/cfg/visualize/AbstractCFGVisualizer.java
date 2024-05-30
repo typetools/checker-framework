@@ -244,8 +244,8 @@ public abstract class AbstractCFGVisualizer<
 
     List<Node> contents = addBlockContent(bb);
     StringJoiner sjBlockContents = new StringJoiner(separator);
-    for (Node t : contents) {
-      sjBlockContents.add(visualizeBlockNode(t, analysis));
+    for (Node n : contents) {
+      sjBlockContents.add(visualizeBlockNode(n, analysis));
     }
     return sjBlockContents.toString();
   }
@@ -270,11 +270,11 @@ public abstract class AbstractCFGVisualizer<
   protected abstract String format(Object obj);
 
   @Override
-  public String visualizeBlockNode(Node t, @Nullable Analysis<V, S, T> analysis) {
+  public String visualizeBlockNode(Node n, @Nullable Analysis<V, S, T> analysis) {
     StringBuilder sbBlockNode = new StringBuilder();
-    sbBlockNode.append(format(t)).append("   [ ").append(getNodeSimpleName(t)).append(" ]");
+    sbBlockNode.append(format(n)).append("   [ ").append(getNodeSimpleName(n)).append(" ]");
     if (analysis != null) {
-      V value = analysis.getValue(t);
+      V value = analysis.getValue(n);
       if (value != null) {
         sbBlockNode.append("    > ").append(format(value));
       }
@@ -474,11 +474,11 @@ public abstract class AbstractCFGVisualizer<
   /**
    * Get the simple name of a node.
    *
-   * @param t a node
+   * @param n a node
    * @return the node's simple name, without "Node"
    */
-  protected String getNodeSimpleName(Node t) {
-    String name = t.getClass().getSimpleName();
+  protected String getNodeSimpleName(Node n) {
+    String name = n.getClass().getSimpleName();
     return name.replace("Node", "");
   }
 }
