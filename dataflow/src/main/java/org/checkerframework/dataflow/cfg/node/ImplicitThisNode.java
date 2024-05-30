@@ -28,4 +28,9 @@ public class ImplicitThisNode extends ThisNode {
   public String toString() {
     return "(this)";
   }
+
+  @Override
+  public String toStringDisambiguated() {
+    return "(this{owner=" + type + "})";
+  }
 }

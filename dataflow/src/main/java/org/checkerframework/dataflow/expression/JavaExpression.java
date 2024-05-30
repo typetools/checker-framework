@@ -316,6 +316,16 @@ public abstract class JavaExpression {
   }
 
   /**
+   * Format this, making field and variable provenance explicit.
+   *
+   * @return a semi-verbose string representation of this
+   */
+  @Pure
+  public String toStringDisambiguated() {
+    return toString();
+  }
+
+  /**
    * Format this verbosely, for debugging.
    *
    * @return a verbose string representation of this

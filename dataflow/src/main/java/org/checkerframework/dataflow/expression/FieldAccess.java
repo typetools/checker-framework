@@ -137,6 +137,15 @@ public class FieldAccess extends JavaExpression {
   }
 
   @Override
+  public String toStringDisambiguated() {
+    String receiverString =
+        (receiver instanceof ClassName)
+            ? receiver.getType().toString()
+            : receiver.toStringDisambiguated();
+    return receiverString + "." + field + "{owner=" + ((Symbol) field).owner + "}";
+  }
+
+  @Override
   public String toStringDebug() {
     return String.format(
         "FieldAccess(type=%s, receiver=%s, field=%s [%s] [%s] owner=%s)",

@@ -154,7 +154,13 @@ public class DOTCFGVisualizer<
 
   @Override
   protected String visualizeEdge(Object sId, Object eId, String flowRule) {
-    return "    " + format(sId) + " -> " + format(eId) + " [label=\"" + flowRule + "\"];";
+    return "    "
+        + escapeString(sId)
+        + " -> "
+        + escapeString(eId)
+        + " [label=\""
+        + flowRule
+        + "\"];";
   }
 
   @Override
@@ -282,23 +288,18 @@ public class DOTCFGVisualizer<
   }
 
   @Override
-  protected String format(Object obj) {
-    return escapeString(obj);
-  }
-
-  @Override
   public String visualizeStoreThisVal(V value) {
     return storeEntryIndent + "this > " + escapeString(value);
   }
 
   @Override
   public String visualizeStoreLocalVar(LocalVariable localVar, V value) {
-    return storeEntryIndent + localVar + " > " + escapeString(value);
+    return storeEntryIndent + localVar.toStringDisambiguated() + " > " + escapeString(value);
   }
 
   @Override
   public String visualizeStoreFieldVal(FieldAccess fieldAccess, V value) {
-    return storeEntryIndent + fieldAccess + " > " + escapeString(value);
+    return storeEntryIndent + fieldAccess.toStringDisambiguated() + " > " + escapeString(value);
   }
 
   @Override
@@ -327,18 +328,9 @@ public class DOTCFGVisualizer<
    * @param str the string to be escaped
    * @return the escaped version of the string
    */
-  private static String escapeString(String str) {
+  @Override
+  protected String escapeString(String str) {
     return str.replace("\"", "\\\"").replace("\r", "\\\\r").replace("\n", "\\\\n");
-  }
-
-  /**
-   * Escape the double quotes from the string representation of the given object.
-   *
-   * @param obj an object
-   * @return an escaped version of the string representation of the object
-   */
-  private static String escapeString(Object obj) {
-    return escapeString(String.valueOf(obj));
   }
 
   /**

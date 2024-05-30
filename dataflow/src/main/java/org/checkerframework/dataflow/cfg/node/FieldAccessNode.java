@@ -3,6 +3,7 @@ package org.checkerframework.dataflow.cfg.node;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.Tree;
+import com.sun.tools.javac.code.Symbol;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
@@ -92,6 +93,16 @@ public class FieldAccessNode extends Node {
   @Override
   public String toString() {
     return getReceiver() + "." + field;
+  }
+
+  @Override
+  public String toStringDisambiguated() {
+    return getReceiver().toStringDisambiguated()
+        + "."
+        + field
+        + "{owner="
+        + ((Symbol) element).owner
+        + "}";
   }
 
   /**

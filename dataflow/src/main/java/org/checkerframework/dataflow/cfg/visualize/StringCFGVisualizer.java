@@ -126,23 +126,18 @@ public class StringCFGVisualizer<
   }
 
   @Override
-  protected String format(Object obj) {
-    return obj.toString();
-  }
-
-  @Override
   public String visualizeStoreThisVal(V value) {
     return storeEntryIndent + "this > " + value;
   }
 
   @Override
   public String visualizeStoreLocalVar(LocalVariable localVar, V value) {
-    return storeEntryIndent + localVar + " > " + value;
+    return storeEntryIndent + localVar.toStringDisambiguated() + " > " + value;
   }
 
   @Override
   public String visualizeStoreFieldVal(FieldAccess fieldAccess, V value) {
-    return storeEntryIndent + fieldAccess + " > " + value;
+    return storeEntryIndent + fieldAccess.toStringDisambiguated() + " > " + value;
   }
 
   @Override

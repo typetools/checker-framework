@@ -187,6 +187,16 @@ public abstract class Node implements UniqueId {
   }
 
   /**
+   * Format this, making field and variable provenance explicit.
+   *
+   * @return a semi-verbose string representation of this
+   */
+  @Pure
+  public String toStringDisambiguated() {
+    return toString();
+  }
+
+  /**
    * Returns a verbose string representation of this, useful for debugging.
    *
    * @return a printed representation of this

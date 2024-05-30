@@ -63,4 +63,9 @@ public class SuperReference extends JavaExpression {
   public String toString() {
     return "super";
   }
+
+  @Override
+  public String toStringDisambiguated() {
+    return "super{" + type + "}";
+  }
 }

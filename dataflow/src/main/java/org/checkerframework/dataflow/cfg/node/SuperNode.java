@@ -13,15 +13,21 @@ import org.checkerframework.javacutil.TreeUtils;
  * <pre>
  *   <em>super</em>
  * </pre>
+ *
+ * Its {@link #type} field is the type of the class in which "super" appears, <em>not<em> the type
+ * to which the "super" identifier resolves.
  */
 public class SuperNode extends Node {
 
   protected final IdentifierTree tree;
 
-  public SuperNode(IdentifierTree t) {
-    super(TreeUtils.typeOf(t));
-    assert t.getName().contentEquals("super");
-    tree = t;
+  public SuperNode(IdentifierTree tree) {
+    super(TreeUtils.typeOf(tree));
+    assert tree.getName().contentEquals("super");
+    this.tree = tree;
+    System.out.printf(
+        "Created SuperNode: tree=%s [%s], type=%s [%s]%n",
+        tree, tree.getClass(), type, type.getClass());
   }
 
   @Override
@@ -37,6 +43,11 @@ public class SuperNode extends Node {
   @Override
   public String toString() {
     return "super";
+  }
+
+  @Override
+  public String toStringDisambiguated() {
+    return "super{owner=" + type + "}";
   }
 
   @Override

@@ -34,4 +34,9 @@ public class ExplicitThisNode extends ThisNode {
   public String toString() {
     return "this";
   }
+
+  @Override
+  public String toStringDisambiguated() {
+    return "this{owner=" + type + "}";
+  }
 }

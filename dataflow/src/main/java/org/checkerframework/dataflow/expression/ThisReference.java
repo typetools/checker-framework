@@ -32,6 +32,11 @@ public class ThisReference extends JavaExpression {
     return "this";
   }
 
+  @Override
+  public String toStringDisambiguated() {
+    return "this{" + type + "}";
+  }
+
   @SuppressWarnings("unchecked") // generic cast
   @Override
   public <T extends JavaExpression> @Nullable T containedOfClass(Class<T> clazz) {
