@@ -5,7 +5,7 @@ import org.checkerframework.dataflow.analysis.BackwardAnalysisImpl;
 import org.checkerframework.dataflow.analysis.UnusedAbstractValue;
 import org.checkerframework.dataflow.busyexpr.BusyExprStore;
 import org.checkerframework.dataflow.busyexpr.BusyExprTransfer;
-import org.checkerframework.dataflow.cfg.visualize.CFGVisualizeLauncher;
+import org.checkerframework.dataflow.cfg.visualize.CfgVisualizeLauncher;
 
 /** Used in busyExpressionTest Gradle task to test the BusyExpression analysis. */
 public class BusyExpression {
@@ -24,6 +24,6 @@ public class BusyExpression {
     BusyExprTransfer transfer = new BusyExprTransfer();
     BackwardAnalysis<UnusedAbstractValue, BusyExprStore, BusyExprTransfer> backwardAnalysis =
         new BackwardAnalysisImpl<>(transfer);
-    CFGVisualizeLauncher.writeStringOfCFG(inputFile, method, clazz, outputFile, backwardAnalysis);
+    CfgVisualizeLauncher.writeStringOfCfg(inputFile, method, clazz, outputFile, backwardAnalysis);
   }
 }

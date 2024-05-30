@@ -51,7 +51,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeValidator;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.basetype.TypeValidator;
-import org.checkerframework.framework.flow.CFCFGBuilder;
+import org.checkerframework.framework.flow.CFCfgBuilder;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -388,16 +388,16 @@ public class NullnessVisitor
   @Override
   public Void visitAssert(AssertTree tree, Void p) {
     // See also
-    // org.checkerframework.dataflow.cfg.builder.CFGBuilder.CFGTranslationPhaseOne.visitAssert
+    // org.checkerframework.dataflow.cfg.builder.CfgBuilder.CfgTranslationPhaseOne.visitAssert
 
     // In cases where neither assumeAssertionsAreEnabled nor assumeAssertionsAreDisabled are
     // turned on and @AssumeAssertions is not used, checkForNullability is still called since
-    // the CFGBuilder will have generated one branch for which asserts are assumed to be
+    // the CfgBuilder will have generated one branch for which asserts are assumed to be
     // enabled.
 
     boolean doVisitAssert;
     if (assumeAssertionsAreEnabled
-        || CFCFGBuilder.assumeAssertionsActivatedForAssertTree(checker, tree)) {
+        || CFCfgBuilder.assumeAssertionsActivatedForAssertTree(checker, tree)) {
       doVisitAssert = true;
     } else if (assumeAssertionsAreDisabled) {
       doVisitAssert = false;

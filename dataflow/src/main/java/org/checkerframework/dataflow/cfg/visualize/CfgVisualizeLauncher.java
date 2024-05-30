@@ -20,8 +20,8 @@ import org.checkerframework.dataflow.analysis.AbstractValue;
 import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.analysis.TransferFunction;
-import org.checkerframework.dataflow.cfg.CFGProcessor;
-import org.checkerframework.dataflow.cfg.CFGProcessor.CFGProcessResult;
+import org.checkerframework.dataflow.cfg.CfgProcessor;
+import org.checkerframework.dataflow.cfg.CfgProcessor.CfgProcessResult;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.plumelib.util.ArrayMap;
 
@@ -34,20 +34,20 @@ import org.plumelib.util.ArrayMap;
  * org.checkerframework.dataflow.cfg.playground.ConstantPropagationPlayground} for another way to
  * use it.
  */
-public final class CFGVisualizeLauncher {
+public final class CfgVisualizeLauncher {
 
   /** Class cannot be instantiated. */
-  private CFGVisualizeLauncher() {
-    throw new AssertionError("Class CFGVisualizeLauncher cannot be instantiated.");
+  private CfgVisualizeLauncher() {
+    throw new AssertionError("Class CfgVisualizeLauncher cannot be instantiated.");
   }
 
   /**
-   * The main entry point of CFGVisualizeLauncher.
+   * The main entry point of CfgVisualizeLauncher.
    *
    * @param args command-line arguments
    */
   public static void main(String[] args) {
-    CFGVisualizeOptions config = CFGVisualizeOptions.parseArgs(args);
+    CfgVisualizeOptions config = CfgVisualizeOptions.parseArgs(args);
 
     performAnalysis(config, null);
   }
@@ -58,16 +58,16 @@ public final class CFGVisualizeLauncher {
    * @param <V> the abstract value type of the analysis
    * @param <S> the store type of the analysis
    * @param <T> the transfer function type of the analysis
-   * @param config CFGVisualizeOptions that includes input file, output directory, method name, and
+   * @param config CfgVisualizeOptions that includes input file, output directory, method name, and
    *     class name
    * @param analysis analysis to perform before the visualization (or {@code null} if no analysis is
    *     to be performed)
    */
   public static <V extends AbstractValue<V>, S extends Store<S>, T extends TransferFunction<V, S>>
-      void performAnalysis(CFGVisualizeOptions config, @Nullable Analysis<V, S, T> analysis) {
+      void performAnalysis(CfgVisualizeOptions config, @Nullable Analysis<V, S, T> analysis) {
     if (!config.isString()) {
       if (analysis == null) {
-        generateDOTofCFGWithoutAnalysis(
+        generateDotOfCfgWithoutAnalysis(
             config.getInputFile(),
             config.getOutputDirectory(),
             config.getMethodName(),
@@ -75,7 +75,7 @@ public final class CFGVisualizeLauncher {
             config.isPDF(),
             config.isVerbose());
       } else {
-        generateDOTofCFG(
+        generateDotOfCfg(
             config.getInputFile(),
             config.getOutputDirectory(),
             config.getMethodName(),
@@ -87,7 +87,7 @@ public final class CFGVisualizeLauncher {
     } else {
       if (analysis == null) {
         String stringGraph =
-            generateStringOfCFGWithoutAnalysis(
+            generateStringOfCfgWithoutAnalysis(
                 config.getInputFile(),
                 config.getMethodName(),
                 config.getClassName(),
@@ -95,7 +95,7 @@ public final class CFGVisualizeLauncher {
         System.out.println(stringGraph);
       } else {
         Map<String, Object> res =
-            generateStringOfCFG(
+            generateStringOfCfg(
                 config.getInputFile(),
                 config.getMethodName(),
                 config.getClassName(),
@@ -130,14 +130,14 @@ public final class CFGVisualizeLauncher {
    * @param pdf also generate a PDF
    * @param verbose show verbose information in CFG
    */
-  private static void generateDOTofCFGWithoutAnalysis(
+  private static void generateDotOfCfgWithoutAnalysis(
       String inputFile,
       String outputDir,
       String method,
       String clas,
       boolean pdf,
       boolean verbose) {
-    generateDOTofCFG(inputFile, outputDir, method, clas, pdf, verbose, null);
+    generateDotOfCfg(inputFile, outputDir, method, clas, pdf, verbose, null);
   }
 
   /**
@@ -149,9 +149,9 @@ public final class CFGVisualizeLauncher {
    * @param verbose show verbose information in CFG
    * @return the String representation of the CFG
    */
-  private static String generateStringOfCFGWithoutAnalysis(
+  private static String generateStringOfCfgWithoutAnalysis(
       String inputFile, String method, String clas, boolean verbose) {
-    Map<String, Object> res = generateStringOfCFG(inputFile, method, clas, verbose, null);
+    Map<String, Object> res = generateStringOfCfg(inputFile, method, clas, verbose, null);
     if (res != null) {
       String stringGraph = (String) res.get("stringGraph");
       if (stringGraph == null) {
@@ -179,7 +179,7 @@ public final class CFGVisualizeLauncher {
    *     to be performed)
    */
   private static <V extends AbstractValue<V>, S extends Store<S>, T extends TransferFunction<V, S>>
-      void generateDOTofCFG(
+      void generateDotOfCfg(
           String inputFile,
           String outputDir,
           String method,
@@ -196,7 +196,7 @@ public final class CFGVisualizeLauncher {
     args.put("outdir", outputDir);
     args.put("verbose", verbose);
 
-    CFGVisualizer<V, S, T> viz = new DOTCFGVisualizer<>();
+    CfgVisualizer<V, S, T> viz = new DotCfgVisualizer<>();
     viz.init(args);
     Map<String, Object> res = viz.visualizeWithAction(cfg, cfg.getEntryBlock(), analysis);
     viz.shutdown();
@@ -216,7 +216,7 @@ public final class CFGVisualizeLauncher {
    * @return control flow graph of the specified method
    */
   public static ControlFlowGraph generateMethodCFG(String file, String clas, String method) {
-    CFGProcessor cfgProcessor = new CFGProcessor(clas, method);
+    CfgProcessor cfgProcessor = new CfgProcessor(clas, method);
 
     Context context = new Context();
     Options.instance(context).put("compilePolicy", "ATTR_ONLY");
@@ -254,7 +254,7 @@ public final class CFGVisualizeLauncher {
       System.setErr(err);
     }
 
-    CFGProcessResult res = cfgProcessor.getCFGProcessResult();
+    CfgProcessResult res = cfgProcessor.getCfgProcessResult();
 
     if (res == null) {
       printError("internal error in type processor! method typeProcessOver() doesn't get called.");
@@ -279,9 +279,9 @@ public final class CFGVisualizeLauncher {
    * @param analysis instance of forward or backward analysis from specific dataflow test case
    */
   @SuppressWarnings("CatchAndPrintStackTrace") // we want to use e.printStackTrace here.
-  public static void writeStringOfCFG(
+  public static void writeStringOfCfg(
       String inputFile, String method, String clas, String outputFile, Analysis<?, ?, ?> analysis) {
-    Map<String, Object> res = generateStringOfCFG(inputFile, method, clas, true, analysis);
+    Map<String, Object> res = generateStringOfCfg(inputFile, method, clas, true, analysis);
     try (FileWriter out = new FileWriter(outputFile, StandardCharsets.UTF_8)) {
       if (res != null && res.get("stringGraph") != null) {
         out.write(res.get("stringGraph").toString());
@@ -324,7 +324,7 @@ public final class CFGVisualizeLauncher {
    *     value
    */
   private static <V extends AbstractValue<V>, S extends Store<S>, T extends TransferFunction<V, S>>
-      @Nullable Map<String, Object> generateStringOfCFG(
+      @Nullable Map<String, Object> generateStringOfCfg(
       String inputFile,
       String method,
       String clas,
@@ -337,7 +337,7 @@ public final class CFGVisualizeLauncher {
 
     Map<String, Object> args = Collections.singletonMap("verbose", verbose);
 
-    CFGVisualizer<V, S, T> viz = new StringCFGVisualizer<>();
+    CfgVisualizer<V, S, T> viz = new StringCfgVisualizer<>();
     viz.init(args);
     Map<String, Object> res = viz.visualize(cfg, cfg.getEntryBlock(), analysis);
     viz.shutdown();

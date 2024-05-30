@@ -17,7 +17,7 @@ import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.block.SpecialBlock;
-import org.checkerframework.dataflow.cfg.visualize.AbstractCFGVisualizer.VisualizeWhere;
+import org.checkerframework.dataflow.cfg.visualize.AbstractCfgVisualizer.VisualizeWhere;
 import org.checkerframework.dataflow.expression.ArrayAccess;
 import org.checkerframework.dataflow.expression.ClassName;
 import org.checkerframework.dataflow.expression.FieldAccess;
@@ -25,15 +25,15 @@ import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.MethodCall;
 
 /** Generate the String representation of a control flow graph. */
-public class StringCFGVisualizer<
+public class StringCfgVisualizer<
         V extends AbstractValue<V>, S extends Store<S>, T extends TransferFunction<V, S>>
-    extends AbstractCFGVisualizer<V, S, T> {
+    extends AbstractCfgVisualizer<V, S, T> {
 
   /** Stream to output String representation to. */
   protected PrintStream out;
 
-  /** Create a StringCFGVisualizer. */
-  public StringCFGVisualizer() {
+  /** Create a StringCfgVisualizer. */
+  public StringCfgVisualizer() {
     out = System.out;
   }
 
@@ -168,7 +168,7 @@ public class StringCFGVisualizer<
   /**
    * {@inheritDoc}
    *
-   * <p>StringCFGVisualizer does not write into file, so left intentionally blank.
+   * <p>StringCfgVisualizer does not write into file, so left intentionally blank.
    */
   @Override
   public void shutdown() {}
@@ -176,7 +176,7 @@ public class StringCFGVisualizer<
   /**
    * {@inheritDoc}
    *
-   * <p>StringCFGVisualizer does not need a specific header, so just return an empty string.
+   * <p>StringCfgVisualizer does not need a specific header, so just return an empty string.
    */
   @Override
   protected String visualizeGraphHeader() {
@@ -186,7 +186,7 @@ public class StringCFGVisualizer<
   /**
    * {@inheritDoc}
    *
-   * <p>StringCFGVisualizer does not need a specific footer, so just return an empty string.
+   * <p>StringCfgVisualizer does not need a specific footer, so just return an empty string.
    */
   @Override
   protected String visualizeGraphFooter() {

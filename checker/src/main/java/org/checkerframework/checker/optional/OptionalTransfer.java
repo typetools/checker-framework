@@ -15,7 +15,7 @@ import javax.lang.model.util.Elements;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.optional.qual.Present;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
-import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGLambda;
+import org.checkerframework.dataflow.cfg.UnderlyingAST.CfgLambda;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
@@ -66,7 +66,7 @@ public class OptionalTransfer extends CFTransfer {
       // Check whether this lambda is an argument to `Optional.ifPresent()` or
       // `Optional.ifPresentOrElse()`.  If so, then within the lambda, the receiver of the
       // `ifPresent*` method is @Present.
-      CFGLambda cfgLambda = (CFGLambda) underlyingAST;
+      CfgLambda cfgLambda = (CfgLambda) underlyingAST;
       LambdaExpressionTree lambdaTree = cfgLambda.getLambdaTree();
       List<? extends VariableTree> lambdaParams = lambdaTree.getParameters();
       if (lambdaParams.size() == 1) {

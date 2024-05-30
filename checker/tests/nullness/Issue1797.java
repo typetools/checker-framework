@@ -203,7 +203,7 @@ public class Issue1797 {
     }
   }
 
-  boolean nestedCFGConstructionTest(@Nullable Object o) {
+  boolean nestedCfgConstructionTest(@Nullable Object o) {
     boolean result = true;
     java.io.BufferedWriter out = null;
     try {
@@ -230,7 +230,7 @@ public class Issue1797 {
     }
   }
 
-  boolean nestedCFGConstructionTest2() throws java.io.IOException {
+  boolean nestedCfgConstructionTest2() throws java.io.IOException {
     java.io.BufferedWriter out =
         new java.io.BufferedWriter(new java.io.OutputStreamWriter(System.err));
     try {

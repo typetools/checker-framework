@@ -57,15 +57,15 @@ import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
-import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGLambda;
-import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
-import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGStatement;
+import org.checkerframework.dataflow.cfg.UnderlyingAST.CfgLambda;
+import org.checkerframework.dataflow.cfg.UnderlyingAST.CfgMethod;
+import org.checkerframework.dataflow.cfg.UnderlyingAST.CfgStatement;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
-import org.checkerframework.dataflow.cfg.visualize.CFGVisualizer;
-import org.checkerframework.dataflow.cfg.visualize.DOTCFGVisualizer;
+import org.checkerframework.dataflow.cfg.visualize.CfgVisualizer;
+import org.checkerframework.dataflow.cfg.visualize.DotCfgVisualizer;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.LocalVariable;
@@ -75,7 +75,7 @@ import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAbstractTransfer;
 import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.framework.flow.CFAnalysis;
-import org.checkerframework.framework.flow.CFCFGBuilder;
+import org.checkerframework.framework.flow.CFCfgBuilder;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
@@ -259,8 +259,8 @@ public abstract class GenericAnnotatedTypeFactory<
 
   /**
    * True if this checker either has one or more subcheckers, or if this checker is a subchecker.
-   * False otherwise. All uses of the methods {@link #addSharedCFGForTree(Tree, ControlFlowGraph)}
-   * and {@link #getSharedCFGForTree(Tree)} should be guarded by a check that this is true.
+   * False otherwise. All uses of the methods {@link #addSharedCfgForTree(Tree, ControlFlowGraph)}
+   * and {@link #getSharedCfgForTree(Tree)} should be guarded by a check that this is true.
    */
   public final boolean hasOrIsSubchecker;
 
@@ -315,7 +315,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * map, and sets this field back to false. That first subchecker will create a CFG and re-populate
    * the map, and subsequent subcheckers will use the map.
    */
-  protected boolean shouldClearSubcheckerSharedCFGs = true;
+  protected boolean shouldClearSubcheckerSharedCfgs = true;
 
   /**
    * Creates a type factory. Its compilation unit is not yet set.
@@ -339,8 +339,8 @@ public abstract class GenericAnnotatedTypeFactory<
     this.initializationStore = null;
     this.initializationStaticStore = null;
 
-    this.cfgVisualizer = createCFGVisualizer();
-    this.handleCFGViz = checker.hasOption("flowdotdir") || checker.hasOption("cfgviz");
+    this.cfgVisualizer = createCfgVisualizer();
+    this.handleCfgViz = checker.hasOption("flowdotdir") || checker.hasOption("cfgviz");
 
     if (shouldCache) {
       int cacheSize = getCacheSize();
@@ -459,7 +459,7 @@ public abstract class GenericAnnotatedTypeFactory<
       if (this.checker.getParentChecker() == null) {
         // This is an ultimate parent checker, so after it runs the shared CFG it is using
         // will no longer be needed, and can be cleared.
-        this.shouldClearSubcheckerSharedCFGs = true;
+        this.shouldClearSubcheckerSharedCfgs = true;
         if (this.checker.getSubcheckers().isEmpty()) {
           // If this checker has no subcheckers, then any maps that are currently
           // being maintained should be cleared right away.
@@ -480,10 +480,10 @@ public abstract class GenericAnnotatedTypeFactory<
    * @param factory a type factory
    */
   private void clearSharedCFG(GenericAnnotatedTypeFactory<?, ?, ?, ?> factory) {
-    if (factory.shouldClearSubcheckerSharedCFGs) {
+    if (factory.shouldClearSubcheckerSharedCfgs) {
       // This is the first subchecker running in a group that share CFGs, so it must clear its
       // ultimate parent's shared CFG before adding a new shared CFG.
-      factory.shouldClearSubcheckerSharedCFGs = false;
+      factory.shouldClearSubcheckerSharedCfgs = false;
       if (factory.subcheckerSharedCFG != null) {
         factory.subcheckerSharedCFG.clear();
       }
@@ -1364,7 +1364,7 @@ public abstract class GenericAnnotatedTypeFactory<
       // construct); analyze top-level blocks and variable initializers as they are
       // encountered.
       try {
-        List<CFGMethod> methods = new ArrayList<>();
+        List<CfgMethod> methods = new ArrayList<>();
         List<? extends Tree> members = ct.getMembers();
         if (!Ordering.from(sortVariablesFirst).isOrdered(members)) {
           members = new ArrayList<>(members);
@@ -1398,7 +1398,7 @@ public abstract class GenericAnnotatedTypeFactory<
 
               // Wait with scanning the method until all other members
               // have been processed.
-              CFGMethod met = new CFGMethod(mt, ct);
+              CfgMethod met = new CfgMethod(mt, ct);
               methods.add(met);
               break;
             case VARIABLE:
@@ -1413,7 +1413,7 @@ public abstract class GenericAnnotatedTypeFactory<
                 analyze(
                     classQueue,
                     lambdaQueue,
-                    new CFGStatement(vt, ct),
+                    new CfgStatement(vt, ct),
                     fieldValues,
                     classTree,
                     true,
@@ -1434,7 +1434,7 @@ public abstract class GenericAnnotatedTypeFactory<
               analyze(
                   classQueue,
                   lambdaQueue,
-                  new CFGStatement(b, ct),
+                  new CfgStatement(b, ct),
                   fieldValues,
                   ct,
                   true,
@@ -1451,7 +1451,7 @@ public abstract class GenericAnnotatedTypeFactory<
         // Now analyze all methods.
         // TODO: at this point, we don't have any information about
         // fields of superclasses.
-        for (CFGMethod met : methods) {
+        for (CfgMethod met : methods) {
           analyze(
               classQueue,
               lambdaQueue,
@@ -1472,7 +1472,7 @@ public abstract class GenericAnnotatedTypeFactory<
           analyze(
               classQueue,
               lambdaQueue,
-              new CFGLambda(lambdaPair.first, classTree, mt),
+              new CfgLambda(lambdaPair.first, classTree, mt),
               fieldValues,
               classTree,
               false,
@@ -1537,7 +1537,7 @@ public abstract class GenericAnnotatedTypeFactory<
       boolean updateInitializationStore,
       boolean isStatic,
       @Nullable Store capturedStore) {
-    ControlFlowGraph cfg = CFCFGBuilder.build(root, ast, checker, this, processingEnv);
+    ControlFlowGraph cfg = CFCfgBuilder.build(root, ast, checker, this, processingEnv);
     cfg.getAllNodes(this::isIgnoredExceptionType)
         .forEach(
             node -> {
@@ -1565,7 +1565,7 @@ public abstract class GenericAnnotatedTypeFactory<
     flowResult.combine(result);
     if (ast.getKind() == UnderlyingAST.Kind.METHOD) {
       // store exit store (for checking postconditions)
-      CFGMethod mast = (CFGMethod) ast;
+      CfgMethod mast = (CfgMethod) ast;
       MethodTree method = mast.getMethod();
       Store regularExitStore = analysis.getRegularExitStore();
       if (regularExitStore != null) {
@@ -1577,7 +1577,7 @@ public abstract class GenericAnnotatedTypeFactory<
       }
       returnStatementStores.put(method, analysis.getReturnStatementStores());
     } else if (ast.getKind() == UnderlyingAST.Kind.ARBITRARY_CODE) {
-      CFGStatement block = (CFGStatement) ast;
+      CfgStatement block = (CfgStatement) ast;
       Store regularExitStore = analysis.getRegularExitStore();
       if (regularExitStore != null) {
         regularExitStores.put(block.getCode(), regularExitStore);
@@ -1589,7 +1589,7 @@ public abstract class GenericAnnotatedTypeFactory<
     } else if (ast.getKind() == UnderlyingAST.Kind.LAMBDA) {
       // TODO: Postconditions?
 
-      CFGLambda block = (CFGLambda) ast;
+      CfgLambda block = (CfgLambda) ast;
       Store regularExitStore = analysis.getRegularExitStore();
       if (regularExitStore != null) {
         regularExitStores.put(block.getCode(), regularExitStore);
@@ -1646,20 +1646,20 @@ public abstract class GenericAnnotatedTypeFactory<
    *     org.checkerframework.framework.flow.CFAbstractStore)
    */
   protected void postAnalyze(ControlFlowGraph cfg) {
-    handleCFGViz(cfg);
+    handleCfgViz(cfg);
   }
 
   /** Whether handling CFG visualization is necessary. */
-  private final boolean handleCFGViz;
+  private final boolean handleCfgViz;
 
   /**
    * Handle the visualization of the CFG, if necessary.
    *
    * @param cfg the CFG
    */
-  protected void handleCFGViz(ControlFlowGraph cfg) {
-    if (handleCFGViz) {
-      getCFGVisualizer().visualizeWithAction(cfg, cfg.getEntryBlock(), analysis);
+  protected void handleCfgViz(ControlFlowGraph cfg) {
+    if (handleCfgViz) {
+      getCfgVisualizer().visualizeWithAction(cfg, cfg.getEntryBlock(), analysis);
     }
   }
 
@@ -2261,15 +2261,15 @@ public abstract class GenericAnnotatedTypeFactory<
     return shouldDefaultTypeVarLocals;
   }
 
-  /** The CFGVisualizer to be used by all CFAbstractAnalysis instances. */
-  protected final CFGVisualizer<Value, Store, TransferFunction> cfgVisualizer;
+  /** The CfgVisualizer to be used by all CFAbstractAnalysis instances. */
+  protected final CfgVisualizer<Value, Store, TransferFunction> cfgVisualizer;
 
   /**
-   * Create a new CFGVisualizer.
+   * Create a new CfgVisualizer.
    *
-   * @return a new CFGVisualizer, or null if none will be used on this run
+   * @return a new CfgVisualizer, or null if none will be used on this run
    */
-  protected @Nullable CFGVisualizer<Value, Store, TransferFunction> createCFGVisualizer() {
+  protected @Nullable CfgVisualizer<Value, Store, TransferFunction> createCfgVisualizer() {
     if (checker.hasOption("flowdotdir")) {
       String flowdotdir = checker.getOption("flowdotdir");
       if (flowdotdir.equals("")) {
@@ -2282,7 +2282,7 @@ public abstract class GenericAnnotatedTypeFactory<
       args.put("verbose", verbose);
       args.put("checkerName", getCheckerName());
 
-      CFGVisualizer<Value, Store, TransferFunction> res = new DOTCFGVisualizer<>();
+      CfgVisualizer<Value, Store, TransferFunction> res = new DotCfgVisualizer<>();
       res.init(args);
       return res;
     } else if (checker.hasOption("cfgviz")) {
@@ -2297,14 +2297,14 @@ public abstract class GenericAnnotatedTypeFactory<
             "Bad -Acfgviz class name \"%s\", should be a binary name.", vizClassName);
       }
 
-      Map<String, Object> args = processCFGVisualizerOption(opts);
+      Map<String, Object> args = processCfgVisualizerOption(opts);
       if (!args.containsKey("verbose")) {
         boolean verbose = checker.hasOption("verbosecfg");
         args.put("verbose", verbose);
       }
       args.put("checkerName", getCheckerName());
 
-      CFGVisualizer<Value, Store, TransferFunction> res =
+      CfgVisualizer<Value, Store, TransferFunction> res =
           BaseTypeChecker.invokeConstructorFor(vizClassName, null, null);
       if (res == null) {
         throw new UserError("Can't load " + vizClassName);
@@ -2333,7 +2333,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * @param opts the CFG visualization options
    * @return a map that represents the options
    */
-  private Map<String, Object> processCFGVisualizerOption(List<String> opts) {
+  private Map<String, Object> processCfgVisualizerOption(List<String> opts) {
     Map<String, Object> res = new HashMap<>(CollectionsPlume.mapCapacity(opts.size() - 1));
     // Index 0 is the visualizer class name and can be ignored.
     for (int i = 1; i < opts.size(); ++i) {
@@ -2353,8 +2353,8 @@ public abstract class GenericAnnotatedTypeFactory<
     return res;
   }
 
-  /** The CFGVisualizer to be used by all CFAbstractAnalysis instances. */
-  public CFGVisualizer<Value, Store, TransferFunction> getCFGVisualizer() {
+  /** The CfgVisualizer to be used by all CFAbstractAnalysis instances. */
+  public CfgVisualizer<Value, Store, TransferFunction> getCfgVisualizer() {
     return cfgVisualizer;
   }
 
@@ -2947,7 +2947,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * @param cfg the control flow graph to use for tree
    * @return whether a shared CFG was found to actually add to (duplicate keys also return true)
    */
-  public boolean addSharedCFGForTree(Tree tree, ControlFlowGraph cfg) {
+  public boolean addSharedCfgForTree(Tree tree, ControlFlowGraph cfg) {
     if (!shouldCache) {
       return false;
     }
@@ -2970,7 +2970,7 @@ public abstract class GenericAnnotatedTypeFactory<
     // This is a subchecker.
     if (parentChecker != null) {
       GenericAnnotatedTypeFactory<?, ?, ?, ?> parentAtf = parentChecker.getTypeFactory();
-      return parentAtf.addSharedCFGForTree(tree, cfg);
+      return parentAtf.addSharedCfgForTree(tree, cfg);
     } else {
       return false;
     }
@@ -2988,7 +2988,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * @return the CFG stored by this checker's uppermost superchecker for tree, or null if it is not
    *     available
    */
-  public @Nullable ControlFlowGraph getSharedCFGForTree(Tree tree) {
+  public @Nullable ControlFlowGraph getSharedCfgForTree(Tree tree) {
     if (!shouldCache) {
       return null;
     }
@@ -3005,7 +3005,7 @@ public abstract class GenericAnnotatedTypeFactory<
     // This is a subchecker.
     if (parentChecker != null) {
       GenericAnnotatedTypeFactory<?, ?, ?, ?> parentAtf = parentChecker.getTypeFactory();
-      return parentAtf.getSharedCFGForTree(tree);
+      return parentAtf.getSharedCfgForTree(tree);
     } else {
       return null;
     }

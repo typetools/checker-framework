@@ -83,7 +83,7 @@ tasks.create(name: 'allDataflowTests', group: 'Verification') {
  * name of the test class.
  * Optionally, when option {@code diff} is true, the output is compared against a
  * {@code Expected.txt} file.
- * See org.checkerframework.dataflow.cfg.visualize.CFGVisualizeLauncher for more details.
+ * See org.checkerframework.dataflow.cfg.visualize.CfgVisualizeLauncher for more details.
  * @param taskName the task name for the new task
  * @param dirName the directory name of the directory that contains the test files
  * @param className the fully-qualified name of the test class
@@ -151,7 +151,7 @@ def testDataflowAnalysis(taskName, dirName, className, diff) {
 
 // When adding a new test case, don't forget to add the temporary files to `../.gitignore`.
 testDataflowAnalysis("busyExpressionTest", "busyexpr", "busyexpr.BusyExpression", true)
-testDataflowAnalysis("cfgConstructionTest", "cfgconstruction", "cfgconstruction.CFGConstruction", false)
+testDataflowAnalysis("cfgConstructionTest", "cfgconstruction", "cfgconstruction.CfgConstruction", false)
 testDataflowAnalysis("constantPropagationTest", "constant-propagation", "constantpropagation.ConstantPropagation", true)
 testDataflowAnalysis("issue3447Test", "issue3447", "livevar.LiveVariable", false)
 testDataflowAnalysis("liveVariableTest", "live-variable", "livevar.LiveVariable", true)

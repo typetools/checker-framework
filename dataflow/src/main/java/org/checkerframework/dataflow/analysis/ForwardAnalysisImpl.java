@@ -13,8 +13,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
-import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGLambda;
-import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
+import org.checkerframework.dataflow.cfg.UnderlyingAST.CfgLambda;
+import org.checkerframework.dataflow.cfg.UnderlyingAST.CfgMethod;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
@@ -360,11 +360,11 @@ public class ForwardAnalysisImpl<
   private List<LocalVariableNode> getParameters(UnderlyingAST underlyingAST) {
     switch (underlyingAST.getKind()) {
       case METHOD:
-        MethodTree tree = ((CFGMethod) underlyingAST).getMethod();
+        MethodTree tree = ((CfgMethod) underlyingAST).getMethod();
         // TODO: document that LocalVariableNode has no block that it belongs to
         return CollectionsPlume.mapList(LocalVariableNode::new, tree.getParameters());
       case LAMBDA:
-        LambdaExpressionTree lambda = ((CFGLambda) underlyingAST).getLambdaTree();
+        LambdaExpressionTree lambda = ((CfgLambda) underlyingAST).getLambdaTree();
         // TODO: document that LocalVariableNode has no block that it belongs to
         return CollectionsPlume.mapList(LocalVariableNode::new, lambda.getParameters());
       default:

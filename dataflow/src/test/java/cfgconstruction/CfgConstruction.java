@@ -1,9 +1,9 @@
 package cfgconstruction;
 
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
-import org.checkerframework.dataflow.cfg.visualize.CFGVisualizeLauncher;
+import org.checkerframework.dataflow.cfg.visualize.CfgVisualizeLauncher;
 
-public class CFGConstruction {
+public class CfgConstruction {
 
   public static void main(String[] args) {
 
@@ -11,7 +11,7 @@ public class CFGConstruction {
     String clazz = "Test";
     String method = "manyNestedTryFinallyBlocks";
 
-    ControlFlowGraph cfg = CFGVisualizeLauncher.generateMethodCFG(inputFile, clazz, method);
+    ControlFlowGraph cfg = CfgVisualizeLauncher.generateMethodCFG(inputFile, clazz, method);
     cfg.checkInvariants();
   }
 }

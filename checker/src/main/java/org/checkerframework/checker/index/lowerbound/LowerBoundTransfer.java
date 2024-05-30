@@ -705,7 +705,7 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
   protected void addInformationFromPreconditions(
       CFStore info,
       AnnotatedTypeFactory factory,
-      UnderlyingAST.CFGMethod method,
+      UnderlyingAST.CfgMethod method,
       MethodTree methodTree,
       ExecutableElement methodElement) {
     super.addInformationFromPreconditions(info, factory, method, methodTree, methodElement);

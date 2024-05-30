@@ -7,7 +7,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.cfg.node.BinaryOperationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
-import org.checkerframework.dataflow.cfg.visualize.CFGVisualizer;
+import org.checkerframework.dataflow.cfg.visualize.CfgVisualizer;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.javacutil.BugInCF;
 
@@ -109,7 +109,7 @@ public class BusyExprStore implements Store<BusyExprStore> {
   }
 
   @Override
-  public String visualize(CFGVisualizer<?, BusyExprStore, ?> viz) {
+  public String visualize(CfgVisualizer<?, BusyExprStore, ?> viz) {
     String key = "busy expressions";
     if (busyExprValueSet.isEmpty()) {
       return viz.visualizeStoreKeyVal(key, "none");

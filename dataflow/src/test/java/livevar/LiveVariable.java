@@ -3,7 +3,7 @@ package livevar;
 import org.checkerframework.dataflow.analysis.BackwardAnalysis;
 import org.checkerframework.dataflow.analysis.BackwardAnalysisImpl;
 import org.checkerframework.dataflow.analysis.UnusedAbstractValue;
-import org.checkerframework.dataflow.cfg.visualize.CFGVisualizeLauncher;
+import org.checkerframework.dataflow.cfg.visualize.CfgVisualizeLauncher;
 import org.checkerframework.dataflow.livevariable.LiveVarStore;
 import org.checkerframework.dataflow.livevariable.LiveVarTransfer;
 
@@ -24,6 +24,6 @@ public class LiveVariable {
     LiveVarTransfer transfer = new LiveVarTransfer();
     BackwardAnalysis<UnusedAbstractValue, LiveVarStore, LiveVarTransfer> backwardAnalysis =
         new BackwardAnalysisImpl<>(transfer);
-    CFGVisualizeLauncher.writeStringOfCFG(inputFile, method, clas, outputFile, backwardAnalysis);
+    CfgVisualizeLauncher.writeStringOfCfg(inputFile, method, clas, outputFile, backwardAnalysis);
   }
 }

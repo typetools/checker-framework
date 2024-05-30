@@ -25,7 +25,7 @@ import org.checkerframework.dataflow.expression.MethodCall;
  * @param <S> the store type used in the analysis
  * @param <T> the transfer function type that is used to approximate run-time behavior
  */
-public interface CFGVisualizer<
+public interface CfgVisualizer<
     V extends AbstractValue<V>, S extends Store<S>, T extends TransferFunction<V, S>> {
   /**
    * Initialization method guaranteed to be called once before the first invocation of {@link
@@ -56,8 +56,8 @@ public interface CFGVisualizer<
    *     The information includes {@link Store}s that are valid at the beginning of basic blocks
    *     reachable from {@code entry} and per-node information for value producing {@link Node}s.
    *     Can also be {@code null} to indicate that this information should not be output.
-   * @return visualization results, e.g. generated file names ({@link DOTCFGVisualizer}) or a String
-   *     representation of the CFG ({@link StringCFGVisualizer})
+   * @return visualization results, e.g. generated file names ({@link DotCfgVisualizer}) or a String
+   *     representation of the CFG ({@link StringCfgVisualizer})
    * @see #visualizeWithAction(ControlFlowGraph, Block, Analysis)
    */
   @Nullable Map<String, Object> visualize(
@@ -77,8 +77,8 @@ public interface CFGVisualizer<
    *     The information includes {@link Store}s that are valid at the beginning of basic blocks
    *     reachable from {@code entry} and per-node information for value producing {@link Node}s.
    *     Can also be {@code null} to indicate that this information should not be output.
-   * @return visualization results, e.g. generated file names ({@link DOTCFGVisualizer}) or a String
-   *     representation of the CFG ({@link StringCFGVisualizer})
+   * @return visualization results, e.g. generated file names ({@link DotCfgVisualizer}) or a String
+   *     representation of the CFG ({@link StringCfgVisualizer})
    * @see #visualize(ControlFlowGraph, Block, Analysis)
    */
   @Nullable Map<String, Object> visualizeWithAction(

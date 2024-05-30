@@ -28,7 +28,7 @@ import org.checkerframework.javacutil.trees.TreeBuilder;
 
 /**
  * The TreeBuilder permits the creation of new AST Trees using the non-public Java compiler API
- * TreeMaker. Initially, it will support construction of desugared Trees required by the CFGBuilder,
+ * TreeMaker. Initially, it will support construction of desugared Trees required by the CfgBuilder,
  * e.g. the pieces of a desugared enhanced for loop.
  */
 public class CFTreeBuilder extends TreeBuilder {

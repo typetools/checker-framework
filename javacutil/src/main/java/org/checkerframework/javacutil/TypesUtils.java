@@ -1517,7 +1517,7 @@ public final class TypesUtils {
    * @return true if assignment to the type may be a narrowing
    */
   public static boolean canBeNarrowingPrimitiveConversion(TypeMirror type, Types types) {
-    // See CFGBuilder.CFGTranslationPhaseOne#conversionRequiresNarrowing()
+    // See CfgBuilder.CfgTranslationPhaseOne#conversionRequiresNarrowing()
     TypeMirror unboxedType = isBoxedPrimitive(type) ? types.unboxedType(type) : type;
     TypeKind unboxedKind = unboxedType.getKind();
     return unboxedKind == TypeKind.BYTE

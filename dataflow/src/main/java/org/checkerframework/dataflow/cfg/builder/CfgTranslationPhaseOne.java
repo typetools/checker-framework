@@ -210,7 +210,7 @@ import org.plumelib.util.IdentityArraySet;
  * #process(TreePath, UnderlyingAST)}.
  */
 @SuppressWarnings("nullness") // TODO
-public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
+public class CfgTranslationPhaseOne extends TreeScanner<Node, Void> {
 
   /** Path to the tree currently being scanned. */
   private TreePath path;
@@ -383,7 +383,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   protected final Set<TypeMirror> newArrayExceptionTypes;
 
   /**
-   * Creates {@link CFGTranslationPhaseOne}.
+   * Creates {@link CfgTranslationPhaseOne}.
    *
    * @param treeBuilder builder for new AST nodes
    * @param annotationProvider extracts annotations from AST nodes
@@ -391,7 +391,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @param assumeAssertionsEnabled can assertions be assumed to be enabled?
    * @param env annotation processing environment containing type utilities
    */
-  public CFGTranslationPhaseOne(
+  public CfgTranslationPhaseOne(
       TreeBuilder treeBuilder,
       AnnotationProvider annotationProvider,
       boolean assumeAssertionsEnabled,
@@ -470,7 +470,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       // If we are building the CFG for a lambda with a single expression as the body, then
       // add an extra node for the result of that lambda.
       if (underlyingAST.getKind() == UnderlyingAST.Kind.LAMBDA) {
-        LambdaExpressionTree lambdaTree = ((UnderlyingAST.CFGLambda) underlyingAST).getLambdaTree();
+        LambdaExpressionTree lambdaTree = ((UnderlyingAST.CfgLambda) underlyingAST).getLambdaTree();
         if (lambdaTree.getBodyKind() == LambdaExpressionTree.BodyKind.EXPRESSION) {
           Node resultNode =
               new LambdaResultExpressionNode((ExpressionTree) lambdaTree.getBody(), finalNode);
@@ -1324,7 +1324,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           }
           if (actualVal == null) {
             throw new BugInCF(
-                "CFGBuilder: scan returned null for %s [%s]",
+                "CfgBuilder: scan returned null for %s [%s]",
                 actualExprs.get(i), actualExprs.get(i).getClass());
           }
           convertedNodes.add(methodInvocationConvert(actualVal, formals.get(i)));
@@ -3489,7 +3489,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   /**
    * Maps a {@code Tree} to its directly enclosing {@code ParenthesizedTree} if one exists.
    *
-   * <p>This map is used by {@link CFGTranslationPhaseOne#addToLookupMap(Node)} to associate a
+   * <p>This map is used by {@link CfgTranslationPhaseOne#addToLookupMap(Node)} to associate a
    * {@code ParenthesizedTree} with the dataflow {@code Node} that was used during inference. This
    * map is necessary because dataflow does not create a {@code Node} for a {@code
    * ParenthesizedTree}.
@@ -3842,7 +3842,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @param finallyLabel label for the entry of the finally block for the normal case
    * @param exceptionalFinallyLabel label for entry of the finally block for when the try block
    *     throws an exception
-   * @param finallyBlockCFGGenerator generates CFG nodes and edges for the finally block
+   * @param finallyBlockCfgGenerator generates CFG nodes and edges for the finally block
    * @param oldReturnTargetLC old return target label cell, which gets restored to {@link
    *     #returnTargetLC} while handling the finally block
    * @param oldBreakTargetLC old break target label cell, which gets restored to {@link
@@ -3859,7 +3859,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       Label doneLabel,
       Label finallyLabel,
       Label exceptionalFinallyLabel,
-      Runnable finallyBlockCFGGenerator,
+      Runnable finallyBlockCfgGenerator,
       LabelCell oldReturnTargetLC,
       LabelCell oldBreakTargetLC,
       Map<Name, Label> oldBreakLabels,
@@ -3876,7 +3876,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
               markerTree,
               "start of finally block #" + TreeUtils.treeUids.get(markerTree),
               env.getTypeUtils()));
-      finallyBlockCFGGenerator.run();
+      finallyBlockCfgGenerator.run();
       extendWithNode(
           new MarkerNode(
               markerTree,
@@ -3897,7 +3897,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
               "start of finally block for Throwable #" + TreeUtils.treeUids.get(markerTree),
               env.getTypeUtils()));
 
-      finallyBlockCFGGenerator.run();
+      finallyBlockCfgGenerator.run();
 
       NodeWithExceptionsHolder throwing =
           extendWithNodeWithException(
@@ -3919,7 +3919,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
               markerTree,
               "start of finally block for return #" + TreeUtils.treeUids.get(markerTree),
               env.getTypeUtils()));
-      finallyBlockCFGGenerator.run();
+      finallyBlockCfgGenerator.run();
       extendWithNode(
           new MarkerNode(
               markerTree,
@@ -3939,7 +3939,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
               markerTree,
               "start of finally block for break #" + TreeUtils.treeUids.get(markerTree),
               env.getTypeUtils()));
-      finallyBlockCFGGenerator.run();
+      finallyBlockCfgGenerator.run();
       extendWithNode(
           new MarkerNode(
               markerTree,
@@ -3964,7 +3964,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
                     + " #"
                     + TreeUtils.treeUids.get(markerTree),
                 env.getTypeUtils()));
-        finallyBlockCFGGenerator.run();
+        finallyBlockCfgGenerator.run();
         extendWithNode(
             new MarkerNode(
                 markerTree,
@@ -3988,7 +3988,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
               markerTree,
               "start of finally block for continue #" + TreeUtils.treeUids.get(markerTree),
               env.getTypeUtils()));
-      finallyBlockCFGGenerator.run();
+      finallyBlockCfgGenerator.run();
       extendWithNode(
           new MarkerNode(
               markerTree,
@@ -4014,7 +4014,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
                     + " #"
                     + TreeUtils.treeUids.get(markerTree),
                 env.getTypeUtils()));
-        finallyBlockCFGGenerator.run();
+        finallyBlockCfgGenerator.run();
         extendWithNode(
             new MarkerNode(
                 markerTree,

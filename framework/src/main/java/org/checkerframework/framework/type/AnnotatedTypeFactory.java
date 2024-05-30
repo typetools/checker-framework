@@ -3757,7 +3757,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * Adds the given mapping from a synthetic (generated) tree to its enclosing element.
    *
    * <p>See {@code
-   * org.checkerframework.framework.flow.CFCFGBuilder.CFCFGTranslationPhaseOne.handleArtificialTree(Tree)}.
+   * org.checkerframework.framework.flow.CFCfgBuilder.CfCfgTranslationPhaseOne.handleArtificialTree(Tree)}.
    *
    * @param tree artifical tree
    * @param enclosing element that encloses {@code tree}

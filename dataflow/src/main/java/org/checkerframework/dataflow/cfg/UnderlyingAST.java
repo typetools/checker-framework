@@ -62,7 +62,7 @@ public abstract class UnderlyingAST implements UniqueId {
   }
 
   /** If the underlying AST is a method. */
-  public static class CFGMethod extends UnderlyingAST {
+  public static class CfgMethod extends UnderlyingAST {
 
     /** The method declaration. */
     protected final MethodTree method;
@@ -70,7 +70,7 @@ public abstract class UnderlyingAST implements UniqueId {
     /** The class tree this method belongs to. */
     protected final ClassTree classTree;
 
-    public CFGMethod(MethodTree method, ClassTree classTree) {
+    public CfgMethod(MethodTree method, ClassTree classTree) {
       super(Kind.METHOD);
       this.method = method;
       this.classTree = classTree;
@@ -114,12 +114,12 @@ public abstract class UnderlyingAST implements UniqueId {
 
     @Override
     public String toString() {
-      return StringsPlume.joinLines("CFGMethod(", method, ")");
+      return StringsPlume.joinLines("CfgMethod(", method, ")");
     }
   }
 
   /** If the underlying AST is a lambda. */
-  public static class CFGLambda extends UnderlyingAST {
+  public static class CfgLambda extends UnderlyingAST {
 
     /** The lambda expression. */
     private final LambdaExpressionTree lambda;
@@ -131,13 +131,13 @@ public abstract class UnderlyingAST implements UniqueId {
     private final @Nullable MethodTree enclosingMethod;
 
     /**
-     * Create a new CFGLambda.
+     * Create a new CfgLambda.
      *
      * @param lambda the lambda expression
      * @param classTree the enclosing class of the lambda
      * @param enclosingMethod the enclosing method of the lambda
      */
-    public CFGLambda(
+    public CfgLambda(
         LambdaExpressionTree lambda, ClassTree classTree, @Nullable MethodTree enclosingMethod) {
       super(Kind.LAMBDA);
       this.lambda = lambda;
@@ -221,7 +221,7 @@ public abstract class UnderlyingAST implements UniqueId {
 
     @Override
     public String toString() {
-      return StringsPlume.joinLines("CFGLambda(", lambda, ")");
+      return StringsPlume.joinLines("CfgLambda(", lambda, ")");
     }
   }
 
@@ -229,14 +229,14 @@ public abstract class UnderlyingAST implements UniqueId {
    * If the underlying AST is a statement or expression. This is for field definitions (with
    * initializers) and initializer blocks.
    */
-  public static class CFGStatement extends UnderlyingAST {
+  public static class CfgStatement extends UnderlyingAST {
 
     protected final Tree code;
 
     /** The class tree this method belongs to. */
     protected final ClassTree classTree;
 
-    public CFGStatement(Tree code, ClassTree classTree) {
+    public CfgStatement(Tree code, ClassTree classTree) {
       super(Kind.ARBITRARY_CODE);
       this.code = code;
       this.classTree = classTree;
@@ -262,7 +262,7 @@ public abstract class UnderlyingAST implements UniqueId {
 
     @Override
     public String toString() {
-      return StringsPlume.joinLines("CFGStatement(", code, ")");
+      return StringsPlume.joinLines("CfgStatement(", code, ")");
     }
   }
 }

@@ -19,7 +19,7 @@ import org.checkerframework.javacutil.TreeUtils;
  * </pre>
  *
  * We allow local variable uses introduced by the {@link
- * org.checkerframework.dataflow.cfg.builder.CFGBuilder} without corresponding AST {@link Tree}s.
+ * org.checkerframework.dataflow.cfg.builder.CfgBuilder} without corresponding AST {@link Tree}s.
  */
 // TODO: don't use for parameters, as they don't have a tree
 public class LocalVariableNode extends Node {

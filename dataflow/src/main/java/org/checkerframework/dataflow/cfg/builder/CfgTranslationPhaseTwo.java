@@ -21,9 +21,9 @@ import org.plumelib.util.ArraySet;
 
 /** Class that performs phase two of the translation process. */
 @SuppressWarnings("nullness") // TODO
-public class CFGTranslationPhaseTwo {
+public class CfgTranslationPhaseTwo {
 
-  private CFGTranslationPhaseTwo() {}
+  private CfgTranslationPhaseTwo() {}
 
   /**
    * Perform phase two of the translation.
@@ -184,7 +184,7 @@ public class CFGTranslationPhaseTwo {
     // add missing edges
     for (MissingEdge p : missingEdges) {
       Integer index = p.index;
-      assert index != null : "CFGBuilder: problem in CFG construction " + p.source;
+      assert index != null : "CfgBuilder: problem in CFG construction " + p.source;
       ExtendedNode extendedNode = nodeList.get(index);
       BlockImpl target = extendedNode.getBlock();
       SingleSuccessorBlockImpl source = p.source;

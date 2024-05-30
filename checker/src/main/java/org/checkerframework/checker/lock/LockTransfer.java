@@ -10,7 +10,7 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
-import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
+import org.checkerframework.dataflow.cfg.UnderlyingAST.CfgMethod;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.Kind;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.Node;
@@ -112,7 +112,7 @@ public class LockTransfer extends CFAbstractTransfer<CFValue, LockStore, LockTra
 
     // Handle synchronized methods and constructors.
     if (astKind == UnderlyingAST.Kind.METHOD) {
-      CFGMethod method = (CFGMethod) underlyingAST;
+      CfgMethod method = (CfgMethod) underlyingAST;
       MethodTree methodTree = method.getMethod();
 
       ExecutableElement methodElement = TreeUtils.elementFromDeclaration(methodTree);

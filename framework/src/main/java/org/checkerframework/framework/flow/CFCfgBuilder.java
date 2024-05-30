@@ -18,10 +18,10 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
-import org.checkerframework.dataflow.cfg.builder.CFGBuilder;
-import org.checkerframework.dataflow.cfg.builder.CFGTranslationPhaseOne;
-import org.checkerframework.dataflow.cfg.builder.CFGTranslationPhaseThree;
-import org.checkerframework.dataflow.cfg.builder.CFGTranslationPhaseTwo;
+import org.checkerframework.dataflow.cfg.builder.CfgBuilder;
+import org.checkerframework.dataflow.cfg.builder.CfgTranslationPhaseOne;
+import org.checkerframework.dataflow.cfg.builder.CfgTranslationPhaseThree;
+import org.checkerframework.dataflow.cfg.builder.CfgTranslationPhaseTwo;
 import org.checkerframework.dataflow.cfg.builder.PhaseOneResult;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -32,12 +32,12 @@ import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.UserError;
 
 /**
- * A control-flow graph builder (see {@link CFGBuilder}) that knows about the Checker Framework
+ * A control-flow graph builder (see {@link CfgBuilder}) that knows about the Checker Framework
  * annotations and their representation as {@link AnnotatedTypeMirror}s.
  */
-public class CFCFGBuilder extends CFGBuilder {
+public class CFCfgBuilder extends CfgBuilder {
   /** This class should never be instantiated. Protected to still allow subclasses. */
-  protected CFCFGBuilder() {}
+  protected CFCfgBuilder() {}
 
   /** Build the control flow graph of some code. */
   public static ControlFlowGraph build(
@@ -59,7 +59,7 @@ public class CFCFGBuilder extends CFGBuilder {
       GenericAnnotatedTypeFactory<?, ?, ?, ?> asGATF =
           (GenericAnnotatedTypeFactory<?, ?, ?, ?>) factory;
       if (asGATF.hasOrIsSubchecker) {
-        ControlFlowGraph sharedCFG = asGATF.getSharedCFGForTree(underlyingAST.getCode());
+        ControlFlowGraph sharedCFG = asGATF.getSharedCfgForTree(underlyingAST.getCode());
         if (sharedCFG != null) {
           return sharedCFG;
         }
@@ -68,16 +68,16 @@ public class CFCFGBuilder extends CFGBuilder {
 
     CFTreeBuilder builder = new CFTreeBuilder(env);
     PhaseOneResult phase1result =
-        new CFCFGTranslationPhaseOne(
+        new CfCfgTranslationPhaseOne(
                 builder, checker, factory, assumeAssertionsEnabled, assumeAssertionsDisabled, env)
             .process(root, underlyingAST);
-    ControlFlowGraph phase2result = CFGTranslationPhaseTwo.process(phase1result);
-    ControlFlowGraph phase3result = CFGTranslationPhaseThree.process(phase2result);
+    ControlFlowGraph phase2result = CfgTranslationPhaseTwo.process(phase1result);
+    ControlFlowGraph phase3result = CfgTranslationPhaseThree.process(phase2result);
     if (factory instanceof GenericAnnotatedTypeFactory) {
       GenericAnnotatedTypeFactory<?, ?, ?, ?> asGATF =
           (GenericAnnotatedTypeFactory<?, ?, ?, ?>) factory;
       if (asGATF.hasOrIsSubchecker) {
-        asGATF.addSharedCFGForTree(underlyingAST.getCode(), phase3result);
+        asGATF.addSharedCfgForTree(underlyingAST.getCode(), phase3result);
       }
     }
     return phase3result;
@@ -118,14 +118,14 @@ public class CFCFGBuilder extends CFGBuilder {
    * structure in the presence of @AssumeAssertion assertion strings which mention the checker or
    * its supercheckers.
    */
-  protected static class CFCFGTranslationPhaseOne extends CFGTranslationPhaseOne {
+  protected static class CfCfgTranslationPhaseOne extends CfgTranslationPhaseOne {
     /** The associated checker. */
     protected final BaseTypeChecker checker;
 
     /** Type factory to provide types used during CFG building. */
     protected final AnnotatedTypeFactory factory;
 
-    public CFCFGTranslationPhaseOne(
+    public CfCfgTranslationPhaseOne(
         CFTreeBuilder builder,
         BaseTypeChecker checker,
         AnnotatedTypeFactory factory,

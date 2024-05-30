@@ -12,17 +12,17 @@ import javax.lang.model.element.TypeElement;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.dataflow.cfg.builder.CFGBuilder;
+import org.checkerframework.dataflow.cfg.builder.CfgBuilder;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.javacutil.BasicTypeProcessor;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * Generate the control flow graph of a given method in a given class. See {@link
- * org.checkerframework.dataflow.cfg.visualize.CFGVisualizeLauncher} for example usage.
+ * org.checkerframework.dataflow.cfg.visualize.CfgVisualizeLauncher} for example usage.
  */
 @SupportedAnnotationTypes("*")
-public class CFGProcessor extends BasicTypeProcessor {
+public class CfgProcessor extends BasicTypeProcessor {
 
   /**
    * Qualified name of a specified class which includes a specified method to generate the CFG for.
@@ -42,7 +42,7 @@ public class CFGProcessor extends BasicTypeProcessor {
   private @Nullable MethodTree methodTree;
 
   /** Result of CFG process; is set by {@link #typeProcessingOver}. */
-  private @MonotonicNonNull CFGProcessResult result = null;
+  private @MonotonicNonNull CfgProcessResult result = null;
 
   /**
    * Create a CFG processor.
@@ -51,7 +51,7 @@ public class CFGProcessor extends BasicTypeProcessor {
    *     the CFG for
    * @param methodName the name of the method to generate the CFG for
    */
-  public CFGProcessor(String className, String methodName) {
+  public CfgProcessor(String className, String methodName) {
     this.className = className;
     this.methodName = methodName;
   }
@@ -61,25 +61,25 @@ public class CFGProcessor extends BasicTypeProcessor {
    *
    * @return result of cfg process
    */
-  public final @Nullable CFGProcessResult getCFGProcessResult() {
+  public final @Nullable CfgProcessResult getCfgProcessResult() {
     return result;
   }
 
   @Override
   public void typeProcessingOver() {
     if (rootTree == null) {
-      result = new CFGProcessResult("Root tree is null.");
+      result = new CfgProcessResult("Root tree is null.");
     } else if (classTree == null) {
-      result = new CFGProcessResult("Method tree is null.");
+      result = new CfgProcessResult("Method tree is null.");
     } else if (methodTree == null) {
-      result = new CFGProcessResult("Class tree is null.");
+      result = new CfgProcessResult("Class tree is null.");
     } else {
       Log log = getCompilerLog();
       if (log.nerrors > 0) {
-        result = new CFGProcessResult("Compilation issued an error.");
+        result = new CfgProcessResult("Compilation issued an error.");
       } else {
-        ControlFlowGraph cfg = CFGBuilder.build(rootTree, methodTree, classTree, processingEnv);
-        result = new CFGProcessResult(cfg);
+        ControlFlowGraph cfg = CfgBuilder.build(rootTree, methodTree, classTree, processingEnv);
+        result = new CfgProcessResult(cfg);
       }
     }
     super.typeProcessingOver();
@@ -119,7 +119,7 @@ public class CFGProcessor extends BasicTypeProcessor {
   }
 
   /** The result of the CFG process, contains the control flow graph when successful. */
-  public static class CFGProcessResult {
+  public static class CfgProcessResult {
     /** Control flow graph. */
     private final @Nullable ControlFlowGraph controlFlowGraph;
 
@@ -134,7 +134,7 @@ public class CFGProcessor extends BasicTypeProcessor {
      *
      * @param cfg control flow graph
      */
-    /*package-private*/ CFGProcessResult(ControlFlowGraph cfg) {
+    /*package-private*/ CfgProcessResult(ControlFlowGraph cfg) {
       this(cfg, true, null);
     }
 
@@ -143,7 +143,7 @@ public class CFGProcessor extends BasicTypeProcessor {
      *
      * @param errMsg the error message
      */
-    /*package-private*/ CFGProcessResult(String errMsg) {
+    /*package-private*/ CfgProcessResult(String errMsg) {
       this(null, false, errMsg);
     }
 
@@ -154,7 +154,7 @@ public class CFGProcessor extends BasicTypeProcessor {
      * @param isSuccess did the CFG process succeed?
      * @param errMsg error message (when the CFG process failed)
      */
-    private CFGProcessResult(
+    private CfgProcessResult(
         @Nullable ControlFlowGraph cfg, boolean isSuccess, @Nullable String errMsg) {
       this.controlFlowGraph = cfg;
       this.isSuccess = isSuccess;

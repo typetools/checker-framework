@@ -14,6 +14,9 @@ Renamed methods:
 Renamed fields:
  * `AnalysisResult.stores` => `inputs`
 
+Renamed classes/methods/fields:
+ * Replaced `CFG` by `Cfg` and `DOT` by `Dot`, for readability and consistency
+
 Deprecated methods:
  * `AbstractAnalysis.getContainingMethod()` => `getEnclosingMethod()`
  * `AbstractAnalysis.getContainingClass()` => `getEnclosingMethod()`

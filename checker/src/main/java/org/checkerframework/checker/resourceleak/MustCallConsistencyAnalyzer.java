@@ -1128,10 +1128,10 @@ class MustCallConsistencyAnalyzer {
     }
 
     UnderlyingAST underlyingAST = cfg.getUnderlyingAST();
-    if (underlyingAST instanceof UnderlyingAST.CFGMethod) {
+    if (underlyingAST instanceof UnderlyingAST.CfgMethod) {
       // TODO: lambdas? In that case false is returned below, which means that ownership will
       //  not be transferred.
-      MethodTree method = ((UnderlyingAST.CFGMethod) underlyingAST).getMethod();
+      MethodTree method = ((UnderlyingAST.CfgMethod) underlyingAST).getMethod();
       ExecutableElement executableElement = TreeUtils.elementFromDeclaration(method);
       return !typeFactory.hasNotOwning(executableElement);
     }
@@ -2259,7 +2259,7 @@ class MustCallConsistencyAnalyzer {
   private Set<Obligation> computeOwningParameters(ControlFlowGraph cfg) {
     // TODO what about lambdas?
     if (cfg.getUnderlyingAST().getKind() == Kind.METHOD) {
-      MethodTree method = ((UnderlyingAST.CFGMethod) cfg.getUnderlyingAST()).getMethod();
+      MethodTree method = ((UnderlyingAST.CfgMethod) cfg.getUnderlyingAST()).getMethod();
       Set<Obligation> result = new LinkedHashSet<>(1);
       for (VariableTree param : method.getParameters()) {
         VariableElement paramElement = TreeUtils.elementFromDeclaration(param);

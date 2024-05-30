@@ -9,7 +9,7 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.block.Block;
-import org.checkerframework.dataflow.cfg.builder.CFGBuilder;
+import org.checkerframework.dataflow.cfg.builder.CfgBuilder;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.plumelib.util.UniqueId;
@@ -60,7 +60,7 @@ public abstract class Node implements UniqueId {
 
   /**
    * The type of this node. For {@link Node}s with {@link Tree}s, this type is the type of the
-   * {@link Tree}. Otherwise, it is the type is set by the {@link CFGBuilder}.
+   * {@link Tree}. Otherwise, it is the type is set by the {@link CfgBuilder}.
    */
   protected final TypeMirror type;
 

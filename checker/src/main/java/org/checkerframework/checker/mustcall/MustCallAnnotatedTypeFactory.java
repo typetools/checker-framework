@@ -98,7 +98,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
    * <p>These temporary variables are only created once---here---but are used by all three parts of
    * the resource leak checker by calling {@link #getTempVar(Node)}. The temporary variables are
    * shared in the same way that subcheckers share CFG structure; see {@link
-   * #getSharedCFGForTree(Tree)}.
+   * #getSharedCfgForTree(Tree)}.
    */
   /*package-private*/ final IdentityHashMap<Tree, LocalVariableNode> tempVars =
       new IdentityHashMap<>(100);

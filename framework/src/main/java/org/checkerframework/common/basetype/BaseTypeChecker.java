@@ -31,7 +31,7 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.common.reflection.MethodValChecker;
-import org.checkerframework.dataflow.cfg.visualize.CFGVisualizer;
+import org.checkerframework.dataflow.cfg.visualize.CfgVisualizer;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -895,11 +895,11 @@ public abstract class BaseTypeChecker extends SourceChecker {
 
   @Override
   protected boolean shouldAddShutdownHook() {
-    if (super.shouldAddShutdownHook() || getTypeFactory().getCFGVisualizer() != null) {
+    if (super.shouldAddShutdownHook() || getTypeFactory().getCfgVisualizer() != null) {
       return true;
     }
     for (BaseTypeChecker checker : getSubcheckers()) {
-      if (checker.getTypeFactory().getCFGVisualizer() != null) {
+      if (checker.getTypeFactory().getCfgVisualizer() != null) {
         return true;
       }
     }
@@ -910,13 +910,13 @@ public abstract class BaseTypeChecker extends SourceChecker {
   protected void shutdownHook() {
     super.shutdownHook();
 
-    CFGVisualizer<?, ?, ?> viz = getTypeFactory().getCFGVisualizer();
+    CfgVisualizer<?, ?, ?> viz = getTypeFactory().getCfgVisualizer();
     if (viz != null) {
       viz.shutdown();
     }
 
     for (BaseTypeChecker checker : getSubcheckers()) {
-      viz = checker.getTypeFactory().getCFGVisualizer();
+      viz = checker.getTypeFactory().getCfgVisualizer();
       if (viz != null) {
         viz.shutdown();
       }

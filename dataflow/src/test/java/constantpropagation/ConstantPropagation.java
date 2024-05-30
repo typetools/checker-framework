@@ -2,7 +2,7 @@ package constantpropagation;
 
 import org.checkerframework.dataflow.analysis.ForwardAnalysis;
 import org.checkerframework.dataflow.analysis.ForwardAnalysisImpl;
-import org.checkerframework.dataflow.cfg.visualize.CFGVisualizeLauncher;
+import org.checkerframework.dataflow.cfg.visualize.CfgVisualizeLauncher;
 import org.checkerframework.dataflow.constantpropagation.Constant;
 import org.checkerframework.dataflow.constantpropagation.ConstantPropagationStore;
 import org.checkerframework.dataflow.constantpropagation.ConstantPropagationTransfer;
@@ -24,6 +24,6 @@ public class ConstantPropagation {
     ConstantPropagationTransfer transfer = new ConstantPropagationTransfer();
     ForwardAnalysis<Constant, ConstantPropagationStore, ConstantPropagationTransfer>
         forwardAnalysis = new ForwardAnalysisImpl<>(transfer);
-    CFGVisualizeLauncher.writeStringOfCFG(inputFile, method, clas, outputFile, forwardAnalysis);
+    CfgVisualizeLauncher.writeStringOfCfg(inputFile, method, clas, outputFile, forwardAnalysis);
   }
 }

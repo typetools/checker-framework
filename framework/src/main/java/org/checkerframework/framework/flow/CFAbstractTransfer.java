@@ -36,8 +36,8 @@ import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
-import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGLambda;
-import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
+import org.checkerframework.dataflow.cfg.UnderlyingAST.CfgLambda;
+import org.checkerframework.dataflow.cfg.UnderlyingAST.CfgMethod;
 import org.checkerframework.dataflow.cfg.node.AbstractNodeVisitor;
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
@@ -265,7 +265,7 @@ public abstract class CFAbstractTransfer<
       }
 
       // add properties known through precondition
-      CFGMethod method = (CFGMethod) underlyingAST;
+      CfgMethod method = (CfgMethod) underlyingAST;
       MethodTree methodDeclTree = method.getMethod();
       ExecutableElement methodElem = TreeUtils.elementFromDeclaration(methodDeclTree);
       addInformationFromPreconditions(store, atypeFactory, method, methodDeclTree, methodElem);
@@ -296,7 +296,7 @@ public abstract class CFAbstractTransfer<
       }
 
     } else if (underlyingAST.getKind() == UnderlyingAST.Kind.LAMBDA) {
-      CFGLambda lambda = (CFGLambda) underlyingAST;
+      CfgLambda lambda = (CfgLambda) underlyingAST;
       if (fixedInitialStore != null) {
         // Create a copy and keep only the field values (nothing else applies).
         store = analysis.createCopiedStore(fixedInitialStore);
@@ -407,7 +407,7 @@ public abstract class CFAbstractTransfer<
    * @param aTypeFactory an annotated type factory
    * @return true if the lambda may be leaked
    */
-  private boolean doesLambdaLeak(CFGLambda lambda, AnnotatedTypeFactory aTypeFactory) {
+  private boolean doesLambdaLeak(CfgLambda lambda, AnnotatedTypeFactory aTypeFactory) {
     LambdaExpressionTree lambdaTree = lambda.getLambdaTree();
     Tree lambdaParent = aTypeFactory.getPath(lambdaTree).getParentPath().getLeaf();
     if (lambdaParent.getKind() == Tree.Kind.METHOD_INVOCATION) {
@@ -588,7 +588,7 @@ public abstract class CFAbstractTransfer<
   protected void addInformationFromPreconditions(
       S initialStore,
       AnnotatedTypeFactory factory,
-      CFGMethod methodAst,
+      CfgMethod methodAst,
       MethodTree methodDeclTree,
       ExecutableElement methodElement) {
     ContractsFromMethod contractsUtils = analysis.atypeFactory.getContractsFromMethod();

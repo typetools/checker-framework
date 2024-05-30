@@ -35,8 +35,8 @@ import org.checkerframework.dataflow.cfg.block.SpecialBlock;
 import org.checkerframework.dataflow.cfg.block.SpecialBlockImpl;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
-import org.checkerframework.dataflow.cfg.visualize.CFGVisualizer;
-import org.checkerframework.dataflow.cfg.visualize.StringCFGVisualizer;
+import org.checkerframework.dataflow.cfg.visualize.CfgVisualizer;
+import org.checkerframework.dataflow.cfg.visualize.StringCfgVisualizer;
 import org.plumelib.util.UniqueId;
 import org.plumelib.util.UnmodifiableIdentityHashMap;
 
@@ -408,7 +408,7 @@ public class ControlFlowGraph implements UniqueId {
    */
   public @Nullable MethodTree getEnclosingMethod(Tree t) {
     if (treeLookup.containsKey(t) && underlyingAST.getKind() == UnderlyingAST.Kind.METHOD) {
-      UnderlyingAST.CFGMethod cfgMethod = (UnderlyingAST.CFGMethod) underlyingAST;
+      UnderlyingAST.CfgMethod cfgMethod = (UnderlyingAST.CfgMethod) underlyingAST;
       return cfgMethod.getMethod();
     }
     return null;
@@ -423,7 +423,7 @@ public class ControlFlowGraph implements UniqueId {
    */
   public @Nullable ClassTree getEnclosingClass(Tree t) {
     if (treeLookup.containsKey(t) && underlyingAST.getKind() == UnderlyingAST.Kind.METHOD) {
-      UnderlyingAST.CFGMethod cfgMethod = (UnderlyingAST.CFGMethod) underlyingAST;
+      UnderlyingAST.CfgMethod cfgMethod = (UnderlyingAST.CfgMethod) underlyingAST;
       return cfgMethod.getClassTree();
     }
     return null;
@@ -439,7 +439,7 @@ public class ControlFlowGraph implements UniqueId {
 
   @Override
   public String toString() {
-    CFGVisualizer<?, ?, ?> viz = new StringCFGVisualizer<>();
+    CfgVisualizer<?, ?, ?> viz = new StringCfgVisualizer<>();
     viz.init(Collections.singletonMap("verbose", true));
     Map<String, Object> res = viz.visualize(this, this.getEntryBlock(), null);
     viz.shutdown();

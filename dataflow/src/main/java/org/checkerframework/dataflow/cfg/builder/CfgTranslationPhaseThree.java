@@ -34,7 +34,7 @@ import org.checkerframework.javacutil.BugInCF;
  * Eliminating the second type of degenerate cases might introduce cases of the third problem. These
  * are also removed.
  */
-public class CFGTranslationPhaseThree {
+public class CfgTranslationPhaseThree {
 
   /** A simple wrapper object that holds a basic block and allows to set one of its successors. */
   protected interface PredecessorHolder {

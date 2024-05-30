@@ -7,7 +7,7 @@ import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.cfg.node.IntegerLiteralNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.Node;
-import org.checkerframework.dataflow.cfg.visualize.CFGVisualizer;
+import org.checkerframework.dataflow.cfg.visualize.CfgVisualizer;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.plumelib.util.ArrayMap;
 import org.plumelib.util.CollectionsPlume;
@@ -163,7 +163,7 @@ public class ConstantPropagationStore implements Store<ConstantPropagationStore>
   }
 
   @Override
-  public String visualize(CFGVisualizer<?, ConstantPropagationStore, ?> viz) {
+  public String visualize(CfgVisualizer<?, ConstantPropagationStore, ?> viz) {
     return viz.visualizeStoreKeyVal("constant propagation", toString());
   }
 }

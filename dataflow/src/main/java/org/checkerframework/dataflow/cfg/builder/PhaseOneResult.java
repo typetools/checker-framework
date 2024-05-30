@@ -189,7 +189,7 @@ public class PhaseOneResult {
     result.add("postfixTreeToCfgNodes=" + mapToString(postfixTreeToCfgNodes));
     result.add("underlyingAST=" + underlyingAST);
     result.add("bindings=" + bindings);
-    result.add("nodeList=" + CFGBuilder.extendedNodeCollectionToStringDebug(nodeList));
+    result.add("nodeList=" + CfgBuilder.extendedNodeCollectionToStringDebug(nodeList));
     result.add("leaders=" + leaders);
     result.add("returnNodes=" + Node.nodeCollectionToString(returnNodes));
     result.add("regularExitLabel=" + regularExitLabel);

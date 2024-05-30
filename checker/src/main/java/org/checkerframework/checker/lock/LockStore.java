@@ -5,7 +5,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
-import org.checkerframework.dataflow.cfg.visualize.CFGVisualizer;
+import org.checkerframework.dataflow.cfg.visualize.CfgVisualizer;
 import org.checkerframework.dataflow.expression.ArrayAccess;
 import org.checkerframework.dataflow.expression.ClassName;
 import org.checkerframework.dataflow.expression.FieldAccess;
@@ -160,7 +160,7 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
   }
 
   @Override
-  protected String internalVisualize(CFGVisualizer<CFValue, LockStore, ?> viz) {
+  protected String internalVisualize(CfgVisualizer<CFValue, LockStore, ?> viz) {
     return viz.visualizeStoreKeyVal("inConstructorOrInitializer", inConstructorOrInitializer)
         + viz.getSeparator()
         + super.internalVisualize(viz);

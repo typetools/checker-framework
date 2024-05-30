@@ -26,14 +26,14 @@ import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.analysis.TransferFunction;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
-import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGLambda;
-import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
-import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGStatement;
+import org.checkerframework.dataflow.cfg.UnderlyingAST.CfgLambda;
+import org.checkerframework.dataflow.cfg.UnderlyingAST.CfgMethod;
+import org.checkerframework.dataflow.cfg.UnderlyingAST.CfgStatement;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.Block.BlockType;
 import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.block.SpecialBlock;
-import org.checkerframework.dataflow.cfg.visualize.AbstractCFGVisualizer.VisualizeWhere;
+import org.checkerframework.dataflow.cfg.visualize.AbstractCfgVisualizer.VisualizeWhere;
 import org.checkerframework.dataflow.expression.ArrayAccess;
 import org.checkerframework.dataflow.expression.ClassName;
 import org.checkerframework.dataflow.expression.FieldAccess;
@@ -44,9 +44,9 @@ import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.UserError;
 
 /** Generate a graph description in the DOT language of a control graph. */
-public class DOTCFGVisualizer<
+public class DotCfgVisualizer<
         V extends AbstractValue<V>, S extends Store<S>, T extends TransferFunction<V, S>>
-    extends AbstractCFGVisualizer<V, S, T> {
+    extends AbstractCfgVisualizer<V, S, T> {
 
   /** The output directory. */
   @SuppressWarnings("nullness:initialization.field.uninitialized") // uses init method
@@ -70,7 +70,7 @@ public class DOTCFGVisualizer<
     if (this.outDir == null) {
       throw new BugInCF(
           "outDir should never be null,"
-              + " provide it in args when calling DOTCFGVisualizer.init(args).");
+              + " provide it in args when calling DotCfgVisualizer.init(args).");
     }
     this.checkerName = (String) args.get("checkerName");
     this.generated = new HashMap<>();
@@ -196,7 +196,7 @@ public class DOTCFGVisualizer<
     StringBuilder outFile = new StringBuilder();
 
     if (ast.getKind() == UnderlyingAST.Kind.ARBITRARY_CODE) {
-      CFGStatement cfgStatement = (CFGStatement) ast;
+      CfgStatement cfgStatement = (CfgStatement) ast;
       String clsName = cfgStatement.getSimpleClassName();
       outFile.append(clsName);
       outFile.append("-initializer-");
@@ -208,7 +208,7 @@ public class DOTCFGVisualizer<
       srcLoc.append(((JCTree) cfgStatement.getCode()).pos);
       srcLoc.append(">");
     } else if (ast.getKind() == UnderlyingAST.Kind.METHOD) {
-      CFGMethod cfgMethod = (CFGMethod) ast;
+      CfgMethod cfgMethod = (CfgMethod) ast;
       String clsName = cfgMethod.getSimpleClassName();
       String methodName = cfgMethod.getMethodName();
       StringJoiner params = new StringJoiner(",");
@@ -233,7 +233,7 @@ public class DOTCFGVisualizer<
       srcLoc.append(((JCTree) cfgMethod.getMethod()).pos);
       srcLoc.append(">");
     } else if (ast.getKind() == UnderlyingAST.Kind.LAMBDA) {
-      CFGLambda cfgLambda = (CFGLambda) ast;
+      CfgLambda cfgLambda = (CfgLambda) ast;
       String clsName = cfgLambda.getSimpleClassName();
       String enclosingMethodName = cfgLambda.getEnclosingMethodName();
       long uid = TreeUtils.treeUids.get(cfgLambda.getCode());

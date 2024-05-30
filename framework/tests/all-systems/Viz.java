@@ -8,12 +8,12 @@ public class Viz {
 
   public interface TransferFunction<C extends AbstractValue<C>, D extends Store<D>> {}
 
-  public interface CFGVisualizer<
+  public interface CfgVisualizer<
       E extends AbstractValue<E>, F extends Store<F>, G extends TransferFunction<E, F>> {}
 
   static class CFAbstractStore<V extends AbstractValue<V>, X extends CFAbstractStore<V, X>>
       implements Store<X> {
 
-    void test(CFGVisualizer<?, X, ?> param) {}
+    void test(CfgVisualizer<?, X, ?> param) {}
   }
 }

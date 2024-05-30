@@ -4,7 +4,7 @@ import org.checkerframework.checker.initialization.InitializationStore;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
-import org.checkerframework.dataflow.cfg.visualize.CFGVisualizer;
+import org.checkerframework.dataflow.cfg.visualize.CfgVisualizer;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAbstractStore;
 
@@ -67,7 +67,7 @@ public class NullnessStore extends InitializationStore<NullnessValue, NullnessSt
   }
 
   @Override
-  protected String internalVisualize(CFGVisualizer<NullnessValue, NullnessStore, ?> viz) {
+  protected String internalVisualize(CfgVisualizer<NullnessValue, NullnessStore, ?> viz) {
     return super.internalVisualize(viz)
         + viz.getSeparator()
         + viz.visualizeStoreKeyVal("isPolyNullNonNull", isPolyNullNonNull)

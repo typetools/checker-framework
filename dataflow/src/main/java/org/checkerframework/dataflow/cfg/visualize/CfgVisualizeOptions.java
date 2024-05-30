@@ -9,9 +9,9 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  * <p>Usage: An instance of this class is created by calling {@link #parseArgs(String[])} with the
  * command line arguments. The arguments are parsed and the options are stored in the instance. They
  * can be retrieved by calling the appropriate getter method. See {@link
- * org.checkerframework.dataflow.cfg.visualize.CFGVisualizeLauncher} for an example.
+ * org.checkerframework.dataflow.cfg.visualize.CfgVisualizeLauncher} for an example.
  */
-public class CFGVisualizeOptions {
+public class CfgVisualizeOptions {
 
   /** Default method name. */
   private static final String DEFAULT_METHOD = "test";
@@ -57,7 +57,7 @@ public class CFGVisualizeOptions {
    * @param verbose true if the verbose output should be generated
    * @param string true if the string representation should be generated
    */
-  private CFGVisualizeOptions(
+  private CfgVisualizeOptions(
       String input,
       String output,
       String method,
@@ -81,9 +81,9 @@ public class CFGVisualizeOptions {
    * read.
    *
    * @param args command-line arguments, see {@link #printUsage()}
-   * @return CFGVisualizeOptions object containing the parsed options
+   * @return CfgVisualizeOptions object containing the parsed options
    */
-  public static CFGVisualizeOptions parseArgs(String[] args) {
+  public static CfgVisualizeOptions parseArgs(String[] args) {
     if (args.length == 0) {
       printUsage();
       System.exit(1);
@@ -150,7 +150,7 @@ public class CFGVisualizeOptions {
       System.exit(1);
     }
 
-    return new CFGVisualizeOptions(input, output, method, clas, pdf, verbose, string);
+    return new CfgVisualizeOptions(input, output, method, clas, pdf, verbose, string);
   }
 
   /**

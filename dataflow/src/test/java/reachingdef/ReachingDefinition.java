@@ -3,7 +3,7 @@ package reachingdef;
 import org.checkerframework.dataflow.analysis.ForwardAnalysis;
 import org.checkerframework.dataflow.analysis.ForwardAnalysisImpl;
 import org.checkerframework.dataflow.analysis.UnusedAbstractValue;
-import org.checkerframework.dataflow.cfg.visualize.CFGVisualizeLauncher;
+import org.checkerframework.dataflow.cfg.visualize.CfgVisualizeLauncher;
 import org.checkerframework.dataflow.reachingdef.ReachingDefinitionStore;
 import org.checkerframework.dataflow.reachingdef.ReachingDefinitionTransfer;
 
@@ -25,6 +25,6 @@ public class ReachingDefinition {
     ReachingDefinitionTransfer transfer = new ReachingDefinitionTransfer();
     ForwardAnalysis<UnusedAbstractValue, ReachingDefinitionStore, ReachingDefinitionTransfer>
         forwardAnalysis = new ForwardAnalysisImpl<>(transfer);
-    CFGVisualizeLauncher.writeStringOfCFG(inputFile, method, clas, outputFile, forwardAnalysis);
+    CfgVisualizeLauncher.writeStringOfCfg(inputFile, method, clas, outputFile, forwardAnalysis);
   }
 }

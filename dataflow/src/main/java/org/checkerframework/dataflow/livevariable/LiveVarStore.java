@@ -14,7 +14,7 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.TernaryExpressionNode;
 import org.checkerframework.dataflow.cfg.node.TypeCastNode;
 import org.checkerframework.dataflow.cfg.node.UnaryOperationNode;
-import org.checkerframework.dataflow.cfg.visualize.CFGVisualizer;
+import org.checkerframework.dataflow.cfg.visualize.CfgVisualizer;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.javacutil.BugInCF;
 import org.plumelib.util.ArraySet;
@@ -130,7 +130,7 @@ public class LiveVarStore implements Store<LiveVarStore> {
   }
 
   @Override
-  public String visualize(CFGVisualizer<?, LiveVarStore, ?> viz) {
+  public String visualize(CfgVisualizer<?, LiveVarStore, ?> viz) {
     String key = "live variables";
     if (liveVarNodeSet.isEmpty()) {
       return viz.visualizeStoreKeyVal(key, "none");

@@ -226,42 +226,42 @@ class ConditionalBlockImpl extends BlockImpl implements ConditionalBlock
 A ControlFlowGraph represents the body of a method or an initializer
 expression as a graph of Blocks with distinguished entry, exit, and
 exceptional exit SpecialBlocks.  ControlFlowGraphs are produced by the
-CFGBuilder classes and are treated as immutable once they are built.
+CfgBuilder classes and are treated as immutable once they are built.
 
 \begin{verbatim}
 package org.checkerframework.dataflow.cfg;
 class ControlFlowGraph
 \end{verbatim}
 
-\subsubsubsection{CFGBuilder}
+\subsubsubsection{CfgBuilder}
 \label{sec:cfg_builder_classes}
 
-The CFGBuilder classes visit an AST and produce a corresponding
+The CfgBuilder classes visit an AST and produce a corresponding
 ControlFlowGraph as described in \autoref{sec:ast_to_cfg_translation}.
 
 \begin{verbatim}
 package org.checkerframework.dataflow.cfg;
-class CFGBuilder
+class CfgBuilder
 \end{verbatim}
 
-The Checker Framework derives from CFGBuilder in order to desugar
+The Checker Framework derives from CfgBuilder in order to desugar
 enhanced for loops that make explicit use of type annotations provided
 by the checker in use.
 
 \begin{verbatim}
 package org.checkerframework.framework.flow;
-class CFCFGBuilder extends CFGBuilder
+class CFCfgBuilder extends CfgBuilder
 \end{verbatim}
 
-\subsubsubsection{CFGVisualizeLauncher}
+\subsubsubsection{CfgVisualizeLauncher}
 \label{sec:cfg_visualize_launcher_class}
 
-The CFGVisualizeLauncher generates a DOT or String representation of
+The CfgVisualizeLauncher generates a DOT or String representation of
 the control flow graph for a given method in a given class.
 
 \begin{verbatim}
 package org.checkerframework.dataflow.cfg;
-class CFGVisualizeLauncher
+class CfgVisualizeLauncher
 \end{verbatim}
 
 \subsubsection{JavaExpressions}
@@ -609,12 +609,12 @@ standard, every basic block consists of a sequence of so-called nodes,
 each of which represents a minimal Java operation or expression.
 
 
-\flow{CFGSimple}{.33}{1.1}{A simple Java code snippet to introduce the CFG.
+\flow{CfgSimple}{.33}{1.1}{A simple Java code snippet to introduce the CFG.
 In CFG visualizations, special basic blocks are shown as ovals;
 conditional basic blocks are polygons with eight sides; and regular and exception
 basic blocks are rectangles.}
 
-Consider the method \code{test} of \autoref{fig:CFGSimple}. The if
+Consider the method \code{test} of \autoref{fig:CfgSimple}. The if
 conditional got translated to a \emph{conditional basic block}
 (octagon) with two successors. There are also two special basic blocks
 (ovals) to denote the entry and exit point of the method.
@@ -996,9 +996,9 @@ general not strictly left-to-right. Rather, the right-hand side might
 be evaluated even if the left-hand side of the assignment causes an
 exception. This semantics is faithfully represented in the CFG
 produced by the translation.  An example of a field assignment
-exhibiting this behavior is shown in \autoref{fig:CFGFieldAssignment}.
+exhibiting this behavior is shown in \autoref{fig:CfgFieldAssignment}.
 
-\flow{CFGFieldAssignment}{.33}{1}{Control flow for a field assignment is not strictly
+\flow{CfgFieldAssignment}{.33}{1}{Control flow for a field assignment is not strictly
 left-to-right (cf.\ \jlsref{15.26.1}),
 which is properly handled by the translation.}
 
@@ -1054,7 +1054,7 @@ then successor and the else store is propagated to the block's else
 successor.
 
 Consider the control flow graph generated for the simple if statement
-in \autoref{fig:CFGIfStatement}.  The conditional expression \code{b1}
+in \autoref{fig:CfgIfStatement}.  The conditional expression \code{b1}
 immediately precedes the \code{ConditionalBlock}, represented by the
 octagonal node.  The \code{ConditionalBlock} is followed by both a
 then and an else successor block, after which control flow merges back
@@ -1067,7 +1067,7 @@ of) the block's else successor according to rule \code{ELSE_TO_BOTH}.
 More precise rules are used to preserve dataflow information for
 short-circuiting expressions, as described in \autoref{sec:cond-exp}.
 
-\flow{CFGIfStatement}{.33}{1.25}{Example of an if statement translated into a
+\flow{CfgIfStatement}{.33}{1.25}{Example of an if statement translated into a
   \code{ConditionalBlock}.}
 
 \subsubsection{Conditional Expressions}
@@ -1082,12 +1082,12 @@ precise flow rules (\autoref{sec:flow-rules}) are used to preserve
 additional dataflow information.
 
 An example program using conditional or is shown in
-\autoref{fig:CFGConditionalOr}.  Note that the CFG correctly
+\autoref{fig:CfgConditionalOr}.  Note that the CFG correctly
 represents short-circuiting.  The expression \code{b2 || b3} is only
 executed if \code{b1} is false and \code{b3} is only evaluated if
 \code{b1} and \code{b2} are false.
 
-Observe in \autoref{fig:CFGConditionalOr} that the flow rule between
+Observe in \autoref{fig:CfgConditionalOr} that the flow rule between
 the first conditional block and its then successor is
 \code{THEN_TO_THEN}, rather than the default flow rule for such edges
 \code{THEN_TO_BOTH}, which is present on the edge from the last
@@ -1106,7 +1106,7 @@ branches of both conditional blocks and only the facts that obtain
 along those edges need to be kept in the else store of the block
 containing \code{b1 || (b2 || b3)}.
 
-\flow{CFGConditionalOr}{.33}{1.33}{Example of a conditional or expression
+\flow{CfgConditionalOr}{.33}{1.33}{Example of a conditional or expression
   (\code{||}) with short-circuiting and more precise flow rules.}
 
 Conditional operator expressions (using the ternary conditional operator
@@ -1119,7 +1119,7 @@ The \code{TernaryExpressionNode} at the merge of the two branches can
 then either be treated like a local variable read or return a
 conditional store.
 
-\flow{CFGConditionalOpExpr}{.33}{.33}{Example of a conditional operator
+\flow{CfgConditionalOpExpr}{.33}{.33}{Example of a conditional operator
   expression (\code{? :}).}
 
 
@@ -1156,7 +1156,7 @@ If assertions are not assumed to be enabled or disabled, then
 the CFG is conservative and represents the fact that the
 assert statement may execute or may not.  This takes the form of a
 ConditionalBlock that branches on a fake variable.  For example, see
-\autoref{fig:CFGAssert}.  The fake variable named
+\autoref{fig:CfgAssert}.  The fake variable named
 \code{assertionsEnabled#num0} controls the first ConditionalBlock.
 The then successor of the ConditionalBlock is the same subgraph of CFG
 Nodes that would be created if assertions were assumed to be enabled,
@@ -1164,7 +1164,7 @@ while the else successor of the ConditionalBlock is the same, empty,
 subgraph of CFG Nodes that would be created if assertions were assumed
 to be disabled.
 
-\flow{CFGAssert}{.15}{2.9}{Example of an assert statement translated with
+\flow{CfgAssert}{.15}{2.9}{Example of an assert statement translated with
   assertions neither assumed to be enabled nor assumed to be
   disabled.}
 
@@ -1196,10 +1196,10 @@ edge goes to nodes in the case and a \code{ELSE_TO_BOTH} edge goes to the next
 case. If a break statement is in nodes, it creates an edge to next node of
 the switch statement. If there is any possibility of fall-through, an edge
 to the first node in the next case is created after nodes in the case.
-For example, see \autoref{fig:CFGSwitch}. The fake variable named \code{switch#num0}
+For example, see \autoref{fig:CfgSwitch}. The fake variable named \code{switch#num0}
 is created and each case node creates the branches.
 
-\flow{CFGSwitch}{.21}{1.45}{Example of a switch statement with case, default and fall through.}
+\flow{CfgSwitch}{.21}{1.45}{Example of a switch statement with case, default and fall through.}
 
 \subsubsection{Switch expressions}
 \label{sec:switch-expr}
@@ -1432,7 +1432,7 @@ and almost all of them map to a single tree.  But we can't maintain a
 unique inverse mapping because some trees have both pre- and
 post-conversion nodes.  Instead, we remember two mappings, one from
 tree to pre-conversion node and, for those trees that were converted,
-one from tree to post-conversion node.  Both the CFGBuilder and the
+one from tree to post-conversion node.  Both the CfgBuilder and the
 ControlFlowGraph store two separate mappings.  The Analysis class
 explicitly stores the tree to pre-conversion node mapping as
 \code{treeLookup} and it indirectly uses the tree to post-conversion
@@ -2055,21 +2055,21 @@ and $<:$ denotes standard Java subtyping.
 
 
 %  LocalWords: pre cfg javacutils InternalUtils DivideByZero BlockImpl se SingleSuccessorBlock RegularBlock SingleSuccessorBlockImpl ExceptionBlock SpecialBlock ConditionalBlock SpecialBlocks
-%  LocalWords: ControlFlowGraph ControlFlowGraphs CFGBuilder ast CFValue JavaExpressions AbstractValue AbstractValues PolyNull Poly AnnotatedTypeMirrors CFAbstractValue NullnessValue CFStore
+%  LocalWords: ControlFlowGraph ControlFlowGraphs CfgBuilder ast CFValue JavaExpressions AbstractValue AbstractValues PolyNull Poly AnnotatedTypeMirrors CFAbstractValue NullnessValue CFStore
 %  LocalWords: NullnessCheckers CFAbstractStore InitializationStore Regex NullnessStore TransferInput TransferResult TransferInputs ConditionalTransferResult RegularTransferResult CFTransfer
 %  LocalWords: TransferFunction NodeVisitor TransferResults isRegex lst CFAbstractTransfer AbstractNodeVisitor asRegex ClassTree InitializationTransfer visitMethodInvocation RegexTransfer
 %  LocalWords: CFAbstractAnalysis NullnessTransfer RegexChecker's lp AnalysisResult AnnotatedTypeFactory AnnotatedTypeFactorys AnnotationProvider getAnnotatedType BaseTypeChecker
-%  LocalWords: GenericAnnotatedTypeFactory FlowAnalysis CFAnalysis BaseAnnotatedTypeFactory CFGSimple ValueLiteral txt BooleanLiteral CharacterLiteral DoubleLiteral FloatLiteral
+%  LocalWords: GenericAnnotatedTypeFactory FlowAnalysis CFAnalysis BaseAnnotatedTypeFactory CfgSimple ValueLiteral txt BooleanLiteral CharacterLiteral DoubleLiteral FloatLiteral
 %  LocalWords: IntegerLiteral LongLiteral NullLiteral ShortLiteral args StringLiteral Accessor ArrayAccess FieldAccess This MethodAccess ExplicitThis ImplicitThis NullAway
 %  LocalWords: LocalVariable MethodInvocation BitwiseAnd BitwiseOr MyType BitwiseComplement BitwiseXor ConditionalAnd ConditionalNot ConditionalOr FloatingDivision FloatingRemainder LeftShift
 %  LocalWords: IntegerDivision IntegerRemainder NumericalAddition EqualTo NumericalMinus NumericalMultiplication NumericalPlus util NumericalSubtraction SignedRightShift StringConcatenate
 %  LocalWords: TernaryExpression UnsignedRightShift NotEqual GreaterThan GreaterThanOrEqual LessThan ArrayCreation ObjectCreation TypeCast cond
 %  LocalWords: InstanceOf NarrowingConversion StringConversion WideningConversion ArrayType ParameterizedType ClassName PrimitiveType PackageName AssertionError NullChk accessor
-%  LocalWords: VariableDeclaration FieldAssignment CFGFieldAssignment getRegularStore CFGConditionalOr fnc CFGConditionalOr2 ConditionalOrNode ConditionalOr2 valueOf
+%  LocalWords: VariableDeclaration FieldAssignment CfgFieldAssignment getRegularStore CfgConditionalOr fnc CfgConditionalOr2 ConditionalOrNode ConditionalOr2 valueOf
 %  LocalWords: IdentifierTree FieldAccessNode ImplicitThisNode unboxing TreePath pathHack MethodTree VarSymbol DetachedVarSymbols DeclarationFromElement BoxedClass treeLookup getValue
 %  LocalWords: nodeValues AdditionNode postconversion treelookup LocalVariableNode AconcurrentSemantics MonotonicNonNull MonotonicQualifier IntegerLiteralNode EqualToNode unshaded
 %  LocalWords: ConstSimple SelfReference PureMethodCall javacutil stubparser TreeParser TreeBuilder DetachedVarSymbol LiveSimple
-% LocalWords:  Uber's Nullsafe CFGVisualizeLauncher intra boolean subparts ValueLiteralNode c' lang BooleanLiteralNode CharacterLiteralNode DoubleLiteralNode FloatLiteralNode ThisNode
+% LocalWords:  Uber's Nullsafe CfgVisualizeLauncher intra boolean subparts ValueLiteralNode c' lang BooleanLiteralNode CharacterLiteralNode DoubleLiteralNode FloatLiteralNode ThisNode
 % LocalWords:  LongLiteralNode NullLiteralNode ShortLiteralNode StringLiteralNode ArrayAccessNode MethodAccessNode ExplicitThisNode SuperNode MethodInvocationNode BinaryOperationNode
 % LocalWords:  UnaryOperationNode BitwiseAndNode BitwiseComplementNode BitwiseOrNode BitwiseXorNode ConditionalAndNode ConditionalNotNode FloatingDivisionNode FloatingRemainderNode b1
 % LocalWords:  LeftShiftNode IntegerDivisionNode IntegerRemainderNode NumericalAdditionNode b2 b3 NumericalMinusNode NumericalMultiplicationNode NumericalPlusNode NotEqualNode num0
@@ -2077,6 +2077,6 @@ and $<:$ denotes standard Java subtyping.
 % LocalWords:  GreaterThanOrEqualNode LessThanOrEqualNode CaseNode AssignmentNode ArrayCreationNode StringConcatenateAssignmentNode ObjectCreationNode FunctionalInterfaceNode ThrowNode
 % LocalWords:  TypeCastNode InstanceOfNode instanceof NarrowingConversionNode StringConversionNode WideningConversionNode ArrayTypeNode ParameterizedTypeNode PrimitiveTypeNode Varargs
 % LocalWords:  ClassNameNode PackageNameNode ReturnNode AssertionErrorNode SynchronizedNode varargs MarkerNode NullChkNode VariableDeclarationNode ClassDeclarationNode NoSuchFieldError
-% LocalWords:  LambdaResultExpressionNode ArrayIndexOutOfBoundsException Throwable ClassFormatError ArithmeticException NegativeArraySizeException ClassCircularityError CFGIfStatement
-% LocalWords:  NoClassDefFoundError unaryAssignNodeLookup assertionsEnabled CFGAssert CFGSwitch
+% LocalWords:  LambdaResultExpressionNode ArrayIndexOutOfBoundsException Throwable ClassFormatError ArithmeticException NegativeArraySizeException ClassCircularityError CfgIfStatement
+% LocalWords:  NoClassDefFoundError unaryAssignNodeLookup assertionsEnabled CfgAssert CfgSwitch
 % LocalWords:  intValue

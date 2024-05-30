@@ -135,7 +135,7 @@ import org.plumelib.util.UtilPlume;
   "assumePureGetters",
 
   // Whether to assume that assertions are enabled or disabled
-  // org.checkerframework.framework.flow.CFCFGBuilder.CFCFGBuilder
+  // org.checkerframework.framework.flow.CFCfgBuilder.CFCfgBuilder
   "assumeAssertionsAreEnabled",
   "assumeAssertionsAreDisabled",
 
@@ -362,21 +362,21 @@ import org.plumelib.util.UtilPlume;
   // Mechanism to visualize the control flow graph (CFG).
   // The argument is a sequence of values or key-value pairs.
   // The first argument has to be the fully-qualified name of the
-  // org.checkerframework.dataflow.cfg.CFGVisualizer implementation that should be used. The
-  // remaining values or key-value pairs are passed to CFGVisualizer.init.
+  // org.checkerframework.dataflow.cfg.CfgVisualizer implementation that should be used. The
+  // remaining values or key-value pairs are passed to CfgVisualizer.init.
   // For example:
   //    -Acfgviz=MyViz,a,b=c,d
-  // instantiates class MyViz and calls CFGVisualizer.init
+  // instantiates class MyViz and calls CfgVisualizer.init
   // with {"a" -> true, "b" -> "c", "d" -> true}.
   "cfgviz",
 
   // Directory for .dot files generated from the CFG visualization in
-  // org.checkerframework.dataflow.cfg.DOTCFGVisualizer
+  // org.checkerframework.dataflow.cfg.DotCfgVisualizer
   // as initialized by
-  // org.checkerframework.framework.type.GenericAnnotatedTypeFactory.createCFGVisualizer()
+  // org.checkerframework.framework.type.GenericAnnotatedTypeFactory.createCfgVisualizer()
   // -Aflowdotdir=xyz
   // is short-hand for
-  // -Acfgviz=org.checkerframework.dataflow.cfg.DOTCFGVisualizer,outdir=xyz
+  // -Acfgviz=org.checkerframework.dataflow.cfg.DotCfgVisualizer,outdir=xyz
   "flowdotdir",
 
   // Enable additional output in the CFG visualization.

@@ -176,7 +176,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
     // javac produces enum super calls with zero arguments even though the
     // method element requires two.
     // See also BaseTypeVisitor.visitMethodInvocation and
-    // CFGBuilder.CFGTranslationPhaseOne.visitMethodInvocation.
+    // CfgBuilder.CfgTranslationPhaseOne.visitMethodInvocation.
     if (TreeUtils.isEnumSuperCall(tree)) {
       return;
     }

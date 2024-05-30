@@ -7,7 +7,7 @@ import java.util.StringJoiner;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.cfg.node.Node;
-import org.checkerframework.dataflow.cfg.visualize.CFGVisualizer;
+import org.checkerframework.dataflow.cfg.visualize.CfgVisualizer;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.javacutil.BugInCF;
 
@@ -102,7 +102,7 @@ public class ReachingDefinitionStore implements Store<ReachingDefinitionStore> {
   }
 
   @Override
-  public String visualize(CFGVisualizer<?, ReachingDefinitionStore, ?> viz) {
+  public String visualize(CfgVisualizer<?, ReachingDefinitionStore, ?> viz) {
     String key = "reaching definitions";
     if (reachingDefSet.isEmpty()) {
       return viz.visualizeStoreKeyVal(key, "none");

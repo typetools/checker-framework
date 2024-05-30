@@ -25,8 +25,8 @@ import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ThisNode;
-import org.checkerframework.dataflow.cfg.visualize.CFGVisualizer;
-import org.checkerframework.dataflow.cfg.visualize.StringCFGVisualizer;
+import org.checkerframework.dataflow.cfg.visualize.CfgVisualizer;
+import org.checkerframework.dataflow.cfg.visualize.StringCfgVisualizer;
 import org.checkerframework.dataflow.expression.ArrayAccess;
 import org.checkerframework.dataflow.expression.ClassName;
 import org.checkerframework.dataflow.expression.FieldAccess;
@@ -1321,16 +1321,16 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   @SideEffectFree
   @Override
   public String toString() {
-    return visualize(new StringCFGVisualizer<>());
+    return visualize(new StringCfgVisualizer<>());
   }
 
   @Override
-  public String visualize(CFGVisualizer<?, S, ?> viz) {
-    // This cast is guaranteed to be safe, as long as the CFGVisualizer is created by
-    // CFGVisualizer<Value, Store, TransferFunction> createCFGVisualizer() of
+  public String visualize(CfgVisualizer<?, S, ?> viz) {
+    // This cast is guaranteed to be safe, as long as the CfgVisualizer is created by
+    // CfgVisualizer<Value, Store, TransferFunction> createCfgVisualizer() of
     // GenericAnnotatedTypeFactory.
     @SuppressWarnings("unchecked")
-    CFGVisualizer<V, S, ?> castedViz = (CFGVisualizer<V, S, ?>) viz;
+    CfgVisualizer<V, S, ?> castedViz = (CfgVisualizer<V, S, ?>) viz;
     String internal = internalVisualize(castedViz);
     if (internal.trim().isEmpty()) {
       return this.getClassAndUid() + "()";
@@ -1345,7 +1345,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * @param viz the visualizer
    * @return a representation of the internal information of this {@link Store}
    */
-  protected String internalVisualize(CFGVisualizer<V, S, ?> viz) {
+  protected String internalVisualize(CfgVisualizer<V, S, ?> viz) {
     StringJoiner res = new StringJoiner(viz.getSeparator());
     for (LocalVariable lv : ToStringComparator.sorted(localVariableValues.keySet())) {
       res.add(viz.visualizeStoreLocalVar(lv, localVariableValues.get(lv)));

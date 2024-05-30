@@ -183,7 +183,7 @@ public class MustCallInference {
         AnnotationBuilder.fromClass(this.resourceLeakAtf.getElementUtils(), NotOwning.class);
     this.MUSTCALLALIAS =
         AnnotationBuilder.fromClass(this.resourceLeakAtf.getElementUtils(), MustCallAlias.class);
-    this.methodTree = ((UnderlyingAST.CFGMethod) cfg.getUnderlyingAST()).getMethod();
+    this.methodTree = ((UnderlyingAST.CfgMethod) cfg.getUnderlyingAST()).getMethod();
     this.methodElt = TreeUtils.elementFromDeclaration(methodTree);
     this.classTree = TreePathUtil.enclosingClass(resourceLeakAtf.getPath(methodTree));
     this.classElt = TreeUtils.elementFromDeclaration(classTree);

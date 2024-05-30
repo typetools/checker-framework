@@ -2143,7 +2143,7 @@ for dotfile in *.dot; do dot -Tpdf -o "$dotfile.pdf" "$dotfile"; done
 or (for more verbose output)
 
 \begin{Verbatim}
-javacheck -processor mypackage.MyProcessor -Acfgviz=org.checkerframework.dataflow.cfg.visualize.DOTCFGVisualizer,outdir=.,verbose MyClass.java
+javacheck -processor mypackage.MyProcessor -Acfgviz=org.checkerframework.dataflow.cfg.visualize.DotCfgVisualizer,outdir=.,verbose MyClass.java
 for dotfile in *.dot; do dot -Tpdf -o "$dotfile.pdf" "$dotfile"; done
 \end{Verbatim}
 
@@ -2168,7 +2168,7 @@ command-line options. \\
 \item \code{-Aflowdotdir=\emph{somedir}}:
   Specify directory for \<.dot> files visualizing the CFG\@.
   Shorthand for\\
-  \<-Acfgviz=org.checkerframework.dataflow.cfg.visualize.DOTCFGVisualizer,outdir=\emph{somedir}>.
+  \<-Acfgviz=org.checkerframework.dataflow.cfg.visualize.DotCfgVisualizer,outdir=\emph{somedir}>.
   % TODO: create the directory if it doesn't exist.
   The directory must already exist.
 
@@ -2186,14 +2186,14 @@ command-line options. \\
 
   The argument is a comma-separated sequence.
   The first element is the fully-qualified name of the
-  \<org.checkerframework.dataflow.cfg.visualize.>\refclass{org/checkerframework/dataflow/cfg/visualize}{CFGVisualizer} implementation
+  \<org.checkerframework.dataflow.cfg.visualize.>\refclass{org/checkerframework/dataflow/cfg/visualize}{CfgVisualizer} implementation
   that should be used. Currently, the possibilities are:
   \begin{itemize}
-  \item \<org.checkerframework.dataflow.cfg.visualize.>\refclass{org/checkerframework/dataflow/cfg/visualize}{DOTCFGVisualizer}
-  \item \<org.checkerframework.dataflow.cfg.visualize.>\refclass{org/checkerframework/dataflow/cfg/visualize}{StringCFGVisualizer}
+  \item \<org.checkerframework.dataflow.cfg.visualize.>\refclass{org/checkerframework/dataflow/cfg/visualize}{DotCfgVisualizer}
+  \item \<org.checkerframework.dataflow.cfg.visualize.>\refclass{org/checkerframework/dataflow/cfg/visualize}{StringCfgVisualizer}
   \end{itemize}
   The remaining keys or key--value pairs are
-  passed to \<CFGVisualizer.init>.  Supported keys include
+  passed to \<CfgVisualizer.init>.  Supported keys include
   \begin{itemize}
   \item \<verbose>
     outputs the store after each basic block (in addition to before);
@@ -2205,9 +2205,9 @@ command-line options. \\
 \end{itemize}
 
 
-\subsubsectionAndLabel{Creating a CFG by running CFGVisualizeLauncher}{creating-debugging-dataflow-graph-with-cfgvisualizelauncher}
+\subsubsectionAndLabel{Creating a CFG by running CfgVisualizeLauncher}{creating-debugging-dataflow-graph-with-cfgvisualizelauncher}
 
-You can also use \refclass{dataflow/cfg/visualize}{CFGVisualizeLauncher} to generate a DOT
+You can also use \refclass{dataflow/cfg/visualize}{CfgVisualizeLauncher} to generate a DOT
 or String representation of the control flow graph of a given method in a given class.
 The CFG is generated and output, but no dataflow analysis is performed.
 
@@ -2219,7 +2219,7 @@ The CFG is generated and output, but no dataflow analysis is performed.
 \begin{Verbatim}
 java -Xbootclasspath/p:$CHECKERFRAMEWORK/checker/dist/javac.jar \
   -cp $CHECKERFRAMEWORK/checker/dist/checker.jar \
-  org.checkerframework.dataflow.cfg.visualize.CFGVisualizeLauncher \
+  org.checkerframework.dataflow.cfg.visualize.CfgVisualizeLauncher \
   MyClass.java --class MyClass --method test --pdf
 \end{Verbatim}
 \end{smaller}
@@ -2230,7 +2230,7 @@ java -Xbootclasspath/p:$CHECKERFRAMEWORK/checker/dist/javac.jar \
 \begin{smaller}
 \begin{Verbatim}
 java -cp $CHECKERFRAMEWORK/checker/dist/checker.jar \
-  org.checkerframework.dataflow.cfg.visualize.CFGVisualizeLauncher \
+  org.checkerframework.dataflow.cfg.visualize.CfgVisualizeLauncher \
   MyClass.java --class MyClass --method test --pdf
 \end{Verbatim}
 \end{smaller}
@@ -2247,13 +2247,13 @@ remove \<--pdf> but add \<--string>. For example (with JDK 8):
 \begin{Verbatim}
 java -Xbootclasspath/p:$CHECKERFRAMEWORK/checker/dist/javac.jar \
   -cp $CHECKERFRAMEWORK/checker/dist/checker.jar \
-  org.checkerframework.dataflow.cfg.visualize.CFGVisualizeLauncher \
+  org.checkerframework.dataflow.cfg.visualize.CfgVisualizeLauncher \
   MyClass.java --class MyClass --method test --string
 \end{Verbatim}
 \end{smaller}
 
 For more details about invoking
-\refclass{dataflow/cfg/visualize}{CFGVisualizeLauncher}, run it with
+\refclass{dataflow/cfg/visualize}{CfgVisualizeLauncher}, run it with
 no arguments.
 
 
@@ -2673,7 +2673,7 @@ without warnings or errors.
 %%  LocalWords:  AnnotationProvider FooTransfer createFlowTransferFunction
 %%  LocalWords:  SupportedLintOptions myoption StubFiles scriptfile outdir
 %%  LocalWords:  somedir Acfgviz Averbosecfg cfgviz MyVisualizer init apis
-%%  LocalWords:  VizClassName CFGVisualizer MyProp MyPropChecker mypackage
+%%  LocalWords:  VizClassName CfgVisualizer MyProp MyPropChecker mypackage
 %  LocalWords:  SourceFile NonNegative JavaExpression DependentTypesHelper
 %  LocalWords:  createDependentTypesHelper boolean regex subclasses README
 %  LocalWords:  formatter nChecker nSubchecker AprintVerboseGenerics pdf
@@ -2686,7 +2686,7 @@ without warnings or errors.
 %%  LocalWords:  processorpath CheckerName EnsuresNonNullIf reportError
 %%  LocalWords:  reportWarning AnnotatedFor AdumpOnErrors AparseAllJdk pid
 % LocalWords:  createTreeAnnotator ListTreeAnnotator TypeAnnotator upcasts
-% LocalWords:  createTypeAnnotator ListTypeAnnotator CFGVisualizeLauncher
+% LocalWords:  createTypeAnnotator ListTypeAnnotator CfgVisualizeLauncher
 % LocalWords:  PropagationTreeAnnotator checkerName cfgvisualizelauncher
 % LocalWords:  Signedness UnknownSignedness signedness PolySigned fromTree
 % LocalWords:  DefaultQualifierPolymorphism createQualifierPolymorphism

@@ -9,7 +9,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
-import org.checkerframework.dataflow.cfg.visualize.CFGVisualizer;
+import org.checkerframework.dataflow.cfg.visualize.CfgVisualizer;
 import org.checkerframework.dataflow.expression.ClassName;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
@@ -235,7 +235,7 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
   }
 
   @Override
-  protected String internalVisualize(CFGVisualizer<V, S, ?> viz) {
+  protected String internalVisualize(CfgVisualizer<V, S, ?> viz) {
     String superVisualize = super.internalVisualize(viz);
 
     String initializedVisualize =

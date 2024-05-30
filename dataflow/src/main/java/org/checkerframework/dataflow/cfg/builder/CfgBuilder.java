@@ -12,7 +12,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
-import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
+import org.checkerframework.dataflow.cfg.UnderlyingAST.CfgMethod;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.ConditionalBlockImpl;
 import org.checkerframework.dataflow.cfg.block.ExceptionBlockImpl;
@@ -44,10 +44,10 @@ import org.checkerframework.javacutil.trees.TreeBuilder;
  *       preserving the control flow structure.
  * </ol>
  */
-public abstract class CFGBuilder {
+public abstract class CfgBuilder {
 
-  /** Creates a CFGBuilder. */
-  protected CFGBuilder() {}
+  /** Creates a CfgBuilder. */
+  protected CfgBuilder() {}
 
   /**
    * Build the control flow graph of some code.
@@ -68,11 +68,11 @@ public abstract class CFGBuilder {
     TreeBuilder builder = new TreeBuilder(env);
     AnnotationProvider annotationProvider = new BasicAnnotationProvider();
     PhaseOneResult phase1result =
-        new CFGTranslationPhaseOne(
+        new CfgTranslationPhaseOne(
                 builder, annotationProvider, assumeAssertionsEnabled, assumeAssertionsDisabled, env)
             .process(root, underlyingAST);
-    ControlFlowGraph phase2result = CFGTranslationPhaseTwo.process(phase1result);
-    ControlFlowGraph phase3result = CFGTranslationPhaseThree.process(phase2result);
+    ControlFlowGraph phase2result = CfgTranslationPhaseTwo.process(phase1result);
+    ControlFlowGraph phase3result = CfgTranslationPhaseThree.process(phase2result);
     return phase3result;
   }
 
@@ -89,11 +89,11 @@ public abstract class CFGBuilder {
     TreeBuilder builder = new TreeBuilder(env);
     AnnotationProvider annotationProvider = new BasicAnnotationProvider();
     PhaseOneResult phase1result =
-        new CFGTranslationPhaseOne(
+        new CfgTranslationPhaseOne(
                 builder, annotationProvider, assumeAssertionsEnabled, assumeAssertionsDisabled, env)
             .process(bodyPath, underlyingAST);
-    ControlFlowGraph phase2result = CFGTranslationPhaseTwo.process(phase1result);
-    ControlFlowGraph phase3result = CFGTranslationPhaseThree.process(phase2result);
+    ControlFlowGraph phase2result = CfgTranslationPhaseTwo.process(phase1result);
+    ControlFlowGraph phase3result = CfgTranslationPhaseThree.process(phase2result);
     return phase3result;
   }
 
@@ -106,7 +106,7 @@ public abstract class CFGBuilder {
   /** Build the control flow graph of a method. */
   public static ControlFlowGraph build(
       CompilationUnitTree root, MethodTree tree, ClassTree classTree, ProcessingEnvironment env) {
-    UnderlyingAST underlyingAST = new CFGMethod(tree, classTree);
+    UnderlyingAST underlyingAST = new CfgMethod(tree, classTree);
     return build(root, underlyingAST, false, false, env);
   }
 
