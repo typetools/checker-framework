@@ -261,22 +261,34 @@ public abstract class AbstractCfgVisualizer<
   }
 
   /**
-   * Format the given object as a String suitable for the output format, i.e. with format-specific
-   * characters escaped.
+   * Make the string suitable for the output format, i.e. with format-specific characters escaped.
+   *
+   * @param str a string
+   * @return the escaped string
+   */
+  protected String escapeString(String str) {
+    return str;
+  }
+
+  /**
+   * Make the object's string representation suitable for the output format, i.e. with
+   * format-specific characters escaped.
    *
    * @param obj an object
-   * @return the formatted String from the given object
+   * @return the object's string representation, escaped
    */
-  protected abstract String format(Object obj);
+  protected final String escapeString(Object obj) {
+    return escapeString(obj.toString());
+  }
 
   @Override
   public String visualizeBlockNode(Node t, @Nullable Analysis<V, S, T> analysis) {
     StringBuilder sbBlockNode = new StringBuilder();
-    sbBlockNode.append(format(t)).append("   [ ").append(getNodeSimpleName(t)).append(" ]");
+    sbBlockNode.append(escapeString(t)).append("   [ ").append(getNodeSimpleName(t)).append(" ]");
     if (analysis != null) {
       V value = analysis.getValue(t);
       if (value != null) {
-        sbBlockNode.append("    > ").append(format(value));
+        sbBlockNode.append("    > ").append(escapeString(value));
       }
     }
     return sbBlockNode.toString();

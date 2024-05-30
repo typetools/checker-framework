@@ -126,11 +126,6 @@ public class StringCfgVisualizer<
   }
 
   @Override
-  protected String format(Object obj) {
-    return obj.toString();
-  }
-
-  @Override
   public String visualizeStoreThisVal(V value) {
     return storeEntryIndent + "this > " + value;
   }
