@@ -1,5 +1,6 @@
 import java.util.Optional;
 import org.checkerframework.checker.optional.qual.EnsuresPresent;
+import org.checkerframework.dataflow.qual.Pure;
 
 @SuppressWarnings({"optional:field", "optional:parameter"})
 public class ShadowingMethodCalls {
@@ -41,6 +42,31 @@ public class ShadowingMethodCalls {
       // :: error: (method.invocation)
       this.f.get();
       super.f.get();
+    }
+  }
+
+  static class ClassA {
+
+    @Pure
+    Optional<String> getOpt() {
+      throw new RuntimeException();
+    }
+  }
+
+  static class ClassB extends ClassA {
+    void use() {
+      if (super.getOpt().isPresent()) {
+        String s = super.getOpt().get();
+      }
+      if (super.getOpt().isPresent()) {
+        String s = this.getOpt().get();
+      }
+      if (this.getOpt().isPresent()) {
+        String s = super.getOpt().get();
+      }
+      if (this.getOpt().isPresent()) {
+        String s = this.getOpt().get();
+      }
     }
   }
 }
