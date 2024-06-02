@@ -10,6 +10,7 @@ Removed methods:
 
 Renamed methods:
  * `CFAbstractStore.methodValues()` => `methodCallExpressions()`
+ * `AbstractCFGVisualizer.format()` => `escapeString()`
 
 Renamed fields:
  * `AnalysisResult.stores` => `inputs`
