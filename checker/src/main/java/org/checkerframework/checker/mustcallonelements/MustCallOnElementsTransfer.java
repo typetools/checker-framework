@@ -385,7 +385,7 @@ public class MustCallOnElementsTransfer extends CFTransfer {
     Set<String> calledMethods =
         MustCallOnElementsAnnotatedTypeFactory.whichMethodsDoesLoopWithThisConditionCall(tree);
     ExpressionTree arrayTree =
-        MustCallOnElementsAnnotatedTypeFactory.getArrayTreeForLoopWithThisCondition(tree);
+        MustCallOnElementsAnnotatedTypeFactory.getCollectionTreeForLoopWithThisCondition(tree);
     if (arrayTree == null) return res;
     CFStore elseStore = res.getElseStore();
     JavaExpression receiverReceiver = JavaExpression.fromTree(arrayTree);

@@ -266,7 +266,8 @@ public class CalledMethodsOnElementsTransfer extends CFTransfer {
   private TransferResult<CFValue, CFStore> updateTransferResultForAllocatingForLoop(
       LessThanNode node, TransferResult<CFValue, CFStore> res) {
     ExpressionTree arrayTree =
-        MustCallOnElementsAnnotatedTypeFactory.getArrayTreeForLoopWithThisCondition(node.getTree());
+        MustCallOnElementsAnnotatedTypeFactory.getCollectionTreeForLoopWithThisCondition(
+            node.getTree());
     if (arrayTree == null) return res;
     JavaExpression target = JavaExpression.fromTree(arrayTree);
     List<String> mustCall =
@@ -298,7 +299,8 @@ public class CalledMethodsOnElementsTransfer extends CFTransfer {
   private TransferResult<CFValue, CFStore> updateTransferResultForFulfillingForLoop(
       LessThanNode node, TransferResult<CFValue, CFStore> res) {
     ExpressionTree arrayTree =
-        MustCallOnElementsAnnotatedTypeFactory.getArrayTreeForLoopWithThisCondition(node.getTree());
+        MustCallOnElementsAnnotatedTypeFactory.getCollectionTreeForLoopWithThisCondition(
+            node.getTree());
     if (arrayTree == null) return res;
     Set<String> calledMethods =
         MustCallOnElementsAnnotatedTypeFactory.whichMethodsDoesLoopWithThisConditionCall(

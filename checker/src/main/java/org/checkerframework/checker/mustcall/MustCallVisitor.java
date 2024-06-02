@@ -304,7 +304,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
                         .equals(collectionName)) {
                   blockIsIllegal.set(true);
                 } else {
-                  collectionToCalledMethods.setLeft(collectionExpr);
+                  collectionToCalledMethods.setLeft(receiver);
                   Name methodName = mst.getIdentifier();
                   methodsCalled.add(methodName.toString());
                 }
@@ -512,12 +512,11 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
       // check whether the RHS actually has must-call obligations
       if (mcValues != null) {
         ExpressionTree condition = tree.getCondition();
-        ExpressionTree arrayTree = arrayAccess.getExpression();
         MustCallOnElementsAnnotatedTypeFactory.createArrayObligationForAssignment(assgn);
         MustCallOnElementsAnnotatedTypeFactory.createArrayObligationForLessThan(
             condition, mcValues);
         MustCallOnElementsAnnotatedTypeFactory.putArrayAffectedByLoopWithThisCondition(
-            condition, arrayTree);
+            condition, arrayAccess);
       }
     }
   }
@@ -835,6 +834,15 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
     switch (expr.getKind()) {
       case IDENTIFIER:
         return ((IdentifierTree) expr).getName();
+      case ARRAY_ACCESS:
+        return nameFromExpression(((ArrayAccessTree) expr).getExpression());
+      case MEMBER_SELECT:
+        Element elt = TreeUtils.elementFromUse((MemberSelectTree) expr);
+        if (elt.getKind() == ElementKind.METHOD) {
+          return nameFromExpression(((MemberSelectTree) expr).getExpression());
+        } else {
+          return null;
+        }
       default:
         return null;
     }

@@ -5,6 +5,7 @@ import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import java.lang.annotation.Annotation;
@@ -126,9 +127,10 @@ public class MustCallOnElementsAnnotatedTypeFactory extends BaseAnnotatedTypeFac
 
   /**
    * Maps the AST-node corresponding to the loop condition of a loop assigning/closing a resource
-   * to/from an {@code @OwningArray} to the array node.
+   * to/from an {@code @OwningArray} to the array access tree.
    */
-  private static Map<Tree, ExpressionTree> arrayTreeForLoopWithThisCondition = new HashMap<>();
+  private static Map<Tree, ExpressionTree> collectionAccessTreeForLoopWithThisCondition =
+      new HashMap<>();
 
   /**
    * Fetches the store from the results of dataflow for {@code first}. If {@code afterFirstStore} is
@@ -293,7 +295,7 @@ public class MustCallOnElementsAnnotatedTypeFactory extends BaseAnnotatedTypeFac
       Tree condition, ExpressionTree arrayTree) {
     assert (condition.getKind() == Tree.Kind.LESS_THAN)
         : "Trying to associate Tree as condition of an obligation changing for-loop, but is not a LESS_THAN tree";
-    arrayTreeForLoopWithThisCondition.put(condition, arrayTree);
+    collectionAccessTreeForLoopWithThisCondition.put(condition, arrayTree);
   }
 
   /**
@@ -331,10 +333,34 @@ public class MustCallOnElementsAnnotatedTypeFactory extends BaseAnnotatedTypeFac
    * @param condition the less-than AST-node
    * @return the array AST-node in the loop body
    */
-  public static ExpressionTree getArrayTreeForLoopWithThisCondition(Tree condition) {
+  public static ExpressionTree getCollectionTreeForLoopWithThisCondition(Tree condition) {
     assert (condition.getKind() == Tree.Kind.LESS_THAN)
         : "Trying to associate Tree as condition of an obligation changing for-loop, but is not a LESS_THAN tree";
-    return arrayTreeForLoopWithThisCondition.get(condition);
+    ExpressionTree accessTree = collectionAccessTreeForLoopWithThisCondition.get(condition);
+    if (accessTree == null) return null;
+    assert (accessTree.getKind() == Tree.Kind.MEMBER_SELECT
+        || accessTree.getKind() == Tree.Kind.ARRAY_ACCESS);
+    if (accessTree instanceof ArrayAccessTree) {
+      return ((ArrayAccessTree) accessTree).getExpression();
+    } else if (accessTree instanceof MemberSelectTree) {
+      return ((MemberSelectTree) accessTree).getExpression();
+    } else {
+      throw new IllegalStateException(
+          "Collection tree should either be ArrayAccessTree (array) or MemberSelectTree (collection)");
+    }
+  }
+
+  /**
+   * Returns the collection access AST-tree, for which a MustCallOnElements obligation is
+   * opened/closed in the loop, for which the given lessThan AST-node is the condition.
+   *
+   * @param condition the less-than AST-node
+   * @return the collection access AST-tree in the loop body
+   */
+  public static ExpressionTree getCollectionAccessTreeForLoopWithThisCondition(Tree condition) {
+    assert (condition.getKind() == Tree.Kind.LESS_THAN)
+        : "Trying to associate Tree as condition of an obligation changing for-loop, but is not a LESS_THAN tree";
+    return collectionAccessTreeForLoopWithThisCondition.get(condition);
   }
 
   /**

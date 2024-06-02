@@ -1487,6 +1487,8 @@ class MustCallConsistencyAnalyzer {
             ExpressionTree arrayTree = ((ArrayAccessTree) lhsTree).getExpression();
             assert arrayTree instanceof IdentifierTree
                 : "LHS of pattern-matched assignment-loop assumed to be IdentifierTree, but is: "
+                    + arrayTree
+                    + " of kind "
                     + arrayTree.getKind();
             Name arrayName = ((IdentifierTree) arrayTree).getName();
             // enforces 6. assignment rule:
@@ -2447,6 +2449,7 @@ class MustCallConsistencyAnalyzer {
           updateObligationsForInvocation(obligations, node, successorAndExceptionType.second);
         } else if (node instanceof LessThanNode) {
           verifyAllocatingForLoop((LessThanNode) node, obligations);
+          verifyFulfillingForLoop((LessThanNode) node, obligations);
         }
         // All other types of nodes are ignored. This is safe, because other kinds of
         // nodes cannot create or modify the resource-alias sets that the algorithm is
@@ -2529,7 +2532,8 @@ class MustCallConsistencyAnalyzer {
    */
   private void verifyAllocatingForLoop(LessThanNode node, Set<Obligation> obligations) {
     ExpressionTree arr =
-        MustCallOnElementsAnnotatedTypeFactory.getArrayTreeForLoopWithThisCondition(node.getTree());
+        MustCallOnElementsAnnotatedTypeFactory.getCollectionTreeForLoopWithThisCondition(
+            node.getTree());
     boolean isOwningArrayField =
         arr != null
             && TreeUtils.elementFromTree(arr).getAnnotation(OwningArray.class) != null
@@ -2553,6 +2557,26 @@ class MustCallConsistencyAnalyzer {
             arr,
             "");
       }
+    }
+  }
+
+  private void verifyFulfillingForLoop(LessThanNode node, Set<Obligation> obligations) {
+    ExpressionTree collectionAccess =
+        MustCallOnElementsAnnotatedTypeFactory.getCollectionAccessTreeForLoopWithThisCondition(
+            node.getTree());
+    Set<String> calledMethods =
+        MustCallOnElementsAnnotatedTypeFactory.whichMethodsDoesLoopWithThisConditionCall(
+            node.getTree());
+    boolean isFulfillingForLoop = calledMethods != null && calledMethods.size() > 0;
+    if (collectionAccess != null && isFulfillingForLoop) {
+      // Element elt = TreeUtils.elementFromTree(collectionAccess);
+      if (obligations != null) {}
+      // obligations.add(
+      //     new Obligation(
+      //         ImmutableSet.of(
+      //             new ResourceAlias(
+      //                  JavaExpression.fromTree(collectionAccess), elt, collectionAccess)),
+      //         Collections.singleton(MethodExitKind.NORMAL_RETURN)));
     }
   }
 
