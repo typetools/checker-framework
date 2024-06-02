@@ -154,8 +154,7 @@ class PatternMatchOwningArrayLoops {
     }
   }
 
-  public void invalidDeallocationLoop3() throws Exception {
-    // :: error: unfulfilled.mustcallonelements.obligations
+  public void validDeallocationLoop3() throws Exception {
     @OwningArray Socket[] arr = new Socket[n];
     for (int i = 0; i < n; i++) {
       try {
@@ -163,7 +162,8 @@ class PatternMatchOwningArrayLoops {
       } catch (Exception e) {
       }
     }
-    // this deallocation loop is illegal and is not pattern-matched
+    // this deallocation loop is legal, as we guarantee cmoe only
+    // for normal termination
     for (int i = 0; i < n; i++) {
       try {
         arr[i].close();
