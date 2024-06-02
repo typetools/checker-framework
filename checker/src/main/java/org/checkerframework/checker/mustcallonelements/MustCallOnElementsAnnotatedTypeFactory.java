@@ -110,9 +110,6 @@ public class MustCallOnElementsAnnotatedTypeFactory extends BaseAnnotatedTypeFac
   /** Set of assignments that open an obligation for an {@code @OwningArray} array. */
   private static Set<AssignmentTree> obligationCreatingAssignments = new HashSet<>();
 
-  /** Set of method accesses that fulfill an obligation for an {@code @OwningArray} array. */
-  private static Set<ExpressionTree> obligationFulfillingMethodAccess = new HashSet<>();
-
   /**
    * Maps the AST-node corresponding to the loop condition of a loop calling methods on an
    * {@code @OwningArray} to the names of the methods called.
@@ -233,28 +230,6 @@ public class MustCallOnElementsAnnotatedTypeFactory extends BaseAnnotatedTypeFac
   protected TypeAnnotator createTypeAnnotator() {
     return new ListTypeAnnotator(
         super.createTypeAnnotator(), new MustCallOnElementsTypeAnnotator(this));
-  }
-
-  /**
-   * returns whether the specified member-select AST node is in a pattern-matched loop that fulfills
-   * an {@code @OwningArray} obligation.
-   *
-   * @param method the method call AST node
-   * @return whether the node is in a pattern-matched loop fulfilling an mcoe obligation
-   */
-  public static boolean doesMethodAccessCloseArrayObligation(ExpressionTree method) {
-    return obligationFulfillingMethodAccess.contains(method);
-  }
-
-  /**
-   * Marks the specified method call AST node as one that fulfills a mcoe obligation for an
-   * {@code @OwningArray} array, i.e. marks the node as being in a pattern-matched loop. Only call
-   * when the corrresponding loop has been successfully pattern-matched.
-   *
-   * @param method the method call AST node
-   */
-  public static void fulfillArrayObligationForMethodAccess(ExpressionTree method) {
-    obligationFulfillingMethodAccess.add(method);
   }
 
   /**
