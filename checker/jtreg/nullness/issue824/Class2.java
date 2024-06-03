@@ -4,9 +4,9 @@
  * The defaults for type variable upper bounds with type Object changed since
  * the issue was filed.  So, this test case has been changed so that
  * annotations on type variable bounds in stub files is still tested.
- * @compile -XDrawDiagnostics -Xlint:unchecked ../issue824lib/Class1.java
+ * @compile -Xlint:unchecked ../issue824lib/Class1.java
  * @compile/fail/ref=Class2.out -XDrawDiagnostics -Xlint:unchecked -processor org.checkerframework.checker.nullness.NullnessChecker -Anomsgtext Class2.java -Astubs=Class1.astub
- * @compile -XDrawDiagnostics -Xlint:unchecked -processor org.checkerframework.checker.nullness.NullnessChecker -Anomsgtext Class2.java
+ * @compile -Xlint:unchecked -processor org.checkerframework.checker.nullness.NullnessChecker -Anomsgtext Class2.java
  */
 
 import org.checkerframework.checker.nullness.qual.Nullable;
