@@ -210,11 +210,11 @@ public interface CFGVisualizer<
   /**
    * Visualize a Node based on the analysis.
    *
-   * @param t the node
+   * @param n the node
    * @param analysis the current analysis
    * @return the String representation of the given node
    */
-  String visualizeBlockNode(Node t, @Nullable Analysis<V, S, T> analysis);
+  String visualizeBlockNode(Node n, @Nullable Analysis<V, S, T> analysis);
 
   /** Shutdown method called once from the shutdown hook of the {@code BaseTypeChecker}. */
   void shutdown();
