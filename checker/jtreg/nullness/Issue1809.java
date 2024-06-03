@@ -4,9 +4,9 @@
  *     https://github.com/typetools/checker-framework/issues/1809
  *     Also see framework/tests/all-systems/Issue1809.java
  *
- * @compile -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -AatfCacheSize=4 Issue1809.java
- * @compile -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -AatfDoNotCache Issue1809.java
- * @compile -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker Issue1809.java
+ * @compile -processor org.checkerframework.checker.nullness.NullnessChecker -AatfCacheSize=4 Issue1809.java
+ * @compile -processor org.checkerframework.checker.nullness.NullnessChecker -AatfDoNotCache Issue1809.java
+ * @compile -processor org.checkerframework.checker.nullness.NullnessChecker Issue1809.java
  */
 
 import java.util.List;

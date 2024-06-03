@@ -600,7 +600,10 @@ public class DependentTypesHelper {
 
   /** Thrown when a non-parameter local variable is found. */
   @SuppressWarnings("serial")
-  private static class FoundLocalVarException extends RuntimeException {}
+  private static class FoundLocalVarException extends RuntimeException {
+    /** Creates a FoundLocalVarException. */
+    public FoundLocalVarException() {}
+  }
 
   /**
    * Viewpoint-adapt all dependent type annotations to the method declaration, {@code
