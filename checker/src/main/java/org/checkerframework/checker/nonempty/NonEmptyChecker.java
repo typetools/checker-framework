@@ -8,4 +8,10 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
  *
  * @checker_framework.manual #non-empty-checker Non-Empty Checker
  */
-public class NonEmptyChecker extends BaseTypeChecker {}
+public class NonEmptyChecker extends BaseTypeChecker {
+
+  /** Creates a NonEmptyChecker. */
+  public NonEmptyChecker() {
+    super();
+  }
+}
