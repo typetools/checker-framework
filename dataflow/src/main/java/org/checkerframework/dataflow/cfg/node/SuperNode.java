@@ -14,7 +14,7 @@ import org.checkerframework.javacutil.TreeUtils;
  *   <em>super</em>
  * </pre>
  *
- * Its {@link #type} field is the type of the class in which "super" appears, <em>not<em> the type
+ * Its {@link #type} field is the type of the class in which "super" appears, <em>not</em> the type
  * to which the "super" identifier resolves.
  */
 public class SuperNode extends Node {
