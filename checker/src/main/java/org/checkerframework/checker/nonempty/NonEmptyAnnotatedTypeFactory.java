@@ -13,6 +13,7 @@ import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
 
+/** The type factory for the {@link NonEmptyChecker}. */
 public class NonEmptyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   /** The @{@link NonEmpty} annotation. */
