@@ -637,9 +637,9 @@ public class JavaExpressionParseUtil {
         }
         if (receiverExpr instanceof SuperReference
             && thisReference.getType().getKind() == TypeKind.DECLARED) {
-          fieldElem =
+          Element thisFieldElem =
               resolver.findField(identifier, thisReference.getType(), pathToCompilationUnit);
-          if (fieldElem == null) {
+          if (thisFieldElem == null) {
             receiverExpr = thisReference;
           }
         }
