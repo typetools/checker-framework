@@ -268,7 +268,7 @@ public class InferenceFactory {
 
     ExecutableType methodType = getTypeOfMethodAdaptedToUse(invocation, context);
     if (treeIndex >= methodType.getParameterTypes().size() - 1
-        && TreeUtils.isVarArgMethodCall(invocation)) {
+        && TreeUtils.isVarargsCall(invocation)) {
       treeIndex = methodType.getParameterTypes().size() - 1;
       TypeMirror typeMirror = methodType.getParameterTypes().get(treeIndex);
       return ((ArrayType) typeMirror).getComponentType();
@@ -301,7 +301,7 @@ public class InferenceFactory {
     }
 
     if (treeIndex >= methodType.getParameterTypes().size() - 1
-        && TreeUtils.isVarArgMethodCall(invocation)) {
+        && TreeUtils.isVarargsCall(invocation)) {
       treeIndex = methodType.getParameterTypes().size() - 1;
       AnnotatedTypeMirror typeMirror = methodType.getParameterTypes().get(treeIndex);
       return ((AnnotatedArrayType) typeMirror).getComponentType();
