@@ -1042,7 +1042,7 @@ public class AnnotatedTypes {
 
     // Handle vararg methods.
     // TODO: Should this be a call to `isVarArgs()` or `isVarArgMethodCall()`?
-    if (!TreeUtils.isVarArgs(invok)) {
+    if (!TreeUtils.isVarargsCall(invok)) {
       return parameters;
     }
     if (parameters.size() == 0) {
