@@ -994,7 +994,7 @@ public class AnnotatedTypes {
       AnnotatedTypeFactory atypeFactory,
       AnnotatedExecutableType method,
       List<? extends ExpressionTree> args) {
-    return adaptParameters(atypeFactory, method, args);
+    return adaptParameters(atypeFactory, method, args, null);
   }
 
   /**
@@ -1008,13 +1008,15 @@ public class AnnotatedTypes {
    * @param atypeFactory the type factory to use for fetching annotated types
    * @param method the method or constructor's type
    * @param args the arguments to the method or constructor invocation
+   * @param invok the method or constructor invocation
    * @return a list of the types that the invocation arguments need to be subtype of; has the same
    *     length as {@code args}
    */
   public static List<AnnotatedTypeMirror> adaptParameters(
       AnnotatedTypeFactory atypeFactory,
       AnnotatedExecutableType method,
-      List<? extends ExpressionTree> args) {
+      List<? extends ExpressionTree> args,
+      Tree invok) {
 
     List<AnnotatedTypeMirror> parameters = method.getParameterTypes();
     // Handle anonymous constructors that extend a class with an enclosing type.
@@ -1039,7 +1041,8 @@ public class AnnotatedTypes {
     }
 
     // Handle vararg methods.
-    if (!method.getElement().isVarArgs()) {
+    // TODO: Should this be a call to `isVarArgs()` or `isVarArgMethodCall()`?
+    if (!TreeUtils.isVarArgs(invok)) {
       return parameters;
     }
     if (parameters.size() == 0) {
