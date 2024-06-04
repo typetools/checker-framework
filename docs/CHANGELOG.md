@@ -1,9 +1,13 @@
-Version 3.44.1 (July 1, 2024)
+Version 3.45.0 (July 2, 2024)
 -----------------------------
 
 **User-visible changes:**
 
 **Implementation details:**
+
+Deprecated methods:
+ * `TreeUtils.isVarArgs()` => `isVarargsCall()`
+ * `TreeUtils.isVarArgMethodCall()` => `isVarargsCall()`
 
 **Closed issues:**
 
