@@ -2561,12 +2561,12 @@ public final class TreeUtils {
    * @param tree a method/constructor invocation
    * @return true if the given method/constructor invocation is a varargs invocation
    */
-  public static boolean isVarArgs(Tree tree) {
+  public static boolean isVarargsCall(Tree tree) {
     switch (tree.getKind()) {
       case METHOD_INVOCATION:
-        return isVarArgs((MethodInvocationTree) tree);
+        return isVarargsCall((MethodInvocationTree) tree);
       case NEW_CLASS:
-        return isVarArgs((NewClassTree) tree);
+        return isVarargsCall((NewClassTree) tree);
       default:
         return false;
     }
@@ -2577,8 +2577,20 @@ public final class TreeUtils {
    *
    * @param invok the method invocation
    * @return true if the given method invocation is a varargs invocation
+   * @deprecated use {@link #isVarargsCall(MethodInvocationTree)}
    */
+  @Deprecated // 2024-06-04
   public static boolean isVarArgs(MethodInvocationTree invok) {
+    return ((JCMethodInvocation) invok).varargsElement != null;
+  }
+
+  /**
+   * Returns true if the given method invocation is a varargs invocation.
+   *
+   * @param invok the method invocation
+   * @return true if the given method invocation is a varargs invocation
+   */
+  public static boolean isVarargsCall(MethodInvocationTree invok) {
     return ((JCMethodInvocation) invok).varargsElement != null;
   }
 
@@ -2605,8 +2617,20 @@ public final class TreeUtils {
    *
    * @param newClassTree the constructor invocation
    * @return true if the given method invocation is a varargs invocation
+   * @deprecated use {@link #isVarargsCall(NewClassTree)}
    */
+  @Deprecated // 2024-06-04
   public static boolean isVarArgs(NewClassTree newClassTree) {
+    return isVarargsCall(newClassTree);
+  }
+
+  /**
+   * Returns true if the given constructor invocation is a varargs invocation.
+   *
+   * @param newClassTree the constructor invocation
+   * @return true if the given method invocation is a varargs invocation
+   */
+  public static boolean isVarargsCall(NewClassTree newClassTree) {
     return ((JCNewClass) newClassTree).varargsElement != null;
   }
 
@@ -2798,11 +2822,11 @@ public final class TreeUtils {
    * @param methodInvocation a method or constructor invocation
    * @return whether applicability by variable arity invocation is necessary to determine the method
    *     signature
-   * @deprecated Use {@link #isVarArgs(Tree)} instead.
+   * @deprecated use {@link #isVarargsCall(Tree)}
    */
-  @Deprecated
+  @Deprecated // 2024-06-04
   public static boolean isVarArgMethodCall(ExpressionTree methodInvocation) {
-    return isVarArgs(methodInvocation);
+    return isVarargsCall(methodInvocation);
   }
 
   /**
