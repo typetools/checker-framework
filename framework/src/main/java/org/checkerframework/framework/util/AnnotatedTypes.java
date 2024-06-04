@@ -987,7 +987,7 @@ public class AnnotatedTypes {
    * @param args the arguments to the method invocation
    * @return the types that the method invocation arguments need to be subtype of
    * @deprecated Use {@link #adaptParameters(AnnotatedTypeFactory,
-   *     AnnotatedTypeMirror.AnnotatedExecutableType, List)} instead
+   *     AnnotatedTypeMirror.AnnotatedExecutableType, List, Tree)} instead
    */
   @Deprecated // 2022-04-21
   public static List<AnnotatedTypeMirror> expandVarArgsParameters(
