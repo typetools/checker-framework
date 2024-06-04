@@ -2568,7 +2568,7 @@ public final class TreeUtils {
       case NEW_CLASS:
         return isVarArgs((NewClassTree) tree);
       default:
-        throw new BugInCF("TreeUtils.isVarArgs: unexpected kind of tree: " + tree);
+        return false;
     }
   }
 
@@ -2579,7 +2579,7 @@ public final class TreeUtils {
    * @return true if the given method invocation is a varargs invocation
    */
   public static boolean isVarArgs(MethodInvocationTree invok) {
-    return isVarArgs(elementFromUse(invok), invok.getArguments());
+    return ((JCMethodInvocation) invok).varargsElement != null;
   }
 
   /**
@@ -2607,36 +2607,7 @@ public final class TreeUtils {
    * @return true if the given method invocation is a varargs invocation
    */
   public static boolean isVarArgs(NewClassTree newClassTree) {
-    return isVarArgs(elementFromUse(newClassTree), newClassTree.getArguments());
-  }
-
-  /**
-   * Returns true if a method/constructor invocation is a varargs invocation.
-   *
-   * @param method the method or constructor
-   * @param args the arguments passed at the invocation
-   * @return true if the given method/constructor invocation is a varargs invocation
-   */
-  private static boolean isVarArgs(ExecutableElement method, List<? extends ExpressionTree> args) {
-    if (!method.isVarArgs()) {
-      return false;
-    }
-
-    List<? extends VariableElement> parameters = method.getParameters();
-    if (parameters.size() != args.size()) {
-      return true;
-    }
-
-    TypeMirror lastArgType = typeOf(args.get(args.size() - 1));
-    if (lastArgType.getKind() == TypeKind.NULL) {
-      return false;
-    }
-    if (lastArgType.getKind() != TypeKind.ARRAY) {
-      return true;
-    }
-
-    TypeMirror varargsParamType = parameters.get(parameters.size() - 1).asType();
-    return TypesUtils.getArrayDepth(varargsParamType) != TypesUtils.getArrayDepth(lastArgType);
+    return ((JCNewClass) newClassTree).varargsElement != null;
   }
 
   /**
@@ -2827,15 +2798,11 @@ public final class TreeUtils {
    * @param methodInvocation a method or constructor invocation
    * @return whether applicability by variable arity invocation is necessary to determine the method
    *     signature
+   * @deprecated Use {@link #isVarArgs(Tree)} instead.
    */
+  @Deprecated
   public static boolean isVarArgMethodCall(ExpressionTree methodInvocation) {
-    if (methodInvocation.getKind() == Tree.Kind.METHOD_INVOCATION) {
-      return ((JCMethodInvocation) methodInvocation).varargsElement != null;
-    } else if (methodInvocation.getKind() == Tree.Kind.NEW_CLASS) {
-      return ((JCNewClass) methodInvocation).varargsElement != null;
-    } else {
-      return false;
-    }
+    return isVarArgs(methodInvocation);
   }
 
   /**
