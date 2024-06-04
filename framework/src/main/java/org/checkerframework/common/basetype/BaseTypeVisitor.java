@@ -1965,7 +1965,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @param tree method or constructor invocation tree
    */
   protected void checkVarargs(AnnotatedExecutableType invokedMethod, Tree tree) {
-    if (!TreeUtils.isVarArgs(tree)) {
+    if (!TreeUtils.isVarargsCall(tree)) {
       // If not a varargs invocation, type checking is already done in checkArguments.
       return;
     }
