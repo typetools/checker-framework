@@ -1,3 +1,13 @@
+Version 3.44.1 (July 1, 2024)
+-----------------------------
+
+**User-visible changes:**
+
+**Implementation details:**
+
+**Closed issues:**
+
+
 Version 3.44.0 (June 3, 2024)
 -----------------------------
 
