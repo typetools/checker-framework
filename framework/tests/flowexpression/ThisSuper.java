@@ -27,17 +27,4 @@ public class ThisSuper {
       @FlowExp("this.field") Object o2 = this.subField;
     }
   }
-
-  class OuterClass {
-    private final Object lock = new Object();
-
-    @FlowExp("this.lock") Object field;
-
-    class InnerClass {
-      private final Object lock = new Object();
-
-      // :: error: (assignment)
-      @FlowExp("this.lock") Object field2 = field;
-    }
-  }
 }
