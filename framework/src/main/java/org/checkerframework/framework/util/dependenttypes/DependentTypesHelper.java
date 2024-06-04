@@ -733,8 +733,7 @@ public class DependentTypesHelper {
                 }
 
                 @Override
-                protected JavaExpression visitSuperReference(
-                    SuperReference superExpr, Void unused) {
+                public JavaExpression visitSuperReference(SuperReference superRef, Void unused) {
                   throw new FoundLocalVarException();
                 }
               };

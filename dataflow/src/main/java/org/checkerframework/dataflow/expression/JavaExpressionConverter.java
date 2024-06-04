@@ -103,11 +103,6 @@ public abstract class JavaExpressionConverter extends JavaExpressionVisitor<Java
   }
 
   @Override
-  protected JavaExpression visitSuperReference(SuperReference superReference, Void unused) {
-    return superReference;
-  }
-
-  @Override
   protected JavaExpression visitLambda(Lambda lambdaExpr, Void unused) {
     return lambdaExpr;
   }
@@ -151,6 +146,11 @@ public abstract class JavaExpressionConverter extends JavaExpressionVisitor<Java
   private MethodReferenceTarget convert(MethodReferenceTarget target) {
     return new MethodReferenceTarget(
         target.getTypeArguments(), target.getIdentifier(), target.isConstructor());
+  }
+
+  @Override
+  protected JavaExpression visitSuperReference(SuperReference superExpr, Void unused) {
+    return superExpr;
   }
 
   @Override

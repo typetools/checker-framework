@@ -2,7 +2,6 @@
 // https://github.com/typetools/checker-framework/issues/152
 import org.checkerframework.framework.testchecker.flowexpression.qual.FlowExp;
 
-// @skip-test
 public class ThisSuper {
   static class SuperClass {
     protected final Object field = new Object();

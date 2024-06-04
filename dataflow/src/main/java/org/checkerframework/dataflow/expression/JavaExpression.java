@@ -4,9 +4,7 @@ import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
-import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.LiteralTree;
-import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
@@ -36,7 +34,6 @@ import org.checkerframework.dataflow.cfg.node.BinaryOperationNode;
 import org.checkerframework.dataflow.cfg.node.ClassNameNode;
 import org.checkerframework.dataflow.cfg.node.ExplicitThisNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
-import org.checkerframework.dataflow.cfg.node.FunctionalInterfaceNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.NarrowingConversionNode;
@@ -75,7 +72,6 @@ import org.plumelib.util.CollectionsPlume;
  * @see <a href="https://checkerframework.org/manual/#java-expressions-as-arguments">the syntax of
  *     Java expressions supported by the Checker Framework</a>
  */
-@SuppressWarnings("all")
 public abstract class JavaExpression {
   /** The type of this expression. */
   protected final TypeMirror type;
@@ -444,21 +440,6 @@ public abstract class JavaExpression {
         methodReceiver = fromNode(mn.getTarget().getReceiver());
       }
       result = new MethodCall(mn.getType(), invokedMethod, methodReceiver, parameters);
-    } else if (receiverNode instanceof FunctionalInterfaceNode) {
-      FunctionalInterfaceNode functionalInterfaceNode = (FunctionalInterfaceNode) receiverNode;
-      Tree tree = functionalInterfaceNode.getTree();
-      if (tree instanceof LambdaExpressionTree) {
-        LambdaExpressionTree lambdaTree = (LambdaExpressionTree) tree;
-        List<LocalVariable> parameters = Lambda.createLambdaParameters(lambdaTree);
-        return new Lambda(functionalInterfaceNode.getType(), parameters, lambdaTree.getBody());
-      } else if (tree instanceof MemberReferenceTree) {
-        MemberReferenceTree memberReferenceTree = (MemberReferenceTree) tree;
-        MethodReferenceScope scope =
-            MethodReferenceScope.fromMemberReferenceTree(memberReferenceTree);
-        MethodReferenceTarget target =
-            MethodReferenceTarget.fromMemberReferenceTree(memberReferenceTree);
-        return new MethodReference(functionalInterfaceNode.getType(), scope, target);
-      }
     }
 
     if (result == null) {
@@ -552,11 +533,11 @@ public abstract class JavaExpression {
         IdentifierTree identifierTree = (IdentifierTree) tree;
         TypeMirror typeOfId = TreeUtils.typeOf(identifierTree);
         Name identifierName = identifierTree.getName();
-        if (identifierName.contentEquals("this") || identifierName.contentEquals("super")) {
-          result =
-              identifierName.contentEquals("this")
-                  ? new ThisReference(typeOfId)
-                  : new SuperReference(typeOfId);
+        if (identifierName.contentEquals("this")) {
+          result = new ThisReference(typeOfId);
+          break;
+        } else if (identifierName.contentEquals("super")) {
+          result = new SuperReference(typeOfId);
           break;
         }
         assert TreeUtils.isUseOfElement(identifierTree) : "@AssumeAssertion(nullness): tree kind";
@@ -754,24 +735,6 @@ public abstract class JavaExpression {
       }
       return getImplicitReceiver(ele);
     }
-  }
-
-  /**
-   * Returns the initial receiver of a method invocation.
-   *
-   * <p>For example, for a given method invocation sequence {@code a.b().c.d().e()}, return {@code
-   * a}.
-   *
-   * @param tree a tree
-   * @return the initial receiver of a method invocation
-   */
-  public static JavaExpression getInitialReceiverOfMethodInvocation(ExpressionTree tree) {
-    assert tree instanceof MethodInvocationTree;
-    ExpressionTree receiverTree = TreeUtils.getReceiverTree(tree);
-    while (receiverTree instanceof MethodInvocationNode) {
-      receiverTree = TreeUtils.getReceiverTree(receiverTree);
-    }
-    return JavaExpression.fromTree(receiverTree);
   }
 
   /**
