@@ -1,14 +1,14 @@
 import org.checkerframework.checker.lock.qual.*;
 import org.checkerframework.dataflow.qual.Pure;
 
-public class FlowExpressionsTest {
+public class JavaExpressionsTest {
   class MyClass {
     public Object field;
   }
 
   private final @GuardedBy({"<self>"}) MyClass m;
 
-  FlowExpressionsTest() {
+  JavaExpressionsTest() {
     m = new MyClass();
   }
 

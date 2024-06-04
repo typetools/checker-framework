@@ -2,7 +2,7 @@ import javax.swing.JMenuBar;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 
-public abstract class FlowExpressionParsingBug {
+public abstract class JavaExpressionParsingBug {
 
   //// Check that JavaExpressions with explicit and implicit 'this' work
 
@@ -18,7 +18,7 @@ public abstract class FlowExpressionParsingBug {
 
   static @Nullable String i = null;
 
-  @RequiresNonNull("FlowExpressionParsingBug.i")
+  @RequiresNonNull("JavaExpressionParsingBug.i")
   public void a() {}
 
   @RequiresNonNull("i")
@@ -30,7 +30,7 @@ public abstract class FlowExpressionParsingBug {
   void test1() {
     // :: error: (contracts.precondition)
     a();
-    FlowExpressionParsingBug.i = "";
+    JavaExpressionParsingBug.i = "";
     a();
   }
 
@@ -51,7 +51,7 @@ public abstract class FlowExpressionParsingBug {
   void test2() {
     // :: error: (contracts.precondition)
     b();
-    FlowExpressionParsingBug.i = "";
+    JavaExpressionParsingBug.i = "";
     b();
   }
 
@@ -72,7 +72,7 @@ public abstract class FlowExpressionParsingBug {
   void test3() {
     // :: error: (contracts.precondition)
     c();
-    FlowExpressionParsingBug.i = "";
+    JavaExpressionParsingBug.i = "";
     c();
   }
 
