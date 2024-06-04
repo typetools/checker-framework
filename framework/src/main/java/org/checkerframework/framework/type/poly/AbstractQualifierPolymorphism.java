@@ -82,6 +82,9 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
   /**
    * Completes a type by removing any unresolved polymorphic qualifiers, replacing them with the
    * bottom qualifiers.
+   *
+   * <p>This is only called when {@code instantiationMapping} is empty. (And that implies that there
+   * are no polymorphic qualifiers on formal parameters??)
    */
   private final SimpleAnnotatedTypeScanner<Void, Void> completer;
 
@@ -181,7 +184,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
       return;
     }
     List<AnnotatedTypeMirror> parameters =
-        AnnotatedTypes.adaptParameters(atypeFactory, type, tree.getArguments());
+        AnnotatedTypes.adaptParameters(atypeFactory, type, tree.getArguments(), tree);
     List<AnnotatedTypeMirror> arguments =
         CollectionsPlume.mapList(atypeFactory::getAnnotatedType, tree.getArguments());
 
@@ -216,7 +219,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
     }
 
     List<AnnotatedTypeMirror> parameters =
-        AnnotatedTypes.adaptParameters(atypeFactory, type, tree.getArguments());
+        AnnotatedTypes.adaptParameters(atypeFactory, type, tree.getArguments(), tree);
     List<AnnotatedTypeMirror> arguments =
         CollectionsPlume.mapList(atypeFactory::getAnnotatedType, tree.getArguments());
 
