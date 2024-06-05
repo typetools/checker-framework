@@ -1045,16 +1045,16 @@ public class AnnotatedTypes {
       return parameters;
     }
     if (parameters.isEmpty()) {
-      return parameters;
+      throw new BugInCF("isVarargsCall but parameters is empty: %s", invok);
     }
 
-    if (!(parameters.get(parameters.size() - 1) instanceof AnnotatedArrayType)) {
+    AnnotatedType lastParam = parameters.get(parameters.size() - 1);
+    if (!(lastParam instanceof AnnotatedArrayType)) {
       throw new BugInCF(
           String.format(
-              "for varargs call %s, last parameter %s is not an array",
-              invok, parameters.get(parameters.size() - 1)));
+              "for varargs call %s, last parameter %s is not an array", invok, lastParam));
     }
-    AnnotatedArrayType varargs = (AnnotatedArrayType) parameters.get(parameters.size() - 1);
+    AnnotatedArrayType varargs = (AnnotatedArrayType) lastParam;
 
     if (parameters.size() == args.size()) {
       // Check if one sent an element or an array
