@@ -1,6 +1,7 @@
 import java.lang.invoke.MethodHandle;
 
 public class Issue6078 {
+  @SuppressWarnings("nullness:argument") // true positive.
   static void call(MethodHandle methodHandle, Object[] array) throws Throwable {
     // The vararg parameter disappears for the below method. It's some sort of bug in javac.
     methodHandle.invoke();
