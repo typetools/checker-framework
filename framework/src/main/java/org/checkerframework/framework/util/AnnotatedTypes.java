@@ -1049,9 +1049,10 @@ public class AnnotatedTypes {
     }
 
     if (!(parameters.get(parameters.size() - 1) instanceof AnnotatedArrayType)) {
-      System.out.printf(
-          "for varargs call %s :%n  parameters: %s%n  last parameter: %s%n",
-          invok, parameters, parameters.get(parameters.size() - 1));
+      throw new BugInCF(
+          String.format(
+              "for varargs call %s, last parameter %s is not an array",
+              invok, parameters.get(parameters.size() - 1)));
     }
     AnnotatedArrayType varargs = (AnnotatedArrayType) parameters.get(parameters.size() - 1);
 
