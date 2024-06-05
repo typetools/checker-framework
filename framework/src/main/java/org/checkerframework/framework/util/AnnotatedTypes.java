@@ -1019,6 +1019,7 @@ public class AnnotatedTypes {
       Tree invok) {
 
     List<AnnotatedTypeMirror> parameters = method.getParameterTypes();
+
     // Handle anonymous constructors that extend a class with an enclosing type.
     if (method.getElement().getKind() == ElementKind.CONSTRUCTOR
         && method.getElement().getEnclosingElement().getSimpleName().contentEquals("")) {
@@ -1040,30 +1041,26 @@ public class AnnotatedTypes {
       }
     }
 
+    System.out.printf("looking at possibly vararg method %s%n", method);
+
     // Handle vararg methods.
-    // TODO: Should this be a call to `isVarArgs()` or `isVarArgMethodCall()`?
     if (!TreeUtils.isVarargsCall(invok)) {
+      System.out.printf("Not a varargs invocation: %s%n", invok);
       return parameters;
     }
+
+    System.out.printf("looking at vararg invocation of %s%n", method);
+
     if (parameters.size() == 0) {
-      return parameters;
+      throw new BugInCF("isVarargsCall but parameters is empty: %s", invok);
     }
 
-    AnnotatedArrayType varargs = (AnnotatedArrayType) parameters.get(parameters.size() - 1);
-
-    if (parameters.size() == args.size()) {
-      // Check if one sent an element or an array
-      AnnotatedTypeMirror lastArg = atypeFactory.getAnnotatedType(args.get(args.size() - 1));
-      if (lastArg.getKind() == TypeKind.NULL
-          || (lastArg.getKind() == TypeKind.ARRAY
-              && getArrayDepth(varargs) == getArrayDepth((AnnotatedArrayType) lastArg))) {
-        return parameters;
-      }
-    }
+    AnnotatedArrayType varargsParam = (AnnotatedArrayType) parameters.get(parameters.size() - 1);
 
     parameters = new ArrayList<>(parameters.subList(0, parameters.size() - 1));
+    System.out.printf("i = %d%n", args.size() - parameters.size());
     for (int i = args.size() - parameters.size(); i > 0; --i) {
-      parameters.add(varargs.getComponentType().deepCopy());
+      parameters.add(varargsParam.getComponentType().deepCopy());
     }
 
     return parameters;
