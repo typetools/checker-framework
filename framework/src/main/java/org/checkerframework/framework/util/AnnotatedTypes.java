@@ -1048,6 +1048,11 @@ public class AnnotatedTypes {
       return parameters;
     }
 
+    if (!(parameters.get(parameters.size() - 1) instanceof AnnotatedArrayType)) {
+      System.out.printf(
+          "for varargs call %s :%n  parameters: %s%n  last parameter: %s%n",
+          invok, parameters, parameters.get(parameters.size() - 1));
+    }
     AnnotatedArrayType varargs = (AnnotatedArrayType) parameters.get(parameters.size() - 1);
 
     if (parameters.size() == args.size()) {
