@@ -1034,7 +1034,6 @@ public final class TreeUtils {
    * @return the expression's receiver tree, or null if it does not have an explicit receiver
    */
   public static @Nullable ExpressionTree getReceiverTree(ExpressionTree expression) {
-    expression = TreeUtils.withoutParens(expression);
     ExpressionTree receiver;
     switch (expression.getKind()) {
       case METHOD_INVOCATION:
@@ -2606,7 +2605,11 @@ public final class TreeUtils {
    * @return true if the given method invocation is a varargs invocation
    */
   public static boolean isVarargsCall(MethodInvocationTree invok) {
-    return ((JCMethodInvocation) invok).varargsElement != null;
+    // For some calls the varargsElement element disappears when it should not. This seems to only
+    // be a problem with MethodHandle#invoke.  See framework/tests/all-systems/Issue6078.java.
+    // So also just check for a mismatch between parameter and argument size.
+    return elementFromUse(invok).getParameters().size() != invok.getArguments().size()
+        || ((JCMethodInvocation) invok).varargsElement != null;
   }
 
   /**

@@ -971,6 +971,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @param tree the method to type-check
    */
   public void processMethodTree(MethodTree tree) {
+
     // We copy the result from getAnnotatedType to ensure that circular types (e.g. K extends
     // Comparable<K>) are represented by circular AnnotatedTypeMirrors, which avoids problems
     // with later checks.
@@ -1847,7 +1848,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         methodName,
         invokedMethod.getTypeVariables());
     List<AnnotatedTypeMirror> params =
-        AnnotatedTypes.adaptParameters(atypeFactory, invokedMethod, tree.getArguments());
+        AnnotatedTypes.adaptParameters(atypeFactory, invokedMethod, tree.getArguments(), tree);
     checkArguments(params, tree.getArguments(), methodName, method.getParameters());
     checkVarargs(invokedMethod, tree);
 
@@ -2170,7 +2171,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     List<? extends ExpressionTree> passedArguments = tree.getArguments();
     List<AnnotatedTypeMirror> params =
-        AnnotatedTypes.adaptParameters(atypeFactory, constructorType, passedArguments);
+        AnnotatedTypes.adaptParameters(atypeFactory, constructorType, passedArguments, tree);
 
     ExecutableElement constructor = constructorType.getElement();
     CharSequence constructorName = ElementUtils.getSimpleDescription(constructor);

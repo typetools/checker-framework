@@ -617,7 +617,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
     List<AnnotatedTypeMirror> paramTypes =
         AnnotatedTypes.adaptParameters(
-            atypeFactory, invokedMethod, methodInvocationTree.getArguments());
+            atypeFactory, invokedMethod, methodInvocationTree.getArguments(), methodInvocationTree);
 
     // Index on @GuardSatisfied at each location. -1 when no @GuardSatisfied annotation was
     // present.

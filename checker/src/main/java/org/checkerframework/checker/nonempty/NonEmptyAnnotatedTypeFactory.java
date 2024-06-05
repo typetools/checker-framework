@@ -2,7 +2,6 @@ package org.checkerframework.checker.nonempty;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.NewArrayTree;
-import com.sun.source.tree.Tree;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.nonempty.qual.NonEmpty;
@@ -14,6 +13,7 @@ import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
 
+/** The type factory for the {@link NonEmptyChecker}. */
 public class NonEmptyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   /** The @{@link NonEmpty} annotation. */
@@ -35,19 +35,14 @@ public class NonEmptyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     return new ListTreeAnnotator(super.createTreeAnnotator(), new NonEmptyTreeAnnotator(this));
   }
 
-  protected boolean isAnnotatedWithNonEmpty(Tree tree) {
-    System.out.printf(
-        "NonEmptyAnnotatedTypeFactory::Checking if tree = [%s] is annotated with @NonEmpty%n",
-        tree);
-    AnnotatedTypeMirror annotatedTypeMirror = this.getAnnotatedType(tree);
-    System.out.printf(
-        "Explicit Annotations for [%s] = %s%n", tree, annotatedTypeMirror.getExplicitAnnotations());
-    return false; // stub
-  }
-
   /** The tree annotator for the Non-Empty Checker. */
   private class NonEmptyTreeAnnotator extends TreeAnnotator {
 
+    /**
+     * Create a new {@link NonEmptyTreeAnnotator}.
+     *
+     * @param aTypeFactory the type factory for this tree annotator
+     */
     public NonEmptyTreeAnnotator(AnnotatedTypeFactory aTypeFactory) {
       super(aTypeFactory);
     }

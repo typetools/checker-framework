@@ -14,7 +14,12 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
  *
  * @checker_framework.manual #non-empty-checker Non-Empty Checker
  */
-public class NonEmptyChecker extends DelegationChecker {
+public class NonEmptyChecker extends BaseTypeChecker {
+
+  /** Creates a NonEmptyChecker. */
+  public NonEmptyChecker() {
+    super();
+  }
 
   @Override
   protected Set<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {

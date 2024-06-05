@@ -509,7 +509,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
         List<? extends VariableElement> methodParams = method.getParameters();
         List<AnnotatedTypeMirror> paramTypes =
             AnnotatedTypes.adaptParameters(
-                atypeFactory, invokedMethod, invocationTree.getArguments());
+                atypeFactory, invokedMethod, invocationTree.getArguments(), invocationTree);
         for (int i = 0; i < args.size(); ++i) {
           if (args.get(i).getKind() == Tree.Kind.NEW_CLASS
               || args.get(i).getKind() == Tree.Kind.LAMBDA_EXPRESSION) {

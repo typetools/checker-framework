@@ -19,6 +19,6 @@ public class NonEmptyTest extends CheckerFrameworkPerDirectoryTest {
 
   @Parameters
   public static String[] getTestDirs() {
-    return new String[] {"nonempty"};
+    return new String[] {"nonempty", "all-systems"};
   }
 }

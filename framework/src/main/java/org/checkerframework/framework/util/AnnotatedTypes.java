@@ -987,14 +987,14 @@ public class AnnotatedTypes {
    * @param args the arguments to the method invocation
    * @return the types that the method invocation arguments need to be subtype of
    * @deprecated Use {@link #adaptParameters(AnnotatedTypeFactory,
-   *     AnnotatedTypeMirror.AnnotatedExecutableType, List)} instead
+   *     AnnotatedTypeMirror.AnnotatedExecutableType, List, Tree)} instead
    */
   @Deprecated // 2022-04-21
   public static List<AnnotatedTypeMirror> expandVarArgsParameters(
       AnnotatedTypeFactory atypeFactory,
       AnnotatedExecutableType method,
       List<? extends ExpressionTree> args) {
-    return adaptParameters(atypeFactory, method, args);
+    return adaptParameters(atypeFactory, method, args, null);
   }
 
   /**
@@ -1003,20 +1003,20 @@ public class AnnotatedTypes {
    *
    * <p>This expands the parameters if the call uses varargs or contracts the parameters if the call
    * is to an anonymous class that extends a class with an enclosing type. If the call is neither of
-   * these, then the parameters are returned unchanged. For example, String.format is declared to
-   * take (String, Object...). Given String.format(a, b, c, d), this returns (String, Object,
-   * Object, Object).
+   * these, then the parameters are returned unchanged.
    *
    * @param atypeFactory the type factory to use for fetching annotated types
    * @param method the method or constructor's type
    * @param args the arguments to the method or constructor invocation
+   * @param invok the method or constructor invocation
    * @return a list of the types that the invocation arguments need to be subtype of; has the same
    *     length as {@code args}
    */
   public static List<AnnotatedTypeMirror> adaptParameters(
       AnnotatedTypeFactory atypeFactory,
       AnnotatedExecutableType method,
-      List<? extends ExpressionTree> args) {
+      List<? extends ExpressionTree> args,
+      Tree invok) {
 
     List<AnnotatedTypeMirror> parameters = method.getParameterTypes();
     // Handle anonymous constructors that extend a class with an enclosing type.
@@ -1041,10 +1041,10 @@ public class AnnotatedTypes {
     }
 
     // Handle vararg methods.
-    if (!method.getElement().isVarArgs()) {
+    if (!TreeUtils.isVarargsCall(invok)) {
       return parameters;
     }
-    if (parameters.size() == 0) {
+    if (parameters.isEmpty()) {
       return parameters;
     }
 
@@ -1086,7 +1086,7 @@ public class AnnotatedTypes {
     AnnotatedArrayType varargs = (AnnotatedArrayType) parameters.get(parameters.size() - 1);
 
     if (parameters.size() == args.size()) {
-      // Check if the client passed an element or an array.
+      // Check if one sent an element or an array
       AnnotatedTypeMirror lastArg = args.get(args.size() - 1);
       if (lastArg.getKind() == TypeKind.ARRAY
           && (getArrayDepth(varargs) == getArrayDepth((AnnotatedArrayType) lastArg)
