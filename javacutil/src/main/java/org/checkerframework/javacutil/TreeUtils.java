@@ -2592,7 +2592,8 @@ public final class TreeUtils {
    */
   public static boolean isVarargsCall(MethodInvocationTree invok) {
     // For some calls the varargsElement element disappears when it should not. This seems to only
-    // be a problem with MethodHandle#invoke.  See framework/tests/all-systems/Issue6078.java.
+    // be a problem with MethodHandle#invoke and only with no arguments.  See
+    // framework/tests/all-systems/Issue6078.java.
     // So also just check for a mismatch between parameter and argument size.
     return elementFromUse(invok).getParameters().size() != invok.getArguments().size()
         || ((JCMethodInvocation) invok).varargsElement != null;
