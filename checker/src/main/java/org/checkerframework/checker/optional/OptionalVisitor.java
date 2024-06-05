@@ -387,9 +387,10 @@ public class OptionalVisitor
               .map(MethodTree::getName)
               .map(Name::toString)
               .collect(Collectors.toSet());
-      if (namesOfMethodsForNonEmptyChecker.contains(invokedMethodName)) {
+      if (namesOfMethodsForNonEmptyChecker.contains(invokedMethodName)
+          && methodNamesToEnclosingMethods.containsKey(invokedMethodName)) {
         methodNamesToEnclosingMethods.get(invokedMethodName).add(enclosingMethod);
-      } else {
+      } else if (namesOfMethodsForNonEmptyChecker.contains(invokedMethodName)) {
         Set<MethodTree> enclosingMethodsForInvokedMethod = new HashSet<>();
         enclosingMethodsForInvokedMethod.add(enclosingMethod);
         methodNamesToEnclosingMethods.put(invokedMethodName, enclosingMethodsForInvokedMethod);
