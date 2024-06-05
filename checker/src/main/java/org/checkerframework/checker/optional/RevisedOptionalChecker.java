@@ -1,14 +1,16 @@
 package org.checkerframework.checker.optional;
 
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.Collection;
 import org.checkerframework.checker.nonempty.NonEmptyChecker;
-import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.framework.source.AggregateChecker;
+import org.checkerframework.framework.source.SourceChecker;
 
-public class RevisedOptionalChecker extends BaseTypeChecker {
+public class RevisedOptionalChecker extends AggregateChecker {
 
   @Override
-  protected Set<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
-    Set<Class<? extends BaseTypeChecker>> checkers = super.getImmediateSubcheckerClasses();
+  protected Collection<Class<? extends SourceChecker>> getSupportedCheckers() {
+    Collection<Class<? extends SourceChecker>> checkers = new ArrayList<>(2);
     checkers.add(NonEmptyChecker.class);
     return checkers;
   }

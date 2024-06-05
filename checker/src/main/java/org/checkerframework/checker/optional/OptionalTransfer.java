@@ -21,6 +21,7 @@ import org.checkerframework.checker.nonempty.qual.NonEmpty;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.optional.qual.Present;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
@@ -146,12 +147,7 @@ public class OptionalTransfer extends CFTransfer {
     if (n.getTree() == null) {
       return result;
     }
-    refineStreamOperations(n, result);
-    System.out.printf(
-        "OptionalTransfer.visitMethodInvocation(%s):%n"
-            + "  TransferResult after Stream operation refinement = %s%n",
-        n, result);
-    return result;
+    return refineStreamOperations(n, result);
   }
 
   /**
@@ -167,7 +163,7 @@ public class OptionalTransfer extends CFTransfer {
    * @param n the method invocation node
    * @param result the transfer result to side effect
    */
-  private void refineStreamOperations(
+  private TransferResult<CFValue, CFStore> refineStreamOperations(
       MethodInvocationNode n, TransferResult<CFValue, CFStore> result) {
     if (nonEmptyToPresentStreamMethods.stream()
         .anyMatch(
@@ -175,18 +171,21 @@ public class OptionalTransfer extends CFTransfer {
       if (isReceiverNonEmpty(n)) {
         // The receiver of the stream operation is @Non-Empty, therefore the result is @Present.
         JavaExpression internalRepr = JavaExpression.fromNode(n);
-        System.out.printf(
-            "OptionalTransfer.refineStreamOperations: Has non-empty receiver: %s%n", internalRepr);
-        System.out.printf(
-            "isAssumePureOrAssumeDeterministicEnabled() = %s%n",
-            isAssumePureOrAssumeDeterministicEnabled());
         if (isAssumePureOrAssumeDeterministicEnabled()) {
           insertIntoStoresPermitNonDeterministic(result, internalRepr, PRESENT);
         } else {
           insertIntoStores(result, internalRepr, PRESENT);
         }
+        CFValue value = analysis.createSingleAnnotationValue(PRESENT, n.getType());
+
+        return new ConditionalTransferResult<>(
+            finishValue(value, result.getThenStore(), result.getElseStore()),
+            result.getThenStore(),
+            result.getElseStore(),
+            result.getExceptionalStores());
       }
     }
+    return result;
   }
 
   /**

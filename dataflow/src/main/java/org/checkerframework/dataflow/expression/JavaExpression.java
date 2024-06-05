@@ -991,6 +991,9 @@ public abstract class JavaExpression {
     while (receiverTree instanceof MethodInvocationNode) {
       receiverTree = TreeUtils.getReceiverTree(receiverTree);
     }
+    if (receiverTree instanceof MethodInvocationTree) {
+      return JavaExpression.getInitialReceiverOfMethodInvocation(receiverTree);
+    }
     return JavaExpression.fromTree(receiverTree);
   }
 }
