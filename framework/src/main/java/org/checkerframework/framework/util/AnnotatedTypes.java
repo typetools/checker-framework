@@ -1048,7 +1048,7 @@ public class AnnotatedTypes {
       throw new BugInCF("isVarargsCall but parameters is empty: %s", invok);
     }
 
-    AnnotatedType lastParam = parameters.get(parameters.size() - 1);
+    AnnotatedTypeMirror lastParam = parameters.get(parameters.size() - 1);
     if (!(lastParam instanceof AnnotatedArrayType)) {
       throw new BugInCF(
           String.format(
