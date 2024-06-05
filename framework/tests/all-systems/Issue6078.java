@@ -4,8 +4,9 @@ public class Issue6078 {
   @SuppressWarnings("nullness:argument") // true positive.
   static void call(MethodHandle methodHandle, Object[] array) throws Throwable {
     // The vararg parameter disappears for the below method. It's some sort of bug in javac.
+    // It is worked around in TreeUtils.isVarargsCall().
     methodHandle.invoke();
-    // The vararg parameter does not disapper for these method calls.
+    // The vararg parameter does not disappaer for these method calls.
     methodHandle.invoke("");
     methodHandle.invoke(array);
     methodHandle.invoke(null);
