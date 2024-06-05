@@ -1041,11 +1041,8 @@ public class AnnotatedTypes {
       }
     }
 
-    System.out.printf("looking at possibly vararg method %s%n", method);
-
     // Handle vararg methods.
     if (!TreeUtils.isVarargsCall(invok)) {
-      System.out.printf("Not a varargs invocation: %s%n", invok);
       return parameters;
     }
     if (parameters.isEmpty()) {
@@ -1055,7 +1052,6 @@ public class AnnotatedTypes {
     AnnotatedArrayType varargsParam = (AnnotatedArrayType) parameters.get(parameters.size() - 1);
 
     parameters = new ArrayList<>(parameters.subList(0, parameters.size() - 1));
-    System.out.printf("i = %d%n", args.size() - parameters.size());
     for (int i = args.size() - parameters.size(); i > 0; --i) {
       parameters.add(varargsParam.getComponentType().deepCopy());
     }
