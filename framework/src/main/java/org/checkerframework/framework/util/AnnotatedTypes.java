@@ -1048,10 +1048,7 @@ public class AnnotatedTypes {
       System.out.printf("Not a varargs invocation: %s%n", invok);
       return parameters;
     }
-
-    System.out.printf("looking at vararg invocation of %s%n", method);
-
-    if (parameters.size() == 0) {
+    if (parameters.isEmpty()) {
       throw new BugInCF("isVarargsCall but parameters is empty: %s", invok);
     }
 
