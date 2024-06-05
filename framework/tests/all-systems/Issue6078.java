@@ -1,9 +1,13 @@
 import java.lang.invoke.MethodHandle;
 
 public class Issue6078 {
-  static void call(MethodHandle methodHandle) throws Throwable {
-    // The vararg parameter disappears for the below method. It's not clear why this happens.
+  static void call(MethodHandle methodHandle, Object[] array) throws Throwable {
+    // The vararg parameter disappears for the below method. It's some sort of bug in javac.
     methodHandle.invoke();
+    // The vararg parameter does not disapper for these method calls.
+    methodHandle.invoke("");
+    methodHandle.invoke(array);
+    methodHandle.invoke(null);
   }
 
   void use() {
