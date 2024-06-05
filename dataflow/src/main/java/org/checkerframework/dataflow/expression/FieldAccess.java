@@ -99,7 +99,17 @@ public class FieldAccess extends JavaExpression {
       return false;
     }
     FieldAccess fa = (FieldAccess) obj;
-    return fa.getField().equals(getField()) && fa.getReceiver().equals(getReceiver());
+    if (!fa.getField().equals(getField())) {
+      return false;
+    }
+
+    if (fa.getReceiver().equals(getReceiver())) {
+      return true;
+    }
+
+    return (fa.getReceiver() instanceof SuperReference || fa.getReceiver() instanceof ThisReference)
+        && (this.getReceiver() instanceof SuperReference
+            || this.getReceiver() instanceof ThisReference);
   }
 
   @Override

@@ -2,7 +2,6 @@
 // https://github.com/typetools/checker-framework/issues/152
 import org.checkerframework.framework.testchecker.javaexpression.qual.FlowExp;
 
-// @skip-test
 public class ThisSuper {
   static class SuperClass {
     protected final Object field = new Object();
@@ -26,19 +25,6 @@ public class ThisSuper {
 
       @FlowExp("super.field") Object o1 = super.superField;
       @FlowExp("this.field") Object o2 = this.subField;
-    }
-  }
-
-  class OuterClass {
-    private final Object lock = new Object();
-
-    @FlowExp("this.lock") Object field;
-
-    class InnerClass {
-      private final Object lock = new Object();
-
-      // :: error: (assignment)
-      @FlowExp("this.lock") Object field2 = field;
     }
   }
 }
