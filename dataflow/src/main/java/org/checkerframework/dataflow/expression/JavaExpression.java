@@ -387,7 +387,7 @@ public abstract class JavaExpression {
     } else if (receiverNode instanceof ThisNode) {
       result = new ThisReference(receiverNode.getType());
     } else if (receiverNode instanceof SuperNode) {
-      result = new ThisReference(receiverNode.getType());
+      result = new SuperReference(receiverNode.getType());
     } else if (receiverNode instanceof LocalVariableNode) {
       LocalVariableNode lv = (LocalVariableNode) receiverNode;
       result = new LocalVariable(lv);
@@ -535,8 +535,11 @@ public abstract class JavaExpression {
         IdentifierTree identifierTree = (IdentifierTree) tree;
         TypeMirror typeOfId = TreeUtils.typeOf(identifierTree);
         Name identifierName = identifierTree.getName();
-        if (identifierName.contentEquals("this") || identifierName.contentEquals("super")) {
+        if (identifierName.contentEquals("this")) {
           result = new ThisReference(typeOfId);
+          break;
+        } else if (identifierName.contentEquals("super")) {
+          result = new SuperReference(typeOfId);
           break;
         }
         assert TreeUtils.isUseOfElement(identifierTree) : "@AssumeAssertion(nullness): tree kind";

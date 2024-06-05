@@ -1,7 +1,19 @@
-Version 3.44.0 (June 3, 2024)
+Version 3.45.0 (July 2, 2024)
 -----------------------------
 
 **User-visible changes:**
+
+**Implementation details:**
+
+Deprecated methods:
+ * `TreeUtils.isVarArgs()` => `isVarargsCall()`
+ * `TreeUtils.isVarArgMethodCall()` => `isVarargsCall()`
+
+**Closed issues:**
+
+
+Version 3.44.0 (June 3, 2024)
+-----------------------------
 
 **Implementation details:**
 
@@ -10,6 +22,7 @@ Removed methods:
 
 Renamed methods:
  * `CFAbstractStore.methodValues()` => `methodCallExpressions()`
+ * `AbstractCFGVisualizer.format()` => `escapeString()`
 
 Renamed fields:
  * `AnalysisResult.stores` => `inputs`
@@ -26,6 +39,11 @@ Deprecated methods:
 Subclasses should override `BaseTypeVisitor#processMethodTree(MethodTree)`.
 
 **Closed issues:**
+
+#802, #2676, #2780, #2926, #3378, #3612, #3764, #4007, #4964, #5070, #5176,
+#5237, #5541, #6046, #6382, #6388, #6566, #6568, #6570, #6576, #6577, #6631,
+#6635, #6636, #6644.
+
 
 Version 3.43.0 (May 1, 2024)
 ----------------------------

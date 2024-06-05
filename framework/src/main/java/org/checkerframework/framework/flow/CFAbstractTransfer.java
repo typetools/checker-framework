@@ -207,18 +207,23 @@ public abstract class CFAbstractTransfer<
     Tree preTree = analysis.getCurrentTree();
     analysis.setCurrentTree(tree);
     AnnotatedTypeMirror at;
-    if (node instanceof MethodInvocationNode
-        && ((MethodInvocationNode) node).getIterableExpression() != null) {
-      ExpressionTree iter = ((MethodInvocationNode) node).getIterableExpression();
-      at = factory.getIterableElementType(iter);
-    } else if (node instanceof ArrayAccessNode
-        && ((ArrayAccessNode) node).getArrayExpression() != null) {
-      ExpressionTree array = ((ArrayAccessNode) node).getArrayExpression();
-      at = factory.getIterableElementType(array);
-    } else {
-      at = factory.getAnnotatedType(tree);
+    try {
+      if (node instanceof MethodInvocationNode
+          && ((MethodInvocationNode) node).getIterableExpression() != null) {
+        ExpressionTree iter = ((MethodInvocationNode) node).getIterableExpression();
+        at = factory.getIterableElementType(iter);
+      } else if (node instanceof ArrayAccessNode
+          && ((ArrayAccessNode) node).getArrayExpression() != null) {
+        ExpressionTree array = ((ArrayAccessNode) node).getArrayExpression();
+        at = factory.getIterableElementType(array);
+      } else {
+        at = factory.getAnnotatedType(tree);
+      }
+    } catch (Throwable t) {
+      throw BugInCF.addLocation(tree, t);
+    } finally {
+      analysis.setCurrentTree(preTree);
     }
-    analysis.setCurrentTree(preTree);
     return analysis.createAbstractValue(at);
   }
 
