@@ -29,8 +29,8 @@ import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * This class provides methods used by the Non-Empty Checker as transfer functions for type rules
- * that cannot be expressed via simple pre- or post-conditional annotations.
+ * This class provides implements type rules that cannot be expressed via pre- or post-condition
+ * annotations.
  */
 public class NonEmptyTransfer extends CFTransfer {
 
