@@ -1019,7 +1019,6 @@ public class AnnotatedTypes {
       Tree invok) {
 
     List<AnnotatedTypeMirror> parameters = method.getParameterTypes();
-    List<AnnotatedTypeMirror> orig_parameters = new ArrayList<>(parameters);
     // Handle anonymous constructors that extend a class with an enclosing type,
     // as in `new MyClass(){ ... }`.
     if (method.getElement().getKind() == ElementKind.CONSTRUCTOR
