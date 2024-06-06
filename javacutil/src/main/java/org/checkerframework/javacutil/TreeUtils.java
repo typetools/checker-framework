@@ -341,7 +341,7 @@ public final class TreeUtils {
    * @param tree the {@link ClassTree} node to get the fields for
    * @return the list of fields that are declared within the given class declaration
    */
-  public static List<VariableTree> fieldsFromTree(ClassTree tree) {
+  public static List<VariableTree> fieldsFromClassTree(ClassTree tree) {
     return tree.getMembers().stream()
         .filter(t -> t.getKind() == Kind.VARIABLE)
         .map(t -> (VariableTree) t)
