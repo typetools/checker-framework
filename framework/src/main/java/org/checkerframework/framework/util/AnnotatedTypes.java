@@ -1019,16 +1019,16 @@ public class AnnotatedTypes {
       Tree invok) {
 
     List<AnnotatedTypeMirror> parameters = method.getParameterTypes();
-    // Handle anonymous constructors that extend a class with an enclosing type.
+    List<AnnotatedTypeMirror> orig_parameters = new ArrayList<>(parameters);
+    // Handle anonymous constructors that extend a class with an enclosing type,
+    // as in `new MyClass(){ ... }`.
     if (method.getElement().getKind() == ElementKind.CONSTRUCTOR
         && method.getElement().getEnclosingElement().getSimpleName().contentEquals("")) {
       DeclaredType t =
           TypesUtils.getSuperClassOrInterface(
               method.getElement().getEnclosingElement().asType(), atypeFactory.types);
       if (t.getEnclosingType() != null) {
-        if (args.isEmpty() && !parameters.isEmpty()) {
-          parameters = parameters.subList(1, parameters.size());
-        } else if (!parameters.isEmpty()) {
+        if (!parameters.isEmpty()) {
           if (atypeFactory.types.isSameType(
               t.getEnclosingType(), parameters.get(0).getUnderlyingType())) {
             if (!atypeFactory.types.isSameType(
