@@ -11,6 +11,7 @@ import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.AbstractValue;
 import org.checkerframework.dataflow.analysis.Analysis;
+import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -277,7 +278,31 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     if (ms.error) {
       return backup;
     }
-    return analysis.createAbstractValue(mostSpecific, mostSpecifTypeMirror);
+    V mostSpecificVal = analysis.createAbstractValue(mostSpecific, mostSpecifTypeMirror);
+    if (this.getThenStore() != null) {
+      mostSpecificVal.addStores(thenStore, elseStore);
+    } else if (other.getThenStore() != null) {
+      mostSpecificVal.addStores(other.thenStore, other.elseStore);
+    }
+    return mostSpecificVal;
+  }
+
+  Store<?> thenStore;
+  Store<?> elseStore;
+
+  void addStores(Store<?> thenStore, Store<?> elseStore) {
+    this.thenStore = thenStore;
+    this.elseStore = elseStore;
+  }
+
+  @SuppressWarnings("unchecked")
+  public <S extends CFAbstractStore<V, S>> S getThenStore() {
+    return (S) thenStore;
+  }
+
+  @SuppressWarnings("unchecked")
+  public <S extends CFAbstractStore<V, S>> S getElseStore() {
+    return (S) elseStore;
   }
 
   /** Computes the most specific annotations. */
@@ -529,7 +554,13 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
             other.getUnderlyingType(),
             other.getAnnotations(),
             canBeMissingAnnotations(upperBoundTypeMirror));
-    return analysis.createAbstractValue(lub, upperBoundTypeMirror);
+    V upperBound = analysis.createAbstractValue(lub, upperBoundTypeMirror);
+    if (this.getThenStore() != null && other.getThenStore() != null) {
+      upperBound.addStores(
+          this.getThenStore().merge(other.getThenStore()),
+          this.getElseStore().merge(other.getElseStore()));
+    }
+    return upperBound;
   }
 
   /**

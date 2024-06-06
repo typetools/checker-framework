@@ -249,39 +249,51 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             || (assumePureGetters && ElementUtils.isGetter(method))
             || atypeFactory.isSideEffectFree(method));
     if (hasSideEffect) {
-
-      boolean sideEffectsUnrefineAliases = gatypeFactory.sideEffectsUnrefineAliases;
-
-      // update local variables
-      // TODO: Also remove if any element/argument to the annotation is not
-      // isUnmodifiableByOtherCode.  Example: @KeyFor("valueThatCanBeMutated").
-      if (sideEffectsUnrefineAliases) {
-        localVariableValues.entrySet().removeIf(e -> e.getKey().isModifiableByOtherCode());
-      }
-
-      // update this value
-      if (sideEffectsUnrefineAliases) {
-        thisValue = null;
-      }
-
-      // update field values
-      if (sideEffectsUnrefineAliases) {
-        fieldValues.entrySet().removeIf(e -> e.getKey().isModifiableByOtherCode());
-      } else {
-        // Case 2 (unassignable fields) and case 3 (monotonic fields)
-        updateFieldValuesForMethodCall(gatypeFactory);
-      }
-
-      // update array values
-      arrayValues.clear();
-
-      // update method values
-      methodCallExpressions.keySet().removeIf(MethodCall::isModifiableByOtherCode);
+      localVariableValues
+          .values()
+          .forEach(
+              v -> {
+                if (v != null && v.getThenStore() != null) {
+                  v.getThenStore().updateForSideEffect(gatypeFactory);
+                  v.getElseStore().updateForSideEffect(gatypeFactory);
+                }
+              });
+      updateForSideEffect(gatypeFactory);
     }
 
     // store information about method call if possible
     JavaExpression methodCall = JavaExpression.fromNode(methodInvocationNode);
     replaceValue(methodCall, val);
+  }
+
+  public void updateForSideEffect(GenericAnnotatedTypeFactory<?, ?, ?, ?> gatypeFactory) {
+    boolean sideEffectsUnrefineAliases = gatypeFactory.sideEffectsUnrefineAliases;
+
+    // update local variables
+    // TODO: Also remove if any element/argument to the annotation is not
+    // isUnmodifiableByOtherCode.  Example: @KeyFor("valueThatCanBeMutated").
+    if (sideEffectsUnrefineAliases) {
+      localVariableValues.entrySet().removeIf(e -> e.getKey().isModifiableByOtherCode());
+    }
+
+    // update this value
+    if (sideEffectsUnrefineAliases) {
+      thisValue = null;
+    }
+
+    // update field values
+    if (sideEffectsUnrefineAliases) {
+      fieldValues.entrySet().removeIf(e -> e.getKey().isModifiableByOtherCode());
+    } else {
+      // Case 2 (unassignable fields) and case 3 (monotonic fields)
+      updateFieldValuesForMethodCall(gatypeFactory);
+    }
+
+    // update array values
+    arrayValues.clear();
+
+    // update method values
+    methodCallExpressions.keySet().removeIf(MethodCall::isModifiableByOtherCode);
   }
 
   /**
@@ -300,7 +312,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    *     from the store
    */
   protected V newFieldValueAfterMethodCall(
-      FieldAccess fieldAccess, GenericAnnotatedTypeFactory<V, S, ?, ?> atypeFactory, V value) {
+      FieldAccess fieldAccess, GenericAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory, V value) {
     // Handle unassignable fields.
     if (!fieldAccess.isAssignableByOtherCode()) {
       return value;
@@ -324,7 +336,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    *     annotation
    */
   protected V newMonotonicFieldValueAfterMethodCall(
-      FieldAccess fieldAccess, GenericAnnotatedTypeFactory<V, S, ?, ?> atypeFactory, V value) {
+      FieldAccess fieldAccess, GenericAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory, V value) {
 
     // case 3: the field has a monotonic annotation
     if (atypeFactory.getSupportedMonotonicTypeQualifiers().isEmpty()) {
@@ -369,7 +381,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * @param atypeFactory AnnotatedTypeFactory of the associated checker
    */
   private void updateFieldValuesForMethodCall(
-      GenericAnnotatedTypeFactory<V, S, ?, ?> atypeFactory) {
+      GenericAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory) {
     Map<FieldAccess, V> newFieldValues = new HashMap<>(CollectionsPlume.mapCapacity(fieldValues));
     for (Map.Entry<FieldAccess, V> e : fieldValues.entrySet()) {
       FieldAccess fieldAccess = e.getKey();
@@ -883,10 +895,37 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     JavaExpression je = JavaExpression.fromNode(n);
     if (je instanceof ArrayAccess) {
       updateForArrayAssignment((ArrayAccess) je, val);
+      localVariableValues
+          .values()
+          .forEach(
+              v -> {
+                if (v != null && v.getThenStore() != null) {
+                  v.getThenStore().updateForArrayAssignment((ArrayAccess) je, val);
+                  v.getElseStore().updateForArrayAssignment((ArrayAccess) je, val);
+                }
+              });
     } else if (je instanceof FieldAccess) {
       updateForFieldAccessAssignment((FieldAccess) je, val);
+      localVariableValues
+          .values()
+          .forEach(
+              v -> {
+                if (v != null && v.getThenStore() != null) {
+                  v.getThenStore().updateForFieldAccessAssignment((FieldAccess) je, val);
+                  v.getElseStore().updateForFieldAccessAssignment((FieldAccess) je, val);
+                }
+              });
     } else if (je instanceof LocalVariable) {
       updateForLocalVariableAssignment((LocalVariable) je, val);
+      localVariableValues
+          .values()
+          .forEach(
+              v -> {
+                if (v != null && v.getThenStore() != null) {
+                  v.getThenStore().updateForLocalVariableAssignment((LocalVariable) je, val);
+                  v.getElseStore().updateForLocalVariableAssignment((LocalVariable) je, val);
+                }
+              });
     } else {
       throw new BugInCF("Unexpected je of class " + je.getClass());
     }
@@ -1241,6 +1280,86 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       if (thisVal != null) {
         V otherVal = e.getValue();
         V mergedVal = upperBoundOfValues(otherVal, thisVal, shouldWiden);
+        if (mergedVal != null) {
+          newStore.classValues.put(el, mergedVal);
+        }
+      }
+    }
+    return newStore;
+  }
+
+  public S merge(S other) {
+    S newStore = analysis.createEmptyStore(sequentialSemantics);
+
+    for (Map.Entry<LocalVariable, V> e : other.localVariableValues.entrySet()) {
+      // local variables that are only part of one store, but not the other are discarded, as
+      // one of store implicitly contains 'top' for that variable.
+      LocalVariable localVar = e.getKey();
+      V thisVal = localVariableValues.get(localVar);
+      if (thisVal != null) {
+        V otherVal = e.getValue();
+        V mergedVal = thisVal.mostSpecific(otherVal, null);
+        if (mergedVal != null) {
+          newStore.localVariableValues.put(localVar, mergedVal);
+        }
+      }
+    }
+
+    // information about the current object
+    {
+      V otherVal = other.thisValue;
+      V myVal = thisValue;
+      V mergedVal = myVal == null ? null : myVal.mostSpecific(otherVal, null);
+      if (mergedVal != null) {
+        newStore.thisValue = mergedVal;
+      }
+    }
+
+    for (Map.Entry<FieldAccess, V> e : other.fieldValues.entrySet()) {
+      // information about fields that are only part of one store, but not the other are
+      // discarded, as one store implicitly contains 'top' for that field.
+      FieldAccess el = e.getKey();
+      V thisVal = fieldValues.get(el);
+      if (thisVal != null) {
+        V otherVal = e.getValue();
+        V mergedVal = thisVal.mostSpecific(otherVal, null);
+        if (mergedVal != null) {
+          newStore.fieldValues.put(el, mergedVal);
+        }
+      }
+    }
+    for (Map.Entry<ArrayAccess, V> e : other.arrayValues.entrySet()) {
+      // information about arrays that are only part of one store, but not the other are
+      // discarded, as one store implicitly contains 'top' for that array access.
+      ArrayAccess el = e.getKey();
+      V thisVal = arrayValues.get(el);
+      if (thisVal != null) {
+        V otherVal = e.getValue();
+        V mergedVal = thisVal.mostSpecific(otherVal, null);
+        if (mergedVal != null) {
+          newStore.arrayValues.put(el, mergedVal);
+        }
+      }
+    }
+    for (Map.Entry<MethodCall, V> e : other.methodCallExpressions.entrySet()) {
+      // information about methods that are only part of one store, but not the other are
+      // discarded, as one store implicitly contains 'top' for that field.
+      MethodCall el = e.getKey();
+      V thisVal = methodCallExpressions.get(el);
+      if (thisVal != null) {
+        V otherVal = e.getValue();
+        V mergedVal = thisVal.mostSpecific(otherVal, null);
+        if (mergedVal != null) {
+          newStore.methodCallExpressions.put(el, mergedVal);
+        }
+      }
+    }
+    for (Map.Entry<ClassName, V> e : other.classValues.entrySet()) {
+      ClassName el = e.getKey();
+      V thisVal = classValues.get(el);
+      if (thisVal != null) {
+        V otherVal = e.getValue();
+        V mergedVal = thisVal.mostSpecific(otherVal, null);
         if (mergedVal != null) {
           newStore.classValues.put(el, mergedVal);
         }
