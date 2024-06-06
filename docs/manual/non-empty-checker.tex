@@ -17,6 +17,16 @@ To run the Non-Empty Checker, run either of these commands:
   javac -processor org.checkerframework.checker.nonempty.NonEmptyChecker \emph{MyJavaFile}.java
 \end{alltt}
 
+The Non-Empty Checker supports the following command-line arguments:
+
+\begin{description}
+\item[\<-AdisableOptionalChecker>]
+  The Non-Empty Checker employs the Optional Checker
+  (see~\ref{optional-checker}) as a subchecker by default.
+  Passing this flag overrides this behaviour and enables the Non-Empty Checker
+  to be run by itself.
+\end{description}
+
 \sectionAndLabel{Non-Empty annotations}{non-empty-annotations}
 
 These qualifiers make up the Non-Empty type system:
@@ -72,21 +82,6 @@ apply to the annotated method itself rather than to some particular type.
   expression is non-empty. See the Javadoc for examples of their use.
 
 \end{description}
-
-\subsectionAndLabel{Delegation qualifiers}{delegation-qualifiers-overview}
-
-The Non-Empty Checker invokes an Delegation Checker,
-TODO: whose annotations indicate whether an object is ...
-
-\begin{description}
-\item[\refqualclass{checker/delegate/qual}{UnknownDelegate}]
-\item[\refqualclass{checker/delegate/qual}{Delegate}]
-\item[\refqualclass{checker/delegate/qual}{DelegateBottom}]
-\end{description}
-
-\noindent
-Use of these annotations can help you to type-check more code.
-TODO: add link to section on Delegation Checker
 
 \sectionAndLabel{Annotating your code with \<@NonEmpty>}{annotating-with-non-empty}
 

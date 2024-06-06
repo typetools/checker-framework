@@ -6,13 +6,20 @@ import java.util.Set;
 import org.checkerframework.checker.optional.OptionalChecker;
 import org.checkerframework.checker.optional.OptionalVisitor;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.framework.source.SupportedOptions;
 
 /**
  * A type-checker that prevents {@link java.util.NoSuchElementException} in the use of container
  * classes.
  *
+ * <p>Note: the {@literal disableOptionalChecker} command-line flag is required if users (or tests,
+ * for that matter) ever want to run the Non-Empty Checker by itself (i.e., without the Optional
+ * Checker as a subchecker). Otherwise, tests that contain code that rely on JDK annotations (or any
+ * Non-Empty annotations that aren't explicitly programmer-written in source code) will fail.
+ *
  * @checker_framework.manual #non-empty-checker Non-Empty Checker
  */
+@SupportedOptions("disableOptionalChecker")
 public class NonEmptyChecker extends BaseTypeChecker {
 
   /** Creates a NonEmptyChecker. */
@@ -23,12 +30,17 @@ public class NonEmptyChecker extends BaseTypeChecker {
   @Override
   protected Set<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
     Set<Class<? extends BaseTypeChecker>> checkers = super.getImmediateSubcheckerClasses();
-    checkers.add(OptionalChecker.class);
+    if (!this.hasOptionNoSubcheckers("disableOptionalChecker")) {
+      checkers.add(OptionalChecker.class);
+    }
     return checkers;
   }
 
   @Override
   public boolean shouldSkipDefs(MethodTree tree) {
+    if (this.hasOptionNoSubcheckers("disableOptionalChecker")) {
+      return false;
+    }
     return !getMethodsToCheck().contains(tree);
   }
 
