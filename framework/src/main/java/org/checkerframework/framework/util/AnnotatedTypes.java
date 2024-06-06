@@ -986,8 +986,8 @@ public class AnnotatedTypes {
    * @param method the method's type
    * @param args the arguments to the method invocation
    * @return the types that the method invocation arguments need to be subtype of
-   * @deprecated Use {@link #adaptParameters(AnnotatedTypeFactory,
-   *     AnnotatedTypeMirror.AnnotatedExecutableType, List, Tree)} instead
+   * @deprecated Use {@link #adaptParameters(AnnotatedTypeFactory, AnnotatedExecutableType, List,
+   *     Tree)} instead
    */
   @Deprecated // 2022-04-21
   public static List<AnnotatedTypeMirror> expandVarArgsParameters(
@@ -1019,20 +1019,20 @@ public class AnnotatedTypes {
       Tree invok) {
 
     List<AnnotatedTypeMirror> parameters = method.getParameterTypes();
-    // Handle anonymous constructors that extend a class with an enclosing type.
+    // Handle anonymous constructors that extend a class with an enclosing type,
+    // as in `new MyClass(){ ... }`.
     if (method.getElement().getKind() == ElementKind.CONSTRUCTOR
         && method.getElement().getEnclosingElement().getSimpleName().contentEquals("")) {
       DeclaredType t =
           TypesUtils.getSuperClassOrInterface(
               method.getElement().getEnclosingElement().asType(), atypeFactory.types);
       if (t.getEnclosingType() != null) {
-        if (args.isEmpty() && !parameters.isEmpty()) {
-          parameters = parameters.subList(1, parameters.size());
-        } else if (!parameters.isEmpty()) {
+        if (!parameters.isEmpty()) {
           if (atypeFactory.types.isSameType(
               t.getEnclosingType(), parameters.get(0).getUnderlyingType())) {
-            if (!atypeFactory.types.isSameType(
-                TreeUtils.typeOf(args.get(0)), parameters.get(0).getUnderlyingType())) {
+            if (args.isEmpty()
+                || !atypeFactory.types.isSameType(
+                    TreeUtils.typeOf(args.get(0)), parameters.get(0).getUnderlyingType())) {
               parameters = parameters.subList(1, parameters.size());
             }
           }
@@ -1045,10 +1045,16 @@ public class AnnotatedTypes {
       return parameters;
     }
     if (parameters.isEmpty()) {
-      return parameters;
+      throw new BugInCF("isVarargsCall but parameters is empty: %s", invok);
     }
 
-    AnnotatedArrayType varargs = (AnnotatedArrayType) parameters.get(parameters.size() - 1);
+    AnnotatedTypeMirror lastParam = parameters.get(parameters.size() - 1);
+    if (!(lastParam instanceof AnnotatedArrayType)) {
+      throw new BugInCF(
+          String.format(
+              "for varargs call %s, last parameter %s is not an array", invok, lastParam));
+    }
+    AnnotatedArrayType varargs = (AnnotatedArrayType) lastParam;
 
     if (parameters.size() == args.size()) {
       // Check if one sent an element or an array
