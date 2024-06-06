@@ -240,7 +240,10 @@ public class OptionalTransfer extends CFTransfer {
    * @return the declaration of the receiver if found, else null
    */
   private @Nullable VariableTree getReceiverDeclaration(
-      MethodInvocationNode methodInvok, JavaExpression initialReceiver) {
+      MethodInvocationNode methodInvok, @Nullable JavaExpression initialReceiver) {
+    if (initialReceiver == null) {
+      return null;
+    }
     // Look in the method, first
     MethodTree methodTree = TreePathUtil.enclosingMethod(methodInvok.getTreePath());
     VariableTree declarationInMethod =
