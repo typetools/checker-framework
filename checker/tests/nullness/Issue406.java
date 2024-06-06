@@ -1,6 +1,6 @@
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-public class Issue402 {
+public class Issue406 {
   static class LocalDate {}
 
   private void testFails1(@Nullable LocalDate x1, @Nullable LocalDate x2) {
