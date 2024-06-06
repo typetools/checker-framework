@@ -24,8 +24,8 @@ public class OptionalChecker extends BaseTypeChecker {
 
   @Override
   protected Set<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
-    Set<Class<? extends BaseTypeChecker>> checkers = super.getImmediateSubcheckerClasses();
-    checkers.add(AliasingChecker.class);
-    return checkers;
+    Set<Class<? extends BaseTypeChecker>> subcheckers = super.getImmediateSubcheckerClasses();
+    subcheckers.add(AliasingChecker.class);
+    return subcheckers;
   }
 }

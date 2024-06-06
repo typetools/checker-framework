@@ -17,15 +17,6 @@ To run the Non-Empty Checker, run either of these commands:
   javac -processor org.checkerframework.checker.nonempty.NonEmptyChecker \emph{MyJavaFile}.java
 \end{alltt}
 
-The Non-Empty Checker supports the following command-line arguments:
-
-\begin{description}
-\item[\<-AdisableOptionalChecker>]
-  The Non-Empty Checker employs the Optional Checker
-  (see~\ref{optional-checker}) as a subchecker by default.
-  Passing this flag overrides this behaviour and enables the Non-Empty Checker
-  to be run by itself.
-\end{description}
 
 \sectionAndLabel{Non-Empty annotations}{non-empty-annotations}
 
@@ -82,6 +73,7 @@ apply to the annotated method itself rather than to some particular type.
   expression is non-empty. See the Javadoc for examples of their use.
 
 \end{description}
+
 
 \sectionAndLabel{Annotating your code with \<@NonEmpty>}{annotating-with-non-empty}
 
