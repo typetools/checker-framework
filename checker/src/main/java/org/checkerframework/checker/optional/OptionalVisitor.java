@@ -633,6 +633,11 @@ public class OptionalVisitor
     return super.visitVariable(tree, p);
   }
 
+  /**
+   * Handles the case where a variable declaration contains "@NonEmpty".
+   *
+   * @param tree a variable declaration
+   */
   private void handleNonEmptyVariableDeclaration(VariableTree tree) {
     boolean isAnnotatedWithNonEmpty =
         TreeUtils.annotationsFromTypeAnnotationTrees(tree.getModifiers().getAnnotations()).stream()

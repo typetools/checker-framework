@@ -162,6 +162,7 @@ public class OptionalTransfer extends CFTransfer {
    *
    * @param n the method invocation node
    * @param result the transfer result to side effect
+   * @return the refined transfer result
    */
   private TransferResult<CFValue, CFStore> refineStreamOperations(
       MethodInvocationNode n, TransferResult<CFValue, CFStore> result) {
@@ -189,8 +190,11 @@ public class OptionalTransfer extends CFTransfer {
   }
 
   /**
-   * Determine whether this analysis is being executed with the {@literal -AassumePure  or {@literal -AassumeDeterministic} flags.
-   * @return true if the {@literal -AassumePure} or {@literal -AassumeDeterministic} flags are passed to this analysis
+   * Determine whether this analysis is being executed with the {@literal -AassumePure} or {@literal
+   * -AassumeDeterministic} flags.
+   *
+   * @return true if the {@literal -AassumePure} or {@literal -AassumeDeterministic} flags are
+   *     passed to this analysis
    */
   private boolean isAssumePureOrAssumeDeterministicEnabled() {
     BaseTypeChecker checker = analysis.getTypeFactory().getChecker();
