@@ -1030,8 +1030,9 @@ public class AnnotatedTypes {
         if (!parameters.isEmpty()) {
           if (atypeFactory.types.isSameType(
               t.getEnclosingType(), parameters.get(0).getUnderlyingType())) {
-            if (!atypeFactory.types.isSameType(
-                TreeUtils.typeOf(args.get(0)), parameters.get(0).getUnderlyingType())) {
+            if (args.isEmpty()
+                || !atypeFactory.types.isSameType(
+                    TreeUtils.typeOf(args.get(0)), parameters.get(0).getUnderlyingType())) {
               parameters = parameters.subList(1, parameters.size());
             }
           }
