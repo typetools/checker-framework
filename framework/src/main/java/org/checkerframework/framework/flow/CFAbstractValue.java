@@ -11,7 +11,6 @@ import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.AbstractValue;
 import org.checkerframework.dataflow.analysis.Analysis;
-import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -287,10 +286,10 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     return mostSpecificVal;
   }
 
-  Store<?> thenStore;
-  Store<?> elseStore;
+  CFAbstractStore<V, ?> thenStore;
+  CFAbstractStore<V, ?> elseStore;
 
-  void addStores(Store<?> thenStore, Store<?> elseStore) {
+  void addStores(CFAbstractStore<V, ?> thenStore, CFAbstractStore<V, ?> elseStore) {
     this.thenStore = thenStore;
     this.elseStore = elseStore;
   }
@@ -556,9 +555,17 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
             canBeMissingAnnotations(upperBoundTypeMirror));
     V upperBound = analysis.createAbstractValue(lub, upperBoundTypeMirror);
     if (this.getThenStore() != null && other.getThenStore() != null) {
-      upperBound.addStores(
-          this.getThenStore().merge(other.getThenStore()),
-          this.getElseStore().merge(other.getElseStore()));
+      @SuppressWarnings({
+        "interning:argument",
+        "mustcall:type.arguments.not.inferred"
+      }) // https://github.com/typetools/checker-framework/issues/6663
+      CFAbstractStore<V, ?> thenStore = this.getThenStore().merge(other.getThenStore());
+      @SuppressWarnings({
+        "interning:argument",
+        "mustcall:type.arguments.not.inferred"
+      }) // https://github.com/typetools/checker-framework/issues/6663
+      CFAbstractStore<V, ?> elseStore = this.getElseStore().merge(other.getElseStore());
+      upperBound.addStores(thenStore, elseStore);
     }
     return upperBound;
   }
