@@ -1872,10 +1872,23 @@ at compile time.
 \end{enumerate}
 
 
-\subsectionAndLabel{Disabling flow-sensitive inference}{creating-dataflow-disable}
+\label{creating-dataflow-disable} % temporary label; remove in January 2025
+\subsectionAndLabel{Further customizing flow-sensitive inference}{creating-dataflow-customization}
 
-In the uncommon case that you wish to disable the Checker Framework's
-built-in flow inference in your checker (this is different than choosing
+By default, the Checker Framework assumes that modifications to an object's
+fields do not change its type qualifiers.  This is true for all
+provenance-based type systems (see
+Section~\ref{type-refinement-runtime-tests}), for all value-based type
+systems over immutable values, and for some other type systems.  To
+indicate that \textbf{side effects can change a value's type qualifiers},
+write \<sideEffectsUnrefineAliases = true;> in the type factory
+constructor, before the call to \<this.postInit();>.  Note that this
+setting may lead to large numbers of false positive warnings.  You can
+reduce the number of false positive warnings by writing more precise side
+effect annotations.
+
+In the uncommon case that you wish to \textbf{disable the Checker Framework's
+built-in flow inference} in your checker (this is different than choosing
 not to extend it as described in Section~\ref{creating-dataflow}), put the
 following two lines at the beginning of the constructor for your subtype of
 \refclass{common/basetype}{BaseAnnotatedTypeFactory}:

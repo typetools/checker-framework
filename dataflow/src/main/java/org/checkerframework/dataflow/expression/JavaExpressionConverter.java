@@ -103,7 +103,6 @@ public abstract class JavaExpressionConverter extends JavaExpressionVisitor<Java
 
   @Override
   protected JavaExpression visitSuperReference(SuperReference superExpr, Void unused) {
-    // TODO?? *****
     return superExpr;
   }
 

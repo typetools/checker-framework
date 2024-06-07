@@ -2,8 +2,8 @@
  * @test
  * @summary Test that compliation order doesn't effect typechecking (#767)
  *
- * @compile -XDrawDiagnostics -Xlint:unchecked -processor org.checkerframework.checker.nullness.NullnessChecker -Anomsgtext Class1.java Class2.java
- * @compile -XDrawDiagnostics -Xlint:unchecked -processor org.checkerframework.checker.nullness.NullnessChecker -Anomsgtext Class2.java Class1.java
+ * @compile -Xlint:unchecked -processor org.checkerframework.checker.nullness.NullnessChecker -Anomsgtext Class1.java Class2.java
+ * @compile -Xlint:unchecked -processor org.checkerframework.checker.nullness.NullnessChecker -Anomsgtext Class2.java Class1.java
  *
  */
 

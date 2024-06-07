@@ -7,6 +7,8 @@ public class Shadowing {
 
   public Optional<String> f;
 
+  public Optional<String> g;
+
   class Sub extends Shadowing {
     Optional<String> f;
 
@@ -18,6 +20,12 @@ public class Shadowing {
     void bar(@Present Optional<String> present) {
       this.f = present;
       @Present Optional<String> ok = this.f;
+    }
+
+    void baz(@Present Optional<String> present) {
+      super.g = present;
+      @Present Optional<String> ok1 = this.g;
+      @Present Optional<String> ok2 = super.g;
     }
 
     // @RequiresPresent("super.f")
