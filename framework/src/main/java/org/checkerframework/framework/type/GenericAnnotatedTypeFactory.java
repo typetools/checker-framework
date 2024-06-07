@@ -907,19 +907,20 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
-   * /** Returns the primary annotation with {@code clazz} on {@code expression}'s type, at a
-   * particular location. The returned annotation may be null even if the expression should have a
-   * primary annotation of {@code clazz}. This is because {@link JavaExpression} do not always have
-   * enough information to get an annotated type.
+   * Returns the primary annotation with {@code clazz} on {@code expression}'s type, at a particular
+   * location. The returned annotation may be null even if the expression should have a primary
+   * annotation of {@code clazz}. This is because {@link JavaExpression}s do not always have enough
+   * information to get an annotated type.
    *
    * <p>This method should only be used if a tree, element, or node is not available for {@code
    * expression}. Use {@link #getAnnotatedType(Tree)} or {@link #getAnnotatedType(Element)} instead.
    *
    * @param expression the expression for which the annotation is returned
    * @param tree current tree
+   * @param path location at which expression is evaluated
    * @param clazz the annotation class for which to look
    * @return the annotation of {@code clazz} on {@code expression}'s type, or null if one does not
-   *     exist or if {@code expression} does not have enough information to get the annotated type.
+   *     exist or if {@code expression} does not have enough information to get the annotated type
    * @throws JavaExpressionParseException thrown if the expression cannot be parsed
    */
   public @Nullable AnnotationMirror getAnnotationFromJavaExpressionString(
@@ -932,8 +933,8 @@ public abstract class GenericAnnotatedTypeFactory<
   /**
    * Returns the primary annotation with {@code clazz} on {@code expr}'s type, at a particular
    * location. The returned annotation may be null even if the expression should have a primary
-   * annotation of {@code clazz}. This is because {@link JavaExpression} do not always have enough
-   * information to get an annotated type .
+   * annotation of {@code clazz}. This is because {@link JavaExpression}s do not always have enough
+   * information to get an annotated type.
    *
    * <p>This method should only be used if a tree, element, or node is not available for {@code
    * expr}. Use {@link #getAnnotatedType(Tree)} or {@link #getAnnotatedType(Element)} instead.
@@ -942,7 +943,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * @param tree current tree
    * @param clazz the annotation class for which to look
    * @return the annotation of {@code clazz} on {@code expr}'s type, or null if one does not exist
-   *     or if {@code expr} does not have enough information to get the annotated type.
+   *     or if {@code expr} does not have enough information to get the annotated type
    */
   public @Nullable AnnotationMirror getAnnotationFromJavaExpression(
       JavaExpression expr, Tree tree, Class<? extends Annotation> clazz) {
@@ -960,7 +961,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * @param expr the expression for which the annotation is returned
    * @param tree current tree
    * @return the annotations on the expression which may be empty if {@code expr} does not have
-   *     enough information to get the annotated type.
+   *     enough information to get the annotated type
    */
   public AnnotationMirrorSet getAnnotationsFromJavaExpression(JavaExpression expr, Tree tree) {
 
