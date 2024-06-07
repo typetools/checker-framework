@@ -3,7 +3,6 @@ package org.checkerframework.checker.nonempty;
 import java.util.Arrays;
 import java.util.List;
 import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.checker.nonempty.qual.NonEmpty;
 import org.checkerframework.dataflow.analysis.TransferInput;
@@ -26,6 +25,7 @@ import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -69,7 +69,8 @@ public class NonEmptyTransfer extends CFTransfer {
       EqualToNode n, TransferInput<CFValue, CFStore> in) {
     TransferResult<CFValue, CFStore> result = super.visitEqualTo(n, in);
     // Account for the case where the sizes of two containers are compared
-    strengthenAnnotationSizeEquals(n.getLeftOperand(), n.getRightOperand(), result.getThenStore());
+    strengthenAnnotationSizeEquals(
+        in, n.getLeftOperand(), n.getRightOperand(), result.getThenStore());
     // Account for the case where size is checked against a non-zero integer
     refineGTE(n.getLeftOperand(), n.getRightOperand(), result.getThenStore());
     refineGTE(n.getRightOperand(), n.getLeftOperand(), result.getThenStore());
@@ -83,7 +84,8 @@ public class NonEmptyTransfer extends CFTransfer {
   public TransferResult<CFValue, CFStore> visitNotEqual(
       NotEqualNode n, TransferInput<CFValue, CFStore> in) {
     TransferResult<CFValue, CFStore> result = super.visitNotEqual(n, in);
-    strengthenAnnotationSizeEquals(n.getLeftOperand(), n.getRightOperand(), result.getElseStore());
+    strengthenAnnotationSizeEquals(
+        in, n.getLeftOperand(), n.getRightOperand(), result.getElseStore());
     refineNotEqual(n.getLeftOperand(), n.getRightOperand(), result.getThenStore());
     refineNotEqual(n.getRightOperand(), n.getLeftOperand(), result.getThenStore());
     return result;
@@ -144,28 +146,39 @@ public class NonEmptyTransfer extends CFTransfer {
    * Refine the transfer result's store, given the left- and right-hand side of an equality check
    * comparing container sizes.
    *
+   * @param in transfer input used to get the types of subnodes of {@code lhs} and {@code rhs}.
    * @param lhs a node that may be a method invocation for {@link java.util.Collection size()} or
    *     {@link java.util.Map size()}
    * @param rhs a node that may be a method invocation for {@link java.util.Collection size()} or
    *     {@link java.util.Map size()}
    * @param store the "then" store of the comparison operation
    */
-  private void strengthenAnnotationSizeEquals(Node lhs, Node rhs, CFStore store) {
+  private void strengthenAnnotationSizeEquals(
+      TransferInput<CFValue, CFStore> in, Node lhs, Node rhs, CFStore store) {
     if (!isSizeAccess(lhs) || !isSizeAccess(rhs)) {
       return;
     }
-    AnnotationMirror lhsNonEmptyAnno =
-        aTypeFactory.getAnnotationFromJavaExpression(
-            getReceiver(lhs), lhs.getTree(), NonEmpty.class);
-    AnnotationMirror rhsNonEmptyAnno =
-        aTypeFactory.getAnnotationFromJavaExpression(
-            getReceiver(rhs), rhs.getTree(), NonEmpty.class);
-    // TODO: use aTypeFactory.getQualifierHierarchy().greatestLowerBoundQualifiersOnly() ?
-    if (lhsNonEmptyAnno != null) {
+
+    if (isAccessOfNonEmptyCollection(in, (MethodInvocationNode) lhs)) {
       store.insertValue(getReceiver(rhs), aTypeFactory.NON_EMPTY);
-    } else if (rhsNonEmptyAnno != null) {
+    } else if (isAccessOfNonEmptyCollection(in, (MethodInvocationNode) rhs)) {
       store.insertValue(getReceiver(lhs), aTypeFactory.NON_EMPTY);
     }
+  }
+
+  /**
+   * Returns true if the receiver of {@code methodAccessNode} is non-empty according to {@code in}.
+   *
+   * @param in used to get the type of {@code methodAccessNode}.
+   * @param methodAccessNode method access
+   * @return true if the receiver of {@code methodAccessNode} is non-empty according to {@code in}.
+   */
+  private boolean isAccessOfNonEmptyCollection(
+      TransferInput<CFValue, CFStore> in, MethodInvocationNode methodAccessNode) {
+    Node receiver = methodAccessNode.getTarget().getReceiver();
+
+    return AnnotationUtils.containsSameByClass(
+        in.getValueOfSubNode(receiver).getAnnotations(), NonEmpty.class);
   }
 
   /**
