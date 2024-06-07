@@ -266,7 +266,29 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     replaceValue(methodCall, val);
   }
 
-  public void updateForSideEffect(GenericAnnotatedTypeFactory<?, ?, ?, ?> gatypeFactory) {
+  /**
+   * Remove any information that might not be valid any more after a method call, and add
+   * information guaranteed by the method.
+   *
+   * <ol>
+   *   <li>If the method is side-effect-free (as indicated by {@link
+   *       org.checkerframework.dataflow.qual.SideEffectFree} or {@link
+   *       org.checkerframework.dataflow.qual.Pure}), then no information needs to be removed.
+   *   <li>Otherwise, all information about field accesses {@code a.f} needs to be removed, except
+   *       if the method {@code n} cannot modify {@code a.f}. This unmodifiability property holds if
+   *       {@code a} is a local variable or {@code this}, and {@code f} is final, or if {@code a.f}
+   *       has a {@link MonotonicQualifier} in the current store. Subclasses can change this
+   *       behavior by overriding {@link #newFieldValueAfterMethodCall(FieldAccess,
+   *       GenericAnnotatedTypeFactory, CFAbstractValue)}.
+   *   <li>Furthermore, if the field has a monotonic annotation, then its information can also be
+   *       kept.
+   * </ol>
+   *
+   * Furthermore, if the method is deterministic, we store its result {@code val} in the store.
+   *
+   * @param gatypeFactory the type factory of the associated checker
+   */
+  protected void updateForSideEffect(GenericAnnotatedTypeFactory<?, ?, ?, ?> gatypeFactory) {
     boolean sideEffectsUnrefineAliases = gatypeFactory.sideEffectsUnrefineAliases;
 
     // update local variables
@@ -1288,83 +1310,29 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     return newStore;
   }
 
+  /**
+   * Creates a new store the has all the values from both {@code this} and {@code other}. If a node
+   * have a value in both stores, then the most specific one is used.
+   *
+   * @param other another store
+   * @return a new store with values from {@code this} and {@code other}
+   */
   public S merge(S other) {
-    S newStore = analysis.createEmptyStore(sequentialSemantics);
+    S newStore = this.copy();
 
-    for (Map.Entry<LocalVariable, V> e : other.localVariableValues.entrySet()) {
-      // local variables that are only part of one store, but not the other are discarded, as
-      // one of store implicitly contains 'top' for that variable.
-      LocalVariable localVar = e.getKey();
-      V thisVal = localVariableValues.get(localVar);
-      if (thisVal != null) {
-        V otherVal = e.getValue();
-        V mergedVal = thisVal.mostSpecific(otherVal, null);
-        if (mergedVal != null) {
-          newStore.localVariableValues.put(localVar, mergedVal);
-        }
+    other.localVariableValues.forEach(newStore::insertValue);
+    if (other.thisValue != null) {
+      if (newStore.thisValue == null) {
+        newStore.thisValue = other.thisValue;
+      } else {
+        newStore.thisValue = thisValue.mostSpecific(other.thisValue, null);
       }
     }
+    other.fieldValues.forEach(newStore::insertValue);
+    other.arrayValues.forEach(newStore::insertValue);
+    other.methodCallExpressions.forEach(newStore::insertValue);
+    other.classValues.forEach(newStore::insertValue);
 
-    // information about the current object
-    {
-      V otherVal = other.thisValue;
-      V myVal = thisValue;
-      V mergedVal = myVal == null ? null : myVal.mostSpecific(otherVal, null);
-      if (mergedVal != null) {
-        newStore.thisValue = mergedVal;
-      }
-    }
-
-    for (Map.Entry<FieldAccess, V> e : other.fieldValues.entrySet()) {
-      // information about fields that are only part of one store, but not the other are
-      // discarded, as one store implicitly contains 'top' for that field.
-      FieldAccess el = e.getKey();
-      V thisVal = fieldValues.get(el);
-      if (thisVal != null) {
-        V otherVal = e.getValue();
-        V mergedVal = thisVal.mostSpecific(otherVal, null);
-        if (mergedVal != null) {
-          newStore.fieldValues.put(el, mergedVal);
-        }
-      }
-    }
-    for (Map.Entry<ArrayAccess, V> e : other.arrayValues.entrySet()) {
-      // information about arrays that are only part of one store, but not the other are
-      // discarded, as one store implicitly contains 'top' for that array access.
-      ArrayAccess el = e.getKey();
-      V thisVal = arrayValues.get(el);
-      if (thisVal != null) {
-        V otherVal = e.getValue();
-        V mergedVal = thisVal.mostSpecific(otherVal, null);
-        if (mergedVal != null) {
-          newStore.arrayValues.put(el, mergedVal);
-        }
-      }
-    }
-    for (Map.Entry<MethodCall, V> e : other.methodCallExpressions.entrySet()) {
-      // information about methods that are only part of one store, but not the other are
-      // discarded, as one store implicitly contains 'top' for that field.
-      MethodCall el = e.getKey();
-      V thisVal = methodCallExpressions.get(el);
-      if (thisVal != null) {
-        V otherVal = e.getValue();
-        V mergedVal = thisVal.mostSpecific(otherVal, null);
-        if (mergedVal != null) {
-          newStore.methodCallExpressions.put(el, mergedVal);
-        }
-      }
-    }
-    for (Map.Entry<ClassName, V> e : other.classValues.entrySet()) {
-      ClassName el = e.getKey();
-      V thisVal = classValues.get(el);
-      if (thisVal != null) {
-        V otherVal = e.getValue();
-        V mergedVal = thisVal.mostSpecific(otherVal, null);
-        if (mergedVal != null) {
-          newStore.classValues.put(el, mergedVal);
-        }
-      }
-    }
     return newStore;
   }
 
