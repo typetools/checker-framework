@@ -907,13 +907,19 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
-   * Returns the primary annotation on expression if it were evaluated at path.
+   * /** Returns the primary annotation with {@code clazz} on {@code expression}'s type, at a
+   * particular location. The returned annotation may be null even if the expression should have a
+   * primary annotation of {@code clazz}. This is because {@link JavaExpression} do not always have
+   * enough information to get an annotated type.
    *
-   * @param expression a Java expression
+   * <p>This method should only be used if a tree, element, or node is not available for {@code
+   * expression}. Use {@link #getAnnotatedType(Tree)} or {@link #getAnnotatedType(Element)} instead.
+   *
+   * @param expression the expression for which the annotation is returned
    * @param tree current tree
-   * @param path location at which expression is evaluated
-   * @param clazz class of the annotation
-   * @return the annotation on expression or null if one does not exist
+   * @param clazz the annotation class for which to look
+   * @return the annotation of {@code clazz} on {@code expression}'s type, or null if one does not
+   *     exist or if {@code expression} does not have enough information to get the annotated type.
    * @throws JavaExpressionParseException thrown if the expression cannot be parsed
    */
   public @Nullable AnnotationMirror getAnnotationFromJavaExpressionString(
@@ -924,12 +930,19 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
-   * Returns the primary annotation on an expression, at a particular location.
+   * Returns the primary annotation with {@code clazz} on {@code expr}'s type, at a particular
+   * location. The returned annotation may be null even if the expression should have a primary
+   * annotation of {@code clazz}. This is because {@link JavaExpression} do not always have enough
+   * information to get an annotated type .
+   *
+   * <p>This method should only be used if a tree, element, or node is not available for {@code
+   * expr}. Use {@link #getAnnotatedType(Tree)} or {@link #getAnnotatedType(Element)} instead.
    *
    * @param expr the expression for which the annotation is returned
    * @param tree current tree
-   * @param clazz the Class of the annotation
-   * @return the annotation on expression or null if one does not exist
+   * @param clazz the annotation class for which to look
+   * @return the annotation of {@code clazz} on {@code expr}'s type, or null if one does not exist
+   *     or if {@code expr} does not have enough information to get the annotated type.
    */
   public @Nullable AnnotationMirror getAnnotationFromJavaExpression(
       JavaExpression expr, Tree tree, Class<? extends Annotation> clazz) {
@@ -937,14 +950,19 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
-   * Returns the primary annotations on an expression, at a particular location.
+   * Returns the primary annotations on an expression, at a particular location. The returned set of
+   * annotations may be empty even if the expression should have primary annotations. This is
+   * because {@link JavaExpression} do not always have enough information to get an annotated type .
+   *
+   * <p>This method should only be used if a tree, element, or node is not available for {@code
+   * expr}. Use {@link #getAnnotatedType(Tree)} or {@link #getAnnotatedType(Element)} instead.
    *
    * @param expr the expression for which the annotation is returned
    * @param tree current tree
-   * @return the annotation on expression or null if one does not exist
+   * @return the annotations on the expression which may be empty if {@code expr} does not have
+   *     enough information to get the annotated type.
    */
-  public @Nullable AnnotationMirrorSet getAnnotationsFromJavaExpression(
-      JavaExpression expr, Tree tree) {
+  public AnnotationMirrorSet getAnnotationsFromJavaExpression(JavaExpression expr, Tree tree) {
 
     // Look in the store
     if (CFAbstractStore.canInsertJavaExpression(expr)) {
@@ -953,8 +971,6 @@ public abstract class GenericAnnotatedTypeFactory<
       if (store != null) {
         Value value = store.getValue(expr);
         if (value != null) {
-          // Is it possible that this lacks some annotations that appear in the type
-          // factory?
           return value.getAnnotations();
         }
       }
