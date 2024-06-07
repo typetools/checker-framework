@@ -314,12 +314,12 @@ public class NonEmptyTransfer extends CFTransfer {
 
   /**
    * Check whether a given binary operation corresponds to a {@link java.util.List size()} or {@link
-   * java.util.Map size()}comparison.
+   * java.util.Map size()} comparison to an {@link IntegerLiteralNode}.
    *
    * @param left the left operand of a binary operation
    * @param right the right operand of a binary operation
    * @return true if the operands correspond to a {@link java.util.List size()} or {@link
-   *     java.util.Map size()} comparison
+   *     java.util.Map size()} comparison to an {@link IntegerLiteralNode}
    */
   private boolean isSizeComparison(Node left, Node right) {
     // Use `List.of()` in Java 9+
