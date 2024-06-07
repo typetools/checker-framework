@@ -1,3 +1,4 @@
+import java.util.Arrays;
 import java.util.List;
 import org.checkerframework.checker.nonempty.qual.NonEmpty;
 
@@ -40,6 +41,17 @@ class Comparisons {
     }
     // :: error: (assignment)
     @NonEmpty List<String> strs4 = strs2;
+  }
+
+  void testImplicitNonZero2(List<String> strs2) {
+    if (getNonEmptyList().size() == strs2.size()) {
+      @NonEmpty List<String> strs3 = strs2; // OK
+    }
+  }
+
+  @NonEmpty
+  List<String> getNonEmptyList() {
+    return Arrays.asList(new String[] {""});
   }
 
   void testEqualIndexOfRefinement(List<Object> objs, Object obj) {
