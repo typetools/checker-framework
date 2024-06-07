@@ -86,6 +86,7 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.NestingKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
@@ -340,7 +341,7 @@ public final class TreeUtils {
    * @param tree the {@link ClassTree} node to get the fields for
    * @return the list of fields that are declared within the given class declaration
    */
-  public static List<VariableTree> fieldsFromTree(ClassTree tree) {
+  public static List<VariableTree> fieldsFromClassTree(ClassTree tree) {
     return tree.getMembers().stream()
         .filter(t -> t.getKind() == Kind.VARIABLE)
         .map(t -> (VariableTree) t)
@@ -2605,11 +2606,26 @@ public final class TreeUtils {
    * @return true if the given method invocation is a varargs invocation
    */
   public static boolean isVarargsCall(MethodInvocationTree invok) {
+    if (((JCMethodInvocation) invok).varargsElement != null) {
+      return true;
+    }
+
     // For some calls the varargsElement element disappears when it should not. This seems to only
-    // be a problem with MethodHandle#invoke.  See framework/tests/all-systems/Issue6078.java.
-    // So also just check for a mismatch between parameter and argument size.
-    return elementFromUse(invok).getParameters().size() != invok.getArguments().size()
-        || ((JCMethodInvocation) invok).varargsElement != null;
+    // be a problem with MethodHandle#invoke and only with no arguments.  See
+    // framework/tests/all-systems/Issue6078.java.
+    // So also check for a mismatch between parameter and argument size.
+    // Such a mismatch occurs for every enum constructor: no args, two params (String name, int
+    // ordinal).
+
+    List<? extends VariableElement> parameters = elementFromUse(invok).getParameters();
+    int numParameters = parameters.size();
+    if (numParameters != invok.getArguments().size()) {
+      if (numParameters > 0 && parameters.get(numParameters - 1).asType() instanceof ArrayType) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   /**

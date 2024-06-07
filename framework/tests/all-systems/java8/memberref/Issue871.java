@@ -2,6 +2,7 @@
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.function.Predicate;
 
 interface Issue871 {
   default Iterable<Path> a() {
@@ -9,8 +10,4 @@ interface Issue871 {
   }
 
   Iterable<Path> f(Predicate<Path> condition);
-
-  interface Predicate<T> {
-    boolean test(T t);
-  }
 }
