@@ -398,7 +398,7 @@ public abstract class GenericAnnotatedTypeFactory<
 
   @Override
   protected void postInit(
-      @UnderInitialization(GenericAnnotatedTypeFactory.class) GenericAnnotatedTypeFactory<Value, Store, TransferFunction, FlowAnalysis> this) {
+          @UnderInitialization(GenericAnnotatedTypeFactory.class) GenericAnnotatedTypeFactory<Value, Store, TransferFunction, FlowAnalysis> this) {
     super.postInit();
 
     this.dependentTypesHelper = createDependentTypesHelper();
@@ -953,15 +953,15 @@ public abstract class GenericAnnotatedTypeFactory<
   /**
    * Returns the primary annotations on an expression, at a particular location. The returned set of
    * annotations may be empty even if the expression should have primary annotations. This is
-   * because {@link JavaExpression} do not always have enough information to get an annotated type .
+   * because {@link JavaExpression} do not always have enough information to get an annotated type.
    *
    * <p>This method should only be used if a tree, element, or node is not available for {@code
    * expr}. Use {@link #getAnnotatedType(Tree)} or {@link #getAnnotatedType(Element)} instead.
    *
    * @param expr the expression for which the annotation is returned
    * @param tree current tree
-   * @return the annotations on the expression which may be empty if {@code expr} does not have
-   *     enough information to get the annotated type
+   * @return the annotations on the expression. May be empty if {@code expr} does not have enough
+   *     information to get the annotated type.
    */
   public AnnotationMirrorSet getAnnotationsFromJavaExpression(JavaExpression expr, Tree tree) {
 
@@ -2254,7 +2254,8 @@ public abstract class GenericAnnotatedTypeFactory<
    * @see #getTypeFactoryOfSubchecker
    */
   @SuppressWarnings("TypeParameterUnusedInFormals") // Intentional abuse
-  public <T extends GenericAnnotatedTypeFactory<?, ?, ?, ?>> @Nullable T getTypeFactoryOfSubcheckerOrNull(Class<? extends BaseTypeChecker> subCheckerClass) {
+  public <T extends GenericAnnotatedTypeFactory<?, ?, ?, ?>>
+      @Nullable T getTypeFactoryOfSubcheckerOrNull(Class<? extends BaseTypeChecker> subCheckerClass) {
     BaseTypeChecker subchecker = checker.getSubchecker(subCheckerClass);
     if (subchecker == null) {
       return null;
