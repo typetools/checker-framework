@@ -59,7 +59,7 @@ public class NonEmptyChecker extends BaseTypeChecker {
     OptionalChecker optionalChecker = getSubchecker(OptionalChecker.class);
     if (optionalChecker != null && optionalChecker.getVisitor() instanceof OptionalVisitor) {
       OptionalVisitor optionalVisitor = (OptionalVisitor) optionalChecker.getVisitor();
-      return optionalVisitor.getMethodsForNonEmptyChecker();
+      return optionalVisitor.getMethodsToVerifyWithNonEmptyChecker();
     }
     return Collections.emptySet();
   }

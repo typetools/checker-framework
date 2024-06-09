@@ -81,8 +81,8 @@ public class OptionalVisitor
   /** The element for java.util.stream.Stream.map(). */
   private final ExecutableElement streamMap;
 
-  /** Set of methods to be checked by the Non-Empty Checker. */
-  private final Set<MethodTree> methodsForNonEmptyChecker;
+  /** Set of methods to be verified by the Non-Empty Checker. */
+  private final Set<MethodTree> methodsToVerifyWithNonEmptyChecker;
 
   /** Map of the names of methods to the methods in which they are invoked. */
   private final Map<String, Set<MethodTree>> methodNamesToEnclosingMethods;
@@ -103,7 +103,7 @@ public class OptionalVisitor
 
     streamFilter = TreeUtils.getMethod("java.util.stream.Stream", "filter", 1, env);
     streamMap = TreeUtils.getMethod("java.util.stream.Stream", "map", 1, env);
-    methodsForNonEmptyChecker = new HashSet<>();
+    methodsToVerifyWithNonEmptyChecker = new HashSet<>();
     methodNamesToEnclosingMethods = new HashMap<>();
   }
 
@@ -122,8 +122,8 @@ public class OptionalVisitor
    *     org.checkerframework.checker.nonempty.NonEmptyChecker}
    */
   @Pure
-  public Set<MethodTree> getMethodsForNonEmptyChecker() {
-    return methodsForNonEmptyChecker;
+  public Set<MethodTree> getMethodsToVerifyWithNonEmptyChecker() {
+    return methodsToVerifyWithNonEmptyChecker;
   }
 
   /**
@@ -383,7 +383,7 @@ public class OptionalVisitor
     MethodTree enclosingMethod = TreePathUtil.enclosingMethod(this.getCurrentPath());
     if (enclosingMethod != null) {
       Set<String> namesOfMethodsForNonEmptyChecker =
-          methodsForNonEmptyChecker.stream()
+          methodsToVerifyWithNonEmptyChecker.stream()
               .map(MethodTree::getName)
               .map(Name::toString)
               .collect(Collectors.toSet());
@@ -405,13 +405,13 @@ public class OptionalVisitor
       updateMethodToCheckWithNonEmptyCheckerGivenPreconditions(tree);
     }
     if (this.isReturnTypeAnnotatedWithNonEmpty(tree)) {
-      methodsForNonEmptyChecker.add(tree);
+      methodsToVerifyWithNonEmptyChecker.add(tree);
     }
     super.processMethodTree(tree);
   }
 
   /**
-   * Updates {@link methodsForNonEmptyChecker} when a method with a precondition from the Non-Empty
+   * Updates {@link methodsToVerifyWithNonEmptyChecker} when a method with a precondition from the Non-Empty
    * type system (e.g., {@link RequiresNonEmpty}) or a formal annotated with {@link NonEmpty} is
    * visited.
    *
@@ -424,9 +424,9 @@ public class OptionalVisitor
   private void updateMethodToCheckWithNonEmptyCheckerGivenPreconditions(MethodTree tree) {
     String methodName = tree.getName().toString();
     if (methodNamesToEnclosingMethods.containsKey(methodName)) {
-      methodsForNonEmptyChecker.addAll(methodNamesToEnclosingMethods.get(methodName));
+      methodsToVerifyWithNonEmptyChecker.addAll(methodNamesToEnclosingMethods.get(methodName));
     }
-    methodsForNonEmptyChecker.add(tree);
+    methodsToVerifyWithNonEmptyChecker.add(tree);
   }
 
   /**
@@ -645,7 +645,7 @@ public class OptionalVisitor
     if (isAnnotatedWithNonEmpty) {
       MethodTree enclosingMethod = TreePathUtil.enclosingMethod(this.getCurrentPath());
       if (enclosingMethod != null) {
-        methodsForNonEmptyChecker.add(enclosingMethod);
+        methodsToVerifyWithNonEmptyChecker.add(enclosingMethod);
       }
     }
   }
