@@ -19,10 +19,10 @@ echo "running \"./gradlew assembleForJavac\" for checker-framework"
 "$SCRIPTDIR/.git-scripts/git-clone-related" codespecs daikon
 cd ../daikon
 git log | head -n 5
-make compile
+make --jobs="$(getconf _NPROCESSORS_ONLN)" compile
 if [ "$TRAVIS" = "true" ] ; then
   # Travis kills a job if it runs 10 minutes without output
-  time make JAVACHECK_EXTRA_ARGS=-Afilenames -C java typecheck-part1
+  time make JAVACHECK_EXTRA_ARGS=-Afilenames -C java --jobs="$(getconf _NPROCESSORS_ONLN)" typecheck-part1
 else
-  time make -C java typecheck-part1
+  time make -C java --jobs="$(getconf _NPROCESSORS_ONLN)" typecheck-part1
 fi

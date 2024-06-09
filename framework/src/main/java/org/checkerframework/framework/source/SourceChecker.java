@@ -1316,9 +1316,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    */
   private void printStackTrace(StackTraceElement[] trace) {
     if (hasOption("dumpOnErrors")) {
-      StringBuilder msg = new StringBuilder();
+      StringJoiner msg = new StringJoiner(System.lineSeparator());
       for (StackTraceElement elem : trace) {
-        msg.append("\tat " + elem + "\n");
+        msg.add("\tat " + elem);
       }
       message(Diagnostic.Kind.NOTE, msg.toString());
     }
@@ -2771,17 +2771,20 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
           msg.add("Compilation unit: " + this.currentRoot.getSourceFile().getName());
         }
 
-        if (this.visitor != null) {
-          DiagnosticPosition pos = (DiagnosticPosition) this.visitor.lastVisited;
-          if (pos != null) {
-            DiagnosticSource source = new DiagnosticSource(this.currentRoot.getSourceFile(), null);
-            int linenr = source.getLineNumber(pos.getStartPosition());
-            int col = source.getColumnNumber(pos.getStartPosition(), true);
-            String line = source.getLine(pos.getStartPosition());
+        DiagnosticPosition pos = null;
+        if ((ce instanceof BugInCF) && ((BugInCF) ce).getLocation() != null) {
+          pos = (DiagnosticPosition) ((BugInCF) ce).getLocation();
+        } else if (this.visitor != null) {
+          pos = (DiagnosticPosition) this.visitor.lastVisited;
+        }
+        if (pos != null) {
+          DiagnosticSource source = new DiagnosticSource(this.currentRoot.getSourceFile(), null);
+          int linenr = source.getLineNumber(pos.getStartPosition());
+          int col = source.getColumnNumber(pos.getStartPosition(), true);
+          String line = source.getLine(pos.getStartPosition());
 
-            msg.add("Last visited tree at line " + linenr + " column " + col + ":");
-            msg.add(line);
-          }
+          msg.add("Last visited tree at line " + linenr + " column " + col + ":");
+          msg.add(line);
         }
 
         Throwable forStackTrace = ce.getCause() != null ? ce.getCause() : ce;

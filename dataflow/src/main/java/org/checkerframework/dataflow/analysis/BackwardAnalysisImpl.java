@@ -323,7 +323,7 @@ public class BackwardAnalysisImpl<
    * @return the store right after the given block
    */
   protected @Nullable S getStoreAfter(Block b) {
-    return readFromStore(outStores, b);
+    return outStores.get(b);
   }
 
   @Override
