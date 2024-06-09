@@ -411,9 +411,9 @@ public class OptionalVisitor
   }
 
   /**
-   * Updates {@link methodsToVerifyWithNonEmptyChecker} when a method with a precondition from the Non-Empty
-   * type system (e.g., {@link RequiresNonEmpty}) or a formal annotated with {@link NonEmpty} is
-   * visited.
+   * Updates {@link methodsToVerifyWithNonEmptyChecker} when a method with a precondition from the
+   * Non-Empty type system (e.g., {@link RequiresNonEmpty}) or a formal annotated with {@link
+   * NonEmpty} is visited.
    *
    * <p>If the method being visited is in {@link methodNamesToEnclosingMethods}, the methods to
    * check with the Non-Empty Checker should be updated with all the methods that dispatch calls to
