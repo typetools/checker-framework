@@ -68,9 +68,11 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
   /** The annotations in this abstract value. */
   protected final AnnotationMirrorSet annotations;
 
-  protected CFAbstractStore<V, ?> thenStore;
+  /** The then store. */
+  protected @Nullable CFAbstractStore<V, ?> thenStore;
 
-  protected CFAbstractStore<V, ?> elseStore;
+  /** The else store. */
+  protected @Nullable CFAbstractStore<V, ?> elseStore;
 
   /**
    * Creates a new CFAbstractValue.
@@ -290,16 +292,34 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     return mostSpecificVal;
   }
 
-  void addStores(CFAbstractStore<V, ?> thenStore, CFAbstractStore<V, ?> elseStore) {
+  /**
+   * Add {@code thenStore} and {@code elseStore} to this value.
+   *
+   * @param thenStore then store
+   * @param elseStore else store
+   */
+  public void addStores(CFAbstractStore<V, ?> thenStore, CFAbstractStore<V, ?> elseStore) {
     this.thenStore = thenStore;
     this.elseStore = elseStore;
   }
 
+  /**
+   * Returns the {@code thenStore}.
+   *
+   * @return the {@code thenStore}.
+   * @param <S> type of the store
+   */
   @SuppressWarnings("unchecked")
   public <S extends CFAbstractStore<V, S>> S getThenStore() {
     return (S) thenStore;
   }
 
+  /**
+   * Returns the {@code else}.
+   *
+   * @return the {@code else}.
+   * @param <S> type of the store
+   */
   @SuppressWarnings("unchecked")
   public <S extends CFAbstractStore<V, S>> S getElseStore() {
     return (S) elseStore;

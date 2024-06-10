@@ -773,6 +773,8 @@ public abstract class CFAbstractTransfer<
       @SuppressWarnings(
           "mustcall:type.arguments.not.inferred") // https://github.com/typetools/checker-framework/issues/6663
       S thenStore = in.getThenStore().merge(valueFromStore.getThenStore());
+      @SuppressWarnings(
+          "mustcall:type.arguments.not.inferred") // https://github.com/typetools/checker-framework/issues/6663
       S elseStore = in.getElseStore().merge(valueFromStore.getElseStore());
       return new ConditionalTransferResult<>(finishValue(value, store), thenStore, elseStore);
     }
