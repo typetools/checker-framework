@@ -1310,6 +1310,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     return newStore;
   }
 
+  private V upperBoundOfValues(V otherVal, V thisVal, boolean shouldWiden) {
+    return shouldWiden ? thisVal.widenUpperBound(otherVal) : thisVal.leastUpperBound(otherVal);
+  }
+
   /**
    * Creates a new store the has all the values from both {@code this} and {@code other}. If a node
    * have a value in both stores, then the most specific one is used.
@@ -1334,10 +1338,6 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     other.classValues.forEach(newStore::insertValue);
 
     return newStore;
-  }
-
-  private V upperBoundOfValues(V otherVal, V thisVal, boolean shouldWiden) {
-    return shouldWiden ? thisVal.widenUpperBound(otherVal) : thisVal.leastUpperBound(otherVal);
   }
 
   /**

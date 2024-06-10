@@ -68,6 +68,10 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
   /** The annotations in this abstract value. */
   protected final AnnotationMirrorSet annotations;
 
+  protected CFAbstractStore<V, ?> thenStore;
+
+  protected CFAbstractStore<V, ?> elseStore;
+
   /**
    * Creates a new CFAbstractValue.
    *
@@ -285,9 +289,6 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     }
     return mostSpecificVal;
   }
-
-  CFAbstractStore<V, ?> thenStore;
-  CFAbstractStore<V, ?> elseStore;
 
   void addStores(CFAbstractStore<V, ?> thenStore, CFAbstractStore<V, ?> elseStore) {
     this.thenStore = thenStore;
