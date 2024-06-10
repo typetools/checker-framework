@@ -61,7 +61,6 @@ public class TestConfigurationBuilder {
             .addOption("-Xmaxerrs", "9999")
             .addOption("-g")
             .addOption("-Xlint:unchecked")
-            .addOption("-XDrawDiagnostics") // use short javac diagnostics
             .addSourceFiles(testSourceFiles);
 
     if (outputClassDirectory != null) {

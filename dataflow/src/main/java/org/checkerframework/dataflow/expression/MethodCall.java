@@ -155,8 +155,11 @@ public class MethodCall extends JavaExpression {
       return false;
     }
     MethodCall other = (MethodCall) obj;
+    boolean isComparingSuperWithThis =
+        (receiver instanceof SuperReference && other.receiver instanceof ThisReference)
+            || (receiver instanceof ThisReference && other.receiver instanceof SuperReference);
     return method.equals(other.method)
-        && receiver.equals(other.receiver)
+        && (receiver.equals(other.receiver) || isComparingSuperWithThis)
         && arguments.equals(other.arguments);
   }
 
