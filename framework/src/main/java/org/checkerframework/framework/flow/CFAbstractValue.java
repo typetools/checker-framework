@@ -578,12 +578,14 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     if (this.getThenStore() != null && other.getThenStore() != null) {
       @SuppressWarnings({
         "interning:argument",
-        "mustcall:type.arguments.not.inferred"
+        "mustcall:type.arguments.not.inferred",
+        "signature:argument"
       }) // https://github.com/typetools/checker-framework/issues/6663
       CFAbstractStore<V, ?> thenStore = this.getThenStore().merge(other.getThenStore());
       @SuppressWarnings({
         "interning:argument",
-        "mustcall:type.arguments.not.inferred"
+        "mustcall:type.arguments.not.inferred",
+        "signature:argument"
       }) // https://github.com/typetools/checker-framework/issues/6663
       CFAbstractStore<V, ?> elseStore = this.getElseStore().merge(other.getElseStore());
       upperBound.addStores(thenStore, elseStore);
