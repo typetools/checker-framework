@@ -18,8 +18,6 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import org.checkerframework.afu.scenelib.util.JVMNames;
 import org.checkerframework.checker.index.qual.Positive;
-import org.checkerframework.checker.initialization.qual.UnknownInitialization;
-import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.Analysis;
@@ -1003,32 +1001,9 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       return;
     }
 
-    // For parameters, If rhsmATM is Nullable or MonotonicNonNull and has the
-    // UnknownInitialization annotation, and if the annotation is not
-    // UnknownInitialization(java.lang.Object.class), replace it with
-    // UnknownInitialization(java.lang.Object.class). This is because there is
-    // likely a constructor where it hasn't been initialized, and we haven't
-    // considered its effect. Otherwise, WPI might get stuck in a loop.
-    if (defLoc == TypeUseLocation.PARAMETER
-        && (rhsATM.hasPrimaryAnnotation(Nullable.class)
-            || rhsATM.hasPrimaryAnnotation(MonotonicNonNull.class))) {
-      for (AnnotationMirror anno : rhsATM.getPrimaryAnnotations()) {
-        if (anno.getAnnotationType()
-                .asElement()
-                .getSimpleName()
-                .contentEquals("UnknownInitialization")
-            && !anno.getAnnotationType()
-                .toString()
-                .equals(
-                    "@org"
-                        + ".checkerframework.checker.initialization.qual.UnknownInitialization(java.lang.Object.class)")) {
-          AnnotationMirror unanno =
-              AnnotationBuilder.fromClass(
-                  atypeFactory.getElementUtils(), UnknownInitialization.class);
-          rhsATM.replaceAnnotation(unanno);
-        }
-      }
-    }
+    // Update Initialization Annotations in WPI. It is only applied to
+    // Nullness-related qualifiers' inference to prevent possible loops.
+    atypeFactory.wpiAdjustForInitializationAnnotations(rhsATM);
 
     AnnotatedTypeMirror atmFromStorage =
         storage.atmFromStorageLocation(rhsATM.getUnderlyingType(), annotationsToUpdate);

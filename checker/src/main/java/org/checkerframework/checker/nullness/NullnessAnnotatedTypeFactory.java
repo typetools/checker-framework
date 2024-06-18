@@ -961,6 +961,30 @@ public class NullnessAnnotatedTypeFactory
     }
   }
 
+  // For all assignments, If rhsmATM is Nullable or MonotonicNonNull and has
+  // the UnknownInitialization annotation, and if the annotation is not
+  // UnknownInitialization(java.lang.Object.class), replace it with
+  // UnknownInitialization(java.lang.Object.class). This is because there is
+  // likely a constructor where it hasn't been initialized, and we haven't
+  // considered its effect. Otherwise, WPI might get stuck in a loop.
+  @Override
+  public void wpiAdjustForInitializationAnnotations(AnnotatedTypeMirror rhsATM) {
+    if ((rhsATM.hasPrimaryAnnotation(Nullable.class)
+        || rhsATM.hasPrimaryAnnotation(MonotonicNonNull.class))) {
+      for (AnnotationMirror anno : rhsATM.getPrimaryAnnotations()) {
+        if (AnnotationUtils.areSameByName(
+                anno, "org.checkerframework.checker.initialization.qual.UnknownInitialization")
+            && !anno.getAnnotationType()
+                .toString()
+                .equals(
+                    "@org"
+                        + ".checkerframework.checker.initialization.qual.UnknownInitialization(java.lang.Object.class)")) {
+          rhsATM.replaceAnnotation(UNDER_INITALIZATION);
+        }
+      }
+    }
+  }
+
   @Override
   public boolean wpiShouldInferTypesForReceivers() {
     // All receivers must be non-null, or the dereference involved in
