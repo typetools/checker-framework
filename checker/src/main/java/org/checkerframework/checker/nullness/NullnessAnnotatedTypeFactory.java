@@ -968,17 +968,15 @@ public class NullnessAnnotatedTypeFactory
   // likely a constructor where it hasn't been initialized, and we haven't
   // considered its effect. Otherwise, WPI might get stuck in a loop.
   @Override
-  public void wpiAdjustForInitializationAnnotations(AnnotatedTypeMirror rhsATM) {
+  public void wpiAdjustAnnotationsBeforeUpdate(AnnotatedTypeMirror rhsATM) {
     if ((rhsATM.hasPrimaryAnnotation(Nullable.class)
         || rhsATM.hasPrimaryAnnotation(MonotonicNonNull.class))) {
       for (AnnotationMirror anno : rhsATM.getPrimaryAnnotations()) {
         if (AnnotationUtils.areSameByName(
                 anno, "org.checkerframework.checker.initialization.qual.UnknownInitialization")
-            && !anno.getAnnotationType()
-                .toString()
-                .equals(
-                    "@org"
-                        + ".checkerframework.checker.initialization.qual.UnknownInitialization(java.lang.Object.class)")) {
+            && !AnnotationUtils.areSameByName(
+                anno,
+                "org.checkerframework.checker.initialization.qual.UnderInitialization(java.lang.Object.class")) {
           rhsATM.replaceAnnotation(UNDER_INITALIZATION);
         }
       }

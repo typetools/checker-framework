@@ -5530,7 +5530,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @param rhsATM the type of the rhs of the pseudo-assignment, which is side-effected by this
    *     method
    */
-  public void wpiAdjustForInitializationAnnotations(AnnotatedTypeMirror rhsATM) {}
+  public void wpiAdjustAnnotationsBeforeUpdate(AnnotatedTypeMirror rhsATM) {}
 
   /**
    * Side-effects the method or constructor annotations to make any desired changes before writing

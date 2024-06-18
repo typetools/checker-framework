@@ -1001,9 +1001,8 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       return;
     }
 
-    // Update Initialization Annotations in WPI. It is only applied to
-    // Nullness-related qualifiers' inference to prevent possible loops.
-    atypeFactory.wpiAdjustForInitializationAnnotations(rhsATM);
+    // Update the right-hand side (rhs) annotations if necessary before updating the annotation set
+    atypeFactory.wpiAdjustAnnotationsBeforeUpdate(rhsATM);
 
     AnnotatedTypeMirror atmFromStorage =
         storage.atmFromStorageLocation(rhsATM.getUnderlyingType(), annotationsToUpdate);
