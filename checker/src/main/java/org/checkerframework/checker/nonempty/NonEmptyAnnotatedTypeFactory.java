@@ -39,7 +39,7 @@ public class NonEmptyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   private class NonEmptyTreeAnnotator extends TreeAnnotator {
 
     /**
-     * Create a new {@link NonEmptyTreeAnnotator}.
+     * Creates a new {@link NonEmptyTreeAnnotator}.
      *
      * @param aTypeFactory the type factory for this tree annotator
      */

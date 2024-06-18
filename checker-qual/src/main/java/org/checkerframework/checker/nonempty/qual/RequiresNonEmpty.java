@@ -26,15 +26,15 @@ import org.checkerframework.framework.qual.PreconditionAnnotation;
  *   List&lt;String&gt; list1 = new LinkedList&lt;&gt;();
  *   List&lt;String&gt; list2;
  *
- *   &nbsp; @RequiresNonEmpty("list1")
- *   &nbsp; @Pure
+ * &nbsp; @RequiresNonEmpty("list1")
+ * &nbsp; @Pure
  *   void m1() {}
  *
- *   &nbsp; @RequiresNonEmpty({"list1", "list2"})
- *   &nbsp; @Pure
+ * &nbsp; @RequiresNonEmpty({"list1", "list2"})
+ * &nbsp; @Pure
  *   void m2() {}
  *
- *   &nbsp; @RequiresNonEmpty({"list1", "list2"})
+ * &nbsp; @RequiresNonEmpty({"list1", "list2"})
  *   void m3() {}
  *
  *   void m4() {}
@@ -42,26 +42,19 @@ import org.checkerframework.framework.qual.PreconditionAnnotation;
  *   void test(@NonEmpty List&lt;String&gt; l1, @NonEmpty List&lt;String&gt; l2) {
  *     MyClass testClass = new MyClass();
  *
- *     // At this point, we should have an error since m1 requires that list1 is @NonEmpty, which is
- *     // not the case here
- *     // :: error: (contracts.precondition)
- *     testClass.m1();
+ *     testClass.m1(); // Compile-time error: m1 requires that list1 is @NonEmpty.
  *
  *     testClass.list1 = l1;
  *     testClass.m1(); // OK
  *
- *     // A call to m2 is stil illegal here, since list2 is still @UnknownNonEmpty
- *     // :: error: (contracts.precondition)
- *     testClass.m2();
+ *     testClass.m2(); // Compile-time error: m2 requires that list2 is @NonEmpty
  *
  *     testClass.list2 = l2;
  *     testClass.m2(); // OK
  *
  *     testClass.m4();
  *
- *     // No longer OK to call m2, no guarantee that m4() was pure
- *     // :: error: (contracts.precondition)
- *     testClass.m2();
+ *     testClass.m2(); // Compile-time error: m4 is not pure and might have assigned a field.
  *   }
  * }
  * </pre>
@@ -82,8 +75,7 @@ public @interface RequiresNonEmpty {
    * The Java {@link java.util.Collection collection}, {@link java.util.Iterator iterator}, {@link
    * java.lang.Iterable iterable}, or {@link java.util.Map map} that must be non-empty.
    *
-   * @return the Java {@link java.util.Collection collection}, {@link java.util.Iterator iterator},
-   *     {@link java.lang.Iterable iterable}, or {@link java.util.Map map}
+   * @return the Java expression that must be non-empty
    */
   String[] value();
 
