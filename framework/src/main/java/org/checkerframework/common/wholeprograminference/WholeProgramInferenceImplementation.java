@@ -1009,15 +1009,22 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
     // UnknownInitialization(java.lang.Object.class). This is because there is
     // likely a constructor where it hasn't been initialized, and we haven't
     // considered its effect. Otherwise, WPI might get stuck in a loop.
-    if(defLoc == TypeUseLocation.PARAMETER && (rhsATM.hasPrimaryAnnotation(Nullable.class) || rhsATM
-            .hasPrimaryAnnotation(MonotonicNonNull.class))){
+    if (defLoc == TypeUseLocation.PARAMETER
+        && (rhsATM.hasPrimaryAnnotation(Nullable.class)
+            || rhsATM.hasPrimaryAnnotation(MonotonicNonNull.class))) {
       for (AnnotationMirror anno : rhsATM.getPrimaryAnnotations()) {
-        if (anno.getAnnotationType().asElement().getSimpleName().contentEquals(
-                "UnknownInitialization") && !anno.getAnnotationType().toString().equals("@org" +
-                ".checkerframework.checker.initialization.qual.UnknownInitialization(java.lang.Object.class)")) {
+        if (anno.getAnnotationType()
+                .asElement()
+                .getSimpleName()
+                .contentEquals("UnknownInitialization")
+            && !anno.getAnnotationType()
+                .toString()
+                .equals(
+                    "@org"
+                        + ".checkerframework.checker.initialization.qual.UnknownInitialization(java.lang.Object.class)")) {
           AnnotationMirror unanno =
-                  AnnotationBuilder.fromClass(atypeFactory.getElementUtils(),
-                          UnknownInitialization.class);
+              AnnotationBuilder.fromClass(
+                  atypeFactory.getElementUtils(), UnknownInitialization.class);
           rhsATM.replaceAnnotation(unanno);
         }
       }
