@@ -1,11 +1,14 @@
 package org.checkerframework.checker.formatter;
 
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.Tree;
 import java.util.Collection;
 import java.util.IllegalFormatException;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.afu.scenelib.Annotation;
 import org.checkerframework.afu.scenelib.el.AField;
 import org.checkerframework.afu.scenelib.el.AMethod;
@@ -16,6 +19,7 @@ import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.checker.formatter.qual.InvalidFormat;
 import org.checkerframework.checker.formatter.qual.UnknownFormat;
 import org.checkerframework.checker.formatter.util.FormatUtil;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -30,6 +34,7 @@ import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 
 /**
@@ -333,5 +338,20 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
       return FORMATBOTTOM;
     }
+  }
+
+  /**
+   * Returns the annotation type mirror for the type of {@code expressionTree} with default
+   * annotations applied.
+   */
+  @Override
+  public @Nullable AnnotatedTypeMirror getDummyAssignedTo(ExpressionTree expressionTree) {
+    TypeMirror type = TreeUtils.typeOf(expressionTree);
+    if (type.getKind() != TypeKind.VOID) {
+      AnnotatedTypeMirror atm = type(expressionTree);
+      addDefaultAnnotations(atm);
+      return atm;
+    }
+    return null;
   }
 }
