@@ -1,9 +1,6 @@
 package org.checkerframework.checker.sqltainting;
 
 import javax.lang.model.element.ExecutableElement;
-
-import org.checkerframework.checker.tainting.TaintingChecker;
-import org.checkerframework.checker.tainting.TaintingVisitor;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
