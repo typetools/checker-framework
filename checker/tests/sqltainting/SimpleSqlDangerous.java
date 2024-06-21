@@ -14,6 +14,7 @@ public class SimpleSqlDangerous {
   void stringRef(String ref) {
     // :: error: (argument)
     execute(ref); // error
+
     dangerous(ref);
   }
 
