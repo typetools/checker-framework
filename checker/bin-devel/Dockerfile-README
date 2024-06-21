@@ -17,6 +17,8 @@ Preliminaries:
 
 Create the Docker image:
 
+# Warning: when run in an Emacs shell buffer, this creates huge amounts of output.
+# So, probably run it in a terminal.
 # Alias to create the Docker image, in an empty directory, and upload to Docker Hub.
 # Takes about 12 minutes for jdk*, about 1 hour for jdk*-plus.
 DOCKERTESTING=""

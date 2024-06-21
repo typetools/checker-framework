@@ -8,12 +8,14 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
 import org.checkerframework.framework.qual.PostconditionAnnotation;
 
 /**
- * Indicates that the expression evaluates to a non-empty {@link java.util.Collection collection},
- * {@link java.util.Iterator iterator}, {@link java.lang.Iterable iterable}, or {@link java.util.Map
- * map}, if the method terminates successfully.
+ * Indicates that a particular expression evaluates to a non-empty value, if the method terminates
+ * successfully.
  *
- * <p>This postcondition annotation is useful for methods that construct a non-empty collection,
- * iterator, iterable, or map:
+ * <p>This annotation applies to {@link java.util.Collection}, {@link java.util.Iterator}, {@link
+ * java.lang.Iterable}, and {@link java.util.Map}, but not {@link java.util.Optional}.
+ *
+ * <p>This postcondition annotation is useful for methods that make a value non-empty by side
+ * effect:
  *
  * <pre><code>
  *   {@literal @}EnsuresNonEmpty("ids")
@@ -22,8 +24,8 @@ import org.checkerframework.framework.qual.PostconditionAnnotation;
  *   }
  * </code></pre>
  *
- * It can also be used for a method that fails if a given collection, iterator, iterable, or map is
- * empty, indicating that the argument is non-empty if the method returns normally:
+ * It can also be used for a method that fails if a given value is empty, indicating that the
+ * argument is non-empty if the method returns normally:
  *
  * <pre><code>
  *   /** Throws an exception if the argument is empty. *&#47;
