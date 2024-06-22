@@ -460,7 +460,8 @@ error: annotation type not applicable to this kind of declaration
 indicates that you are using a definition of \<@NonNull> that is a
 declaration annotation, which cannot be used in that syntactic location.
 For example, many legacy annotations such as those listed in
-Figure~\ref{fig-nullness-refactoring} are declaration annotations.  You can
+Figures~\ref{fig-nullness-refactoring-nonnull} and \ref{fig-nullness-refactoring-nullable}
+are declaration annotations.  You can
 fix the problem by instead using a definition of \<@NonNull> that is a type
 annotation, such as the Checker Framework's annotations; often this only
 requires changing an \<import> statement.
@@ -730,9 +731,9 @@ in this manual.)
 sudo apt-get -qqy update
 sudo apt-get -qqy install \
  openjdk-17-jdk \
- ant cpp git gradle jq jtreg6 libcurl3-gnutls \
- make maven pipx python3-requests unzip wget \
- autoconf devscripts dia hevea imagemagick junit jtreg6 latexmk \
+ ant cpp git gradle jq jtreg7 libcurl3-gnutls \
+ make maven pipx python3-requests python3-setuptools unzip wget \
+ autoconf devscripts dia hevea imagemagick junit jtreg7 latexmk \
  librsvg2-bin libasound2-dev libcups2-dev libfontconfig1-dev \
  libx11-dev libxext-dev libxrender-dev libxrandr-dev libxtst-dev libxt-dev \
  pdf2svg rsync shellcheck \
@@ -766,7 +767,7 @@ In a startup file, write:
 
 \begin{Verbatim}
 brew update
-brew install git ant hevea maven librsvg unzip make
+brew install git graphviz ant hevea maven librsvg unzip make
 brew tap homebrew/cask-versions
 brew install --cask temurin17
 brew install --cask mactex

@@ -139,12 +139,15 @@ public class InvocationType {
       returnType = typeFactory.getAnnotatedType(e);
     } else if (invocation.getKind() == Tree.Kind.METHOD_INVOCATION
         || invocation.getKind() == Tree.Kind.MEMBER_REFERENCE) {
-      returnType = annotatedExecutableType.getReturnType();
       if (invocation.getKind() == Kind.MEMBER_REFERENCE
           && ((MemberReferenceTree) invocation).getMode() == ReferenceMode.NEW) {
+        returnType =
+            context.typeFactory.getResultingTypeOfConstructorMemberReference(
+                (MemberReferenceTree) invocation, annotatedExecutableType);
         returnTypeJava = returnType.getUnderlyingType();
       } else {
         returnTypeJava = methodType.getReturnType();
+        returnType = annotatedExecutableType.getReturnType();
       }
 
     } else {
@@ -170,7 +173,7 @@ public class InvocationType {
   public List<AbstractType> getParameterTypes(Theta map, int size) {
     List<AnnotatedTypeMirror> params = new ArrayList<>(annotatedExecutableType.getParameterTypes());
 
-    if (TreeUtils.isVarArgMethodCall(invocation)) {
+    if (TreeUtils.isVarargsCall(invocation)) {
       AnnotatedArrayType vararg = (AnnotatedArrayType) params.remove(params.size() - 1);
       for (int i = params.size(); i < size; i++) {
         params.add(vararg.getComponentType());
@@ -179,7 +182,7 @@ public class InvocationType {
 
     List<TypeMirror> paramsJava = new ArrayList<>(methodType.getParameterTypes());
 
-    if (TreeUtils.isVarArgMethodCall(invocation)) {
+    if (TreeUtils.isVarargsCall(invocation)) {
       ArrayType vararg = (ArrayType) paramsJava.remove(paramsJava.size() - 1);
       for (int i = paramsJava.size(); i < size; i++) {
         paramsJava.add(vararg.getComponentType());

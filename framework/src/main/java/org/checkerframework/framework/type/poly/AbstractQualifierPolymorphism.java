@@ -50,7 +50,7 @@ import org.plumelib.util.CollectionsPlume;
  *   <li>the PolyCollector creates an instantiation
  *   <li>if the instantiation is non-empty: the Replacer does resolution -- that is, it replaces
  *       each occurrence of {@code @Poly*} by the concrete qualifier it maps to in the instantiation
- *   <li>if the instantiation is empty, the Completer replaces each {@code @Poly*} by the top
+ *   <li>if the instantiation is empty, the Completer replaces each {@code @Poly*} by the bottom
  *       qualifier
  * </ul>
  */
@@ -82,6 +82,9 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
   /**
    * Completes a type by removing any unresolved polymorphic qualifiers, replacing them with the
    * bottom qualifiers.
+   *
+   * <p>This is only called when {@code instantiationMapping} is empty. (And that implies that there
+   * are no polymorphic qualifiers on formal parameters??)
    */
   private final SimpleAnnotatedTypeScanner<Void, Void> completer;
 
@@ -90,7 +93,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
       new AnnotationMirrorMap<>();
 
   /** The visit method returns true if the passed type has any polymorphic qualifiers. */
-  protected final SimpleAnnotatedTypeScanner<Boolean, Void> polyScanner;
+  protected final SimpleAnnotatedTypeScanner<Boolean, Void> hasPolyScanner;
 
   /**
    * Creates an {@link AbstractQualifierPolymorphism} instance that uses the given checker for
@@ -130,7 +133,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
               return null;
             });
 
-    this.polyScanner =
+    this.hasPolyScanner =
         new SimpleAnnotatedTypeScanner<>(
             (type, notused) -> {
               for (AnnotationMirror a : type.getPrimaryAnnotations()) {
@@ -158,7 +161,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
 
   @Override
   public boolean hasPolymorphicQualifiers(AnnotatedTypeMirror type) {
-    return polyScanner.visit(type);
+    return hasPolyScanner.visit(type);
   }
 
   /**
@@ -181,7 +184,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
       return;
     }
     List<AnnotatedTypeMirror> parameters =
-        AnnotatedTypes.adaptParameters(atypeFactory, type, tree.getArguments());
+        AnnotatedTypes.adaptParameters(atypeFactory, type, tree.getArguments(), tree);
     List<AnnotatedTypeMirror> arguments =
         CollectionsPlume.mapList(atypeFactory::getAnnotatedType, tree.getArguments());
 
@@ -200,7 +203,8 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
               collector.visit(atypeFactory.getReceiverType(tree), type.getReceiverType()));
     }
 
-    if (instantiationMapping != null && !instantiationMapping.isEmpty()) {
+    if ((instantiationMapping != null && !instantiationMapping.isEmpty())
+        || TreeUtils.isCallToVarArgsMethodWithZeroVarargsActuals(tree)) {
       replacer.visit(type, instantiationMapping);
     } else {
       completer.visit(type);
@@ -215,7 +219,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
     }
 
     List<AnnotatedTypeMirror> parameters =
-        AnnotatedTypes.adaptParameters(atypeFactory, type, tree.getArguments());
+        AnnotatedTypes.adaptParameters(atypeFactory, type, tree.getArguments(), tree);
     List<AnnotatedTypeMirror> arguments =
         CollectionsPlume.mapList(atypeFactory::getAnnotatedType, tree.getArguments());
 
@@ -475,7 +479,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
      * Creates a mapping of polymorphic qualifiers to their instantiations by visiting each
      * composite type in {@code type}.
      *
-     * @param type the AnnotateTypeMirror used to find instantiations
+     * @param type the AnnotatedTypeMirror used to find instantiations
      * @param polyType the AnnotatedTypeMirror that may have polymorphic qualifiers
      * @return a mapping of polymorphic qualifiers to their instantiations
      */

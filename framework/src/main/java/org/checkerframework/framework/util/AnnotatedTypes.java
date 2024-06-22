@@ -521,21 +521,6 @@ public class AnnotatedTypes {
       memberType = atypeFactory.getTypeVarSubstitutor().substitute(mappings, memberType);
     }
 
-    if (receiverType.getKind() == TypeKind.DECLARED && member.getKind() == ElementKind.METHOD) {
-      AnnotatedDeclaredType capturedReceiver =
-          ((AnnotatedExecutableType) memberType).getReceiverType();
-      TypeMirror s = types.asMemberOf(capturedReceiver.getUnderlyingType(), member);
-      AnnotatedExecutableType t =
-          (AnnotatedExecutableType)
-              AnnotatedTypeMirror.createType(s, atypeFactory, memberType.isDeclaration());
-      t.setReceiverType(capturedReceiver.deepCopy());
-      t.setElement((ExecutableElement) member);
-
-      atypeFactory.initializeAtm(t);
-      atypeFactory.replaceAnnotations(memberType, t);
-      return t;
-    }
-
     return memberType;
   }
 
@@ -673,7 +658,7 @@ public class AnnotatedTypes {
   }
 
   /**
-   * Given a method and all supertypes (recursively) of the method's containing class, returns the
+   * Given a method and all supertypes (recursively) of the method's enclosing class, returns the
    * methods that the method overrides.
    *
    * @param method the overriding method
@@ -1001,15 +986,15 @@ public class AnnotatedTypes {
    * @param method the method's type
    * @param args the arguments to the method invocation
    * @return the types that the method invocation arguments need to be subtype of
-   * @deprecated Use {@link #adaptParameters(AnnotatedTypeFactory,
-   *     AnnotatedTypeMirror.AnnotatedExecutableType, List)} instead
+   * @deprecated Use {@link #adaptParameters(AnnotatedTypeFactory, AnnotatedExecutableType, List,
+   *     Tree)} instead
    */
   @Deprecated // 2022-04-21
   public static List<AnnotatedTypeMirror> expandVarArgsParameters(
       AnnotatedTypeFactory atypeFactory,
       AnnotatedExecutableType method,
       List<? extends ExpressionTree> args) {
-    return adaptParameters(atypeFactory, method, args);
+    return adaptParameters(atypeFactory, method, args, null);
   }
 
   /**
@@ -1023,29 +1008,31 @@ public class AnnotatedTypes {
    * @param atypeFactory the type factory to use for fetching annotated types
    * @param method the method or constructor's type
    * @param args the arguments to the method or constructor invocation
+   * @param invok the method or constructor invocation
    * @return a list of the types that the invocation arguments need to be subtype of; has the same
    *     length as {@code args}
    */
   public static List<AnnotatedTypeMirror> adaptParameters(
       AnnotatedTypeFactory atypeFactory,
       AnnotatedExecutableType method,
-      List<? extends ExpressionTree> args) {
+      List<? extends ExpressionTree> args,
+      Tree invok) {
 
     List<AnnotatedTypeMirror> parameters = method.getParameterTypes();
-    // Handle anonymous constructors that extend a class with an enclosing type.
+    // Handle anonymous constructors that extend a class with an enclosing type,
+    // as in `new MyClass(){ ... }`.
     if (method.getElement().getKind() == ElementKind.CONSTRUCTOR
         && method.getElement().getEnclosingElement().getSimpleName().contentEquals("")) {
       DeclaredType t =
           TypesUtils.getSuperClassOrInterface(
               method.getElement().getEnclosingElement().asType(), atypeFactory.types);
       if (t.getEnclosingType() != null) {
-        if (args.isEmpty() && !parameters.isEmpty()) {
-          parameters = parameters.subList(1, parameters.size());
-        } else if (!parameters.isEmpty()) {
+        if (!parameters.isEmpty()) {
           if (atypeFactory.types.isSameType(
               t.getEnclosingType(), parameters.get(0).getUnderlyingType())) {
-            if (!atypeFactory.types.isSameType(
-                TreeUtils.typeOf(args.get(0)), parameters.get(0).getUnderlyingType())) {
+            if (args.isEmpty()
+                || !atypeFactory.types.isSameType(
+                    TreeUtils.typeOf(args.get(0)), parameters.get(0).getUnderlyingType())) {
               parameters = parameters.subList(1, parameters.size());
             }
           }
@@ -1054,14 +1041,20 @@ public class AnnotatedTypes {
     }
 
     // Handle vararg methods.
-    if (!method.getElement().isVarArgs()) {
+    if (!TreeUtils.isVarargsCall(invok)) {
       return parameters;
     }
-    if (parameters.size() == 0) {
-      return parameters;
+    if (parameters.isEmpty()) {
+      throw new BugInCF("isVarargsCall but parameters is empty: %s", invok);
     }
 
-    AnnotatedArrayType varargs = (AnnotatedArrayType) parameters.get(parameters.size() - 1);
+    AnnotatedTypeMirror lastParam = parameters.get(parameters.size() - 1);
+    if (!(lastParam instanceof AnnotatedArrayType)) {
+      throw new BugInCF(
+          String.format(
+              "for varargs call %s, last parameter %s is not an array", invok, lastParam));
+    }
+    AnnotatedArrayType varargs = (AnnotatedArrayType) lastParam;
 
     if (parameters.size() == args.size()) {
       // Check if one sent an element or an array

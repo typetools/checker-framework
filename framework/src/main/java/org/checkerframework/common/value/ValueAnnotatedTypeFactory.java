@@ -261,6 +261,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     addAliasedTypeAnnotation(
         "org.checkerframework.checker.index.qual.SubstringIndexFor",
         createIntRangeFromGTENegativeOne());
+    addAliasedTypeAnnotation("javax.annotation.Nonnegative", createIntRangeFromNonNegative());
 
     // PolyLength is syntactic sugar for both @PolySameLen and @PolyValue
     addAliasedTypeAnnotation("org.checkerframework.checker.index.qual.PolyLength", POLY);
@@ -1204,7 +1205,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       return BOTTOMVAL;
     }
     AnnotationBuilder builder = new AnnotationBuilder(processingEnv, MatchesRegex.class);
-    builder.setValue("value", regexes.toArray(new String[regexes.size()]));
+    builder.setValue("value", regexes.toArray(new String[0]));
     return builder.build();
   }
 
@@ -1222,7 +1223,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       return UNKNOWNVAL;
     }
     AnnotationBuilder builder = new AnnotationBuilder(processingEnv, DoesNotMatchRegex.class);
-    builder.setValue("value", regexes.toArray(new String[regexes.size()]));
+    builder.setValue("value", regexes.toArray(new String[0]));
     return builder.build();
   }
 

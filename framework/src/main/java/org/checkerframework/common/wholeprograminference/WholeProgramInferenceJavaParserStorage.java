@@ -36,13 +36,12 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.lang.annotation.Annotation;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -75,6 +74,7 @@ import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.wholeprograminference.WholeProgramInference.OutputFormat;
 import org.checkerframework.dataflow.analysis.Analysis;
+import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.framework.ajava.AnnotationMirrorToAnnotationExprConversion;
 import org.checkerframework.framework.ajava.AnnotationTransferVisitor;
 import org.checkerframework.framework.ajava.DefaultJointVisitor;
@@ -164,6 +164,7 @@ public class WholeProgramInferenceJavaParserStorage
    * @param qual an annotation class
    * @return true iff {@code qual} is meta-annotated with {@link InvisibleQualifier}
    */
+  @Pure
   public static boolean isInvisible(Class<? extends Annotation> qual) {
     return Arrays.stream(qual.getAnnotations())
         .anyMatch(anno -> anno.annotationType() == InvisibleQualifier.class);
@@ -735,13 +736,9 @@ public class WholeProgramInferenceJavaParserStorage
            */
           private void addClass(ClassTree tree, @Nullable TypeDeclaration<?> javaParserNode) {
             String className;
-            // elementFromDeclaration returns null instead of crashing when no element
-            // exists for the class tree, which can happen for certain kinds of
-            // anonymous classes, such as classes, such as Ordering$1 in
-            // PolyCollectorTypeVar.java in the all-systems test suite.
             TypeElement classElt = TreeUtils.elementFromDeclaration(tree);
             if (classElt == null) {
-              // If such an element does not exist, compute the name of the class,
+              // If such an element does not exist, compute the name of the class
               // instead. This method of computing the name is not 100% guaranteed to
               // be reliable, but it should be sufficient for WPI's purposes here: if
               // the wrong name is computed, the worst outcome is a false positive
@@ -1073,7 +1070,7 @@ public class WholeProgramInferenceJavaParserStorage
    * @param root the compilation unit to be written
    */
   private void writeAjavaFile(File outputPath, CompilationUnitAnnos root) {
-    try (Writer writer = new BufferedWriter(new FileWriter(outputPath))) {
+    try (Writer writer = Files.newBufferedWriter(outputPath.toPath(), StandardCharsets.UTF_8)) {
 
       // This implementation uses JavaParser's lexical preserving printing, which writes the
       // file such that its formatting is close to the original source file it was parsed from

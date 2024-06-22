@@ -228,7 +228,7 @@ public class NullnessTransfer
         thenStore = thenStore == null ? res.getThenStore() : thenStore;
         elseStore = elseStore == null ? res.getElseStore() : elseStore;
         // TODO: methodTree is null for lambdas.  Handle that case.  See Issue3850.java.
-        MethodTree methodTree = analysis.getContainingMethod(secondNode.getTree());
+        MethodTree methodTree = analysis.getEnclosingMethod(secondNode.getTree());
         ExecutableElement methodElem =
             methodTree == null ? null : TreeUtils.elementFromDeclaration(methodTree);
         if (notEqualTo) {
@@ -397,7 +397,7 @@ public class NullnessTransfer
     Node receiver = n.getTarget().getReceiver();
     if (nonNullAssumptionAfterInvocation
         || isMethodSideEffectFree
-        || JavaExpression.fromNode(receiver).isUnassignableByOtherCode()) {
+        || !JavaExpression.fromNode(receiver).isAssignableByOtherCode()) {
       // Make receiver non-null.
       makeNonNull(result, receiver);
     }
@@ -413,7 +413,7 @@ public class NullnessTransfer
       if (methodParams.get(i).hasPrimaryAnnotation(NONNULL)
           && (nonNullAssumptionAfterInvocation
               || isMethodSideEffectFree
-              || JavaExpression.fromTree(methodArgs.get(i)).isUnassignableByOtherCode())) {
+              || !JavaExpression.fromTree(methodArgs.get(i)).isAssignableByOtherCode())) {
         makeNonNull(result, n.getArgument(i));
       }
     }

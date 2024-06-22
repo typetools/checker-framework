@@ -409,6 +409,8 @@ public abstract class AbstractType {
   public AbstractType getMostSpecificArrayType() {
     if (getTypeKind() == TypeKind.ARRAY) {
       return this;
+    } else if (TypesUtils.isObject(getJavaType())) {
+      return null;
     } else {
       AnnotatedTypeMirror msat = mostSpecificArrayType(getAnnotatedType());
       TypeMirror typeMirror =
@@ -427,11 +429,13 @@ public abstract class AbstractType {
    * @param type annotated type mirror
    * @return the first supertype of {@code type} that is an array
    */
-  private AnnotatedTypeMirror mostSpecificArrayType(AnnotatedTypeMirror type) {
+  private static AnnotatedTypeMirror mostSpecificArrayType(AnnotatedTypeMirror type) {
     if (type.getKind() == TypeKind.ARRAY) {
       return type;
+    } else if (TypesUtils.isObject(type.getUnderlyingType())) {
+      return null;
     } else {
-      for (AnnotatedTypeMirror superType : this.getAnnotatedType().directSupertypes()) {
+      for (AnnotatedTypeMirror superType : type.directSupertypes()) {
         AnnotatedTypeMirror arrayType = mostSpecificArrayType(superType);
         if (arrayType != null) {
           return arrayType;

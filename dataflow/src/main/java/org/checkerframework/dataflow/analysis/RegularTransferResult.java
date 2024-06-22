@@ -108,7 +108,6 @@ public class RegularTransferResult<V extends AbstractValue<V>, S extends Store<S
     this.storeChanged = storeChanged;
   }
 
-  /** The regular result store. */
   @Override
   public S getRegularStore() {
     return store;

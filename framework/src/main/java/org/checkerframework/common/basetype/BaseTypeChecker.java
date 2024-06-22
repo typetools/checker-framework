@@ -321,7 +321,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
       @ClassGetName String name, Class<?>[] paramTypes, Object[] args) {
 
     // Load the class.
-    Class<T> cls = null;
+    Class<T> cls;
     try {
       cls = (Class<T>) Class.forName(name);
     } catch (Exception e) {
@@ -827,8 +827,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
       }
 
       options.addAll(
-          expandCFOptions(
-              Arrays.asList(this.getClass()), options.toArray(new String[options.size()])));
+          expandCFOptions(Arrays.asList(this.getClass()), options.toArray(new String[0])));
 
       supportedOptions = Collections.unmodifiableSet(options);
     }

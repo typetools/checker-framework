@@ -25,12 +25,11 @@ import com.google.common.base.CharMatcher;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.reflect.ClassPath;
-import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -103,9 +102,9 @@ public class RemoveAnnotationsForInference {
    * @param args command-line arguments: directories to process
    */
   public static void main(String[] args) {
-    // TODO: using plume-lib's options here would be better, but would add a dependency
-    // to the whole Checker Framework, which is undesirable. Move this program elsewhere
-    // (e.g., to a plume-lib project)?
+    // TODO: using plume-lib's "Options" project here would be better, but would add a dependency to
+    // the whole Checker Framework, which is undesirable. Move this program elsewhere (e.g., to a
+    // plume-lib project)?
     if (args[0].contentEquals("-keepFile")) {
       if (args.length < 2) {
         System.err.println(
@@ -272,7 +271,8 @@ public class RemoveAnnotationsForInference {
     }
 
     try (PrintWriter pw =
-        new PrintWriter(new BufferedWriter(new FileWriter(absolutePath.toString())))) {
+        new PrintWriter(
+            Files.newBufferedWriter(Paths.get(absolutePath.toString()), StandardCharsets.UTF_8))) {
       for (String line : lines) {
         pw.println(line);
       }

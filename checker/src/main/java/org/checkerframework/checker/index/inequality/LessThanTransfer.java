@@ -7,7 +7,6 @@ import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.index.IndexAbstractTransfer;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueCheckerUtils;
-import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.Node;
@@ -50,7 +49,7 @@ public class LessThanTransfer extends IndexAbstractTransfer {
     // left > right so right < left
     // Refine right to @LessThan("left")
     JavaExpression leftJe = JavaExpression.fromNode(left);
-    if (leftJe != null && leftJe.isUnassignableByOtherCode()) {
+    if (leftJe != null && !leftJe.isAssignableByOtherCode()) {
       if (isDoubleOrFloatLiteral(leftJe)) {
         return;
       }
@@ -85,7 +84,7 @@ public class LessThanTransfer extends IndexAbstractTransfer {
     // left > right so right is less than left
     // Refine right to @LessThan("left")
     JavaExpression leftJe = JavaExpression.fromNode(left);
-    if (leftJe != null && leftJe.isUnassignableByOtherCode()) {
+    if (leftJe != null && !leftJe.isAssignableByOtherCode()) {
       if (isDoubleOrFloatLiteral(leftJe)) {
         return;
       }
@@ -109,9 +108,10 @@ public class LessThanTransfer extends IndexAbstractTransfer {
   @Override
   public TransferResult<CFValue, CFStore> visitNumericalSubtraction(
       NumericalSubtractionNode n, TransferInput<CFValue, CFStore> in) {
+    TransferResult<CFValue, CFStore> result = super.visitNumericalSubtraction(n, in);
     LessThanAnnotatedTypeFactory factory = (LessThanAnnotatedTypeFactory) analysis.getTypeFactory();
     JavaExpression leftJe = JavaExpression.fromNode(n.getLeftOperand());
-    if (leftJe != null && leftJe.isUnassignableByOtherCode()) {
+    if (leftJe != null && !leftJe.isAssignableByOtherCode()) {
       ValueAnnotatedTypeFactory valueFactory = factory.getValueAnnotatedTypeFactory();
       Long right = ValueCheckerUtils.getMinValue(n.getRightOperand().getTree(), valueFactory);
       if (right != null && 0 < right) {
@@ -125,12 +125,10 @@ public class LessThanTransfer extends IndexAbstractTransfer {
           }
         }
         AnnotationMirror refine = factory.createLessThanQualifier(expressions);
-        CFValue value = analysis.createSingleAnnotationValue(refine, n.getType());
-        CFStore info = in.getRegularStore();
-        return new RegularTransferResult<>(finishValue(value, info), info);
+        return recreateTransferResult(refine, result);
       }
     }
-    return super.visitNumericalSubtraction(n, in);
+    return result;
   }
 
   /**

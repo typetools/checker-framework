@@ -817,8 +817,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
   private TransferResult<CFValue, CFStore> createTransferResult(
       Node n, TransferInput<CFValue, CFStore> in, UBQualifier qualifier) {
     AnnotationMirror newAnno = atypeFactory.convertUBQualifierToAnnotation(qualifier);
-    CFValue value = analysis.createSingleAnnotationValue(newAnno, n.getType());
-    return createTransferResult(value, in);
+    return createTransferResult(newAnno, n.getType(), in);
   }
 
   @Override

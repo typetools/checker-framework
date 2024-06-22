@@ -36,6 +36,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
 import java.lang.annotation.Target;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -847,7 +848,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       Enumeration<URL> urls = getClass().getClassLoader().getResources(filename);
       while (urls.hasMoreElements()) {
         URL url = urls.nextElement();
-        try (BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()))) {
+        try (BufferedReader in =
+            new BufferedReader(new InputStreamReader(url.openStream(), StandardCharsets.UTF_8))) {
           result.addAll(in.lines().collect(Collectors.toList()));
         }
       }
@@ -1006,7 +1008,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       }
       if (candidateAjavaFiles.size() == 1) {
         currentFileAjavaTypes = new AnnotationFileElementTypes(this);
-        String ajavaPath = candidateAjavaFiles.toArray(new String[candidateAjavaFiles.size()])[0];
+        String ajavaPath = candidateAjavaFiles.toArray(new String[0])[0];
         try {
           currentFileAjavaTypes.parseAjavaFileWithTree(ajavaPath, root);
         } catch (Throwable e) {
@@ -1689,8 +1691,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * Creates an AnnotatedTypeMirror for an ExpressionTree. The AnnotatedTypeMirror contains explicit
    * annotations written on the expression and for some expressions, annotations from
    * sub-expressions that could have been explicitly written, defaulted, refined, or otherwise
-   * computed. (Expression whose type include annotations from sub-expressions are: ArrayAccessTree,
-   * ConditionalExpressionTree, IdentifierTree, MemberSelectTree, and MethodInvocationTree.)
+   * computed. (Expressions whose type include annotations from sub-expressions are:
+   * ArrayAccessTree, ConditionalExpressionTree, IdentifierTree, MemberSelectTree, and
+   * MethodInvocationTree.)
    *
    * <p>For example, the AnnotatedTypeMirror returned for an array access expression is the fully
    * annotated type of the array component of the array being accessed.
@@ -2711,6 +2714,45 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    */
   public ParameterizedExecutableType constructorFromUseWithoutTypeArgInference(NewClassTree tree) {
     return constructorFromUse(tree, false);
+  }
+
+  /**
+   * Gets the type of the resulting constructor call of a MemberReferenceTree.
+   *
+   * @param memberReferenceTree MemberReferenceTree where the member is a constructor
+   * @param constructorType AnnotatedExecutableType of the declaration of the constructor
+   * @return AnnotatedTypeMirror of the resulting type of the constructor
+   */
+  public AnnotatedTypeMirror getResultingTypeOfConstructorMemberReference(
+      MemberReferenceTree memberReferenceTree, AnnotatedExecutableType constructorType) {
+    assert memberReferenceTree.getMode() == MemberReferenceTree.ReferenceMode.NEW;
+
+    // The return type for constructors should only have explicit annotations from the
+    // constructor. The code below recreates some of the logic from TypeFromTree.visitNewClass to do
+    // this.
+
+    // The return type of the constructor will be the type of the expression of the member
+    // reference tree.
+    AnnotatedTypeMirror constructorReturnType =
+        fromTypeTree(memberReferenceTree.getQualifierExpression());
+    if (TreeUtils.needsTypeArgInference(memberReferenceTree)) {
+      // If the method reference is missing type arguments, e.g. LinkedHashMap::new, then the
+      // constructorReturnType will be raw.  So, use the return type from the constructor instead.
+      AnnotatedTypeMirror re = constructorType.getReturnType().deepCopy(false);
+      re.clearPrimaryAnnotations();
+      re.addAnnotations(constructorReturnType.getPrimaryAnnotations());
+      constructorReturnType = re;
+    }
+
+    if (constructorReturnType.getKind() == TypeKind.DECLARED) {
+      // Keep only explicit annotations and those from @Poly
+      AnnotatedTypes.copyOnlyExplicitConstructorAnnotations(
+          this, (AnnotatedDeclaredType) constructorReturnType, constructorType);
+    }
+
+    // Now add back defaulting.
+    addComputedTypeAnnotations(memberReferenceTree.getQualifierExpression(), constructorReturnType);
+    return constructorReturnType;
   }
 
   /**
@@ -5700,6 +5742,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
   /**
    * Output a message about {@link #getAnnotatedType}, if logging is on.
+   *
+   * <p>Set the value of {@link #debugGat} to {@literal true} to enable logging.
    *
    * @param format a format string
    * @param args arguments to the format string

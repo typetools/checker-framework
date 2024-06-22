@@ -27,7 +27,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -46,6 +48,7 @@ import java.util.StringJoiner;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import java.util.stream.Collectors;
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -114,15 +117,15 @@ import org.plumelib.util.UtilPlume;
   // org.checkerframework.framework.source.SourceChecker.createSuppressWarnings
   "suppressWarnings",
 
-  // Set inclusion/exclusion of type uses or definitions
+  // Set inclusion/exclusion of type uses, definitions, or files.
   // org.checkerframework.framework.source.SourceChecker.shouldSkipUses and similar
   "skipUses",
   "onlyUses",
   "skipDefs",
   "onlyDefs",
-
-  // Set inclusion/exclusion of files based on directory
-  "skipDirs",
+  "skipFiles",
+  "onlyFiles",
+  "skipDirs", // Obsolete as of 2024-03-15, replaced by "skipFiles".
 
   // Unsoundly assume all methods have no side effects, are deterministic, or both.
   "assumeSideEffectFree",
@@ -403,9 +406,6 @@ import org.plumelib.util.UtilPlume;
   // org.checkerframework.framework.source.SourceChecker.shutdownHook()
   "resourceStats",
 
-  // Parse all JDK files at startup rather than as needed.
-  "parseAllJdk",
-
   // Run checks that test ajava files.
   //
   // Whenever processing a source file, parse it with JavaParser and check that the AST can be
@@ -414,6 +414,11 @@ import org.plumelib.util.UtilPlume;
   // Also checks that annotations can be inserted. For each Java file, clears all annotations and
   // reinserts them, then checks if the original and modified ASTs are equivalent.
   "ajavaChecks",
+
+  // Converts type argument inference crashes into errors. By default, this option is true.
+  // Use "-AconvertTypeArgInferenceCrashToWarning=false" to turn this option off and allow type
+  // argument inference crashes to crash the type checker.
+  "convertTypeArgInferenceCrashToWarning"
 })
 public abstract class SourceChecker extends AbstractTypeProcessor implements OptionConfiguration {
 
@@ -472,8 +477,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   private @Nullable Pattern warnUnneededSuppressionsExceptions;
 
   /**
-   * SuppressWarnings strings supplied via the -AsuppressWarnings option. Do not use directly, call
-   * {@link #getSuppressWarningsStringsFromOption()}.
+   * SuppressWarnings strings supplied via the {@code -AsuppressWarnings} option. Do not use
+   * directly, call {@link #getSuppressWarningsStringsFromOption()}.
    */
   private String @MonotonicNonNull [] suppressWarningsStringsFromOption;
 
@@ -524,12 +529,20 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   private @MonotonicNonNull Pattern onlyDefsPattern;
 
   /**
-   * Regular expression pattern to specify directories that should not be checked.
+   * Regular expression pattern to specify files or directories that should not be checked.
    *
-   * <p>It contains the pattern specified by the user, through the option {@code checkers.skipDirs};
-   * otherwise it contains a pattern that can match no directory.
+   * <p>It contains the pattern specified by the user, through the option {@code
+   * checkers.skipFiles}; otherwise it contains a pattern that can match no directory.
    */
-  private @MonotonicNonNull Pattern skipDirsPattern;
+  private @MonotonicNonNull Pattern skipFilesPattern;
+
+  /**
+   * Regular expression pattern to specify files or directories that should be checked.
+   *
+   * <p>It contains the pattern specified by the user, through the option {@code
+   * checkers.onlyFiles}; otherwise it contains a pattern that can match no directory.
+   */
+  private @MonotonicNonNull Pattern onlyFilesPattern;
 
   /** The supported lint options. */
   private @MonotonicNonNull Set<String> supportedLints;
@@ -585,6 +598,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
 
   /** True if the -AwarnUnneededSuppressions command-line argument was passed. */
   private boolean warnUnneededSuppressions;
+
+  /** Creates a source checker. */
+  protected SourceChecker() {}
 
   // Also see initChecker().
   @Override
@@ -861,14 +877,35 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   }
 
   /**
-   * Extract the value of the {@code skipDirs} option given the value of the options passed to the
+   * Extract the value of the {@code skipFiles} option given the value of the options passed to the
    * checker.
    *
    * @param options the map of options and their values passed to the checker
-   * @return the value of the {@code skipDirs} option
+   * @return the value of the {@code skipFiles} option
    */
-  private Pattern getSkipDirsPattern(Map<String, String> options) {
-    return getSkipPattern("skipDirs", options);
+  private Pattern getSkipFilesPattern(Map<String, String> options) {
+    boolean hasSkipFiles = options.containsKey("skipFiles");
+    boolean hasSkipDirs = options.containsKey("skipDirs");
+    if (hasSkipFiles && hasSkipDirs) {
+      throw new UserError("Do not supply both -AskipFiles and -AskipDirs command-line options.");
+    }
+    // This logic isn't quite right because the checker.skipDirs property might exist.
+    if (hasSkipDirs) {
+      return getSkipPattern("skipDirs", options);
+    } else {
+      return getSkipPattern("skipFiles", options);
+    }
+  }
+
+  /**
+   * Extract the value of the {@code onlyFiles} option given the value of the options passed to the
+   * checker.
+   *
+   * @param options the map of options and their values passed to the checker
+   * @return the value of the {@code onlyFiles} option
+   */
+  private Pattern getOnlyFilesPattern(Map<String, String> options) {
+    return getOnlyPattern("onlyFiles", options);
   }
 
   ///////////////////////////////////////////////////////////////////////////
@@ -1043,7 +1080,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         // Duplicate messages are suppressed, so this might not appear in front of every
         // " is type-checking " message (when a file takes less than a second to
         // type-check).
-        message(Diagnostic.Kind.NOTE, Instant.now().toString());
+        message(Diagnostic.Kind.NOTE, Instant.now().truncatedTo(ChronoUnit.SECONDS).toString());
         message(
             Diagnostic.Kind.NOTE,
             "%s is type-checking %s",
@@ -1279,9 +1316,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    */
   private void printStackTrace(StackTraceElement[] trace) {
     if (hasOption("dumpOnErrors")) {
-      StringBuilder msg = new StringBuilder();
+      StringJoiner msg = new StringJoiner(System.lineSeparator());
       for (StackTraceElement elem : trace) {
-        msg.append("\tat " + elem + "\n");
+        msg.add("\tat " + elem);
       }
       message(Diagnostic.Kind.NOTE, msg.toString());
     }
@@ -1963,7 +2000,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   private String @Nullable [] getSuppressWarningsStringsFromOption() {
     if (!computedSuppressWarningsStringsFromOption) {
       computedSuppressWarningsStringsFromOption = true;
-      Map<String, String> options = getOptions();
+      Map<String, String> options = getAllOptions();
       if (options.containsKey("suppressWarnings")) {
         String swStrings = options.get("suppressWarnings");
         if (swStrings != null) {
@@ -1973,6 +2010,48 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     }
 
     return this.suppressWarningsStringsFromOption;
+  }
+
+  /**
+   * Returns the options passed to this checker and its immediate parent checker.
+   *
+   * @return the options passed to this checker and its immediate parent checker
+   */
+  private Map<String, String> getAllOptions() {
+    if (parentChecker == null) {
+      return getOptions();
+    }
+    Map<String, String> allOptions = new HashMap<>(this.getOptions());
+    parentChecker
+        .getOptions()
+        .forEach(
+            (parentOptKey, parentOptVal) -> {
+              if (parentOptVal != null) {
+                allOptions.merge(parentOptKey, parentOptVal, this::combineOptionValues);
+              }
+            });
+    return Collections.unmodifiableMap(allOptions);
+  }
+
+  /**
+   * Combines two comma-delimited strings into a single comma-delimited string that does not contain
+   * duplicates.
+   *
+   * <p>Checker option values are comma-delimited. This method combines two option values while
+   * discarding possible duplicates.
+   *
+   * @param optionValueA the first comma-delimited string
+   * @param optionValueB the second comma-delimited string
+   * @return a comma-delimited string containing values from the first and second string, with no
+   *     duplicates
+   */
+  private String combineOptionValues(String optionValueA, String optionValueB) {
+    Set<String> optionValueASet =
+        Arrays.stream(optionValueA.split(",")).collect(Collectors.toSet());
+    Set<String> optionValueBSet =
+        Arrays.stream(optionValueB.split(",")).collect(Collectors.toSet());
+    optionValueASet.addAll(optionValueBSet);
+    return String.join(",", optionValueASet);
   }
 
   /**
@@ -2355,16 +2434,31 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       }
       // Check if the message key in the warning suppression is part of the message key that
       // the checker is emiting.
-      if (messageKey.equals(messageKeyInSuppressWarningsString)
-          || messageKey.startsWith(messageKeyInSuppressWarningsString + ".")
-          || messageKey.endsWith("." + messageKeyInSuppressWarningsString)
-          || messageKey.contains("." + messageKeyInSuppressWarningsString + ".")) {
+      if (messageKeyMatches(messageKey, messageKeyInSuppressWarningsString)) {
         return true;
       }
     }
 
     // None of the SuppressWarnings strings suppresses this error.
     return false;
+  }
+
+  /**
+   * Does the given messageKey match a messageKey that appears in a SuppressWarnings? Subclasses
+   * should override this method if they need additional logic to compare message keys.
+   *
+   * @param messageKey the message key of the error that is being emitted, without any "checker:"
+   *     prefix
+   * @param messageKeyInSuppressWarningsString the message key in a {@code @SuppressWarnings}
+   *     annotation
+   * @return true if the arguments match
+   */
+  protected boolean messageKeyMatches(
+      String messageKey, String messageKeyInSuppressWarningsString) {
+    return messageKey.equals(messageKeyInSuppressWarningsString)
+        || messageKey.startsWith(messageKeyInSuppressWarningsString + ".")
+        || messageKey.endsWith("." + messageKeyInSuppressWarningsString)
+        || messageKey.contains("." + messageKeyInSuppressWarningsString + ".");
   }
 
   /**
@@ -2515,7 +2609,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * checker.skipDefs} property.
    *
    * @param tree class to potentially skip
-   * @return true if checker should not test {@code tree}
+   * @return true if checker should not type-check {@code tree}
    */
   public final boolean shouldSkipDefs(ClassTree tree) {
     String qualifiedName = TreeUtils.typeOf(tree).toString();
@@ -2541,28 +2635,39 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * Tests whether the method definition should not be checked because it matches the {@code
    * checker.skipDefs} property.
    *
+   * @param tree method to potentially skip
+   * @return true if checker should not type-check {@code tree}
+   */
+  public boolean shouldSkipDefs(MethodTree tree) {
+    return false; // subclasses may override this implementation
+  }
+
+  /**
+   * Tests whether the method definition should not be checked because it matches the {@code
+   * checker.skipDefs} property.
+   *
    * <p>TODO: currently only uses the class definition. Refine pattern. Same for skipUses.
    *
    * @param cls class to potentially skip
    * @param meth method to potentially skip
-   * @return true if checker should not test {@code meth}
+   * @return true if checker should not type-check {@code meth}
    */
   public final boolean shouldSkipDefs(ClassTree cls, MethodTree meth) {
-    return shouldSkipDefs(cls);
+    return shouldSkipDefs(cls) || shouldSkipDefs(meth);
   }
 
   ///////////////////////////////////////////////////////////////////////////
-  /// Skipping dirs
+  /// Skipping files
   ///
 
   /**
    * Tests whether the enclosing file path of the passed tree matches the pattern specified in the
-   * {@code checker.skipDirs} property.
+   * {@code checker.skipFiles} property.
    *
    * @param tree a tree
    * @return true iff the enclosing directory of the tree should be skipped
    */
-  public final boolean shouldSkipDirs(ClassTree tree) {
+  public final boolean shouldSkipFiles(ClassTree tree) {
     if (tree == null) {
       return false;
     }
@@ -2571,21 +2676,25 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       throw new BugInCF("elementFromDeclaration(%s [%s]) => null%n", tree, tree.getClass());
     }
     String sourceFilePathForElement = ElementUtils.getSourceFilePath(typeElement);
-    return shouldSkipDirs(sourceFilePathForElement);
+    return shouldSkipFiles(sourceFilePathForElement);
   }
 
   /**
    * Tests whether the file at the file path should be not be checked because it matches the {@code
-   * checker.skipDirs} property.
+   * checker.skipFiles} property.
    *
    * @param path the path to the file to potentially skip
    * @return true iff the checker should not check the file at {@code path}
    */
-  private boolean shouldSkipDirs(String path) {
-    if (skipDirsPattern == null) {
-      skipDirsPattern = getSkipDirsPattern(getOptions());
+  private boolean shouldSkipFiles(String path) {
+    if (skipFilesPattern == null) {
+      skipFilesPattern = getSkipFilesPattern(getOptions());
     }
-    return skipDirsPattern.matcher(path).find();
+    if (onlyFilesPattern == null) {
+      onlyFilesPattern = getOnlyFilesPattern(getOptions());
+    }
+
+    return skipFilesPattern.matcher(path).find() || !onlyFilesPattern.matcher(path).find();
   }
 
   ///////////////////////////////////////////////////////////////////////////
@@ -2662,17 +2771,20 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
           msg.add("Compilation unit: " + this.currentRoot.getSourceFile().getName());
         }
 
-        if (this.visitor != null) {
-          DiagnosticPosition pos = (DiagnosticPosition) this.visitor.lastVisited;
-          if (pos != null) {
-            DiagnosticSource source = new DiagnosticSource(this.currentRoot.getSourceFile(), null);
-            int linenr = source.getLineNumber(pos.getStartPosition());
-            int col = source.getColumnNumber(pos.getStartPosition(), true);
-            String line = source.getLine(pos.getStartPosition());
+        DiagnosticPosition pos = null;
+        if ((ce instanceof BugInCF) && ((BugInCF) ce).getLocation() != null) {
+          pos = (DiagnosticPosition) ((BugInCF) ce).getLocation();
+        } else if (this.visitor != null) {
+          pos = (DiagnosticPosition) this.visitor.lastVisited;
+        }
+        if (pos != null) {
+          DiagnosticSource source = new DiagnosticSource(this.currentRoot.getSourceFile(), null);
+          int linenr = source.getLineNumber(pos.getStartPosition());
+          int col = source.getColumnNumber(pos.getStartPosition(), true);
+          String line = source.getLine(pos.getStartPosition());
 
-            msg.add("Last visited tree at line " + linenr + " column " + col + ":");
-            msg.add(line);
-          }
+          msg.add("Last visited tree at line " + linenr + " column " + col + ":");
+          msg.add(line);
         }
 
         Throwable forStackTrace = ce.getCause() != null ? ce.getCause() : ce;
@@ -2809,7 +2921,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     gitPropertiesPrinted = true;
 
     try (InputStream in = getClass().getResourceAsStream("/git.properties");
-        BufferedReader reader = new BufferedReader(new InputStreamReader(in)); ) {
+        BufferedReader reader =
+            new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8)); ) {
       String line;
       while ((line = reader.readLine()) != null) {
         System.out.println(line);

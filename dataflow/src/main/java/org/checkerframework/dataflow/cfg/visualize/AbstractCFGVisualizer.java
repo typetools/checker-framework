@@ -18,6 +18,7 @@ import org.checkerframework.dataflow.analysis.Analysis.Direction;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.analysis.TransferFunction;
 import org.checkerframework.dataflow.analysis.TransferInput;
+import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
@@ -36,7 +37,7 @@ import org.plumelib.util.UniqueId;
  *
  * @param <V> the abstract value type to be tracked by the analysis
  * @param <S> the store type used in the analysis
- * @param <T> the transfer function type that is used to approximate runtime behavior
+ * @param <T> the transfer function type that is used to approximate run-time behavior
  * @see DOTCFGVisualizer
  * @see StringCFGVisualizer
  */
@@ -192,8 +193,8 @@ public abstract class AbstractCFGVisualizer<
    * @param bb the block
    * @param analysis the current analysis
    * @param separator the line separator. Examples: "\\l" for left justification in {@link
-   *     DOTCFGVisualizer} (this is really a terminator, not a separator), "\n" to add a new line in
-   *     {@link StringCFGVisualizer}
+   *     DOTCFGVisualizer} (this is really a terminator, not a separator), "\n" or {@code
+   *     System.lineSeparator()} to add a new line in {@link StringCFGVisualizer}
    * @return the String representation of the block
    */
   protected String visualizeBlockWithSeparator(
@@ -243,8 +244,8 @@ public abstract class AbstractCFGVisualizer<
 
     List<Node> contents = addBlockContent(bb);
     StringJoiner sjBlockContents = new StringJoiner(separator);
-    for (Node t : contents) {
-      sjBlockContents.add(visualizeBlockNode(t, analysis));
+    for (Node n : contents) {
+      sjBlockContents.add(visualizeBlockNode(n, analysis));
     }
     return sjBlockContents.toString();
   }
@@ -260,22 +261,34 @@ public abstract class AbstractCFGVisualizer<
   }
 
   /**
-   * Format the given object as a String suitable for the output format, i.e. with format-specific
-   * characters escaped.
+   * Make the string suitable for the output format, i.e. with format-specific characters escaped.
+   *
+   * @param str a string
+   * @return the escaped string
+   */
+  protected String escapeString(String str) {
+    return str;
+  }
+
+  /**
+   * Make the object's string representation suitable for the output format, i.e. with
+   * format-specific characters escaped.
    *
    * @param obj an object
-   * @return the formatted String from the given object
+   * @return the object's string representation, escaped
    */
-  protected abstract String format(Object obj);
+  protected final String escapeString(Object obj) {
+    return escapeString(obj.toString());
+  }
 
   @Override
-  public String visualizeBlockNode(Node t, @Nullable Analysis<V, S, T> analysis) {
+  public String visualizeBlockNode(Node n, @Nullable Analysis<V, S, T> analysis) {
     StringBuilder sbBlockNode = new StringBuilder();
-    sbBlockNode.append(format(t)).append("   [ ").append(getNodeSimpleName(t)).append(" ]");
+    sbBlockNode.append(escapeString(n)).append("   [ ").append(getNodeSimpleName(n)).append(" ]");
     if (analysis != null) {
-      V value = analysis.getValue(t);
+      V value = analysis.getValue(n);
       if (value != null) {
-        sbBlockNode.append("    > ").append(format(value));
+        sbBlockNode.append("    > ").append(escapeString(value));
       }
     }
     return sbBlockNode.toString();
@@ -290,14 +303,15 @@ public abstract class AbstractCFGVisualizer<
   }
 
   /**
-   * Visualize the transfer input before or after the given block.
+   * Visualize the transfer input before, or the transfer result after, the given block. The
+   * transfer input and the transfer result contain stores and other information.
    *
    * @param where either BEFORE or AFTER
    * @param bb a block
    * @param analysis the current analysis
    * @param separator the line separator. Examples: "\\l" for left justification in {@link
-   *     DOTCFGVisualizer} (which is actually a line TERMINATOR, not a separator!), "\n" to add a
-   *     new line in {@link StringCFGVisualizer}
+   *     DOTCFGVisualizer} (which is actually a line TERMINATOR, not a separator!), "\n" or {@code
+   *     System.lineSeparator()} to add a new line in {@link StringCFGVisualizer}
    * @return the visualization of the transfer input before or after the given block
    */
   protected String visualizeBlockTransferInputHelper(
@@ -312,24 +326,32 @@ public abstract class AbstractCFGVisualizer<
     S regularStore;
     S thenStore = null;
     S elseStore = null;
+    V resultValue = null;
     boolean isTwoStores = false;
 
-    UniqueId storesFrom;
+    UniqueId storesFromId;
 
     if (analysisDirection == Direction.FORWARD && where == VisualizeWhere.AFTER) {
       regularStore = analysis.getResult().getStoreAfter(bb);
-      storesFrom = analysis.getResult();
+      storesFromId = analysis.getResult();
+      Node lastNode = bb.getLastNode();
+      if (lastNode != null) {
+        TransferResult<V, S> tResult = analysis.getResult().lookupResult(lastNode);
+        if (tResult != null) {
+          resultValue = tResult.getResultValue();
+        }
+      }
     } else if (analysisDirection == Direction.BACKWARD && where == VisualizeWhere.BEFORE) {
       regularStore = analysis.getResult().getStoreBefore(bb);
-      storesFrom = analysis.getResult();
+      storesFromId = analysis.getResult();
     } else {
       TransferInput<V, S> input = analysis.getInput(bb);
       // Per the documentation of AbstractAnalysis#inputs, null means no information.
       if (input == null) {
         regularStore = null;
-        storesFrom = null;
+        storesFromId = null;
       } else {
-        storesFrom = input;
+        storesFromId = input;
         isTwoStores = input.containsTwoStores();
         regularStore = input.getRegularStore();
         thenStore = input.getThenStore();
@@ -339,9 +361,14 @@ public abstract class AbstractCFGVisualizer<
 
     StringBuilder sbStore = new StringBuilder();
     if (verbose) {
-      sbStore.append((storesFrom == null ? "null" : storesFrom.getClassAndUid()) + separator);
+      sbStore.append((storesFromId == null ? "null" : storesFromId.getClassAndUid()) + separator);
     }
     sbStore.append(where == VisualizeWhere.BEFORE ? "Before: " : "After: ");
+
+    if (verbose && resultValue != null) {
+      sbStore.append("resultValue=" + resultValue);
+      sbStore.append(separator);
+    }
 
     if (regularStore == null) {
       sbStore.append("()");
@@ -459,11 +486,11 @@ public abstract class AbstractCFGVisualizer<
   /**
    * Get the simple name of a node.
    *
-   * @param t a node
+   * @param n a node
    * @return the node's simple name, without "Node"
    */
-  protected String getNodeSimpleName(Node t) {
-    String name = t.getClass().getSimpleName();
+  protected String getNodeSimpleName(Node n) {
+    String name = n.getClass().getSimpleName();
     return name.replace("Node", "");
   }
 }

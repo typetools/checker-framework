@@ -7,7 +7,6 @@ export SHELLOPTS
 echo "SHELLOPTS=${SHELLOPTS}"
 
 SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-# shellcheck disable=SC1090 # In newer shellcheck than 0.6.0, pass: "-P SCRIPTDIR" (literally)
 export ORG_GRADLE_PROJECT_useJdk17Compiler=true
 source "$SCRIPTDIR"/clone-related.sh
 
@@ -19,10 +18,10 @@ echo "running \"./gradlew assembleForJavac\" for checker-framework"
 "$SCRIPTDIR/.git-scripts/git-clone-related" codespecs daikon
 cd ../daikon
 git log | head -n 5
-make compile
+make --jobs="$(getconf _NPROCESSORS_ONLN)" compile
 if [ "$TRAVIS" = "true" ] ; then
   # Travis kills a job if it runs 10 minutes without output
-  time make JAVACHECK_EXTRA_ARGS=-Afilenames -C java typecheck-part2
+  time make JAVACHECK_EXTRA_ARGS=-Afilenames -C java --jobs="$(getconf _NPROCESSORS_ONLN)" typecheck-part2
 else
-  time make -C java typecheck-part2
+  time make -C java --jobs="$(getconf _NPROCESSORS_ONLN)" typecheck-part2
 fi

@@ -1,9 +1,9 @@
 plugins {
   id 'java-library'
-
+  id 'base'
   // https://github.com/n0mer/gradle-git-properties
   // Generates file build/resources/main/git.properties when the `classes` task runs.
-  id 'com.gorylenko.gradle-git-properties' version '2.4.1'
+  id 'com.gorylenko.gradle-git-properties' version '2.4.2'
 }
 
 sourceSets {
@@ -64,11 +64,11 @@ dependencies {
   testImplementation 'com.amazonaws:aws-java-sdk-ec2'
   testImplementation 'com.amazonaws:aws-java-sdk-kms'
   // The AWS SDK is used for testing the Called Methods Checker.
-  testImplementation platform('com.amazonaws:aws-java-sdk-bom:1.12.670')
+  testImplementation platform('com.amazonaws:aws-java-sdk-bom:1.12.734')
   // For the Resource Leak Checker's support for JavaEE.
   testImplementation 'javax.servlet:javax.servlet-api:4.0.1'
   // For the Resource Leak Checker's support for IOUtils.
-  testImplementation 'commons-io:commons-io:2.15.1'
+  testImplementation 'commons-io:commons-io:2.16.1'
   // To test for an obscure crash in CFG construction for try-with-resources;
   // see https://github.com/typetools/checker-framework/issues/6396
   testImplementation 'org.apache.spark:spark-sql_2.12:3.3.2'
@@ -168,6 +168,9 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 task checkerJar(type: ShadowJar, dependsOn: compileJava, group: 'Build') {
   description "Builds checker-${project.version}.jar with all dependencies except checker-qual and checker-util."
   includeEmptyDirs = false
+  base {
+    archivesName = 'checker'
+  }
 
   from shadowJar.source
   configurations = shadowJar.configurations
@@ -994,8 +997,6 @@ task wpiManyTest(group: 'Verification') {
             || line.startsWith('warning: [path]')
             // Ignore bootstrap classpath warning:
             || line.startsWith('warning: [options] bootstrap')
-            // Ignore warnings about illegal access:
-            || line.contains('Option --illegal-access is deprecated')
             // Ignore the warnings about --add-opens arguments to the JVM
             || line.contains('warning: [options] --add-opens has no effect at compile time')
             // Ignore the summary line that reports the total number of warnings (which can be single or plural).
@@ -1041,12 +1042,14 @@ final checkerPom(publication) {
   // Don't use publication.from components.java which would publish the skinny jar as checker.jar.
   publication.pom {
     name = 'Checker Framework'
-    description = 'The Checker Framework enhances Java\'s type system to\n' +
-        'make it more powerful and useful. This lets software developers\n' +
-        'detect and prevent errors in their Java programs.\n' +
-        'The Checker Framework includes compiler plug-ins ("checkers")\n' +
-        'that find bugs or verify their absence. It also permits you to\n' +
-        'write your own compiler plug-ins.'
+    description =
+        String.join(System.lineSeparator(),
+        'The Checker Framework enhances Java\'s type system to',
+        'make it more powerful and useful. This lets software developers',
+        'detect and prevent errors in their Java programs.',
+        'The Checker Framework includes compiler plug-ins ("checkers")',
+        'that find bugs or verify their absence. It also permits you to',
+        'write your own compiler plug-ins.')
     licenses {
       license {
         name = 'GNU General Public License, version 2 (GPL2), with the classpath exception'

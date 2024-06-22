@@ -42,7 +42,7 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
   }
 
   @Override
-  public Void visitMethod(MethodTree tree, Void p) {
+  public void processMethodTree(MethodTree tree) {
     ExecutableElement methodElement = TreeUtils.elementFromDeclaration(tree);
     if (atypeFactory.getDeclAnnotation(methodElement, FormatMethod.class) != null) {
       int formatStringIndex = FormatterVisitor.formatStringIndex(methodElement);
@@ -50,7 +50,7 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
         checker.reportError(tree, "format.method", methodElement.getSimpleName());
       }
     }
-    return super.visitMethod(tree, p);
+    super.processMethodTree(tree);
   }
 
   @Override
@@ -167,7 +167,7 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
    *
    * @param fc an invocation of a format method
    * @param enclosingMethod the method that contains the call
-   * @return true if {@code fc} is a call to a format method that forwards its containing method's
+   * @return true if {@code fc} is a call to a format method that forwards its enclosing method's
    *     arguments
    */
   private boolean isWrappedFormatCall(FormatCall fc, @Nullable MethodTree enclosingMethod) {
