@@ -51,4 +51,21 @@
     <delete dir="bin"/>
   </target>
 
+  <target name="compile"
+          description="Compile without typechecking"
+          depends="clean">
+    <mkdir dir="bin"/>
+    <javac fork="true" srcdir="src" destdir="bin" includeantruntime="false">
+      <classpath>
+        <pathelement location="${checker-framework}/checker/dist/checker.jar"/>
+        <pathelement location="lib/personalblog.jar"/>
+        <pathelement location="lib/hibernate2.jar"/>
+        <pathelement location="lib/commons-logging.jar"/>
+        <pathelement location="lib/struts.jar"/>
+        <pathelement location="lib/servlet-api.jar"/>
+        <pathelement location="lib/commons-lang.jar"/>
+      </classpath>
+    </javac>
+  </target>
+
 </project>
