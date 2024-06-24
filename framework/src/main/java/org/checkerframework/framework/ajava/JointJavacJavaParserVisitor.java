@@ -45,6 +45,7 @@ import com.github.javaparser.ast.expr.SuperExpr;
 import com.github.javaparser.ast.expr.SwitchExpr;
 import com.github.javaparser.ast.expr.ThisExpr;
 import com.github.javaparser.ast.expr.TypeExpr;
+import com.github.javaparser.ast.expr.TypePatternExpr;
 import com.github.javaparser.ast.expr.UnaryExpr;
 import com.github.javaparser.ast.modules.ModuleDeclaration;
 import com.github.javaparser.ast.modules.ModuleExportsDirective;
@@ -284,7 +285,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
    */
   @SuppressWarnings("UnusedVariable")
   public Void visitBindingPattern17(Tree javacTree, Node javaParserNode) {
-    PatternExpr patternExpr = castNode(PatternExpr.class, javaParserNode, javacTree);
+    TypePatternExpr patternExpr = castNode(TypePatternExpr.class, javaParserNode, javacTree);
     processBindingPattern(javacTree, patternExpr);
     VariableTree variableTree = BindingPatternUtils.getVariable(javacTree);
     // The name expression can be null, even when a name exists.

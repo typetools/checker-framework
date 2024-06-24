@@ -68,6 +68,12 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
   /** The annotations in this abstract value. */
   protected final AnnotationMirrorSet annotations;
 
+  /** The then store. */
+  protected @Nullable CFAbstractStore<V, ?> thenStore;
+
+  /** The else store. */
+  protected @Nullable CFAbstractStore<V, ?> elseStore;
+
   /**
    * Creates a new CFAbstractValue.
    *
@@ -277,7 +283,46 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     if (ms.error) {
       return backup;
     }
-    return analysis.createAbstractValue(mostSpecific, mostSpecifTypeMirror);
+    V mostSpecificVal = analysis.createAbstractValue(mostSpecific, mostSpecifTypeMirror);
+    if (this.getThenStore() != null) {
+      mostSpecificVal.addStores(thenStore, elseStore);
+    } else if (other.getThenStore() != null) {
+      mostSpecificVal.addStores(other.thenStore, other.elseStore);
+    }
+    return mostSpecificVal;
+  }
+
+  /**
+   * Add {@code thenStore} and {@code elseStore} to this value.
+   *
+   * @param thenStore then store
+   * @param elseStore else store
+   */
+  public void addStores(CFAbstractStore<V, ?> thenStore, CFAbstractStore<V, ?> elseStore) {
+    this.thenStore = thenStore;
+    this.elseStore = elseStore;
+  }
+
+  /**
+   * Returns the {@code thenStore}.
+   *
+   * @return the {@code thenStore}.
+   * @param <S> type of the store
+   */
+  @SuppressWarnings("unchecked")
+  public <S extends CFAbstractStore<V, S>> S getThenStore() {
+    return (S) thenStore;
+  }
+
+  /**
+   * Returns the {@code else}.
+   *
+   * @return the {@code else}.
+   * @param <S> type of the store
+   */
+  @SuppressWarnings("unchecked")
+  public <S extends CFAbstractStore<V, S>> S getElseStore() {
+    return (S) elseStore;
   }
 
   /** Computes the most specific annotations. */
@@ -529,7 +574,23 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
             other.getUnderlyingType(),
             other.getAnnotations(),
             canBeMissingAnnotations(upperBoundTypeMirror));
-    return analysis.createAbstractValue(lub, upperBoundTypeMirror);
+    V upperBound = analysis.createAbstractValue(lub, upperBoundTypeMirror);
+    if (this.getThenStore() != null && other.getThenStore() != null) {
+      @SuppressWarnings({
+        "interning:argument",
+        "mustcall:type.arguments.not.inferred",
+        "signature:argument"
+      }) // https://github.com/typetools/checker-framework/issues/6663
+      CFAbstractStore<V, ?> thenStore = this.getThenStore().merge(other.getThenStore());
+      @SuppressWarnings({
+        "interning:argument",
+        "mustcall:type.arguments.not.inferred",
+        "signature:argument"
+      }) // https://github.com/typetools/checker-framework/issues/6663
+      CFAbstractStore<V, ?> elseStore = this.getElseStore().merge(other.getElseStore());
+      upperBound.addStores(thenStore, elseStore);
+    }
+    return upperBound;
   }
 
   /**
