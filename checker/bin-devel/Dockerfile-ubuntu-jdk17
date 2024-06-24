@@ -30,12 +30,12 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   cpp \
   git \
   jq \
-  jtreg6 \
+  jtreg7 \
   libcurl3-gnutls \
   make \
   maven \
-  python3-distutils \
   python3-requests \
+  python3-setuptools \
   unzip \
   wget
 
