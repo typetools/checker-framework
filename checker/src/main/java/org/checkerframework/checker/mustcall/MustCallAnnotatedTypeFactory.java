@@ -23,6 +23,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.mustcall.qual.CreatesMustCallFor;
 import org.checkerframework.checker.mustcall.qual.InheritableMustCall;
@@ -165,6 +166,11 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   }
 
   @Override
+  protected MustCallAnalysis createFlowAnalysis() {
+    return new MustCallAnalysis((MustCallChecker) checker, this);
+  }
+
+  @Override
   protected TreeAnnotator createTreeAnnotator() {
     return new ListTreeAnnotator(super.createTreeAnnotator(), new MustCallTreeAnnotator(this));
   }
@@ -224,6 +230,16 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     ExecutableElement declaration = TreeUtils.elementFromUse(tree);
     changeNonOwningParameterTypesToTop(declaration, type);
     super.constructorFromUsePreSubstitution(tree, type, resolvePolyQuals);
+  }
+
+  @Override
+  public boolean isIgnoredExceptionType(TypeMirror exceptionType) {
+    if (exceptionType.getKind() == TypeKind.DECLARED) {
+      return ((MustCallChecker) checker)
+          .getIgnoredExceptions()
+          .contains(analysis.getTypes(), exceptionType);
+    }
+    return false;
   }
 
   /**
