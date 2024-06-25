@@ -78,7 +78,7 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   final AnnotationMirrorSet INTERNED_SET = AnnotationMirrorSet.singleton(INTERNED);
 
   /**
-   * Creates a new {@link InterningAnnotatedTypeFactory} that operates on a particular AST.
+   * Creates a new {@link InterningAnnotatedTypeFactory}.
    *
    * @param checker the checker to use
    */
