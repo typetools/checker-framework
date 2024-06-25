@@ -9,9 +9,8 @@ import org.checkerframework.framework.qual.ConditionalPostconditionAnnotation;
 import org.checkerframework.framework.qual.InheritedAnnotation;
 
 /**
- * Indicates that the given expressions which may be {@link java.util.Collection collections},
- * {@link java.util.Iterator iterators}, {@link java.lang.Iterable iterables}, or {@link
- * java.util.Map maps} are non-empty, if the method returns the given result (either true or false).
+ * Indicates that the specific expressions are non-empty, if the method returns the given result
+ * (either true or false).
  *
  * <p>Here are ways this conditional postcondition annotation can be used:
  *
@@ -35,9 +34,8 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
  * An {@code @EnsuresNonEmptyIf} annotation that refers to a private field is useful for verifying
  * that a method establishes a property, even though client code cannot directly affect the field.
  *
- * <p><b>Method postconditions:</b> Suppose that if a method {@code areOrdersActive()} returns
- * true,p then {@code getOrders()} will return a non-empty Map. You can express this relationship
- * as:
+ * <p><b>Method postconditions:</b> Suppose that if a method {@code areOrdersActive()} returns true,
+ * then {@code getOrders()} will return a non-empty Map. You can express this relationship as:
  *
  * <pre><code>&nbsp;@EnsuresNonEmptyIf(result = true, expression = "this.getOrders()")
  * &nbsp;public &lt;T&gt; boolean areOrdersActive() {
@@ -56,16 +54,14 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
 public @interface EnsuresNonEmptyIf {
 
   /**
-   * Returns the return value of the method for which the postcondition holds.
+   * A return value of the method; when the method returns that value, the postcondition holds.
    *
    * @return the return value of the method for which the postcondition holds
    */
   boolean result();
 
   /**
-   * Returns the Java expressions which may be {@link java.util.Collection collections}, {@link
-   * java.util.Iterator iterators}, {@link java.lang.Iterable iterables}, or {@link java.util.Map
-   * maps} that are non-empty after the method returns the given result.
+   * Returns the Java expressions that are non-empty after the method returns the given result.
    *
    * @return the Java expressions that are non-empty after the method returns the given result
    */

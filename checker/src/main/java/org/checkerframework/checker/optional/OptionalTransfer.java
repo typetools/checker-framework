@@ -4,6 +4,7 @@ import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
+import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
@@ -120,7 +121,9 @@ public class OptionalTransfer extends CFTransfer {
           if (methodElt.equals(optionalIfPresent) || methodElt.equals(optionalIfPresentOrElse)) {
             // `underlyingAST` is an invocation of `Optional.ifPresent()` or
             // `Optional.ifPresentOrElse()`.  In the lambda, the receiver is @Present.
-            JavaExpression receiverJe = JavaExpression.fromTree(TreeUtils.getReceiverTree(invok));
+            ExpressionTree methodSelectTree = TreeUtils.withoutParens(invok.getMethodSelect());
+            ExpressionTree receiverTree = ((MemberSelectTree) methodSelectTree).getExpression();
+            JavaExpression receiverJe = JavaExpression.fromTree(receiverTree);
             result.insertValue(receiverJe, PRESENT);
           }
         }
