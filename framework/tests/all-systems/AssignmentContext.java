@@ -22,7 +22,7 @@ public class AssignmentContext {
     s = b ? new String[] {""} : null;
   }
 
-  void assignToCast(String @MinLen(4) [] @MinLen(5) [] currentSample) {
+  void assignToCast(@MinLen(3) String @MinLen(1) [] @MinLen(2) [] currentSample) {
     // This statement used to cause a null pointer exception.
     ((String @MinLen(5) []) currentSample[3])[4] = currentSample[3][4];
   }
