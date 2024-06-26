@@ -14,11 +14,7 @@ public class NonEmptyTest extends CheckerFrameworkPerDirectoryTest {
    * @param testFiles the files containing test code to be type-checked
    */
   public NonEmptyTest(List<File> testFiles) {
-    super(
-        testFiles,
-        org.checkerframework.checker.nonempty.NonEmptyChecker.class,
-        "nonempty",
-        "-AdisableOptionalChecker");
+    super(testFiles, org.checkerframework.checker.nonempty.NonEmptyChecker.class, "nonempty");
   }
 
   @Parameters
