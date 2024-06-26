@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
@@ -48,7 +49,6 @@ import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -436,9 +436,9 @@ public class OptionalVisitor
    * @return true if a method is explicitly annotated with {@link RequiresNonEmpty}
    */
   private boolean isAnnotatedWithNonEmptyPrecondition(MethodTree tree) {
-    return TreeUtils.annotationsFromTypeAnnotationTrees(tree.getModifiers().getAnnotations())
-        .stream()
-        .anyMatch(am -> atypeFactory.areSameByClass(am, RequiresNonEmpty.class));
+    List<? extends AnnotationMirror> annos =
+        TreeUtils.annotationsFromTypeAnnotationTrees(tree.getModifiers().getAnnotations());
+    return atypeFactory.containsSameByClass(annos, RequiresNonEmpty.class);
   }
 
   /**
@@ -449,13 +449,14 @@ public class OptionalVisitor
    */
   private boolean isAnyFormalAnnotatedWithNonEmpty(MethodTree tree) {
     List<? extends VariableTree> params = tree.getParameters();
-    AnnotationMirrorSet annotationMirrors = new AnnotationMirrorSet();
     for (VariableTree vt : params) {
-      annotationMirrors.addAll(
-          TreeUtils.annotationsFromTypeAnnotationTrees(vt.getModifiers().getAnnotations()));
+      List<? extends AnnotationMirror> annos =
+          TreeUtils.annotationsFromTypeAnnotationTrees(vt.getModifiers().getAnnotations());
+      if (atypeFactory.containsSameByClass(annos, NonEmpty.class)) {
+        return true;
+      }
     }
-    return annotationMirrors.stream()
-        .anyMatch(am -> atypeFactory.areSameByClass(am, NonEmpty.class));
+    return false;
   }
 
   /**
@@ -468,8 +469,9 @@ public class OptionalVisitor
     if (tree.getReturnType() == null) {
       return false;
     }
-    return TreeUtils.typeOf(tree.getReturnType()).getAnnotationMirrors().stream()
-        .anyMatch(am -> atypeFactory.areSameByClass(am, NonEmpty.class));
+    List<? extends AnnotationMirror> annos =
+        TreeUtils.typeOf(tree.getReturnType()).getAnnotationMirrors();
+    return atypeFactory.containsSameByClass(annos, NonEmpty.class);
   }
 
   @Override
@@ -639,10 +641,9 @@ public class OptionalVisitor
    * @param tree a variable declaration
    */
   private void handleNonEmptyVariableDeclaration(VariableTree tree) {
-    boolean isAnnotatedWithNonEmpty =
-        TreeUtils.annotationsFromTypeAnnotationTrees(tree.getModifiers().getAnnotations()).stream()
-            .anyMatch(am -> atypeFactory.areSameByClass(am, NonEmpty.class));
-    if (isAnnotatedWithNonEmpty) {
+    List<? extends AnnotationMirror> annos =
+        TreeUtils.annotationsFromTypeAnnotationTrees(tree.getModifiers().getAnnotations());
+    if (atypeFactory.containsSameByClass(annos, NonEmpty.class)) {
       MethodTree enclosingMethod = TreePathUtil.enclosingMethod(this.getCurrentPath());
       if (enclosingMethod != null) {
         methodsToVerifyWithNonEmptyChecker.add(enclosingMethod);
