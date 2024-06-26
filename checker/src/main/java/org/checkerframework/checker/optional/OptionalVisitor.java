@@ -81,7 +81,7 @@ public class OptionalVisitor
   /** The element for java.util.stream.Stream.map(). */
   private final ExecutableElement streamMap;
 
-  /** Set of methods to be verified by the Non-Empty Checker. */
+  /** The set of methods to be verified by the Non-Empty Checker. */
   private final Set<MethodTree> methodsToVerifyWithNonEmptyChecker;
 
   /** Map of the names of methods to the methods in which they are invoked. */
@@ -442,10 +442,12 @@ public class OptionalVisitor
   }
 
   /**
-   * Returns true if any formal parameter of a method is explicitly annotated with {@link NonEmpty}.
+   * Returns true if any formal parameter of the method is explicitly annotated with {@link
+   * NonEmpty}.
    *
    * @param tree a method tree
-   * @return true if any formal parameter of a method is explicitly annotated with {@link NonEmpty}
+   * @return true if any formal parameter of the method is explicitly annotated with {@link
+   *     NonEmpty}
    */
   private boolean isAnyFormalAnnotatedWithNonEmpty(MethodTree tree) {
     List<? extends VariableTree> params = tree.getParameters();
@@ -459,10 +461,10 @@ public class OptionalVisitor
   }
 
   /**
-   * Returns true if the return type of a method is explicitly annotated with {@link NonEmpty}.
+   * Returns true if the return type of the method is explicitly annotated with {@link NonEmpty}.
    *
    * @param tree a method tree
-   * @return true if the return type of a method is explicitly annotated with {@link NonEmpty}
+   * @return true if the return type of the method is explicitly annotated with {@link NonEmpty}
    */
   private boolean isReturnTypeAnnotatedWithNonEmpty(MethodTree tree) {
     if (tree.getReturnType() == null) {
