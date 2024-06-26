@@ -12,27 +12,23 @@ import org.checkerframework.framework.source.SupportedOptions;
  * A type-checker that prevents {@link java.util.NoSuchElementException} in the use of container
  * classes.
  *
+ * <p>Note: if "-ArunAsOptionalChecker" is passed, then the Non-Empty Checker first runs the
+ * Optional Checker (as a subchecker), then only checks explicitly-written @NonEmpty annotations.
+ *
  * @checker_framework.manual #non-empty-checker Non-Empty Checker
  */
 @SupportedOptions("runAsOptionalChecker") // See field `runAsOptionalChecker` for documentation.
 public class NonEmptyChecker extends BaseTypeChecker {
 
-  /**
-   * If true, the Non-Empty Checker first runs the Optional Checker (as a subchecker), then only
-   * checks explicitly-written @NonEmpty annotations.
-   */
-  private boolean runAsOptionalChecker;
-
   /** Creates a NonEmptyChecker. */
   public NonEmptyChecker() {
     super();
-    runAsOptionalChecker = this.hasOptionNoSubcheckers("runAsOptionalChecker");
   }
 
   @Override
   protected Set<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
     Set<Class<? extends BaseTypeChecker>> checkers = super.getImmediateSubcheckerClasses();
-    if (runAsOptionalChecker) {
+    if (this.hasOptionNoSubcheckers("runAsOptionalChecker")) {
       checkers.add(OptionalChecker.class);
     }
     return checkers;
@@ -40,7 +36,7 @@ public class NonEmptyChecker extends BaseTypeChecker {
 
   @Override
   public boolean shouldSkipDefs(MethodTree tree) {
-    if (runAsOptionalChecker) {
+    if (this.hasOptionNoSubcheckers("runAsOptionalChecker")) {
       return !getMethodsToCheck().contains(tree);
     }
     return super.shouldSkipDefs(tree);
