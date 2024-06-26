@@ -87,7 +87,7 @@ public class OptionalTransfer extends CFTransfer {
   public OptionalTransfer(CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
     super(analysis);
     optionalTypeFactory = (OptionalAnnotatedTypeFactory) analysis.getTypeFactory();
-    BaseTypeChecker checker = optionalTypeFactory().getChecker();
+    BaseTypeChecker checker = optionalTypeFactory.getChecker();
     isAssumePureOrAssumeDeterministicEnabled =
         checker.hasOption("assumePure") || checker.hasOption("assumeDeterministic");
 
