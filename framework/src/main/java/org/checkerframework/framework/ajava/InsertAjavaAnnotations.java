@@ -3,6 +3,7 @@ package org.checkerframework.framework.ajava;
 import com.github.javaparser.JavaToken;
 import com.github.javaparser.JavaToken.Kind;
 import com.github.javaparser.Position;
+import com.github.javaparser.TokenRange;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.Node;
@@ -13,8 +14,11 @@ import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.nodeTypes.NodeWithAnnotations;
 import com.github.javaparser.ast.type.ArrayType;
+import com.github.javaparser.ast.type.ArrayType.ArrayBracketPair;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.printer.DefaultPrettyPrinter;
+import com.github.javaparser.utils.Pair;
 import com.sun.source.util.JavacTask;
 import java.io.File;
 import java.io.FileInputStream;
@@ -238,9 +242,11 @@ public class InsertAjavaAnnotations {
     @Override
     public void visit(ArrayType src, Node other) {
       ArrayType dest = (ArrayType) other;
+      Pair<Type, List<ArrayBracketPair>> destArrayTypes = ArrayType.unwrapArrayTypes(dest);
+      TokenRange innerMostCom = destArrayTypes.a.getTokenRange().get();
 
       List<Position> positions = new ArrayList<>();
-      for (JavaToken token : dest.getTokenRange().get()) {
+      for (JavaToken token : dest.getTokenRange().get().withBegin(innerMostCom.getEnd())) {
         if (token.getKind() == Kind.LBRACKET.getKind()) {
           positions.add(token.getRange().get().begin);
         }
