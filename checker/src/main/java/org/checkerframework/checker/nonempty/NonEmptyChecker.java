@@ -51,9 +51,9 @@ public class NonEmptyChecker extends BaseTypeChecker {
    * Non-Empty type system to refine its analysis with respect to operations on containers (e.g.,
    * Streams, Collections) that result in values of type Optional.
    *
-   * <p>This method provides access to the Non-Empty Checker for methods that should be verified
+   * <p>This method provides access to the Non-Empty Checker for methods that should be verified.
    *
-   * @return a set of methods to be checked by the Non-Empty Checker
+   * @return the set of methods to be checked by the Non-Empty Checker
    */
   private Set<MethodTree> getMethodsToCheck() {
     OptionalChecker optionalChecker = getSubchecker(OptionalChecker.class);

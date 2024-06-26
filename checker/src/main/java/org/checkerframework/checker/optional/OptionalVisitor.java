@@ -81,7 +81,7 @@ public class OptionalVisitor
   /** The element for java.util.stream.Stream.map(). */
   private final ExecutableElement streamMap;
 
-  /** Set of methods to be verified by the Non-Empty Checker. */
+  /** The set of methods to be verified by the Non-Empty Checker. */
   private final Set<MethodTree> methodsToVerifyWithNonEmptyChecker;
 
   /** Map of the names of methods to the methods in which they are invoked. */

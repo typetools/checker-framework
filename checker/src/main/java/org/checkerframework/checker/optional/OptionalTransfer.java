@@ -46,6 +46,9 @@ public class OptionalTransfer extends CFTransfer {
   /** The {@link OptionalAnnotatedTypeFactory} instance for this transfer class. */
   private final OptionalAnnotatedTypeFactory optionalTypeFactory;
 
+  /** True if "-AassumePure" or "-AassumeDeterministic" was passed. */
+  boolean isAssumePureOrAssumeDeterministicEnabled;
+
   /** The @{@link Present} annotation. */
   private final AnnotationMirror PRESENT;
 
@@ -84,6 +87,10 @@ public class OptionalTransfer extends CFTransfer {
   public OptionalTransfer(CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
     super(analysis);
     optionalTypeFactory = (OptionalAnnotatedTypeFactory) analysis.getTypeFactory();
+    BaseTypeChecker checker = optionalTypeFactory().getChecker();
+    isAssumePureOrAssumeDeterministicEnabled =
+        checker.hasOption("assumePure") || checker.hasOption("assumeDeterministic");
+
     Elements elements = optionalTypeFactory.getElementUtils();
     PRESENT = AnnotationBuilder.fromClass(elements, Present.class);
     NON_EMPTY = AnnotationBuilder.fromClass(elements, NonEmpty.class);
@@ -150,32 +157,29 @@ public class OptionalTransfer extends CFTransfer {
     if (n.getTree() == null) {
       return result;
     }
-    return refineStreamOperations(n, result);
+    return refineNonEmptyToPresentStreamResult(n, result);
   }
 
   /**
-   * Refines the result of a call to {@link java.util.stream.Stream#max(Comparator)}, {@link
-   * java.util.stream.Stream#min(Comparator)}, or {@link
+   * Refines the result of a call to a method in {@link #nonEmptyToPresentStreamMethods}. When one
+   * of those methods is invoked on an empty stream, the result is an empty/absent Optional. When
+   * one of those methods is invoked on a non-empty stream, the result is a present Optional.
+   * Examples are {@link java.util.stream.Stream#max(Comparator)} and {@link
    * java.util.stream.Stream#reduce(BinaryOperator)}.
-   *
-   * <p>The presence/emptiness of the Optional value returned in the method invocations above are
-   * dependent on whether the initial stream (i.e., the receiver) is empty (or not). That is,
-   * invoking the methods above on a {@code @NonEmpty} stream will return a {@code @Present}
-   * Optional, while invoking them on an empty stream will return an empty Optional.
    *
    * @param n the method invocation node
    * @param result the transfer result to side effect
    * @return the refined transfer result
    */
-  private TransferResult<CFValue, CFStore> refineStreamOperations(
+  private TransferResult<CFValue, CFStore> refineNonEmptyToPresentStreamResult(
       MethodInvocationNode n, TransferResult<CFValue, CFStore> result) {
     if (nonEmptyToPresentStreamMethods.stream()
         .anyMatch(
             op -> NodeUtils.isMethodInvocation(n, op, optionalTypeFactory.getProcessingEnv()))) {
-      if (isReceiverNonEmpty(n)) {
+      if (isReceiverParameterNonEmpty(n)) {
         // The receiver of the stream operation is @Non-Empty, therefore the result is @Present.
         JavaExpression internalRepr = JavaExpression.fromNode(n);
-        if (isAssumePureOrAssumeDeterministicEnabled()) {
+        if (isAssumePureOrAssumeDeterministicEnabled) {
           insertIntoStoresPermitNonDeterministic(result, internalRepr, PRESENT);
         } else {
           insertIntoStores(result, internalRepr, PRESENT);
@@ -193,25 +197,14 @@ public class OptionalTransfer extends CFTransfer {
   }
 
   /**
-   * Determine whether this analysis is being executed with the {@literal -AassumePure} or {@literal
-   * -AassumeDeterministic} flags.
-   *
-   * @return true if the {@literal -AassumePure} or {@literal -AassumeDeterministic} flags are
-   *     passed to this analysis
-   */
-  private boolean isAssumePureOrAssumeDeterministicEnabled() {
-    BaseTypeChecker checker = analysis.getTypeFactory().getChecker();
-    return checker.hasOption("assumePure") || checker.hasOption("assumeDeterministic");
-  }
-
-  /**
-   * Returns true if the receiver of the given method invocation is annotated with @{@link
-   * NonEmpty}.
+   * Returns true if the receiver parameter of the method being invoked is explicitly annotated
+   * with @{@link NonEmpty}.
    *
    * @param methodInvok a method invocation node
-   * @return true if the receiver of the given method invocation is annotated with @{@link NonEmpty}
+   * @return true if the receiver parameter of the method being invoked is explicitly annotated
+   *     with @{@link NonEmpty}
    */
-  private boolean isReceiverNonEmpty(MethodInvocationNode methodInvok) {
+  private boolean isReceiverParameterNonEmpty(MethodInvocationNode methodInvok) {
     ExpressionTree receiverTree = TreeUtils.getReceiverTree(methodInvok.getTree());
     JavaExpression receiver;
     if (receiverTree instanceof MethodInvocationTree) {
@@ -239,7 +232,7 @@ public class OptionalTransfer extends CFTransfer {
    * method invocation node.
    *
    * @param methodInvok a method invocation node
-   * @param initialReceiver the initial receiver in the method invocation node
+   * @param initialReceiver the initial receiver argument in the method invocation node
    * @return the declaration of the receiver if found, else null
    */
   private @Nullable VariableTree getReceiverDeclaration(
