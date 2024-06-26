@@ -43,7 +43,7 @@ public class NonEmptyChecker extends BaseTypeChecker {
     if (runAsOptionalChecker) {
       return !getMethodsToCheck().contains(tree);
     }
-    return super(tree);
+    return super.shouldSkipDefs(tree);
   }
 
   /**
