@@ -12,11 +12,9 @@ import org.checkerframework.framework.source.SupportedOptions;
  * A type-checker that prevents {@link java.util.NoSuchElementException} in the use of container
  * classes.
  *
- * <p>Note: the {@literal runAsOptionalChecker} command-line flag means that
- *
  * @checker_framework.manual #non-empty-checker Non-Empty Checker
  */
-@SupportedOptions("runAsOptionalChecker")
+@SupportedOptions("runAsOptionalChecker") // See field `runAsOptionalChecker` for documentation.
 public class NonEmptyChecker extends BaseTypeChecker {
 
   /**
