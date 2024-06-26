@@ -443,10 +443,12 @@ public class OptionalVisitor
   }
 
   /**
-   * Returns true if any formal parameter of a method is explicitly annotated with {@link NonEmpty}.
+   * Returns true if any formal parameter of the method is explicitly annotated with {@link
+   * NonEmpty}.
    *
    * @param methodDecl a method declaration
-   * @return true if any formal parameter of a method is explicitly annotated with {@link NonEmpty}
+   * @return true if any formal parameter of the method is explicitly annotated with {@link
+   *     NonEmpty}
    */
   private boolean isAnyFormalAnnotatedWithNonEmpty(MethodTree methodDecl) {
     List<? extends VariableTree> params = methodDecl.getParameters();
@@ -460,10 +462,10 @@ public class OptionalVisitor
   }
 
   /**
-   * Returns true if the return type of a method is explicitly annotated with {@link NonEmpty}.
+   * Returns true if the return type of the method is explicitly annotated with {@link NonEmpty}.
    *
    * @param methodDecl a method declaration
-   * @return true if the return type of a method is explicitly annotated with {@link NonEmpty}
+   * @return true if the return type of the method is explicitly annotated with {@link NonEmpty}
    */
   private boolean isReturnTypeAnnotatedWithNonEmpty(MethodTree methodDecl) {
     if (methodDecl.getReturnType() == null) {
