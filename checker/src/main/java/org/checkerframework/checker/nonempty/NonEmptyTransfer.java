@@ -352,7 +352,7 @@ public class NonEmptyTransfer extends CFTransfer {
 
   /**
    * If this is an invocation of a size-dependent method, return the value that the method returns
-   * ffor an empty container.
+   * for an empty container.
    *
    * @param n a node that might be an invocation of a size-dependent method
    * @return the value that the method returns ffor an empty container, or null
