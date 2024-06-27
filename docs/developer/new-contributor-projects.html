@@ -51,6 +51,7 @@
     <ul>
       <li><a href="#hint-about-annotated-library-methods">Indicate library methods that should be used instead</a></li>
       <li><a href="#index-errors">Improving error messages</a></li>
+      <li><a href="#javaparser-to-javac-parse">Replace JavaParser by javac</a></li>
       <li><a href="#java-expression-parser">Java expression parser</a></li>
       <li><a href="#dataflow">Dataflow enhancements</a></li>
       <li><a href="#Purity_analysis">Side effect analysis, also known as purity analysis</a></li>
@@ -1343,25 +1344,31 @@ some distinct challenges:
 </ul>
 
 
+<h2 id="javaparser-to-javac-parse">Replace JavaParser by javac</h2>
+
+<p>
+The Checker Framework uses JavaParser to parse 
+<a href="https://checkerframework.org/manual/#java-expressions-as-arguments">a
+Java expressions</a>.  However, JavaParser is buggy and poorly maintained.
+The goal of this project is to replace every use of JavaParser by a use of
+<a href="https://github.com/plume-lib/javac-parse">javac-parse</a>.
+</p>
+
+
 <h2 id="java-expression-parser">Java expression parser</h2>
 
 <p>
 A number of type annotations take, as an
 argument, <a href="https://checkerframework.org/manual/#java-expressions-as-arguments">a
-Java expression</a>.  The representation for these
-(the <a href="https://checkerframework.org/api/org/checkerframework/dataflow/expression/JavaExpression.html"><code>JavaExpression</code></a>
-class) is a hack.  The goal of this
-project is to remove it.
+Java expression</a>.  The representation for these is as a <a href="https://checkerframework.org/api/org/checkerframework/dataflow/expression/JavaExpression.html"><code>JavaExpression</code></a>.  The goal of this
+project is to remove it.  
 </p>
 
 <p>
 The <code>JavaExpression</code> class
 represents an AST.  There is no need for the Checker Framework to
-define its own AST when the JavaParser AST already exists and is
-maintained.  In fact, <code>JavaExpressionParseUtil</code> uses JavaParser,
-but needlessly converts a
-JavaParser <code>Expression</code> into
-a <code>JavaExpression</code>.
+define its own AST when the javac AST already exists and is
+maintained.
 </p>
 
 <p>
@@ -1371,29 +1378,29 @@ a <code>JavaExpression</code>.
   <li>
     Replace every use
     of <a href="https://checkerframework.org/api/org/checkerframework/dataflow/expression/JavaExpression.html"><code>JavaExpression</code></a>
-    by a use of the JavaParser
-    class <a href="https://www.javadoc.io/static/com.github.javaparser/javaparser-core/3.15.22/com/github/javaparser/ast/expr/Expression.html"><code>com.github.javaparser.ast.expr.Expression</code></a>.
+    by a use of the javac class
+    class <a href="https://www.javadoc.io/static/org.kohsuke.sorcerer/sorcerer-javac/0.11/com/sun/tools/javac/tree/JCTree.JCExpression.html"><code>com.sun.tools.javac.tree.JCTree.JCExpression.html</code></a>.
   </li>
   <li>
     Replace every use of a subclass of <code>JavaExpression</code> (listed in the
     "Direct Known Subclasses" section of
     the <a href="https://checkerframework.org/api/org/checkerframework/dataflow/expression/JavaExpression.html"><code>JavaExpression</code>
     API documentation)</a> by a use of a
-    <a href="https://www.javadoc.io/static/com.github.javaparser/javaparser-core/3.15.22/com/github/javaparser/ast/expr/Expression.html">subclass of <code>Expression</code></a>.  For example, replace every use
-    of <a href="https://checkerframework.org/api/org/checkerframework/dataflow/expression/MethodCall.html"><code>MethodCall</code></a> by <a href="https://www.javadoc.io/static/com.github.javaparser/javaparser-core/3.15.22/com/github/javaparser/ast/expr/MethodCallExpr.html"><code>MethodCallExpr</code></a>.
+    <a href="https://www.javadoc.io/static/org.kohsuke.sorcerer/sorcerer-javac/0.11/com/sun/tools/javac/tree/JCTree.JCExpression.html">subclass
+    of <code>JCTree.JCExpression.html</code></a>.
+    For example, replace every use
+    of <a href="https://checkerframework.org/api/org/checkerframework/dataflow/expression/MethodCall.html"><code>MethodCall</code></a> by <a href="https://www.javadoc.io/static/org.kohsuke.sorcerer/sorcerer-javac/0.11/com/sun/tools/javac/tree/JCTree.JCMethodInvocation.html"><code>JCTree.JCMethodInvocation</code></a>.
   </li>
   <li>
-    The <a href="https://checkerframework.org/api/org/checkerframework/framework/util/JavaExpressionParseUtil.html"><code>JavaExpressionParseUtil</code></a>
-    class already uses JavaParser, but it uses <code>ExpressionToReceiverVisitor</code> to construct
-    a <code>JavaExpression</code>.  Have it return a
-    JavaParser <code>Expression</code> instead, and delete <code>ExpressionToReceiverVisitor</code>.
+    Replace the <a href="https://checkerframework.org/api/org/checkerframework/framework/util/JavaExpressionParseUtil.html"><code>JavaExpressionParseUtil</code></a>
+    class and delete <code>ExpressionToReceiverVisitor</code>.
   </li>
 </ul>
 
 <p>
 Direct replacement of the classes is not possible, or we would have done it
 already.  For example, <code>JavaExpression</code> contains some methods that
-JavaParser lacks, such as <code>isUnassignableByOtherCode</code>.  As a
+javac lacks, such as <code>isUnassignableByOtherCode</code>.  As a
 first step before doing the tasks listed above, you may want to convert
 these methods from instance methods of <code>JavaExpression</code> into static
 methods in <code>JavaExpressions</code>, making <code>JavaExpression</code> more
@@ -1403,7 +1410,7 @@ of <code>JavaExpression</code>, when <code>JavaExpression</code> is eliminated.
 An
 alternate design (or a partial step in the refactoring process) would be to
 retain the <code>JavaExpression</code> class, but make it a thin wrapper around
-JavaParser classes that do most of the real work.
+javac classes that do most of the real work.
 </p>
 
 <p>
