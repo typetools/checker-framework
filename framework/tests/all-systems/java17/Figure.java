@@ -25,5 +25,5 @@ sealed class Rectangle extends Figure {
 
 @SuppressWarnings("initializedfields:contracts.postcondition")
 final class FilledRectangle extends Rectangle {
-  int red, green, blue;
+  int red, green, blue, sealed;
 }
