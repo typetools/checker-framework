@@ -11,6 +11,7 @@ import org.checkerframework.javacutil.AnnotationMirrorSet;
 /** Annotated type factory for the SQL Tainting Checker. */
 public class SqlTaintingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
+
   /** The {@code @}{@link SqlSanitized} annotation mirror. */
   private final AnnotationMirror SQLSANITIZED;
 
