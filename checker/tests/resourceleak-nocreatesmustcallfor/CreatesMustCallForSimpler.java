@@ -1,4 +1,4 @@
-// A simpler test that @CreatesMustCallFor works as intended wrt the Object Construction Checker.
+// A simpler test that @CreatesMustCallFor works as intended wrt the Resource Leak Checker.
 
 // This test has been modified to expect that CreatesMustCallFor is feature-flagged to off.
 
