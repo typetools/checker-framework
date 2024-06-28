@@ -276,8 +276,8 @@ TreeAnnotator
   <p>To release the Maven artifacts to the Maven Central <b>snapshot</b> repository:</p>
   <ol>
     <li>
-      Ensure that <code>~/.gradle/gradle.properties</code> includes your <code>SONATYPE_NEXUS_USERNAME</code>
-      and <code>SONATYPE_NEXUS_PASSWORD</code>.
+      Ensure that <code>~/.gradle/gradle.properties</code> includes your user token in <code>SONATYPE_NEXUS_USERNAME</code>
+      and your user token key in <code>SONATYPE_NEXUS_PASSWORD</code>.
     </li>
     <li>
       Ensure that the version number in <code>checker-framework/build.gradle</code> (in <code>allprojects { version ... }</code>) ends in <code>-SNAPSHOT</code>.
@@ -375,13 +375,13 @@ configurations.all({
     </tr>
     <tr>
       <td>4.</td>
-      <td><strong>Add your account information to gradle/build.properties in your home directory.</strong><br/>
+      <td><strong>Add your user token information to gradle/build.properties in your home directory.</strong><br/>
+        Follow the <a href="https://central.sonatype.org/publish/generate-token/">instructions</a> to generate a user token.
         Create a <code>~/.gradle/gradle.properties</code> file with the following:
         <pre>
-SONATYPE_NEXUS_USERNAME=your_user_name
-SONATYPE_NEXUS_PASSWORD=your_password</pre>
-        using the information you just created for your Sonatype Account on tern or other
-        network host.  Since the file contains your password, make it non-readable:  <code>chmod og-rw ~/.gradle/gradle.properties</code>
+SONATYPE_NEXUS_USERNAME=your_tokenuser
+SONATYPE_NEXUS_PASSWORD=your_tokenkey</pre>
+ Since the file contains your password, make it non-readable:  <code>chmod og-rw ~/.gradle/gradle.properties</code>
       </td>
     </tr>
     <tr>

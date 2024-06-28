@@ -41,12 +41,12 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   libcurl3-gnutls \
   make \
   maven \
-  python3-distutils \
   python3-requests \
+  python3-setuptools \
   unzip \
   wget \
 && aptitude -y install \
-  jtreg6
+  jtreg7
 
 # Maven 3.8.7 is the default on Ubuntu 23.04, so the below is not needed.
 # (Don't try to use a variable here for the Maven version.)
