@@ -11,6 +11,5 @@ import org.checkerframework.framework.source.SuppressWarningsPrefix;
  *
  * @checker_framework.manual #tainting-checker Tainting Checker
  */
-
 @SuppressWarningsPrefix({"sqlsanitized", "sqltainting"})
 public class SqlTaintingChecker extends BaseTypeChecker {}

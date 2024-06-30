@@ -12,7 +12,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 
 /**
  * Denotes a value to be used in a SQL query that has been sanitized (i.e. non-alphanumeric
- * characters escaped as necessary) and is thus safe for SQL query use.
+ * characters escaped as necessary) and is thus safe to be embedded as a value in a SQL query.
  *
  * <p>All empty Strings and String literals consisting solely of alphanumeric characters,
  * whitespace, and backslash-escaped sensitive characters (i.e. single/double quotes, backslashes,
@@ -21,7 +21,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-@SubtypeOf(SqlQueryValue.class)
-@QualifierForLiterals(stringPatterns = "^(\\w|\\s|\\\\'|\\\\\"|\\\\\\\\|\\\\-|\\\\%|\\\\_)*$")
+@SubtypeOf(SqlUnsanitized.class)
+@QualifierForLiterals(stringPatterns = "^(\\w|\\s|(\\\\[-'\"\\\\%_])*)*$")
 @DefaultFor(TypeUseLocation.LOWER_BOUND)
 public @interface SqlSanitized {}
