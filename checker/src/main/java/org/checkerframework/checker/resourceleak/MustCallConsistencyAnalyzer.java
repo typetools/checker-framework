@@ -2560,6 +2560,15 @@ class MustCallConsistencyAnalyzer {
     }
   }
 
+  /**
+   * Check whether the given node is the condition of an mcoe-obligation-fulfilling-loop. and
+   * whether the loop actually fulfills all the methods it promises to call by checking the
+   * {@code @CalledMethods} type of the collection/array element in the loop body. Also, add an
+   * obligation for the array/collection element iterated over.
+   *
+   * @param node lessthannode that may be the condition of a mcoe fulfilling for loop
+   * @param obligations the set of tracked obligations in the analysis
+   */
   private void verifyFulfillingForLoop(LessThanNode node, Set<Obligation> obligations) {
     ExpressionTree collectionAccess =
         MustCallOnElementsAnnotatedTypeFactory.getCollectionAccessTreeForLoopWithThisCondition(
@@ -2575,7 +2584,7 @@ class MustCallConsistencyAnalyzer {
       //     new Obligation(
       //         ImmutableSet.of(
       //             new ResourceAlias(
-      //                  JavaExpression.fromTree(collectionAccess), elt, collectionAccess)),
+      //                 JavaExpression.fromTree(collectionAccess), elt, collectionAccess)),
       //         Collections.singleton(MethodExitKind.NORMAL_RETURN)));
     }
   }
