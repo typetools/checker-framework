@@ -249,39 +249,73 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             || (assumePureGetters && ElementUtils.isGetter(method))
             || atypeFactory.isSideEffectFree(method));
     if (hasSideEffect) {
-
-      boolean sideEffectsUnrefineAliases = gatypeFactory.sideEffectsUnrefineAliases;
-
-      // update local variables
-      // TODO: Also remove if any element/argument to the annotation is not
-      // isUnmodifiableByOtherCode.  Example: @KeyFor("valueThatCanBeMutated").
-      if (sideEffectsUnrefineAliases) {
-        localVariableValues.entrySet().removeIf(e -> e.getKey().isModifiableByOtherCode());
-      }
-
-      // update this value
-      if (sideEffectsUnrefineAliases) {
-        thisValue = null;
-      }
-
-      // update field values
-      if (sideEffectsUnrefineAliases) {
-        fieldValues.entrySet().removeIf(e -> e.getKey().isModifiableByOtherCode());
-      } else {
-        // Case 2 (unassignable fields) and case 3 (monotonic fields)
-        updateFieldValuesForMethodCall(gatypeFactory);
-      }
-
-      // update array values
-      arrayValues.clear();
-
-      // update method values
-      methodCallExpressions.keySet().removeIf(MethodCall::isModifiableByOtherCode);
+      localVariableValues
+          .values()
+          .forEach(
+              v -> {
+                if (v != null && v.getThenStore() != null) {
+                  v.getThenStore().updateForSideEffect(gatypeFactory);
+                  v.getElseStore().updateForSideEffect(gatypeFactory);
+                }
+              });
+      updateForSideEffect(gatypeFactory);
     }
 
     // store information about method call if possible
     JavaExpression methodCall = JavaExpression.fromNode(methodInvocationNode);
     replaceValue(methodCall, val);
+  }
+
+  /**
+   * Remove any information that might not be valid any more after a method call, and add
+   * information guaranteed by the method.
+   *
+   * <ol>
+   *   <li>If the method is side-effect-free (as indicated by {@link
+   *       org.checkerframework.dataflow.qual.SideEffectFree} or {@link
+   *       org.checkerframework.dataflow.qual.Pure}), then no information needs to be removed.
+   *   <li>Otherwise, all information about field accesses {@code a.f} needs to be removed, except
+   *       if the method {@code n} cannot modify {@code a.f}. This unmodifiability property holds if
+   *       {@code a} is a local variable or {@code this}, and {@code f} is final, or if {@code a.f}
+   *       has a {@link MonotonicQualifier} in the current store. Subclasses can change this
+   *       behavior by overriding {@link #newFieldValueAfterMethodCall(FieldAccess,
+   *       GenericAnnotatedTypeFactory, CFAbstractValue)}.
+   *   <li>Furthermore, if the field has a monotonic annotation, then its information can also be
+   *       kept.
+   * </ol>
+   *
+   * Furthermore, if the method is deterministic, we store its result {@code val} in the store.
+   *
+   * @param gatypeFactory the type factory of the associated checker
+   */
+  protected void updateForSideEffect(GenericAnnotatedTypeFactory<?, ?, ?, ?> gatypeFactory) {
+    boolean sideEffectsUnrefineAliases = gatypeFactory.sideEffectsUnrefineAliases;
+
+    // update local variables
+    // TODO: Also remove if any element/argument to the annotation is not
+    // isUnmodifiableByOtherCode.  Example: @KeyFor("valueThatCanBeMutated").
+    if (sideEffectsUnrefineAliases) {
+      localVariableValues.entrySet().removeIf(e -> e.getKey().isModifiableByOtherCode());
+    }
+
+    // update this value
+    if (sideEffectsUnrefineAliases) {
+      thisValue = null;
+    }
+
+    // update field values
+    if (sideEffectsUnrefineAliases) {
+      fieldValues.entrySet().removeIf(e -> e.getKey().isModifiableByOtherCode());
+    } else {
+      // Case 2 (unassignable fields) and case 3 (monotonic fields)
+      updateFieldValuesForMethodCall(gatypeFactory);
+    }
+
+    // update array values
+    arrayValues.clear();
+
+    // update method values
+    methodCallExpressions.keySet().removeIf(MethodCall::isModifiableByOtherCode);
   }
 
   /**
@@ -300,7 +334,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    *     from the store
    */
   protected V newFieldValueAfterMethodCall(
-      FieldAccess fieldAccess, GenericAnnotatedTypeFactory<V, S, ?, ?> atypeFactory, V value) {
+      FieldAccess fieldAccess, GenericAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory, V value) {
     // Handle unassignable fields.
     if (!fieldAccess.isAssignableByOtherCode()) {
       return value;
@@ -324,7 +358,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    *     annotation
    */
   protected V newMonotonicFieldValueAfterMethodCall(
-      FieldAccess fieldAccess, GenericAnnotatedTypeFactory<V, S, ?, ?> atypeFactory, V value) {
+      FieldAccess fieldAccess, GenericAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory, V value) {
 
     // case 3: the field has a monotonic annotation
     if (atypeFactory.getSupportedMonotonicTypeQualifiers().isEmpty()) {
@@ -369,7 +403,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * @param atypeFactory AnnotatedTypeFactory of the associated checker
    */
   private void updateFieldValuesForMethodCall(
-      GenericAnnotatedTypeFactory<V, S, ?, ?> atypeFactory) {
+      GenericAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory) {
     Map<FieldAccess, V> newFieldValues = new HashMap<>(CollectionsPlume.mapCapacity(fieldValues));
     for (Map.Entry<FieldAccess, V> e : fieldValues.entrySet()) {
       FieldAccess fieldAccess = e.getKey();
@@ -883,10 +917,37 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     JavaExpression je = JavaExpression.fromNode(n);
     if (je instanceof ArrayAccess) {
       updateForArrayAssignment((ArrayAccess) je, val);
+      localVariableValues
+          .values()
+          .forEach(
+              v -> {
+                if (v != null && v.getThenStore() != null) {
+                  v.getThenStore().updateForArrayAssignment((ArrayAccess) je, val);
+                  v.getElseStore().updateForArrayAssignment((ArrayAccess) je, val);
+                }
+              });
     } else if (je instanceof FieldAccess) {
       updateForFieldAccessAssignment((FieldAccess) je, val);
+      localVariableValues
+          .values()
+          .forEach(
+              v -> {
+                if (v != null && v.getThenStore() != null) {
+                  v.getThenStore().updateForFieldAccessAssignment((FieldAccess) je, val);
+                  v.getElseStore().updateForFieldAccessAssignment((FieldAccess) je, val);
+                }
+              });
     } else if (je instanceof LocalVariable) {
       updateForLocalVariableAssignment((LocalVariable) je, val);
+      localVariableValues
+          .values()
+          .forEach(
+              v -> {
+                if (v != null && v.getThenStore() != null) {
+                  v.getThenStore().updateForLocalVariableAssignment((LocalVariable) je, val);
+                  v.getElseStore().updateForLocalVariableAssignment((LocalVariable) je, val);
+                }
+              });
     } else {
       throw new BugInCF("Unexpected je of class " + je.getClass());
     }
@@ -1251,6 +1312,32 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
   private V upperBoundOfValues(V otherVal, V thisVal, boolean shouldWiden) {
     return shouldWiden ? thisVal.widenUpperBound(otherVal) : thisVal.leastUpperBound(otherVal);
+  }
+
+  /**
+   * Creates a new store the has all the values from both {@code this} and {@code other}. If a node
+   * have a value in both stores, then the most specific one is used.
+   *
+   * @param other another store
+   * @return a new store with values from {@code this} and {@code other}
+   */
+  public S merge(S other) {
+    S newStore = this.copy();
+
+    other.localVariableValues.forEach(newStore::insertValue);
+    if (other.thisValue != null) {
+      if (newStore.thisValue == null) {
+        newStore.thisValue = other.thisValue;
+      } else {
+        newStore.thisValue = thisValue.mostSpecific(other.thisValue, null);
+      }
+    }
+    other.fieldValues.forEach(newStore::insertValue);
+    other.arrayValues.forEach(newStore::insertValue);
+    other.methodCallExpressions.forEach(newStore::insertValue);
+    other.classValues.forEach(newStore::insertValue);
+
+    return newStore;
   }
 
   /**
