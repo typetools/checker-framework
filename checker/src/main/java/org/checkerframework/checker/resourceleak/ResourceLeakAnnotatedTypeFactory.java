@@ -18,6 +18,7 @@ import org.checkerframework.checker.calledmethods.qual.CalledMethods;
 import org.checkerframework.checker.calledmethods.qual.CalledMethodsBottom;
 import org.checkerframework.checker.calledmethods.qual.CalledMethodsPredicate;
 import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;
+import org.checkerframework.checker.calledmethodsonelements.qual.EnsuresCalledMethodsOnElements;
 import org.checkerframework.checker.mustcall.CreatesMustCallForElementSupplier;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.MustCallChecker;
@@ -27,6 +28,7 @@ import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.checkerframework.checker.mustcall.qual.MustCallAlias;
 import org.checkerframework.checker.mustcall.qual.NotOwning;
 import org.checkerframework.checker.mustcall.qual.Owning;
+import org.checkerframework.checker.mustcallonelements.qual.OwningArray;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
@@ -55,13 +57,25 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
   private final ExecutableElement mustCallValueElement =
       TreeUtils.getMethod(MustCall.class, "value", 0, processingEnv);
 
+  /** The EnsuresCalledMethodsOnElements.value element/field. */
+  /*package-private*/ final ExecutableElement ensuresCalledMethodsOnElementsValueElement =
+      TreeUtils.getMethod(EnsuresCalledMethodsOnElements.class, "value", 0, processingEnv);
+
   /** The EnsuresCalledMethods.value element/field. */
   /*package-private*/ final ExecutableElement ensuresCalledMethodsValueElement =
       TreeUtils.getMethod(EnsuresCalledMethods.class, "value", 0, processingEnv);
 
+  /** The EnsuresCalledMethodsOnElements.methods element/field. */
+  /*package-private*/ final ExecutableElement ensuresCalledMethodsOnElementsMethodsElement =
+      TreeUtils.getMethod(EnsuresCalledMethodsOnElements.class, "methods", 0, processingEnv);
+
   /** The EnsuresCalledMethods.methods element/field. */
   /*package-private*/ final ExecutableElement ensuresCalledMethodsMethodsElement =
       TreeUtils.getMethod(EnsuresCalledMethods.class, "methods", 0, processingEnv);
+
+  /** The EnsuresCalledMethodsOnElements.List.value element/field. */
+  private final ExecutableElement ensuresCalledMethodsOnElementsListValueElement =
+      TreeUtils.getMethod(EnsuresCalledMethodsOnElements.List.class, "value", 0, processingEnv);
 
   /** The EnsuresCalledMethods.List.value element/field. */
   private final ExecutableElement ensuresCalledMethodsListValueElement =
@@ -269,7 +283,7 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
    * @param node a node
    * @return true iff the given node is a temporary variable
    */
-  /*package-private*/ boolean isTempVar(Node node) {
+  /*package-private*/ public boolean isTempVar(Node node) {
     return tempVarToTree.containsKey(node);
   }
 
@@ -388,12 +402,39 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
   }
 
   /**
+   * Returns the {@link EnsuresCalledMethodsOnElements.List#value} element.
+   *
+   * @return the {@link EnsuresCalledMethodsOnElements.List#value} element
+   */
+  public ExecutableElement getEnsuresCalledMethodsOnElementsListValueElement() {
+    return ensuresCalledMethodsOnElementsListValueElement;
+  }
+
+  /**
    * Returns the {@link EnsuresCalledMethods.List#value} element.
    *
    * @return the {@link EnsuresCalledMethods.List#value} element
    */
   public ExecutableElement getEnsuresCalledMethodsListValueElement() {
     return ensuresCalledMethodsListValueElement;
+  }
+
+  /**
+   * Returns the {@link EnsuresCalledMethods#value} element.
+   *
+   * @return the {@link EnsuresCalledMethods#value} element
+   */
+  public ExecutableElement getEnsuresCalledMethodsValueElement() {
+    return ensuresCalledMethodsValueElement;
+  }
+
+  /**
+   * Returns the {@link EnsuresCalledMethods#methods} element.
+   *
+   * @return the {@link EnsuresCalledMethods#methods} element
+   */
+  public ExecutableElement getEnsuresCalledMethodsMethodsElement() {
+    return ensuresCalledMethodsMethodsElement;
   }
 
   /**
@@ -446,6 +487,21 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
   public boolean hasOwning(Element elt) {
     MustCallAnnotatedTypeFactory mcatf = getTypeFactoryOfSubchecker(MustCallChecker.class);
     return mcatf.getDeclAnnotation(elt, Owning.class) != null;
+  }
+
+  /**
+   * Does the given element have an {@code @OwningArray} annotation (including in stub files)?
+   *
+   * <p>Prefer this method to calling {@link #getDeclAnnotation(Element, Class)} on the type factory
+   * directly, which won't find this annotation in stub files (it only considers stub files loaded
+   * by this checker, not subcheckers).
+   *
+   * @param elt an element
+   * @return whether there is an OwningArray annotation on the given element
+   */
+  public boolean hasOwningArray(Element elt) {
+    MustCallAnnotatedTypeFactory mcatf = getTypeFactoryOfSubchecker(MustCallChecker.class);
+    return mcatf.getDeclAnnotation(elt, OwningArray.class) != null;
   }
 
   @Override

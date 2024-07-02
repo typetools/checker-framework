@@ -23,6 +23,8 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.mustcall.qual.CreatesMustCallFor;
 import org.checkerframework.checker.mustcall.qual.InheritableMustCall;
@@ -42,6 +44,7 @@ import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
@@ -155,6 +158,90 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     // GenericAnnotatedTypeFactory, but this works here because we know the Must Call Checker is
     // always the first subchecker that's sharing tempvars.
     tempVars.clear();
+  }
+
+  /**
+   * Called in addComputedTypeAnnotations. Changes the type parameter of collection from
+   * {@code @MustCallUnknown} to {@code @MustCall} for method return types and variables.
+   *
+   * <p>This is necessary as the type variable upper bounds for collections is
+   * {@code @MustCallUnknown}. When the type variable is a generic or wildcard, the type parameter
+   * does default to {@code @MustCallUnknown}, which causes problems, since these usually don't have
+   * anything to do with resources at all.
+   *
+   * @param elt the element
+   * @param type the type of the element
+   */
+  private void changeCollectionTypeParameters(Element elt, AnnotatedTypeMirror type) {
+    if (elt instanceof VariableElement) {
+      // change it for variables
+      if (type.getKind() == TypeKind.DECLARED) {
+        AnnotatedDeclaredType adt = (AnnotatedDeclaredType) type;
+        if (isCollection(adt.getUnderlyingType())) {
+          for (AnnotatedTypeMirror typeArg : adt.getTypeArguments()) {
+            if (typeArg == null) continue;
+            AnnotationMirror mcAnno = typeArg.getEffectiveAnnotation();
+            boolean typeArgIsMcoeUnknown =
+                mcAnno != null
+                    && processingEnv
+                        .getTypeUtils()
+                        .isSameType(mcAnno.getAnnotationType(), TOP.getAnnotationType());
+            if (typeArgIsMcoeUnknown) {
+              typeArg.replaceAnnotation(BOTTOM);
+            }
+          }
+        }
+      }
+    } else if (elt instanceof ExecutableElement) {
+      // change it for method return types
+      if (type.getKind() == TypeKind.EXECUTABLE) {
+        AnnotatedExecutableType methodType = (AnnotatedExecutableType) type;
+        AnnotatedTypeMirror returnType = methodType.getReturnType();
+        if (isCollection(returnType.getUnderlyingType())) {
+          if (returnType.getKind() == TypeKind.DECLARED) {
+            AnnotatedDeclaredType adt = (AnnotatedDeclaredType) returnType;
+            for (AnnotatedTypeMirror typeArg : adt.getTypeArguments()) {
+              if (typeArg == null) continue;
+              AnnotationMirror mcAnno = typeArg.getEffectiveAnnotation();
+              boolean typeArgIsMcoeUnknown =
+                  mcAnno != null
+                      && processingEnv
+                          .getTypeUtils()
+                          .isSameType(mcAnno.getAnnotationType(), TOP.getAnnotationType());
+              if (typeArgIsMcoeUnknown) {
+                typeArg.replaceAnnotation(BOTTOM);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  /*
+   * Change the default @MustCallOnElements type value of @OwningArray fields and @OwningArray method parameters
+   * to contain the @MustCall methods of the component, if no manual annotation is present.
+   * For example the type of: final @OwningArray Socket[] s is changed to @MustCallOnElements("close").
+   */
+  @Override
+  public void addComputedTypeAnnotations(Element elt, AnnotatedTypeMirror type) {
+    super.addComputedTypeAnnotations(elt, type);
+    changeCollectionTypeParameters(elt, type);
+  }
+
+  /**
+   * Returns whether the given {@link TypeMirror} is an instance of a collection (subclass). This is
+   * determined by getting the class of the TypeMirror and checking whether it is assignable from
+   * Collection.
+   *
+   * @param type the TypeMirror
+   * @return whether type is an instance of a collection (subclass)
+   */
+  private boolean isCollection(TypeMirror type) {
+    if (type == null) return false;
+    Class<?> elementRawType = TypesUtils.getClassFromType(type);
+    if (elementRawType == null) return false;
+    return Collection.class.isAssignableFrom(elementRawType);
   }
 
   @Override
@@ -344,6 +431,15 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
    */
   public ExecutableElement getMustCallValueElement() {
     return mustCallValueElement;
+  }
+
+  /**
+   * Returns the {@link InheritableMustCall#value} element.
+   *
+   * @return the {@link InheritableMustCall#value} element
+   */
+  public ExecutableElement getInheritableMustCallValueElement() {
+    return inheritableMustCallValueElement;
   }
 
   /** Support @InheritableMustCall meaning @MustCall on all subtype elements. */
