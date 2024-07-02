@@ -4,6 +4,7 @@ import java.util.function.Function;
 
 public abstract class Issue6664B {
 
+  @SuppressWarnings("purity.methodref")
   void method2() {
     // Doesn't use variable arity for method applicability.
     Function<Object[], List<Object>> f1 = Arrays::asList;
