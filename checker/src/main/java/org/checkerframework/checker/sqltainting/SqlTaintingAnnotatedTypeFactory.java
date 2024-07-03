@@ -20,7 +20,7 @@ public class SqlTaintingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /**
    * Creates a {@link SqlTaintingAnnotatedTypeFactory}.
    *
-   * @param checker the tainting checker
+   * @param checker the SQL tainting checker
    */
   public SqlTaintingAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
