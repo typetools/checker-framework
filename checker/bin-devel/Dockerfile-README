@@ -28,49 +28,49 @@ alias create_upload_docker_image=' \
   mkdir -p dockerdir && \
   (cd dockerdir && \
   \cp -pf ../Dockerfile-$OS-$JDKVER Dockerfile && \
-  DOCKERIMAGE="mdernst/$PROJECT-$OS-$JDKVER$DOCKERTESTING"
+  DOCKERIMAGE="mdernst/$DPROJECT-$OS-$JDKVER$DOCKERTESTING"
   docker build -t $DOCKERIMAGE . && \
   docker push $DOCKERIMAGE) && \
   rm -rf dockerdir'
 
 export OS=ubuntu
 export JDKVER=jdk11
-export PROJECT=cf
+export DPROJECT=cf
 create_upload_docker_image
 
 export OS=ubuntu
 export JDKVER=jdk11-plus
-export PROJECT=cf
+export DPROJECT=cf
 create_upload_docker_image
 
 export OS=ubuntu
 export JDKVER=jdk17
-export PROJECT=cf
+export DPROJECT=cf
 create_upload_docker_image
 
 export OS=ubuntu
 export JDKVER=jdk17-plus
-export PROJECT=cf
+export DPROJECT=cf
 create_upload_docker_image
 
 export OS=ubuntu
 export JDKVER=jdk20
-export PROJECT=cf
+export DPROJECT=cf
 create_upload_docker_image
 
 export OS=ubuntu
 export JDKVER=jdk20-plus
-export PROJECT=cf
+export DPROJECT=cf
 create_upload_docker_image
 
 export OS=ubuntu
 export JDKVER=jdk21
-export PROJECT=cf
+export DPROJECT=cf
 create_upload_docker_image
 
 export OS=ubuntu
 export JDKVER=jdk21-plus
-export PROJECT=cf
+export DPROJECT=cf
 create_upload_docker_image
 
 
