@@ -15,5 +15,5 @@ import org.checkerframework.framework.qual.PolymorphicQualifier;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-@PolymorphicQualifier(SqlQueryValue.class)
+@PolymorphicQualifier(SqlUnsanitized.class)
 public @interface PolySqlQueryValue {}

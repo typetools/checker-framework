@@ -1,0 +1,9 @@
+package java.sql;
+
+import java.util.regex.Pattern;
+
+import org.checkerframework.checker.sqltainting.qual.SqlSanitized;
+
+public interface Statement extends Wrapper, AutoCloseable {
+    ResultSet executeQuery(@SqlSanitized String var1) throws SQLException;
+}
