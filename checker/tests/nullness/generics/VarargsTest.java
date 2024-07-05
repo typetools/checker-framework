@@ -1,7 +1,7 @@
 import java.util.Arrays;
 import java.util.Set;
 
-public class VarArgsTest {
+public class VarargsTest {
   // :: warning: [unchecked] Possible heap pollution from parameterized vararg type
   // java.util.Set<? super X>
   <X> void test(Set<? super X>... args) {

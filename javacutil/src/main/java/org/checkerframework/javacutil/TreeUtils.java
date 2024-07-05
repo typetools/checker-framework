@@ -2595,7 +2595,7 @@ public final class TreeUtils {
    * @deprecated use {@link #isVarargsCall(MethodInvocationTree)}
    */
   @Deprecated // 2024-06-04
-  public static boolean isVarArgs(MethodInvocationTree invok) {
+  public static boolean isVarargs(MethodInvocationTree invok) {
     return ((JCMethodInvocation) invok).varargsElement != null;
   }
 
@@ -2636,8 +2636,8 @@ public final class TreeUtils {
    * @return true if the given method invocation is an invocation of a method with a vararg
    *     parameter, and the invocation has with zero vararg actuals
    */
-  public static boolean isCallToVarArgsMethodWithZeroVarargsActuals(MethodInvocationTree invok) {
-    if (!TreeUtils.isVarArgs(invok)) {
+  public static boolean isCallToVarargsMethodWithZeroVarargsActuals(MethodInvocationTree invok) {
+    if (!TreeUtils.isVarargs(invok)) {
       return false;
     }
     int numParams = elementFromUse(invok).getParameters().size();
@@ -2654,7 +2654,7 @@ public final class TreeUtils {
    * @deprecated use {@link #isVarargsCall(NewClassTree)}
    */
   @Deprecated // 2024-06-04
-  public static boolean isVarArgs(NewClassTree newClassTree) {
+  public static boolean isVarargs(NewClassTree newClassTree) {
     return isVarargsCall(newClassTree);
   }
 
@@ -2849,7 +2849,7 @@ public final class TreeUtils {
   /**
    * Was applicability by variable arity invocation necessary to determine the method signature?
    *
-   * <p>This isn't the same as {@link ExecutableElement#isVarArgs()}. That method returns true if
+   * <p>This isn't the same as {@link ExecutableElement#isVarargs()}. That method returns true if
    * the method accepts a variable number of arguments. This method returns true if the method
    * invocation actually used that fact to invoke the method.
    *
@@ -2859,7 +2859,7 @@ public final class TreeUtils {
    * @deprecated use {@link #isVarargsCall(Tree)}
    */
   @Deprecated // 2024-06-04
-  public static boolean isVarArgMethodCall(ExpressionTree methodInvocation) {
+  public static boolean isVarargsMethodCall(ExpressionTree methodInvocation) {
     return isVarargsCall(methodInvocation);
   }
 

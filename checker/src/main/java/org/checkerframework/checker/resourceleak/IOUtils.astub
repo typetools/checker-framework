@@ -24,7 +24,7 @@ class IOUtils {
     static void closeQuietly(Closeable arg0);
 
     @SuppressWarnings("ensuresvarargs.unverified")
-    @EnsuresCalledMethodsVarArgs("close")
+    @EnsuresCalledMethodsVarargs("close")
     static void closeQuietly(Closeable... arg0);
 
     @EnsuresCalledMethods(value = "#1", methods = "close")
