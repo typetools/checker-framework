@@ -2849,7 +2849,7 @@ public final class TreeUtils {
   /**
    * Was applicability by variable arity invocation necessary to determine the method signature?
    *
-   * <p>This isn't the same as {@link ExecutableElement#isVarargs()}. That method returns true if
+   * <p>This isn't the same as {@link ExecutableElement#isVarArgs()}. That method returns true if
    * the method accepts a variable number of arguments. This method returns true if the method
    * invocation actually used that fact to invoke the method.
    *

@@ -188,6 +188,13 @@ public class SignaturePrinter extends AbstractTypeProcessor {
       }
     }
 
+    /**
+     * Prints a variable declaration.
+     *
+     * @param type the type of the variable
+     * @param name the name of the variable
+     * @param isVarargs true if the variable is a varargs formal parameter
+     */
     public void printVariable(AnnotatedTypeMirror type, Name name, boolean isVarargs) {
       out.print(type);
       if (isVarargs) {
