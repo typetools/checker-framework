@@ -37,8 +37,8 @@ if [ -d "$GIT_SCRIPTS" ] ; then
   (cd "$GIT_SCRIPTS" && (git pull -q || true))
 else
   (cd "$CHECKERFRAMEWORK/checker/bin-devel" && \
-      (git clone --filter=blob:none -q https://github.com/plume-lib/git-scripts.git .git-scripts || \
-       (sleep 60 && git clone --filter=blob:none -q https://github.com/plume-lib/git-scripts.git .git-scripts)))
+      (git clone --depth=1 -q https://github.com/plume-lib/git-scripts.git .git-scripts || \
+       (sleep 60 && git clone --depth=1 -q https://github.com/plume-lib/git-scripts.git .git-scripts)))
 fi
 
 # Clone the annotated JDK into ../jdk .
