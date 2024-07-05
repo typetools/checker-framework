@@ -662,7 +662,7 @@ void clone(url, directory, ignoreError, extraArgs = []){
     args = [
       'clone',
       '-q',
-      '--filter=blob:none',
+      '--depth=1',
       url,
       file(directory).toPath().last()
     ]
