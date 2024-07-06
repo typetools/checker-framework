@@ -84,8 +84,8 @@ public class OptionalVisitor
   /** The set of methods to be verified by the Non-Empty Checker. */
   private final Set<MethodTree> methodsToVerifyWithNonEmptyChecker;
 
-  /** Map of the names of methods to the methods in which they are invoked. */
-  private final Map<String, Set<MethodTree>> methodNamesToEnclosingMethods;
+  /** Map of the names of callees to the methods that call them. */
+  private final Map<String, Set<MethodTree>> calleesToCallers;
 
   /**
    * Create an OptionalVisitor.
@@ -104,7 +104,7 @@ public class OptionalVisitor
     streamFilter = TreeUtils.getMethod("java.util.stream.Stream", "filter", 1, env);
     streamMap = TreeUtils.getMethod("java.util.stream.Stream", "map", 1, env);
     methodsToVerifyWithNonEmptyChecker = new HashSet<>();
-    methodNamesToEnclosingMethods = new HashMap<>();
+    calleesToCallers = new HashMap<>();
   }
 
   @Override
@@ -360,17 +360,16 @@ public class OptionalVisitor
   public Void visitMethodInvocation(MethodInvocationTree tree, Void p) {
     handleCreationElimination(tree);
     handleNestedOptionalCreation(tree);
-    updateMethodNamesToEnclosingMethods(tree);
+    updateCalleesToCallers(tree);
     return super.visitMethodInvocation(tree, p);
   }
 
   /**
-   * Updates {@link methodNamesToEnclosingMethods} given a method invocation.
+   * Updates {@link calleesToCallers} given a method invocation.
    *
    * <p>Check whether the method is in the set of methods that must be checked by the Non-Empty
-   * checker whenever a method invocation is encountered. If the method is in the set, the method
-   * that immediately encloses the method invocation should also be added to the set of methods to
-   * be checked by the Non-Empty Checker.
+   * checker whenever a method invocation is encountered. If the method is in the set, its caller
+   * should also be checked by the Non-Empty Checker.
    *
    * <p>This ensures that the <i>clients</i> of any methods that must be checked by the Non-Empty
    * Checker (i.e., methods that have preconditions related to the Non-Empty type system) are
@@ -378,22 +377,19 @@ public class OptionalVisitor
    *
    * @param tree a method invocation tree
    */
-  private void updateMethodNamesToEnclosingMethods(MethodInvocationTree tree) {
-    String invokedMethodName = tree.getMethodSelect().toString();
-    MethodTree enclosingMethod = TreePathUtil.enclosingMethod(this.getCurrentPath());
-    if (enclosingMethod != null) {
+  private void updateCalleesToCallers(MethodInvocationTree tree) {
+    String callee = tree.getMethodSelect().toString();
+    MethodTree caller = TreePathUtil.enclosingMethod(this.getCurrentPath());
+    if (caller != null) {
       Set<String> namesOfMethodsForNonEmptyChecker =
           methodsToVerifyWithNonEmptyChecker.stream()
               .map(MethodTree::getName)
               .map(Name::toString)
               .collect(Collectors.toSet());
-      if (namesOfMethodsForNonEmptyChecker.contains(invokedMethodName)
-          && methodNamesToEnclosingMethods.containsKey(invokedMethodName)) {
-        methodNamesToEnclosingMethods.get(invokedMethodName).add(enclosingMethod);
-      } else if (namesOfMethodsForNonEmptyChecker.contains(invokedMethodName)) {
-        Set<MethodTree> enclosingMethodsForInvokedMethod = new HashSet<>();
-        enclosingMethodsForInvokedMethod.add(enclosingMethod);
-        methodNamesToEnclosingMethods.put(invokedMethodName, enclosingMethodsForInvokedMethod);
+      if (namesOfMethodsForNonEmptyChecker.contains(callee)) {
+        Set<MethodTree> callers =
+            calleesToCallers.computeIfAbsent(callee, (__) -> new HashSet<MethodTree>());
+        callers.add(caller);
       }
     }
   }
@@ -415,16 +411,15 @@ public class OptionalVisitor
    * Non-Empty type system (e.g., {@link RequiresNonEmpty}) or a formal annotated with {@link
    * NonEmpty} is visited.
    *
-   * <p>If the method being visited is in {@link methodNamesToEnclosingMethods}, the methods to
-   * check with the Non-Empty Checker should be updated with all the methods that dispatch calls to
-   * this method.
+   * <p>If the method being visited is in {@link calleesToCallers}, the methods to check with the
+   * Non-Empty Checker should be updated with all the methods that dispatch calls to this method.
    *
    * @param tree a method tree
    */
   private void updateMethodToCheckWithNonEmptyCheckerGivenPreconditions(MethodTree tree) {
     String methodName = tree.getName().toString();
-    if (methodNamesToEnclosingMethods.containsKey(methodName)) {
-      methodsToVerifyWithNonEmptyChecker.addAll(methodNamesToEnclosingMethods.get(methodName));
+    if (calleesToCallers.containsKey(methodName)) {
+      methodsToVerifyWithNonEmptyChecker.addAll(calleesToCallers.get(methodName));
     }
     methodsToVerifyWithNonEmptyChecker.add(tree);
   }
