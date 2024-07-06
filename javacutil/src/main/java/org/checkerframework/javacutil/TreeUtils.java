@@ -2571,6 +2571,17 @@ public final class TreeUtils {
   }
 
   /**
+   * Returns true if the given method reference has a varargs formal parameter.
+   *
+   * @param methref a method reference
+   * @return if the given method reference has a varargs formal parameter
+   */
+  public static boolean hasVarargsParameter(MemberReferenceTree methref) {
+    JCMemberReference jcMethoRef = (JCMemberReference) methref;
+    return jcMethoRef.varargsElement != null;
+  }
+
+  /**
    * Returns true if the given method/constructor invocation is a varargs invocation.
    *
    * @param tree a method/constructor invocation
@@ -2582,6 +2593,8 @@ public final class TreeUtils {
         return isVarargsCall((MethodInvocationTree) tree);
       case NEW_CLASS:
         return isVarargsCall((NewClassTree) tree);
+      case MEMBER_REFERENCE:
+        return hasVarargsParameter((MemberReferenceTree) tree);
       default:
         return false;
     }
