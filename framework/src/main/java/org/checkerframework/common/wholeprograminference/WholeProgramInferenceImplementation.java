@@ -1001,9 +1001,6 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       return;
     }
 
-    // Update the right-hand side (rhs) annotations if necessary before updating the annotation set
-    atypeFactory.wpiAdjustAnnotationsBeforeUpdate(rhsATM);
-
     AnnotatedTypeMirror atmFromStorage =
         storage.atmFromStorageLocation(rhsATM.getUnderlyingType(), annotationsToUpdate);
     updateAtmWithLub(rhsATM, atmFromStorage);

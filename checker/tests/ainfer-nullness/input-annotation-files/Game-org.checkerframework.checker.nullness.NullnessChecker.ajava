@@ -1,0 +1,101 @@
+import org.checkerframework.checker.initialization.qual.*;
+import org.checkerframework.checker.nullness.qual.*;
+
+@org.checkerframework.framework.qual.AnnotatedFor("org.checkerframework.checker.nullness.NullnessChecker")
+interface Game {
+
+    @org.checkerframework.dataflow.qual.SideEffectFree
+    void newGame();
+}
+
+@org.checkerframework.framework.qual.AnnotatedFor("org.checkerframework.checker.nullness.NullnessChecker")
+class // package-private
+GameImpl implements // package-private
+Game {
+
+    private @org.checkerframework.checker.initialization.qual.Initialized @org.checkerframework.checker.nullness.qual.MonotonicNonNull MoveValidator moveValidator;
+
+    @org.checkerframework.checker.nullness.qual.EnsuresNonNull({ "this.moveValidator" })
+    @org.checkerframework.dataflow.qual.Impure
+    public GameImpl(MoveValidator mValidator) {
+        mValidator.setGame(this);
+        moveValidator = mValidator;
+    }
+
+    @org.checkerframework.dataflow.qual.SideEffectFree
+    public GameImpl() {
+    }
+
+    @org.checkerframework.framework.qual.EnsuresQualifier(expression = { "this.moveValidator" }, qualifier = org.checkerframework.checker.nullness.qual.Nullable.class)
+    @org.checkerframework.dataflow.qual.SideEffectFree
+    public void newGame(@org.checkerframework.checker.initialization.qual.Initialized @org.checkerframework.checker.nullness.qual.NonNull // package-private
+    GameImpl this) {
+        // Implementation of starting a new game
+    }
+}
+
+@org.checkerframework.framework.qual.AnnotatedFor("org.checkerframework.checker.nullness.NullnessChecker")
+interface MoveValidator {
+
+    @org.checkerframework.dataflow.qual.Impure
+    void setGame(@org.checkerframework.checker.initialization.qual.UnknownInitialization(GameImpl.class) @org.checkerframework.checker.nullness.qual.Nullable Game game);
+}
+
+@org.checkerframework.framework.qual.AnnotatedFor("org.checkerframework.checker.nullness.NullnessChecker")
+class // package-private
+PlayerDependentMoveValidator implements // package-private
+MoveValidator {
+
+    private @org.checkerframework.checker.initialization.qual.UnknownInitialization(GameImpl.class) @org.checkerframework.checker.nullness.qual.Nullable Game game;
+
+    private @org.checkerframework.checker.initialization.qual.Initialized @org.checkerframework.checker.nullness.qual.NonNull MoveValidator blackMoveValidator = new SimpleMoveValidator();
+
+    @org.checkerframework.framework.qual.EnsuresQualifier(expression = { "this.game" }, qualifier = org.checkerframework.checker.nullness.qual.Nullable.class)
+    @org.checkerframework.dataflow.qual.Impure
+    public void setGame(@org.checkerframework.checker.initialization.qual.Initialized @org.checkerframework.checker.nullness.qual.NonNull // package-private
+    PlayerDependentMoveValidator this, @org.checkerframework.checker.initialization.qual.UnknownInitialization(GameImpl.class) @org.checkerframework.checker.nullness.qual.Nullable Game game) {
+        this.game = game;
+    }
+
+    @org.checkerframework.dataflow.qual.SideEffectFree
+    public PlayerDependentMoveValidator() {
+    }
+
+    @org.checkerframework.checker.nullness.qual.EnsuresNonNull({ "#1" })
+    @org.checkerframework.checker.nullness.qual.EnsuresNonNull({ "this.game" })
+    @org.checkerframework.dataflow.qual.Impure
+    public PlayerDependentMoveValidator(@org.checkerframework.checker.initialization.qual.UnknownInitialization(java.lang.Object.class) @org.checkerframework.checker.nullness.qual.Nullable Game game) {
+        this.setGame(game);
+        blackMoveValidator.setGame(game);
+    }
+}
+
+@org.checkerframework.framework.qual.AnnotatedFor("org.checkerframework.checker.nullness.NullnessChecker")
+class // package-private
+SimpleMoveValidator implements // package-private
+MoveValidator {
+
+    private @org.checkerframework.checker.initialization.qual.UnknownInitialization(GameImpl.class) @org.checkerframework.checker.nullness.qual.MonotonicNonNull Game game;
+
+    @org.checkerframework.checker.nullness.qual.EnsuresNonNull({ "this.game" })
+    @org.checkerframework.dataflow.qual.Impure
+    public void setGame(@org.checkerframework.checker.initialization.qual.Initialized @org.checkerframework.checker.nullness.qual.NonNull // package-private
+    SimpleMoveValidator this, @org.checkerframework.checker.initialization.qual.UnknownInitialization(GameImpl.class) @org.checkerframework.checker.nullness.qual.NonNull Game game) {
+        this.game = game;
+    }
+
+    @org.checkerframework.dataflow.qual.SideEffectFree
+    public SimpleMoveValidator() {
+    }
+
+    @org.checkerframework.checker.nullness.qual.EnsuresNonNull({ "this.game" })
+    @org.checkerframework.dataflow.qual.Pure
+    public @org.checkerframework.checker.initialization.qual.UnderInitialization(PlayerDependentMoveValidator.class) @org.checkerframework.checker.nullness.qual.NonNull MoveValidator createMoveValidator() {
+        return new PlayerDependentMoveValidator(game);
+    }
+        public void test(){
+        PlayerDependentMoveValidator g1 =
+                new PlayerDependentMoveValidator(game);
+        this.game = g1.game;
+    }
+}

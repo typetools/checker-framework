@@ -5524,15 +5524,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
-   * Changes the type of {@code rhsATM} when being assigned to anything, for use by whole-program
-   * inference. The default implementation does nothing.
-   *
-   * @param rhsATM the type of the rhs of the pseudo-assignment, which is side-effected by this
-   *     method
-   */
-  public void wpiAdjustAnnotationsBeforeUpdate(AnnotatedTypeMirror rhsATM) {}
-
-  /**
    * Side-effects the method or constructor annotations to make any desired changes before writing
    * to an annotation file.
    *

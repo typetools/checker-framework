@@ -1,0 +1,94 @@
+import org.checkerframework.checker.initialization.qual.*;
+import org.checkerframework.checker.nullness.qual.*;
+
+@org.checkerframework.framework.qual.AnnotatedFor("org.checkerframework.checker.nullness.KeyForSubchecker")
+interface Game {
+
+    @org.checkerframework.dataflow.qual.SideEffectFree
+    void newGame();
+}
+
+@org.checkerframework.framework.qual.AnnotatedFor("org.checkerframework.checker.nullness.KeyForSubchecker")
+class // package-private
+GameImpl implements // package-private
+Game {
+
+    private  MoveValidator moveValidator;
+
+    @org.checkerframework.dataflow.qual.Impure
+    public GameImpl(MoveValidator mValidator) {
+        mValidator.setGame(this);
+        moveValidator = mValidator;
+    }
+
+    @org.checkerframework.dataflow.qual.SideEffectFree
+    public GameImpl() {
+    }
+
+    @org.checkerframework.dataflow.qual.SideEffectFree
+    public void newGame( // package-private
+    GameImpl this) {
+        // Implementation of starting a new game
+    }
+}
+
+@org.checkerframework.framework.qual.AnnotatedFor("org.checkerframework.checker.nullness.KeyForSubchecker")
+interface MoveValidator {
+
+    @org.checkerframework.dataflow.qual.Impure
+    void setGame( MoveValidator this,  Game game);
+}
+
+@org.checkerframework.framework.qual.AnnotatedFor("org.checkerframework.checker.nullness.KeyForSubchecker")
+class // package-private
+PlayerDependentMoveValidator implements // package-private
+MoveValidator {
+
+    private  Game game;
+
+    private  MoveValidator blackMoveValidator = new SimpleMoveValidator();
+
+    @org.checkerframework.dataflow.qual.Impure
+    public void setGame( // package-private
+    PlayerDependentMoveValidator this,  Game game) {
+        this.game = game;
+    }
+
+    @org.checkerframework.dataflow.qual.SideEffectFree
+    public PlayerDependentMoveValidator() {
+    }
+
+    @org.checkerframework.dataflow.qual.Impure
+    public PlayerDependentMoveValidator( Game game) {
+        this.setGame(game);
+        blackMoveValidator.setGame(game);
+    }
+}
+
+@org.checkerframework.framework.qual.AnnotatedFor("org.checkerframework.checker.nullness.KeyForSubchecker")
+class // package-private
+SimpleMoveValidator implements // package-private
+MoveValidator {
+
+    private  Game game;
+
+    @org.checkerframework.dataflow.qual.Impure
+    public void setGame( // package-private
+    SimpleMoveValidator this,  Game game) {
+        this.game = game;
+    }
+
+    @org.checkerframework.dataflow.qual.SideEffectFree
+    public SimpleMoveValidator() {
+    }
+
+    @org.checkerframework.dataflow.qual.Pure
+    public  MoveValidator createMoveValidator() {
+        return new PlayerDependentMoveValidator(game);
+    }
+        public void test(){
+        PlayerDependentMoveValidator g1 =
+                new PlayerDependentMoveValidator(game);
+        this.game = g1.game;
+    }
+}
