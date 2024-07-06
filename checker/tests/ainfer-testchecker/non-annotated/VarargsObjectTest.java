@@ -1,7 +1,7 @@
 import org.checkerframework.checker.testchecker.ainfer.qual.AinferParent;
 import org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1;
 
-public class VarargsTest {
+public class VarargsObjectTest {
 
   static void m1Varargs(Object... args) {}
 
