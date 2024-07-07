@@ -5,7 +5,7 @@ interface Game {
   void newGame();
 }
 
-class GameImpl implements Game { // package-private
+class GameImpl implements Game {
   private MoveValidator moveValidator;
 
   public GameImpl(MoveValidator mValidator) {
@@ -17,7 +17,6 @@ class GameImpl implements Game { // package-private
 
   @Override
   public void newGame() {
-    // Implementation of starting a new game
   }
 }
 
@@ -25,7 +24,7 @@ interface MoveValidator {
   void setGame(Game game);
 }
 
-class PlayerDependentMoveValidator implements MoveValidator { // package-private
+class PlayerDependentMoveValidator implements MoveValidator {
   public Game game;
   private MoveValidator blackMoveValidator = new SimpleMoveValidator();
 
@@ -44,7 +43,7 @@ class PlayerDependentMoveValidator implements MoveValidator { // package-private
   }
 }
 
-class SimpleMoveValidator implements MoveValidator { // package-private
+class SimpleMoveValidator implements MoveValidator {
   private Game game;
 
   @SuppressWarnings({"override.param", "contracts.postcondition"})
