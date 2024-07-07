@@ -977,7 +977,7 @@ public abstract class JavaExpression {
   }
 
   /**
-   * Returns the initial receiver of a "fluent" method invocation.
+   * Returns the leftmost receiver of a method invocation chain.
    *
    * <p>For example, for a given method invocation sequence {@code a.b().c.d().e()}, return {@code
    * a}.

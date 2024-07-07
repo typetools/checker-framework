@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
@@ -48,7 +49,6 @@ import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -84,8 +84,8 @@ public class OptionalVisitor
   /** The set of methods to be verified by the Non-Empty Checker. */
   private final Set<MethodTree> methodsToVerifyWithNonEmptyChecker;
 
-  /** Map of the names of methods to the methods in which they are invoked. */
-  private final Map<String, Set<MethodTree>> methodNamesToEnclosingMethods;
+  /** Map of the names of callees to the methods that call them. */
+  private final Map<String, Set<MethodTree>> calleesToCallers;
 
   /**
    * Create an OptionalVisitor.
@@ -104,7 +104,7 @@ public class OptionalVisitor
     streamFilter = TreeUtils.getMethod("java.util.stream.Stream", "filter", 1, env);
     streamMap = TreeUtils.getMethod("java.util.stream.Stream", "map", 1, env);
     methodsToVerifyWithNonEmptyChecker = new HashSet<>();
-    methodNamesToEnclosingMethods = new HashMap<>();
+    calleesToCallers = new HashMap<>();
   }
 
   @Override
@@ -360,17 +360,16 @@ public class OptionalVisitor
   public Void visitMethodInvocation(MethodInvocationTree tree, Void p) {
     handleCreationElimination(tree);
     handleNestedOptionalCreation(tree);
-    updateMethodNamesToEnclosingMethods(tree);
+    updateCalleesToCallers(tree);
     return super.visitMethodInvocation(tree, p);
   }
 
   /**
-   * Updates {@link methodNamesToEnclosingMethods} given a method invocation.
+   * Updates {@link calleesToCallers} given a method invocation.
    *
    * <p>Check whether the method is in the set of methods that must be checked by the Non-Empty
-   * checker whenever a method invocation is encountered. If the method is in the set, the method
-   * that immediately encloses the method invocation should also be added to the set of methods to
-   * be checked by the Non-Empty Checker.
+   * checker whenever a method invocation is encountered. If the method is in the set, its caller
+   * should also be checked by the Non-Empty Checker.
    *
    * <p>This ensures that the <i>clients</i> of any methods that must be checked by the Non-Empty
    * Checker (i.e., methods that have preconditions related to the Non-Empty type system) are
@@ -378,22 +377,22 @@ public class OptionalVisitor
    *
    * @param tree a method invocation tree
    */
-  private void updateMethodNamesToEnclosingMethods(MethodInvocationTree tree) {
-    String invokedMethodName = tree.getMethodSelect().toString();
-    MethodTree enclosingMethod = TreePathUtil.enclosingMethod(this.getCurrentPath());
-    if (enclosingMethod != null) {
+  private void updateCalleesToCallers(MethodInvocationTree tree) {
+    String callee = tree.getMethodSelect().toString();
+    MethodTree caller = TreePathUtil.enclosingMethod(this.getCurrentPath());
+    if (caller != null) {
+      // Using the names of methods (as opposed to their fully-qualified name or signature) is a
+      // safe (but imprecise) over-approximation of all the methods that must be verified with the
+      // Non-Empty Checker. Overloads of methods will be detected.
       Set<String> namesOfMethodsForNonEmptyChecker =
           methodsToVerifyWithNonEmptyChecker.stream()
               .map(MethodTree::getName)
               .map(Name::toString)
               .collect(Collectors.toSet());
-      if (namesOfMethodsForNonEmptyChecker.contains(invokedMethodName)
-          && methodNamesToEnclosingMethods.containsKey(invokedMethodName)) {
-        methodNamesToEnclosingMethods.get(invokedMethodName).add(enclosingMethod);
-      } else if (namesOfMethodsForNonEmptyChecker.contains(invokedMethodName)) {
-        Set<MethodTree> enclosingMethodsForInvokedMethod = new HashSet<>();
-        enclosingMethodsForInvokedMethod.add(enclosingMethod);
-        methodNamesToEnclosingMethods.put(invokedMethodName, enclosingMethodsForInvokedMethod);
+      if (namesOfMethodsForNonEmptyChecker.contains(callee)) {
+        Set<MethodTree> callers =
+            calleesToCallers.computeIfAbsent(callee, (__) -> new HashSet<MethodTree>());
+        callers.add(caller);
       }
     }
   }
@@ -415,17 +414,16 @@ public class OptionalVisitor
    * Non-Empty type system (e.g., {@link RequiresNonEmpty}) or a formal annotated with {@link
    * NonEmpty} is visited.
    *
-   * <p>If the method being visited is in {@link methodNamesToEnclosingMethods}, the methods to
-   * check with the Non-Empty Checker should be updated with all the methods that dispatch calls to
-   * this method.
+   * <p>If the method being visited is in {@link calleesToCallers}, the methods to check with the
+   * Non-Empty Checker should be updated with all the methods that dispatch calls to this method.
    *
    * @param methodDecl a method declaration that definitely has a precondition regarding
    *     {@code @NonEmpty}
    */
   private void updateMethodToCheckWithNonEmptyCheckerGivenPreconditions(MethodTree methodDecl) {
     String methodName = methodDecl.getName().toString();
-    if (methodNamesToEnclosingMethods.containsKey(methodName)) {
-      methodsToVerifyWithNonEmptyChecker.addAll(methodNamesToEnclosingMethods.get(methodName));
+    if (calleesToCallers.containsKey(methodName)) {
+      methodsToVerifyWithNonEmptyChecker.addAll(calleesToCallers.get(methodName));
     }
     methodsToVerifyWithNonEmptyChecker.add(methodDecl);
   }
@@ -437,9 +435,9 @@ public class OptionalVisitor
    * @return true if a method is explicitly annotated with {@link RequiresNonEmpty}
    */
   private boolean isAnnotatedWithNonEmptyPrecondition(MethodTree methodDecl) {
-    return TreeUtils.annotationsFromTypeAnnotationTrees(methodDecl.getModifiers().getAnnotations())
-        .stream()
-        .anyMatch(am -> atypeFactory.areSameByClass(am, RequiresNonEmpty.class));
+    List<? extends AnnotationMirror> annos =
+        TreeUtils.annotationsFromTypeAnnotationTrees(methodDecl.getModifiers().getAnnotations());
+    return atypeFactory.containsSameByClass(annos, RequiresNonEmpty.class);
   }
 
   /**
@@ -452,13 +450,14 @@ public class OptionalVisitor
    */
   private boolean isAnyFormalAnnotatedWithNonEmpty(MethodTree methodDecl) {
     List<? extends VariableTree> params = methodDecl.getParameters();
-    AnnotationMirrorSet annotationMirrors = new AnnotationMirrorSet();
     for (VariableTree vt : params) {
-      annotationMirrors.addAll(
-          TreeUtils.annotationsFromTypeAnnotationTrees(vt.getModifiers().getAnnotations()));
+      List<? extends AnnotationMirror> annos =
+          TreeUtils.annotationsFromTypeAnnotationTrees(vt.getModifiers().getAnnotations());
+      if (atypeFactory.containsSameByClass(annos, NonEmpty.class)) {
+        return true;
+      }
     }
-    return annotationMirrors.stream()
-        .anyMatch(am -> atypeFactory.areSameByClass(am, NonEmpty.class));
+    return false;
   }
 
   /**
@@ -471,8 +470,9 @@ public class OptionalVisitor
     if (methodDecl.getReturnType() == null) {
       return false;
     }
-    return TreeUtils.typeOf(methodDecl.getReturnType()).getAnnotationMirrors().stream()
-        .anyMatch(am -> atypeFactory.areSameByClass(am, NonEmpty.class));
+    List<? extends AnnotationMirror> annos =
+        TreeUtils.typeOf(methodDecl.getReturnType()).getAnnotationMirrors();
+    return atypeFactory.containsSameByClass(annos, NonEmpty.class);
   }
 
   @Override
@@ -616,7 +616,7 @@ public class OptionalVisitor
    */
   @Override
   public Void visitVariable(VariableTree tree, Void p) {
-    handleNonEmptyVariableDeclaration(tree);
+    updateMethodsToVerifyWithNonEmptyCheckerGivenNonEmptyVariable(tree);
     VariableElement ve = TreeUtils.elementFromDeclaration(tree);
     TypeMirror tm = ve.asType();
     if (isOptionalType(tm)) {
@@ -637,15 +637,15 @@ public class OptionalVisitor
   }
 
   /**
-   * Handles the case where a variable declaration contains "@NonEmpty".
+   * Given a variable declaration, add the enclosing method in which it is found (if one exists) to
+   * the set of methods that must be verified with the Non-Empty Checker.
    *
    * @param tree a variable declaration
    */
-  private void handleNonEmptyVariableDeclaration(VariableTree tree) {
-    boolean isAnnotatedWithNonEmpty =
-        TreeUtils.annotationsFromTypeAnnotationTrees(tree.getModifiers().getAnnotations()).stream()
-            .anyMatch(am -> atypeFactory.areSameByClass(am, NonEmpty.class));
-    if (isAnnotatedWithNonEmpty) {
+  private void updateMethodsToVerifyWithNonEmptyCheckerGivenNonEmptyVariable(VariableTree tree) {
+    List<? extends AnnotationMirror> annos =
+        TreeUtils.annotationsFromTypeAnnotationTrees(tree.getModifiers().getAnnotations());
+    if (atypeFactory.containsSameByClass(annos, NonEmpty.class)) {
       MethodTree enclosingMethod = TreePathUtil.enclosingMethod(this.getCurrentPath());
       if (enclosingMethod != null) {
         methodsToVerifyWithNonEmptyChecker.add(enclosingMethod);

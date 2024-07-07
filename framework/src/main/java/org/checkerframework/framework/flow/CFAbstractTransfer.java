@@ -1493,11 +1493,12 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
-   * Inserts {@code newAnno} into all stores (conditional or not) in the result for node, while
-   * permitting non-determinism. This is a utility method for subclasses.
+   * Inserts {@code newAnno} into all stores (conditional or not) in the result for {@code target},
+   * while permitting non-determinism. This is a utility method for subclasses.
    *
    * @param result the {@link TransferResult} holding the stores to modify
-   * @param target the receiver whose values should be modified
+   * @param target the {@link JavaExpression} for which the stores should be modified to contain the
+   *     value {@code newAnno}
    * @param newAnno the new value
    */
   protected static void insertIntoStoresPermitNonDeterministic(
