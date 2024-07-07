@@ -173,9 +173,8 @@ public class OptionalTransfer extends CFTransfer {
    */
   private TransferResult<CFValue, CFStore> refineNonEmptyToPresentStreamResult(
       MethodInvocationNode n, TransferResult<CFValue, CFStore> result) {
-    if (nonEmptyToPresentStreamMethods.stream()
-        .anyMatch(
-            op -> NodeUtils.isMethodInvocation(n, op, optionalTypeFactory.getProcessingEnv()))) {
+    if (NodeUtils.isMethodInvocation(
+        n, nonEmptyToPresentStreamMethods, optionalTypeFactory.getProcessingEnv())) {
       if (isReceiverParameterNonEmpty(n)) {
         // The receiver of the stream operation is @Non-Empty, therefore the result is @Present.
         JavaExpression internalRepr = JavaExpression.fromNode(n);
