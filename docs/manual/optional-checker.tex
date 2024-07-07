@@ -56,10 +56,25 @@ Optional Checker in the future.)
 
 \sectionAndLabel{How to run the Optional Checker}{optional-run-checker}
 
+The standard way to run the Optional Checker is one of these command lines:
+
 \begin{Verbatim}
 javac -processor optional MyFile.java ...
 javac -processor org.checkerframework.checker.optional.OptionalChecker MyFile.java ...
 \end{Verbatim}
+
+% TODO: This is gross.  Figure out a way to control this from the Optional Checker.
+There is a second way to run the Optional Checker:
+
+\begin{Verbatim}
+javac -ArunAsOptionalChecker -processor nonempty MyFile.java ...
+javac -ArunAsOptionalChecker -processor org.checkerframework.checker.nonempty.NonEmptyChecker MyFile.java ...
+\end{Verbatim}
+
+In this modality, the Optional Checker and the Non-Empty Checker work in
+tandem.  The Optional Checker uses \<@NonEmpty> annotations to refine its
+results for \<Stream> operations like \<max>, \<reduce>, and \<findFirst>,
+and the Non-Empty Checker checks only explicitly-written annotations.
 
 
 \sectionAndLabel{Optional annotations}{optional-annotations}

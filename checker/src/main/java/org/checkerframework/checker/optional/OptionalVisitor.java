@@ -381,6 +381,9 @@ public class OptionalVisitor
     String callee = tree.getMethodSelect().toString();
     MethodTree caller = TreePathUtil.enclosingMethod(this.getCurrentPath());
     if (caller != null) {
+      // Using the names of methods (as opposed to their fully-qualified name or signature) is a
+      // safe (but imprecise) over-approximation of all the methods that must be verified with the
+      // Non-Empty Checker. Overloads of methods will be detected.
       Set<String> namesOfMethodsForNonEmptyChecker =
           methodsToVerifyWithNonEmptyChecker.stream()
               .map(MethodTree::getName)
@@ -612,7 +615,7 @@ public class OptionalVisitor
    */
   @Override
   public Void visitVariable(VariableTree tree, Void p) {
-    handleNonEmptyVariableDeclaration(tree);
+    updateMethodsToVerifyWithNonEmptyCheckerGivenNonEmptyVariable(tree);
     VariableElement ve = TreeUtils.elementFromDeclaration(tree);
     TypeMirror tm = ve.asType();
     if (isOptionalType(tm)) {
@@ -633,11 +636,12 @@ public class OptionalVisitor
   }
 
   /**
-   * Handles the case where a variable declaration contains "@NonEmpty".
+   * Given a variable declaration, add the enclosing method in which it is found (if one exists) to
+   * the set of methods that must be verified with the Non-Empty Checker.
    *
    * @param tree a variable declaration
    */
-  private void handleNonEmptyVariableDeclaration(VariableTree tree) {
+  private void updateMethodsToVerifyWithNonEmptyCheckerGivenNonEmptyVariable(VariableTree tree) {
     List<? extends AnnotationMirror> annos =
         TreeUtils.annotationsFromTypeAnnotationTrees(tree.getModifiers().getAnnotations());
     if (atypeFactory.containsSameByClass(annos, NonEmpty.class)) {
