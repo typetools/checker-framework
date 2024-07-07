@@ -12,8 +12,8 @@ class MemberRefVarArgsTest {
 
   static void myMethodArray(String[] in) {}
 
-  VarArgsFunc v1 = MemberRefVarArgsTest::myMethod;
-  VarArgsFunc v2 = MemberRefVarArgsTest::myMethodArray;
+  VarargsFunc v1 = MemberRefVarArgsTest::myMethod;
+  VarargsFunc v2 = MemberRefVarArgsTest::myMethodArray;
 
   ArrayFunc v3 = MemberRefVarArgsTest::myMethod;
   ArrayFunc v4 = MemberRefVarArgsTest::myMethodArray;
