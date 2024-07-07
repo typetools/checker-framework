@@ -300,8 +300,7 @@ public class TransferInput<V extends AbstractValue<V>, S extends Store<S>> imple
   @Override
   public String toString() {
     if (store == null) {
-      return getClassAndUid()
-          + "[then="
+      return "[then="
           + StringsPlume.indentLinesExceptFirst(2, thenStore)
           + ","
           + System.lineSeparator()
@@ -309,7 +308,7 @@ public class TransferInput<V extends AbstractValue<V>, S extends Store<S>> imple
           + StringsPlume.indentLinesExceptFirst(2, elseStore)
           + "]";
     } else {
-      return getClassAndUid() + "[" + store + "]";
+      return "[" + store + "]";
     }
   }
 }

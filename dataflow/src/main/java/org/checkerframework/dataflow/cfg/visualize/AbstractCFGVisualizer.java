@@ -15,7 +15,6 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.AbstractValue;
 import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.dataflow.analysis.Analysis.Direction;
-import org.checkerframework.dataflow.analysis.AnalysisResult;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.analysis.TransferFunction;
 import org.checkerframework.dataflow.analysis.TransferInput;
@@ -333,32 +332,14 @@ public abstract class AbstractCFGVisualizer<
     UniqueId storesFromId;
 
     if (analysisDirection == Direction.FORWARD && where == VisualizeWhere.AFTER) {
-      AnalysisResult<V, S> aResult = analysis.getResult();
+      regularStore = analysis.getResult().getStoreAfter(bb);
+      storesFromId = analysis.getResult();
       Node lastNode = bb.getLastNode();
-
-      TransferInput<V, S> input = analysis.getInput(bb);
-      System.out.printf("input = %s%n", input);
-      System.out.printf("analysisCaches keys = %s%n", aResult.analysisCaches.keySet());
-      IdentityHashMap<Node, TransferResult<V, S>> cache = aResult.analysisCaches.get(input);
-      System.out.printf("cache = %s%n", cache);
-      // TransferResult<V, S> tResult = cache.get(lastNode);
-
-      // getStoreAfter re-runs the analysis, which we don't want.
-      // System.out.printf("About to call getStoreAfter(%s)%n", bb);
-      // regularStore = aResult.getStoreAfter(bb);
-
-      storesFrom = aResult;
-      // Node lastNode = bb.getLastNode();
       if (lastNode != null) {
         TransferResult<V, S> tResult = analysis.getResult().lookupResult(lastNode);
         if (tResult != null) {
-          regularStore = tResult.getRegularStore();
           resultValue = tResult.getResultValue();
-        } else {
-          regularStore = null;
         }
-      } else {
-        regularStore = null;
       }
     } else if (analysisDirection == Direction.BACKWARD && where == VisualizeWhere.BEFORE) {
       regularStore = analysis.getResult().getStoreBefore(bb);

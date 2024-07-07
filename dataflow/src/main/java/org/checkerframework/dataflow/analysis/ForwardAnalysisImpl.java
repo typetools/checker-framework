@@ -27,7 +27,6 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.javacutil.BugInCF;
 import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.IPair;
-import org.plumelib.util.StringsPlume;
 
 /**
  * An implementation of a forward analysis to solve a org.checkerframework.dataflow problem given a
@@ -40,9 +39,6 @@ import org.plumelib.util.StringsPlume;
 public class ForwardAnalysisImpl<
         V extends AbstractValue<V>, S extends Store<S>, T extends ForwardTransferFunction<V, S>>
     extends AbstractAnalysis<V, S, T> implements ForwardAnalysis<V, S, T> {
-
-  /** If true, output debugging information. */
-  private final boolean debug = true;
 
   /**
    * Number of times each block has been analyzed since the last time widening was applied. Null if
@@ -117,9 +113,6 @@ public class ForwardAnalysisImpl<
 
   @Override
   public void performAnalysisBlock(Block b) {
-    if (debug) {
-      System.out.printf("entered performAnalysisBlock: %s%n", b);
-    }
     switch (b.getType()) {
       case REGULAR_BLOCK:
         {
@@ -127,9 +120,6 @@ public class ForwardAnalysisImpl<
           // Apply transfer function to contents
           TransferInput<V, S> inputBefore = getInputBefore(rb);
           assert inputBefore != null : "@AssumeAssertion(nullness): invariant";
-          if (debug) {
-            System.out.printf("inputBefore = %s%n", inputBefore);
-          }
           currentInput = inputBefore.copy();
           Node lastNode = null;
           boolean addToWorklistAgain = false;
@@ -221,9 +211,6 @@ public class ForwardAnalysisImpl<
       default:
         throw new BugInCF("Unexpected block type: " + b.getType());
     }
-    if (debug) {
-      System.out.printf("exited performAnalysisBlock: %s%n", b);
-    }
   }
 
   @Override
@@ -248,17 +235,6 @@ public class ForwardAnalysisImpl<
       IdentityHashMap<Node, V> nodeValues,
       @Nullable Map<TransferInput<V, S>, IdentityHashMap<Node, TransferResult<V, S>>>
           analysisCaches) {
-    if (debug) {
-      System.out.printf(
-          "runAnalysisFor:%n  node = %s%n  preOrPost = %s%n"
-              + "  blockTransferInput = %s%n  nodeValues = %s%n  analysisCaches = %s%n",
-          node,
-          preOrPost,
-          StringsPlume.indentLinesExceptFirst(2, blockTransferInput),
-          nodeValues,
-          analysisCaches);
-    }
-
     Block block = node.getBlock();
     assert block != null : "@AssumeAssertion(nullness): invariant";
     Node oldCurrentNode = currentNode;
@@ -269,9 +245,6 @@ public class ForwardAnalysisImpl<
       cache = analysisCaches.computeIfAbsent(blockTransferInput, __ -> new IdentityHashMap<>());
     } else {
       cache = null;
-    }
-    if (debug) {
-      System.out.printf("runAnalysisFor:  cache = %s%n", cache);
     }
 
     if (isRunning) {
@@ -301,10 +274,6 @@ public class ForwardAnalysisImpl<
                 // {@link #inputs}
                 transferResult = callTransferFunction(n, store.copy());
                 if (cache != null) {
-                  if (cache.containsKey(n)) {
-                    System.out.printf(
-                        "For %s, replacing %s by %s%n", n, cache.get(n), transferResult);
-                  }
                   cache.put(n, transferResult);
                 }
               }
@@ -422,16 +391,6 @@ public class ForwardAnalysisImpl<
       TransferInput<V, S> currentInput,
       Store.FlowRule flowRule,
       boolean addToWorklistAgain) {
-    if (debug) {
-      System.out.printf(
-          "propagateStoresTo:%n  succ = %s%n  node = %s%n"
-              + "  currentInput = %s%n  flowRule = %s%n  addToWorklistAgain = %s%n",
-          succ,
-          node,
-          StringsPlume.indentLinesExceptFirst(2, currentInput),
-          flowRule,
-          addToWorklistAgain);
-    }
     switch (flowRule) {
       case EACH_TO_EACH:
         if (currentInput.containsTwoStores()) {
@@ -478,17 +437,6 @@ public class ForwardAnalysisImpl<
       Block b, @Nullable Node node, S s, Store.Kind kind, boolean addBlockToWorklist) {
     S thenStore = getStoreBefore(b, Store.Kind.THEN);
     S elseStore = getStoreBefore(b, Store.Kind.ELSE);
-    if (debug) {
-      System.out.printf(
-          "addStoreBefore(%s, %s, %s, %s, %s)%n  thenStore = %s%n  elseStore = %s%n",
-          b,
-          node,
-          kind,
-          addBlockToWorklist,
-          StringsPlume.indentLinesExceptFirst(2, s),
-          StringsPlume.indentLinesExceptFirst(2, thenStore),
-          StringsPlume.indentLinesExceptFirst(2, elseStore));
-    }
     boolean shouldWiden = false;
     if (blockCount != null) {
       Integer count = blockCount.getOrDefault(b, 0);
@@ -556,10 +504,6 @@ public class ForwardAnalysisImpl<
           }
         }
     }
-    System.out.printf("addBlockToWorklist = %s%n", addBlockToWorklist);
-    System.out.printf("  block = %s%n", StringsPlume.indentLinesExceptFirst(2, b));
-    System.out.printf("  input = %s%n", StringsPlume.indentLinesExceptFirst(2, inputs.get(b)));
-
     if (addBlockToWorklist) {
       addToWorklist(b);
     }
