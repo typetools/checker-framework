@@ -36,6 +36,12 @@ import org.plumelib.util.UniqueId;
 public abstract class Node implements UniqueId {
 
   /**
+   * If true, print the owner of each field and {@code this}, to disambiguate shadowing. This field
+   * is intended for debugging.
+   */
+  public static final boolean disambiguateOwner = false;
+
+  /**
    * The basic block this node belongs to. If null, this object represents a method formal
    * parameter.
    *
@@ -184,16 +190,6 @@ public abstract class Node implements UniqueId {
       transitiveOperands.add(next);
     }
     return transitiveOperands;
-  }
-
-  /**
-   * Format this, making field and variable provenance explicit.
-   *
-   * @return a semi-verbose string representation of this
-   */
-  @Pure
-  public String toStringDisambiguated() {
-    return toString();
   }
 
   /**

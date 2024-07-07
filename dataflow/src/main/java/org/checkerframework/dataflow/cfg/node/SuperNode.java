@@ -21,13 +21,10 @@ public class SuperNode extends Node {
 
   protected final IdentifierTree tree;
 
-  public SuperNode(IdentifierTree tree) {
-    super(TreeUtils.typeOf(tree));
-    assert tree.getName().contentEquals("super");
-    this.tree = tree;
-    System.out.printf(
-        "Created SuperNode: tree=%s [%s], type=%s [%s]%n",
-        tree, tree.getClass(), type, type.getClass());
+  public SuperNode(IdentifierTree t) {
+    super(TreeUtils.typeOf(t));
+    assert t.getName().contentEquals("super");
+    tree = t;
   }
 
   @Override
@@ -42,12 +39,11 @@ public class SuperNode extends Node {
 
   @Override
   public String toString() {
-    return "super";
-  }
-
-  @Override
-  public String toStringDisambiguated() {
-    return "super{owner=" + type + "}";
+    if (Node.disambiguateOwner) {
+      return "super{owner=" + type + "}";
+    } else {
+      return "super";
+    }
   }
 
   @Override

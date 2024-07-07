@@ -32,11 +32,10 @@ public class ExplicitThisNode extends ThisNode {
 
   @Override
   public String toString() {
-    return "this";
-  }
-
-  @Override
-  public String toStringDisambiguated() {
-    return "this{owner=" + type + "}";
+    if (Node.disambiguateOwner) {
+      return "this{owner=" + type + "}";
+    } else {
+      return "this";
+    }
   }
 }

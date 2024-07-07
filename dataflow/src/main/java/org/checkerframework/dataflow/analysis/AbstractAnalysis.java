@@ -207,15 +207,7 @@ public abstract class AbstractAnalysis<
       }
       // fall through when the current node is not 'n', and 'n' is not a subnode.
     }
-    V result = nodeValues.get(n);
-    System.out.printf(
-        "AbstractAnalysis.getValue looked up%n  %s [%s]%n  => %s%n  in %s [%s]%n",
-        n.toStringDisambiguated(),
-        n.getClass(),
-        result,
-        nodeValues,
-        System.identityHashCode(nodeValues));
-    return result;
+    return nodeValues.get(n);
   }
 
   /**
@@ -459,7 +451,6 @@ public abstract class AbstractAnalysis<
    * @return true if the node's value changed, or a store was updated
    */
   protected boolean updateNodeValues(Node node, TransferResult<V, S> transferResult) {
-    System.out.printf("updateNodeValues(%s, %s)%n", node.toStringDisambiguated(), transferResult);
     V newVal = transferResult.getResultValue();
     boolean nodeValueChanged = false;
     if (newVal != null) {

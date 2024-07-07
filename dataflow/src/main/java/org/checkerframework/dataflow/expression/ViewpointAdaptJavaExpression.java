@@ -91,14 +91,6 @@ public class ViewpointAdaptJavaExpression extends JavaExpressionConverter {
   }
 
   @Override
-  protected JavaExpression visitSuperReference(SuperReference superExpr, Void unused) {
-    System.out.printf(
-        "visitSuperReference(%s): thisReference=%s%n",
-        superExpr.toStringDisambiguated(), thisReference.toStringDisambiguated());
-    return null; // TODO *****
-  }
-
-  @Override
   protected JavaExpression visitFormalParameter(FormalParameter parameterExpr, Void unused) {
     if (args != null) {
       int index = parameterExpr.getIndex() - 1;

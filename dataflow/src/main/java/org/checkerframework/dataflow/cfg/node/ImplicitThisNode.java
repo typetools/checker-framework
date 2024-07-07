@@ -26,11 +26,10 @@ public class ImplicitThisNode extends ThisNode {
   // used in an inner class context.
   @Override
   public String toString() {
-    return "(this)";
-  }
-
-  @Override
-  public String toStringDisambiguated() {
-    return "(this{owner=" + type + "})";
+    if (Node.disambiguateOwner) {
+      return "(this{owner=" + type + "})";
+    } else {
+      return "(this)";
+    }
   }
 }

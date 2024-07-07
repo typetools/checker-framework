@@ -333,7 +333,6 @@ public class ForwardAnalysisImpl<
     }
     storesAtReturnStatements.clear();
     super.initFields(cfg);
-    assert this.cfg != null : "@AssumeAssertion(nullness)";
   }
 
   @Override

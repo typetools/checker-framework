@@ -132,12 +132,12 @@ public class StringCFGVisualizer<
 
   @Override
   public String visualizeStoreLocalVar(LocalVariable localVar, V value) {
-    return storeEntryIndent + localVar.toStringDisambiguated() + " > " + value;
+    return storeEntryIndent + localVar + " > " + value;
   }
 
   @Override
   public String visualizeStoreFieldVal(FieldAccess fieldAccess, V value) {
-    return storeEntryIndent + fieldAccess.toStringDisambiguated() + " > " + value;
+    return storeEntryIndent + fieldAccess + " > " + value;
   }
 
   @Override

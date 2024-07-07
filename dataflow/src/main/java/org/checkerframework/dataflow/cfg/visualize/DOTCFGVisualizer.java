@@ -294,12 +294,12 @@ public class DOTCFGVisualizer<
 
   @Override
   public String visualizeStoreLocalVar(LocalVariable localVar, V value) {
-    return storeEntryIndent + localVar.toStringDisambiguated() + " > " + escapeString(value);
+    return storeEntryIndent + localVar + " > " + escapeString(value);
   }
 
   @Override
   public String visualizeStoreFieldVal(FieldAccess fieldAccess, V value) {
-    return storeEntryIndent + fieldAccess.toStringDisambiguated() + " > " + escapeString(value);
+    return storeEntryIndent + fieldAccess + " > " + escapeString(value);
   }
 
   @Override

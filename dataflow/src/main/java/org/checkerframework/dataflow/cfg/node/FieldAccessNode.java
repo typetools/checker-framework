@@ -92,17 +92,11 @@ public class FieldAccessNode extends Node {
 
   @Override
   public String toString() {
-    return getReceiver() + "." + field;
-  }
-
-  @Override
-  public String toStringDisambiguated() {
-    return getReceiver().toStringDisambiguated()
-        + "."
-        + field
-        + "{owner="
-        + ((Symbol) element).owner
-        + "}";
+    if (Node.disambiguateOwner) {
+      return getReceiver() + "." + field + "{owner=" + ((Symbol) element).owner + "}";
+    } else {
+      return getReceiver() + "." + field;
+    }
   }
 
   /**

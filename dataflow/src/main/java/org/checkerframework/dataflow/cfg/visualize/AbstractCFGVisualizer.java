@@ -284,11 +284,7 @@ public abstract class AbstractCFGVisualizer<
   @Override
   public String visualizeBlockNode(Node n, @Nullable Analysis<V, S, T> analysis) {
     StringBuilder sbBlockNode = new StringBuilder();
-    sbBlockNode
-        .append(escapeString(n.toStringDisambiguated()))
-        .append("   [ ")
-        .append(getNodeSimpleName(n))
-        .append(" ]");
+    sbBlockNode.append(escapeString(n)).append("   [ ").append(getNodeSimpleName(n)).append(" ]");
     if (analysis != null) {
       V value = analysis.getValue(n);
       if (value != null) {
