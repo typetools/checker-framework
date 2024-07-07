@@ -11,9 +11,9 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * obligation to call any set (even an infinite set!) of methods. This type contains every object.
  * This type should rarely be written by a programmer.
  *
- * <p>The Object Construction Checker cannot verify that the property represented by this annotation
- * is enforced; that is, the Object Construction Checker will always issue a warning when the value
- * of an expression with this type might be de-allocated.
+ * <p>The Resource Leak Checker cannot verify that the property represented by this annotation is
+ * enforced; that is, the Resource Leak Checker will always issue a warning when the value of an
+ * expression with this type might be de-allocated.
  *
  * @checker_framework.manual #must-call-checker Must Call Checker
  */
