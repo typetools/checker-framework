@@ -18,6 +18,12 @@ To run the Non-Empty Checker, run either of these commands:
   javac -processor org.checkerframework.checker.nonempty.NonEmptyChecker \emph{MyJavaFile}.java
 \end{alltt}
 
+The Non-Empty Checker has a second modality, in which it mostly acts like
+the Optional Checker (\sectionpageref{optional-checker}).  If you pass the
+\<-ArunAsOptionalChecker> command-line argument, then the Non-Empty Checker
+runs the Optional Checker, then checks (only) explicitly-written
+\<@NonEmpty} annotations.
+
 
 \sectionAndLabel{Non-Empty annotations}{non-empty-annotations}
 
