@@ -1,6 +1,3 @@
-import org.checkerframework.checker.initialization.qual.*;
-import org.checkerframework.checker.nullness.qual.*;
-
 @org.checkerframework.framework.qual.AnnotatedFor("org.checkerframework.checker.nullness.NullnessChecker")
 interface Game {
 

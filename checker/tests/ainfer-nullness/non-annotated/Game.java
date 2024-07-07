@@ -1,6 +1,3 @@
-import org.checkerframework.checker.initialization.qual.*;
-import org.checkerframework.checker.nullness.qual.*;
-
 interface Game {
   void newGame();
 }
@@ -16,8 +13,7 @@ class GameImpl implements Game {
   public GameImpl() {}
 
   @Override
-  public void newGame() {
-  }
+  public void newGame() {}
 }
 
 interface MoveValidator {
