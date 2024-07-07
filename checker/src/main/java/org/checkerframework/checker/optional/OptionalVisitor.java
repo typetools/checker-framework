@@ -417,25 +417,26 @@ public class OptionalVisitor
    * <p>If the method being visited is in {@link calleesToCallers}, the methods to check with the
    * Non-Empty Checker should be updated with all the methods that dispatch calls to this method.
    *
-   * @param tree a method tree
+   * @param methodDecl a method declaration that definitely has a precondition regarding
+   *     {@code @NonEmpty}
    */
-  private void updateMethodToCheckWithNonEmptyCheckerGivenPreconditions(MethodTree tree) {
-    String methodName = tree.getName().toString();
+  private void updateMethodToCheckWithNonEmptyCheckerGivenPreconditions(MethodTree methodDecl) {
+    String methodName = methodDecl.getName().toString();
     if (calleesToCallers.containsKey(methodName)) {
       methodsToVerifyWithNonEmptyChecker.addAll(calleesToCallers.get(methodName));
     }
-    methodsToVerifyWithNonEmptyChecker.add(tree);
+    methodsToVerifyWithNonEmptyChecker.add(methodDecl);
   }
 
   /**
    * Returns true if a method is explicitly annotated with {@link RequiresNonEmpty}.
    *
-   * @param tree a method tree
+   * @param methodDecl a method declaration
    * @return true if a method is explicitly annotated with {@link RequiresNonEmpty}
    */
-  private boolean isAnnotatedWithNonEmptyPrecondition(MethodTree tree) {
+  private boolean isAnnotatedWithNonEmptyPrecondition(MethodTree methodDecl) {
     List<? extends AnnotationMirror> annos =
-        TreeUtils.annotationsFromTypeAnnotationTrees(tree.getModifiers().getAnnotations());
+        TreeUtils.annotationsFromTypeAnnotationTrees(methodDecl.getModifiers().getAnnotations());
     return atypeFactory.containsSameByClass(annos, RequiresNonEmpty.class);
   }
 
@@ -443,12 +444,12 @@ public class OptionalVisitor
    * Returns true if any formal parameter of the method is explicitly annotated with {@link
    * NonEmpty}.
    *
-   * @param tree a method tree
+   * @param methodDecl a method declaration
    * @return true if any formal parameter of the method is explicitly annotated with {@link
    *     NonEmpty}
    */
-  private boolean isAnyFormalAnnotatedWithNonEmpty(MethodTree tree) {
-    List<? extends VariableTree> params = tree.getParameters();
+  private boolean isAnyFormalAnnotatedWithNonEmpty(MethodTree methodDecl) {
+    List<? extends VariableTree> params = methodDecl.getParameters();
     for (VariableTree vt : params) {
       List<? extends AnnotationMirror> annos =
           TreeUtils.annotationsFromTypeAnnotationTrees(vt.getModifiers().getAnnotations());
@@ -462,15 +463,15 @@ public class OptionalVisitor
   /**
    * Returns true if the return type of the method is explicitly annotated with {@link NonEmpty}.
    *
-   * @param tree a method tree
+   * @param methodDecl a method declaration
    * @return true if the return type of the method is explicitly annotated with {@link NonEmpty}
    */
-  private boolean isReturnTypeAnnotatedWithNonEmpty(MethodTree tree) {
-    if (tree.getReturnType() == null) {
+  private boolean isReturnTypeAnnotatedWithNonEmpty(MethodTree methodDecl) {
+    if (methodDecl.getReturnType() == null) {
       return false;
     }
     List<? extends AnnotationMirror> annos =
-        TreeUtils.typeOf(tree.getReturnType()).getAnnotationMirrors();
+        TreeUtils.typeOf(methodDecl.getReturnType()).getAnnotationMirrors();
     return atypeFactory.containsSameByClass(annos, NonEmpty.class);
   }
 
