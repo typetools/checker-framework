@@ -1,8 +1,8 @@
 \htmlhr
 \chapterAndLabel{Non-Empty Checker for container classes}{non-empty-checker}
 
-The Non-Empty Checker tracks whether a container may be empty.
-It works on containers such as
+The Non-Empty Checker tracks whether a container is possibly-empty or is
+definitely non-empty.  It works on containers such as
 \<Collection>s, \<Iterator>s, \<Iterable>s, and \<Map>s, but not \<Optional>s.
 
 If the Non-Empty Checker issues no warnings, then your program does not
@@ -145,7 +145,7 @@ The \<@SuppressWarnings("nonempty")> annotation is specific to warnings raised
 by the Non-Empty Checker:
 
 \begin{Verbatim}
-// This method might return an empty list, depending on the argument
+// This method might return an empty list, depending on the argument.
 List<String> getRegionIds(String region) { ... }
 
 void parseRegions() {
