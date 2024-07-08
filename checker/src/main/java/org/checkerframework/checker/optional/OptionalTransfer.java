@@ -161,29 +161,31 @@ public class OptionalTransfer extends CFTransfer {
   }
 
   /**
-   * Refines the result of a call to a method in {@link #nonEmptyToPresentStreamMethods}. When one
-   * of those methods is invoked on an empty stream, the result is an empty/absent Optional. When
-   * one of those methods is invoked on a non-empty stream, the result is a present Optional.
-   * Examples are {@link java.util.stream.Stream#max(Comparator)} and {@link
+   * Refines the result of a call to a method in {@link #nonEmptyToPresentStreamMethods}. Examples
+   * are {@link java.util.stream.Stream#max(Comparator)} and {@link
    * java.util.stream.Stream#reduce(BinaryOperator)}.
+   *
+   * <p>When one of those methods is invoked on an empty stream, the result is an empty/absent
+   * Optional. When one of those methods is invoked on a non-empty stream, the result is a present
+   * Optional.
    *
    * @param n the method invocation node
    * @param result the transfer result to side effect
    * @return the refined transfer result
    */
   private TransferResult<CFValue, CFStore> refineNonEmptyToPresentStreamResult(
-      MethodInvocationNode n, TransferResult<CFValue, CFStore> result) {
+      MethodInvocationNode methodInvok, TransferResult<CFValue, CFStore> result) {
     if (NodeUtils.isMethodInvocation(
-        n, nonEmptyToPresentStreamMethods, optionalTypeFactory.getProcessingEnv())) {
-      if (isReceiverParameterNonEmpty(n)) {
-        // The receiver of the stream operation is @Non-Empty, therefore the result is @Present.
-        JavaExpression internalRepr = JavaExpression.fromNode(n);
+        methodInvok, nonEmptyToPresentStreamMethods, optionalTypeFactory.getProcessingEnv())) {
+      if (isReceiverParameterNonEmpty(methodInvok)) {
+        // The receiver is @Non-Empty, therefore the result is @Present.
+        JavaExpression methodInvokJE = JavaExpression.fromNode(methodInvok);
         if (assumeDeterministic) {
-          insertIntoStoresPermitNonDeterministic(result, internalRepr, PRESENT);
+          insertIntoStoresPermitNonDeterministic(result, methodInvokJE, PRESENT);
         } else {
-          insertIntoStores(result, internalRepr, PRESENT);
+          insertIntoStores(result, methodInvokJE, PRESENT);
         }
-        CFValue value = analysis.createSingleAnnotationValue(PRESENT, n.getType());
+        CFValue value = analysis.createSingleAnnotationValue(PRESENT, methodInvok.getType());
 
         return new ConditionalTransferResult<>(
             finishValue(value, result.getThenStore(), result.getElseStore()),
@@ -207,7 +209,7 @@ public class OptionalTransfer extends CFTransfer {
     ExpressionTree receiverTree = TreeUtils.getReceiverTree(methodInvok.getTree());
     JavaExpression receiver;
     if (receiverTree instanceof MethodInvocationTree) {
-      receiver = JavaExpression.getInitialReceiverOfMethodInvocation(receiverTree);
+      receiver = JavaExpression.getLeftmostReceiverOfMethodInvocation(receiverTree);
     } else {
       receiver = JavaExpression.fromTree(receiverTree);
     }

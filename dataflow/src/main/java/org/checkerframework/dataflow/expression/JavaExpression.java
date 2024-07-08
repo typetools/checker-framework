@@ -985,14 +985,15 @@ public abstract class JavaExpression {
    * @param tree a tree
    * @return the initial receiver of a method invocation
    */
-  public static @Nullable JavaExpression getInitialReceiverOfMethodInvocation(ExpressionTree tree) {
+  public static @Nullable JavaExpression getLeftmostReceiverOfMethodInvocation(
+      ExpressionTree tree) {
     assert tree instanceof MethodInvocationTree;
     ExpressionTree receiverTree = TreeUtils.getReceiverTree(tree);
     while (receiverTree instanceof MethodInvocationNode) {
       receiverTree = TreeUtils.getReceiverTree(receiverTree);
     }
     if (receiverTree instanceof MethodInvocationTree) {
-      return JavaExpression.getInitialReceiverOfMethodInvocation(receiverTree);
+      return JavaExpression.getLeftmostReceiverOfMethodInvocation(receiverTree);
     }
     return receiverTree != null ? JavaExpression.fromTree(receiverTree) : null;
   }
