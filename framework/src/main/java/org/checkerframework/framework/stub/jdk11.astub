@@ -81,7 +81,7 @@ public interface ExecutableMemberDoc extends MemberDoc {
     boolean isSynchronized();
 
     @Pure
-    public boolean isVarargs();
+    public boolean isVarArgs();
 
     @Pure
     Type receiverType();
