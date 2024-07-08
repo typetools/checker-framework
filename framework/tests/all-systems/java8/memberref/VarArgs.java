@@ -6,6 +6,10 @@ interface ArrayFunc {
   void take(String[] in);
 }
 
+// I do not understand why, but changing the name of this class to
+// "MemberRefVarargsTest" (with a lowercase "a") leads to a test failure:
+//   :0: warning: MemberRefVarargsTest-org.checkerframework.common.value.ValueChecker.astub:(line
+//         5,col 1): Type not found: MemberRefVarargsTest
 class MemberRefVarArgsTest {
 
   static void myMethod(String... in) {}
