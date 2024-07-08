@@ -5,16 +5,18 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import org.checkerframework.framework.qual.PolymorphicQualifier;
+import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
+import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * A polymorphic qualifier for the SQL Tainting type system.
+ * Denotes a value to be used as part of a SQL query. Might be safe for SQL query use or might be
+ * dangerous.
  *
- * @checker_framework.manual #tainting-checker Tainting Checker
- * @checker_framework.manual #qualifier-polymorphism Qualifier polymorphism
+ * @see SqlSanitized
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-@PolymorphicQualifier(SqlDangerous.class)
-public @interface PolySqlDangerous {}
+@SubtypeOf({})
+@DefaultQualifierInHierarchy
+public @interface SqlUnsanitized {}
