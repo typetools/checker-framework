@@ -327,8 +327,8 @@ public class NonEmptyTransfer extends CFTransfer {
   }
 
   /**
-   * Return true if the given node is an instance of a method invocation node for {@link
-   * java.util.Collection size()} or {@link java.util.Map size()}.
+   * Return true if the given node is an invocation of {@link java.util.Collection#size()} or {@link
+   * java.util.Map#size()}.
    *
    * @param possibleSizeAccess a node that may be a method call to the {@code size()} method in the
    *     {@link java.util.Collection} or {@link java.util.Map} types
