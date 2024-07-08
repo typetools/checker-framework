@@ -13,22 +13,25 @@ import org.checkerframework.framework.source.SupportedOptions;
  * classes.
  *
  * <p>Note: if "-ArunAsOptionalChecker" is passed, then the Non-Empty Checker first runs the
- * Optional Checker (as a subchecker), then only checks explicitly-written @NonEmpty annotations.
+ * Optional Checker (as a subchecker), then checks only explicitly-written @NonEmpty annotations.
  *
  * @checker_framework.manual #non-empty-checker Non-Empty Checker
  */
 @SupportedOptions("runAsOptionalChecker") // See field `runAsOptionalChecker` for documentation.
 public class NonEmptyChecker extends BaseTypeChecker {
 
+  private boolean runAsOptionalChecker;
+
   /** Creates a NonEmptyChecker. */
   public NonEmptyChecker() {
     super();
+    runAsOptionalChecker = this.hasOptionNoSubcheckers("runAsOptionalChecker");
   }
 
   @Override
   protected Set<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
     Set<Class<? extends BaseTypeChecker>> checkers = super.getImmediateSubcheckerClasses();
-    if (this.hasOptionNoSubcheckers("runAsOptionalChecker")) {
+    if (runAsOptionalChecker) {
       checkers.add(OptionalChecker.class);
     }
     return checkers;
@@ -36,7 +39,7 @@ public class NonEmptyChecker extends BaseTypeChecker {
 
   @Override
   public boolean shouldSkipDefs(MethodTree tree) {
-    if (this.hasOptionNoSubcheckers("runAsOptionalChecker")) {
+    if (runAsOptionalChecker) {
       return !getMethodsToCheck().contains(tree);
     }
     return super.shouldSkipDefs(tree);
@@ -55,7 +58,7 @@ public class NonEmptyChecker extends BaseTypeChecker {
    */
   private Set<MethodTree> getMethodsToCheck() {
     OptionalChecker optionalChecker = getSubchecker(OptionalChecker.class);
-    if (optionalChecker != null && optionalChecker.getVisitor() instanceof OptionalVisitor) {
+    if (optionalChecker != null) {
       OptionalVisitor optionalVisitor = (OptionalVisitor) optionalChecker.getVisitor();
       return optionalVisitor.getMethodsToVerifyWithNonEmptyChecker();
     }
