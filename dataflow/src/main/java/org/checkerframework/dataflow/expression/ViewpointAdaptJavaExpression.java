@@ -62,7 +62,7 @@ public class ViewpointAdaptJavaExpression extends JavaExpressionConverter {
   /** List of arguments used to replace occurrences {@link FormalParameter}s. */
   private final @Nullable List<JavaExpression> args;
 
-  /** The expression to replace occurrences of {@link ThisReference}s. */
+  /** The expression to replace occurrences of {@link ThisReference}. */
   private final @Nullable JavaExpression thisReference;
 
   // Instance methods
