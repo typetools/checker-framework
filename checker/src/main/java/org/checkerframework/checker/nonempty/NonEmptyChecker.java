@@ -20,6 +20,7 @@ import org.checkerframework.framework.source.SupportedOptions;
 @SupportedOptions("runAsOptionalChecker") // See field `runAsOptionalChecker` for documentation.
 public class NonEmptyChecker extends BaseTypeChecker {
 
+  /** True if "-ArunAsOptionalChecker" was passed. */
   private boolean runAsOptionalChecker;
 
   /** Creates a NonEmptyChecker. */

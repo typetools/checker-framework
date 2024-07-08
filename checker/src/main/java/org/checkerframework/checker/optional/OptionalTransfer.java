@@ -47,7 +47,7 @@ public class OptionalTransfer extends CFTransfer {
   private final OptionalAnnotatedTypeFactory optionalTypeFactory;
 
   /** True if "-AassumePure" or "-AassumeDeterministic" was passed. */
-  boolean isAssumePureOrAssumeDeterministicEnabled;
+  boolean assumeDeterministic;
 
   /** The @{@link Present} annotation. */
   private final AnnotationMirror PRESENT;
@@ -88,7 +88,7 @@ public class OptionalTransfer extends CFTransfer {
     super(analysis);
     optionalTypeFactory = (OptionalAnnotatedTypeFactory) analysis.getTypeFactory();
     BaseTypeChecker checker = optionalTypeFactory.getChecker();
-    isAssumePureOrAssumeDeterministicEnabled =
+    assumeDeterministic =
         checker.hasOption("assumePure") || checker.hasOption("assumeDeterministic");
 
     Elements elements = optionalTypeFactory.getElementUtils();
@@ -178,7 +178,7 @@ public class OptionalTransfer extends CFTransfer {
       if (isReceiverParameterNonEmpty(n)) {
         // The receiver of the stream operation is @Non-Empty, therefore the result is @Present.
         JavaExpression internalRepr = JavaExpression.fromNode(n);
-        if (isAssumePureOrAssumeDeterministicEnabled) {
+        if (assumeDeterministic) {
           insertIntoStoresPermitNonDeterministic(result, internalRepr, PRESENT);
         } else {
           insertIntoStores(result, internalRepr, PRESENT);
