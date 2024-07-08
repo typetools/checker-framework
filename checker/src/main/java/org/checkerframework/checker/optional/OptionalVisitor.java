@@ -84,7 +84,11 @@ public class OptionalVisitor
   /** The set of methods to be verified by the Non-Empty Checker. */
   private final Set<MethodTree> methodsToVerifyWithNonEmptyChecker;
 
-  /** Map of the names of callees to the methods that call them. */
+  /**
+   * Map from simple names of callees to the methods that call them. Use of simple names (rather
+   * than fully-qualified names or signatures) is a bit imprecise, because it includes all
+   * overloads.
+   */
   private final Map<String, Set<MethodTree>> calleesToCallers;
 
   /**
@@ -116,7 +120,7 @@ public class OptionalVisitor
    * Gets the set of methods that should be verified using the {@link
    * org.checkerframework.checker.nonempty.NonEmptyChecker}.
    *
-   * <p>This should only really be called by the Non-Empty Checker.
+   * <p>This should only be called by the Non-Empty Checker.
    *
    * @return the set of methods that should be verified using the {@link
    *     org.checkerframework.checker.nonempty.NonEmptyChecker}
@@ -367,9 +371,8 @@ public class OptionalVisitor
   /**
    * Updates {@link calleesToCallers} given a method invocation.
    *
-   * <p>Check whether the method is in the set of methods that must be checked by the Non-Empty
-   * checker whenever a method invocation is encountered. If the method is in the set, its caller
-   * should also be checked by the Non-Empty Checker.
+   * <p>If a callee should be checked by the Non-Empty checker, then the caller should also be
+   * checked by the Non-Empty Checker.
    *
    * <p>This ensures that the <i>clients</i> of any methods that must be checked by the Non-Empty
    * Checker (i.e., methods that have preconditions related to the Non-Empty type system) are
@@ -383,7 +386,7 @@ public class OptionalVisitor
     if (caller != null) {
       // Using the names of methods (as opposed to their fully-qualified name or signature) is a
       // safe (but imprecise) over-approximation of all the methods that must be verified with the
-      // Non-Empty Checker. Overloads of methods will be detected.
+      // Non-Empty Checker. Overloads of methods will be included.
       Set<String> namesOfMethodsForNonEmptyChecker =
           methodsToVerifyWithNonEmptyChecker.stream()
               .map(MethodTree::getName)
