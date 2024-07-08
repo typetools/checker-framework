@@ -85,10 +85,10 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
       }
     } else if (je instanceof MethodCall) {
       MethodCall method = (MethodCall) je;
-      CFValue current = methodCallValues.get(method);
+      CFValue current = methodCallExpressions.get(method);
       CFValue value = changeLockAnnoToTop(je, current);
       if (value != null) {
-        methodCallValues.put(method, value);
+        methodCallExpressions.put(method, value);
       }
     } else if (je instanceof ArrayAccess) {
       ArrayAccess arrayAccess = (ArrayAccess) je;
@@ -233,10 +233,10 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
         }
       } else if (je instanceof MethodCall) {
         MethodCall method = (MethodCall) je;
-        CFValue oldValue = methodCallValues.get(method);
+        CFValue oldValue = methodCallExpressions.get(method);
         CFValue newValue = value.mostSpecific(oldValue, null);
         if (newValue != null) {
-          methodCallValues.put(method, newValue);
+          methodCallExpressions.put(method, newValue);
         }
       }
     }

@@ -1,5 +1,6 @@
 import org.checkerframework.dataflow.qual.Deterministic;
 import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.qual.SideEffectsOnly;
 
 // various tests for the checker to automatically suggest pure methods (most methods have been
@@ -179,5 +180,12 @@ public class PuritySuggestionsClass {
     @SideEffectsOnly({})
     // :: warning: (purity.more.sideeffectfree)
     void foo() {}
+  }
+
+  @SideEffectFree
+  @Deterministic
+  // :: warning: (purity.effectively.pure)
+  String shouldBeMarkedPure() {
+    return "";
   }
 }

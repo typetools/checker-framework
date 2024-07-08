@@ -6,17 +6,17 @@ interface ArrayFunc {
   void take(String[] in);
 }
 
-class VarArgsTest {
+class MemberRefVarArgsTest {
 
   static void myMethod(String... in) {}
 
   static void myMethodArray(String[] in) {}
 
-  VarArgsFunc v1 = VarArgsTest::myMethod;
-  VarArgsFunc v2 = VarArgsTest::myMethodArray;
+  VarArgsFunc v1 = MemberRefVarArgsTest::myMethod;
+  VarArgsFunc v2 = MemberRefVarArgsTest::myMethodArray;
 
-  ArrayFunc v3 = VarArgsTest::myMethod;
-  ArrayFunc v4 = VarArgsTest::myMethodArray;
+  ArrayFunc v3 = MemberRefVarArgsTest::myMethod;
+  ArrayFunc v4 = MemberRefVarArgsTest::myMethodArray;
 }
 
 interface RegularFunc {

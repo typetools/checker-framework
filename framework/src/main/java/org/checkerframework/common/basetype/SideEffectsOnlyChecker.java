@@ -246,7 +246,7 @@ public class SideEffectsOnlyChecker {
      */
     private boolean isAdditionalSideEffectedExpression(JavaExpression expr) {
       return !sideEffectsOnlyExpressionsFromAnnotation.contains(expr)
-          && !expr.isUnmodifiableByOtherCode()
+          && expr.isModifiableByOtherCode()
           && !aliasedExpressions.containsKey(expr);
     }
 

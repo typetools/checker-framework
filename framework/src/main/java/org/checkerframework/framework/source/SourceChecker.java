@@ -29,6 +29,7 @@ import java.lang.reflect.Proxy;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -476,8 +477,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   private @Nullable Pattern warnUnneededSuppressionsExceptions;
 
   /**
-   * SuppressWarnings strings supplied via the -AsuppressWarnings option. Do not use directly, call
-   * {@link #getSuppressWarningsStringsFromOption()}.
+   * SuppressWarnings strings supplied via the {@code -AsuppressWarnings} option. Do not use
+   * directly, call {@link #getSuppressWarningsStringsFromOption()}.
    */
   private String @MonotonicNonNull [] suppressWarningsStringsFromOption;
 
@@ -1079,7 +1080,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         // Duplicate messages are suppressed, so this might not appear in front of every
         // " is type-checking " message (when a file takes less than a second to
         // type-check).
-        message(Diagnostic.Kind.NOTE, Instant.now().toString());
+        message(Diagnostic.Kind.NOTE, Instant.now().truncatedTo(ChronoUnit.SECONDS).toString());
         message(
             Diagnostic.Kind.NOTE,
             "%s is type-checking %s",
@@ -1315,9 +1316,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    */
   private void printStackTrace(StackTraceElement[] trace) {
     if (hasOption("dumpOnErrors")) {
-      StringBuilder msg = new StringBuilder();
+      StringJoiner msg = new StringJoiner(System.lineSeparator());
       for (StackTraceElement elem : trace) {
-        msg.append("\tat " + elem + "\n");
+        msg.add("\tat " + elem);
       }
       message(Diagnostic.Kind.NOTE, msg.toString());
     }
@@ -2608,7 +2609,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * checker.skipDefs} property.
    *
    * @param tree class to potentially skip
-   * @return true if checker should not test {@code tree}
+   * @return true if checker should not type-check {@code tree}
    */
   public final boolean shouldSkipDefs(ClassTree tree) {
     String qualifiedName = TreeUtils.typeOf(tree).toString();
@@ -2634,14 +2635,25 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * Tests whether the method definition should not be checked because it matches the {@code
    * checker.skipDefs} property.
    *
+   * @param tree method to potentially skip
+   * @return true if checker should not type-check {@code tree}
+   */
+  public boolean shouldSkipDefs(MethodTree tree) {
+    return false; // subclasses may override this implementation
+  }
+
+  /**
+   * Tests whether the method definition should not be checked because it matches the {@code
+   * checker.skipDefs} property.
+   *
    * <p>TODO: currently only uses the class definition. Refine pattern. Same for skipUses.
    *
    * @param cls class to potentially skip
    * @param meth method to potentially skip
-   * @return true if checker should not test {@code meth}
+   * @return true if checker should not type-check {@code meth}
    */
   public final boolean shouldSkipDefs(ClassTree cls, MethodTree meth) {
-    return shouldSkipDefs(cls);
+    return shouldSkipDefs(cls) || shouldSkipDefs(meth);
   }
 
   ///////////////////////////////////////////////////////////////////////////
@@ -2759,17 +2771,20 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
           msg.add("Compilation unit: " + this.currentRoot.getSourceFile().getName());
         }
 
-        if (this.visitor != null) {
-          DiagnosticPosition pos = (DiagnosticPosition) this.visitor.lastVisited;
-          if (pos != null) {
-            DiagnosticSource source = new DiagnosticSource(this.currentRoot.getSourceFile(), null);
-            int linenr = source.getLineNumber(pos.getStartPosition());
-            int col = source.getColumnNumber(pos.getStartPosition(), true);
-            String line = source.getLine(pos.getStartPosition());
+        DiagnosticPosition pos = null;
+        if ((ce instanceof BugInCF) && ((BugInCF) ce).getLocation() != null) {
+          pos = (DiagnosticPosition) ((BugInCF) ce).getLocation();
+        } else if (this.visitor != null) {
+          pos = (DiagnosticPosition) this.visitor.lastVisited;
+        }
+        if (pos != null) {
+          DiagnosticSource source = new DiagnosticSource(this.currentRoot.getSourceFile(), null);
+          int linenr = source.getLineNumber(pos.getStartPosition());
+          int col = source.getColumnNumber(pos.getStartPosition(), true);
+          String line = source.getLine(pos.getStartPosition());
 
-            msg.add("Last visited tree at line " + linenr + " column " + col + ":");
-            msg.add(line);
-          }
+          msg.add("Last visited tree at line " + linenr + " column " + col + ":");
+          msg.add(line);
         }
 
         Throwable forStackTrace = ce.getCause() != null ? ce.getCause() : ce;

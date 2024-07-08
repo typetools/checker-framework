@@ -75,6 +75,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import java.util.StringJoiner;
+import java.util.stream.Collectors;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationMirror;
@@ -85,6 +86,7 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.NestingKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
@@ -331,6 +333,19 @@ public final class TreeUtils {
   @Pure
   public static @Nullable TypeElement elementFromUse(ClassTree tree) {
     return elementFromDeclaration(tree);
+  }
+
+  /**
+   * Returns the fields that are declared within the given class declaration.
+   *
+   * @param tree the {@link ClassTree} node to get the fields for
+   * @return the list of fields that are declared within the given class declaration
+   */
+  public static List<VariableTree> fieldsFromClassTree(ClassTree tree) {
+    return tree.getMembers().stream()
+        .filter(t -> t.getKind() == Kind.VARIABLE)
+        .map(t -> (VariableTree) t)
+        .collect(Collectors.toList());
   }
 
   /**
@@ -2556,19 +2571,32 @@ public final class TreeUtils {
   }
 
   /**
+   * Returns true if the given method reference has a varargs formal parameter.
+   *
+   * @param methref a method reference
+   * @return if the given method reference has a varargs formal parameter
+   */
+  public static boolean hasVarargsParameter(MemberReferenceTree methref) {
+    JCMemberReference jcMethoRef = (JCMemberReference) methref;
+    return jcMethoRef.varargsElement != null;
+  }
+
+  /**
    * Returns true if the given method/constructor invocation is a varargs invocation.
    *
    * @param tree a method/constructor invocation
    * @return true if the given method/constructor invocation is a varargs invocation
    */
-  public static boolean isVarArgs(Tree tree) {
+  public static boolean isVarargsCall(Tree tree) {
     switch (tree.getKind()) {
       case METHOD_INVOCATION:
-        return isVarArgs((MethodInvocationTree) tree);
+        return isVarargsCall((MethodInvocationTree) tree);
       case NEW_CLASS:
-        return isVarArgs((NewClassTree) tree);
+        return isVarargsCall((NewClassTree) tree);
+      case MEMBER_REFERENCE:
+        return hasVarargsParameter((MemberReferenceTree) tree);
       default:
-        throw new BugInCF("TreeUtils.isVarArgs: unexpected kind of tree: " + tree);
+        return false;
     }
   }
 
@@ -2577,9 +2605,40 @@ public final class TreeUtils {
    *
    * @param invok the method invocation
    * @return true if the given method invocation is a varargs invocation
+   * @deprecated use {@link #isVarargsCall(MethodInvocationTree)}
    */
+  @Deprecated // 2024-06-04
   public static boolean isVarArgs(MethodInvocationTree invok) {
-    return isVarArgs(elementFromUse(invok), invok.getArguments());
+    return ((JCMethodInvocation) invok).varargsElement != null;
+  }
+
+  /**
+   * Returns true if the given method invocation is a varargs invocation.
+   *
+   * @param invok the method invocation
+   * @return true if the given method invocation is a varargs invocation
+   */
+  public static boolean isVarargsCall(MethodInvocationTree invok) {
+    if (((JCMethodInvocation) invok).varargsElement != null) {
+      return true;
+    }
+
+    // For some calls the varargsElement element disappears when it should not. This seems to only
+    // be a problem with MethodHandle#invoke and only with no arguments.  See
+    // framework/tests/all-systems/Issue6078.java.
+    // So also check for a mismatch between parameter and argument size.
+    // Such a mismatch occurs for every enum constructor: no args, two params (String name, int
+    // ordinal).
+
+    List<? extends VariableElement> parameters = elementFromUse(invok).getParameters();
+    int numParameters = parameters.size();
+    if (numParameters != invok.getArguments().size()) {
+      if (numParameters > 0 && parameters.get(numParameters - 1).asType() instanceof ArrayType) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   /**
@@ -2605,38 +2664,21 @@ public final class TreeUtils {
    *
    * @param newClassTree the constructor invocation
    * @return true if the given method invocation is a varargs invocation
+   * @deprecated use {@link #isVarargsCall(NewClassTree)}
    */
+  @Deprecated // 2024-06-04
   public static boolean isVarArgs(NewClassTree newClassTree) {
-    return isVarArgs(elementFromUse(newClassTree), newClassTree.getArguments());
+    return isVarargsCall(newClassTree);
   }
 
   /**
-   * Returns true if a method/constructor invocation is a varargs invocation.
+   * Returns true if the given constructor invocation is a varargs invocation.
    *
-   * @param method the method or constructor
-   * @param args the arguments passed at the invocation
-   * @return true if the given method/constructor invocation is a varargs invocation
+   * @param newClassTree the constructor invocation
+   * @return true if the given method invocation is a varargs invocation
    */
-  private static boolean isVarArgs(ExecutableElement method, List<? extends ExpressionTree> args) {
-    if (!method.isVarArgs()) {
-      return false;
-    }
-
-    List<? extends VariableElement> parameters = method.getParameters();
-    if (parameters.size() != args.size()) {
-      return true;
-    }
-
-    TypeMirror lastArgType = typeOf(args.get(args.size() - 1));
-    if (lastArgType.getKind() == TypeKind.NULL) {
-      return false;
-    }
-    if (lastArgType.getKind() != TypeKind.ARRAY) {
-      return true;
-    }
-
-    TypeMirror varargsParamType = parameters.get(parameters.size() - 1).asType();
-    return TypesUtils.getArrayDepth(varargsParamType) != TypesUtils.getArrayDepth(lastArgType);
+  public static boolean isVarargsCall(NewClassTree newClassTree) {
+    return ((JCNewClass) newClassTree).varargsElement != null;
   }
 
   /**
@@ -2827,15 +2869,11 @@ public final class TreeUtils {
    * @param methodInvocation a method or constructor invocation
    * @return whether applicability by variable arity invocation is necessary to determine the method
    *     signature
+   * @deprecated use {@link #isVarargsCall(Tree)}
    */
+  @Deprecated // 2024-06-04
   public static boolean isVarArgMethodCall(ExpressionTree methodInvocation) {
-    if (methodInvocation.getKind() == Tree.Kind.METHOD_INVOCATION) {
-      return ((JCMethodInvocation) methodInvocation).varargsElement != null;
-    } else if (methodInvocation.getKind() == Tree.Kind.NEW_CLASS) {
-      return ((JCNewClass) methodInvocation).varargsElement != null;
-    } else {
-      return false;
-    }
+    return isVarargsCall(methodInvocation);
   }
 
   /**

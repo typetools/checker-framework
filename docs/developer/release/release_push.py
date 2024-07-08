@@ -87,7 +87,7 @@ def copy_release_dir(path_to_dev_releases, path_to_live_releases, release_versio
     # The / at the end of the source location is necessary so that
     # rsync copies the files in the source directory to the destination directory
     # rather than a subdirectory of the destination directory.
-    cmd = "rsync --omit-dir-times --recursive --links --quiet %s/ %s" % (
+    cmd = "rsync --no-group --omit-dir-times --recursive --links --quiet %s/ %s" % (
         source_location,
         dest_location,
     )
@@ -103,7 +103,7 @@ def promote_release(path_to_releases, release_version):
     from_dir = os.path.join(path_to_releases, release_version)
     to_dir = os.path.join(path_to_releases, "..")
     # Trailing slash is crucial.
-    cmd = "rsync -aJ --omit-dir-times %s/ %s" % (from_dir, to_dir)
+    cmd = "rsync --no-group -aJ --omit-dir-times %s/ %s" % (from_dir, to_dir)
     execute(cmd)
 
 

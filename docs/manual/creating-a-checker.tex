@@ -1645,8 +1645,8 @@ override the visitor method that handles the \refclass{dataflow/cfg/node}{Node}s
 relevant to your run-time check or run-time operation.
 Leave the body of the overriding method empty for now.
 
-For example, the Regex Checker refines the type of a run-time test method
-call.  A method call is represented by a
+For example, the Regex Checker refines the type based on a call to the
+\<RegexUtil.isRegex> method.  A method call is represented by a
 \refclass{dataflow/cfg/node}{MethodInvocationNode}.  Therefore,
 \refclass{checker/regex}{RegexTransfer} overrides the
 \code{visitMethodInvocation} method:
@@ -1872,10 +1872,23 @@ at compile time.
 \end{enumerate}
 
 
-\subsectionAndLabel{Disabling flow-sensitive inference}{creating-dataflow-disable}
+\label{creating-dataflow-disable} % temporary label; remove in January 2025
+\subsectionAndLabel{Further customizing flow-sensitive inference}{creating-dataflow-customization}
 
-In the uncommon case that you wish to disable the Checker Framework's
-built-in flow inference in your checker (this is different than choosing
+By default, the Checker Framework assumes that modifications to an object's
+fields do not change its type qualifiers.  This is true for all
+provenance-based type systems (see
+Section~\ref{type-refinement-runtime-tests}), for all value-based type
+systems over immutable values, and for some other type systems.  To
+indicate that \textbf{side effects can change a value's type qualifiers},
+write \<sideEffectsUnrefineAliases = true;> in the type factory
+constructor, before the call to \<this.postInit();>.  Note that this
+setting may lead to large numbers of false positive warnings.  You can
+reduce the number of false positive warnings by writing more precise side
+effect annotations.
+
+In the uncommon case that you wish to \textbf{disable the Checker Framework's
+built-in flow inference} in your checker (this is different than choosing
 not to extend it as described in Section~\ref{creating-dataflow}), put the
 following two lines at the beginning of the constructor for your subtype of
 \refclass{common/basetype}{BaseAnnotatedTypeFactory}:
@@ -2123,7 +2136,7 @@ using any of the following four techniques:
   \<CheckerMain>, not by the annotation processor.  That means that it can be
   supplied only when you use the Checker Framework compiler (the ``Checker
   Framework javac wrapper''), and it cannot be written in a file containing
-  command-line arguments passed to the compiler using the @argfile syntax.
+  command-line arguments passed to the compiler using the \<@argfile> syntax.
 
 \end{itemize}
 
@@ -2140,8 +2153,16 @@ for dotfile in *.dot; do dot -Tpdf -o "$dotfile.pdf" "$dotfile"; done
 \end{Verbatim}
 
 \noindent
+or (for more verbose output)
+
+\begin{Verbatim}
+javacheck -processor mypackage.MyProcessor -Acfgviz=org.checkerframework.dataflow.cfg.visualize.DOTCFGVisualizer,outdir=.,verbose MyClass.java
+for dotfile in *.dot; do dot -Tpdf -o "$dotfile.pdf" "$dotfile"; done
+\end{Verbatim}
+
+\noindent
 where the first command creates file \<MyClass.dot> that
-represents the CFG, and the last command draws the CFG in a PDF file.
+represents the CFG, and the second command writes the CFG to a PDF file.
 The \<dot> program is part of \href{http://www.graphviz.org}{Graphviz}.
 
 In the output, conditional basic blocks are represented as octagons with
@@ -2160,7 +2181,7 @@ command-line options. \\
 \item \code{-Aflowdotdir=\emph{somedir}}:
   Specify directory for \<.dot> files visualizing the CFG\@.
   Shorthand for\\
-  \<-Acfgviz=org.checkerframework.dataflow.cfg.DOTCFGVisualizer,outdir=\emph{somedir}>.
+  \<-Acfgviz=org.checkerframework.dataflow.cfg.visualize.DOTCFGVisualizer,outdir=\emph{somedir}>.
   % TODO: create the directory if it doesn't exist.
   The directory must already exist.
 
@@ -2178,7 +2199,7 @@ command-line options. \\
 
   The argument is a comma-separated sequence.
   The first element is the fully-qualified name of the
-  \<org.checkerframework.dataflow.cfg.CFGVisualizer> implementation
+  \<org.checkerframework.dataflow.cfg.visualize.>\refclass{org/checkerframework/dataflow/cfg/visualize}{CFGVisualizer} implementation
   that should be used. Currently, the possibilities are:
   \begin{itemize}
   \item \<org.checkerframework.dataflow.cfg.visualize.>\refclass{org/checkerframework/dataflow/cfg/visualize}{DOTCFGVisualizer}
@@ -2188,6 +2209,8 @@ command-line options. \\
   passed to \<CFGVisualizer.init>.  Supported keys include
   \begin{itemize}
   \item \<verbose>
+    outputs the store after each basic block (in addition to before);
+    shows transfer result values, unique IDs, and the processing order
   \item \<outdir> directory into which to write files
   \item \<checkerName>
   \end{itemize}

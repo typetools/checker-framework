@@ -90,12 +90,55 @@ public abstract class JavaExpression {
     return type;
   }
 
+  /**
+   * Returns true if some subexpression is of given class.
+   *
+   * <p>If you want to debug and determine <em>which</em> subexpression is of the given class, use
+   * {@link #containedOfClass}.
+   *
+   * @param clazz the JavaExpression subclass to search for
+   * @return true if some subexpression's class is the given class
+   */
   @Pure
-  public abstract boolean containsOfClass(Class<? extends JavaExpression> clazz);
+  public final boolean containsOfClass(Class<? extends JavaExpression> clazz) {
+    return containedOfClass(clazz) != null;
+  }
 
+  /**
+   * Returns the first subexpression whose class is the given class, or null.
+   *
+   * <p>This is intended as a diagnostic aid; most clients will use {@link #containsOfClass}.
+   *
+   * @param <T> the type corresponding to {@code clazz}
+   * @param clazz the JavaExpression subclass to search for
+   * @return true if some subexpression whose class is the given class
+   */
   @Pure
-  public boolean containsUnknown() {
+  public abstract <T extends JavaExpression> @Nullable T containedOfClass(Class<T> clazz);
+
+  /**
+   * Returns true if some subexpression is {@link Unknown}.
+   *
+   * <p>If you want to debug and determine <em>which</em> subexpression is of the given class, use
+   * {@link #containedUnknown}.
+   *
+   * @return true if some subexpression is {@link Unknown}
+   */
+  @Pure
+  public final boolean containsUnknown() {
     return containsOfClass(Unknown.class);
+  }
+
+  /**
+   * Returns the first subexpression whose class is {@link Unknown}, or null.
+   *
+   * <p>This is intended as a diagnostic aid; most clients will use {@link #containsUnknown}.
+   *
+   * @return the first subexpression whose class is {@link Unknown}, or null
+   */
+  @Pure
+  public final @Nullable Unknown containedUnknown() {
+    return containedOfClass(Unknown.class);
   }
 
   /**
@@ -126,10 +169,34 @@ public abstract class JavaExpression {
    * final field accesses whose receiver is {@link #isUnassignableByOtherCode}, and operations whose
    * operands are all {@link #isUnmodifiableByOtherCode}.
    *
+   * @return true if no subexpression of this can be assigned to from outside the current method
+   *     body
    * @see #isUnmodifiableByOtherCode
+   * @deprecated use {@link #isAssignableByOtherCode}
    */
+  @Deprecated // 2024-04-30
   @Pure
-  public abstract boolean isUnassignableByOtherCode();
+  public boolean isUnassignableByOtherCode() {
+    return !isAssignableByOtherCode();
+  }
+
+  /**
+   * Returns true if some subexpression of this can be assigned to from outside the current method
+   * body.
+   *
+   * <p>This is false for local variables, the self reference, final field accesses whose receiver
+   * is {@link #isUnassignableByOtherCode}, and operations whose operands are all not {@link
+   * #isModifiableByOtherCode}.
+   *
+   * @return true if some subexpression of this can be assigned to from outside the current method
+   *     body
+   * @see #isModifiableByOtherCode
+   */
+  // TODO: Make abstract when isUnassignableByOtherCode is removed.
+  @Pure
+  public boolean isAssignableByOtherCode() {
+    return !isUnassignableByOtherCode();
+  }
 
   /**
    * Returns true if and only if the value this expression stands for cannot be changed by a method
@@ -138,10 +205,34 @@ public abstract class JavaExpression {
    * <p>Approximately, this returns true if the expression is {@link #isUnassignableByOtherCode} and
    * its type is immutable.
    *
+   * @return true if the value of this expression cannot be changed from outside the current method
+   *     body
+   * @see #isUnassignableByOtherCode
+   * @deprecated use {@link #isModifiableByOtherCode}
+   */
+  @Deprecated // 2024-04-30
+  @Pure
+  public boolean isUnmodifiableByOtherCode() {
+    return !isModifiableByOtherCode();
+  }
+
+  /**
+   * Returns true if the value this expression stands for can be changed by a method call;
+   * equivalently, if the value this expression evaluates to can be changed by a side effect from
+   * outside the containing method.
+   *
+   * <p>Approximately, this returns true if the expression is {@link #isAssignableByOtherCode} or
+   * its type is mutable. ({@code String} is an immutable type.)
+   *
+   * @return true if the value of this expression can be changed from outside the current method
+   *     body
    * @see #isUnassignableByOtherCode
    */
+  // TODO: Make abstract when isUnmodifiableByOtherCode is removed.
   @Pure
-  public abstract boolean isUnmodifiableByOtherCode();
+  public boolean isModifiableByOtherCode() {
+    return !isUnmodifiableByOtherCode();
+  }
 
   /**
    * Returns true if and only if the two Java expressions are syntactically identical.
@@ -294,7 +385,7 @@ public abstract class JavaExpression {
     } else if (receiverNode instanceof ThisNode) {
       result = new ThisReference(receiverNode.getType());
     } else if (receiverNode instanceof SuperNode) {
-      result = new ThisReference(receiverNode.getType());
+      result = new SuperReference(receiverNode.getType());
     } else if (receiverNode instanceof LocalVariableNode) {
       LocalVariableNode lv = (LocalVariableNode) receiverNode;
       result = new LocalVariable(lv);
@@ -442,8 +533,11 @@ public abstract class JavaExpression {
         IdentifierTree identifierTree = (IdentifierTree) tree;
         TypeMirror typeOfId = TreeUtils.typeOf(identifierTree);
         Name identifierName = identifierTree.getName();
-        if (identifierName.contentEquals("this") || identifierName.contentEquals("super")) {
+        if (identifierName.contentEquals("this")) {
           result = new ThisReference(typeOfId);
+          break;
+        } else if (identifierName.contentEquals("super")) {
+          result = new SuperReference(typeOfId);
           break;
         }
         assert TreeUtils.isUseOfElement(identifierTree) : "@AssumeAssertion(nullness): tree kind";

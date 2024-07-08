@@ -23,9 +23,9 @@ if grep -n -r --exclude-dir=build --exclude-dir=examples --exclude-dir=jtreg --e
   echo "Don't use static import or wildcard import"
   exit 1
 fi
-make -C checker/bin
-make -C checker/bin-devel
-make -C docs/developer/release check-python-style
+make -C checker/bin --jobs="$(getconf _NPROCESSORS_ONLN)"
+make -C checker/bin-devel --jobs="$(getconf _NPROCESSORS_ONLN)"
+make -C docs/developer/release check-python-style --jobs="$(getconf _NPROCESSORS_ONLN)"
 
 ## HTML legality
 ./gradlew htmlValidate --console=plain --warning-mode=all
@@ -47,8 +47,8 @@ fi
 if [ $status -ne 0 ]; then exit $status; fi
 
 # Shell script style
-make -C checker/bin shell-script-style
-make -C checker/bin-devel shell-script-style
+make -C checker/bin --jobs="$(getconf _NPROCESSORS_ONLN)" shell-script-style
+make -C checker/bin-devel --jobs="$(getconf _NPROCESSORS_ONLN)" shell-script-style
 
 ## User documentation
 ./gradlew manual

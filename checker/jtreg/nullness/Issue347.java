@@ -2,7 +2,7 @@
  * @test
  * @summary Test for Issue 347: concurrent semantics has desired behavior
  *
- * @compile -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -Alint Issue347.java
+ * @compile -processor org.checkerframework.checker.nullness.NullnessChecker -Alint Issue347.java
  * @compile/fail/ref=Issue347-con.out -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -Alint Issue347.java -AconcurrentSemantics
  */
 

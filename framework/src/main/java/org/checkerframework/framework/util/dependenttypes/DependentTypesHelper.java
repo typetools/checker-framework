@@ -38,6 +38,7 @@ import org.checkerframework.dataflow.expression.FormalParameter;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.JavaExpressionConverter;
 import org.checkerframework.dataflow.expression.LocalVariable;
+import org.checkerframework.dataflow.expression.SuperReference;
 import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.expression.Unknown;
 import org.checkerframework.framework.source.SourceChecker;
@@ -599,7 +600,10 @@ public class DependentTypesHelper {
 
   /** Thrown when a non-parameter local variable is found. */
   @SuppressWarnings("serial")
-  private static class FoundLocalException extends RuntimeException {}
+  private static class FoundLocalVarException extends RuntimeException {
+    /** Creates a FoundLocalVarException. */
+    public FoundLocalVarException() {}
+  }
 
   /**
    * Viewpoint-adapt all dependent type annotations to the method declaration, {@code
@@ -642,14 +646,14 @@ public class DependentTypesHelper {
                     LocalVariable localVarExpr, Void unused) {
                   int index = paramsAsLocals.indexOf(localVarExpr);
                   if (index == -1) {
-                    throw new FoundLocalException();
+                    throw new FoundLocalVarException();
                   }
                   return parameters.get(index);
                 }
               };
           try {
             return jec.convert(javaExpr);
-          } catch (FoundLocalException ex) {
+          } catch (FoundLocalVarException ex) {
             return null;
           }
         };
@@ -720,18 +724,23 @@ public class DependentTypesHelper {
                 // accomplishes.
                 @Override
                 public JavaExpression visitLocalVariable(LocalVariable local, Void unused) {
-                  throw new FoundLocalException();
+                  throw new FoundLocalVarException();
                 }
 
                 @Override
                 public JavaExpression visitThisReference(ThisReference thisRef, Void unused) {
-                  throw new FoundLocalException();
+                  throw new FoundLocalVarException();
+                }
+
+                @Override
+                public JavaExpression visitSuperReference(SuperReference superRef, Void unused) {
+                  throw new FoundLocalVarException();
                 }
               };
 
           try {
             return jec.convert(expr);
-          } catch (FoundLocalException ex) {
+          } catch (FoundLocalVarException ex) {
             return null;
           }
         };

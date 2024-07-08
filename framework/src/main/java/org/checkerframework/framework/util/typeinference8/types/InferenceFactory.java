@@ -183,7 +183,7 @@ public class InferenceFactory {
           return new ProperType(res, TreeUtils.typeOf(var), this.context);
         } else {
           throw new BugInCF(
-              "Unexpected assignment context.\nKind: %s\nTree: %s", context.getKind(), context);
+              "Unexpected assignment context.%nKind: %s%nTree: %s", context.getKind(), context);
         }
     }
   }
@@ -268,7 +268,7 @@ public class InferenceFactory {
 
     ExecutableType methodType = getTypeOfMethodAdaptedToUse(invocation, context);
     if (treeIndex >= methodType.getParameterTypes().size() - 1
-        && TreeUtils.isVarArgMethodCall(invocation)) {
+        && TreeUtils.isVarargsCall(invocation)) {
       treeIndex = methodType.getParameterTypes().size() - 1;
       TypeMirror typeMirror = methodType.getParameterTypes().get(treeIndex);
       return ((ArrayType) typeMirror).getComponentType();
@@ -301,7 +301,7 @@ public class InferenceFactory {
     }
 
     if (treeIndex >= methodType.getParameterTypes().size() - 1
-        && TreeUtils.isVarArgMethodCall(invocation)) {
+        && TreeUtils.isVarargsCall(invocation)) {
       treeIndex = methodType.getParameterTypes().size() - 1;
       AnnotatedTypeMirror typeMirror = methodType.getParameterTypes().get(treeIndex);
       return ((AnnotatedArrayType) typeMirror).getComponentType();
@@ -977,7 +977,12 @@ public class InferenceFactory {
       if (ei.isProper()) {
         properTypes.add((ProperType) ei);
       } else {
-        es.add((UseOfVariable) ei);
+        UseOfVariable varEi = (UseOfVariable) ei;
+        if (varEi.getVariable().getInstantiation() != null) {
+          properTypes.add(varEi.getVariable().getInstantiation());
+        } else {
+          es.add((UseOfVariable) ei);
+        }
       }
     }
     if (es.isEmpty()) {

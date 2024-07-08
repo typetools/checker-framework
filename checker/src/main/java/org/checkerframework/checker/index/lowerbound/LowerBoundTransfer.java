@@ -17,7 +17,6 @@ import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.index.qual.Positive;
 import org.checkerframework.checker.index.upperbound.OffsetEquation;
 import org.checkerframework.common.value.ValueCheckerUtils;
-import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
@@ -848,7 +847,7 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
       NumericalAdditionNode n, TransferInput<CFValue, CFStore> p) {
     TransferResult<CFValue, CFStore> result = super.visitNumericalAddition(n, p);
     AnnotationMirror newAnno = getAnnotationForPlus(n, p);
-    return createNewResult(result, newAnno);
+    return recreateTransferResult(newAnno, result);
   }
 
   @Override
@@ -856,7 +855,7 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
       NumericalSubtractionNode n, TransferInput<CFValue, CFStore> p) {
     TransferResult<CFValue, CFStore> result = super.visitNumericalSubtraction(n, p);
     AnnotationMirror newAnno = getAnnotationForMinus(n, p);
-    return createNewResult(result, newAnno);
+    return recreateTransferResult(newAnno, result);
   }
 
   @Override
@@ -864,7 +863,7 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
       NumericalMultiplicationNode n, TransferInput<CFValue, CFStore> p) {
     TransferResult<CFValue, CFStore> result = super.visitNumericalMultiplication(n, p);
     AnnotationMirror newAnno = getAnnotationForMultiply(n, p);
-    return createNewResult(result, newAnno);
+    return recreateTransferResult(newAnno, result);
   }
 
   @Override
@@ -872,7 +871,7 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
       IntegerDivisionNode n, TransferInput<CFValue, CFStore> p) {
     TransferResult<CFValue, CFStore> result = super.visitIntegerDivision(n, p);
     AnnotationMirror newAnno = getAnnotationForDivide(n, p);
-    return createNewResult(result, newAnno);
+    return recreateTransferResult(newAnno, result);
   }
 
   @Override
@@ -880,7 +879,7 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
       IntegerRemainderNode n, TransferInput<CFValue, CFStore> p) {
     TransferResult<CFValue, CFStore> transferResult = super.visitIntegerRemainder(n, p);
     AnnotationMirror resultAnno = getAnnotationForRemainder(n, p);
-    return createNewResult(transferResult, resultAnno);
+    return recreateTransferResult(resultAnno, transferResult);
   }
 
   @Override
@@ -888,7 +887,7 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
       SignedRightShiftNode n, TransferInput<CFValue, CFStore> p) {
     TransferResult<CFValue, CFStore> transferResult = super.visitSignedRightShift(n, p);
     AnnotationMirror resultAnno = getAnnotationForRightShift(n, p);
-    return createNewResult(transferResult, resultAnno);
+    return recreateTransferResult(resultAnno, transferResult);
   }
 
   @Override
@@ -896,7 +895,7 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
       UnsignedRightShiftNode n, TransferInput<CFValue, CFStore> p) {
     TransferResult<CFValue, CFStore> transferResult = super.visitUnsignedRightShift(n, p);
     AnnotationMirror resultAnno = getAnnotationForRightShift(n, p);
-    return createNewResult(transferResult, resultAnno);
+    return recreateTransferResult(resultAnno, transferResult);
   }
 
   @Override
@@ -904,21 +903,6 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
       BitwiseAndNode n, TransferInput<CFValue, CFStore> p) {
     TransferResult<CFValue, CFStore> transferResult = super.visitBitwiseAnd(n, p);
     AnnotationMirror resultAnno = getAnnotationForAnd(n, p);
-    return createNewResult(transferResult, resultAnno);
-  }
-
-  /**
-   * Create a new transfer result based on the original result and the new annotation.
-   *
-   * @param result the original result
-   * @param resultAnno the new annotation
-   * @return the new transfer result
-   */
-  private TransferResult<CFValue, CFStore> createNewResult(
-      TransferResult<CFValue, CFStore> result, AnnotationMirror resultAnno) {
-    CFValue newResultValue =
-        analysis.createSingleAnnotationValue(
-            resultAnno, result.getResultValue().getUnderlyingType());
-    return new RegularTransferResult<>(newResultValue, result.getRegularStore());
+    return recreateTransferResult(resultAnno, transferResult);
   }
 }

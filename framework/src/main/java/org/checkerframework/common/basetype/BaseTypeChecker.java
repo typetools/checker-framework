@@ -321,7 +321,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
       @ClassGetName String name, Class<?>[] paramTypes, Object[] args) {
 
     // Load the class.
-    Class<T> cls = null;
+    Class<T> cls;
     try {
       cls = (Class<T>) Class.forName(name);
     } catch (Exception e) {

@@ -1,0 +1,173 @@
+\htmlhr
+\chapterAndLabel{Non-Empty Checker for container classes}{non-empty-checker}
+
+The Non-Empty Checker tracks whether a container is possibly-empty or is
+definitely non-empty.  It works on containers such as
+\<Collection>s, \<Iterator>s, \<Iterable>s, and \<Map>s, but not \<Optional>s.
+
+If the Non-Empty Checker issues no warnings, then your program does not
+throw \<NoSuchElementException> as a result of calling methods such as
+\<Iterator.next()>,
+\<Deque.getFirst()>, \<Deque.removeFirst()>, \<Queue.remove()>, or
+\<Queue.element()>.
+
+To run the Non-Empty Checker, run either of these commands:
+
+\begin{alltt}
+  javac -processor nonempty \emph{MyJavaFile}.java
+  javac -processor org.checkerframework.checker.nonempty.NonEmptyChecker \emph{MyJavaFile}.java
+\end{alltt}
+
+
+\sectionAndLabel{Non-Empty annotations}{non-empty-annotations}
+
+These qualifiers make up the Non-Empty type system:
+
+\begin{description}
+
+\item[\refqualclass{checker/nonempty/qual}{UnknownNonEmpty}]
+  The annotated collection, iterator, iterable, or map may or may not be empty.
+  This is the top type; programmers need not explicitly write it.
+
+\item[\refqualclass{checker/nonempty/qual}{NonEmpty}]
+  The annotated collection, iterator, iterable, or map is \emph{definitely}
+  non-empty.
+
+\item[\refqualclass{checker/nonempty/qual}{PolyNonEmpty}]
+  indicates qualifier polymorphism.
+  For a description of qualifier polymorphism, see
+  Section~\ref{method-qualifier-polymorphism}.
+
+\end{description}
+
+\begin{figure}
+\includeimage{nonempty-subtyping}{3.75cm}
+\caption{The subtyping relationship of the Non-Empty Checker's qualifiers.}
+\label{fig-nonempty-hierarchy}
+\end{figure}
+
+\subsectionAndLabel{Non-Empty method annotations}{non-empty-method-annotations}
+
+The Non-Empty Checker supports several annotations that specify method
+behavior.  These are declaration annotations, not type annotations;  they
+apply to the annotated method itself rather than to some particular type.
+
+\begin{description}
+
+\item[\refqualclass{checker/nonempty/qual}{RequiresNonEmpty}]
+  indicates a method precondition.  The annotated method expects the
+  specified expresssion to be non-empty when the
+  method is invoked.  You could write \<@RequiresNonEmpty($f$)> when field
+  \<$f$> is sometimes empty, but the annotated method requires
+  \<$f$> to be non-empty.
+
+\item[\refqualclass{checker/nonempty/qual}{EnsuresNonEmpty}]
+  indicates a method postcondition.  After the method returns (without
+  throwing an exception), the given
+  expression is non-empty. See the Javadoc for examples of its use.
+
+\item[\refqualclass{checker/nonempty/qual}{EnsuresNonEmptyIf}]
+  indicates a method postcondition.  With \<@EnsuresNonEmpty>, the given
+  expression is non-empty after the method returns normally.  With
+  \<@EnsuresNonEmptyIf>, if the annotated
+  method returns the given boolean value (true or false), then the given
+  expression is non-empty. See the Javadoc for examples of its use.
+
+\end{description}
+
+
+\sectionAndLabel{Annotating your code with \<@NonEmpty>}{annotating-with-non-empty}
+
+The default annotation for collections, iterators, iterables, and maps is
+\<@UnknownNonEmpty>.
+Refinement to the \<@NonEmpty> type occurs in certain cases, such as after
+conditional checks for empty/non-emptiness (see Section~\ref{type-refinement} for
+more details):
+
+\begin{Verbatim}
+    public List<String> getSessionIds() { ... }
+    ...
+    List<String> sessionIds = getSessionIds(); // sessionIds has type @UnknownNonEmpty
+    ...
+    if (!sessionIds.isEmpty()) {
+      sessionIds.iterator().next(); // OK, sessionIds has type @NonEmpty
+      ...
+    }
+\end{Verbatim}
+
+A programmer can manually annotate code in cases where a collection,
+iterator, iterable, or map is always known to be non-empty, but that fact is
+unable to be inferred by the type system:
+
+\begin{Verbatim}
+    // This call always returns a non-empty map; there is always at least one user in the store
+    public @NonEmpty Map<UserId, User> getUserMapping() { ... }
+    ...
+    Map<UserId, User> users = getUserMapping(); // users has type @NonEmpty
+\end{Verbatim}
+
+\sectionAndLabel{What the Non-Empty Checker checks}{non-empty-checker-checks}
+
+The Non-Empty Checker ensures that collections, iterators, iterables, or maps
+are non-empty at certain points in a program.
+If a program type-checks cleanly under the Non-Empty Checker (i.e., no errors
+are issued by the checker), then the program is certified with a compile-time
+guarantee of the absence of errors rooted in the use of operations that
+rely on whether a collection is non-empty.
+For example, calling \<next()> on an iterator that is known to be \<@NonEmpty>
+should never fail, or, getting the first element of a \<@NonEmpty> list should
+not throw an exception.
+
+The Non-Empty Checker does \emph{not} provide guarantees about the fixed
+length or size of collections, iterators, iterables, or maps, beyond whether
+it has a length or size of at least 1 (i.e., it is non-empty).
+The Index Checker (\chapterpageref{index-checker}) is a checker that analyzes
+array bounds and indices and warns about potential
+\<IndexOutOfBoundsException>s.
+
+The Non-Empty Checker does \emph{not} provide guarantees about proper use
+of \<Optional>, even though misuse can lead to the same execption,
+\<NoSuchElementException>.  Use the Optional Checker
+(\chapterpageref{optional-checker}) instead.
+
+
+\sectionAndLabel{Suppressing non-empty warnings}{suppressing-non-empty-warnings}
+
+Like any sound static analysis tool, the Non-Empty Checker may issue a warning
+for code that is correct.
+It is often best to change your code or annotations in this case.
+Alternatively, you may choose to suppress the warning.
+This does not change the code, but prevents the warning from being presented to
+you.
+The Checker Framework supplies several mechanisms to suppress warnings (see
+\chapterpageref{suppressing-warnings}).
+The \<@SuppressWarnings("nonempty")> annotation is specific to warnings raised
+by the Non-Empty Checker:
+
+\begin{Verbatim}
+// This method might return an empty list, depending on the argument.
+List<String> getRegionIds(String region) { ... }
+
+void parseRegions() {
+ @SuppressWarnings("nonempty") // We know that `getRegions(x)` returns a non-empty list.
+ @NonEmpty List<String> regionIds = getRegionIds(x);
+}
+\end{Verbatim}
+
+\subsectionAndLabel{Suppressing warnings with assertions}{suppressing-warnings-with-assertions}
+
+Occasionally, it is inconvenient or verbose to use the \<@SuppressWarnings>
+annotation.
+For example, Java does not permit annotations such as \<@SuppressWarnings> to
+appear on expressions, static initializers, etc.
+Here are two ways to suppress a warning in such cases:
+
+\begin{itemize}
+\item
+  Create a local variable to hold a subexpression, and
+  suppress a warning on the local variable declaration.
+\item
+  Use the \<@AssumeAssertion> string in
+  an \<assert> message (see Section~\ref{assumeassertion}).
+\end{itemize}
+
