@@ -22,12 +22,14 @@ import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
-import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.TreeUtils;
 
 /** The transfer function for the Optional Checker. */
 public class OptionalTransfer extends CFTransfer {
+
+  /** The {@link OptionalAnnotatedTypeFactory} instance for this transfer class. */
+  private final OptionalAnnotatedTypeFactory optionalTypeFactory;
 
   /** The @{@link Present} annotation. */
   private final AnnotationMirror PRESENT;
@@ -38,9 +40,6 @@ public class OptionalTransfer extends CFTransfer {
   /** The element for java.util.Optional.ifPresentOrElse(), or null. */
   private final @Nullable ExecutableElement optionalIfPresentOrElse;
 
-  /** The type factory associated with this transfer function. */
-  private final AnnotatedTypeFactory atypeFactory;
-
   /**
    * Create an OptionalTransfer.
    *
@@ -48,10 +47,10 @@ public class OptionalTransfer extends CFTransfer {
    */
   public OptionalTransfer(CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
     super(analysis);
-    atypeFactory = analysis.getTypeFactory();
-    Elements elements = atypeFactory.getElementUtils();
+    optionalTypeFactory = (OptionalAnnotatedTypeFactory) analysis.getTypeFactory();
+    Elements elements = optionalTypeFactory.getElementUtils();
     PRESENT = AnnotationBuilder.fromClass(elements, Present.class);
-    ProcessingEnvironment env = atypeFactory.getProcessingEnv();
+    ProcessingEnvironment env = optionalTypeFactory.getProcessingEnv();
     optionalIfPresent = TreeUtils.getMethod("java.util.Optional", "ifPresent", 1, env);
     optionalIfPresentOrElse =
         TreeUtils.getMethodOrNull("java.util.Optional", "ifPresentOrElse", 2, env);
@@ -70,7 +69,7 @@ public class OptionalTransfer extends CFTransfer {
       LambdaExpressionTree lambdaTree = cfgLambda.getLambdaTree();
       List<? extends VariableTree> lambdaParams = lambdaTree.getParameters();
       if (lambdaParams.size() == 1) {
-        TreePath lambdaPath = atypeFactory.getPath(lambdaTree);
+        TreePath lambdaPath = optionalTypeFactory.getPath(lambdaTree);
         Tree lambdaParent = lambdaPath.getParentPath().getLeaf();
         if (lambdaParent.getKind() == Tree.Kind.METHOD_INVOCATION) {
           MethodInvocationTree invok = (MethodInvocationTree) lambdaParent;
