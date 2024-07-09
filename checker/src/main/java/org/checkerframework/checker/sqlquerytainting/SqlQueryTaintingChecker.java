@@ -11,4 +11,4 @@ import org.checkerframework.framework.source.SuppressWarningsPrefix;
  * sanitized before use.
  */
 @SuppressWarningsPrefix({"sqlquerysanitized", "sqlquerytainting"})
-public class SqlTaintingChecker extends BaseTypeChecker {}
+public class SqlQueryTaintingChecker extends BaseTypeChecker {}
