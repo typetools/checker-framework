@@ -6,15 +6,15 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 
-/** Visitor for the {@link SqlTaintingChecker}. */
-public class SqlTaintingVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
+/** Visitor for the {@link SqlQueryTaintingChecker}. */
+public class SqlQueryTaintingVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
 
   /**
-   * Creates a {@link SqlTaintingVisitor}.
+   * Creates a {@link SqlQueryTaintingVisitor}.
    *
    * @param checker the checker that uses this visitor
    */
-  public SqlTaintingVisitor(BaseTypeChecker checker) {
+  public SqlQueryTaintingVisitor(BaseTypeChecker checker) {
     super(checker);
   }
 
