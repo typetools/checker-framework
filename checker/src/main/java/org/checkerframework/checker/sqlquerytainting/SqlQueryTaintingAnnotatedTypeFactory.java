@@ -10,11 +10,11 @@ import org.checkerframework.javacutil.AnnotationMirrorSet;
 /** Annotated type factory for the SQL Query Tainting Checker. */
 public class SqlQueryTaintingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-  /** The {@code @}{@link SqlSanitized} annotation mirror. */
-  private final AnnotationMirror SQLSANITIZED;
+  /** The {@code @}{@link SqlSanitizedUser} annotation mirror. */
+  private final AnnotationMirror SQLSANITIZEDUSER;
 
-  /** A singleton set containing the {@code @}{@link SqlSanitized} annotation mirror. */
-  private final AnnotationMirrorSet setOfSqlSanitized;
+  /** A singleton set containing the {@code @}{@link SqlSanitizedUser} annotation mirror. */
+  private final AnnotationMirrorSet setOfSqlSanitizedUser;
 
   /**
    * Creates a {@link SqlQueryTaintingAnnotatedTypeFactory}.
@@ -23,13 +23,13 @@ public class SqlQueryTaintingAnnotatedTypeFactory extends BaseAnnotatedTypeFacto
    */
   public SqlQueryTaintingAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
-    this.SQLSANITIZED = AnnotationBuilder.fromClass(getElementUtils(), SqlSanitized.class);
-    this.setOfSqlSanitized = AnnotationMirrorSet.singleton(SQLSANITIZED);
+    this.SQLSANITIZEDUSER = AnnotationBuilder.fromClass(getElementUtils(), SqlSanitizedUser.class);
+    this.setOfSqlSanitizedUser = AnnotationMirrorSet.singleton(SQLSANITIZEDUSER);
     postInit();
   }
 
   @Override
   protected Set<AnnotationMirror> getEnumConstructorQualifiers() {
-    return setOfSqlSanitized;
+    return setOfSqlSanitizedUser;
   }
 }
