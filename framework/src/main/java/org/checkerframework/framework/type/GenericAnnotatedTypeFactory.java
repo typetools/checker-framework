@@ -2439,6 +2439,7 @@ public abstract class GenericAnnotatedTypeFactory<
   @FormatMethod
   private static void log(String format, Object... args) {
     if (debug) {
+      System.out.flush();
       SystemPlume.sleep(1); // logging can interleave with typechecker output
       System.out.printf(format, args);
     }

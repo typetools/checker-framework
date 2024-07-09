@@ -1844,6 +1844,9 @@ public final class TreeUtils {
    * Returns the type as a TypeMirror of {@code tree}. To obtain {@code tree}'s AnnotatedTypeMirror,
    * call {@code AnnotatedTypeFactory.getAnnotatedType()}.
    *
+   * <p>Note that for the expression "super", this method returns the type of "this", not "this"'s
+   * superclass.
+   *
    * @return the type as a TypeMirror of {@code tree}
    */
   public static TypeMirror typeOf(Tree tree) {
@@ -2571,6 +2574,17 @@ public final class TreeUtils {
   }
 
   /**
+   * Returns true if the given method reference has a varargs formal parameter.
+   *
+   * @param methref a method reference
+   * @return if the given method reference has a varargs formal parameter
+   */
+  public static boolean hasVarargsParameter(MemberReferenceTree methref) {
+    JCMemberReference jcMethoRef = (JCMemberReference) methref;
+    return jcMethoRef.varargsElement != null;
+  }
+
+  /**
    * Returns true if the given method/constructor invocation is a varargs invocation.
    *
    * @param tree a method/constructor invocation
@@ -2582,6 +2596,8 @@ public final class TreeUtils {
         return isVarargsCall((MethodInvocationTree) tree);
       case NEW_CLASS:
         return isVarargsCall((NewClassTree) tree);
+      case MEMBER_REFERENCE:
+        return hasVarargsParameter((MemberReferenceTree) tree);
       default:
         return false;
     }
