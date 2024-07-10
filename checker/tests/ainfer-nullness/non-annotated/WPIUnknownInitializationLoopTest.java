@@ -1,3 +1,10 @@
+// WPI gets stuck in a loop for codes like this because it
+// does not currently consider the facts related to the absence of some initializations
+// when there are multiple constructors for a class. A solution for this problem makes the
+// ainfernullness test on this code pass. The current solution changes the UnknownInitialization
+// annotations with all arguments for a Nullable or MonotonicNonNull object to
+// UnknownInitialization(java.lang.Object.class).
+
 interface Game {
   void newGame();
 }

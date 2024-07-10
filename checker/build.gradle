@@ -813,6 +813,9 @@ task ainferNullnessGenerateJaifs(type: Test) {
     delete('tests/ainfer-nullness/annotated/TwoCtorGenericAbstract.java')
     delete('tests/ainfer-nullness/annotated/TypeVarReturnAnnotated.java')
 
+    //This test shouldn't be expected to work without the input .ajava file.
+    delete('tests/ainfer-nullness/annotated/WPIUnknownInitializationLoopTest.java')
+
     // Inserting annotations from .jaif files in-place.
     String jaifsDir = 'tests/ainfer-nullness/inference-output';
     List<File> jaifs = fileTree(jaifsDir).matching {
@@ -1079,4 +1082,3 @@ publishing {
 signing {
   sign publishing.publications.checker
 }
-
