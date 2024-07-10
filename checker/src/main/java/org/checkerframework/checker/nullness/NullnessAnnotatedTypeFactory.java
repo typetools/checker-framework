@@ -50,6 +50,7 @@ import org.checkerframework.dataflow.analysis.Analysis.BeforeOrAfter;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
+import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeFormatter;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -938,6 +939,8 @@ public class NullnessAnnotatedTypeFactory
   @Override
   public void wpiAdjustForUpdateField(
       Tree lhsTree, Element element, String fieldName, AnnotatedTypeMirror rhsATM) {
+    // Adjust initialization annotations first
+    wpiAdjustInitializationAnnotations(rhsATM, TypeUseLocation.FIELD);
     // Synthetic variable names contain "#". Ignore them.
     if (!rhsATM.hasPrimaryAnnotation(Nullable.class) || fieldName.contains("#")) {
       return;
@@ -956,8 +959,39 @@ public class NullnessAnnotatedTypeFactory
   // then change rhs to @Nullable
   @Override
   public void wpiAdjustForUpdateNonField(AnnotatedTypeMirror rhsATM) {
+    // Adjust initialization annotations first
+    wpiAdjustInitializationAnnotations(rhsATM, TypeUseLocation.OTHERWISE);
     if (rhsATM.hasPrimaryAnnotation(MonotonicNonNull.class)) {
       rhsATM.replaceAnnotation(NULLABLE);
+    }
+  }
+
+  /**
+   * Changes the type of {@code rhsATM} when assigned to any pseudo-assignment, for use by
+   * whole-program inference.
+   *
+   * <p>If {@code rhsATM} is Nullable or MonotonicNonNull and has the UnknownInitialization
+   * annotation, replace it with {@code UnknownInitialization(java.lang.Object.class)}. This ensures
+   * that if there is a constructor where the type hasn't been initialized, its effect is
+   * considered. Otherwise, whole-program inference might get stuck in a loop.
+   *
+   * @param rhsATM the type of the right-hand side of the pseudo-assignment, which is side-effected
+   *     by this method
+   * @param defLoc the location where the annotation will be added. It is either a FIELD or a
+   *     non-field (OTHERWISE).
+   */
+  public void wpiAdjustInitializationAnnotations(
+      AnnotatedTypeMirror rhsATM, TypeUseLocation defLoc) {
+    // defLoc is defined to be used in the future if needed to differentiate between field and
+    // non-field locations
+    if ((rhsATM.hasPrimaryAnnotation(Nullable.class)
+        || rhsATM.hasPrimaryAnnotation(MonotonicNonNull.class))) {
+      for (AnnotationMirror anno : rhsATM.getPrimaryAnnotations()) {
+        if (AnnotationUtils.areSameByName(
+            anno, "org.checkerframework.checker.initialization.qual" + ".UnknownInitialization")) {
+          rhsATM.replaceAnnotation(UNKNOWN_INITIALIZATION);
+        }
+      }
     }
   }
 
