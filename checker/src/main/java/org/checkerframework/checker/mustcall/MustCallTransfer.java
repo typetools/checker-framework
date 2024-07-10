@@ -6,16 +6,21 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.calledmethods.CalledMethodsTransfer;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
+import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
+import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
+import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
@@ -24,7 +29,6 @@ import org.checkerframework.dataflow.cfg.node.StringConversionNode;
 import org.checkerframework.dataflow.cfg.node.SwitchExpressionNode;
 import org.checkerframework.dataflow.cfg.node.TernaryExpressionNode;
 import org.checkerframework.dataflow.expression.JavaExpression;
-import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
@@ -67,7 +71,7 @@ public class MustCallTransfer extends CFTransfer {
    *
    * @param analysis the analysis
    */
-  public MustCallTransfer(CFAnalysis analysis) {
+  public MustCallTransfer(MustCallAnalysis analysis) {
     super(analysis);
     atypeFactory = (MustCallAnnotatedTypeFactory) analysis.getTypeFactory();
     noCreatesMustCallFor =
@@ -137,7 +141,27 @@ public class MustCallTransfer extends CFTransfer {
           lubWithStoreValue(store, targetExpr, defaultType);
         }
       }
+
+      if (n.getBlock() instanceof ExceptionBlock) {
+        Map<TypeMirror, CFStore> exceptionalStores =
+            CalledMethodsTransfer.makeExceptionalStores(n, in);
+        // Update stores for the exceptional paths to handle cases like:
+        // https://github.com/typetools/checker-framework/issues/6050
+        if (result.containsTwoStores()) {
+          result =
+              new ConditionalTransferResult<>(
+                  result.getResultValue(),
+                  result.getThenStore().copy(),
+                  result.getElseStore().copy(),
+                  exceptionalStores);
+        } else {
+          result =
+              new RegularTransferResult<>(
+                  result.getResultValue(), result.getRegularStore().copy(), exceptionalStores);
+        }
+      }
     }
+
     return result;
   }
 
