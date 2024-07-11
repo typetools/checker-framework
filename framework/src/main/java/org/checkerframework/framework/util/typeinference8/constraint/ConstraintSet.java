@@ -286,7 +286,12 @@ public class ConstraintSet implements ReductionResult {
       if (this.list.size() > BoundSet.MAX_INCORPORATION_STEPS) {
         throw new BugInCF("TO MANY CONSTRAINTS: %s", context.pathToExpression.getLeaf());
       }
-      boundSet.merge(reduceOneStep(context));
+      BoundSet result = reduceOneStep(context);
+      boundSet.merge(result);
+      if (result.setFoundAA) {
+        boundSet.setFoundAA = true;
+        return boundSet;
+      }
     }
 
     return boundSet;
@@ -331,6 +336,9 @@ public class ConstraintSet implements ReductionResult {
       if (!alreadyFailed && boundSet.errorMsg.isEmpty()) {
         boundSet.errorMsg = constraint.toString();
       }
+    }
+    if (constraint instanceof AdditionalArgument) {
+      boundSet.setFoundAA = true;
     }
     return boundSet;
   }

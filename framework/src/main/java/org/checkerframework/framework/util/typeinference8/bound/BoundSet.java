@@ -43,6 +43,8 @@ public class BoundSet implements ReductionResult {
   /** The error message to report to users. */
   public String errorMsg = "";
 
+  public boolean setFoundAA = false;
+
   /** Whether this bounds set contains the false bound. */
   private boolean containsFalse;
 
@@ -252,7 +254,10 @@ public class BoundSet implements ReductionResult {
    * @return the dependencies between all variables in this bound set
    */
   public Dependencies getDependencies(Collection<Variable> additionalVars) {
-    variables.addAll(additionalVars);
+    for (Theta t : context.maps.values()) {
+      variables.addAll(t.values());
+    }
+    //    variables.addAll(additionalVars);
     Dependencies dependencies = new Dependencies();
 
     for (CaptureBound capture : captures) {
