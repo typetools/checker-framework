@@ -5,6 +5,7 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberReferenceTree;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import javax.lang.model.type.TypeKind;
@@ -43,6 +44,15 @@ public abstract class TypeConstraint implements Constraint {
    */
   public AbstractType getT() {
     return T;
+  }
+
+  /**
+   * Returns a collection of all inference variables mentioned by this constraint.
+   *
+   * @return a collection of all inference variables mentioned by this constraint
+   */
+  public Collection<Variable> getInferenceVariables() {
+    return T.getInferenceVariables();
   }
 
   /**
