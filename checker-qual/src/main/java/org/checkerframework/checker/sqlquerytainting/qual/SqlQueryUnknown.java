@@ -1,4 +1,4 @@
-package org.checkerframework.checker.sqlquerytainting;
+package org.checkerframework.checker.sqlquerytainting.qual;
 
 import java.lang.annotation.*;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
