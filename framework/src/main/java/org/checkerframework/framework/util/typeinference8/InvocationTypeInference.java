@@ -10,6 +10,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.type.ExecutableType;
@@ -646,7 +647,11 @@ public class InvocationTypeInference {
    */
   private BoundSet getB4(BoundSet b3, ConstraintSet c) {
     // C might contain new variables that have not yet been added to the b3 bound set.
-    Set<Variable> newVariables = c.getAllInferenceVariables();
+    Set<Variable> newVariables = new LinkedHashSet<>();
+    for (Theta t : context.maps.values()) {
+      newVariables.addAll(t.values());
+    }
+
     while (!c.isEmpty()) {
 
       ConstraintSet subset = c.getClosedSubset(b3.getDependencies(newVariables));

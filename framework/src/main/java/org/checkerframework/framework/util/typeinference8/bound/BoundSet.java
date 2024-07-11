@@ -254,10 +254,7 @@ public class BoundSet implements ReductionResult {
    * @return the dependencies between all variables in this bound set
    */
   public Dependencies getDependencies(Collection<Variable> additionalVars) {
-    for (Theta t : context.maps.values()) {
-      variables.addAll(t.values());
-    }
-    //    variables.addAll(additionalVars);
+    variables.addAll(additionalVars);
     Dependencies dependencies = new Dependencies();
 
     for (CaptureBound capture : captures) {
