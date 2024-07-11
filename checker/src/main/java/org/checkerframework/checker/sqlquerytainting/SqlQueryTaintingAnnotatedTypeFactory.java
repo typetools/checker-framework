@@ -2,6 +2,7 @@ package org.checkerframework.checker.sqlquerytainting;
 
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import org.checkerframework.checker.sqlquerytainting.qual.SqlSanitizedUser;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.javacutil.AnnotationBuilder;
