@@ -20,13 +20,13 @@ import org.checkerframework.javacutil.TreeUtils;
 public class SqlQueryTaintingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   /** The {@code @}{@link SqlEvenQuotes} annotation mirror. */
-  private final AnnotationMirror SQLEVENQUOTES;
+  private final AnnotationMirror SQL_EVEN_QUOTES;
 
   /** The {@code @}{@link SqlOddQuotes} annotation mirror. */
-  private final AnnotationMirror SQLODDQUOTES;
+  private final AnnotationMirror SQL_ODD_QUOTES;
 
   /** The {@code @}{@link SqlQueryUnknown} annotation mirror. */
-  private final AnnotationMirror SQLQUERYUNKNOWN;
+  private final AnnotationMirror SQL_QUERY_UNKNOWN;
 
   /** A singleton set containing the {@code @}{@link SqlEvenQuotes} annotation mirror. */
   private final AnnotationMirrorSet setOfSqlEvenQuotes;
@@ -38,10 +38,10 @@ public class SqlQueryTaintingAnnotatedTypeFactory extends BaseAnnotatedTypeFacto
    */
   public SqlQueryTaintingAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
-    this.SQLEVENQUOTES = AnnotationBuilder.fromClass(getElementUtils(), SqlEvenQuotes.class);
-    this.SQLODDQUOTES = AnnotationBuilder.fromClass(getElementUtils(), SqlOddQuotes.class);
-    this.SQLQUERYUNKNOWN = AnnotationBuilder.fromClass(getElementUtils(), SqlQueryUnknown.class);
-    this.setOfSqlEvenQuotes = AnnotationMirrorSet.singleton(SQLEVENQUOTES);
+    this.SQL_EVEN_QUOTES = AnnotationBuilder.fromClass(getElementUtils(), SqlEvenQuotes.class);
+    this.SQL_ODD_QUOTES = AnnotationBuilder.fromClass(getElementUtils(), SqlOddQuotes.class);
+    this.SQL_QUERY_UNKNOWN = AnnotationBuilder.fromClass(getElementUtils(), SqlQueryUnknown.class);
+    this.setOfSqlEvenQuotes = AnnotationMirrorSet.singleton(SQL_EVEN_QUOTES);
     postInit();
   }
 
@@ -63,31 +63,31 @@ public class SqlQueryTaintingAnnotatedTypeFactory extends BaseAnnotatedTypeFacto
 
     @Override
     public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
-      if (!type.hasPrimaryAnnotationInHierarchy(SQLQUERYUNKNOWN)
+      if (!type.hasPrimaryAnnotationInHierarchy(SQL_QUERY_UNKNOWN)
           && TreeUtils.isStringConcatenation(tree)) {
         AnnotatedTypeMirror leftType = getAnnotatedType(tree.getLeftOperand());
         AnnotatedTypeMirror rightType = getAnnotatedType(tree.getRightOperand());
 
-        if (leftType.hasPrimaryAnnotation(SQLQUERYUNKNOWN)
-            || rightType.hasPrimaryAnnotation(SQLQUERYUNKNOWN)) {
-          type.addAnnotation(SQLQUERYUNKNOWN);
+        if (leftType.hasPrimaryAnnotation(SQL_QUERY_UNKNOWN)
+            || rightType.hasPrimaryAnnotation(SQL_QUERY_UNKNOWN)) {
+          type.addAnnotation(SQL_QUERY_UNKNOWN);
           return null;
         }
 
         int leftParity = 0;
-        if (leftType.hasPrimaryAnnotation(SQLODDQUOTES)) {
+        if (leftType.hasPrimaryAnnotation(SQL_ODD_QUOTES)) {
           leftParity = 1;
         }
 
         int rightParity = 0;
-        if (rightType.hasPrimaryAnnotation(SQLODDQUOTES)) {
+        if (rightType.hasPrimaryAnnotation(SQL_ODD_QUOTES)) {
           rightParity = 1;
         }
 
         if (leftParity + rightParity % 2 == 0) {
-          type.addAnnotation(SQLEVENQUOTES);
+          type.addAnnotation(SQL_EVEN_QUOTES);
         } else {
-          type.addAnnotation(SQLODDQUOTES);
+          type.addAnnotation(SQL_ODD_QUOTES);
         }
       }
 
