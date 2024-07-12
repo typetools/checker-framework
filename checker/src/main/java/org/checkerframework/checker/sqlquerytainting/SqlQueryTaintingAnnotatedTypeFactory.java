@@ -10,6 +10,7 @@ import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
@@ -47,6 +48,12 @@ public class SqlQueryTaintingAnnotatedTypeFactory extends BaseAnnotatedTypeFacto
   @Override
   protected Set<AnnotationMirror> getEnumConstructorQualifiers() {
     return setOfSqlEvenQuotes;
+  }
+
+  @Override
+  public TreeAnnotator createTreeAnnotator() {
+    return new ListTreeAnnotator(
+        new SqlQueryTaintingAnnotatedTypeFactory.SqlQueryTaintingTreeAnnotator(this));
   }
 
   private class SqlQueryTaintingTreeAnnotator extends TreeAnnotator {
