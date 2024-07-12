@@ -43,8 +43,6 @@ public class BoundSet implements ReductionResult {
   /** The error message to report to users. */
   public String errorMsg = "";
 
-  public boolean setFoundAA = false;
-
   /** Whether this bounds set contains the false bound. */
   private boolean containsFalse;
 

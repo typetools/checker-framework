@@ -288,12 +288,29 @@ public class ConstraintSet implements ReductionResult {
       }
       BoundSet result = reduceOneStep(context);
       boundSet.merge(result);
-      if (result.setFoundAA) {
-        boundSet.setFoundAA = true;
+    }
+    return boundSet;
+  }
+
+  /**
+   * Reduces all the constraints in this set. (See JLS 18.2)
+   *
+   * @param context the context
+   * @return the bound set produced by reducing this constraint set
+   */
+  public BoundSet reduceAA(Java8InferenceContext context) {
+    BoundSet boundSet = new BoundSet(context);
+    while (!this.isEmpty()) {
+      if (this.list.size() > BoundSet.MAX_INCORPORATION_STEPS) {
+        throw new BugInCF("TO MANY CONSTRAINTS: %s", context.pathToExpression.getLeaf());
+      }
+      boolean foundAA = this.list.get(0).getKind() == Kind.ADDITIONAL_ARG;
+      BoundSet result = reduceOneStep(context);
+      if (foundAA) {
         return boundSet;
       }
+      boundSet.merge(result);
     }
-
     return boundSet;
   }
 
@@ -336,9 +353,6 @@ public class ConstraintSet implements ReductionResult {
       if (!alreadyFailed && boundSet.errorMsg.isEmpty()) {
         boundSet.errorMsg = constraint.toString();
       }
-    }
-    if (constraint instanceof AdditionalArgument) {
-      boundSet.setFoundAA = true;
     }
     return boundSet;
   }
