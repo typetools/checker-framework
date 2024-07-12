@@ -16,8 +16,15 @@ public class DiamondMethodRef {
                     .boxed()
                     .collect(
                         Collectors.toMap(
-                            Function.identity(), hitDie -> 1, Integer::sum, LinkedHashMap::new)))
+                            Function.identity(),
+                            hitDie -> 1,
+                            DiamondMethodRef::sum,
+                            LinkedHashMap::new)))
         .mapToInt(hdMap -> hdMap.entrySet().stream().mapToInt(Map.Entry::getValue).sum());
+  }
+
+  static Integer sum(Integer a, Integer b) {
+    return a + b;
   }
 
   public static class CharacterDisplay {
