@@ -18,5 +18,5 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf(SqlQueryUnknown.class)
-@QualifierForLiterals(stringPatterns = "^((([^\\\\']|\\\\.)*'){2})*([^\\\\']|\\\\.)*\\\\?$")
+@QualifierForLiterals(stringPatterns = "^((([^\\\\']|\\\\.)*+'){2})*+([^\\\\']|\\\\.)*+\\\\?$")
 public @interface SqlEvenQuotes {}
