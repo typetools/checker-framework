@@ -53,6 +53,7 @@ public class SqlQueryTaintingAnnotatedTypeFactory extends BaseAnnotatedTypeFacto
   @Override
   public TreeAnnotator createTreeAnnotator() {
     return new ListTreeAnnotator(
+        super.createTreeAnnotator(),
         new SqlQueryTaintingAnnotatedTypeFactory.SqlQueryTaintingTreeAnnotator(this));
   }
 
