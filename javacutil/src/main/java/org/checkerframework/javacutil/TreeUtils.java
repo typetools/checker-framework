@@ -1844,6 +1844,9 @@ public final class TreeUtils {
    * Returns the type as a TypeMirror of {@code tree}. To obtain {@code tree}'s AnnotatedTypeMirror,
    * call {@code AnnotatedTypeFactory.getAnnotatedType()}.
    *
+   * <p>Note that for the expression "super", this method returns the type of "this", not "this"'s
+   * superclass.
+   *
    * @return the type as a TypeMirror of {@code tree}
    */
   public static TypeMirror typeOf(Tree tree) {
