@@ -387,14 +387,14 @@ public class OptionalVisitor
       // Using the names of methods (as opposed to their fully-qualified name or signature) is a
       // safe (but imprecise) over-approximation of all the methods that must be verified with the
       // Non-Empty Checker. Overloads of methods will be included.
-      Set<String> namesOfMethodsForNonEmptyChecker =
+      boolean isCalleeInMethodsToVerifyWithNonEmptyChecker =
           methodsToVerifyWithNonEmptyChecker.stream()
               .map(MethodTree::getName)
               .map(Name::toString)
-              .collect(Collectors.toSet());
-      if (namesOfMethodsForNonEmptyChecker.contains(callee)) {
+              .anyMatch(nameOfMethodToVerify -> nameOfMethodToVerify.equals(callee));
+      if (isCalleeInMethodsToVerifyWithNonEmptyChecker) {
         Set<MethodTree> callers =
-            calleesToCallers.computeIfAbsent(callee, (__) -> new HashSet<MethodTree>());
+            calleesToCallers.computeIfAbsent(callee, (__) -> new HashSet<>());
         callers.add(caller);
       }
     }
