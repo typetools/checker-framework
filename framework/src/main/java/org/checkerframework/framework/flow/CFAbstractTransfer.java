@@ -311,8 +311,8 @@ public abstract class CFAbstractTransfer<
         // store.localVariableValues.clear();
         store.classValues.clear();
         store.arrayValues.clear();
-        // If the lambda is leaked or the lambda is impure, remove any information about modifiable
-        // method values from the initial store.
+        // If the lambda is leaked or the lambda is impure, remove any information about
+        // modifiable method values from the initial store.
         TreePath lambdaBody = atypeFactory.getPath(lambda.getLambdaTree().getBody());
         if (doesLambdaLeak(lambda, atypeFactory)
             || !isExpressionOrStatementPure(lambdaBody, atypeFactory)) {
@@ -444,9 +444,9 @@ public abstract class CFAbstractTransfer<
       TreePath expressionOrStatement, AnnotatedTypeFactory aTypeFactory) {
     // TODO: almost certainly should not have to do this here. It is not enough to check for the
     // existence of the assume SideEffectFree/Deterministic flags at this point. The checker is
-    // queried for these options, but the parsing of the assumePure flag into these flags are done
-    // at the visitor-level. As a result, it's possible for only the assumePure flag to exist here,
-    // which entails assumeSideEffectFree and assumeDeterministic
+    // queried for these options, but the parsing of the assumePure flag into these flags are
+    // done at the visitor-level. As a result, it's possible for only the assumePure flag to
+    // exist here, which entails assumeSideEffectFree and assumeDeterministic
     boolean isAssumeSideEffectFreeEnabled =
         aTypeFactory.getChecker().hasOption("assumeSideEffectFree")
             || aTypeFactory.getChecker().hasOption("assumePure");
