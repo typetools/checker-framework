@@ -17,9 +17,6 @@ plugins {
   // Only works on JDK 11+ (even including the plugin crashes Gradle on JDK 8).
   id 'com.diffplug.spotless' version '6.25.0'
 }
-apply plugin: 'de.undercouch.download'
-
-import org.ajoberstar.grgit.Grgit
 
 // There is another `repositories { ... }` block below; if you change this one, change that one as well.
 repositories {
