@@ -5,7 +5,6 @@ import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
-import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import java.lang.annotation.Annotation;
@@ -31,6 +30,9 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.calledmethods.CalledMethodsAnnotatedTypeFactory.McoeObligationAlteringLoop;
+import org.checkerframework.checker.calledmethods.CalledMethodsAnnotatedTypeFactory.PotentiallyAssigningLoop;
+import org.checkerframework.checker.calledmethods.CalledMethodsAnnotatedTypeFactory.PotentiallyFulfillingLoop;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.qual.InheritableMustCall;
 import org.checkerframework.checker.mustcall.qual.MustCall;
@@ -108,28 +110,17 @@ public class MustCallOnElementsAnnotatedTypeFactory extends BaseAnnotatedTypeFac
   private final ExecutableElement mustCallOnElementsValueElement =
       TreeUtils.getMethod(MustCallOnElements.class, "value", 0, processingEnv);
 
-  /** Set of assignments that open an obligation for an {@code @OwningArray} array. */
-  private static Set<AssignmentTree> obligationCreatingAssignments = new HashSet<>();
+  /**
+   * Maps the AST-tree corresponding to the loop condition of an Mcoe-Obligation-altering loop to
+   * the loop wrapper class.
+   */
+  private static Map<Tree, McoeObligationAlteringLoop> conditionToLoopMap = new HashMap<>();
 
   /**
-   * Maps the AST-node corresponding to the loop condition of a loop calling methods on an
-   * {@code @OwningArray} to the names of the methods called.
+   * Maps the AST-tree corresponding to an assignment within an Mcoe-Obligation-creating loop to the
+   * loop wrapper class.
    */
-  private static Map<Tree, Set<String>> whichMethodsDoesLoopWithThisConditionCallMap =
-      new HashMap<>();
-
-  /**
-   * Maps the AST-node corresponding to the loop condition of a loop assigning a resource to an
-   * {@code @OwningArray} to the methods that are part of the obligation.
-   */
-  private static Map<Tree, List<String>> whichObligationsDoesLoopWithThisConditionCreateMap =
-      new HashMap<>();
-
-  /**
-   * Maps the AST-node corresponding to the loop condition of a loop assigning/closing a resource
-   * to/from an {@code @OwningArray} to the array access tree.
-   */
-  private static Map<Tree, ExpressionTree> collectionAccessTreeForLoopWithThisCondition =
+  private static Map<AssignmentTree, PotentiallyAssigningLoop> assignmentToLoopMap =
       new HashMap<>();
 
   /**
@@ -241,61 +232,42 @@ public class MustCallOnElementsAnnotatedTypeFactory extends BaseAnnotatedTypeFac
    * @return whether the specified node is in an allocating for-loop for an {@code @OwningArray}.
    */
   public static boolean doesAssignmentCreateArrayObligation(AssignmentTree assgn) {
-    return obligationCreatingAssignments.contains(assgn);
+    return assignmentToLoopMap.containsKey(assgn);
   }
 
   /**
-   * Marks the specified assignment AST node as one that's in a loop that creates a mcoe obligation
-   * for an {@code @OwningArray} array, i.e. marks the node as being in a pattern-matched loop. Only
-   * call when the corrresponding loop has been successfully pattern-matched.
+   * Marks the specified loop as fulfilling an mcoe obligation for an {@code @OwningArray} array.
    *
-   * @param assgn the assignment node
+   * @param loop the wrapper class of the loop
    */
-  public static void createArrayObligationForAssignment(AssignmentTree assgn) {
-    obligationCreatingAssignments.add(assgn);
+  public static void markFulfillingLoop(PotentiallyFulfillingLoop loop) {
+    conditionToLoopMap.put(loop.condition, loop);
   }
 
   /**
-   * Marks the specified less-than AST node as one that's the condition of a loop that creates a
-   * mcoe obligation for an {@code @OwningArray} array. The obligations created are passed in the
-   * second argument.
+   * Marks the specified loop as creating an mcoe obligation for an {@code @OwningArray} array.
    *
-   * @param tree the less-than node
-   * @param methods a list of the methods in the obligation
+   * @param loop the wrapper class of the loop
    */
-  public static void createArrayObligationForLessThan(Tree tree, List<String> methods) {
-    assert (tree.getKind() == Tree.Kind.LESS_THAN)
+  public static void markAssigningLoop(PotentiallyAssigningLoop loop) {
+    assert (loop.condition.getKind() == Tree.Kind.LESS_THAN)
         : "Trying to associate Tree as condition of a method calling for-loop, but is not a LESS_THAN tree";
-    whichObligationsDoesLoopWithThisConditionCreateMap.put(tree, methods);
+    assignmentToLoopMap.put(loop.assignment, loop);
+    conditionToLoopMap.put(loop.condition, loop);
   }
 
   /**
-   * Marks the specified less-than AST node as one that's the condition of a loop that fulfills a
-   * mcoe obligation for an {@code @OwningArray} array. The fulfilled mcoe method is passed in the
-   * second argument.
+   * Returns the {@link
+   * org.checkerframework.checker.calledmethods.CalledMethodsAnnotatedTypeFactory.McoeObligationAlteringLoop}
+   * for which the given tree is the loop condition or null if there is no such loop.
    *
-   * @param tree the less-than AST node
-   * @param methods the method that is called on the array elements in the loop
+   * @param tree the loop condition tree
+   * @return the {@link
+   *     org.checkerframework.checker.calledmethods.CalledMethodsAnnotatedTypeFactory.McoeObligationAlteringLoop}
+   *     for which the given tree is the loop condition or null if there is no such loop.
    */
-  public static void closeArrayObligationForLessThan(Tree tree, Set<String> methods) {
-    assert (tree.getKind() == Tree.Kind.LESS_THAN)
-        : "Trying to associate Tree as condition of a method calling for-loop, but is not a LESS_THAN tree";
-    whichMethodsDoesLoopWithThisConditionCallMap.put(tree, methods);
-  }
-
-  /**
-   * Associates the given less-than AST-node (which is a loop condition for a successfully
-   * pattern-matched loop for opening/closing a MustCallOnElements obligation) with the arrayTree
-   * AST-node that corresponds to the array in question.
-   *
-   * @param condition the less-than AST-node
-   * @param arrayTree the array AST-node
-   */
-  public static void putArrayAffectedByLoopWithThisCondition(
-      Tree condition, ExpressionTree arrayTree) {
-    assert (condition.getKind() == Tree.Kind.LESS_THAN)
-        : "Trying to associate Tree as condition of an obligation changing for-loop, but is not a LESS_THAN tree";
-    collectionAccessTreeForLoopWithThisCondition.put(condition, arrayTree);
+  public static McoeObligationAlteringLoop getLoopForCondition(Tree tree) {
+    return conditionToLoopMap.get(tree);
   }
 
   /**
@@ -306,10 +278,16 @@ public class MustCallOnElementsAnnotatedTypeFactory extends BaseAnnotatedTypeFac
    *     obligation
    * @return list of the methods that are the MustCallOnElements obligations created in this loop
    */
-  public static List<String> whichObligationsDoesLoopWithThisConditionCreate(Tree condition) {
+  public static Set<String> whichObligationsDoesLoopWithThisConditionCreate(Tree condition) {
     assert (condition.getKind() == Tree.Kind.LESS_THAN)
         : "Trying to associate Tree as condition of a method calling for-loop, but is not a LESS_THAN tree";
-    return whichObligationsDoesLoopWithThisConditionCreateMap.get(condition);
+    McoeObligationAlteringLoop loop = conditionToLoopMap.get(condition);
+    boolean isAssigningLoop =
+        loop != null && loop.loopKind == McoeObligationAlteringLoop.LoopKind.ASSIGNING;
+    if (isAssigningLoop) {
+      return loop.getMethods();
+    }
+    return null;
   }
 
   /**
@@ -323,12 +301,18 @@ public class MustCallOnElementsAnnotatedTypeFactory extends BaseAnnotatedTypeFac
   public static Set<String> whichMethodsDoesLoopWithThisConditionCall(Tree condition) {
     assert (condition.getKind() == Tree.Kind.LESS_THAN)
         : "Trying to associate Tree as condition of a method calling for-loop, but is not a LESS_THAN tree";
-    return whichMethodsDoesLoopWithThisConditionCallMap.get(condition);
+    McoeObligationAlteringLoop loop = conditionToLoopMap.get(condition);
+    boolean isFulfillingLoop =
+        loop != null && loop.loopKind == McoeObligationAlteringLoop.LoopKind.FULFILLING;
+    if (isFulfillingLoop) {
+      return new HashSet<String>(loop.getMethods());
+    }
+    return null;
   }
 
   /**
-   * Returns the array AST-node, for which a MustCallOnElements obligation is opened/closed in the
-   * loop, for which the given lessThan AST-node is the condition.
+   * Returns the collection AST-node, for which a MustCallOnElements obligation is opened/closed in
+   * the loop, for which the given lessThan AST-node is the condition.
    *
    * @param condition the less-than AST-node
    * @return the array AST-node in the loop body
@@ -336,18 +320,9 @@ public class MustCallOnElementsAnnotatedTypeFactory extends BaseAnnotatedTypeFac
   public static ExpressionTree getCollectionTreeForLoopWithThisCondition(Tree condition) {
     assert (condition.getKind() == Tree.Kind.LESS_THAN)
         : "Trying to associate Tree as condition of an obligation changing for-loop, but is not a LESS_THAN tree";
-    ExpressionTree accessTree = collectionAccessTreeForLoopWithThisCondition.get(condition);
-    if (accessTree == null) return null;
-    assert (accessTree.getKind() == Tree.Kind.MEMBER_SELECT
-        || accessTree.getKind() == Tree.Kind.ARRAY_ACCESS);
-    if (accessTree instanceof ArrayAccessTree) {
-      return ((ArrayAccessTree) accessTree).getExpression();
-    } else if (accessTree instanceof MemberSelectTree) {
-      return ((MemberSelectTree) accessTree).getExpression();
-    } else {
-      throw new IllegalStateException(
-          "Collection tree should either be ArrayAccessTree (array) or MemberSelectTree (collection)");
-    }
+    McoeObligationAlteringLoop loop = conditionToLoopMap.get(condition);
+    ExpressionTree collectionTree = loop == null ? null : loop.collectionTree;
+    return collectionTree;
   }
 
   /**
@@ -360,7 +335,9 @@ public class MustCallOnElementsAnnotatedTypeFactory extends BaseAnnotatedTypeFac
   public static ExpressionTree getCollectionAccessTreeForLoopWithThisCondition(Tree condition) {
     assert (condition.getKind() == Tree.Kind.LESS_THAN)
         : "Trying to associate Tree as condition of an obligation changing for-loop, but is not a LESS_THAN tree";
-    return collectionAccessTreeForLoopWithThisCondition.get(condition);
+    McoeObligationAlteringLoop loop = conditionToLoopMap.get(condition);
+    ExpressionTree accessTree = loop == null ? null : loop.collectionElementTree;
+    return accessTree;
   }
 
   /**

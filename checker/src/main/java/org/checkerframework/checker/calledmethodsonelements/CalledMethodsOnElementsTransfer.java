@@ -15,6 +15,10 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.calledmethods.CalledMethodsAnnotatedTypeFactory.McoeObligationAlteringLoop;
+import org.checkerframework.checker.calledmethods.CalledMethodsAnnotatedTypeFactory.McoeObligationAlteringLoop.LoopKind;
+import org.checkerframework.checker.calledmethods.CalledMethodsAnnotatedTypeFactory.PotentiallyAssigningLoop;
+import org.checkerframework.checker.calledmethods.CalledMethodsAnnotatedTypeFactory.PotentiallyFulfillingLoop;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.qual.InheritableMustCall;
 import org.checkerframework.checker.mustcall.qual.MustCall;
@@ -28,12 +32,10 @@ import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
-import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
 import org.checkerframework.dataflow.cfg.node.LessThanNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.expression.JavaExpression;
-import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
@@ -67,7 +69,7 @@ public class CalledMethodsOnElementsTransfer extends CFTransfer {
    *
    * @param analysis the analysis
    */
-  public CalledMethodsOnElementsTransfer(CFAnalysis analysis) {
+  public CalledMethodsOnElementsTransfer(CalledMethodsOnElementsAnalysis analysis) {
     super(analysis);
     if (analysis.getTypeFactory() instanceof CalledMethodsOnElementsAnnotatedTypeFactory) {
       atypeFactory = (CalledMethodsOnElementsAnnotatedTypeFactory) analysis.getTypeFactory();
@@ -75,7 +77,6 @@ public class CalledMethodsOnElementsTransfer extends CFTransfer {
       atypeFactory =
           new CalledMethodsOnElementsAnnotatedTypeFactory(analysis.getTypeFactory().getChecker());
     }
-
     calledMethodsOnElementsValueElement = atypeFactory.calledMethodsOnElementsValueElement;
     enableWpiForRlc = atypeFactory.getChecker().hasOption(ResourceLeakChecker.ENABLE_WPI_FOR_RLC);
     env = atypeFactory.getProcessingEnv();
@@ -137,13 +138,13 @@ public class CalledMethodsOnElementsTransfer extends CFTransfer {
   // }
   //
 
-  @Override
-  public TransferResult<CFValue, CFStore> visitArrayAccess(
-      ArrayAccessNode node, TransferInput<CFValue, CFStore> input) {
-    // ExpressionTree arrayExpr = node.getArrayExpression();
-    // System.out.println("arrayexpre: " + arrayExpr);
-    return super.visitArrayAccess(node, input);
-  }
+  // @Override
+  // public TransferResult<CFValue, CFStore> visitArrayAccess(
+  //     ArrayAccessNode node, TransferInput<CFValue, CFStore> input) {
+  //   // ExpressionTree arrayExpr = node.getArrayExpression();
+  //   // System.out.println("arrayexpre: " + arrayExpr);
+  //   return super.visitArrayAccess(node, input);
+  // }
 
   // /**
   //  * if the method invocation corresponds to the condition of a (desugared) enhanced for loop,
@@ -255,56 +256,40 @@ public class CalledMethodsOnElementsTransfer extends CFTransfer {
   }
 
   /**
-   * Checks whether the passed {@code LessThanNode} is the condition of an allocating for loop (for
-   * an {@code @OwningArray}), in which case the {@code @CalledMethodsOnElements} type of the
-   * corresponding array is emptied in the else store of the {@code TransferResult}.
+   * Resets the {@code @CalledMethodsOnElements} type of the collection specified in the passed loop
+   * to TOP in the else store of the {@code TransferResult}. This is required for soundness, since
+   * when the collection is reassigned, the previously called methods are no longer considered
+   * called on the new elements.
    *
-   * @param node the {@code LessThanNode} that is possibly the condition of an allocating for loop
+   * @param loop the {@code PotentiallyAssigningLoop}
    * @param res the transfer result to update
-   * @return the updates {@code TransferResult}
+   * @return the updated {@code TransferResult}
    */
   private TransferResult<CFValue, CFStore> updateTransferResultForAllocatingForLoop(
-      LessThanNode node, TransferResult<CFValue, CFStore> res) {
-    ExpressionTree arrayTree =
-        MustCallOnElementsAnnotatedTypeFactory.getCollectionTreeForLoopWithThisCondition(
-            node.getTree());
-    if (arrayTree == null) return res;
+      PotentiallyAssigningLoop loop, TransferResult<CFValue, CFStore> res) {
+    ExpressionTree arrayTree = loop.collectionTree;
     JavaExpression target = JavaExpression.fromTree(arrayTree);
-    List<String> mustCall =
-        MustCallOnElementsAnnotatedTypeFactory.whichObligationsDoesLoopWithThisConditionCreate(
-            node.getTree());
-    if (mustCall != null) {
-      // array is newly assigned -> remove all calledmethods
-      AnnotationMirror newAnno =
-          createAccumulatorAnnotation(Collections.emptyList(), atypeFactory.TOP);
-      CFStore elseStore = res.getElseStore();
-      elseStore.clearValue(target);
-      elseStore.insertValue(target, newAnno);
-      return new ConditionalTransferResult<>(res.getResultValue(), res.getThenStore(), elseStore);
-    }
-    return res;
+    AnnotationMirror newAnno =
+        createAccumulatorAnnotation(Collections.emptyList(), atypeFactory.TOP);
+    CFStore elseStore = res.getElseStore();
+    elseStore.clearValue(target);
+    elseStore.insertValue(target, newAnno);
+    return new ConditionalTransferResult<>(res.getResultValue(), res.getThenStore(), elseStore);
   }
 
   /**
-   * Checks whether the passed {@code LessThanNode} is the condition of an obligation-fulfilling for
-   * loop (for an {@code @OwningArray}), in which case the methods called in the loop body are added
-   * to the {@code @CalledMethodsOnElements} type of the corresponding array in the else store of
-   * the {@code TransferResult}.
+   * Updates the {@code @CalledMethodsOnElements} type of the corresponding collection in the else
+   * store of the {@code TransferResult} based on the information in the loop wrapper.
    *
-   * @param node the {@code LessThanNode} that is possibly the condition of an obligation-fulfilling
-   *     for-loop
+   * @param loop the {@code PotentiallyFulfillingLoop}
    * @param res the transfer result to update
    * @return the updated transfer result
    */
   private TransferResult<CFValue, CFStore> updateTransferResultForFulfillingForLoop(
-      LessThanNode node, TransferResult<CFValue, CFStore> res) {
-    ExpressionTree arrayTree =
-        MustCallOnElementsAnnotatedTypeFactory.getCollectionTreeForLoopWithThisCondition(
-            node.getTree());
-    if (arrayTree == null) return res;
-    Set<String> calledMethods =
-        MustCallOnElementsAnnotatedTypeFactory.whichMethodsDoesLoopWithThisConditionCall(
-            node.getTree());
+      PotentiallyFulfillingLoop loop, TransferResult<CFValue, CFStore> res) {
+    ExpressionTree arrayTree = loop.collectionTree;
+    Set<String> calledMethods = loop.getMethods();
+    System.out.println("transfer: " + arrayTree);
     if (calledMethods != null && calledMethods.size() > 0) {
       CFStore elseStore = res.getElseStore();
       JavaExpression target = JavaExpression.fromTree(arrayTree);
@@ -328,6 +313,17 @@ public class CalledMethodsOnElementsTransfer extends CFTransfer {
   public TransferResult<CFValue, CFStore> visitLessThan(
       LessThanNode node, TransferInput<CFValue, CFStore> input) {
     TransferResult<CFValue, CFStore> res = super.visitLessThan(node, input);
+    McoeObligationAlteringLoop loop =
+        MustCallOnElementsAnnotatedTypeFactory.getLoopForCondition(node.getTree());
+    System.out.println("transfer: " + loop);
+    if (loop != null) {
+      if (loop.loopKind == LoopKind.ASSIGNING) {
+        res = updateTransferResultForAllocatingForLoop((PotentiallyAssigningLoop) loop, res);
+      } else if (loop.loopKind == LoopKind.FULFILLING) {
+        res = updateTransferResultForFulfillingForLoop((PotentiallyFulfillingLoop) loop, res);
+      }
+    }
+    return res;
     // if (TreeUtils.statementIsSynthetic(node.getTree())) {
     //   BinaryTree lessThanTree = node.getTree();
     //   System.out.println("ltTree: " + lessThanTree);
@@ -348,9 +344,6 @@ public class CalledMethodsOnElementsTransfer extends CFTransfer {
     //       }
     //     }
     // }
-
-    res = updateTransferResultForAllocatingForLoop(node, res);
-    return updateTransferResultForFulfillingForLoop(node, res);
   }
 
   /**

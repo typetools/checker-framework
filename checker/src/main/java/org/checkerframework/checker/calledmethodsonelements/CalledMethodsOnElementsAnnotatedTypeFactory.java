@@ -104,6 +104,11 @@ public class CalledMethodsOnElementsAnnotatedTypeFactory extends BaseAnnotatedTy
     return builder.build();
   }
 
+  @Override
+  protected CalledMethodsOnElementsAnalysis createFlowAnalysis() {
+    return new CalledMethodsOnElementsAnalysis((CalledMethodsOnElementsChecker) checker, this);
+  }
+
   /**
    * Returns the cmoe value element.
    *

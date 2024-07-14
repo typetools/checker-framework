@@ -44,6 +44,8 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.calledmethods.CalledMethodsAnnotatedTypeFactory;
+import org.checkerframework.checker.calledmethods.CalledMethodsAnnotatedTypeFactory.PotentiallyAssigningLoop;
 import org.checkerframework.checker.mustcall.qual.InheritableMustCall;
 import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.checkerframework.checker.mustcall.qual.MustCallAlias;
@@ -52,12 +54,11 @@ import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.mustcall.qual.PolyMustCall;
 import org.checkerframework.checker.mustcallonelements.MustCallOnElementsAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcallonelements.qual.OwningArray;
-import org.checkerframework.checker.resourceleak.ResourceLeakAnnotatedTypeFactory;
-import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
-import org.checkerframework.checker.resourceleak.ResourceLeakVisitor;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
-import org.checkerframework.dataflow.util.PurityUtils;
+import org.checkerframework.dataflow.cfg.block.Block;
+import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -152,199 +153,232 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
   //   return super.visitEnhancedForLoop(tree, p);
   // }
 
-  /** Mutable pair implementation. */
-  static class Pair<L, R> {
-    /** left element of Pair */
-    private L left = null;
+  // /**
+  //  * Returns a <code>Map</code> from the ExpressionTree of a collection/array to the set of
+  // methods
+  //  * (as {@code MethodInvocationTree}) that are called on its elements in the loop body united
+  // with
+  //  * the set of methods (as {@code MemberSelectTree}) Or null if any of the following rules are
+  //  * violated:
+  //  *
+  //  * <ul>
+  //  *   <li>there may be no writes to the iterator variable
+  //  *   <li>no assert, return or break statements
+  //  * </ul>
+  //  *
+  //  * @param block the list of statements of a for-loop
+  //  * @param identifierInHeader the name of the identifier in the condition of the loop, either a
+  //  *     size variable or a collection identifier
+  //  * @param iterator the name of the single iterator variable of the for-loop
+  //  * @return Map of ExpressionTree of collection/array, on whose elements methods are called in
+  // the
+  //  *     loop body to the set of method names that have been called, or null if any of the checks
+  //  *     fail
+  //  */
+  // private Map<ExpressionTree, Set<ExpressionTree>> getValidMethodsCalledOnCollectionElement(
+  //     BlockTree block, Name identifierInHeader, Name iterator) {
+  //   AtomicBoolean blockIsIllegal = new AtomicBoolean(false);
+  //   final Map<ExpressionTree, Set<ExpressionTree>> collectionToCalledMethods = new HashMap<>();
+  //   TreeScanner<Void, Void> scanner =
+  //       new TreeScanner<Void, Void>() {
+  //         @Override
+  //         public Void visitUnary(UnaryTree tree, Void p) {
+  //           switch (tree.getKind()) {
+  //             case PREFIX_DECREMENT:
+  //               blockIsIllegal.set(true);
+  //               break;
+  //             case POSTFIX_DECREMENT:
+  //               blockIsIllegal.set(true);
+  //               break;
+  //             case PREFIX_INCREMENT:
+  //               blockIsIllegal.set(true);
+  //               break;
+  //             case POSTFIX_INCREMENT:
+  //               blockIsIllegal.set(true);
+  //               break;
+  //             default:
+  //               break;
+  //           }
+  //           return super.visitUnary(tree, p);
+  //         }
 
-    /** right element of Pair */
-    private R right = null;
+  //         @Override
+  //         public Void visitCompoundAssignment(CompoundAssignmentTree tree, Void p) {
+  //           blockIsIllegal.set(true);
+  //           return super.visitCompoundAssignment(tree, p);
+  //         }
 
-    /**
-     * Constructs a mutable Pair of left and right element.
-     *
-     * @param left left element
-     * @param right right element
-     */
-    public Pair(L left, R right) {
-      this.left = left;
-      this.right = right;
-    }
+  //         @Override
+  //         public Void visitAssignment(AssignmentTree tree, Void p) {
+  //           blockIsIllegal.set(true);
+  //           return super.visitAssignment(tree, p);
+  //         }
 
-    /**
-     * setter method for left element
-     *
-     * @param newLeft value to replace left element of Pair with
-     */
-    public void setLeft(L newLeft) {
-      this.left = newLeft;
-    }
-
-    /**
-     * setter method for right element
-     *
-     * @param newRight value to replace right element of Pair with
-     */
-    public void setRight(R newRight) {
-      this.right = newRight;
-    }
-
-    /**
-     * getter method for left element
-     *
-     * @return left element of Pair
-     */
-    public L getLeft() {
-      return this.left;
-    }
-
-    /**
-     * getter method for right element
-     *
-     * @return right element of Pair
-     */
-    public R getRight() {
-      return this.right;
-    }
+  /**
+   * Returns whether the given collection name is consistent with the identifier from the loop
+   * header.
+   *
+   * <p>That is, either the names are equal, or the identifier from the header is the same variable
+   * used to initialize the given collection.
+   *
+   * <p>Returns false if any argument is null.
+   *
+   * @param idInHeader identifier from loop header
+   * @param collectionName name of collection
+   * @return whether the given collection name is consistent with the identifier from the loop
+   *     header.
+   */
+  private boolean loopHeaderConsistentWithCollection(Name idInHeader, Name collectionName) {
+    if (idInHeader == null || collectionName == null) return false;
+    boolean namesAreEqual = collectionName.equals(idInHeader);
+    Name initSize = arrayInitializationSize.get(collectionName);
+    boolean idInHeaderIsSizeOfCollection = initSize != null && initSize.equals(idInHeader);
+    return namesAreEqual || idInHeaderIsSizeOfCollection;
   }
 
   /**
-   * Returns a <code>Pair</code> of the ExpressionTree of the single collection/array, on whose
-   * elements methods are called in the loop body and the set of method names that have been called
-   * or null if any of the following rules are violated:
+   * Returns whether the given tree is of the form collection.get(i), where i is the given index
+   * name.
    *
-   * <ul>
-   *   <li>methods may be called on the elements of at most one collection/array
-   *   <li>there may be no writes to the iterator variable
-   *   <li>no calls to methods with side effects
-   *   <li>no assert, return or break statements
-   * </ul>
-   *
-   * @param block the list of statements of a for-loop
-   * @param identifierInHeader the name of the identifier in the condition of the loop, either a
-   *     size variable or a collection identifier
-   * @param iterator the name of the single iterator variable of the for-loop
-   * @return Pair of the ExpressionTree of the single collection/array, on whose elements methods
-   *     are called in the loop body and the set of method names that have been called, or null if
-   *     any of the checks fail
+   * @param tree the tree to check
+   * @param index the index variable name
+   * @return whether the given tree is of the form collection.get(index)
    */
-  private Pair<ExpressionTree, Set<String>> getValidMethodsCalledOnCollectionElement(
+  private boolean isIthCollectionElement(Tree tree, Name index) {
+    if (tree == null || index == null) return false;
+    if (tree.getKind() == Tree.Kind.METHOD_INVOCATION
+        && index.equals(nameFromExpression(TreeUtils.isGetCall(tree)))) {
+      MethodInvocationTree mit = (MethodInvocationTree) tree;
+      ExpressionTree methodSelect = mit.getMethodSelect();
+      assert methodSelect.getKind() == Tree.Kind.MEMBER_SELECT
+          : "method selection of object.get() expected to be memberSelectTree, but is "
+              + methodSelect.getKind();
+      MemberSelectTree mst = (MemberSelectTree) methodSelect;
+      Element receiverElt = TreeUtils.elementFromTree(mst.getExpression());
+      return MustCallOnElementsAnnotatedTypeFactory.isCollection(receiverElt, atypeFactory);
+    }
+    return false;
+  }
+
+  //         @Override
+  //         public Void visitMethodInvocation(MethodInvocationTree mit, Void p) {
+  //           List<? extends ExpressionTree> args = mit.getArguments();
+  //           boolean firstArgIsCollectionElement =
+  //               args.size() >= 1 // at least one argument
+  //                   && collectionTreeFromExpression(args.get(0)) != null
+  //                   && (MustCallOnElementsAnnotatedTypeFactory.isCollection(
+  //                           TreeUtils.elementFromTree(collectionTreeFromExpression(args.get(0))),
+  //                           atypeFactory)
+  //                       || args.get(0).getKind() == Tree.Kind.ARRAY_ACCESS)
+  //                   && loopHeaderConsistentWithCollection(
+  //                       identifierInHeader, nameFromExpression(args.get(0)));
+  //           ExpressionTree receiver = null;
+  //           ExpressionTree method = mit;
+  //           if (firstArgIsCollectionElement) {
+  //             // method(collection.get(i)) or method(arr[i])
+  //             System.out.println("method select: " + mit.getMethodSelect());
+  //             System.out.println("method select: " + mit.getMethodSelect().getKind());
+  //             receiver = args.get(0);
+  //           } else {
+  //             // collection.get(i).method() or arr[i].method()
+  //             ExpressionTree methodSelect = mit.getMethodSelect();
+  //             assert methodSelect.getKind() == Tree.Kind.MEMBER_SELECT
+  //                 : "method selection of "
+  //                     + methodSelect
+  //                     + " expected to be memberSelectTree, but is "
+  //                     + methodSelect.getKind();
+  //             MemberSelectTree mst = (MemberSelectTree) methodSelect;
+  //             receiver = mst.getExpression();
+  //             method = mst;
+  //           }
+  //           boolean receiverIsIthArrayElement =
+  //               receiver.getKind() == Tree.Kind.ARRAY_ACCESS
+  //                   && nameFromExpression(((ArrayAccessTree)
+  // receiver).getIndex()).equals(iterator);
+  //           boolean receiverIsIthCollectionElement = isIthCollectionElement(receiver, iterator);
+  //           if (receiverIsIthArrayElement || receiverIsIthCollectionElement) {
+  //             ExpressionTree collectionExpr = collectionTreeFromExpression(receiver);
+  //             collectionToCalledMethods
+  //                 .computeIfAbsent(collectionExpr, k -> new HashSet<>())
+  //                 .add(method);
+  //           }
+  //           return super.visitMethodInvocation(mit, p);
+  //         }
+
+  //         @Override
+  //         public Void visitBreak(BreakTree bt, Void p) {
+  //           blockIsIllegal.set(true);
+  //           return super.visitBreak(bt, p);
+  //         }
+
+  //         @Override
+  //         public Void visitReturn(ReturnTree rt, Void p) {
+  //           blockIsIllegal.set(true);
+  //           return super.visitReturn(rt, p);
+  //         }
+  //       };
+  //   for (StatementTree stmt : block.getStatements()) {
+  //     scanner.scan(stmt, null);
+  //   }
+  //   if (!blockIsIllegal.get()) {
+  //     return collectionToCalledMethods;
+  //   } else {
+  //     return null;
+  //   }
+  // }
+
+  /**
+   * Check that the loop does not contain any writes to the loop iterator variable and no
+   * return/break statements. Extract the collection access tree ({@code arr[i]} or {@code
+   * collection.get(i)} where {@code i} is the iterator variable and {@code collection/arr} is
+   * consistent with the loop header) and return the last encountered such tree.
+   *
+   * @param block the loop body tree
+   * @param identifierInHeader collection name if loop condition is {@code i < collection.size()} or
+   *     {@code i < arr.length} and {@code n} if loop condition is {@code i < n}
+   * @param iterator the name of the loop iterator variable
+   * @return null if any writes to loop iterator variable or return/break statements are in {@code
+   *     block}. Else, return the last encountered collection access tree consistent with the loop
+   *     heaer if it exists and else null.
+   */
+  private @Nullable ExpressionTree preMatchLoop(
       BlockTree block, Name identifierInHeader, Name iterator) {
     AtomicBoolean blockIsIllegal = new AtomicBoolean(false);
-    final Pair<ExpressionTree, Set<String>> collectionToCalledMethods =
-        new Pair<>(null, new HashSet<>());
-    final Set<String> methodsCalled = new HashSet<>();
+    final ExpressionTree[] collectionElementTree = {null};
+
     TreeScanner<Void, Void> scanner =
         new TreeScanner<Void, Void>() {
           @Override
-          public Void visitUnary(UnaryTree node, Void p) {
-            switch (node.getKind()) {
+          public Void visitUnary(UnaryTree tree, Void p) {
+            switch (tree.getKind()) {
               case PREFIX_DECREMENT:
-                blockIsIllegal.set(true);
-                break;
               case POSTFIX_DECREMENT:
-                blockIsIllegal.set(true);
-                break;
               case PREFIX_INCREMENT:
-                blockIsIllegal.set(true);
-                break;
               case POSTFIX_INCREMENT:
-                blockIsIllegal.set(true);
+                if (nameFromExpression(tree.getExpression()).equals(iterator)) {
+                  blockIsIllegal.set(true);
+                }
                 break;
               default:
                 break;
             }
-            return super.visitUnary(node, p);
+            return super.visitUnary(tree, p);
           }
 
           @Override
-          public Void visitCompoundAssignment(CompoundAssignmentTree node, Void p) {
-            blockIsIllegal.set(true);
-            return super.visitCompoundAssignment(node, p);
-          }
-
-          @Override
-          public Void visitAssert(AssertTree node, Void p) {
-            blockIsIllegal.set(true);
-            return super.visitAssert(node, p);
-          }
-
-          @Override
-          public Void visitAssignment(AssignmentTree node, Void p) {
-            blockIsIllegal.set(true);
-            return super.visitAssignment(node, p);
-          }
-
-          /*
-           * Check whether this is a method call on the i'th element (where i is the loop
-           * iterator) of the collection/array from the loop header.
-           */
-          @Override
-          public Void visitMemberSelect(MemberSelectTree mst, Void p) {
-            Element elt = TreeUtils.elementFromUse(mst);
-            boolean isMethodCall = elt.getKind() == ElementKind.METHOD;
-            if (isMethodCall) {
-              ExpressionTree receiver = mst.getExpression();
-              boolean receiverIsArrayElement =
-                  receiver.getKind() == Tree.Kind.ARRAY_ACCESS
-                      && identifierInHeader != null
-                      && (nameFromExpression(((ArrayAccessTree) receiver).getExpression())
-                              .equals(identifierInHeader)
-                          || arrayInitializationSize
-                              .get(nameFromExpression(((ArrayAccessTree) receiver).getExpression()))
-                              .equals(identifierInHeader))
-                      && nameFromExpression(((ArrayAccessTree) receiver).getIndex())
-                          .equals(iterator);
-              boolean receiverIsCollectionElement = false;
-              if (receiverIsArrayElement || receiverIsCollectionElement) {
-                ExpressionTree collectionExpr = ((ArrayAccessTree) receiver).getExpression();
-                Name collectionName = nameFromExpression(collectionExpr);
-                if (collectionToCalledMethods.getLeft() != null
-                    && !nameFromExpression(collectionToCalledMethods.getLeft())
-                        .equals(collectionName)) {
-                  blockIsIllegal.set(true);
-                } else {
-                  collectionToCalledMethods.setLeft(receiver);
-                  Name methodName = mst.getIdentifier();
-                  methodsCalled.add(methodName.toString());
-                }
-              }
+          public Void visitCompoundAssignment(CompoundAssignmentTree tree, Void p) {
+            if (nameFromExpression(tree.getVariable()).equals(iterator)) {
+              blockIsIllegal.set(true);
             }
-            return super.visitMemberSelect(mst, p);
+            return super.visitCompoundAssignment(tree, p);
           }
 
           @Override
-          public Void visitMethodInvocation(MethodInvocationTree mit, Void p) {
-            ExecutableElement elem = TreeUtils.elementFromUse(mit);
-            boolean isMethodSideEffectFree =
-                atypeFactory.isSideEffectFree(elem)
-                    || PurityUtils.isSideEffectFree(atypeFactory, elem);
-            boolean callsMethodsOnElements = false;
-            List<? extends ExpressionTree> args = mit.getArguments();
-            // check that the first argument is either the collection from the header or has the
-            // correct initialization size
-            if (args.size() >= 1
-                && identifierInHeader != null
-                && (nameFromExpression(args.get(0)).equals(identifierInHeader)
-                    || arrayInitializationSize
-                        .get(nameFromExpression(args.get(0)))
-                        .equals(identifierInHeader))) {
-              Set<String> methodsCalledOnElementOfMethodArg = getCoeMethodNames(mit);
-              Name collectionName = nameFromExpression(args.get(0));
-              if (collectionToCalledMethods.getLeft() != null
-                  && !nameFromExpression(collectionToCalledMethods.getLeft())
-                      .equals(collectionName)) {
-                blockIsIllegal.set(true);
-              } else {
-                callsMethodsOnElements = true;
-                collectionToCalledMethods.setLeft(args.get(0));
-                methodsCalled.addAll(methodsCalledOnElementOfMethodArg);
-              }
+          public Void visitAssignment(AssignmentTree tree, Void p) {
+            if (nameFromExpression(tree.getVariable()).equals(iterator)) {
+              blockIsIllegal.set(true);
             }
-            if (!isMethodSideEffectFree && !callsMethodsOnElements) {
-              // blockIsIllegal.set(true);
-            }
-            return super.visitMethodInvocation(mit, p);
+            return super.visitAssignment(tree, p);
           }
 
           @Override
@@ -358,53 +392,96 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
             blockIsIllegal.set(true);
             return super.visitReturn(rt, p);
           }
+
+          // check whether corresponds to collection.get(i)
+          @Override
+          public Void visitMethodInvocation(MethodInvocationTree mit, Void p) {
+            if (isIthCollectionElement(mit, iterator)
+                && loopHeaderConsistentWithCollection(
+                    identifierInHeader, nameFromExpression(mit))) {
+              collectionElementTree[0] = mit;
+            }
+            return super.visitMethodInvocation(mit, p);
+          }
+
+          // check whether corresponds to arr[i]
+          @Override
+          public Void visitArrayAccess(ArrayAccessTree aat, Void p) {
+            boolean isIthArrayElement = nameFromExpression(aat.getIndex()).equals(iterator);
+            if (isIthArrayElement
+                && loopHeaderConsistentWithCollection(
+                    identifierInHeader, nameFromExpression(aat))) {
+              collectionElementTree[0] = aat;
+            }
+            return super.visitArrayAccess(aat, p);
+          }
         };
     for (StatementTree stmt : block.getStatements()) {
       scanner.scan(stmt, null);
     }
-    if (!blockIsIllegal.get() && methodsCalled != null && methodsCalled.size() >= 1) {
-      collectionToCalledMethods.setRight(methodsCalled);
-      return collectionToCalledMethods;
-    } else {
-      return null;
+    if (!blockIsIllegal.get() && collectionElementTree[0] != null) {
+      return collectionElementTree[0];
     }
+    return null;
   }
 
   /**
-   * Checks whether a for-loop possibly fulfills {@code @MustCallOnElements} obligations of a
+   * Checks whether a for-loop potentially fulfills {@code @MustCallOnElements} obligations of a
    * collection/array and marks the loop in case the check is successful.
    *
    * @param tree forlooptree
    */
   private void patternMatchFulfillingLoop(ForLoopTree tree) {
     BlockTree blockT = (BlockTree) tree.getStatement();
-    Name identifierInHeader =
-        verifyAllElementsAreCalledOn(
-            (StatementTree) tree.getInitializer().get(0),
-            (BinaryTree) tree.getCondition(),
-            (ExpressionStatementTree) tree.getUpdate().get(0));
     StatementTree init = tree.getInitializer().get(0);
+    ExpressionTree condition = tree.getCondition();
+    ExpressionStatementTree update = tree.getUpdate().get(0);
+    Name identifierInHeader = verifyAllElementsAreCalledOn(init, (BinaryTree) condition, update);
+    System.out.println("identifierInHeader: " + identifierInHeader);
     Name iterator = ((VariableTree) init).getName();
     if (identifierInHeader == null || iterator == null) {
       return;
     }
-    Pair<ExpressionTree, Set<String>> methodCallTree =
-        getValidMethodsCalledOnCollectionElement(blockT, identifierInHeader, iterator);
-    if (methodCallTree == null) {
-      return;
+    ExpressionTree collectionElementTree = preMatchLoop(blockT, identifierInHeader, iterator);
+    if (collectionElementTree != null) {
+      // pattern match succeeded, now mark the loop in the respective datastructures
+      System.out.println("prematch succeeded");
+      Set<Node> conditionNodes = atypeFactory.getNodesForTree(condition);
+      Set<Node> collectionEltNodes = atypeFactory.getNodesForTree(collectionElementTree);
+      Set<Node> updateNodes = atypeFactory.getNodesForTree(update.getExpression());
+      Block loopConditionBlock = null;
+      for (Node node : conditionNodes) {
+        Block blockOfNode = node.getBlock();
+        if (blockOfNode != null) {
+          loopConditionBlock = blockOfNode;
+          break;
+        }
+      }
+      Block loopUpdateBlock = null;
+      for (Node node : updateNodes) {
+        Block blockOfNode = node.getBlock();
+        if (blockOfNode != null) {
+          loopUpdateBlock = blockOfNode;
+          break;
+        }
+      }
+      Node nodeForCollectionElt = null;
+      if (collectionEltNodes != null) {
+        nodeForCollectionElt = collectionEltNodes.iterator().next();
+      }
+      if (loopUpdateBlock == null || loopConditionBlock == null) return;
+      // add the blocks into a static datastructure in the calledmethodsatf, such that it can
+      // analyze
+      // them (call MustCallConsistencyAnalyzer.analyzeFulfillingLoops, which in turn adds the trees
+      // to the static datastructure in McoeAtf)
+      CalledMethodsAnnotatedTypeFactory.addPotentiallyFulfillingLoop(
+          loopConditionBlock,
+          loopUpdateBlock,
+          tree.getCondition(),
+          collectionElementTree,
+          nodeForCollectionElt,
+          collectionTreeFromExpression(collectionElementTree));
     }
-    ExpressionTree collectionExpr = methodCallTree.getLeft();
-    Set<String> methodNames = methodCallTree.getRight();
-    if (collectionExpr == null || methodNames == null || methodNames.size() == 0) {
-      return;
-    }
-
-    // pattern match succeeded, now mark the loop in the respective datastructures
-    System.out.println("detected calledmethods: " + methodNames);
-    ExpressionTree condition = tree.getCondition();
-    MustCallOnElementsAnnotatedTypeFactory.closeArrayObligationForLessThan(condition, methodNames);
-    MustCallOnElementsAnnotatedTypeFactory.putArrayAffectedByLoopWithThisCondition(
-        condition, collectionExpr);
   }
 
   /**
@@ -511,12 +588,14 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
       System.out.println("detected mustcall: " + mcValues);
       // check whether the RHS actually has must-call obligations
       if (mcValues != null) {
-        ExpressionTree condition = tree.getCondition();
-        MustCallOnElementsAnnotatedTypeFactory.createArrayObligationForAssignment(assgn);
-        MustCallOnElementsAnnotatedTypeFactory.createArrayObligationForLessThan(
-            condition, mcValues);
-        MustCallOnElementsAnnotatedTypeFactory.putArrayAffectedByLoopWithThisCondition(
-            condition, arrayAccess);
+        PotentiallyAssigningLoop loop =
+            new PotentiallyAssigningLoop(
+                arrayAccess.getExpression(),
+                arrayAccess,
+                tree.getCondition(),
+                assgn,
+                new HashSet<String>(mcValues));
+        MustCallOnElementsAnnotatedTypeFactory.markAssigningLoop(loop);
       }
     }
   }
@@ -596,8 +675,8 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
            */
           class StatementScanner extends TreeScanner<Void, Void> {
             @Override
-            public Void visitUnary(UnaryTree node, Void p) {
-              switch (node.getKind()) {
+            public Void visitUnary(UnaryTree tree, Void p) {
+              switch (tree.getKind()) {
                 case PREFIX_DECREMENT:
                   blockIsIllegal.set(true);
                   break;
@@ -613,25 +692,25 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
                 default:
                   break;
               }
-              return super.visitUnary(node, p);
+              return super.visitUnary(tree, p);
             }
 
             @Override
-            public Void visitCompoundAssignment(CompoundAssignmentTree node, Void p) {
+            public Void visitCompoundAssignment(CompoundAssignmentTree tree, Void p) {
               blockIsIllegal.set(true);
-              return super.visitCompoundAssignment(node, p);
+              return super.visitCompoundAssignment(tree, p);
             }
 
             @Override
-            public Void visitAssert(AssertTree node, Void p) {
+            public Void visitAssert(AssertTree tree, Void p) {
               blockIsIllegal.set(true);
-              return super.visitAssert(node, p);
+              return super.visitAssert(tree, p);
             }
 
             @Override
-            public Void visitAssignment(AssignmentTree node, Void p) {
+            public Void visitAssignment(AssignmentTree tree, Void p) {
               blockIsIllegal.set(true);
-              return super.visitAssignment(node, p);
+              return super.visitAssignment(tree, p);
             }
 
             @Override
@@ -723,40 +802,40 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
    * @return names of methods ensured to be called on the elements of the first argument of the
    *     given method invocation tree
    */
-  private Set<String> getCoeMethodNames(MethodInvocationTree methodInvocation) {
-    ExpressionTree methodCall = methodInvocation.getMethodSelect();
-    if (methodCall instanceof MemberSelectTree) {
-      return Collections.singleton(((MemberSelectTree) methodCall).getIdentifier().toString());
-    } else if (methodCall instanceof IdentifierTree) {
-      ExecutableElement method = TreeUtils.elementFromUse(methodInvocation);
-      ResourceLeakChecker rlc = new ResourceLeakChecker();
-      rlc.init(checker.getProcessingEnvironment());
-      ResourceLeakAnnotatedTypeFactory rlAtf = new ResourceLeakAnnotatedTypeFactory(rlc);
-      AnnotationMirrorSet allEnsuresCalledMethodsAnnos =
-          ResourceLeakVisitor.getEnsuresCalledMethodsAnnotations(method, rlAtf);
-      Set<String> methodsCalledOnFirstArg = new HashSet<>();
-      for (AnnotationMirror ensuresCalledMethodsAnno : allEnsuresCalledMethodsAnnos) {
-        List<String> values =
-            AnnotationUtils.getElementValueArray(
-                ensuresCalledMethodsAnno,
-                rlAtf.getEnsuresCalledMethodsValueElement(),
-                String.class);
-        for (String value : values) {
-          if (value.equals("#1")) {
-            List<String> methods =
-                AnnotationUtils.getElementValueArray(
-                    ensuresCalledMethodsAnno,
-                    rlAtf.getEnsuresCalledMethodsMethodsElement(),
-                    String.class);
-            methodsCalledOnFirstArg.addAll(methods);
-          }
-        }
-      }
-      return methodsCalledOnFirstArg;
-    } else {
-      return null;
-    }
-  }
+  // private Set<String> getCoeMethodNames(MethodInvocationTree methodInvocation) {
+  //   ExpressionTree methodCall = methodInvocation.getMethodSelect();
+  //   if (methodCall instanceof MemberSelectTree) {
+  //     return Collections.singleton(((MemberSelectTree) methodCall).getIdentifier().toString());
+  //   } else if (methodCall instanceof IdentifierTree) {
+  //     ExecutableElement method = TreeUtils.elementFromUse(methodInvocation);
+  //     ResourceLeakChecker rlc = new ResourceLeakChecker();
+  //     rlc.init(checker.getProcessingEnvironment());
+  //     ResourceLeakAnnotatedTypeFactory rlAtf = new ResourceLeakAnnotatedTypeFactory(rlc);
+  //     AnnotationMirrorSet allEnsuresCalledMethodsAnnos =
+  //         ResourceLeakVisitor.getEnsuresCalledMethodsAnnotations(method, rlAtf);
+  //     Set<String> methodsCalledOnFirstArg = new HashSet<>();
+  //     for (AnnotationMirror ensuresCalledMethodsAnno : allEnsuresCalledMethodsAnnos) {
+  //       List<String> values =
+  //           AnnotationUtils.getElementValueArray(
+  //               ensuresCalledMethodsAnno,
+  //               rlAtf.getEnsuresCalledMethodsValueElement(),
+  //               String.class);
+  //       for (String value : values) {
+  //         if (value.equals("#1")) {
+  //           List<String> methods =
+  //               AnnotationUtils.getElementValueArray(
+  //                   ensuresCalledMethodsAnno,
+  //                   rlAtf.getEnsuresCalledMethodsMethodsElement(),
+  //                   String.class);
+  //           methodsCalledOnFirstArg.addAll(methods);
+  //         }
+  //       }
+  //     }
+  //     return methodsCalledOnFirstArg;
+  //   } else {
+  //     return null;
+  //   }
+  // }
 
   /**
    * Decides for a for-loop header whether the loop iterates over all elements of some array based
@@ -800,25 +879,33 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
       }
       // verify that condition is of the form: i < something
       if (!(condition.getLeftOperand() instanceof IdentifierTree)) return null;
-
-      if (condition.getRightOperand() instanceof MemberSelectTree) {
-        MemberSelectTree lengthAccess = (MemberSelectTree) condition.getRightOperand();
-        Name arrayName = nameFromExpression(lengthAccess.getExpression());
-        if (initVar.getName()
-                == ((IdentifierTree) condition.getLeftOperand())
-                    .getName() // i=0 and i<n are same "i"
-            && initVar.getName()
-                == ((IdentifierTree) inc.getExpression()).getName() // i=0 and i++ are same "i"
-            && lengthAccess
-                .getIdentifier()
-                .toString()
-                .contentEquals("length")) { // condition is i<arr.length
-          return arrayName;
-        } else {
-          return null;
+      if (!initVar
+              .getName()
+              .equals(
+                  ((IdentifierTree) condition.getLeftOperand())
+                      .getName()) // i=0 and i<n are same "i"
+          || !initVar
+              .getName()
+              .equals(
+                  ((IdentifierTree) inc.getExpression()).getName())) { // i=0 and i++ are same "i"
+        return null;
+      }
+      if (TreeUtils.isArrayLengthAccess(condition.getRightOperand())) {
+        return nameFromExpression(condition.getRightOperand());
+      } else if ((condition.getRightOperand() instanceof MethodInvocationTree)
+          && TreeUtils.isSizeAccess(condition.getRightOperand())) {
+        ExpressionTree methodSelect =
+            ((MethodInvocationTree) condition.getRightOperand()).getMethodSelect();
+        assert methodSelect.getKind() == Tree.Kind.MEMBER_SELECT
+            : "method selection of object.size() expected to be memberSelectTree, but is "
+                + methodSelect.getKind();
+        MemberSelectTree mst = (MemberSelectTree) methodSelect;
+        Element elt = TreeUtils.elementFromTree(mst.getExpression());
+        if (MustCallOnElementsAnnotatedTypeFactory.isCollection(elt, atypeFactory)) {
+          return nameFromExpression(mst.getExpression());
         }
-      } else if (condition.getRightOperand() instanceof IdentifierTree) {
-        return ((IdentifierTree) condition.getRightOperand()).getName();
+      } else if (condition.getRightOperand().getKind() == Tree.Kind.IDENTIFIER) {
+        return nameFromExpression(condition.getRightOperand());
       }
     }
     return null;
@@ -831,6 +918,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
    * @return Name of the identifier the expression evaluates to or null if it doesn't
    */
   protected Name nameFromExpression(ExpressionTree expr) {
+    if (expr == null) return null;
     switch (expr.getKind()) {
       case IDENTIFIER:
         return ((IdentifierTree) expr).getName();
@@ -838,11 +926,39 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
         return nameFromExpression(((ArrayAccessTree) expr).getExpression());
       case MEMBER_SELECT:
         Element elt = TreeUtils.elementFromUse((MemberSelectTree) expr);
-        if (elt.getKind() == ElementKind.METHOD) {
+        if (elt.getKind() == ElementKind.METHOD || elt.getKind() == ElementKind.FIELD) {
           return nameFromExpression(((MemberSelectTree) expr).getExpression());
         } else {
           return null;
         }
+      case METHOD_INVOCATION:
+        return nameFromExpression(((MethodInvocationTree) expr).getMethodSelect());
+      default:
+        return null;
+    }
+  }
+
+  /**
+   * Returns the ExpressionTree of the collection/array in the given expression
+   *
+   * @param expr ExpressionTree
+   * @return the expression evaluates to or null if it doesn't
+   */
+  protected ExpressionTree collectionTreeFromExpression(ExpressionTree expr) {
+    switch (expr.getKind()) {
+      case IDENTIFIER:
+        return expr;
+      case ARRAY_ACCESS:
+        return ((ArrayAccessTree) expr).getExpression();
+      case MEMBER_SELECT:
+        Element elt = TreeUtils.elementFromUse((MemberSelectTree) expr);
+        if (elt.getKind() == ElementKind.METHOD) {
+          return ((MemberSelectTree) expr).getExpression();
+        } else {
+          return null;
+        }
+      case METHOD_INVOCATION:
+        return collectionTreeFromExpression(((MethodInvocationTree) expr).getMethodSelect());
       default:
         return null;
     }
@@ -915,12 +1031,6 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
 
     return super.visitAssignment(tree, p);
   }
-
-  // @Override
-  // public TransferResult<CFValue, CFStore> visitAssignment(
-  //     AssignmentNode node, TransferInput<CFValue, CFStore> input) {
-  //   return super.visitAssignment(node, input);
-  // }
 
   /** An empty string list. */
   private static final List<String> emptyStringList = Collections.emptyList();

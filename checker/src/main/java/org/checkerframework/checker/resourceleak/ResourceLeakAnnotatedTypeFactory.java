@@ -4,7 +4,6 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -123,16 +122,6 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
   protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
     return getBundledTypeQualifiers(
         CalledMethods.class, CalledMethodsBottom.class, CalledMethodsPredicate.class);
-  }
-
-  /**
-   * Creates a @CalledMethods annotation whose values are the given strings.
-   *
-   * @param val the methods that have been called
-   * @return an annotation indicating that the given methods have been called
-   */
-  public AnnotationMirror createCalledMethods(String... val) {
-    return createAccumulatorAnnotation(Arrays.asList(val));
   }
 
   @Override

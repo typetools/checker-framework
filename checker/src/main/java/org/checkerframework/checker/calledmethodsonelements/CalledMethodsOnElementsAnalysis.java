@@ -1,18 +1,30 @@
-package org.checkerframework.checker.mustcallonelements;
+package org.checkerframework.checker.calledmethodsonelements;
 
 import com.google.common.collect.ImmutableSet;
-import com.sun.tools.javac.code.Type;
+import java.util.List;
 import java.util.Set;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.calledmethods.CalledMethodsAnnotatedTypeFactory;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.dataflow.cfg.ControlFlowGraph;
+import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
 import org.checkerframework.framework.flow.CFAnalysis;
+import org.checkerframework.framework.flow.CFValue;
 
 /**
  * The analysis for the Called Methods Checker. The analysis is specialized to ignore certain
  * exception types; see {@link #isIgnoredExceptionType(TypeMirror)}.
  */
-public class MustCallOnElementsAnalysis extends CFAnalysis {
+public class CalledMethodsOnElementsAnalysis extends CFAnalysis {
+
+  @Override
+  public void performAnalysis(ControlFlowGraph cfg, List<FieldInitialValue<CFValue>> fieldValues) {
+    System.out.println("cmOE");
+    System.out.println("cfg: " + ((CFGMethod) cfg.getUnderlyingAST()).getMethodName());
+    CalledMethodsAnnotatedTypeFactory.postAnalyzeStatically(cfg);
+    super.performAnalysis(cfg, fieldValues);
+  }
 
   /**
    * The fully-qualified names of the exception types that are ignored by this checker when
@@ -30,26 +42,13 @@ public class MustCallOnElementsAnalysis extends CFAnalysis {
           RuntimeException.class.getCanonicalName());
 
   /**
-   * Creates a new {@code MustCallOnElementsAnalysis}.
+   * Creates a new {@code CalledMethodsOnElementsAnalysis}.
    *
    * @param checker the checker
    * @param factory the factory
    */
-  public MustCallOnElementsAnalysis(
-      BaseTypeChecker checker, MustCallOnElementsAnnotatedTypeFactory factory) {
+  public CalledMethodsOnElementsAnalysis(
+      BaseTypeChecker checker, CalledMethodsOnElementsAnnotatedTypeFactory factory) {
     super(checker, factory);
-  }
-
-  /**
-   * Ignore exceptional control flow due to ignored exception types.
-   *
-   * @param exceptionType exception type
-   * @return {@code true} if {@code exceptionType} is a member of {@link #ignoredExceptionTypes},
-   *     {@code false} otherwise
-   */
-  @Override
-  protected boolean isIgnoredExceptionType(TypeMirror exceptionType) {
-    return ignoredExceptionTypes.contains(
-        ((Type) exceptionType).tsym.getQualifiedName().toString());
   }
 }

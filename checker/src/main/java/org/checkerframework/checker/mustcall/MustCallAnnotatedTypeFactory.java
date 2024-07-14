@@ -556,6 +556,15 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   }
 
   /**
+   * Returns whether a flowresult exists, i.e. whether flowResult is non-null
+   *
+   * @return true if a flowresult exists
+   */
+  public boolean hasFlowResult() {
+    return flowResult != null;
+  }
+
+  /**
    * Returns the CreatesMustCallFor.value field/element.
    *
    * @return the CreatesMustCallFor.value field/element
@@ -628,6 +637,16 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
    */
   public @Nullable LocalVariableNode getTempVar(Node node) {
     return tempVars.get(node.getTree());
+  }
+
+  /**
+   * Return the temporary variable for tree, if it exists. See {@code #tempVars}.
+   *
+   * @param tree an AST tree
+   * @return the corresponding temporary variable, or null if there is none
+   */
+  public @Nullable LocalVariableNode getTempVar(Tree tree) {
+    return tempVars.get(tree);
   }
 
   /**

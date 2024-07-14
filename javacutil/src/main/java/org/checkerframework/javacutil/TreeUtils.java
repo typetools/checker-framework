@@ -1702,6 +1702,35 @@ public final class TreeUtils {
   }
 
   /**
+   * If the given tree is a call to "get", this method returns the expression tree of the first
+   * argument and null else.
+   *
+   * <p>Assuming it's a call to List.get(), this will be the iterator. For example, if the tree is
+   * Collection.get(i), the method returns i.
+   *
+   * @param tree the tree to check
+   * @return ExpressionTree of index variable if tree is collection.get(index) and null else
+   */
+  public static ExpressionTree isGetCall(Tree tree) {
+    if (tree.getKind() == Tree.Kind.METHOD_INVOCATION
+        && isNamedMethodCall("get", (MethodInvocationTree) tree)) {
+      return ((MethodInvocationTree) tree).getArguments().get(0);
+    }
+    return null;
+  }
+
+  /**
+   * Returns whether the given tree is of the form object.size()
+   *
+   * @param tree the tree to check
+   * @return whether the given tree is of the form object.size()
+   */
+  public static boolean isSizeAccess(Tree tree) {
+    return tree.getKind() == Tree.Kind.METHOD_INVOCATION
+        && isNamedMethodCall("size", (MethodInvocationTree) tree);
+  }
+
+  /**
    * Returns true if the given {@link MethodTree} is an anonymous constructor (the constructor for
    * an anonymous class).
    *

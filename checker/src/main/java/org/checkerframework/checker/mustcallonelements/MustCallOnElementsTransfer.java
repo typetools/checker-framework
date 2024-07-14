@@ -4,7 +4,6 @@ import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -243,14 +242,14 @@ public class MustCallOnElementsTransfer extends CFTransfer {
     CFValue oldTypeValue = store.getValue(receiver);
     assert oldTypeValue != null : "Collection " + receiver + " not in Store.";
     AnnotationMirror oldType = oldTypeValue.getAnnotations().first();
-    List<String> mcoeMethods = Collections.emptyList();
+    List<String> mcoeMethods = new ArrayList<>();
     if (oldType.getElementValues().get(atypeFactory.getMustCallOnElementsValueElement()) != null) {
       mcoeMethods =
           AnnotationUtils.getElementValueArray(
               oldType, atypeFactory.getMustCallOnElementsValueElement(), String.class);
     }
     mcoeMethods.addAll(mcValues);
-    AnnotationMirror newType = getMustCallOnElementsType(mcoeMethods);
+    AnnotationMirror newType = getMustCallOnElementsType(new HashSet<>(mcoeMethods));
     store.clearValue(receiver);
     store.insertValue(receiver, newType);
     return new RegularTransferResult<CFValue, CFStore>(res.getResultValue(), store);
@@ -362,7 +361,7 @@ public class MustCallOnElementsTransfer extends CFTransfer {
         JavaExpression array = JavaExpression.fromNode(arg);
         CFStore store = res.getRegularStore();
         store.clearValue(array);
-        store.insertValue(array, getMustCallOnElementsType(Collections.emptyList()));
+        store.insertValue(array, getMustCallOnElementsType(new HashSet<>()));
         return new RegularTransferResult<CFValue, CFStore>(res.getResultValue(), store);
       } else if (argIsOwningArray) {
         // param non-@OwningArray and arg @OwningArray would imply we have an alias
@@ -379,7 +378,7 @@ public class MustCallOnElementsTransfer extends CFTransfer {
     BinaryTree tree = node.getTree();
     assert (tree.getKind() == Tree.Kind.LESS_THAN)
         : "failed assumption: binaryTree in calledmethodsonelements transfer function is not lessthan tree";
-    List<String> newMustCallMethods =
+    Set<String> newMustCallMethods =
         MustCallOnElementsAnnotatedTypeFactory.whichObligationsDoesLoopWithThisConditionCreate(
             tree);
     Set<String> calledMethods =
@@ -406,7 +405,7 @@ public class MustCallOnElementsTransfer extends CFTransfer {
       CFValue oldTypeValue = elseStore.getValue(receiverReceiver);
       assert oldTypeValue != null : "Array " + arrayTree + " not in Store.";
       AnnotationMirror oldType = oldTypeValue.getAnnotations().first();
-      List<String> mcoeMethods = Collections.emptyList();
+      List<String> mcoeMethods = new ArrayList<>();
       if (oldType.getElementValues().get(atypeFactory.getMustCallOnElementsValueElement())
           != null) {
         mcoeMethods =
@@ -414,7 +413,7 @@ public class MustCallOnElementsTransfer extends CFTransfer {
                 oldType, atypeFactory.getMustCallOnElementsValueElement(), String.class);
       }
       mcoeMethods.removeAll(calledMethods);
-      AnnotationMirror newType = getMustCallOnElementsType(mcoeMethods);
+      AnnotationMirror newType = getMustCallOnElementsType(new HashSet<>(mcoeMethods));
       elseStore.clearValue(receiverReceiver);
       elseStore.insertValue(receiverReceiver, newType);
       return new ConditionalTransferResult<>(res.getResultValue(), res.getThenStore(), elseStore);
@@ -428,9 +427,10 @@ public class MustCallOnElementsTransfer extends CFTransfer {
    * @param methodNames the names of the methods to add to the type
    * @return the annotation with the given methods as value
    */
-  private @Nullable AnnotationMirror getMustCallOnElementsType(List<String> methodNames) {
+  private @Nullable AnnotationMirror getMustCallOnElementsType(Set<String> methodNames) {
     AnnotationBuilder builder = new AnnotationBuilder(this.env, atypeFactory.BOTTOM);
-    builder.setValue("value", CollectionsPlume.withoutDuplicatesSorted(methodNames));
+    builder.setValue(
+        "value", CollectionsPlume.withoutDuplicatesSorted(new ArrayList<>(methodNames)));
     return builder.build();
   }
 
