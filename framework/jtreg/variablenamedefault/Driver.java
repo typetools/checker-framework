@@ -4,7 +4,7 @@
  *
  * @clean lib.Test use.UseTest
  * @compile lib/Test.java
- * @compile -processor org.checkerframework.framework.testchecker.variablenamedefault.VariableNameDefaultChecker use/UseTest.java -XDrawDiagnostics
+ * @compile -processor org.checkerframework.framework.testchecker.variablenamedefault.VariableNameDefaultChecker use/UseTest.java
  *
  * @clean lib.Test use.UseTest
  * @compile -g lib/Test.java

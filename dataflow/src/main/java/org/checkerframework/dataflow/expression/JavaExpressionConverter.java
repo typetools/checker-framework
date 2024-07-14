@@ -108,6 +108,11 @@ public abstract class JavaExpressionConverter extends JavaExpressionVisitor<Java
   }
 
   @Override
+  protected JavaExpression visitSuperReference(SuperReference superExpr, Void unused) {
+    return superExpr;
+  }
+
+  @Override
   protected JavaExpression visitUnaryOperation(UnaryOperation unaryOpExpr, Void unused) {
     JavaExpression operand = convert(unaryOpExpr.getOperand());
     return new UnaryOperation(unaryOpExpr.getType(), unaryOpExpr.getOperationKind(), operand);

@@ -37,10 +37,7 @@ public class JavaParserUtil {
    * The Language Level to use when parsing if a specific level isn't applied. This should be the
    * highest version of Java that the Checker Framework can process.
    */
-  // JavaParser's ParserConfiguration.LanguageLevel has no constant for JDK 18, as of version
-  // 3.25.1 (2023-02-28).  See
-  // https://www.javadoc.io/doc/com.github.javaparser/javaparser-core/latest/com/github/javaparser/ParserConfiguration.LanguageLevel.html .
-  public static final LanguageLevel DEFAULT_LANGUAGE_LEVEL = LanguageLevel.JAVA_17;
+  public static final LanguageLevel DEFAULT_LANGUAGE_LEVEL = LanguageLevel.JAVA_21;
 
   ///
   /// Replacements for StaticJavaParser
@@ -61,6 +58,7 @@ public class JavaParserUtil {
   public static CompilationUnit parseCompilationUnit(InputStream inputStream) {
     ParserConfiguration parserConfiguration = new ParserConfiguration();
     parserConfiguration.setLanguageLevel(DEFAULT_LANGUAGE_LEVEL);
+    parserConfiguration.setPreprocessUnicodeEscapes(true);
     JavaParser javaParser = new JavaParser(parserConfiguration);
     ParseResult<CompilationUnit> parseResult = javaParser.parse(inputStream);
     if (parseResult.isSuccessful() && parseResult.getResult().isPresent()) {
@@ -86,6 +84,7 @@ public class JavaParserUtil {
   public static CompilationUnit parseCompilationUnit(File file) throws FileNotFoundException {
     ParserConfiguration configuration = new ParserConfiguration();
     configuration.setLanguageLevel(DEFAULT_LANGUAGE_LEVEL);
+    configuration.setPreprocessUnicodeEscapes(true);
     JavaParser javaParser = new JavaParser(configuration);
     ParseResult<CompilationUnit> parseResult = javaParser.parse(file);
     if (parseResult.isSuccessful() && parseResult.getResult().isPresent()) {
@@ -142,6 +141,7 @@ public class JavaParserUtil {
     configuration.setLexicalPreservationEnabled(false);
     configuration.setAttributeComments(false);
     configuration.setDetectOriginalLineSeparator(false);
+    configuration.setPreprocessUnicodeEscapes(true);
     JavaParser javaParser = new JavaParser(configuration);
     ParseResult<StubUnit> parseResult = javaParser.parseStubUnit(inputStream);
     if (parseResult.isSuccessful() && parseResult.getResult().isPresent()) {
@@ -188,6 +188,7 @@ public class JavaParserUtil {
     configuration.setLexicalPreservationEnabled(false);
     configuration.setAttributeComments(false);
     configuration.setDetectOriginalLineSeparator(false);
+    configuration.setPreprocessUnicodeEscapes(true);
     JavaParser javaParser = new JavaParser(configuration);
     ParseResult<Expression> parseResult = javaParser.parseExpression(expression);
     if (parseResult.isSuccessful() && parseResult.getResult().isPresent()) {

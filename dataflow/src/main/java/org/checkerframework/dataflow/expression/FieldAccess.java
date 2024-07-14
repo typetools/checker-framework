@@ -7,6 +7,7 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
+import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
@@ -99,7 +100,17 @@ public class FieldAccess extends JavaExpression {
       return false;
     }
     FieldAccess fa = (FieldAccess) obj;
-    return fa.getField().equals(getField()) && fa.getReceiver().equals(getReceiver());
+    if (!fa.getField().equals(getField())) {
+      return false;
+    }
+
+    if (fa.getReceiver().equals(getReceiver())) {
+      return true;
+    }
+
+    return (fa.getReceiver() instanceof SuperReference || fa.getReceiver() instanceof ThisReference)
+        && (this.getReceiver() instanceof SuperReference
+            || this.getReceiver() instanceof ThisReference);
   }
 
   @Override
@@ -129,8 +140,10 @@ public class FieldAccess extends JavaExpression {
 
   @Override
   public String toString() {
-    if (receiver instanceof ClassName) {
-      return receiver.getType() + "." + field;
+    String receiverString =
+        (receiver instanceof ClassName) ? receiver.getType().toString() : receiver.toString();
+    if (Node.disambiguateOwner) {
+      return receiverString + "." + field + "{owner=" + ((Symbol) field).owner + "}";
     } else {
       return receiver + "." + field;
     }

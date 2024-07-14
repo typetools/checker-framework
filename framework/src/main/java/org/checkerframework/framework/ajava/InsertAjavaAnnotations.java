@@ -1,6 +1,9 @@
 package org.checkerframework.framework.ajava;
 
+import com.github.javaparser.JavaToken;
+import com.github.javaparser.JavaToken.Kind;
 import com.github.javaparser.Position;
+import com.github.javaparser.TokenRange;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.Node;
@@ -11,6 +14,7 @@ import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.nodeTypes.NodeWithAnnotations;
 import com.github.javaparser.ast.type.ArrayType;
+import com.github.javaparser.ast.type.ArrayType.ArrayBracketPair;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.printer.DefaultPrettyPrinter;
@@ -238,23 +242,29 @@ public class InsertAjavaAnnotations {
     @Override
     public void visit(ArrayType src, Node other) {
       ArrayType dest = (ArrayType) other;
-      // The second component of this pair contains a list of ArrayBracketPairs from left to
-      // right. For example, if src contains String[][], then the list will contain the
-      // types String[] and String[][]. To insert array annotations in the correct location,
-      // we insert them directly to the right of the end of the previous element.
-      Pair<Type, List<ArrayType.ArrayBracketPair>> srcArrayTypes = ArrayType.unwrapArrayTypes(src);
-      Pair<Type, List<ArrayType.ArrayBracketPair>> destArrayTypes =
-          ArrayType.unwrapArrayTypes(dest);
-      // The first annotations go directly after the element type.
-      Position firstPosition = destArrayTypes.a.getEnd().get();
-      addAnnotations(firstPosition, srcArrayTypes.b.get(0).getAnnotations(), 1, false);
-      for (int i = 1; i < srcArrayTypes.b.size(); i++) {
-        Position position = destArrayTypes.b.get(i - 1).getTokenRange().get().toRange().get().end;
-        addAnnotations(position, srcArrayTypes.b.get(i).getAnnotations(), 1, true);
+      Pair<Type, List<ArrayBracketPair>> destArrayTypes = ArrayType.unwrapArrayTypes(dest);
+      TokenRange innerMostCom = destArrayTypes.a.getTokenRange().get();
+
+      List<Position> positions = new ArrayList<>();
+      for (JavaToken token : dest.getTokenRange().get().withBegin(innerMostCom.getEnd())) {
+        if (token.getKind() == Kind.LBRACKET.getKind()) {
+          positions.add(token.getRange().get().begin);
+        }
       }
 
-      // Visit the component type.
-      srcArrayTypes.a.accept(this, destArrayTypes.a);
+      // At the end of the loop, these two variables will contain the innermost array type.
+      ArrayType srcArray = src;
+      ArrayType destArray = dest;
+      for (Position position : positions) {
+        addAnnotations(position, srcArray.getAnnotations(), 0, true);
+        if (srcArray.getComponentType().isArrayType()) {
+          srcArray = (ArrayType) srcArray.getComponentType();
+          destArray = (ArrayType) destArray.getComponentType();
+        }
+      }
+
+      // Visit the innermost component type.
+      srcArray.getComponentType().accept(this, destArray.getComponentType());
     }
 
     @Override

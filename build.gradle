@@ -55,7 +55,7 @@ ext {
   versions = [
     autoValue       : '1.11.0',
     googleJavaFormat : '1.19.2',
-    lombok          : '1.18.32',
+    lombok          : '1.18.34',
     hashmapUtil : '0.0.1',
     reflectionUtil : '1.1.3',
     plumeUtil : '1.9.3',
@@ -113,8 +113,8 @@ allprojects { currentProj ->
   // level (third number) if:
   //   * any new checkers have been added, or
   //   * backward-incompatible changes have been made to APIs or elsewhere.
-  // To make a snapshot release: ./gradlew publish
-  version '3.43.1-SNAPSHOT'
+  // To make a snapshot release, version should end in "-SNAPSHOT", then: ./gradlew publish
+  version '3.45.1-SNAPSHOT'
 
   tasks.withType(JavaCompile).configureEach {
     options.fork = true
@@ -662,7 +662,7 @@ void clone(url, directory, ignoreError, extraArgs = []){
     args = [
       'clone',
       '-q',
-      '--filter=blob:none',
+      '--depth=1',
       url,
       file(directory).toPath().last()
     ]
@@ -968,14 +968,6 @@ subprojects {
 
         // Per Manu's comment above, on CI, parallelism seems to lead to flaky failures.
         maxParallelForks = 1
-
-        // Azure seems to time out when a task doesn't produce periodic output.
-        if (project.name.is('checker')) {
-          testLogging {
-            events "started", "skipped", "failed", "passed"
-            displayGranularity 3
-          }
-        }
 
         // Fork the test to try to improve performance.
         // https://docs.gradle.org/current/userguide/performance.html#fork_tests_into_multiple_processes
