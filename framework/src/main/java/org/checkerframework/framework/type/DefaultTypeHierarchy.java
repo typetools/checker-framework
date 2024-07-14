@@ -388,8 +388,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
       areEqualVisitHistory.put(inside, outside, currentTop, result);
       return result;
     } else if (TypesUtils.isCapturedTypeVariable(outside.getUnderlyingType())) {
-      // Sometimes the wildcard has been captured too early, so treat the captured type variable
-      // as wildcard.
+      // Sometimes the wildcard has been captured too early, so treat the captured type
+      // variable as wildcard.
       // This is all cases except bullet 6, "T <= T".
       AnnotatedTypeVariable outsideTypeVar = (AnnotatedTypeVariable) outside;
 
