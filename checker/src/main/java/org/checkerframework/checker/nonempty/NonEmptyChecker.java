@@ -41,13 +41,13 @@ public class NonEmptyChecker extends BaseTypeChecker {
   @Override
   public boolean shouldSkipDefs(MethodTree tree) {
     if (runAsOptionalChecker) {
-      return !getMethodsToCheck().contains(tree);
+      return !getMethodsToVerify().contains(tree);
     }
     return super.shouldSkipDefs(tree);
   }
 
   /**
-   * Obtains the methods to check w.r.t. the Non-Empty type system from the Optional Checker.
+   * Obtains the methods to verify w.r.t. the Non-Empty type system from the Optional Checker.
    *
    * <p>The Optional Checker uses explicitly-written (i.e., programmer-written) annotations from the
    * Non-Empty type system to refine its analysis with respect to operations on containers (e.g.,
@@ -55,9 +55,9 @@ public class NonEmptyChecker extends BaseTypeChecker {
    *
    * <p>This method provides access to the Non-Empty Checker for methods that should be verified.
    *
-   * @return the set of methods to be checked by the Non-Empty Checker
+   * @return the set of methods to be verified by the Non-Empty Checker
    */
-  private Set<MethodTree> getMethodsToCheck() {
+  private Set<MethodTree> getMethodsToVerify() {
     OptionalChecker optionalChecker = getSubchecker(OptionalChecker.class);
     if (optionalChecker != null) {
       OptionalVisitor optionalVisitor = (OptionalVisitor) optionalChecker.getVisitor();
