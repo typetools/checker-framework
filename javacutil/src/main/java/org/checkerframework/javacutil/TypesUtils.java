@@ -374,7 +374,7 @@ public final class TypesUtils {
    *
    * @param type the type
    * @param qualifiedNames fully-qualified type names to check for
-   * @return type iff type represents a declared type whose fully-qualified name is one of the given
+   * @return true iff type represents a declared type whose fully-qualified name is one of the given
    *     names
    */
   public static boolean isDeclaredOfName(TypeMirror type, Collection<String> qualifiedNames) {
