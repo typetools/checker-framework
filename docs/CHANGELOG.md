@@ -162,7 +162,7 @@ crash when compiling them.
 **Implementation details:**
 
 Dataflow supports all the new Java 21 language features.
- * A new node,`DeconstructorPatternNode`, was added, so any implementation of
+ * A new node, `DeconstructorPatternNode`, was added, so any implementation of
    `NodeVisitor` must be updated.
  * Method `InstanceOfNode.getBindingVariable()` is deprecated; use
    `getPatternNode()` or `getBindingVariables()` instead.
