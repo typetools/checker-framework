@@ -20,17 +20,17 @@ class UnmodifiableTest {
     }
   }
 
-  void testVarArgsEmpty() {
+  void testVarargsEmpty() {
     // :: error: (assignment)
     @NonEmpty List<String> items = List.of();
   }
 
-  void testVarArgsNonEmptyList() {
+  void testVarargsNonEmptyList() {
     // Requires more than 10 elements to invoke the varargs version
     @NonEmpty List<Integer> items = List.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12); // OK
   }
 
-  void testVarArgsNonEmptyMap() {
+  void testVarargsNonEmptyMap() {
     // Requires more than 10 elements to invoke the varargs version
     @NonEmpty
     Map<String, Integer> map =

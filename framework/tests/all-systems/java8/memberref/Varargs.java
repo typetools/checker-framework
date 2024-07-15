@@ -1,4 +1,4 @@
-interface VarArgsFunc {
+interface VarargsFunc {
   void take(String... in);
 }
 
@@ -12,8 +12,8 @@ class MemberRefVarargsTest {
 
   static void myMethodArray(String[] in) {}
 
-  VarArgsFunc v1 = MemberRefVarargsTest::myMethod;
-  VarArgsFunc v2 = MemberRefVarargsTest::myMethodArray;
+  VarargsFunc v1 = MemberRefVarargsTest::myMethod;
+  VarargsFunc v2 = MemberRefVarargsTest::myMethodArray;
 
   ArrayFunc v3 = MemberRefVarargsTest::myMethod;
   ArrayFunc v4 = MemberRefVarargsTest::myMethodArray;
