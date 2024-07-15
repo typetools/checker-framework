@@ -23,7 +23,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ElementKind;
@@ -393,8 +392,7 @@ public class OptionalVisitor
               .map(Name::toString)
               .anyMatch(nameOfMethodToVerify -> nameOfMethodToVerify.equals(callee));
       if (isCalleeInMethodsToVerifyWithNonEmptyChecker) {
-        Set<MethodTree> callers =
-            calleesToCallers.computeIfAbsent(callee, (__) -> new HashSet<>());
+        Set<MethodTree> callers = calleesToCallers.computeIfAbsent(callee, (__) -> new HashSet<>());
         callers.add(caller);
       }
     }
