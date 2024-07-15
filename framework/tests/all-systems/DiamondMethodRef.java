@@ -24,7 +24,7 @@ public class DiamondMethodRef {
   }
 
   static Integer sum(Integer a, Integer b) {
-    return a + b;
+    throw new RuntimeException();
   }
 
   public static class CharacterDisplay {
@@ -33,7 +33,7 @@ public class DiamondMethodRef {
     }
 
     public final int getLevel(PCClass pcc) {
-      return 0;
+      throw new RuntimeException();
     }
 
     public HitDie getLevelHitDie(PCClass pcClass, final int classLevel) {
@@ -45,7 +45,7 @@ public class DiamondMethodRef {
 
   static class HitDie {
     int getDie() {
-      return 0;
+      throw new RuntimeException();
     }
   }
 }
