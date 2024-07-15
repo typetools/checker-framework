@@ -2653,7 +2653,7 @@ public final class TreeUtils {
    *     parameter, and the invocation has with zero vararg actuals
    */
   public static boolean isCallToVarargsMethodWithZeroVarargsActuals(MethodInvocationTree invok) {
-    if (!TreeUtils.isVarargs(invok)) {
+    if (!TreeUtils.isVarArgs(invok)) {
       return false;
     }
     int numParams = elementFromUse(invok).getParameters().size();
