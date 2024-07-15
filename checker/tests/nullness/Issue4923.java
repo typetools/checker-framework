@@ -14,6 +14,6 @@ class Issue4923 {
   final Object x = new Object();
 
   // Make sure that initializer type is compatible with declared type
-  // :: error: (assignment.type.incompatible)
+  // :: error: (assignment)
   final Object y = null;
 }
