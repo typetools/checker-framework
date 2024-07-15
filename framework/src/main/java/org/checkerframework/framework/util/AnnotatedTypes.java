@@ -990,7 +990,7 @@ public class AnnotatedTypes {
    *     Tree)} instead
    */
   @Deprecated // 2022-04-21
-  public static List<AnnotatedTypeMirror> expandVarargsParameters(
+  public static List<AnnotatedTypeMirror> expandVarArgsParameters(
       AnnotatedTypeFactory atypeFactory,
       AnnotatedExecutableType method,
       List<? extends ExpressionTree> args) {
@@ -1083,7 +1083,7 @@ public class AnnotatedTypes {
    * @param args the types of the arguments at the call site
    * @return the method parameters, with varargs replaced by instances of its component type
    */
-  public static List<AnnotatedTypeMirror> expandVarargsParametersFromTypes(
+  public static List<AnnotatedTypeMirror> expandVarArgsParametersFromTypes(
       AnnotatedExecutableType method, List<AnnotatedTypeMirror> args) {
     List<AnnotatedTypeMirror> parameters = method.getParameterTypes();
     if (!method.getElement().isVarArgs()) {

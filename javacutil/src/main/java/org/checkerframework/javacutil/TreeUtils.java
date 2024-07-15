@@ -2611,7 +2611,7 @@ public final class TreeUtils {
    * @deprecated use {@link #isVarargsCall(MethodInvocationTree)}
    */
   @Deprecated // 2024-06-04
-  public static boolean isVarargs(MethodInvocationTree invok) {
+  public static boolean isVarArgs(MethodInvocationTree invok) {
     return ((JCMethodInvocation) invok).varargsElement != null;
   }
 
@@ -2626,8 +2626,8 @@ public final class TreeUtils {
       return true;
     }
 
-    // For some calls the varargsElement element disappears when it should not. This seems to only
-    // be a problem with MethodHandle#invoke and only with no arguments.  See
+    // For some calls the varargsElement element disappears when it should not. This seems to
+    // only be a problem with MethodHandle#invoke and only with no arguments.  See
     // framework/tests/all-systems/Issue6078.java.
     // So also check for a mismatch between parameter and argument size.
     // Such a mismatch occurs for every enum constructor: no args, two params (String name, int
@@ -2670,7 +2670,7 @@ public final class TreeUtils {
    * @deprecated use {@link #isVarargsCall(NewClassTree)}
    */
   @Deprecated // 2024-06-04
-  public static boolean isVarargs(NewClassTree newClassTree) {
+  public static boolean isVarArgs(NewClassTree newClassTree) {
     return isVarargsCall(newClassTree);
   }
 
@@ -2875,7 +2875,7 @@ public final class TreeUtils {
    * @deprecated use {@link #isVarargsCall(Tree)}
    */
   @Deprecated // 2024-06-04
-  public static boolean isVarargsMethodCall(ExpressionTree methodInvocation) {
+  public static boolean isVarArgMethodCall(ExpressionTree methodInvocation) {
     return isVarargsCall(methodInvocation);
   }
 
