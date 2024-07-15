@@ -2728,8 +2728,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     assert memberReferenceTree.getMode() == MemberReferenceTree.ReferenceMode.NEW;
 
     // The return type for constructors should only have explicit annotations from the
-    // constructor. The code below recreates some of the logic from TypeFromTree.visitNewClass to do
-    // this.
+    // constructor. The code below recreates some of the logic from TypeFromTree.visitNewClass
+    // to do this.
 
     // The return type of the constructor will be the type of the expression of the member
     // reference tree.
@@ -2737,7 +2737,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         fromTypeTree(memberReferenceTree.getQualifierExpression());
     if (TreeUtils.needsTypeArgInference(memberReferenceTree)) {
       // If the method reference is missing type arguments, e.g. LinkedHashMap::new, then the
-      // constructorReturnType will be raw.  So, use the return type from the constructor instead.
+      // constructorReturnType will be raw.  So, use the return type from the constructor
+      // instead.
       AnnotatedTypeMirror re = constructorType.getReturnType().deepCopy(false);
       re.clearPrimaryAnnotations();
       re.addAnnotations(constructorReturnType.getPrimaryAnnotations());
