@@ -1083,7 +1083,7 @@ public class AnnotatedTypes {
    * @param args the types of the arguments at the call site
    * @return the method parameters, with varargs replaced by instances of its component type
    */
-  public static List<AnnotatedTypeMirror> expandVarArgsParametersFromTypes(
+  public static List<AnnotatedTypeMirror> expandVarargsParametersFromTypes(
       AnnotatedExecutableType method, List<AnnotatedTypeMirror> args) {
     List<AnnotatedTypeMirror> parameters = method.getParameterTypes();
     if (!method.getElement().isVarArgs()) {
