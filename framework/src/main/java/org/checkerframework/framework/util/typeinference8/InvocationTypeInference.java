@@ -668,7 +668,7 @@ public class InvocationTypeInference {
         c.applyInstantiations();
       }
       c.remove(subset);
-      BoundSet newBounds = subset.reduceAA(context);
+      BoundSet newBounds = subset.reduceAdditionalArgOnce(context);
       if (!subset.isEmpty()) {
         c.addAll(subset);
       }

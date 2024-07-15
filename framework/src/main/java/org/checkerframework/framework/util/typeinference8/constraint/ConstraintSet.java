@@ -293,12 +293,13 @@ public class ConstraintSet implements ReductionResult {
   }
 
   /**
-   * Reduces all the constraints in this set. (See JLS 18.2)
+   * Reduces all the constraints in this set. (See JLS 18.2) If an {@link AdditionalArgument} is
+   * found it is reduced one step and then this method is returns.
    *
    * @param context the context
    * @return the bound set produced by reducing this constraint set
    */
-  public BoundSet reduceAA(Java8InferenceContext context) {
+  public BoundSet reduceAdditionalArgOnce(Java8InferenceContext context) {
     BoundSet boundSet = new BoundSet(context);
     while (!this.isEmpty()) {
       if (this.list.size() > BoundSet.MAX_INCORPORATION_STEPS) {
