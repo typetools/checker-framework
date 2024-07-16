@@ -28,7 +28,7 @@ import org.checkerframework.checker.calledmethods.qual.CalledMethodsBottom;
 import org.checkerframework.checker.calledmethods.qual.CalledMethodsPredicate;
 import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;
 import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethodsOnException;
-import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethodsVarArgs;
+import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethodsVarargs;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer;
 import org.checkerframework.common.accumulation.AccumulationAnnotatedTypeFactory;
@@ -92,9 +92,21 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
   /*package-private*/ final ExecutableElement calledMethodsValueElement =
       TreeUtils.getMethod(CalledMethods.class, "value", 0, processingEnv);
 
-  /** The {@link EnsuresCalledMethodsVarArgs#value} element/argument. */
+  /** The {@link EnsuresCalledMethodsVarargs#value} element/argument. */
+  /*package-private*/ final ExecutableElement ensuresCalledMethodsVarargsValueElement =
+      TreeUtils.getMethod(EnsuresCalledMethodsVarargs.class, "value", 0, processingEnv);
+
+  /**
+   * The {@link org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethodsVarargs#value}
+   * element/argument.
+   */
+  @SuppressWarnings("deprecation") // EnsuresCalledMethodsVarArgs
   /*package-private*/ final ExecutableElement ensuresCalledMethodsVarArgsValueElement =
-      TreeUtils.getMethod(EnsuresCalledMethodsVarArgs.class, "value", 0, processingEnv);
+      TreeUtils.getMethod(
+          org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethodsVarArgs.class,
+          "value",
+          0,
+          processingEnv);
 
   /** The {@link EnsuresCalledMethodsOnException#value} element/argument. */
   /*package-private*/ final ExecutableElement ensuresCalledMethodsOnExceptionValueElement =
