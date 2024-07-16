@@ -2,29 +2,17 @@ package org.checkerframework.checker.calledmethods;
 
 import com.google.common.collect.ImmutableSet;
 import com.sun.tools.javac.code.Type;
-import java.util.List;
 import java.util.Set;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.common.accumulation.AccumulationAnalysis;
-import org.checkerframework.common.accumulation.AccumulationValue;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.dataflow.cfg.ControlFlowGraph;
-import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
 
 /**
  * The analysis for the Called Methods Checker. The analysis is specialized to ignore certain
  * exception types; see {@link #isIgnoredExceptionType(TypeMirror)}.
  */
 public class CalledMethodsAnalysis extends AccumulationAnalysis {
-
-  @Override
-  public void performAnalysis(
-      ControlFlowGraph cfg, List<FieldInitialValue<AccumulationValue>> fieldValues) {
-    System.out.println("cm analysis");
-    System.out.println("cfg: " + ((CFGMethod) cfg.getUnderlyingAST()).getMethodName());
-    super.performAnalysis(cfg, fieldValues);
-  }
 
   /**
    * The fully-qualified names of the exception types that are ignored by this checker when

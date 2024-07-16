@@ -1,5 +1,6 @@
 package org.checkerframework.checker.mustcallonelements;
 
+import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
@@ -150,7 +151,7 @@ public class MustCallOnElementsTransfer extends CFTransfer {
             && rhs.getTree() != null
             && TreeUtils.elementFromTree(rhs.getTree()) != null
             && TreeUtils.elementFromTree(rhs.getTree()).getAnnotation(OwningArray.class) != null;
-    if (!lhsIsOwningArray && rhsIsOwningArray) {
+    if (!lhsIsOwningArray && rhsIsOwningArray && !(rhs.getTree() instanceof ArrayAccessTree)) {
       JavaExpression lhsJavaExpression = JavaExpression.fromNode(lhs);
       store.clearValue(lhsJavaExpression);
       store.insertValue(lhsJavaExpression, getMustCallOnElementsUnknown());
@@ -252,6 +253,7 @@ public class MustCallOnElementsTransfer extends CFTransfer {
     AnnotationMirror newType = getMustCallOnElementsType(new HashSet<>(mcoeMethods));
     store.clearValue(receiver);
     store.insertValue(receiver, newType);
+    System.out.println("inserted into store: " + receiver + " " + newType);
     return new RegularTransferResult<CFValue, CFStore>(res.getResultValue(), store);
   }
 
@@ -308,6 +310,9 @@ public class MustCallOnElementsTransfer extends CFTransfer {
           // case "add(int,E)":
           //   res = transformCollectionAddWithIdx(node, res, parameters);
           //   break;
+        case "size()":
+        case "get(int)":
+          return res;
         default:
           atypeFactory.getChecker().reportError(node.getTree(), "unsafe.method", methodSignature);
       }

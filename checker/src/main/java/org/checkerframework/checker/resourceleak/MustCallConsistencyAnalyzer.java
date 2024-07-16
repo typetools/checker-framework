@@ -47,7 +47,9 @@ import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.calledmethods.CalledMethodsAnalysis;
+import org.checkerframework.checker.calledmethods.CalledMethodsAnnotatedTypeFactory;
 import org.checkerframework.checker.calledmethods.CalledMethodsAnnotatedTypeFactory.PotentiallyFulfillingLoop;
+import org.checkerframework.checker.calledmethods.CalledMethodsChecker;
 import org.checkerframework.checker.calledmethods.qual.CalledMethods;
 import org.checkerframework.checker.calledmethodsonelements.CalledMethodsOnElementsAnnotatedTypeFactory;
 import org.checkerframework.checker.calledmethodsonelements.CalledMethodsOnElementsChecker;
@@ -74,6 +76,7 @@ import org.checkerframework.dataflow.cfg.block.Block.BlockType;
 import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
 import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlock;
+import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
 import org.checkerframework.dataflow.cfg.node.ArrayCreationNode;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.ClassNameNode;
@@ -188,6 +191,9 @@ public class MustCallConsistencyAnalyzer {
    * analyzeObligationFulfillingLoop(ControlFlowGraph, PotentiallyFulfillingLoop)} method.
    */
   private final boolean isLoopBodyAnalysis;
+
+  /** The type factory for the CalledMethods Checker, which is used to get CalledMethods types */
+  private final CalledMethodsAnnotatedTypeFactory cmTypeFactory;
 
   /**
    * The type factory for the MustCallOnElements Checker, which is used to get MustCallOnElements
@@ -632,21 +638,19 @@ public class MustCallConsistencyAnalyzer {
    *     so this constructor cannot get it directly.
    */
   public MustCallConsistencyAnalyzer(
-      ResourceLeakAnnotatedTypeFactory typeFactory, CalledMethodsAnalysis analysis) {
+      CalledMethodsAnnotatedTypeFactory typeFactory, CalledMethodsAnalysis analysis) {
     this.isLoopBodyAnalysis = true;
-    this.typeFactory = typeFactory;
+    this.cmTypeFactory = typeFactory;
+    this.typeFactory = null;
     this.mcoeTypeFactory = null;
     this.cmoeTypeFactory = null;
-    // this.mcoeTypeFactory =
-    // typeFactory.getTypeFactoryOfSubchecker(MustCallOnElementsChecker.class);
-    // this.cmoeTypeFactory =
-    //     typeFactory.getTypeFactoryOfSubchecker(CalledMethodsOnElementsChecker.class);
-    this.checker = (ResourceLeakChecker) typeFactory.getChecker();
+    this.checker = null;
     this.analysis = analysis;
-    this.permitStaticOwning = checker.hasOption("permitStaticOwning");
-    this.permitInitializationLeak = checker.hasOption("permitInitializationLeak");
-    this.noLightweightOwnership = checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP);
-    this.countMustCall = checker.hasOption(ResourceLeakChecker.COUNT_MUST_CALL);
+    this.permitStaticOwning = typeFactory.getChecker().hasOption("permitStaticOwning");
+    this.permitInitializationLeak = typeFactory.getChecker().hasOption("permitInitializationLeak");
+    this.noLightweightOwnership =
+        typeFactory.getChecker().hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP);
+    this.countMustCall = typeFactory.getChecker().hasOption(ResourceLeakChecker.COUNT_MUST_CALL);
   }
 
   /**
@@ -662,6 +666,7 @@ public class MustCallConsistencyAnalyzer {
       ResourceLeakAnnotatedTypeFactory typeFactory, ResourceLeakAnalysis analysis) {
     this.isLoopBodyAnalysis = false;
     this.typeFactory = typeFactory;
+    this.cmTypeFactory = typeFactory.getTypeFactoryOfSubchecker(CalledMethodsChecker.class);
     this.mcoeTypeFactory = typeFactory.getTypeFactoryOfSubchecker(MustCallOnElementsChecker.class);
     this.cmoeTypeFactory =
         typeFactory.getTypeFactoryOfSubchecker(CalledMethodsOnElementsChecker.class);
@@ -753,12 +758,12 @@ public class MustCallConsistencyAnalyzer {
     Deque<BlockWithObligations> worklist = new ArrayDeque<>();
 
     // Add an obligation for the element of the collection iterated over
-    Node collectionElementNode = potentiallyFulfillingLoop.collectionElementNode;
+    // Node collectionElementNode = potentiallyFulfillingLoop.collectionElementNode;
     Obligation collectionElementObligation =
         new Obligation(
             ImmutableSet.of(
                 new ResourceAlias(
-                    JavaExpression.fromNode(collectionElementNode),
+                    JavaExpression.fromTree(collectionElementAccess),
                     TreeUtils.elementFromTree(collectionElementAccess),
                     collectionElementAccess)),
             Collections.singleton(MethodExitKind.NORMAL_RETURN));
@@ -797,7 +802,6 @@ public class MustCallConsistencyAnalyzer {
         if (isLastBlockOfBody) {
           Set<String> calledMethodsAfterBlock =
               analyzeTypeOfCollectionElement(currentBlock, potentiallyFulfillingLoop, obligations);
-
           // intersect the called methods after this block with the accumulated ones so far.
           // This is required because there may be multiple "back edges" of the loop, in which
           // case we must intersect the called methods between those.
@@ -810,7 +814,7 @@ public class MustCallConsistencyAnalyzer {
       }
     }
     // now put the loop into the static datastructure if it calls any methods on the element
-    System.out.println("called methods: " + calledMethodsInLoop);
+    System.out.println("called methods (loop-body-analysis): " + calledMethodsInLoop);
     if (calledMethodsInLoop != null && calledMethodsInLoop.size() > 0) {
       potentiallyFulfillingLoop.addMethods(calledMethodsInLoop);
       MustCallOnElementsAnnotatedTypeFactory.markFulfillingLoop(potentiallyFulfillingLoop);
@@ -836,11 +840,11 @@ public class MustCallConsistencyAnalyzer {
     AccumulationStore store = null;
     if (lastLoopBodyBlock.getLastNode() == null) {
       // TODO is this really the right store? I think we need to get the then-or else store
-      store = typeFactory.getStoreAfterBlock(lastLoopBodyBlock);
+      store = cmTypeFactory.getStoreAfterBlock(lastLoopBodyBlock);
       // this.analysis.getInput(lastLoopBodyBlock).getRegularStore();
       // this.analysis.getStoreAfter(lastLoopBodyBlock);
     } else {
-      store = typeFactory.getStoreAfter(lastLoopBodyBlock.getLastNode());
+      store = cmTypeFactory.getStoreAfter(lastLoopBodyBlock.getLastNode());
     }
     Obligation collectionElementObligation =
         getObligationForVar(obligations, potentiallyFulfillingLoop.collectionElementTree);
@@ -889,7 +893,7 @@ public class MustCallConsistencyAnalyzer {
       for (AnnotationMirror anno : cmVal.getAnnotations()) {
         if (AnnotationUtils.areSameByName(
             anno, "org.checkerframework.checker.calledmethods.qual.CalledMethods")) {
-          return typeFactory.getCalledMethods(anno);
+          return cmTypeFactory.getCalledMethods(anno);
         }
       }
     }
@@ -964,7 +968,7 @@ public class MustCallConsistencyAnalyzer {
 
   /**
    * Verifies all {@link OwningArray} fields for the enclosing class of the method corresponding to
-   * a CFG are final, non-static and arrays/collections. Also verifies that there's no
+   * a CFG are final, non-static, private and arrays/collections. Also verifies that there's no
    * {@code @Owning} field that is an array/collection.
    *
    * @param cfg the CFG
@@ -993,6 +997,9 @@ public class MustCallConsistencyAnalyzer {
                 checker.reportError(member, "owningarray.field.not.final", tree.getName());
               }
               if (ElementUtils.isStatic(memberElm)) {
+                checker.reportError(member, "owningarray.field.static", tree.getName());
+              }
+              if (!ElementUtils.isPrivate(memberElm)) {
                 checker.reportError(member, "owningarray.field.static", tree.getName());
               }
               if (!isArray && !isCollection) {
@@ -1684,10 +1691,6 @@ public class MustCallConsistencyAnalyzer {
    * Updates a set of Obligations to account for an assignment and enforces the assignment rules for
    * the MustCallOnElements checker.
    *
-   * <p>Assigning to an owning field might remove Obligations, assigning to a resource variable
-   * might remove obligations, assigning to a new local variable might modify an Obligation (by
-   * increasing the size of its resource alias set), etc.
-   *
    * <p>Obligation creation rules for MustCallOnElements checker.
    *
    * <ul>
@@ -1714,25 +1717,26 @@ public class MustCallConsistencyAnalyzer {
    *   <li>5. The elements of an {@code @OwningArray} may only be assigned in an allocating loop.
    *   <li>6. The elements of an {@code @OwningArray} field may only be assigned once in the
    *       constructor.
+   *   <li>7. The rhs of an assignment may only be {@code @OwningArray} if it is an array access
+   *       (for example {@code arr[i]}) and the lhs is not an {@code @OwningArray}.
    * </ul>
    *
-   * @param obligations the set of Obligations to update
-   * @param cfg the control flow graph that contains {@code assignmentNode}
-   * @param assignmentNode the assignment
+   * @param lhs node of the lhs of the assignment
+   * @param rhs node of the rhs of the assignment - after conversion to temp-var
+   * @param rhsExpr node of the rhs of the assignment - before conversion to temp-var
+   * @param assignmentNode node of assignment to check
+   * @param cfg the ControlFlowGraph of the enclosing method
+   * @param obligations the set of tracked obligations
    */
-  private void updateObligationsForAssignment(
-      Set<Obligation> obligations, ControlFlowGraph cfg, AssignmentNode assignmentNode) {
-    Node lhs = assignmentNode.getTarget();
+  private void checkAssignmentToOwningArray(
+      Node lhs,
+      Node rhs,
+      Node rhsExpr,
+      AssignmentNode assignmentNode,
+      ControlFlowGraph cfg,
+      Set<Obligation> obligations) {
     Element lhsElement = TreeUtils.elementFromTree(lhs.getTree());
-    if (lhsElement == null) {
-      return;
-    }
-    // Use the temporary variable for the rhs if it exists.
-    Node rhsExpr = NodeUtils.removeCasts(assignmentNode.getExpression());
-    Node rhs = getTempVarOrNode(rhsExpr);
     Element rhsElement = TreeUtils.elementFromTree(rhs.getTree());
-
-    // update obligations for assignments to @OwningArray array
     CFStore mcoeStore =
         mcoeTypeFactory == null ? null : mcoeTypeFactory.getStoreBefore(assignmentNode.getTree());
     CFStore cmoeStore =
@@ -1746,7 +1750,8 @@ public class MustCallConsistencyAnalyzer {
         mcoeStore != null && mcoeTypeFactory.isMustCallOnElementsUnknown(mcoeStore, lhs.getTree());
     MethodTree enclosingMethod = cfg.getEnclosingMethod(assignmentNode.getTree());
     boolean inConstructor = enclosingMethod != null && TreeUtils.isConstructor(enclosingMethod);
-    if (!isOwningArray && rhsIsOwningArray) {
+    if (!isOwningArray && rhsIsOwningArray && !(rhsExpr instanceof ArrayAccessNode)) {
+      // enforces 7. assignment rule:
       checker.reportError(assignmentNode.getTree(), "illegal.aliasing");
     }
     if (isOwningArray) {
@@ -1891,9 +1896,40 @@ public class MustCallConsistencyAnalyzer {
         }
       }
     }
+  }
+
+  /**
+   * Updates a set of Obligations to account for an assignment and enforces the assignment rules for
+   * the MustCallOnElements checker.
+   *
+   * <p>Assigning to an owning field might remove Obligations, assigning to a resource variable
+   * might remove obligations, assigning to a new local variable might modify an Obligation (by
+   * increasing the size of its resource alias set), etc.
+   *
+   * @param obligations the set of Obligations to update
+   * @param cfg the control flow graph that contains {@code assignmentNode}
+   * @param assignmentNode the assignment
+   */
+  private void updateObligationsForAssignment(
+      Set<Obligation> obligations, ControlFlowGraph cfg, AssignmentNode assignmentNode) {
+    Node lhs = assignmentNode.getTarget();
+    Element lhsElement = TreeUtils.elementFromTree(lhs.getTree());
+    if (lhsElement == null) {
+      return;
+    }
+    // Use the temporary variable for the rhs if it exists.
+    Node rhsExpr = NodeUtils.removeCasts(assignmentNode.getExpression());
+    Node rhs = isLoopBodyAnalysis ? null : getTempVarOrNode(rhsExpr);
+    MethodTree enclosingMethod = cfg.getEnclosingMethod(assignmentNode.getTree());
+    boolean inConstructor = enclosingMethod != null && TreeUtils.isConstructor(enclosingMethod);
+
+    // update obligations for assignments to @OwningArray array
+    if (!isLoopBodyAnalysis) {
+      checkAssignmentToOwningArray(lhs, rhs, rhsExpr, assignmentNode, cfg, obligations);
+    }
 
     // Ownership transfer to @Owning field.
-    if (lhsElement.getKind() == ElementKind.FIELD) {
+    if (lhsElement.getKind() == ElementKind.FIELD && !isLoopBodyAnalysis) {
       boolean isOwningField = !noLightweightOwnership && typeFactory.hasOwning(lhsElement);
       // Check that the must-call obligations of the lhs have been satisfied, if the field is
       // non-final and owning.
@@ -1907,7 +1943,6 @@ public class MustCallConsistencyAnalyzer {
       // (When obligation creation is turned off, non-final fields cannot take ownership.)
       if (isOwningField
           && rhs instanceof LocalVariableNode
-          && !isLoopBodyAnalysis
           && (typeFactory.canCreateObligations() || ElementUtils.isFinal(lhsElement))) {
 
         LocalVariableNode rhsVar = (LocalVariableNode) rhs;
@@ -1957,9 +1992,13 @@ public class MustCallConsistencyAnalyzer {
               new ResourceAlias(JavaExpression.fromNode(lhs), lhsElement, lhs.getTree()));
         }
       }
-    } else if (lhs instanceof LocalVariableNode && !isOwningArray) {
+    } else if (lhs instanceof LocalVariableNode) {
       LocalVariableNode lhsVar = (LocalVariableNode) lhs;
-      updateObligationsForPseudoAssignment(obligations, assignmentNode, lhsVar, rhs);
+      boolean isOwningArray =
+          !isLoopBodyAnalysis && !noLightweightOwnership && typeFactory.hasOwningArray(lhsElement);
+      if (!isOwningArray) {
+        updateObligationsForPseudoAssignment(obligations, assignmentNode, lhsVar, rhs);
+      }
       if (isLoopBodyAnalysis) {
         handleAssignmentToCollectionElementVariable(obligations, assignmentNode, lhsVar, rhsExpr);
       }
@@ -2001,9 +2040,13 @@ public class MustCallConsistencyAnalyzer {
           // cases, use the tree associated with the temp var for the resource alias,
           // as that is the tree where errors should be reported.
           Tree treeForAlias =
-              typeFactory.isTempVar(lhsVar)
-                  ? typeFactory.getTreeForTempVar(lhsVar)
-                  : node.getTree();
+              // I don't think we need a tempVar here, since the only case where we're interested
+              // in such an assignment in the loopBodyAnalysis is if the lhs is an actual variable
+              // to be used as an alias, so we don't care about the case where lhs is a temp-var.
+              // typeFactory.isTempVar(lhsVar)
+              //     ? typeFactory.getTreeForTempVar(lhsVar)
+              //     : node.getTree();
+              node.getTree();
           ResourceAlias aliasForAssignment =
               new ResourceAlias(new LocalVariable(lhsVar), treeForAlias);
           newResourceAliasesForObligation.add(aliasForAssignment);
@@ -2016,7 +2059,7 @@ public class MustCallConsistencyAnalyzer {
     if (oldObligation != null && newObligation != null) {
       obligations.remove(oldObligation);
       obligations.add(newObligation);
-      System.out.println("added obligation: " + newObligation);
+      System.out.println("added obligation (loop-body-analysis): " + newObligation);
     }
   }
 
@@ -2210,14 +2253,14 @@ public class MustCallConsistencyAnalyzer {
           // cases, use the tree associated with the temp var for the resource alias,
           // as that is the tree where errors should be reported.
           Tree treeForAlias =
-              typeFactory.isTempVar(lhsVar)
+              typeFactory.isTempVar(lhsVar) && !isLoopBodyAnalysis
                   ? typeFactory.getTreeForTempVar(lhsVar)
                   : node.getTree();
           aliasForAssignment = new ResourceAlias(new LocalVariable(lhsVar), treeForAlias);
         }
         newResourceAliasesForObligation.add(aliasForAssignment);
         // Remove temp vars from tracking once they are assigned to another location.
-        if (typeFactory.isTempVar(rhsVar)) {
+        if (!isLoopBodyAnalysis && typeFactory.isTempVar(rhsVar)) {
           ResourceAlias aliasForRhs = obligation.getResourceAlias(rhsVar);
           if (aliasForRhs != null) {
             newResourceAliasesForObligation.remove(aliasForRhs);
@@ -2231,7 +2274,7 @@ public class MustCallConsistencyAnalyzer {
         continue;
       }
 
-      if (newResourceAliasesForObligation.isEmpty()) {
+      if (!isLoopBodyAnalysis && newResourceAliasesForObligation.isEmpty()) {
         // Because the last reference to the resource has been overwritten, check the
         // must-call obligation.
         MustCallAnnotatedTypeFactory mcAtf =
@@ -2881,20 +2924,20 @@ public class MustCallConsistencyAnalyzer {
                 + ((ExceptionBlock) currentBlock).getNode().getTree()
                 + " with exception type "
                 + exceptionType;
-    // Computed outside the Obligation loop for efficiency.
-    // if (isLoopBodyAnalysis) {
-    //   System.out.println("analysis: " + analysis.getinputs());
-    // }
-    AccumulationStore regularStoreOfSuccessor = analysis.getInput(successor).getRegularStore();
+    AccumulationStore regularStoreOfSuccessor = cmTypeFactory.getStoreBefore(successor);
+    MustCallAnnotatedTypeFactory mcAtf =
+        isLoopBodyAnalysis ? null : typeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
+    CFStore mcCFStore = isLoopBodyAnalysis ? null : mcAtf.getStoreBefore(successor);
+    // AccumulationStore regularStoreOfSuccessor = analysis.getInput(successor).getRegularStore();
     final CFStore mcoeStore =
-        mcoeTypeFactory == null ? null : mcoeTypeFactory.getStoreForBlock(true, successor, null);
+        isLoopBodyAnalysis ? null : mcoeTypeFactory.getStoreForBlock(true, successor, null);
     for (Obligation obligation : obligations) {
       // This boolean is true if there is no evidence that the Obligation does not go out
       // of scope - that is, if there is definitely a resource alias that is in scope in
       // the successor.
       boolean obligationGoesOutOfScopeBeforeSuccessor = true;
       for (ResourceAlias resourceAlias : obligation.resourceAliases) {
-        if (aliasInScopeInSuccessor(regularStoreOfSuccessor, mcoeStore, resourceAlias)) {
+        if (aliasInScopeInSuccessor(regularStoreOfSuccessor, mcoeStore, mcCFStore, resourceAlias)) {
           obligationGoesOutOfScopeBeforeSuccessor = false;
           break;
         }
@@ -2903,15 +2946,12 @@ public class MustCallConsistencyAnalyzer {
       // going out of scope: if this is an exit block or there is no information about any
       // of them in the successor store, all aliases must be going out of scope and a
       // consistency check should occur.
-      if (successor.getType() == BlockType.SPECIAL_BLOCK /* special blocks are exit blocks */
-          || obligationGoesOutOfScopeBeforeSuccessor) {
+      if ((successor.getType() == BlockType.SPECIAL_BLOCK /* special blocks are exit blocks */
+              || obligationGoesOutOfScopeBeforeSuccessor)
+          && !isLoopBodyAnalysis) {
         // this checks whether we exit and if yes, whether MustCall and CalledMethods are
-        // consistent. In the loop-body-analysis, we don't care about that, so we can soundly
-        // skip it
-        if (isLoopBodyAnalysis) continue;
-        MustCallAnnotatedTypeFactory mcAtf =
-            typeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
-
+        // consistent.
+        //
         // If successor is an exceptional successor, and Obligation represents the
         // temporary variable for currentBlock's node, do not propagate or do a
         // consistency check, as in the exceptional case the "assignment" to the
@@ -3054,25 +3094,30 @@ public class MustCallConsistencyAnalyzer {
         MethodExitKind exitKind =
             exceptionType == null ? MethodExitKind.NORMAL_RETURN : MethodExitKind.EXCEPTIONAL_EXIT;
         if (obligation.whenToEnforce.contains(exitKind)) {
-          if (cmStore != null && mcStore != null) {
+          if (!(obligation instanceof CollectionObligation) && !isLoopBodyAnalysis) {
             checkMustCall(obligation, cmStore, mcStore, exitReasonForErrorMessage);
           }
-          checkMustCallOnElements(
-              obligation,
-              mcoeStoreCurrent,
-              cmoeStoreCurrent,
-              true,
-              null,
-              exitReasonForErrorMessage);
+          if (!isLoopBodyAnalysis) {
+            checkMustCallOnElements(
+                obligation,
+                mcoeStoreCurrent,
+                cmoeStoreCurrent,
+                true,
+                null,
+                exitReasonForErrorMessage);
+          }
         }
       } else {
         // In this case, there is info in the successor store about some alias in the
         // Obligation.
         // Handles the possibility that some resource in the Obligation may go out of
         // scope.
+        //
         Set<ResourceAlias> copyOfResourceAliases = new LinkedHashSet<>(obligation.resourceAliases);
         copyOfResourceAliases.removeIf(
-            alias -> !aliasInScopeInSuccessor(regularStoreOfSuccessor, mcoeStore, alias));
+            alias ->
+                !aliasInScopeInSuccessor(regularStoreOfSuccessor, mcoeStore, mcCFStore, alias)
+                    && !isLoopBodyAnalysis);
         boolean isCollectionObligation = obligation instanceof CollectionObligation;
         if (isCollectionObligation) {
           successorObligations.add(
@@ -3115,19 +3160,20 @@ public class MustCallConsistencyAnalyzer {
 
   /**
    * Returns true if {@code alias.reference} is definitely in-scope in the successor store: that is,
-   * there is a value for it in {@code successorStore}.
+   * there is a value for it in a successor store.
    *
    * @param successorStore the regular store of the successor block
    * @param mcoeStore the mcoeStore of the successor block
+   * @param mcStore the mcStore of the successor block
    * @param alias the resource alias to check
    * @return true if the variable is definitely in scope for the purposes of the consistency
    *     checking algorithm in the successor block from which the store came
    */
   private boolean aliasInScopeInSuccessor(
-      AccumulationStore successorStore, CFStore mcoeStore, ResourceAlias alias) {
+      AccumulationStore successorStore, CFStore mcoeStore, CFStore mcStore, ResourceAlias alias) {
     return (successorStore.getValue(alias.reference) != null)
         || (mcoeStore != null && mcoeStore.getValue(alias.reference) != null)
-        || isLoopBodyAnalysis; // for loop body analysis, never remove obligation
+        || (mcStore != null && mcStore.getValue(alias.reference) != null);
   }
 
   /**
@@ -3321,25 +3367,25 @@ public class MustCallConsistencyAnalyzer {
     }
     ResourceAlias firstAlias = obligation.resourceAliases.iterator().next();
     if (isExit) {
-      // System.out.println(
-      //     "verifying exit "
-      //         + obligation.hashCode()
-      //         + ": "
-      //         + obligation
-      //         + " "
-      //         + mcoeValues
-      //         + "\n        -> "
-      //         + cmoeValues);
+      System.out.println(
+          "verifying exit "
+              + obligation.hashCode()
+              + ": "
+              + obligation
+              + " "
+              + mcoeValues
+              + "\n        -> "
+              + cmoeValues);
     } else {
-      // System.out.println(
-      //     "verifying assignmentloop "
-      //         + obligation.hashCode()
-      //         + ": "
-      //         + obligation
-      //         + " "
-      //         + mcoeValues
-      //         + "\n        -> "
-      //         + cmoeValues);
+      System.out.println(
+          "verifying assignmentloop "
+              + obligation.hashCode()
+              + ": "
+              + obligation
+              + " "
+              + mcoeValues
+              + "\n        -> "
+              + cmoeValues);
     }
     mcoeValues.removeAll(cmoeValues);
     if (!mcoeValues.isEmpty()) {

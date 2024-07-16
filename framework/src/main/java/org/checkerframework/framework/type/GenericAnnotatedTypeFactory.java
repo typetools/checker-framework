@@ -60,6 +60,7 @@ import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGLambda;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGStatement;
+import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
@@ -1233,6 +1234,38 @@ public abstract class GenericAnnotatedTypeFactory<
             analysis.getNodeValues(),
             flowResultAnalysisCaches);
     return store;
+  }
+
+  /**
+   * Returns the store immediately before a given block.
+   *
+   * @param block a block whose pre-store to return
+   * @return the store immediately before {@code block}
+   */
+  public @Nullable Store getStoreBefore(Block block) {
+    if (!analysis.isRunning()) {
+      return flowResult.getStoreBefore(block);
+    }
+    TransferInput<Value, Store> prevStore = analysis.getInput(block);
+    if (prevStore == null) {
+      return null;
+    }
+    return prevStore.getRegularStore();
+    // List<Node> nodes = block.getNodes();
+    // if (nodes.isEmpty()) {
+    //   // This block doesn't contain any node, return the store in the transfer input.
+    //   return prevStore.getRegularStore();
+    // } else {
+    //   Node firstNode = nodes.get(0);
+    //   Store store =
+    //       AnalysisResult.runAnalysisFor(
+    //           firstNode,
+    //           Analysis.BeforeOrAfter.BEFORE,
+    //           prevStore,
+    //           analysis.getNodeValues(),
+    //           flowResultAnalysisCaches);
+    //   return store;
+    // }
   }
 
   /**

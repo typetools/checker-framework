@@ -31,7 +31,6 @@ import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethodsOnExc
 import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethodsVarArgs;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer;
-import org.checkerframework.checker.resourceleak.ResourceLeakAnnotatedTypeFactory;
 import org.checkerframework.common.accumulation.AccumulationAnnotatedTypeFactory;
 import org.checkerframework.common.accumulation.AccumulationStore;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -67,7 +66,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
   private static final Set<PotentiallyFulfillingLoop> potentiallyFulfillingLoops = new HashSet<>();
 
   /** Used as argument to call the post-analyzer of the {@code CalledMethods} checker with. */
-  private static ResourceLeakAnnotatedTypeFactory rlAtf = null;
+  // private ResourceLeakAnnotatedTypeFactory rlAtf = null;
 
   /**
    * The builder frameworks (such as Lombok and AutoValue) supported by this instance of the Called
@@ -121,6 +120,10 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
         checker.getStringsOption(CalledMethodsChecker.DISABLE_BUILDER_FRAMEWORK_SUPPORTS, ',');
     enableFrameworks(disabledFrameworks);
 
+    // if (this instanceof ResourceLeakAnnotatedTypeFactory) {
+    //   if (rlAtf == null) rlAtf = (ResourceLeakAnnotatedTypeFactory) this;
+    // }
+
     this.useValueChecker = checker.hasOption(CalledMethodsChecker.USE_VALUE_CHECKER);
 
     // Lombok generates @CalledMethods annotations using an old package name,
@@ -136,6 +139,15 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
     if (this.getClass() == CalledMethodsAnnotatedTypeFactory.class) {
       this.postInit();
     }
+  }
+
+  /**
+   * Returns the analysis.
+   *
+   * @return the flow analysis
+   */
+  public CalledMethodsAnalysis getAnalysis() {
+    return (CalledMethodsAnalysis) analysis;
   }
 
   /**
@@ -172,9 +184,6 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
 
   @Override
   protected TreeAnnotator createTreeAnnotator() {
-    if (this instanceof ResourceLeakAnnotatedTypeFactory) {
-      if (rlAtf == null) rlAtf = (ResourceLeakAnnotatedTypeFactory) this;
-    }
     return new ListTreeAnnotator(super.createTreeAnnotator(), new CalledMethodsTreeAnnotator(this));
   }
 
@@ -603,12 +612,12 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
    *
    * @param cfg the cfg of the enclosing method
    */
-  public static void postAnalyzeStatically(ControlFlowGraph cfg) {
-    System.out.println("c1: " + (rlAtf != null));
-    System.out.println("c2: " + potentiallyFulfillingLoops.size());
-    if (rlAtf != null && potentiallyFulfillingLoops.size() > 0) {
+  @Override
+  public void postAnalyze(ControlFlowGraph cfg) {
+    // if (rlAtf != null && potentiallyFulfillingLoops.size() > 0) {
+    if (potentiallyFulfillingLoops.size() > 0) {
       MustCallConsistencyAnalyzer mustCallConsistencyAnalyzer =
-          new MustCallConsistencyAnalyzer(rlAtf, (CalledMethodsAnalysis) rlAtf.analysis);
+          new MustCallConsistencyAnalyzer(this, (CalledMethodsAnalysis) this.analysis);
 
       // analyze loop bodies of all loops marked 'potentially-mcoe-obligation-fulfilling'
       Set<PotentiallyFulfillingLoop> analyzed = new HashSet<>();
@@ -634,7 +643,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
       // }
     }
 
-    // super.postAnalyze(cfg);
+    super.postAnalyze(cfg);
   }
 
   @Override
@@ -674,9 +683,6 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
    * @return the called methods
    */
   public List<String> getCalledMethods(AnnotationMirror calledMethodsAnnotation) {
-    if (this instanceof ResourceLeakAnnotatedTypeFactory) {
-      rlAtf = (ResourceLeakAnnotatedTypeFactory) this;
-    }
     return AnnotationUtils.getElementValueArray(
         calledMethodsAnnotation, calledMethodsValueElement, String.class, Collections.emptyList());
   }

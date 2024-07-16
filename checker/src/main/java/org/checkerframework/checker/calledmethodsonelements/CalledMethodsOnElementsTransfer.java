@@ -289,7 +289,7 @@ public class CalledMethodsOnElementsTransfer extends CFTransfer {
       PotentiallyFulfillingLoop loop, TransferResult<CFValue, CFStore> res) {
     ExpressionTree arrayTree = loop.collectionTree;
     Set<String> calledMethods = loop.getMethods();
-    System.out.println("transfer: " + arrayTree);
+    System.out.println("calledmethods: (cmoe transfer) " + calledMethods);
     if (calledMethods != null && calledMethods.size() > 0) {
       CFStore elseStore = res.getElseStore();
       JavaExpression target = JavaExpression.fromTree(arrayTree);
@@ -315,7 +315,6 @@ public class CalledMethodsOnElementsTransfer extends CFTransfer {
     TransferResult<CFValue, CFStore> res = super.visitLessThan(node, input);
     McoeObligationAlteringLoop loop =
         MustCallOnElementsAnnotatedTypeFactory.getLoopForCondition(node.getTree());
-    System.out.println("transfer: " + loop);
     if (loop != null) {
       if (loop.loopKind == LoopKind.ASSIGNING) {
         res = updateTransferResultForAllocatingForLoop((PotentiallyAssigningLoop) loop, res);

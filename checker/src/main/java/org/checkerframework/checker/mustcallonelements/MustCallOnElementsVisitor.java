@@ -1,6 +1,7 @@
 package org.checkerframework.checker.mustcallonelements;
 
 import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.MethodInvocationTree;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -25,6 +26,18 @@ public class MustCallOnElementsVisitor
    */
   public MustCallOnElementsVisitor(BaseTypeChecker checker) {
     super(checker);
+  }
+
+  @Override
+  protected boolean skipReceiverSubtypeCheck(
+      MethodInvocationTree tree,
+      AnnotatedTypeMirror methodDefinitionReceiver,
+      AnnotatedTypeMirror methodCallReceiver) {
+    // It does not make sense for receivers to have must-call obligations. If the receiver of a
+    // method were to have a non-empty must-call obligation, then actually this method should
+    // be part of the must-call annotation on the class declaration! So skipping this check is
+    // always sound.
+    return true;
   }
 
   /**

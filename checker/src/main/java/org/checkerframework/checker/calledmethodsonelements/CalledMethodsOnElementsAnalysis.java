@@ -1,30 +1,17 @@
 package org.checkerframework.checker.calledmethodsonelements;
 
 import com.google.common.collect.ImmutableSet;
-import java.util.List;
 import java.util.Set;
 import javax.lang.model.type.TypeMirror;
-import org.checkerframework.checker.calledmethods.CalledMethodsAnnotatedTypeFactory;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.dataflow.cfg.ControlFlowGraph;
-import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
 import org.checkerframework.framework.flow.CFAnalysis;
-import org.checkerframework.framework.flow.CFValue;
 
 /**
  * The analysis for the Called Methods Checker. The analysis is specialized to ignore certain
  * exception types; see {@link #isIgnoredExceptionType(TypeMirror)}.
  */
 public class CalledMethodsOnElementsAnalysis extends CFAnalysis {
-
-  @Override
-  public void performAnalysis(ControlFlowGraph cfg, List<FieldInitialValue<CFValue>> fieldValues) {
-    System.out.println("cmOE");
-    System.out.println("cfg: " + ((CFGMethod) cfg.getUnderlyingAST()).getMethodName());
-    CalledMethodsAnnotatedTypeFactory.postAnalyzeStatically(cfg);
-    super.performAnalysis(cfg, fieldValues);
-  }
 
   /**
    * The fully-qualified names of the exception types that are ignored by this checker when
