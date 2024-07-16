@@ -611,8 +611,11 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       throw new TypeSystemError("Unexpected QualifierKinds: %s %s", qualifierKind1, qualifierKind2);
     }
 
-    @SuppressWarnings("nullness:return")
     @Override
+    @SuppressWarnings(
+        "nullness:return" // This class UnitsQualifierHierarchy is annotated for nullness,
+    // but the outer class UnitsAnnotatedTypeFactory is not, so the type of fields is @Nullable.
+    )
     protected AnnotationMirror greatestLowerBoundWithElements(
         AnnotationMirror a1,
         QualifierKind qualifierKind1,

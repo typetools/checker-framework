@@ -126,7 +126,7 @@ public class NullnessAnnotatedTypeFactory
   /** Aliases for {@code @Nonnull}. */
   @SuppressWarnings({
     "signature:argument", // Class names intentionally obfuscated
-    "signature:assignment.type.incompatible" // Class names intentionally obfuscated
+    "signature:assignment" // Class names intentionally obfuscated
   })
   private static final List<@FullyQualifiedName String> NONNULL_ALIASES =
       Arrays.<@FullyQualifiedName String>asList(
@@ -221,7 +221,7 @@ public class NullnessAnnotatedTypeFactory
   /** Aliases for {@code @Nullable}. */
   @SuppressWarnings({
     "signature:argument", // Class names intentionally obfuscated
-    "signature:assignment.type.incompatible" // Class names intentionally obfuscated
+    "signature:assignment" // Class names intentionally obfuscated
   })
   private static final List<@FullyQualifiedName String> NULLABLE_ALIASES =
       Arrays.<@FullyQualifiedName String>asList(
@@ -356,7 +356,7 @@ public class NullnessAnnotatedTypeFactory
   /** Aliases for {@code @PolyNull}. */
   @SuppressWarnings({
     "signature:argument", // Class names intentionally obfuscated
-    "signature:assignment.type.incompatible" // Class names intentionally obfuscated
+    "signature:assignment" // Class names intentionally obfuscated
   })
   private static final List<@FullyQualifiedName String> POLYNULL_ALIASES =
       Arrays.<@FullyQualifiedName String>asList(
