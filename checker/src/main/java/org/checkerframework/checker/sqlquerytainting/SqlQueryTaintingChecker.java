@@ -1,6 +1,7 @@
 package org.checkerframework.checker.sqlquerytainting;
 
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.framework.qual.StubFiles;
 import org.checkerframework.framework.source.SuppressWarningsPrefix;
 
 /**
@@ -11,4 +12,5 @@ import org.checkerframework.framework.source.SuppressWarningsPrefix;
  * sanitized before use.
  */
 @SuppressWarningsPrefix({"sqlquerysanitized", "sqlquerytainting"})
+@StubFiles({"BCryptPasswordEncoder.astub", "Statement.astub"})
 public class SqlQueryTaintingChecker extends BaseTypeChecker {}
