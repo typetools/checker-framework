@@ -1,7 +1,0 @@
-package java.sql;
-
-import org.checkerframework.checker.sqlquerytainting.qual.SqlEvenQuotes;
-
-public interface ResultSet extends Wrapper, AutoCloseable {
-    @SqlEvenQuotes String getString(int var1) throws SQLException;
-}
