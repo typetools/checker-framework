@@ -64,14 +64,13 @@ public class SqlQueryTaintingAnnotatedTypeFactory extends BaseAnnotatedTypeFacto
 
     @Override
     public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
-      if (!type.hasPrimaryAnnotationInHierarchy(SQL_QUERY_UNKNOWN)
-          && TreeUtils.isStringConcatenation(tree)) {
+      if (TreeUtils.isStringConcatenation(tree)) {
         AnnotatedTypeMirror leftType = getAnnotatedType(tree.getLeftOperand());
         AnnotatedTypeMirror rightType = getAnnotatedType(tree.getRightOperand());
 
         if (leftType.hasPrimaryAnnotation(SQL_QUERY_UNKNOWN)
             || rightType.hasPrimaryAnnotation(SQL_QUERY_UNKNOWN)) {
-          type.addAnnotation(SQL_QUERY_UNKNOWN);
+          type.replaceAnnotation(SQL_QUERY_UNKNOWN);
           return null;
         }
 
@@ -85,10 +84,10 @@ public class SqlQueryTaintingAnnotatedTypeFactory extends BaseAnnotatedTypeFacto
           rightParity = 1;
         }
 
-        if (leftParity + rightParity % 2 == 0) {
-          type.addAnnotation(SQL_EVEN_QUOTES);
+        if ((leftParity + rightParity) % 2 == 0) {
+          type.replaceAnnotation(SQL_EVEN_QUOTES);
         } else {
-          type.addAnnotation(SQL_ODD_QUOTES);
+          type.replaceAnnotation(SQL_ODD_QUOTES);
         }
       }
 
