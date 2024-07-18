@@ -1,4 +1,4 @@
-package org.checkerframework.checker.sqlquerytainting;
+package org.checkerframework.checker.sqlquotes;
 
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
@@ -6,15 +6,15 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 
-/** Visitor for the {@link SqlQueryTaintingChecker}. */
-public class SqlQueryTaintingVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
+/** Visitor for the {@link SqlQuotesChecker}. */
+public class SqlQuotesVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
 
   /**
-   * Creates a {@link SqlQueryTaintingVisitor}.
+   * Creates a {@link SqlQuotesVisitor}.
    *
    * @param checker the checker that uses this visitor
    */
-  public SqlQueryTaintingVisitor(BaseTypeChecker checker) {
+  public SqlQuotesVisitor(BaseTypeChecker checker) {
     super(checker);
   }
 

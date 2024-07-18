@@ -1,4 +1,4 @@
-package org.checkerframework.checker.sqlquerytainting;
+package org.checkerframework.checker.sqlquotes;
 
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.StubFiles;
@@ -11,6 +11,6 @@ import org.checkerframework.framework.source.SuppressWarningsPrefix;
  * <p>It verifies that only SQL-safe embedded query values are trusted and that user input is
  * sanitized before use.
  */
-@SuppressWarningsPrefix({"sqlquerysanitized", "sqlquerytainting"})
+@SuppressWarningsPrefix({"sqlquerysanitized", "sqlquotes"})
 @StubFiles({"BCryptPasswordEncoder.astub", "Statement.astub"})
-public class SqlQueryTaintingChecker extends BaseTypeChecker {}
+public class SqlQuotesChecker extends BaseTypeChecker {}
