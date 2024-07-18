@@ -294,7 +294,7 @@ public class ConstraintSet implements ReductionResult {
 
   /**
    * Reduces all the constraints in this set. (See JLS 18.2) If an {@link AdditionalArgument} is
-   * found it is reduced one step and then this method is returns.
+   * found it is reduced one step and then this method returns.
    *
    * @param context the context
    * @return the bound set produced by reducing this constraint set
