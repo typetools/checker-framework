@@ -1,4 +1,4 @@
-package org.checkerframework.checker.sqlquerytainting.qual;
+package org.checkerframework.checker.sqlquotes.qual;
 
 import java.lang.annotation.*;
 import org.checkerframework.framework.qual.QualifierForLiterals;

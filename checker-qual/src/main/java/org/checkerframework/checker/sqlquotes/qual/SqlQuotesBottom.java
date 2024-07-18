@@ -1,4 +1,4 @@
-package org.checkerframework.checker.sqlquerytainting.qual;
+package org.checkerframework.checker.sqlquotes.qual;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -11,7 +11,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TargetLocations;
 import org.checkerframework.framework.qual.TypeUseLocation;
 
-/** Represents the bottom of the SQL query tainting qualifier hierarchy. */
+/** Represents the bottom of the SQL Quotes qualifier hierarchy. */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})

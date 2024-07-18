@@ -1,8 +1,8 @@
-import org.checkerframework.checker.sqlquerytainting.qual.SqlEvenQuotes;
-import org.checkerframework.checker.sqlquerytainting.qual.SqlOddQuotes;
-import org.checkerframework.checker.sqlquerytainting.qual.SqlQuotesUnknown;
+import org.checkerframework.checker.sqlquotes.qual.SqlEvenQuotes;
+import org.checkerframework.checker.sqlquotes.qual.SqlOddQuotes;
+import org.checkerframework.checker.sqlquotes.qual.SqlQuotesUnknown;
 
-public class SqlQualifierConcat {
+public class SqlQuotesConcat {
   void oddOddConcat() {
     @SqlOddQuotes String odd1 = "asd\\'f'asdf''\\";
     @SqlOddQuotes String odd2 = "''asdf''''asdf'asdf'asdf'asdf";

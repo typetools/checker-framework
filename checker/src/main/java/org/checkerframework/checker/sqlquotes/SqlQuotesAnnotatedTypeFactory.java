@@ -1,11 +1,11 @@
-package org.checkerframework.checker.sqlquerytainting;
+package org.checkerframework.checker.sqlquotes;
 
 import com.sun.source.tree.BinaryTree;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
-import org.checkerframework.checker.sqlquerytainting.qual.SqlEvenQuotes;
-import org.checkerframework.checker.sqlquerytainting.qual.SqlOddQuotes;
-import org.checkerframework.checker.sqlquerytainting.qual.SqlQuotesUnknown;
+import org.checkerframework.checker.sqlquotes.qual.SqlEvenQuotes;
+import org.checkerframework.checker.sqlquotes.qual.SqlOddQuotes;
+import org.checkerframework.checker.sqlquotes.qual.SqlQuotesUnknown;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -16,8 +16,8 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.TreeUtils;
 
-/** Annotated type factory for the SQL Query Tainting Checker. */
-public class SqlQueryTaintingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
+/** Annotated type factory for the SQL Quotes Checker. */
+public class SqlQuotesAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   /** The {@code @}{@link SqlEvenQuotes} annotation mirror. */
   private final AnnotationMirror SQL_EVEN_QUOTES;
@@ -32,11 +32,11 @@ public class SqlQueryTaintingAnnotatedTypeFactory extends BaseAnnotatedTypeFacto
   private final AnnotationMirrorSet setOfSqlEvenQuotes;
 
   /**
-   * Creates a {@link SqlQueryTaintingAnnotatedTypeFactory}.
+   * Creates a {@link SqlQuotesAnnotatedTypeFactory}.
    *
    * @param checker the SQL tainting checker
    */
-  public SqlQueryTaintingAnnotatedTypeFactory(BaseTypeChecker checker) {
+  public SqlQuotesAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     this.SQL_EVEN_QUOTES = AnnotationBuilder.fromClass(getElementUtils(), SqlEvenQuotes.class);
     this.SQL_ODD_QUOTES = AnnotationBuilder.fromClass(getElementUtils(), SqlOddQuotes.class);
@@ -55,11 +55,11 @@ public class SqlQueryTaintingAnnotatedTypeFactory extends BaseAnnotatedTypeFacto
   public TreeAnnotator createTreeAnnotator() {
     return new ListTreeAnnotator(
         super.createTreeAnnotator(),
-        new SqlQueryTaintingAnnotatedTypeFactory.SqlQueryTaintingTreeAnnotator(this));
+        new SqlQuotesAnnotatedTypeFactory.SqlQuotesTreeAnnotator(this));
   }
 
-  private class SqlQueryTaintingTreeAnnotator extends TreeAnnotator {
-    public SqlQueryTaintingTreeAnnotator(AnnotatedTypeFactory atypeFactory) {
+  private class SqlQuotesTreeAnnotator extends TreeAnnotator {
+    public SqlQuotesTreeAnnotator(AnnotatedTypeFactory atypeFactory) {
       super(atypeFactory);
     }
 

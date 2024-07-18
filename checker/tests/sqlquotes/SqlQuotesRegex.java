@@ -1,7 +1,7 @@
-import org.checkerframework.checker.sqlquerytainting.qual.SqlEvenQuotes;
-import org.checkerframework.checker.sqlquerytainting.qual.SqlOddQuotes;
+import org.checkerframework.checker.sqlquotes.qual.SqlEvenQuotes;
+import org.checkerframework.checker.sqlquotes.qual.SqlOddQuotes;
 
-public class SqlQualifierRegex {
+public class SqlQuotesRegex {
 
   void oddNoEscaped() {
     // :: error: (assignment)
