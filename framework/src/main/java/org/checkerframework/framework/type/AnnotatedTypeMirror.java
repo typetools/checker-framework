@@ -1271,7 +1271,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
      *
      * @return true if this type represents a varargs method
      */
-    public boolean isVarArgs() {
+    public boolean isVarargs() {
       return this.element.isVarArgs();
     }
 
