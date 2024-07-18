@@ -5,7 +5,7 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.sqlquerytainting.qual.SqlEvenQuotes;
 import org.checkerframework.checker.sqlquerytainting.qual.SqlOddQuotes;
-import org.checkerframework.checker.sqlquerytainting.qual.SqlQueryUnknown;
+import org.checkerframework.checker.sqlquerytainting.qual.SqlQuotesUnknown;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -25,8 +25,8 @@ public class SqlQueryTaintingAnnotatedTypeFactory extends BaseAnnotatedTypeFacto
   /** The {@code @}{@link SqlOddQuotes} annotation mirror. */
   private final AnnotationMirror SQL_ODD_QUOTES;
 
-  /** The {@code @}{@link SqlQueryUnknown} annotation mirror. */
-  private final AnnotationMirror SQL_QUERY_UNKNOWN;
+  /** The {@code @}{@link SqlQuotesUnknown} annotation mirror. */
+  private final AnnotationMirror SQL_QUOTES_UNKNOWN;
 
   /** A singleton set containing the {@code @}{@link SqlEvenQuotes} annotation mirror. */
   private final AnnotationMirrorSet setOfSqlEvenQuotes;
@@ -40,7 +40,8 @@ public class SqlQueryTaintingAnnotatedTypeFactory extends BaseAnnotatedTypeFacto
     super(checker);
     this.SQL_EVEN_QUOTES = AnnotationBuilder.fromClass(getElementUtils(), SqlEvenQuotes.class);
     this.SQL_ODD_QUOTES = AnnotationBuilder.fromClass(getElementUtils(), SqlOddQuotes.class);
-    this.SQL_QUERY_UNKNOWN = AnnotationBuilder.fromClass(getElementUtils(), SqlQueryUnknown.class);
+    this.SQL_QUOTES_UNKNOWN =
+        AnnotationBuilder.fromClass(getElementUtils(), SqlQuotesUnknown.class);
     this.setOfSqlEvenQuotes = AnnotationMirrorSet.singleton(SQL_EVEN_QUOTES);
     postInit();
   }
@@ -68,9 +69,9 @@ public class SqlQueryTaintingAnnotatedTypeFactory extends BaseAnnotatedTypeFacto
         AnnotatedTypeMirror leftType = getAnnotatedType(tree.getLeftOperand());
         AnnotatedTypeMirror rightType = getAnnotatedType(tree.getRightOperand());
 
-        if (leftType.hasPrimaryAnnotation(SQL_QUERY_UNKNOWN)
-            || rightType.hasPrimaryAnnotation(SQL_QUERY_UNKNOWN)) {
-          type.replaceAnnotation(SQL_QUERY_UNKNOWN);
+        if (leftType.hasPrimaryAnnotation(SQL_QUOTES_UNKNOWN)
+            || rightType.hasPrimaryAnnotation(SQL_QUOTES_UNKNOWN)) {
+          type.replaceAnnotation(SQL_QUOTES_UNKNOWN);
           return null;
         }
 

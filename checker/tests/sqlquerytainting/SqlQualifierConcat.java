@@ -1,6 +1,6 @@
 import org.checkerframework.checker.sqlquerytainting.qual.SqlEvenQuotes;
 import org.checkerframework.checker.sqlquerytainting.qual.SqlOddQuotes;
-import org.checkerframework.checker.sqlquerytainting.qual.SqlQueryUnknown;
+import org.checkerframework.checker.sqlquerytainting.qual.SqlQuotesUnknown;
 
 public class SqlQualifierConcat {
   void oddOddConcat() {
@@ -59,7 +59,7 @@ public class SqlQualifierConcat {
     @SqlEvenQuotes String evenResult2 = even3 + even4;
   }
 
-  void withTopConcat(@SqlQueryUnknown String top) {
+  void withTopConcat(@SqlQuotesUnknown String top) {
     @SqlOddQuotes String odd1 = "'asdf";
     // :: error: (assignment)
     @SqlOddQuotes String oddResult1 = odd1 + top;
