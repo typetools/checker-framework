@@ -64,13 +64,6 @@ public class CalledMethodsVisitor extends AccumulationVisitor {
   public void processMethodTree(MethodTree tree) {
     ExecutableElement elt = TreeUtils.elementFromDeclaration(tree);
     AnnotationMirror ecmv = atypeFactory.getDeclAnnotation(elt, EnsuresCalledMethodsVarargs.class);
-    // Temporary, for backward compatibility.
-    if (ecmv == null) {
-      ecmv =
-          atypeFactory.getDeclAnnotation(
-              elt,
-              org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethodsVarArgs.class);
-    }
     if (ecmv != null) {
       if (!elt.isVarArgs()) {
         checker.report(tree, new DiagMessage(Diagnostic.Kind.ERROR, "ensuresvarargs.invalid"));
