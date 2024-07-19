@@ -11,7 +11,11 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
-import org.checkerframework.checker.calledmethods.qual.CalledMethods;
+import javax.lang.model.element.TypeElement;
+import org.checkerframework.checker.calledmethods.CalledMethodsAnnotatedTypeFactory;
+import org.checkerframework.checker.calledmethods.CalledMethodsChecker;
+import org.checkerframework.checker.calledmethods.EnsuresCalledMethodOnExceptionContract;
+import org.checkerframework.checker.calledmethods.qual.CalledMethos;
 import org.checkerframework.checker.calledmethods.qual.CalledMethodsBottom;
 import org.checkerframework.checker.calledmethods.qual.CalledMethodsPredicate;
 import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;
@@ -355,8 +359,12 @@ public class ResourceLeakAnnotatedTypeFactory extends AccumulationAnnotatedTypeF
    */
   public boolean hasCreatesMustCallFor(MethodInvocationNode node) {
     ExecutableElement decl = TreeUtils.elementFromUse(node.getTree());
+    RLCCalledMethodsAnnotatedTypeFactory cmAtf = getTypeFactoryOfSubchecker(CalledMethodsChecker.class);
     return getDeclAnnotation(decl, CreatesMustCallFor.class) != null
-        || getDeclAnnotation(decl, CreatesMustCallFor.List.class) != null;
+        || getDeclAnnotation(decl, CreatesMustCallFor.List.class) != null
+        || cmAtf.getDeclAnnotation(decl, CreatesMustCallFor.class) != null
+        || cmAtf.getDeclAnnotation(decl, CreatesMustCallFor.List.class) != null
+      ;
   }
 
   /**
