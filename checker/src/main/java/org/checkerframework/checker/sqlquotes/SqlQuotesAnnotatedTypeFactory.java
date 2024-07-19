@@ -5,8 +5,8 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.sqlquotes.qual.SqlEvenQuotes;
 import org.checkerframework.checker.sqlquotes.qual.SqlOddQuotes;
-import org.checkerframework.checker.sqlquotes.qual.SqlQuotesUnknown;
 import org.checkerframework.checker.sqlquotes.qual.SqlQuotesBottom;
+import org.checkerframework.checker.sqlquotes.qual.SqlQuotesUnknown;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -46,8 +46,7 @@ public class SqlQuotesAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     this.SQL_ODD_QUOTES = AnnotationBuilder.fromClass(getElementUtils(), SqlOddQuotes.class);
     this.SQL_QUOTES_UNKNOWN =
         AnnotationBuilder.fromClass(getElementUtils(), SqlQuotesUnknown.class);
-    this.SQL_QUOTES_BOTTOM =
-        AnnotationBuilder.fromClass(getElementUtils(), SqlQuotesBottom.class);
+    this.SQL_QUOTES_BOTTOM = AnnotationBuilder.fromClass(getElementUtils(), SqlQuotesBottom.class);
     this.setOfSqlEvenQuotes = AnnotationMirrorSet.singleton(SQL_EVEN_QUOTES);
     postInit();
   }

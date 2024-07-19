@@ -9,7 +9,7 @@ import org.checkerframework.framework.qual.QualifierForLiterals;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
-     * Used to denote a String that contains either zero or an even number of unescaped single quotes –
+ * Used to denote a String that contains either zero or an even number of unescaped single quotes –
  * i.e., there must be either zero or an even number of ‘ characters in a SqlEvenQuotes String that
  * are not preceded immediately by a SQL \ character. (Thus, written in Java, every occurrence of
  * the single quote in a SqlEvenQuotes String must be preceded by a double backslash.) SqlEvenQuotes
@@ -24,5 +24,14 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf(SqlQuotesUnknown.class)
-@QualifierForLiterals(stringPatterns = "^((([^\\\\']|\\\\.)*+'){2})*+([^\\\\']|\\\\.)*+\\\\?$")
+@QualifierForLiterals(
+    stringPatterns =
+        "^"
+            // any number of paired quotes
+            + "((([^\\\\']|\\\\.)*+'){2})*+"
+            // no quotes
+            + "([^\\\\']|\\\\.)*+"
+            // possible final backslash
+            + "\\\\?"
+            + "$")
 public @interface SqlEvenQuotes {}
