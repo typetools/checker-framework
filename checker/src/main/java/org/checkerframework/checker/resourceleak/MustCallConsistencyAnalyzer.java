@@ -2487,9 +2487,7 @@ public class MustCallConsistencyAnalyzer {
     // cmAnno is actually an instance of CalledMethods: it could be CMBottom or CMPredicate.
     AnnotationMirror cmAnnoForMustCallMethods =
         typeFactory.createCalledMethods(mustCallValues.toArray(new String[0]));
-    return cmAtf
-        .getQualifierHierarchy()
-        .isSubtypeQualifiersOnly(cmAnno, cmAnnoForMustCallMethods);
+    return cmAtf.getQualifierHierarchy().isSubtypeQualifiersOnly(cmAnno, cmAnnoForMustCallMethods);
   }
 
   /**
