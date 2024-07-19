@@ -337,6 +337,10 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
     }
   }
 
+  public TransferInput<V, S> getInput(Block block) {
+    return inputs.get(block);
+  }
+
   /**
    * Returns the regular store immediately after a given block.
    *

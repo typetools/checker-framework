@@ -107,7 +107,9 @@ public abstract class BaseTypeChecker extends SourceChecker {
       checker.initChecker();
     }
 
+    // System.out.println("initializing messagestore for " + this.getClass() + " " + this);
     if (!getSubcheckers().isEmpty()) {
+      // System.out.println("initialized");
       messageStore = new TreeSet<>(this::compareCheckerMessages);
     }
 
@@ -524,11 +526,13 @@ public abstract class BaseTypeChecker extends SourceChecker {
   // AbstractTypeProcessor delegation
   @Override
   public void typeProcess(TypeElement element, TreePath tree) {
+    // System.out.println("this: " + this.getClass() + " " + getSubcheckers());
     if (!getSubcheckers().isEmpty()) {
       // TODO: I expected this to only be necessary if (parentChecker == null).
       // However, the NestedAggregateChecker fails otherwise.
       messageStore.clear();
     }
+    // System.out.println("cleared successful");
 
     // Errors (or other messages) issued via
     //   SourceChecker#message(Diagnostic.Kind, Object, String, Object...)
