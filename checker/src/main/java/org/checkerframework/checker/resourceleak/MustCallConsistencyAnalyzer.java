@@ -1439,7 +1439,7 @@ public class MustCallConsistencyAnalyzer {
             typeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
         checkMustCall(
             obligation,
-            typeFactory.getStoreBefore(node),
+            cmAtf.getStoreBefore(node),
             mcAtf.getStoreBefore(node),
             "variable overwritten by assignment " + node.getTree());
         replacements.put(obligation, null);
@@ -1625,7 +1625,7 @@ public class MustCallConsistencyAnalyzer {
     // Get the store before the RHS rather than the assignment node, because the CFG always has
     // the RHS first. If the RHS has side-effects, then the assignment node's store will have
     // had its inferred types erased.
-    AccumulationStore cmStoreBefore = typeFactory.getStoreBefore(rhs);
+    AccumulationStore cmStoreBefore = cmAtf.getStoreBefore(rhs);
     AccumulationValue cmValue = cmStoreBefore == null ? null : cmStoreBefore.getValue(lhs);
     AnnotationMirror cmAnno = null;
     if (cmValue != null) { // When store contains the lhs
@@ -2155,7 +2155,7 @@ public class MustCallConsistencyAnalyzer {
           if (cmStoreAfter.containsKey(last)) {
             cmStore = cmStoreAfter.get(last);
           } else {
-            cmStore = typeFactory.getStoreAfter(last);
+            cmStore = cmAtf.getStoreAfter(last);
             cmStoreAfter.put(last, cmStore);
           }
           // If this is an exceptional block, check the MC store beforehand to avoid
@@ -2393,7 +2393,7 @@ public class MustCallConsistencyAnalyzer {
       }
       if (cmAnno == null) {
         cmAnno =
-            typeFactory
+            cmAtf
                 .getAnnotatedType(alias.element)
                 .getEffectiveAnnotationInHierarchy(typeFactory.top);
       }
@@ -2487,7 +2487,7 @@ public class MustCallConsistencyAnalyzer {
     // cmAnno is actually an instance of CalledMethods: it could be CMBottom or CMPredicate.
     AnnotationMirror cmAnnoForMustCallMethods =
         typeFactory.createCalledMethods(mustCallValues.toArray(new String[0]));
-    return typeFactory
+    return cmAtf
         .getQualifierHierarchy()
         .isSubtypeQualifiersOnly(cmAnno, cmAnnoForMustCallMethods);
   }
