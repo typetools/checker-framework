@@ -7,6 +7,8 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.calledmethods.CalledMethodsAnnotatedTypeFactory;
 import org.checkerframework.checker.calledmethods.EnsuresCalledMethodOnExceptionContract;
 import org.checkerframework.checker.calledmethods.qual.CalledMethods;
@@ -75,7 +77,7 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
     return new RLCCalledMethodsAnalysis((RLCCalledMethodsChecker) checker, this);
   }
 
-  private ResourceLeakChecker getResourceLeakChecker() {
+  public ResourceLeakChecker getResourceLeakChecker() {
     if (rlc == null) {
       rlc = (ResourceLeakChecker) checker.getParentChecker();
     }
@@ -95,6 +97,22 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
           getResourceLeakAnnotatedTypeFactory().getTypeFactoryOfSubchecker(MustCallChecker.class);
     }
     return mcAtf;
+  }
+
+  /**
+   * Returns true if the checker should ignore exceptional control flow due to the given exception
+   * type.
+   *
+   * @param exceptionType exception type
+   * @return {@code true} if {@code exceptionType} is a member of {@link
+   *     CalledMethodsAnalysis#ignoredExceptionTypes}, {@code false} otherwise
+   */
+  @Override
+  public boolean isIgnoredExceptionType(TypeMirror exceptionType) {
+    if (exceptionType.getKind() == TypeKind.DECLARED) {
+      return ((RLCCalledMethodsAnalysis) analysis).isIgnoredExceptionType(exceptionType);
+    }
+    return false;
   }
 
   /**
