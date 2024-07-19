@@ -5,6 +5,7 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.sqlquotes.qual.SqlEvenQuotes;
 import org.checkerframework.checker.sqlquotes.qual.SqlOddQuotes;
+import org.checkerframework.checker.sqlquotes.qual.SqlQuotesBottom;
 import org.checkerframework.checker.sqlquotes.qual.SqlQuotesUnknown;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -28,6 +29,9 @@ public class SqlQuotesAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /** The {@code @}{@link SqlQuotesUnknown} annotation mirror. */
   private final AnnotationMirror SQL_QUOTES_UNKNOWN;
 
+  /** The {@code @}{@link SqlQuotesBottom} annotation mirror. */
+  private final AnnotationMirror SQL_QUOTES_BOTTOM;
+
   /** A singleton set containing the {@code @}{@link SqlEvenQuotes} annotation mirror. */
   private final AnnotationMirrorSet setOfSqlEvenQuotes;
 
@@ -42,6 +46,7 @@ public class SqlQuotesAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     this.SQL_ODD_QUOTES = AnnotationBuilder.fromClass(getElementUtils(), SqlOddQuotes.class);
     this.SQL_QUOTES_UNKNOWN =
         AnnotationBuilder.fromClass(getElementUtils(), SqlQuotesUnknown.class);
+    this.SQL_QUOTES_BOTTOM = AnnotationBuilder.fromClass(getElementUtils(), SqlQuotesBottom.class);
     this.setOfSqlEvenQuotes = AnnotationMirrorSet.singleton(SQL_EVEN_QUOTES);
     postInit();
   }
@@ -65,6 +70,7 @@ public class SqlQuotesAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
+      super.visitBinary(tree, type);
       if (TreeUtils.isStringConcatenation(tree)) {
         AnnotatedTypeMirror leftType = getAnnotatedType(tree.getLeftOperand());
         AnnotatedTypeMirror rightType = getAnnotatedType(tree.getRightOperand());
@@ -75,11 +81,25 @@ public class SqlQuotesAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
           return null;
         }
 
-        int leftParity = leftType.hasPrimaryAnnotation(SQL_ODD_QUOTES) ? 1 : 0;
-        int rightParity = rightType.hasPrimaryAnnotation(SQL_ODD_QUOTES) ? 1 : 0;
+        if (leftType.hasPrimaryAnnotation(SQL_QUOTES_BOTTOM)) {
+          type.replaceAnnotation(rightType.getPrimaryAnnotation());
+          return null;
+        } else if (rightType.hasPrimaryAnnotation(SQL_QUOTES_BOTTOM)) {
+          type.replaceAnnotation(leftType.getPrimaryAnnotation());
+          return null;
+        }
 
-        int parity = leftParity + rightParity;
-        if (parity == 0 || parity == 2) {
+        int leftParity = 0;
+        if (leftType.hasPrimaryAnnotation(SQL_ODD_QUOTES)) {
+          leftParity = 1;
+        }
+
+        int rightParity = 0;
+        if (rightType.hasPrimaryAnnotation(SQL_ODD_QUOTES)) {
+          rightParity = 1;
+        }
+
+        if ((leftParity + rightParity) % 2 == 0) {
           type.replaceAnnotation(SQL_EVEN_QUOTES);
         } else {
           type.replaceAnnotation(SQL_ODD_QUOTES);

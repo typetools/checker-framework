@@ -1,14 +1,19 @@
 package org.checkerframework.checker.sqlquotes.qual;
 
-import java.lang.annotation.*;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.QualifierForLiterals;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * SqlOddQuotes: Used to denote a String that comprises part of a SQL query and contains an odd
- * number of unescaped single quotes – i.e., there must be an odd number of ‘ characters in a
- * SqlOddQuotes String that are not preceded immediately by a \ character. SqlOddQuotes Strings are
- * not syntactical to be passed to query execution methods.
+ * Used to denote a String that contains an odd number of unescaped single quotes – i.e., there must
+ * be an odd number of ‘ characters in a SqlOddQuotes String that are not preceded immediately by a
+ * SQL \ character. (Thus, written in Java, every occurrence of the single quote in a SqlEvenQuotes
+ * String must be preceded by a double backslash.) SqlOddQuotes Strings are not syntactical to be
+ * passed to query execution methods.
  *
  * <p>Common use cases include: SQL query fragments to be concatenated with user input, such as
  * “SELECT * FROM table WHERE field = ‘”; SQL query fragments containing user input but missing an
