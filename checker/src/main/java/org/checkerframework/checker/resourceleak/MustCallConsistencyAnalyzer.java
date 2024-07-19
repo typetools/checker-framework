@@ -45,6 +45,9 @@ import org.checkerframework.checker.mustcall.qual.MustCallAlias;
 import org.checkerframework.checker.mustcall.qual.NotOwning;
 import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsAnnotatedTypeFactory;
+import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsChecker;
+import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsVisitor;
 import org.checkerframework.common.accumulation.AccumulationStore;
 import org.checkerframework.common.accumulation.AccumulationValue;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
@@ -141,8 +144,7 @@ import org.plumelib.util.IPair;
  * expressions, method calls (for the return value), and ternary expressions. Other types of
  * expressions may be supported in the future.
  */
-/*package-private*/
-class MustCallConsistencyAnalyzer {
+public class MustCallConsistencyAnalyzer {
 
   /** True if errors related to static owning fields should be suppressed. */
   private final boolean permitStaticOwning;
@@ -156,11 +158,14 @@ class MustCallConsistencyAnalyzer {
    */
   private final Set<ResourceAlias> reportedErrorAliases = new HashSet<>();
 
+  /** The type factory for the Resource Leak Checker, which is used to access the subcheckers */
+  private final ResourceLeakAnnotatedTypeFactory typeFactory;
+
   /**
-   * The type factory for the Resource Leak Checker, which is used to get called methods types and
+   * The type factory for the Called Methods Checker, which is used to get called methods types and
    * to access the Must Call Checker.
    */
-  private final ResourceLeakAnnotatedTypeFactory typeFactory;
+  private final RLCCalledMethodsAnnotatedTypeFactory cmAtf;
 
   /**
    * A cache for the result of calling {@code ResourceLeakAnnotatedTypeFactory.getStoreAfter()} on a
@@ -177,9 +182,6 @@ class MustCallConsistencyAnalyzer {
   /** The Resource Leak Checker, used to issue errors. */
   private final ResourceLeakChecker checker;
 
-  /** The analysis from the Resource Leak Checker, used to get input stores based on CFG blocks. */
-  private final ResourceLeakAnalysis analysis;
-
   /** True if -AnoLightweightOwnership was passed on the command line. */
   private final boolean noLightweightOwnership;
 
@@ -187,7 +189,7 @@ class MustCallConsistencyAnalyzer {
   private final boolean countMustCall;
 
   /** A description for how a method might exit. */
-  /*package-private*/ enum MethodExitKind {
+  public enum MethodExitKind {
 
     /** The method exits normally by returning. */
     NORMAL_RETURN,
@@ -552,14 +554,11 @@ class MustCallConsistencyAnalyzer {
    * #analyze(ControlFlowGraph)}.
    *
    * @param typeFactory the type factory
-   * @param analysis the analysis from the type factory. Usually this would have protected access,
-   *     so this constructor cannot get it directly.
    */
-  /*package-private*/ MustCallConsistencyAnalyzer(
-      ResourceLeakAnnotatedTypeFactory typeFactory, ResourceLeakAnalysis analysis) {
+  /*package-private*/ MustCallConsistencyAnalyzer(ResourceLeakAnnotatedTypeFactory typeFactory) {
     this.typeFactory = typeFactory;
+    this.cmAtf = typeFactory.getTypeFactoryOfSubchecker(RLCCalledMethodsChecker.class);
     this.checker = (ResourceLeakChecker) typeFactory.getChecker();
-    this.analysis = analysis;
     this.permitStaticOwning = checker.hasOption("permitStaticOwning");
     this.permitInitializationLeak = checker.hasOption("permitInitializationLeak");
     this.noLightweightOwnership = checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP);
@@ -774,7 +773,7 @@ class MustCallConsistencyAnalyzer {
     MustCallAnnotatedTypeFactory mcAtf =
         typeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
     List<String> callerCmcfValues =
-        ResourceLeakVisitor.getCreatesMustCallForValues(callerMethodElt, mcAtf, typeFactory);
+        RLCCalledMethodsVisitor.getCreatesMustCallForValues(callerMethodElt, mcAtf, cmAtf);
     if (callerCmcfValues.isEmpty()) {
       return false;
     }
@@ -1687,7 +1686,7 @@ class MustCallConsistencyAnalyzer {
         typeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
 
     List<String> cmcfValues =
-        ResourceLeakVisitor.getCreatesMustCallForValues(enclosingMethodElt, mcAtf, typeFactory);
+        RLCCalledMethodsVisitor.getCreatesMustCallForValues(enclosingMethodElt, mcAtf, cmAtf);
 
     if (cmcfValues.isEmpty()) {
       checker.reportError(
@@ -1898,7 +1897,7 @@ class MustCallConsistencyAnalyzer {
       Map<TypeMirror, Set<Block>> exceptionalSuccessors = excBlock.getExceptionalSuccessors();
       for (Map.Entry<TypeMirror, Set<Block>> entry : exceptionalSuccessors.entrySet()) {
         TypeMirror exceptionType = entry.getKey();
-        if (!analysis.isIgnoredExceptionType(exceptionType)) {
+        if (!cmAtf.isIgnoredExceptionType(exceptionType)) {
           for (Block exSucc : entry.getValue()) {
             result.add(IPair.of(exSucc, exceptionType));
           }
@@ -2030,7 +2029,7 @@ class MustCallConsistencyAnalyzer {
                 + " with exception type "
                 + exceptionType;
     // Computed outside the Obligation loop for efficiency.
-    AccumulationStore regularStoreOfSuccessor = analysis.getInput(successor).getRegularStore();
+    AccumulationStore regularStoreOfSuccessor = cmAtf.getInput(successor).getRegularStore();
     for (Obligation obligation : obligations) {
       // This boolean is true if there is no evidence that the Obligation does not go out
       // of scope - that is, if there is definitely a resource alias that is in scope in
@@ -2208,14 +2207,14 @@ class MustCallConsistencyAnalyzer {
       case CONDITIONAL_BLOCK:
         ConditionalBlock condBlock = (ConditionalBlock) currentBlock;
         if (condBlock.getThenSuccessor().equals(successor)) {
-          return analysis.getInput(currentBlock).getThenStore();
+          return cmAtf.getInput(currentBlock).getThenStore();
         } else if (condBlock.getElseSuccessor().equals(successor)) {
-          return analysis.getInput(currentBlock).getElseStore();
+          return cmAtf.getInput(currentBlock).getElseStore();
         } else {
           throw new BugInCF("successor not found");
         }
       case SPECIAL_BLOCK:
-        return analysis.getInput(successor).getRegularStore();
+        return cmAtf.getInput(successor).getRegularStore();
       default:
         throw new BugInCF("unexpected block type " + currentBlock.getType());
     }
@@ -2517,7 +2516,7 @@ class MustCallConsistencyAnalyzer {
    * @param mustCallVal the list of must-call strings
    * @return a formatted string
    */
-  /*package-private*/ static String formatMissingMustCallMethods(List<String> mustCallVal) {
+  public static String formatMissingMustCallMethods(List<String> mustCallVal) {
     int size = mustCallVal.size();
     if (size == 0) {
       throw new TypeSystemError("empty mustCallVal " + mustCallVal);

@@ -1,15 +1,14 @@
 package org.checkerframework.checker.resourceleak;
 
 import javax.lang.model.type.TypeMirror;
-import org.checkerframework.checker.calledmethods.CalledMethodsAnalysis;
-import org.checkerframework.checker.calledmethods.CalledMethodsAnnotatedTypeFactory;
+import org.checkerframework.common.accumulation.AccumulationAnalysis;
 
 /**
  * This variant of CFAnalysis extends the set of ignored exception types.
  *
  * @see ResourceLeakChecker#getIgnoredExceptions()
  */
-public class ResourceLeakAnalysis extends CalledMethodsAnalysis {
+public class ResourceLeakAnalysis extends AccumulationAnalysis {
 
   /**
    * The set of exceptions to ignore, cached from {@link
@@ -18,13 +17,13 @@ public class ResourceLeakAnalysis extends CalledMethodsAnalysis {
   private final SetOfTypes ignoredExceptions;
 
   /**
-   * Creates a new {@code CalledMethodsAnalysis}.
+   * Creates a new {@code ResourceLeakAnalysis}.
    *
    * @param checker the checker
    * @param factory the factory
    */
   protected ResourceLeakAnalysis(
-      ResourceLeakChecker checker, CalledMethodsAnnotatedTypeFactory factory) {
+      ResourceLeakChecker checker, ResourceLeakAnnotatedTypeFactory factory) {
     super(checker, factory);
     this.ignoredExceptions = checker.getIgnoredExceptions();
   }
