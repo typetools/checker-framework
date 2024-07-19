@@ -6,6 +6,7 @@ import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.sqlquotes.qual.SqlEvenQuotes;
 import org.checkerframework.checker.sqlquotes.qual.SqlOddQuotes;
 import org.checkerframework.checker.sqlquotes.qual.SqlQuotesUnknown;
+import org.checkerframework.checker.sqlquotes.qual.SqlQuotesBottom;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -28,6 +29,9 @@ public class SqlQuotesAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /** The {@code @}{@link SqlQuotesUnknown} annotation mirror. */
   private final AnnotationMirror SQL_QUOTES_UNKNOWN;
 
+  /** The {@code @}{@link SqlQuotesBottom} annotation mirror. */
+  private final AnnotationMirror SQL_QUOTES_BOTTOM;
+
   /** A singleton set containing the {@code @}{@link SqlEvenQuotes} annotation mirror. */
   private final AnnotationMirrorSet setOfSqlEvenQuotes;
 
@@ -42,6 +46,8 @@ public class SqlQuotesAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     this.SQL_ODD_QUOTES = AnnotationBuilder.fromClass(getElementUtils(), SqlOddQuotes.class);
     this.SQL_QUOTES_UNKNOWN =
         AnnotationBuilder.fromClass(getElementUtils(), SqlQuotesUnknown.class);
+    this.SQL_QUOTES_BOTTOM =
+        AnnotationBuilder.fromClass(getElementUtils(), SqlQuotesBottom.class);
     this.setOfSqlEvenQuotes = AnnotationMirrorSet.singleton(SQL_EVEN_QUOTES);
     postInit();
   }
@@ -73,6 +79,14 @@ public class SqlQuotesAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (leftType.hasPrimaryAnnotation(SQL_QUOTES_UNKNOWN)
             || rightType.hasPrimaryAnnotation(SQL_QUOTES_UNKNOWN)) {
           type.replaceAnnotation(SQL_QUOTES_UNKNOWN);
+          return null;
+        }
+
+        if (leftType.hasPrimaryAnnotation(SQL_QUOTES_BOTTOM)) {
+          type.replaceAnnotation(rightType.getPrimaryAnnotation());
+          return null;
+        } else if (rightType.hasPrimaryAnnotation(SQL_QUOTES_BOTTOM)) {
+          type.replaceAnnotation(leftType.getPrimaryAnnotation());
           return null;
         }
 
