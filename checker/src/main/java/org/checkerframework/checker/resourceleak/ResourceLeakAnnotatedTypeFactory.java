@@ -135,7 +135,7 @@ public class ResourceLeakAnnotatedTypeFactory extends AccumulationAnnotatedTypeF
     }
 
     super.postAnalyze(cfg);
-    tempVarToTree.clear();
+    // tempVarToTree.clear();
   }
 
   @Override
