@@ -20,7 +20,6 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
@@ -311,8 +310,8 @@ public abstract class CFAbstractTransfer<
         // store.localVariableValues.clear();
         store.classValues.clear();
         store.arrayValues.clear();
-        // If the lambda is leaked or the lambda is impure, remove any information about modifiable
-        // method values from the initial store.
+        // If the lambda is leaked or the lambda is impure, remove any information about
+        // modifiable method values from the initial store.
         TreePath lambdaBody = atypeFactory.getPath(lambda.getLambdaTree().getBody());
         if (doesLambdaLeak(lambda, atypeFactory)
             || !isExpressionOrStatementPure(lambdaBody, atypeFactory)) {
@@ -444,9 +443,9 @@ public abstract class CFAbstractTransfer<
       TreePath expressionOrStatement, AnnotatedTypeFactory aTypeFactory) {
     // TODO: almost certainly should not have to do this here. It is not enough to check for the
     // existence of the assume SideEffectFree/Deterministic flags at this point. The checker is
-    // queried for these options, but the parsing of the assumePure flag into these flags are done
-    // at the visitor-level. As a result, it's possible for only the assumePure flag to exist here,
-    // which entails assumeSideEffectFree and assumeDeterministic
+    // queried for these options, but the parsing of the assumePure flag into these flags are
+    // done at the visitor-level. As a result, it's possible for only the assumePure flag to
+    // exist here, which entails assumeSideEffectFree and assumeDeterministic
     boolean isAssumeSideEffectFreeEnabled =
         aTypeFactory.getChecker().hasOption("assumeSideEffectFree")
             || aTypeFactory.getChecker().hasOption("assumePure");
@@ -471,7 +470,8 @@ public abstract class CFAbstractTransfer<
   /**
    * Add field values to the initial store before {@code methodTree}.
    *
-   * <p>The initializer value is inserted into {@code store} if the field is private and final.
+   * <p>The initializer value is inserted into {@code store} if the field is final and the field
+   * type is immutable, as defined by {@link AnnotatedTypeFactory#isImmutable(TypeMirror)}.
    *
    * <p>The declared value is inserted into {@code store} if:
    *
@@ -492,9 +492,9 @@ public abstract class CFAbstractTransfer<
     TypeElement classEle = TreeUtils.elementFromDeclaration(classTree);
     for (FieldInitialValue<V> fieldInitialValue : analysis.getFieldInitialValues()) {
       VariableElement varEle = fieldInitialValue.fieldDecl.getField();
-      // Insert the value from the initializer of private final fields.
+      // TODO: should field visibility matter? An access from outside the class might observe
+      // the declared type instead of a refined type. Issue a warning to alert users?
       if (fieldInitialValue.initializer != null
-          && varEle.getModifiers().contains(Modifier.PRIVATE)
           && ElementUtils.isFinal(varEle)
           && analysis.atypeFactory.isImmutable(ElementUtils.getType(varEle))) {
         store.insertValue(fieldInitialValue.fieldDecl, fieldInitialValue.initializer);

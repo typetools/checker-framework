@@ -30,8 +30,8 @@ public class FuzzyEngine {
         message.append(String.format("- Engine has a null input variable at index <%d>\n", i));
       } else if (inputVariable.getTerms().isEmpty()) {
         // ignore because sometimes inputs can be empty: takagi-sugeno/matlab/slcpp1.fis
-        // message.append(String.format("- Input variable <%s> has no terms\n", inputVariable
-        // .getName()));
+        // message.append(String.format("- Input variable <%s> has no terms\n",
+        // inputVariable.getName()));
       }
     }
 
