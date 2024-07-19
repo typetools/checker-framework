@@ -52,6 +52,7 @@ import org.checkerframework.common.accumulation.AccumulationStore;
 import org.checkerframework.common.accumulation.AccumulationValue;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
+import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.Kind;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.Block.BlockType;
@@ -595,11 +596,13 @@ public class MustCallConsistencyAnalyzer {
     worklist.add(entry);
     visited.add(entry);
 
+    System.out.println("ANALYZING: " + ((CFGMethod) cfg.getUnderlyingAST()).getMethodName());
     while (!worklist.isEmpty()) {
       BlockWithObligations current = worklist.remove();
       propagateObligationsToSuccessorBlocks(
           cfg, current.obligations, current.block, visited, worklist);
     }
+    System.out.println("FINISHED ANALYZING: " + ((CFGMethod) cfg.getUnderlyingAST()).getMethodName());
   }
 
   /**
@@ -1962,6 +1965,7 @@ public class MustCallConsistencyAnalyzer {
       // successor blocks. The set is initialized to the current dataflow facts and updated by
       // the methods invoked in the for loop below.
       Set<Obligation> obligations = new LinkedHashSet<>(incomingObligations);
+      System.out.println("obligations into: " + currentBlock + " are: " + obligations);
 
       // PERFORMANCE NOTE: The computed changes to `obligations` are mostly the same for each
       // successor block, but can vary slightly depending on the exception type.  There might
