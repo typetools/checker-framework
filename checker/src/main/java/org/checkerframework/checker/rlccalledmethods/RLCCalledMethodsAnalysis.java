@@ -1,15 +1,17 @@
 package org.checkerframework.checker.rlccalledmethods;
 
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.calledmethods.CalledMethodsAnalysis;
+import org.checkerframework.checker.resourceleak.SetOfTypes;
 
 /** The RLCCalledMethodsAnalysis, extends the set of ignored exception types. */
 public class RLCCalledMethodsAnalysis extends CalledMethodsAnalysis {
 
-  // /**
-  //  * The set of exceptions to ignore, cached from {@link
-  //  * ResourceLeakChecker#getIgnoredExceptions()}.
-  //  */
-  // private final SetOfTypes ignoredExceptions;
+  /**
+   * The set of exceptions to ignore, cached from {@link
+   * ResourceLeakChecker#getIgnoredExceptions()}.
+   */
+  private final SetOfTypes ignoredExceptions;
 
   /**
    * Creates a new {@code RLCCalledMethodsAnalysis}.
@@ -20,11 +22,11 @@ public class RLCCalledMethodsAnalysis extends CalledMethodsAnalysis {
   protected RLCCalledMethodsAnalysis(
       RLCCalledMethodsChecker checker, RLCCalledMethodsAnnotatedTypeFactory factory) {
     super(checker, factory);
-    // this.ignoredExceptions = checker.getIgnoredExceptions();
+    this.ignoredExceptions = factory.getResourceLeakChecker().getIgnoredExceptions();
   }
 
-  // @Override
-  // public boolean isIgnoredExceptionType(TypeMirror exceptionType) {
-  //   return ignoredExceptions.contains(getTypes(), exceptionType);
-  // }
+  @Override
+  public boolean isIgnoredExceptionType(TypeMirror exceptionType) {
+    return ignoredExceptions.contains(getTypes(), exceptionType);
+  }
 }
