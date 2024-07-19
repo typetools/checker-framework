@@ -9,7 +9,7 @@ import org.junit.runners.Parameterized.Parameters;
 public class SqlQuotesTest extends CheckerFrameworkPerDirectoryTest {
 
   /**
-   * Create a TaintingTest.
+   * Create a SqlQuotesTest.
    *
    * @param testFiles the files containing test code, which will be type-checked
    */

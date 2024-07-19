@@ -75,17 +75,11 @@ public class SqlQuotesAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
           return null;
         }
 
-        int leftParity = 0;
-        if (leftType.hasPrimaryAnnotation(SQL_ODD_QUOTES)) {
-          leftParity = 1;
-        }
+        int leftParity = leftType.hasPrimaryAnnotation(SQL_ODD_QUOTES) ? 1 : 0;
+        int rightParity = rightType.hasPrimaryAnnotation(SQL_ODD_QUOTES) ? 1 : 0;
 
-        int rightParity = 0;
-        if (rightType.hasPrimaryAnnotation(SQL_ODD_QUOTES)) {
-          rightParity = 1;
-        }
-
-        if ((leftParity + rightParity) % 2 == 0) {
+        int parity = leftParity + rightParity;
+        if (parity == 0 || parity == 2) {
           type.replaceAnnotation(SQL_EVEN_QUOTES);
         } else {
           type.replaceAnnotation(SQL_ODD_QUOTES);
