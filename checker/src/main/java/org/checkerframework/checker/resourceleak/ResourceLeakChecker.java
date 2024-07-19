@@ -16,6 +16,8 @@ import org.checkerframework.checker.mustcall.MustCallChecker;
 import org.checkerframework.checker.mustcall.MustCallNoCreatesMustCallForChecker;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsChecker;
+import org.checkerframework.common.accumulation.AccumulationChecker;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.qual.StubFiles;
@@ -37,7 +39,7 @@ import org.checkerframework.framework.source.SupportedOptions;
   ResourceLeakChecker.ENABLE_WPI_FOR_RLC,
 })
 @StubFiles("IOUtils.astub")
-public class ResourceLeakChecker extends CalledMethodsChecker {
+public class ResourceLeakChecker extends AccumulationChecker {
 
   /** Creates a ResourceLeakChecker. */
   public ResourceLeakChecker() {}
@@ -144,6 +146,7 @@ public class ResourceLeakChecker extends CalledMethodsChecker {
     } else {
       checkers.add(MustCallChecker.class);
     }
+    checkers.add(RLCCalledMethodsChecker.class);
 
     return checkers;
   }
