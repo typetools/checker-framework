@@ -1,9 +1,9 @@
-Version 3.45.1 (August 1, 2024)
+Version 3.46.0 (August 1, 2024)
 -----------------------------
 
 **User-visible changes:**
 
-Deprecated `@EnsuresCalledMethodsVarArgs`; use `@EnsuresCalledMethodsVarargs` instead.
+Renamed `@EnsuresCalledMethodsVarArgs`to `@EnsuresCalledMethodsVarargs`.
 
 **Implementation details:**
 
