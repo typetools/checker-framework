@@ -918,7 +918,7 @@ public abstract class JavaExpression {
   }
 
   /**
-   * Find the declaration of the receiver of a method call in a method tree.
+   * Find the declaration of the receiver of a method call in a given method tree.
    *
    * <p>The receiver should appear in one of two places, either as a formal parameter to the method,
    * or as a local variable.
@@ -950,7 +950,7 @@ public abstract class JavaExpression {
   }
 
   /**
-   * Find the declaration of the receiver of a method call in a method tree.
+   * Find the declaration of the receiver of a method call in a given class tree.
    *
    * <p>The receiver should appear as a field in the class, if found.
    *
