@@ -75,6 +75,11 @@ public class SqlQuotesAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * </ul>
    */
   private class SqlQuotesTreeAnnotator extends TreeAnnotator {
+    /**
+     * Creates a {@link SqlQuotesTreeAnnotator}
+     *
+     * @param atypeFactory the annotated type factory
+     */
     public SqlQuotesTreeAnnotator(AnnotatedTypeFactory atypeFactory) {
       super(atypeFactory);
     }
