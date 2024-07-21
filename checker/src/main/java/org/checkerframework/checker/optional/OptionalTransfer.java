@@ -225,31 +225,30 @@ public class OptionalTransfer extends CFTransfer {
   }
 
   /**
-   * Returns the declaration of the initial receiver of the given method invocation node.
+   * Returns the declaration of the leftmost receiver of the given method invocation node.
    *
-   * <p>An attempt is first made to find the declaration of the receiver in the method that
-   * immediately encloses the given method invocation node. If this is unsuccessful, an attempt is
-   * made to look for the receiver in the fields of the class that immediately encloses the given
-   * method invocation node.
+   * <p>Finds the declaration of {@param leftmostReceiver} in the method that immediately encloses
+   * {@param methodInvok}. If unsuccessful, look up the declaration in the fields of the class that
+   * immediately encloses {@param methodInvok}.
    *
    * @param methodInvok a method invocation node
-   * @param initialReceiver the initial receiver argument in the method invocation node
+   * @param leftmostReceiver the initial receiver argument in the method invocation node
    * @return the declaration of the receiver if found, else null
    */
   private @Nullable VariableTree getReceiverDeclaration(
-      MethodInvocationNode methodInvok, @Nullable JavaExpression initialReceiver) {
-    if (initialReceiver == null) {
+      MethodInvocationNode methodInvok, @Nullable JavaExpression leftmostReceiver) {
+    if (leftmostReceiver == null) {
       return null;
     }
     // Look in the method, first.
     MethodTree methodTree = TreePathUtil.enclosingMethod(methodInvok.getTreePath());
     VariableTree declarationInMethod =
-        JavaExpression.getReceiverDeclarationInMethod(methodTree, initialReceiver);
+        JavaExpression.getReceiverDeclarationInMethod(methodTree, leftmostReceiver);
     if (declarationInMethod != null) {
       return declarationInMethod;
     }
     // If the declaration can't be found in the method, look in the class.
     ClassTree classTree = TreePathUtil.enclosingClass(methodInvok.getTreePath());
-    return JavaExpression.getReceiverDeclarationInClass(classTree, initialReceiver);
+    return JavaExpression.getReceiverDeclarationInClass(classTree, leftmostReceiver);
   }
 }
