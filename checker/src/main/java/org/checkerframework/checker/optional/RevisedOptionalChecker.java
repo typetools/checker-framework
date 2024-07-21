@@ -7,6 +7,7 @@ import org.checkerframework.framework.source.AggregateChecker;
 import org.checkerframework.framework.source.SourceChecker;
 
 /** A version of the Optional Checker that runs the NonEmptyChecker as a subchecker. */
+// TODO: This is effectively the new Optional Checker and the name should reflect this fact.
 public class RevisedOptionalChecker extends AggregateChecker {
 
   /** Creates a RevisedOptionalChecker. */
