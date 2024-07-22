@@ -63,7 +63,23 @@ public class SqlQuotesAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         new SqlQuotesAnnotatedTypeFactory.SqlQuotesTreeAnnotator(this));
   }
 
+  /**
+   * A TreeAnnotator to enforce SqlQuotes String concatenation rules:
+   *
+   * <ul>
+   *   <li>(SqlOddQuotes + SqlEvenQuotes) returns SqlOddQuotes (commutatively);
+   *   <li>(SqlOddQuotes + SqlOddQuotes) returns SqlEvenQuotes;
+   *   <li>(SqlEvenQuotes + SqlEvenQuotes) returns SqlEvenQuotes;
+   *   <li>SqlQuotesUnknown dominates other types in concatenation;
+   *   <li>Non-bottom types dominate SqlQuotesBottom in concatenation.
+   * </ul>
+   */
   private class SqlQuotesTreeAnnotator extends TreeAnnotator {
+    /**
+     * Creates a {@link SqlQuotesTreeAnnotator}
+     *
+     * @param atypeFactory the annotated type factory
+     */
     public SqlQuotesTreeAnnotator(AnnotatedTypeFactory atypeFactory) {
       super(atypeFactory);
     }
@@ -99,7 +115,8 @@ public class SqlQuotesAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
           rightParity = 1;
         }
 
-        if ((leftParity + rightParity) % 2 == 0) {
+        int parity = leftParity + rightParity;
+        if (parity == 0 || parity == 2) {
           type.replaceAnnotation(SQL_EVEN_QUOTES);
         } else {
           type.replaceAnnotation(SQL_ODD_QUOTES);
