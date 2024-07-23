@@ -26,6 +26,11 @@ public class NonEmptyChecker extends BaseTypeChecker {
   /** Creates a NonEmptyChecker. */
   public NonEmptyChecker() {
     super();
+  }
+
+  @Override
+  public void initChecker() {
+    super.initChecker();
     runAsOptionalChecker = this.hasOptionNoSubcheckers("runAsOptionalChecker");
   }
 
