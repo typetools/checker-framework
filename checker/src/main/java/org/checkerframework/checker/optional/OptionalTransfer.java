@@ -227,9 +227,9 @@ public class OptionalTransfer extends CFTransfer {
   /**
    * Returns the declaration of the leftmost receiver of the given method invocation node.
    *
-   * <p>Finds the declaration of {@param leftmostReceiver} in the method that immediately encloses
-   * {@param methodInvok}. If unsuccessful, look up the declaration in the fields of the class that
-   * immediately encloses {@param methodInvok}.
+   * <p>Finds the declaration of {@code leftmostReceiver} in the method that immediately encloses
+   * {@code methodInvok}. If unsuccessful, look up the declaration in the fields of the class that
+   * immediately encloses {@code methodInvok}.
    *
    * @param methodInvok a method invocation node
    * @param leftmostReceiver the initial receiver argument in the method invocation node
