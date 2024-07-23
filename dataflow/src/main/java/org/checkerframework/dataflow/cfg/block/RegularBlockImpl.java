@@ -19,6 +19,10 @@ public class RegularBlockImpl extends SingleSuccessorBlockImpl implements Regula
   public RegularBlockImpl() {
     super(BlockType.REGULAR_BLOCK);
     contents = new ArrayList<>();
+    long uid = getUid();
+    if (uid == 164) {
+      new Error("created block " + getUid()).printStackTrace();
+    }
   }
 
   /**
