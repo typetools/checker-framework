@@ -8,8 +8,6 @@ import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.calledmethods.CalledMethodsTransfer;
 import org.checkerframework.checker.mustcall.CreatesMustCallForToJavaExpression;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
-import org.checkerframework.checker.mustcall.MustCallChecker;
-import org.checkerframework.checker.resourceleak.ResourceLeakAnnotatedTypeFactory;
 import org.checkerframework.common.accumulation.AccumulationStore;
 import org.checkerframework.common.accumulation.AccumulationValue;
 import org.checkerframework.dataflow.analysis.TransferInput;
@@ -42,12 +40,11 @@ public class RLCCalledMethodsTransfer extends CalledMethodsTransfer {
       TernaryExpressionNode node, TransferInput<AccumulationValue, AccumulationStore> input) {
     TransferResult<AccumulationValue, AccumulationStore> result =
         super.visitTernaryExpression(node, input);
-    ResourceLeakAnnotatedTypeFactory rlTypeFactory =
-        ((RLCCalledMethodsAnnotatedTypeFactory) atypeFactory).getResourceLeakAnnotatedTypeFactory();
     if (!TypesUtils.isPrimitiveOrBoxed(node.getType())) {
       // Add the synthetic variable created during CFG construction to the temporary
       // variable map (rather than creating a redundant temp var)
-      rlTypeFactory.addTempVar(node.getTernaryExpressionVar(), node.getTree());
+      ((RLCCalledMethodsAnnotatedTypeFactory) atypeFactory)
+          .addTempVar(node.getTernaryExpressionVar(), node.getTree());
     }
     return result;
   }
@@ -57,12 +54,11 @@ public class RLCCalledMethodsTransfer extends CalledMethodsTransfer {
       SwitchExpressionNode node, TransferInput<AccumulationValue, AccumulationStore> input) {
     TransferResult<AccumulationValue, AccumulationStore> result =
         super.visitSwitchExpressionNode(node, input);
-    ResourceLeakAnnotatedTypeFactory rlTypeFactory =
-        ((RLCCalledMethodsAnnotatedTypeFactory) atypeFactory).getResourceLeakAnnotatedTypeFactory();
     if (!TypesUtils.isPrimitiveOrBoxed(node.getType())) {
       // Add the synthetic variable created during CFG construction to the temporary
       // variable map (rather than creating a redundant temp var)
-      rlTypeFactory.addTempVar(node.getSwitchExpressionVar(), node.getTree());
+      ((RLCCalledMethodsAnnotatedTypeFactory) atypeFactory)
+          .addTempVar(node.getSwitchExpressionVar(), node.getTree());
     }
     return result;
   }
@@ -79,10 +75,8 @@ public class RLCCalledMethodsTransfer extends CalledMethodsTransfer {
 
     // If there is a temporary variable for the receiver, update its type.
     Node receiver = node.getTarget().getReceiver();
-    ResourceLeakAnnotatedTypeFactory rlTypeFactory =
-        ((RLCCalledMethodsAnnotatedTypeFactory) atypeFactory).getResourceLeakAnnotatedTypeFactory();
     MustCallAnnotatedTypeFactory mcAtf =
-        rlTypeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
+        ((RLCCalledMethodsAnnotatedTypeFactory) atypeFactory).getMustCallAnnotatedTypeFactory();
     Node accumulationTarget = mcAtf.getTempVar(receiver);
     if (accumulationTarget != null) {
       String methodName = node.getTarget().getMethod().getSimpleName().toString();
@@ -104,16 +98,14 @@ public class RLCCalledMethodsTransfer extends CalledMethodsTransfer {
    */
   private void handleCreatesMustCallFor(
       MethodInvocationNode n, TransferResult<AccumulationValue, AccumulationStore> result) {
-    ResourceLeakAnnotatedTypeFactory rlTypeFactory =
-        ((RLCCalledMethodsAnnotatedTypeFactory) atypeFactory).getResourceLeakAnnotatedTypeFactory();
-    if (!rlTypeFactory.canCreateObligations()) {
+    if (!((RLCCalledMethodsAnnotatedTypeFactory) atypeFactory).canCreateObligations()) {
       return;
     }
 
     List<JavaExpression> targetExprs =
         CreatesMustCallForToJavaExpression.getCreatesMustCallForExpressionsAtInvocation(
-            n, atypeFactory, rlTypeFactory);
-    AnnotationMirror defaultType = rlTypeFactory.top;
+            n, atypeFactory, (RLCCalledMethodsAnnotatedTypeFactory) atypeFactory);
+    AnnotationMirror defaultType = atypeFactory.top;
     for (JavaExpression targetExpr : targetExprs) {
       AccumulationValue defaultTypeValue =
           analysis.createSingleAnnotationValue(defaultType, targetExpr.getType());
@@ -154,22 +146,20 @@ public class RLCCalledMethodsTransfer extends CalledMethodsTransfer {
         return;
       }
     }
-    ResourceLeakAnnotatedTypeFactory rlTypeFactory =
-        ((RLCCalledMethodsAnnotatedTypeFactory) atypeFactory).getResourceLeakAnnotatedTypeFactory();
     // Must-call obligations on primitives are not supported.
     if (!TypesUtils.isPrimitiveOrBoxed(node.getType())) {
       MustCallAnnotatedTypeFactory mcAtf =
-          rlTypeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
+          ((RLCCalledMethodsAnnotatedTypeFactory) atypeFactory).getMustCallAnnotatedTypeFactory();
       LocalVariableNode temp = mcAtf.getTempVar(node);
       if (temp != null) {
-        rlTypeFactory.addTempVar(temp, node.getTree());
+        ((RLCCalledMethodsAnnotatedTypeFactory) atypeFactory).addTempVar(temp, node.getTree());
         JavaExpression localExp = JavaExpression.fromNode(temp);
         AnnotationMirror anm =
             atypeFactory
                 .getAnnotatedType(node.getTree())
                 .getPrimaryAnnotationInHierarchy(atypeFactory.top);
         if (anm == null) {
-          anm = rlTypeFactory.top;
+          anm = atypeFactory.top;
         }
         if (result.containsTwoStores()) {
           result.getThenStore().insertValue(localExp, anm);

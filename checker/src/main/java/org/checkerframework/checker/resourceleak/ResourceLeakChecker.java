@@ -17,10 +17,9 @@ import org.checkerframework.checker.mustcall.MustCallNoCreatesMustCallForChecker
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsChecker;
-import org.checkerframework.common.accumulation.AccumulationChecker;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.qual.StubFiles;
+import org.checkerframework.framework.source.CompositeChecker;
 import org.checkerframework.framework.source.SupportedOptions;
 
 /**
@@ -39,10 +38,12 @@ import org.checkerframework.framework.source.SupportedOptions;
   ResourceLeakChecker.ENABLE_WPI_FOR_RLC,
 })
 @StubFiles("IOUtils.astub")
-public class ResourceLeakChecker extends AccumulationChecker {
+public class ResourceLeakChecker extends CompositeChecker {
 
   /** Creates a ResourceLeakChecker. */
-  public ResourceLeakChecker() {}
+  public ResourceLeakChecker() {
+    super();
+  }
 
   /**
    * Command-line option for counting how many must-call obligations were checked by the Resource
@@ -129,13 +130,17 @@ public class ResourceLeakChecker extends AccumulationChecker {
    */
   private int numMustCallFailed = 0;
 
-  /**
-   * The cached set of ignored exceptions parsed from {@link #IGNORED_EXCEPTIONS}. Caching this
-   * field prevents the checker from issuing duplicate warnings about missing exception types.
-   *
-   * @see #getIgnoredExceptions()
-   */
-  private @MonotonicNonNull SetOfTypes ignoredExceptions = null;
+  // @Override
+  // protected Collection<Class<? extends BaseTypeChecker>> getSupportedCheckers() {
+  //   Set<Class<? extends BaseTypeChecker>> checkers = new HashSet<>();
+  //   if (this.processingEnv.getOptions().containsKey(MustCallChecker.NO_CREATES_MUSTCALLFOR)) {
+  //     checkers.add(MustCallNoCreatesMustCallForChecker.class);
+  //   } else {
+  //     checkers.add(MustCallChecker.class);
+  //   }
+  //   checkers.add(RLCCalledMethodsChecker.class);
+  //   return checkers;
+  // }
 
   @Override
   protected Set<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
@@ -151,10 +156,32 @@ public class ResourceLeakChecker extends AccumulationChecker {
     return checkers;
   }
 
-  @Override
-  protected BaseTypeVisitor<?> createSourceVisitor() {
-    return new ResourceLeakVisitor(this);
-  }
+  /**
+   * The cached set of ignored exceptions parsed from {@link #IGNORED_EXCEPTIONS}. Caching this
+   * field prevents the checker from issuing duplicate warnings about missing exception types.
+   *
+   * @see #getIgnoredExceptions()
+   */
+  private @MonotonicNonNull SetOfTypes ignoredExceptions = null;
+
+  // @Override
+  // protected Set<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
+  //   Set<Class<? extends BaseTypeChecker>> checkers = super.getImmediateSubcheckerClasses();
+
+  //   if (this.processingEnv.getOptions().containsKey(MustCallChecker.NO_CREATES_MUSTCALLFOR)) {
+  //     checkers.add(MustCallNoCreatesMustCallForChecker.class);
+  //   } else {
+  //     checkers.add(MustCallChecker.class);
+  //   }
+  //   checkers.add(RLCCalledMethodsChecker.class);
+
+  //   return checkers;
+  // }
+
+  // @Override
+  // protected SourceVisitor<?, ?> createSourceVisitor() {
+  //   return new ResourceLeakVisitor(this);
+  // }
 
   @Override
   public void reportError(
