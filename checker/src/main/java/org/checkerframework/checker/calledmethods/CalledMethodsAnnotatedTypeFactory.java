@@ -305,7 +305,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
    * At a fluent method call (which returns {@code this}), add the method to the type of the return
    * value.
    */
-  protected class CalledMethodsTreeAnnotator extends AccumulationTreeAnnotator {
+  private class CalledMethodsTreeAnnotator extends AccumulationTreeAnnotator {
     /**
      * Creates an instance of this tree annotator for the given type factory.
      *
@@ -347,7 +347,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
    * Adds @CalledMethod annotations for build() methods of AutoValue and Lombok Builders to ensure
    * required properties have been set.
    */
-  protected class CalledMethodsTypeAnnotator extends TypeAnnotator {
+  private class CalledMethodsTypeAnnotator extends TypeAnnotator {
 
     /**
      * Constructor matching super.

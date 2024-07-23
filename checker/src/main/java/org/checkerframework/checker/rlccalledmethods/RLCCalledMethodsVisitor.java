@@ -19,14 +19,13 @@ import org.checkerframework.checker.calledmethods.EnsuresCalledMethodOnException
 import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;
 import org.checkerframework.checker.mustcall.CreatesMustCallForToJavaExpression;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
-import org.checkerframework.checker.mustcall.MustCallChecker;
 import org.checkerframework.checker.mustcall.qual.CreatesMustCallFor;
 import org.checkerframework.checker.mustcall.qual.NotOwning;
 import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.mustcall.qual.PolyMustCall;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer;
-import org.checkerframework.checker.resourceleak.ResourceLeakAnnotatedTypeFactory;
+import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
@@ -46,6 +45,13 @@ import org.checkerframework.javacutil.TypesUtils;
  * that {@link CreatesMustCallFor} overrides are valid.
  */
 public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
+
+  /**
+   * True if -AenableWpiForRlc was passed on the command line. See {@link
+   * ResourceLeakChecker#ENABLE_WPI_FOR_RLC}.
+   */
+  private final boolean enableWpiForRlc;
+
   /**
    * Creates a new RLCCalledMethodsVisitor.
    *
@@ -53,15 +59,16 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
    */
   public RLCCalledMethodsVisitor(BaseTypeChecker checker) {
     super(checker);
+    assert (checker.getParentChecker() instanceof ResourceLeakChecker);
+    this.enableWpiForRlc =
+        checker.getParentChecker().hasOption(ResourceLeakChecker.ENABLE_WPI_FOR_RLC);
   }
 
   @Override
   public void processMethodTree(MethodTree tree) {
     ExecutableElement elt = TreeUtils.elementFromDeclaration(tree);
-    ResourceLeakAnnotatedTypeFactory rlTypeFactory =
-        ((RLCCalledMethodsAnnotatedTypeFactory) atypeFactory).getResourceLeakAnnotatedTypeFactory();
     MustCallAnnotatedTypeFactory mcAtf =
-        rlTypeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
+        ((RLCCalledMethodsAnnotatedTypeFactory) atypeFactory).getMustCallAnnotatedTypeFactory();
     List<String> cmcfValues =
         getCreatesMustCallForValues(
             elt, mcAtf, (RLCCalledMethodsAnnotatedTypeFactory) atypeFactory);
@@ -91,14 +98,14 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
     List<JavaExpression> createsMustCallExprs =
         CreatesMustCallForToJavaExpression.getCreatesMustCallForExpressionsAtMethodDeclaration(
             tree, mcAtf, mcAtf);
-    ResourceLeakAnnotatedTypeFactory rlTypeFactory =
-        ((RLCCalledMethodsAnnotatedTypeFactory) atypeFactory).getResourceLeakAnnotatedTypeFactory();
     for (JavaExpression targetExpr : createsMustCallExprs) {
       AnnotationMirror mustCallAnno =
           mcAtf
               .getAnnotatedType(TypesUtils.getTypeElement(targetExpr.getType()))
               .getPrimaryAnnotationInHierarchy(mcAtf.TOP);
-      if (rlTypeFactory.getMustCallValues(mustCallAnno).isEmpty()) {
+      if (((RLCCalledMethodsAnnotatedTypeFactory) atypeFactory)
+          .getMustCallValues(mustCallAnno)
+          .isEmpty()) {
         checker.reportError(
             tree,
             "creates.mustcall.for.invalid.target",
@@ -226,11 +233,11 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
    * @param tree the constructor
    */
   private void checkMustCallAliasAnnotationForConstructor(MethodTree tree) {
-    ResourceLeakAnnotatedTypeFactory rlTypeFactory =
-        ((RLCCalledMethodsAnnotatedTypeFactory) atypeFactory).getResourceLeakAnnotatedTypeFactory();
     ExecutableElement constructorDecl = TreeUtils.elementFromDeclaration(tree);
     boolean isMustCallAliasAnnoOnConstructor =
-        constructorDecl != null && rlTypeFactory.hasMustCallAlias(constructorDecl);
+        constructorDecl != null
+            && ((RLCCalledMethodsAnnotatedTypeFactory) atypeFactory)
+                .hasMustCallAlias(constructorDecl);
     Element paramWithMustCallAliasAnno = getParameterWithMustCallAliasAnno(tree);
     checkMustCallAliasAnnoMismatch(
         paramWithMustCallAliasAnno, isMustCallAliasAnnoOnConstructor, tree);
@@ -282,14 +289,14 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
    *     null
    */
   private @Nullable Element getParameterWithMustCallAliasAnno(MethodTree tree) {
-    ResourceLeakAnnotatedTypeFactory rlTypeFactory =
-        ((RLCCalledMethodsAnnotatedTypeFactory) atypeFactory).getResourceLeakAnnotatedTypeFactory();
     VariableTree receiverParameter = tree.getReceiverParameter();
-    if (receiverParameter != null && rlTypeFactory.hasMustCallAlias(receiverParameter)) {
+    if (receiverParameter != null
+        && ((RLCCalledMethodsAnnotatedTypeFactory) atypeFactory)
+            .hasMustCallAlias(receiverParameter)) {
       return TreeUtils.elementFromDeclaration(receiverParameter);
     }
     for (VariableTree param : tree.getParameters()) {
-      if (rlTypeFactory.hasMustCallAlias(param)) {
+      if (((RLCCalledMethodsAnnotatedTypeFactory) atypeFactory).hasMustCallAlias(param)) {
         return TreeUtils.elementFromDeclaration(param);
       }
     }
@@ -459,9 +466,8 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
       }
     }
 
-    ResourceLeakAnnotatedTypeFactory rlTypeFactory =
-        ((RLCCalledMethodsAnnotatedTypeFactory) atypeFactory).getResourceLeakAnnotatedTypeFactory();
-    List<String> mustCallObligationsOfOwningField = rlTypeFactory.getMustCallValues(field);
+    List<String> mustCallObligationsOfOwningField =
+        ((RLCCalledMethodsAnnotatedTypeFactory) atypeFactory).getMustCallValues(field);
 
     if (mustCallObligationsOfOwningField.isEmpty()) {
       return;
@@ -479,7 +485,8 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
 
     String error;
     Element enclosingElement = field.getEnclosingElement();
-    List<String> enclosingMustCallValues = rlTypeFactory.getMustCallValues(enclosingElement);
+    List<String> enclosingMustCallValues =
+        ((RLCCalledMethodsAnnotatedTypeFactory) atypeFactory).getMustCallValues(enclosingElement);
 
     if (enclosingMustCallValues == null) {
       error =
@@ -507,14 +514,16 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
             List<String> values =
                 AnnotationUtils.getElementValueArray(
                     ensuresCalledMethodsAnno,
-                    rlTypeFactory.ensuresCalledMethodsValueElement,
+                    ((RLCCalledMethodsAnnotatedTypeFactory) atypeFactory)
+                        .ensuresCalledMethodsValueElement,
                     String.class);
             for (String value : values) {
               if (expressionEqualsField(value, field)) {
                 List<String> methods =
                     AnnotationUtils.getElementValueArray(
                         ensuresCalledMethodsAnno,
-                        rlTypeFactory.ensuresCalledMethodsMethodsElement,
+                        ((RLCCalledMethodsAnnotatedTypeFactory) atypeFactory)
+                            .ensuresCalledMethodsMethodsElement,
                         String.class);
                 for (String method : methods) {
                   unsatisfiedMustCallObligationsOfOwningField.remove(
@@ -636,5 +645,21 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
   @Override
   protected RLCCalledMethodsAnnotatedTypeFactory createTypeFactory() {
     return new RLCCalledMethodsAnnotatedTypeFactory(checker);
+  }
+
+  /**
+   * Checks if WPI is enabled for the Resource Leak Checker inference. See {@link
+   * ResourceLeakChecker#ENABLE_WPI_FOR_RLC}.
+   *
+   * @return returns true if WPI is enabled for the Resource Leak Checker
+   */
+  protected boolean isWpiEnabledForRLC() {
+    return enableWpiForRlc;
+  }
+
+  @Override
+  protected boolean shouldPerformContractInference() {
+    return ((RLCCalledMethodsAnnotatedTypeFactory) atypeFactory).getWholeProgramInference() != null
+        && isWpiEnabledForRLC();
   }
 }
