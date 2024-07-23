@@ -1,6 +1,9 @@
 // To reproduce the problem:
 // javacheck -processor resourceleak testcase.java
 
+// javacheck -processor resourceleak -Aflowdotdir=. testcase.java ; for dotfile in *.dot; do dot
+// -Tpdf -o "$dotfile.pdf" "$dotfile"; done
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.PrintStream;
