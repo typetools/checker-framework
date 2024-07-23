@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
 import org.checkerframework.checker.interning.qual.FindDistinct;
@@ -748,5 +749,42 @@ public abstract class CompositeChecker extends SourceChecker {
       // composite checkers do not visit source,
       // the checkers in the composite checker do.
     };
+  }
+
+  @Override
+  public SourceVisitor<?, ?> getVisitor() {
+    return (SourceVisitor<?, ?>) super.getVisitor();
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * <p>This implementation collects needed warning suppressions for all subcheckers.
+   */
+  @Override
+  protected void warnUnneededSuppressions() {
+    if (parentChecker != null) {
+      return;
+    }
+
+    if (!warnUnneededSuppressions) {
+      return;
+    }
+    Set<Element> elementsWithSuppressedWarnings =
+        new HashSet<>(this.elementsWithSuppressedWarnings);
+    this.elementsWithSuppressedWarnings.clear();
+
+    Set<String> prefixes = new HashSet<>(getSuppressWarningsPrefixes());
+    Set<String> errorKeys = new HashSet<>(messagesProperties.stringPropertyNames());
+    for (BaseTypeChecker subChecker : subcheckers) {
+      elementsWithSuppressedWarnings.addAll(subChecker.elementsWithSuppressedWarnings);
+      subChecker.elementsWithSuppressedWarnings.clear();
+      prefixes.addAll(subChecker.getSuppressWarningsPrefixes());
+      errorKeys.addAll(subChecker.messagesProperties.stringPropertyNames());
+      subChecker.getVisitor().treesWithSuppressWarnings.clear();
+    }
+    warnUnneededSuppressions(elementsWithSuppressedWarnings, prefixes, errorKeys);
+
+    getVisitor().treesWithSuppressWarnings.clear();
   }
 }

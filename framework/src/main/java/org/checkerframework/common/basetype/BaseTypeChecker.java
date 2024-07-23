@@ -1,10 +1,7 @@
 package org.checkerframework.common.basetype;
 
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.visualize.CFGVisualizer;
@@ -144,38 +141,6 @@ public abstract class BaseTypeChecker extends CompositeChecker {
   @SuppressWarnings("TypeParameterUnusedInFormals") // Intentional abuse
   public <T extends GenericAnnotatedTypeFactory<?, ?, ?, ?>> @Nullable T getTypeFactoryOfSubcheckerOrNull(Class<? extends BaseTypeChecker> subCheckerClass) {
     return getTypeFactory().getTypeFactoryOfSubcheckerOrNull(subCheckerClass);
-  }
-
-  /**
-   * {@inheritDoc}
-   *
-   * <p>This implementation collects needed warning suppressions for all subcheckers.
-   */
-  @Override
-  protected void warnUnneededSuppressions() {
-    if (parentChecker != null) {
-      return;
-    }
-
-    if (!warnUnneededSuppressions) {
-      return;
-    }
-    Set<Element> elementsWithSuppressedWarnings =
-        new HashSet<>(this.elementsWithSuppressedWarnings);
-    this.elementsWithSuppressedWarnings.clear();
-
-    Set<String> prefixes = new HashSet<>(getSuppressWarningsPrefixes());
-    Set<String> errorKeys = new HashSet<>(messagesProperties.stringPropertyNames());
-    for (BaseTypeChecker subChecker : subcheckers) {
-      elementsWithSuppressedWarnings.addAll(subChecker.elementsWithSuppressedWarnings);
-      subChecker.elementsWithSuppressedWarnings.clear();
-      prefixes.addAll(subChecker.getSuppressWarningsPrefixes());
-      errorKeys.addAll(subChecker.messagesProperties.stringPropertyNames());
-      subChecker.getVisitor().treesWithSuppressWarnings.clear();
-    }
-    warnUnneededSuppressions(elementsWithSuppressedWarnings, prefixes, errorKeys);
-
-    getVisitor().treesWithSuppressWarnings.clear();
   }
 
   @Override
