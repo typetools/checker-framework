@@ -1,3 +1,6 @@
+// To reproduce the problem:
+// javacheck -processor resourceleak testcase.java
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.PrintStream;
