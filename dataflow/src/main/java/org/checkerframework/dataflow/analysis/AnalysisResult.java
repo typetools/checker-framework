@@ -421,6 +421,12 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
     assert block != null : "@AssumeAssertion(nullness): null block for node " + node;
     TransferInput<V, S> transferInput = inputs.get(block);
     if (transferInput == null) {
+      System.out.println("no input for: " + block);
+      System.out.println(inputs.keySet().iterator().next());
+      System.out.println(inputs.keySet().iterator().next().hashCode());
+      System.out.println(block.hashCode());
+      System.out.println(inputs.keySet().iterator().next().equals(block));
+      System.out.println(inputs.keySet().iterator().next() == block);
       return null;
     }
     // Calling Analysis.runAnalysisFor() may mutate the internal nodeValues map inside an
