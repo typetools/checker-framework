@@ -228,6 +228,7 @@ public abstract class AbstractCFGVisualizer<
         }
       }
     }
+    sbBlock.insert(0, "[" + bb.getClass().getSimpleName() + ":" + bb.getUid() + "]");
     return sbBlock.toString();
   }
 
