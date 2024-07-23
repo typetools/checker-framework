@@ -1560,6 +1560,7 @@ public abstract class GenericAnnotatedTypeFactory<
       boolean updateInitializationStore,
       boolean isStatic,
       @Nullable Store capturedStore) {
+    System.out.printf("GATF.analyze: this = %s%n", getClass().getSimpleName());
     ControlFlowGraph cfg = CFCFGBuilder.build(root, ast, checker, this, processingEnv);
     cfg.getAllNodes(this::isIgnoredExceptionType)
         .forEach(
