@@ -48,6 +48,9 @@ import org.plumelib.util.StringsPlume;
  */
 public abstract class CompositeChecker extends SourceChecker {
 
+  /** Create a new CompositeChecker. */
+  protected CompositeChecker() {}
+
   @Override
   public void initChecker() {
     // initialize all checkers and share options as necessary
