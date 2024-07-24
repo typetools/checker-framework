@@ -337,6 +337,12 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
     }
   }
 
+  /**
+   * Returns the TransferInput for the given block.
+   *
+   * @param block a CFG Block
+   * @return the TransferInput for the given block.
+   */
   public TransferInput<V, S> getInput(Block block) {
     return inputs.get(block);
   }
