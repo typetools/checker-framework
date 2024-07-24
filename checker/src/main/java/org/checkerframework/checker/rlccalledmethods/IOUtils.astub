@@ -1,0 +1,41 @@
+package org.apache.commons.io;
+
+import org.checkerframework.checker.calledmethods.qual.*;
+
+class IOUtils {
+    @EnsuresCalledMethods(value = "#1", methods = "close")
+    @EnsuresCalledMethodsOnException(value = "#1", methods = "close")
+    static void closeQuietly(Reader arg0);
+
+    @EnsuresCalledMethods(value = "#1", methods = "close")
+    @EnsuresCalledMethodsOnException(value = "#1", methods = "close")
+    static void closeQuietly(Writer arg0);
+
+    @EnsuresCalledMethods(value = "#1", methods = "close")
+    @EnsuresCalledMethodsOnException(value = "#1", methods = "close")
+    static void closeQuietly(InputStream arg0);
+
+    @EnsuresCalledMethods(value = "#1", methods = "close")
+    @EnsuresCalledMethodsOnException(value = "#1", methods = "close")
+    static void closeQuietly(OutputStream arg0);
+
+    @EnsuresCalledMethods(value = "#1", methods = "close")
+    @EnsuresCalledMethodsOnException(value = "#1", methods = "close")
+    static void closeQuietly(Closeable arg0);
+
+    @SuppressWarnings("ensuresvarargs.unverified")
+    @EnsuresCalledMethodsVarargs("close")
+    static void closeQuietly(Closeable... arg0);
+
+    @EnsuresCalledMethods(value = "#1", methods = "close")
+    @EnsuresCalledMethodsOnException(value = "#1", methods = "close")
+    static void closeQuietly(Socket arg0);
+
+    @EnsuresCalledMethods(value = "#1", methods = "close")
+    @EnsuresCalledMethodsOnException(value = "#1", methods = "close")
+    static void closeQuietly(Selector arg0);
+
+    @EnsuresCalledMethods(value = "#1", methods = "close")
+    @EnsuresCalledMethodsOnException(value = "#1", methods = "close")
+    static void closeQuietly(ServerSocket arg0);
+}
