@@ -682,7 +682,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   @SuppressWarnings("interning:assignment") // used in == tests
   protected void setRoot(CompilationUnitTree newRoot) {
     this.currentRoot = newRoot;
-    visitor.setRoot(currentRoot);
+    if (visitor != null) {
+      visitor.setRoot(currentRoot);
+    }
   }
 
   /**
