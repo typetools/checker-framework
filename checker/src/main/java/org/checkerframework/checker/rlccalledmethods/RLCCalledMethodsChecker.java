@@ -60,8 +60,8 @@ public class RLCCalledMethodsChecker extends CalledMethodsChecker {
   @Override
   public void setRoot(CompilationUnitTree newRoot) {
     super.setRoot(newRoot);
-    if (parentChecker != null) {
-      parentChecker.setRoot(newRoot);
+    if (parentChecker != null && (parentChecker instanceof ResourceLeakChecker)) {
+      ((ResourceLeakChecker) parentChecker).setRoot(newRoot);
     }
   }
 }
