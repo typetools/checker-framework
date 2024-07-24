@@ -31,12 +31,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.reflection.MethodValChecker;
-import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.type.AnnotatedTypeFactory;
-import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.util.TreePathCacher;
-import org.checkerframework.javacutil.AbstractTypeProcessor;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TypeSystemError;
@@ -46,44 +41,10 @@ import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.StringsPlume;
 
 /**
- * An abstract {@link SourceChecker} that provides a simple {@link
- * org.checkerframework.framework.source.SourceVisitor} implementation that type-checks assignments,
- * pseudo-assignments such as parameter passing and method invocation, and method overriding.
- *
- * <p>Most type-checker annotation processors should extend this class, instead of {@link
- * SourceChecker}. Checkers that require annotated types but not subtype checking (e.g. for testing
- * purposes) should extend {@link SourceChecker}. Non-type checkers (e.g. checkers to enforce coding
- * styles) can extend {@link SourceChecker} or {@link AbstractTypeProcessor}; the Checker Framework
- * is not specifically designed to support such checkers.
- *
- * <p>It is a convention that, for a type system Foo, the checker, the visitor, and the annotated
- * type factory are named as <i>FooChecker</i>, <i>FooVisitor</i>, and
- * <i>FooAnnotatedTypeFactory</i>. Some factory methods use this convention to construct the
- * appropriate classes reflectively.
- *
- * <p>{@code BaseTypeChecker} encapsulates a group for factories for various representations/classes
- * related the type system, mainly:
- *
- * <ul>
- *   <li>{@link QualifierHierarchy}: to represent the supported qualifiers in addition to their
- *       hierarchy, mainly, subtyping rules
- *   <li>{@link TypeHierarchy}: to check subtyping rules between <b>annotated types</b> rather than
- *       qualifiers
- *   <li>{@link AnnotatedTypeFactory}: to construct qualified types enriched with default qualifiers
- *       according to the type system rules
- *   <li>{@link BaseTypeVisitor}: to visit the compiled Java files and check for violations of the
- *       type system rules
- * </ul>
- *
- * <p>Subclasses must specify the set of type qualifiers they support. See {@link
- * AnnotatedTypeFactory#createSupportedTypeQualifiers()}.
- *
- * <p>If the specified type qualifiers are meta-annotated with {@link SubtypeOf}, this
- * implementation will automatically construct the type qualifier hierarchy. Otherwise, or if this
- * behavior must be overridden, the subclass may override the {@link
- * BaseAnnotatedTypeFactory#createQualifierHierarchy()} method.
- *
- * @checker_framework.manual #creating-compiler-interface The checker class
+ * An abstract {@link SourceChecker} that provides support for subcheckers and manages their
+ * messages. It doesn't require an extending checker to provide a qualifier hierarchy, type factory
+ * or visitor. Hence, it can be used similar to an AggregateChecker, with the additional service of
+ * managing messages.
  */
 public abstract class CompositeChecker extends SourceChecker {
 

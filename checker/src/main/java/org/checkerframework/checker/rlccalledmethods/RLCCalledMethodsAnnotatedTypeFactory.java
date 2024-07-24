@@ -54,8 +54,13 @@ import org.checkerframework.javacutil.TypeSystemError;
 public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotatedTypeFactory
     implements CreatesMustCallForElementSupplier {
 
+  /** True if errors related to static owning fields should be suppressed. */
   public final boolean permitStaticOwning;
+
+  /** True if -AnoLightweightOwnership was supplied on the command line (for the rlc). */
   public final boolean noLightweightOwnership;
+
+  /** The rlc parent checker. */
   private ResourceLeakChecker rlc;
 
   /**
@@ -345,6 +350,11 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
     return new RLCCalledMethodsAnalysis((RLCCalledMethodsChecker) checker, this);
   }
 
+  /**
+   * Returns the rlc parent checker.
+   *
+   * @return the {@link ResourceLeakChecker} parent checker
+   */
   public ResourceLeakChecker getResourceLeakChecker() {
     if (rlc == null) {
       rlc = (ResourceLeakChecker) checker.getParentChecker();
@@ -352,6 +362,11 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
     return rlc;
   }
 
+  /**
+   * Returns the MustCallAnnotatedTypeFactory of the MustCall subchecker.
+   *
+   * @return the MustCallAnnotatedTypeFactory of the MustCall subchecker.
+   */
   public MustCallAnnotatedTypeFactory getMustCallAnnotatedTypeFactory() {
     if (checker.getSubchecker(MustCallChecker.class) != null) {
       return getTypeFactoryOfSubchecker(MustCallChecker.class);
@@ -387,12 +402,11 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
   }
 
   /**
-   * Fetches the store from the results of dataflow for {@code block}. The store after {@code block}
-   * is returned.
+   * Fetches the transfer input for the given block, either from the flowResult, if the analysis is
+   * still running, or else from the analysis itself.
    *
    * @param block a block
-   * @return the appropriate CFStore, populated with CalledMethods annotations, from the results of
-   *     running dataflow
+   * @return the appropriate TransferInput from the results of running dataflow
    */
   public TransferInput<AccumulationValue, AccumulationStore> getInput(Block block) {
     if (!analysis.isRunning()) {

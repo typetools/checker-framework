@@ -390,10 +390,6 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
   @Override
   public Void visitVariable(VariableTree tree, Void p) {
     VariableElement varElement = TreeUtils.elementFromDeclaration(tree);
-    // ResourceLeakAnnotatedTypeFactory rlTypeFactory =
-    //     ((RLCCalledMethodsAnnotatedTypeFactory)
-    // atypeFactory).getResourceLeakAnnotatedTypeFactory();
-
     if (varElement.getKind().isField()
         && !((RLCCalledMethodsAnnotatedTypeFactory) atypeFactory).noLightweightOwnership
         && atypeFactory.getDeclAnnotation(varElement, Owning.class) != null) {
