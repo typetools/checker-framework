@@ -656,6 +656,29 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       return;
     }
 
+    localVariableValues
+        .values()
+        .forEach(
+            v -> {
+              if (v != null && v.getThenStore() != null) {
+                v.getThenStore().computeNewValueAndInsertImpl(expr, value, merger);
+                v.getElseStore().computeNewValueAndInsertImpl(expr, value, merger);
+              }
+            });
+
+    computeNewValueAndInsertImpl(expr, value, merger);
+  }
+
+  /**
+   * Inserts the result of applying {@code merger} to {@code value} and the previous value for
+   * {@code expr}.
+   *
+   * @param expr the JavaExpression
+   * @param value the value of the JavaExpression
+   * @param merger the function used to merge {@code value} and the previous value of {@code expr}
+   */
+  /*package-private*/ void computeNewValueAndInsertImpl(
+      JavaExpression expr, V value, BinaryOperator<V> merger) {
     if (expr instanceof LocalVariable) {
       LocalVariable localVar = (LocalVariable) expr;
       V oldValue = localVariableValues.get(localVar);
