@@ -10,7 +10,9 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 
 /**
- * The CalledMethodsChecker used as a subchecker in the ResourceLeakChecker and never independently.
+ * The entry point for the RLCCalledMethodsChecker. This checker is a modifed {@link
+ * CalledMethodsChecker} used as a subchecker in the ResourceLeakChecker and never independently.
+ * Runs the MustCallChecker as a subchecker in order to share cfg.
  */
 public class RLCCalledMethodsChecker extends CalledMethodsChecker {
 
