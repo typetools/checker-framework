@@ -112,7 +112,7 @@ public class AnnotationClassLoader implements Closeable {
   private final URL resourceURL;
 
   /** The class loader used to load annotation classes. */
-  @SuppressWarnings("resourceleak:required.method.not.called") // this class is @MustCall({})
+  @SuppressWarnings("builder:required.method.not.called") // this class is @MustCall({})
   protected final @Owning URLClassLoader classLoader;
 
   /**
