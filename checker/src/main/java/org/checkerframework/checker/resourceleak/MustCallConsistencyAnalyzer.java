@@ -206,7 +206,7 @@ public class MustCallConsistencyAnalyzer {
    * their must-call obligation. Must-call obligations are tracked by the {@link MustCallChecker}
    * and are accessed by looking up the type(s) in its type system of the resource aliases contained
    * in each {@code Obligation} using {@link
-   * #getMustCallMethods(RLCCalledMethodsAnnotatedTypeFactory, ResourceLeakChecker, CFStore)}.
+   * #getMustCallMethods(RLCCalledMethodsAnnotatedTypeFactory, CFStore)}.
    *
    * <p>An Obligation might not matter on all paths out of a method. For instance, after a
    * constructor assigns a resource to an {@link Owning} field, the resource only needs to be closed
@@ -321,8 +321,8 @@ public class MustCallConsistencyAnalyzer {
      * Gets the must-call methods (i.e. the list of methods that must be called to satisfy the
      * must-call obligation) of each resource alias represented by this Obligation.
      *
-     * @param cmAtf the RLCCalledMethodsAnnotatedTypeFactory to get the called-methods store
-     * @param checker a ResourceLeakChecker to get the MustCallAnnotatedTypeFactory
+     * @param cmAtf the RLCCalledMethodsAnnotatedTypeFactory to get the called-methods store and
+     *     MustCall atf
      * @param mcStore a CFStore produced by the MustCall checker's dataflow analysis. If this is
      *     null, then the default MustCall type of each variable's class will be used.
      * @return a map from each resource alias of this to a list of its must-call method names, or
@@ -330,9 +330,7 @@ public class MustCallConsistencyAnalyzer {
      *     resource alias of this in the Must Call store is MustCallUnknown)
      */
     public @Nullable Map<ResourceAlias, List<String>> getMustCallMethods(
-        RLCCalledMethodsAnnotatedTypeFactory cmAtf,
-        ResourceLeakChecker checker,
-        @Nullable CFStore mcStore) {
+        RLCCalledMethodsAnnotatedTypeFactory cmAtf, @Nullable CFStore mcStore) {
       Map<ResourceAlias, List<String>> result = new HashMap<>(this.resourceAliases.size());
       MustCallAnnotatedTypeFactory mustCallAnnotatedTypeFactory =
           cmAtf.getMustCallAnnotatedTypeFactory();
@@ -2324,8 +2322,7 @@ public class MustCallConsistencyAnalyzer {
   private void checkMustCall(
       Obligation obligation, AccumulationStore cmStore, CFStore mcStore, String outOfScopeReason) {
 
-    Map<ResourceAlias, List<String>> mustCallValues =
-        obligation.getMustCallMethods(cmAtf, checker, mcStore);
+    Map<ResourceAlias, List<String>> mustCallValues = obligation.getMustCallMethods(cmAtf, mcStore);
 
     // Optimization: if mustCallValues is null, always issue a warning (there is no way to
     // satisfy the check). A null mustCallValue occurs when the type is top

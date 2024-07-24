@@ -73,7 +73,7 @@ import org.plumelib.util.CollectionsPlume;
  * representing a method. The entry method of this class is {@link
  * #runMustCallInference(ResourceLeakAnnotatedTypeFactory, ControlFlowGraph,
  * MustCallConsistencyAnalyzer)}, invoked from the {@link
- * ResourceLeakAnnotatedTypeFactory#postAnalyze} method when Whole Program Inference is enabled.
+ * RLCCalledMethodsAnnotatedTypeFactory#postAnalyze} method when Whole Program Inference is enabled.
  *
  * <p>The algorithm determines if the @MustCall obligation of a field is satisfied along some path
  * leading to the regular exit point of the method. If the obligation is satisfied, the algorithm
@@ -199,8 +199,8 @@ public class MustCallInference {
 
   /**
    * Creates a MustCallInference instance and runs the inference algorithm. This method is called by
-   * the {@link ResourceLeakAnnotatedTypeFactory#postAnalyze} method if Whole Program Inference is
-   * enabled.
+   * the {@link RLCCalledMethodsAnnotatedTypeFactory#postAnalyze} method if Whole Program Inference
+   * is enabled.
    *
    * @param rlc the checker
    * @param cfg the control flow graph of the method to check

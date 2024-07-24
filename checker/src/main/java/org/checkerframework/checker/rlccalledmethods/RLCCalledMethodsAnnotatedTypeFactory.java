@@ -51,6 +51,11 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 
+/**
+ * The type factory for the RLC Called Methods Checker. The main difference between this and the
+ * Called Methods type factory from which it is derived is that this version's {@link
+ * #postAnalyze(ControlFlowGraph)} method checks that must-call obligations are fulfilled.
+ */
 public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotatedTypeFactory
     implements CreatesMustCallForElementSupplier {
 
@@ -106,6 +111,11 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
   /** True if -AnoResourceAliases was passed on the command line. */
   private final boolean noResourceAliases;
 
+  /**
+   * Creates a new RLCCalledMethodsAnnotatedTypeFactory.
+   *
+   * @param checker the checker associated with this type factory
+   */
   public RLCCalledMethodsAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     this.noResourceAliases =
@@ -209,7 +219,7 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
    * <p>Do not use this method to get the MustCall values of an {@link
    * org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer.Obligation}. Instead, use
    * {@link
-   * org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer.Obligation#getMustCallMethods(ResourceLeakAnnotatedTypeFactory,
+   * org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer.Obligation#getMustCallMethods(RLCCalledMethodsAnnotatedTypeFactory,
    * CFStore)}.
    *
    * <p>Do not call {@link List#isEmpty()} on the result of this method: prefer to call {@link
@@ -251,7 +261,7 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
    * aliases of an {@link
    * org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer.Obligation}. Instead, use
    * {@link
-   * org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer.Obligation#getMustCallMethods(ResourceLeakAnnotatedTypeFactory,
+   * org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer.Obligation#getMustCallMethods(RLCCalledMethodsAnnotatedTypeFactory,
    * CFStore)}.
    *
    * @param tree a tree
@@ -381,7 +391,7 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
    *
    * @param exceptionType exception type
    * @return {@code true} if {@code exceptionType} is a member of {@link
-   *     CalledMethodsAnalysis#ignoredExceptionTypes}, {@code false} otherwise
+   *     RLCCalledMethodsAnalysis#ignoredExceptionTypes}, {@code false} otherwise
    */
   @Override
   public boolean isIgnoredExceptionType(TypeMirror exceptionType) {
