@@ -338,8 +338,7 @@ public class MustCallConsistencyAnalyzer {
         @Nullable CFStore mcStore) {
       Map<ResourceAlias, List<String>> result = new HashMap<>(this.resourceAliases.size());
       MustCallAnnotatedTypeFactory mustCallAnnotatedTypeFactory =
-          (MustCallAnnotatedTypeFactory)
-              checker.getSubchecker(MustCallChecker.class).getTypeFactory();
+          cmAtf.getMustCallAnnotatedTypeFactory();
 
       for (ResourceAlias alias : this.resourceAliases) {
         AnnotationMirror mcAnno = getMustCallValue(alias, mcStore, mustCallAnnotatedTypeFactory);
@@ -776,9 +775,7 @@ public class MustCallConsistencyAnalyzer {
       return false;
     }
     ExecutableElement callerMethodElt = TreeUtils.elementFromDeclaration(callerMethodTree);
-    MustCallAnnotatedTypeFactory mcAtf =
-        (MustCallAnnotatedTypeFactory)
-            checker.getSubchecker(MustCallChecker.class).getTypeFactory();
+    MustCallAnnotatedTypeFactory mcAtf = cmAtf.getMustCallAnnotatedTypeFactory();
     List<String> callerCmcfValues =
         RLCCalledMethodsVisitor.getCreatesMustCallForValues(callerMethodElt, mcAtf, cmAtf);
     if (callerCmcfValues.isEmpty()) {
@@ -1436,9 +1433,7 @@ public class MustCallConsistencyAnalyzer {
       if (newResourceAliasesForObligation.isEmpty()) {
         // Because the last reference to the resource has been overwritten, check the
         // must-call obligation.
-        MustCallAnnotatedTypeFactory mcAtf =
-            (MustCallAnnotatedTypeFactory)
-                checker.getSubchecker(MustCallChecker.class).getTypeFactory();
+        MustCallAnnotatedTypeFactory mcAtf = cmAtf.getMustCallAnnotatedTypeFactory();
         checkMustCall(
             obligation,
             cmAtf.getStoreBefore(node),
@@ -1512,9 +1507,7 @@ public class MustCallConsistencyAnalyzer {
         return;
       } else {
         // Issue an error if the field has a non-empty must-call type.
-        MustCallAnnotatedTypeFactory mcTypeFactory =
-            (MustCallAnnotatedTypeFactory)
-                checker.getSubchecker(MustCallChecker.class).getTypeFactory();
+        MustCallAnnotatedTypeFactory mcTypeFactory = cmAtf.getMustCallAnnotatedTypeFactory();
         AnnotationMirror mcAnno =
             mcTypeFactory.getAnnotatedType(lhs.getElement()).getPrimaryAnnotation(MustCall.class);
         List<String> mcValues =
@@ -1594,9 +1587,7 @@ public class MustCallConsistencyAnalyzer {
       }
     }
 
-    MustCallAnnotatedTypeFactory mcTypeFactory =
-        (MustCallAnnotatedTypeFactory)
-            checker.getSubchecker(MustCallChecker.class).getTypeFactory();
+    MustCallAnnotatedTypeFactory mcTypeFactory = cmAtf.getMustCallAnnotatedTypeFactory();
 
     // Get the Must Call type for the field. If there's info about this field in the store, use
     // that. Otherwise, use the declared type of the field
@@ -1691,9 +1682,7 @@ public class MustCallConsistencyAnalyzer {
       return;
     }
     ExecutableElement enclosingMethodElt = TreeUtils.elementFromDeclaration(enclosingMethod);
-    MustCallAnnotatedTypeFactory mcAtf =
-        (MustCallAnnotatedTypeFactory)
-            checker.getSubchecker(MustCallChecker.class).getTypeFactory();
+    MustCallAnnotatedTypeFactory mcAtf = cmAtf.getMustCallAnnotatedTypeFactory();
 
     List<String> cmcfValues =
         RLCCalledMethodsVisitor.getCreatesMustCallForValues(enclosingMethodElt, mcAtf, cmAtf);
@@ -2057,9 +2046,7 @@ public class MustCallConsistencyAnalyzer {
       // consistency check should occur.
       if (successor.getType() == BlockType.SPECIAL_BLOCK /* special blocks are exit blocks */
           || obligationGoesOutOfScopeBeforeSuccessor) {
-        MustCallAnnotatedTypeFactory mcAtf =
-            (MustCallAnnotatedTypeFactory)
-                checker.getSubchecker(MustCallChecker.class).getTypeFactory();
+        MustCallAnnotatedTypeFactory mcAtf = cmAtf.getMustCallAnnotatedTypeFactory();
 
         // If successor is an exceptional successor, and Obligation represents the
         // temporary variable for currentBlock's node, do not propagate or do a

@@ -23,6 +23,7 @@ import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;
 import org.checkerframework.checker.mustcall.CreatesMustCallForElementSupplier;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.MustCallChecker;
+import org.checkerframework.checker.mustcall.MustCallNoCreatesMustCallForChecker;
 import org.checkerframework.checker.mustcall.qual.CreatesMustCallFor;
 import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.checkerframework.checker.mustcall.qual.MustCallAlias;
@@ -55,7 +56,6 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
 
   public final boolean permitStaticOwning;
   public final boolean noLightweightOwnership;
-  private MustCallAnnotatedTypeFactory mcAtf;
   private ResourceLeakChecker rlc;
 
   /**
@@ -352,20 +352,12 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
     return rlc;
   }
 
-  // public ResourceLeakAnnotatedTypeFactory getResourceLeakAnnotatedTypeFactory() {
-  //   if (rlAtf == null) {
-  //     rlAtf = (ResourceLeakAnnotatedTypeFactory) getResourceLeakChecker().getTypeFactory();
-  //   }
-  //   return rlAtf;
-  // }
-
   public MustCallAnnotatedTypeFactory getMustCallAnnotatedTypeFactory() {
-    if (mcAtf == null) {
-      mcAtf =
-          (MustCallAnnotatedTypeFactory)
-              getResourceLeakChecker().getSubchecker(MustCallChecker.class).getTypeFactory();
+    if (checker.getSubchecker(MustCallChecker.class) != null) {
+      return getTypeFactoryOfSubchecker(MustCallChecker.class);
+    } else {
+      return getTypeFactoryOfSubchecker(MustCallNoCreatesMustCallForChecker.class);
     }
-    return mcAtf;
   }
 
   /**

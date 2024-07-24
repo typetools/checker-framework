@@ -13,7 +13,6 @@ import javax.tools.Diagnostic;
 import org.checkerframework.checker.calledmethods.CalledMethodsChecker;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.mustcall.MustCallChecker;
-import org.checkerframework.checker.mustcall.MustCallNoCreatesMustCallForChecker;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsChecker;
@@ -146,11 +145,11 @@ public class ResourceLeakChecker extends CompositeChecker {
   protected Set<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
     Set<Class<? extends BaseTypeChecker>> checkers = super.getImmediateSubcheckerClasses();
 
-    if (this.processingEnv.getOptions().containsKey(MustCallChecker.NO_CREATES_MUSTCALLFOR)) {
-      checkers.add(MustCallNoCreatesMustCallForChecker.class);
-    } else {
-      checkers.add(MustCallChecker.class);
-    }
+    // if (this.processingEnv.getOptions().containsKey(MustCallChecker.NO_CREATES_MUSTCALLFOR)) {
+    //   checkers.add(MustCallNoCreatesMustCallForChecker.class);
+    // } else {
+    //   checkers.add(MustCallChecker.class);
+    // }
     checkers.add(RLCCalledMethodsChecker.class);
 
     return checkers;
