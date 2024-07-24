@@ -59,6 +59,9 @@ import org.plumelib.util.CollectionsPlume;
  */
 public abstract class BaseTypeChecker extends CompositeChecker {
 
+  /** Create a new BaseTypeChecker. */
+  protected BaseTypeChecker() {}
+
   /**
    * Returns the appropriate visitor that type-checks the compilation unit according to the type
    * system rules.
