@@ -237,7 +237,7 @@ public final class CFGVisualizeLauncher {
       // Redirect syserr to nothing (and prevent the compiler from issuing
       // warnings about our exception).
       @SuppressWarnings({
-        "builder:required.method.not.called",
+        "resourceleak:required.method.not.called",
         "mustcall:assignment"
       }) // Won't be needed in JDK 11+ with use of "OutputStream.nullOutputStream()".
       @MustCall() OutputStream nullOS =
