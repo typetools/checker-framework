@@ -158,9 +158,6 @@ public class MustCallConsistencyAnalyzer {
    */
   private final Set<ResourceAlias> reportedErrorAliases = new HashSet<>();
 
-  // /** The type factory for the Resource Leak Checker, which is used to access the subcheckers */
-  // private final ResourceLeakAnnotatedTypeFactory typeFactory;
-
   /**
    * The type factory for the Called Methods Checker, which is used to get called methods types and
    * to access the Must Call Checker.
@@ -1592,11 +1589,6 @@ public class MustCallConsistencyAnalyzer {
     // Get the Must Call type for the field. If there's info about this field in the store, use
     // that. Otherwise, use the declared type of the field
     CFStore mcStore = mcTypeFactory.getStoreBefore(lhs);
-    if (mcStore == null) {
-      System.out.println("lhs: " + lhs);
-      System.out.println("assignment: " + node);
-      System.out.println("store: " + mcStore);
-    }
     CFValue mcValue = mcStore.getValue(lhs);
     AnnotationMirror mcAnno = null;
     if (mcValue != null) {
