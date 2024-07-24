@@ -680,11 +680,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @param newRoot the new compilation unit root
    */
   @SuppressWarnings("interning:assignment") // used in == tests
-  protected void setRoot(CompilationUnitTree newRoot) {
+  public void setRoot(CompilationUnitTree newRoot) {
     this.currentRoot = newRoot;
-    if (visitor != null) {
-      visitor.setRoot(currentRoot);
-    }
+    visitor.setRoot(currentRoot);
   }
 
   /**

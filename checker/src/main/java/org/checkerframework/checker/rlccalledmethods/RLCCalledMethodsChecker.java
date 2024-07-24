@@ -1,5 +1,6 @@
 package org.checkerframework.checker.rlccalledmethods;
 
+import com.sun.source.tree.CompilationUnitTree;
 import java.util.Set;
 import org.checkerframework.checker.calledmethods.CalledMethodsChecker;
 import org.checkerframework.checker.mustcall.MustCallChecker;
@@ -50,5 +51,17 @@ public class RLCCalledMethodsChecker extends CalledMethodsChecker {
     }
 
     return checkers;
+  }
+
+  /*
+   * Required in the RLC, since the RLC doesn't have its root set. The likely reason is that it
+   * doesn't have its own visitor. This way, the RLCCMC can set the root for the RLC.
+   */
+  @Override
+  public void setRoot(CompilationUnitTree newRoot) {
+    super.setRoot(newRoot);
+    if (parentChecker != null) {
+      parentChecker.setRoot(newRoot);
+    }
   }
 }

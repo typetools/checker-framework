@@ -123,13 +123,11 @@ public abstract class CompositeChecker extends SourceChecker {
   protected boolean warnUnneededSuppressions;
 
   @Override
-  protected void setRoot(CompilationUnitTree newRoot) {
+  public void setRoot(CompilationUnitTree newRoot) {
     super.setRoot(newRoot);
     if (parentChecker == null) {
       // Only clear the path cache if this is the main checker.
       treePathCacher.clear();
-    } else {
-      parentChecker.setRoot(newRoot);
     }
   }
 
