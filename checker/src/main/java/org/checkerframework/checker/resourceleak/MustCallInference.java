@@ -119,12 +119,6 @@ public class MustCallInference {
    */
   private final Set<VariableElement> owningFields = new HashSet<>();
 
-  // /**
-  //  * The type factory for the Resource Leak Checker, which is used to access the Must Call
-  // Checker.
-  //  */
-  // private final ResourceLeakAnnotatedTypeFactory resourceLeakAtf;
-
   /**
    * The type factory for the RLC Called Methods Checker, which is used to access information about
    * the Must Call Checker
@@ -182,7 +176,6 @@ public class MustCallInference {
    */
   public MustCallInference(
       ResourceLeakChecker rlc, ControlFlowGraph cfg, MustCallConsistencyAnalyzer mcca) {
-    // this.resourceLeakAtf = resourceLeakAtf;
     this.cmAtf =
         (RLCCalledMethodsAnnotatedTypeFactory)
             rlc.getSubchecker(RLCCalledMethodsChecker.class).getTypeFactory();
