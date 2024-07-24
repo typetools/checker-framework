@@ -387,7 +387,11 @@ public abstract class CompositeChecker extends SourceChecker {
     return subcheckers;
   }
 
-  /** Get the shared TreePathCacher instance. */
+  /**
+   * Get the shared TreePathCacher instance.
+   *
+   * @return the shared TreePathCacher instance.
+   */
   public TreePathCacher getTreePathCacher() {
     if (treePathCacher == null) {
       // In case it wasn't already set in instantiateSubcheckers.
