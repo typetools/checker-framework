@@ -10,7 +10,6 @@ import java.util.regex.Pattern;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic;
-import org.checkerframework.checker.calledmethods.CalledMethodsChecker;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.mustcall.MustCallChecker;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
@@ -22,9 +21,16 @@ import org.checkerframework.framework.source.CompositeChecker;
 import org.checkerframework.framework.source.SupportedOptions;
 
 /**
- * The entry point for the Resource Leak Checker. This checker is a modifed {@link
- * CalledMethodsChecker} that checks that the must-call obligations of each expression (as computed
- * via the {@link org.checkerframework.checker.mustcall.MustCallChecker} have been fulfilled.
+ * The entry point for the Resource Leak Checker. This checker only counts the number of {@link
+ * org.checkerframework.checker.mustcall.qual.MustCall} annotations and defines a set of ignored
+ * exceptions. All of its previous logic is now in the {@link RLCCalledMethodsChecker}, which is a
+ * subchecker of this checker.
+ *
+ * <p>The checker hierarchy is: this "empty" RLC | RLCCalledMethodsChecker | MustCallChecker
+ *
+ * <p>The MustCallChecker is a subchecker of the RLCCm checker (instead of a sibling), since we want
+ * them to operate on the same cfg (so we can get both a CM and MC store for a given cfg block),
+ * which only works if one of them is a subchecker of the other.
  */
 @SupportedOptions({
   "permitStaticOwning",
@@ -40,9 +46,7 @@ import org.checkerframework.framework.source.SupportedOptions;
 public class ResourceLeakChecker extends CompositeChecker {
 
   /** Creates a ResourceLeakChecker. */
-  public ResourceLeakChecker() {
-    super();
-  }
+  public ResourceLeakChecker() {}
 
   /**
    * Command-line option for counting how many must-call obligations were checked by the Resource
