@@ -9,7 +9,7 @@ public class RLCCalledMethodsAnalysis extends CalledMethodsAnalysis {
 
   /**
    * The set of exceptions to ignore, cached from {@link
-   * ResourceLeakChecker#getIgnoredExceptions()}.
+   * RLCCalledMethodsChecker#getIgnoredExceptions()}.
    */
   private final SetOfTypes ignoredExceptions;
 
