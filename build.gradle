@@ -10,6 +10,8 @@ plugins {
   id 'net.ltgt.errorprone' version '3.1.0'
   // https://plugins.gradle.org/plugin/org.ajoberstar.grgit
   id 'org.ajoberstar.grgit' version '5.2.2' apply false
+  // https://docs.gradle.org/current/userguide/eclipse_plugin.html
+  id 'eclipse'
 
   id 'groovy' // needed for formatting Gradle files
   // Code formatting; defines targets "spotlessApply" and "spotlessCheck".
@@ -17,9 +19,6 @@ plugins {
   // Only works on JDK 11+ (even including the plugin crashes Gradle on JDK 8).
   id 'com.diffplug.spotless' version '6.25.0'
 }
-apply plugin: 'de.undercouch.download'
-
-import org.ajoberstar.grgit.Grgit
 
 // There is another `repositories { ... }` block below; if you change this one, change that one as well.
 repositories {
@@ -55,11 +54,11 @@ ext {
   versions = [
     autoValue       : '1.11.0',
     googleJavaFormat : '1.19.2',
-    lombok          : '1.18.32',
+    lombok          : '1.18.34',
     hashmapUtil : '0.0.1',
     reflectionUtil : '1.1.3',
     plumeUtil : '1.9.3',
-    errorprone : '2.28.0',
+    errorprone : '2.29.2',
   ]
 }
 
@@ -113,14 +112,15 @@ allprojects { currentProj ->
   // level (third number) if:
   //   * any new checkers have been added, or
   //   * backward-incompatible changes have been made to APIs or elsewhere.
-  // To make a snapshot release: ./gradlew publish
-  version '3.44.1-SNAPSHOT'
+  // To make a snapshot release, version should end in "-SNAPSHOT", then: ./gradlew publish
+  version '3.45.1-SNAPSHOT'
 
   tasks.withType(JavaCompile).configureEach {
     options.fork = true
   }
 
   apply plugin: 'java'
+  apply plugin: 'eclipse'
   apply plugin: 'com.github.johnrengelman.shadow'
   apply plugin: 'de.undercouch.download'
   apply plugin: 'net.ltgt.errorprone'
@@ -149,6 +149,20 @@ allprojects { currentProj ->
     errorproneJavac("com.google.errorprone:javac:9+181-r4173-1")
 
     allProjects subprojects
+  }
+
+  eclipse.classpath {
+    defaultOutputDir = file("build/default")
+    file.whenMerged { cp ->
+      cp.entries.forEach { cpe ->
+        if (cpe instanceof org.gradle.plugins.ide.eclipse.model.SourceFolder) {
+          cpe.output = cpe.output.replace "bin/", "build/classes/java/"
+        }
+        if (cpe instanceof org.gradle.plugins.ide.eclipse.model.Output) {
+          cpe.path = cpe.path.replace "bin/", "build/"
+        }
+      }
+    }
   }
 
   ext {
@@ -662,7 +676,7 @@ void clone(url, directory, ignoreError, extraArgs = []){
     args = [
       'clone',
       '-q',
-      '--filter=blob:none',
+      '--depth=1',
       url,
       file(directory).toPath().last()
     ]

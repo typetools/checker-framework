@@ -1,30 +1,30 @@
 import org.checkerframework.checker.tainting.qual.*;
 
-class PolyVarArgs {
+class PolyVarargs {
 
-  void testVarArgsNoFormals() {
+  void testVarargsNoFormals() {
     @Tainted String tainted = varArgsNoFormals();
     @Untainted String untainted = varArgsNoFormals("a");
     @Untainted String untainted2 = varArgsNoFormals("b", "c");
   }
 
-  void testVarArgsNoFormalsInvalid() {
+  void testVarargsNoFormalsInvalid() {
     // :: error: (assignment)
     @Untainted String tainted = varArgsNoFormals();
   }
 
-  void testVarArgsWithFormals() {
+  void testVarargsWithFormals() {
     @Tainted String tainted = varArgsWithFormals(1);
     @Untainted String untainted = varArgsWithFormals(1, "a");
     @Untainted String untainted2 = varArgsWithFormals(1, "a", "b");
   }
 
-  void testVarArgsWithFormalsInvalid() {
+  void testVarargsWithFormalsInvalid() {
     // :: error: (assignment)
     @Untainted String tainted = varArgsWithFormals(1);
   }
 
-  void testVarArgsWithPolyFormals() {
+  void testVarargsWithPolyFormals() {
     @Tainted String tainted = varArgsWithPolyFormals(1);
 
     // :: warning: (cast.unsafe)
@@ -32,7 +32,7 @@ class PolyVarArgs {
     @Untainted String untainted = varArgsWithPolyFormals(safeInt, "a");
   }
 
-  void testVarArgsWithPolyFormalsInvalid() {
+  void testVarargsWithPolyFormalsInvalid() {
     // :: error: (assignment)
     @Untainted String tainted = varArgsWithPolyFormals(1);
   }

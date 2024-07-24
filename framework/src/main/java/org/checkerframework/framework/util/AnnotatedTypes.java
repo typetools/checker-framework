@@ -1019,6 +1019,7 @@ public class AnnotatedTypes {
       Tree invok) {
 
     List<AnnotatedTypeMirror> parameters = method.getParameterTypes();
+
     // Handle anonymous constructors that extend a class with an enclosing type,
     // as in `new MyClass(){ ... }`.
     if (method.getElement().getKind() == ElementKind.CONSTRUCTOR
@@ -1082,7 +1083,7 @@ public class AnnotatedTypes {
    * @param args the types of the arguments at the call site
    * @return the method parameters, with varargs replaced by instances of its component type
    */
-  public static List<AnnotatedTypeMirror> expandVarArgsParametersFromTypes(
+  public static List<AnnotatedTypeMirror> expandVarargsParametersFromTypes(
       AnnotatedExecutableType method, List<AnnotatedTypeMirror> args) {
     List<AnnotatedTypeMirror> parameters = method.getParameterTypes();
     if (!method.getElement().isVarArgs()) {
@@ -1124,14 +1125,14 @@ public class AnnotatedTypes {
   public static AnnotatedTypeMirror getAnnotatedTypeMirrorOfParameter(
       AnnotatedExecutableType methodType, int index) {
     List<AnnotatedTypeMirror> parameterTypes = methodType.getParameterTypes();
-    boolean hasVarArg = methodType.getElement().isVarArgs();
+    boolean hasVarargs = methodType.getElement().isVarArgs();
 
     int lastIndex = parameterTypes.size() - 1;
     AnnotatedTypeMirror lastType = parameterTypes.get(lastIndex);
     boolean parameterBeforeVarargs = index < lastIndex;
     if (!parameterBeforeVarargs && lastType instanceof AnnotatedArrayType) {
       AnnotatedArrayType arrayType = (AnnotatedArrayType) lastType;
-      if (hasVarArg) {
+      if (hasVarargs) {
         return arrayType.getComponentType();
       }
     }

@@ -868,7 +868,7 @@ public abstract class JavaExpression {
    */
   private static List<JavaExpression> argumentTreesToJavaExpressions(
       ExecutableElement method, List<? extends ExpressionTree> argTrees) {
-    if (isVarArgsInvocation(method, argTrees)) {
+    if (isVarargsInvocation(method, argTrees)) {
       List<JavaExpression> result = new ArrayList<>(method.getParameters().size());
       for (int i = 0; i < method.getParameters().size() - 1; i++) {
         result.add(JavaExpression.fromTree(argTrees.get(i)));
@@ -897,7 +897,7 @@ public abstract class JavaExpression {
    * @param args the arguments at the call site
    * @return true if method is a varargs method and its varargs arguments are not passed in an array
    */
-  private static boolean isVarArgsInvocation(
+  private static boolean isVarargsInvocation(
       ExecutableElement method, List<? extends ExpressionTree> args) {
     if (!method.isVarArgs()) {
       return false;

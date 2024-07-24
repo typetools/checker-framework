@@ -1,7 +1,17 @@
-Version 3.45.0 (July 2, 2024)
+Version 3.46.0 (August 1, 2024)
 -----------------------------
 
 **User-visible changes:**
+
+Renamed `@EnsuresCalledMethodsVarArgs`to `@EnsuresCalledMethodsVarargs`.
+
+**Implementation details:**
+
+**Closed issues:**
+
+
+Version 3.45.0 (July 1, 2024)
+-----------------------------
 
 **Implementation details:**
 
@@ -12,6 +22,8 @@ Deprecated methods:
  * `TreeUtils.isVarArgMethodCall()` => `isVarargsCall()`
 
 **Closed issues:**
+
+#152, #5575, #6630, #6641, #6648, #6676.
 
 
 Version 3.44.0 (June 3, 2024)
@@ -150,7 +162,7 @@ crash when compiling them.
 **Implementation details:**
 
 Dataflow supports all the new Java 21 language features.
- * A new node,`DeconstructorPatternNode`, was added, so any implementation of
+ * A new node, `DeconstructorPatternNode`, was added, so any implementation of
    `NodeVisitor` must be updated.
  * Method `InstanceOfNode.getBindingVariable()` is deprecated; use
    `getPatternNode()` or `getBindingVariables()` instead.

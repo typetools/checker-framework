@@ -258,10 +258,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   /** True if "-AajavaChecks" was passed on the command line. */
   private final boolean ajavaChecks;
 
-  /** True if "-AassumeSideEffectFree" or "-aassumePure" was passed on the command line. */
+  /** True if "-AassumeSideEffectFree" or "-AassumePure" was passed on the command line. */
   private final boolean assumeSideEffectFree;
 
-  /** True if "-AassumeDeterministic" or "-aassumePure" was passed on the command line. */
+  /** True if "-AassumeDeterministic" or "-AassumePure" was passed on the command line. */
   private final boolean assumeDeterministic;
 
   /** True if "-AassumePureGetters" was passed on the command line. */
@@ -3652,19 +3652,22 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       List<? extends ExpressionTree> passedArgs,
       CharSequence executableName,
       List<?> paramNames) {
-    int size = requiredTypes.size();
-    assert size == passedArgs.size()
-        : "size mismatch between required args ("
-            + requiredTypes
-            + ") and passed args ("
-            + passedArgs
-            + ")";
+    int numRequired = requiredTypes.size();
+    assert numRequired == passedArgs.size()
+        : String.format(
+            "numRequired %d should equal %d in checkArguments(%s, %s, %s, %s)",
+            numRequired,
+            passedArgs.size(),
+            listToString(requiredTypes),
+            listToString(passedArgs),
+            executableName,
+            listToString(paramNames));
     int maxParamNamesIndex = paramNames.size() - 1;
     // Rather weak assertion, due to how varargs parameters are treated.
-    assert size >= maxParamNamesIndex
+    assert numRequired >= maxParamNamesIndex
         : String.format(
             "mismatched lengths %d %d %d checkArguments(%s, %s, %s, %s)",
-            size,
+            numRequired,
             passedArgs.size(),
             paramNames.size(),
             listToString(requiredTypes),
@@ -3672,7 +3675,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             executableName,
             listToString(paramNames));
 
-    for (int i = 0; i < size; ++i) {
+    for (int i = 0; i < numRequired; ++i) {
       AnnotatedTypeMirror requiredType = requiredTypes.get(i);
       ExpressionTree passedArg = passedArgs.get(i);
       Object paramName = paramNames.get(Math.min(i, maxParamNamesIndex));
@@ -4279,9 +4282,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           overriddenParams.remove(0);
         }
         // Deal with varargs
-        if (overrider.isVarArgs() && !overridden.isVarArgs()) {
+        if (overrider.isVarargs() && !overridden.isVarargs()) {
           overriderParams =
-              AnnotatedTypes.expandVarArgsParametersFromTypes(overrider, overriddenParams);
+              AnnotatedTypes.expandVarargsParametersFromTypes(overrider, overriddenParams);
         }
       }
 
@@ -4650,7 +4653,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Issues an error if access not allowed, based on an @Unused annotation.
+   * Issues an error if access is not allowed, based on an {@code @Unused} annotation.
    *
    * @param identifierTree the identifier being accessed; the method does nothing if it is not a
    *     field

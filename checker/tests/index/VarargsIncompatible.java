@@ -1,4 +1,4 @@
-public class VarArgsIncompatible {
+public class VarargsIncompatible {
 
   public static void test(int[] arr) {
     help(arr);
