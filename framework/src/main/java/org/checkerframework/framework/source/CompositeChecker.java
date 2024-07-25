@@ -128,10 +128,6 @@ public abstract class CompositeChecker extends SourceChecker {
     if (parentChecker == null) {
       // Only clear the path cache if this is the main checker.
       treePathCacher.clear();
-    } else {
-      if (parentChecker.getVisitor() != null) {
-        parentChecker.setRoot(newRoot);
-      }
     }
   }
 
