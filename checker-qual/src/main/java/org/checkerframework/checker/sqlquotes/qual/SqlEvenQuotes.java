@@ -24,14 +24,5 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf(SqlQuotesUnknown.class)
-@QualifierForLiterals(
-    stringPatterns =
-        "^"
-            // any number of paired quotes
-            + "((([^\\\\']|\\\\.)*+'){2})*+"
-            // no quotes
-            + "([^\\\\']|\\\\.)*+"
-            // possible final backslash
-            + "\\\\?"
-            + "$")
+@QualifierForLiterals(stringPatterns = "^([^']*('[^']*'[^']*)*)$")
 public @interface SqlEvenQuotes {}
