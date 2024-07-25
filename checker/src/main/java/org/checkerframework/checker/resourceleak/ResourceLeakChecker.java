@@ -26,7 +26,7 @@ import org.checkerframework.framework.source.SupportedOptions;
  * exceptions. All of its previous logic is now in the {@link RLCCalledMethodsChecker}, which is a
  * subchecker of this checker.
  *
- * <p>The checker hierarchy is: this "empty" RLC -> RLCCalledMethodsChecker -> MustCallChecker
+ * <p>The checker hierarchy is: this "empty" RLC | RLCCalledMethodsChecker | MustCallChecker
  *
  * <p>The MustCallChecker is a subchecker of the RLCCm checker (instead of a sibling), since we want
  * them to operate on the same cfg (so we can get both a CM and MC store for a given cfg block),
@@ -133,14 +133,6 @@ public class ResourceLeakChecker extends CompositeChecker {
    */
   private int numMustCallFailed = 0;
 
-  /**
-   * The cached set of ignored exceptions parsed from {@link #IGNORED_EXCEPTIONS}. Caching this
-   * field prevents the checker from issuing duplicate warnings about missing exception types.
-   *
-   * @see #getIgnoredExceptions()
-   */
-  private @MonotonicNonNull SetOfTypes ignoredExceptions = null;
-
   @Override
   protected Set<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
     Set<Class<? extends BaseTypeChecker>> checkers = super.getImmediateSubcheckerClasses();
@@ -149,6 +141,14 @@ public class ResourceLeakChecker extends CompositeChecker {
 
     return checkers;
   }
+
+  /**
+   * The cached set of ignored exceptions parsed from {@link #IGNORED_EXCEPTIONS}. Caching this
+   * field prevents the checker from issuing duplicate warnings about missing exception types.
+   *
+   * @see #getIgnoredExceptions()
+   */
+  private @MonotonicNonNull SetOfTypes ignoredExceptions = null;
 
   @Override
   public void reportError(
