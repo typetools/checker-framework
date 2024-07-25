@@ -4,7 +4,7 @@ import org.checkerframework.checker.sqlquotes.qual.SqlQuotesUnknown;
 
 public class SqlQuotesConcat {
   void oddOddConcat() {
-    @SqlOddQuotes String odd1 = "asd\\'f'asdf''\\";
+    @SqlOddQuotes String odd1 = "asd''f'asdf'''";
     @SqlOddQuotes String odd2 = "''asdf''''asdf'asdf'asdf'asdf";
     // :: error: (assignment)
     @SqlOddQuotes String oddResult1 = odd1 + odd2;
@@ -18,8 +18,8 @@ public class SqlQuotesConcat {
   }
 
   void oddEvenConcat() {
-    @SqlOddQuotes String odd1 = "asd\\'f'asdf''\\";
-    @SqlEvenQuotes String even1 = "'\\''a\\sdf";
+    @SqlOddQuotes String odd1 = "asd''f'asdf'''";
+    @SqlEvenQuotes String even1 = "''''a'sdf";
     // :: error: (assignment)
     @SqlEvenQuotes String evenResult1 = odd1 + even1;
     @SqlOddQuotes String oddResult1 = odd1 + even1;
@@ -32,8 +32,8 @@ public class SqlQuotesConcat {
   }
 
   void evenOddConcat() {
-    @SqlOddQuotes String odd1 = "asd\\'f'asdf''\\";
-    @SqlEvenQuotes String even1 = "'\\''a\\sdf";
+    @SqlOddQuotes String odd1 = "asd''f'asdf'''";
+    @SqlEvenQuotes String even1 = "''''a'sdf";
     // :: error: (assignment)
     @SqlEvenQuotes String evenResult1 = even1 + odd1;
     @SqlOddQuotes String oddResult1 = even1 + odd1;
@@ -46,13 +46,13 @@ public class SqlQuotesConcat {
   }
 
   void evenEvenConcat() {
-    @SqlEvenQuotes String even1 = "\\'''asdf''asd\\f'\\asdf'\\''asdf'asdf\\'";
+    @SqlEvenQuotes String even1 = "''''asdf''asd'f''asdf''''asdf'asdf''";
     @SqlEvenQuotes String even2 = "''asdf";
     // :: error: (assignment)
     @SqlOddQuotes String oddResult1 = even1 + even2;
     @SqlEvenQuotes String evenResult1 = even1 + even2;
 
-    @SqlEvenQuotes String even3 = "'a\\'sdf'";
+    @SqlEvenQuotes String even3 = "'a''sdf'";
     @SqlEvenQuotes String even4 = "'asdf''asdf'asdf'asdf'''";
     // :: error: (assignment)
     @SqlOddQuotes String oddResult2 = even3 + even4;
@@ -72,7 +72,7 @@ public class SqlQuotesConcat {
     @SqlEvenQuotes String evenResult2 = top + odd1;
     String topResult2 = top + odd1;
 
-    @SqlEvenQuotes String even1 = "'a\\'sdf'";
+    @SqlEvenQuotes String even1 = "'a''sdf'";
     // :: error: (assignment)
     @SqlOddQuotes String oddResult3 = even1 + top;
     // :: error: (assignment)
