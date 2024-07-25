@@ -14,6 +14,8 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * be passed to query execution methods.
  *
  * <p>Common use cases include unsanitized user input.
+ *
+ * @checker_framework.manual #sql-quotes-checker SQL Quotes Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

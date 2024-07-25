@@ -20,6 +20,8 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * ending single quote, such as “SELECT * FROM table WHERE field = ‘value”; connecting punctuation,
  * such as “’, “; and any combinations of the above with paired-off single quotes, such as “SELECT *
  * FROM table WHERE field1 = ‘value1’, field2 = ‘value2’, field3 = ‘”.
+ *
+ * @checker_framework.manual #sql-quotes-checker SQL Quotes Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

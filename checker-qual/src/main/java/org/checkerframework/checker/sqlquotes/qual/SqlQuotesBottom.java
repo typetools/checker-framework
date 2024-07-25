@@ -11,7 +11,12 @@ import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TargetLocations;
 import org.checkerframework.framework.qual.TypeUseLocation;
 
-/** Represents the bottom of the SQL Quotes qualifier hierarchy. */
+/**
+ * Represents the bottom of the SQL Quotes qualifier hierarchy.
+ *
+ * @checker_framework.manual #sql-quotes-checker SQL Quotes Checker
+ * @checker_framework.manual #bottom-type the bottom type
+ */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})

@@ -18,6 +18,8 @@ import org.checkerframework.framework.qual.SubtypeOf;
  *
  * <p>Common use cases include: SQL query fragments, such as “SELECT * FROM”; properly sanitized
  * user input; and complete SQL queries, such as “SELECT * FROM table WHERE field = ‘value’”.
+ *
+ * @checker_framework.manual #sql-quotes-checker SQL Quotes Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
