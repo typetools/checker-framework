@@ -1,0 +1,89 @@
+\htmlhr
+\chapterAndLabel{SQL Quotes Checker}{sql-quotes-checker}
+
+The SQL Quotes Checker helps prevent SQL injection vulnerabilities. Many
+\href{https://en.wikipedia.org/wiki/Sql_injection}{SQL injection} attacks
+involve malicious user input containing unescaped special characters such as the
+single quote, which can change whether subsequent concatenations are interpreted
+as SQL command code or as SQL query values. (Some databases support the use of the
+backslash as an escape character for single quotes. However, ANSI standard determines
+that single quotes in SQL queries should be escaped by \emph{doubling-up}:
+immediately preceding or following it with another single quote. The SQL Quotes Checker
+follows ANSI standard and considers doubled-up single quotes as one escaped single quote.)
+
+Consequently, the checker qualifies String literals by the parity of unescaped single
+quotes present. Furthermore, it marks user-supplied Strings as unsafe for SQL query
+use, as their quoting is unknown; the program must \emph{sanitize} all such values
+before concatenating them to a SQL query for execution. Sanitization can be done by
+parsing and quoting user input as necessary to ensure special characters are properly
+escaped. The SQL Quotes Checker guarantees that no unchecked values are passed to a
+SQL query execution statement. It is \emph{unable} to guarantee that hard-coded SQL
+queries written by the code author are safe for execution; e.g., the checker will not
+warn at compile time about improper uses of \code{DELETE} or \code{DROP} statements.
+
+It should be noted that using SQL parameters rather than direct concatenation of
+SQL query values onto SQL commands mitigates the danger of SQL injection attacks,
+as parameterized values are, by design, unable to be misinterpreted as part of a SQL
+command. Developers should strive to use parameterized queries when possible; the
+SQL Quotes Checker is at its most applicable when retrospectively securing existing
+programs involving user input concatenation.
+
+To run the SQL Quotes Checker, supply the
+\code{-processor SqlQuotesChecker}
+or
+\code{-processor org.checkerframework.checker.sqlquotes.SqlQuotesChecker}
+command-line option to javac.
+% for examples
+
+\sectionAndLabel{SQL quotes annotations}{sql-quotes-annotations}
+
+The SQL Quotes type system uses the following annotations:
+
+\begin{description}
+\item[\refqualclass{checker/sqlquotes/qual}{SqlEvenQuotes}]
+    indicates a String literal that contains zero or an even number of
+    single quotes.
+\item[\refqualclass{checker/sqlquotes/qual}{SqlOddQuotes}]
+    indicates a String literal that contains an odd number of single
+    quotes.
+\item[\refqualclass{checker/sqlquotes/qual}{SqlQuotesUnknown}]
+    indicates a String whose quoting is unknown.
+    \code{@SqlQuotesUnknown} is a supertype of \code{@SqlEvenQuotes}
+    and \code{@SqlOddQuotes}. It is the default qualifier for non-literal
+    Strings.
+\end{description}
+
+The subtyping hierarchy of the SQL Quotes Checker's qualifiers is shown in
+Figure~\ref{fig-sql-quotes-hierarchy}.
+
+\begin{figure}
+\includeimage{sql-quotes}{5.5cm}
+\caption{The subtyping relationship of the SQL Quotes Checker's qualifiers.
+  The type qualifiers are applicable to Strings. Qualifiers in gray are
+  used internally by the type system but should never be written by a programmer.}
+\label{fig-sql-quotes-hierarchy}
+\end{figure}
+
+\sectionAndLabel{What the SQL Quotes Checker checker}{sql-quotes-checks}
+
+Concatenation of \code{@SqlEvenQuotes} and \code{@SqlOddQuotes} Strings parallels
+integer parity over addition. In other words, concatenation of \code{@SqlOddQuotes}
+and \code{@SqlEvenQuotes} Strings are most narrowly typed as follows:
+
+\begin{verbatim}
+    @SqlOddQuotes + @SqlOddQuotes = @SqlEvenQuotes
+    @SqlOddQuotes + @SqlEvenQuotes = @SqlOddQuotes
+    @SqlEvenQuotes + @SqlOddQuotes = @SqlOddQuotes
+    @SqlEvenQuotes + @SqlEvenQuotes = @SqlEvenQuotes
+\end{verbatim}
+
+SQL query execution methods such as \code{Statement.executeQuery} will only accept
+the \code{@SqlEvenQuotes} qualifier as a parameter. Attempting to pass any other type to
+the method will throw a type mismatch error, as \code{@SqlQuotesUnknown} Strings contain
+unsanitized material that pose SQL injection risks and \code{@SqlOddQuotes} Strings will not
+evaluate syntactically.
+
+Similarly, when writing annotations with the SQL Quotes Checker, methods that access
+sensitive data (i.e., methods that query databases) should be annotated with the
+\code{@SqlEvenQuotes} qualifier to prohibit unsanitized values from interacting with
+said data.
