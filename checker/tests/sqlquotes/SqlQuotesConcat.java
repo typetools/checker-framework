@@ -4,7 +4,7 @@ import org.checkerframework.checker.sqlquotes.qual.SqlQuotesUnknown;
 
 public class SqlQuotesConcat {
   void oddOddConcat() {
-    @SqlOddQuotes String odd1 = "asd''f'asdf'''";
+    @SqlOddQuotes String odd1 = "asd''f'asdf''";
     @SqlOddQuotes String odd2 = "''asdf''''asdf'asdf'asdf'asdf";
     // :: error: (assignment)
     @SqlOddQuotes String oddResult1 = odd1 + odd2;
@@ -18,8 +18,8 @@ public class SqlQuotesConcat {
   }
 
   void oddEvenConcat() {
-    @SqlOddQuotes String odd1 = "asd''f'asdf'''";
-    @SqlEvenQuotes String even1 = "''''a'sdf";
+    @SqlOddQuotes String odd1 = "asd''f'asdf''";
+    @SqlEvenQuotes String even1 = "'''a'sdf";
     // :: error: (assignment)
     @SqlEvenQuotes String evenResult1 = odd1 + even1;
     @SqlOddQuotes String oddResult1 = odd1 + even1;
@@ -32,8 +32,8 @@ public class SqlQuotesConcat {
   }
 
   void evenOddConcat() {
-    @SqlOddQuotes String odd1 = "asd''f'asdf'''";
-    @SqlEvenQuotes String even1 = "''''a'sdf";
+    @SqlOddQuotes String odd1 = "asd''f'asdf''";
+    @SqlEvenQuotes String even1 = "'''a'sdf";
     // :: error: (assignment)
     @SqlEvenQuotes String evenResult1 = even1 + odd1;
     @SqlOddQuotes String oddResult1 = even1 + odd1;
