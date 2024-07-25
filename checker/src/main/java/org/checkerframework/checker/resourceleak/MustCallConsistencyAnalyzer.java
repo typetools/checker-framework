@@ -1865,8 +1865,9 @@ public class MustCallConsistencyAnalyzer {
 
   /**
    * Get all successor blocks for some block, except for those corresponding to ignored exception
-   * types. See {@link ResourceLeakAnalysis#isIgnoredExceptionType(TypeMirror)}. Each exceptional
-   * successor is paired with the type of exception that leads to it, for use in error messages.
+   * types. See {@link RLCCalledMethodsAnalysis#isIgnoredExceptionType(TypeMirror)}. Each
+   * exceptional successor is paired with the type of exception that leads to it, for use in error
+   * messages.
    *
    * @param block input block
    * @return set of pairs (b, t), where b is a successor block, and t is the type of exception for
