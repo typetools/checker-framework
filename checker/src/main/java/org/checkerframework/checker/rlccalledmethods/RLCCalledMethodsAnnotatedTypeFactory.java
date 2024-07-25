@@ -12,6 +12,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.calledmethods.CalledMethodsAnnotatedTypeFactory;
 import org.checkerframework.checker.calledmethods.EnsuresCalledMethodOnExceptionContract;
@@ -394,7 +395,10 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
    */
   @Override
   public boolean isIgnoredExceptionType(TypeMirror exceptionType) {
-    return ((RLCCalledMethodsAnalysis) analysis).isIgnoredExceptionType(exceptionType);
+    if (exceptionType.getKind() == TypeKind.DECLARED) {
+      return ((RLCCalledMethodsAnalysis) analysis).isIgnoredExceptionType(exceptionType);
+    }
+    return false;
   }
 
   /**
