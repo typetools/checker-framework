@@ -10,10 +10,10 @@ import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
  * Used to denote a String that contains an odd number of unescaped single quotes – i.e., there must
- * be an odd number of ‘ characters in a SqlOddQuotes String that are not preceded immediately by a
- * SQL \ character. (Thus, when written in Java, a SqlOddQuotes String contains an odd number of
- * single quotes that are not preceded by a double backslash.) SqlOddQuotes Strings are not
- * syntactical to be passed to query execution methods.
+ * be an odd number of ‘ characters in a SqlOddQuotes String that are not preceded immediately by
+ * another ' character. (Thus, all SqlOddQuotes Strings ultimately contain an odd number of single
+ * quotes, escaped or otherwise.) SqlOddQuotes Strings are not syntactical to be passed to query
+ * execution methods.
  *
  * <p>Common use cases include: SQL query fragments to be concatenated with user input, such as
  * “SELECT * FROM table WHERE field = ‘”; SQL query fragments containing user input but missing an

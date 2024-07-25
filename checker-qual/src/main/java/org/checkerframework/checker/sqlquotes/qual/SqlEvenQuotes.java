@@ -11,8 +11,8 @@ import org.checkerframework.framework.qual.SubtypeOf;
 /**
  * Used to denote a String that contains either zero or an even number of unescaped single quotes –
  * i.e., there must be either zero or an even number of ‘ characters in a SqlEvenQuotes String that
- * are not preceded immediately by a SQL \ character. (Thus, when written in Java, a SqlEvenQuotes
- * String contains an even number of single quotes that are not preceded by a double backslash.)
+ * are not preceded immediately by another ' character. (Thus, all SqlEvenQuotes Strings ultimately
+ * contain an even number of ' characters, escaped or otherwise.)
  * SqlEvenQuotes Strings are syntactical to be passed to query execution methods and are guaranteed
  * to have no impact on whether subsequent concatenations are interpreted as SQL command code or as
  * SQL query values.
