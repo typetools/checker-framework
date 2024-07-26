@@ -24,6 +24,7 @@ propkey-checker.tex \
 signature-checker.tex \
 guieffect-checker.tex \
 units-checker.tex \
+sql-quotes-checker.tex \
 signedness-checker.tex \
 purity-checker.tex \
 constant-value-checker.tex \

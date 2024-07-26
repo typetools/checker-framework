@@ -19,8 +19,8 @@ public class SqlQuotesVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> 
   }
 
   /**
-   * Don't check that the constructor result is top. Checking that the super() or this() call is a
-   * subtype of the constructor result is sufficient.
+   * This override does not check that the constructor result is top. Checking that the super() or
+   * this() call is a subtype of the constructor result is sufficient.
    */
   @Override
   protected void checkConstructorResult(
