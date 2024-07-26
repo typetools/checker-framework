@@ -11,4 +11,7 @@ import org.checkerframework.framework.qual.StubFiles;
  * sanitized before use.
  */
 @StubFiles({"BCryptPasswordEncoder.astub", "Statement.astub"})
-public class SqlQuotesChecker extends BaseTypeChecker {}
+public class SqlQuotesChecker extends BaseTypeChecker {
+  /** Creates a SqlQuotesChecker. */
+  public SqlQuotesChecker() {}
+}
