@@ -26,24 +26,6 @@ repositories {
   mavenCentral()
 }
 
-tasks.register('resolveDependencies') {
-  // http://www.jonathanpearlin.com/2014/10/28/gradle_resolve_all_dependencies.html
-  doLast {
-    project.rootProject.allprojects.each { subProject ->
-      subProject.buildscript.configurations.each { configuration ->
-        if (configuration.canBeResolved) {
-          configuration.resolve()
-        }
-      }
-      subProject.configurations.each { configuration ->
-        if (configuration.canBeResolved) {
-          configuration.resolve()
-        }
-      }
-    }
-  }
-}
-
 ext {
   // This call to `isCompatibleWith` causes a Gradle run-time failure: "No signature of method".
   // isJava17compatible = JavaVersion.isCompatibleWith(JavaVersion.VERSION_17)
@@ -95,6 +77,26 @@ task installGitHooks(type: Copy, dependsOn: 'setLocalRepo') {
   from files('checker/bin-devel/git.post-merge', 'checker/bin-devel/git.pre-commit')
   rename('git\\.(.*)', '$1')
   into localRepo + '/hooks'
+}
+
+tasks.register('resolveDependencies') {
+  // Copied from here:
+  // http://www.jonathanpearlin.com/2014/10/28/gradle_resolve_all_dependencies.html
+  description 'Resolves all dependencies.'
+  doLast {
+    project.rootProject.allprojects.each { subProject ->
+      subProject.buildscript.configurations.each { configuration ->
+        if (configuration.canBeResolved) {
+          configuration.resolve()
+        }
+      }
+      subProject.configurations.each { configuration ->
+        if (configuration.canBeResolved) {
+          configuration.resolve()
+        }
+      }
+    }
+  }
 }
 
 spotless {
