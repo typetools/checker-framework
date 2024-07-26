@@ -521,7 +521,17 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       return;
     }
     computeNewValueAndInsert(
-        expr, newValue, CFAbstractValue<V>::greatestLowerBound, permitNondeterministic);
+        expr,
+        newValue,
+        (v1, v2) -> {
+          if (v1 == null) {
+            return v2;
+          } else if (v2 == null) {
+            return v1;
+          }
+          return v1.greatestLowerBound(v2);
+        },
+        permitNondeterministic);
   }
 
   /** Returns true if {@code expr} can be stored in this store. */
