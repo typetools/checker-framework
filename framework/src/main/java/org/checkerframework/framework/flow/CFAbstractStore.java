@@ -688,7 +688,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * @param merger the function used to merge {@code value} and the previous value of {@code expr}
    */
   /*package-private*/ void computeNewValueAndInsertImpl(
-      JavaExpression expr, V value, BinaryOperator<V> merger) {
+      JavaExpression expr, @Nullable V value, BinaryOperator<V> merger) {
     if (expr instanceof LocalVariable) {
       LocalVariable localVar = (LocalVariable) expr;
       V oldValue = localVariableValues.get(localVar);
