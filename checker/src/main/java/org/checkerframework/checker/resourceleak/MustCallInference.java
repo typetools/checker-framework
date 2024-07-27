@@ -71,9 +71,9 @@ import org.plumelib.util.CollectionsPlume;
  *
  * <p>Each instance of this class corresponds to a single control flow graph (CFG), typically
  * representing a method. The entry method of this class is {@link
- * #runMustCallInference(ResourceLeakAnnotatedTypeFactory, ControlFlowGraph,
- * MustCallConsistencyAnalyzer)}, invoked from the {@link
- * RLCCalledMethodsAnnotatedTypeFactory#postAnalyze} method when Whole Program Inference is enabled.
+ * #runMustCallInference(ResourceLeakChecker, ControlFlowGraph, MustCallConsistencyAnalyzer)},
+ * invoked from the {@link RLCCalledMethodsAnnotatedTypeFactory#postAnalyze} method when Whole
+ * Program Inference is enabled.
  *
  * <p>The algorithm determines if the @MustCall obligation of a field is satisfied along some path
  * leading to the regular exit point of the method. If the obligation is satisfied, the algorithm
