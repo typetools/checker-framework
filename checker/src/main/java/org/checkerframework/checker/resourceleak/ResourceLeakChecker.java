@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableSet;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NavigableSet;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -285,5 +286,12 @@ public class ResourceLeakChecker extends CompositeChecker {
       return null;
     }
     return types.getDeclaredType(elem);
+  }
+
+  @Override
+  public NavigableSet<String> getSuppressWarningsPrefixes() {
+    NavigableSet<String> result = super.getSuppressWarningsPrefixes();
+    result.add("builder");
+    return result;
   }
 }

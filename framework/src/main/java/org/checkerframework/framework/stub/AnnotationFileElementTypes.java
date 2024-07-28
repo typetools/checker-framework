@@ -300,7 +300,7 @@ public class AnnotationFileElementTypes {
    * @param annotationFiles list of files and directories to parse
    * @param fileType the file type of files to parse
    */
-  @SuppressWarnings("resourceleak:required.method.not.called" // `allFiles` may contain multiple
+  @SuppressWarnings("builder:required.method.not.called" // `allFiles` may contain multiple
   // JarEntryAnnotationFileResource.  Each of those references a zip file entry resource, which
   // itself references a ZipFile resource -- the same ZipFile for multiple zip file entries.
   // Closing any one of the zip file entries will close the ZipFile, which invalidates the
