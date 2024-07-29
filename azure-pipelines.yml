@@ -19,7 +19,6 @@ jobs:
 ## TODO: The jdk20 jobs are a bit gratuitous.  They are placeholders for jdk22 when it is released.
 ## Leaving those placeholders will ease the jdk22 edits to this file.
 
-# misc_jdk20 because JDK 20 adds more strict checking (e.g., Javadoc)
 - job: canary_jobs
   dependsOn:
    - junit_jdk21
@@ -29,7 +28,6 @@ jobs:
    - typecheck_part1_jdk21
    - typecheck_part2_jdk21
    - misc_jdk21
-   # - misc_jdk20
   pool:
     vmImage: 'ubuntu-latest'
   steps:
@@ -205,7 +203,6 @@ jobs:
   container: mdernst/cf-ubuntu-jdk11-plus:latest
   steps:
   - checkout: self
-    fetchDepth: 25
   - bash: ./checker/bin-devel/test-misc.sh
     displayName: test-misc.sh
 - job: misc_jdk17
@@ -217,7 +214,6 @@ jobs:
   container: mdernst/cf-ubuntu-jdk17-plus:latest
   steps:
   - checkout: self
-    fetchDepth: 25
   - bash: ./checker/bin-devel/test-misc.sh
     displayName: test-misc.sh
 - job: misc_jdk21
@@ -226,7 +222,6 @@ jobs:
   container: mdernst/cf-ubuntu-jdk21-plus:latest
   steps:
   - checkout: self
-    fetchDepth: 25
   - bash: ./checker/bin-devel/test-misc.sh
     displayName: test-misc.sh
 # - job: misc_jdk20
