@@ -24,10 +24,11 @@ import org.checkerframework.framework.source.SupportedOptions;
 /**
  * The entry point for the Resource Leak Checker. This checker only counts the number of {@link
  * org.checkerframework.checker.mustcall.qual.MustCall} annotations and defines a set of ignored
- * exceptions. All of its previous logic is now in the {@link RLCCalledMethodsChecker}, which is a
- * subchecker of this checker.
+ * exceptions. This checker calls the {@link RLCCalledMethodsChecker} as a direct subchecker, which
+ * then in turn calls the {@link MustCallChecker} as a subchecker and traverses the cfg to check
+ * whether all MustCall obligations are fulfilled.
  *
- * <p>The checker hierarchy is: this "empty" RLC | RLCCalledMethodsChecker | MustCallChecker
+ * <p>The checker hierarchy is: this "empty" RLC -> RLCCalledMethodsChecker -> MustCallChecker
  *
  * <p>The MustCallChecker is a subchecker of the RLCCm checker (instead of a sibling), since we want
  * them to operate on the same cfg (so we can get both a CM and MC store for a given cfg block),
