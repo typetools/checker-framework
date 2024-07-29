@@ -1,9 +1,13 @@
 package org.checkerframework.common.basetype;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 import java.util.Collection;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.dataflow.cfg.visualize.CFGVisualizer;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.source.CompositeChecker;
@@ -14,8 +18,11 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.javacutil.AbstractTypeProcessor;
 import org.checkerframework.javacutil.AnnotationProvider;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypeSystemError;
+import org.checkerframework.javacutil.UserError;
 import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.StringsPlume;
 
 /**
  * An abstract {@link SourceChecker} that provides a simple {@link
@@ -213,5 +220,76 @@ public abstract class BaseTypeChecker extends CompositeChecker {
     }
 
     return ultimateParentChecker;
+  }
+
+  /**
+   * Invokes the constructor belonging to the class named by {@code name} having the given parameter
+   * types on the given arguments. Returns {@code null} if the class cannot be found. Otherwise,
+   * throws an exception if there is trouble with the constructor invocation.
+   *
+   * @param <T> the type to which the constructor belongs
+   * @param name the name of the class to which the constructor belongs
+   * @param paramTypes the types of the constructor's parameters
+   * @param args the arguments on which to invoke the constructor
+   * @return the result of the constructor invocation on {@code args}, or null if the class does not
+   *     exist
+   */
+  @SuppressWarnings({"unchecked", "TypeParameterUnusedInFormals"}) // Intentional abuse
+  public static <T> @Nullable T invokeConstructorFor(
+      @ClassGetName String name, Class<?>[] paramTypes, Object[] args) {
+
+    // Load the class.
+    Class<T> cls;
+    try {
+      cls = (Class<T>) Class.forName(name);
+    } catch (Exception e) {
+      // no class is found, simply return null
+      return null;
+    }
+
+    assert cls != null : "reflectively loading " + name + " failed";
+
+    // Invoke the constructor.
+    try {
+      Constructor<T> ctor = cls.getConstructor(paramTypes);
+      return ctor.newInstance(args);
+    } catch (Throwable t) {
+      if (t instanceof InvocationTargetException) {
+        Throwable err = t.getCause();
+        if (err instanceof UserError || err instanceof TypeSystemError) {
+          // Don't add more information about the constructor invocation.
+          throw (RuntimeException) err;
+        }
+      } else if (t instanceof NoSuchMethodException) {
+        // Note: it's possible that NoSuchMethodException was caused by
+        // `ctor.newInstance(args)`, if the constructor itself uses reflection.
+        // But this case is unlikely.
+        throw new TypeSystemError(
+            "Could not find constructor %s(%s)", name, StringsPlume.join(", ", paramTypes));
+      }
+
+      Throwable cause;
+      String causeMessage;
+      if (t instanceof InvocationTargetException) {
+        cause = t.getCause();
+        if (cause == null || cause.getMessage() == null) {
+          causeMessage = t.getMessage();
+        } else if (t.getMessage() == null) {
+          causeMessage = cause.getMessage();
+        } else {
+          causeMessage = t.getMessage() + ": " + cause.getMessage();
+        }
+      } else {
+        cause = t;
+        causeMessage = (cause == null) ? "null" : cause.getMessage();
+      }
+      throw new BugInCF(
+          cause,
+          "Error when invoking constructor %s(%s) on args %s; cause: %s",
+          name,
+          StringsPlume.join(", ", paramTypes),
+          Arrays.toString(args),
+          causeMessage);
+    }
   }
 }
