@@ -59,6 +59,9 @@ import org.plumelib.util.CollectionsPlume;
  */
 public abstract class BaseTypeChecker extends CompositeChecker {
 
+  /** An array containing just {@code BaseTypeChecker.class}. */
+  protected static Class<?>[] baseTypeCheckerClassArray = new Class<?>[] {BaseTypeChecker.class};
+
   /** Create a new BaseTypeChecker. */
   protected BaseTypeChecker() {}
 

@@ -153,9 +153,9 @@ public abstract class CompositeChecker extends SourceChecker {
    * checker A.)
    *
    * <p>This method is protected so it can be overridden, but it should only be called internally by
-   * the BaseTypeChecker.
+   * the CompositeChecker.
    *
-   * <p>The BaseTypeChecker will not modify the list returned by this method, but other clients do
+   * <p>The CompositeChecker will not modify the list returned by this method, but other clients do
    * modify the list.
    *
    * @return the subchecker classes on which this checker depends; will be modified by callees
@@ -180,9 +180,6 @@ public abstract class CompositeChecker extends SourceChecker {
   public boolean shouldResolveReflection() {
     return hasOptionNoSubcheckers("resolveReflection");
   }
-
-  /** An array containing just {@code BaseTypeChecker.class}. */
-  protected static Class<?>[] baseTypeCheckerClassArray = new Class<?>[] {BaseTypeChecker.class};
 
   /**
    * Returns the name of a class related to a given one, by replacing "Checker" or "Subchecker" by
