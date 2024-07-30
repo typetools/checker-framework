@@ -52,6 +52,10 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
    */
   private final boolean enableWpiForRlc;
 
+  /**
+   * Shadowed because we must dispatch to the RLCCm Checker's version of getTypefactoryOfSubchecker
+   * to get the correct MustCallAnnotatedTypeFactory.
+   */
   private final RLCCalledMethodsAnnotatedTypeFactory typeFactory;
 
   /**
