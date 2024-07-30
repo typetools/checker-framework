@@ -38,8 +38,13 @@ import org.plumelib.util.CollectionsPlume;
 /**
  * An abstract {@link SourceChecker} that provides support for subcheckers and manages their
  * messages. It doesn't require an extending checker to provide a qualifier hierarchy, type factory
- * or visitor. Hence, it can be used similar to an {@link AggregateChecker}, with the additional
- * service of managing messages.
+ * or visitor. Hence, it can be used similar to an {@link AggregateChecker}, with additional
+ * services, such as managing messages.
+ *
+ * <p>The subcheckers of a CompositeChecker however must subclass {@link BaseTypeChecker}, which is
+ * itself a direct subclass of the CompositeChecker. This is because a CompositeChecker is a
+ * top-level 'container checker', which is mainly used to call other subcheckers, which are expected
+ * to have qualifier hierarchies, type factories and visitors.
  */
 public abstract class CompositeChecker extends SourceChecker {
 
