@@ -555,7 +555,6 @@ public class MustCallConsistencyAnalyzer {
    * @param rlc the ResourceLeakChecker
    */
   public MustCallConsistencyAnalyzer(ResourceLeakChecker rlc) {
-    // this.typeFactory = typeFactory;
     this.cmAtf =
         (RLCCalledMethodsAnnotatedTypeFactory)
             rlc.getSubchecker(RLCCalledMethodsChecker.class).getTypeFactory();

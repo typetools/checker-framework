@@ -52,6 +52,8 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
    */
   private final boolean enableWpiForRlc;
 
+  private final RLCCalledMethodsAnnotatedTypeFactory typeFactory;
+
   /**
    * Creates a new RLCCalledMethodsVisitor.
    *
@@ -62,16 +64,14 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
     assert (checker.getParentChecker() instanceof ResourceLeakChecker);
     this.enableWpiForRlc =
         checker.getParentChecker().hasOption(ResourceLeakChecker.ENABLE_WPI_FOR_RLC);
+    typeFactory = (RLCCalledMethodsAnnotatedTypeFactory) atypeFactory;
   }
 
   @Override
   public void processMethodTree(MethodTree tree) {
     ExecutableElement elt = TreeUtils.elementFromDeclaration(tree);
-    MustCallAnnotatedTypeFactory mcAtf =
-        ((RLCCalledMethodsAnnotatedTypeFactory) atypeFactory).getMustCallAnnotatedTypeFactory();
-    List<String> cmcfValues =
-        getCreatesMustCallForValues(
-            elt, mcAtf, (RLCCalledMethodsAnnotatedTypeFactory) atypeFactory);
+    MustCallAnnotatedTypeFactory mcAtf = typeFactory.getMustCallAnnotatedTypeFactory();
+    List<String> cmcfValues = getCreatesMustCallForValues(elt, mcAtf, typeFactory);
     if (!cmcfValues.isEmpty()) {
       checkCreatesMustCallForOverrides(tree, elt, mcAtf, cmcfValues);
       checkCreatesMustCallForTargetsHaveNonEmptyMustCall(tree, mcAtf);
@@ -103,9 +103,7 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
           mcAtf
               .getAnnotatedType(TypesUtils.getTypeElement(targetExpr.getType()))
               .getPrimaryAnnotationInHierarchy(mcAtf.TOP);
-      if (((RLCCalledMethodsAnnotatedTypeFactory) atypeFactory)
-          .getMustCallValues(mustCallAnno)
-          .isEmpty()) {
+      if (typeFactory.getMustCallValues(mustCallAnno).isEmpty()) {
         checker.reportError(
             tree,
             "creates.mustcall.for.invalid.target",
@@ -133,8 +131,7 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
     // overwritten by a CMCF method, but the CMCF effect wouldn't occur.
     for (ExecutableElement overridden : ElementUtils.getOverriddenMethods(elt, this.types)) {
       List<String> overriddenCmcfValues =
-          getCreatesMustCallForValues(
-              overridden, mcAtf, (RLCCalledMethodsAnnotatedTypeFactory) atypeFactory);
+          getCreatesMustCallForValues(overridden, mcAtf, typeFactory);
       if (!overriddenCmcfValues.containsAll(cmcfValues)) {
         String foundCmcfValueString = String.join(", ", cmcfValues);
         String neededCmcfValueString = String.join(", ", overriddenCmcfValues);
@@ -235,9 +232,7 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
   private void checkMustCallAliasAnnotationForConstructor(MethodTree tree) {
     ExecutableElement constructorDecl = TreeUtils.elementFromDeclaration(tree);
     boolean isMustCallAliasAnnoOnConstructor =
-        constructorDecl != null
-            && ((RLCCalledMethodsAnnotatedTypeFactory) atypeFactory)
-                .hasMustCallAlias(constructorDecl);
+        constructorDecl != null && typeFactory.hasMustCallAlias(constructorDecl);
     Element paramWithMustCallAliasAnno = getParameterWithMustCallAliasAnno(tree);
     checkMustCallAliasAnnoMismatch(
         paramWithMustCallAliasAnno, isMustCallAliasAnnoOnConstructor, tree);
@@ -290,13 +285,11 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
    */
   private @Nullable Element getParameterWithMustCallAliasAnno(MethodTree tree) {
     VariableTree receiverParameter = tree.getReceiverParameter();
-    if (receiverParameter != null
-        && ((RLCCalledMethodsAnnotatedTypeFactory) atypeFactory)
-            .hasMustCallAlias(receiverParameter)) {
+    if (receiverParameter != null && typeFactory.hasMustCallAlias(receiverParameter)) {
       return TreeUtils.elementFromDeclaration(receiverParameter);
     }
     for (VariableTree param : tree.getParameters()) {
-      if (((RLCCalledMethodsAnnotatedTypeFactory) atypeFactory).hasMustCallAlias(param)) {
+      if (typeFactory.hasMustCallAlias(param)) {
         return TreeUtils.elementFromDeclaration(param);
       }
     }
@@ -391,8 +384,8 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
   public Void visitVariable(VariableTree tree, Void p) {
     VariableElement varElement = TreeUtils.elementFromDeclaration(tree);
     if (varElement.getKind().isField()
-        && !((RLCCalledMethodsAnnotatedTypeFactory) atypeFactory).noLightweightOwnership
-        && atypeFactory.getDeclAnnotation(varElement, Owning.class) != null) {
+        && !typeFactory.noLightweightOwnership
+        && typeFactory.getDeclAnnotation(varElement, Owning.class) != null) {
       checkOwningField(varElement);
     }
 
@@ -454,7 +447,7 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
 
     Set<Modifier> modifiers = field.getModifiers();
     if (modifiers.contains(Modifier.STATIC)) {
-      if (((RLCCalledMethodsAnnotatedTypeFactory) atypeFactory).permitStaticOwning) {
+      if (typeFactory.permitStaticOwning) {
         return;
       }
       if (modifiers.contains(Modifier.FINAL)) {
@@ -462,8 +455,7 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
       }
     }
 
-    List<String> mustCallObligationsOfOwningField =
-        ((RLCCalledMethodsAnnotatedTypeFactory) atypeFactory).getMustCallValues(field);
+    List<String> mustCallObligationsOfOwningField = typeFactory.getMustCallValues(field);
 
     if (mustCallObligationsOfOwningField.isEmpty()) {
       return;
@@ -481,8 +473,7 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
 
     String error;
     Element enclosingElement = field.getEnclosingElement();
-    List<String> enclosingMustCallValues =
-        ((RLCCalledMethodsAnnotatedTypeFactory) atypeFactory).getMustCallValues(enclosingElement);
+    List<String> enclosingMustCallValues = typeFactory.getMustCallValues(enclosingElement);
 
     if (enclosingMustCallValues == null) {
       error =
@@ -504,22 +495,19 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
           ExecutableElement siblingMethod = (ExecutableElement) siblingElement;
 
           AnnotationMirrorSet allEnsuresCalledMethodsAnnos =
-              getEnsuresCalledMethodsAnnotations(
-                  siblingMethod, (RLCCalledMethodsAnnotatedTypeFactory) atypeFactory);
+              getEnsuresCalledMethodsAnnotations(siblingMethod, typeFactory);
           for (AnnotationMirror ensuresCalledMethodsAnno : allEnsuresCalledMethodsAnnos) {
             List<String> values =
                 AnnotationUtils.getElementValueArray(
                     ensuresCalledMethodsAnno,
-                    ((RLCCalledMethodsAnnotatedTypeFactory) atypeFactory)
-                        .ensuresCalledMethodsValueElement,
+                    typeFactory.ensuresCalledMethodsValueElement,
                     String.class);
             for (String value : values) {
               if (expressionEqualsField(value, field)) {
                 List<String> methods =
                     AnnotationUtils.getElementValueArray(
                         ensuresCalledMethodsAnno,
-                        ((RLCCalledMethodsAnnotatedTypeFactory) atypeFactory)
-                            .ensuresCalledMethodsMethodsElement,
+                        typeFactory.ensuresCalledMethodsMethodsElement,
                         String.class);
                 for (String method : methods) {
                   unsatisfiedMustCallObligationsOfOwningField.remove(
@@ -530,8 +518,7 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
             }
 
             Set<EnsuresCalledMethodOnExceptionContract> exceptionalPostconds =
-                ((RLCCalledMethodsAnnotatedTypeFactory) atypeFactory)
-                    .getExceptionalPostconditions(siblingMethod);
+                typeFactory.getExceptionalPostconditions(siblingMethod);
             for (EnsuresCalledMethodOnExceptionContract postcond : exceptionalPostconds) {
               if (expressionEqualsField(postcond.getExpression(), field)) {
                 unsatisfiedMustCallObligationsOfOwningField.remove(
@@ -655,7 +642,6 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
 
   @Override
   protected boolean shouldPerformContractInference() {
-    return ((RLCCalledMethodsAnnotatedTypeFactory) atypeFactory).getWholeProgramInference() != null
-        && isWpiEnabledForRLC();
+    return typeFactory.getWholeProgramInference() != null && isWpiEnabledForRLC();
   }
 }
