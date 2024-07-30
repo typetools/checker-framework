@@ -249,6 +249,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             || (assumePureGetters && ElementUtils.isGetter(method))
             || atypeFactory.isSideEffectFree(method));
     if (hasSideEffect) {
+      updateForSideEffect(gatypeFactory);
       localVariableValues
           .values()
           .forEach(
@@ -258,7 +259,6 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                   v.getElseStore().updateForSideEffect(gatypeFactory);
                 }
               });
-      updateForSideEffect(gatypeFactory);
     }
 
     // store information about method call if possible
@@ -666,6 +666,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       return;
     }
 
+    computeNewValueAndInsertImpl(expr, value, merger);
+
     localVariableValues
         .values()
         .forEach(
@@ -675,8 +677,6 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                 v.getElseStore().computeNewValueAndInsertImpl(expr, value, merger);
               }
             });
-
-    computeNewValueAndInsertImpl(expr, value, merger);
   }
 
   /**
@@ -824,6 +824,21 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       // Expressions containing unknown expressions are not stored.
       return;
     }
+
+    clearValueImpl(expr);
+    localVariableValues
+        .values()
+        .forEach(
+            v -> {
+              if (v != null && v.getThenStore() != null) {
+                v.getThenStore().clearValueImpl(expr);
+                v.getElseStore().clearValueImpl(expr);
+              }
+            });
+  }
+
+  /*package-private*/ void clearValueImpl(JavaExpression expr) {
+
     if (expr instanceof LocalVariable) {
       LocalVariable localVar = (LocalVariable) expr;
       localVariableValues.remove(localVar);
