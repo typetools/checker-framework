@@ -1,6 +1,7 @@
 package org.checkerframework.checker.sqlquotes;
 
 import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.CompoundAssignmentTree;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.sqlquotes.qual.SqlEvenQuotes;
@@ -120,6 +121,45 @@ public class SqlQuotesAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         } else {
           type.replaceAnnotation(SQL_ODD_QUOTES);
         }
+      }
+
+      return null;
+    }
+
+    @Override
+    public Void visitCompoundAssignment(CompoundAssignmentTree tree, AnnotatedTypeMirror type) {
+      if (TreeUtils.isStringCompoundConcatenation(tree)) {
+        AnnotatedTypeMirror leftType = getAnnotatedType(tree.getVariable());
+        AnnotatedTypeMirror rightType = getAnnotatedType(tree.getExpression());
+
+        if (leftType.hasPrimaryAnnotation(SQL_QUOTES_UNKNOWN)) {
+          return null;
+        }
+
+        if (rightType.hasPrimaryAnnotation(SQL_QUOTES_UNKNOWN)) {
+          type.replaceAnnotation(SQL_QUOTES_UNKNOWN);
+          return null;
+        }
+
+        if (leftType.hasPrimaryAnnotation(SQL_QUOTES_BOTTOM)) {
+          type.replaceAnnotation(rightType.getPrimaryAnnotation());
+          return null;
+        } else if (rightType.hasPrimaryAnnotation(SQL_QUOTES_BOTTOM)) {
+          type.replaceAnnotation(leftType.getPrimaryAnnotation());
+          return null;
+        }
+
+        if (leftType.hasPrimaryAnnotation(SQL_EVEN_QUOTES)) {
+          type.replaceAnnotation(rightType.getPrimaryAnnotation());
+        } else {
+          if (rightType.hasPrimaryAnnotation(SQL_ODD_QUOTES)) {
+            type.replaceAnnotation(SQL_EVEN_QUOTES);
+          } else {
+            type.replaceAnnotation(SQL_ODD_QUOTES);
+          }
+        }
+
+        return null;
       }
 
       return null;
