@@ -26,6 +26,7 @@ import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
 import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.reflection.MethodValChecker;
@@ -40,7 +41,8 @@ import org.plumelib.util.CollectionsPlume;
  * messages. It doesn't require an extending checker to provide a qualifier hierarchy, type factory
  * or visitor. Hence, it can be used similar to an {@link AggregateChecker}. However, the
  * subcheckers of a CompositeChecker can cooperate and communicate, which is not possible using an
- * {@link AggregateChecker}.
+ * {@link AggregateChecker}. A prototypical example of a CompositeChecker is the {@link
+ * ResourceLeakChecker}.
  *
  * <p>The subcheckers of a CompositeChecker must subclass {@link BaseTypeChecker}, which is itself a
  * direct subclass of the CompositeChecker. This is because a CompositeChecker is a top-level
