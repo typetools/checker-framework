@@ -325,7 +325,7 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
    *
    * @param elt an executable element
    * @param mcAtf a MustCallAnnotatedTypeFactory, to source the value element
-   * @param atypeFactory a ResourceLeakAnnotatedTypeFactory
+   * @param atypeFactory a RLCCalledMethodsAnnotatedTypeFactory
    * @return the literal strings present in the @CreatesMustCallFor annotation(s) of that element,
    *     substituting the default "this" for empty annotations. This method returns the empty list
    *     iff there are no @CreatesMustCallFor annotations on elt. The returned list is always
@@ -360,7 +360,7 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
    * Get all {@link EnsuresCalledMethods} annotations on an element.
    *
    * @param elt an executable element that might have {@link EnsuresCalledMethods} annotations
-   * @param atypeFactory a <code>ResourceLeakAnnotatedTypeFactory</code>
+   * @param atypeFactory a <code>RLCCalledMethodsAnnotatedTypeFactory</code>
    * @return a set of {@link EnsuresCalledMethods} annotations
    */
   @Pure

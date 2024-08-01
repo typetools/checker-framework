@@ -166,8 +166,8 @@ public class MustCallConsistencyAnalyzer {
   private final RLCCalledMethodsAnnotatedTypeFactory cmAtf;
 
   /**
-   * A cache for the result of calling {@code ResourceLeakAnnotatedTypeFactory.getStoreAfter()} on a
-   * node. The cache prevents repeatedly computing least upper bounds on stores
+   * A cache for the result of calling {@code RLCCalledMethodsAnnotatedTypeFactory.getStoreAfter()}
+   * on a node. The cache prevents repeatedly computing least upper bounds on stores
    */
   private final IdentityHashMap<Node, AccumulationStore> cmStoreAfter = new IdentityHashMap<>();
 
@@ -1370,7 +1370,7 @@ public class MustCallConsistencyAnalyzer {
    * @param lhsVar the left-hand side variable for the pseudo-assignment
    * @param rhs the right-hand side for the pseudo-assignment, which must have been converted to a
    *     temporary variable (via a call to {@link
-   *     ResourceLeakAnnotatedTypeFactory#getTempVarForNode})
+   *     RLCCalledMethodsAnnotatedTypeFactory#getTempVarForNode})
    */
   /*package-private*/ void updateObligationsForPseudoAssignment(
       Set<Obligation> obligations, Node node, LocalVariableNode lhsVar, Node rhs) {
@@ -2183,13 +2183,13 @@ public class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Gets the store propagated by the {@link ResourceLeakAnalysis} (containing called methods
+   * Gets the store propagated by the {@link RLCCalledMethodsAnalysis} (containing called methods
    * information) along a particular CFG edge during local type inference. The source {@link Block}
    * of the edge must contain no {@link Node}s.
    *
    * @param currentBlock source block of the CFG edge. Must contain no {@link Node}s.
    * @param successor target block of the CFG edge.
-   * @return store propagated by the {@link ResourceLeakAnalysis} along the CFG edge.
+   * @return store propagated by the {@link RLCCalledMethodsAnalysis} along the CFG edge.
    */
   private AccumulationStore getStoreForEdgeFromEmptyBlock(Block currentBlock, Block successor) {
     switch (currentBlock.getType()) {
