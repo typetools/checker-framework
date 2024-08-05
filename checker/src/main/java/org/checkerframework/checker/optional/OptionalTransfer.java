@@ -219,9 +219,9 @@ public class OptionalTransfer extends CFTransfer {
     }
     List<? extends AnnotationTree> receiverAnnotationTrees =
         receiverDeclaration.getModifiers().getAnnotations();
-    List<AnnotationMirror> annotationMirrors =
+    List<AnnotationMirror> receiverAnnotationMirrors =
         TreeUtils.annotationsFromTypeAnnotationTrees(receiverAnnotationTrees);
-    return AnnotationUtils.containsSame(annotationMirrors, NON_EMPTY);
+    return AnnotationUtils.containsSame(receiverAnnotationMirrors, NON_EMPTY);
   }
 
   /**
