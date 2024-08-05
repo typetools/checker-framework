@@ -213,7 +213,7 @@ public class OptionalTransfer extends CFTransfer {
     } else {
       receiver = JavaExpression.fromTree(receiverTree);
     }
-    VariableTree receiverDeclaration = getReceiverDeclaration(methodInvok, receiver);
+    VariableTree receiverDeclaration = getLeftmostReceiverDeclaration(methodInvok, receiver);
     if (receiverDeclaration == null) {
       return false;
     }
@@ -232,10 +232,10 @@ public class OptionalTransfer extends CFTransfer {
    * immediately encloses {@code methodInvok}.
    *
    * @param methodInvok a method invocation node
-   * @param leftmostReceiver the initial receiver argument in the method invocation node
+   * @param leftmostReceiver the leftmost receiver argument in the method invocation node
    * @return the declaration of the receiver if found, else null
    */
-  private @Nullable VariableTree getReceiverDeclaration(
+  private @Nullable VariableTree getLeftmostReceiverDeclaration(
       MethodInvocationNode methodInvok, @Nullable JavaExpression leftmostReceiver) {
     if (leftmostReceiver == null) {
       return null;
