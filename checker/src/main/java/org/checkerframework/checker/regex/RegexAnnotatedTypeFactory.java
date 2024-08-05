@@ -322,7 +322,7 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
       // Don't call super method which will try to create a LUB
-      // Even when it is not yet valid: i.e. between a @PolyRegex and a @Regex
+      // even when it is not yet valid, e.g., between a @PolyRegex and a @Regex.
       return null;
     }
   }
