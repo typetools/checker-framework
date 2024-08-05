@@ -79,6 +79,26 @@ task installGitHooks(type: Copy, dependsOn: 'setLocalRepo') {
   into localRepo + '/hooks'
 }
 
+tasks.register('resolveDependencies') {
+  // Copied from here:
+  // http://www.jonathanpearlin.com/2014/10/28/gradle_resolve_all_dependencies.html
+  description 'Resolves all dependencies.'
+  doLast {
+    project.rootProject.allprojects.each { subProject ->
+      subProject.buildscript.configurations.each { configuration ->
+        if (configuration.canBeResolved) {
+          configuration.resolve()
+        }
+      }
+      subProject.configurations.each { configuration ->
+        if (configuration.canBeResolved) {
+          configuration.resolve()
+        }
+      }
+    }
+  }
+}
+
 spotless {
   // Resolve the Spotless plugin dependencies from the buildscript repositories rather than the
   // project repositories.  That way the spotless plugin does not use the locally built version of
@@ -113,7 +133,7 @@ allprojects { currentProj ->
   //   * any new checkers have been added, or
   //   * backward-incompatible changes have been made to APIs or elsewhere.
   // To make a snapshot release, version should end in "-SNAPSHOT", then: ./gradlew publish
-  version '3.45.1-SNAPSHOT'
+  version '3.46.0'
 
   tasks.withType(JavaCompile).configureEach {
     options.fork = true

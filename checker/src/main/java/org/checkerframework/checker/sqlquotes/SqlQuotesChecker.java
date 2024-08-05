@@ -1,6 +1,7 @@
 package org.checkerframework.checker.sqlquotes;
 
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.framework.qual.RelevantJavaTypes;
 import org.checkerframework.framework.qual.StubFiles;
 
 /**
@@ -11,6 +12,7 @@ import org.checkerframework.framework.qual.StubFiles;
  * sanitized before use.
  */
 @StubFiles({"BCryptPasswordEncoder.astub", "Statement.astub"})
+@RelevantJavaTypes(CharSequence.class)
 public class SqlQuotesChecker extends BaseTypeChecker {
   /** Creates a SqlQuotesChecker. */
   public SqlQuotesChecker() {}
