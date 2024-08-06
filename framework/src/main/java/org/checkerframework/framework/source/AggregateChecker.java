@@ -30,7 +30,10 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
  *
  * <p>Checker writers need to subclass this class and only override {@link #getSupportedCheckers()}
  * to indicate the classes of the checkers to be bundled.
+ *
+ * @deprecated use {@link CompositeChecker} instead.
  */
+@Deprecated
 public abstract class AggregateChecker extends SourceChecker {
 
   protected final List<SourceChecker> checkers;
@@ -42,9 +45,6 @@ public abstract class AggregateChecker extends SourceChecker {
    * @return the list of checkers to be run
    */
   protected abstract Collection<Class<? extends SourceChecker>> getSupportedCheckers();
-
-  /** Supported options for this checker. */
-  private @MonotonicNonNull Set<String> supportedOptions = null;
 
   /** Options passed to this checker. */
   private @MonotonicNonNull Map<String, String> options = null;
@@ -94,7 +94,6 @@ public abstract class AggregateChecker extends SourceChecker {
     for (SourceChecker checker : checkers) {
       // We need to add all options that are activated for the aggregate to
       // the individual checkers.
-      checker.addOptions(super.getOptions());
       // Each checker should "support" all possible lint options - otherwise
       // subchecker A would complain about a lint option for subchecker B.
       checker.setSupportedLintOptions(this.getSupportedLintOptions());

@@ -5,9 +5,9 @@ import java.util.Set;
 import javax.annotation.processing.SupportedOptions;
 import org.checkerframework.checker.initialization.InitializationChecker;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
-import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.qual.StubFiles;
+import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.source.SupportedLintOptions;
 
 /**
@@ -74,8 +74,8 @@ public class NullnessChecker extends InitializationChecker {
   public NullnessChecker() {}
 
   @Override
-  protected Set<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
-    Set<Class<? extends BaseTypeChecker>> checkers = super.getImmediateSubcheckerClasses();
+  protected Set<Class<? extends SourceChecker>> getImmediateSubcheckerClasses() {
+    Set<Class<? extends SourceChecker>> checkers = super.getImmediateSubcheckerClasses();
     if (!hasOptionNoSubcheckers("assumeKeyFor")) {
       checkers.add(KeyForSubchecker.class);
     }
