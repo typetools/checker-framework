@@ -937,14 +937,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
                 + "! Please ensure your checker is properly initialized.");
       }
       if (shouldAddShutdownHook()) {
-        Runtime.getRuntime()
-            .addShutdownHook(
-                new Thread() {
-                  @Override
-                  public void run() {
-                    shutdownHook();
-                  }
-                });
+        Runtime.getRuntime().addShutdownHook(new Thread(this::shutdownHook));
       }
       if (!printedVersion && hasOption("version")) {
         messager.printMessage(Diagnostic.Kind.NOTE, "Checker Framework " + getCheckerVersion());
