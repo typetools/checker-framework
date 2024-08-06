@@ -827,7 +827,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @return the active options for this checker, not including those passed to subcheckers
    */
   public Map<String, String> getOptionsNoSubcheckers() {
-    return getOptions();
+    return createActiveOptions(processingEnv.getOptions());
   }
 
   /**
@@ -1979,6 +1979,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * call the super implementation of this method and add dependencies to the returned set so that
    * checkers required for reflection resolution are included if reflection resolution is requested.
    *
+   * <p>If you wish to create a checker that runs multiple checkers, but itself is not a type
+   * system, then subclass {@link CompositeChecker}.
+   *
+   * <p>If a checker should be added or not based on a command line option, use {@link
+   * #getOptionsNoSubcheckers()} or {@link #hasOptionNoSubcheckers(String)} to avoid recursively
+   * calling this method.
+   *
    * <p>Each subchecker of this checker may also depend on other checkers. If this checker and one
    * of its subcheckers both depend on a third checker, that checker will only be instantiated once.
    *
@@ -1993,10 +2000,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * checker A.)
    *
    * <p>This method is protected so it can be overridden, but it should only be called internally by
-   * the CompositeChecker.
-   *
-   * <p>The CompositeChecker will not modify the list returned by this method, but other clients do
-   * modify the list.
+   * {@link SourceChecker}.
    *
    * @return the subchecker classes on which this checker depends; will be modified by callees
    */
@@ -2150,8 +2154,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     if (activeOptions == null) {
       activeOptions = createActiveOptions(processingEnv.getOptions());
 
-      for (SourceChecker checker : getSubcheckers()) {
-        activeOptions.putAll(checker.getOptions());
+      for (SourceChecker subchecker : getSubcheckers()) {
+        activeOptions.putAll(subchecker.createActiveOptions(processingEnv.getOptions()));
       }
     }
     return activeOptions;
