@@ -27,6 +27,10 @@ import org.checkerframework.framework.source.SuppressWarningsPrefix;
   char.class,
 })
 public class LessThanChecker extends BaseTypeChecker {
+
+  /** Default constructor. */
+  public LessThanChecker() {}
+
   @Override
   protected Set<Class<? extends SourceChecker>> getImmediateSubcheckerClasses() {
     Set<Class<? extends SourceChecker>> checkers = super.getImmediateSubcheckerClasses();

@@ -20,6 +20,9 @@ import org.checkerframework.framework.source.SourceChecker;
  */
 public class I18nChecker extends CompositeChecker {
 
+  /** Default constructor. */
+  public I18nChecker() {}
+
   @Override
   protected Set<Class<? extends SourceChecker>> getImmediateSubcheckerClasses() {
     Set<Class<? extends SourceChecker>> checkers = new LinkedHashSet<>(2);
