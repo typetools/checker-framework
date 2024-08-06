@@ -2055,7 +2055,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     return supportedLints;
   }
 
-  /** Compute the set of supported lint options. */
+  /**
+   * Compute the set of supported lint options for this checker and its subcheckers.
+   *
+   * @return the set of supported lint options for this checker and its subcheckers
+   */
   protected Set<String> createSupportedLintOptions() {
     Set<String> lintSet = getLintOptionsFromAnnotation();
 
@@ -2065,6 +2069,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     return lintSet;
   }
 
+  /**
+   * Get the lint options from the {@link SupportedLintOptions} annotation on this class.
+   *
+   * @return the lint options from the {@link SupportedLintOptions} annotation
+   */
   private Set<String> getLintOptionsFromAnnotation() {
     SupportedLintOptions sl = this.getClass().getAnnotation(SupportedLintOptions.class);
 
