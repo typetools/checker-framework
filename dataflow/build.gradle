@@ -157,6 +157,11 @@ testDataflowAnalysis("issue3447Test", "issue3447", "livevar.LiveVariable", false
 testDataflowAnalysis("liveVariableTest", "live-variable", "livevar.LiveVariable", true)
 testDataflowAnalysis("reachingDefinitionTest", "reachingdef", "reachingdef.ReachingDefinition", true)
 
+test {
+  // The tests are run in by the allDataflowTests.
+  exclude '**/*'
+}
+
 apply from: rootProject.file('gradle-mvn-push.gradle')
 
 /** Adds information to the publication for uploading the dataflow artifacts to Maven repositories. */
