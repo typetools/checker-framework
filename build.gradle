@@ -627,6 +627,11 @@ javadoc.dependsOn(allJavadoc)
 
 clean {
   delete(file("${rootDir}/docs/api"))
+  doLast {
+    exec {
+      commandLine 'make', '-C', 'docs/manual', 'clean'
+    }
+  }
 }
 
 configurations {
