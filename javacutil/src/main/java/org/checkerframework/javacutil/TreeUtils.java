@@ -250,6 +250,32 @@ public final class TreeUtils {
   }
 
   /**
+   * Returns true iff the underlying JCTree exists and start at a position p &le; 0 in the source
+   * code.
+   *
+   * <p>Note that there are trees that may actually start at position 0 in the source code, such as
+   * import statements or class declarations. Be careful.
+   *
+   * @param tree the tree
+   * @return true iff the underlying JCTree exists and start at a position p &le; 0 in the source
+   *     code.
+   * @throws BugInCF if {@code tree} is null or is not a valid javac-internal tree (JCTree)
+   */
+  public static boolean statementIsSynthetic(Tree tree) {
+    if (tree == null) {
+      throw new BugInCF("TreeUtils.statementIsSynthetic: tree is null");
+    }
+
+    if (tree instanceof JCTree) {
+      return ((JCTree) tree).getStartPosition() <= 0;
+    } else {
+      throw new BugInCF(
+          "TreeUtils.statementIsSynthetic: tree is not a valid Javac tree but a "
+              + tree.getClass());
+    }
+  }
+
+  /**
    * If the given tree is a parenthesized tree, return the enclosed non-parenthesized tree.
    * Otherwise, return the same tree.
    *
@@ -1688,6 +1714,35 @@ public final class TreeUtils {
       }
     }
     return false;
+  }
+
+  /**
+   * If the given tree is a call to "get", this method returns the expression tree of the first
+   * argument and null else.
+   *
+   * <p>Assuming it's a call to List.get(), this will be the iterator. For example, if the tree is
+   * Collection.get(i), the method returns i.
+   *
+   * @param tree the tree to check
+   * @return ExpressionTree of index variable if tree is collection.get(index) and null else
+   */
+  public static ExpressionTree isGetCall(Tree tree) {
+    if (tree.getKind() == Tree.Kind.METHOD_INVOCATION
+        && isNamedMethodCall("get", (MethodInvocationTree) tree)) {
+      return ((MethodInvocationTree) tree).getArguments().get(0);
+    }
+    return null;
+  }
+
+  /**
+   * Returns whether the given tree is of the form object.size()
+   *
+   * @param tree the tree to check
+   * @return whether the given tree is of the form object.size()
+   */
+  public static boolean isSizeAccess(Tree tree) {
+    return tree.getKind() == Tree.Kind.METHOD_INVOCATION
+        && isNamedMethodCall("size", (MethodInvocationTree) tree);
   }
 
   /**

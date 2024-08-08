@@ -205,10 +205,21 @@ public class ElementUtils {
   /**
    * Returns true if the element is a final element: a final field, method, or final class.
    *
+   * @param element the element
    * @return true if the element is final
    */
   public static boolean isFinal(Element element) {
     return element.getModifiers().contains(Modifier.FINAL);
+  }
+
+  /**
+   * Returns true if the element is a private element: a private field, method, or private class.
+   *
+   * @param element the element
+   * @return true if the element is private
+   */
+  public static boolean isPrivate(Element element) {
+    return element.getModifiers().contains(Modifier.PRIVATE);
   }
 
   /**

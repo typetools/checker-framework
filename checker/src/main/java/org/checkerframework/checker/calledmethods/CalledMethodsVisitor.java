@@ -13,7 +13,6 @@ import javax.lang.model.element.ExecutableElement;
 import javax.tools.Diagnostic;
 import org.checkerframework.checker.calledmethods.builder.BuilderFrameworkSupport;
 import org.checkerframework.checker.calledmethods.qual.CalledMethods;
-import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethodsVarargs;
 import org.checkerframework.common.accumulation.AccumulationVisitor;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.expression.JavaExpression;
@@ -62,17 +61,18 @@ public class CalledMethodsVisitor extends AccumulationVisitor {
   @Override
   @SuppressWarnings("deprecation") // EnsuresCalledMethodsVarArgs
   public void processMethodTree(MethodTree tree) {
-    ExecutableElement elt = TreeUtils.elementFromDeclaration(tree);
-    AnnotationMirror ecmv = atypeFactory.getDeclAnnotation(elt, EnsuresCalledMethodsVarargs.class);
-    if (ecmv != null) {
-      if (!elt.isVarArgs()) {
-        checker.report(tree, new DiagMessage(Diagnostic.Kind.ERROR, "ensuresvarargs.invalid"));
-      }
-    }
-    for (EnsuresCalledMethodOnExceptionContract postcond :
-        ((CalledMethodsAnnotatedTypeFactory) atypeFactory).getExceptionalPostconditions(elt)) {
-      checkExceptionalPostcondition(postcond, tree);
-    }
+    // ExecutableElement elt = TreeUtils.elementFromDeclaration(tree);
+    // AnnotationMirror ecmv = atypeFactory.getDeclAnnotation(elt,
+    // EnsuresCalledMethodsVarargs.class);
+    // if (ecmv != null) {
+    //   if (!elt.isVarArgs()) {
+    //     checker.report(tree, new DiagMessage(Diagnostic.Kind.ERROR, "ensuresvarargs.invalid"));
+    //   }
+    // }
+    // for (EnsuresCalledMethodOnExceptionContract postcond :
+    //     ((CalledMethodsAnnotatedTypeFactory) atypeFactory).getExceptionalPostconditions(elt)) {
+    //   checkExceptionalPostcondition(postcond, tree);
+    // }
     super.processMethodTree(tree);
   }
 

@@ -1,18 +1,17 @@
-package org.checkerframework.checker.calledmethods;
+package org.checkerframework.checker.calledmethodsonelements;
 
 import com.google.common.collect.ImmutableSet;
-import com.sun.tools.javac.code.Type;
 import java.util.Set;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.signature.qual.CanonicalName;
-import org.checkerframework.common.accumulation.AccumulationAnalysis;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.framework.flow.CFAnalysis;
 
 /**
  * The analysis for the Called Methods Checker. The analysis is specialized to ignore certain
  * exception types; see {@link #isIgnoredExceptionType(TypeMirror)}.
  */
-public class CalledMethodsAnalysis extends AccumulationAnalysis {
+public class CalledMethodsOnElementsAnalysis extends CFAnalysis {
 
   /**
    * The fully-qualified names of the exception types that are ignored by this checker when
@@ -23,33 +22,20 @@ public class CalledMethodsAnalysis extends AccumulationAnalysis {
           // Use the Nullness Checker instead.
           NullPointerException.class.getCanonicalName(),
           // Ignore run-time errors, which cannot be predicted statically. Doing
-          // so is unsound in the sense that they could still occur -- e.g., the
-          // program could run out of memory -- but if they did, the checker's
+          // so is unsound in the sense that they could still occur - e.g., the
+          // program could run out of memory - but if they did, the checker's
           // results would be useless anyway.
           Error.class.getCanonicalName(),
           RuntimeException.class.getCanonicalName());
 
   /**
-   * Creates a new {@code CalledMethodsAnalysis}.
+   * Creates a new {@code CalledMethodsOnElementsAnalysis}.
    *
    * @param checker the checker
    * @param factory the factory
    */
-  protected CalledMethodsAnalysis(
-      BaseTypeChecker checker, CalledMethodsAnnotatedTypeFactory factory) {
+  public CalledMethodsOnElementsAnalysis(
+      BaseTypeChecker checker, CalledMethodsOnElementsAnnotatedTypeFactory factory) {
     super(checker, factory);
-  }
-
-  /**
-   * Ignore exceptional control flow due to ignored exception types.
-   *
-   * @param exceptionType exception type
-   * @return {@code true} if {@code exceptionType} is a member of {@link #ignoredExceptionTypes},
-   *     {@code false} otherwise
-   */
-  @Override
-  public boolean isIgnoredExceptionType(TypeMirror exceptionType) {
-    return ignoredExceptionTypes.contains(
-        ((Type) exceptionType).tsym.getQualifiedName().toString());
   }
 }
