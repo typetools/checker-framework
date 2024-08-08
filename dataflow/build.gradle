@@ -158,7 +158,7 @@ testDataflowAnalysis("liveVariableTest", "live-variable", "livevar.LiveVariable"
 testDataflowAnalysis("reachingDefinitionTest", "reachingdef", "reachingdef.ReachingDefinition", true)
 
 test {
-  // The tests are run in by the allDataflowTests.
+  // The tests are run by allDataflowTests.
   exclude '**/*'
 }
 
