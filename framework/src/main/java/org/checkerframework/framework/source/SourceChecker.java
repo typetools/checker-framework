@@ -605,7 +605,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
 
   /**
    * The checker that called this one, whether that be a BaseTypeChecker (used as a compound
-   * checker) or a Composite Checker. Null if this is the checker that calls all others. Note that
+   * checker) or an Aggregate Checker. Null if this is the checker that calls all others. Note that
    * in the case of a compound checker, the compound checker is the parent, not the checker that was
    * run prior to this one by the compound checker.
    */

@@ -7,7 +7,7 @@ import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.framework.source.AggregateChecker;
 import org.checkerframework.framework.source.SourceChecker;
 
-/** Basic composite checker. */
+/** Basic aggregate checker. */
 public class TestAggregateChecker extends AggregateChecker {
 
   protected Set<Class<? extends SourceChecker>> getImmediateSubcheckerClasses() {

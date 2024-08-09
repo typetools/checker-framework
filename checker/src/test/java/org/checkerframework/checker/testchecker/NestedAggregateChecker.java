@@ -18,7 +18,7 @@ public class NestedAggregateChecker extends AggregateChecker {
     Set<Class<? extends SourceChecker>> checkers = new LinkedHashSet<>(4);
 
     checkers.add(FenumChecker.class);
-    checkers.add(I18nChecker.class); // The I18nChecker is composite checker
+    checkers.add(I18nChecker.class); // The I18nChecker is an aggregate checker.
     checkers.add(NullnessChecker.class);
     checkers.add(RegexChecker.class);
 
