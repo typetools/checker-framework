@@ -308,6 +308,7 @@ public final class TreePathUtil {
         // Otherwise use the context of the ConditionalExpressionTree.
         return getContextForPolyExpression(parentPath, isLambdaOrMethodRef);
       case PARENTHESIZED:
+      case CASE:
         return getContextForPolyExpression(parentPath, isLambdaOrMethodRef);
       default:
         if (TreeUtils.isYield(parent)) {
