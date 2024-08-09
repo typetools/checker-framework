@@ -1240,7 +1240,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    */
   @Override
   public void typeProcess(TypeElement e, TreePath p) {
-    if (messageStore != null) {
+    if (messageStore != null && parentChecker == null) {
       messageStore.clear();
     }
 
