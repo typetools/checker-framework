@@ -3,8 +3,8 @@ package org.checkerframework.checker.testchecker;
 // Test case for Issue 343
 // https://github.com/typetools/checker-framework/issues/343
 
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import org.checkerframework.checker.fenum.FenumChecker;
 import org.checkerframework.checker.i18n.I18nChecker;
 import org.checkerframework.checker.nullness.NullnessChecker;
@@ -14,15 +14,14 @@ import org.checkerframework.framework.source.SourceChecker;
 
 public class NestedAggregateChecker extends AggregateChecker {
   @Override
-  protected Collection<Class<? extends SourceChecker>> getSupportedCheckers() {
-    ArrayList<Class<? extends SourceChecker>> list =
-        new ArrayList<Class<? extends SourceChecker>>();
+  protected Set<Class<? extends SourceChecker>> getImmediateSubcheckerClasses() {
+    Set<Class<? extends SourceChecker>> checkers = new LinkedHashSet<>(4);
 
-    list.add(FenumChecker.class);
-    list.add(I18nChecker.class); // The I18nChecker is an aggregate checker
-    list.add(NullnessChecker.class);
-    list.add(RegexChecker.class);
+    checkers.add(FenumChecker.class);
+    checkers.add(I18nChecker.class); // The I18nChecker is an aggregate checker.
+    checkers.add(NullnessChecker.class);
+    checkers.add(RegexChecker.class);
 
-    return list;
+    return checkers;
   }
 }

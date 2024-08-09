@@ -1,7 +1,7 @@
 package org.checkerframework.checker.i18n;
 
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import org.checkerframework.framework.source.AggregateChecker;
 import org.checkerframework.framework.source.SourceChecker;
 
@@ -20,9 +20,12 @@ import org.checkerframework.framework.source.SourceChecker;
  */
 public class I18nChecker extends AggregateChecker {
 
+  /** Default constructor. */
+  public I18nChecker() {}
+
   @Override
-  protected Collection<Class<? extends SourceChecker>> getSupportedCheckers() {
-    Collection<Class<? extends SourceChecker>> checkers = new ArrayList<>(2);
+  protected Set<Class<? extends SourceChecker>> getImmediateSubcheckerClasses() {
+    Set<Class<? extends SourceChecker>> checkers = new LinkedHashSet<>(2);
     checkers.add(I18nSubchecker.class);
     checkers.add(LocalizableKeyChecker.class);
     return checkers;

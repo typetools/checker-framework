@@ -5,6 +5,7 @@ import java.util.Set;
 import org.checkerframework.common.aliasing.AliasingChecker;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
+import org.checkerframework.framework.source.SourceChecker;
 
 /**
  * Used to test the compound checker design pattern. AliasingChecker and AnotherCompoundChecker are
@@ -13,9 +14,9 @@ import org.checkerframework.common.basetype.BaseTypeVisitor;
  */
 public class CompoundChecker extends BaseTypeChecker {
   @Override
-  protected Set<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
-    LinkedHashSet<Class<? extends BaseTypeChecker>> subcheckers = new LinkedHashSet<>();
-    subcheckers.addAll(super.getImmediateSubcheckerClasses());
+  protected Set<Class<? extends SourceChecker>> getImmediateSubcheckerClasses() {
+    LinkedHashSet<Class<? extends SourceChecker>> subcheckers =
+        new LinkedHashSet<>(super.getImmediateSubcheckerClasses());
     subcheckers.add(AliasingChecker.class);
     subcheckers.add(AnotherCompoundChecker.class);
     return subcheckers;

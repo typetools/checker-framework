@@ -5,6 +5,7 @@ import java.util.Set;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.value.util.Range;
+import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.source.SupportedOptions;
 
 /**
@@ -42,7 +43,7 @@ public class ValueChecker extends BaseTypeChecker {
   }
 
   @Override
-  protected Set<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
+  protected Set<Class<? extends SourceChecker>> getImmediateSubcheckerClasses() {
     // Don't call super otherwise MethodVal will be added as a subChecker
     // which creates a circular dependency.
     return new LinkedHashSet<>(0);

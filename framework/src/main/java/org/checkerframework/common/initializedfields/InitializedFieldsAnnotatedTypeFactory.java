@@ -20,6 +20,7 @@ import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.initializedfields.qual.EnsuresInitializedFields;
 import org.checkerframework.common.initializedfields.qual.InitializedFields;
 import org.checkerframework.common.initializedfields.qual.InitializedFieldsBottom;
+import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
@@ -58,8 +59,10 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
       GenericAnnotatedTypeFactory<?, ?, ?, ?> atf = createTypeFactoryForProcessor(checkerName);
       if (atf != null) {
         // Add all the subcheckers so that default values are checked for the subcheckers.
-        for (BaseTypeChecker subchecker : atf.getChecker().getSubcheckers()) {
-          defaultValueAtypeFactories.add(subchecker.getTypeFactory());
+        for (SourceChecker subchecker : atf.getChecker().getSubcheckers()) {
+          if (subchecker instanceof BaseTypeChecker) {
+            defaultValueAtypeFactories.add(((BaseTypeChecker) subchecker).getTypeFactory());
+          }
         }
         defaultValueAtypeFactories.add(atf);
       }
@@ -226,7 +229,7 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
         defaultValueAtypeFactories) {
       defaultValueAtypeFactory.setRoot(root);
       // Set the root on all the subcheckers, too.
-      for (BaseTypeChecker subchecker : defaultValueAtypeFactory.getChecker().getSubcheckers()) {
+      for (SourceChecker subchecker : defaultValueAtypeFactory.getChecker().getSubcheckers()) {
         AnnotatedTypeFactory subATF =
             defaultValueAtypeFactory.getTypeFactoryOfSubchecker(subchecker.getClass());
         subATF.setRoot(root);
