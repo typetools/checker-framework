@@ -3,7 +3,12 @@ Version 3.46.1 (September 3, 2024)
 
 **User-visible changes:**
 
+Aggregate Checkers now interleave error messages so that all errors about a line of code apear
+together.
+
 **Implementation details:**
+
+Renamed `AggreateChecker#getSupportedCheckers` to `getImmediateSubcheckerClasses`.
 
 **Closed issues:**
 
