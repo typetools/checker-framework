@@ -2259,7 +2259,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @param unit current compilation unit
    */
   protected void printStoredMessages(CompilationUnitTree unit) {
-    if (messageStore == null) {
+    if (messageStore == null || parentChecker != null) {
       return;
     }
     for (CheckerMessage msg : messageStore) {
