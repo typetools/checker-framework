@@ -605,7 +605,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
 
   /**
    * The checker that called this one, whether that be a BaseTypeChecker (used as a compound
-   * checker) or an AggregateChecker. Null if this is the checker that calls all others. Note that
+   * checker) or a Composite Checker. Null if this is the checker that calls all others. Note that
    * in the case of a compound checker, the compound checker is the parent, not the checker that was
    * run prior to this one by the compound checker.
    */
@@ -669,8 +669,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   public final synchronized void init(ProcessingEnvironment env) {
     ProcessingEnvironment unwrappedEnv = unwrapProcessingEnvironment(env);
     super.init(unwrappedEnv);
-    // The processingEnvironment field will be set by the superclass's init method.
-    // This is used to trigger AggregateChecker's setProcessingEnvironment.
+    // Sets processing enviroment and other related fields.
     setProcessingEnvironment(unwrappedEnv);
 
     if (!hasOption("warnUnneededSuppressionsExceptions")) {
@@ -710,12 +709,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   }
 
   /**
-   * Set the processing environment of the current checker.
+   * Set the processing environment and other related fields of the current checker.
    *
    * @param env the new processing environment
    */
-  // This method is protected only to allow the AggregateChecker and BaseTypeChecker to call it.
-  protected void setProcessingEnvironment(ProcessingEnvironment env) {
+  private void setProcessingEnvironment(ProcessingEnvironment env) {
     this.processingEnv = env;
     this.elements = processingEnv.getElementUtils();
     this.trees = Trees.instance(processingEnv);
@@ -1090,7 +1088,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
 
     this.visitor = createSourceVisitor();
 
-    if (!getSubcheckers().isEmpty()) {
+    if (!getSubcheckers().isEmpty() && parentChecker == null) {
       messageStore = new TreeSet<>(this::compareCheckerMessages);
     }
 
@@ -1122,10 +1120,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   /**
    * The number of errors at the last exit of the type processor. At entry to the type processor we
    * check whether the current error count is higher and then don't process the file, as it contains
-   * some Java errors. Needs to be protected to allow access from AggregateChecker and
-   * BaseTypeChecker.
+   * some Java errors.
    */
-  protected int errsOnLastExit = 0;
+  private int errsOnLastExit = 0;
 
   /**
    * Returns the requested subchecker. A checker of a given class can only be run once, so this
@@ -1243,9 +1240,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    */
   @Override
   public void typeProcess(TypeElement e, TreePath p) {
-    if (!getSubcheckers().isEmpty()) {
-      // TODO: I expected this to only be necessary if (parentChecker == null).
-      // However, the NestedAggregateChecker fails otherwise.
+    if (messageStore != null) {
       messageStore.clear();
     }
 
@@ -1361,8 +1356,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       // Also add possibly deferred diagnostics, which will get published back in
       // AbstractTypeProcessor.
       this.errsOnLastExit = log.nerrors;
+      printStoredMessages(p.getCompilationUnit());
       if (!getSubcheckers().isEmpty()) {
-        printStoredMessages(p.getCompilationUnit());
         // Update errsOnLastExit to reflect the errors issued.
         this.errsOnLastExit = log.nerrors;
       }
@@ -1973,7 +1968,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * checkers required for reflection resolution are included if reflection resolution is requested.
    *
    * <p>If you wish to create a checker that runs multiple checkers, but itself is not a type
-   * system, then subclass {@link CompositeChecker}.
+   * system, then subclass {@link AggregateChecker}.
    *
    * <p>If a checker should be added or not based on a command line option, use {@link
    * #getOptionsNoSubcheckers()} or {@link #hasOptionNoSubcheckers(String)} to avoid recursively
@@ -2084,13 +2079,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   }
 
   /**
-   * Set the supported lint options. Use of this method should be limited to the AggregateChecker,
-   * who needs to set the lint options to the union of all subcheckers. Also, e.g. the
-   * NullnessSubchecker need to use this method, as one is created by the other.
+   * Set the supported lint options.
    *
    * @param newLints the new supported lint options, which replace any existing ones
    */
-  protected void setSupportedLintOptions(Set<String> newLints) {
+  private void setSupportedLintOptions(Set<String> newLints) {
     supportedLints = newLints;
   }
 
@@ -2266,6 +2259,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @param unit current compilation unit
    */
   protected void printStoredMessages(CompilationUnitTree unit) {
+    if (messageStore == null) {
+      return;
+    }
     for (CheckerMessage msg : messageStore) {
       printOrStoreMessage(msg.kind, msg.message, msg.source, unit, msg.trace);
     }

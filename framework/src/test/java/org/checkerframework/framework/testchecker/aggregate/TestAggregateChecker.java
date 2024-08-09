@@ -4,11 +4,11 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import org.checkerframework.common.aliasing.AliasingChecker;
 import org.checkerframework.common.value.ValueChecker;
-import org.checkerframework.framework.source.CompositeChecker;
+import org.checkerframework.framework.source.AggregateChecker;
 import org.checkerframework.framework.source.SourceChecker;
 
 /** Basic composite checker. */
-public class TestCompositeChecker extends CompositeChecker {
+public class TestAggregateChecker extends AggregateChecker {
 
   protected Set<Class<? extends SourceChecker>> getImmediateSubcheckerClasses() {
     Set<Class<? extends SourceChecker>> checkers = new LinkedHashSet<>(2);

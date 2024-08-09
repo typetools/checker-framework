@@ -9,10 +9,10 @@ import org.checkerframework.checker.fenum.FenumChecker;
 import org.checkerframework.checker.i18n.I18nChecker;
 import org.checkerframework.checker.nullness.NullnessChecker;
 import org.checkerframework.checker.regex.RegexChecker;
-import org.checkerframework.framework.source.CompositeChecker;
+import org.checkerframework.framework.source.AggregateChecker;
 import org.checkerframework.framework.source.SourceChecker;
 
-public class NestedAggregateChecker extends CompositeChecker {
+public class NestedAggregateChecker extends AggregateChecker {
   @Override
   protected Set<Class<? extends SourceChecker>> getImmediateSubcheckerClasses() {
     Set<Class<? extends SourceChecker>> checkers = new LinkedHashSet<>(4);

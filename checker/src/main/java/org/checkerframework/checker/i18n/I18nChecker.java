@@ -2,7 +2,7 @@ package org.checkerframework.checker.i18n;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
-import org.checkerframework.framework.source.CompositeChecker;
+import org.checkerframework.framework.source.AggregateChecker;
 import org.checkerframework.framework.source.SourceChecker;
 
 /**
@@ -18,7 +18,7 @@ import org.checkerframework.framework.source.SourceChecker;
  * @see LocalizableKeyChecker
  * @checker_framework.manual #i18n-checker Internationalization Checker
  */
-public class I18nChecker extends CompositeChecker {
+public class I18nChecker extends AggregateChecker {
 
   /** Default constructor. */
   public I18nChecker() {}
