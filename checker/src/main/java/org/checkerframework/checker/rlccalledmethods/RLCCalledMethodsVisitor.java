@@ -1,4 +1,4 @@
-package org.checkerframework.checker.resourceleak;
+package org.checkerframework.checker.rlccalledmethods;
 
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.VariableTree;
@@ -19,12 +19,13 @@ import org.checkerframework.checker.calledmethods.EnsuresCalledMethodOnException
 import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;
 import org.checkerframework.checker.mustcall.CreatesMustCallForToJavaExpression;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
-import org.checkerframework.checker.mustcall.MustCallChecker;
 import org.checkerframework.checker.mustcall.qual.CreatesMustCallFor;
 import org.checkerframework.checker.mustcall.qual.NotOwning;
 import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.mustcall.qual.PolyMustCall;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer;
+import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
@@ -40,24 +41,10 @@ import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
- * The visitor for the Resource Leak Checker. Responsible for checking that the rules for {@link
- * Owning} fields are satisfied, and for checking that {@link CreatesMustCallFor} overrides are
- * valid.
+ * Responsible for checking that the rules for {@link Owning} fields are satisfied, and for checking
+ * that {@link CreatesMustCallFor} overrides are valid.
  */
-public class ResourceLeakVisitor extends CalledMethodsVisitor {
-
-  /** True if errors related to static owning fields should be suppressed. */
-  private final boolean permitStaticOwning;
-
-  /**
-   * Because CalledMethodsVisitor doesn't have a type parameter, we need a reference to the type
-   * factory that has this static type to access the features that ResourceLeakAnnotatedTypeFactory
-   * implements but CalledMethodsAnnotatedTypeFactory does not.
-   */
-  private final ResourceLeakAnnotatedTypeFactory rlTypeFactory;
-
-  /** True if -AnoLightweightOwnership was supplied on the command line. */
-  private final boolean noLightweightOwnership;
+public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
 
   /**
    * True if -AenableWpiForRlc was passed on the command line. See {@link
@@ -66,29 +53,29 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
   private final boolean enableWpiForRlc;
 
   /**
-   * Create the visitor.
+   * Shadowed because we must dispatch to the RLCCm Checker's version of getTypefactoryOfSubchecker
+   * to get the correct MustCallAnnotatedTypeFactory.
+   */
+  private final RLCCalledMethodsAnnotatedTypeFactory typeFactory;
+
+  /**
+   * Creates a new RLCCalledMethodsVisitor.
    *
    * @param checker the type-checker associated with this visitor
    */
-  public ResourceLeakVisitor(BaseTypeChecker checker) {
+  public RLCCalledMethodsVisitor(BaseTypeChecker checker) {
     super(checker);
-    rlTypeFactory = (ResourceLeakAnnotatedTypeFactory) atypeFactory;
-    permitStaticOwning = checker.hasOption("permitStaticOwning");
-    noLightweightOwnership = checker.hasOption("noLightweightOwnership");
-    enableWpiForRlc = checker.hasOption(ResourceLeakChecker.ENABLE_WPI_FOR_RLC);
-  }
-
-  @Override
-  protected ResourceLeakAnnotatedTypeFactory createTypeFactory() {
-    return new ResourceLeakAnnotatedTypeFactory(checker);
+    assert (checker.getParentChecker() instanceof ResourceLeakChecker);
+    this.enableWpiForRlc =
+        checker.getParentChecker().hasOption(ResourceLeakChecker.ENABLE_WPI_FOR_RLC);
+    typeFactory = (RLCCalledMethodsAnnotatedTypeFactory) atypeFactory;
   }
 
   @Override
   public void processMethodTree(MethodTree tree) {
     ExecutableElement elt = TreeUtils.elementFromDeclaration(tree);
-    MustCallAnnotatedTypeFactory mcAtf =
-        rlTypeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
-    List<String> cmcfValues = getCreatesMustCallForValues(elt, mcAtf, rlTypeFactory);
+    MustCallAnnotatedTypeFactory mcAtf = typeFactory.getMustCallAnnotatedTypeFactory();
+    List<String> cmcfValues = getCreatesMustCallForValues(elt, mcAtf, typeFactory);
     if (!cmcfValues.isEmpty()) {
       checkCreatesMustCallForOverrides(tree, elt, mcAtf, cmcfValues);
       checkCreatesMustCallForTargetsHaveNonEmptyMustCall(tree, mcAtf);
@@ -120,7 +107,7 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
           mcAtf
               .getAnnotatedType(TypesUtils.getTypeElement(targetExpr.getType()))
               .getPrimaryAnnotationInHierarchy(mcAtf.TOP);
-      if (rlTypeFactory.getMustCallValues(mustCallAnno).isEmpty()) {
+      if (typeFactory.getMustCallValues(mustCallAnno).isEmpty()) {
         checker.reportError(
             tree,
             "creates.mustcall.for.invalid.target",
@@ -148,7 +135,7 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
     // overwritten by a CMCF method, but the CMCF effect wouldn't occur.
     for (ExecutableElement overridden : ElementUtils.getOverriddenMethods(elt, this.types)) {
       List<String> overriddenCmcfValues =
-          getCreatesMustCallForValues(overridden, mcAtf, rlTypeFactory);
+          getCreatesMustCallForValues(overridden, mcAtf, typeFactory);
       if (!overriddenCmcfValues.containsAll(cmcfValues)) {
         String foundCmcfValueString = String.join(", ", cmcfValues);
         String neededCmcfValueString = String.join(", ", overriddenCmcfValues);
@@ -249,7 +236,7 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
   private void checkMustCallAliasAnnotationForConstructor(MethodTree tree) {
     ExecutableElement constructorDecl = TreeUtils.elementFromDeclaration(tree);
     boolean isMustCallAliasAnnoOnConstructor =
-        constructorDecl != null && rlTypeFactory.hasMustCallAlias(constructorDecl);
+        constructorDecl != null && typeFactory.hasMustCallAlias(constructorDecl);
     Element paramWithMustCallAliasAnno = getParameterWithMustCallAliasAnno(tree);
     checkMustCallAliasAnnoMismatch(
         paramWithMustCallAliasAnno, isMustCallAliasAnnoOnConstructor, tree);
@@ -302,20 +289,15 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
    */
   private @Nullable Element getParameterWithMustCallAliasAnno(MethodTree tree) {
     VariableTree receiverParameter = tree.getReceiverParameter();
-    if (receiverParameter != null && rlTypeFactory.hasMustCallAlias(receiverParameter)) {
+    if (receiverParameter != null && typeFactory.hasMustCallAlias(receiverParameter)) {
       return TreeUtils.elementFromDeclaration(receiverParameter);
     }
     for (VariableTree param : tree.getParameters()) {
-      if (rlTypeFactory.hasMustCallAlias(param)) {
+      if (typeFactory.hasMustCallAlias(param)) {
         return TreeUtils.elementFromDeclaration(param);
       }
     }
     return null;
-  }
-
-  @Override
-  protected boolean shouldPerformContractInference() {
-    return atypeFactory.getWholeProgramInference() != null && isWpiEnabledForRLC();
   }
 
   /**
@@ -328,7 +310,7 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
    * @param mcAtf a MustCallAnnotatedTypeFactory, to source the value element
    * @return the string value
    */
-  private static String getCreatesMustCallForValue(
+  public static String getCreatesMustCallForValue(
       AnnotationMirror createsMustCallFor, MustCallAnnotatedTypeFactory mcAtf) {
     return AnnotationUtils.getElementValue(
         createsMustCallFor, mcAtf.getCreatesMustCallForValueElement(), String.class, "this");
@@ -343,16 +325,16 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
    *
    * @param elt an executable element
    * @param mcAtf a MustCallAnnotatedTypeFactory, to source the value element
-   * @param atypeFactory a ResourceLeakAnnotatedTypeFactory
+   * @param atypeFactory a RLCCalledMethodsAnnotatedTypeFactory
    * @return the literal strings present in the @CreatesMustCallFor annotation(s) of that element,
    *     substituting the default "this" for empty annotations. This method returns the empty list
    *     iff there are no @CreatesMustCallFor annotations on elt. The returned list is always
    *     modifiable if it is non-empty.
    */
-  /*package-private*/ static List<String> getCreatesMustCallForValues(
+  public static List<String> getCreatesMustCallForValues(
       ExecutableElement elt,
       MustCallAnnotatedTypeFactory mcAtf,
-      ResourceLeakAnnotatedTypeFactory atypeFactory) {
+      RLCCalledMethodsAnnotatedTypeFactory atypeFactory) {
     AnnotationMirror createsMustCallForList =
         atypeFactory.getDeclAnnotation(elt, CreatesMustCallFor.List.class);
     List<String> result = new ArrayList<>(4);
@@ -378,12 +360,12 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
    * Get all {@link EnsuresCalledMethods} annotations on an element.
    *
    * @param elt an executable element that might have {@link EnsuresCalledMethods} annotations
-   * @param atypeFactory a <code>ResourceLeakAnnotatedTypeFactory</code>
+   * @param atypeFactory a <code>RLCCalledMethodsAnnotatedTypeFactory</code>
    * @return a set of {@link EnsuresCalledMethods} annotations
    */
   @Pure
   private static AnnotationMirrorSet getEnsuresCalledMethodsAnnotations(
-      ExecutableElement elt, ResourceLeakAnnotatedTypeFactory atypeFactory) {
+      ExecutableElement elt, RLCCalledMethodsAnnotatedTypeFactory atypeFactory) {
     AnnotationMirror ensuresCalledMethodsAnnos =
         atypeFactory.getDeclAnnotation(elt, EnsuresCalledMethods.List.class);
     AnnotationMirrorSet result = new AnnotationMirrorSet();
@@ -405,10 +387,9 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
   @Override
   public Void visitVariable(VariableTree tree, Void p) {
     VariableElement varElement = TreeUtils.elementFromDeclaration(tree);
-
     if (varElement.getKind().isField()
-        && !noLightweightOwnership
-        && rlTypeFactory.getDeclAnnotation(varElement, Owning.class) != null) {
+        && !typeFactory.noLightweightOwnership
+        && typeFactory.getDeclAnnotation(varElement, Owning.class) != null) {
       checkOwningField(varElement);
     }
 
@@ -470,7 +451,7 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
 
     Set<Modifier> modifiers = field.getModifiers();
     if (modifiers.contains(Modifier.STATIC)) {
-      if (permitStaticOwning) {
+      if (typeFactory.permitStaticOwning) {
         return;
       }
       if (modifiers.contains(Modifier.FINAL)) {
@@ -478,7 +459,7 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
       }
     }
 
-    List<String> mustCallObligationsOfOwningField = rlTypeFactory.getMustCallValues(field);
+    List<String> mustCallObligationsOfOwningField = typeFactory.getMustCallValues(field);
 
     if (mustCallObligationsOfOwningField.isEmpty()) {
       return;
@@ -496,7 +477,7 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
 
     String error;
     Element enclosingElement = field.getEnclosingElement();
-    List<String> enclosingMustCallValues = rlTypeFactory.getMustCallValues(enclosingElement);
+    List<String> enclosingMustCallValues = typeFactory.getMustCallValues(enclosingElement);
 
     if (enclosingMustCallValues == null) {
       error =
@@ -518,19 +499,19 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
           ExecutableElement siblingMethod = (ExecutableElement) siblingElement;
 
           AnnotationMirrorSet allEnsuresCalledMethodsAnnos =
-              getEnsuresCalledMethodsAnnotations(siblingMethod, rlTypeFactory);
+              getEnsuresCalledMethodsAnnotations(siblingMethod, typeFactory);
           for (AnnotationMirror ensuresCalledMethodsAnno : allEnsuresCalledMethodsAnnos) {
             List<String> values =
                 AnnotationUtils.getElementValueArray(
                     ensuresCalledMethodsAnno,
-                    rlTypeFactory.ensuresCalledMethodsValueElement,
+                    typeFactory.ensuresCalledMethodsValueElement,
                     String.class);
             for (String value : values) {
               if (expressionEqualsField(value, field)) {
                 List<String> methods =
                     AnnotationUtils.getElementValueArray(
                         ensuresCalledMethodsAnno,
-                        rlTypeFactory.ensuresCalledMethodsMethodsElement,
+                        typeFactory.ensuresCalledMethodsMethodsElement,
                         String.class);
                 for (String method : methods) {
                   unsatisfiedMustCallObligationsOfOwningField.remove(
@@ -541,7 +522,7 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
             }
 
             Set<EnsuresCalledMethodOnExceptionContract> exceptionalPostconds =
-                rlTypeFactory.getExceptionalPostconditions(siblingMethod);
+                typeFactory.getExceptionalPostconditions(siblingMethod);
             for (EnsuresCalledMethodOnExceptionContract postcond : exceptionalPostconds) {
               if (expressionEqualsField(postcond.getExpression(), field)) {
                 unsatisfiedMustCallObligationsOfOwningField.remove(
@@ -605,16 +586,6 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
   }
 
   /**
-   * Checks if WPI is enabled for the Resource Leak Checker inference. See {@link
-   * ResourceLeakChecker#ENABLE_WPI_FOR_RLC}.
-   *
-   * @return returns true if WPI is enabled for the Resource Leak Checker
-   */
-  protected boolean isWpiEnabledForRLC() {
-    return enableWpiForRlc;
-  }
-
-  /**
    * Formats a list of must-call method post-conditions to be printed in an error message.
    *
    * @param field the value whose methods must be called
@@ -656,5 +627,25 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
       default:
         throw new UnsupportedOperationException(exitKind.toString());
     }
+  }
+
+  @Override
+  protected RLCCalledMethodsAnnotatedTypeFactory createTypeFactory() {
+    return new RLCCalledMethodsAnnotatedTypeFactory(checker);
+  }
+
+  /**
+   * Checks if WPI is enabled for the Resource Leak Checker inference. See {@link
+   * ResourceLeakChecker#ENABLE_WPI_FOR_RLC}.
+   *
+   * @return returns true if WPI is enabled for the Resource Leak Checker
+   */
+  protected boolean isWpiEnabledForRLC() {
+    return enableWpiForRlc;
+  }
+
+  @Override
+  protected boolean shouldPerformContractInference() {
+    return typeFactory.getWholeProgramInference() != null && isWpiEnabledForRLC();
   }
 }

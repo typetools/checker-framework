@@ -1,4 +1,4 @@
-package org.checkerframework.checker.resourceleak;
+package org.checkerframework.checker.rlccalledmethods;
 
 import com.sun.source.tree.MethodInvocationTree;
 import java.util.List;
@@ -8,7 +8,7 @@ import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.calledmethods.CalledMethodsTransfer;
 import org.checkerframework.checker.mustcall.CreatesMustCallForToJavaExpression;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
-import org.checkerframework.checker.mustcall.MustCallChecker;
+import org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer;
 import org.checkerframework.common.accumulation.AccumulationStore;
 import org.checkerframework.common.accumulation.AccumulationValue;
 import org.checkerframework.dataflow.analysis.TransferInput;
@@ -25,23 +25,22 @@ import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /** The transfer function for the resource-leak extension to the called-methods type system. */
-public class ResourceLeakTransfer extends CalledMethodsTransfer {
+public class RLCCalledMethodsTransfer extends CalledMethodsTransfer {
 
   /**
-   * Shadowed because we must dispatch to the Resource Leak Checker's version of
-   * getTypefactoryOfSubchecker to get the correct MustCallAnnotatedTypeFactory.
+   * Shadowed because we must dispatch to the RLCCm Checker's version of getTypefactoryOfSubchecker
+   * to get the correct MustCallAnnotatedTypeFactory.
    */
-  private final ResourceLeakAnnotatedTypeFactory rlTypeFactory;
+  private final RLCCalledMethodsAnnotatedTypeFactory cmAtf;
 
   /**
-   * Create a new resource leak transfer function.
+   * Create a new RLCCalledMethodsTransfer.
    *
-   * @param analysis the analysis. Its type factory must be a {@link
-   *     ResourceLeakAnnotatedTypeFactory}.
+   * @param analysis the analysis
    */
-  public ResourceLeakTransfer(ResourceLeakAnalysis analysis) {
+  public RLCCalledMethodsTransfer(RLCCalledMethodsAnalysis analysis) {
     super(analysis);
-    this.rlTypeFactory = (ResourceLeakAnnotatedTypeFactory) analysis.getTypeFactory();
+    this.cmAtf = (RLCCalledMethodsAnnotatedTypeFactory) analysis.getTypeFactory();
   }
 
   @Override
@@ -52,7 +51,7 @@ public class ResourceLeakTransfer extends CalledMethodsTransfer {
     if (!TypesUtils.isPrimitiveOrBoxed(node.getType())) {
       // Add the synthetic variable created during CFG construction to the temporary
       // variable map (rather than creating a redundant temp var)
-      rlTypeFactory.addTempVar(node.getTernaryExpressionVar(), node.getTree());
+      cmAtf.addTempVar(node.getTernaryExpressionVar(), node.getTree());
     }
     return result;
   }
@@ -65,7 +64,7 @@ public class ResourceLeakTransfer extends CalledMethodsTransfer {
     if (!TypesUtils.isPrimitiveOrBoxed(node.getType())) {
       // Add the synthetic variable created during CFG construction to the temporary
       // variable map (rather than creating a redundant temp var)
-      rlTypeFactory.addTempVar(node.getSwitchExpressionVar(), node.getTree());
+      cmAtf.addTempVar(node.getSwitchExpressionVar(), node.getTree());
     }
     return result;
   }
@@ -82,12 +81,11 @@ public class ResourceLeakTransfer extends CalledMethodsTransfer {
 
     // If there is a temporary variable for the receiver, update its type.
     Node receiver = node.getTarget().getReceiver();
-    MustCallAnnotatedTypeFactory mcAtf =
-        rlTypeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
+    MustCallAnnotatedTypeFactory mcAtf = cmAtf.getMustCallAnnotatedTypeFactory();
     Node accumulationTarget = mcAtf.getTempVar(receiver);
     if (accumulationTarget != null) {
       String methodName = node.getTarget().getMethod().getSimpleName().toString();
-      methodName = rlTypeFactory.adjustMethodNameUsingValueChecker(methodName, node.getTree());
+      methodName = cmAtf.adjustMethodNameUsingValueChecker(methodName, node.getTree());
       accumulate(accumulationTarget, result, methodName);
     }
 
@@ -103,14 +101,14 @@ public class ResourceLeakTransfer extends CalledMethodsTransfer {
    */
   private void handleCreatesMustCallFor(
       MethodInvocationNode n, TransferResult<AccumulationValue, AccumulationStore> result) {
-    if (!rlTypeFactory.canCreateObligations()) {
+    if (!cmAtf.canCreateObligations()) {
       return;
     }
 
     List<JavaExpression> targetExprs =
         CreatesMustCallForToJavaExpression.getCreatesMustCallForExpressionsAtInvocation(
-            n, rlTypeFactory, rlTypeFactory);
-    AnnotationMirror defaultType = rlTypeFactory.top;
+            n, cmAtf, cmAtf);
+    AnnotationMirror defaultType = cmAtf.top;
     for (JavaExpression targetExpr : targetExprs) {
       AccumulationValue defaultTypeValue =
           analysis.createSingleAnnotationValue(defaultType, targetExpr.getType());
@@ -153,18 +151,15 @@ public class ResourceLeakTransfer extends CalledMethodsTransfer {
     }
     // Must-call obligations on primitives are not supported.
     if (!TypesUtils.isPrimitiveOrBoxed(node.getType())) {
-      MustCallAnnotatedTypeFactory mcAtf =
-          rlTypeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
+      MustCallAnnotatedTypeFactory mcAtf = cmAtf.getMustCallAnnotatedTypeFactory();
       LocalVariableNode temp = mcAtf.getTempVar(node);
       if (temp != null) {
-        rlTypeFactory.addTempVar(temp, node.getTree());
+        cmAtf.addTempVar(temp, node.getTree());
         JavaExpression localExp = JavaExpression.fromNode(temp);
         AnnotationMirror anm =
-            rlTypeFactory
-                .getAnnotatedType(node.getTree())
-                .getPrimaryAnnotationInHierarchy(rlTypeFactory.top);
+            cmAtf.getAnnotatedType(node.getTree()).getPrimaryAnnotationInHierarchy(cmAtf.top);
         if (anm == null) {
-          anm = rlTypeFactory.top;
+          anm = cmAtf.top;
         }
         if (result.containsTwoStores()) {
           result.getThenStore().insertValue(localExp, anm);

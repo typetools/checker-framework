@@ -4,27 +4,36 @@ import com.google.common.collect.ImmutableSet;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NavigableSet;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic;
-import org.checkerframework.checker.calledmethods.CalledMethodsChecker;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.mustcall.MustCallChecker;
-import org.checkerframework.checker.mustcall.MustCallNoCreatesMustCallForChecker;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsChecker;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.qual.StubFiles;
+import org.checkerframework.framework.source.CompositeChecker;
 import org.checkerframework.framework.source.SupportedOptions;
 
 /**
- * The entry point for the Resource Leak Checker. This checker is a modifed {@link
- * CalledMethodsChecker} that checks that the must-call obligations of each expression (as computed
- * via the {@link org.checkerframework.checker.mustcall.MustCallChecker} have been fulfilled.
+ * The entry point for the Resource Leak Checker. This checker only counts the number of {@link
+ * org.checkerframework.checker.mustcall.qual.MustCall} annotations and defines a set of ignored
+ * exceptions. This checker calls the {@link RLCCalledMethodsChecker} as a direct subchecker, which
+ * then in turn calls the {@link MustCallChecker} as a subchecker and traverses the cfg to check
+ * whether all MustCall obligations are fulfilled.
+ *
+ * <p>The checker hierarchy is: this "empty" RLC &rarr; RLCCalledMethodsChecker &rarr;
+ * MustCallChecker
+ *
+ * <p>The MustCallChecker is a subchecker of the RLCCm checker (instead of a sibling), since we want
+ * them to operate on the same cfg (so we can get both a CM and MC store for a given cfg block),
+ * which only works if one of them is a subchecker of the other.
  */
 @SupportedOptions({
   "permitStaticOwning",
@@ -37,7 +46,7 @@ import org.checkerframework.framework.source.SupportedOptions;
   ResourceLeakChecker.ENABLE_WPI_FOR_RLC,
 })
 @StubFiles("IOUtils.astub")
-public class ResourceLeakChecker extends CalledMethodsChecker {
+public class ResourceLeakChecker extends CompositeChecker {
 
   /** Creates a ResourceLeakChecker. */
   public ResourceLeakChecker() {}
@@ -127,6 +136,15 @@ public class ResourceLeakChecker extends CalledMethodsChecker {
    */
   private int numMustCallFailed = 0;
 
+  @Override
+  protected Set<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
+    Set<Class<? extends BaseTypeChecker>> checkers = super.getImmediateSubcheckerClasses();
+
+    checkers.add(RLCCalledMethodsChecker.class);
+
+    return checkers;
+  }
+
   /**
    * The cached set of ignored exceptions parsed from {@link #IGNORED_EXCEPTIONS}. Caching this
    * field prevents the checker from issuing duplicate warnings about missing exception types.
@@ -134,24 +152,6 @@ public class ResourceLeakChecker extends CalledMethodsChecker {
    * @see #getIgnoredExceptions()
    */
   private @MonotonicNonNull SetOfTypes ignoredExceptions = null;
-
-  @Override
-  protected Set<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
-    Set<Class<? extends BaseTypeChecker>> checkers = super.getImmediateSubcheckerClasses();
-
-    if (this.processingEnv.getOptions().containsKey(MustCallChecker.NO_CREATES_MUSTCALLFOR)) {
-      checkers.add(MustCallNoCreatesMustCallForChecker.class);
-    } else {
-      checkers.add(MustCallChecker.class);
-    }
-
-    return checkers;
-  }
-
-  @Override
-  protected BaseTypeVisitor<?> createSourceVisitor() {
-    return new ResourceLeakVisitor(this);
-  }
 
   @Override
   public void reportError(
@@ -288,5 +288,12 @@ public class ResourceLeakChecker extends CalledMethodsChecker {
       return null;
     }
     return types.getDeclaredType(elem);
+  }
+
+  @Override
+  public NavigableSet<String> getSuppressWarningsPrefixes() {
+    NavigableSet<String> result = super.getSuppressWarningsPrefixes();
+    result.add("builder");
+    return result;
   }
 }
