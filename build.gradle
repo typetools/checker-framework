@@ -625,6 +625,15 @@ task allJavadoc(type: Javadoc, group: 'Documentation') {
 // See documentation for allJavadoc task.
 javadoc.dependsOn(allJavadoc)
 
+clean {
+  delete(file("${rootDir}/docs/api"))
+  doLast {
+    exec {
+      commandLine 'make', '-C', 'docs/manual', 'clean'
+    }
+  }
+}
+
 configurations {
   requireJavadoc
 }
