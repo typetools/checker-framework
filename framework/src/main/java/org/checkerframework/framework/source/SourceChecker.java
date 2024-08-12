@@ -2745,7 +2745,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @param culprit a message to print about the cause
    */
   private void logBug(Throwable ce, String culprit) {
-    String lineSeparator = getOption("exceptionLineSeparator", System.lineSeparator());
+    String lineSeparator =
+        getOptions().getOrDefault("exceptionLineSeparator", System.lineSeparator());
     StringJoiner msg = new StringJoiner(lineSeparator);
     if (ce.getCause() != null && ce.getCause() instanceof OutOfMemoryError) {
       msg.add(
@@ -2756,7 +2757,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
               Runtime.getRuntime().freeMemory()));
     } else {
       String message;
-      if (hasOption("exceptionLineSeparator")) {
+      if (getOptions().containsKey("exceptionLineSeparator")) {
         message = ce.getMessage().replaceAll(System.lineSeparator(), lineSeparator);
       } else {
         message = ce.getMessage();
