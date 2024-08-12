@@ -692,8 +692,8 @@ public class AnnotatedTypes {
    * A pair of an empty map and false. Used in {@link #findTypeArguments(AnnotatedTypeFactory,
    * ExpressionTree, ExecutableElement, AnnotatedExecutableType, boolean)}.
    */
-  private static final IPair<Map<TypeVariable, AnnotatedTypeMirror>, Boolean> emptyFalsePair =
-      IPair.of(Collections.emptyMap(), false);
+  private static final TypeArguments emptyFalsePair =
+      new TypeArguments(Collections.emptyMap(), false, false);
   ;
 
   /**
@@ -712,9 +712,10 @@ public class AnnotatedTypes {
    *     AnnotatedTypes.asMemberOf with the receiver and elt
    * @param inferTypeArgs whether the type argument should be inferred
    * @return the mapping of type variables to type arguments for this method or constructor
-   *     invocation, and whether unchecked conversion was required to infer the type arguments
+   *     invocation, and whether unchecked conversion was required to infer the type arguments, and
+   *     whether type argument inference crashed
    */
-  public static IPair<Map<TypeVariable, AnnotatedTypeMirror>, Boolean> findTypeArguments(
+  public static TypeArguments findTypeArguments(
       AnnotatedTypeFactory atypeFactory,
       ExpressionTree expr,
       ExecutableElement elt,
@@ -737,9 +738,10 @@ public class AnnotatedTypes {
       if (inferTypeArgs && TreeUtils.needsTypeArgInference(memRef)) {
         InferenceResult inferenceResult =
             atypeFactory.getTypeArgumentInference().inferTypeArgs(atypeFactory, expr, preType);
-        return IPair.of(
+        return new TypeArguments(
             inferenceResult.getTypeArgumentsForExpression(expr),
-            inferenceResult.isUncheckedConversion());
+            inferenceResult.isUncheckedConversion(),
+            inferenceResult.inferenceCrashed());
       }
       targs = memRef.getTypeArguments();
       if (memRef.getTypeArguments() == null) {
@@ -774,17 +776,42 @@ public class AnnotatedTypes {
         // already should be a declaration.
         typeArguments.put(typeVar.getUnderlyingType(), typeArg);
       }
-      return IPair.of(typeArguments, false);
+      return new TypeArguments(typeArguments, false, false);
     } else {
       if (inferTypeArgs) {
         InferenceResult inferenceResult =
             atypeFactory.getTypeArgumentInference().inferTypeArgs(atypeFactory, expr, preType);
-        return IPair.of(
+        return new TypeArguments(
             inferenceResult.getTypeArgumentsForExpression(expr),
-            inferenceResult.isUncheckedConversion());
+            inferenceResult.isUncheckedConversion(),
+            inferenceResult.inferenceCrashed());
       } else {
         return emptyFalsePair;
       }
+    }
+  }
+
+  /**
+   * Class representing type arguments for a method, constructor, or method reference expression.
+   */
+  public static class TypeArguments {
+
+    /** A mapping from {@link TypeVariable} to its annotated type argument. */
+    public final Map<TypeVariable, AnnotatedTypeMirror> typeArguments;
+
+    /** Whether unchecked conversion was needed for inference. */
+    public final boolean uncheckedConversion;
+
+    /** Whether type arguement inference crashed. */
+    public final boolean inferenceCrash;
+
+    public TypeArguments(
+        Map<TypeVariable, AnnotatedTypeMirror> typeArguments,
+        boolean uncheckedConversion,
+        boolean inferenceCrash) {
+      this.typeArguments = typeArguments;
+      this.uncheckedConversion = uncheckedConversion;
+      this.inferenceCrash = inferenceCrash;
     }
   }
 
