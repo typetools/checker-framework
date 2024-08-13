@@ -802,9 +802,16 @@ public class AnnotatedTypes {
     /** Whether unchecked conversion was needed for inference. */
     public final boolean uncheckedConversion;
 
-    /** Whether type arguement inference crashed. */
+    /** Whether type argument inference crashed. */
     public final boolean inferenceCrash;
 
+    /**
+     * Creates a {@link TypeArguments} object.
+     *
+     * @param typeArguments a mapping from {@link TypeVariable} to its annotated type argument
+     * @param uncheckedConversion whether unchecked conversion was needed for inference
+     * @param inferenceCrash whether type argument inference crashed
+     */
     public TypeArguments(
         Map<TypeVariable, AnnotatedTypeMirror> typeArguments,
         boolean uncheckedConversion,

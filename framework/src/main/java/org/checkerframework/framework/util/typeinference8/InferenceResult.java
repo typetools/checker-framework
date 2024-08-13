@@ -119,6 +119,11 @@ public class InferenceResult {
     return annoInferenceFailed;
   }
 
+  /**
+   * Whether inference crashed.
+   *
+   * @return whether inference crashed
+   */
   public boolean inferenceCrashed() {
     return inferenceCrashed;
   }
