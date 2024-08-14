@@ -2473,7 +2473,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     if (typeArguments.inferenceCrash && tree instanceof MethodInvocationTree) {
       // If inference crashed, then the return type will not be the correct Java type.  This can
-      // cause crashes else where in the framework.  To avoid those crashes, create an ATM with the
+      // cause crashes elsewhere in the framework.  To avoid those crashes, create an ATM with the
       // correct Java type and default annotations.  (If inference crashes an error will be issued
       // in the BaseTypeVisitor.)
       TypeMirror type = TreeUtils.typeOf(tree);

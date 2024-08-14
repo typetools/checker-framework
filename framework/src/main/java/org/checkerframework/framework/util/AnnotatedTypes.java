@@ -694,7 +694,6 @@ public class AnnotatedTypes {
    */
   private static final TypeArguments emptyFalsePair =
       new TypeArguments(Collections.emptyMap(), false, false);
-  ;
 
   /**
    * Given a method or constructor invocation, return a mapping of the type variables to their type
