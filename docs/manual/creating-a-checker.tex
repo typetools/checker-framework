@@ -1056,7 +1056,8 @@ An aggregate checker runs multiple independent, unrelated checkers.  There
 is no communication or cooperation among them.
 
 The effect is the same as if a user passes
-multiple processors to the \<-processor> command-line option, except the error message are interleaved
+multiple processors to the \<-processor> command-line option,
+except the error messages are interleaved
 such that all errors about a line of code appear together.
 
 For example, instead of a user having to run
@@ -1079,7 +1080,7 @@ the \<getImmediateSubcheckerClasses> method, like the following:
 \begin{Verbatim}
   public class MyUnitCheckers extends AggregateChecker {
     protected Set<Class<? extends SourceChecker>> getImmediateSubcheckerClasses() {
-      Set<Class<? extends SourceChecker>> checkers = new LinkedHashSet<>(CollectionsPlume.mapCapacity(3));
+      Set<Class<? extends SourceChecker>> checkers = new LinkedHashSet<>();
       checkers.add(DistanceUnitChecker.class);
       checkers.add(VelocityUnitChecker.class);
       checkers.add(MassUnitChecker.class);
