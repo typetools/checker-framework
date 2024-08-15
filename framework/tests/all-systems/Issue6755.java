@@ -26,6 +26,6 @@ public class Issue6755 {
     var testsByValue =
         Stream.of(new Issue6755(1), new Issue6755(2))
             .collect(Collectors.groupingBy(Issue6755::getValue));
-    var values = Stream.of(1, 2).map(val -> merge(val, testsByValue)).toList();
+    var values = Stream.of(1, 2).map(val -> merge(val, testsByValue));
   }
 }

@@ -32,7 +32,6 @@ public class TaintingIssue6755 {
         Stream.of(1, 2)
             .map(
                 // :: error: (argument)
-                val -> merge(val, testsByValue))
-            .toList();
+                val -> merge(val, testsByValue));
   }
 }
