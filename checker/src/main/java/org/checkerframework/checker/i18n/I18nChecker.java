@@ -4,6 +4,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import org.checkerframework.framework.source.AggregateChecker;
 import org.checkerframework.framework.source.SourceChecker;
+import org.plumelib.util.CollectionsPlume;
 
 /**
  * A type-checker that enforces (and finds the violations of) two properties:
