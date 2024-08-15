@@ -21,7 +21,7 @@ import org.plumelib.util.CollectionsPlume;
  */
 public class I18nChecker extends AggregateChecker {
 
-  /** Default constructor. */
+  /** Create an I18nChecker. */
   public I18nChecker() {}
 
   @Override
