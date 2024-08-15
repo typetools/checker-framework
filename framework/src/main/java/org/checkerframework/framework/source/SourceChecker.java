@@ -595,8 +595,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
 
   /**
    * Supported options for this checker. This is the set of all possible options that could be
-   * passed to this checker. Whereas {@link #activeOptions} is a map for options that were used for
-   * this run of the checker.
+   * passed to this checker. By contrast, {@link #activeOptions} is a map for options that were used
+   * for this run of the checker.
    */
   protected @MonotonicNonNull Set<String> supportedOptions = null;
 

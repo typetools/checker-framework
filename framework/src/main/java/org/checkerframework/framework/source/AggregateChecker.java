@@ -29,7 +29,7 @@ public abstract class AggregateChecker extends SourceChecker {
   @Override
   protected SourceVisitor<?, ?> createSourceVisitor() {
     return new SourceVisitor<Void, Void>(this) {
-      // aggregate checkers do not visit source,
+      // Aggregate checkers do not visit source,
       // the checkers in the aggregate checker do.
     };
   }
