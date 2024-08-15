@@ -2028,6 +2028,10 @@ This prevents the message from being elevated to an error by \code{-Werror}.
 
 \item \code{-AdumpOnErrors}: Outputs a stack trace when reporting errors or warnings.
 
+\item \code{-AexceptionLineSeparator}: Controls what line separator is used when printing exceptions.
+This is useful when tools, such as Maven, only display the first line of exception messsages. For
+example, \code{-AexceptionLineSeparator="    "}.
+
 \end{itemize}
 
 
