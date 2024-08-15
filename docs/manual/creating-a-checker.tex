@@ -1079,7 +1079,7 @@ the \<getImmediateSubcheckerClasses> method, like the following:
 \begin{Verbatim}
   public class MyUnitCheckers extends AggregateChecker {
     protected Set<Class<? extends SourceChecker>> getImmediateSubcheckerClasses() {
-      Set<Class<? extends SourceChecker>> checkers = new LinkedHashSet<>(2);
+      Set<Class<? extends SourceChecker>> checkers = new LinkedHashSet<>(CollectionsPlume.mapCapacity(3));
       checkers.add(DistanceUnitChecker.class);
       checkers.add(VelocityUnitChecker.class);
       checkers.add(MassUnitChecker.class);

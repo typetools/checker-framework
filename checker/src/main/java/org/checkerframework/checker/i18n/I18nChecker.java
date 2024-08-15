@@ -25,7 +25,8 @@ public class I18nChecker extends AggregateChecker {
 
   @Override
   protected Set<Class<? extends SourceChecker>> getImmediateSubcheckerClasses() {
-    Set<Class<? extends SourceChecker>> checkers = new LinkedHashSet<>(2);
+    Set<Class<? extends SourceChecker>> checkers =
+        new LinkedHashSet<>(CollectionsPlume.mapCapacity(2));
     checkers.add(I18nSubchecker.class);
     checkers.add(LocalizableKeyChecker.class);
     return checkers;

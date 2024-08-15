@@ -11,7 +11,8 @@ import org.checkerframework.framework.source.SourceChecker;
 public class TestAggregateChecker extends AggregateChecker {
 
   protected Set<Class<? extends SourceChecker>> getImmediateSubcheckerClasses() {
-    Set<Class<? extends SourceChecker>> checkers = new LinkedHashSet<>(2);
+    Set<Class<? extends SourceChecker>> checkers =
+        new LinkedHashSet<>(CollectionsPlume.mapCapacity(2));
     checkers.add(ValueChecker.class);
     checkers.add(AliasingChecker.class);
     return checkers;
