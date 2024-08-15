@@ -1713,11 +1713,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     AnnotatedTypeMirror result = TypeFromTree.fromExpression(this, tree);
 
     if (shouldCache
+        // Don't cache the type of some expressions, because incorrect annotations would be
+        // cached during dataflow analysis. See Issue #602.
         && tree.getKind() != Tree.Kind.NEW_CLASS
         && tree.getKind() != Tree.Kind.NEW_ARRAY
         && tree.getKind() != Tree.Kind.CONDITIONAL_EXPRESSION) {
-      // Don't cache the type of some expressions, because incorrect annotations would be
-      // cached during dataflow analysis. See Issue #602.
       fromExpressionTreeCache.put(tree, result.deepCopy());
     }
     logGat("fromExpression(%s) => %s%n", tree, result);
