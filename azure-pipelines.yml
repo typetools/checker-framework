@@ -72,17 +72,17 @@ jobs:
   - bash: ./checker/bin-devel/test-cftests-junit.sh
     displayName: test-cftests-junit.sh
 - job: junit_jdk22
- dependsOn:
-  - canary_jobs
- pool:
-   vmImage: 'ubuntu-latest'
- container: mdernst/cf-ubuntu-jdk22:latest
- timeoutInMinutes: 70
- steps:
- - checkout: self
-   fetchDepth: 25
- - bash: ./checker/bin-devel/test-cftests-junit.sh
-   displayName: test-cftests-junit.sh
+  dependsOn:
+   - canary_jobs
+  pool:
+    vmImage: 'ubuntu-latest'
+  container: mdernst/cf-ubuntu-jdk22:latest
+  timeoutInMinutes: 70
+  steps:
+  - checkout: self
+    fetchDepth: 25
+  - bash: ./checker/bin-devel/test-cftests-junit.sh
+    displayName: test-cftests-junit.sh
 - job: nonjunit_jdk11
   dependsOn:
    - canary_jobs
@@ -117,16 +117,16 @@ jobs:
   - bash: ./checker/bin-devel/test-cftests-nonjunit.sh
     displayName: test-cftests-nonjunit.sh
 - job: nonjunit_jdk22
- dependsOn:
-  - canary_jobs
- pool:
-   vmImage: 'ubuntu-latest'
- container: mdernst/cf-ubuntu-jdk22:latest
- steps:
- - checkout: self
-   fetchDepth: 25
- - bash: ./checker/bin-devel/test-cftests-nonjunit.sh
-   displayName: test-cftests-nonjunit.sh
+  dependsOn:
+   - canary_jobs
+  pool:
+    vmImage: 'ubuntu-latest'
+  container: mdernst/cf-ubuntu-jdk22:latest
+  steps:
+  - checkout: self
+    fetchDepth: 25
+  - bash: ./checker/bin-devel/test-cftests-nonjunit.sh
+    displayName: test-cftests-nonjunit.sh
 # Sometimes one of the invocations of wpi-many in `./gradlew wpiManyTest`
 # takes much longer to complete than normal, and this Azure job times out.
 # When there is a timeout, one cannot examine wpi or wpi-many logs.
@@ -226,17 +226,17 @@ jobs:
   - bash: ./checker/bin-devel/test-misc.sh
     displayName: test-misc.sh
 - job: misc_jdk22
- dependsOn:
-  - canary_jobs
-  - misc_jdk21
- pool:
-   vmImage: 'ubuntu-latest'
- container: mdernst/cf-ubuntu-jdk22-plus:latest
- steps:
- - checkout: self
-   fetchDepth: 25
- - bash: ./checker/bin-devel/test-misc.sh
-   displayName: test-misc.sh
+  dependsOn:
+   - canary_jobs
+   - misc_jdk21
+  pool:
+    vmImage: 'ubuntu-latest'
+  container: mdernst/cf-ubuntu-jdk22-plus:latest
+  steps:
+  - checkout: self
+    fetchDepth: 25
+  - bash: ./checker/bin-devel/test-misc.sh
+    displayName: test-misc.sh
 - job: typecheck_jdk11
   dependsOn:
    - canary_jobs
@@ -284,17 +284,17 @@ jobs:
     displayName: test-typecheck-part2.sh
 - job: typecheck_jdk22
   dependsOn:
-  - canary_jobs
-  - typecheck_part1_jdk21
-  - typecheck_part2_jdk21
- pool:
-   vmImage: 'ubuntu-latest'
- container: mdernst/cf-ubuntu-jdk22-plus:latest
- steps:
- - checkout: self
-   fetchDepth: 1000
- - bash: ./checker/bin-devel/test-typecheck.sh
-   displayName: test-typecheck.sh
+   - canary_jobs
+   - typecheck_part1_jdk21
+   - typecheck_part2_jdk21
+  pool:
+    vmImage: 'ubuntu-latest'
+  container: mdernst/cf-ubuntu-jdk22-plus:latest
+  steps:
+  - checkout: self
+    fetchDepth: 1000
+  - bash: ./checker/bin-devel/test-typecheck.sh
+    displayName: test-typecheck.sh
 - job: daikon_jdk11
   dependsOn:
    - canary_jobs
@@ -349,18 +349,18 @@ jobs:
     displayName: test-daikon-part2.sh
 - job: daikon_jdk22
   dependsOn:
-  - canary_jobs
-  - daikon_part1_jdk21
-  - daikon_part2_jdk21
- pool:
-   vmImage: 'ubuntu-latest'
- container: mdernst/cf-ubuntu-jdk22:latest
- timeoutInMinutes: 80
- steps:
- - checkout: self
-   fetchDepth: 25
- - bash: ./checker/bin-devel/test-daikon.sh
-   displayName: test-daikon.sh
+   - canary_jobs
+   - daikon_part1_jdk21
+   - daikon_part2_jdk21
+  pool:
+    vmImage: 'ubuntu-latest'
+  container: mdernst/cf-ubuntu-jdk22:latest
+  timeoutInMinutes: 80
+  steps:
+  - checkout: self
+    fetchDepth: 25
+  - bash: ./checker/bin-devel/test-daikon.sh
+    displayName: test-daikon.sh
 - job: guava_jdk11
   dependsOn:
    - canary_jobs
@@ -405,18 +405,18 @@ jobs:
   - bash: ./checker/bin-devel/test-guava.sh
     displayName: test-guava.sh
 - job: guava_jdk22
- dependsOn:
-  - canary_jobs
-  - guava_jdk21
- pool:
-   vmImage: 'ubuntu-latest'
- container: mdernst/cf-ubuntu-jdk22:latest
- timeoutInMinutes: 70
- steps:
- - checkout: self
-   fetchDepth: 25
- - bash: ./checker/bin-devel/test-guava.sh
-   displayName: test-guava.sh
+  dependsOn:
+   - canary_jobs
+   - guava_jdk21
+  pool:
+    vmImage: 'ubuntu-latest'
+  container: mdernst/cf-ubuntu-jdk22:latest
+  timeoutInMinutes: 70
+  steps:
+  - checkout: self
+    fetchDepth: 25
+  - bash: ./checker/bin-devel/test-guava.sh
+    displayName: test-guava.sh
 - job: plume_lib_jdk11
   dependsOn:
    - canary_jobs
@@ -453,17 +453,17 @@ jobs:
   - bash: ./checker/bin-devel/test-plume-lib.sh
     displayName: test-plume-lib.sh
 - job: plume_lib_jdk22
- dependsOn:
-  - canary_jobs
-  - plume_lib_jdk21
- pool:
-   vmImage: 'ubuntu-latest'
- container: mdernst/cf-ubuntu-jdk22:latest
- steps:
- - checkout: self
-   fetchDepth: 25
- - bash: ./checker/bin-devel/test-plume-lib.sh
-   displayName: test-plume-lib.sh
+  dependsOn:
+   - canary_jobs
+   - plume_lib_jdk21
+  pool:
+    vmImage: 'ubuntu-latest'
+  container: mdernst/cf-ubuntu-jdk22:latest
+  steps:
+  - checkout: self
+    fetchDepth: 25
+  - bash: ./checker/bin-devel/test-plume-lib.sh
+    displayName: test-plume-lib.sh
 ## The downstream jobs are not currently needed because test-downstream.sh is empty.
 # - job: downstream_jdk11
 #   dependsOn:
