@@ -193,7 +193,7 @@ jobs:
   - checkout: self
     fetchDepth: 25
   - bash: ./checker/bin-devel/test-cftests-inference.sh
-   displayName: test-cftests-inference.sh
+    displayName: test-cftests-inference.sh
 # Unlimited fetchDepth for misc_jobs, because of need to make contributors.tex
 - job: misc_jdk11
   dependsOn:
