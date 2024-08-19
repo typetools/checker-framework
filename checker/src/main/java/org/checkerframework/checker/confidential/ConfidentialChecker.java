@@ -1,15 +1,15 @@
-package org.checkerframework.checker.tainting;
+package org.checkerframework.checker.confidential;
 
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.source.SuppressWarningsPrefix;
 
 /**
- * A type-checker plug-in for the Tainting type system qualifier that finds (and verifies the
- * absence of) trust bugs.
+ * A type-checker plug-in for the Confidential type system qualifier that finds (and verifies the
+ * absence of) information leakage bugs.
  *
- * <p>It verifies that only verified values are trusted and that user-input is sanitized before use.
+ * <p>It verifies that no confidential values are passed to user-facing methods.
  *
- * @checker_framework.manual #tainting-checker Tainting Checker
+ * @checker_framework.manual #confidential-checker Confidential Checker
  */
-@SuppressWarningsPrefix({"untainted", "tainting"})
-public class TaintingChecker extends BaseTypeChecker {}
+@SuppressWarningsPrefix({"confidential"})
+public class ConfidentialChecker extends BaseTypeChecker {}

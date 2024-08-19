@@ -1,4 +1,4 @@
-package org.checkerframework.checker.confidential;
+package org.checkerframework.checker.confidential.qual;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;

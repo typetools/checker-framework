@@ -1,4 +1,4 @@
-package org.checkerframework.checker.tainting;
+package org.checkerframework.checker.confidential;
 
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
@@ -6,15 +6,15 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 
-/** Visitor for the {@link TaintingChecker}. */
-public class TaintingVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
+/** Visitor for the {@link ConfidentialChecker}. */
+public class ConfidentialVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
 
   /**
-   * Creates a {@link TaintingVisitor}.
+   * Creates a {@link ConfidentialVisitor}.
    *
    * @param checker the checker that uses this visitor
    */
-  public TaintingVisitor(BaseTypeChecker checker) {
+  public ConfidentialVisitor(BaseTypeChecker checker) {
     super(checker);
   }
 

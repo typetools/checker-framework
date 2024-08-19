@@ -1,36 +1,36 @@
-package org.checkerframework.checker.tainting;
+package org.checkerframework.checker.confidential;
 
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
-import org.checkerframework.checker.tainting.qual.Untainted;
+import org.checkerframework.checker.confidential.qual.NonConfidential;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 
-/** Annotated type factory for the Tainting Checker. */
-public class TaintingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
+/** Annotated type factory for the Confidential Checker. */
+public class ConfidentialAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-  /** The {@code @}{@link Untainted} annotation mirror. */
-  private final AnnotationMirror UNTAINTED;
+  /** The {@code @}{@link NonConfidential} annotation mirror. */
+  private final AnnotationMirror NONCONFIDENTIAL;
 
-  /** A singleton set containing the {@code @}{@link Untainted} annotation mirror. */
-  private final AnnotationMirrorSet setOfUntainted;
+  /** A singleton set containing the {@code @}{@link NonConfidential} annotation mirror. */
+  private final AnnotationMirrorSet setOfNonConfidential;
 
   /**
-   * Creates a {@link TaintingAnnotatedTypeFactory}.
+   * Creates a {@link ConfidentialAnnotatedTypeFactory}.
    *
-   * @param checker the tainting checker
+   * @param checker the confidential checker
    */
-  public TaintingAnnotatedTypeFactory(BaseTypeChecker checker) {
+  public ConfidentialAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
-    this.UNTAINTED = AnnotationBuilder.fromClass(getElementUtils(), Untainted.class);
-    this.setOfUntainted = AnnotationMirrorSet.singleton(UNTAINTED);
+    this.NONCONFIDENTIAL = AnnotationBuilder.fromClass(getElementUtils(), NonConfidential.class);
+    this.setOfNonConfidential = AnnotationMirrorSet.singleton(NONCONFIDENTIAL);
     postInit();
   }
 
   @Override
   protected Set<AnnotationMirror> getEnumConstructorQualifiers() {
-    return setOfUntainted;
+    return setOfNonConfidential;
   }
 }

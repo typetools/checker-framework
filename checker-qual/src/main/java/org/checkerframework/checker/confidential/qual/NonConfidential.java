@@ -1,4 +1,4 @@
-package org.checkerframework.checker.confidential;
+package org.checkerframework.checker.confidential.qual;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -12,14 +12,16 @@ import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TypeUseLocation;
 
 /**
- * TODO
+ * Denotes a value that can be exposed to end users, or a location that can be accessed by end
+ * users. NonConfidential locations can only contain NonConfidential information, not Confidential
+ * information.
  *
- * @checker_framework.manual TODO
+ * @checker_framework.manual #confidential-checker Confidential Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf(Confidential.class)
-@QualifierForLiterals(LiteralKind.STRING)
+@QualifierForLiterals(LiteralKind.ALL)
 @DefaultFor(TypeUseLocation.LOWER_BOUND)
 public @interface NonConfidential {}
