@@ -1349,7 +1349,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
   /**
    * Creates a new store that has all the values from both {@code this} and {@code other}. If a node
-   * have a value in both stores, then the most specific one is used.
+   * has a value in both stores, then the most specific one is used.
    *
    * @param other another store
    * @return a new store with values from {@code this} and {@code other}
