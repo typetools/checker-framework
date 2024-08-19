@@ -996,7 +996,7 @@ public abstract class CFAbstractTransfer<
       if (ElementUtils.isEffectivelyFinal(TreeUtils.elementFromTree(lhs.getTree()))) {
         S thenStore = in.getThenStore().copy();
         S elseStore = in.getElseStore().copy();
-        rhsValue.addStores(thenStore, elseStore);
+        rhsValue.setStores(thenStore, elseStore);
       }
     }
 
