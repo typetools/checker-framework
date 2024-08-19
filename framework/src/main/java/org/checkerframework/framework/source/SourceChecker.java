@@ -609,7 +609,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
 
   /**
    * The checker that called this one, whether that be a BaseTypeChecker (used as a compound
-   * checker) or an Aggregate Checker. Null if this is the checker that calls all others. Note that
+   * checker) or an AggregateChecker. Null if this is the checker that calls all others. Note that
    * in the case of a compound checker, the compound checker is the parent, not the checker that was
    * run prior to this one by the compound checker.
    */
@@ -641,11 +641,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * be run in. This list will only be non-empty for the one checker that runs all other
    * subcheckers. Do not read this field directly. Instead, retrieve it via {@link #getSubcheckers}.
    *
-   * <p>If the list still null when {@link #getSubcheckers} is called, then {@code getSubcheckers()}
-   * will call {@link #instantiateSubcheckers}. However, if the current object was itself
-   * instantiated by a prior call to instantiateSubcheckers, this field will have been initialized
-   * to an empty list before {@code getSubcheckers()} is called, thereby ensuring that this list is
-   * non-empty only for one checker.
+   * <p>If this variable is null when {@link #getSubcheckers} is called, then {@code
+   * getSubcheckers()} will call {@link #instantiateSubcheckers}. However, if the current object was
+   * itself instantiated by a prior call to instantiateSubcheckers, this field will have been
+   * initialized to an empty list before {@code getSubcheckers()} is called, thereby ensuring that
+   * this list is non-empty only for one checker.
    */
   protected @MonotonicNonNull List<SourceChecker> subcheckers = null;
 
@@ -656,7 +656,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * <p>Does not need to be initialized to null or an empty list because it is always initialized
    * via calls to {@link #instantiateSubcheckers}.
    */
-  // Set to non-null when subcheckers is.
+  // Set to non-null when `subcheckers` is.
   protected @MonotonicNonNull List<SourceChecker> immediateSubcheckers = null;
 
   /**
@@ -844,8 +844,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   }
 
   /**
-   * Return a list of additional stub files to be treated as if they had been written in a
-   * {@code @StubFiles} annotation.
+   * Return a list of stub files to be treated as if they had been written in a {@code @StubFiles}
+   * annotation.
    *
    * @return stub files to be treated as if they had been written in a {@code @StubFiles} annotation
    */
@@ -1151,7 +1151,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   /**
    * Returns the unmodifiable list of immediate subcheckers of this checker.
    *
-   * <p>Performs a depth first search for all checkers this checker depends on. The depth first
+   * <p>Performs a depth-first search for all checkers this checker depends on. The depth-first
    * search ensures that the collection has the correct order the checkers need to be run in.
    *
    * <p>Modifies the alreadyInitializedSubcheckerMap map by adding all recursively newly
@@ -1182,6 +1182,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         continue;
       }
 
+      // The subchecker is not already initialized.  Do so.
+
       SourceChecker instance;
       try {
         instance = subcheckerClass.getDeclaredConstructor().newInstance();
@@ -1204,10 +1206,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   }
 
   /**
-   * Get the list of all subcheckers (if any). via the instantiateSubcheckers method. This list is
+   * Get the list of all subcheckers (if any) via the instantiateSubcheckers() method. This list is
    * only non-empty for the one checker that runs all other subcheckers. These are recursively
-   * instantiated via instantiateSubcheckers the first time the method is called if subcheckers is
-   * null. Assumes all checkers run on the same thread.
+   * instantiated via instantiateSubcheckers() the first time this method is called if field {@code
+   * subcheckers} is null. Assumes all checkers run on the same thread.
    *
    * @return the list of all subcheckers (if any)
    */
@@ -1261,19 +1263,19 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     Context context = ((JavacProcessingEnvironment) processingEnv).getContext();
     Log log = Log.instance(context);
 
-    int nerrorsOfAllPreviousCheckers = this.errsOnLastExit;
+    int numErrorsOfAllPreviousCheckers = this.errsOnLastExit;
     for (SourceChecker subchecker : getSubcheckers()) {
-      subchecker.errsOnLastExit = nerrorsOfAllPreviousCheckers;
+      subchecker.errsOnLastExit = numErrorsOfAllPreviousCheckers;
       subchecker.messageStore = messageStore;
       int errorsBeforeTypeChecking = log.nerrors;
 
       subchecker.typeProcess(e, p);
 
       int errorsAfterTypeChecking = log.nerrors;
-      nerrorsOfAllPreviousCheckers += errorsAfterTypeChecking - errorsBeforeTypeChecking;
+      numErrorsOfAllPreviousCheckers += errorsAfterTypeChecking - errorsBeforeTypeChecking;
     }
 
-    this.errsOnLastExit = nerrorsOfAllPreviousCheckers;
+    this.errsOnLastExit = numErrorsOfAllPreviousCheckers;
 
     if (javacErrored) {
       return;

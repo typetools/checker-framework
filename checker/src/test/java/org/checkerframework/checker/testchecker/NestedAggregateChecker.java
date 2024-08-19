@@ -11,6 +11,7 @@ import org.checkerframework.checker.nullness.NullnessChecker;
 import org.checkerframework.checker.regex.RegexChecker;
 import org.checkerframework.framework.source.AggregateChecker;
 import org.checkerframework.framework.source.SourceChecker;
+import org.plumelib.util.CollectionsPlume;
 
 public class NestedAggregateChecker extends AggregateChecker {
   @Override
