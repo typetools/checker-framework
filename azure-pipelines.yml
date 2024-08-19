@@ -29,6 +29,7 @@ jobs:
    - typecheck_part1_jdk21
    - typecheck_part2_jdk21
    - misc_jdk21
+   - misc_jdk22
   pool:
     vmImage: 'ubuntu-latest'
   steps:
@@ -225,10 +226,8 @@ jobs:
   - checkout: self
   - bash: ./checker/bin-devel/test-misc.sh
     displayName: test-misc.sh
+# This is a canary job, so it has no `dependsOn`.
 - job: misc_jdk22
-  dependsOn:
-   - canary_jobs
-   - misc_jdk21
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk22-plus:latest
