@@ -1,4 +1,4 @@
-package org.checkerframework.checker.tainting.qual;
+package org.checkerframework.checker.confidential;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -8,13 +8,13 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.PolymorphicQualifier;
 
 /**
- * A polymorphic qualifier for the Tainting type system.
+ * A polymorphic qualifier for the Confidential type system.
  *
- * @checker_framework.manual #tainting-checker Tainting Checker
+ * @checker_framework.manual TODO
  * @checker_framework.manual #qualifier-polymorphism Qualifier polymorphism
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-@PolymorphicQualifier(Tainted.class)
-public @interface PolyTainted {}
+@PolymorphicQualifier(Confidential.class)
+public @interface PolyConfidential {}

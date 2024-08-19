@@ -1,4 +1,4 @@
-package org.checkerframework.checker.tainting.qual;
+package org.checkerframework.checker.confidential;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -12,14 +12,14 @@ import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TypeUseLocation;
 
 /**
- * Denotes a reference that is untainted, i.e. can be trusted.
+ * TODO
  *
- * @checker_framework.manual #tainting-checker Tainting Checker
+ * @checker_framework.manual TODO
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-@SubtypeOf(Tainted.class)
+@SubtypeOf(Confidential.class)
 @QualifierForLiterals(LiteralKind.STRING)
 @DefaultFor(TypeUseLocation.LOWER_BOUND)
-public @interface Untainted {}
+public @interface NonConfidential {}

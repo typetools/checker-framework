@@ -1,4 +1,4 @@
-package org.checkerframework.checker.tainting.qual;
+package org.checkerframework.checker.confidential;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -9,15 +9,15 @@ import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * Denotes a possibly-tainted value: at run time, the value might be tainted or might be untainted.
+ * TODO
  *
- * @see Untainted
- * @see org.checkerframework.checker.tainting.TaintingChecker
- * @checker_framework.manual #tainting-checker Tainting Checker
+ * @see NonConfidential
+ * @see org.checkerframework.checker.tainting.ConfidentialChecker
+ * @checker_framework.manual TODO
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf({})
 @DefaultQualifierInHierarchy
-public @interface Tainted {}
+public @interface Confidential {}
