@@ -15,7 +15,7 @@ jobs:
 
 # The dependsOn clauses are:
 #  * Everything depends on the canary jobs (the main jdk21 jobs), except those jobs themselves.
-#  * Anything *_jdk11 or *_jdk17 or *_jdk20 depends on *_jdk21.
+#  * Anything *_jdk11 or *_jdk17 or *_jdk22 depends on *_jdk21.
 ## TODO: Sometimes jdkXX jobs, for a previous non-LTS version (such as jdk20) are a bit gratuitous.
 ## They are placeholders for the next non-LTS version (such as jdk22) when it is released.
 ## Leaving those placeholders will ease the edits to this file.
