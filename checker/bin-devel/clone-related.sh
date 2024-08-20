@@ -84,6 +84,9 @@ echo "... done: (cd ${AT} && ./.build-without-test.sh)"
 
 # Download dependencies, trying a second time if there is a failure.
 (TERM=dumb timeout 300 ./gradlew resolveDependencies || \
-     (sleep 1m && ./gradlew resolveDependencies))
+     (echo "./gradlew resolveDependencies failed; sleeping before trying again." && \
+      sleep 1m && \
+      echo "Trying again: ./gradlew resolveDependencies" && \
+      TERM=dumb timeout 300 ./gradlew resolveDependencies))
 
 echo Exiting checker/bin-devel/clone-related.sh in "$(pwd)"
