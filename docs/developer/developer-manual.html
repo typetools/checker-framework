@@ -48,6 +48,7 @@ including people who wish to edit its source code or make pull requests.
       <li><a href="#Documenting_refactoring_ideas">Documenting refactoring ideas</a></li>
       <li><a href="#annotated-library-version-numbers">Version numbers for annotated libraries</a></li>
       <li><a href="#Making_a_Checker_Framework_release">Making a Checker Framework release</a></li>
+      <li><a href="#Supporting_a_new_version_of_Java">Supporting a new version of Java</a></li>
       <li><a href="#Case_studies">Describing a case study</a></li>
       <li><a href="#Counting_annotations">Counting annotations</a></li>
       <li><a href="#Build_historical">Building a historical version of the Checker Framework</a></li>
@@ -528,6 +529,42 @@ See a separate document about the Checker Framework release process:
 <!-- This relative URL works from a clone, but not from the web. -->
 <a href="release/README-release-process.html">local version (link works from a clone)</a>.
 </p>
+
+
+<h2 id="Supporting_a_new_version_of_Java">Supporting a new version of Java</h2>
+
+<p>
+To upgrade the Checker Framework to use a newer version of Java:
+</p>
+
+<pre>
+# Create a branch named "java-22".
+cd $t/checker-framework-fork-mernst-branch-master
+gnb java-22
+cd $t/checker-framework-fork-mernst-branch-java-22
+
+# Edit:
+checker/bin/wpi.sh
+checker/bin/wpi-many.sh (diff it against wpi.sh)
+# Rename and edit:
+checker/bin-devel/Dockerfile-ubuntu-jdkXX
+checker/bin-devel/Dockerfile-ubuntu-jdkXX-plus (diff it against Dockerfile-ubuntu-jdkXX)
+# Further search for: ((java|jdk).?|\b)20\b
+# Don't push changes yet.
+
+# Use the latest version of Gradle, which supports the new JDK version:
+for wmtest in wpi-many-tests-bcel-util wpi-many-tests-bibtex-clean wpi-many-tests-ensures-called-methods wpi-many-tests-html-pretty-print wpi-many-tests-owning-field -wpi-many-tests-bibtex-clean ; do
+  cd $t/$wmtest && \
+  (./gradlew wrapper --gradle-version 8.10 && ./gradlew build --warning-mode=all) && \
+  git commit -m "Use Gradle 8.10" gradle/wrapper/gradle-wrapper.properties && \
+  git push
+done
+# Now update file checker/tests/wpi-many/testin.txt.
+
+# Build the Docker images for the newest JDK version (others need not be rebuilt).
+
+# Push changes.  Fix any build failures.
+</pre>
 
 
 <h2 id="Case_studies">Describing a case study</h2>
