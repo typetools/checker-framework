@@ -109,9 +109,9 @@ import org.plumelib.util.UtilPlume;
   //       which should be in the same order as this source code file.
   //     * a specific section should contain a detailed discussion.
 
-  ///
-  /// Unsound checking: ignore some errors
-  ///
+  //
+  // Unsound checking: ignore some errors
+  //
 
   // A comma-separated list of warnings to suppress
   // org.checkerframework.framework.source.SourceChecker.createSuppressWarnings
@@ -143,9 +143,9 @@ import org.plumelib.util.UtilPlume;
   // org.checkerframework.framework.source.SourceChecker.report
   "warns",
 
-  ///
-  /// More sound (strict checking): enable errors that are disabled by default
-  ///
+  //
+  // More sound (strict checking): enable errors that are disabled by default
+  //
 
   // The next ones *increase* rather than *decrease* soundness.  They will eventually be replaced
   // by their complements (except -AconcurrentSemantics) and moved into the above section.
@@ -190,9 +190,9 @@ import org.plumelib.util.UtilPlume;
   // org.checkerframework.framework.type.TypeHierarchy.isSubtypeTypeArguments
   "ignoreRawTypeArguments",
 
-  ///
-  /// Type-checking modes:  enable/disable functionality
-  ///
+  //
+  // Type-checking modes:  enable/disable functionality
+  //
 
   // Lint options
   // org.checkerframework.framework.source.SourceChecker.getSupportedLintOptions() and similar
@@ -246,9 +246,9 @@ import org.plumelib.util.UtilPlume;
   // org.checkerframework.framework.type.ElementAnnotationApplier.apply
   "ignoreInvalidAnnotationLocations",
 
-  ///
-  /// Partially-annotated libraries
-  ///
+  //
+  // Partially-annotated libraries
+  //
 
   // Additional stub files to use
   // org.checkerframework.framework.type.AnnotatedTypeFactory.parseStubFiles()
@@ -280,11 +280,11 @@ import org.plumelib.util.UtilPlume;
   // Already listed above, but worth noting again in this section:
   // "useConservativeDefaultsForUncheckedCode"
 
-  ///
-  /// Debugging
-  ///
+  //
+  // Debugging
+  //
 
-  /// Amount of detail in messages
+  // Amount of detail in messages
 
   // Print the version of the Checker Framework
   "version",
@@ -318,14 +318,14 @@ import org.plumelib.util.UtilPlume;
   // org.checkerframework.framework.source.SourceChecker.logBug
   "exceptionLineSeparator",
 
-  /// Format of messages
+  // Format of messages
 
   // Output detailed message in simple-to-parse format, useful
   // for tools parsing Checker Framework output.
   // org.checkerframework.framework.source.SourceChecker.message(Kind, Object, String, Object...)
   "detailedmsgtext",
 
-  /// Stub and JDK libraries
+  // Stub and JDK libraries
 
   // Ignore the standard jdk.astub file; primarily for testing or debugging.
   // org.checkerframework.framework.type.AnnotatedTypeFactory.parseStubFiles()
@@ -344,7 +344,7 @@ import org.plumelib.util.UtilPlume;
   // org.checkerframework.framework.stub.AnnotationFileParser.debugAnnotationFileParser
   "stubDebug",
 
-  /// Progress tracing
+  // Progress tracing
 
   // Output file names before checking
   // org.checkerframework.framework.source.SourceChecker.typeProcess()
@@ -358,7 +358,7 @@ import org.plumelib.util.UtilPlume;
   // org.checkerframework.common.basetype.SourceChecker.printStackTrace()
   "dumpOnErrors",
 
-  /// Visualizing the CFG
+  // Visualizing the CFG
 
   // Implemented in the wrapper rather than this file, but worth noting here.
   // -AoutputArgsToFile
@@ -389,7 +389,7 @@ import org.plumelib.util.UtilPlume;
   // -Acfgviz=MyClass,verbose
   "verbosecfg",
 
-  /// Caches
+  // Caches
 
   // Set the cache size for caches in AnnotatedTypeFactory
   "atfCacheSize",
@@ -397,14 +397,14 @@ import org.plumelib.util.UtilPlume;
   // Sets AnnotatedTypeFactory shouldCache to false
   "atfDoNotCache",
 
-  /// Language Server Protocol(LSP) Support
+  // Language Server Protocol(LSP) Support
 
   // TODO: document `-AlspTypeInfo` in manual, as a debugging option.
   // Output detailed type information for nodes in AST
   // org.checkerframework.framework.type.AnnotatedTypeFactory
   "lspTypeInfo",
 
-  /// Miscellaneous debugging options
+  // Miscellaneous debugging options
 
   // Whether to output resource statistics at JVM shutdown
   // org.checkerframework.framework.source.SourceChecker.shutdownHook()

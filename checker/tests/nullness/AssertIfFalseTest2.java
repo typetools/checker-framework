@@ -10,8 +10,8 @@ public class AssertIfFalseTest2 {
   }
 
   // ///////////////////////////////////////////////////////////////////////////
-  /// Classes copied from the annotated JDK
-  ///
+  // Classes copied from the annotated JDK
+  //
 
   public class PriorityQueue1<E extends @NonNull Object> {
     @EnsuresNonNullIf(

@@ -370,9 +370,9 @@ if (skipDelombok) {
   tasks.test.dependsOn('delombok')
 }
 
-///
-/// Tests of the -Ainfer command-line argument.  These are not whole-program inference tests.
-///
+//
+// Tests of the -Ainfer command-line argument.  These are not whole-program inference tests.
+//
 
 test {
   useJUnit {
@@ -884,9 +884,9 @@ task ainferTest(group: 'Verification') {
   dependsOn('ainferResourceLeakAjavaTest')
 }
 
-///
-/// Whole-program inference tests
-///
+//
+// Whole-program inference tests
+//
 
 // This is run as part of the inferenceTests task.
 task wpiManyTest(group: 'Verification') {
