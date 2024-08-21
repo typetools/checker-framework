@@ -70,6 +70,7 @@ import org.plumelib.reflection.Signatures;
 @SupportedOptions("checker")
 public class SignaturePrinter extends AbstractTypeProcessor {
 
+  /** The checker associated with this printer. */
   private SourceChecker checker;
 
   // ///////// Initialization /////////////
