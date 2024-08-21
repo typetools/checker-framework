@@ -73,6 +73,9 @@ public class SignaturePrinter extends AbstractTypeProcessor {
   /** The checker associated with this printer. */
   private SourceChecker checker;
 
+  /** Creates a SignaturePrinter. */
+  public SignaturePrinter() {}
+
   // ///////// Initialization /////////////
   /**
    * Initialization.
