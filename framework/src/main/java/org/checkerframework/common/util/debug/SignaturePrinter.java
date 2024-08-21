@@ -72,7 +72,7 @@ public class SignaturePrinter extends AbstractTypeProcessor {
 
   private SourceChecker checker;
 
-  ///////// Initialization /////////////
+  // ///////// Initialization /////////////
   /**
    * Initialization.
    *
@@ -126,7 +126,7 @@ public class SignaturePrinter extends AbstractTypeProcessor {
     // printer.visit(element);
   }
 
-  ////////// Printer //////////
+  // ////////// Printer //////////
   /** Element printer. */
   static class ElementPrinter extends AbstractElementVisitor8<Void, Void> {
     /** String used for indentation. */

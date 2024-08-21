@@ -638,9 +638,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     }
   }
 
-  ///////////////////////////////////////////////////////////////////////////
-  /// Getters and setters
-  ///
+  // ///////////////////////////////////////////////////////////////////////////
+  // Getters and setters
+  //
 
   /**
    * Returns the {@link ProcessingEnvironment} that was supplied to this checker.
@@ -912,9 +912,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     return getOnlyPattern("onlyFiles", options);
   }
 
-  ///////////////////////////////////////////////////////////////////////////
-  /// Type-checking
-  ///
+  // ///////////////////////////////////////////////////////////////////////////
+  // Type-checking
+  //
 
   /**
    * {@inheritDoc}
@@ -1105,9 +1105,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     }
   }
 
-  ///////////////////////////////////////////////////////////////////////////
-  /// Reporting type-checking errors; most clients use reportError() or reportWarning()
-  ///
+  // ///////////////////////////////////////////////////////////////////////////
+  // Reporting type-checking errors; most clients use reportError() or reportWarning()
+  //
 
   /**
    * Reports an error. By default, prints it to the screen via the compiler's internal messager.
@@ -1321,9 +1321,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     }
   }
 
-  ///////////////////////////////////////////////////////////////////////////
-  /// Diagnostic message formatting
-  ///
+  // ///////////////////////////////////////////////////////////////////////////
+  // Diagnostic message formatting
+  //
 
   /**
    * Returns the localized long message corresponding to this key. If not found, tries suffixes of
@@ -1496,9 +1496,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     return "( " + start + ", " + end + " )";
   }
 
-  ///////////////////////////////////////////////////////////////////////////
-  /// Lint options ("-Alint:xxxx" and "-Alint:-xxxx")
-  ///
+  // ///////////////////////////////////////////////////////////////////////////
+  // Lint options ("-Alint:xxxx" and "-Alint:-xxxx")
+  //
 
   /**
    * Determine which lint options are artive.
@@ -1719,9 +1719,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     supportedLints = newLints;
   }
 
-  ///////////////////////////////////////////////////////////////////////////
-  /// Regular (non-lint) options ("-Axxxx")
-  ///
+  // ///////////////////////////////////////////////////////////////////////////
+  // Regular (non-lint) options ("-Axxxx")
+  //
 
   /**
    * Determine which options are active.
@@ -1982,9 +1982,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     return Collections.singleton("*");
   }
 
-  ///////////////////////////////////////////////////////////////////////////
-  /// Warning suppression and unneeded warnings
-  ///
+  // ///////////////////////////////////////////////////////////////////////////
+  // Warning suppression and unneeded warnings
+  //
 
   /**
    * Returns the argument to {@code -AsuppressWarnings}, split on commas, or null if no such
@@ -2543,9 +2543,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     return result.toLowerCase(Locale.getDefault());
   }
 
-  ///////////////////////////////////////////////////////////////////////////
-  /// Skipping uses and defs
-  ///
+  // ///////////////////////////////////////////////////////////////////////////
+  // Skipping uses and defs
+  //
 
   /**
    * Tests whether the class owner of the passed element is an unannotated class and matches the
@@ -2653,9 +2653,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     return shouldSkipDefs(cls) || shouldSkipDefs(meth);
   }
 
-  ///////////////////////////////////////////////////////////////////////////
-  /// Skipping files
-  ///
+  // ///////////////////////////////////////////////////////////////////////////
+  // Skipping files
+  //
 
   /**
    * Tests whether the enclosing file path of the passed tree matches the pattern specified in the
@@ -2694,9 +2694,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     return skipFilesPattern.matcher(path).find() || !onlyFilesPattern.matcher(path).find();
   }
 
-  ///////////////////////////////////////////////////////////////////////////
-  /// Errors other than type-checking errors
-  ///
+  // ///////////////////////////////////////////////////////////////////////////
+  // Errors other than type-checking errors
+  //
 
   /**
    * Log (that is, print) a user error.
@@ -2838,9 +2838,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         t);
   }
 
-  ///////////////////////////////////////////////////////////////////////////
-  /// Shutdown
-  ///
+  // ///////////////////////////////////////////////////////////////////////////
+  // Shutdown
+  //
 
   /**
    * Return true to indicate that method {@link #shutdownHook} should be added as a shutdownHook of
@@ -2877,9 +2877,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     }
   }
 
-  ///////////////////////////////////////////////////////////////////////////
-  /// Miscellaneous
-  ///
+  // ///////////////////////////////////////////////////////////////////////////
+  // Miscellaneous
+  //
 
   /**
    * A helper function to parse a Properties file.
