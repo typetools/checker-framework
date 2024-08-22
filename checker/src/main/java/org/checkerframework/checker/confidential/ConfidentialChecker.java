@@ -12,6 +12,6 @@ import org.checkerframework.framework.source.SuppressWarningsPrefix;
  *
  * @checker_framework.manual #confidential-checker Confidential Checker
  */
-@StubFiles({"Logger.astub"})
+@StubFiles({"Logger.astub", "Log.astub"})
 @SuppressWarningsPrefix({"confidential"})
 public class ConfidentialChecker extends BaseTypeChecker {}
