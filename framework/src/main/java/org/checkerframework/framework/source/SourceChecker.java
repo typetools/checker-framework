@@ -314,6 +314,10 @@ import org.plumelib.util.UtilPlume;
   // org.checkerframework.framework.source.SourceChecker.message(Kind, Object, String, Object...)
   "nomsgtext",
 
+  // Controls the line separator output in Checker Framework exceptions.
+  // org.checkerframework.framework.source.SourceChecker.logBug
+  "exceptionLineSeparator",
+
   /// Format of messages
 
   // Output detailed message in simple-to-parse format, useful
@@ -2741,7 +2745,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @param culprit a message to print about the cause
    */
   private void logBug(Throwable ce, String culprit) {
-    StringJoiner msg = new StringJoiner(System.lineSeparator());
+    String lineSeparator =
+        getOptions().getOrDefault("exceptionLineSeparator", System.lineSeparator());
+    StringJoiner msg = new StringJoiner(lineSeparator);
     if (ce.getCause() != null && ce.getCause() instanceof OutOfMemoryError) {
       msg.add(
           String.format(
@@ -2750,7 +2756,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
               Runtime.getRuntime().totalMemory(),
               Runtime.getRuntime().freeMemory()));
     } else {
-      msg.add(ce.getMessage());
+      String message;
+      if (getOptions().containsKey("exceptionLineSeparator")) {
+        message = ce.getMessage().replaceAll(System.lineSeparator(), lineSeparator);
+      } else {
+        message = ce.getMessage();
+      }
+      msg.add(message);
       boolean noPrintErrorStack =
           (processingEnv != null
               && processingEnv.getOptions() != null

@@ -372,4 +372,32 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
 
     return arePrimaryAnnosEqual(type1, type2);
   }
+
+  @Override
+  public Boolean visitTypevar_Declared(
+      AnnotatedTypeVariable type1, AnnotatedDeclaredType type2, Void unused) {
+    // This case should not happen, but sometimes type argument inference incorrectly infers a
+    // captured type, when javac does not. See Issue6755.java.
+    if (TypesUtils.isCapturedTypeVariable(type1.underlyingType)) {
+      if (type1.getLowerBound().getKind() != TypeKind.NULL) {
+        return visit(type1.getLowerBound(), type2, unused);
+      }
+      return visit(type1.getUpperBound(), type2, unused);
+    }
+    return super.visitTypevar_Declared(type1, type2, unused);
+  }
+
+  @Override
+  public Boolean visitDeclared_Typevar(
+      AnnotatedDeclaredType type1, AnnotatedTypeVariable type2, Void unused) {
+    // This case should not happen, but sometimes type argument inference incorrectly infers a
+    // captured type, when javac does not. See Issue6755.java.
+    if (TypesUtils.isCapturedTypeVariable(type2.underlyingType)) {
+      if (type2.getLowerBound().getKind() != TypeKind.NULL) {
+        return visit(type1, type2.getLowerBound(), unused);
+      }
+      return visit(type1, type2.getUpperBound(), unused);
+    }
+    return super.visitDeclared_Typevar(type1, type2, unused);
+  }
 }

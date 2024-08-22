@@ -124,6 +124,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
             Collections.emptyList(),
             false,
             true,
+            true,
             "An exception occurred: " + ex.getLocalizedMessage());
       }
       throw BugInCF.addLocation(outerTree, ex);
