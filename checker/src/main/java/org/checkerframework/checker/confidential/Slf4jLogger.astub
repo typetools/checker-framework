@@ -1,0 +1,123 @@
+package org.slf4j;
+
+import static org.slf4j.event.EventConstants.DEBUG_INT;
+import static org.slf4j.event.EventConstants.ERROR_INT;
+import static org.slf4j.event.EventConstants.INFO_INT;
+import static org.slf4j.event.EventConstants.TRACE_INT;
+import static org.slf4j.event.EventConstants.WARN_INT;
+import static org.slf4j.event.Level.DEBUG;
+import static org.slf4j.event.Level.ERROR;
+import static org.slf4j.event.Level.INFO;
+import static org.slf4j.event.Level.TRACE;
+import static org.slf4j.event.Level.WARN;
+
+import org.slf4j.event.Level;
+import org.slf4j.helpers.CheckReturnValue;
+import org.slf4j.spi.DefaultLoggingEventBuilder;
+import org.slf4j.spi.LoggingEventBuilder;
+import org.slf4j.spi.NOPLoggingEventBuilder;
+
+import org.checkerframework.checker.confidential.qual.NonConfidential;
+
+public interface Logger {
+
+    public void error(@NonConfidential String msg);
+
+    public void error(@NonConfidential String format, Object arg);
+
+    public void error(@NonConfidential String format, Object arg1, Object arg2);
+
+    public void error(@NonConfidential String format, Object... arguments);
+
+    public void error(@NonConfidential String msg, @NonConfidential Throwable t);
+
+    public void error(@NonConfidential Marker marker, @NonConfidential String msg);
+
+    public void error(@NonConfidential Marker marker, @NonConfidential String format, Object arg);
+
+    public void error(@NonConfidential Marker marker, @NonConfidential String format, Object arg1, Object arg2);
+
+    public void error(@NonConfidential Marker marker, @NonConfidential String format, Object... arguments);
+
+    public void error(@NonConfidential Marker marker, @NonConfidential String msg, @NonConfidential Throwable t);
+
+    public void info(@NonConfidential String msg);
+
+    public void info(@NonConfidential String format, Object arg);
+
+    public void info(@NonConfidential String format, Object arg1, Object arg2);
+
+    public void info(@NonConfidential String format, Object... arguments);
+
+    public void info(@NonConfidential String msg, @NonConfidential Throwable t);
+
+    public void info(@NonConfidential Marker marker, @NonConfidential String msg);
+
+    public void info(@NonConfidential Marker marker, @NonConfidential String format, Object arg);
+
+    public void info(@NonConfidential Marker marker, @NonConfidential String format, Object arg1, Object arg2);
+
+    public void info(@NonConfidential Marker marker, @NonConfidential String format, Object... arguments);
+
+    public void info(@NonConfidential Marker marker, @NonConfidential String msg, @NonConfidential Throwable t);
+
+    public void debug(@NonConfidential String msg);
+
+    public void debug(@NonConfidential String format, Object arg);
+
+    public void debug(@NonConfidential String format, Object arg1, Object arg2);
+
+    public void debug(@NonConfidential String format, Object... arguments);
+
+    public void debug(@NonConfidential String msg, @NonConfidential Throwable t);
+
+    public void debug(@NonConfidential Marker marker, @NonConfidential String msg);
+
+    public void debug(@NonConfidential Marker marker, @NonConfidential String format, Object arg);
+
+    public void debug(@NonConfidential Marker marker, @NonConfidential String format, Object arg1, Object arg2);
+
+    public void debug(@NonConfidential Marker marker, @NonConfidential String format, Object... arguments);
+
+    public void debug(@NonConfidential Marker marker, @NonConfidential String msg, @NonConfidential Throwable t);
+
+    public void trace(@NonConfidential String msg);
+
+    public void trace(@NonConfidential String format, Object arg);
+
+    public void trace(@NonConfidential String format, Object arg1, Object arg2);
+
+    public void trace(@NonConfidential String format, Object... arguments);
+
+    public void trace(@NonConfidential String msg, @NonConfidential Throwable t);
+
+    public void trace(@NonConfidential Marker marker, @NonConfidential String msg);
+
+    public void trace(@NonConfidential Marker marker, @NonConfidential String format, Object arg);
+
+    public void trace(@NonConfidential Marker marker, @NonConfidential String format, Object arg1, Object arg2);
+
+    public void trace(@NonConfidential Marker marker, @NonConfidential String format, Object... argArray);
+
+    public void trace(@NonConfidential Marker marker, @NonConfidential String msg, @NonConfidential Throwable t);
+
+    public void warn(@NonConfidential String msg);
+
+    public void warn(@NonConfidential String format, Object arg);
+
+    public void warn(@NonConfidential String format, Object... arguments);
+
+    public void warn(@NonConfidential String format, Object arg1, Object arg2);
+
+    public void warn(@NonConfidential String msg, @NonConfidential Throwable t);
+
+    public void warn(@NonConfidential Marker marker, @NonConfidential String msg);
+
+    public void warn(@NonConfidential Marker marker, @NonConfidential String format, Object arg);
+
+    public void warn(@NonConfidential Marker marker, @NonConfidential String format, Object arg1, Object arg2);
+
+    public void warn(@NonConfidential Marker marker, @NonConfidential String format, Object... arguments);
+
+    public void warn(@NonConfidential Marker marker, @NonConfidential String msg, @NonConfidential Throwable t);
+}
