@@ -1,5 +1,5 @@
 https://github.com/kelloggm/wpi-many-tests-bcel-util 91415634c1d47ada93de4fb9105bbd7817928a58
-https://github.com/kelloggm/wpi-many-tests-bibtex-clean 26010818f72b7966250fb2ec774ef6a95d32e64e
+https://github.com/kelloggm/wpi-many-tests-bibtex-clean fe7ae9a276d8d392c174d497c14a7bf4f30876e8
 https://github.com/kelloggm/wpi-many-tests-ensures-called-methods e5ad4c582392ee8edd8a6270b12aad876df94782
 https://github.com/kelloggm/wpi-many-tests-html-pretty-print de5790094a1b3cece9cd97152a5c54afa615e6d9
 https://github.com/kelloggm/-wpi-many-tests-bibtex-clean 13e52bb7d33c6061152effd3bbe909ae61a55abb
