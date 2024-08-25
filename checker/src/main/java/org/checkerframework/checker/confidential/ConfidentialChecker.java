@@ -14,7 +14,7 @@ import org.checkerframework.framework.source.SuppressWarningsPrefix;
  */
 @StubFiles({
   "Log4jLogger.astub",
-  "Log.astub",
+  "AndroidLog.astub",
   "Slf4jLogger.astub",
   "Handler.astub",
   "JavaLogger.astub",
