@@ -147,4 +147,8 @@ public class TextView extends View implements ViewTreeObserver.OnPreDrawListener
     private void setText(@NonConfidential CharSequence text, BufferType type, boolean notifyBefore, int oldlen);
 
     public final void setText(@NonConfidential char[] text, int start, int len);
+
+    public void setError(@NonConfidential CharSequence error);
+
+    public void setError(@NonConfidential CharSequence error, Drawable icon);
 }
