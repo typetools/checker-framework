@@ -1,0 +1,37 @@
+package android.app;
+
+import android.annotation.ArrayRes;
+import android.annotation.AttrRes;
+import android.annotation.DrawableRes;
+import android.annotation.StringRes;
+import android.annotation.StyleRes;
+import android.compat.annotation.UnsupportedAppUsage;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.res.ResourceId;
+import android.content.res.Resources;
+import android.database.Cursor;
+import android.graphics.drawable.Drawable;
+import android.os.Bundle;
+import android.os.Message;
+import android.text.Layout;
+import android.text.method.MovementMethod;
+import android.util.TypedValue;
+import android.view.ContextThemeWrapper;
+import android.view.KeyEvent;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.Button;
+import android.widget.ListAdapter;
+import android.widget.ListView;
+import com.android.internal.R;
+import com.android.internal.app.AlertController;
+
+import org.checkerframework.checker.confidential.qual.NonConfidential;
+
+public class AlertDialog extends Dialog implements DialogInterface {
+
+    public void setMessage(@NonConfidential CharSequence message);
+
+    public Builder setMessage(@NonConfidential CharSequence message);
+}

@@ -21,7 +21,8 @@ import org.checkerframework.framework.source.SuppressWarningsPrefix;
   "Formatter.astub",
   "ApacheLog.astub",
   "Toast.astub",
-  "TextView.astub"
+  "TextView.astub",
+  "AlertDialog.astub"
 })
 @SuppressWarningsPrefix({"confidential"})
 public class ConfidentialChecker extends BaseTypeChecker {}
