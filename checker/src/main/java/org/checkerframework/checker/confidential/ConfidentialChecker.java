@@ -25,7 +25,8 @@ import org.checkerframework.framework.source.SuppressWarningsPrefix;
   "AlertDialog.astub",
   "AbstractAuthenticationTargetUrlRequestHandler.astub",
   "PrintStream.astub",
-  "HttpServletResponse.astub"
+  "HttpServletResponse.astub",
+  "Cookie.astub"
 })
 @SuppressWarningsPrefix({"confidential"})
 public class ConfidentialChecker extends BaseTypeChecker {}
