@@ -1,0 +1,16 @@
+package javax.servlet.http;
+
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Map;
+import java.util.function.Supplier;
+import javax.servlet.ServletResponse;
+
+import org.checkerframework.checker.confidential.qual.NonConfidential;
+
+public interface HttpServletResponse extends ServletResponse {
+
+    void sendRedirect(@NonConfidential String var1);
+
+    void sendError(int var1, @NonConfidential String var2);
+}
