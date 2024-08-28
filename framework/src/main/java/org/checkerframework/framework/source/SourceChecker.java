@@ -595,8 +595,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
 
   /**
    * Supported options for this checker. This is the set of all possible options that could be
-   * passed to this checker. By contrast, {@link #activeOptions} is a map for options that were used
-   * for this run of the checker.
+   * passed to this checker. By contrast, {@link #activeOptions} is a map for options that were
+   * passed for this run of the checker.
    */
   protected @MonotonicNonNull Set<String> supportedOptions = null;
 
@@ -660,7 +660,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   protected @MonotonicNonNull List<SourceChecker> immediateSubcheckers = null;
 
   /**
-   * TreePathCacher to share between instances. Initialized either in getTreePathCacher (which is
+   * TreePathCacher to share between subcheckers. Initialized either in getTreePathCacher (which is
    * also called from {@link #instantiateSubcheckers}).
    */
   protected TreePathCacher treePathCacher = null;
@@ -823,7 +823,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   }
 
   /**
-   * Like {@link #getOptions}, but only includes options provided to this checker. Does not include
+   * Like {@link #getOptions}, but only includes options passed to this checker. Does not include
    * those passed to subcheckers.
    *
    * @return the active options for this checker, not including those passed to subcheckers
@@ -833,11 +833,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   }
 
   /**
-   * Like {@link #hasOption}, but checks whether the given option is provided to this checker. Does
+   * Like {@link #hasOption}, but checks whether the given option is passed to this checker. Does
    * not consider those passed to subcheckers.
    *
    * @param name the name of the option to check
-   * @return true if the option name was provided to this checker, false otherwise
+   * @return true if the option name was passed to this checker, false otherwise
    */
   public final boolean hasOptionNoSubcheckers(String name) {
     return getOptionsNoSubcheckers().containsKey(name);
