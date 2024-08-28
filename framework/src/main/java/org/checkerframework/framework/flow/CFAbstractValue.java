@@ -285,20 +285,20 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     }
     V mostSpecificVal = analysis.createAbstractValue(mostSpecific, mostSpecifTypeMirror);
     if (this.getThenStore() != null) {
-      mostSpecificVal.addStores(thenStore, elseStore);
+      mostSpecificVal.setStores(thenStore, elseStore);
     } else if (other.getThenStore() != null) {
-      mostSpecificVal.addStores(other.thenStore, other.elseStore);
+      mostSpecificVal.setStores(other.thenStore, other.elseStore);
     }
     return mostSpecificVal;
   }
 
   /**
-   * Add {@code thenStore} and {@code elseStore} to this value.
+   * Set the thenStore and the elseStore of this value.
    *
-   * @param thenStore then store
-   * @param elseStore else store
+   * @param thenStore the new then store
+   * @param elseStore the new else store
    */
-  public void addStores(CFAbstractStore<V, ?> thenStore, CFAbstractStore<V, ?> elseStore) {
+  public void setStores(CFAbstractStore<V, ?> thenStore, CFAbstractStore<V, ?> elseStore) {
     this.thenStore = thenStore;
     this.elseStore = elseStore;
   }
@@ -306,7 +306,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
   /**
    * Returns the {@code thenStore}.
    *
-   * @return the {@code thenStore}.
+   * @return the {@code thenStore}
    * @param <S> type of the store
    */
   @SuppressWarnings("unchecked")
@@ -315,9 +315,9 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
   }
 
   /**
-   * Returns the {@code else}.
+   * Returns the {@code elseStore}.
    *
-   * @return the {@code else}.
+   * @return the {@code elseStore}
    * @param <S> type of the store
    */
   @SuppressWarnings("unchecked")
@@ -588,7 +588,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         "signature:argument"
       }) // https://github.com/typetools/checker-framework/issues/6663
       CFAbstractStore<V, ?> elseStore = this.getElseStore().merge(other.getElseStore());
-      upperBound.addStores(thenStore, elseStore);
+      upperBound.setStores(thenStore, elseStore);
     }
     return upperBound;
   }
