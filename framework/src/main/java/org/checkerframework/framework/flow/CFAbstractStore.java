@@ -225,9 +225,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    *       {@code a} is a local variable or {@code this}, and {@code f} is final, or if {@code a.f}
    *       has a {@link MonotonicQualifier} in the current store. Subclasses can change this
    *       behavior by overriding {@link #newFieldValueAfterMethodCall(FieldAccess,
-   *       GenericAnnotatedTypeFactory, CFAbstractValue)}.
-   *   <li>Furthermore, if the field has a monotonic annotation, then its information can also be
-   *       kept.
+   *       GenericAnnotatedTypeFactory, CFAbstractValue)}. Furthermore, if the field has a monotonic
+   *       annotation, then its information can also be kept.
    * </ol>
    *
    * Furthermore, if the method is deterministic, we store its result {@code val} in the store.
@@ -249,14 +248,14 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             || (assumePureGetters && ElementUtils.isGetter(method))
             || atypeFactory.isSideEffectFree(method));
     if (hasSideEffect) {
-      updateForSideEffect(gatypeFactory);
+      updateForMethodCallImpl(gatypeFactory);
       localVariableValues
           .values()
           .forEach(
               v -> {
                 if (v != null && v.getThenStore() != null) {
-                  v.getThenStore().updateForSideEffect(gatypeFactory);
-                  v.getElseStore().updateForSideEffect(gatypeFactory);
+                  v.getThenStore().updateForMethodCallImpl(gatypeFactory);
+                  v.getElseStore().updateForMethodCallImpl(gatypeFactory);
                 }
               });
     }
@@ -267,28 +266,12 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   }
 
   /**
-   * Remove any information that might not be valid any more after a method call, and add
-   * information guaranteed by the method.
-   *
-   * <ol>
-   *   <li>If the method is side-effect-free (as indicated by {@link
-   *       org.checkerframework.dataflow.qual.SideEffectFree} or {@link
-   *       org.checkerframework.dataflow.qual.Pure}), then no information needs to be removed.
-   *   <li>Otherwise, all information about field accesses {@code a.f} needs to be removed, except
-   *       if the method {@code n} cannot modify {@code a.f}. This unmodifiability property holds if
-   *       {@code a} is a local variable or {@code this}, and {@code f} is final, or if {@code a.f}
-   *       has a {@link MonotonicQualifier} in the current store. Subclasses can change this
-   *       behavior by overriding {@link #newFieldValueAfterMethodCall(FieldAccess,
-   *       GenericAnnotatedTypeFactory, CFAbstractValue)}.
-   *   <li>Furthermore, if the field has a monotonic annotation, then its information can also be
-   *       kept.
-   * </ol>
-   *
-   * Furthermore, if the method is deterministic, we store its result {@code val} in the store.
+   * Implements {@link #updateForMethodCall(MethodInvocationNode, AnnotatedTypeFactory,
+   * CFAbstractValue)}.
    *
    * @param gatypeFactory the type factory of the associated checker
    */
-  protected void updateForSideEffect(GenericAnnotatedTypeFactory<?, ?, ?, ?> gatypeFactory) {
+  protected void updateForMethodCallImpl(GenericAnnotatedTypeFactory<?, ?, ?, ?> gatypeFactory) {
     boolean sideEffectsUnrefineAliases = gatypeFactory.sideEffectsUnrefineAliases;
 
     // update local variables

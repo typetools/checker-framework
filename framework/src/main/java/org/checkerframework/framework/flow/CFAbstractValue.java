@@ -575,6 +575,9 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
             other.getAnnotations(),
             canBeMissingAnnotations(upperBoundTypeMirror));
     V upperBound = analysis.createAbstractValue(lub, upperBoundTypeMirror);
+    if (upperBound == null) {
+      return null;
+    }
     if (this.getThenStore() != null && other.getThenStore() != null) {
       @SuppressWarnings({
         "interning:argument",
@@ -589,6 +592,10 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
       }) // https://github.com/typetools/checker-framework/issues/6663
       CFAbstractStore<V, ?> elseStore = this.getElseStore().merge(other.getElseStore());
       upperBound.setStores(thenStore, elseStore);
+    } else if (this.getThenStore() != null) {
+      upperBound.setStores(this.getThenStore(), this.getElseStore());
+    } else if (other.getThenStore() != null) {
+      upperBound.setStores(other.getThenStore(), other.getElseStore());
     }
     return upperBound;
   }
