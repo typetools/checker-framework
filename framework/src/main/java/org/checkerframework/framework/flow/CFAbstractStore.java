@@ -1252,7 +1252,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     return upperBound(previous, true);
   }
 
-  protected S upperBound(S other, boolean shouldWiden) {
+  private S upperBound(S other, boolean shouldWiden) {
     S newStore = analysis.createEmptyStore(sequentialSemantics);
 
     for (Map.Entry<LocalVariable, V> e : other.localVariableValues.entrySet()) {
@@ -1278,7 +1278,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       if (store != null) {
         ThenElseStore<V, S> otherStore = e.getValue();
         ThenElseStore<V, S> mergedStore =
-            store.merge((s1, s2) -> s1.upperBound(s1, shouldWiden), otherStore);
+            shouldWiden
+                ? store.merge((s1, s2) -> s1.widenedUpperBound(s1), otherStore)
+                : store.merge((s1, s2) -> s1.leastUpperBound(s1), otherStore);
 
         if (mergedStore != null) {
           newStore.booleanVarStores.put(localVar, mergedStore);
