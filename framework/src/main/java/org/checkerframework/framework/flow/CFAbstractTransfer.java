@@ -71,7 +71,7 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.dataflow.util.PurityChecker;
 import org.checkerframework.framework.flow.CFAbstractAnalysis.FieldInitialValue;
-import org.checkerframework.framework.flow.CFAbstractStore.ThenElseStore;
+import org.checkerframework.framework.flow.CFAbstractStore.BooleanVarStore;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -770,11 +770,11 @@ public abstract class CFAbstractTransfer<
     V valueFromStore = store.getValue(n);
     V valueFromFactory = getValueFromFactory(n.getTree(), n);
     V value = moreSpecificValue(valueFromFactory, valueFromStore);
-    ThenElseStore<V, S> thenElseStore =
+    BooleanVarStore<V, S> booleanVarStore =
         store.booleanVarStores.get(new LocalVariable(n.getElement()));
-    if (thenElseStore != null) {
-      S thenStore = in.getThenStore().mostSpecific(thenElseStore.thenStore);
-      S elseStore = in.getElseStore().mostSpecific(thenElseStore.elseStore);
+    if (booleanVarStore != null) {
+      S thenStore = in.getThenStore().mostSpecific(booleanVarStore.thenStore);
+      S elseStore = in.getElseStore().mostSpecific(booleanVarStore.elseStore);
       return new ConditionalTransferResult<>(finishValue(value, store), thenStore, elseStore);
     }
     return new RegularTransferResult<>(finishValue(value, store), store);
@@ -990,19 +990,13 @@ public abstract class CFAbstractTransfer<
     }
     if (lhs instanceof LocalVariableNode
         && TypesUtils.isBooleanType(lhs.getType())
-        && in.containsTwoStores()) {
-      if (ElementUtils.isEffectivelyFinal(TreeUtils.elementFromTree(lhs.getTree()))) {
-        ThenElseStore<V, S> thenElseStore =
-            new ThenElseStore<>(in.getThenStore().copy(), in.getElseStore().copy());
-        in.getThenStore()
-            .booleanVarStores
-            .put(new LocalVariable(((LocalVariableNode) lhs).getElement()), thenElseStore);
-        in.getElseStore()
-            .booleanVarStores
-            .put(new LocalVariable(((LocalVariableNode) lhs).getElement()), thenElseStore);
-        thenElseStore.elseStore.booleanVarStores.clear();
-        thenElseStore.thenStore.booleanVarStores.clear();
-      }
+        && in.containsTwoStores()
+        && ElementUtils.isEffectivelyFinal(TreeUtils.elementFromTree(lhs.getTree()))) {
+      LocalVariable lhsExpr = new LocalVariable(((LocalVariableNode) lhs).getElement());
+      BooleanVarStore<V, S> booleanVarStore =
+          new BooleanVarStore<>(in.getThenStore(), in.getElseStore());
+      in.getThenStore().insertBooleanVarStore(lhsExpr, booleanVarStore);
+      in.getElseStore().insertBooleanVarStore(lhsExpr, booleanVarStore);
     }
     if (n.isSynthetic() && in.containsTwoStores()) {
       // This is a synthetic assignment node created for a ternary expression. In this case

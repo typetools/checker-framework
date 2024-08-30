@@ -74,15 +74,15 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   protected final Map<LocalVariable, V> localVariableValues;
 
   /** Stores after boolean variable assignment. */
-  protected final Map<LocalVariable, ThenElseStore<V, S>> booleanVarStores;
+  protected final Map<LocalVariable, BooleanVarStore<V, S>> booleanVarStores;
 
   /**
-   * An object that constains a then and an else store.
+   * An object that contains the then and else store after a boolean variable assignment.
    *
    * @param <V> value
    * @param <S> store
    */
-  protected static class ThenElseStore<
+  protected static class BooleanVarStore<
       V extends CFAbstractValue<V>, S extends CFAbstractStore<V, S>> {
 
     /** Then store. */
@@ -92,14 +92,16 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     S elseStore;
 
     /**
-     * Create a then else store.
+     * Create a then else store with copies of the provided {@code thenStore} and {@code elseStore}.
      *
      * @param thenStore thenStore
      * @param elseStore elseStore
      */
-    ThenElseStore(S thenStore, S elseStore) {
-      this.thenStore = thenStore;
-      this.elseStore = elseStore;
+    BooleanVarStore(S thenStore, S elseStore) {
+      this.thenStore = thenStore.copy();
+      this.elseStore = elseStore.copy();
+      thenStore.booleanVarStores.clear();
+      elseStore.booleanVarStores.clear();
     }
 
     /**
@@ -107,8 +109,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      *
      * @return a copy of this
      */
-    public ThenElseStore<V, S> copy() {
-      return new ThenElseStore<>(thenStore.copy(), elseStore.copy());
+    public BooleanVarStore<V, S> copy() {
+      return new BooleanVarStore<>(thenStore, elseStore);
     }
 
     /**
@@ -124,14 +126,14 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     /**
      * Merges this then stores with {@code other}'s then store using {@code function} and merges
      * this else store {@code other}'s else store using {@code function}. A new {@code
-     * ThenElseStore} is returned with the result from both merges.
+     * BooleanVarStore} is returned with the result from both merges.
      *
      * @param function A function that takes two stores and returns a store.
-     * @param other another {@code ThenElseStore}
+     * @param other another {@code BooleanVarStore}
      * @return the merge of this and other
      */
-    public ThenElseStore<V, S> merge(BiFunction<S, S, S> function, ThenElseStore<V, S> other) {
-      return new ThenElseStore<>(
+    public BooleanVarStore<V, S> merge(BiFunction<S, S, S> function, BooleanVarStore<V, S> other) {
+      return new BooleanVarStore<>(
           function.apply(thenStore, other.thenStore), function.apply(elseStore, other.elseStore));
     }
   }
@@ -690,8 +692,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     if (!shouldInsert(expr, value, permitNondeterministic)) {
       return;
     }
-    for (ThenElseStore<V, S> thenElseStore : booleanVarStores.values()) {
-      thenElseStore.applyToStores(
+    for (BooleanVarStore<V, S> booleanVarStore : booleanVarStores.values()) {
+      booleanVarStore.applyToStores(
           s -> s.computeNewValueAndInsert(expr, value, merger, permitNondeterministic));
     }
 
@@ -1216,6 +1218,11 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     return localVariableValues.get(new LocalVariable(el));
   }
 
+  protected void insertBooleanVarStore(
+      LocalVariable lhsExpr, BooleanVarStore<V, S> booleanVarStore) {
+    booleanVarStores.put(lhsExpr, booleanVarStore);
+  }
+
   /* --------------------------------------------------------- */
   /* Handling of the current object */
   /* --------------------------------------------------------- */
@@ -1270,14 +1277,14 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       }
     }
 
-    for (Map.Entry<LocalVariable, ThenElseStore<V, S>> e : other.booleanVarStores.entrySet()) {
+    for (Map.Entry<LocalVariable, BooleanVarStore<V, S>> e : other.booleanVarStores.entrySet()) {
       // local variables that are only part of one store, but not the other are discarded, as
       // one of store implicitly contains 'top' for that variable.
       LocalVariable localVar = e.getKey();
-      ThenElseStore<V, S> store = booleanVarStores.get(localVar);
+      BooleanVarStore<V, S> store = booleanVarStores.get(localVar);
       if (store != null) {
-        ThenElseStore<V, S> otherStore = e.getValue();
-        ThenElseStore<V, S> mergedStore =
+        BooleanVarStore<V, S> otherStore = e.getValue();
+        BooleanVarStore<V, S> mergedStore =
             shouldWiden
                 ? store.merge((s1, s2) -> s1.widenedUpperBound(s1), otherStore)
                 : store.merge((s1, s2) -> s1.leastUpperBound(s1), otherStore);
