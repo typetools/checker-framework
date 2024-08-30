@@ -28,6 +28,8 @@ jobs:
    - inference_part2_jdk21
    - typecheck_part1_jdk21
    - typecheck_part2_jdk21
+   - misc_jdk21
+   - misc_jdk22
   pool:
     vmImage: 'ubuntu-latest'
   steps:
