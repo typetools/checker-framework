@@ -9,7 +9,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.StringJoiner;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
+import java.util.function.Consumer;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
@@ -70,6 +72,34 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
   /** Information collected about local variables (including method parameters). */
   protected final Map<LocalVariable, V> localVariableValues;
+
+  /** Stores after boolean variable assignment. */
+  protected final Map<LocalVariable, ThenElseStore<V, S>> booleanVarStores;
+
+  protected static class ThenElseStore<
+      V extends CFAbstractValue<V>, S extends CFAbstractStore<V, S>> {
+    S thenStore;
+    S elseStore;
+
+    ThenElseStore(S thenStore, S elseStore) {
+      this.thenStore = thenStore;
+      this.elseStore = elseStore;
+    }
+
+    public ThenElseStore<V, S> copy() {
+      return new ThenElseStore<>(thenStore.copy(), elseStore.copy());
+    }
+
+    public void update(Consumer<CFAbstractStore<V, S>> o) {
+      o.accept(thenStore);
+      o.accept(elseStore);
+    }
+
+    public ThenElseStore<V, S> merge(BiFunction<S, S, S> o, ThenElseStore<V, S> other) {
+      return new ThenElseStore<>(
+          o.apply(thenStore, other.thenStore), o.apply(elseStore, other.elseStore));
+    }
+  }
 
   /** Information collected about the current object. */
   protected V thisValue;
@@ -140,17 +170,18 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    */
   protected CFAbstractStore(CFAbstractAnalysis<V, S, ?> analysis, boolean sequentialSemantics) {
     this.analysis = analysis;
-    localVariableValues = new HashMap<>();
-    thisValue = null;
-    fieldValues = new HashMap<>();
-    methodCallExpressions = new HashMap<>();
-    arrayValues = new HashMap<>();
-    classValues = new HashMap<>();
+    this.localVariableValues = new HashMap<>();
+    this.booleanVarStores = new HashMap<>();
+    this.thisValue = null;
+    this.fieldValues = new HashMap<>();
+    this.methodCallExpressions = new HashMap<>();
+    this.arrayValues = new HashMap<>();
+    this.classValues = new HashMap<>();
     this.sequentialSemantics = sequentialSemantics;
-    assumeSideEffectFree =
+    this.assumeSideEffectFree =
         analysis.checker.hasOption("assumeSideEffectFree")
             || analysis.checker.hasOption("assumePure");
-    assumePureGetters = analysis.checker.hasOption("assumePureGetters");
+    this.assumePureGetters = analysis.checker.hasOption("assumePureGetters");
   }
 
   /**
@@ -160,15 +191,17 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    */
   protected CFAbstractStore(CFAbstractStore<V, S> other) {
     this.analysis = other.analysis;
-    localVariableValues = new HashMap<>(other.localVariableValues);
-    thisValue = other.thisValue;
-    fieldValues = new HashMap<>(other.fieldValues);
-    methodCallExpressions = new HashMap<>(other.methodCallExpressions);
-    arrayValues = new HashMap<>(other.arrayValues);
-    classValues = new HashMap<>(other.classValues);
-    sequentialSemantics = other.sequentialSemantics;
-    assumeSideEffectFree = other.assumeSideEffectFree;
-    assumePureGetters = other.assumePureGetters;
+    this.localVariableValues = new HashMap<>(other.localVariableValues);
+    this.booleanVarStores = new HashMap<>(other.booleanVarStores.size());
+    other.booleanVarStores.forEach((var, store) -> this.booleanVarStores.put(var, store.copy()));
+    this.thisValue = other.thisValue;
+    this.fieldValues = new HashMap<>(other.fieldValues);
+    this.methodCallExpressions = new HashMap<>(other.methodCallExpressions);
+    this.arrayValues = new HashMap<>(other.arrayValues);
+    this.classValues = new HashMap<>(other.classValues);
+    this.sequentialSemantics = other.sequentialSemantics;
+    this.assumeSideEffectFree = other.assumeSideEffectFree;
+    this.assumePureGetters = other.assumePureGetters;
   }
 
   /**
@@ -257,6 +290,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       // isUnmodifiableByOtherCode.  Example: @KeyFor("valueThatCanBeMutated").
       if (sideEffectsUnrefineAliases) {
         localVariableValues.entrySet().removeIf(e -> e.getKey().isModifiableByOtherCode());
+        booleanVarStores.entrySet().removeIf(e -> e.getKey().isModifiableByOtherCode());
       }
 
       // update this value
@@ -621,6 +655,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     if (!shouldInsert(expr, value, permitNondeterministic)) {
       return;
     }
+    for (ThenElseStore<V, S> thenElseStore : booleanVarStores.values()) {
+      thenElseStore.update(
+          s -> s.computeNewValueAndInsert(expr, value, merger, permitNondeterministic));
+    }
 
     if (expr instanceof LocalVariable) {
       LocalVariable localVar = (LocalVariable) expr;
@@ -760,6 +798,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     if (expr instanceof LocalVariable) {
       LocalVariable localVar = (LocalVariable) expr;
       localVariableValues.remove(localVar);
+      booleanVarStores.remove(localVar);
     } else if (expr instanceof FieldAccess) {
       FieldAccess fieldAcc = (FieldAccess) expr;
       fieldValues.remove(fieldAcc);
@@ -883,10 +922,18 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     JavaExpression je = JavaExpression.fromNode(n);
     if (je instanceof ArrayAccess) {
       updateForArrayAssignment((ArrayAccess) je, val);
+      booleanVarStores.forEach(
+          (var, store) -> store.update(s -> s.updateForArrayAssignment((ArrayAccess) je, val)));
     } else if (je instanceof FieldAccess) {
       updateForFieldAccessAssignment((FieldAccess) je, val);
+      booleanVarStores.forEach(
+          (var, store) ->
+              store.update(s -> s.updateForFieldAccessAssignment((FieldAccess) je, val)));
     } else if (je instanceof LocalVariable) {
       updateForLocalVariableAssignment((LocalVariable) je, val);
+      booleanVarStores.forEach(
+          (var, store) ->
+              store.update(s -> s.updateForLocalVariableAssignment((LocalVariable) je, val)));
     } else {
       throw new BugInCF("Unexpected je of class " + je.getClass());
     }
@@ -1168,7 +1215,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     return upperBound(previous, true);
   }
 
-  private S upperBound(S other, boolean shouldWiden) {
+  protected S upperBound(S other, boolean shouldWiden) {
     S newStore = analysis.createEmptyStore(sequentialSemantics);
 
     for (Map.Entry<LocalVariable, V> e : other.localVariableValues.entrySet()) {
@@ -1182,6 +1229,22 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
         if (mergedVal != null) {
           newStore.localVariableValues.put(localVar, mergedVal);
+        }
+      }
+    }
+
+    for (Map.Entry<LocalVariable, ThenElseStore<V, S>> e : other.booleanVarStores.entrySet()) {
+      // local variables that are only part of one store, but not the other are discarded, as
+      // one of store implicitly contains 'top' for that variable.
+      LocalVariable localVar = e.getKey();
+      ThenElseStore<V, S> store = booleanVarStores.get(localVar);
+      if (store != null) {
+        ThenElseStore<V, S> otherStore = e.getValue();
+        ThenElseStore<V, S> mergedStore =
+            store.merge((s1, s2) -> s1.upperBound(s1, shouldWiden), otherStore);
+
+        if (mergedStore != null) {
+          newStore.booleanVarStores.put(localVar, mergedStore);
         }
       }
     }
@@ -1251,6 +1314,33 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
   private V upperBoundOfValues(V otherVal, V thisVal, boolean shouldWiden) {
     return shouldWiden ? thisVal.widenUpperBound(otherVal) : thisVal.leastUpperBound(otherVal);
+  }
+
+  /**
+   * Creates a new store the has all the values from both {@code this} and {@code other}. If a node
+   * have a value in both stores, then the most specific one is used.
+   *
+   * @param other another store
+   * @return a new store with values from {@code this} and {@code other}
+   */
+  public S mostSpecific(S other) {
+    S newStore = this.copy();
+
+    other.localVariableValues.forEach(newStore::insertValue);
+    // TODO: booleanVarStores
+    if (other.thisValue != null) {
+      if (newStore.thisValue == null) {
+        newStore.thisValue = other.thisValue;
+      } else {
+        newStore.thisValue = thisValue.mostSpecific(other.thisValue, null);
+      }
+    }
+    other.fieldValues.forEach(newStore::insertValue);
+    other.arrayValues.forEach(newStore::insertValue);
+    other.methodCallExpressions.forEach(newStore::insertValue);
+    other.classValues.forEach(newStore::insertValue);
+
+    return newStore;
   }
 
   /**
