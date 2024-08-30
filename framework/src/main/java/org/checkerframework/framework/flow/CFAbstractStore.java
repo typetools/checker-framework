@@ -77,7 +77,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   protected final Map<LocalVariable, ThenElseStore<V, S>> booleanVarStores;
 
   /**
-   * Then else store.
+   * An object that constains a then and an else store.
    *
    * @param <V> value
    * @param <S> store
