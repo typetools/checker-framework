@@ -76,28 +76,63 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   /** Stores after boolean variable assignment. */
   protected final Map<LocalVariable, ThenElseStore<V, S>> booleanVarStores;
 
+  /**
+   * Then else store.
+   *
+   * @param <V> value
+   * @param <S> store
+   */
   protected static class ThenElseStore<
       V extends CFAbstractValue<V>, S extends CFAbstractStore<V, S>> {
+
+    /** Then store. */
     S thenStore;
+
+    /** Else store. */
     S elseStore;
 
+    /**
+     * Create a then else store.
+     *
+     * @param thenStore thenStore
+     * @param elseStore elseStore
+     */
     ThenElseStore(S thenStore, S elseStore) {
       this.thenStore = thenStore;
       this.elseStore = elseStore;
     }
 
+    /**
+     * Copy this.
+     *
+     * @return a copy of this
+     */
     public ThenElseStore<V, S> copy() {
       return new ThenElseStore<>(thenStore.copy(), elseStore.copy());
     }
 
-    public void update(Consumer<CFAbstractStore<V, S>> o) {
-      o.accept(thenStore);
-      o.accept(elseStore);
+    /**
+     * Applies {@code function} to both stores.
+     *
+     * @param function that takes a store and preforms some action
+     */
+    public void applyToStores(Consumer<CFAbstractStore<V, S>> function) {
+      function.accept(thenStore);
+      function.accept(elseStore);
     }
 
-    public ThenElseStore<V, S> merge(BiFunction<S, S, S> o, ThenElseStore<V, S> other) {
+    /**
+     * Merges this then stores with {@code other}'s then store using {@code function} and merges
+     * this else store {@code other}'s else store using {@code function}. A new {@code
+     * ThenElseStore} is returned with the result from both merges.
+     *
+     * @param function A function that takes two stores and returns a store.
+     * @param other another {@code ThenElseStore}
+     * @return the merge of this and other
+     */
+    public ThenElseStore<V, S> merge(BiFunction<S, S, S> function, ThenElseStore<V, S> other) {
       return new ThenElseStore<>(
-          o.apply(thenStore, other.thenStore), o.apply(elseStore, other.elseStore));
+          function.apply(thenStore, other.thenStore), function.apply(elseStore, other.elseStore));
     }
   }
 
@@ -656,7 +691,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       return;
     }
     for (ThenElseStore<V, S> thenElseStore : booleanVarStores.values()) {
-      thenElseStore.update(
+      thenElseStore.applyToStores(
           s -> s.computeNewValueAndInsert(expr, value, merger, permitNondeterministic));
     }
 
@@ -923,17 +958,19 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     if (je instanceof ArrayAccess) {
       updateForArrayAssignment((ArrayAccess) je, val);
       booleanVarStores.forEach(
-          (var, store) -> store.update(s -> s.updateForArrayAssignment((ArrayAccess) je, val)));
+          (var, store) ->
+              store.applyToStores(s -> s.updateForArrayAssignment((ArrayAccess) je, val)));
     } else if (je instanceof FieldAccess) {
       updateForFieldAccessAssignment((FieldAccess) je, val);
       booleanVarStores.forEach(
           (var, store) ->
-              store.update(s -> s.updateForFieldAccessAssignment((FieldAccess) je, val)));
+              store.applyToStores(s -> s.updateForFieldAccessAssignment((FieldAccess) je, val)));
     } else if (je instanceof LocalVariable) {
       updateForLocalVariableAssignment((LocalVariable) je, val);
       booleanVarStores.forEach(
           (var, store) ->
-              store.update(s -> s.updateForLocalVariableAssignment((LocalVariable) je, val)));
+              store.applyToStores(
+                  s -> s.updateForLocalVariableAssignment((LocalVariable) je, val)));
     } else {
       throw new BugInCF("Unexpected je of class " + je.getClass());
     }
