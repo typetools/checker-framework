@@ -182,11 +182,10 @@ jobs:
   - bash: ./checker/bin-devel/test-cftests-inference-part2.sh
     displayName: test-cftests-inference-part2.sh
 - job: inference_jdk23
-# TEMPORARY, for testing.
-#   dependsOn:
-#    - canary_jobs
-#    - inference_part1_jdk21
-#    - inference_part2_jdk21
+  dependsOn:
+   - canary_jobs
+   - inference_part1_jdk21
+   - inference_part2_jdk21
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk23:latest
