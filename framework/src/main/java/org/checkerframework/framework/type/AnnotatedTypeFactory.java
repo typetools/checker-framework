@@ -273,13 +273,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   /** The EnsuresQualifierIf.List type. */
   protected final TypeMirror ensuresQualifierIfListTM;
 
-  /**
-   * ===== postInit initialized fields ==== Note: qualHierarchy and typeHierarchy are both
-   * initialized in the postInit.
-   *
-   * @see #postInit() This means, they cannot be final and cannot be referred to in any subclass
-   *     constructor or method until after postInit is called
-   */
+  // ===== postInit()-initialized fields ====
+  // Note: qualHierarchy and typeHierarchy are both initialized in postInit().
+  // This means, they cannot be final and cannot be referred to in any subclass
+  // constructor or method until after postInit is called
 
   /** Represent the annotation relations. */
   // This field cannot be final because it is set in `postInit()`.

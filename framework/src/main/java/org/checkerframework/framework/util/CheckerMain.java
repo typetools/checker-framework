@@ -782,9 +782,9 @@ public class CheckerMain {
     return str;
   }
 
-  ///////////////////////////////////////////////////////////////////////////
-  /// Shorthand checker names
-  ///
+  // ///////////////////////////////////////////////////////////////////////////
+  // Shorthand checker names
+  //
 
   /** Processor shorthand is enabled for processors in this directory in checker.jar. */
   protected static final String CHECKER_BASE_DIR_NAME = "org/checkerframework/checker/";

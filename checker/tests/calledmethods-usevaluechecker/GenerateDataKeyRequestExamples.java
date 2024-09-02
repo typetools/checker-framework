@@ -101,11 +101,11 @@ public class GenerateDataKeyRequestExamples {
     client.generateDataKey(request);
   }
 
-  /// Interprocedural
+  // Interprocedural
 
   void callee2(
       AWSKMS client,
-      @CalledMethodsPredicate("(!withNumberOfBytes) && (!setNumberOfBytes)") GenerateDataKeyRequest request) {
+          @CalledMethodsPredicate("(!withNumberOfBytes) && (!setNumberOfBytes)") GenerateDataKeyRequest request) {
     request.withKeySpec(DataKeySpec.AES_256);
     client.generateDataKey(request);
   }
