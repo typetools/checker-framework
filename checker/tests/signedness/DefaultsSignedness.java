@@ -118,7 +118,7 @@ public class DefaultsSignedness {
 
     sinBoxedByte = testBoxedByte;
 
-    //// :: error: (assignment)
+    // // :: error: (assignment)
     conBoxedByte = testBoxedByte;
 
     // Test boxed shorts
@@ -127,7 +127,7 @@ public class DefaultsSignedness {
 
     sinBoxedShort = testBoxedShort;
 
-    //// :: error: (assignment)
+    // // :: error: (assignment)
     conBoxedShort = testBoxedShort;
 
     // Test boxed Integers
@@ -136,7 +136,7 @@ public class DefaultsSignedness {
 
     sinBoxedInteger = testBoxedInteger;
 
-    //// :: error: (assignment)
+    // // :: error: (assignment)
     conBoxedInteger = testBoxedInteger;
 
     // Test boxed Longs
@@ -145,7 +145,7 @@ public class DefaultsSignedness {
 
     sinBoxedLong = testBoxedLong;
 
-    //// :: error: (assignment)
+    // // :: error: (assignment)
     conBoxedLong = testBoxedLong;
     */
   }

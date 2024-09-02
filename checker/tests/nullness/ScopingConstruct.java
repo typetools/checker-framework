@@ -198,9 +198,9 @@ public class ScopingConstruct {
     throw new Error("not implemented");
   }
 
-  ///
-  /// Formal parameters
-  ///
+  //
+  // Formal parameters
+  //
 
   void fsn(StaticNested sn) {}
 
@@ -247,9 +247,9 @@ public class ScopingConstruct {
 
   void fscsnnni(ScopingConstruct.StaticNested.@Nullable NestedInner scsnnni) {}
 
-  ///
-  /// Local variables
-  ///
+  //
+  // Local variables
+  //
 
   void lvsn() {
     StaticNested sn;
@@ -334,9 +334,9 @@ public class ScopingConstruct {
     ScopingConstruct.StaticNested.@Nullable NestedInner scsnnni;
   }
 
-  ///
-  /// Resource variables
-  ///
+  //
+  // Resource variables
+  //
 
   void rvsn() {
     try (StaticNested sn = null) {}
@@ -421,9 +421,9 @@ public class ScopingConstruct {
     try (ScopingConstruct.StaticNested.@Nullable NestedInner scsnnni = null) {}
   }
 
-  ///
-  /// For variables
-  ///
+  //
+  // For variables
+  //
 
   void fvsn() {
     for (StaticNested sn = null; ; ) {}

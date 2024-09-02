@@ -812,9 +812,9 @@ public class WholeProgramInferenceScenesStorage
     updateTypeElementFromATM(typeToUpdate, defLoc, newATM, curATM, ignoreIfAnnotated);
   }
 
-  ///
-  /// Writing to a file
-  ///
+  //
+  // Writing to a file
+  //
 
   // The prepare*ForWriting hooks are needed in addition to the postProcessClassTree hook because
   // a scene may be modifed and written at any time, including before or after
