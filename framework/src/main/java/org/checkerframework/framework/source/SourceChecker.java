@@ -109,9 +109,9 @@ import org.plumelib.util.UtilPlume;
   //       which should be in the same order as this source code file.
   //     * a specific section should contain a detailed discussion.
 
-  ///
-  /// Unsound checking: ignore some errors
-  ///
+  //
+  // Unsound checking: ignore some errors
+  //
 
   // A comma-separated list of warnings to suppress
   // org.checkerframework.framework.source.SourceChecker.createSuppressWarnings
@@ -143,9 +143,9 @@ import org.plumelib.util.UtilPlume;
   // org.checkerframework.framework.source.SourceChecker.report
   "warns",
 
-  ///
-  /// More sound (strict checking): enable errors that are disabled by default
-  ///
+  //
+  // More sound (strict checking): enable errors that are disabled by default
+  //
 
   // The next ones *increase* rather than *decrease* soundness.  They will eventually be replaced
   // by their complements (except -AconcurrentSemantics) and moved into the above section.
@@ -190,9 +190,9 @@ import org.plumelib.util.UtilPlume;
   // org.checkerframework.framework.type.TypeHierarchy.isSubtypeTypeArguments
   "ignoreRawTypeArguments",
 
-  ///
-  /// Type-checking modes:  enable/disable functionality
-  ///
+  //
+  // Type-checking modes:  enable/disable functionality
+  //
 
   // Lint options
   // org.checkerframework.framework.source.SourceChecker.getSupportedLintOptions() and similar
@@ -246,9 +246,9 @@ import org.plumelib.util.UtilPlume;
   // org.checkerframework.framework.type.ElementAnnotationApplier.apply
   "ignoreInvalidAnnotationLocations",
 
-  ///
-  /// Partially-annotated libraries
-  ///
+  //
+  // Partially-annotated libraries
+  //
 
   // Additional stub files to use
   // org.checkerframework.framework.type.AnnotatedTypeFactory.parseStubFiles()
@@ -280,11 +280,11 @@ import org.plumelib.util.UtilPlume;
   // Already listed above, but worth noting again in this section:
   // "useConservativeDefaultsForUncheckedCode"
 
-  ///
-  /// Debugging
-  ///
+  //
+  // Debugging
+  //
 
-  /// Amount of detail in messages
+  // Amount of detail in messages
 
   // Print the version of the Checker Framework
   "version",
@@ -314,14 +314,18 @@ import org.plumelib.util.UtilPlume;
   // org.checkerframework.framework.source.SourceChecker.message(Kind, Object, String, Object...)
   "nomsgtext",
 
-  /// Format of messages
+  // Controls the line separator output in Checker Framework exceptions.
+  // org.checkerframework.framework.source.SourceChecker.logBug
+  "exceptionLineSeparator",
+
+  // Format of messages
 
   // Output detailed message in simple-to-parse format, useful
   // for tools parsing Checker Framework output.
   // org.checkerframework.framework.source.SourceChecker.message(Kind, Object, String, Object...)
   "detailedmsgtext",
 
-  /// Stub and JDK libraries
+  // Stub and JDK libraries
 
   // Ignore the standard jdk.astub file; primarily for testing or debugging.
   // org.checkerframework.framework.type.AnnotatedTypeFactory.parseStubFiles()
@@ -340,7 +344,7 @@ import org.plumelib.util.UtilPlume;
   // org.checkerframework.framework.stub.AnnotationFileParser.debugAnnotationFileParser
   "stubDebug",
 
-  /// Progress tracing
+  // Progress tracing
 
   // Output file names before checking
   // org.checkerframework.framework.source.SourceChecker.typeProcess()
@@ -354,7 +358,7 @@ import org.plumelib.util.UtilPlume;
   // org.checkerframework.common.basetype.SourceChecker.printStackTrace()
   "dumpOnErrors",
 
-  /// Visualizing the CFG
+  // Visualizing the CFG
 
   // Implemented in the wrapper rather than this file, but worth noting here.
   // -AoutputArgsToFile
@@ -385,7 +389,7 @@ import org.plumelib.util.UtilPlume;
   // -Acfgviz=MyClass,verbose
   "verbosecfg",
 
-  /// Caches
+  // Caches
 
   // Set the cache size for caches in AnnotatedTypeFactory
   "atfCacheSize",
@@ -393,14 +397,14 @@ import org.plumelib.util.UtilPlume;
   // Sets AnnotatedTypeFactory shouldCache to false
   "atfDoNotCache",
 
-  /// Language Server Protocol(LSP) Support
+  // Language Server Protocol(LSP) Support
 
   // TODO: document `-AlspTypeInfo` in manual, as a debugging option.
   // Output detailed type information for nodes in AST
   // org.checkerframework.framework.type.AnnotatedTypeFactory
   "lspTypeInfo",
 
-  /// Miscellaneous debugging options
+  // Miscellaneous debugging options
 
   // Whether to output resource statistics at JVM shutdown
   // org.checkerframework.framework.source.SourceChecker.shutdownHook()
@@ -634,9 +638,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     }
   }
 
-  ///////////////////////////////////////////////////////////////////////////
-  /// Getters and setters
-  ///
+  // ///////////////////////////////////////////////////////////////////////////
+  // Getters and setters
+  //
 
   /**
    * Returns the {@link ProcessingEnvironment} that was supplied to this checker.
@@ -908,9 +912,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     return getOnlyPattern("onlyFiles", options);
   }
 
-  ///////////////////////////////////////////////////////////////////////////
-  /// Type-checking
-  ///
+  // ///////////////////////////////////////////////////////////////////////////
+  // Type-checking
+  //
 
   /**
    * {@inheritDoc}
@@ -937,14 +941,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
                 + "! Please ensure your checker is properly initialized.");
       }
       if (shouldAddShutdownHook()) {
-        Runtime.getRuntime()
-            .addShutdownHook(
-                new Thread() {
-                  @Override
-                  public void run() {
-                    shutdownHook();
-                  }
-                });
+        Runtime.getRuntime().addShutdownHook(new Thread(this::shutdownHook));
       }
       if (!printedVersion && hasOption("version")) {
         messager.printMessage(Diagnostic.Kind.NOTE, "Checker Framework " + getCheckerVersion());
@@ -1108,9 +1105,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     }
   }
 
-  ///////////////////////////////////////////////////////////////////////////
-  /// Reporting type-checking errors; most clients use reportError() or reportWarning()
-  ///
+  // ///////////////////////////////////////////////////////////////////////////
+  // Reporting type-checking errors; most clients use reportError() or reportWarning()
+  //
 
   /**
    * Reports an error. By default, prints it to the screen via the compiler's internal messager.
@@ -1324,9 +1321,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     }
   }
 
-  ///////////////////////////////////////////////////////////////////////////
-  /// Diagnostic message formatting
-  ///
+  // ///////////////////////////////////////////////////////////////////////////
+  // Diagnostic message formatting
+  //
 
   /**
    * Returns the localized long message corresponding to this key. If not found, tries suffixes of
@@ -1499,9 +1496,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     return "( " + start + ", " + end + " )";
   }
 
-  ///////////////////////////////////////////////////////////////////////////
-  /// Lint options ("-Alint:xxxx" and "-Alint:-xxxx")
-  ///
+  // ///////////////////////////////////////////////////////////////////////////
+  // Lint options ("-Alint:xxxx" and "-Alint:-xxxx")
+  //
 
   /**
    * Determine which lint options are artive.
@@ -1722,9 +1719,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     supportedLints = newLints;
   }
 
-  ///////////////////////////////////////////////////////////////////////////
-  /// Regular (non-lint) options ("-Axxxx")
-  ///
+  // ///////////////////////////////////////////////////////////////////////////
+  // Regular (non-lint) options ("-Axxxx")
+  //
 
   /**
    * Determine which options are active.
@@ -1985,9 +1982,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     return Collections.singleton("*");
   }
 
-  ///////////////////////////////////////////////////////////////////////////
-  /// Warning suppression and unneeded warnings
-  ///
+  // ///////////////////////////////////////////////////////////////////////////
+  // Warning suppression and unneeded warnings
+  //
 
   /**
    * Returns the argument to {@code -AsuppressWarnings}, split on commas, or null if no such
@@ -2546,9 +2543,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     return result.toLowerCase(Locale.getDefault());
   }
 
-  ///////////////////////////////////////////////////////////////////////////
-  /// Skipping uses and defs
-  ///
+  // ///////////////////////////////////////////////////////////////////////////
+  // Skipping uses and defs
+  //
 
   /**
    * Tests whether the class owner of the passed element is an unannotated class and matches the
@@ -2656,9 +2653,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     return shouldSkipDefs(cls) || shouldSkipDefs(meth);
   }
 
-  ///////////////////////////////////////////////////////////////////////////
-  /// Skipping files
-  ///
+  // ///////////////////////////////////////////////////////////////////////////
+  // Skipping files
+  //
 
   /**
    * Tests whether the enclosing file path of the passed tree matches the pattern specified in the
@@ -2697,9 +2694,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     return skipFilesPattern.matcher(path).find() || !onlyFilesPattern.matcher(path).find();
   }
 
-  ///////////////////////////////////////////////////////////////////////////
-  /// Errors other than type-checking errors
-  ///
+  // ///////////////////////////////////////////////////////////////////////////
+  // Errors other than type-checking errors
+  //
 
   /**
    * Log (that is, print) a user error.
@@ -2748,7 +2745,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @param culprit a message to print about the cause
    */
   private void logBug(Throwable ce, String culprit) {
-    StringJoiner msg = new StringJoiner(System.lineSeparator());
+    String lineSeparator =
+        getOptions().getOrDefault("exceptionLineSeparator", System.lineSeparator());
+    StringJoiner msg = new StringJoiner(lineSeparator);
     if (ce.getCause() != null && ce.getCause() instanceof OutOfMemoryError) {
       msg.add(
           String.format(
@@ -2757,7 +2756,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
               Runtime.getRuntime().totalMemory(),
               Runtime.getRuntime().freeMemory()));
     } else {
-      msg.add(ce.getMessage());
+      String message;
+      if (getOptions().containsKey("exceptionLineSeparator")) {
+        message = ce.getMessage().replaceAll(System.lineSeparator(), lineSeparator);
+      } else {
+        message = ce.getMessage();
+      }
+      msg.add(message);
       boolean noPrintErrorStack =
           (processingEnv != null
               && processingEnv.getOptions() != null
@@ -2833,9 +2838,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         t);
   }
 
-  ///////////////////////////////////////////////////////////////////////////
-  /// Shutdown
-  ///
+  // ///////////////////////////////////////////////////////////////////////////
+  // Shutdown
+  //
 
   /**
    * Return true to indicate that method {@link #shutdownHook} should be added as a shutdownHook of
@@ -2872,9 +2877,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     }
   }
 
-  ///////////////////////////////////////////////////////////////////////////
-  /// Miscellaneous
-  ///
+  // ///////////////////////////////////////////////////////////////////////////
+  // Miscellaneous
+  //
 
   /**
    * A helper function to parse a Properties file.

@@ -83,7 +83,10 @@ echo "... done: (cd ${AT} && ./.build-without-test.sh)"
 ## Compile
 
 # Download dependencies, trying a second time if there is a failure.
-(TERM=dumb timeout 300 ./gradlew resolveDependencies || \
-     (sleep 1m && ./gradlew resolveDependencies))
+(TERM=dumb timeout 300 ./gradlew --write-verification-metadata sha256 help --dry-run --quiet || \
+     (echo "./gradlew --write-verification-metadata sha256 help --dry-run --quiet failed; sleeping before trying again." && \
+      sleep 1m && \
+      echo "Trying again: ./gradlew --write-verification-metadata sha256 help --dry-run --quiet" && \
+      TERM=dumb timeout 300 ./gradlew --write-verification-metadata sha256 help --dry-run --quiet))
 
 echo Exiting checker/bin-devel/clone-related.sh in "$(pwd)"

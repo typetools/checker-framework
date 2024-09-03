@@ -31,9 +31,9 @@ public final class TreePathUtil {
     throw new BugInCF("Class TreeUtils cannot be instantiated.");
   }
 
-  ///
-  /// Retrieving a path (from another path)
-  ///
+  //
+  // Retrieving a path (from another path)
+  //
 
   /**
    * Gets path to the first (innermost) enclosing tree of the given kind. May return {@code path}
@@ -85,9 +85,9 @@ public final class TreePathUtil {
     return pathTillOfKind(path, Tree.Kind.METHOD);
   }
 
-  ///
-  /// Retrieving a tree (from a path)
-  ///
+  //
+  // Retrieving a tree (from a path)
+  //
 
   /**
    * Gets the first (innermost) enclosing tree in path, of the given kind. May return the leaf of
@@ -308,6 +308,7 @@ public final class TreePathUtil {
         // Otherwise use the context of the ConditionalExpressionTree.
         return getContextForPolyExpression(parentPath, isLambdaOrMethodRef);
       case PARENTHESIZED:
+      case CASE:
         return getContextForPolyExpression(parentPath, isLambdaOrMethodRef);
       default:
         if (TreeUtils.isYield(parent)) {
@@ -341,9 +342,9 @@ public final class TreePathUtil {
     }
   }
 
-  ///
-  /// Predicates
-  ///
+  //
+  // Predicates
+  //
 
   /**
    * Returns true if the tree is in a constructor or an initializer block.
@@ -433,9 +434,9 @@ public final class TreePathUtil {
     throw new BugInCF("path did not contain method or class: " + toString(origPath));
   }
 
-  ///
-  /// Formatting
-  ///
+  //
+  // Formatting
+  //
 
   /**
    * Return a printed representation of a TreePath.

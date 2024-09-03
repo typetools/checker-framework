@@ -2722,7 +2722,15 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   public Node visitConditionalExpression(ConditionalExpressionTree tree, Void p) {
     // see JLS 15.25
     TypeMirror exprType = TreeUtils.typeOf(tree);
-
+    if (exprType.getKind() == TypeKind.NULL) {
+      // Happens when the 2nd and 3rd operands are both null, i.e. b ? null : null.
+      Tree parent = TreePathUtil.getContextForPolyExpression(getCurrentPath());
+      if (parent != null) {
+        exprType = TreeUtils.typeOf(parent);
+      } else {
+        exprType = TypesUtils.getObjectTypeMirror(env);
+      }
+    }
     Label trueStart = new Label();
     Label falseStart = new Label();
     Label merge = new Label();
