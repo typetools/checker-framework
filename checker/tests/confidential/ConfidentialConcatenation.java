@@ -1,3 +1,6 @@
+// NonConfidential <: Confidential
+
+import org.checkerframework.checker.confidential.qual.Confidential;
 import org.checkerframework.checker.confidential.qual.NonConfidential;
 
 public class ConfidentialConcatenation {
@@ -6,7 +9,22 @@ public class ConfidentialConcatenation {
 
   void executeConfidential(String s) {}
 
+  void executeConfidential2(@Confidential String s) {}
+
   void concatenation(@NonConfidential String s1, String s2) {
+    @Confidential String s_1 = s1 + s1;
+    @Confidential String s_2 = s1 + s2;
+    @Confidential String s_3 = s2 + s1;
+    @Confidential String s_4 = s2 + s2;
+
+    @NonConfidential String s_5 = s1 + s1;
+    // :: error: (assignment)
+    @NonConfidential String s_6 = s1 + s2;
+    // :: error: (assignment)
+    @NonConfidential String s_7 = s2 + s1;
+    // :: error: (assignment)
+    @NonConfidential String s_8 = s2 + s2;
+
     executeNonConfidential(s1 + s1);
     // :: error: (argument)
     executeNonConfidential(s1 + s2);
@@ -19,6 +37,10 @@ public class ConfidentialConcatenation {
     executeConfidential(s1 + s2);
     executeConfidential(s2 + s1);
     executeConfidential(s2 + s2);
+    executeConfidential2(s1 + s1);
+    executeConfidential2(s1 + s2);
+    executeConfidential2(s2 + s1);
+    executeConfidential2(s2 + s2);
   }
 
   void compoundConcatenation(@NonConfidential String s1, String s2) {
