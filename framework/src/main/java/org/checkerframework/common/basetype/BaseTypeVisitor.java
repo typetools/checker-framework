@@ -3218,6 +3218,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           varType,
           valueType,
           valueExpTree);
+      // TEMPORARY
+      new Error("backtrace").printStackTrace();
     }
   }
 
