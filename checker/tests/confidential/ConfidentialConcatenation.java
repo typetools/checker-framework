@@ -24,6 +24,9 @@ public class ConfidentialConcatenation {
     @NonConfidential String s_7 = s2 + s1;
     // :: error: (assignment)
     @NonConfidential String s_8 = s2 + s2;
+  }
+
+  void concatenationInvocation(@NonConfidential String s1, String s2) {
 
     executeNonConfidential(s1 + s1);
     // :: error: (argument)
