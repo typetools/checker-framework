@@ -775,7 +775,8 @@ public abstract class CFAbstractTransfer<
     if (booleanVarStore != null) {
       S thenStore = in.getThenStore().mostSpecific(booleanVarStore.thenStore);
       S elseStore = in.getElseStore().mostSpecific(booleanVarStore.elseStore);
-      return new ConditionalTransferResult<>(finishValue(value, store), thenStore, elseStore);
+      return new ConditionalTransferResult<>(
+          finishValue(value, thenStore, elseStore), thenStore, elseStore);
     }
     return new RegularTransferResult<>(finishValue(value, store), store);
   }
@@ -835,7 +836,10 @@ public abstract class CFAbstractTransfer<
   public TransferResult<V, S> visitConditionalNot(ConditionalNotNode n, TransferInput<V, S> p) {
     TransferResult<V, S> result = super.visitConditionalNot(n, p);
     S thenStore = result.getThenStore();
+    thenStore.swapBooleanVarStore();
     S elseStore = result.getElseStore();
+    elseStore.swapBooleanVarStore();
+
     return new ConditionalTransferResult<>(result.getResultValue(), elseStore, thenStore);
   }
 

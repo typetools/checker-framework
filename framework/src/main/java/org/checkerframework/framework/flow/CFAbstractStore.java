@@ -1218,9 +1218,18 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     return localVariableValues.get(new LocalVariable(el));
   }
 
-  protected void insertBooleanVarStore(
-      LocalVariable lhsExpr, BooleanVarStore<V, S> booleanVarStore) {
-    booleanVarStores.put(lhsExpr, booleanVarStore);
+  protected void insertBooleanVarStore(LocalVariable lhsExpr, BooleanVarStore<V, S> other) {
+    booleanVarStores.put(lhsExpr, other);
+  }
+
+  protected void swapBooleanVarStore() {
+    Map<LocalVariable, BooleanVarStore<V, S>> newBooleanVarStores =
+        new HashMap<>(booleanVarStores.size());
+    booleanVarStores.forEach(
+        (var, store) ->
+            newBooleanVarStores.put(var, new BooleanVarStore<>(store.elseStore, store.thenStore)));
+    booleanVarStores.clear();
+    booleanVarStores.putAll(newBooleanVarStores);
   }
 
   /* --------------------------------------------------------- */
@@ -1286,8 +1295,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         BooleanVarStore<V, S> otherStore = e.getValue();
         BooleanVarStore<V, S> mergedStore =
             shouldWiden
-                ? store.merge((s1, s2) -> s1.widenedUpperBound(s1), otherStore)
-                : store.merge((s1, s2) -> s1.leastUpperBound(s1), otherStore);
+                ? store.merge(CFAbstractStore::widenedUpperBound, otherStore)
+                : store.merge(CFAbstractStore::leastUpperBound, otherStore);
 
         if (mergedStore != null) {
           newStore.booleanVarStores.put(localVar, mergedStore);
@@ -1371,9 +1380,11 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    */
   public S mostSpecific(S other) {
     S newStore = this.copy();
-
+    other.booleanVarStores.forEach(newStore::insertBooleanVarStore);
+    //    booleanVarStores.computeIfPresent(lhsExpr, (key, booleanVarStore) ->
+    // booleanVarStore.merge(
+    //        CFAbstractStore::mostSpecific, other));
     other.localVariableValues.forEach(newStore::insertValue);
-    // TODO: booleanVarStores
     if (other.thisValue != null) {
       if (newStore.thisValue == null) {
         newStore.thisValue = other.thisValue;
