@@ -7,9 +7,9 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="144.88226"
-   height="145.84274"
-   viewBox="320 90 210 170"
+   width="194"
+   height="120"
+   viewBox="320 111 205 105"
    id="svg3577"
    version="1.1"
    inkscape:version="1.0.1 (3bc2e813f5, 2020-09-07)"
@@ -107,15 +107,6 @@
          y="226.772"
          id="tspan3617">@Present</tspan></text>
   </g>
-  <text
-     font-size="12.8"
-     style="font-style:normal;font-weight:normal;font-size:12.8px;line-height:0%;font-family:'courier new';text-anchor:start;fill:#000000"
-     x="423.14307"
-     y="70.007416"
-     id="text3619"><tspan
-       x="423.14307"
-       y="70.007416"
-       id="tspan3621" /></text>
   <g
      id="g3657"
      transform="translate(-37.864476,-19)">
@@ -135,13 +126,4 @@
        points="465.5,176.236 460.5,173.736 455.5,176.236 460.5,166.236 "
        id="polygon3663" />
   </g>
-  <text
-     font-size="12.8"
-     style="font-style:normal;font-weight:normal;font-size:12.8px;line-height:0%;font-family:'courier new';text-anchor:start;fill:#000000"
-     x="423.14307"
-     y="70.007416"
-     id="text3673"><tspan
-       x="423.14307"
-       y="70.007416"
-       id="tspan3675" /></text>
 </svg>
