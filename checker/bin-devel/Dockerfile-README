@@ -54,22 +54,22 @@ export DPROJECT=cf
 create_upload_docker_image
 
 export OS=ubuntu
-export JDKVER=jdk20
-export DPROJECT=cf
-create_upload_docker_image
-
-export OS=ubuntu
-export JDKVER=jdk20-plus
-export DPROJECT=cf
-create_upload_docker_image
-
-export OS=ubuntu
 export JDKVER=jdk21
 export DPROJECT=cf
 create_upload_docker_image
 
 export OS=ubuntu
 export JDKVER=jdk21-plus
+export DPROJECT=cf
+create_upload_docker_image
+
+export OS=ubuntu
+export JDKVER=jdk22
+export DPROJECT=cf
+create_upload_docker_image
+
+export OS=ubuntu
+export JDKVER=jdk22-plus
 export DPROJECT=cf
 create_upload_docker_image
 

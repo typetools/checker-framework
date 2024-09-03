@@ -1,3 +1,15 @@
+Version 3.46.1 (September 3, 2024)
+-----------------------------
+
+**User-visible changes:**
+
+The Checker Framework runs under JDK 22 -- that is, it runs on a version 22 JVM.
+
+**Implementation details:**
+
+**Closed issues:**
+
+
 Version 3.46.0 (August 1, 2024)
 -----------------------------
 
@@ -5,9 +17,9 @@ Version 3.46.0 (August 1, 2024)
 
 Renamed `@EnsuresCalledMethodsVarArgs`to `@EnsuresCalledMethodsVarargs`.
 
-**Implementation details:**
-
 **Closed issues:**
+
+#4923, #6420, #6469, #6652, #6664.
 
 
 Version 3.45.0 (July 1, 2024)
