@@ -4,6 +4,7 @@ Version 3.47.0 (September 3, 2024)
 **User-visible changes:**
 
 The Checker Framework runs under JDK 22 -- that is, it runs on a version 22 JVM.
+The Checker Framework runs under JDK 23 -- that is, it runs on a version 23 JVM.
 
 The Optional Checker no longer supports the `@OptionalBottom` annotation.
 
