@@ -242,9 +242,9 @@ public class WholeProgramInferenceJavaParserStorage
     }
   }
 
-  ///
-  /// Reading stored annotations
-  ///
+  //
+  // Reading stored annotations
+  //
 
   @Override
   public boolean hasStorageLocationForMethod(ExecutableElement methodElt) {
@@ -578,9 +578,9 @@ public class WholeProgramInferenceJavaParserStorage
     }
   }
 
-  ///
-  /// Reading in files
-  ///
+  //
+  // Reading in files
+  //
 
   @Override
   public void preprocessClassTree(ClassTree classTree) {
@@ -908,9 +908,9 @@ public class WholeProgramInferenceJavaParserStorage
     return path;
   }
 
-  ///
-  /// Writing to a file
-  ///
+  //
+  // Writing to a file
+  //
 
   // The prepare*ForWriting hooks are needed in addition to the postProcessClassTree hook because
   // a scene may be modifed and written at any time, including before or after
@@ -1174,9 +1174,9 @@ public class WholeProgramInferenceJavaParserStorage
     target.accept(new AnnotationTransferVisitor(), annotatedType);
   }
 
-  ///
-  /// Storing annotations
-  ///
+  //
+  // Storing annotations
+  //
 
   /**
    * Stores the JavaParser node for a compilation unit and the list of wrappers for the classes and

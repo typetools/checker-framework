@@ -23,7 +23,7 @@ public class ReferenceInfoUtil {
     return annos;
   }
 
-  /////////////////// Extract annotations //////////////////
+  // /////////////////// Extract annotations //////////////////
   private static void findAnnotations(ClassFile cf, List<Annotation> annos) {
     for (Method m : cf.methods) {
       findAnnotations(cf, m, Attribute.RuntimeVisibleAnnotations, annos);

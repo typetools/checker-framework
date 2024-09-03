@@ -135,7 +135,7 @@ public class ValueLiteral extends JavaExpression {
     return false; // not modifiable
   }
 
-  /// java.lang.Object methods
+  // java.lang.Object methods
 
   @Override
   public boolean equals(@Nullable Object obj) {
