@@ -1,6 +1,7 @@
 package org.checkerframework.checker.sqlquotes;
 
 import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.CompoundAssignmentTree;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.sqlquotes.qual.SqlEvenQuotes;
@@ -86,44 +87,60 @@ public class SqlQuotesAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
-      super.visitBinary(tree, type);
       if (TreeUtils.isStringConcatenation(tree)) {
         AnnotatedTypeMirror leftType = getAnnotatedType(tree.getLeftOperand());
         AnnotatedTypeMirror rightType = getAnnotatedType(tree.getRightOperand());
+        type.replaceAnnotation(getResultingType(leftType, rightType));
+      }
+      return null;
+    }
 
-        if (leftType.hasPrimaryAnnotation(SQL_QUOTES_UNKNOWN)
-            || rightType.hasPrimaryAnnotation(SQL_QUOTES_UNKNOWN)) {
-          type.replaceAnnotation(SQL_QUOTES_UNKNOWN);
-          return null;
-        }
+    @Override
+    public Void visitCompoundAssignment(CompoundAssignmentTree tree, AnnotatedTypeMirror type) {
+      if (TreeUtils.isStringCompoundConcatenation(tree)) {
+        AnnotatedTypeMirror leftType = getAnnotatedType(tree.getVariable());
+        AnnotatedTypeMirror rightType = getAnnotatedType(tree.getExpression());
+        type.replaceAnnotation(getResultingType(leftType, rightType));
+      }
+      return null;
+    }
 
-        if (leftType.hasPrimaryAnnotation(SQL_QUOTES_BOTTOM)) {
-          type.replaceAnnotation(rightType.getPrimaryAnnotation());
-          return null;
-        } else if (rightType.hasPrimaryAnnotation(SQL_QUOTES_BOTTOM)) {
-          type.replaceAnnotation(leftType.getPrimaryAnnotation());
-          return null;
-        }
-
-        int leftParity = 0;
-        if (leftType.hasPrimaryAnnotation(SQL_ODD_QUOTES)) {
-          leftParity = 1;
-        }
-
-        int rightParity = 0;
-        if (rightType.hasPrimaryAnnotation(SQL_ODD_QUOTES)) {
-          rightParity = 1;
-        }
-
-        int parity = leftParity + rightParity;
-        if (parity == 0 || parity == 2) {
-          type.replaceAnnotation(SQL_EVEN_QUOTES);
-        } else {
-          type.replaceAnnotation(SQL_ODD_QUOTES);
-        }
+    /**
+     * Returns the type of concatenating leftType and rightType.
+     *
+     * @param leftType the type on the left of the expression
+     * @param rightType the type on the right of the expression
+     * @return the resulting type after concatenation
+     */
+    private AnnotationMirror getResultingType(
+        AnnotatedTypeMirror leftType, AnnotatedTypeMirror rightType) {
+      if (leftType.hasPrimaryAnnotation(SQL_QUOTES_UNKNOWN)
+          || rightType.hasPrimaryAnnotation(SQL_QUOTES_UNKNOWN)) {
+        return SQL_QUOTES_UNKNOWN;
       }
 
-      return null;
+      if (leftType.hasPrimaryAnnotation(SQL_QUOTES_BOTTOM)) {
+        return rightType.getPrimaryAnnotation();
+      } else if (rightType.hasPrimaryAnnotation(SQL_QUOTES_BOTTOM)) {
+        return leftType.getPrimaryAnnotation();
+      }
+
+      int leftParity = 0;
+      if (leftType.hasPrimaryAnnotation(SQL_ODD_QUOTES)) {
+        leftParity = 1;
+      }
+
+      int rightParity = 0;
+      if (rightType.hasPrimaryAnnotation(SQL_ODD_QUOTES)) {
+        rightParity = 1;
+      }
+
+      int parity = leftParity + rightParity;
+      if (parity == 0 || parity == 2) {
+        return SQL_EVEN_QUOTES;
+      } else {
+        return SQL_ODD_QUOTES;
+      }
     }
   }
 }

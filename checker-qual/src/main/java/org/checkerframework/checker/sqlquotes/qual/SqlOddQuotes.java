@@ -9,11 +9,11 @@ import org.checkerframework.framework.qual.QualifierForLiterals;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * Used to denote a String that contains an odd number of unescaped single quotes – i.e., there must
- * be an odd number of ‘ characters in a SqlOddQuotes String that are not preceded immediately by
- * another ' character. (Thus, all SqlOddQuotes Strings ultimately contain an odd number of single
- * quotes, escaped or otherwise.) SqlOddQuotes Strings are not syntactical to be passed to query
- * execution methods.
+ * Denotes a String that contains an odd number of unescaped single quotes – i.e., there must be an
+ * odd number of ‘ characters in a SqlOddQuotes String that are not preceded immediately by another
+ * ' character. (Thus, all SqlOddQuotes Strings ultimately contain an odd number of single quotes,
+ * escaped or otherwise.) SqlOddQuotes Strings are not syntactical to be passed to query execution
+ * methods.
  *
  * <p>Common use cases include: SQL query fragments to be concatenated with user input, such as
  * “SELECT * FROM table WHERE field = ‘”; SQL query fragments containing user input but missing an
@@ -27,5 +27,5 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf(SqlQuotesUnknown.class)
-@QualifierForLiterals(stringPatterns = "^[^']*('[^']*'[^']*)*'[^']*$")
+@QualifierForLiterals(stringPatterns = "^[^']*+'[^']*+('[^']*+'[^']*+)*+$")
 public @interface SqlOddQuotes {}
