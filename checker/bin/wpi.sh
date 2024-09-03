@@ -331,12 +331,18 @@ stdout is in      $dljc_stdout"
 if [ "${DLJC}" = "" ]; then
   # The user did not set the DLJC environment variable.
   DLJC="${SCRIPTDIR}/.do-like-javac/dljc"
+  if [ ! -f "${DLJC}" ]; then
+    (cd "$SCRIPTDIR"/../.. && ./gradlew getDoLikeJavac)
+  fi
 else
   # The user did set the DLJC environment variable.
   if [ ! -f "${DLJC}" ]; then
     echo "Failure: DLJC is set to ${DLJC} which is not a file or does not exist."
     exit 1
   fi
+fi
+if [ ! -f "$SCRIPTDIR/../dist/checker.jar" ] ; then
+  (cd "$SCRIPTDIR"/../.. && ./gradlew assembleForJavac)
 fi
 
 #### Main script
