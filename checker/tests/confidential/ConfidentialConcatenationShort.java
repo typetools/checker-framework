@@ -1,3 +1,5 @@
+// TEMPORARY TEST FILE; remove before merging.
+
 // NonConfidential <: Confidential
 
 import org.checkerframework.checker.confidential.qual.Confidential;

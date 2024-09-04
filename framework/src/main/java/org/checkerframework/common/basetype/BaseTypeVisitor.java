@@ -3226,14 +3226,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           varType,
           valueType,
           valueExpTree);
-      // TEMPORARY
-      try {
-        Thread.sleep(1);
-      } catch (InterruptedException e) {
-        Thread.currentThread().interrupt();
-      }
-      System.out.flush();
-      new Error("backtrace").printStackTrace();
     }
   }
 
