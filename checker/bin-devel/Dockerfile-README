@@ -24,6 +24,7 @@ Create the Docker image:
 DOCKERTESTING=""
 # DOCKERTESTING="-testing"
 alias create_upload_docker_image=' \
+  ( [ -z "$INSIDE_EMACS" ] || (echo "Do not run within Emacs" && false) ) && \
   rm -rf dockerdir && \
   mkdir -p dockerdir && \
   (cd dockerdir && \
@@ -64,12 +65,12 @@ export DPROJECT=cf
 create_upload_docker_image
 
 export OS=ubuntu
-export JDKVER=jdk22
+export JDKVER=jdk23
 export DPROJECT=cf
 create_upload_docker_image
 
 export OS=ubuntu
-export JDKVER=jdk22-plus
+export JDKVER=jdk23-plus
 export DPROJECT=cf
 create_upload_docker_image
 
