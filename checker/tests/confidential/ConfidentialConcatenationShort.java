@@ -5,12 +5,9 @@ import org.checkerframework.checker.confidential.qual.NonConfidential;
 
 public class ConfidentialConcatenationShort {
 
-  void concatenationInitialization(@NonConfidential String s1, String s2) {
-    @Confidential String s_1 = s1 + s1;
-  }
+  @Confidential String confidentialField;
 
   void concatenation(@NonConfidential String s1, String s2) {
-    @Confidential String s_1;
-    s_1 = s1 + s1;
+    confidentialField = s1 + s1;
   }
 }
