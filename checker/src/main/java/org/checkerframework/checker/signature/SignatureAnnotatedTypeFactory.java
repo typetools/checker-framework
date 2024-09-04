@@ -144,7 +144,7 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     // The below code achieves the same effect as writing a meta-annotation
     //     @QualifierForLiterals(stringPatterns = "...")
     // on each type qualifier definition.  Annotation elements cannot be computations (not even
-    // string concatenations of literal strings) and cannot be not references to compile-time
+    // string concatenations of literal strings) and cannot be references to compile-time
     // constants such as effectively-final fields.  So every `stringPatterns = "..."` would have
     // to be a literal string, which would be verbose ard hard to maintain.
     result.addStringPattern(
