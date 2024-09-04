@@ -1,5 +1,15 @@
+Version 3.47.0 (October 1, 2024)
+--------------------------------
+
+**User-visible changes:**
+
+**Implementation details:**
+
+**Closed issues:**
+
+
 Version 3.47.0 (September 3, 2024)
------------------------------
+----------------------------------
 
 **User-visible changes:**
 
