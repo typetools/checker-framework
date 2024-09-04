@@ -11,9 +11,10 @@ import java.lang.annotation.Target;
 /**
  * This is a declaration annotation that applies to type declarations and packages. On a type, it
  * means that the class conceptually takes a type qualifier parameter, though there is nowhere to
- * write it because the class hard-codes a Java basetype rather than taking a type parameter.
- * Writing {@code HasQualifierParameter} on a package is the same as writing it on each class in
- * that package.
+ * write it because the class hard-codes a Java basetype rather than taking a type parameter. (When
+ * {@code @HasQualifierParameter} is written on a type, it <b>must</b> also be written on every
+ * subtype.) Writing {@code @HasQualifierParameter} on a package is the same as writing it on each
+ * class in that package.
  *
  * <p>Writing {@code @HasQualifierParameter} on a type declaration has two effects.
  *
@@ -44,13 +45,13 @@ import java.lang.annotation.Target;
  *                     /        |       {@code @Tainted} Date
  *                   /          |               |
  *                  /           |               |
- *                 /   {@code @Untainted} Object       |
+ *                 /   {@code @Untainted} Object        |
  *                /             |       \       |
- *  {@code @Tainted} StringBuffer      |      {@code @Untainted} Date
+ *  {@code @Tainted} StringBuffer       |      {@code @Untainted} Date
  *             |                |
  *             |      {@code @Untainted} StringBuffer
  *             |                |
- *  {@code @Tainted} MyStringBuffer    |
+ *  {@code @Tainted} MyStringBuffer     |
  *                              |
  *                    {@code @Untainted} MyStringBuffer
  * </pre>
