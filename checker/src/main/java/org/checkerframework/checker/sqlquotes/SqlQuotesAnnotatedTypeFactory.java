@@ -2,6 +2,8 @@ package org.checkerframework.checker.sqlquotes;
 
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;
+import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.Tree;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.sqlquotes.qual.SqlEvenQuotes;
@@ -104,6 +106,8 @@ public class SqlQuotesAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    *   <li>SqlQuotesUnknown dominates other types in concatenation;
    *   <li>Non-bottom types dominate SqlQuotesBottom in concatenation.
    * </ul>
+   *
+   * and also to set the type of literals.
    */
   private class SqlQuotesTreeAnnotator extends TreeAnnotator {
     /**
@@ -113,6 +117,26 @@ public class SqlQuotesAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     public SqlQuotesTreeAnnotator(AnnotatedTypeFactory atypeFactory) {
       super(atypeFactory);
+    }
+
+    @Override
+    public Void visitLiteral(LiteralTree tree, AnnotatedTypeMirror type) {
+      if (tree.getKind() == Tree.Kind.STRING_LITERAL) {
+        String string = (String) tree.getValue();
+        int numQuotes = 0;
+        int len = string.length();
+        for (int i = 0; i < len; i++) {
+          if (string.charAt(i) == '\'') {
+            numQuotes++;
+          }
+        }
+        if ((numQuotes & 1) == 0) {
+          type.replaceAnnotation(SQL_EVEN_QUOTES);
+        } else {
+          type.replaceAnnotation(SQL_ODD_QUOTES);
+        }
+      }
+      return null;
     }
 
     @Override
