@@ -13,6 +13,8 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.LiteralTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
@@ -59,9 +61,37 @@ public class SqlQuotesAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   @Override
   public TreeAnnotator createTreeAnnotator() {
+    // Don't call super.createTreeAnnotator() because it includes PropagationTreeAnnotator,
+    // but we want to use UnitsPropagationTreeAnnotator instead.
     return new ListTreeAnnotator(
-        super.createTreeAnnotator(),
+        new SqlQuotesPropagationTreeAnnotator(this),
+        new LiteralTreeAnnotator(this).addStandardLiteralQualifiers(),
         new SqlQuotesAnnotatedTypeFactory.SqlQuotesTreeAnnotator(this));
+  }
+
+  /** Disables {@link #visitBinary} to avoid runaway recursion. */
+  private static class SqlQuotesPropagationTreeAnnotator extends PropagationTreeAnnotator {
+
+    /**
+     * Creates a new SqlQuotesPropagationTreeAnnotator.
+     *
+     * @param atypeFactory the type factory
+     */
+    public SqlQuotesPropagationTreeAnnotator(AnnotatedTypeFactory atypeFactory) {
+      super(atypeFactory);
+    }
+
+    // Completely handled by SqlQuotesTreeAnnotator.
+    @Override
+    public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
+      return null;
+    }
+
+    // Completely handled by SqlQuotesTreeAnnotator.
+    @Override
+    public Void visitCompoundAssignment(CompoundAssignmentTree tree, AnnotatedTypeMirror type) {
+      return null;
+    }
   }
 
   /**
