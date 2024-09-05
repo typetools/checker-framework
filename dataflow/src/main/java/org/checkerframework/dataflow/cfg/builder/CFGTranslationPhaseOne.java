@@ -2723,11 +2723,13 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     // see JLS 15.25
     TypeMirror exprType = TreeUtils.typeOf(tree);
     if (exprType.getKind() == TypeKind.NULL) {
-      // Happens when the 2nd and 3rd operands are both null, i.e. b ? null : null.
+      // Happens when the 2nd and 3rd operands are both null, e.g.: b ? null : null
       Tree parent = TreePathUtil.getContextForPolyExpression(getCurrentPath());
       if (parent != null) {
         exprType = TreeUtils.typeOf(parent);
-      } else {
+        // exprType is null when the condition is non-atomic, e.g.: x.isEmpty() ? null : null
+      }
+      if (parent == null || exprType == null) {
         exprType = TypesUtils.getObjectTypeMirror(env);
       }
     }
