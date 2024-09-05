@@ -1,5 +1,7 @@
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 public class Issue6785 {
-  String foo2(String x) {
+  @Nullable String foo2(String x) {
     return x.isEmpty() ? null : null;
   }
 }
