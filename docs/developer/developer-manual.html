@@ -42,7 +42,11 @@ including people who wish to edit its source code or make pull requests.
       <li><a href="#github-configuration">GitHub configuration</a></li>
       <li><a href="#ci">Continuous Integration</a>
         <ul>
-          <li><a href="#project-visibility">How to change project visibility settings</a></li>
+          <li><a href="#ci-azure-pipelines">Azure Pipelines</a>
+            <ul>
+              <li><a href="#project-visibility">How to change project visibility settings</a></li>
+            </ul></li>
+          <li><a href="#ci-travis">Travis CI</a></li>
           <li><a href="#ci-failure">Reproducing Continuous Integration build failures</a></li>
         </ul></li>
       <li><a href="#Documenting_refactoring_ideas">Documenting refactoring ideas</a></li>
@@ -404,6 +408,8 @@ Pipelines, CircleCI, and/or Travis CI on each push to GitHub.
 We recommend Azure Pipelines.
 </p>
 
+<h3 id="ci-azure-pipelines">Azure Pipelines</h3>
+
 <p>
   To enable Azure Pipelines continuous integration for your fork:
   (This is a summary of the <a href="https://learn.microsoft.com/en-us/azure/devops/pipelines/create-first-pipeline?view=azure-devops">Azure
@@ -432,17 +438,7 @@ We recommend Azure Pipelines.
   <li>Click "run".</li>
 </ul>
 
-<p>
-  To enable Travis CI continuous integration for your fork:
-</p>
-<ul>
-  <li>Browse to <a href="https://www.travis-ci.com/">travis-ci.com</a></li>
-  <li>Click the downarrow for the dropdown, near your face in the upper right corner</li>
-  <li>Click settings</li>
-  <li>Find "checker-framework" in the list, and click the slider to enable it.</li>
-</ul>
-
-<h3 id="project-visibility">How to change project visibility settings</h3>
+<h4 id="project-visibility">How to change project visibility settings</h4>
 
 <p>
 To change your project's visibility settings (usually to "Public" to enable CI):
@@ -454,6 +450,20 @@ To change your project's visibility settings (usually to "Public" to enable CI):
   <li>Click the "Visibility" dropdown.</li>
   <li>Click "Public".</li>
 </ul>
+
+
+<h3 id="ci-travis">Travis CI</h3>
+
+<p>
+  To enable Travis CI continuous integration for your fork:
+</p>
+<ul>
+  <li>Browse to <a href="https://www.travis-ci.com/">travis-ci.com</a></li>
+  <li>Click the downarrow for the dropdown, near your face in the upper right corner</li>
+  <li>Click settings</li>
+  <li>Find "checker-framework" in the list, and click the slider to enable it.</li>
+</ul>
+
 
 <h3 id="ci-failure">Reproducing Continuous Integration build failures</h3>
 
