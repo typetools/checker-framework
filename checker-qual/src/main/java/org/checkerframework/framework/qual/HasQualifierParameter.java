@@ -15,7 +15,7 @@ import java.lang.annotation.Target;
  * parameter. Writing {@code HasQualifierParameter} on a <b>package</b> is the same as writing it on
  * each class in that package.
  *
- * <h1>Written on a type declaration</h1>
+ * <h2>Written on a type declaration</h2>
  *
  * <p>Writing {@code @HasQualifierParameter} on a <b>type declaration</b> has two effects.
  *
@@ -60,7 +60,7 @@ import java.lang.annotation.Target;
  * <p>When a type is {@code @HasQualifierParameter}, all its subtypes are as well. That is, the
  * {@code @HasQualifierParameter} annotation is inherited by subtypes.
  *
- * <h1>Written on a package</h1>
+ * <h2>Written on a package</h2>
  *
  * <p>When {@code @HasQualifierParameter} is written on a package, it is equivalent to writing that
  * annotation on each class in the package or in a sub-package. It can be disabled on a specific
