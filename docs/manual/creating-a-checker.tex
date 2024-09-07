@@ -1414,6 +1414,34 @@ which is the Checker Framework's representation of an annotated type.
 \end{enumerate}
 
 
+\subsectionAndLabel{Recursion in \<TreeAnnotator>s}{creating-procedurally-recursion-in-treeannotators}
+
+A subclass of \<TreeAnnotator> should not, in general, call
+\<getAnnotatedType()> more than once.
+This is primarily a concern for \<visitBinary()> and \<visitCompoundAssignment()>.
+For example, the implementation of \<visitBinary()> should not start with
+
+\begin{Verbatim}
+    AnnotatedTypeMirror lExpr = getAnnotatedType(tree.getLeftOperand());
+    AnnotatedTypeMirror rExpr = getAnnotatedType(tree.getRightOperand());
+\end{Verbatim}
+
+\noindent
+The reason is that \<PropagationTreeAnnotator> already does such recursion.  If
+two \<TreeAnnotator>s do so, then expressions at the base of a large binary tree
+will be visited exponentially many times, leading to slowdowns or the appearance
+of an infinite loop.
+
+One approach is to not call \<getAnnotatedType()> in \<visitBinary()>; this is
+what \<UpperBoundAnnotatedTypeFactory> does.
+
+Another approach is to disable \<PropagationTreeAnnotator>, doing all work in a
+different \<TreeAnnotator>.  Create a subclass of \<PropagationTreeAnnotator>
+whose \<visitBinary()> method does no work, and use that subclass in place of
+\<PropagationTreeAnnotator> itself.  This is what \<RegexAnnotatedTypeFactory>
+and \<UnitsAnnotatedTypeFactory> do.
+
+
 \sectionAndLabel{Dataflow: enhancing flow-sensitive type refinement}{creating-dataflow}
 
 By default, every checker performs flow-sensitive type refinement, as described
