@@ -44,6 +44,7 @@ including people who wish to edit its source code or make pull requests.
         <ul>
           <li><a href="#ci-azure-pipelines">Azure Pipelines</a>
             <ul>
+              <li><a href="#ci-increasing-quota">Increasing quota</a></li>
               <li><a href="#project-visibility">How to change project visibility settings</a></li>
             </ul></li>
           <li><a href="#ci-travis">Travis CI</a></li>
@@ -424,6 +425,7 @@ We recommend Azure Pipelines.
       <li>If this option is not available, create the project and <a href="#project-visibility">modify its visibility</a> later.</li>
     </ul>
   </li>
+  <li>(You might have to wait a few days for your project to be created.)
   <li>Click "create project"</li>
   <li>At the left, click the blue rocket labeled "pipelines"</li>
   <li>Click "new pipeline"</li>
@@ -437,6 +439,37 @@ We recommend Azure Pipelines.
   <li>Approve and install.</li>
   <li>Click "run".</li>
 </ul>
+
+<h4 id="ci-increasing-quota">Increasing quota</h4>
+
+<p>
+By default, your project has no parallelism and thus pipeline runs fail
+immediately. Azure DevOps provides
+a <a href="https://aka.ms/azpipelines-parallelism-request">Microsoft Forms</a>
+through which you can request increased public project concurrency for validated
+open-source projects.
+</p>
+
+<p>
+It may be the case that you obtain only 1800 minutes per month, only one
+parallel job at a time, and only for private projects.  In this case, you need
+to ask Azure to lift all three restrictions.  Send mail such as the following:
+</p>
+
+<p>
+  Thank you for granting me free tier access to Azure Pipelines.
+  I am working on the open-source <a href="https://github.com/typetools/checker-framework">Checker Framework</a>.
+  Therefore could you please make the following changes, per the policies at https://azure.microsoft.com/en-us/products/devops/pipelines/?
+</p>
+  <ul>
+    <li>Increase parallelism beyond 1 job.</li>
+    <li>Increase time limit beyond 1800 minutes per month.</li>
+    <li>Permit the project to be public, for collaboration.</li>
+  </ul>
+<p>
+  Thanks for your help.
+</p>
+
 
 <h4 id="project-visibility">How to change project visibility settings</h4>
 
@@ -696,7 +729,7 @@ branch is deleted.
 </body>
 </html>
 
-<!--  LocalWords:  TODO javacutil gradle javadoc reformats subprojects pre NullAway CircleCI travis ci downarrow dropdown MYUSERID NNN doesn AnnotationStatistics JavaCodeStatistics stubparser
+<!--  LocalWords:  TODO javacutil gradle javadoc reformats subprojects pre NullAway CircleCI travis ci downarrow dropdown MYUSERID NNN doesn AnnotationStatistics JavaCodeStatistics stubparser wpi Dockerfile ubuntu jdkXX jdk wmtest bcel util bibtex html cd ReportChecker pids mernst gnb
  -->
 <!--  LocalWords:  subproject personalblog changelog config SOMEDOMAIN YAML isn
  -->
