@@ -443,15 +443,17 @@ We recommend Azure Pipelines.
 <h4 id="ci-increasing-quota">Increasing quota</h4>
 
 <p>
-By default, your Azure DevOps organization has no parallelism.  Fill out the
-form at <a href="https://aka.ms/azpipelines-parallelism-request">Microsoft
-Forms</a> to request increased project concurrency.
+By default, your project has no parallelism and thus pipeline runs fail
+immediately. Azure DevOps provides
+a <a href="https://aka.ms/azpipelines-parallelism-request">Microsoft Forms</a>
+through which you can request increased public project concurrency for validated
+open-source projects.
 </p>
 
 <p>
-  After receiving a response to your form,
-  you might obtain only 1800 minutes per month, and no parallelism, and only for private projects.
-  In this case, you need to ask Azure to lift all three restrictions.  Send mail such as the following:
+It may be the case that you obtain only 1800 minutes per month, only one
+parallel job at a time, and only for private projects.  In this case, you need
+to ask Azure to lift all three restrictions.  Send mail such as the following:
 </p>
 
 <p>
