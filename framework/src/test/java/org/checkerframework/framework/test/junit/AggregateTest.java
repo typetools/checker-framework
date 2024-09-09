@@ -7,6 +7,9 @@ import org.junit.runners.Parameterized.Parameters;
 
 public class AggregateTest extends CheckerFrameworkPerFileTest {
 
+  /**
+   * @param file the file containing test code, which will be type-checked
+   */
   public AggregateTest(File file) {
     super(file, AggregateOfCompoundChecker.class, "aggregate", "-AresolveReflection");
   }

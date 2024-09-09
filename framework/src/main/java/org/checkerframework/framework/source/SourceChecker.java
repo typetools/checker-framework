@@ -2637,7 +2637,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       // the warning.
       return true;
     }
-    assert this.currentRoot != null : "BAD NULL";
+
+    assert this.currentRoot != null : "this.currentRoot == null";
     // trees.getPath might be slow, but this is only used in error reporting
     TreePath path = trees.getPath(this.currentRoot, tree);
 
@@ -3504,21 +3505,21 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     /** The source code that the message is about. */
     final @InternedDistinct Tree source;
 
-    /** Stores the stack trace when the message is created. */
-    final StackTraceElement[] trace;
-
     /**
      * The checker that issued this message. The compound checker that depends on this checker uses
      * this to sort the messages.
      */
     final @InternedDistinct SourceChecker checker;
 
+    /** The stack trace when the message was created. */
+    final StackTraceElement[] trace;
+
     /**
      * Create a new CheckerMessage.
      *
      * @param kind kind of diagnostic, for example, error or warning
      * @param message error message that needs to be printed
-     * @param source tree element causing the error
+     * @param source tree node causing the error
      * @param checker the type-checker in use
      * @param trace the stack trace when the message is created
      */
