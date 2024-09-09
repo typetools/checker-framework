@@ -2313,12 +2313,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       o2Index = subcheckers.size();
     }
     int checkercmp = Integer.compare(o1Index, o2Index);
-    if (checkercmp == 0) {
-      // If the two messages are from the same checker, sort by message.
-      return msgcmp;
-    } else {
+    if (checkercmp != 0) {
       return checkercmp;
     }
+    // The two messages are from the same checker, so sort by message.
+    return msgcmp;
   }
 
   @Override
