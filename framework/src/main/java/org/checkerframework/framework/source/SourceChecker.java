@@ -638,8 +638,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
 
   /**
    * The full list of subcheckers that need to be run prior to this one, in the order they need to
-   * be run in. This list will only be non-empty for the one checker that runs all other
-   * subcheckers. Do not read this field directly. Instead, retrieve it via {@link #getSubcheckers}.
+   * be run. This list will only be non-empty for the one checker that runs all other subcheckers.
+   * Do not read this field directly. Instead, retrieve it via {@link #getSubcheckers}.
    *
    * <p>If this variable is null when {@link #getSubcheckers} is called, then {@code
    * getSubcheckers()} will call {@link #instantiateSubcheckers}. However, if the current object was
@@ -656,7 +656,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * <p>Does not need to be initialized to null or an empty list because it is always initialized
    * via calls to {@link #instantiateSubcheckers}.
    */
-  // Set to non-null when `subcheckers` is.
+  // This field is set to non-null when `subcheckers` is.
   protected @MonotonicNonNull List<SourceChecker> immediateSubcheckers = null;
 
   /**
@@ -834,7 +834,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
 
   /**
    * Like {@link #hasOption}, but checks whether the given option is passed to this checker. Does
-   * not consider those passed to subcheckers.
+   * not consider options passed to subcheckers.
    *
    * @param name the name of the option to check
    * @return true if the option name was passed to this checker, false otherwise
@@ -1077,9 +1077,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     this.messager = processingEnv.getMessager();
     this.messagesProperties = getMessagesProperties();
 
+    // Set the active options for this checker and all subcheckers.
     getOptions();
 
-    // initialize all checkers and share options as necessary
+    // Initialize all checkers and share options as necessary.
     for (SourceChecker checker : getSubcheckers()) {
       // Each checker should "support" all possible lint options - otherwise
       // subchecker A would complain about a lint option for subchecker B.
@@ -1122,9 +1123,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   private boolean warnedAboutGarbageCollection = false;
 
   /**
-   * The number of errors at the last exit of the type processor. At entry to the type processor we
-   * check whether the current error count is higher and then don't process the file, as it contains
-   * some Java errors.
+   * The number of errors at the last exit of the type processor (that is, upon completion of
+   * processing the previous compilation unit). At entry to the type processor, if the current error
+   * count is higher, then javac must have issued an error. If javac issued an error, then don't
+   * process the file, as it contains * some Java errors.
    */
   private int errsOnLastExit = 0;
 
@@ -1144,22 +1146,20 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         return (T) checker;
       }
     }
-
     return null;
   }
 
   /**
-   * Returns the unmodifiable list of immediate subcheckers of this checker.
+   * Computes the unmodifiable list of immediate subcheckers of this checker, in the order the
+   * checkers need to be run.
    *
-   * <p>Performs a depth-first search for all checkers this checker depends on. The depth-first
-   * search ensures that the collection has the correct order the checkers need to be run in.
-   *
-   * <p>Modifies the alreadyInitializedSubcheckerMap map by adding all recursively newly
-   * instantiated subcheckers' class objects and instances. It is necessary to use a map that
+   * <p>Modifies the {@code alreadyInitializedSubcheckerMap} parameter by adding all recursively
+   * newly instantiated subcheckers' class objects and instances. It is necessary to use a map that
    * preserves the order in which entries were inserted, such as LinkedHashMap or ArrayMap.
    *
    * @param alreadyInitializedSubcheckerMap subcheckers that have already been instantiated. Is
-   *     modified by this method.
+   *     modified by this method. Its point is to ensure that if two checkers A and B both depend on
+   *     checker C, then checker C is instantiated and run only once, not twice.
    * @return the unmodifiable list of immediate subcheckers of this checker
    */
   protected List<SourceChecker> instantiateSubcheckers(
@@ -1173,6 +1173,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     ArrayList<SourceChecker> immediateSubcheckers =
         new ArrayList<>(classesOfImmediateSubcheckers.size());
 
+    // Performs a depth-first search for all checkers this checker depends on. The depth-first
+    // search ensures that the collection has the correct order the checkers need to be run in.
     for (Class<? extends SourceChecker> subcheckerClass : classesOfImmediateSubcheckers) {
       SourceChecker subchecker = alreadyInitializedSubcheckerMap.get(subcheckerClass);
       if (subchecker != null) {
@@ -1206,10 +1208,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   }
 
   /**
-   * Get the list of all subcheckers (if any) via the instantiateSubcheckers() method. This list is
-   * only non-empty for the one checker that runs all other subcheckers. These are recursively
-   * instantiated via instantiateSubcheckers() the first time this method is called if field {@code
-   * subcheckers} is null. Assumes all checkers run on the same thread.
+   * Get the list of all subcheckers (if any). This list is only non-empty for the one checker that
+   * runs all other subcheckers. These are recursively instantiated via instantiateSubcheckers() the
+   * first time this method is called if field {@code subcheckers} is null. Assumes all checkers run
+   * on the same thread.
    *
    * @return the list of all subcheckers (if any)
    */
@@ -1256,9 +1258,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     // All other messages are printed immediately.  This includes errors issued because the
     // checker threw an exception.
 
-    // In order to run the next checker on this compilation unit even if the previous issued
-    // errors, the next checker's errsOnLastExit needs to include all errors issued by previous
-    // checkers.
+    // Update errsOnLastExit for all checkers, so that no matter which one is run next, its test of
+    // whether a Java error occurred is correct.
 
     Context context = ((JavacProcessingEnvironment) processingEnv).getContext();
     Log log = Log.instance(context);
@@ -1988,10 +1989,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * being printed. (See {@link #printOrStoreMessage(Diagnostic.Kind, String, Tree,
    * CompilationUnitTree)}.)
    *
-   * <p>WARNING: Circular dependencies are not supported nor do checkers verify that their
-   * dependencies are not circular. Make sure no circular dependencies are created when overriding
-   * this method. (In other words, if checker A depends on checker B, checker B cannot depend on
-   * checker A.)
+   * <p>WARNING: Circular dependencies are not supported. (In other words, if checker A depends on
+   * checker B, checker B cannot depend on checker A.) The Checker Framework does not check for
+   * circularity. Make sure no circular dependencies are created when overriding * this method.
    *
    * <p>This method is protected so it can be overridden, but it should only be called internally by
    * {@link SourceChecker}.
@@ -2011,7 +2011,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   }
 
   /**
-   * Returns whether or not reflection should be resolved.
+   * Returns true if reflection should be resolved.
    *
    * @return true if reflection should be resolved
    */
@@ -2024,7 +2024,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * {@code replacement}.
    *
    * @param checkerClass the checker class
-   * @param replacement the string to replace "Checker" or "Subchecker" by
+   * @param replacement the string that replaces "Checker" or "Subchecker"
    * @return the name of the related class
    */
   @SuppressWarnings("signature") // string manipulation of @ClassGetName string

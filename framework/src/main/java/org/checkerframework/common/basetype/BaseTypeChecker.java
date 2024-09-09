@@ -240,7 +240,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
    * throws an exception if there is trouble with the constructor invocation.
    *
    * @param <T> the type to which the constructor belongs
-   * @param name the name of the class to which the constructor belongs
+   * @param className the name of the class to which the constructor belongs
    * @param paramTypes the types of the constructor's parameters
    * @param args the arguments on which to invoke the constructor
    * @return the result of the constructor invocation on {@code args}, or null if the class does not
@@ -248,18 +248,18 @@ public abstract class BaseTypeChecker extends SourceChecker {
    */
   @SuppressWarnings({"unchecked", "TypeParameterUnusedInFormals"}) // Intentional abuse
   public static <T> @Nullable T invokeConstructorFor(
-      @ClassGetName String name, Class<?>[] paramTypes, Object[] args) {
+      @ClassGetName String className, Class<?>[] paramTypes, Object[] args) {
 
     // Load the class.
     Class<T> cls;
     try {
-      cls = (Class<T>) Class.forName(name);
+      cls = (Class<T>) Class.forName(className);
     } catch (Exception e) {
       // no class is found, simply return null
       return null;
     }
 
-    assert cls != null : "reflectively loading " + name + " failed";
+    assert cls != null : "reflectively loading " + className + " failed";
 
     // Invoke the constructor.
     try {
@@ -277,7 +277,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
         // `ctor.newInstance(args)`, if the constructor itself uses reflection.
         // But this case is unlikely.
         throw new TypeSystemError(
-            "Could not find constructor %s(%s)", name, StringsPlume.join(", ", paramTypes));
+            "Could not find constructor %s(%s)", className, StringsPlume.join(", ", paramTypes));
       }
 
       Throwable cause;
@@ -298,7 +298,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
       throw new BugInCF(
           cause,
           "Error when invoking constructor %s(%s) on args %s; cause: %s",
-          name,
+          className,
           StringsPlume.join(", ", paramTypes),
           Arrays.toString(args),
           causeMessage);
