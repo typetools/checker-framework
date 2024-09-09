@@ -1,9 +1,7 @@
-Version 3.46.1 (September 3, 2024)
------------------------------
+Version 3.48.0 (October 1, 2024)
+--------------------------------
 
 **User-visible changes:**
-
-The Checker Framework runs under JDK 22 -- that is, it runs on a version 22 JVM.
 
 Aggregate Checkers now interleave error messages so that all errors about a line of code apear
 together.
@@ -13,6 +11,26 @@ together.
 Renamed `AggreateChecker#getSupportedCheckers` to `getImmediateSubcheckerClasses`.
 
 **Closed issues:**
+
+
+Version 3.47.0 (September 3, 2024)
+----------------------------------
+
+**User-visible changes:**
+
+The Checker Framework runs under JDK 22 -- that is, it runs on a version 22 JVM.
+The Checker Framework runs under JDK 23 -- that is, it runs on a version 23 JVM.
+
+The Optional Checker no longer supports the `@OptionalBottom` annotation.
+
+**Implementation details:**
+
+Removed annotations:
+  * `@OptionalBottom`
+
+**Closed issues:**
+
+#6510, #6704, #6743, #6749, #6760, #6761.
 
 
 Version 3.46.0 (August 1, 2024)

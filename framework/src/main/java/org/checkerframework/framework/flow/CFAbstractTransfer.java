@@ -1346,11 +1346,12 @@ public abstract class CFAbstractTransfer<
     return lubResult;
   }
 
-  /**
-   * In a cast {@code (@A C) e} of some expression {@code e} to a new type {@code @A C}, we usually
-   * take the annotation of the type {@code C} (here {@code @A}). However, if the inferred
-   * annotation of {@code e} is more precise, we keep that one.
-   */
+  // /**
+  //  * In a cast {@code (@A C) e} of some expression {@code e} to a new type {@code @A C}, we
+  // usually
+  //  * take the annotation of the type {@code C} (here {@code @A}). However, if the inferred
+  //  * annotation of {@code e} is more precise, we keep that one.
+  //  */
   // @Override
   // public TransferResult<V, S> visitTypeCast(TypeCastNode n,
   // TransferInput<V, S> p) {

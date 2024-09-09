@@ -313,8 +313,17 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         new RegexPropagationTreeAnnotator(this));
   }
 
+  /**
+   * Disables PropagationTreeAnnotator for binary trees. This prevents undesirable heavy recursion
+   * in large binary trees.
+   */
   private static class RegexPropagationTreeAnnotator extends PropagationTreeAnnotator {
 
+    /**
+     * Creates a RegexPropagationTreeAnnotator.
+     *
+     * @param atypeFactory the type factory
+     */
     public RegexPropagationTreeAnnotator(AnnotatedTypeFactory atypeFactory) {
       super(atypeFactory);
     }
