@@ -1,7 +1,10 @@
-Version 3.47.0 (October 1, 2024)
+Version 3.47.1 (October 1, 2024)
 --------------------------------
 
 **User-visible changes:**
+
+The new SqlQuotesChecker prevents errors in quoting in SQL queries.  It prevents
+injection attacks that exploit quoting errors.
 
 **Implementation details:**
 
@@ -32,9 +35,6 @@ Version 3.46.0 (August 1, 2024)
 -----------------------------
 
 **User-visible changes:**
-
-The new SqlQuotesChecker prevents errors in quoting in SQL queries.  It prevents
-injection attacks that exploit quoting errors.
 
 Renamed `@EnsuresCalledMethodsVarArgs`to `@EnsuresCalledMethodsVarargs`.
 
