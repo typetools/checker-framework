@@ -6,7 +6,12 @@ import java.util.Set;
 import javax.tools.Diagnostic;
 
 /**
- * An abstract {@link SourceChecker} that runs subcheckers and interleaves their messages.
+ * An abstract {@link SourceChecker} that runs independent subcheckers and interleaves their
+ * messages.
+ *
+ * <p>There is no communication, interaction, or cooperation between the component checkers, even to
+ * the extent of being able to read one another's qualifiers. An aggregate checker is merely
+ * shorthand to invoke a sequence of checkers.
  *
  * <p>Though each checker is run on a whole compilation unit before the next checker is run, error
  * and warning messages are collected and sorted based on the location in the source file before

@@ -641,11 +641,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * be run. This list will only be non-empty for the one checker that runs all other subcheckers.
    * Do not read this field directly. Instead, retrieve it via {@link #getSubcheckers}.
    *
-   * <p>If this variable is null when {@link #getSubcheckers} is called, then {@code
-   * getSubcheckers()} will call {@link #instantiateSubcheckers}. However, if the current object was
-   * itself instantiated by a prior call to instantiateSubcheckers, this field will have been
-   * initialized to an empty list before {@code getSubcheckers()} is called, thereby ensuring that
-   * this list is non-empty only for one checker.
+   * <p>This field will be {@code null} until {@code getSubcheckers`} is called. {@code
+   * getSubcheckers} sets this field to an immutable list which is empty for all but the ultimate
+   * parent checker.
    */
   protected @MonotonicNonNull List<SourceChecker> subcheckers = null;
 
@@ -1077,7 +1075,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     // Set the active options for this checker and all subcheckers.
     getOptions();
 
-    // Initialize all checkers and share options as necessary.
+    // Initialize all checkers and share supported lint options.
     for (SourceChecker checker : getSubcheckers()) {
       // Each checker should "support" all possible lint options - otherwise
       // subchecker A would complain about a lint option for subchecker B.
