@@ -23,6 +23,30 @@ public abstract class AggregateChecker extends SourceChecker {
   /** Create a new AggregateChecker. */
   protected AggregateChecker() {}
 
+  /**
+   * Returns the set of independent subchecker classes run by this checker.
+   *
+   * <p>If a checker should be added or not based on a command line option, use {@link
+   * #getOptionsNoSubcheckers()} or {@link #hasOptionNoSubcheckers(String)} to avoid recursively
+   * calling this method.
+   *
+   * <p>Each subchecker of this checker may depend on other checkers. If this checker and one of its
+   * subcheckers both run a third checker, that checker will only be instantiated once.
+   *
+   * <p>Though each checker is run on a whole compilation unit before the next checker is run, error
+   * and warning messages are collected and sorted based on the location in the source file before
+   * being printed. (See {@link #printOrStoreMessage(Diagnostic.Kind, String, Tree,
+   * CompilationUnitTree)}.)
+   *
+   * <p>WARNING: Circular dependencies are not supported. (In other words, if checker A depends on
+   * checker B, checker B cannot depend on checker A.) The Checker Framework does not check for
+   * circularity. Make sure no circular dependencies are created when overriding * this method.
+   *
+   * <p>This method is protected so it can be overridden, but it should only be called internally by
+   * {@link SourceChecker}.
+   *
+   * @return the independent subchecker classes; will be modified by callees
+   */
   @Override
   protected abstract Set<Class<? extends SourceChecker>> getImmediateSubcheckerClasses();
 

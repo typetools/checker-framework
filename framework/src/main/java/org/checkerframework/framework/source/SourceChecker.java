@@ -1967,12 +1967,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * Returns the set of subchecker classes on which this checker depends. Returns an empty set if
    * this checker does not depend on any others.
    *
+   * <p>If this checker should run multiple independent checkers and not contain a type system, then
+   * subclass {@link AggregateChecker}.
+   *
    * <p>Subclasses should override this method to specify subcheckers. If they do so, they should
    * call the super implementation of this method and add dependencies to the returned set so that
    * checkers required for reflection resolution are included if reflection resolution is requested.
-   *
-   * <p>If you wish to create a checker that runs multiple checkers, but itself is not a type
-   * system, then subclass {@link AggregateChecker}.
    *
    * <p>If a checker should be added or not based on a command line option, use {@link
    * #getOptionsNoSubcheckers()} or {@link #hasOptionNoSubcheckers(String)} to avoid recursively
@@ -2482,20 +2482,20 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     if (!warnUnneededSuppressions) {
       return;
     }
-    Set<Element> elementsWithSuppressedWarnings =
+    Set<Element> allElementsWithSuppressedWarnings =
         new HashSet<>(this.elementsWithSuppressedWarnings);
     this.elementsWithSuppressedWarnings.clear();
 
     Set<String> prefixes = new HashSet<>(getSuppressWarningsPrefixes());
     Set<String> errorKeys = new HashSet<>(messagesProperties.stringPropertyNames());
     for (SourceChecker subChecker : subcheckers) {
-      elementsWithSuppressedWarnings.addAll(subChecker.elementsWithSuppressedWarnings);
+      allElementsWithSuppressedWarnings.addAll(subChecker.elementsWithSuppressedWarnings);
       subChecker.elementsWithSuppressedWarnings.clear();
       prefixes.addAll(subChecker.getSuppressWarningsPrefixes());
       errorKeys.addAll(subChecker.messagesProperties.stringPropertyNames());
       subChecker.getVisitor().treesWithSuppressWarnings.clear();
     }
-    warnUnneededSuppressions(elementsWithSuppressedWarnings, prefixes, errorKeys);
+    warnUnneededSuppressions(allElementsWithSuppressedWarnings, prefixes, errorKeys);
 
     getVisitor().treesWithSuppressWarnings.clear();
   }
