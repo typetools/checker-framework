@@ -652,16 +652,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   /**
    * The list of subcheckers that are direct dependencies of this checker. This list will be
    * non-empty for any checker that has at least one subchecker.
-   *
-   * <p>Does not need to be initialized to null or an empty list because it is always initialized
-   * via calls to {@link #instantiateSubcheckers}.
    */
   // This field is set to non-null when `subcheckers` is.
   protected @MonotonicNonNull List<SourceChecker> immediateSubcheckers = null;
 
   /**
-   * TreePathCacher to share between subcheckers. Initialized either in getTreePathCacher (which is
-   * also called from {@link #instantiateSubcheckers}).
+   * TreePathCacher to share between subcheckers. Initialized either in {@link #getTreePathCacher()}
+   * or {@link #instantiateSubcheckers(Map)}.
    */
   protected TreePathCacher treePathCacher = null;
 
