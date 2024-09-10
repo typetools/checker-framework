@@ -1187,14 +1187,14 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       try {
         instance = subcheckerClass.getDeclaredConstructor().newInstance();
       } catch (Exception e) {
-        throw new BugInCF("Could not create an instance of " + subcheckerClass, e);
+        throw new TypeSystemError("Could not create an instance of " + subcheckerClass, e);
       }
 
+      immediateSubcheckers.add(instance);
       instance.setProcessingEnvironment(this.processingEnv);
       instance.treePathCacher = this.getTreePathCacher();
       // Prevent the new checker from storing non-immediate subcheckers
       instance.subcheckers = Collections.emptyList();
-      immediateSubcheckers.add(instance);
       instance.immediateSubcheckers =
           instance.instantiateSubcheckers(alreadyInitializedSubcheckerMap);
       instance.setParentChecker(this);
