@@ -26,9 +26,9 @@ public class NonEmptyCollection {
     return sm.firstKey();
   }
 
-  ///////////////////////////////////////////////////////////////////////////
-  /// Helper classes copied from JDK
-  ///
+  // ///////////////////////////////////////////////////////////////////////////
+  // Helper classes copied from JDK
+  //
 
   public class PriorityQueue1<E> {
     @SuppressWarnings("purity") // object creation is forbidden in pure methods

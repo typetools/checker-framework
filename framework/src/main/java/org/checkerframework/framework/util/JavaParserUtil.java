@@ -39,9 +39,9 @@ public class JavaParserUtil {
    */
   public static final LanguageLevel DEFAULT_LANGUAGE_LEVEL = LanguageLevel.JAVA_21;
 
-  ///
-  /// Replacements for StaticJavaParser
-  ///
+  //
+  // Replacements for StaticJavaParser
+  //
 
   /**
    * Parses the Java code contained in the {@code InputStream} and returns a {@code CompilationUnit}
@@ -198,9 +198,9 @@ public class JavaParserUtil {
     }
   }
 
-  ///
-  /// Other methods
-  ///
+  //
+  // Other methods
+  //
 
   /**
    * Given the compilation unit node for a source file, returns the top level type definition with
