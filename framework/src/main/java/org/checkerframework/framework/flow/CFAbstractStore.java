@@ -1287,8 +1287,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     }
 
     for (Map.Entry<LocalVariable, BooleanVarStore<V, S>> e : other.booleanVarStores.entrySet()) {
-      // local variables that are only part of one store, but not the other are discarded, as
-      // one of store implicitly contains 'top' for that variable.
+      // If a local variable appears in just one store, then the other store implicitly contains
+      // 'top' for that variable.  Remove the variable.
       LocalVariable localVar = e.getKey();
       BooleanVarStore<V, S> store = booleanVarStores.get(localVar);
       if (store != null) {
