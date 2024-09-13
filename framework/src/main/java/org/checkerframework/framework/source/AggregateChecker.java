@@ -45,7 +45,7 @@ public abstract class AggregateChecker extends SourceChecker {
    *
    * <p>WARNING: Circular dependencies are not supported. (In other words, if checker A depends on
    * checker B, checker B cannot depend on checker A.) The Checker Framework does not check for
-   * circularity. Make sure no circular dependencies are created when overriding * this method.
+   * circularity. Make sure no circular dependencies are created when overriding this method.
    *
    * <p>This method is protected so it can be overridden, but it should only be called internally by
    * {@link SourceChecker}.

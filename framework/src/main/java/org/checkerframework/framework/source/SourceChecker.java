@@ -641,7 +641,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * be run. This list will only be non-empty for the one checker that runs all other subcheckers.
    * Do not read this field directly. Instead, retrieve it via {@link #getSubcheckers}.
    *
-   * <p>This field will be {@code null} until {@code getSubcheckers`} is called. {@code
+   * <p>This field will be {@code null} until {@code getSubcheckers} is called. {@code
    * getSubcheckers} sets this field to an immutable list which is empty for all but the ultimate
    * parent checker.
    */
@@ -1987,7 +1987,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    *
    * <p>WARNING: Circular dependencies are not supported. (In other words, if checker A depends on
    * checker B, checker B cannot depend on checker A.) The Checker Framework does not check for
-   * circularity. Make sure no circular dependencies are created when overriding * this method.
+   * circularity. Make sure no circular dependencies are created when overriding this method.
    *
    * <p>This method is protected so it can be overridden, but it should only be called internally by
    * {@link SourceChecker}.
