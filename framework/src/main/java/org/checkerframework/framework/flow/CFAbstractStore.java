@@ -92,7 +92,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     S elseStore;
 
     /**
-     * Create a then else store with copies of the provided {@code thenStore} and {@code elseStore}.
+     * Create a BooleanVarStore with copies of the provided {@code thenStore} and {@code elseStore}.
      *
      * @param thenStore thenStore
      * @param elseStore elseStore
@@ -116,7 +116,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     /**
      * Applies {@code function} to both stores.
      *
-     * @param function that takes a store and preforms some action
+     * @param function that takes a store and performs some action
      */
     public void applyToStores(Consumer<CFAbstractStore<V, S>> function) {
       function.accept(thenStore);
@@ -124,13 +124,13 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     }
 
     /**
-     * Merges this then stores with {@code other}'s then store using {@code function} and merges
-     * this else store {@code other}'s else store using {@code function}. A new {@code
-     * BooleanVarStore} is returned with the result from both merges.
+     * Merges this's then stores with {@code other}'s then store using {@code function}, and
+     * likewise for the else stores. A new {@code BooleanVarStore} is returned with the result from
+     * both merges.
      *
-     * @param function A function that takes two stores and returns a store.
+     * @param function a function that takes two stores and returns a store
      * @param other another {@code BooleanVarStore}
-     * @return the merge of this and other
+     * @return the merge of this and {@code other}
      */
     public BooleanVarStore<V, S> merge(BiFunction<S, S, S> function, BooleanVarStore<V, S> other) {
       return new BooleanVarStore<>(
@@ -1272,8 +1272,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     S newStore = analysis.createEmptyStore(sequentialSemantics);
 
     for (Map.Entry<LocalVariable, V> e : other.localVariableValues.entrySet()) {
-      // local variables that are only part of one store, but not the other are discarded, as
-      // one of store implicitly contains 'top' for that variable.
+      // If a local variable appears in just one store, then the other store implicitly contains
+      // 'top' for that variable.  Remove the variable.
       LocalVariable localVar = e.getKey();
       V thisVal = localVariableValues.get(localVar);
       if (thisVal != null) {
