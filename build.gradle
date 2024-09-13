@@ -58,7 +58,7 @@ ext {
     hashmapUtil : '0.0.1',
     reflectionUtil : '1.1.3',
     plumeUtil : '1.9.3',
-    errorprone : '2.31.0',
+    errorprone : '2.32.0',
   ]
 }
 
@@ -448,13 +448,14 @@ allprojects { currentProj ->
       options.encoding = 'UTF-8'
       options.fork = true
 
-      // Error Prone depends on checker-qual.jar, so don't run it on that project to avoid a circular dependency.
       // TODO: enable Error Prone on test classes.
-      if (compilationTask.name.equals('compileJava') && !project.name.startsWith('checker-qual')) {
+      if (compilationTask.name.equals('compileJava')
+          // Error Prone depends on checker-qual.jar, so don't run it on that project to avoid a circular dependency.
+          && !project.name.startsWith('checker-qual')) {
         // Error Prone must be available in the annotation processor path
         options.annotationProcessorPath = configurations.errorprone
         // Enable Error Prone
-        options.errorprone.enabled = true
+        options.errorprone.enabled = isJava17orHigher
         options.errorprone.disableWarningsInGeneratedCode = true
         options.errorprone.errorproneArgs = [
           // Many compiler classes are interned.
