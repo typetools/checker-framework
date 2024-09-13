@@ -819,9 +819,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
 
   /**
    * Like {@link #getOptions}, but only includes options passed to this checker. Does not include
-   * those passed to subcheckers.
+   * those passed only to subcheckers.
    *
-   * @return the active options for this checker, not including those passed to subcheckers
+   * @return the active options for this checker, not including those passed only to subcheckers
    */
   public Map<String, String> getOptionsNoSubcheckers() {
     return createActiveOptions(processingEnv.getOptions());
@@ -829,7 +829,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
 
   /**
    * Like {@link #hasOption}, but checks whether the given option is passed to this checker. Does
-   * not consider options passed to subcheckers.
+   * not consider options only passed to subcheckers.
    *
    * @param name the name of the option to check
    * @return true if the option name was passed to this checker, false otherwise
@@ -1962,8 +1962,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   }
 
   /**
-   * Returns the set of subchecker classes on which this checker depends. Returns an empty set if
-   * this checker does not depend on any others.
+   * Returns the set of subchecker classes on which this checker depends. ("Depends" means the
+   * checkers that are subcheckers of the current checker rather than a subchecker of some other
+   * checker.) Returns an empty set if this checker does not depend on any others.
    *
    * <p>If this checker should run multiple independent checkers and not contain a type system, then
    * subclass {@link AggregateChecker}.
@@ -2291,8 +2292,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
 
     int msgcmp = o1.message.compareTo(o2.message);
     if (msgcmp == 0) {
-      // If the two messages are identical so far, it doesn't matter
-      // from which checker they came.
+      // If the two messages are identical, it doesn't matter from which checker they came.
+      // The messages are put in a set, which deduplicates them when this comparison returns 0.
       return 0;
     }
 
