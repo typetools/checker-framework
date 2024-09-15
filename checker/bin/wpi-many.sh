@@ -202,7 +202,7 @@ cd "${OUTDIR}" || exit 5
 while IFS='' read -r line || [ "$line" ]
 do
     # Skip lines that start with "#".
-    [[ $line = \#* ]]; continue
+    [[ $line = \#* ]] && continue
 
     # Remove trailing return character if reading from a DOS file.
     line="$(echo "$line" | tr -d '\r')"
