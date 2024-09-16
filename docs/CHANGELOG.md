@@ -11,8 +11,6 @@ together.
 
 **Implementation details:**
 
-Renamed `AggreateChecker#getSupportedCheckers` to `getImmediateSubcheckerClasses`.
-
 **Closed issues:**
 
 
