@@ -1,10 +1,9 @@
 package org.checkerframework.checker.i18n;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.Collection;
 import org.checkerframework.framework.source.AggregateChecker;
 import org.checkerframework.framework.source.SourceChecker;
-import org.plumelib.util.CollectionsPlume;
 
 /**
  * A type-checker that enforces (and finds the violations of) two properties:
@@ -21,13 +20,9 @@ import org.plumelib.util.CollectionsPlume;
  */
 public class I18nChecker extends AggregateChecker {
 
-  /** Create an I18nChecker. */
-  public I18nChecker() {}
-
   @Override
-  protected Set<Class<? extends SourceChecker>> getImmediateSubcheckerClasses() {
-    Set<Class<? extends SourceChecker>> checkers =
-        new LinkedHashSet<>(CollectionsPlume.mapCapacity(2));
+  protected Collection<Class<? extends SourceChecker>> getSupportedCheckers() {
+    Collection<Class<? extends SourceChecker>> checkers = new ArrayList<>(2);
     checkers.add(I18nSubchecker.class);
     checkers.add(LocalizableKeyChecker.class);
     return checkers;

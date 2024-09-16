@@ -1,21 +1,17 @@
 package org.checkerframework.framework.testchecker.aggregate;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.Arrays;
+import java.util.Collection;
 import org.checkerframework.common.aliasing.AliasingChecker;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.framework.source.AggregateChecker;
 import org.checkerframework.framework.source.SourceChecker;
-import org.plumelib.util.CollectionsPlume;
 
 /** Basic aggregate checker. */
 public class TestAggregateChecker extends AggregateChecker {
 
-  protected Set<Class<? extends SourceChecker>> getImmediateSubcheckerClasses() {
-    Set<Class<? extends SourceChecker>> checkers =
-        new LinkedHashSet<>(CollectionsPlume.mapCapacity(2));
-    checkers.add(ValueChecker.class);
-    checkers.add(AliasingChecker.class);
-    return checkers;
+  @Override
+  protected Collection<Class<? extends SourceChecker>> getSupportedCheckers() {
+    return Arrays.asList(ValueChecker.class, AliasingChecker.class);
   }
 }
