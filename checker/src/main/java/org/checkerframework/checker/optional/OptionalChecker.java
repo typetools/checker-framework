@@ -6,6 +6,7 @@ import org.checkerframework.common.aliasing.AliasingChecker;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.RelevantJavaTypes;
 import org.checkerframework.framework.qual.StubFiles;
+import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.source.SupportedOptions;
 
 /**
@@ -23,8 +24,8 @@ public class OptionalChecker extends BaseTypeChecker {
   public OptionalChecker() {}
 
   @Override
-  protected Set<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
-    Set<Class<? extends BaseTypeChecker>> subcheckers = super.getImmediateSubcheckerClasses();
+  protected Set<Class<? extends SourceChecker>> getImmediateSubcheckerClasses() {
+    Set<Class<? extends SourceChecker>> subcheckers = super.getImmediateSubcheckerClasses();
     subcheckers.add(AliasingChecker.class);
     return subcheckers;
   }
