@@ -10,9 +10,9 @@ import org.checkerframework.framework.qual.QualifierForLiterals;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * Denotes a value that can be exposed to end users, or a location that can be accessed by end
- * users. NonConfidential locations can only contain NonConfidential information, not Confidential
- * information.
+ * Denotes a value that may be exposed to end users, or a location that may be accessed by end
+ * users. NonConfidential locations will never contain sensitive, private, or otherwise
+ * privileged-access information.
  *
  * @checker_framework.manual #confidential-checker Confidential Checker
  */

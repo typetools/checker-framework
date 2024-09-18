@@ -8,9 +8,11 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * Denotes a value that should not be exposed to end users (i.e., PII, passwords, and private keys)
- * or a location (i.e., a file or database) that should not be able to be accessed by end users.
- * Confidential locations can contain Confidential or NonConfidential information.
+ * Denotes a value that will not be exposed to end users or a sink that will not be able to be
+ * accessed by end users.
+ *
+ * <p>Typically, a Confidential value will contain sensitive, private, or otherwise
+ * privileged-access information, such as passwords, PII, and private keys.
  *
  * @see NonConfidential
  * @see org.checkerframework.checker.confidential.ConfidentialChecker
