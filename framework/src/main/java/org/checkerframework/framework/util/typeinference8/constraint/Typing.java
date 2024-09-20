@@ -301,10 +301,10 @@ public class Typing extends TypeConstraint {
   private ReductionResult reduceContained() {
     if (T.getTypeKind() != TypeKind.WILDCARD) {
       // The JLS says that if S is a wildcard the constraint should reduce to false,
-      // but javac seems to except this case. Issue6725.java is an example.
+      // but javac seems to accept this case. Issue6725.java is an example.
       // if (S.getTypeKind() == TypeKind.WILDCARD) {
       //   return ConstraintSet.FALSE;
-      //   }
+      // }
       if (isCovarTypeArg) {
         return new Typing(S, T, Kind.SUBTYPE);
       }
