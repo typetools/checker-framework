@@ -44,7 +44,7 @@ public class ConfidentialAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   public ConfidentialAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     this.NONCONFIDENTIAL = AnnotationBuilder.fromClass(getElementUtils(), NonConfidential.class);
-    this.CONFIDENTIAL = AnnotationBuilder.fromClass(getElementUtils(), NonConfidential.class);
+    this.CONFIDENTIAL = AnnotationBuilder.fromClass(getElementUtils(), Confidential.class);
     this.UNKNOWN_CONFIDENTIAL =
         AnnotationBuilder.fromClass(getElementUtils(), UnknownConfidential.class);
     this.BOTTOM_CONFIDENTIAL =
