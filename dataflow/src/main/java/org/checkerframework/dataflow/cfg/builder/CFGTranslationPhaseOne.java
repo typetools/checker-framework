@@ -1092,9 +1092,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     if (!right.getKind().isPrimitive()) {
       if (TypesUtils.isCapturedTypeVariable(right)) {
         // This doesn't seem legal according to the JLS, but javac accepts it.
-        left = types.unboxedType(TypesUtils.upperBound(right));
+        right = types.unboxedType(TypesUtils.upperBound(right));
       } else {
-        left = types.unboxedType(right);
+        right = types.unboxedType(right);
       }
     }
 
