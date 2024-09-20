@@ -8,7 +8,6 @@ import org.checkerframework.checker.confidential.qual.BottomConfidential;
 import org.checkerframework.checker.confidential.qual.Confidential;
 import org.checkerframework.checker.confidential.qual.NonConfidential;
 import org.checkerframework.checker.confidential.qual.UnknownConfidential;
-import org.checkerframework.checker.sqlquotes.SqlQuotesAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -63,7 +62,7 @@ public class ConfidentialAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   public TreeAnnotator createTreeAnnotator() {
     return new ListTreeAnnotator(
         super.createTreeAnnotator(),
-        new SqlQuotesAnnotatedTypeFactory.SqlQuotesTreeAnnotator(this));
+        new ConfidentialAnnotatedTypeFactory.ConfidentialTreeAnnotator(this));
   }
 
   /**
