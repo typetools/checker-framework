@@ -2255,8 +2255,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
 
   /**
    * Prints error messages for this checker and all subcheckers such that the errors are ordered by
-   * line and column number and then by checker. (See {@link #compareCheckerMessages} for more
-   * precise order.)
+   * line and column number and then by checker. (See {@link
+   * CheckerMessage#compareTo(CheckerMessage)} for more precise order.)
    *
    * @param unit current compilation unit
    */
