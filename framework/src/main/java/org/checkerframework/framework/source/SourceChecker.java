@@ -3442,6 +3442,38 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     return TreePath.getPath(currentRoot, currentRoot);
   }
 
+  /**
+   * Index of this checker {@link #getSubcheckers()} or the size of {@link #getSubcheckers()} if
+   * this is the parent checker. Do not use this field directly. Call {@link #getSubCheckerIndex()}
+   * instead.
+   */
+  private int subcheckerIndex = -1;
+
+  /**
+   * Index of this checker {@link #getSubcheckers()} or the size of {@link #getSubcheckers()} if
+   * this is the parent checker.
+   *
+   * @return index of this checker {@link #getSubcheckers()} or the size of {@link
+   *     #getSubcheckers()} if this is the parent checker.
+   */
+  protected int getSubCheckerIndex() {
+    if (subcheckerIndex == -1) {
+      SourceChecker parent = this;
+      while (parent.parentChecker != null) {
+        parent = parent.parentChecker;
+      }
+      if (parent == this) {
+        subcheckerIndex = parent.getSubcheckers().size();
+      } else {
+        subcheckerIndex = parent.getSubcheckers().indexOf(this);
+      }
+      if (subcheckerIndex == -1) {
+        throw new BugInCF("Checker not found in getSubcheckers.");
+      }
+    }
+    return subcheckerIndex;
+  }
+
   /** Represents a message (e.g., an error message) issued by a checker. */
   protected static class CheckerMessage implements Comparable<CheckerMessage> {
     /** The severity of the message. */
@@ -3541,20 +3573,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         return kind;
       }
 
-      if (this.checker == other.checker) {
-        return this.message.compareTo(other.message);
-      }
-
       // Sort by order in which the checkers are run. (All the subcheckers,
       // followed by the checker.)
-      List<SourceChecker> subcheckers = this.checker.getSubcheckers();
-      int thisIndex = subcheckers.indexOf(this.checker);
-      int otherIndex = subcheckers.indexOf(other.checker);
-      if (thisIndex == -1) {
-        thisIndex = subcheckers.size();
-      }
-      if (otherIndex == -1) {
-        otherIndex = subcheckers.size();
+      int thisIndex = this.checker.getSubCheckerIndex();
+      int otherIndex = other.checker.getSubCheckerIndex();
+      if (thisIndex == otherIndex) {
+        return this.message.compareTo(other.message);
       }
       return Integer.compare(thisIndex, otherIndex);
     }
