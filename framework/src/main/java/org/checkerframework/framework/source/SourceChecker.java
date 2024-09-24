@@ -3456,6 +3456,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @return index of this checker {@link #getSubcheckers()} or the size of {@link
    *     #getSubcheckers()} if this is the parent checker.
    */
+  @SuppressWarnings("interning:not.interned") // checking if parent is exactly this.
   protected int getSubCheckerIndex() {
     if (subcheckerIndex == -1) {
       SourceChecker parent = this;
