@@ -3450,8 +3450,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   private int subcheckerIndex = -1;
 
   /**
-   * Index of this checker {@link #getSubcheckers()} or the size of {@link #getSubcheckers()} if
-   * this is the parent checker.
+   * Index of this checker in {@link #getSubcheckers()} (when called on the ultimate parent) or the
+   * size of {@link #getSubcheckers()} if this is the parent checker.
    *
    * @return index of this checker {@link #getSubcheckers()} or the size of {@link
    *     #getSubcheckers()} if this is the parent checker.
@@ -3578,10 +3578,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       // followed by the checker.)
       int thisIndex = this.checker.getSubCheckerIndex();
       int otherIndex = other.checker.getSubCheckerIndex();
-      if (thisIndex == otherIndex) {
-        return this.message.compareTo(other.message);
+      if (thisIndex != otherIndex) {
+        return Integer.compare(thisIndex, otherIndex);
       }
-      return Integer.compare(thisIndex, otherIndex);
+
+      return this.message.compareTo(other.message);
     }
   }
 }
