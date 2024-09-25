@@ -280,7 +280,9 @@ public class Expression extends TypeConstraint {
         AbstractType gi = gs.get(i);
         constraintSet.add(new Typing(fi, gi, TypeConstraint.Kind.TYPE_EQUALITY));
       }
-      constraintSet.add(new Typing(tPrime, T, TypeConstraint.Kind.SUBTYPE));
+      if (tPrime != T) {
+        constraintSet.add(new Typing(tPrime, T, TypeConstraint.Kind.SUBTYPE));
+      }
     } else {
       context.addLambdaParms(lambda.getParameters());
     }
