@@ -3444,29 +3444,30 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
 
   /**
    * Index of this checker {@link #getSubcheckers()} or the size of {@link #getSubcheckers()} if
-   * this is the parent checker. Do not use this field directly. Call {@link #getSubCheckerIndex()}
-   * instead.
+   * this is the ultimate ancestor checker. Do not use this field directly. Call {@link
+   * #getSubCheckerIndex()} instead.
    */
   private int subcheckerIndex = -1;
 
   /**
-   * Index of this checker in {@link #getSubcheckers()} (when called on the ultimate parent) or the
-   * size of {@link #getSubcheckers()} if this is the parent checker.
+   * Index of this checker in {@link #getSubcheckers()} (when {@link #getSubcheckers()} is called on
+   * the ultimate ancestor), or the size of {@link #getSubcheckers()} if this is the ancestor
+   * checker.
    *
-   * @return index of this checker {@link #getSubcheckers()} or the size of {@link
-   *     #getSubcheckers()} if this is the parent checker.
+   * @return index of this checker in the ultimate ancestor's {@link #getSubcheckers()}, or the size
+   *     of {@link #getSubcheckers()} if this is the ancestor checker
    */
-  @SuppressWarnings("interning:not.interned") // checking if parent is exactly this.
+  @SuppressWarnings("interning:not.interned") // Checking if ancestor is exactly this.
   protected int getSubCheckerIndex() {
     if (subcheckerIndex == -1) {
-      SourceChecker parent = this;
-      while (parent.parentChecker != null) {
-        parent = parent.parentChecker;
+      SourceChecker ancestor = this;
+      while (ancestor.parentChecker != null) {
+        ancestor = ancestor.parentChecker;
       }
-      if (parent == this) {
-        subcheckerIndex = parent.getSubcheckers().size();
+      if (ancestor == this) {
+        subcheckerIndex = ancestor.getSubcheckers().size();
       } else {
-        subcheckerIndex = parent.getSubcheckers().indexOf(this);
+        subcheckerIndex = ancestor.getSubcheckers().indexOf(this);
       }
       if (subcheckerIndex == -1) {
         throw new BugInCF("Checker not found in getSubcheckers.");
