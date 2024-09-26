@@ -1089,7 +1089,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     this.visitor = createSourceVisitor();
 
     if (!getSubcheckers().isEmpty() && parentChecker == null) {
-      messageStore = new TreeSet<>(this::compareCheckerMessages);
+      messageStore = new TreeSet<>();
     }
 
     // Validate the lint flags, if they haven't been used already.
@@ -2255,8 +2255,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
 
   /**
    * Prints error messages for this checker and all subcheckers such that the errors are ordered by
-   * line and column number and then by checker. (See {@link #compareCheckerMessages} for more
-   * precise order.)
+   * line and column number and then by checker. (See {@link
+   * CheckerMessage#compareTo(CheckerMessage)} for more precise order.)
    *
    * @param unit current compilation unit
    */
@@ -2267,53 +2267,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     for (CheckerMessage msg : messageStore) {
       printOrStoreMessage(msg.kind, msg.message, msg.source, unit, msg.trace);
     }
-  }
-
-  /**
-   * Compares two {@link CheckerMessage}s. Compares first by position at which the error will be
-   * printed, then by kind of message, then by the message string, and finally by the order in which
-   * the checkers run.
-   *
-   * @param o1 the first CheckerMessage
-   * @param o2 the second CheckerMessage
-   * @return a negative integer, zero, or a positive integer if the first CheckerMessage is less
-   *     than, equal to, or greater than the second
-   */
-  protected int compareCheckerMessages(CheckerMessage o1, CheckerMessage o2) {
-    int byPos = InternalUtils.compareDiagnosticPosition(o1.source, o2.source);
-    if (byPos != 0) {
-      return byPos;
-    }
-
-    int kind = o1.kind.compareTo(o2.kind);
-    if (kind != 0) {
-      return kind;
-    }
-
-    int msgcmp = o1.message.compareTo(o2.message);
-    if (msgcmp == 0) {
-      // If the two messages are identical, it doesn't matter from which checker they came.
-      // The messages are put in a set, which deduplicates them when this comparison returns 0.
-      return 0;
-    }
-
-    // Sort by order in which the checkers are run. (All the subcheckers,
-    // followed by the checker.)
-    List<SourceChecker> subcheckers = SourceChecker.this.getSubcheckers();
-    int o1Index = subcheckers.indexOf(o1.checker);
-    int o2Index = subcheckers.indexOf(o2.checker);
-    if (o1Index == -1) {
-      o1Index = subcheckers.size();
-    }
-    if (o2Index == -1) {
-      o2Index = subcheckers.size();
-    }
-    int checkercmp = Integer.compare(o1Index, o2Index);
-    if (checkercmp != 0) {
-      return checkercmp;
-    }
-    // The two messages are from the same checker, so sort by message.
-    return msgcmp;
   }
 
   @Override
@@ -3489,8 +3442,42 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     return TreePath.getPath(currentRoot, currentRoot);
   }
 
+  /**
+   * Index of this checker {@link #getSubcheckers()} or the size of {@link #getSubcheckers()} if
+   * this is the ultimate ancestor checker. Do not use this field directly. Call {@link
+   * #getSubCheckerIndex()} instead.
+   */
+  private int subcheckerIndex = -1;
+
+  /**
+   * Index of this checker in {@link #getSubcheckers()} (when {@link #getSubcheckers()} is called on
+   * the ultimate ancestor), or the size of {@link #getSubcheckers()} if this is the ancestor
+   * checker.
+   *
+   * @return index of this checker in the ultimate ancestor's {@link #getSubcheckers()}, or the size
+   *     of {@link #getSubcheckers()} if this is the ancestor checker
+   */
+  @SuppressWarnings("interning:not.interned") // Checking if ancestor is exactly this.
+  protected int getSubCheckerIndex() {
+    if (subcheckerIndex == -1) {
+      SourceChecker ancestor = this;
+      while (ancestor.parentChecker != null) {
+        ancestor = ancestor.parentChecker;
+      }
+      if (ancestor == this) {
+        subcheckerIndex = ancestor.getSubcheckers().size();
+      } else {
+        subcheckerIndex = ancestor.getSubcheckers().indexOf(this);
+      }
+      if (subcheckerIndex == -1) {
+        throw new BugInCF("Checker not found in getSubcheckers.");
+      }
+    }
+    return subcheckerIndex;
+  }
+
   /** Represents a message (e.g., an error message) issued by a checker. */
-  protected static class CheckerMessage {
+  protected static class CheckerMessage implements Comparable<CheckerMessage> {
     /** The severity of the message. */
     final Diagnostic.Kind kind;
 
@@ -3565,6 +3552,38 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
           + ", source="
           + source
           + '}';
+    }
+
+    /**
+     * Compares {@code other} with {@code this} {@link CheckerMessage}. Compares first by position
+     * at which the error will be printed, then by kind of message, then the order in which the
+     * checkers run, and finally by the message string.
+     *
+     * @param other the other CheckerMessage
+     * @return a negative integer, zero, or a positive integer if this CheckerMessage is less than,
+     *     equal to, or greater than {@code other}
+     */
+    @Override
+    public int compareTo(CheckerMessage other) {
+      int byPos = InternalUtils.compareDiagnosticPosition(this.source, other.source);
+      if (byPos != 0) {
+        return byPos;
+      }
+
+      int kind = this.kind.compareTo(other.kind);
+      if (kind != 0) {
+        return kind;
+      }
+
+      // Sort by order in which the checkers are run. (All the subcheckers,
+      // followed by the checker.)
+      int thisIndex = this.checker.getSubCheckerIndex();
+      int otherIndex = other.checker.getSubCheckerIndex();
+      if (thisIndex != otherIndex) {
+        return Integer.compare(thisIndex, otherIndex);
+      }
+
+      return this.message.compareTo(other.message);
     }
   }
 }
