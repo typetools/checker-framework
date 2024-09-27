@@ -3,17 +3,19 @@ package org.checkerframework.checker.resourceleak;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.calledmethods.CalledMethodsAnalysis;
 import org.checkerframework.checker.calledmethods.CalledMethodsAnnotatedTypeFactory;
+import org.checkerframework.checker.mustcall.MustCallChecker;
+import org.checkerframework.checker.mustcall.MustCallNoCreatesMustCallForChecker;
+import org.checkerframework.checker.mustcall.SetOfTypes;
 
 /**
  * This variant of CFAnalysis extends the set of ignored exception types.
  *
- * @see ResourceLeakChecker#getIgnoredExceptions()
+ * @see MustCallChecker#getIgnoredExceptions()
  */
 public class ResourceLeakAnalysis extends CalledMethodsAnalysis {
 
   /**
-   * The set of exceptions to ignore, cached from {@link
-   * ResourceLeakChecker#getIgnoredExceptions()}.
+   * The set of exceptions to ignore, cached from {@link MustCallChecker#getIgnoredExceptions()}.
    */
   private final SetOfTypes ignoredExceptions;
 
@@ -26,7 +28,11 @@ public class ResourceLeakAnalysis extends CalledMethodsAnalysis {
   protected ResourceLeakAnalysis(
       ResourceLeakChecker checker, CalledMethodsAnnotatedTypeFactory factory) {
     super(checker, factory);
-    this.ignoredExceptions = checker.getIgnoredExceptions();
+    MustCallChecker mustCallChecker = checker.getSubchecker(MustCallChecker.class);
+    if (mustCallChecker == null) {
+      mustCallChecker = checker.getSubchecker(MustCallNoCreatesMustCallForChecker.class);
+    }
+    this.ignoredExceptions = mustCallChecker.getIgnoredExceptions();
   }
 
   @Override
