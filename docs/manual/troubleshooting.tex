@@ -761,7 +761,7 @@ In a startup file, write:
 \end{smaller}
 %END LATEX
 
-\item[Mac OS]
+\item[macOS]
   If you employ \href{https://brew.sh}{homebrew} to install packages, run
   the following commands:
 
@@ -785,13 +785,15 @@ Note: If copy permission is denied, try \<sudo>.
 In a startup file, write:
 
 \begin{Verbatim}
-export JAVA_HOME=$(/usr/libexec/java_home -v 17)
+export JAVA_HOME=$(/usr/libexec/java_home -v XX)
 \end{Verbatim}
 or
 \begin{Verbatim}
-export JAVA_HOME=/Library/Java/JavaVirtualMachines/adoptopenjdk-17.jdk/Contents/Home/
+export JAVA_HOME=/Library/Java/JavaVirtualMachines/adoptopenjdk-XX.jdk/Contents/Home/
 \end{Verbatim}
 
+where \emph{XX} is a JDK version such as 17, 21, 23, etc. that is one of
+the ones listed in  \<checker/bin-devel/Dockerfile-ubuntu-jdk\emph{XX}-plus>.
 
 \item[Windows]
   To build on Windows 10 or later,
