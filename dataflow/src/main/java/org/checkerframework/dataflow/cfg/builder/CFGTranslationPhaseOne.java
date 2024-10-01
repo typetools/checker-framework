@@ -1080,12 +1080,24 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @return a TypeMirror representing the binary numeric promoted type
    */
   protected TypeMirror binaryPromotedType(TypeMirror left, TypeMirror right) {
-    if (TypesUtils.isBoxedPrimitive(left)) {
-      left = types.unboxedType(left);
+    if (!left.getKind().isPrimitive()) {
+      if (TypesUtils.isCapturedTypeVariable(left)) {
+        // This doesn't seem legal according to the JLS, but javac accepts it.
+        left = types.unboxedType(TypesUtils.upperBound(left));
+      } else {
+        left = types.unboxedType(left);
+      }
     }
-    if (TypesUtils.isBoxedPrimitive(right)) {
-      right = types.unboxedType(right);
+
+    if (!right.getKind().isPrimitive()) {
+      if (TypesUtils.isCapturedTypeVariable(right)) {
+        // This doesn't seem legal according to the JLS, but javac accepts it.
+        right = types.unboxedType(TypesUtils.upperBound(right));
+      } else {
+        right = types.unboxedType(right);
+      }
     }
+
     TypeKind promotedTypeKind = TypeKindUtils.widenedNumericType(left, right);
     return types.getPrimitiveType(promotedTypeKind);
   }

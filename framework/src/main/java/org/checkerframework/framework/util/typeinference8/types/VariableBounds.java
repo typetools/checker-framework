@@ -558,7 +558,7 @@ public class VariableBounds {
   public boolean hasLowerBoundDifferentParam() {
     List<AbstractType> parameteredTypes = new ArrayList<>();
     for (AbstractType type : bounds.get(BoundKind.LOWER)) {
-      if (!type.isUseOfVariable() && type.isParameterizedType()) {
+      if (type.isProper() && type.isParameterizedType()) {
         parameteredTypes.add(type);
       }
     }

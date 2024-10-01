@@ -651,15 +651,6 @@ More sound (strict) checking: enable errors that are disabled by default
 \item \<-AconcurrentSemantics>
   Whether to assume concurrent semantics (field values may change at any
   time) or sequential semantics; see Section~\ref{faq-concurrency}.
-\item \<-AconservativeUninferredTypeArguments>
-  Whether an error should be issued if type arguments could not be inferred and
-  whether method type arguments that could not be inferred should use
-  conservative defaults.
-  By default, such type arguments are (largely) ignored in later
-  checks.
-  Passing this option uses a conservative value instead.
-  See \href{https://github.com/typetools/checker-framework/issues/979}{Issue
-  979}.
 \item \<-AignoreRawTypeArguments=false>
   Do not ignore subtype tests for type arguments that were inferred for a
   raw type.  See Section~\ref{generics-raw-types}.

@@ -1359,7 +1359,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @return the annotated type of {@code tree}
    */
   public AnnotatedTypeMirror getAnnotatedType(Tree tree) {
-    logGat("getAnnotatedType(%s)%n", TreeUtils.toStringTruncated(tree, 60));
+    logGat("getAnnotatedType(%s)%n", tree);
 
     if (tree == null) {
       throw new BugInCF("AnnotatedTypeFactory.getAnnotatedType: null tree");
@@ -1376,25 +1376,19 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     } else if (TreeUtils.isExpressionTree(tree)) {
       tree = TreeUtils.withoutParens((ExpressionTree) tree);
       type = fromExpression((ExpressionTree) tree);
-      logGat(
-          "getAnnotatedType(%s): fromExpression=>%s%n",
-          TreeUtils.toStringTruncated(tree, 60), type);
+      logGat("getAnnotatedType(%s): fromExpression=>%s%n", tree, type);
     } else {
       throw new BugInCF(
           "AnnotatedTypeFactory.getAnnotatedType: query of annotated type for tree "
               + tree.getKind());
     }
 
-    logGat(
-        "getAnnotatedType(%s): before addComputedTypeAnnotations, type=%s%n",
-        TreeUtils.toStringTruncated(tree, 60), type);
+    logGat("getAnnotatedType(%s): before addComputedTypeAnnotations, type=%s%n", tree, type);
     addComputedTypeAnnotations(tree, type);
     if (tree.getKind() == Kind.TYPE_CAST) {
       type = applyCaptureConversion(type);
     }
-    logGat(
-        "getAnnotatedType(%s): after addComputedTypeAnnotations, type=%s%n",
-        TreeUtils.toStringTruncated(tree, 60), type);
+    logGat("getAnnotatedType(%s): after addComputedTypeAnnotations, type=%s%n", tree, type);
 
     if (TreeUtils.isClassTree(tree) || tree.getKind() == Tree.Kind.METHOD) {
       // Don't cache VARIABLE
@@ -5755,6 +5749,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *
    * <p>Set the value of {@link #debugGat} to {@literal true} to enable logging.
    *
+   * <p>Any {@link Tree} arguments will be formatted using {@link TreeUtils#toStringTruncated(Tree,
+   * int)} at a maximum length of 60.
+   *
    * @param format a format string
    * @param args arguments to the format string
    */
@@ -5762,6 +5759,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   public void logGat(String format, Object... args) {
     if (debugGat) {
       SystemPlume.sleep(1); // logging can interleave with typechecker output
+
+      // Shorten tree arguments to keep the output readable.
+      for (int i = 0; i < args.length; ++i) {
+        Object arg = args[i];
+        if (arg instanceof Tree) {
+          args[i] = TreeUtils.toStringTruncated((Tree) arg, 60);
+        }
+      }
+
       System.out.printf(format, args);
     }
   }
