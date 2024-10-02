@@ -5,6 +5,7 @@ import java.util.Set;
 import org.checkerframework.checker.optional.OptionalChecker;
 import org.checkerframework.checker.optional.OptionalVisitor;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.source.SupportedOptions;
 
 /**
@@ -42,8 +43,8 @@ public class NonEmptyChecker extends BaseTypeChecker {
   }
 
   @Override
-  protected Set<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
-    Set<Class<? extends BaseTypeChecker>> checkers = super.getImmediateSubcheckerClasses();
+  protected Set<Class<? extends SourceChecker>> getImmediateSubcheckerClasses() {
+    Set<Class<? extends SourceChecker>> checkers = super.getImmediateSubcheckerClasses();
     if (runAsOptionalChecker) {
       checkers.add(OptionalChecker.class);
     }
