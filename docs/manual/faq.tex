@@ -1921,7 +1921,8 @@ An alternate approach is to use a bug detector such as
 or the
 tools built into Eclipse (see Section~\ref{faq-eclipse}) and IntelliJ\@.
 The \href{https://github.com/uber/NullAway}{NullAway} and
-\href{https://fbinfer.com/docs/next/checker-eradicate/}{Eradicate} tools are more
+% The eradicate checker has been removed from fbinfer.
+\href{https://fbinfer.com/docs/1.1.0/checker-eradicate/}{Eradicate} tools are more
 like sound type-checking than bug detection, but all of those tools accept
 unsoundness --- that is, false negatives or missed warnings --- in exchange
 for analysis speed.
