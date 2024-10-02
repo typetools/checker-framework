@@ -1,4 +1,14 @@
-Version 3.47.1 (October 1, 2024)
+Version 3.48.1 (November 1, 2024)
+--------------------------------
+
+**User-visible changes:**
+
+**Implementation details:**
+
+**Closed issues:**
+
+
+Version 3.48.0 (October 2, 2024)
 --------------------------------
 
 **User-visible changes:**
@@ -6,12 +16,12 @@ Version 3.47.1 (October 1, 2024)
 The new SqlQuotesChecker prevents errors in quoting in SQL queries.  It prevents
 injection attacks that exploit quoting errors.
 
-Aggregate Checkers now interleave error messages so that all errors about a line of code apear
+Aggregate Checkers now interleave error messages so that all errors about a line of code appear
 together.
 
-**Implementation details:**
-
 **Closed issues:**
+
+#3568, #6725, #6753, #6769, #6770, #6780, #6785, #6795, #6804, #6811, #6825.
 
 
 Version 3.47.0 (September 3, 2024)
