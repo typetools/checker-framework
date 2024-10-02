@@ -28,8 +28,7 @@ import org.checkerframework.framework.source.SupportedOptions;
 @SupportedOptions("runAsOptionalChecker")
 public class NonEmptyChecker extends BaseTypeChecker {
 
-  /** True if "-ArunAsOptionalChecker" was passed; see class documentation for details. */
-  private boolean runAsOptionalChecker;
+  private final String RUN_AS_OPTIONAL_CHECKER_KEY = "runAsOptionalChecker";
 
   /** Creates a NonEmptyChecker. */
   public NonEmptyChecker() {
@@ -39,13 +38,12 @@ public class NonEmptyChecker extends BaseTypeChecker {
   @Override
   public void initChecker() {
     super.initChecker();
-    runAsOptionalChecker = this.hasOptionNoSubcheckers("runAsOptionalChecker");
   }
 
   @Override
   protected Set<Class<? extends SourceChecker>> getImmediateSubcheckerClasses() {
     Set<Class<? extends SourceChecker>> checkers = super.getImmediateSubcheckerClasses();
-    if (runAsOptionalChecker) {
+    if (this.hasOptionNoSubcheckers(RUN_AS_OPTIONAL_CHECKER_KEY)) {
       checkers.add(OptionalChecker.class);
     }
     return checkers;
@@ -53,7 +51,7 @@ public class NonEmptyChecker extends BaseTypeChecker {
 
   @Override
   public boolean shouldSkipDefs(MethodTree tree) {
-    if (runAsOptionalChecker) {
+    if (this.hasOptionNoSubcheckers("runAsOptionalChecker")) {
       return !getMethodsToVerify().contains(tree);
     }
     return super.shouldSkipDefs(tree);
@@ -66,7 +64,7 @@ public class NonEmptyChecker extends BaseTypeChecker {
    * @return the set of methods to be verified by the Non-Empty Checker
    */
   private Set<MethodTree> getMethodsToVerify() {
-    assert runAsOptionalChecker;
+    assert this.hasOptionNoSubcheckers(RUN_AS_OPTIONAL_CHECKER_KEY);
     OptionalChecker optionalChecker = getSubchecker(OptionalChecker.class);
     assert optionalChecker != null : "@AssumeAssertion(nullness): runAsOptionalChecker is true";
     OptionalVisitor optionalVisitor = (OptionalVisitor) optionalChecker.getVisitor();
