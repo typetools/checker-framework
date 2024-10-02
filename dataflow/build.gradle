@@ -34,6 +34,9 @@ def createDataflowShaded(shadedPkgName) {
     base {
       archivesName = "dataflow-${shadedPkgName}"
     }
+    dependencies {
+      exclude(project(':checker-qual'))
+    }
     // Without this line, the Maven artifact will have the classifier "all".
     archiveClassifier.set('')
 
@@ -207,6 +210,15 @@ final dataflowShadedPom(MavenPublication publication, String shadedPkgName) {
         url = 'http://www.gnu.org/software/classpath/license.html'
         distribution = 'repo'
       }
+    }
+    withXml {
+      // This should just happen automatically, but I can't figure out how to make it happen with
+      // a custom Shadow task.
+      asNode().appendNode('dependencies').appendNode('dependency')
+          .appendNode('groupId', 'org.checkerframework').parent()
+          .appendNode('artifactId', 'checker-qual').parent()
+          .appendNode('version', version).parent()
+          .appendNode('scope','runtime')
     }
   }
 }
