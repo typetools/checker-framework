@@ -28,6 +28,10 @@ import org.checkerframework.framework.source.SupportedOptions;
 @SupportedOptions("runAsOptionalChecker")
 public class NonEmptyChecker extends BaseTypeChecker {
 
+  /**
+   * The compiler option used to invoke the Non-Empty Checker as the Optional Checker with increased
+   * precision.
+   */
   private final String RUN_AS_OPTIONAL_CHECKER_KEY = "runAsOptionalChecker";
 
   /** Creates a NonEmptyChecker. */
