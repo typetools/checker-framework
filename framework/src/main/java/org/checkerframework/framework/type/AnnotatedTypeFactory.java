@@ -2826,7 +2826,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         p.addAll(1, superCon.getParameterTypes());
         con.setParameterTypes(p);
       }
-      con.getReturnType().replaceAnnotations(superCon.getReturnType().getPrimaryAnnotations());
+      con.getReturnType().replaceAnnotations(type.getPrimaryAnnotations());
     } else {
       con = AnnotatedTypes.asMemberOf(types, this, type, ctor, con);
     }
