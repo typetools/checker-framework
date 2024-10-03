@@ -35,6 +35,7 @@ import org.checkerframework.framework.source.SupportedOptions;
   MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP,
   MustCallChecker.NO_RESOURCE_ALIASES,
   ResourceLeakChecker.ENABLE_WPI_FOR_RLC,
+  ResourceLeakChecker.ENABLE_RETURNS_RECEIVER
 })
 @StubFiles("IOUtils.astub")
 public class ResourceLeakChecker extends CalledMethodsChecker {
@@ -115,6 +116,8 @@ public class ResourceLeakChecker extends CalledMethodsChecker {
    */
   public static final String ENABLE_WPI_FOR_RLC = "enableWpiForRlc";
 
+  public static final String ENABLE_RETURNS_RECEIVER = "enableReturnsReceiverForRlc";
+
   /**
    * The number of expressions with must-call obligations that were checked. Incremented only if the
    * {@link #COUNT_MUST_CALL} command-line option was supplied.
@@ -177,6 +180,12 @@ public class ResourceLeakChecker extends CalledMethodsChecker {
           numMustCall - numMustCallFailed);
     }
     super.typeProcessingOver();
+  }
+
+  @Override
+  protected boolean isReturnsReceiverDisabled() {
+    // disable by default, unless the flag is set
+    return !hasOption(ENABLE_RETURNS_RECEIVER) || super.isReturnsReceiverDisabled();
   }
 
   /**
