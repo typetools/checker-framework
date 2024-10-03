@@ -116,6 +116,11 @@ public class ResourceLeakChecker extends CalledMethodsChecker {
    */
   public static final String ENABLE_WPI_FOR_RLC = "enableWpiForRlc";
 
+  /**
+   * The Returns Receiver Checker is disabled by default for the Resource Leak Checker, as it adds
+   * significant overhead and typically provides little benefit. To enable it, use the
+   * -AenableReturnsReceiverForRlc flag.
+   */
   public static final String ENABLE_RETURNS_RECEIVER = "enableReturnsReceiverForRlc";
 
   /**
@@ -182,9 +187,12 @@ public class ResourceLeakChecker extends CalledMethodsChecker {
     super.typeProcessingOver();
   }
 
+  /**
+   * Disable the Returns Receiver Checker unless it has been explicitly enabled with the {@link
+   * #ENABLE_RETURNS_RECEIVER} option.
+   */
   @Override
   protected boolean isReturnsReceiverDisabled() {
-    // disable by default, unless the flag is set
     return !hasOption(ENABLE_RETURNS_RECEIVER) || super.isReturnsReceiverDisabled();
   }
 
