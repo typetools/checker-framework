@@ -3,6 +3,10 @@ Version 3.48.1 (November 1, 2024)
 
 **User-visible changes:**
 
+The Returns Receiver sub-checker is now disabled by default when running the Resource Leak Checker,
+as usually it is not needed and it adds overhead. To enable it, use the new
+`-AenableReturnsReceiverForRlc` command-line argument.
+
 **Implementation details:**
 
 **Closed issues:**

@@ -72,7 +72,7 @@ public class CalledMethodsChecker extends AccumulationChecker {
    *
    * @return whether the -AdisableReturnsReceiver option was specified on the command line
    */
-  private boolean isReturnsReceiverDisabled() {
+  protected boolean isReturnsReceiverDisabled() {
     if (returnsReceiverDisabled == null) {
       returnsReceiverDisabled = hasOptionNoSubcheckers(DISABLE_RETURNS_RECEIVER);
     }
