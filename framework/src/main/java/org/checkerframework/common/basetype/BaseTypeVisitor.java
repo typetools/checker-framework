@@ -3561,20 +3561,22 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       return;
     }
 
-    AnnotatedTypeMirror methodReceiver = method.getReceiverType().getErased();
-    AnnotatedTypeMirror treeReceiver = methodReceiver.shallowCopy(false);
-    AnnotatedTypeMirror rcv = atypeFactory.getReceiverType(tree);
+    AnnotatedTypeMirror erasedMethodReceiver = method.getReceiverType().getErased();
+    AnnotatedTypeMirror erasedTreeReceiver = erasedMethodReceiver.shallowCopy(false);
+    AnnotatedTypeMirror treeReceiver = atypeFactory.getReceiverType(tree);
 
-    treeReceiver.addAnnotations(rcv.getEffectiveAnnotations());
+    erasedTreeReceiver.addAnnotations(treeReceiver.getEffectiveAnnotations());
 
-    if (!skipReceiverSubtypeCheck(tree, methodReceiver, rcv)) {
+    if (!skipReceiverSubtypeCheck(tree, erasedMethodReceiver, treeReceiver)) {
       // The diagnostic can be a bit misleading because the check is of the receiver but
       // `tree` is the entire method invocation (where the receiver might be implicit).
-      commonAssignmentCheckStartDiagnostic(methodReceiver, treeReceiver, tree);
-      boolean success = typeHierarchy.isSubtype(treeReceiver, methodReceiver);
-      commonAssignmentCheckEndDiagnostic(success, null, methodReceiver, treeReceiver, tree);
+      commonAssignmentCheckStartDiagnostic(erasedMethodReceiver, erasedTreeReceiver, tree);
+      boolean success = typeHierarchy.isSubtype(erasedTreeReceiver, erasedMethodReceiver);
+      commonAssignmentCheckEndDiagnostic(
+          success, null, erasedMethodReceiver, erasedTreeReceiver, tree);
       if (!success) {
-        reportMethodInvocabilityError(tree, treeReceiver, methodReceiver);
+        // Don't report the erased types because they show up with '</*RAW*/>' as type args.
+        reportMethodInvocabilityError(tree, treeReceiver, method.getReceiverType());
       }
     }
   }
