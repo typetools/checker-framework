@@ -43,8 +43,8 @@ public abstract class FunctionalInterfaces {
 
   public void anonymousClass() {
 
-    // :: error: (assignment)
     @MustCall({}) Actor a =
+        // :: error: (assignment)
         new Actor() {
           public void act() {}
         };
