@@ -1064,10 +1064,6 @@ publishing {
   publications {
     checker(MavenPublication) {
       project.shadow.component it
-      // reset the artifacts because of project.shadow.component changes
-      // the classifier from 'all' to '' because of
-      // https://github.com/johnrengelman/shadow/issues/860
-      artifacts = [shadowJar]
       checkerPom it
       artifact checkerJar
       artifact allSourcesJar
