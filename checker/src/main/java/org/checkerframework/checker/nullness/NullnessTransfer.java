@@ -222,9 +222,9 @@ public class NullnessTransfer
         }
       }
 
-      AnnotationMirrorSet secondAnnos =
-          secondValue != null ? secondValue.getAnnotations() : new AnnotationMirrorSet();
-      if (nullnessTypeFactory.containsSameByClass(secondAnnos, PolyNull.class)) {
+      if (secondValue != null
+          && nullnessTypeFactory.containsSameByClass(
+              secondValue.getAnnotations(), PolyNull.class)) {
         thenStore = thenStore == null ? res.getThenStore() : thenStore;
         elseStore = elseStore == null ? res.getElseStore() : elseStore;
         // TODO: methodTree is null for lambdas.  Handle that case.  See Issue3850.java.

@@ -9,6 +9,8 @@ as usually it is not needed and it adds overhead. To enable it, use the new
 
 **Implementation details:**
 
+Deprecated `AnnotationUtils.annotationNameInterned()`
+
 **Closed issues:**
 
 
