@@ -51,11 +51,7 @@ public class NonEmptyChecker extends BaseTypeChecker {
   @Override
   protected Set<Class<? extends SourceChecker>> getImmediateSubcheckerClasses() {
     Set<Class<? extends SourceChecker>> checkers = super.getImmediateSubcheckerClasses();
-    if (!isShouldRunOptionalCheckerSet) {
-      shouldRunAsOptionalChecker = this.hasOptionNoSubcheckers("runAsOptionalChecker");
-      isShouldRunOptionalCheckerSet = true;
-    }
-    if (shouldRunAsOptionalChecker) {
+    if (shouldRunAsOptionalChecker()) {
       checkers.add(OptionalChecker.class);
     }
     return checkers;
@@ -63,27 +59,41 @@ public class NonEmptyChecker extends BaseTypeChecker {
 
   @Override
   public boolean shouldSkipDefs(MethodTree tree) {
-    if (!isShouldRunOptionalCheckerSet) {
-      shouldRunAsOptionalChecker = this.hasOptionNoSubcheckers("runAsOptionalChecker");
-      isShouldRunOptionalCheckerSet = true;
-    }
-    if (shouldRunAsOptionalChecker) {
+    if (shouldRunAsOptionalChecker()) {
       return !getMethodsToVerify().contains(tree);
     }
     return super.shouldSkipDefs(tree);
   }
 
   /**
-   * Obtains the methods to verify w.r.t. the Non-Empty type system from the Optional Checker. See
-   * the class documentation for information about "-ArunAsOptionalChecker".
+   * Obtains the methods to verify w.r.t. the Non-Empty type system from the Optional Checker.
    *
    * @return the set of methods to be verified by the Non-Empty Checker
+   * @throws AssertionError if invoked when {@link shouldRunAsOptionalChecker} is false
    */
   private Set<MethodTree> getMethodsToVerify() {
-    assert shouldRunAsOptionalChecker;
+    assert shouldRunAsOptionalChecker; // Invariant: this method is invoked iff
+    // shouldRunAsOptionalChecker is true
     OptionalChecker optionalChecker = getSubchecker(OptionalChecker.class);
     assert optionalChecker != null : "@AssumeAssertion(nullness): runAsOptionalChecker is true";
     OptionalVisitor optionalVisitor = (OptionalVisitor) optionalChecker.getVisitor();
     return optionalVisitor.getMethodsToVerifyWithNonEmptyChecker();
+  }
+
+  /**
+   * Returns the value of {@link shouldRunAsOptionalChecker}.
+   *
+   * <p>This method behaves as a getter for {@link shouldRunAsOptionalChecker}, and avoids
+   * re-computing its value each time (i.e., avoids repeated calls to {@link
+   * SourceChecker#hasOptionNoSubcheckers}).
+   *
+   * @return the value of {@link shouldRunAsOptionalChecker}
+   */
+  private boolean shouldRunAsOptionalChecker() {
+    if (!isShouldRunOptionalCheckerSet) {
+      shouldRunAsOptionalChecker = this.hasOptionNoSubcheckers("runAsOptionalChecker");
+      isShouldRunOptionalCheckerSet = true;
+    }
+    return shouldRunAsOptionalChecker;
   }
 }
