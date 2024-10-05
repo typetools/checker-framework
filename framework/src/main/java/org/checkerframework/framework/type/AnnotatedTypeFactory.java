@@ -2826,7 +2826,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         p.addAll(1, superCon.getParameterTypes());
         con.setParameterTypes(p);
       }
-      con.getReturnType().replaceAnnotations(superCon.getReturnType().getPrimaryAnnotations());
+      Set<? extends AnnotationMirror> lub =
+          qualHierarchy.leastUpperBoundsShallow(
+              type.getPrimaryAnnotations(),
+              type.getUnderlyingType(),
+              superCon.getReturnType().getPrimaryAnnotations(),
+              superCon.getReturnType().getUnderlyingType());
+      con.getReturnType().replaceAnnotations(lub);
     } else {
       con = AnnotatedTypes.asMemberOf(types, this, type, ctor, con);
     }
