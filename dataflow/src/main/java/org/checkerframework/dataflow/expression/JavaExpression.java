@@ -932,6 +932,7 @@ public abstract class JavaExpression {
     if (tree == null) {
       return null;
     }
+    // Java forbids shadowing a formal parameter by a local variable.
     List<? extends VariableTree> params = tree.getParameters();
     for (VariableTree param : params) {
       if (param.getName().toString().equals(receiver.toString())) {
@@ -962,10 +963,14 @@ public abstract class JavaExpression {
    */
   public static @Nullable VariableTree getReceiverDeclarationInClass(
       @Nullable ClassTree tree, JavaExpression receiver) {
-    if (tree == null || tree.getMembers().isEmpty()) {
+    if (tree == null) {
       return null;
     }
-    for (Tree member : tree.getMembers()) {
+    List<Tree> members = tree.getMembers();
+    if (members.isEmpty()) {
+      return null;
+    }
+    for (Tree member : members) {
       if (member instanceof VariableTree) {
         VariableTree field = (VariableTree) member;
         if (JavaExpression.fromVariableTree(field).containsSyntacticEqualJavaExpression(receiver)) {
@@ -979,11 +984,10 @@ public abstract class JavaExpression {
   /**
    * Returns the leftmost receiver of a method invocation chain.
    *
-   * <p>For example, for a given method invocation sequence {@code a.b().c.d().e()}, return {@code
-   * a}.
+   * <p>For example, given method invocation sequence {@code a.b().c.d().e()}, return {@code a}.
    *
    * @param tree a tree
-   * @return the initial receiver of a method invocation
+   * @return the initial receiver of a method invocation chain
    */
   public static @Nullable JavaExpression getLeftmostReceiverOfMethodInvocation(
       ExpressionTree tree) {
