@@ -151,7 +151,7 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   private boolean hasFormatMethodAnno(
       WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos methodAnnos) {
     AnnotationMirrorSet declarationAnnos = methodAnnos.getDeclarationAnnotations();
-    return (!declarationAnnos.isEmpty())
+    return !declarationAnnos.isEmpty()
         && (AnnotationUtils.containsSameByClass(
                 declarationAnnos, org.checkerframework.checker.formatter.qual.FormatMethod.class)
             || AnnotationUtils.containsSameByName(
