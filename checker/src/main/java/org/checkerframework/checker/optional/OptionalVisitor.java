@@ -81,14 +81,14 @@ public class OptionalVisitor
   private final ExecutableElement streamMap;
 
   /** The set of methods to be verified by the Non-Empty Checker. */
-  private final Set<MethodTree> methodsToVerifyWithNonEmptyChecker;
+  private final Set<MethodTree> methodsToVerifyWithNonEmptyChecker = new HashSet<>();
 
   /**
    * Map from simple names of callees to the methods that call them. Use of simple names (rather
    * than fully-qualified names or signatures) is a bit imprecise, because it includes all
    * overloads.
    */
-  private final Map<String, Set<MethodTree>> calleesToCallers;
+  private final Map<String, Set<MethodTree>> calleesToCallers = new HashMap<>();
 
   /**
    * Create an OptionalVisitor.
@@ -106,8 +106,6 @@ public class OptionalVisitor
 
     streamFilter = TreeUtils.getMethod("java.util.stream.Stream", "filter", 1, env);
     streamMap = TreeUtils.getMethod("java.util.stream.Stream", "map", 1, env);
-    methodsToVerifyWithNonEmptyChecker = new HashSet<>();
-    calleesToCallers = new HashMap<>();
   }
 
   @Override
@@ -373,19 +371,19 @@ public class OptionalVisitor
    * <p>If a callee should be checked by the Non-Empty checker, then the caller should also be
    * checked by the Non-Empty Checker.
    *
-   * <p>This ensures that the <i>clients</i> of any methods that must be checked by the Non-Empty
+   * <p>This ensures that the <em>clients</em> of any methods that must be checked by the Non-Empty
    * Checker (i.e., methods that have preconditions related to the Non-Empty type system) are
    * included in the set of methods to check.
    *
    * @param tree a method invocation tree
    */
   private void updateCalleesToCallers(MethodInvocationTree tree) {
-    String callee = tree.getMethodSelect().toString();
     MethodTree caller = TreePathUtil.enclosingMethod(this.getCurrentPath());
     if (caller != null) {
       // Using the names of methods (as opposed to their fully-qualified name or signature) is a
       // safe (but imprecise) over-approximation of all the methods that must be verified with the
       // Non-Empty Checker. Overloads of methods will be included.
+      String callee = tree.getMethodSelect().toString();
       boolean isCalleeInMethodsToVerifyWithNonEmptyChecker =
           methodsToVerifyWithNonEmptyChecker.stream()
               .map(MethodTree::getName)
