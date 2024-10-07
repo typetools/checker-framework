@@ -966,7 +966,7 @@ public abstract class JavaExpression {
     if (tree == null) {
       return null;
     }
-    List<Tree> members = tree.getMembers();
+    List<? extends Tree> members = tree.getMembers();
     if (members.isEmpty()) {
       return null;
     }
