@@ -249,6 +249,6 @@ public class OptionalTransfer extends CFTransfer {
     }
     // If the declaration can't be found in the method, look in the class.
     ClassTree classTree = TreePathUtil.enclosingClass(methodInvok.getTreePath());
-    return JavaExpression.getReceiverDeclarationInClass(classTree, leftmostReceiver);
+    return JavaExpression.getReceiverDeclarationAsField(classTree, leftmostReceiver);
   }
 }

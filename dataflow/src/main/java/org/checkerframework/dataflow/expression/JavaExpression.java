@@ -961,7 +961,7 @@ public abstract class JavaExpression {
    * @param receiver the receiver for which to look up a declaration
    * @return the declaration of the receiver of the method call, if found. Otherwise, null
    */
-  public static @Nullable VariableTree getReceiverDeclarationInClass(
+  public static @Nullable VariableTree getReceiverDeclarationAsField(
       @Nullable ClassTree tree, JavaExpression receiver) {
     if (tree == null) {
       return null;
