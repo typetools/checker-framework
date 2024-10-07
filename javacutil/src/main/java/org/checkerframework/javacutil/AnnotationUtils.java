@@ -85,11 +85,12 @@ public class AnnotationUtils {
   /**
    * Returns the fully-qualified name of an annotation as a String.
    *
+   * <p>This is more efficient than calling {@link annotationName} and {@link
+   * java.lang.String#intern}.
+   *
    * @param annotation the annotation whose name to return
    * @return the fully-qualified name of an annotation as a String
-   * @deprecated use {@link annotationName} and {@link java.lang.String#intern}
    */
-  @Deprecated // 2024-10-05
   public static final @CanonicalName @Interned String annotationNameInterned(
       AnnotationMirror annotation) {
     if (annotation instanceof AnnotationBuilder.CheckerFrameworkAnnotationMirror) {
