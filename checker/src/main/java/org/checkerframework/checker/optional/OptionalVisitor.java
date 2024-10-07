@@ -400,7 +400,7 @@ public class OptionalVisitor
   public void processMethodTree(MethodTree tree) {
     if (this.isAnnotatedWithNonEmptyPrecondition(tree)
         || this.isAnyFormalAnnotatedWithNonEmpty(tree)) {
-      updateMethodToCheckWithNonEmptyCheckerGivenPreconditions(tree);
+      addMethodToVerifyWithNonEmptyChecker(tree);
     }
     if (this.isReturnTypeAnnotatedWithNonEmpty(tree)) {
       methodsToVerifyWithNonEmptyChecker.add(tree);
@@ -409,17 +409,12 @@ public class OptionalVisitor
   }
 
   /**
-   * Updates {@link methodsToVerifyWithNonEmptyChecker} when a method with a precondition from the
-   * Non-Empty type system (e.g., {@link RequiresNonEmpty}) or a formal annotated with {@link
-   * NonEmpty} is visited.
-   *
-   * <p>If the method being visited is in {@link calleesToCallers}, the methods to check with the
-   * Non-Empty Checker should be updated with all the methods that dispatch calls to this method.
+   * Updates {@link methodsToVerifyWithNonEmptyChecker}.
    *
    * @param methodDecl a method declaration that definitely has a precondition regarding
    *     {@code @NonEmpty}
    */
-  private void updateMethodToCheckWithNonEmptyCheckerGivenPreconditions(MethodTree methodDecl) {
+  private void addMethodToVerifyWithNonEmptyChecker(MethodTree methodDecl) {
     String methodName = methodDecl.getName().toString();
     if (calleesToCallers.containsKey(methodName)) {
       methodsToVerifyWithNonEmptyChecker.addAll(calleesToCallers.get(methodName));
@@ -636,8 +631,9 @@ public class OptionalVisitor
   }
 
   /**
-   * Given a variable declaration, add the enclosing method in which it is found (if one exists) to
-   * the set of methods that must be verified with the Non-Empty Checker.
+   * Given a variable declaration annotated with @{@link NonEmpty}, add the enclosing method in
+   * which it is found (if one exists) to the set of methods that must be verified with the
+   * Non-Empty Checker.
    *
    * @param tree a variable declaration
    */
