@@ -41,8 +41,8 @@ public class ArrayAccessNode extends Node {
   protected @Nullable ExpressionTree arrayExpression;
 
   /**
-   * If this ArrayAccessNode is a node for an array desugared from an enhanced for loop, then the
-   * {@code enhancedForLoop} field is the {@code EnhancedForLoopTree} AST node.
+   * If this ArrayAccessNode is a node for an array access desugared from an enhanced for loop, then
+   * the {@code enhancedForLoop} field is the {@code EnhancedForLoopTree} AST node.
    *
    * <p>Is set by {@link #setEnhancedForLoop}.
    */
@@ -85,11 +85,11 @@ public class ArrayAccessNode extends Node {
   }
 
   /**
-   * If this ArrayAccessNode is a node for an array desugared from an enhanced for loop, then return
-   * the {@code enhancedForLoop} AST node. Otherwise, return null.
+   * If this ArrayAccessNode is a node for an array access desugared from an enhanced for loop, then
+   * return the {@code EnhancedForLoopTree} AST node. Otherwise, return null.
    *
-   * @return the {@code EnhancedForLoopTree}, or null if this is not an array desugared from an
-   *     enhanced for loop
+   * @return the {@code EnhancedForLoopTree}, or null if this is not an array access desugared from
+   *     an enhanced for loop
    */
   public @Nullable EnhancedForLoopTree getEnhancedForLoop() {
     return enhancedForLoop;
