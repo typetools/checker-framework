@@ -33,9 +33,7 @@ import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.util.TreePath;
-import java.lang.annotation.Annotation;
 import java.util.List;
-import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -55,7 +53,6 @@ import org.checkerframework.framework.flow.CFCFGBuilder;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
@@ -145,16 +142,6 @@ public class NullnessVisitor
     // The Nullness Checker issues a more comprehensible "nullness.on.primitive" error rather
     // than the "annotations.on.use" error this method would issue.
     return true;
-  }
-
-  private boolean containsSameByName(
-      Set<Class<? extends Annotation>> quals, AnnotationMirror anno) {
-    for (Class<? extends Annotation> q : quals) {
-      if (atypeFactory.areSameByClass(anno, q)) {
-        return true;
-      }
-    }
-    return false;
   }
 
   @Override
@@ -751,27 +738,19 @@ public class NullnessVisitor
     if (enclosingExpr != null) {
       checkForNullability(enclosingExpr, DEREFERENCE_OF_NULLABLE);
     }
-    AnnotatedDeclaredType type = atypeFactory.getAnnotatedType(tree);
-    ExpressionTree identifier = tree.getIdentifier();
-    if (identifier instanceof AnnotatedTypeTree) {
-      AnnotatedTypeTree t = (AnnotatedTypeTree) identifier;
-      for (AnnotationMirror a : atypeFactory.getAnnotatedType(t).getPrimaryAnnotations()) {
-        // is this an annotation of the nullness checker?
-        boolean nullnessCheckerAnno = containsSameByName(atypeFactory.getNullnessAnnotations(), a);
-        if (nullnessCheckerAnno && !AnnotationUtils.areSame(NONNULL, a)) {
-          // The type is not non-null => warning
-          checker.reportWarning(tree, "new.class", type.getPrimaryAnnotations());
-          // Note that other consistency checks are made by isValid.
+
+    AnnotationMirrorSet explicitAnnos = atypeFactory.getExplicitNewClassAnnos(tree);
+    AnnotationMirror nullnessAnno =
+        qualHierarchy.findAnnotationInSameHierarchy(explicitAnnos, NONNULL);
+    if (nullnessAnno != null) {
+      if (atypeFactory.areSameByClass(nullnessAnno, NonNull.class)) {
+        if (warnRedundantAnnotations) {
+          checker.reportWarning(tree, "redundant.anno", NONNULL);
         }
-      }
-      if (t.toString().contains("@PolyNull")) {
-        // TODO: this is a hack, but PolyNull gets substituted
-        // afterwards
-        checker.reportWarning(tree, "new.class", type.getPrimaryAnnotations());
+      } else {
+        checker.reportWarning(tree, "new.class");
       }
     }
-    // TODO: It might be nicer to introduce a framework-level
-    // isValidNewClassType or some such.
     return super.visitNewClass(tree, p);
   }
 

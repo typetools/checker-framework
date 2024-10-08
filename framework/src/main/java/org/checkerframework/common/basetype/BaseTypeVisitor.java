@@ -271,7 +271,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   private final boolean checkCastElementType;
 
   /** True if "-AwarnRedundantAnnotations" was passed on the command line */
-  private final boolean warnRedundantAnnotations;
+  protected final boolean warnRedundantAnnotations;
 
   /** The tree of the enclosing method that is currently being visited, if any. */
   protected @Nullable MethodTree methodTree = null;
