@@ -209,6 +209,11 @@ public class OptionalTransfer extends CFTransfer {
     ExpressionTree receiverTree = TreeUtils.getReceiverTree(methodInvok.getTree());
     JavaExpression receiver;
     if (receiverTree instanceof MethodInvocationTree) {
+      // TODO(https://github.com/typetools/checker-framework/issues/6848): this logic needs further
+      // refinement to eliminate a source of false positives in the Optional Checker.
+      // Also see the discussion in:
+      // https://github.com/typetools/checker-framework/pull/6685#discussion_r1788632663 for
+      // additional context.
       receiver = JavaExpression.getLeftmostReceiverOfMethodInvocation(receiverTree);
     } else {
       receiver = JavaExpression.fromTree(receiverTree);
