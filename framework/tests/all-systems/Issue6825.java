@@ -17,7 +17,7 @@ public class Issue6825 {
 
   private List<? extends SomeClass> typeParameters = null;
 
-  public Issue6825(InferenceCrash other) {
+  public Issue6825(Issue6825 other) {
     this.typeParameters =
         other.typeParameters == null ? null : new ArrayList<>(other.typeParameters);
   }
