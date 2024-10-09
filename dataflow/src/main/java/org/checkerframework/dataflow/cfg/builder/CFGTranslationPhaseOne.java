@@ -3123,6 +3123,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       handleArtificialTree(arrayAccess);
       ArrayAccessNode arrayAccessNode = new ArrayAccessNode(arrayAccess, arrayNode2, indexNode2);
       arrayAccessNode.setArrayExpression(expression);
+      arrayAccessNode.setEnhancedForLoop(tree);
       arrayAccessNode.setInSource(false);
       extendWithNode(arrayAccessNode);
       AssignmentNode arrayAccessAssignNode =
@@ -3133,6 +3134,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       Node arrayAccessAssignNodeExpr = arrayAccessAssignNode.getExpression();
       if (arrayAccessAssignNodeExpr instanceof ArrayAccessNode) {
         ((ArrayAccessNode) arrayAccessAssignNodeExpr).setArrayExpression(expression);
+        ((ArrayAccessNode) arrayAccessAssignNodeExpr).setEnhancedForLoop(tree);
       } else if (arrayAccessAssignNodeExpr instanceof MethodInvocationNode) {
         // If the array component type is a primitive, there may be a boxing or unboxing
         // conversion. Treat that as an iterator.
