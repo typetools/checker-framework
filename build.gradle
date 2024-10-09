@@ -327,6 +327,11 @@ allprojects { currentProj ->
       checkerFatJar(project(path: ':checker', configuration: 'fatJar'))
     }
 
+    tasks.create(name: 'typecheck-afu', group: 'Verification') {
+      description 'Run the Checker Framework on Annotaiton File Utilities'
+      dependsOn gradle.includedBuild('annotation-file-utilities').task(':checkSignature')
+    }
+
     // Add the fat checker.jar to the classpath of every Javadoc task. This allows Javadoc in
     // any module to reference classes in any other module.
     // Also, build and use ManualTaglet as a taglet.
@@ -1071,6 +1076,7 @@ subprojects {
     tasks.create(name: 'typecheck-part1', group: 'Verification') {
       description 'Run the Checker Framework on itself (part 1)'
       dependsOn('checkFormatter', 'checkInterning', 'checkOptional', 'checkPurity')
+      dependsOn('typecheck-afu')
     }
     tasks.create(name: 'typecheck-part2', group: 'Verification') {
       description 'Run the Checker Framework on itself (part 2)'
