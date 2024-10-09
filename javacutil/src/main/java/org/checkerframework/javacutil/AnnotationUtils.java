@@ -157,10 +157,8 @@ public class AnnotationUtils {
       throw new BugInCF("Unexpected null argument:  compareByName(%s, %s)", a1, a2);
     }
 
-    // annotationName() contains a check for CheckerFrameworkAnnotationMirror, so the final `return`
-    // statement of this method should run about as fast as this `if` block.  Is the point of this
-    // block just the `if (name1 == name2) { return 0; }`, or is there some other justification for
-    // it?
+    // This is largely duplicated code.  The point of this block is that
+    // the `if (name1 == name2)` test is very fast.
     if (a1 instanceof CheckerFrameworkAnnotationMirror
         && a2 instanceof CheckerFrameworkAnnotationMirror) {
       @Interned @CanonicalName String name1 = ((CheckerFrameworkAnnotationMirror) a1).annotationName;
