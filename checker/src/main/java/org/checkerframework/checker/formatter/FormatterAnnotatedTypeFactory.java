@@ -154,7 +154,7 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     return !declarationAnnos.isEmpty()
         && (containsSameByClass(
                 declarationAnnos, org.checkerframework.checker.formatter.qual.FormatMethod.class)
-            || containsSameByName(
+            || AnnotationUtils.containsSameByName(
                 declarationAnnos, "com.google.errorprone.annotations.FormatMethod"));
   }
 
