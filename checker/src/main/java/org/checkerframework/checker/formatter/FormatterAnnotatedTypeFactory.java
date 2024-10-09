@@ -152,9 +152,9 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos methodAnnos) {
     AnnotationMirrorSet declarationAnnos = methodAnnos.getDeclarationAnnotations();
     return !declarationAnnos.isEmpty()
-        && (AnnotationUtils.containsSameByClass(
+        && (containsSameByClass(
                 declarationAnnos, org.checkerframework.checker.formatter.qual.FormatMethod.class)
-            || AnnotationUtils.containsSameByName(
+            || containsSameByName(
                 declarationAnnos, "com.google.errorprone.annotations.FormatMethod"));
   }
 
