@@ -16,4 +16,4 @@ source "$SCRIPTDIR"/clone-related.sh
 
 # Also run the Checker Framework on AFU.
 ./gradlew assembleForJavac --console=plain --warning-mode=all
-./gradlew :annotation-file-utilities:checkSignature --console=plain --warning-mode=alle
+./gradlew :annotation-file-utilities:checkSignature --console=plain --warning-mode=all
