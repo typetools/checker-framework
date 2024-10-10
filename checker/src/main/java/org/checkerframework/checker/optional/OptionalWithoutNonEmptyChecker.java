@@ -19,9 +19,9 @@ import org.checkerframework.framework.source.SupportedOptions;
 @RelevantJavaTypes(Optional.class)
 @StubFiles({"javaparser.astub"})
 @SupportedOptions("optionalMapAssumeNonNull")
-public class OptionalChecker extends BaseTypeChecker {
+public class OptionalWithoutNonEmptyChecker extends BaseTypeChecker {
   /** Create an OptionalChecker. */
-  public OptionalChecker() {}
+  public OptionalWithoutNonEmptyChecker() {}
 
   @Override
   protected Set<Class<? extends SourceChecker>> getImmediateSubcheckerClasses() {

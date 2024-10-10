@@ -66,7 +66,9 @@ class Main {
 
   class OptContainer {
 
-    @SuppressWarnings("optional:field") // Don't care about this warning, unrelated to the test case
+    @SuppressWarnings(
+        "optionalwithoutnonempty:field") // Don't care about this warning, unrelated to the test
+    // case
     private Optional<String> opt;
 
     public OptContainer(String s) {
