@@ -31,7 +31,7 @@ import org.checkerframework.framework.qual.PostconditionAnnotation;
  * </code></pre>
  *
  * @see Present
- * @see org.checkerframework.checker.optional.OptionalChecker
+ * @see org.checkerframework.checker.optional.OptionalWithoutNonEmptyChecker
  * @checker_framework.manual #optional-checker Optional Checker
  */
 @Documented
