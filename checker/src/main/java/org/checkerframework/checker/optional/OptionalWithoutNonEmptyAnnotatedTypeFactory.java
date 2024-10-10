@@ -22,7 +22,7 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.TreeUtils;
 
 /** OptionalAnnotatedTypeFactory for the Optional Checker. */
-public class OptionalAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
+public class OptionalWithoutNonEmptyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   /** The element for java.util.Optional.map(). */
   private final ExecutableElement optionalMap;
@@ -35,7 +35,7 @@ public class OptionalAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    *
    * @param checker the Optional Checker associated with this type factory
    */
-  public OptionalAnnotatedTypeFactory(BaseTypeChecker checker) {
+  public OptionalWithoutNonEmptyAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     postInit();
     optionalMap = TreeUtils.getMethodOrNull("java.util.Optional", "map", 1, getProcessingEnv());
@@ -128,6 +128,6 @@ public class OptionalAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   @Override
   public CFTransfer createFlowTransferFunction(
       CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
-    return new OptionalTransfer(analysis);
+    return new OptionalWithoutNonEmptyTransfer(analysis);
   }
 }

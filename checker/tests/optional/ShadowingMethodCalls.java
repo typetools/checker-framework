@@ -2,7 +2,7 @@ import java.util.Optional;
 import org.checkerframework.checker.optional.qual.EnsuresPresent;
 import org.checkerframework.dataflow.qual.Pure;
 
-@SuppressWarnings({"optional:field", "optional:parameter"})
+@SuppressWarnings({"optionalwithoutnonempty:field", "optionalwithoutnonempty:parameter"})
 public class ShadowingMethodCalls {
 
   Optional<String> f;

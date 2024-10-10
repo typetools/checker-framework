@@ -2,8 +2,8 @@ package org.checkerframework.checker.nonempty;
 
 import com.sun.source.tree.MethodTree;
 import java.util.Set;
-import org.checkerframework.checker.optional.OptionalChecker;
-import org.checkerframework.checker.optional.OptionalVisitor;
+import org.checkerframework.checker.optional.OptionalWithoutNonEmptyChecker;
+import org.checkerframework.checker.optional.OptionalWithoutNonEmptyVisitor;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.source.SupportedOptions;
@@ -52,7 +52,7 @@ public class NonEmptyChecker extends BaseTypeChecker {
   protected Set<Class<? extends SourceChecker>> getImmediateSubcheckerClasses() {
     Set<Class<? extends SourceChecker>> checkers = super.getImmediateSubcheckerClasses();
     if (shouldRunAsOptionalChecker()) {
-      checkers.add(OptionalChecker.class);
+      checkers.add(OptionalWithoutNonEmptyChecker.class);
     }
     return checkers;
   }
@@ -74,9 +74,11 @@ public class NonEmptyChecker extends BaseTypeChecker {
   private Set<MethodTree> getMethodsToVerify() {
     assert shouldRunAsOptionalChecker; // Invariant: this method is invoked iff
     // shouldRunAsOptionalChecker is true
-    OptionalChecker optionalChecker = getSubchecker(OptionalChecker.class);
+    OptionalWithoutNonEmptyChecker optionalChecker =
+        getSubchecker(OptionalWithoutNonEmptyChecker.class);
     assert optionalChecker != null : "@AssumeAssertion(nullness): runAsOptionalChecker is true";
-    OptionalVisitor optionalVisitor = (OptionalVisitor) optionalChecker.getVisitor();
+    OptionalWithoutNonEmptyVisitor optionalVisitor =
+        (OptionalWithoutNonEmptyVisitor) optionalChecker.getVisitor();
     return optionalVisitor.getMethodsToVerifyWithNonEmptyChecker();
   }
 

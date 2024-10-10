@@ -3,7 +3,7 @@ import java.util.function.Function;
 
 class OptionalClosureTest {
 
-  @SuppressWarnings("optional:field") // We don't care, not the point of this test
+  @SuppressWarnings("optionalwithoutnonempty:field") // We don't care, not the point of this test
   public Optional<String> opt;
 
   public Function<String, String> test() {
@@ -16,6 +16,7 @@ class OptionalClosureTest {
     return str -> "Hello";
   }
 
-  @SuppressWarnings("optional:parameter") // We don't care, not the point of this test
+  @SuppressWarnings(
+      "optionalwithoutnonempty:parameter") // We don't care, not the point of this test
   public void setOpt(Optional<String> opt) {}
 }
