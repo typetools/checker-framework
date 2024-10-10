@@ -69,10 +69,13 @@ public class LessThanVisitor extends BaseTypeVisitor<LessThanAnnotatedTypeFactor
   @Override
   protected boolean commonAssignmentCheck(
       AnnotatedTypeMirror varType,
-      AnnotatedTypeMirror valueType,
-      Tree valueTree,
+      ExpressionTree valueTree,
       @CompilerMessageKey String errorKey,
       Object... extraArgs) {
+
+    if (shouldSkipUses(valueTree)) {
+      return true;
+    }
     // If value is less than all expressions in the annotation in varType,
     // using the Value Checker, then skip the common assignment check.
     // Also skip the check if the only expression is "a + 1" and the valueTree is "a".
@@ -101,14 +104,11 @@ public class LessThanVisitor extends BaseTypeVisitor<LessThanAnnotatedTypeFactor
       }
 
       if (isLessThan) {
-        // Print the messages because super isn't called.
-        commonAssignmentCheckStartDiagnostic(varType, valueType, valueTree);
-        commonAssignmentCheckEndDiagnostic(true, "isLessThan", varType, valueType, valueTree);
         // skip call to super, everything is OK.
         return true;
       }
     }
-    return super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, extraArgs);
+    return super.commonAssignmentCheck(varType, valueTree, errorKey, extraArgs);
   }
 
   @Override
