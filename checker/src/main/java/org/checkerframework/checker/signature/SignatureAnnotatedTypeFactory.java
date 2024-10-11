@@ -84,6 +84,10 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   protected final AnnotationMirror PRIMITIVE_TYPE =
       AnnotationBuilder.fromClass(elements, PrimitiveType.class);
 
+  /** The {@literal @}{@link Identifier} annotation. */
+  protected final AnnotationMirror IDENTIFIER =
+      AnnotationBuilder.fromClass(elements, Identifier.class);
+
   /** The {@link String#replace(char, char)} method. */
   private final ExecutableElement replaceCharChar =
       TreeUtils.getMethod("java.lang.String", "replace", processingEnv, "char", "char");
@@ -209,9 +213,20 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
+
       if (TreeUtils.isStringConcatenation(tree)) {
-        // This could be made more precise.
-        type.replaceAnnotation(SIGNATURE_UNKNOWN);
+        AnnotatedTypeMirror lType = getAnnotatedType(tree.getLeftOperand());
+        AnnotatedTypeMirror rType = getAnnotatedType(tree.getRightOperand());
+
+        // An identifier can end, but not start, with digits
+        if (lType.getPrimaryAnnotation(Identifier.class) != null
+            && (rType.getPrimaryAnnotation(Identifier.class) != null
+                || TypesUtils.isIntegralNumericOrBoxed(rType.getUnderlyingType()))) {
+          type.replaceAnnotation(IDENTIFIER);
+        } else {
+          // This could be made more precise.
+          type.replaceAnnotation(SIGNATURE_UNKNOWN);
+        }
       }
       return null; // super.visitBinary(tree, type);
     }

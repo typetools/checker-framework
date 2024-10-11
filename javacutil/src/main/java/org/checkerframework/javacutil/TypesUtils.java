@@ -576,6 +576,46 @@ public final class TypesUtils {
   }
 
   /**
+   * Returns true iff the argument is an integral primitive type.
+   *
+   * @param type a type
+   * @return whether the argument is an integral primitive type
+   */
+  public static boolean isIntegralNumericPrimitive(TypeMirror type) {
+    return isIntegralNumericPrimitive(type.getKind());
+  }
+
+  /**
+   * Returns true iff the argument is an integral primitive type.
+   *
+   * @param typeKind a type kind
+   * @return whether the argument is an integral primitive type
+   */
+  public static boolean isIntegralNumericPrimitive(TypeKind typeKind) {
+    switch (typeKind) {
+      case BYTE:
+      case INT:
+      case LONG:
+      case SHORT:
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  /**
+   * Return true if the argument TypeMirror is a (possibly boxed) integral type, excluding char and
+   * Character which do not print as numbers.
+   *
+   * @param type the type to inspect
+   * @return true if type is an integral numeric type
+   */
+  public static boolean isIntegralNumericOrBoxed(TypeMirror type) {
+    TypeKind kind = TypeKindUtils.primitiveOrBoxedToTypeKind(type);
+    return kind != null && TypeKindUtils.isIntegralNumeric(kind);
+  }
+
+  /**
    * Returns true if declaredType is a Class that is used to box primitive type (e.g.
    * declaredType=java.lang.Double and primitiveType=22.5d )
    *
