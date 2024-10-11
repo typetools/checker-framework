@@ -231,10 +231,10 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      *
      * <pre><code>
      * {@literal @}InternalForm String internalForm = binaryName.replace('.', '/');
-     * {@literal @}BinaryName String binaryName = internalForm.replace('/', '.');
+     * {@literal @}DotSeparatedIdentifiers String dsi = internalForm.replace('/', '.');
      * </code></pre>
      *
-     * Class.getName and Class.getCanonicalName(): Cwhen called on a primitive type ,the return a
+     * Class.getName and Class.getCanonicalName(): when called on a primitive type, they return a
      * {@link PrimitiveType}. When called on a non-array, non-nested, non-primitive type, they
      * return a {@link BinaryName}:
      *
@@ -276,7 +276,7 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
           type.replaceAnnotation(INTERNAL_FORM);
         } else if ((oldChar == '/' && newChar == '.')
             && receiverType.getPrimaryAnnotation(InternalForm.class) != null) {
-          type.replaceAnnotation(BINARY_NAME);
+          type.replaceAnnotation(DOT_SEPARATED_IDENTIFIERS);
         }
       } else {
         boolean isClassGetName = TreeUtils.isMethodInvocation(tree, classGetName, processingEnv);
