@@ -2849,6 +2849,7 @@ public final class TreeUtils {
    * @return whether or not {@code expression} is a standalone expression
    */
   public static boolean isStandaloneExpression(ExpressionTree expression) {
+    expression = TreeUtils.withoutParens(expression);
     if (expression instanceof JCTree.JCExpression) {
       if (((JCTree.JCExpression) expression).isStandalone()) {
         return true;
