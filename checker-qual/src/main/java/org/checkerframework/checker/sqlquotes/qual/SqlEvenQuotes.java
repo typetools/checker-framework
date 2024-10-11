@@ -1,4 +1,4 @@
-opackage org.checkerframework.checker.sqlquotes.qual;
+package org.checkerframework.checker.sqlquotes.qual;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
