@@ -542,26 +542,7 @@ public final class TypesUtils {
    * @return whether the argument is an integral primitive type
    */
   public static boolean isIntegralPrimitive(TypeMirror type) {
-    return isIntegralPrimitive(type.getKind());
-  }
-
-  /**
-   * Returns true iff the argument is an integral primitive type.
-   *
-   * @param typeKind a type kind
-   * @return whether the argument is an integral primitive type
-   */
-  public static boolean isIntegralPrimitive(TypeKind typeKind) {
-    switch (typeKind) {
-      case BYTE:
-      case CHAR:
-      case INT:
-      case LONG:
-      case SHORT:
-        return true;
-      default:
-        return false;
-    }
+    return TypeKindUtils.isIntegral(type.getKind());
   }
 
   /**
@@ -582,25 +563,7 @@ public final class TypesUtils {
    * @return whether the argument is an integral primitive type
    */
   public static boolean isIntegralNumericPrimitive(TypeMirror type) {
-    return isIntegralNumericPrimitive(type.getKind());
-  }
-
-  /**
-   * Returns true iff the argument is an integral primitive type.
-   *
-   * @param typeKind a type kind
-   * @return whether the argument is an integral primitive type
-   */
-  public static boolean isIntegralNumericPrimitive(TypeKind typeKind) {
-    switch (typeKind) {
-      case BYTE:
-      case INT:
-      case LONG:
-      case SHORT:
-        return true;
-      default:
-        return false;
-    }
+    return TypeKindUtils.isIntegralNumeric(type.getKind());
   }
 
   /**
