@@ -84,6 +84,10 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   protected final AnnotationMirror PRIMITIVE_TYPE =
       AnnotationBuilder.fromClass(elements, PrimitiveType.class);
 
+  /** The {@literal @}{@link Identifier} annotation. */
+  protected final AnnotationMirror IDENTIFIER =
+      AnnotationBuilder.fromClass(elements, Identifier.class);
+
   /** The {@link String#replace(char, char)} method. */
   private final ExecutableElement replaceCharChar =
       TreeUtils.getMethod("java.lang.String", "replace", processingEnv, "char", "char");
@@ -209,9 +213,20 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
+
       if (TreeUtils.isStringConcatenation(tree)) {
-        // This could be made more precise.
-        type.replaceAnnotation(SIGNATURE_UNKNOWN);
+        AnnotatedTypeMirror lType = getAnnotatedType(tree.getLeftOperand());
+        AnnotatedTypeMirror rType = getAnnotatedType(tree.getRightOperand());
+
+        // An identifier can end, but not start, with digits
+        if (lType.getPrimaryAnnotation(Identifier.class) != null
+            && (rType.getPrimaryAnnotation(Identifier.class) != null
+                || TypesUtils.isIntegralNumericOrBoxed(rType.getUnderlyingType()))) {
+          type.replaceAnnotation(IDENTIFIER);
+        } else {
+          // This could be made more precise.
+          type.replaceAnnotation(SIGNATURE_UNKNOWN);
+        }
       }
       return null; // super.visitBinary(tree, type);
     }
@@ -231,10 +246,10 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      *
      * <pre><code>
      * {@literal @}InternalForm String internalForm = binaryName.replace('.', '/');
-     * {@literal @}BinaryName String binaryName = internalForm.replace('/', '.');
+     * {@literal @}DotSeparatedIdentifiers String dsi = internalForm.replace('/', '.');
      * </code></pre>
      *
-     * Class.getName and Class.getCanonicalName(): Cwhen called on a primitive type ,the return a
+     * Class.getName and Class.getCanonicalName(): when called on a primitive type, they return a
      * {@link PrimitiveType}. When called on a non-array, non-nested, non-primitive type, they
      * return a {@link BinaryName}:
      *
@@ -276,7 +291,7 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
           type.replaceAnnotation(INTERNAL_FORM);
         } else if ((oldChar == '/' && newChar == '.')
             && receiverType.getPrimaryAnnotation(InternalForm.class) != null) {
-          type.replaceAnnotation(BINARY_NAME);
+          type.replaceAnnotation(DOT_SEPARATED_IDENTIFIERS);
         }
       } else {
         boolean isClassGetName = TreeUtils.isMethodInvocation(tree, classGetName, processingEnv);
