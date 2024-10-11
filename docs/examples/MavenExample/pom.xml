@@ -108,7 +108,7 @@
         <plugins>
           <plugin>
             <!-- This plugin execution will copy the com.google.errorprone:javac jar file to
-                 your project’s output directory without adding that jar as an explicit
+                 your project's output directory without adding that jar as an explicit
                  dependency. -->
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-dependency-plugin</artifactId>
