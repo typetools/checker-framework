@@ -542,26 +542,7 @@ public final class TypesUtils {
    * @return whether the argument is an integral primitive type
    */
   public static boolean isIntegralPrimitive(TypeMirror type) {
-    return isIntegralPrimitive(type.getKind());
-  }
-
-  /**
-   * Returns true iff the argument is an integral primitive type.
-   *
-   * @param typeKind a type kind
-   * @return whether the argument is an integral primitive type
-   */
-  public static boolean isIntegralPrimitive(TypeKind typeKind) {
-    switch (typeKind) {
-      case BYTE:
-      case CHAR:
-      case INT:
-      case LONG:
-      case SHORT:
-        return true;
-      default:
-        return false;
-    }
+    return TypeKindUtils.isIntegral(type.getKind());
   }
 
   /**
@@ -573,6 +554,28 @@ public final class TypesUtils {
   public static boolean isIntegralPrimitiveOrBoxed(TypeMirror type) {
     TypeKind kind = TypeKindUtils.primitiveOrBoxedToTypeKind(type);
     return kind != null && TypeKindUtils.isIntegral(kind);
+  }
+
+  /**
+   * Returns true iff the argument is an integral primitive type.
+   *
+   * @param type a type
+   * @return whether the argument is an integral primitive type
+   */
+  public static boolean isIntegralNumericPrimitive(TypeMirror type) {
+    return TypeKindUtils.isIntegralNumeric(type.getKind());
+  }
+
+  /**
+   * Return true if the argument TypeMirror is a (possibly boxed) integral type, excluding char and
+   * Character which do not print as numbers.
+   *
+   * @param type the type to inspect
+   * @return true if type is an integral numeric type
+   */
+  public static boolean isIntegralNumericOrBoxed(TypeMirror type) {
+    TypeKind kind = TypeKindUtils.primitiveOrBoxedToTypeKind(type);
+    return kind != null && TypeKindUtils.isIntegralNumeric(kind);
   }
 
   /**

@@ -33,6 +33,25 @@ public final class TypeKindUtils {
   }
 
   /**
+   * Return true if the argument is one of INT, SHORT, BYTE, LONG.
+   *
+   * @param typeKind the TypeKind to inspect
+   * @return true if typeKind is a primitive integral type kind, excluding CHAR which does not print
+   *     as an integer
+   */
+  public static boolean isIntegralNumeric(TypeKind typeKind) {
+    switch (typeKind) {
+      case INT:
+      case SHORT:
+      case BYTE:
+      case LONG:
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  /**
    * Return true if the argument is one of FLOAT, DOUBLE.
    *
    * @param typeKind the TypeKind to inspect
