@@ -1,10 +1,10 @@
-package org.checkerframework.checker.nonempty;
+package org.checkerframework.checker.optional;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.NewArrayTree;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
-import org.checkerframework.checker.nonempty.qual.NonEmpty;
+import org.checkerframework.checker.optional.qual.NonEmpty;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -13,18 +13,18 @@ import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
 
-/** The type factory for the {@link NonEmptyChecker}. */
-public class NonEmptyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
+/** The type factory for the {@link OptionalChecker}. */
+public class OptionalAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   /** The @{@link NonEmpty} annotation. */
   public final AnnotationMirror NON_EMPTY = AnnotationBuilder.fromClass(elements, NonEmpty.class);
 
   /**
-   * Creates a new {@link NonEmptyAnnotatedTypeFactory} that operates on a particular AST.
+   * Creates a new {@link OptionalAnnotatedTypeFactory} that operates on a particular AST.
    *
    * @param checker the checker to use
    */
-  public NonEmptyAnnotatedTypeFactory(BaseTypeChecker checker) {
+  public OptionalAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     this.sideEffectsUnrefineAliases = true;
     this.postInit();

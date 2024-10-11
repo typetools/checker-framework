@@ -1,4 +1,4 @@
-package org.checkerframework.checker.nonempty.qual;
+package org.checkerframework.checker.optional.qual;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;

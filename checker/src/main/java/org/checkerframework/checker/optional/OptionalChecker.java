@@ -1,9 +1,7 @@
-package org.checkerframework.checker.nonempty;
+package org.checkerframework.checker.optional;
 
 import com.sun.source.tree.MethodTree;
 import java.util.Set;
-import org.checkerframework.checker.optional.OptionalWithoutNonEmptyChecker;
-import org.checkerframework.checker.optional.OptionalWithoutNonEmptyVisitor;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.source.SupportedOptions;
@@ -26,7 +24,7 @@ import org.checkerframework.framework.source.SupportedOptions;
  * @checker_framework.manual #non-empty-checker Non-Empty Checker
  */
 @SupportedOptions("runAsOptionalChecker")
-public class NonEmptyChecker extends BaseTypeChecker {
+public class OptionalChecker extends BaseTypeChecker {
 
   /** True if the {@code shouldRunOptionalChecker} variable has been set. */
   private boolean isShouldRunOptionalCheckerSet = false;
@@ -37,7 +35,7 @@ public class NonEmptyChecker extends BaseTypeChecker {
   private boolean shouldRunAsOptionalChecker = false;
 
   /** Creates a NonEmptyChecker. */
-  public NonEmptyChecker() {
+  public OptionalChecker() {
     super();
   }
 

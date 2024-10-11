@@ -2,6 +2,7 @@ package org.checkerframework.checker.test.junit;
 
 import java.io.File;
 import java.util.List;
+import org.checkerframework.checker.optional.OptionalChecker;
 import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
@@ -14,7 +15,7 @@ public class NonEmptyTest extends CheckerFrameworkPerDirectoryTest {
    * @param testFiles the files containing test code to be type-checked
    */
   public NonEmptyTest(List<File> testFiles) {
-    super(testFiles, org.checkerframework.checker.nonempty.NonEmptyChecker.class, "nonempty");
+    super(testFiles, OptionalChecker.class, "nonempty");
   }
 
   @Parameters

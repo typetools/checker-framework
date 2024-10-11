@@ -33,12 +33,12 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
-import org.checkerframework.checker.nonempty.qual.NonEmpty;
-import org.checkerframework.checker.nonempty.qual.RequiresNonEmpty;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.optional.qual.NonEmpty;
 import org.checkerframework.checker.optional.qual.OptionalCreator;
 import org.checkerframework.checker.optional.qual.OptionalEliminator;
 import org.checkerframework.checker.optional.qual.OptionalPropagator;
+import org.checkerframework.checker.optional.qual.RequiresNonEmpty;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeValidator;
@@ -114,13 +114,11 @@ public class OptionalWithoutNonEmptyVisitor
   }
 
   /**
-   * Gets the set of methods that should be verified using the {@link
-   * org.checkerframework.checker.nonempty.NonEmptyChecker}.
+   * Gets the set of methods that should be verified using the {@link OptionalChecker}.
    *
    * <p>This should only be called by the Non-Empty Checker.
    *
-   * @return the set of methods that should be verified using the {@link
-   *     org.checkerframework.checker.nonempty.NonEmptyChecker}
+   * @return the set of methods that should be verified using the {@link OptionalChecker}
    */
   @Pure
   public Set<MethodTree> getMethodsToVerifyWithNonEmptyChecker() {

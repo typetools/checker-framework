@@ -1,9 +1,9 @@
-package org.checkerframework.checker.nonempty;
+package org.checkerframework.checker.optional;
 
 import java.util.List;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.ExecutableElement;
-import org.checkerframework.checker.nonempty.qual.NonEmpty;
+import org.checkerframework.checker.optional.qual.NonEmpty;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.CaseNode;
@@ -28,13 +28,13 @@ import org.checkerframework.javacutil.TreeUtils;
 /**
  * This class implements type rules that cannot be expressed via pre- or post-condition annotations.
  */
-public class NonEmptyTransfer extends CFTransfer {
+public class OptionalTransfer extends CFTransfer {
 
   /** A {@link ProcessingEnvironment} instance. */
   private final ProcessingEnvironment env;
 
-  /** A {@link NonEmptyAnnotatedTypeFactory} instance. */
-  protected final NonEmptyAnnotatedTypeFactory aTypeFactory;
+  /** A {@link OptionalAnnotatedTypeFactory} instance. */
+  protected final OptionalAnnotatedTypeFactory aTypeFactory;
 
   /** The {@link java.util.Collection#size()} method. */
   private final ExecutableElement collectionSize;
@@ -46,15 +46,15 @@ public class NonEmptyTransfer extends CFTransfer {
   private final ExecutableElement listIndexOf;
 
   /**
-   * Create a new {@link NonEmptyTransfer}.
+   * Create a new {@link OptionalTransfer}.
    *
    * @param analysis the analysis for this transfer function
    */
-  public NonEmptyTransfer(CFAnalysis analysis) {
+  public OptionalTransfer(CFAnalysis analysis) {
     super(analysis);
 
     this.env = analysis.getTypeFactory().getProcessingEnv();
-    this.aTypeFactory = (NonEmptyAnnotatedTypeFactory) analysis.getTypeFactory();
+    this.aTypeFactory = (OptionalAnnotatedTypeFactory) analysis.getTypeFactory();
 
     this.collectionSize = TreeUtils.getMethod("java.util.Collection", "size", 0, this.env);
     this.mapSize = TreeUtils.getMethod("java.util.Map", "size", 0, this.env);
