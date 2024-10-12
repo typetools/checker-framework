@@ -2739,7 +2739,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       Tree parent = TreePathUtil.getContextForPolyExpression(getCurrentPath());
       if (parent != null) {
         exprType = TreeUtils.typeOf(parent);
-        // exprType is null when the condition is non-atomic, e.g.: x.isEmpty() ? null : null
+        // exprType is null when the condition is non-atomic, e.g.: x.isEmpty() ? null :
+        // null
       }
       if (parent == null || exprType == null) {
         exprType = TypesUtils.getObjectTypeMirror(env);
