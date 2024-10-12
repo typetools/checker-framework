@@ -1492,6 +1492,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     AnnotatedTypeMirror fromTypeTree = fromTypeTree(clause);
     AnnotationMirrorSet bound = getTypeDeclarationBounds(fromTypeTree.getUnderlyingType());
     fromTypeTree.addMissingAnnotations(bound);
+    addComputedTypeAnnotations(clause, fromTypeTree);
     return fromTypeTree;
   }
 
@@ -2464,9 +2465,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     if (typeArguments.inferenceCrash && tree instanceof MethodInvocationTree) {
-      // If inference crashed, then the return type will not be the correct Java type.  This can
-      // cause crashes elsewhere in the framework.  To avoid those crashes, create an ATM with the
-      // correct Java type and default annotations.  (If inference crashes an error will be issued
+      // If inference crashed, then the return type will not be the correct Java type.  This
+      // can
+      // cause crashes elsewhere in the framework.  To avoid those crashes, create an ATM with
+      // the
+      // correct Java type and default annotations.  (If inference crashes an error will be
+      // issued
       // in the BaseTypeVisitor.)
       TypeMirror type = TreeUtils.typeOf(tree);
       AnnotatedTypeMirror returnType = AnnotatedTypeMirror.createType(type, this, false);
@@ -2855,9 +2859,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     stubTypes.injectRecordComponentType(types, ctor, con);
 
     if (typeArguments.inferenceCrash) {
-      // If inference crashed, then the return type will not be the correct Java type.  This can
-      // cause crashes elsewhere in the framework.  To avoid those crashes, create an ATM with the
-      // correct Java type and default annotations.  (If inference crashes an error will be issued
+      // If inference crashed, then the return type will not be the correct Java type.  This
+      // can
+      // cause crashes elsewhere in the framework.  To avoid those crashes, create an ATM with
+      // the
+      // correct Java type and default annotations.  (If inference crashes an error will be
+      // issued
       // in the BaseTypeVisitor.)
       TypeMirror typeTM = TreeUtils.typeOf(tree);
       AnnotatedTypeMirror returnType = AnnotatedTypeMirror.createType(typeTM, this, false);
