@@ -264,10 +264,9 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
     // MustCall type. For example, consider the method call:
     //   void foo(@MustCall("bar") ThisClass this)
     // If we now call o.foo() where o has @MustCall({"bar, baz"}), the receiver subtype check
-    // would
-    // throw an error, since o is not a subtype of @MustCall("bar"). However, since foo cannot
-    // take ownership of its receiver, it does not matter what it 'thinks' the @MustCall methods
-    // of the receiver are. Hence, it is always sound to skip this check.
+    // would throw an error, since o is not a subtype of @MustCall("bar"). However, since foo
+    // cannot take ownership of its receiver, it does not matter what it 'thinks' the @MustCall
+    // methods of the receiver are. Hence, it is always sound to skip this check.
     return true;
   }
 

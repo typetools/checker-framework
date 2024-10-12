@@ -1254,8 +1254,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     // checker threw an exception.
 
     // Update errsOnLastExit for all checkers, so that no matter which one is run next, its test
-    // of
-    // whether a Java error occurred is correct.
+    // of whether a Java error occurred is correct.
 
     Context context = ((JavacProcessingEnvironment) processingEnv).getContext();
     Log log = Log.instance(context);
