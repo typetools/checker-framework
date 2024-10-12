@@ -39,7 +39,10 @@ import org.plumelib.util.ArrayMap;
   }
 
   @Override
-  @SuppressWarnings("keyfor:contracts.conditional.postcondition") // get adds everything
+  @SuppressWarnings({
+    "keyfor:contracts.conditional.postcondition",
+    "optionalwithoutnonempty:contracts.conditional.postcondition"
+  }) // get adds everything
   public boolean containsKey(@Nullable Object key) {
     return true;
   }
