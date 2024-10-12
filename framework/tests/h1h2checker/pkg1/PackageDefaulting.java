@@ -10,14 +10,14 @@ public class PackageDefaulting {
   // Test H1 hierarchy
   void m(@H1S1 @H2S1 Object p1, @H1S2 @H2S1 Object p2) {
     Object l1 = p1;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     Object l2 = p2;
   }
 
   // Test H2 hierarchy
   void m2(@H1S1 @H2S1 Object p1, @H1S1 @H2S2 Object p2) {
     Object l1 = p1;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     Object l2 = p2;
   }
 }
