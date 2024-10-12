@@ -211,7 +211,8 @@ public class Typing extends TypeConstraint {
       // constraint reduces to the following new constraints:
       // for all i (1 <= i <= n), <Bi <= Ai>.
 
-      // Capturing is not in the JLS, but otherwise wildcards appear in the constraints against
+      // Capturing is not in the JLS, but otherwise wildcards appear in the constraints
+      // against
       // the type arguments, which causes crashes.
       AbstractType sAsSuper = S.asSuper(T.getJavaType()).capture(context);
       if (sAsSuper == null) {

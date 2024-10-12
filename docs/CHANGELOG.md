@@ -3,6 +3,10 @@ Version 3.48.2 (November 1, 2024)
 
 **User-visible changes:**
 
+`DefaultQualifier` supports the new `applyToSubpackages` annotation attribute
+to decide whether a default should also apply to subpackages.  To preserve the
+current behavior, the default is `true`.
+
 **Implementation details:**
 
 **Closed issues:**

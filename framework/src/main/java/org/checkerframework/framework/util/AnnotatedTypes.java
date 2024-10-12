@@ -900,7 +900,8 @@ public class AnnotatedTypes {
       if (type2.getKind() == TypeKind.TYPEVAR) {
         return type2;
       }
-      // I think the only way error happens is when one of the types is a typevarible, but just in
+      // I think the only way error happens is when one of the types is a typevarible, but
+      // just in
       // case, just return type1.
       return type1;
     }
