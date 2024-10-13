@@ -1830,21 +1830,37 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       // `tree` has an explicit receiver.
       MemberSelectTree mtree = (MemberSelectTree) tree;
       return scan(mtree.getExpression(), null);
-    } else {
-      // `tree` lacks an explicit reciever.
-      Element ele = TreeUtils.elementFromUse(tree);
-      TypeElement declaringClass = ElementUtils.enclosingTypeElement(ele);
-      TypeMirror type = ElementUtils.getType(declaringClass);
-      if (ElementUtils.isStatic(ele)) {
-        ClassNameNode node = new ClassNameNode(type, declaringClass);
-        extendWithClassNameNode(node);
-        return node;
-      } else {
-        Node node = new ImplicitThisNode(type);
-        extendWithNode(node);
-        return node;
-      }
     }
+
+    // Access through an implicit receiver
+    Element ele = TreeUtils.elementFromUse(tree);
+    TypeElement declClassElem = ElementUtils.enclosingTypeElement(ele);
+    TypeMirror declClassType = ElementUtils.getType(declClassElem);
+
+    if (ElementUtils.isStatic(ele)) {
+      ClassNameNode node = new ClassNameNode(declClassType, declClassElem);
+      extendWithClassNameNode(node);
+      return node;
+    }
+
+    // Access through an implicit `this`
+    TreePath enclClassPath = TreePathUtil.pathTillClass(getCurrentPath());
+    ClassTree enclClassTree = (ClassTree) enclClassPath.getLeaf();
+    TypeElement enclClassElem = TreeUtils.elementFromDeclaration(enclClassTree);
+    TypeMirror enclClassType = enclClassElem.asType();
+    while (!TypesUtils.isErasedSubtype(enclClassType, declClassType, types)) {
+      enclClassPath = TreePathUtil.pathTillClass(enclClassPath.getParentPath());
+      if (enclClassPath == null) {
+        enclClassType = declClassType;
+        break;
+      }
+      enclClassTree = (ClassTree) enclClassPath.getLeaf();
+      enclClassElem = TreeUtils.elementFromDeclaration(enclClassTree);
+      enclClassType = enclClassElem.asType();
+    }
+    Node node = new ImplicitThisNode(enclClassType);
+    extendWithNode(node);
+    return node;
   }
 
   /**
@@ -3569,9 +3585,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     Node node = new FieldAccessNode(tree, expr);
 
     Element element = TreeUtils.elementFromUse(tree);
-    if (ElementUtils.isStatic(element)
-        || expr instanceof ImplicitThisNode
-        || expr instanceof ExplicitThisNode) {
+    if (ElementUtils.isStatic(element) || expr instanceof ThisNode) {
       // No NullPointerException can be thrown, use normal node
       extendWithNode(node);
     } else {
