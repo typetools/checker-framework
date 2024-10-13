@@ -642,7 +642,8 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
     @Override
     public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
       // This implementation does NOT call getAnnotatedType on the left or right operands.
-      // Doing so would lead to re-examination of subexpressions many times (which is too slow).
+      // Doing so would lead to re-examination of subexpressions many times (which is too
+      // slow).
 
       // A few small rules for addition/subtraction by 0/1, etc.
       if (TreeUtils.isStringConcatenation(tree)) {
