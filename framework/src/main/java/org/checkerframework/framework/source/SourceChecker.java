@@ -405,7 +405,7 @@ import org.plumelib.util.UtilPlume;
   // Sets AnnotatedTypeFactory shouldCache to false
   "atfDoNotCache",
 
-  // Language Server Protocol(LSP) Support
+  // Language Server Protocol (LSP) Support
 
   // TODO: document `-AlspTypeInfo` in manual, as a debugging option.
   // Output detailed type information for nodes in AST
