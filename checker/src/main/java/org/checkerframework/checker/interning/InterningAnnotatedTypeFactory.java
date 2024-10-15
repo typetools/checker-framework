@@ -242,6 +242,13 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       }
       return super.visitDeclared(t, p);
     }
+
+    @Override
+    public Void visitPrimitive(AnnotatedPrimitiveType t, Void p) {
+      // case 4: primitive types are interned
+      t.replaceAnnotation(INTERNED);
+      return super.visitPrimitive(t, p);
+    }
   }
 
   /**

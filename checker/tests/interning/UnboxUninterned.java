@@ -10,4 +10,10 @@ public class UnboxUninterned {
     int i1 = -x.intValue();
     int i2 = -x;
   }
+
+  void loopVariables(java.util.List<Long> list) {
+    for (long i : list) {
+      long unused = Math.addExact(i, 0L);
+    }
+  }
 }
