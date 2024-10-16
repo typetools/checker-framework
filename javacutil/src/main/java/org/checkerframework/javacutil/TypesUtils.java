@@ -1107,7 +1107,11 @@ public final class TypesUtils {
 
     // If neither type is a primitive type, null type, or wildcard
     // and if the types are not the same, use javac types.glb
-    return types.glb(t1, t2);
+    TypeMirror glb = types.glb(t1, t2);
+    if (glb.getKind() == TypeKind.ERROR) {
+      throw new BugInCF("Unexpected ERROR GLB type");
+    }
+    return glb;
   }
 
   /**
