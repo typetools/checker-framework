@@ -1,6 +1,6 @@
 import java.util.List;
-import org.checkerframework.checker.nonempty.qual.NonEmpty;
-import org.checkerframework.checker.nonempty.qual.UnknownNonEmpty;
+import org.checkerframework.checker.optional.qual.NonEmpty;
+import org.checkerframework.checker.optional.qual.UnknownNonEmpty;
 
 class NonEmptyHierarchyTest {
 

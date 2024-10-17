@@ -1,6 +1,6 @@
 import java.util.List;
 import java.util.stream.Stream;
-import org.checkerframework.checker.nonempty.qual.NonEmpty;
+import org.checkerframework.checker.optional.qual.NonEmpty;
 
 class Streams {
 

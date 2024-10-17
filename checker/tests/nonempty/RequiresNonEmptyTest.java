@@ -1,7 +1,7 @@
 import java.util.LinkedList;
 import java.util.List;
-import org.checkerframework.checker.nonempty.qual.NonEmpty;
-import org.checkerframework.checker.nonempty.qual.RequiresNonEmpty;
+import org.checkerframework.checker.optional.qual.NonEmpty;
+import org.checkerframework.checker.optional.qual.RequiresNonEmpty;
 import org.checkerframework.dataflow.qual.Pure;
 
 class MyClass {

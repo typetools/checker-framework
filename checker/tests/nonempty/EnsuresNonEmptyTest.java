@@ -1,6 +1,6 @@
 import java.util.ArrayList;
-import org.checkerframework.checker.nonempty.qual.EnsuresNonEmpty;
-import org.checkerframework.checker.nonempty.qual.NonEmpty;
+import org.checkerframework.checker.optional.qual.EnsuresNonEmpty;
+import org.checkerframework.checker.optional.qual.NonEmpty;
 
 class EnsuresNonEmptyTest {
 

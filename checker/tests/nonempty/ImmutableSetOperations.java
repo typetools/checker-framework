@@ -1,5 +1,5 @@
 import java.util.Set;
-import org.checkerframework.checker.nonempty.qual.NonEmpty;
+import org.checkerframework.checker.optional.qual.NonEmpty;
 
 class ImmutableSetOperations {
 

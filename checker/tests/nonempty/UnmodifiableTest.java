@@ -3,7 +3,7 @@ import static java.util.Map.entry;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import org.checkerframework.checker.nonempty.qual.NonEmpty;
+import org.checkerframework.checker.optional.qual.NonEmpty;
 
 class UnmodifiableTest {
 

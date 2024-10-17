@@ -1,6 +1,6 @@
 import java.util.Arrays;
 import java.util.List;
-import org.checkerframework.checker.nonempty.qual.NonEmpty;
+import org.checkerframework.checker.optional.qual.NonEmpty;
 
 class Comparisons {
 

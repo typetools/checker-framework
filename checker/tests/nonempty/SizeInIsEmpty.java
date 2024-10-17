@@ -1,7 +1,7 @@
 import java.util.AbstractSet;
 import java.util.Iterator;
-import org.checkerframework.checker.nonempty.qual.EnsuresNonEmptyIf;
-import org.checkerframework.checker.nonempty.qual.PolyNonEmpty;
+import org.checkerframework.checker.optional.qual.EnsuresNonEmptyIf;
+import org.checkerframework.checker.optional.qual.PolyNonEmpty;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 

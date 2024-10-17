@@ -1,6 +1,5 @@
 import java.util.List;
 import java.util.Optional;
-import org.checkerframework.checker.nonempty.qual.*;
 import org.checkerframework.checker.optional.qual.*;
 import org.checkerframework.dataflow.qual.Pure;
 
