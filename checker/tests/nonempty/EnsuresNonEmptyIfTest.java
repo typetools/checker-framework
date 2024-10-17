@@ -1,6 +1,8 @@
 import java.util.ArrayList;
-import org.checkerframework.checker.nonempty.qual.EnsuresNonEmptyIf;
-import org.checkerframework.checker.nonempty.qual.NonEmpty;
+import org.checkerframework.checker.optional.qual.EnsuresNonEmptyIf;
+import org.checkerframework.checker.optional.qual.NonEmpty;
+
+// @skip-test: these tests should not be run until a standalone Non-Empty Checker is available
 
 class EnsuresNonEmptyIfTest {
 

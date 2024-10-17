@@ -1,8 +1,10 @@
 import java.util.LinkedList;
 import java.util.List;
-import org.checkerframework.checker.nonempty.qual.EnsuresNonEmpty;
-import org.checkerframework.checker.nonempty.qual.NonEmpty;
-import org.checkerframework.checker.nonempty.qual.UnknownNonEmpty;
+import org.checkerframework.checker.optional.qual.EnsuresNonEmpty;
+import org.checkerframework.checker.optional.qual.NonEmpty;
+import org.checkerframework.checker.optional.qual.UnknownNonEmpty;
+
+// @skip-test: these tests should not be run until a standalone Non-Empty Checker is available
 
 class Issue6407 {
 

@@ -220,6 +220,7 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine>, Close
     }
   }
 
+  @SuppressWarnings("optionalwithoutnonempty:contracts.conditional.postcondition")
   @Override
   @Pure
   public boolean hasNext() {

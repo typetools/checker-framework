@@ -34,6 +34,8 @@ public class Theta extends LinkedHashMap<TypeVariable, Variable> {
     return typeVariable;
   }
 
+  @SuppressWarnings(
+      "optionalwithoutnonempty:contracts.conditional.postcondition") // false positive warning
   @Override
   public boolean containsKey(Object key) {
     if (key instanceof TypeVariable) {

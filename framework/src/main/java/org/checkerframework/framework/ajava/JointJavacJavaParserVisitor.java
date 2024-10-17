@@ -2309,7 +2309,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
    * @param javacTree a javac tree or null
    * @param javaParserNode an optional JavaParser node, which might not be present
    */
-  @SuppressWarnings("optional:optional.parameter") // interface with JavaParser
+  @SuppressWarnings("optionalwithoutnonempty:optional.parameter") // interface with JavaParser
   private void visitOptional(@Nullable Tree javacTree, Optional<? extends Node> javaParserNode) {
     assert javacTree != null == javaParserNode.isPresent()
         : String.format("visitOptional(%s, %s)", javacTree, javaParserNode);
