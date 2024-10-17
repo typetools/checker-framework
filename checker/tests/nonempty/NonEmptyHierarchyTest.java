@@ -2,6 +2,8 @@ import java.util.List;
 import org.checkerframework.checker.optional.qual.NonEmpty;
 import org.checkerframework.checker.optional.qual.UnknownNonEmpty;
 
+// @skip-test: these tests should not be run until a standalone Non-Empty Checker is available
+
 class NonEmptyHierarchyTest {
 
   void testAssignments(@NonEmpty List<String> l1, @UnknownNonEmpty List<String> l2) {

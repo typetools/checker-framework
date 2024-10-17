@@ -1,6 +1,8 @@
 import java.util.List;
 import org.checkerframework.checker.optional.qual.NonEmpty;
 
+// @skip-test: these tests should not be run until a standalone Non-Empty Checker is available
+
 class ImmutableListOperations {
 
   void testCreateEmptyImmutableList() {

@@ -1,6 +1,8 @@
 import java.util.Map;
 import org.checkerframework.checker.optional.qual.NonEmpty;
 
+// @skip-test: these tests should not be run until a standalone Non-Empty Checker is available
+
 class MapOperations {
 
   // Skip test until we decide whether to handle accesses on empty containers

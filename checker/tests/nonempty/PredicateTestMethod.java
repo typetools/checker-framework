@@ -3,6 +3,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Predicate;
 
+// @skip-test: these tests should not be run until a standalone Non-Empty Checker is available
+
 @SuppressWarnings("nonempty:argument") // Side Effects Only Checker is required to determine that
 // `filter.test` does not side-effect anything else.
 class PredicateTestMethod {

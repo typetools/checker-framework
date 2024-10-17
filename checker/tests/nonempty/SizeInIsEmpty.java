@@ -5,6 +5,8 @@ import org.checkerframework.checker.optional.qual.PolyNonEmpty;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 
+// @skip-test: these tests should not be run until a standalone Non-Empty Checker is available
+
 public class SizeInIsEmpty<E extends Object> extends AbstractSet<E> {
 
   @SideEffectFree

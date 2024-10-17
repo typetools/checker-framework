@@ -2,6 +2,8 @@ import java.util.ArrayList;
 import java.util.List;
 import org.checkerframework.checker.optional.qual.NonEmpty;
 
+// @skip-test: these tests should not be run until a standalone Non-Empty Checker is available
+
 class ListOperations {
 
   // Skip test until we decide whether to handle accesses on empty containers

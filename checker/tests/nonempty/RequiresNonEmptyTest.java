@@ -4,6 +4,8 @@ import org.checkerframework.checker.optional.qual.NonEmpty;
 import org.checkerframework.checker.optional.qual.RequiresNonEmpty;
 import org.checkerframework.dataflow.qual.Pure;
 
+// @skip-test: these tests should not be run until a standalone Non-Empty Checker is available
+
 class MyClass {
 
   List<String> list1 = new LinkedList<>();
