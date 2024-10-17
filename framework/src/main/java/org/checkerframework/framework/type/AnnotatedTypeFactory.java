@@ -1492,6 +1492,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     AnnotatedTypeMirror fromTypeTree = fromTypeTree(clause);
     AnnotationMirrorSet bound = getTypeDeclarationBounds(fromTypeTree.getUnderlyingType());
     fromTypeTree.addMissingAnnotations(bound);
+    // Annotate any type variables in the type.
     addComputedTypeAnnotations(clause, fromTypeTree);
     return fromTypeTree;
   }
