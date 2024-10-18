@@ -1,6 +1,4 @@
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 public class ForEach {
@@ -30,20 +28,5 @@ public class ForEach {
     for (Object cs : s) {
       cs.toString();
     }
-  }
-
-  @SuppressWarnings(
-      "nonempty") // TODO: the Non-Empty Checker requires the Side Effects Only checker to
-  // eliminate the false positive here.
-  public static <T extends Object> List<T> removeDuplicates(List<T> l) {
-    // There are shorter solutions that do not maintain order.
-    HashSet<T> hs = new HashSet<>(l.size());
-    List<T> result = new ArrayList<>();
-    for (T t : l) {
-      if (hs.add(t)) {
-        result.add(t);
-      }
-    }
-    return result;
   }
 }

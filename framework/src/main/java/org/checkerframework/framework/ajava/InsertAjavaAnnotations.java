@@ -268,7 +268,8 @@ public class InsertAjavaAnnotations {
     }
 
     @Override
-    @SuppressWarnings("optional:method.invocation") // parallel structure of two data structures
+    @SuppressWarnings(
+        "optionalwithoutnonempty:method.invocation") // parallel structure of two data structures
     public void visit(CompilationUnit src, Node other) {
       CompilationUnit dest = (CompilationUnit) other;
       defaultAction(src, dest);

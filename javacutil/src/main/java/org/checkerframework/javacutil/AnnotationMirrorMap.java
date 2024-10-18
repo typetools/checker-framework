@@ -90,12 +90,16 @@ public class AnnotationMirrorMap<V> implements Map<@KeyFor("this") AnnotationMir
     return shadowMap.size();
   }
 
+  @SuppressWarnings("optionalwithoutnonempty:contracts.conditional.postcondition") // delegatation
   @Override
   public boolean isEmpty() {
     return shadowMap.isEmpty();
   }
 
-  @SuppressWarnings("keyfor:contracts.conditional.postcondition") // delegation
+  @SuppressWarnings({
+    "keyfor:contracts.conditional.postcondition",
+    "optionalwithoutnonempty:contracts.conditional.postcondition"
+  }) // delegation
   @Override
   public boolean containsKey(Object key) {
     if (key instanceof AnnotationMirror) {
@@ -105,6 +109,7 @@ public class AnnotationMirrorMap<V> implements Map<@KeyFor("this") AnnotationMir
     }
   }
 
+  @SuppressWarnings("optionalwithoutnonempty:contracts.conditional.postcondition") // delegatation
   @Override
   public boolean containsValue(Object value) {
     return shadowMap.containsValue(value);
@@ -126,7 +131,8 @@ public class AnnotationMirrorMap<V> implements Map<@KeyFor("this") AnnotationMir
   @SuppressWarnings({
     "keyfor:contracts.postcondition",
     "keyfor:contracts.postcondition",
-    "keyfor:argument"
+    "keyfor:argument",
+    "optionalwithoutnonempty:contracts.postcondition"
   }) // delegation
   @Override
   public @Nullable V put(AnnotationMirror key, V value) {

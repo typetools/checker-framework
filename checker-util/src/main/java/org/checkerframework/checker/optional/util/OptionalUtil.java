@@ -66,9 +66,9 @@ public final class OptionalUtil {
    * @param ref an Optional reference of @MaybePresent type, that is present at run time
    * @return the argument, casted to have the type qualifier @Present
    */
+  @SuppressWarnings("optionalwithoutnonempty:optional.parameter")
   @EnsuresPresent("#1")
-  public static <T extends @MaybePresent Object> @Present Optional<T> castPresent(
-      @MaybePresent Optional<T> ref) {
+  public static <T extends @MaybePresent Object> @Present Optional<T> castPresent(Optional<T> ref) {
     assert ref.isPresent() : "Misuse of castPresent: called with an empty Optional";
     return (@Present Optional<T>) ref;
   }

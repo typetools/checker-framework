@@ -126,11 +126,13 @@ public class AnnotationMirrorSet
     return shadowSet.size();
   }
 
+  @SuppressWarnings("optionalwithoutnonempty:contracts.conditional.postcondition") // delegatation
   @Override
   public boolean isEmpty() {
     return shadowSet.isEmpty();
   }
 
+  @SuppressWarnings("optionalwithoutnonempty:contracts.conditional.postcondition") // delegatation
   @Override
   public boolean contains(
       @UnknownInitialization(AnnotationMirrorSet.class) AnnotationMirrorSet this,
@@ -155,7 +157,10 @@ public class AnnotationMirrorSet
     return shadowSet.toArray(a);
   }
 
-  @SuppressWarnings("keyfor:argument") // delegation
+  @SuppressWarnings({
+    "optionalwithoutnonempty:contracts.postcondition",
+    "keyfor:argument"
+  }) // delegation
   @Override
   public boolean add(
       @UnknownInitialization(AnnotationMirrorSet.class) AnnotationMirrorSet this,

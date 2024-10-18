@@ -2,6 +2,7 @@ package org.checkerframework.dataflow.expression;
 
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.LiteralTree;
@@ -10,6 +11,7 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
@@ -913,5 +915,90 @@ public abstract class JavaExpression {
     VariableElement lastParamElt = paramElts.get(paramElts.size() - 1);
     return TypesUtils.getArrayDepth(ElementUtils.getType(lastParamElt))
         != TypesUtils.getArrayDepth(lastArgType);
+  }
+
+  /**
+   * Find the declaration of the receiver of a method call in a given method tree.
+   *
+   * <p>The receiver should appear in one of two places, either as a formal parameter to the method,
+   * or as a local variable.
+   *
+   * @param tree the method tree
+   * @param receiver the receiver for which to look up a declaration
+   * @return the declaration of the receiver of the method call, if found. Otherwise, null
+   */
+  public static @Nullable VariableTree getReceiverDeclarationInMethod(
+      @Nullable MethodTree tree, JavaExpression receiver) {
+    if (tree == null) {
+      return null;
+    }
+    // Java forbids shadowing a formal parameter by a local variable.
+    List<? extends VariableTree> params = tree.getParameters();
+    for (VariableTree param : params) {
+      if (param.getName().toString().equals(receiver.toString())) {
+        return param;
+      }
+    }
+    for (StatementTree statement : tree.getBody().getStatements()) {
+      if (statement instanceof VariableTree) {
+        VariableTree localVariableTree = (VariableTree) statement;
+        if (localVariableTree.getName().toString().equals(receiver.toString())) {
+          return localVariableTree;
+        }
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Find the declaration of the receiver of a method call in a given class tree.
+   *
+   * <p>The receiver should appear as a field in the class, if found.
+   *
+   * <p>TODO: what about inherited fields?
+   *
+   * @param tree the class tree
+   * @param receiver the receiver for which to look up a declaration
+   * @return the declaration of the receiver of the method call, if found. Otherwise, null
+   */
+  public static @Nullable VariableTree getReceiverDeclarationAsField(
+      @Nullable ClassTree tree, JavaExpression receiver) {
+    if (tree == null) {
+      return null;
+    }
+    List<? extends Tree> members = tree.getMembers();
+    if (members.isEmpty()) {
+      return null;
+    }
+    for (Tree member : members) {
+      if (member instanceof VariableTree) {
+        VariableTree field = (VariableTree) member;
+        if (JavaExpression.fromVariableTree(field).containsSyntacticEqualJavaExpression(receiver)) {
+          return field;
+        }
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Returns the leftmost receiver of a method invocation chain.
+   *
+   * <p>For example, given method invocation sequence {@code a.b().c.d().e()}, return {@code a}.
+   *
+   * @param tree a tree
+   * @return the initial receiver of a method invocation chain
+   */
+  public static @Nullable JavaExpression getLeftmostReceiverOfMethodInvocation(
+      ExpressionTree tree) {
+    assert tree instanceof MethodInvocationTree;
+    ExpressionTree receiverTree = TreeUtils.getReceiverTree(tree);
+    while (receiverTree instanceof MethodInvocationNode) {
+      receiverTree = TreeUtils.getReceiverTree(receiverTree);
+    }
+    if (receiverTree instanceof MethodInvocationTree) {
+      return JavaExpression.getLeftmostReceiverOfMethodInvocation(receiverTree);
+    }
+    return receiverTree != null ? JavaExpression.fromTree(receiverTree) : null;
   }
 }

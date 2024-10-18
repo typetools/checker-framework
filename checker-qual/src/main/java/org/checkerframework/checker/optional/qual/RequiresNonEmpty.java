@@ -1,4 +1,4 @@
-package org.checkerframework.checker.nonempty.qual;
+package org.checkerframework.checker.optional.qual;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -17,8 +17,8 @@ import org.checkerframework.framework.qual.PreconditionAnnotation;
  * <pre>
  * import java.util.LinkedList;
  * import java.util.List;
- * import org.checkerframework.checker.nonempty.qual.NonEmpty;
- * import org.checkerframework.checker.nonempty.qual.RequiresNonEmpty;
+ * import org.checkerframework.checker.optional.qual.NonEmpty;
+ * import org.checkerframework.checker.optional.qual.RequiresNonEmpty;
  * import org.checkerframework.dataflow.qual.Pure;
  *
  * class MyClass {
