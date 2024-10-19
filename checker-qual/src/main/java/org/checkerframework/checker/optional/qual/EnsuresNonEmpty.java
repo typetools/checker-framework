@@ -12,7 +12,8 @@ import org.checkerframework.framework.qual.PostconditionAnnotation;
  * successfully.
  *
  * <p>This annotation applies to {@link java.util.Collection}, {@link java.util.Iterator}, {@link
- * java.lang.Iterable}, and {@link java.util.Map}, but not {@link java.util.Optional}.
+ * java.lang.Iterable}, and {@link java.util.Map}, and and {@link java.util.stream.Stream}, but not
+ * {@link java.util.Optional}.
  *
  * <p>This postcondition annotation is useful for methods that make a value non-empty by side
  * effect:

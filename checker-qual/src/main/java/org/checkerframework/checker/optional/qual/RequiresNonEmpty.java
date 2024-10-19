@@ -9,8 +9,9 @@ import org.checkerframework.framework.qual.PreconditionAnnotation;
 
 /**
  * Indicates a method precondition: the specified expressions that may be a {@link
- * java.util.Collection collection}, {@link java.util.Iterator iterator}, {@link java.lang.Iterable
- * iterable}, or {@link java.util.Map map} must be non-empty when the annotated method is invoked.
+ * java.util.Collection Collection}, {@link java.util.Iterator Iterator}, {@link java.lang.Iterable
+ * Iterable}, or {@link java.util.Map Map}, or {@link java.util.stream.Stream Stream} must be
+ * non-empty when the annotated method is invoked.
  *
  * <p>For example:
  *
@@ -72,8 +73,9 @@ import org.checkerframework.framework.qual.PreconditionAnnotation;
 public @interface RequiresNonEmpty {
 
   /**
-   * The Java {@link java.util.Collection collection}, {@link java.util.Iterator iterator}, {@link
-   * java.lang.Iterable iterable}, or {@link java.util.Map map} that must be non-empty.
+   * The Java {@link java.util.Collection Collection}, {@link java.util.Iterator Iterator}, {@link
+   * java.lang.Iterable Iterable}, {@link java.util.Map Map}, or {@link java.util.stream.Stream
+   * Stream} that must be non-empty.
    *
    * @return the Java expression that must be non-empty
    */

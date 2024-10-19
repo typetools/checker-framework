@@ -158,10 +158,10 @@ public class OptionalTransfer extends CFTransfer {
    * comparing container sizes.
    *
    * @param in transfer input used to get the types of subnodes of {@code lhs} and {@code rhs}.
-   * @param lhs a node that may be a method invocation of {@link java.util.Collection size()} or
-   *     {@link java.util.Map size()}
-   * @param rhs a node that may be a method invocation of {@link java.util.Collection size()} or
-   *     {@link java.util.Map size()}
+   * @param lhs a node that may be a method invocation of {@link java.util.Collection#size()
+   *     Collection.size()} or {@link java.util.Map#size() Map.size()}
+   * @param rhs a node that may be a method invocation of {@link java.util.Collection#size()
+   *     Collection.size()} or {@link java.util.Map#size Map.size()}
    * @param store the "then" store of the comparison operation
    */
   private void strengthenAnnotationSizeEquals(
