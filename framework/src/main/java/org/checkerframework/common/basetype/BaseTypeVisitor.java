@@ -2269,22 +2269,27 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     Tree enclosing = TreePathUtil.enclosingOfKind(getCurrentPath(), methodAndLambdaExpression);
 
-    AnnotatedTypeMirror ret = null;
+    AnnotatedTypeMirror declaredReturnType = null;
     if (enclosing.getKind() == Tree.Kind.METHOD) {
-
       MethodTree enclosingMethod = TreePathUtil.enclosingMethod(getCurrentPath());
       boolean valid = validateTypeOf(enclosing);
       if (valid) {
-        ret = atypeFactory.getMethodReturnType(enclosingMethod, tree);
+        declaredReturnType = atypeFactory.getMethodReturnType(enclosingMethod, tree);
       }
     } else {
       AnnotatedExecutableType result =
           atypeFactory.getFunctionTypeFromTree((LambdaExpressionTree) enclosing);
-      ret = result.getReturnType();
+      declaredReturnType = result.getReturnType();
     }
 
-    if (ret != null) {
-      commonAssignmentCheck(ret, tree.getExpression(), "return");
+    if (declaredReturnType != null) {
+      CFAbstractStore<?, ?> s1 = atypeFactory.getStoreAfter(tree);
+      CFAbstractStore<?, ?> s2 = atypeFactory.getStoreAfter(tree.getExpression());
+      System.out.printf("storeAfter (%s) =%n  %s%n  %s%n", tree, s1, s2);
+      System.out.printf(
+          "about to call commonAssignmentCheck(%s, %s)%n",
+          declaredReturnType, tree.getExpression());
+      commonAssignmentCheck(declaredReturnType, tree.getExpression(), "return");
     }
     return super.visitReturn(tree, p);
   }
