@@ -10,7 +10,7 @@ import org.checkerframework.framework.qual.PolymorphicQualifier;
 /**
  * A polymorphic qualifier for the Confidential type system.
  *
- * @checker_framework.manual TODO
+ * @checker_framework.manual #confidential-checker Confidential Checker
  * @checker_framework.manual #qualifier-polymorphism Qualifier polymorphism
  */
 @Documented
