@@ -57,7 +57,7 @@ ext {
     lombok          : '1.18.34',
     hashmapUtil : '0.0.1',
     reflectionUtil : '1.1.4',
-    plumeUtil : '1.9.3',
+    plumeUtil : '1.10.0',
     errorprone : '2.35.1',
   ]
 }
