@@ -151,10 +151,11 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   private boolean hasFormatMethodAnno(
       WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos methodAnnos) {
     AnnotationMirrorSet declarationAnnos = methodAnnos.getDeclarationAnnotations();
-    return AnnotationUtils.containsSameByClass(
-            declarationAnnos, org.checkerframework.checker.formatter.qual.FormatMethod.class)
-        || AnnotationUtils.containsSameByName(
-            declarationAnnos, "com.google.errorprone.annotations.FormatMethod");
+    return !declarationAnnos.isEmpty()
+        && (containsSameByClass(
+                declarationAnnos, org.checkerframework.checker.formatter.qual.FormatMethod.class)
+            || AnnotationUtils.containsSameByName(
+                declarationAnnos, "com.google.errorprone.annotations.FormatMethod"));
   }
 
   /** The tree annotator for the Format String Checker. */

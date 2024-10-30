@@ -64,6 +64,10 @@ public class AnnotationUtils {
   /**
    * Returns the fully-qualified name of an annotation as a String.
    *
+   * <p>This method is efficient for {@code AnnotationBuilder.CheckerFrameworkAnnotationMirror}, for
+   * which it looks up the name. This method may be inefficient for other subclasses of {@code
+   * AnnotationMirror}, because it may compute a new string.
+   *
    * @param annotation the annotation whose name to return
    * @return the fully-qualified name of an annotation as a String
    */
@@ -80,6 +84,9 @@ public class AnnotationUtils {
 
   /**
    * Returns the fully-qualified name of an annotation as a String.
+   *
+   * <p>This is more efficient than calling {@link annotationName} and {@link
+   * java.lang.String#intern}.
    *
    * @param annotation the annotation whose name to return
    * @return the fully-qualified name of an annotation as a String
@@ -150,6 +157,8 @@ public class AnnotationUtils {
       throw new BugInCF("Unexpected null argument:  compareByName(%s, %s)", a1, a2);
     }
 
+    // This is largely duplicated code.  The point of this block is that
+    // the `if (name1 == name2)` test is very fast.
     if (a1 instanceof CheckerFrameworkAnnotationMirror
         && a2 instanceof CheckerFrameworkAnnotationMirror) {
       @Interned @CanonicalName String name1 = ((CheckerFrameworkAnnotationMirror) a1).annotationName;
@@ -190,7 +199,7 @@ public class AnnotationUtils {
   }
 
   /**
-   * Checks that the annotation {@code am} has the name of {@code annoClass}. Values are ignored.
+   * Checks that the annotation {@code am} has class {@code annoClass}. Values are ignored.
    *
    * <p>This method is not very efficient. It is more efficient to use {@code
    * AnnotatedTypeFactory#areSameByClass} or {@link #areSameByName}.
@@ -386,7 +395,7 @@ public class AnnotationUtils {
       return nameComparison;
     }
 
-    // The annotations have the same name, but different values, so compare values.
+    // The annotations have the same name, but possibly different values, so compare values.
     Map<? extends ExecutableElement, ? extends AnnotationValue> vals1 = a1.getElementValues();
     Map<? extends ExecutableElement, ? extends AnnotationValue> vals2 = a2.getElementValues();
     Set<ExecutableElement> sortedElements =
@@ -413,11 +422,11 @@ public class AnnotationUtils {
   }
 
   /**
-   * Return 0 iff the two AnnotationValue objects are the same.
+   * Compare the two AnnotationValue objects for order.
    *
    * @param av1 the first AnnotationValue to compare
    * @param av2 the second AnnotationValue to compare
-   * @return 0 if the two annotation values are the same
+   * @return -1 if the first is lesser, 0 if they are the same, or 1 if the first is greater
    */
   @CompareToMethod
   private static int compareAnnotationValue(AnnotationValue av1, AnnotationValue av2) {

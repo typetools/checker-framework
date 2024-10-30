@@ -280,7 +280,11 @@ public class Expression extends TypeConstraint {
         AbstractType gi = gs.get(i);
         constraintSet.add(new Typing(fi, gi, TypeConstraint.Kind.TYPE_EQUALITY));
       }
-      constraintSet.add(new Typing(tPrime, T, TypeConstraint.Kind.SUBTYPE));
+      @SuppressWarnings("interning:not.interned") // checking for exact object.
+      boolean tPrimeNotSameAsT = tPrime != T;
+      if (tPrimeNotSameAsT) {
+        constraintSet.add(new Typing(tPrime, T, TypeConstraint.Kind.SUBTYPE));
+      }
     } else {
       context.addLambdaParms(lambda.getParameters());
     }
