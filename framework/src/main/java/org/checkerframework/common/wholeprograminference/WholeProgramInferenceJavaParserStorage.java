@@ -23,9 +23,15 @@ import com.github.javaparser.ast.expr.MarkerAnnotationExpr;
 import com.github.javaparser.ast.expr.NormalAnnotationExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.SingleMemberAnnotationExpr;
+import com.github.javaparser.ast.type.ArrayType;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.github.javaparser.ast.type.IntersectionType;
+import com.github.javaparser.ast.type.PrimitiveType;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.type.TypeParameter;
+import com.github.javaparser.ast.type.UnionType;
+import com.github.javaparser.ast.type.VarType;
+import com.github.javaparser.ast.type.WildcardType;
 import com.github.javaparser.ast.visitor.CloneVisitor;
 import com.github.javaparser.ast.visitor.VoidVisitor;
 import com.github.javaparser.printer.DefaultPrettyPrinter;
@@ -1064,6 +1070,65 @@ public class WholeProgramInferenceJavaParserStorage
   }
 
   /**
+   * Returns true if the annotation is relevant (where it appears in the program). This
+   * implementation is conservative and only returns false if the qualifier is definitely not
+   * relevant.
+   *
+   * @param anno an annotation
+   * @return true if the annotation might be relevant
+   */
+  boolean annotationIsRelevant(AnnotationExpr anno) {
+    GenericAnnotatedTypeFactory<?, ?, ?, ?> gatf = (GenericAnnotatedTypeFactory) atypeFactory;
+    if (gatf.relevantJavaTypes == null) {
+      return true;
+    }
+
+    // `aname` is a fully-qualified name.
+    String aName = anno.getNameAsString();
+    if (!atypeFactory.isSupportedQualifier(aName)) {
+      // The annotation might be a declaration qualifier, such as a side effect specification.
+      return true;
+    }
+    Node parentNode = anno.getParentNode().get();
+
+    if (parentNode instanceof ArrayType) {
+      return gatf.arraysAreRelevant();
+    }
+    if (parentNode instanceof ClassOrInterfaceType) {
+      ClassOrInterfaceType classType = (ClassOrInterfaceType) parentNode;
+      String simpleName = classType.getName().toString();
+      String scopedName = classType.getNameWithScope();
+      // TODO: Do I need to remove type parameters?
+      return gatf.isRelevant(simpleName) || gatf.isRelevant(scopedName);
+    }
+    if (parentNode instanceof IntersectionType) {
+      return true; // TODO
+    }
+    if (parentNode instanceof Parameter) {
+      Parameter param = (Parameter) parentNode;
+      if (param.isVarArgs()) {
+        return gatf.arraysAreRelevant();
+      } else {
+        throw new Error("Unexpected type annotation on non-varargs Parameter: " + param);
+      }
+    }
+    if (parentNode instanceof PrimitiveType) {
+      return gatf.isRelevant(parentNode.toString());
+    }
+    if (parentNode instanceof UnionType) {
+      return true; // TODO
+    }
+    if (parentNode instanceof VarType) {
+      return gatf.nonprimitivesAreRelevant();
+    }
+    if (parentNode instanceof WildcardType) {
+      return true; // TODO
+    }
+
+    throw new Error("What parent? " + parentNode.getClass().getSimpleName() + " " + parentNode);
+  }
+
+  /**
    * Write an ajava file to disk.
    *
    * @param outputPath the path to which the ajava file should be written
@@ -1078,7 +1143,9 @@ public class WholeProgramInferenceJavaParserStorage
       // adding annotations in certain locations.
       // LexicalPreservingPrinter.print(root.declaration, writer);
 
-      // Do not print invisible qualifiers, to avoid cluttering the output.
+      // To avoid cluttering the output, do not print:
+      //  * invisible qualifiers
+      //  * irrelevant qualifiers.
       Set<String> invisibleQualifierNames = getInvisibleQualifierNames(this.atypeFactory);
       DefaultPrettyPrinter prettyPrinter =
           new DefaultPrettyPrinter() {
@@ -1091,6 +1158,9 @@ public class WholeProgramInferenceJavaParserStorage
                       if (invisibleQualifierNames.contains(n.getName().toString())) {
                         return;
                       }
+                      if (!annotationIsRelevant(n)) {
+                        return;
+                      }
                       super.visit(n, arg);
                     }
 
@@ -1099,12 +1169,18 @@ public class WholeProgramInferenceJavaParserStorage
                       if (invisibleQualifierNames.contains(n.getName().toString())) {
                         return;
                       }
+                      if (!annotationIsRelevant(n)) {
+                        return;
+                      }
                       super.visit(n, arg);
                     }
 
                     @Override
                     public void visit(NormalAnnotationExpr n, Void arg) {
                       if (invisibleQualifierNames.contains(n.getName().toString())) {
+                        return;
+                      }
+                      if (!annotationIsRelevant(n)) {
                         return;
                       }
                       super.visit(n, arg);
