@@ -1,11 +1,9 @@
 Version 3.48.2 (November 1, 2024)
 --------------------------------
 
-**User-visible changes:**
-
-**Implementation details:**
-
 **Closed issues:**
+
+#6371, #6867.
 
 
 Version 3.48.1 (October 11, 2024)
