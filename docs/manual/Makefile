@@ -12,10 +12,11 @@ nullness-checker.tex \
 map-key-checker.tex \
 optional-checker.tex \
 interning-checker.tex \
+called-methods-checker.tex \
+resource-leak-checker.tex \
+fenum-checker.tex \
 lock-checker.tex \
 index-checker.tex \
-called-methods-checker.tex \
-fenum-checker.tex \
 tainting-checker.tex \
 sql-quotes-checker.tex \
 regex-checker.tex \
@@ -33,6 +34,7 @@ reflection-checker.tex \
 reflection-inference-rules.tex \
 initialized-fields-checker.tex \
 aliasing-checker.tex \
+must-call-checker.tex \
 subtyping-checker.tex \
 external-checkers.tex \
 typestate-checker.tex \
