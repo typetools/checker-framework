@@ -15,7 +15,7 @@ public class Objects {
     @EnsuresNonNull("#1")
     public static <T> T requireNonNull(@Nullable T obj, String message);
     @EnsuresNonNull("#1")
-    public static <T> T requireNonNull(T obj, Supplier<String> messageSupplier)
+    public static <T> T requireNonNull(@Nullable T obj, Supplier<String> messageSupplier)
     @EnsuresNonNullIf(expression="#1", result=true)
     public static boolean nonNull(@Nullable Object obj);
     @EnsuresNonNullIf(expression="#1", result=false)
