@@ -2276,10 +2276,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     if (declaredReturnType != null) {
       CFAbstractStore<?, ?> s1 = atypeFactory.getStoreAfter(tree);
       CFAbstractStore<?, ?> s2 = atypeFactory.getStoreAfter(tree.getExpression());
-      System.out.printf("storeAfter (%s) =%n  %s%n  %s%n", tree, s1, s2);
-      System.out.printf(
-          "about to call commonAssignmentCheck(%s, %s)%n",
-          declaredReturnType, tree.getExpression());
+      // System.out.printf("storeAfter (%s) =%n  %s%n  %s%n", tree, s1, s2);
+      // System.out.printf(
+      //     "about to call commonAssignmentCheck(%s, %s)%n",
+      //     declaredReturnType, tree.getExpression());
       commonAssignmentCheck(declaredReturnType, tree.getExpression(), "return");
     }
     return super.visitReturn(tree, p);

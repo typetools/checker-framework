@@ -1,7 +1,6 @@
 package org.checkerframework.checker.nonempty.qual;
 
 import java.lang.annotation.*;
-import org.checkerframework.checker.optional.qual.UnknownNonEmpty;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
