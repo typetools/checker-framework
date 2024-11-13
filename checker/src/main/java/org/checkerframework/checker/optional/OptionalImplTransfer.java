@@ -41,10 +41,10 @@ import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 
 /** The transfer function for the Optional Checker. */
-public class OptionalTransfer extends CFTransfer {
+public class OptionalImplTransfer extends CFTransfer {
 
-  /** The {@link OptionalAnnotatedTypeFactory} instance for this transfer class. */
-  private final OptionalAnnotatedTypeFactory optionalTypeFactory;
+  /** The {@link OptionalImplAnnotatedTypeFactory} instance for this transfer class. */
+  private final OptionalImplAnnotatedTypeFactory optionalTypeFactory;
 
   /** True if "-AassumePure" or "-AassumeDeterministic" was passed. */
   boolean assumeDeterministic;
@@ -84,9 +84,9 @@ public class OptionalTransfer extends CFTransfer {
    *
    * @param analysis the Optional Checker instance
    */
-  public OptionalTransfer(CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
+  public OptionalImplTransfer(CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
     super(analysis);
-    optionalTypeFactory = (OptionalAnnotatedTypeFactory) analysis.getTypeFactory();
+    optionalTypeFactory = (OptionalImplAnnotatedTypeFactory) analysis.getTypeFactory();
     BaseTypeChecker checker = optionalTypeFactory.getChecker();
     assumeDeterministic =
         checker.hasOption("assumePure") || checker.hasOption("assumeDeterministic");

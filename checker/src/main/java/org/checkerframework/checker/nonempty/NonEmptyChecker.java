@@ -2,8 +2,8 @@ package org.checkerframework.checker.nonempty;
 
 import com.sun.source.tree.MethodTree;
 import java.util.Set;
-import org.checkerframework.checker.optional.OptionalChecker;
-import org.checkerframework.checker.optional.OptionalVisitor;
+import org.checkerframework.checker.optional.OptionalImplChecker;
+import org.checkerframework.checker.optional.OptionalImplVisitor;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.source.SupportedOptions;
@@ -28,14 +28,6 @@ import org.checkerframework.framework.source.SupportedOptions;
 @SupportedOptions("runAsOptionalChecker")
 public class NonEmptyChecker extends BaseTypeChecker {
 
-  /** True if the {@code shouldRunOptionalChecker} variable has been set. */
-  private boolean isShouldRunOptionalCheckerSet = false;
-
-  /**
-   * True if the Non-Empty Checker should be run as the Optional Checker with increased precision.
-   */
-  private boolean shouldRunAsOptionalChecker = false;
-
   /** Creates a NonEmptyChecker. */
   public NonEmptyChecker() {
     super();
@@ -44,25 +36,18 @@ public class NonEmptyChecker extends BaseTypeChecker {
   @Override
   public void initChecker() {
     super.initChecker();
-    shouldRunAsOptionalChecker = this.hasOptionNoSubcheckers("runAsOptionalChecker");
-    isShouldRunOptionalCheckerSet = true;
   }
 
   @Override
   protected Set<Class<? extends SourceChecker>> getImmediateSubcheckerClasses() {
     Set<Class<? extends SourceChecker>> checkers = super.getImmediateSubcheckerClasses();
-    if (shouldRunAsOptionalChecker()) {
-      checkers.add(OptionalChecker.class);
-    }
+    checkers.add(OptionalImplChecker.class);
     return checkers;
   }
 
   @Override
   public boolean shouldSkipDefs(MethodTree tree) {
-    if (shouldRunAsOptionalChecker()) {
-      return !getMethodsToVerify().contains(tree);
-    }
-    return super.shouldSkipDefs(tree);
+    return !getMethodsToVerify().contains(tree);
   }
 
   /**
@@ -72,28 +57,9 @@ public class NonEmptyChecker extends BaseTypeChecker {
    * @throws AssertionError if invoked when {@link shouldRunAsOptionalChecker} is false
    */
   private Set<MethodTree> getMethodsToVerify() {
-    assert shouldRunAsOptionalChecker; // Invariant: this method is invoked iff
-    // shouldRunAsOptionalChecker is true
-    OptionalChecker optionalChecker = getSubchecker(OptionalChecker.class);
-    assert optionalChecker != null : "@AssumeAssertion(nullness): runAsOptionalChecker is true";
-    OptionalVisitor optionalVisitor = (OptionalVisitor) optionalChecker.getVisitor();
+    OptionalImplChecker optionalCheckerImpl = getSubchecker(OptionalImplChecker.class);
+    assert optionalCheckerImpl != null : "@AssumeAssertion(nullness): runAsOptionalChecker is true";
+    OptionalImplVisitor optionalVisitor = (OptionalImplVisitor) optionalCheckerImpl.getVisitor();
     return optionalVisitor.getMethodsToVerifyWithNonEmptyChecker();
-  }
-
-  /**
-   * Returns the value of {@link shouldRunAsOptionalChecker}.
-   *
-   * <p>This method behaves as a getter for {@link shouldRunAsOptionalChecker}, and avoids
-   * re-computing its value each time (i.e., avoids repeated calls to {@link
-   * SourceChecker#hasOptionNoSubcheckers}).
-   *
-   * @return the value of {@link shouldRunAsOptionalChecker}
-   */
-  private boolean shouldRunAsOptionalChecker() {
-    if (!isShouldRunOptionalCheckerSet) {
-      shouldRunAsOptionalChecker = this.hasOptionNoSubcheckers("runAsOptionalChecker");
-      isShouldRunOptionalCheckerSet = true;
-    }
-    return shouldRunAsOptionalChecker;
   }
 }

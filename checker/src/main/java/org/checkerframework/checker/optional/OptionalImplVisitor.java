@@ -59,7 +59,7 @@ import org.plumelib.util.IPair;
  *
  * @checker_framework.manual #optional-checker Optional Checker
  */
-public class OptionalVisitor
+public class OptionalImplVisitor
     extends BaseTypeVisitor</* OptionalAnnotatedTypeFactory*/ BaseAnnotatedTypeFactory> {
 
   /** The Collection type. */
@@ -95,7 +95,7 @@ public class OptionalVisitor
    *
    * @param checker the associated OptionalChecker
    */
-  public OptionalVisitor(BaseTypeChecker checker) {
+  public OptionalImplVisitor(BaseTypeChecker checker) {
     super(checker);
     collectionType = types.erasure(TypesUtils.typeFromClass(Collection.class, types, elements));
 

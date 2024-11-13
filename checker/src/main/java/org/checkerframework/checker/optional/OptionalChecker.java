@@ -1,32 +1,22 @@
 package org.checkerframework.checker.optional;
 
-import java.util.Optional;
-import java.util.Set;
-import org.checkerframework.common.aliasing.AliasingChecker;
-import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.framework.qual.RelevantJavaTypes;
-import org.checkerframework.framework.qual.StubFiles;
+import java.util.ArrayList;
+import java.util.Collection;
+import org.checkerframework.checker.nonempty.NonEmptyChecker;
+import org.checkerframework.framework.source.AggregateChecker;
 import org.checkerframework.framework.source.SourceChecker;
-import org.checkerframework.framework.source.SupportedOptions;
 
-/**
- * A type-checker that prevents misuse of the {@link java.util.Optional} class.
- *
- * @checker_framework.manual #optional-checker Optional Checker
- */
-// TODO: For a call to `@Optional#ofNullable`, if the argument has type
-// @NonNull, make the return type have type @Present.
-@RelevantJavaTypes(Optional.class)
-@StubFiles({"javaparser.astub"})
-@SupportedOptions("optionalMapAssumeNonNull")
-public class OptionalChecker extends BaseTypeChecker {
-  /** Create an OptionalChecker. */
+/** A version of the Optional Checker that runs the NonEmptyChecker as a subchecker. */
+// TODO: This is effectively the new Optional Checker and the name should reflect this fact.
+public class OptionalChecker extends AggregateChecker {
+
+  /** Creates a RevisedOptionalChecker. */
   public OptionalChecker() {}
 
   @Override
-  protected Set<Class<? extends SourceChecker>> getImmediateSubcheckerClasses() {
-    Set<Class<? extends SourceChecker>> subcheckers = super.getImmediateSubcheckerClasses();
-    subcheckers.add(AliasingChecker.class);
-    return subcheckers;
+  protected Collection<Class<? extends SourceChecker>> getSupportedCheckers() {
+    Collection<Class<? extends SourceChecker>> checkers = new ArrayList<>(2);
+    checkers.add(NonEmptyChecker.class);
+    return checkers;
   }
 }
