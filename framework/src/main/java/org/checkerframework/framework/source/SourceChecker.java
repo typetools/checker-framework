@@ -405,7 +405,7 @@ import org.plumelib.util.UtilPlume;
   // Sets AnnotatedTypeFactory shouldCache to false
   "atfDoNotCache",
 
-  // Language Server Protocol(LSP) Support
+  // Language Server Protocol (LSP) Support
 
   // TODO: document `-AlspTypeInfo` in manual, as a debugging option.
   // Output detailed type information for nodes in AST
@@ -1253,8 +1253,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     // All other messages are printed immediately.  This includes errors issued because the
     // checker threw an exception.
 
-    // Update errsOnLastExit for all checkers, so that no matter which one is run next, its test of
-    // whether a Java error occurred is correct.
+    // Update errsOnLastExit for all checkers, so that no matter which one is run next, its test
+    // of whether a Java error occurred is correct.
 
     Context context = ((JavacProcessingEnvironment) processingEnv).getContext();
     Log log = Log.instance(context);
