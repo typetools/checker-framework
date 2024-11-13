@@ -398,9 +398,16 @@ public class OptionalWithoutNonEmptyVisitor
   public void processMethodTree(MethodTree tree) {
     if (this.isAnnotatedWithNonEmptyPrecondition(tree)
         || this.isAnyFormalAnnotatedWithNonEmpty(tree)) {
+      System.out.printf(
+          "NonEmpty will verify method and callees because of precondition or annotated formal:"
+              + " %s %s%n",
+          tree.getName(), tree.getParameters());
       addMethodToVerifyWithNonEmptyChecker(tree);
     }
     if (this.isReturnTypeAnnotatedWithNonEmpty(tree)) {
+      System.out.printf(
+          "NonEmpty will verify because of return type: %s %s => %s%n",
+          tree.getName(), tree.getParameters(), tree.getReturnType());
       methodsToVerifyWithNonEmptyChecker.add(tree);
     }
     super.processMethodTree(tree);
@@ -415,6 +422,9 @@ public class OptionalWithoutNonEmptyVisitor
   private void addMethodToVerifyWithNonEmptyChecker(MethodTree methodDecl) {
     String methodName = methodDecl.getName().toString();
     if (calleesToCallers.containsKey(methodName)) {
+      System.out.printf(
+          "NonEmpty will verify callees of %s %s: %s%n",
+          methodName, methodDecl.getParameters(), calleesToCallers.get(methodName));
       methodsToVerifyWithNonEmptyChecker.addAll(calleesToCallers.get(methodName));
     }
     methodsToVerifyWithNonEmptyChecker.add(methodDecl);
@@ -641,6 +651,12 @@ public class OptionalWithoutNonEmptyVisitor
     if (atypeFactory.containsSameByClass(annos, NonEmpty.class)) {
       MethodTree enclosingMethod = TreePathUtil.enclosingMethod(this.getCurrentPath());
       if (enclosingMethod != null) {
+        System.out.printf(
+            "NonEmpty will verify %s due to enclosed variable %s: %s %s%n",
+            enclosingMethod.getName(),
+            tree,
+            enclosingMethod.getName(),
+            enclosingMethod.getParameters());
         methodsToVerifyWithNonEmptyChecker.add(enclosingMethod);
       }
     }
