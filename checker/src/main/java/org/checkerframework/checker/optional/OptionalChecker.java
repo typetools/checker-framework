@@ -77,7 +77,9 @@ public class OptionalChecker extends BaseTypeChecker {
     assert optionalChecker != null : "@AssumeAssertion(nullness): runAsOptionalChecker is true";
     OptionalWithoutNonEmptyVisitor optionalVisitor =
         (OptionalWithoutNonEmptyVisitor) optionalChecker.getVisitor();
-    return optionalVisitor.getMethodsToVerifyWithNonEmptyChecker();
+    Set<MethodTree> result = optionalVisitor.getMethodsToVerifyWithNonEmptyChecker();
+    System.out.printf("getMethodsToVerify() => %s%n", result);
+    return result;
   }
 
   /**

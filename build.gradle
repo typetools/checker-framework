@@ -860,7 +860,7 @@ subprojects {
           '-Astubs=javax-lang-model-element-name.astub'
         ])
     createCheckTypeTask(project.name, 'Optional',
-        'org.checkerframework.checker.optional.OptionalWithoutNonEmptyChecker',
+        'org.checkerframework.checker.optional.OptionalChecker',
         [
           // to avoid having to annotate JavaParser
           '-AassumePureGetters',
