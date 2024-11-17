@@ -42,7 +42,7 @@ jobs:
    - junit_jdk21
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk11:latest
+  container: mdernst/cf-ubuntu-jdk11-testing:latest
   timeoutInMinutes: 70
   steps:
   - checkout: self
@@ -55,7 +55,7 @@ jobs:
    - junit_jdk21
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk17:latest
+  container: mdernst/cf-ubuntu-jdk17-testing:latest
   timeoutInMinutes: 70
   steps:
   - checkout: self
@@ -65,7 +65,7 @@ jobs:
 - job: junit_jdk21
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk21:latest
+  container: mdernst/cf-ubuntu-jdk21-testing:latest
   timeoutInMinutes: 70
   steps:
   - checkout: self
@@ -77,7 +77,7 @@ jobs:
    - canary_jobs
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk23:latest
+  container: mdernst/cf-ubuntu-jdk23-testing:latest
   timeoutInMinutes: 70
   steps:
   - checkout: self
@@ -90,7 +90,7 @@ jobs:
    - nonjunit_jdk21
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk11:latest
+  container: mdernst/cf-ubuntu-jdk11-testing:latest
   steps:
   - checkout: self
     fetchDepth: 25
@@ -102,7 +102,7 @@ jobs:
    - nonjunit_jdk21
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk17:latest
+  container: mdernst/cf-ubuntu-jdk17-testing:latest
   steps:
   - checkout: self
     fetchDepth: 25
@@ -111,7 +111,7 @@ jobs:
 - job: nonjunit_jdk21
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk21:latest
+  container: mdernst/cf-ubuntu-jdk21-testing:latest
   steps:
   - checkout: self
     fetchDepth: 25
@@ -122,7 +122,7 @@ jobs:
    - canary_jobs
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk23:latest
+  container: mdernst/cf-ubuntu-jdk23-testing:latest
   steps:
   - checkout: self
     fetchDepth: 25
@@ -139,7 +139,7 @@ jobs:
    - inference_part2_jdk21
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk11:latest
+  container: mdernst/cf-ubuntu-jdk11-testing:latest
   timeoutInMinutes: 90
   steps:
   - checkout: self
@@ -153,7 +153,7 @@ jobs:
    - inference_part2_jdk21
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk17:latest
+  container: mdernst/cf-ubuntu-jdk17-testing:latest
   timeoutInMinutes: 90
   steps:
   - checkout: self
@@ -164,7 +164,7 @@ jobs:
 - job: inference_part1_jdk21
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk21:latest
+  container: mdernst/cf-ubuntu-jdk21-testing:latest
   timeoutInMinutes: 90
   steps:
   - checkout: self
@@ -174,7 +174,7 @@ jobs:
 - job: inference_part2_jdk21
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk21:latest
+  container: mdernst/cf-ubuntu-jdk21-testing:latest
   timeoutInMinutes: 90
   steps:
   - checkout: self
@@ -188,7 +188,7 @@ jobs:
    - inference_part2_jdk21
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk23:latest
+  container: mdernst/cf-ubuntu-jdk23-testing:latest
   timeoutInMinutes: 90
   steps:
   - checkout: self
@@ -202,7 +202,7 @@ jobs:
    - misc_jdk21
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk11-plus:latest
+  container: mdernst/cf-ubuntu-jdk11-plus-testing:latest
   steps:
   - checkout: self
   - bash: ./checker/bin-devel/test-misc.sh
@@ -213,7 +213,7 @@ jobs:
    - misc_jdk21
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk17-plus:latest
+  container: mdernst/cf-ubuntu-jdk17-plus-testing:latest
   steps:
   - checkout: self
   - bash: ./checker/bin-devel/test-misc.sh
@@ -221,7 +221,7 @@ jobs:
 - job: misc_jdk21
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk21-plus:latest
+  container: mdernst/cf-ubuntu-jdk21-plus-testing:latest
   steps:
   - checkout: self
   - bash: ./checker/bin-devel/test-misc.sh
@@ -230,7 +230,7 @@ jobs:
 - job: misc_jdk23
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk23-plus:latest
+  container: mdernst/cf-ubuntu-jdk23-plus-testing:latest
   steps:
   - checkout: self
     fetchDepth: 25
@@ -243,7 +243,7 @@ jobs:
    - typecheck_part2_jdk21
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk11-plus:latest
+  container: mdernst/cf-ubuntu-jdk11-plus-testing:latest
   steps:
   - checkout: self
     fetchDepth: 1000
@@ -256,7 +256,7 @@ jobs:
    - typecheck_part2_jdk21
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk17-plus:latest
+  container: mdernst/cf-ubuntu-jdk17-plus-testing:latest
   steps:
   - checkout: self
     fetchDepth: 1000
@@ -266,7 +266,7 @@ jobs:
 - job: typecheck_part1_jdk21
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk21-plus:latest
+  container: mdernst/cf-ubuntu-jdk21-plus-testing:latest
   steps:
   - checkout: self
     fetchDepth: 1000
@@ -275,7 +275,7 @@ jobs:
 - job: typecheck_part2_jdk21
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk21-plus:latest
+  container: mdernst/cf-ubuntu-jdk21-plus-testing:latest
   steps:
   - checkout: self
     fetchDepth: 1000
@@ -288,7 +288,7 @@ jobs:
    - typecheck_part2_jdk21
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk23-plus:latest
+  container: mdernst/cf-ubuntu-jdk23-plus-testing:latest
   steps:
   - checkout: self
     fetchDepth: 1000
@@ -301,7 +301,7 @@ jobs:
    - daikon_part2_jdk21
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk11:latest
+  container: mdernst/cf-ubuntu-jdk11-testing:latest
   timeoutInMinutes: 80
   steps:
   - checkout: self
@@ -315,7 +315,7 @@ jobs:
    - daikon_part2_jdk21
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk17:latest
+  container: mdernst/cf-ubuntu-jdk17-testing:latest
   timeoutInMinutes: 80
   steps:
   - checkout: self
@@ -327,7 +327,7 @@ jobs:
    - canary_jobs
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk21:latest
+  container: mdernst/cf-ubuntu-jdk21-testing:latest
   timeoutInMinutes: 70
   steps:
   - checkout: self
@@ -339,7 +339,7 @@ jobs:
    - canary_jobs
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk21:latest
+  container: mdernst/cf-ubuntu-jdk21-testing:latest
   timeoutInMinutes: 80
   steps:
   - checkout: self
@@ -353,7 +353,7 @@ jobs:
    - daikon_part2_jdk21
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk23:latest
+  container: mdernst/cf-ubuntu-jdk23-testing:latest
   timeoutInMinutes: 80
   steps:
   - checkout: self
@@ -367,7 +367,7 @@ jobs:
 #    - guava_jdk21
 #   pool:
 #     vmImage: 'ubuntu-latest'
-#   container: mdernst/cf-ubuntu-jdk11:latest
+#   container: mdernst/cf-ubuntu-jdk11-testing:latest
 #   timeoutInMinutes: 70
 #   steps:
 #   - checkout: self
@@ -380,7 +380,7 @@ jobs:
    - guava_jdk21
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk17:latest
+  container: mdernst/cf-ubuntu-jdk17-testing:latest
   timeoutInMinutes: 70
   steps:
   - checkout: self
@@ -392,7 +392,7 @@ jobs:
    - canary_jobs
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk21:latest
+  container: mdernst/cf-ubuntu-jdk21-testing:latest
   # The guava job sometimes times out, because the time between these lines can be 30 minutes!
   #   [INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/plugin-tools/maven-plugin-tools-generators/3.5.1/maven-plugin-tools-generators-3.5.1.pom
   #   [INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/plugin-tools/maven-plugin-tools-generators/3.5.1/maven-plugin-tools-generators-3.5.1.pom
@@ -410,7 +410,7 @@ jobs:
    - guava_jdk21
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk23:latest
+  container: mdernst/cf-ubuntu-jdk23-testing:latest
   timeoutInMinutes: 70
   steps:
   - checkout: self
@@ -423,7 +423,7 @@ jobs:
    - plume_lib_jdk21
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk11:latest
+  container: mdernst/cf-ubuntu-jdk11-testing:latest
   steps:
   - checkout: self
     fetchDepth: 25
@@ -435,7 +435,7 @@ jobs:
    - plume_lib_jdk21
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk17:latest
+  container: mdernst/cf-ubuntu-jdk17-testing:latest
   steps:
   - checkout: self
     fetchDepth: 25
@@ -446,7 +446,7 @@ jobs:
    - canary_jobs
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk21:latest
+  container: mdernst/cf-ubuntu-jdk21-testing:latest
   steps:
   - checkout: self
     fetchDepth: 25
@@ -458,7 +458,7 @@ jobs:
    - plume_lib_jdk21
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk23:latest
+  container: mdernst/cf-ubuntu-jdk23-testing:latest
   steps:
   - checkout: self
     fetchDepth: 25
@@ -471,7 +471,7 @@ jobs:
 #    - downstream_jdk21
 #   pool:
 #     vmImage: 'ubuntu-latest'
-#   container: mdernst/cf-ubuntu-jdk11:latest
+#   container: mdernst/cf-ubuntu-jdk11-testing:latest
 #   steps:
 #   - checkout: self
 #     fetchDepth: 25
@@ -483,7 +483,7 @@ jobs:
 #    - downstream_jdk21
 #   pool:
 #     vmImage: 'ubuntu-latest'
-#   container: mdernst/cf-ubuntu-jdk17:latest
+#   container: mdernst/cf-ubuntu-jdk17-testing:latest
 #   steps:
 #   - checkout: self
 #     fetchDepth: 25
@@ -494,7 +494,7 @@ jobs:
 #    - canary_jobs
 #   pool:
 #     vmImage: 'ubuntu-latest'
-#   container: mdernst/cf-ubuntu-jdk21:latest
+#   container: mdernst/cf-ubuntu-jdk21-testing:latest
 #   steps:
 #   - checkout: self
 #     fetchDepth: 25
@@ -506,7 +506,7 @@ jobs:
 #    - downstream_jdk21
 #   pool:
 #     vmImage: 'ubuntu-latest'
-#   container: mdernst/cf-ubuntu-jdk23:latest
+#   container: mdernst/cf-ubuntu-jdk23-testing:latest
 #   steps:
 #   - checkout: self
 #     fetchDepth: 25
