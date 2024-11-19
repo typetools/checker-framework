@@ -941,7 +941,14 @@ docker run -it mdernst/cf-ubuntu-jdk21 /bin/bash
 \end{Verbatim}
 
 Then, you can run arbitrary commands, including those that appear in the
-CI configuration files.
+CI configuration files.  For example:
+
+\begin{Verbatim}
+git clone --filter=blob:none -b docker-ubuntu-24-10 https://github.com/mernst/checker-framework.git
+cd checker-framework
+export NO_WRITE_VERIFICATION_METADATA=true
+checker/bin-devel/test-cftests-junit.sh
+\end{Verbatim}
 
 
 \subsectionAndLabel{Related repositories}{building-related-repositories}
