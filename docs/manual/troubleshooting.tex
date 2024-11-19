@@ -946,6 +946,8 @@ CI configuration files.  For example:
 \begin{Verbatim}
 git clone --filter=blob:none -b docker-ubuntu-24-10 https://github.com/mernst/checker-framework.git
 cd checker-framework
+export CHECKERFRAMEWORK=$(pwd)
+alias javacheck='$CHECKERFRAMEWORK/checker/bin/javac'
 export NO_WRITE_VERIFICATION_METADATA=true
 checker/bin-devel/test-cftests-junit.sh
 \end{Verbatim}
