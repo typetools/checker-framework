@@ -12,4 +12,4 @@ source "$SCRIPTDIR"/clone-related.sh
 
 
 
-./gradlew test --console=plain --warning-mode=all -Pemit.test.debug=true
+./gradlew test --console=plain --warning-mode=all
