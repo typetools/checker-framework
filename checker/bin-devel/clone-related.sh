@@ -83,8 +83,8 @@ echo "... done: (cd ${AT} && ./.build-without-test.sh)"
 ## Compile
 
 # Download dependencies, trying a second time if there is a failure.
-echo "NO_WRITE_VERIFICATION_METADATA=$NO_WRITE_VERIFICATION_METADATA"
-if [ -n "${NO_WRITE_VERIFICATION_METADATA+x}" ]; then
+# echo "NO_WRITE_VERIFICATION_METADATA=$NO_WRITE_VERIFICATION_METADATA"
+if [ -z "${NO_WRITE_VERIFICATION_METADATA+x}" ]; then
 (TERM=dumb timeout 300 ./gradlew --write-verification-metadata sha256 help --dry-run --quiet || \
      (echo "./gradlew --write-verification-metadata sha256 help --dry-run --quiet failed; sleeping before trying again." && \
       sleep 1m && \

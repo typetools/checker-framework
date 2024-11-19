@@ -9,8 +9,8 @@ set -e
 SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 source "$SCRIPTDIR"/clone-related.sh
 # Download dependencies, trying a second time if there is a failure.
-echo "NO_WRITE_VERIFICATION_METADATA=$NO_WRITE_VERIFICATION_METADATA"
-if [ -n "${NO_WRITE_VERIFICATION_METADATA+x}" ]; then
+# echo "NO_WRITE_VERIFICATION_METADATA=$NO_WRITE_VERIFICATION_METADATA"
+if [ -z "${NO_WRITE_VERIFICATION_METADATA+x}" ]; then
 (TERM=dumb timeout 300 ./gradlew --write-verification-metadata sha256 help --dry-run || \
      (sleep 1m && TERM=dumb timeout 300 ./gradlew --write-verification-metadata sha256 help --dry-run))
 fi
