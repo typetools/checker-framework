@@ -15,7 +15,7 @@ public class I18nFormat {
     MessageFormat.format("'{0, number}'", new Date(12));
 
     // :: warning: (i18nformat.missing.arguments)
-    MessageFormat.format("''{0, time, short}''{1}{2, time} {33, number}{44444}'{''''", 0);
+    MessageFormat.format("''{0, time, short}''{1}{2, time} {33, number}{4444}'{''''", 0);
 
     // :: warning: (i18nformat.missing.arguments)
     MessageFormat.format("{0, number}{1, number}", 1);
