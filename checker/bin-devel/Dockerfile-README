@@ -28,7 +28,7 @@ Create the Docker image:
 # Takes about 12 minutes for jdk*, about 1 hour for jdk*-plus.
 DOCKERTESTING=""
 # When DOCKERTESTING is enabled, also edit any file containing the string "mdernst/".
-DOCKERTESTING="-testing"
+# DOCKERTESTING="-testing"
 alias create_upload_docker_image=' \
   ( [ -z "$INSIDE_EMACS" ] || (echo "Do not run within Emacs" && false) ) && \
   (rm -rf dockerdir && \
