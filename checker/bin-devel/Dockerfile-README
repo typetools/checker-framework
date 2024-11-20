@@ -1,7 +1,7 @@
 This directory contains Dockerfiles to create new Docker images for
 running Checker Framework tests reproducibly.
 
-The rest of this file explains how to build new Docker images:
+The rest of this file explains how to build new Docker images.
 
 
 Preliminaries:
@@ -14,25 +14,33 @@ Preliminaries:
   # (This is only necessary once per machine; credentials are cached.)
   docker login
 
+After running any of the below, consider deleting the docker containers,
+which can take up a lot of disk space.
+To stop and remove/delete all docker containers:
+  docker stop $(docker ps -a -q)
+  docker rm $(docker ps -a -q)
+or you can just remove some of them.
 
 Create the Docker image:
 
-# Warning: when run in an Emacs shell buffer, this creates huge amounts of output.
-# So, probably run it in a terminal.
 # Alias to create the Docker image, in an empty directory, and upload to Docker Hub.
+# Run from a terminal, NOT from Emacs, because it produces vast amounts of output.
 # Takes about 12 minutes for jdk*, about 1 hour for jdk*-plus.
 DOCKERTESTING=""
+# When DOCKERTESTING is enabled, also edit any file containing the string "mdernst/".
 # DOCKERTESTING="-testing"
 alias create_upload_docker_image=' \
   ( [ -z "$INSIDE_EMACS" ] || (echo "Do not run within Emacs" && false) ) && \
-  rm -rf dockerdir && \
+  (rm -rf dockerdir && \
   mkdir -p dockerdir && \
-  (cd dockerdir && \
+  cd dockerdir && \
   \cp -pf ../Dockerfile-$OS-$JDKVER Dockerfile && \
-  DOCKERIMAGE="mdernst/$DPROJECT-$OS-$JDKVER$DOCKERTESTING"
+  DOCKERIMAGE="mdernst/$DPROJECT-$OS-$JDKVER$DOCKERTESTING" && \
   docker build -t $DOCKERIMAGE . && \
-  docker push $DOCKERIMAGE) && \
-  rm -rf dockerdir'
+  docker push $DOCKERIMAGE && \
+  rm -rf dockerdir) || \
+  (echo "*****"; echo "*****"; echo "FAILURE in $DOCKERIMAGE"; echo "*****"; echo "*****"; false) \
+'
 
 export OS=ubuntu
 export JDKVER=jdk11
