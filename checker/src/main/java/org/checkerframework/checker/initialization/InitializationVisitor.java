@@ -330,7 +330,6 @@ public class InitializationVisitor<
   // about initialization we compute in
   // GenericAnnotatedTypeFactory.initializationStaticStore and
   // GenericAnnotatedTypeFactory.initializationStore.
-  @SuppressWarnings("DuplicateBranches") // TODO: remove after looking at "if (staticFields)".
   protected void checkFieldsInitialized(
       Tree tree,
       boolean staticFields,
