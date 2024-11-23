@@ -54,11 +54,12 @@ public class NonEmptyChecker extends BaseTypeChecker {
    * Obtains the methods to verify w.r.t. the Non-Empty type system from the Optional Checker.
    *
    * @return the set of methods to be verified by the Non-Empty Checker
-   * @throws AssertionError if invoked when {@link shouldRunAsOptionalChecker} is false
+   * @throws AssertionError if invoked when the {@link OptionalImplChecker} is not set as a
+   *     subchecker of this checker
    */
   private Set<MethodTree> getMethodsToVerify() {
     OptionalImplChecker optionalCheckerImpl = getSubchecker(OptionalImplChecker.class);
-    assert optionalCheckerImpl != null : "@AssumeAssertion(nullness): runAsOptionalChecker is true";
+    assert optionalCheckerImpl != null;
     OptionalImplVisitor optionalVisitor = (OptionalImplVisitor) optionalCheckerImpl.getVisitor();
     return optionalVisitor.getMethodsToVerifyWithNonEmptyChecker();
   }

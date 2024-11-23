@@ -1,5 +1,6 @@
 package org.checkerframework.checker.optional;
 
+import java.util.NavigableSet;
 import java.util.Optional;
 import java.util.Set;
 import org.checkerframework.common.aliasing.AliasingChecker;
@@ -28,5 +29,19 @@ public class OptionalImplChecker extends BaseTypeChecker {
     Set<Class<? extends SourceChecker>> subcheckers = super.getImmediateSubcheckerClasses();
     subcheckers.add(AliasingChecker.class);
     return subcheckers;
+  }
+
+  /**
+   * Ensures that the "optional" prefix in the argument to a {@link SuppressWarnings} annotation is
+   * respected. Programmers should not have to use the "optionalimpl" prefix in suppression
+   * annotations.
+   *
+   * @return the set of suppress warnings prefixes that are respected by this checker
+   */
+  @Override
+  public NavigableSet<String> getSuppressWarningsPrefixes() {
+    NavigableSet<String> prefixes = super.getSuppressWarningsPrefixes();
+    prefixes.add("optional");
+    return prefixes;
   }
 }
