@@ -11,7 +11,7 @@
 # See https://packages.ubuntu.com/search?suite=default&section=all&arch=any&keywords=openjdk-23-jdk&searchon=names
 # to see what Ubuntu versions support a particular OpenJDK version.
 FROM ubuntu:oracular
-MAINTAINER Michael Ernst <mernst@cs.washington.edu>
+LABEL org.opencontainers.image.authors="Michael Ernst <mernst@cs.washington.edu>"
 
 # According to
 # https://docs.docker.com/engine/userguide/eng-image/dockerfile_best-practices/:
