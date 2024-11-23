@@ -330,7 +330,6 @@ public class InitializationVisitor<
   // about initialization we compute in
   // GenericAnnotatedTypeFactory.initializationStaticStore and
   // GenericAnnotatedTypeFactory.initializationStore.
-  @SuppressWarnings("DuplicateBranches") // TODO: remove after looking at "if (staticFields)".
   protected void checkFieldsInitialized(
       Tree tree,
       boolean staticFields,
@@ -356,13 +355,8 @@ public class InitializationVisitor<
     List<VariableTree> nonviolatingFields = uninitializedFields.second;
 
     // Remove fields that have already been initialized by an initializer block.
-    if (staticFields) {
-      violatingFields.removeAll(initializedFields);
-      nonviolatingFields.removeAll(initializedFields);
-    } else {
-      violatingFields.removeAll(initializedFields);
-      nonviolatingFields.removeAll(initializedFields);
-    }
+    violatingFields.removeAll(initializedFields);
+    nonviolatingFields.removeAll(initializedFields);
 
     // Errors are issued at the field declaration if the field is static or if the constructor
     // is the default constructor.
