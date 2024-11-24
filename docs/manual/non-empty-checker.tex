@@ -11,6 +11,25 @@ throw \<NoSuchElementException> as a result of calling methods such as
 \<Deque.getFirst()>, \<Deque.removeFirst()>, \<Queue.remove()>, or
 \<Queue.element()>.
 
+Currently, the Non-Empty Checker operates as an auxilliary checker for the
+Optional Checker (\sectionpageref{optional-checker}).
+Its default modality is to \emph{partially} verify a program with respect to
+non-empty information and guarantees.
+This information is then used by the Optional Checker to increase its precision
+around \<Optional> values whose presence relies on whether a container is
+non-empty (or empty).
+
+Under this default modality, the Non-Empty Checker verifies methods and
+declarations that are:
+\begin{itemize}
+
+\item explicitly annotated with non-empty annotations (i.e., programmer-written
+  annotations from the Non-Empty type system
+  (\sectionpageref{non-empty-annotations}).
+\item passed to it from the Optional Checker.
+
+\end{itemize}
+
 To run the Non-Empty Checker, run either of these commands:
 
 \begin{alltt}
@@ -18,12 +37,18 @@ To run the Non-Empty Checker, run either of these commands:
   javac -processor org.checkerframework.checker.nonempty.NonEmptyChecker \emph{MyJavaFile}.java
 \end{alltt}
 
-The Non-Empty Checker has a second modality, in which it mostly acts like
-the Optional Checker (\sectionpageref{optional-checker}).  If you pass the
-\<-ArunAsOptionalChecker> command-line argument, then the Non-Empty Checker
-runs the Optional Checker, then checks (only) explicitly-written
-\<@NonEmpty} annotations.
+The Non-Empty Checker has a second modality, in which it can be run as a
+standalone (i.e.,not as an auxiliary checker):
 
+\begin{alltt}
+  javac -processor nonempty -AcheckAllDefs \emph{MyJavaFile}.java
+\end{alltt}
+
+If you pass the \<-AcheckAllDefs> command-line argument, the Non-Empty Checker
+will attempt to verify \emph{all} methods and declarations with respect to its
+guarantee.
+This currently leads to a large number of false positive errors and warnings,
+at this time, and is not recommended.
 
 \sectionAndLabel{Non-Empty annotations}{non-empty-annotations}
 
