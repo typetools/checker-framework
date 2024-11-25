@@ -2,6 +2,8 @@ package org.checkerframework.checker.sqlquotes;
 
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;
+import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.Tree;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.sqlquotes.qual.SqlEvenQuotes;
@@ -13,6 +15,8 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.LiteralTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
@@ -59,9 +63,37 @@ public class SqlQuotesAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   @Override
   public TreeAnnotator createTreeAnnotator() {
+    // Don't call super.createTreeAnnotator() because it includes PropagationTreeAnnotator,
+    // but we want to use UnitsPropagationTreeAnnotator instead.
     return new ListTreeAnnotator(
-        super.createTreeAnnotator(),
+        new SqlQuotesPropagationTreeAnnotator(this),
+        new LiteralTreeAnnotator(this).addStandardLiteralQualifiers(),
         new SqlQuotesAnnotatedTypeFactory.SqlQuotesTreeAnnotator(this));
+  }
+
+  /** Disables {@link #visitBinary} to avoid runaway recursion. */
+  private static class SqlQuotesPropagationTreeAnnotator extends PropagationTreeAnnotator {
+
+    /**
+     * Creates a new SqlQuotesPropagationTreeAnnotator.
+     *
+     * @param atypeFactory the type factory
+     */
+    public SqlQuotesPropagationTreeAnnotator(AnnotatedTypeFactory atypeFactory) {
+      super(atypeFactory);
+    }
+
+    // Completely handled by SqlQuotesTreeAnnotator.
+    @Override
+    public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
+      return null;
+    }
+
+    // Completely handled by SqlQuotesTreeAnnotator.
+    @Override
+    public Void visitCompoundAssignment(CompoundAssignmentTree tree, AnnotatedTypeMirror type) {
+      return null;
+    }
   }
 
   /**
@@ -74,6 +106,8 @@ public class SqlQuotesAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    *   <li>SqlQuotesUnknown dominates other types in concatenation;
    *   <li>Non-bottom types dominate SqlQuotesBottom in concatenation.
    * </ul>
+   *
+   * and also to set the type of literals.
    */
   private class SqlQuotesTreeAnnotator extends TreeAnnotator {
     /**
@@ -83,6 +117,26 @@ public class SqlQuotesAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     public SqlQuotesTreeAnnotator(AnnotatedTypeFactory atypeFactory) {
       super(atypeFactory);
+    }
+
+    @Override
+    public Void visitLiteral(LiteralTree tree, AnnotatedTypeMirror type) {
+      if (tree.getKind() == Tree.Kind.STRING_LITERAL) {
+        String string = (String) tree.getValue();
+        int numQuotes = 0;
+        int len = string.length();
+        for (int i = 0; i < len; i++) {
+          if (string.charAt(i) == '\'') {
+            numQuotes++;
+          }
+        }
+        if ((numQuotes & 1) == 0) {
+          type.replaceAnnotation(SQL_EVEN_QUOTES);
+        } else {
+          type.replaceAnnotation(SQL_ODD_QUOTES);
+        }
+      }
+      return null;
     }
 
     @Override

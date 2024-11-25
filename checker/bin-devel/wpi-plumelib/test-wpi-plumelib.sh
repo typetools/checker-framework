@@ -65,7 +65,7 @@ test_wpi_plume_lib() {
     # Try twice in case of network lossage
     git clone -q --depth=1 "https://github.com/plume-lib/$project.git" || (sleep 60 && git clone -q --depth=1 "https://github.com/plume-lib/$project.git")
 
-    cd "$project" || (echo "can't run: cd $project" && exit 1)
+    cd "$project" || { echo "can't run: cd $project"; exit 2; }
 
     java -cp "$CHECKERFRAMEWORK/checker/dist/checker.jar" org.checkerframework.framework.stub.RemoveAnnotationsForInference . || exit 1
     # The project may not build after running RemoveAnnotationsForInference, because some casts
@@ -109,7 +109,7 @@ test_wpi_plume_lib() {
 
 
 mkdir -p "$TESTDIR"
-cd "$TESTDIR" || (echo "can't do: cd $TESTDIR" && exit 1)
+cd "$TESTDIR" || { echo "can't do: cd $TESTDIR"; exit 2; }
 
 # Get the list of checkers from the project's build.gradle file
 ## TODO: These projects are annotated for additional checkers, like resourceleak. Add to these lists.

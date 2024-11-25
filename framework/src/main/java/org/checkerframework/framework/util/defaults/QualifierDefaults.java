@@ -272,8 +272,11 @@ public class QualifierDefaults {
   }
 
   /**
-   * Sets the default annotations. A programmer may override this by writing the @DefaultQualifier
+   * Adds a default annotation. A programmer may override this by writing the @DefaultQualifier
    * annotation on an element.
+   *
+   * @param absoluteDefaultAnno the default annotation mirror
+   * @param location the type use location
    */
   public void addCheckedCodeDefault(
       AnnotationMirror absoluteDefaultAnno, TypeUseLocation location) {

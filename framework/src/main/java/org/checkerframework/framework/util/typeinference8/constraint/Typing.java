@@ -211,7 +211,9 @@ public class Typing extends TypeConstraint {
       // constraint reduces to the following new constraints:
       // for all i (1 <= i <= n), <Bi <= Ai>.
 
-      AbstractType sAsSuper = S.asSuper(T.getJavaType());
+      // Capturing is not in the JLS, but otherwise wildcards appear in the constraints
+      // against the type arguments, which causes crashes.
+      AbstractType sAsSuper = S.asSuper(T.getJavaType()).capture(context);
       if (sAsSuper == null) {
         return ConstraintSet.FALSE;
       } else if (sAsSuper.isRaw() || T.isRaw()) {
@@ -300,14 +302,14 @@ public class Typing extends TypeConstraint {
    */
   private ReductionResult reduceContained() {
     if (T.getTypeKind() != TypeKind.WILDCARD) {
-      if (S.getTypeKind() != TypeKind.WILDCARD) {
-        if (isCovarTypeArg) {
-          return new Typing(S, T, Kind.SUBTYPE);
-        }
-        return new Typing(S, T, Kind.TYPE_EQUALITY);
-      } else {
+      if (S.getTypeKind() == TypeKind.WILDCARD) {
         return ConstraintSet.FALSE;
       }
+      if (isCovarTypeArg) {
+        return new Typing(S, T, Kind.SUBTYPE);
+      }
+      return new Typing(S, T, Kind.TYPE_EQUALITY);
+
     } else if (T.isUnboundWildcard()) {
       return ConstraintSet.TRUE;
     } else if (T.isUpperBoundedWildcard()) {

@@ -1080,12 +1080,24 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @return a TypeMirror representing the binary numeric promoted type
    */
   protected TypeMirror binaryPromotedType(TypeMirror left, TypeMirror right) {
-    if (TypesUtils.isBoxedPrimitive(left)) {
-      left = types.unboxedType(left);
+    if (!left.getKind().isPrimitive()) {
+      if (TypesUtils.isCapturedTypeVariable(left)) {
+        // This doesn't seem legal according to the JLS, but javac accepts it.
+        left = types.unboxedType(TypesUtils.upperBound(left));
+      } else {
+        left = types.unboxedType(left);
+      }
     }
-    if (TypesUtils.isBoxedPrimitive(right)) {
-      right = types.unboxedType(right);
+
+    if (!right.getKind().isPrimitive()) {
+      if (TypesUtils.isCapturedTypeVariable(right)) {
+        // This doesn't seem legal according to the JLS, but javac accepts it.
+        right = types.unboxedType(TypesUtils.upperBound(right));
+      } else {
+        right = types.unboxedType(right);
+      }
     }
+
     TypeKind promotedTypeKind = TypeKindUtils.widenedNumericType(left, right);
     return types.getPrimitiveType(promotedTypeKind);
   }
@@ -1822,13 +1834,25 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       // `tree` lacks an explicit reciever.
       Element ele = TreeUtils.elementFromUse(tree);
       TypeElement declaringClass = ElementUtils.enclosingTypeElement(ele);
-      TypeMirror type = ElementUtils.getType(declaringClass);
+      TypeMirror typeOfDeclaringClass = ElementUtils.getType(declaringClass);
       if (ElementUtils.isStatic(ele)) {
-        ClassNameNode node = new ClassNameNode(type, declaringClass);
+        ClassNameNode node = new ClassNameNode(typeOfDeclaringClass, declaringClass);
         extendWithClassNameNode(node);
         return node;
       } else {
-        Node node = new ImplicitThisNode(type);
+        ClassTree classTree = TreePathUtil.enclosingClass(getCurrentPath());
+        TypeElement classEle = TreeUtils.elementFromDeclaration(classTree);
+
+        // An implicit receiver is the first enclosing type that is a subtype of the type where the
+        // element is declared.
+        while (!TypesUtils.isErasedSubtype(classEle.asType(), typeOfDeclaringClass, types)) {
+          Element enclosing = classEle.getEnclosingElement();
+          while (!(enclosing instanceof TypeElement)) {
+            enclosing = enclosing.getEnclosingElement();
+          }
+          classEle = (TypeElement) enclosing;
+        }
+        Node node = new ImplicitThisNode(classEle.asType());
         extendWithNode(node);
         return node;
       }
@@ -2723,11 +2747,14 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     // see JLS 15.25
     TypeMirror exprType = TreeUtils.typeOf(tree);
     if (exprType.getKind() == TypeKind.NULL) {
-      // Happens when the 2nd and 3rd operands are both null, i.e. b ? null : null.
+      // Happens when the 2nd and 3rd operands are both null, e.g.: b ? null : null
       Tree parent = TreePathUtil.getContextForPolyExpression(getCurrentPath());
       if (parent != null) {
         exprType = TreeUtils.typeOf(parent);
-      } else {
+        // exprType is null when the condition is non-atomic, e.g.: x.isEmpty() ? null :
+        // null
+      }
+      if (parent == null || exprType == null) {
         exprType = TypesUtils.getObjectTypeMirror(env);
       }
     }
@@ -3012,6 +3039,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       // annotations, so save the expression in the node so that the full type can be
       // found later.
       nextCallNode.setIterableExpression(expression);
+      nextCallNode.setEnhancedForLoop(tree);
       nextCallNode.setInSource(false);
       extendWithNode(nextCallNode);
 
@@ -3020,6 +3048,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       // translateAssignment() scans variable and creates new nodes, so set the expression
       // there, too.
       ((MethodInvocationNode) assignNode.getExpression()).setIterableExpression(expression);
+      ((MethodInvocationNode) assignNode.getExpression()).setEnhancedForLoop(tree);
 
       assert statement != null;
       scan(statement, p);
@@ -3107,6 +3136,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       handleArtificialTree(arrayAccess);
       ArrayAccessNode arrayAccessNode = new ArrayAccessNode(arrayAccess, arrayNode2, indexNode2);
       arrayAccessNode.setArrayExpression(expression);
+      arrayAccessNode.setEnhancedForLoop(tree);
       arrayAccessNode.setInSource(false);
       extendWithNode(arrayAccessNode);
       AssignmentNode arrayAccessAssignNode =
@@ -3117,11 +3147,13 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       Node arrayAccessAssignNodeExpr = arrayAccessAssignNode.getExpression();
       if (arrayAccessAssignNodeExpr instanceof ArrayAccessNode) {
         ((ArrayAccessNode) arrayAccessAssignNodeExpr).setArrayExpression(expression);
+        ((ArrayAccessNode) arrayAccessAssignNodeExpr).setEnhancedForLoop(tree);
       } else if (arrayAccessAssignNodeExpr instanceof MethodInvocationNode) {
         // If the array component type is a primitive, there may be a boxing or unboxing
         // conversion. Treat that as an iterator.
         MethodInvocationNode boxingNode = (MethodInvocationNode) arrayAccessAssignNodeExpr;
         boxingNode.setIterableExpression(expression);
+        boxingNode.setEnhancedForLoop(tree);
       }
 
       assert statement != null;

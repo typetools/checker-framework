@@ -5,6 +5,7 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
@@ -282,8 +283,15 @@ public final class TreePathUtil {
       case LAMBDA_EXPRESSION:
       case METHOD_INVOCATION:
       case NEW_ARRAY:
-      case NEW_CLASS:
       case RETURN:
+        return parent;
+      case NEW_CLASS:
+        @SuppressWarnings("interning:not.interned") // Checking for exact object.
+        boolean enclosingExpr =
+            ((NewClassTree) parent).getEnclosingExpression() == treePath.getLeaf();
+        if (enclosingExpr) {
+          return null;
+        }
         return parent;
       case TYPE_CAST:
         if (isLambdaOrMethodRef) {
