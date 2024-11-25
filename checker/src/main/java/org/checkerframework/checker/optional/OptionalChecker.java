@@ -6,11 +6,13 @@ import org.checkerframework.checker.nonempty.NonEmptyChecker;
 import org.checkerframework.framework.source.AggregateChecker;
 import org.checkerframework.framework.source.SourceChecker;
 
-/** A version of the Optional Checker that runs the NonEmptyChecker as a subchecker. */
-// TODO: This is effectively the new Optional Checker and the name should reflect this fact.
+/**
+ * A type-checker that prevents {@link java.util.NoSuchElementException} in the use of the {@link
+ * java.util.Optional} class.
+ */
 public class OptionalChecker extends AggregateChecker {
 
-  /** Creates a RevisedOptionalChecker. */
+  /** Creates a new {@link org.checkerframework.checker.optional.OptionalChecker} */
   public OptionalChecker() {}
 
   @Override
