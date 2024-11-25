@@ -10,7 +10,6 @@ public class ConfidentialConcatenation {
   void executeConfidential(@Confidential String s) {}
 
   void concatenation(@NonConfidential String s1, @Confidential String s2) {
-    // :: error: (assignment)
     @Confidential String s_1 = s1 + s1;
     @Confidential String s_2 = s1 + s2;
     @Confidential String s_3 = s2 + s1;
@@ -26,7 +25,6 @@ public class ConfidentialConcatenation {
   }
 
   void concatenationInvocation(@NonConfidential String s1, @Confidential String s2) {
-
     executeNonConfidential(s1 + s1);
     // :: error: (argument)
     executeNonConfidential(s1 + s2);
@@ -35,14 +33,13 @@ public class ConfidentialConcatenation {
     // :: error: (argument)
     executeNonConfidential(s2 + s2);
 
-    // :: error: (argument)
     executeConfidential(s1 + s1);
     executeConfidential(s1 + s2);
     executeConfidential(s2 + s1);
     executeConfidential(s2 + s2);
   }
 
-  void compoundConcatenation(@NonConfidential String s1, String s2) {
+  void compoundConcatenation(@NonConfidential String s1, @Confidential String s2) {
     s1 += s1;
     // :: error: (compound.assignment)
     s1 += s2;
