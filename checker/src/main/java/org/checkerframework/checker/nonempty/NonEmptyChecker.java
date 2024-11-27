@@ -31,6 +31,10 @@ public class NonEmptyChecker extends BaseTypeChecker {
   @Override
   protected Set<Class<? extends SourceChecker>> getImmediateSubcheckerClasses() {
     Set<Class<? extends SourceChecker>> checkers = super.getImmediateSubcheckerClasses();
+    // Ideally, the OptionalImplChecker should only be added as a subchecker if this Non-Empty
+    // Checker is being run in aggregate with the top-level Optional Checker
+    // However, it appears that this information (via SourceChecker#getParentChecker()) is not
+    // available at the time when this method is called.
     checkers.add(OptionalImplChecker.class);
     return checkers;
   }
@@ -38,6 +42,10 @@ public class NonEmptyChecker extends BaseTypeChecker {
   @Override
   public boolean shouldSkipDefs(MethodTree tree) {
     if (!(this.getParentChecker() instanceof OptionalChecker)) {
+      // If the parent checker is null, or if it is NOT an instance of the top-level Optional
+      // Checker,
+      // this indicates that this Non-Empty Checker is being run independently. In this case, check
+      // all definitions, not just the ones related to the Optional Checker's guarantee.
       return false;
     }
     return !getMethodsToVerify().contains(tree);
