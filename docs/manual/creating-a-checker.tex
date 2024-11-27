@@ -1075,14 +1075,17 @@ the user can write
 
 \noindent
 if you define an aggregate checker class.  Extend \refclass{framework/source}{AggregateChecker} and override
-the \<getImmediateSubcheckerClasses> method, like the following:
+the \<getSupportedCheckers> method, like the following:
 
 \begin{Verbatim}
   public class MyUnitCheckers extends AggregateChecker {
-    protected Set<Class<? extends SourceChecker>> getImmediateSubcheckerClasses() {
-      return new LinkedHashSet<>(Arrays.asList(DistanceUnitChecker.class,
-                                               VelocityUnitChecker.class,
-                                               MassUnitChecker.class));
+    @Override
+    protected Collection<Class<? extends SourceChecker>> getSupportedCheckers() {
+      Collection<Class<? extends SourceChecker>> checkers = new ArrayList<>(3);
+      Collections.addAll(
+        checkers,
+        DistanceUnitChecker.class, VelocityUnitChecker.class, MassUnitChecker.class);
+      return checkers;
     }
   }
 \end{Verbatim}
