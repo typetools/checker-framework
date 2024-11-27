@@ -27,7 +27,6 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Name;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
@@ -80,15 +79,15 @@ public class OptionalImplVisitor
   /** The element for java.util.stream.Stream.map(). */
   private final ExecutableElement streamMap;
 
-  /** The set of methods to be verified by the Non-Empty Checker. */
-  private final Set<MethodTree> methodsToVerifyWithNonEmptyChecker = new HashSet<>();
+  /** The set of names of methods to be verified by the Non-Empty Checker. */
+  private final Set<String> namesOfMethodsToVerifyWithNonEmptyChecker = new HashSet<>();
 
   /**
-   * Map from simple names of callees to the methods that call them. Use of simple names (rather
-   * than fully-qualified names or signatures) is a bit imprecise, because it includes all
-   * overloads.
+   * Map from simple names of callees to the simple names of methods that call them. Use of simple
+   * names (rather than fully-qualified names or signatures) is a bit imprecise, because it includes
+   * all overloads.
    */
-  private final Map<String, Set<MethodTree>> calleesToCallers = new HashMap<>();
+  private final Map<String, Set<String>> calleesToCallers = new HashMap<>();
 
   /**
    * Create an OptionalImplVisitor.
@@ -124,8 +123,8 @@ public class OptionalImplVisitor
    *     org.checkerframework.checker.nonempty.NonEmptyChecker}
    */
   @Pure
-  public Set<MethodTree> getMethodsToVerifyWithNonEmptyChecker() {
-    return methodsToVerifyWithNonEmptyChecker;
+  public Set<String> getNamesOfMethodsToVerifyWithNonEmptyChecker() {
+    return namesOfMethodsToVerifyWithNonEmptyChecker;
   }
 
   /**
@@ -386,13 +385,11 @@ public class OptionalImplVisitor
       // Non-Empty Checker. Overloads of methods will be included.
       String callee = tree.getMethodSelect().toString();
       boolean isCalleeInMethodsToVerifyWithNonEmptyChecker =
-          methodsToVerifyWithNonEmptyChecker.stream()
-              .map(MethodTree::getName)
-              .map(Name::toString)
+          namesOfMethodsToVerifyWithNonEmptyChecker.stream()
               .anyMatch(nameOfMethodToVerify -> nameOfMethodToVerify.equals(callee));
       if (isCalleeInMethodsToVerifyWithNonEmptyChecker) {
-        Set<MethodTree> callers = calleesToCallers.computeIfAbsent(callee, (__) -> new HashSet<>());
-        callers.add(caller);
+        Set<String> callers = calleesToCallers.computeIfAbsent(callee, (__) -> new HashSet<>());
+        callers.add(caller.getName().toString());
       }
     }
   }
@@ -404,13 +401,13 @@ public class OptionalImplVisitor
       addMethodToVerifyWithNonEmptyChecker(tree);
     }
     if (this.isReturnTypeAnnotatedWithNonEmpty(tree)) {
-      methodsToVerifyWithNonEmptyChecker.add(tree);
+      namesOfMethodsToVerifyWithNonEmptyChecker.add(tree.getName().toString());
     }
     super.processMethodTree(tree);
   }
 
   /**
-   * Updates {@link methodsToVerifyWithNonEmptyChecker}.
+   * Updates {@link namesOfMethodsToVerifyWithNonEmptyChecker}.
    *
    * @param methodDecl a method declaration that definitely has a precondition regarding
    *     {@code @NonEmpty}
@@ -418,9 +415,9 @@ public class OptionalImplVisitor
   private void addMethodToVerifyWithNonEmptyChecker(MethodTree methodDecl) {
     String methodName = methodDecl.getName().toString();
     if (calleesToCallers.containsKey(methodName)) {
-      methodsToVerifyWithNonEmptyChecker.addAll(calleesToCallers.get(methodName));
+      namesOfMethodsToVerifyWithNonEmptyChecker.addAll(calleesToCallers.get(methodName));
     }
-    methodsToVerifyWithNonEmptyChecker.add(methodDecl);
+    namesOfMethodsToVerifyWithNonEmptyChecker.add(methodDecl.getName().toString());
   }
 
   /**
@@ -645,7 +642,7 @@ public class OptionalImplVisitor
     if (atypeFactory.containsSameByClass(annos, NonEmpty.class)) {
       MethodTree enclosingMethod = TreePathUtil.enclosingMethod(this.getCurrentPath());
       if (enclosingMethod != null) {
-        methodsToVerifyWithNonEmptyChecker.add(enclosingMethod);
+        namesOfMethodsToVerifyWithNonEmptyChecker.add(enclosingMethod.getName().toString());
       }
     }
   }

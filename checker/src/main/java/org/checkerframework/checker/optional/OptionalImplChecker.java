@@ -11,7 +11,8 @@ import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.source.SupportedOptions;
 
 /**
- * A type-checker that prevents misuse of the {@link java.util.Optional} class.
+ * The implementation of a type-checker that prevents misuse of the {@link java.util.Optional}
+ * class.
  *
  * @checker_framework.manual #optional-checker Optional Checker
  */
@@ -32,9 +33,8 @@ public class OptionalImplChecker extends BaseTypeChecker {
   }
 
   /**
-   * Ensures that the "optional" prefix in the argument to a {@link SuppressWarnings} annotation is
-   * respected. Programmers should not have to use the "optionalimpl" prefix in suppression
-   * annotations.
+   * Use the "optional", rather than the "optionalimpl" prefix as the argument to a {@link
+   * SuppressWarnings} annotation,
    *
    * @return the set of suppress warnings prefixes that are respected by this checker
    */

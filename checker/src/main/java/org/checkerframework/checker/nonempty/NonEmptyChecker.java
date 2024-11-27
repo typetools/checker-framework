@@ -48,20 +48,20 @@ public class NonEmptyChecker extends BaseTypeChecker {
       // all definitions, not just the ones related to the Optional Checker's guarantee.
       return false;
     }
-    return !getMethodsToVerify().contains(tree);
+    return !getMethodsToVerify().contains(tree.getName().toString());
   }
 
   /**
    * Obtains the methods to verify w.r.t. the Non-Empty type system from the Optional Checker.
    *
-   * @return the set of methods to be verified by the Non-Empty Checker
+   * @return the set of names of the methods to be verified by the Non-Empty Checker
    * @throws AssertionError if invoked when the {@link OptionalImplChecker} is not set as a
    *     subchecker of this checker
    */
-  private Set<MethodTree> getMethodsToVerify() {
+  private Set<String> getMethodsToVerify() {
     OptionalImplChecker optionalCheckerImpl = getSubchecker(OptionalImplChecker.class);
     assert optionalCheckerImpl != null;
     OptionalImplVisitor optionalVisitor = (OptionalImplVisitor) optionalCheckerImpl.getVisitor();
-    return optionalVisitor.getMethodsToVerifyWithNonEmptyChecker();
+    return optionalVisitor.getNamesOfMethodsToVerifyWithNonEmptyChecker();
   }
 }
