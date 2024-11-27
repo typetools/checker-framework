@@ -80,7 +80,7 @@ public class OptionalImplTransfer extends CFTransfer {
   private final List<ExecutableElement> nonEmptyToPresentStreamMethods;
 
   /**
-   * Create an OptionalTransfer.
+   * Create an OptionalImplTransfer.
    *
    * @param analysis the Optional Checker instance
    */

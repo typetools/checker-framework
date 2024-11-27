@@ -21,7 +21,7 @@ import org.checkerframework.framework.source.SupportedOptions;
 @StubFiles({"javaparser.astub"})
 @SupportedOptions("optionalMapAssumeNonNull")
 public class OptionalImplChecker extends BaseTypeChecker {
-  /** Create an OptionalChecker. */
+  /** Create an OptionalImplChecker. */
   public OptionalImplChecker() {}
 
   @Override

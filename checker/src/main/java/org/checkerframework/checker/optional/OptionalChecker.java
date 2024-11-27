@@ -9,6 +9,8 @@ import org.checkerframework.framework.source.SourceChecker;
 /**
  * A type-checker that prevents {@link java.util.NoSuchElementException} in the use of the {@link
  * java.util.Optional} class.
+ *
+ * @checker_framework.manual #optional-checker Optional Checker
  */
 public class OptionalChecker extends AggregateChecker {
 

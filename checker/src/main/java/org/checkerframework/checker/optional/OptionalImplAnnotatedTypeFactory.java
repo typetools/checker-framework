@@ -21,7 +21,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.TreeUtils;
 
-/** OptionalAnnotatedTypeFactory for the Optional Checker. */
+/** OptionalImplAnnotatedTypeFactory for the OptionalImplChecker. */
 public class OptionalImplAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   /** The element for java.util.Optional.map(). */
@@ -31,9 +31,10 @@ public class OptionalImplAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   protected final AnnotationMirror PRESENT = AnnotationBuilder.fromClass(elements, Present.class);
 
   /**
-   * Creates an OptionalAnnotatedTypeFactory.
+   * Creates an OptionalImplAnnotatedTypeFactory.
    *
-   * @param checker the Optional Checker associated with this type factory
+   * @param checker the {@link org.checkerframework.checker.optional.OptionalImplChecker} associated
+   *     with this type factory
    */
   public OptionalImplAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);

@@ -54,8 +54,8 @@ import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.IPair;
 
 /**
- * The OptionalVisitor enforces the Optional Checker rules. These rules are described in the Checker
- * Framework Manual.
+ * The OptionalImplVisitor enforces the Optional Checker rules. These rules are described in the
+ * Checker Framework Manual.
  *
  * @checker_framework.manual #optional-checker Optional Checker
  */
@@ -91,9 +91,10 @@ public class OptionalImplVisitor
   private final Map<String, Set<MethodTree>> calleesToCallers = new HashMap<>();
 
   /**
-   * Create an OptionalVisitor.
+   * Create an OptionalImplVisitor.
    *
-   * @param checker the associated OptionalChecker
+   * @param checker the associated instance of {@link
+   *     org.checkerframework.checker.optional.OptionalImplChecker}
    */
   public OptionalImplVisitor(BaseTypeChecker checker) {
     super(checker);

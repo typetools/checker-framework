@@ -37,11 +37,6 @@ public class NonEmptyChecker extends BaseTypeChecker {
   }
 
   @Override
-  public void initChecker() {
-    super.initChecker();
-  }
-
-  @Override
   protected Set<Class<? extends SourceChecker>> getImmediateSubcheckerClasses() {
     Set<Class<? extends SourceChecker>> checkers = super.getImmediateSubcheckerClasses();
     checkers.add(OptionalImplChecker.class);
