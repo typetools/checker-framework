@@ -37,19 +37,6 @@ To run the Non-Empty Checker, run either of these commands:
   javac -processor org.checkerframework.checker.nonempty.NonEmptyChecker \emph{MyJavaFile}.java
 \end{alltt}
 
-The Non-Empty Checker has a second modality, in which it can be run as a
-standalone (i.e.,not as an auxiliary checker):
-
-\begin{alltt}
-  javac -processor nonempty -AcheckAllDefs \emph{MyJavaFile}.java
-\end{alltt}
-
-If you pass the \<-AcheckAllDefs> command-line argument, the Non-Empty Checker
-will attempt to verify \emph{all} methods and declarations with respect to its
-guarantee.
-This currently leads to a large number of false positive errors and warnings,
-at this time, and is not recommended.
-
 \sectionAndLabel{Non-Empty annotations}{non-empty-annotations}
 
 These qualifiers make up the Non-Empty type system:

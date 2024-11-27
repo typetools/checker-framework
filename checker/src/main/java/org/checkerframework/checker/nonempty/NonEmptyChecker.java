@@ -2,6 +2,7 @@ package org.checkerframework.checker.nonempty;
 
 import com.sun.source.tree.MethodTree;
 import java.util.Set;
+import org.checkerframework.checker.optional.OptionalChecker;
 import org.checkerframework.checker.optional.OptionalImplChecker;
 import org.checkerframework.checker.optional.OptionalImplVisitor;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -16,15 +17,6 @@ import org.checkerframework.framework.source.SupportedOptions;
  * using explicitly-written (i.e., programmer-written) annotations from the Non-Empty type system to
  * refine the Optional analysis. This improves analysis of operations on containers (e.g., Streams,
  * Collections) that result in values of type Optional.
- *
- * <p>The Non-Empty Checker's default modality is to only verify (i.e., establish guarantees) for
- * methods that are passed to it by the Optional Checker. Running the Non-Empty Checker in this
- * default modality does <i>not</i> guarantee the absence of {@link
- * java.util.NoSuchElementException} across the <i>entire</i> program.
- *
- * <p>If "-AcheckAllDefs" is passed, then the Non-Empty Checker will attempt to verify <i>all</i>
- * method definitions to prevent {@link java.util.NoSuchElementException}. This modality introduces
- * a larger number of false positives and errors, and so it is not generally supported for users.
  *
  * @checker_framework.manual #non-empty-checker Non-Empty Checker
  */
@@ -45,10 +37,7 @@ public class NonEmptyChecker extends BaseTypeChecker {
 
   @Override
   public boolean shouldSkipDefs(MethodTree tree) {
-    if (hasOptionNoSubcheckers("checkAllDefs")) {
-      // The "-AcheckAllDefs" flag was passed on the command-line, indicating that the user
-      // wants to verify the entire program, not just the methods collected by the Optional Checker.
-      // Consequently, do not skip any method definitions.
+    if (!(this.getParentChecker() instanceof OptionalChecker)) {
       return false;
     }
     return !getMethodsToVerify().contains(tree);
