@@ -325,13 +325,13 @@ public class OptionalImplVisitor
       return;
     }
 
+    // TODO: this does not yet account for assignments
     if (thenStmt.getKind() == Tree.Kind.VARIABLE) {
       ExpressionTree initializer = ((VariableTree) thenStmt).getInitializer();
-      if (initializer.getKind() != Tree.Kind.METHOD_INVOCATION) {
-        return;
-      } else {
+      if (initializer.getKind() == Tree.Kind.METHOD_INVOCATION) {
         checkConditionalStatementIsPresentGetCall(
-            tree, (MethodInvocationTree) initializer, isPresentCall);
+            tree, (MethodInvocationTree) initializer, isPresentCall, "prefer.map.and.orelse");
+        return;
       }
     }
 
@@ -342,7 +342,8 @@ public class OptionalImplVisitor
     if (thenExpr.getKind() != Tree.Kind.METHOD_INVOCATION) {
       return;
     }
-    checkConditionalStatementIsPresentGetCall(tree, (MethodInvocationTree) thenExpr, isPresentCall);
+    checkConditionalStatementIsPresentGetCall(
+        tree, (MethodInvocationTree) thenExpr, isPresentCall, "prefer.ifpresent");
   }
 
   /**
@@ -361,9 +362,13 @@ public class OptionalImplVisitor
    * @param invok the method invocation in the {@code then} block
    * @param isPresentCall the pair comprising a boolean (indicating whether the expression is a call
    *     to {@code * Optional.isPresent} or to {@code Optional.isEmpty}) and its receiver;
+   * @param messageKey the message key, either "prefer.ifPresent" or "prefer.map.and.orelse"
    */
   private void checkConditionalStatementIsPresentGetCall(
-      IfTree tree, MethodInvocationTree invok, IPair<Boolean, ExpressionTree> isPresentCall) {
+      IfTree tree,
+      MethodInvocationTree invok,
+      IPair<Boolean, ExpressionTree> isPresentCall,
+      String messageKey) {
     List<? extends ExpressionTree> args = invok.getArguments();
     if (args.size() != 1) {
       return;
@@ -385,9 +390,7 @@ public class OptionalImplVisitor
       methodString = methodString.substring(0, dotPos) + "::" + methodString.substring(dotPos + 1);
     }
 
-    // TODO: not quite right for the assignment case, the error key should be
-    // "prefer.map.and.orelse"
-    checker.reportWarning(tree, "prefer.ifpresent", receiver, methodString);
+    checker.reportWarning(tree, messageKey, receiver, methodString);
   }
 
   @Override
