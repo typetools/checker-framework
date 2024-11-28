@@ -252,8 +252,6 @@ public class OptionalImplVisitor
     }
     ExpressionTree getReceiver = TreeUtils.getReceiverTree(trueReceiver);
 
-    // What is a better way to do this than string comparison?
-    // Use transfer functions and Store entries.
     ExpressionTree receiver = isPresentCall.second;
     if (sameExpression(receiver, getReceiver)) {
       ExecutableElement ele = TreeUtils.elementFromUse((MethodInvocationTree) trueExpr);
@@ -280,6 +278,8 @@ public class OptionalImplVisitor
   private boolean sameExpression(ExpressionTree tree1, ExpressionTree tree2) {
     JavaExpression r1 = JavaExpression.fromTree(tree1);
     JavaExpression r2 = JavaExpression.fromTree(tree2);
+    // What is a better way to do this than string comparison?
+    // Use transfer functions and Store entries.
     if (r1 != null && !r1.containsUnknown() && r2 != null && !r2.containsUnknown()) {
       return r1.equals(r2);
     } else {
@@ -325,6 +325,16 @@ public class OptionalImplVisitor
       return;
     }
 
+    if (thenStmt.getKind() == Tree.Kind.VARIABLE) {
+      ExpressionTree initializer = ((VariableTree) thenStmt).getInitializer();
+      if (initializer.getKind() != Tree.Kind.METHOD_INVOCATION) {
+        return;
+      } else {
+        checkConditionalStatementIsPresentGetCall(
+            tree, (MethodInvocationTree) initializer, isPresentCall);
+      }
+    }
+
     if (thenStmt.getKind() != Tree.Kind.EXPRESSION_STATEMENT) {
       return;
     }
@@ -332,7 +342,28 @@ public class OptionalImplVisitor
     if (thenExpr.getKind() != Tree.Kind.METHOD_INVOCATION) {
       return;
     }
-    MethodInvocationTree invok = (MethodInvocationTree) thenExpr;
+    checkConditionalStatementIsPresentGetCall(tree, (MethodInvocationTree) thenExpr, isPresentCall);
+  }
+
+  /**
+   * Helps implement part of rule #3.
+   *
+   * <p>Pattern match for the following code:
+   *
+   * <ul>
+   *   <li>{@code METHOD(VAR.get());}
+   *   <li>{@code OTHER_VAR = METHOD(VAR.get());}
+   * </ul>
+   *
+   * inside the {@code then} block for {@code VAR.isPresent()}:
+   *
+   * @param tree the conditional statement tree
+   * @param invok the method invocation in the {@code then} block
+   * @param isPresentCall the pair comprising a boolean (indicating whether the expression is a call
+   *     to {@code * Optional.isPresent} or to {@code Optional.isEmpty}) and its receiver;
+   */
+  private void checkConditionalStatementIsPresentGetCall(
+      IfTree tree, MethodInvocationTree invok, IPair<Boolean, ExpressionTree> isPresentCall) {
     List<? extends ExpressionTree> args = invok.getArguments();
     if (args.size() != 1) {
       return;
@@ -354,6 +385,8 @@ public class OptionalImplVisitor
       methodString = methodString.substring(0, dotPos) + "::" + methodString.substring(dotPos + 1);
     }
 
+    // TODO: not quite right for the assignment case, the error key should be
+    // "prefer.map.and.orelse"
     checker.reportWarning(tree, "prefer.ifpresent", receiver, methodString);
   }
 
@@ -371,9 +404,10 @@ public class OptionalImplVisitor
    * <p>If a callee should be checked by the Non-Empty checker, then the caller should also be
    * checked by the Non-Empty Checker.
    *
-   * <p>This ensures that the <em>clients</em> of any methods that must be checked by the Non-Empty
-   * Checker (i.e., methods that have preconditions related to the Non-Empty type system) are
-   * included in the set of methods to check.
+   * <p>The {@link calleesToCallers} map is updated with the method that <i>encloses</i> the given
+   * method invocation if the callee of the invocation is present in the map. That is, the map is
+   * updated with the callers of any methods that must be checked by the Non-Empty type system
+   * (e.g., methods that have preconditions related to the Non-Empty type system).
    *
    * @param tree a method invocation tree
    */
@@ -421,10 +455,10 @@ public class OptionalImplVisitor
   }
 
   /**
-   * Returns true if a method is explicitly annotated with {@link RequiresNonEmpty}.
+   * Returns true if the method is explicitly annotated with {@link RequiresNonEmpty}.
    *
-   * @param methodDecl a method declaration
-   * @return true if a method is explicitly annotated with {@link RequiresNonEmpty}
+   * @param methodDecl the method declaration
+   * @return true if the method is explicitly annotated with {@link RequiresNonEmpty}
    */
   private boolean isAnnotatedWithNonEmptyPrecondition(MethodTree methodDecl) {
     List<? extends AnnotationMirror> annos =
@@ -459,11 +493,11 @@ public class OptionalImplVisitor
    * @return true if the return type of the method is explicitly annotated with {@link NonEmpty}
    */
   private boolean isReturnTypeAnnotatedWithNonEmpty(MethodTree methodDecl) {
-    if (methodDecl.getReturnType() == null) {
+    Tree returnType = methodDecl.getReturnType();
+    if (returnType == null) {
       return false;
     }
-    List<? extends AnnotationMirror> annos =
-        TreeUtils.typeOf(methodDecl.getReturnType()).getAnnotationMirrors();
+    List<? extends AnnotationMirror> annos = TreeUtils.typeOf(returnType).getAnnotationMirrors();
     return atypeFactory.containsSameByClass(annos, NonEmpty.class);
   }
 
@@ -487,13 +521,11 @@ public class OptionalImplVisitor
     }
     ExpressionTree leftOp = TreeUtils.withoutParens(tree.getLeftOperand());
     ExpressionTree rightOp = TreeUtils.withoutParens(tree.getRightOperand());
-    TypeMirror leftOpType = TreeUtils.typeOf(leftOp);
-    TypeMirror rightOpType = TreeUtils.typeOf(rightOp);
 
-    if (leftOp.getKind() == Tree.Kind.NULL_LITERAL && isOptionalType(rightOpType)) {
+    if (leftOp.getKind() == Tree.Kind.NULL_LITERAL && isOptionalType(TreeUtils.typeOf(rightOp))) {
       checker.reportWarning(tree, "optional.null.comparison");
     }
-    if (rightOp.getKind() == Tree.Kind.NULL_LITERAL && isOptionalType(leftOpType)) {
+    if (rightOp.getKind() == Tree.Kind.NULL_LITERAL && isOptionalType(TreeUtils.typeOf(leftOp))) {
       checker.reportWarning(tree, "optional.null.comparison");
     }
   }
