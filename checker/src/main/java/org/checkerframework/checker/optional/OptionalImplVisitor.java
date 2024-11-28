@@ -368,7 +368,7 @@ public class OptionalImplVisitor
       IfTree tree,
       MethodInvocationTree invok,
       IPair<Boolean, ExpressionTree> isPresentCall,
-      String messageKey) {
+      @CompilerMessageKey String messageKey) {
     List<? extends ExpressionTree> args = invok.getArguments();
     if (args.size() != 1) {
       return;
