@@ -1,4 +1,4 @@
-Version 3.48.3 (December 1, 2024)
+Version 3.48.3 (December 2, 2024)
 --------------------------------
 
 **Closed issues:**
