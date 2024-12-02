@@ -19,7 +19,7 @@ import java.lang.annotation.Target;
  *
  * <pre>{@code
  * class String {
- *   char charAt(@IndexFor("this") index) { ... }
+ *   char charAt(@IndexFor("this") int index) { ... }
  * }
  * }</pre>
  *
