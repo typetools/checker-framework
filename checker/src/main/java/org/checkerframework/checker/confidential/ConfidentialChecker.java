@@ -24,6 +24,8 @@ import org.checkerframework.framework.source.SuppressWarningsPrefix;
   "TextView.astub",
   "AlertDialog.astub",
   "AbstractAuthenticationTargetUrlRequestHandler.astub",
+  "UsernamePasswordAuthenticationToken.astub",
+  "PasswordEncoder.astub",
   // "PrintStream.astub",
   "HttpServletResponse.astub",
   "Cookie.astub"
