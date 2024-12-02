@@ -1,5 +1,6 @@
 package org.checkerframework.checker.optional;
 
+import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ConditionalExpressionTree;
@@ -192,7 +193,7 @@ public class OptionalImplVisitor
    * Returns true iff the method being called is Optional propagation: filter, flatMap, map, or.
    *
    * @param methInvok a method invocation
-   * @return true true iff the method being called is Optional propagation: filter, flatMap, map, or
+   * @return true iff the method being called is Optional propagation: filter, flatMap, map, or
    */
   private boolean isOptionalPropagation(MethodInvocationTree methInvok) {
     ExecutableElement method = TreeUtils.elementFromUse(methInvok);
@@ -318,6 +319,10 @@ public class OptionalImplVisitor
       elseStmt = tmp;
     }
 
+    if (thenStmt != null && elseStmt != null) {
+      handleAssignmentInConditional(tree, thenStmt, elseStmt);
+    }
+
     if (!(elseStmt == null
         || (elseStmt.getKind() == Tree.Kind.BLOCK
             && ((BlockTree) elseStmt).getStatements().isEmpty()))) {
@@ -325,8 +330,7 @@ public class OptionalImplVisitor
       return;
     }
 
-    // TODO: this does not yet account for assignments
-    if (thenStmt.getKind() == Tree.Kind.VARIABLE) {
+    if (thenStmt != null && thenStmt.getKind() == Tree.Kind.VARIABLE) {
       ExpressionTree initializer = ((VariableTree) thenStmt).getInitializer();
       if (initializer.getKind() == Tree.Kind.METHOD_INVOCATION) {
         checkConditionalStatementIsPresentGetCall(
@@ -344,6 +348,53 @@ public class OptionalImplVisitor
     }
     checkConditionalStatementIsPresentGetCall(
         tree, (MethodInvocationTree) thenExpr, isPresentCall, "prefer.ifpresent");
+  }
+
+  /**
+   * Part of rule #3.
+   *
+   * <p>Pattern match for:
+   *
+   * <pre>
+   *   T someVar;
+   *   if (opt.isPresent()) {
+   *    someVar = opt.get().METHOD();
+   *   } else {
+   *    someVar = VALUE;
+   *   }
+   * </pre>
+   *
+   * <p>Prefer: {@code someVar = VAR.map(METHOD).orElse(VALUE);}
+   *
+   * @param tree a conditional expression that can perhaps be simplified
+   */
+  private void handleAssignmentInConditional(
+      IfTree tree, StatementTree thenStmt, StatementTree elseStmt) {
+    if (thenStmt.getKind() != Tree.Kind.EXPRESSION_STATEMENT
+        || elseStmt.getKind() != Tree.Kind.EXPRESSION_STATEMENT) {
+      return;
+    }
+    ExpressionTree trueExpr = ((ExpressionStatementTree) thenStmt).getExpression();
+    ExpressionTree falseExpr = ((ExpressionStatementTree) elseStmt).getExpression();
+    if (trueExpr.getKind() != Tree.Kind.ASSIGNMENT || falseExpr.getKind() != Tree.Kind.ASSIGNMENT) {
+      return;
+    }
+    AssignmentTree trueAssignment = (AssignmentTree) trueExpr;
+    AssignmentTree falseAssignment = (AssignmentTree) falseExpr;
+
+    if (sameExpression(trueAssignment.getVariable(), falseAssignment.getVariable())) {
+      ExecutableElement ele =
+          TreeUtils.elementFromUse((MethodInvocationTree) trueAssignment.getExpression());
+      checker.reportWarning(
+          tree,
+          "prefer.map.and.orelse",
+          trueAssignment.getVariable(),
+          // The literal "ENCLOSINGCLASS::" is gross.
+          // TODO: add this to the error message.
+          // ElementUtils.getQualifiedClassName(ele);
+          ele.getSimpleName(),
+          falseAssignment.getExpression());
+    }
   }
 
   /**
