@@ -367,6 +367,8 @@ public class OptionalImplVisitor
    * <p>Prefer: {@code someVar = VAR.map(METHOD).orElse(VALUE);}
    *
    * @param tree a conditional expression that can perhaps be simplified
+   * @param thenStmt the "then" part of a conditional expression
+   * @param elseStmt the "else" part of a conditional expression
    */
   private void handleAssignmentInConditional(
       IfTree tree, StatementTree thenStmt, StatementTree elseStmt) {
