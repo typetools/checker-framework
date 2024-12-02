@@ -37,11 +37,11 @@ The Confidential Checker type system uses the following annotations:
     will not be able to be accessed by end users.
 \item[\refqualclass{checker/confidential/qual}{NonConfidential}]
     indicates a value that may be exposed to end users, or a location that
-    may be accessed by end users. It is the default qualifier for literals.
+    may be accessed by end users. It is the default qualifier.
 \item[\refqualclass{checker/confidential/qual}{UnknownConfidential}]
     indicates a value whose confidentiality is unknown.
     \code{@UnknownConfidential} is a supertype of \code{@Confidential}
-    and \code{@NonConfidential}. It is the default qualifier for non-literals.
+    and \code{@NonConfidential}.
 \item[\refqualclass{checker/confidential/qual}{PolyConfidential}]
     indicates qualifier polymorphism. For a description of qualifier polymorphism,
     see Section~\ref{method-qualifier-polymorphism}.
@@ -63,24 +63,13 @@ Figure~\ref{fig-confidential-hierarchy}.
 Although parallels could be drawn between the Confidential Checker's
 \code{@Confidential} annotation and the Taint Checker's \code{@Tainted}
 annotation (see Section~\ref{tainting-annotations}), it should be noted that
-\code{@Confidential} is not ambiguous in the values to which it can be applied.
-As a result, while the Confidential Checker (correctly) does not allow
-\code{@Confidential} values to be passed to \code{@NonConfidential} sinks, it also
-disallows \code{@NonConfidential} values in \code{@Confidential} sinks. The
-motivation for this structure was to avoid issues caused by
-\href{https://en.wikipedia.org/wiki/Covariance_and_contravariance_(computer_science)}
-{invariant subtyping}.
-
-The latter constraint may not constitute desired behavior if, for example, we want
-to set a \code{@Confidential} password field to a simple literal (which defaults
-to \code{@NonConfidential}). However, in practice, the \code{@NonConfidential}
-value would often be concatenated with a \code{@Confidential} value prior to
-being passed to the \code{@Confidential} sink, thus converting it to a
-\code{@Confidential} value via the type concatenation rules laid out below in
-Section~\ref{confidential-checks}. For other cases, \code{@SuppressWarnings}
-annotations should be specified to conduct casts between \code{@NonConfidential}
-and \code{@Confidential} values.
-
+there is no subtyping relationship between \code{@Confidential} and
+\code{@NonConfidential}. However, the external behavior of these annotations
+can strongly resemble that of a supertype and subtype, as casts from the latter
+to the former are always permitted (see Section~\ref{confidential-checks}). As
+a result, while the Confidential Checker (correctly) does not allow
+\code{@Confidential} values to be passed to \code{@NonConfidential} sinks, it does
+allow \code{@NonConfidential} values in \code{@Confidential} sinks.
 
 \sectionAndLabel{What the Confidential Checker checks}{confidential-checks}
 
@@ -96,10 +85,19 @@ as follows:
     @NonConfidential + @NonConfidential = @NonConfidential
 \end{Verbatim}
 
+However, casts of any type in the Confidential hierarchy to \code{@Confidential}
+are always allowed as they do not pose a risk of sensitive information exposure:
+\code{@NonConfidential} to \code{@Confidential} casts only increase stringency,
+while \code{@UnknownConfidential} is subtyped by \code{@Confidential},
+\code{@NonConfidential} and can thus be safely cast. This allowance was motivated
+by a high percentage of \code{@SuppressWarnings} annotations being written to allow
+casts from \code{@NonConfidential} to \code{@Confidential}.
+
 \sectionAndLabel{Library annotations}{confidential-library-annotations}
 
 As mentioned prior, the Confidential Checker provides preliminary annotations
-for certain public-facing sinks. For instance, the \code{TextView} class for Android
+for certain public-facing sinks either in the form of stub files or within the
+Checker Framework's annotated JDK. For instance, the \code{TextView} class for Android
 apps requires that a \code{@NonConfidential CharSequence} should be passed to
 its \code{setText} method to avoid displaying sensitive information on the user's
 viewport.
@@ -108,3 +106,12 @@ If necessary, developers can write methods to vet \code{@Confidential} or
 \code{@UnknownConfidential} values and determine which, if any, parts of the
 value can be safely cast to \code{@NonConfidential} under a \code{@SuppressWarnings}
 annotation and passed to user-facing sinks.
+
+It should be noted that, since \code{@NonConfidential} is the default annotation,
+developers must be particularly attentive to explicitly annotating their variables
+to avoid accidentally passing a secret value to a public-facing sink. For this reason,
+it may seem insecure to set \code{@NonConfidential} as the default rather than
+\code{@UnknownConfidential} or \code{@Confidential}. However, this implementation
+significantly decreases the number of \code{@SuppressWarnings} annotations (and
+overall annotations)that the developer must write, as in practice, values are more
+often \code{@NonConfidential} than \code{@Confidential}.
