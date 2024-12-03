@@ -111,11 +111,11 @@ public class OptionalImplVisitor
 
   @Override
   protected BaseTypeValidator createTypeValidator() {
-    return new OptionalTypeValidator(checker, this, atypeFactory);
+    return new OptionalImplTypeValidator(checker, this, atypeFactory);
   }
 
   /**
-   * Gets the set of methods that should be verified using the {@link
+   * Returns the set of methods that should be verified using the {@link
    * org.checkerframework.checker.nonempty.NonEmptyChecker}.
    *
    * <p>This should only be called by the Non-Empty Checker.
@@ -753,9 +753,9 @@ public class OptionalImplVisitor
    * check for improper types, it is necessary to examine, in the type checker, the argument to
    * construction of an Optional. Method {@link #handleNestedOptionalCreation} does so.
    */
-  private final class OptionalTypeValidator extends BaseTypeValidator {
+  private final class OptionalImplTypeValidator extends BaseTypeValidator {
 
-    public OptionalTypeValidator(
+    public OptionalImplTypeValidator(
         BaseTypeChecker checker, BaseTypeVisitor<?> visitor, AnnotatedTypeFactory atypeFactory) {
       super(checker, visitor, atypeFactory);
     }
