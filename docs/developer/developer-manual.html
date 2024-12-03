@@ -112,6 +112,14 @@ The same is true for the other projects.
 </p>
 
 <p>
+You do not need to explicitly build the <code>jdk</code> repository.  Building
+the Checker Framework (say, via <code>./gradlew assemble</code>) automatically
+makes the Checker Framework use the annotated JDK that exists
+at <code>../jdk/</code> &mdash; that is, as a sibling directory of the Checker
+Framework named <code>jdk</code>.
+</p>
+
+<p>
 If a change spans multiple projects, make pull requests for all of them.
 Each pull request description's should link to all the others.
 </p>
