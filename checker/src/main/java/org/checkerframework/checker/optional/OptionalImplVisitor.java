@@ -755,7 +755,13 @@ public class OptionalImplVisitor
    */
   private final class OptionalImplTypeValidator extends BaseTypeValidator {
 
-    /** Create an OptionalImplTypeValidator. */
+    /**
+     * Create an OptionalImplTypeValidator.
+     *
+     * @param checker the type-checker associated with this type validator
+     * @param visitor the visitor associated with this type validator
+     * @param atypeFactory the type factory associated with this type validator
+     */
     public OptionalImplTypeValidator(
         BaseTypeChecker checker, BaseTypeVisitor<?> visitor, AnnotatedTypeFactory atypeFactory) {
       super(checker, visitor, atypeFactory);
