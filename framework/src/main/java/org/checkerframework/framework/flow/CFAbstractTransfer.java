@@ -268,6 +268,11 @@ public abstract class CFAbstractTransfer<
         store.initializeMethodParameter(p, analysis.createAbstractValue(anno));
       }
 
+      AnnotatedTypeMirror implicitThis = atypeFactory.getSelfType(underlyingAST.getCode());
+      if (implicitThis != null) {
+        store.thisValue = analysis.createAbstractValue(implicitThis);
+      }
+
       // add properties known through precondition
       CFGMethod method = (CFGMethod) underlyingAST;
       MethodTree methodDeclTree = method.getMethod();
