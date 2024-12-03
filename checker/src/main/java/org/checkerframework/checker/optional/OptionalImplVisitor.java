@@ -385,17 +385,19 @@ public class OptionalImplVisitor
     AssignmentTree falseAssignment = (AssignmentTree) falseExpr;
 
     if (sameExpression(trueAssignment.getVariable(), falseAssignment.getVariable())) {
-      ExecutableElement ele =
-          TreeUtils.elementFromUse((MethodInvocationTree) trueAssignment.getExpression());
-      checker.reportWarning(
-          tree,
-          "prefer.map.and.orelse",
-          trueAssignment.getVariable(),
-          // The literal "ENCLOSINGCLASS::" is gross.
-          // TODO: add this to the error message.
-          // ElementUtils.getQualifiedClassName(ele);
-          ele.getSimpleName(),
-          falseAssignment.getExpression());
+      if (trueAssignment.getExpression().getKind() == Kind.METHOD_INVOCATION) {
+        ExecutableElement ele =
+            TreeUtils.elementFromUse((MethodInvocationTree) trueAssignment.getExpression());
+        checker.reportWarning(
+            tree,
+            "prefer.map.and.orelse",
+            trueAssignment.getVariable(),
+            // The literal "ENCLOSINGCLASS::" is gross.
+            // TODO: add this to the error message.
+            // ElementUtils.getQualifiedClassName(ele);
+            ele.getSimpleName(),
+            falseAssignment.getExpression());
+      }
     }
   }
 
