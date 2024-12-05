@@ -13,7 +13,7 @@ import org.checkerframework.framework.source.SupportedOptions;
  * A type-checker that prevents {@link java.util.NoSuchElementException} in the use of container
  * classes.
  *
- * <p>Runs the {@link org.checkerframework.checker.optional.OptionalImplChecker}(as a subchecker),
+ * <p>Runs the {@link org.checkerframework.checker.optional.OptionalImplChecker} (as a subchecker),
  * using explicitly-written (i.e., programmer-written) annotations from the Non-Empty type system to
  * refine the Optional analysis. This improves analysis of operations on containers (e.g., Streams,
  * Collections) that result in values of type Optional.
