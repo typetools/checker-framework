@@ -227,8 +227,8 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
-   * The fixed initial store which includes initialized fields and, if analyzing a lambda, final
-   * local variables.
+   * The fixed initial store which includes values from field initialization and, if analyzing a
+   * lambda, final local variables.
    */
   private @Nullable S fixedInitialStore = null;
 
