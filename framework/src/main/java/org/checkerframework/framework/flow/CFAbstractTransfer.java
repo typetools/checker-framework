@@ -226,7 +226,10 @@ public abstract class CFAbstractTransfer<
     return analysis.createAbstractValue(at);
   }
 
-  /** The fixed initial store. */
+  /**
+   * The fixed initial store which includes initialized fields and, if analyzing a lambda, final
+   * local variables.
+   */
   private @Nullable S fixedInitialStore = null;
 
   /**
@@ -270,7 +273,8 @@ public abstract class CFAbstractTransfer<
 
       AnnotatedTypeMirror implicitThis = atypeFactory.getSelfType(underlyingAST.getCode());
       if (implicitThis != null) {
-        store.thisValue = analysis.createAbstractValue(implicitThis);
+        V thisSelf = analysis.createAbstractValue(implicitThis);
+        store.thisValue = thisSelf.mostSpecific(store.thisValue, null);
       }
 
       // add properties known through precondition
