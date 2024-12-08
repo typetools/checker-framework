@@ -218,7 +218,7 @@ public class DefaultJointVisitor extends JointJavacJavaParserVisitor {
   public void processExports(ExportsTree javacTree, ModuleExportsDirective javaParserNode) {}
 
   @Override
-  public void processExpressionStatemen(
+  public void processExpressionStatement(
       ExpressionStatementTree javacTree, ExpressionStmt javaParserNode) {}
 
   @Override
