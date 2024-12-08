@@ -1126,6 +1126,7 @@ public class WholeProgramInferenceJavaParserStorage
                       super.visit(n, arg);
                     }
 
+                    @Override
                     public void visit(final StringLiteralExpr n, final Void arg) {
                       n.setValue(escapeLonelySurrogates(n.getValue()));
 
