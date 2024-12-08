@@ -743,7 +743,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   public Void visitExpressionStatement(ExpressionStatementTree javacTree, Node javaParserNode) {
     if (javaParserNode instanceof ExpressionStmt) {
       ExpressionStmt node = (ExpressionStmt) javaParserNode;
-      processExpressionStatemen(javacTree, node);
+      processExpressionStatement(javacTree, node);
       javacTree.getExpression().accept(this, node.getExpression());
     } else if (javaParserNode instanceof ExplicitConstructorInvocationStmt) {
       // In this case the javac expression will be a MethodTree. Since JavaParser doesn't
@@ -1767,7 +1767,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
    */
-  public abstract void processExpressionStatemen(
+  public abstract void processExpressionStatement(
       ExpressionStatementTree javacTree, ExpressionStmt javaParserNode);
 
   /**
