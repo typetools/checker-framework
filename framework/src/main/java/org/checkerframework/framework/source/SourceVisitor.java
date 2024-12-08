@@ -67,8 +67,8 @@ public abstract class SourceVisitor<R, P> extends TreePathScanner<R, P> {
    * com.sun.source.util.TreePathScanner.scan(TreePath, P)}, the CompilationUnitTree of the TreePath
    * has to be equal to {@code root}.
    */
-  public void setRoot(CompilationUnitTree root) {
-    this.root = root;
+  public void setRoot(CompilationUnitTree newRoot) {
+    this.root = newRoot;
   }
 
   /**

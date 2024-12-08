@@ -149,8 +149,8 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   }
 
   @Override
-  public void setRoot(@Nullable CompilationUnitTree root) {
-    super.setRoot(root);
+  public void setRoot(@Nullable CompilationUnitTree newRoot) {
+    super.setRoot(newRoot);
     // TODO: This should probably be guarded by isSafeToClearSharedCFG from
     // GenericAnnotatedTypeFactory, but this works here because we know the Must Call Checker is
     // always the first subchecker that's sharing tempvars.
