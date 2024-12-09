@@ -3,6 +3,7 @@ package org.checkerframework.framework.ajava;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.PackageDeclaration;
 import com.github.javaparser.ast.body.AnnotationDeclaration;
 import com.github.javaparser.ast.body.AnnotationMemberDeclaration;
@@ -750,11 +751,56 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
       // surround explicit constructor invocations in an expression statement, we match
       // javaParserNode to the javac expression rather than the javac expression statement.
       javacTree.getExpression().accept(this, javaParserNode);
+    } else if (isYieldAndYield(javacTree, javaParserNode)) {
+      // There is nothing to do
     } else {
       throwUnexpectedNodeType(javacTree, javaParserNode);
     }
 
     return null;
+  }
+
+  /**
+   * Returns true if {@code javacTree} is a {@code yield()} method call and {@code javaParserNode}
+   * is a {@code yield()} statement.
+   *
+   * <p>There are methods named {@code yield()}, such as one in {@code Thread}. JavaParser parses
+   * every occurrence of {@code yield} as a yield statement. For example, it considers {@code
+   * yield();} to be {@code yield ();} which is shorthand for {@code yield ()->{};}. See
+   * https://github.com/javaparser/javaparser/issues/2332 .
+   *
+   * @param javacTree a javac tree
+   * @param javaParserNode a JavaParser node
+   * @return true if {@code javacTree} is a {@code yield()} method call and {@code javaParserNode}
+   *     is a {@code yield()} statement
+   */
+  private boolean isYieldAndYield(ExpressionStatementTree javacTree, Node javaParserNode) {
+    if (javacTree.getExpression().getKind() == Tree.Kind.METHOD_INVOCATION
+        && javaParserNode instanceof YieldStmt) {
+      MethodInvocationTree javacInvok = (MethodInvocationTree) javacTree.getExpression();
+      ExpressionTree javacInvokMethod = javacInvok.getMethodSelect();
+      List<? extends ExpressionTree> javacInvokArgs = javacInvok.getArguments();
+      List<? extends Tree> javacInvokTypeArgs = javacInvok.getTypeArguments();
+      if ((javacInvokArgs.isEmpty()
+              && javacInvokTypeArgs.isEmpty()
+              && javacInvokMethod.getKind() == Tree.Kind.IDENTIFIER)
+          && ((IdentifierTree) javacInvokMethod).getName().toString().equals("yield")) {
+
+        YieldStmt javaParserYieldStmt = (YieldStmt) javaParserNode;
+        Expression javaParserYieldExpression = javaParserYieldStmt.getExpression();
+        if (javaParserYieldExpression instanceof LambdaExpr) {
+          LambdaExpr javaParserLambda = (LambdaExpr) javaParserYieldExpression;
+          NodeList<Parameter> jpLambdaParams = javaParserLambda.getParameters();
+          Statement jpLambdaBody = javaParserLambda.getBody();
+          if (jpLambdaParams.isEmpty()
+              && jpLambdaBody.isBlockStmt()
+              && jpLambdaBody.asBlockStmt().getStatements().isEmpty()) {
+            return true;
+          }
+        }
+      }
+    }
+    return false;
   }
 
   @Override
