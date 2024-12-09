@@ -783,7 +783,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     } else if (expr instanceof ClassName) {
       ClassName c = (ClassName) expr;
       classValues.remove(c);
-    } else { // thisValue ...
+    } else if (expr instanceof ThisReference) {
+      thisValue = null;
+    } else {
       // No other types of expressions are stored.
     }
   }
@@ -1208,9 +1210,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     {
       V otherVal = other.thisValue;
       V myVal = thisValue;
-      V mergedVal = myVal == null ? null : upperBoundOfValues(otherVal, myVal, shouldWiden);
-      if (mergedVal != null) {
-        newStore.thisValue = mergedVal;
+      if (myVal == null || otherVal == null) {
+        newStore.thisValue = null;
+      } else {
+        newStore.thisValue = upperBoundOfValues(otherVal, myVal, shouldWiden);
       }
     }
 
