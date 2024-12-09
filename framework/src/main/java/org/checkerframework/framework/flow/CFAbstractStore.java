@@ -662,18 +662,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
           arrayValues.put(arrayAccess, newValue);
         }
       }
-    } else if (expr instanceof ThisReference) {
-      ThisReference thisRef = (ThisReference) expr;
-      if (sequentialSemantics || !thisRef.isAssignableByOtherCode()) {
-        V oldValue = thisValue;
-        V newValue = merger.apply(oldValue, value);
-        if (newValue != null) {
-          thisValue = newValue;
-        }
-      }
-    } else if (expr instanceof SuperReference) {
-      SuperReference thisRef = (SuperReference) expr;
-      if (sequentialSemantics || !thisRef.isAssignableByOtherCode()) {
+    } else if (expr instanceof ThisReference || expr instanceof SuperReference) {
+      if (sequentialSemantics || !expr.isAssignableByOtherCode()) {
         V oldValue = thisValue;
         V newValue = merger.apply(oldValue, value);
         if (newValue != null) {
@@ -801,10 +791,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     if (expr instanceof LocalVariable) {
       LocalVariable localVar = (LocalVariable) expr;
       return localVariableValues.get(localVar);
-    } else if (expr instanceof ThisReference) {
-      return thisValue;
-    } else if (expr instanceof SuperReference) {
-      // TODO: Is a more specific value possible?
+    } else if (expr instanceof ThisReference || expr instanceof SuperReference) {
       return thisValue;
     } else if (expr instanceof FieldAccess) {
       FieldAccess fieldAcc = (FieldAccess) expr;
@@ -837,11 +824,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       return fieldValues.get((FieldAccess) je);
     } else if (je instanceof ClassName) {
       return classValues.get((ClassName) je);
-    } else if (je instanceof ThisReference) {
-      // "return thisValue" is wrong, because the node refers to an outer this.
-      // So, return null for now.  TODO: improve.
-      return null;
-    } else if (je instanceof SuperReference) {
+    } else if (je instanceof ThisReference || je instanceof SuperReference) {
       // "return thisValue" is wrong, because the node refers to an outer this.
       // So, return null for now.  TODO: improve.
       return null;
