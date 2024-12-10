@@ -1118,10 +1118,17 @@ public class WholeProgramInferenceJavaParserStorage
                     @Override
                     public void visit(final CharLiteralExpr n, final Void arg) {
                       String value = n.getValue();
-                      assert value.length() == 1;
-                      char c = value.charAt(0);
-                      if (Character.isSurrogate(c)) {
-                        n.setValue(String.format("\\u%04X", (int) c));
+                      if (value.length() == 1) {
+                        char c = value.charAt(0);
+                        if (Character.isSurrogate(c)) {
+                          n.setValue(String.format("\\u%04X", (int) c));
+                        }
+                      } else if (value.length() == 2 && value.charAt(0) == '\\') {
+                        // value is two characters, the first of which is a backslash; there is
+                        // nothing to do
+                      } else {
+                        throw new BugInCF(
+                            "bad length %d for character literal '%s'", value.length(), value);
                       }
                       super.visit(n, arg);
                     }
