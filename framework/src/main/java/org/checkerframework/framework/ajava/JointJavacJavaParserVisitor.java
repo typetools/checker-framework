@@ -544,6 +544,21 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
    */
   private void visitClassMembers(
       List<? extends Tree> javacMembers, List<BodyDeclaration<?>> javaParserMembers) {
+    if (javacMembers.size() == 0) {
+      // The Checker Framework is invoked by javac's
+      // ClientCodeWrapper$WrappedTaskListener.finished() which calls CF's
+      // AbstractTypeProcessor$AttributionTaskListener.finished() which calls
+      // SourceChecker.typeProcess().  For a compilation unit (that is, a .java file)
+      // containing multiple classes, SourceChecker.typeProcess() is called once per class.
+      // When it is called the second time (to process the second class in the compilation
+      // unit), the first class in the compilation unit has been side-effected (by javac
+      // between the two calls) so that all of its fields and methods have been removed.
+      // (Perhaps the point of that is to permit garbage collection of memory.)  This causes
+      // JointJavacJavaParserVisitor to throw an exception, because it expects the structure
+      // of the javac and JavaParser classes to be the same.
+      return;
+    }
+
     PeekingIterator<Tree> javacIter = Iterators.peekingIterator(javacMembers.iterator());
     PeekingIterator<BodyDeclaration<?>> javaParserIter =
         Iterators.peekingIterator(javaParserMembers.iterator());
@@ -560,8 +575,17 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
       // instances. In JavaParser this is one FieldDeclaration with two nested
       // VariableDeclarators. Match the declarators with the VariableTrees.
       if (javaParserIter.hasNext() && javaParserIter.peek().isFieldDeclaration()) {
+        BodyDeclaration<?> javaParserFieldDecl = javaParserIter.peek();
         for (VariableDeclarator decl : javaParserIter.next().asFieldDeclaration().getVariables()) {
-          assert javacIter.hasNext();
+          if (!javacIter.hasNext()) {
+            throw new BugInCF(
+                "JavaParser iterator has next: \"%s\", but javac iterator has no next%njavacMembers [%d]=%s%njavaParserMembers [%d]=%s%n",
+                javaParserFieldDecl,
+                javacMembers.size(),
+                javacMembers,
+                javaParserMembers.size(),
+                javaParserMembers);
+          }
           assert javacIter.peek().getKind() == Tree.Kind.VARIABLE;
           javacIter.next().accept(this, decl);
         }
