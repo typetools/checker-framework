@@ -72,11 +72,11 @@ public class InitializationVisitor<
   }
 
   @Override
-  public void setRoot(CompilationUnitTree root) {
+  public void setRoot(CompilationUnitTree newRoot) {
     // Clean up the cache of initialized fields once per compilation unit.
     // Alternatively, but harder to determine, this could be done once per top-level class.
     initializedFields.clear();
-    super.setRoot(root);
+    super.setRoot(newRoot);
   }
 
   @Override

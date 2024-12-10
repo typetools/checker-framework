@@ -66,9 +66,11 @@ public abstract class SourceVisitor<R, P> extends TreePathScanner<R, P> {
    * Set the CompilationUnitTree to be used during any visits. For any later calls of {@code
    * com.sun.source.util.TreePathScanner.scan(TreePath, P)}, the CompilationUnitTree of the TreePath
    * has to be equal to {@code root}.
+   *
+   * @param newRoot the new compilation unit
    */
-  public void setRoot(CompilationUnitTree root) {
-    this.root = root;
+  public void setRoot(CompilationUnitTree newRoot) {
+    this.root = newRoot;
   }
 
   /**
