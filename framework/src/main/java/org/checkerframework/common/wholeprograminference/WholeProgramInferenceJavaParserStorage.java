@@ -1118,10 +1118,11 @@ public class WholeProgramInferenceJavaParserStorage
                     @Override
                     public void visit(final CharLiteralExpr n, final Void arg) {
                       String value = n.getValue();
-                      assert value.length() == 1;
-                      char c = value.charAt(0);
-                      if (Character.isSurrogate(c)) {
-                        n.setValue(String.format("\\u%04X", (int) c));
+                      if (value.length() == 1) {
+                        char c = value.charAt(0);
+                        if (Character.isSurrogate(c)) {
+                          n.setValue(String.format("\\u%04X", (int) c));
+                        }
                       }
                       super.visit(n, arg);
                     }
