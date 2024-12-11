@@ -461,10 +461,11 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
 
   @Override
   public Void visitClass(ClassTree javacTree, Node javaParserNode) {
-    TypeDeclaration<?> javaParserTypeDeclaration = (TypeDeclaration<?>) javaParserNode;
     // This `if` statement could also test the number of type parameters,
     // but not all JavaParser TypeDeclarations support `getTypeParameters()`.
-    if (javacTree.getMembers().isEmpty() && !javaParserTypeDeclaration.getMembers().isEmpty()) {
+    if (javaParserNode instanceof TypeDeclaration
+        && javacTree.getMembers().isEmpty()
+        && !((TypeDeclaration<?>) javaParserNode).getMembers().isEmpty()) {
       // The Checker Framework is invoked by javac's
       // ClientCodeWrapper$WrappedTaskListener.finished() which calls CF's
       // AbstractTypeProcessor$AttributionTaskListener.finished() which calls
