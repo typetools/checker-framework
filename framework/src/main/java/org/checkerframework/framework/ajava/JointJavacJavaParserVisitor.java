@@ -460,9 +460,29 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
 
   @Override
   public Void visitClass(ClassTree javacTree, Node javaParserNode) {
+    if ((javacTree.getMembers().isEmpty() && !node.getMembers().isEmpty())
+        || javacTree.getTypeParameters().isEmpty() && !node.getTypeParameters().isEmpty()) {
+      // The Checker Framework is invoked by javac's
+      // ClientCodeWrapper$WrappedTaskListener.finished() which calls CF's
+      // AbstractTypeProcessor$AttributionTaskListener.finished() which calls
+      // SourceChecker.typeProcess().  For a compilation unit (that is, a .java file)
+      // containing multiple classes, SourceChecker.typeProcess() is called once per class.
+      // When it is called the second time (to process the second class in the compilation
+      // unit), the first class in the compilation unit has been side-effected (by javac
+      // between the two calls) so that all of its fields and methods have been removed.
+      // (Perhaps the point of that is to permit garbage collection of memory.)  This causes
+      // JointJavacJavaParserVisitor to throw an exception, because it expects the structure
+      // of the javac and JavaParser classes to be the same.
+      return;
+    }
+
     if (javaParserNode instanceof ClassOrInterfaceDeclaration) {
       ClassOrInterfaceDeclaration node = (ClassOrInterfaceDeclaration) javaParserNode;
       processClass(javacTree, node);
+      if (javacTree.getTypeParameters().size() != node.getTypeParameters().size()) {
+        throw new BugInCF(
+            "Different number of type parameters:%n%s%n%s%n", javacTree, javaParserNode);
+      }
       visitLists(javacTree.getTypeParameters(), node.getTypeParameters());
 
       if (javacTree.getKind() == Tree.Kind.CLASS) {
@@ -544,21 +564,6 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
    */
   private void visitClassMembers(
       List<? extends Tree> javacMembers, List<BodyDeclaration<?>> javaParserMembers) {
-    if (javacMembers.size() == 0) {
-      // The Checker Framework is invoked by javac's
-      // ClientCodeWrapper$WrappedTaskListener.finished() which calls CF's
-      // AbstractTypeProcessor$AttributionTaskListener.finished() which calls
-      // SourceChecker.typeProcess().  For a compilation unit (that is, a .java file)
-      // containing multiple classes, SourceChecker.typeProcess() is called once per class.
-      // When it is called the second time (to process the second class in the compilation
-      // unit), the first class in the compilation unit has been side-effected (by javac
-      // between the two calls) so that all of its fields and methods have been removed.
-      // (Perhaps the point of that is to permit garbage collection of memory.)  This causes
-      // JointJavacJavaParserVisitor to throw an exception, because it expects the structure
-      // of the javac and JavaParser classes to be the same.
-      return;
-    }
-
     PeekingIterator<Tree> javacIter = Iterators.peekingIterator(javacMembers.iterator());
     PeekingIterator<BodyDeclaration<?>> javaParserIter =
         Iterators.peekingIterator(javaParserMembers.iterator());
