@@ -36,6 +36,7 @@ public abstract class AggregateChecker extends SourceChecker {
    *
    * @return the list of checkers to be run
    */
+  // These are immediate subcheckers.
   protected abstract Collection<Class<? extends SourceChecker>> getSupportedCheckers();
 
   @Override
