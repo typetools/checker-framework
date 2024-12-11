@@ -1441,27 +1441,25 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     }
 
     String defaultFormat = "(" + messageKey + ")";
+    String prefix;
     String fmtString;
     if (this.processingEnv.getOptions() != null /*nnbug*/
         && this.processingEnv.getOptions().containsKey("nomsgtext")) {
-      fmtString = defaultFormat;
+      prefix = defaultFormat;
+      fmtString = null;
     } else if (this.processingEnv.getOptions() != null /*nnbug*/
         && this.processingEnv.getOptions().containsKey("detailedmsgtext")) {
       // The -Adetailedmsgtext command-line option was given, so output
       // a stylized error message for easy parsing by a tool.
-      fmtString =
-          detailedMsgTextPrefix(source, defaultFormat, args)
-              + fullMessageOf(messageKey, defaultFormat);
+      prefix = detailedMsgTextPrefix(source, defaultFormat, args);
+      fmtString = fullMessageOf(messageKey, defaultFormat);
     } else {
-      fmtString =
-          "["
-              + suppressWarningsString(messageKey)
-              + "] "
-              + fullMessageOf(messageKey, defaultFormat);
+      prefix = "[" + suppressWarningsString(messageKey) + "] ";
+      fmtString = fullMessageOf(messageKey, defaultFormat);
     }
     String messageText;
     try {
-      messageText = String.format(fmtString, args);
+      messageText = prefix + (fmtString == null ? "" : String.format(fmtString, args));
     } catch (Exception e) {
       throw new BugInCF(
           "Invalid format string: \"" + fmtString + "\" args: " + Arrays.toString(args), e);
