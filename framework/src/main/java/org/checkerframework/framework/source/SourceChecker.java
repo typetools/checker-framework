@@ -1126,13 +1126,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   private int errsOnLastExit = 0;
 
   /**
-   * Returns the requested subchecker. A checker of a given class can only be run once, so this
-   * returns the only such checker, or null if none was found. The caller must know the exact
-   * checker class to request.
+   * Returns the requested (immediate) subchecker. A checker of a given class can only be run once,
+   * so this returns the only such checker, or null if none was found. The caller must know the
+   * exact checker class to request.
    *
    * @param <T> the class of the subchecker to return
    * @param checkerClass the class of the subchecker to return
-   * @return the requested subchecker or null if not found
+   * @return the requested (immediate) subchecker or null if not found
    */
   @SuppressWarnings("unchecked")
   public <T extends SourceChecker> @Nullable T getSubchecker(Class<T> checkerClass) {
