@@ -1683,7 +1683,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     if (args != null) {
       sj.add(Integer.toString(args.length));
       for (Object arg : args) {
-        sj.add(Objects.toString(arg));
+        // Escape '%' characters in arguments to prevent formatting conflicts during message
+        // generation.
+        sj.add(Objects.toString(arg).replace("%", "%%"));
       }
     } else {
       // Output 0 for null arguments.
