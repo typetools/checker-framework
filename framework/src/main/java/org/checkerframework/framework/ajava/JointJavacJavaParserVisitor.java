@@ -18,6 +18,7 @@ import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.ReceiverParameter;
 import com.github.javaparser.ast.body.RecordDeclaration;
+import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.ArrayAccessExpr;
 import com.github.javaparser.ast.expr.AssignExpr;
@@ -460,8 +461,10 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
 
   @Override
   public Void visitClass(ClassTree javacTree, Node javaParserNode) {
-    if ((javacTree.getMembers().isEmpty() && !node.getMembers().isEmpty())
-        || javacTree.getTypeParameters().isEmpty() && !node.getTypeParameters().isEmpty()) {
+    TypeDeclaration<?> javaParserTypeDeclaration = (TypeDeclaration<?>) javaParserNode;
+    // This `if` statement could also test the number of type parameters,
+    // but not all JavaParser TypeDeclarations support `getTypeParameters()`.
+    if (javacTree.getMembers().isEmpty() && !javaParserTypeDeclaration.getMembers().isEmpty()) {
       // The Checker Framework is invoked by javac's
       // ClientCodeWrapper$WrappedTaskListener.finished() which calls CF's
       // AbstractTypeProcessor$AttributionTaskListener.finished() which calls
@@ -473,7 +476,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
       // (Perhaps the point of that is to permit garbage collection of memory.)  This causes
       // JointJavacJavaParserVisitor to throw an exception, because it expects the structure
       // of the javac and JavaParser classes to be the same.
-      return;
+      return null;
     }
 
     if (javaParserNode instanceof ClassOrInterfaceDeclaration) {
