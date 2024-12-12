@@ -21,8 +21,8 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.TreeUtils;
 
-/** OptionalAnnotatedTypeFactory for the Optional Checker. */
-public class OptionalAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
+/** OptionalImplAnnotatedTypeFactory for the OptionalImplChecker. */
+public class OptionalImplAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   /** The element for java.util.Optional.map(). */
   private final ExecutableElement optionalMap;
@@ -31,11 +31,12 @@ public class OptionalAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   protected final AnnotationMirror PRESENT = AnnotationBuilder.fromClass(elements, Present.class);
 
   /**
-   * Creates an OptionalAnnotatedTypeFactory.
+   * Creates an OptionalImplAnnotatedTypeFactory.
    *
-   * @param checker the Optional Checker associated with this type factory
+   * @param checker the {@link org.checkerframework.checker.optional.OptionalImplChecker} associated
+   *     with this type factory
    */
-  public OptionalAnnotatedTypeFactory(BaseTypeChecker checker) {
+  public OptionalImplAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     postInit();
     optionalMap = TreeUtils.getMethodOrNull("java.util.Optional", "map", 1, getProcessingEnv());
@@ -128,6 +129,6 @@ public class OptionalAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   @Override
   public CFTransfer createFlowTransferFunction(
       CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
-    return new OptionalTransfer(analysis);
+    return new OptionalImplTransfer(analysis);
   }
 }
