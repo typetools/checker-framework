@@ -359,7 +359,9 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
   public AnnotatedTypeMirror visitDeclared_Primitive(
       AnnotatedDeclaredType type, AnnotatedPrimitiveType superType, Void p) {
     if (!TypesUtils.isBoxedPrimitive(type.getUnderlyingType())) {
-      throw new BugInCF("AsSuperVisitor Declared_Primitive: type is not a boxed primitive.");
+      throw new BugInCF(
+          "AsSuperVisitor Declared_Primitive: type is not a boxed primitive: %s %s",
+          type, superType);
     }
     AnnotatedTypeMirror unboxedType = atypeFactory.getUnboxedType(type);
     return copyPrimaryAnnos(unboxedType, superType);
