@@ -1751,6 +1751,7 @@ public class WholeProgramInferenceJavaParserStorage
      * to the returned AnnotatedTypeMirror are reflected in this CallableDeclarationAnnos.
      *
      * @param className the class that contains the method, for diagnostics only
+     * @param methodName the method name, for diagnostics only
      * @param expression a string representing a Java expression, in the same format as the argument
      *     to a {@link org.checkerframework.framework.qual.RequiresQualifier} annotation
      * @param declaredType the declared type of {@code expression}
