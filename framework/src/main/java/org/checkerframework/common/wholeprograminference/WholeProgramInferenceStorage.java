@@ -124,6 +124,7 @@ public interface WholeProgramInferenceStorage<T> {
    *     expression is not a supported expression type
    */
   public @Nullable T getPreOrPostconditions(
+      String className,
       Analysis.BeforeOrAfter preOrPost,
       ExecutableElement methodElement,
       String expression,

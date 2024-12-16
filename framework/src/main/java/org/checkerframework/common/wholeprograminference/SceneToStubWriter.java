@@ -651,7 +651,9 @@ public final class SceneToStubWriter {
    * @param atf the type factory, for computing preconditions and postconditions
    * @param indentLevel the indent string
    */
+  @SuppressWarnings("UnusedVariable")
   private static void printMethodDeclaration(
+      String className,
       AMethod aMethod,
       String simplename,
       PrintWriter printWriter,
@@ -859,6 +861,7 @@ public final class SceneToStubWriter {
       printWriter.println();
       for (Map.Entry<String, AMethod> methodEntry : aClass.getMethods().entrySet()) {
         printMethodDeclaration(
+            aClass.className,
             methodEntry.getValue(),
             innermostClassname,
             printWriter,

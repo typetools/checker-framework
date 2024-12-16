@@ -74,7 +74,7 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
     }
 
     @Override
-    public void processMethodTree(MethodTree tree) {
+    public void processMethodTree(String className, MethodTree tree) {
       ExecutableElement elem = TreeUtils.elementFromDeclaration(tree);
 
       AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(tree);

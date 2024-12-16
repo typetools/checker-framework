@@ -302,6 +302,7 @@ public class WholeProgramInferenceScenesStorage
 
   @Override
   public ATypeElement getPreOrPostconditions(
+      String className,
       Analysis.BeforeOrAfter preOrPost,
       ExecutableElement methodElement,
       String expression,
@@ -309,9 +310,9 @@ public class WholeProgramInferenceScenesStorage
       AnnotatedTypeFactory atypeFactory) {
     switch (preOrPost) {
       case BEFORE:
-        return getPreconditionsForExpression(methodElement, expression, declaredType);
+        return getPreconditionsForExpression(className, methodElement, expression, declaredType);
       case AFTER:
-        return getPostconditionsForExpression(methodElement, expression, declaredType);
+        return getPostconditionsForExpression(className, methodElement, expression, declaredType);
       default:
         throw new BugInCF("Unexpected " + preOrPost);
     }
@@ -325,8 +326,12 @@ public class WholeProgramInferenceScenesStorage
    * @param declaredType the declared type of the expression
    * @return the precondition annotations for a Java expression
    */
+  @SuppressWarnings("UnusedVariable")
   private ATypeElement getPreconditionsForExpression(
-      ExecutableElement methodElement, String expression, AnnotatedTypeMirror declaredType) {
+      String className,
+      ExecutableElement methodElement,
+      String expression,
+      AnnotatedTypeMirror declaredType) {
     AMethod methodAnnos = getMethodAnnos(methodElement);
     preconditionsToDeclaredTypes.put(methodAnnos.methodSignature + expression, declaredType);
     return methodAnnos.vivifyAndAddTypeMirrorToPrecondition(
@@ -342,8 +347,12 @@ public class WholeProgramInferenceScenesStorage
    * @param declaredType the declared type of the expression
    * @return the postcondition annotations for a Java expression
    */
+  @SuppressWarnings("UnusedVariable")
   private ATypeElement getPostconditionsForExpression(
-      ExecutableElement methodElement, String expression, AnnotatedTypeMirror declaredType) {
+      String className,
+      ExecutableElement methodElement,
+      String expression,
+      AnnotatedTypeMirror declaredType) {
     AMethod methodAnnos = getMethodAnnos(methodElement);
     postconditionsToDeclaredTypes.put(methodAnnos.methodSignature + expression, declaredType);
     return methodAnnos.vivifyAndAddTypeMirrorToPostcondition(
@@ -839,7 +848,7 @@ public class WholeProgramInferenceScenesStorage
    */
   public void wpiPrepareClassForWriting(AClass classAnnos) {
     for (Map.Entry<String, AMethod> methodEntry : classAnnos.methods.entrySet()) {
-      wpiPrepareMethodForWriting(methodEntry.getValue());
+      wpiPrepareMethodForWriting(classAnnos.className, methodEntry.getValue());
     }
   }
 
@@ -849,8 +858,8 @@ public class WholeProgramInferenceScenesStorage
    *
    * @param methodAnnos the method or constructor annotations to modify
    */
-  public void wpiPrepareMethodForWriting(AMethod methodAnnos) {
-    atypeFactory.wpiPrepareMethodForWriting(methodAnnos);
+  public void wpiPrepareMethodForWriting(String className, AMethod methodAnnos) {
+    atypeFactory.wpiPrepareMethodForWriting(className, methodAnnos);
   }
 
   @Override
