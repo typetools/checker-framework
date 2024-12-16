@@ -43,9 +43,9 @@ public class NonEmptyChecker extends BaseTypeChecker {
   public boolean shouldSkipDefs(MethodTree tree) {
     if (!(this.getParentChecker() instanceof OptionalChecker)) {
       // If the parent checker is null, or if it is NOT an instance of the top-level Optional
-      // Checker,
-      // this indicates that this Non-Empty Checker is being run independently. In this case, check
-      // all definitions, not just the ones related to the Optional Checker's guarantee.
+      // Checker, this indicates that this Non-Empty Checker is being run independently. In
+      // this case, check all definitions, not just the ones related to the Optional Checker's
+      // guarantee.
       return false;
     }
     return !getMethodsToVerify().contains(tree.getName().toString());
@@ -55,8 +55,7 @@ public class NonEmptyChecker extends BaseTypeChecker {
    * Obtains the methods to verify w.r.t. the Non-Empty type system from the Optional Checker.
    *
    * @return the set of names of the methods to be verified by the Non-Empty Checker
-   * @throws AssertionError if invoked when the {@link OptionalImplChecker} is not set as a
-   *     subchecker of this checker
+   * @throws AssertionError if the {@link OptionalImplChecker} is not a subchecker of this checker
    */
   private Set<String> getMethodsToVerify() {
     OptionalImplChecker optionalCheckerImpl = getSubchecker(OptionalImplChecker.class);

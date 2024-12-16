@@ -188,9 +188,8 @@ public class NonEmptyTransfer extends CFTransfer {
       TransferInput<CFValue, CFStore> in, MethodInvocationNode methodAccessNode) {
     Node receiver = methodAccessNode.getTarget().getReceiver();
 
-    CFValue receiverValue = in.getValueOfSubNode(receiver);
-    return receiverValue != null
-        && aTypeFactory.containsSameByClass(receiverValue.getAnnotations(), NonEmpty.class);
+    return aTypeFactory.containsSameByClass(
+        in.getValueOfSubNode(receiver).getAnnotations(), NonEmpty.class);
   }
 
   /**
