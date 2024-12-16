@@ -959,6 +959,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * Type-check {@literal methodTree}. Subclasses should override this method instead of {@link
    * #visitMethod(MethodTree, Void)}.
    *
+   * @param className the class that contains the method, for diagnostics only
    * @param tree the method to type-check
    */
   public void processMethodTree(String className, MethodTree tree) {

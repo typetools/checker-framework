@@ -52,6 +52,7 @@ public interface WholeProgramInference {
    *       creation call.
    * </ul>
    *
+   * @param className the class that contains the method, for diagnostics only
    * @param objectCreationNode the Node that invokes the constructor
    * @param constructorElt the Element of the constructor
    * @param store the store just before the call

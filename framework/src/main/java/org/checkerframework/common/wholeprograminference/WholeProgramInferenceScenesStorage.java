@@ -321,6 +321,7 @@ public class WholeProgramInferenceScenesStorage
   /**
    * Returns the precondition annotations for a Java expression.
    *
+   * @param className the class that contains the method, for diagnostics only
    * @param methodElement the method
    * @param expression the expression
    * @param declaredType the declared type of the expression
@@ -342,6 +343,7 @@ public class WholeProgramInferenceScenesStorage
   /**
    * Returns the postcondition annotations for a Java expression.
    *
+   * @param className the class that contains the method, for diagnostics only
    * @param methodElement the method
    * @param expression the expression
    * @param declaredType the declared type of the expression
@@ -856,6 +858,7 @@ public class WholeProgramInferenceScenesStorage
    * Side-effects the method or constructor annotations to make any desired changes before writing
    * to a file.
    *
+   * @param className the class that contains the method, for diagnostics only
    * @param methodAnnos the method or constructor annotations to modify
    */
   public void wpiPrepareMethodForWriting(String className, AMethod methodAnnos) {

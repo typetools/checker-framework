@@ -644,6 +644,7 @@ public final class SceneToStubWriter {
   /**
    * Prints a method declaration in stub file format (i.e., without a method body).
    *
+   * @param className the class that contains the method, for diagnostics only
    * @param aMethod the method to print
    * @param simplename the simple name of the enclosing class, for receiver parameters and
    *     constructor names
