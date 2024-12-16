@@ -19,10 +19,12 @@ import com.github.javaparser.ast.body.RecordDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.AnnotationExpr;
+import com.github.javaparser.ast.expr.CharLiteralExpr;
 import com.github.javaparser.ast.expr.MarkerAnnotationExpr;
 import com.github.javaparser.ast.expr.NormalAnnotationExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.SingleMemberAnnotationExpr;
+import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.type.TypeParameter;
@@ -1072,10 +1074,10 @@ public class WholeProgramInferenceJavaParserStorage
   private void writeAjavaFile(File outputPath, CompilationUnitAnnos root) {
     try (Writer writer = Files.newBufferedWriter(outputPath.toPath(), StandardCharsets.UTF_8)) {
 
-      // This implementation uses JavaParser's lexical preserving printing, which writes the
-      // file such that its formatting is close to the original source file it was parsed from
-      // as possible. It is commented out because, this feature is very buggy and crashes when
-      // adding annotations in certain locations.
+      // This commented implementation uses JavaParser's lexical preserving printing, which
+      // writes the file such that its formatting is close to the original source file it was
+      // parsed from as possible. It is commented out because this feature is very buggy and
+      // crashes when adding annotations in certain locations.
       // LexicalPreservingPrinter.print(root.declaration, writer);
 
       // Do not print invisible qualifiers, to avoid cluttering the output.
@@ -1109,6 +1111,28 @@ public class WholeProgramInferenceJavaParserStorage
                       }
                       super.visit(n, arg);
                     }
+
+                    // visit(CharLiteralExpr) and visit(StringLiteralExpr) work around bugs in
+                    // JavaParser, with respect to handling lonely surrogate characters.
+
+                    @Override
+                    public void visit(final CharLiteralExpr n, final Void arg) {
+                      String value = n.getValue();
+                      if (value.length() == 1) {
+                        char c = value.charAt(0);
+                        if (Character.isSurrogate(c)) {
+                          n.setValue(String.format("\\u%04X", (int) c));
+                        }
+                      }
+                      super.visit(n, arg);
+                    }
+
+                    @Override
+                    public void visit(final StringLiteralExpr n, final Void arg) {
+                      n.setValue(escapeLonelySurrogates(n.getValue()));
+
+                      super.visit(n, arg);
+                    }
                   };
               node.accept(visitor, null);
               return visitor.toString();
@@ -1119,6 +1143,50 @@ public class WholeProgramInferenceJavaParserStorage
     } catch (IOException e) {
       throw new BugInCF("Error while writing ajava file " + outputPath, e);
     }
+  }
+
+  // TODO: Move these two routines to StringUtils.
+
+  /**
+   * Returns the index of a lonely surrogate character in its argument, or -1 if there is none.
+   *
+   * @param s a string
+   * @return the index of a lonely surrogate character in its argument, or -1 if there is none
+   */
+  private int indexOfLonelySurrogateCharacter(String s) {
+    int limit = s.length();
+    for (int i = 0; i < limit; i++) {
+      if (Character.isSurrogate(s.charAt(i))) {
+        if (i == limit - 1) {
+          return i;
+        } else if (Character.isSurrogatePair(s.charAt(i), s.charAt(i + 1))) {
+          i++;
+        } else {
+          return i;
+        }
+      }
+    }
+    return -1;
+  }
+
+  /**
+   * Replace lonely surrogate characters by their unicode escape.
+   *
+   * @param s a string
+   * @return the string, with lonely surrogate characters replaced by their unicode escape
+   */
+  private String escapeLonelySurrogates(String s) {
+    int idx = indexOfLonelySurrogateCharacter(s);
+    if (idx != -1) {
+      // This recursion is less efficient than a loop with StringBuilder would be,
+      // but there should rarely be lonely surrogate characters.
+      s =
+          s.substring(0, idx)
+              + "\\u"
+              + String.format("%04X", (int) s.charAt(idx))
+              + escapeLonelySurrogates(s.substring(idx + 1));
+    }
+    return s;
   }
 
   /**
