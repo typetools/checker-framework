@@ -644,6 +644,7 @@ public final class SceneToStubWriter {
   /**
    * Prints a method declaration in stub file format (i.e., without a method body).
    *
+   * @param className the class that contains the method, for diagnostics only
    * @param aMethod the method to print
    * @param simplename the simple name of the enclosing class, for receiver parameters and
    *     constructor names
@@ -651,7 +652,9 @@ public final class SceneToStubWriter {
    * @param atf the type factory, for computing preconditions and postconditions
    * @param indentLevel the indent string
    */
+  @SuppressWarnings("UnusedVariable")
   private static void printMethodDeclaration(
+      String className,
       AMethod aMethod,
       String simplename,
       PrintWriter printWriter,
@@ -859,6 +862,7 @@ public final class SceneToStubWriter {
       printWriter.println();
       for (Map.Entry<String, AMethod> methodEntry : aClass.getMethods().entrySet()) {
         printMethodDeclaration(
+            aClass.className,
             methodEntry.getValue(),
             innermostClassname,
             printWriter,

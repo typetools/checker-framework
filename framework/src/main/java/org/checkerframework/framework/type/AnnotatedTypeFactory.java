@@ -5573,9 +5573,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * Side-effects the method or constructor annotations to make any desired changes before writing
    * to an annotation file.
    *
+   * @param className the class that contains the method, for diagnostics only
    * @param methodAnnos the method or constructor annotations to modify
    */
-  public void wpiPrepareMethodForWriting(AMethod methodAnnos) {
+  public void wpiPrepareMethodForWriting(String className, AMethod methodAnnos) {
     // This implementation does nothing.
   }
 
@@ -5597,14 +5598,52 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       Collection<WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos> inSubtypes) {
     Map<String, InferredDeclared> precondMap = methodAnnos.getPreconditions();
     Map<String, InferredDeclared> postcondMap = methodAnnos.getPostconditions();
+    String className = methodAnnos.className;
+    String methodName = methodAnnos.declaration.getName().toString();
     for (WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos inSupertype :
         inSupertypes) {
-      makeConditionConsistentWithOtherMethod(precondMap, inSupertype, true, true);
-      makeConditionConsistentWithOtherMethod(postcondMap, inSupertype, false, true);
+      // methodName and otherMethodName are usually the same, but not for constructors.
+      String otherMethodName = inSupertype.declaration.getName().toString();
+      makeConditionConsistentWithOtherMethod(
+          methodName,
+          otherMethodName,
+          className,
+          inSupertype.className,
+          precondMap,
+          inSupertype,
+          true,
+          true);
+      makeConditionConsistentWithOtherMethod(
+          methodName,
+          otherMethodName,
+          className,
+          inSupertype.className,
+          postcondMap,
+          inSupertype,
+          false,
+          true);
     }
     for (WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos inSubtype : inSubtypes) {
-      makeConditionConsistentWithOtherMethod(precondMap, inSubtype, true, false);
-      makeConditionConsistentWithOtherMethod(postcondMap, inSubtype, false, false);
+      // methodName and otherMethodName are usually the same, but not for constructors.
+      String otherMethodName = inSubtype.declaration.getName().toString();
+      makeConditionConsistentWithOtherMethod(
+          methodName,
+          otherMethodName,
+          className,
+          inSubtype.className,
+          precondMap,
+          inSubtype,
+          true,
+          false);
+      makeConditionConsistentWithOtherMethod(
+          methodName,
+          otherMethodName,
+          className,
+          inSubtype.className,
+          postcondMap,
+          inSubtype,
+          false,
+          false);
     }
   }
 
@@ -5617,6 +5656,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * <p>Overriding implementations should call {@code
    * super.makeConditionConsistentWithOtherMethod()}.
    *
+   * @param methodName the method name, for diagnostics only
+   * @param otherMethodName the other method name, for diagnostics only
+   * @param className the class containing the method
+   * @param otherClassName the class containing the other method, for diagnostics only
    * @param conditionMap pre- or post-condition annotations on a method M; may be side-effected
    * @param otherDeclAnnos annotations on a method that M overrides or that overrides M; that is, on
    *     a method in the same "method family" as M; may be side-effected
@@ -5626,6 +5669,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *     a subtype
    */
   protected void makeConditionConsistentWithOtherMethod(
+      String methodName,
+      String otherMethodName,
+      String className,
+      String otherClassName,
       Map<String, InferredDeclared> conditionMap,
       WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos otherDeclAnnos,
       boolean isPrecondition,
@@ -5654,8 +5701,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         } else {
           AnnotatedTypeMirror otherInferredType =
               isPrecondition
-                  ? otherDeclAnnos.getPreconditionsForExpression(expr, declaredType, this)
-                  : otherDeclAnnos.getPostconditionsForExpression(expr, declaredType, this);
+                  ? otherDeclAnnos.getPreconditionsForExpression(
+                      className, methodName, expr, declaredType, this)
+                  : otherDeclAnnos.getPostconditionsForExpression(
+                      className, methodName, expr, declaredType, this);
           this.getWholeProgramInference().updateAtmWithLub(inferredType, otherInferredType);
         }
       }

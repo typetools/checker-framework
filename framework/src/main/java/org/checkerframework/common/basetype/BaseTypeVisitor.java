@@ -951,7 +951,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     if (checker.shouldSkipDefs(enclosingClass, tree)) {
       return null;
     }
-    processMethodTree(tree);
+    processMethodTree("<unknown from visitMethod>", tree);
     return null;
   }
 
@@ -959,9 +959,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * Type-check {@literal methodTree}. Subclasses should override this method instead of {@link
    * #visitMethod(MethodTree, Void)}.
    *
+   * @param className the class that contains the method, for diagnostics only
    * @param tree the method to type-check
    */
-  public void processMethodTree(MethodTree tree) {
+  public void processMethodTree(String className, MethodTree tree) {
 
     // We copy the result from getAnnotatedType to ensure that circular types (e.g. K extends
     // Comparable<K>) are represented by circular AnnotatedTypeMirrors, which avoids problems
@@ -1049,7 +1050,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         if (store != null) {
           atypeFactory
               .getWholeProgramInference()
-              .updateContracts(Analysis.BeforeOrAfter.AFTER, methodElement, store);
+              .updateContracts(className, Analysis.BeforeOrAfter.AFTER, methodElement, store);
         }
       }
 
