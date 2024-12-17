@@ -1892,15 +1892,18 @@ public class WholeProgramInferenceJavaParserStorage
 
     @Override
     public String toString() {
-      return "CallableDeclarationAnnos [declaration="
-          + declaration
-          + ", parameterTypes="
-          + parameterTypes
-          + ", receiverType="
-          + receiverType
-          + ", returnType="
-          + returnType
-          + "]";
+      StringJoiner sj =
+          new StringJoiner(
+              "," + System.lineSeparator() + "  ",
+              "CallableDeclarationAnnos{",
+              System.lineSeparator() + "}");
+      sj.add("returnType = " + returnType);
+      sj.add("receiverType = " + receiverType);
+      sj.add("parameterTypes = " + parameterTypes);
+      sj.add("paramsDeclAnnos = " + paramsDeclAnnos);
+      sj.add("declarationAnnotations = " + declarationAnnotations);
+      sj.add("preconditions = " + preconditions);
+      return sj.toString();
     }
   }
 
