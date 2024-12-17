@@ -487,7 +487,7 @@ public class OptionalImplVisitor
   }
 
   @Override
-  public void processMethodTree(MethodTree tree) {
+  public void processMethodTree(String className, MethodTree tree) {
     if (this.isAnnotatedWithNonEmptyPrecondition(tree)
         || this.isAnyFormalAnnotatedWithNonEmpty(tree)) {
       addMethodToVerifyWithNonEmptyChecker(tree);
@@ -495,7 +495,7 @@ public class OptionalImplVisitor
     if (this.isReturnTypeAnnotatedWithNonEmpty(tree)) {
       namesOfMethodsToVerifyWithNonEmptyChecker.add(tree.getName().toString());
     }
-    super.processMethodTree(tree);
+    super.processMethodTree(className, tree);
   }
 
   /**
