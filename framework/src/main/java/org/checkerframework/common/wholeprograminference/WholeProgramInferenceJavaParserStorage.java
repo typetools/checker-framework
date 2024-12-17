@@ -1512,16 +1512,14 @@ public class WholeProgramInferenceJavaParserStorage
      * are strings representing JavaExpressions, using the same format as a user would in an {@link
      * org.checkerframework.framework.qual.RequiresQualifier} annotation.
      */
-    private @MonotonicNonNull Map<String, IPair<AnnotatedTypeMirror, AnnotatedTypeMirror>>
-        preconditions = null;
+    private @MonotonicNonNull Map<String, InferredDeclared> preconditions = null;
 
     /**
      * Mapping from expression strings to pairs of (inferred postcondition, declared type). The
      * okeys are strings representing JavaExpressions, using the same format as a user would in an
      * {@link org.checkerframework.framework.qual.EnsuresQualifier} annotation.
      */
-    private @MonotonicNonNull Map<String, IPair<AnnotatedTypeMirror, AnnotatedTypeMirror>>
-        postconditions = null;
+    private @MonotonicNonNull Map<String, InferredDeclared> postconditions = null;
 
     /**
      * Creates a wrapper for the given method or constructor declaration.
@@ -1717,7 +1715,7 @@ public class WholeProgramInferenceJavaParserStorage
      *     expression, declared type of the expression)
      * @see #getPreconditionsForExpression
      */
-    public Map<String, IPair<AnnotatedTypeMirror, AnnotatedTypeMirror>> getPreconditions() {
+    public Map<String, InferredDeclared> getPreconditions() {
       if (preconditions == null) {
         return Collections.emptyMap();
       } else {
@@ -1738,7 +1736,7 @@ public class WholeProgramInferenceJavaParserStorage
      *     expression, declared type of the expression)
      * @see #getPostconditionsForExpression
      */
-    public Map<String, IPair<AnnotatedTypeMirror, AnnotatedTypeMirror>> getPostconditions() {
+    public Map<String, InferredDeclared> getPostconditions() {
       if (postconditions == null) {
         return Collections.emptyMap();
       }
@@ -1773,10 +1771,10 @@ public class WholeProgramInferenceJavaParserStorage
       if (!preconditions.containsKey(expression)) {
         AnnotatedTypeMirror preconditionsType =
             AnnotatedTypeMirror.createType(declaredType.getUnderlyingType(), atf, false);
-        preconditions.put(expression, IPair.of(preconditionsType, declaredType));
+        preconditions.put(expression, new InferredDeclared(preconditionsType, declaredType));
       }
 
-      return preconditions.get(expression).first;
+      return preconditions.get(expression).inferred;
     }
 
     /**
@@ -1806,10 +1804,12 @@ public class WholeProgramInferenceJavaParserStorage
       if (!postconditions.containsKey(expression)) {
         AnnotatedTypeMirror postconditionsType =
             AnnotatedTypeMirror.createType(declaredType.getUnderlyingType(), atf, false);
-        postconditions.put(expression, IPair.of(postconditionsType, declaredType));
+        postconditions.put(expression, new InferredDeclared(postconditionsType, declaredType));
       }
 
-      return postconditions.get(expression).first;
+      InferredDeclared postAndDecl = postconditions.get(expression);
+      AnnotatedTypeMirror result = postAndDecl.inferred;
+      return result;
     }
 
     /**
@@ -1913,19 +1913,18 @@ public class WholeProgramInferenceJavaParserStorage
    * @param orig the map to copy
    * @return a deep copy of the map
    */
-  private static @Nullable Map<String, IPair<AnnotatedTypeMirror, AnnotatedTypeMirror>> deepCopyMapOfStringToPair(
-          @Nullable Map<String, IPair<AnnotatedTypeMirror, AnnotatedTypeMirror>> orig) {
+  private static @Nullable Map<String, InferredDeclared> deepCopyMapOfStringToPair(
+      @Nullable Map<String, InferredDeclared> orig) {
     if (orig == null) {
       return null;
     }
-    Map<String, IPair<AnnotatedTypeMirror, AnnotatedTypeMirror>> result =
-        new HashMap<>(CollectionsPlume.mapCapacity(orig.size()));
+    Map<String, InferredDeclared> result = new HashMap<>(CollectionsPlume.mapCapacity(orig.size()));
     result.clear();
-    for (Map.Entry<String, IPair<AnnotatedTypeMirror, AnnotatedTypeMirror>> entry :
-        orig.entrySet()) {
+    for (Map.Entry<String, InferredDeclared> entry : orig.entrySet()) {
       String javaExpression = entry.getKey();
-      IPair<AnnotatedTypeMirror, AnnotatedTypeMirror> atms = entry.getValue();
-      result.put(javaExpression, IPair.deepCopy(atms));
+      InferredDeclared atms = entry.getValue();
+      result.put(
+          javaExpression, new InferredDeclared(atms.inferred.deepCopy(), atms.declared.deepCopy()));
     }
     return result;
   }
@@ -2056,6 +2055,31 @@ public class WholeProgramInferenceJavaParserStorage
     @Override
     public String toString() {
       return "FieldAnnos [declaration=" + declaration + ", type=" + type + "]";
+    }
+  }
+
+  /** A pair of two annotated types: an inferred type and a declared type. */
+  public static class InferredDeclared {
+    /** The inferred type. */
+    public final AnnotatedTypeMirror inferred;
+
+    /** The declared type. */
+    public final AnnotatedTypeMirror declared;
+
+    /**
+     * Creates an InferredDeclared.
+     *
+     * @param inferred the inferred type
+     * @param declared the declared type
+     */
+    public InferredDeclared(AnnotatedTypeMirror inferred, AnnotatedTypeMirror declared) {
+      this.inferred = inferred;
+      this.declared = declared;
+    }
+
+    @Override
+    public String toString() {
+      return "InferredDeclared(" + inferred + ", " + declared + ")";
     }
   }
 }
