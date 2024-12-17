@@ -1,14 +1,19 @@
 package org.checkerframework.framework.util.typeinference8.constraint;
 
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.Tree;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import javax.lang.model.type.TypeKind;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
+import org.checkerframework.framework.util.typeinference8.types.UseOfVariable;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.framework.util.typeinference8.util.Theta;
+import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * &lt;LambdaExpression &rarr;throws T&gt;: The checked exceptions thrown by the body of the
@@ -53,6 +58,30 @@ public class CheckedExceptionConstraint extends TypeConstraint {
 
   @Override
   public List<Variable> getInputVariables() {
+    if (getKind() == Kind.LAMBDA_EXCEPTION) {
+      if (T.isUseOfVariable()) {
+        return Collections.singletonList(((UseOfVariable) T).getVariable());
+      } else {
+        LambdaExpressionTree lambdaTree = (LambdaExpressionTree) expression;
+        List<Variable> inputs = new ArrayList<>();
+        if (TreeUtils.isImplicitlyTypedLambda(lambdaTree)) {
+          List<AbstractType> params = this.T.getFunctionTypeParameterTypes();
+          if (params == null) {
+            // T is not a function type.
+            return Collections.emptyList();
+          }
+          for (AbstractType param : params) {
+            inputs.addAll(param.getInferenceVariables());
+          }
+        }
+        AbstractType R = this.T.getFunctionTypeReturnType();
+        if (R == null || R.getTypeKind() == TypeKind.NONE) {
+          return inputs;
+        }
+        inputs.addAll(R.getInferenceVariables());
+        return inputs;
+      }
+    }
     return getInputVariablesForExpression(expression, getT());
   }
 
