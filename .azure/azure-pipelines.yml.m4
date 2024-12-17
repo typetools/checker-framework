@@ -46,6 +46,8 @@ nonjunit_job(21)
 inference_job_lts(21)
 
 # Unlimited fetchDepth for misc_jobs, because of need to make contributors.tex
+misc_job(11)
+misc_job(17)
 misc_job(21)
 misc_job(23)
 
