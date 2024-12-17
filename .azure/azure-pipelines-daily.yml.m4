@@ -52,11 +52,8 @@ inference_job(17)
 inference_job_lts(21)
 inference_job(23)
 
-# Unlimited fetchDepth for misc_jobs, because of need to make contributors.tex
-misc_job(11)
-misc_job(17)
-misc_job(21)
-misc_job(23)
+# Do not run misc_job daily, because it does diffs that assume it is running in
+# a pull request.
 
 typecheck_job(11)
 typecheck_job(17)
