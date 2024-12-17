@@ -52,11 +52,13 @@ public interface WholeProgramInference {
    *       creation call.
    * </ul>
    *
+   * @param className the class that contains the method, for diagnostics only
    * @param objectCreationNode the Node that invokes the constructor
    * @param constructorElt the Element of the constructor
    * @param store the store just before the call
    */
   void updateFromObjectCreation(
+      String className,
       ObjectCreationNode objectCreationNode,
       ExecutableElement constructorElt,
       CFAbstractStore<?, ?> store);
@@ -172,11 +174,13 @@ public interface WholeProgramInference {
   /**
    * Updates the preconditions or postconditions of the current method, from a store.
    *
+   * @param className the name of the class, for debugging only
    * @param methodElement the method or constructor whose preconditions or postconditions to update
    * @param preOrPost whether to update preconditions or postconditions
    * @param store the store at the method's entry or normal exit, for reading types of expressions
    */
   void updateContracts(
+      String className,
       Analysis.BeforeOrAfter preOrPost,
       ExecutableElement methodElement,
       CFAbstractStore<?, ?> store);

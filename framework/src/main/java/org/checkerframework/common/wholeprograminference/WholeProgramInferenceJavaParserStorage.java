@@ -386,6 +386,7 @@ public class WholeProgramInferenceJavaParserStorage
 
   @Override
   public AnnotatedTypeMirror getPreOrPostconditions(
+      String className,
       Analysis.BeforeOrAfter preOrPost,
       ExecutableElement methodElement,
       String expression,
@@ -393,10 +394,11 @@ public class WholeProgramInferenceJavaParserStorage
       AnnotatedTypeFactory atypeFactory) {
     switch (preOrPost) {
       case BEFORE:
-        return getPreconditionsForExpression(methodElement, expression, declaredType, atypeFactory);
+        return getPreconditionsForExpression(
+            className, methodElement, expression, declaredType, atypeFactory);
       case AFTER:
         return getPostconditionsForExpression(
-            methodElement, expression, declaredType, atypeFactory);
+            className, methodElement, expression, declaredType, atypeFactory);
       default:
         throw new BugInCF("Unexpected " + preOrPost);
     }
@@ -405,6 +407,7 @@ public class WholeProgramInferenceJavaParserStorage
   /**
    * Returns the precondition annotations for the given expression.
    *
+   * @param className the class that contains the method, for diagnostics only
    * @param methodElement the method
    * @param expression the expression
    * @param declaredType the declared type of the expression
@@ -412,6 +415,7 @@ public class WholeProgramInferenceJavaParserStorage
    * @return the precondition annotations for a field
    */
   private AnnotatedTypeMirror getPreconditionsForExpression(
+      String className,
       ExecutableElement methodElement,
       String expression,
       AnnotatedTypeMirror declaredType,
@@ -421,12 +425,18 @@ public class WholeProgramInferenceJavaParserStorage
       // See the comment on the similar exception in #getParameterAnnotations, above.
       return declaredType;
     }
-    return methodAnnos.getPreconditionsForExpression(expression, declaredType, atypeFactory);
+    return methodAnnos.getPreconditionsForExpression(
+        className,
+        methodElement.getSimpleName().toString(),
+        expression,
+        declaredType,
+        atypeFactory);
   }
 
   /**
    * Returns the postcondition annotations for an expression.
    *
+   * @param className the class that contains the method, for diagnostics only
    * @param methodElement the method
    * @param expression the expression
    * @param declaredType the declared type of the expression
@@ -434,6 +444,7 @@ public class WholeProgramInferenceJavaParserStorage
    * @return the postcondition annotations for a field
    */
   private AnnotatedTypeMirror getPostconditionsForExpression(
+      String className,
       ExecutableElement methodElement,
       String expression,
       AnnotatedTypeMirror declaredType,
@@ -443,7 +454,12 @@ public class WholeProgramInferenceJavaParserStorage
       // See the comment on the similar exception in #getParameterAnnotations, above.
       return declaredType;
     }
-    return methodAnnos.getPostconditionsForExpression(expression, declaredType, atypeFactory);
+    return methodAnnos.getPostconditionsForExpression(
+        className,
+        methodElement.getSimpleName().toString(),
+        expression,
+        declaredType,
+        atypeFactory);
   }
 
   @Override
@@ -814,7 +830,9 @@ public class WholeProgramInferenceJavaParserStorage
             String executableSignature = JVMNames.getJVMMethodSignature(javacTree);
             if (!enclosingClass.callableDeclarations.containsKey(executableSignature)) {
               enclosingClass.callableDeclarations.put(
-                  executableSignature, new CallableDeclarationAnnos(javaParserNode));
+                  executableSignature,
+                  new CallableDeclarationAnnos(
+                      javacClass.getSimpleName().toString(), javaParserNode));
             }
           }
 
@@ -1456,6 +1474,9 @@ public class WholeProgramInferenceJavaParserStorage
    * inferred about its parameters and return type.
    */
   public class CallableDeclarationAnnos implements DeepCopyable<CallableDeclarationAnnos> {
+    /** The class that contains the method. */
+    public final String className;
+
     /** Wrapped method or constructor declaration. */
     public final CallableDeclaration<?> declaration;
 
@@ -1491,29 +1512,29 @@ public class WholeProgramInferenceJavaParserStorage
      * are strings representing JavaExpressions, using the same format as a user would in an {@link
      * org.checkerframework.framework.qual.RequiresQualifier} annotation.
      */
-    private @MonotonicNonNull Map<String, IPair<AnnotatedTypeMirror, AnnotatedTypeMirror>>
-        preconditions = null;
+    private @MonotonicNonNull Map<String, InferredDeclared> preconditions = null;
 
     /**
      * Mapping from expression strings to pairs of (inferred postcondition, declared type). The
      * okeys are strings representing JavaExpressions, using the same format as a user would in an
      * {@link org.checkerframework.framework.qual.EnsuresQualifier} annotation.
      */
-    private @MonotonicNonNull Map<String, IPair<AnnotatedTypeMirror, AnnotatedTypeMirror>>
-        postconditions = null;
+    private @MonotonicNonNull Map<String, InferredDeclared> postconditions = null;
 
     /**
      * Creates a wrapper for the given method or constructor declaration.
      *
+     * @param className the class that contains the method, for diagnostics only
      * @param declaration method or constructor declaration to wrap
      */
-    public CallableDeclarationAnnos(CallableDeclaration<?> declaration) {
+    public CallableDeclarationAnnos(String className, CallableDeclaration<?> declaration) {
+      this.className = className;
       this.declaration = declaration;
     }
 
     @Override
     public CallableDeclarationAnnos deepCopy() {
-      CallableDeclarationAnnos result = new CallableDeclarationAnnos(declaration);
+      CallableDeclarationAnnos result = new CallableDeclarationAnnos(className, declaration);
       result.returnType = DeepCopyable.deepCopyOrNull(this.returnType);
       result.receiverType = DeepCopyable.deepCopyOrNull(this.receiverType);
       if (parameterTypes != null) {
@@ -1694,7 +1715,7 @@ public class WholeProgramInferenceJavaParserStorage
      *     expression, declared type of the expression)
      * @see #getPreconditionsForExpression
      */
-    public Map<String, IPair<AnnotatedTypeMirror, AnnotatedTypeMirror>> getPreconditions() {
+    public Map<String, InferredDeclared> getPreconditions() {
       if (preconditions == null) {
         return Collections.emptyMap();
       } else {
@@ -1715,7 +1736,7 @@ public class WholeProgramInferenceJavaParserStorage
      *     expression, declared type of the expression)
      * @see #getPostconditionsForExpression
      */
-    public Map<String, IPair<AnnotatedTypeMirror, AnnotatedTypeMirror>> getPostconditions() {
+    public Map<String, InferredDeclared> getPostconditions() {
       if (postconditions == null) {
         return Collections.emptyMap();
       }
@@ -1727,6 +1748,8 @@ public class WholeProgramInferenceJavaParserStorage
      * Returns an AnnotatedTypeMirror containing the preconditions for the given expression. Changes
      * to the returned AnnotatedTypeMirror are reflected in this CallableDeclarationAnnos.
      *
+     * @param className the class that contains the method, for diagnostics only
+     * @param methodName the method name, for diagnostics only
      * @param expression a string representing a Java expression, in the same format as the argument
      *     to a {@link org.checkerframework.framework.qual.RequiresQualifier} annotation
      * @param declaredType the declared type of {@code expression}
@@ -1736,7 +1759,11 @@ public class WholeProgramInferenceJavaParserStorage
      *     preconditions for the given expression
      */
     public AnnotatedTypeMirror getPreconditionsForExpression(
-        String expression, AnnotatedTypeMirror declaredType, AnnotatedTypeFactory atf) {
+        String className,
+        String methodName,
+        String expression,
+        AnnotatedTypeMirror declaredType,
+        AnnotatedTypeFactory atf) {
       if (preconditions == null) {
         preconditions = new HashMap<>(1);
       }
@@ -1744,16 +1771,18 @@ public class WholeProgramInferenceJavaParserStorage
       if (!preconditions.containsKey(expression)) {
         AnnotatedTypeMirror preconditionsType =
             AnnotatedTypeMirror.createType(declaredType.getUnderlyingType(), atf, false);
-        preconditions.put(expression, IPair.of(preconditionsType, declaredType));
+        preconditions.put(expression, new InferredDeclared(preconditionsType, declaredType));
       }
 
-      return preconditions.get(expression).first;
+      return preconditions.get(expression).inferred;
     }
 
     /**
      * Returns an AnnotatedTypeMirror containing the postconditions for the given expression.
      * Changes to the returned AnnotatedTypeMirror are reflected in this CallableDeclarationAnnos.
      *
+     * @param className the class that contains the method, for diagnostics only
+     * @param methodName the method name, for diagnostics only
      * @param expression a string representing a Java expression, in the same format as the argument
      *     to a {@link org.checkerframework.framework.qual.EnsuresQualifier} annotation
      * @param declaredType the declared type of {@code expression}
@@ -1763,7 +1792,11 @@ public class WholeProgramInferenceJavaParserStorage
      *     postconditions for the given expression
      */
     public AnnotatedTypeMirror getPostconditionsForExpression(
-        String expression, AnnotatedTypeMirror declaredType, AnnotatedTypeFactory atf) {
+        String className,
+        String methodName,
+        String expression,
+        AnnotatedTypeMirror declaredType,
+        AnnotatedTypeFactory atf) {
       if (postconditions == null) {
         postconditions = new HashMap<>(1);
       }
@@ -1771,10 +1804,12 @@ public class WholeProgramInferenceJavaParserStorage
       if (!postconditions.containsKey(expression)) {
         AnnotatedTypeMirror postconditionsType =
             AnnotatedTypeMirror.createType(declaredType.getUnderlyingType(), atf, false);
-        postconditions.put(expression, IPair.of(postconditionsType, declaredType));
+        postconditions.put(expression, new InferredDeclared(postconditionsType, declaredType));
       }
 
-      return postconditions.get(expression).first;
+      InferredDeclared postAndDecl = postconditions.get(expression);
+      AnnotatedTypeMirror result = postAndDecl.inferred;
+      return result;
     }
 
     /**
@@ -1857,15 +1892,18 @@ public class WholeProgramInferenceJavaParserStorage
 
     @Override
     public String toString() {
-      return "CallableDeclarationAnnos [declaration="
-          + declaration
-          + ", parameterTypes="
-          + parameterTypes
-          + ", receiverType="
-          + receiverType
-          + ", returnType="
-          + returnType
-          + "]";
+      StringJoiner sj =
+          new StringJoiner(
+              "," + System.lineSeparator() + "  ",
+              "CallableDeclarationAnnos{",
+              System.lineSeparator() + "}");
+      sj.add("returnType = " + returnType);
+      sj.add("receiverType = " + receiverType);
+      sj.add("parameterTypes = " + parameterTypes);
+      sj.add("paramsDeclAnnos = " + paramsDeclAnnos);
+      sj.add("declarationAnnotations = " + declarationAnnotations);
+      sj.add("preconditions = " + preconditions);
+      return sj.toString();
     }
   }
 
@@ -1875,19 +1913,18 @@ public class WholeProgramInferenceJavaParserStorage
    * @param orig the map to copy
    * @return a deep copy of the map
    */
-  private static @Nullable Map<String, IPair<AnnotatedTypeMirror, AnnotatedTypeMirror>> deepCopyMapOfStringToPair(
-          @Nullable Map<String, IPair<AnnotatedTypeMirror, AnnotatedTypeMirror>> orig) {
+  private static @Nullable Map<String, InferredDeclared> deepCopyMapOfStringToPair(
+      @Nullable Map<String, InferredDeclared> orig) {
     if (orig == null) {
       return null;
     }
-    Map<String, IPair<AnnotatedTypeMirror, AnnotatedTypeMirror>> result =
-        new HashMap<>(CollectionsPlume.mapCapacity(orig.size()));
+    Map<String, InferredDeclared> result = new HashMap<>(CollectionsPlume.mapCapacity(orig.size()));
     result.clear();
-    for (Map.Entry<String, IPair<AnnotatedTypeMirror, AnnotatedTypeMirror>> entry :
-        orig.entrySet()) {
+    for (Map.Entry<String, InferredDeclared> entry : orig.entrySet()) {
       String javaExpression = entry.getKey();
-      IPair<AnnotatedTypeMirror, AnnotatedTypeMirror> atms = entry.getValue();
-      result.put(javaExpression, IPair.deepCopy(atms));
+      InferredDeclared atms = entry.getValue();
+      result.put(
+          javaExpression, new InferredDeclared(atms.inferred.deepCopy(), atms.declared.deepCopy()));
     }
     return result;
   }
@@ -2018,6 +2055,31 @@ public class WholeProgramInferenceJavaParserStorage
     @Override
     public String toString() {
       return "FieldAnnos [declaration=" + declaration + ", type=" + type + "]";
+    }
+  }
+
+  /** A pair of two annotated types: an inferred type and a declared type. */
+  public static class InferredDeclared {
+    /** The inferred type. */
+    public final AnnotatedTypeMirror inferred;
+
+    /** The declared type. */
+    public final AnnotatedTypeMirror declared;
+
+    /**
+     * Creates an InferredDeclared.
+     *
+     * @param inferred the inferred type
+     * @param declared the declared type
+     */
+    public InferredDeclared(AnnotatedTypeMirror inferred, AnnotatedTypeMirror declared) {
+      this.inferred = inferred;
+      this.declared = declared;
+    }
+
+    @Override
+    public String toString() {
+      return "InferredDeclared(" + inferred + ", " + declared + ")";
     }
   }
 }

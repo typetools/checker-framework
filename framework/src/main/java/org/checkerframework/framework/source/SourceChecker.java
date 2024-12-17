@@ -740,7 +740,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    */
   @SuppressWarnings("interning:assignment") // used in == tests
   public void setRoot(CompilationUnitTree newRoot) {
-    this.currentRoot = newRoot;
+    currentRoot = newRoot;
     visitor.setRoot(currentRoot);
     if (parentChecker == null) {
       // Only clear the path cache if this is the main checker.
