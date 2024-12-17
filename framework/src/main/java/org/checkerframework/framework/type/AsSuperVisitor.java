@@ -244,6 +244,22 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
     return types.isSameType(underlyingTypeA, underlyingTypeB);
   }
 
+  @Override
+  public String defaultErrorMessage(
+      AnnotatedTypeMirror type, AnnotatedTypeMirror superType, Void p) {
+    // Message is on one line, without line breaks, because in a stack trace only the first line
+    // of the message may be shown.
+    return String.format(
+        "%s: unexpected combination:  type: [%s %s] %s  superType: [%s %s] %s",
+        this.getClass().getSimpleName(),
+        type.getKind(),
+        type.getClass(),
+        type,
+        superType.getKind(),
+        superType.getClass(),
+        superType);
+  }
+
   // <editor-fold defaultstate="collapsed" desc="visitArray_Other methods">
   @Override
   public AnnotatedTypeMirror visitArray_Array(
