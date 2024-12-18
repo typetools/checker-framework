@@ -374,17 +374,12 @@ public class OptionalImplVisitor
    */
   private void handleAssignmentInConditional(
       IfTree tree, StatementTree thenStmt, StatementTree elseStmt) {
-    if (thenStmt.getKind() != Tree.Kind.EXPRESSION_STATEMENT
-        || elseStmt.getKind() != Tree.Kind.EXPRESSION_STATEMENT) {
+    AssignmentTree trueAssignment = TreeUtils.asAssignmentTree(thenStmt);
+    AssignmentTree falseAssignment = TreeUtils.asAssignmentTree(elseStmt);
+
+    if (trueAssignment == null || falseAssignment == null) {
       return;
     }
-    ExpressionTree trueExpr = ((ExpressionStatementTree) thenStmt).getExpression();
-    ExpressionTree falseExpr = ((ExpressionStatementTree) elseStmt).getExpression();
-    if (trueExpr.getKind() != Tree.Kind.ASSIGNMENT || falseExpr.getKind() != Tree.Kind.ASSIGNMENT) {
-      return;
-    }
-    AssignmentTree trueAssignment = (AssignmentTree) trueExpr;
-    AssignmentTree falseAssignment = (AssignmentTree) falseExpr;
 
     if (sameExpression(trueAssignment.getVariable(), falseAssignment.getVariable())) {
       if (trueAssignment.getExpression().getKind() == Kind.METHOD_INVOCATION) {
