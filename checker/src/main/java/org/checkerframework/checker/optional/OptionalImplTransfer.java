@@ -82,7 +82,7 @@ public class OptionalImplTransfer extends CFTransfer {
   /**
    * Create an OptionalImplTransfer.
    *
-   * @param analysis the Optional Checker instance
+   * @param analysis the OptionalImpl Checker instance
    */
   public OptionalImplTransfer(CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
     super(analysis);

@@ -179,7 +179,8 @@ public class OptionalImplVisitor
   }
 
   /**
-   * Returns true iff the method being called is Optional creation: empty, of, ofNullable.
+   * Returns true iff the method being called is annotated with {@code @}{@link OptionalCreator}.
+   * This is the Optional creation methods: empty, of, ofNullable.
    *
    * @param methInvok a method invocation
    * @return true iff the method being called is Optional creation: empty, of, ofNullable
@@ -190,7 +191,8 @@ public class OptionalImplVisitor
   }
 
   /**
-   * Returns true iff the method being called is Optional propagation: filter, flatMap, map, or.
+   * Returns true iff the method being called is annotated with {@code @}{@link OptionalPropagator}.
+   * This is the Optional propagation methods: filter, flatMap, map, or.
    *
    * @param methInvok a method invocation
    * @return true iff the method being called is Optional propagation: filter, flatMap, map, or
@@ -201,8 +203,8 @@ public class OptionalImplVisitor
   }
 
   /**
-   * Returns true iff the method being called is Optional elimination: get, orElse, orElseGet,
-   * orElseThrow.
+   * Returns true iff the method being called is annotated with {@code @}{@link OptionalEliminator}.
+   * This is the Optional elimination methods: get, orElse, orElseGet, orElseThrow.
    *
    * @param methInvok a method invocation
    * @return true iff the method being called is Optional elimination: get, orElse, orElseGet,
@@ -416,7 +418,7 @@ public class OptionalImplVisitor
    * @param tree the conditional statement tree
    * @param invok the method invocation in the {@code then} block
    * @param isPresentCall the pair comprising a boolean (indicating whether the expression is a call
-   *     to {@code * Optional.isPresent} or to {@code Optional.isEmpty}) and its receiver;
+   *     to {@code Optional.isPresent} or to {@code Optional.isEmpty}) and its receiver
    * @param messageKey the message key, either "prefer.ifPresent" or "prefer.map.and.orelse"
    */
   private void checkConditionalStatementIsPresentGetCall(
@@ -424,17 +426,17 @@ public class OptionalImplVisitor
       MethodInvocationTree invok,
       IPair<Boolean, ExpressionTree> isPresentCall,
       @CompilerMessageKey String messageKey) {
-    List<? extends ExpressionTree> args = invok.getArguments();
-    if (args.size() != 1) {
+    List<? extends ExpressionTree> invokArgs = invok.getArguments();
+    if (invokArgs.size() != 1) {
       return;
     }
-    ExpressionTree arg = TreeUtils.withoutParens(args.get(0));
-    if (!isCallToGet(arg)) {
+    ExpressionTree invokArg = TreeUtils.withoutParens(invokArgs.get(0));
+    if (!isCallToGet(invokArg)) {
       return;
     }
-    ExpressionTree receiver = isPresentCall.second;
-    ExpressionTree getReceiver = TreeUtils.getReceiverTree(arg);
-    if (!receiver.toString().equals(getReceiver.toString())) {
+    ExpressionTree isPresentReceiver = isPresentCall.second;
+    ExpressionTree getReceiver = TreeUtils.getReceiverTree(invokArg);
+    if (!isPresentReceiver.toString().equals(getReceiver.toString())) {
       return;
     }
     ExpressionTree method = invok.getMethodSelect();
@@ -445,7 +447,7 @@ public class OptionalImplVisitor
       methodString = methodString.substring(0, dotPos) + "::" + methodString.substring(dotPos + 1);
     }
 
-    checker.reportWarning(tree, messageKey, receiver, methodString);
+    checker.reportWarning(tree, messageKey, isPresentReceiver, methodString);
   }
 
   @Override
@@ -462,10 +464,10 @@ public class OptionalImplVisitor
    * <p>If a callee should be checked by the Non-Empty checker, then the caller should also be
    * checked by the Non-Empty Checker.
    *
-   * <p>The {@link calleesToCallers} map is updated with the method that <i>encloses</i> the given
-   * method invocation if the callee of the invocation is present in the map. That is, the map is
-   * updated with the callers of any methods that must be checked by the Non-Empty type system
-   * (e.g., methods that have preconditions related to the Non-Empty type system).
+   * <p>The caller is the method that <i>encloses</i> the given method invocation. The map is
+   * updated if the callee of the invocation is present in the map. That is, the map is updated with
+   * the callers of any methods that must be checked by the Non-Empty type system (e.g., methods
+   * that have preconditions related to the Non-Empty type system).
    *
    * @param tree a method invocation tree
    */
@@ -487,15 +489,15 @@ public class OptionalImplVisitor
   }
 
   @Override
-  public void processMethodTree(String className, MethodTree tree) {
-    if (this.isAnnotatedWithNonEmptyPrecondition(tree)
-        || this.isAnyFormalAnnotatedWithNonEmpty(tree)) {
-      addMethodToVerifyWithNonEmptyChecker(tree);
+  public void processMethodTree(String className, MethodTree methodDecl) {
+    if (isAnnotatedWithNonEmptyPrecondition(methodDecl)
+        || isAnyFormalAnnotatedWithNonEmpty(methodDecl)) {
+      addMethodToVerifyWithNonEmptyChecker(methodDecl);
     }
-    if (this.isReturnTypeAnnotatedWithNonEmpty(tree)) {
-      namesOfMethodsToVerifyWithNonEmptyChecker.add(tree.getName().toString());
+    if (isReturnTypeAnnotatedWithNonEmpty(methodDecl)) {
+      namesOfMethodsToVerifyWithNonEmptyChecker.add(methodDecl.getName().toString());
     }
-    super.processMethodTree(className, tree);
+    super.processMethodTree(className, methodDecl);
   }
 
   /**

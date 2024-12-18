@@ -32,12 +32,7 @@ public class OptionalImplChecker extends BaseTypeChecker {
     return subcheckers;
   }
 
-  /**
-   * Use the "optional", rather than the "optionalimpl" prefix as the argument to a {@link
-   * SuppressWarnings} annotation,
-   *
-   * @return the set of suppress warnings prefixes that are respected by this checker
-   */
+  /** Use "optional", rather than "optionalimpl", as the {@link SuppressWarnings} prefix. */
   @Override
   public NavigableSet<String> getSuppressWarningsPrefixes() {
     NavigableSet<String> prefixes = super.getSuppressWarningsPrefixes();

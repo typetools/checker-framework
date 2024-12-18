@@ -21,7 +21,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.TreeUtils;
 
-/** OptionalImplAnnotatedTypeFactory for the OptionalImplChecker. */
+/** Type factory for the OptionalImplChecker. */
 public class OptionalImplAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   /** The element for java.util.Optional.map(). */
@@ -50,13 +50,13 @@ public class OptionalImplAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   /**
    * If {@code tree} is a call to {@link java.util.Optional#map(Function)} whose argument is a
-   * method reference, then this method adds {@code @Present} to {@code type} if the following is
+   * method reference m, then this method adds {@code @Present} to {@code type} if the following is
    * true:
    *
    * <ul>
    *   <li>The type of the receiver to {@link java.util.Optional#map(Function)} is {@code @Present},
    *       and
-   *   <li>{@link #returnHasNullable(MemberReferenceTree)} returns false.
+   *   <li>{@link #hasNullableReturnType(MemberReferenceTree)} returns false for m.
    * </ul>
    *
    * @param tree a tree
@@ -68,20 +68,21 @@ public class OptionalImplAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
     MethodInvocationTree mapTree = (MethodInvocationTree) tree;
     ExpressionTree argTree = mapTree.getArguments().get(0);
-    if (argTree.getKind() == Kind.MEMBER_REFERENCE) {
-      MemberReferenceTree memberReferenceTree = (MemberReferenceTree) argTree;
-      AnnotatedTypeMirror optType = getReceiverType(mapTree);
-      if (optType == null || !optType.hasEffectiveAnnotation(Present.class)) {
-        return;
-      }
-      if (!returnHasNullable(memberReferenceTree)) {
-        // The method still could have a @PolyNull on the return and might return null.
-        // If @PolyNull is the primary annotation on the parameter and not on any type
-        // arguments or array elements, then it is still safe to mark the optional type as
-        // present.
-        // TODO: Add the check for poly null on arguments.
-        type.replaceAnnotation(PRESENT);
-      }
+    if (argTree.getKind() != Kind.MEMBER_REFERENCE) {
+      return;
+    }
+    AnnotatedTypeMirror mapReceiver = getReceiverType(mapTree);
+    if (mapReceiver == null || !mapReceiver.hasEffectiveAnnotation(Present.class)) {
+      return;
+    }
+    MemberReferenceTree memberReferenceTree = (MemberReferenceTree) argTree;
+    if (!hasNullableReturnType(memberReferenceTree)) {
+      // The method still could have a @PolyNull on the return and might return null.
+      // If @PolyNull is the primary annotation on the parameter and not on any type
+      // arguments or array elements, then it is still safe to mark the optional type as
+      // present.
+      // TODO: Add the check for @PolyNull on arguments.
+      type.replaceAnnotation(PRESENT);
     }
   }
 
@@ -89,18 +90,19 @@ public class OptionalImplAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * Returns true if the return type of the function type of {@code memberReferenceTree} is
    * annotated with {@code @Nullable}.
    *
-   * @param memberReferenceTree a member reference
+   * @param memberReferenceTree a member reference (which is to a method or constructor)
    * @return true if the return type of the function type of {@code memberReferenceTree} is
    *     annotated with {@code @Nullable}
    */
-  private boolean returnHasNullable(MemberReferenceTree memberReferenceTree) {
+  private boolean hasNullableReturnType(MemberReferenceTree memberReferenceTree) {
+    // A member reference refers to either a method or a constructor.
     if (TreeUtils.MemberReferenceKind.getMemberReferenceKind(memberReferenceTree)
         .isConstructorReference()) {
       return false;
     }
     ExecutableElement memberReferenceFuncType = TreeUtils.elementFromUse(memberReferenceTree);
     if (memberReferenceFuncType.getEnclosingElement().getKind() == ElementKind.ANNOTATION_TYPE) {
-      // Annotation element accessor are always non-null;
+      // Annotation element accessors are always non-null;
       return false;
     }
 
@@ -112,10 +114,10 @@ public class OptionalImplAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
-   * Returns true if {@code annos} contains a nullable annotation.
+   * Returns true if {@code annos} contains an annotation named "Nullable".
    *
    * @param annos a collection of annotations
-   * @return true if {@code annos} contains a nullable annotation
+   * @return true if {@code annos} contains an annotation named "Nullable".
    */
   private boolean containsNullable(Collection<? extends AnnotationMirror> annos) {
     for (AnnotationMirror anno : annos) {
