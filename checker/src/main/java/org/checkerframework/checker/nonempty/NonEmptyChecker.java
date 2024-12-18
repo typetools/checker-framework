@@ -2,30 +2,37 @@ package org.checkerframework.checker.nonempty;
 
 import com.sun.source.tree.MethodTree;
 import java.util.Set;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.optional.OptionalChecker;
 import org.checkerframework.checker.optional.OptionalImplChecker;
 import org.checkerframework.checker.optional.OptionalImplVisitor;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.source.SourceChecker;
-import org.checkerframework.framework.source.SupportedOptions;
 
 /**
  * A type-checker that prevents {@link java.util.NoSuchElementException} in the use of container
  * classes.
  *
- * <p>Runs the {@link org.checkerframework.checker.optional.OptionalImplChecker} (as a subchecker),
- * using explicitly-written (i.e., programmer-written) annotations from the Non-Empty type system to
- * refine the Optional analysis. This improves analysis of operations on containers (e.g., Streams,
- * Collections) that result in values of type Optional.
+ * <p>Runs the {@link org.checkerframework.checker.optional.OptionalImplChecker} (as a subchecker)
+ * by default. This checker should not yet be run as a standalone checker. The Non-Empty Checker
+ * uses explicitly-written (i.e., programmer-written) annotations from the Non-Empty type system to
+ * refine the analysis of operations on containers (e.g., Streams, Collections) that result in
+ * values of type {@link java.util.Optional}.
  *
  * @checker_framework.manual #non-empty-checker Non-Empty Checker
  */
-@SupportedOptions("checkAllDefs")
 public class NonEmptyChecker extends BaseTypeChecker {
+
+  /** A cached instance of {@link OptionalImplVisitor} */
+  private OptionalImplVisitor optionalImplVisitor;
+
+  /** A cached instance of this checker's parent checker */
+  private final @Nullable SourceChecker parentChecker;
 
   /** Creates a NonEmptyChecker. */
   public NonEmptyChecker() {
     super();
+    parentChecker = this.getParentChecker();
   }
 
   @Override
@@ -41,10 +48,10 @@ public class NonEmptyChecker extends BaseTypeChecker {
 
   @Override
   public boolean shouldSkipDefs(MethodTree tree) {
-    if (!(this.getParentChecker() instanceof OptionalChecker)) {
-      // If the parent checker is null, or if it is NOT an instance of the top-level Optional
-      // Checker, this indicates that this Non-Empty Checker is being run independently. In
-      // this case, check all definitions, not just the ones related to the Optional Checker's
+    if (!(this.parentChecker instanceof OptionalChecker)) {
+      // The parent checker being null, or not being an instance of the top-level Optional Checker
+      // indicates that this Non-Empty Checker is being run independently.
+      // Check all definitions in this case, not just the ones relevant to the Optional Checker's
       // guarantee.
       return false;
     }
@@ -58,9 +65,11 @@ public class NonEmptyChecker extends BaseTypeChecker {
    * @throws AssertionError if the {@link OptionalImplChecker} is not a subchecker of this checker
    */
   private Set<String> getMethodsToVerify() {
-    OptionalImplChecker optionalCheckerImpl = getSubchecker(OptionalImplChecker.class);
-    assert optionalCheckerImpl != null;
-    OptionalImplVisitor optionalVisitor = (OptionalImplVisitor) optionalCheckerImpl.getVisitor();
-    return optionalVisitor.getNamesOfMethodsToVerifyWithNonEmptyChecker();
+    if (optionalImplVisitor == null) {
+      OptionalImplChecker optionalCheckerImpl = getSubchecker(OptionalImplChecker.class);
+      assert optionalCheckerImpl != null;
+      optionalImplVisitor = (OptionalImplVisitor) optionalCheckerImpl.getVisitor();
+    }
+    return optionalImplVisitor.getNamesOfMethodsToVerifyWithNonEmptyChecker();
   }
 }
