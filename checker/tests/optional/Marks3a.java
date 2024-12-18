@@ -50,7 +50,7 @@ public class Marks3a {
     String customerName = "";
     String unknownCustomerName = "";
 
-    // This is OK
+    // This is OK, because the two LHSes differ.
     if (opt.isPresent()) {
       customerName = opt.get().getName();
     } else {

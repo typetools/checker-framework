@@ -674,7 +674,8 @@ public class OptionalImplVisitor
    * <p>TODO: Also check at collection creation sites, but there are so many of them, and there
    * often are not values of the element type at the collection creation site.
    *
-   * @param tree a method invocation that might create an Optional of an illegal type
+   * @param tree a method invocation that might create Optional<X> where X is impermissable:
+   *     Optional or Collection
    */
   public void handleNestedOptionalCreation(MethodInvocationTree tree) {
     if (!isOptionalCreation(tree)) {
@@ -796,11 +797,10 @@ public class OptionalImplVisitor
         // If typeArgs.size()==0, then the user wrote a raw type `Optional`.
         if (typeArgs.size() == 1) {
           TypeMirror typeArg = typeArgs.get(0);
-          if (isCollectionType(typeArg)) {
-            checker.reportWarning(tree, "optional.collection");
-          }
           if (isOptionalType(typeArg)) {
             checker.reportWarning(tree, "optional.nesting");
+          } else if (isCollectionType(typeArg)) {
+            checker.reportWarning(tree, "optional.collection");
           }
         }
       }

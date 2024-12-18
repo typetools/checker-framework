@@ -926,7 +926,7 @@ public abstract class JavaExpression {
    *
    * @param tree the method tree
    * @param receiver the receiver for which to look up a declaration
-   * @return the declaration of the receiver of the method call, if found. Otherwise, null
+   * @return the declaration of the receiver of the method call, if found. Otherwise, null.
    */
   public static @Nullable VariableTree getReceiverDeclarationInMethod(
       @Nullable MethodTree tree, JavaExpression receiver) {
@@ -960,7 +960,7 @@ public abstract class JavaExpression {
    *
    * @param tree the class tree
    * @param receiver the receiver for which to look up a declaration
-   * @return the declaration of the receiver of the method call, if found. Otherwise, null
+   * @return the declaration of the receiver of the method call, if found. Otherwise, null.
    */
   public static @Nullable VariableTree getReceiverDeclarationAsField(
       @Nullable ClassTree tree, JavaExpression receiver) {
