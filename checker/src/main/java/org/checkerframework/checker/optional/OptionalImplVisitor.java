@@ -674,7 +674,7 @@ public class OptionalImplVisitor
    * <p>TODO: Also check at collection creation sites, but there are so many of them, and there
    * often are not values of the element type at the collection creation site.
    *
-   * @param tree a method invocation that might create Optional<X> where X is impermissable:
+   * @param tree a method invocation that might create {@code Optional<X>} where X is impermissable:
    *     Optional or Collection
    */
   public void handleNestedOptionalCreation(MethodInvocationTree tree) {
