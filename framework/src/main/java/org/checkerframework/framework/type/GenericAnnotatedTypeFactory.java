@@ -2304,7 +2304,7 @@ public abstract class GenericAnnotatedTypeFactory<
       }
       boolean verbose = checker.hasOption("verbosecfg");
 
-      Map<String, Object> args = new HashMap<>(2);
+      Map<String, Object> args = new HashMap<>(4);
       args.put("outdir", flowdotdir);
       args.put("verbose", verbose);
       args.put("checkerName", getCheckerName());
