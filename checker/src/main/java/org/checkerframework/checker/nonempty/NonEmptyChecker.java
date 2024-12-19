@@ -2,7 +2,6 @@ package org.checkerframework.checker.nonempty;
 
 import com.sun.source.tree.MethodTree;
 import java.util.Set;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.optional.OptionalChecker;
 import org.checkerframework.checker.optional.OptionalImplChecker;
 import org.checkerframework.checker.optional.OptionalImplVisitor;
@@ -26,13 +25,9 @@ public class NonEmptyChecker extends BaseTypeChecker {
   /** A cached instance of {@link OptionalImplVisitor} */
   private OptionalImplVisitor optionalImplVisitor;
 
-  /** A cached instance of this checker's parent checker */
-  private final @Nullable SourceChecker parentChecker;
-
   /** Creates a NonEmptyChecker. */
   public NonEmptyChecker() {
     super();
-    parentChecker = this.getParentChecker();
   }
 
   @Override
