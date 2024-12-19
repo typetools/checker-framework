@@ -310,6 +310,19 @@ public class OptionalImplVisitor
    *
    * <p>Prefer: {@code VAR.ifPresent(METHOD);}
    *
+   * <p>Also matches:
+   *
+   * <pre>
+   *     V someVal;
+   *     if (VAR.isPresent()) {
+   *        someVal = METHOD(VAR.get());
+   *     } else {
+   *        someVal = OTHER;
+   *     }
+   * </pre>
+   *
+   * <p>Prefer: {@code someVal = VAR.map(METHOD).orElse(OTHER);}
+   *
    * @param tree an if statement that can perhaps be simplified
    */
   public void handleConditionalStatementIsPresentGet(IfTree tree) {
@@ -376,8 +389,8 @@ public class OptionalImplVisitor
    * <p>Prefer: {@code someVar = VAR.map(METHOD).orElse(VALUE);}
    *
    * @param tree a conditional expression that can perhaps be simplified
-   * @param thenStmt the "then" part of a conditional expression
-   * @param elseStmt the "else" part of a conditional expression
+   * @param thenStmt the "then" part of {@code tree}
+   * @param elseStmt the "else" part of {@code tree}
    */
   private void handleAssignmentInConditional(
       IfTree tree, StatementTree thenStmt, StatementTree elseStmt) {
