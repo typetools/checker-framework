@@ -936,14 +936,14 @@ public abstract class JavaExpression {
     // Java forbids shadowing a formal parameter by a local variable.
     List<? extends VariableTree> params = tree.getParameters();
     for (VariableTree param : params) {
-      if (param.getName().toString().equals(receiver.toString())) {
+      if (receiver.syntacticEquals(JavaExpression.fromVariableTree(param))) {
         return param;
       }
     }
     for (StatementTree statement : tree.getBody().getStatements()) {
       if (statement instanceof VariableTree) {
         VariableTree localVariableTree = (VariableTree) statement;
-        if (localVariableTree.getName().toString().equals(receiver.toString())) {
+        if (receiver.syntacticEquals(JavaExpression.fromVariableTree(localVariableTree))) {
           return localVariableTree;
         }
       }
