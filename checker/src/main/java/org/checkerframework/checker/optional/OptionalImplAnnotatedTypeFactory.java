@@ -56,7 +56,7 @@ public class OptionalImplAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * <ul>
    *   <li>The type of the receiver to {@link java.util.Optional#map(Function)} is {@code @Present},
    *       and
-   *   <li>{@link #hasNullableReturnType(MemberReferenceTree)} returns false for m.
+   *   <li>{@link #isReturnTypeNullable(MemberReferenceTree)} returns false for m.
    * </ul>
    *
    * @param tree a tree
@@ -76,7 +76,7 @@ public class OptionalImplAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       return;
     }
     MemberReferenceTree memberReferenceTree = (MemberReferenceTree) argTree;
-    if (!hasNullableReturnType(memberReferenceTree)) {
+    if (!isReturnTypeNullable(memberReferenceTree)) {
       // The method still could have a @PolyNull on the return and might return null.
       // If @PolyNull is the primary annotation on the parameter and not on any type
       // arguments or array elements, then it is still safe to mark the optional type as
@@ -94,7 +94,7 @@ public class OptionalImplAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * @return true if the return type of the function type of {@code memberReferenceTree} is
    *     annotated with {@code @Nullable}
    */
-  private boolean hasNullableReturnType(MemberReferenceTree memberReferenceTree) {
+  private boolean isReturnTypeNullable(MemberReferenceTree memberReferenceTree) {
     // A member reference refers to either a method or a constructor.
     if (TreeUtils.MemberReferenceKind.getMemberReferenceKind(memberReferenceTree)
         .isConstructorReference()) {
