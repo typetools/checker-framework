@@ -274,6 +274,13 @@ public class OptionalImplVisitor
   /**
    * Returns true if the two trees represent the same expression.
    *
+   * <p>This method would ideally be in {@link TreeUtils} as a public static method, but this would
+   * introduce the {@code dataflow} package as a dependency in {@code javacutil}, which is
+   * undesirable.
+   *
+   * <p>See https://github.com/typetools/checker-framework/pull/6901#discussion_r1889461449 for
+   * additional details and discussion.
+   *
    * @param tree1 the first tree
    * @param tree2 the second tree
    * @return true if the two trees represent the same expression
@@ -283,7 +290,7 @@ public class OptionalImplVisitor
     JavaExpression r2 = JavaExpression.fromTree(tree2);
     // What is a better way to do this than string comparison?
     // Use transfer functions and Store entries.
-    if (r1 != null && !r1.containsUnknown() && r2 != null && !r2.containsUnknown()) {
+    if (!r1.containsUnknown() && !r2.containsUnknown()) {
       return r1.equals(r2);
     } else {
       return tree1.toString().equals(tree2.toString());
