@@ -11,13 +11,11 @@ throw \<NoSuchElementException> as a result of calling methods such as
 \<Deque.getFirst()>, \<Deque.removeFirst()>, \<Queue.remove()>, or
 \<Queue.element()>.
 
-Currently, the Non-Empty Checker operates as an auxilliary checker for the
+Currently, the Non-Empty Checker operates as an auxiliary checker for the
 Optional Checker (\sectionpageref{optional-checker}).
-Its default modality is to \emph{partially} verify a program with respect to
-non-empty information and guarantees.
-This information is then used by the Optional Checker to increase its precision
-around \<Optional> values whose presence relies on whether a container is
-non-empty (or empty).
+The Optional Checker uses information from the Non-Empty Checker to increase
+its precision around \<Optional> values whose presence relies on whether a
+container is non-empty (or empty).
 
 Under this default modality, the Non-Empty Checker verifies methods and
 declarations that are:
