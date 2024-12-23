@@ -218,7 +218,7 @@ public class OptionalImplTransfer extends CFTransfer {
     } else {
       receiver = JavaExpression.fromTree(receiverTree);
     }
-    VariableTree receiverDeclaration = getLeftmostReceiverDeclaration(methodInvok, receiver);
+    VariableTree receiverDeclaration = getReceiverDeclaration(methodInvok, receiver);
     if (receiverDeclaration == null) {
       return false;
     }
@@ -230,30 +230,62 @@ public class OptionalImplTransfer extends CFTransfer {
   }
 
   /**
-   * Returns the declaration of the leftmost receiver of the given method invocation node.
+   * Returns the declaration of the receiver of the given method invocation node.
    *
-   * <p>Finds the declaration of {@code leftmostReceiver} in the method that immediately encloses
-   * {@code methodInvok}. If unsuccessful, look up the declaration in the fields of the class that
-   * immediately encloses {@code methodInvok}.
+   * <p>Finds the declaration of {@code receiver} in the method that immediately encloses {@code
+   * methodInvok}. If unsuccessful, look up the declaration in the fields of the class(s) that
+   * enclose {@code methodInvok}.
    *
    * @param methodInvok a method invocation node
-   * @param leftmostReceiver the leftmost receiver argument in the method invocation node
+   * @param receiver the receiver argument in the method invocation node
    * @return the declaration of the receiver if found, else null
    */
-  private @Nullable VariableTree getLeftmostReceiverDeclaration(
-      MethodInvocationNode methodInvok, @Nullable JavaExpression leftmostReceiver) {
-    if (leftmostReceiver == null) {
+  private @Nullable VariableTree getReceiverDeclaration(
+      MethodInvocationNode methodInvok, @Nullable JavaExpression receiver) {
+    if (receiver == null) {
       return null;
     }
     // Look in the method, first.
     MethodTree methodTree = TreePathUtil.enclosingMethod(methodInvok.getTreePath());
     VariableTree declarationInMethod =
-        JavaExpression.getReceiverDeclarationInMethod(methodTree, leftmostReceiver);
+        JavaExpression.getReceiverDeclarationInMethod(methodTree, receiver);
     if (declarationInMethod != null) {
       return declarationInMethod;
     }
     // If the declaration can't be found in the method, look in the class.
-    ClassTree classTree = TreePathUtil.enclosingClass(methodInvok.getTreePath());
-    return JavaExpression.getReceiverDeclarationAsField(classTree, leftmostReceiver);
+    return getReceiverDeclaredInClassField(methodInvok, receiver);
+  }
+
+  /**
+   * Returns the declaration of the receiver of the given method invocation node.
+   *
+   * <p>Finds the declaration of {@code receiver} in the classes that enclose {@code methodInvok}.
+   *
+   * @param methodInvok a method invocation node
+   * @param receiver the receiver argument in the method invocation node
+   * @return the declaration of the receiver if found, else null
+   */
+  private @Nullable VariableTree getReceiverDeclaredInClassField(
+      MethodInvocationNode methodInvok, JavaExpression receiver) {
+    TreePath classTreePath = methodInvok.getTreePath();
+    ClassTree classTree = TreePathUtil.enclosingClass(classTreePath);
+    while (classTree != null) {
+      VariableTree receiverAsField =
+          JavaExpression.getReceiverDeclarationAsField(classTree, receiver);
+      if (receiverAsField != null) {
+        return receiverAsField;
+      }
+      // The receiver was not declared in the class immediately enclosing the method invocation, but
+      // it might be declared
+      // as a field in an outer class
+      if (classTreePath.getParentPath() != null) {
+        classTreePath = classTreePath.getParentPath();
+        classTree = TreePathUtil.enclosingClass(classTreePath);
+      } else {
+        // There is no outer class in which to check for the declaration of the receiver
+        return null;
+      }
+    }
+    return null;
   }
 }
