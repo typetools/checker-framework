@@ -313,15 +313,16 @@ public class OptionalImplVisitor
    * <p>Also matches:
    *
    * <pre>
-   *     V someVal;
    *     if (VAR.isPresent()) {
-   *        someVal = METHOD(VAR.get());
+   *        x = METHOD(VAR.get());
    *     } else {
-   *        someVal = OTHER;
+   *        x = OTHER;
    *     }
    * </pre>
    *
-   * <p>Prefer: {@code someVal = VAR.map(METHOD).orElse(OTHER);}
+   * Where {@code x} is some variable (e.g., a field, a local variable).
+   *
+   * <p>Prefer: {@code x = VAR.map(METHOD).orElse(OTHER);}
    *
    * @param tree an if statement that can perhaps be simplified
    */
@@ -428,7 +429,8 @@ public class OptionalImplVisitor
    *   <li>{@code OTHER_VAR = METHOD(VAR.get());}
    * </ul>
    *
-   * inside the {@code then} block for {@code VAR.isPresent()}:
+   * inside the body of the {@code then} block for {@code VAR.isPresent()} or the {@code else} block
+   * for {@code VAR.isEmpty()}.
    *
    * @param tree the conditional statement tree
    * @param invok the method invocation in the {@code then} block
