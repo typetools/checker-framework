@@ -988,15 +988,12 @@ public abstract class JavaExpression {
    * <p>For example, given method invocation sequence {@code a.b().c.d().e()}, return {@code a}.
    *
    * @param tree a tree
-   * @return the initial receiver of a method invocation chain
+   * @return the leftmost receiver of a method invocation chain
    */
   public static @Nullable JavaExpression getLeftmostReceiverOfMethodInvocation(
       ExpressionTree tree) {
     assert tree instanceof MethodInvocationTree;
     ExpressionTree receiverTree = TreeUtils.getReceiverTree(tree);
-    while (receiverTree instanceof MethodInvocationNode) {
-      receiverTree = TreeUtils.getReceiverTree(receiverTree);
-    }
     if (receiverTree instanceof MethodInvocationTree) {
       return JavaExpression.getLeftmostReceiverOfMethodInvocation(receiverTree);
     }
