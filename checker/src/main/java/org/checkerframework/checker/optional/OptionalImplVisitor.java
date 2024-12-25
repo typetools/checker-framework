@@ -379,15 +379,16 @@ public class OptionalImplVisitor
    * <p>Pattern match for:
    *
    * <pre>
-   *   T someVar;
    *   if (opt.isPresent()) {
-   *    someVar = opt.get().METHOD();
+   *    x = opt.get().METHOD();
    *   } else {
-   *    someVar = VALUE;
+   *    x = VALUE;
    *   }
    * </pre>
    *
-   * <p>Prefer: {@code someVar = VAR.map(METHOD).orElse(VALUE);}
+   * Where {@code x} is some variable (e.g., a field, a local variable).
+   *
+   * <p>Prefer: {@code x = opt.map(METHOD).orElse(VALUE);}
    *
    * @param tree a conditional expression that can perhaps be simplified
    * @param thenStmt the "then" part of {@code tree}
