@@ -37,7 +37,6 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -121,6 +120,7 @@ public class JavaExpressionParseUtil {
   /** The replacement for a formal parameter in "#2" syntax. */
   private static final String PARAMETER_REPLACEMENT = PARAMETER_PREFIX + "$1";
 
+  /** Binary operations that return {@code boolean}. */
   private static final Set<BinaryExpr.Operator> COMPARISON_OPERATORS =
       EnumSet.of(
           BinaryExpr.Operator.EQUALS,
@@ -967,28 +967,29 @@ public class JavaExpressionParseUtil {
       TypeMirror leftType = leftJe.getType();
       TypeMirror rightType = rightJe.getType();
       TypeMirror type;
-      Supplier<ParseRuntimeException> exception =
-          () ->
-              new ParseRuntimeException(
-                  constructJavaExpressionParseError(
-                      expr.toString(),
-                      String.format("inconsistent types %s %s for %s", leftType, rightType, expr)));
       // isSubtype() first does the cheaper test isSameType(), so no need to do it here.
       if (COMPARISON_OPERATORS.contains(expr.getOperator())) {
         if (types.isSubtype(leftType, rightType) || types.isSubtype(rightType, leftType)) {
           type = booleanTypeMirror;
         } else {
-          throw exception.get();
+          // Don't fall through, issue an error immediately instead.
+          throw new ParseRuntimeException(
+              constructJavaExpressionParseError(
+                  expr.toString(),
+                  String.format("inconsistent types %s %s for %s", leftType, rightType, expr)));
         }
+      } else if (expr.getOperator() == BinaryExpr.Operator.PLUS
+          && (TypesUtils.isString(leftType) || TypesUtils.isString(rightType))) {
+        type = stringTypeMirror;
       } else if (types.isSubtype(leftType, rightType)) {
         type = rightType;
       } else if (types.isSubtype(rightType, leftType)) {
         type = leftType;
-      } else if (expr.getOperator() == BinaryExpr.Operator.PLUS
-          && (TypesUtils.isString(leftType) || TypesUtils.isString(rightType))) {
-        type = stringTypeMirror;
       } else {
-        throw exception.get();
+        throw new ParseRuntimeException(
+            constructJavaExpressionParseError(
+                expr.toString(),
+                String.format("inconsistent types %s %s for %s", leftType, rightType, expr)));
       }
       return new BinaryOperation(
           type, javaParserBinaryOperatorToTreeKind(expr.getOperator()), leftJe, rightJe);
