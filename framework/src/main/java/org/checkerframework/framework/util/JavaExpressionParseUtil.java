@@ -952,13 +952,13 @@ public class JavaExpressionParseUtil {
       TypeMirror rightType = rightJe.getType();
       TypeMirror type;
       // isSubtype() first does the cheaper test isSameType(), so no need to do it here.
-      if (types.isSubtype(leftType, rightType)) {
+      if (expr.getOperator() == BinaryExpr.Operator.PLUS
+          && (TypesUtils.isString(leftType) || TypesUtils.isString(rightType))) {
+        type = stringTypeMirror;
+      } else if (types.isSubtype(leftType, rightType)) {
         type = rightType;
       } else if (types.isSubtype(rightType, leftType)) {
         type = leftType;
-      } else if (expr.getOperator() == BinaryExpr.Operator.PLUS
-          && (TypesUtils.isString(leftType) || TypesUtils.isString(rightType))) {
-        type = stringTypeMirror;
       } else {
         throw new ParseRuntimeException(
             constructJavaExpressionParseError(
