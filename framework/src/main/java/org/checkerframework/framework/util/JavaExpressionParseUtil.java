@@ -34,7 +34,10 @@ import com.sun.tools.javac.code.Type.ArrayType;
 import com.sun.tools.javac.code.Type.ClassType;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -117,6 +120,15 @@ public class JavaExpressionParseUtil {
 
   /** The replacement for a formal parameter in "#2" syntax. */
   private static final String PARAMETER_REPLACEMENT = PARAMETER_PREFIX + "$1";
+
+  private static final Set<BinaryExpr.Operator> COMPARISON_OPERATORS =
+      EnumSet.of(
+          BinaryExpr.Operator.EQUALS,
+          BinaryExpr.Operator.NOT_EQUALS,
+          BinaryExpr.Operator.GREATER,
+          BinaryExpr.Operator.GREATER_EQUALS,
+          BinaryExpr.Operator.LESS,
+          BinaryExpr.Operator.LESS_EQUALS);
 
   /**
    * Parses a string to a {@link JavaExpression}.
@@ -217,6 +229,9 @@ public class JavaExpressionParseUtil {
     /** The java.lang.String type. */
     private final TypeMirror stringTypeMirror;
 
+    /** The primitive boolean type. */
+    private final TypeMirror booleanTypeMirror;
+
     /** The enclosing type. Used to look up unqualified method, field, and class names. */
     private final TypeMirror enclosingType;
 
@@ -257,7 +272,8 @@ public class JavaExpressionParseUtil {
       this.localVarPath = localVarPath;
       this.env = env;
       this.types = env.getTypeUtils();
-      this.stringTypeMirror = env.getElementUtils().getTypeElement("java.lang.String").asType();
+      this.stringTypeMirror = ElementUtils.getTypeElement(env, String.class).asType();
+      this.booleanTypeMirror = ElementUtils.getTypeElement(env, boolean.class).asType();
       this.enclosingType = enclosingType;
       this.thisReference = thisReference;
       this.parameters = parameters;
@@ -951,8 +967,20 @@ public class JavaExpressionParseUtil {
       TypeMirror leftType = leftJe.getType();
       TypeMirror rightType = rightJe.getType();
       TypeMirror type;
+      Supplier<ParseRuntimeException> exception =
+          () ->
+              new ParseRuntimeException(
+                  constructJavaExpressionParseError(
+                      expr.toString(),
+                      String.format("inconsistent types %s %s for %s", leftType, rightType, expr)));
       // isSubtype() first does the cheaper test isSameType(), so no need to do it here.
-      if (types.isSubtype(leftType, rightType)) {
+      if (COMPARISON_OPERATORS.contains(expr.getOperator())) {
+        if (types.isSubtype(leftType, rightType) || types.isSubtype(rightType, leftType)) {
+          type = booleanTypeMirror;
+        } else {
+          throw exception.get();
+        }
+      } else if (types.isSubtype(leftType, rightType)) {
         type = rightType;
       } else if (types.isSubtype(rightType, leftType)) {
         type = leftType;
@@ -960,10 +988,7 @@ public class JavaExpressionParseUtil {
           && (TypesUtils.isString(leftType) || TypesUtils.isString(rightType))) {
         type = stringTypeMirror;
       } else {
-        throw new ParseRuntimeException(
-            constructJavaExpressionParseError(
-                expr.toString(),
-                String.format("inconsistent types %s %s for %s", leftType, rightType, expr)));
+        throw exception.get();
       }
       return new BinaryOperation(
           type, javaParserBinaryOperatorToTreeKind(expr.getOperator()), leftJe, rightJe);
