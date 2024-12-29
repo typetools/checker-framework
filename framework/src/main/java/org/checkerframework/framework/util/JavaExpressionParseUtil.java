@@ -273,7 +273,7 @@ public class JavaExpressionParseUtil {
       this.env = env;
       this.types = env.getTypeUtils();
       this.stringTypeMirror = ElementUtils.getTypeElement(env, String.class).asType();
-      this.booleanTypeMirror = ElementUtils.getTypeElement(env, boolean.class).asType();
+      this.booleanTypeMirror = types.getPrimitiveType(TypeKind.BOOLEAN);
       this.enclosingType = enclosingType;
       this.thisReference = thisReference;
       this.parameters = parameters;
