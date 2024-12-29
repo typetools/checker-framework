@@ -45,6 +45,7 @@ import org.checkerframework.common.basetype.BaseTypeValidator;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -256,8 +257,12 @@ public class OptionalImplVisitor
     ExpressionTree getReceiver = TreeUtils.getReceiverTree(trueReceiver);
 
     ExpressionTree receiver = isPresentCall.second;
-    if (sameExpression(receiver, getReceiver)) {
-      ExecutableElement ele = TreeUtils.elementFromUse((MethodInvocationTree) trueExpr);
+    ExecutableElement ele = TreeUtils.elementFromUse((MethodInvocationTree) trueExpr);
+    boolean isPure =
+        PurityUtils.isDeterministic(atypeFactory, ele)
+            && PurityUtils.isSideEffectFree(atypeFactory, ele);
+
+    if (sameExpression(receiver, getReceiver) && isPure) {
 
       checker.reportWarning(
           tree,
