@@ -921,8 +921,15 @@ public abstract class JavaExpression {
   /**
    * Find the declaration of the receiver of a method call in a given method tree.
    *
-   * <p>The receiver should appear in one of two places, either as a formal parameter to the method,
-   * or as a local variable.
+   * <p>This method assumes that the receiver is declared as either a:
+   *
+   * <ul>
+   *   <li>Formal parameter of the method {@code tree}
+   *   <li>A locally-defined variable within the body of the method {@code tree}
+   * </ul>
+   *
+   * If the receiver is neither of these, it may be declared as a field of the enclosing class (see
+   * {@link JavaExpression#getReceiverDeclarationAsField(ClassTree, JavaExpression)}.
    *
    * @param tree the method tree
    * @param receiver the receiver for which to look up a declaration
