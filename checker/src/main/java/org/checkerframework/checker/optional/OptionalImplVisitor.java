@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
@@ -645,7 +646,13 @@ public class OptionalImplVisitor
    *
    * <p>Pattern match for: {@code CREATION().PROPAGATION()*.ELIMINATION()}
    *
-   * <p>Prefer: {@code VAR.ifPresent(METHOD);}
+   * <p>{@code CREATION()} wraps a value in an instance of {@link java.util.Optional}, and {@code
+   * PROPAGATION()} is a method (or a sequence of methods) that operate on and return {@link
+   * java.util.Optional}. {@code ELIMINATION()} is the terminal operation that unwraps the {@link
+   * java.util.Optional} value (i.e., {@link Optional#get()}).
+   *
+   * <p>This creation-propagation-elimination pattern can be eliminated by directly checking whether
+   * a value is null before invoking methods on it.
    *
    * @param tree a method invocation that can perhaps be simplified
    */
