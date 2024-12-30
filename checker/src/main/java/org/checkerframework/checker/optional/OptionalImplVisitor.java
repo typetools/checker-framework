@@ -439,7 +439,7 @@ public class OptionalImplVisitor
    * for {@code VAR.isEmpty()}.
    *
    * @param tree the conditional statement tree
-   * @param invok the method invocation in the {@code then} block
+   * @param invok the entire method invocation statement or the initializer of an assignment
    * @param isPresentCall the pair comprising a boolean (indicating whether the expression is a call
    *     to {@code Optional.isPresent} or to {@code Optional.isEmpty}) and its receiver
    * @param messageKey the message key, either "prefer.ifPresent" or "prefer.map.and.orelse"
