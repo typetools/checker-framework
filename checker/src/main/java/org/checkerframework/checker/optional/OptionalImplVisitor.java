@@ -348,6 +348,17 @@ public class OptionalImplVisitor
       elseStmt = tmp;
     }
 
+    ExpressionTree isPresentReceiver = TreeUtils.getReceiverTree(condExpr);
+    if (isPresentReceiver instanceof MethodInvocationTree) {
+      ExecutableElement ele = TreeUtils.elementFromUse((MethodInvocationTree) isPresentReceiver);
+      boolean isPure =
+          PurityUtils.isDeterministic(atypeFactory, ele)
+              && PurityUtils.isSideEffectFree(atypeFactory, ele);
+      if (!isPure) {
+        return;
+      }
+    }
+
     if (thenStmt != null && elseStmt != null) {
       handleAssignmentInConditional(tree, thenStmt, elseStmt);
     }
