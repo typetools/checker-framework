@@ -89,6 +89,10 @@ public class OptionalImplVisitor
    * Map from simple names of callees to the simple names of methods that call them. Use of simple
    * names (rather than fully-qualified names or signatures) is a bit imprecise, because it includes
    * all overloads.
+   *
+   * <p>This is not a complete mapping of <i>all</i> callees and callers in a program. It comprises
+   * methods that have programmer-written annotations from the {@link NonEmpty} type system, and
+   * their immediate dependents.
    */
   private final Map<String, Set<String>> calleesToCallers = new HashMap<>();
 
@@ -494,15 +498,16 @@ public class OptionalImplVisitor
   }
 
   /**
-   * Updates {@link calleesToCallers} given a method invocation.
-   *
-   * <p>If a callee should be checked by the Non-Empty checker, then the caller should also be
-   * checked by the Non-Empty Checker.
+   * Updates {@link calleesToCallers} given a method invocation, if the caller of the method is
+   * known to rely on the {@link NonEmpty} type system.
    *
    * <p>The caller is the method that <i>encloses</i> the given method invocation. The map is
    * updated if the callee of the invocation is present in the map. That is, the map is updated with
-   * the callers of any methods that must be checked by the Non-Empty type system (e.g., methods
-   * that have preconditions related to the Non-Empty type system).
+   * the callers of any methods that have programmer-written annotations from the {@link NonEmpty}
+   * system.
+   *
+   * <p>These annotations may appear on the return type, formal parameters, or on the declaration of
+   * local variables within method bodies.
    *
    * @param tree a method invocation tree
    */
