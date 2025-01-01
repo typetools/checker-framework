@@ -1001,8 +1001,8 @@ public abstract class JavaExpression {
       ExpressionTree tree) {
     assert tree instanceof MethodInvocationTree;
     ExpressionTree receiverTree = TreeUtils.getReceiverTree(tree);
-    if (receiverTree instanceof MethodInvocationTree) {
-      return JavaExpression.getLeftmostReceiverOfMethodInvocation(receiverTree);
+    while (receiverTree instanceof MethodInvocationTree) {
+      receiverTree = TreeUtils.getReceiverTree(receiverTree);
     }
     return receiverTree != null ? JavaExpression.fromTree(receiverTree) : null;
   }
