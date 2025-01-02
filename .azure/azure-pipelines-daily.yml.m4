@@ -1,6 +1,7 @@
 changequote(`[',`]')dnl
 include([defs.m4])dnl
-trigger: none # will disable CI builds entirely
+trigger: none
+pr: none
 
 schedules:
 # 8am UTC is midnight PST.
