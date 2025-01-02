@@ -421,8 +421,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     exceptionalExitLabel = new Label();
     tryStack = new TryStack(exceptionalExitLabel);
     returnTargetLC = new LabelCell(regularExitLabel);
-    breakLabels = new HashMap<>(2);
-    continueLabels = new HashMap<>(2);
+    breakLabels = new HashMap<>(4);
+    continueLabels = new HashMap<>(4);
     returnNodes = new ArrayList<>();
     declaredClasses = new ArrayList<>();
     declaredLambdas = new ArrayList<>();

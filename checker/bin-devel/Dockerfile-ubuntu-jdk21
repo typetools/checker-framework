@@ -6,14 +6,23 @@
 # Checker Framework and Annotation Tools repositories) for: (java|jdk).?21\b
 
 # "ubuntu" is the latest LTS release.  "ubuntu:rolling" is the latest release.
-# As of 2023-11-15, "ubuntu:rolling" is still 23.04.
-FROM ubuntu:24.04
-MAINTAINER Michael Ernst <mernst@cs.washington.edu>
+# Both might lag behind; as of 2024-11-16, ubuntu:rolling was still 24.04 rather than 24.10.
+FROM ubuntu:24.10
+LABEL org.opencontainers.image.authors="Michael Ernst <mernst@cs.washington.edu>"
 
 # According to
 # https://docs.docker.com/engine/userguide/eng-image/dockerfile_best-practices/:
 #  * Put "apt-get update" and "apt-get install" and "apt cleanup" in the same RUN command.
 #  * Do not run "apt-get upgrade"; instead get upstream to update.
+
+RUN export DEBIAN_FRONTEND=noninteractive \
+&& apt-get -qqy update \
+&& apt-get install -y locales \
+&& rm -rf /var/lib/apt/lists/* \
+&& locale-gen "en_US.UTF-8"
+ENV LANG=en_US.UTF-8 \
+    LANGUAGE=en_US:en \
+    LC_ALL=en_US.UTF-8
 
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt-get -qqy update \

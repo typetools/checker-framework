@@ -45,7 +45,7 @@ dependencies {
   implementation "org.plumelib:hashmap-util:${versions.hashmapUtil}"
   implementation "org.plumelib:plume-util:${versions.plumeUtil}"
   implementation "org.plumelib:reflection-util:${versions.reflectionUtil}"
-  implementation 'io.github.classgraph:classgraph:4.8.177'
+  implementation 'io.github.classgraph:classgraph:4.8.179'
 
   testImplementation group: 'junit', name: 'junit', version: '4.13.2'
   testImplementation project(':framework-test')
@@ -104,6 +104,7 @@ task copyAndMinimizeAnnotatedJdkFiles(dependsOn: cloneTypetoolsJdk, group: 'Buil
   doLast {
     FileTree tree = fileTree(dir: inputDir)
     NavigableSet<String> annotatedForFiles = new TreeSet<>();
+    // Populate `annotatedForFiles`.
     tree.visit { FileVisitDetails fvd ->
       if (!fvd.file.isDirectory() && fvd.file.name.matches('.*\\.java')
           && !fvd.file.path.contains('org/checkerframework')) {

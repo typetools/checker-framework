@@ -140,11 +140,17 @@ public class ProperType extends AbstractType {
    *     ConstraintSet#TRUE}; otherwise, a false bound is returned
    */
   public ReductionResult isSubType(ProperType superType) {
-    TypeMirror subType = getJavaType();
+    TypeMirror subJavaType = getJavaType();
     TypeMirror superJavaType = superType.getJavaType();
 
-    if (context.typeFactory.types.isAssignable(subType, superJavaType)
-        || TypesUtils.isErasedSubtype(subType, superJavaType, context.typeFactory.types)) {
+    // The TypeMirror for a captured type variables may have inference variables that have not
+    // been substituted with their instantiation, so use the AnnotatedTypeMirror to get the erased
+    // type.
+    TypeMirror subErasedJavaType = this.getErased().getJavaType();
+    TypeMirror superErasedJavaType = superType.getErased().getJavaType();
+
+    if (context.typeFactory.types.isAssignable(subJavaType, superJavaType)
+        || context.typeFactory.types.isAssignable(subErasedJavaType, superErasedJavaType)) {
       AnnotatedTypeMirror superATM = superType.getAnnotatedType();
       AnnotatedTypeMirror subATM = this.getAnnotatedType();
       if (typeFactory.getTypeHierarchy().isSubtype(subATM, superATM)) {
