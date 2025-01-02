@@ -1,11 +1,9 @@
-Version 3.48.4 (January 2, 2024)
+Version 3.48.4 (January 2, 2025)
 --------------------------------
 
-**User-visible changes:**
-
-**Implementation details:**
-
 **Closed issues:**
+
+#6919, #6630.
 
 
 Version 3.48.3 (December 2, 2024)
