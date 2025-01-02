@@ -954,6 +954,8 @@ public class JavaExpressionParseUtil {
       // isSubtype() first does the cheaper test isSameType(), so no need to do it here.
       if (expr.getOperator() == BinaryExpr.Operator.PLUS
           && (TypesUtils.isString(leftType) || TypesUtils.isString(rightType))) {
+        // JLS 15.18.1 says, "If only one operand expression is of type String, then string
+        // conversion is performed on the other operand to produce a string at run time."
         type = stringTypeMirror;
       } else if (types.isSubtype(leftType, rightType)) {
         type = rightType;
