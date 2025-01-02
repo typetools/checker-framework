@@ -93,14 +93,19 @@ public class FormatUtil {
    * @throws IllegalFormatException if the format string is invalid
    */
   public static void tryFormatSatisfiability(String format) throws IllegalFormatException {
-    @SuppressWarnings({
-      "unused", // called for side effect, to see if it throws an exception
-      "nullness:argument", // it's not documented, but String.format permits
-      // a null array, which it treats as matching any format string (null is supplied to each
-      // format specifier).
-      "formatter:format.string", // this is a test of format string validity
-    })
-    String unused = String.format(format, (Object[]) null);
+    try {
+      @SuppressWarnings({
+        "unused", // called for side effect, to see if it throws an exception
+        "nullness:argument", // it's not documented, but String.format permits
+        // a null array, which it treats as matching any format string (null is supplied to each
+        // format specifier).
+        "formatter:format.string", // this is a test of format string validity
+      })
+      String unused = String.format(format, (Object[]) null);
+    } catch (OutOfMemoryError e) {
+      throw new Error(
+          "OOM while calling String.format on (length " + format.length() + "): " + format);
+    }
   }
 
   /**
