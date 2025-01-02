@@ -1,5 +1,7 @@
 changequote(`[',`]')dnl
 include([defs.m4])dnl
+trigger: none # will disable CI builds entirely
+
 schedules:
 # 8am UTC is midnight PST.
 - cron: '0 8 * * *'
