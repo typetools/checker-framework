@@ -962,18 +962,19 @@ public class JavaExpressionParseUtil {
 
     @Override
     public JavaExpression visit(BinaryExpr expr, Void aVoid) {
+      BinaryExpr.Operator op = expr.getOperator();
       JavaExpression leftJe = expr.getLeft().accept(this, null);
       JavaExpression rightJe = expr.getRight().accept(this, null);
       TypeMirror leftType = leftJe.getType();
       TypeMirror rightType = rightJe.getType();
       TypeMirror type;
       // isSubtype() first does the cheaper test isSameType(), so no need to do it here.
-      if (expr.getOperator() == BinaryExpr.Operator.PLUS
+      if (op == BinaryExpr.Operator.PLUS
           && (TypesUtils.isString(leftType) || TypesUtils.isString(rightType))) {
         // JLS 15.18.1 says, "If only one operand expression is of type String, then string
         // conversion is performed on the other operand to produce a string at run time."
         type = stringTypeMirror;
-      } else if (COMPARISON_OPERATORS.contains(expr.getOperator())) {
+      } else if (COMPARISON_OPERATORS.contains(op)) {
         if (types.isSubtype(leftType, rightType) || types.isSubtype(rightType, leftType)) {
           type = booleanTypeMirror;
         } else {
