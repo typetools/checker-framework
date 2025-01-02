@@ -1,5 +1,8 @@
 changequote(`[',`]')dnl
 include([defs.m4])dnl
+trigger: none
+pr: none
+
 schedules:
 # 8am UTC is midnight PST.
 - cron: '0 8 * * *'
