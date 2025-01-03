@@ -1,12 +1,10 @@
 package org.checkerframework.checker.optional;
 
 import com.sun.source.tree.AnnotationTree;
-import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
@@ -16,7 +14,12 @@ import java.util.List;
 import java.util.function.BinaryOperator;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import org.checkerframework.checker.nonempty.qual.NonEmpty;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -35,9 +38,10 @@ import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 
 /** The transfer function for the Optional Checker. */
@@ -207,85 +211,46 @@ public class OptionalImplTransfer extends CFTransfer {
    */
   private boolean isReceiverParameterNonEmpty(MethodInvocationNode methodInvok) {
     ExpressionTree receiverTree = TreeUtils.getReceiverTree(methodInvok.getTree());
-    JavaExpression receiver;
     if (receiverTree instanceof MethodInvocationTree) {
       // TODO(https://github.com/typetools/checker-framework/issues/6848): this logic needs further
       // refinement to eliminate a source of false positives in the Optional Checker.
       // Also see the discussion in:
       // https://github.com/typetools/checker-framework/pull/6685#discussion_r1788632663 for
       // additional context.
-      receiver = JavaExpression.getLeftmostReceiverOfMethodInvocation(receiverTree);
-    } else {
-      receiver = JavaExpression.fromTree(receiverTree);
+      while (receiverTree instanceof MethodInvocationTree) {
+        receiverTree = TreeUtils.getReceiverTree(receiverTree);
+      }
     }
-    VariableTree receiverDeclaration = getReceiverDeclaration(methodInvok, receiver);
-    if (receiverDeclaration == null) {
+
+    Element e = TreeUtils.elementFromTree(receiverTree);
+    if (e == null) {
       return false;
     }
-    List<? extends AnnotationTree> receiverAnnotationTrees =
-        receiverDeclaration.getModifiers().getAnnotations();
-    List<AnnotationMirror> receiverAnnotationMirrors =
-        TreeUtils.annotationsFromTypeAnnotationTrees(receiverAnnotationTrees);
-    return AnnotationUtils.containsSame(receiverAnnotationMirrors, NON_EMPTY);
-  }
-
-  /**
-   * Returns the declaration of the receiver of the given method invocation node.
-   *
-   * <p>Finds the declaration of {@code receiver} in the method that immediately encloses {@code
-   * methodInvok}. If unsuccessful, look up the declaration in the fields of the class(s) that
-   * enclose {@code methodInvok}.
-   *
-   * @param methodInvok a method invocation node
-   * @param receiver the receiver argument in the method invocation node
-   * @return the declaration of the receiver if found, else null
-   */
-  private @Nullable VariableTree getReceiverDeclaration(
-      MethodInvocationNode methodInvok, @Nullable JavaExpression receiver) {
-    if (receiver == null) {
-      return null;
-    }
-    // Look in the method, first.
-    MethodTree methodTree = TreePathUtil.enclosingMethod(methodInvok.getTreePath());
-    VariableTree declarationInMethod =
-        JavaExpression.getReceiverDeclarationInMethod(methodTree, receiver);
-    if (declarationInMethod != null) {
-      return declarationInMethod;
-    }
-    // If the declaration can't be found in the method, look in the class.
-    return getReceiverDeclaredInClassField(methodInvok, receiver);
-  }
-
-  /**
-   * Returns the declaration of the receiver of the given method invocation node.
-   *
-   * <p>Finds the declaration of {@code receiver} in the classes that enclose {@code methodInvok}.
-   *
-   * @param methodInvok a method invocation node
-   * @param receiver the receiver argument in the method invocation node
-   * @return the declaration of the receiver if found, else null
-   */
-  private @Nullable VariableTree getReceiverDeclaredInClassField(
-      MethodInvocationNode methodInvok, JavaExpression receiver) {
-    TreePath classTreePath = methodInvok.getTreePath();
-    ClassTree classTree = TreePathUtil.enclosingClass(classTreePath);
-    while (classTree != null) {
-      VariableTree receiverAsField =
-          JavaExpression.getReceiverDeclarationAsField(classTree, receiver);
-      if (receiverAsField != null) {
-        return receiverAsField;
+    if (e.getKind() == ElementKind.LOCAL_VARIABLE
+        || e.getKind() == ElementKind.RESOURCE_VARIABLE
+        || e.getKind() == ElementKind.PARAMETER) {
+      // Annotations for local variables can be looked up in the tree.
+      VariableTree receiverDeclaration =
+          (VariableTree) optionalTypeFactory.declarationFromElement(e);
+      if (receiverDeclaration == null) {
+        return false;
       }
-      // The receiver was not declared in the class immediately enclosing the method invocation, but
-      // it might be declared
-      // as a field in an outer class
-      if (classTreePath.getParentPath() != null) {
-        classTreePath = classTreePath.getParentPath();
-        classTree = TreePathUtil.enclosingClass(classTreePath);
-      } else {
-        // There is no outer class in which to check for the declaration of the receiver
-        return null;
-      }
+
+      List<? extends AnnotationTree> receiverAnnotationTrees =
+          receiverDeclaration.getModifiers().getAnnotations();
+      List<AnnotationMirror> receiverAnnotationMirrors =
+          TreeUtils.annotationsFromTypeAnnotationTrees(receiverAnnotationTrees);
+      return AnnotationUtils.containsSame(receiverAnnotationMirrors, NON_EMPTY);
     }
-    return null;
+
+    TypeMirror receiverType = e.asType();
+    if (receiverType.getKind() == TypeKind.DECLARED) {
+      AnnotationMirrorSet annos =
+          AnnotatedDeclaredType.primaryAnnotationsFromElement(
+              e, (DeclaredType) receiverType, optionalTypeFactory);
+      return annos.contains(NON_EMPTY);
+    }
+
+    return false;
   }
 }
