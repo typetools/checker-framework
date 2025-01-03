@@ -7,24 +7,25 @@ involve malicious user input containing unescaped special characters such as the
 single quote, which can change whether subsequent concatenations are interpreted
 as SQL command code or as SQL query values.
 
-The SQL Quotes Checker helps classifies Strings by the parity of unescaped
-single quotes.  Furthermore, it marks user-supplied Strings as unsafe for
-SQL query use, as their quoting is unknown; the program must
-\emph{sanitize} or \emph{validate} all such values before concatenating
+The SQL Quotes Checker determines whether a string contains an unescaped
+single quote character.  Furthermore, it marks user-supplied Strings as
+unsafe for SQL query use, because their quoting is unknown; the program
+must \emph{sanitize} or \emph{validate} all such values before concatenating
 them to a SQL query for execution. Sanitization can be done by quoting user
 input as necessary to ensure special characters are properly escaped.  The
-SQL Quotes Checker follows ANSI standard and considers doubled-up single
-quotes as one escaped single quote.  (Some databases support the use of the
-backslash as an escape character for single quotes, but this is not safe
+SQL Quotes Checker follows the ANSI standard and considers two consecutive
+single quote characters as one escaped single quote.  (Some databases
+support the use of the backslash as an escape character for single quotes.
+The SQL Quotes Checker does not support that syntax because it is not safe
 for all SQL database implementations.)
 
 The SQL Quotes Checker guarantees that no unchecked values are passed to a
-SQL query execution statement.  It does \emph{not} to guarantee that SQL
+SQL query execution statement.  It does \emph{not} guarantee that SQL
 queries written by the code author are safe for execution; e.g., the
 checker will not warn at compile time about syntax errors or improper uses
 of \code{DELETE} or \code{DROP} statements.
 
-When possible, it is better to use a prepared statement or other mechanisms
+When possible, it is better code style to use a prepared statement or other mechanisms
 that automatically handle quoting without the need for the programmer to do
 any work.  The SQL Quotes Checker is useful for the large quantity of code
 that still uses string concatenation to create SQL queries.
@@ -49,8 +50,7 @@ The SQL Quotes type system uses the following annotations:
     quotes.
 \item[\refqualclass{checker/sqlquotes/qual}{SqlQuotesUnknown}]
     indicates a String whose quoting is unknown.
-    \code{@SqlQuotesUnknown} is a supertype of \code{@SqlEvenQuotes}
-    and \code{@SqlOddQuotes}. It is the default qualifier for non-literal
+    It is the default qualifier for non-literal
     Strings.
 \item[\refqualclass{checker/sqlquotes/qual}{SqlQuotesBottom}]
     is the bottom qualifier.  Programmers rarely need to write it.
