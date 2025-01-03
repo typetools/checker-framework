@@ -889,15 +889,16 @@ public class JavaExpressionParseUtil {
                   dimension.getDimension().map(dim -> dim.accept(this, aVoid)).orElse(null),
               expr.getLevels());
 
-      List<JavaExpression> initializers;
-      if (expr.getInitializer().isPresent()) {
-        initializers =
-            CollectionsPlume.mapList(
-                (Expression initializer) -> initializer.accept(this, null),
-                expr.getInitializer().get().getValues());
-      } else {
-        initializers = Collections.emptyList();
-      }
+      List<JavaExpression> initializers =
+          expr.getInitializer()
+              .map(
+                  arrayInitializerExpr -> {
+                    return CollectionsPlume.mapList(
+                        (Expression initializer) -> initializer.accept(this, null),
+                        arrayInitializerExpr.getValues());
+                  })
+              .orElse(Collections.emptyList());
+
       TypeMirror arrayType = convertTypeToTypeMirror(expr.getElementType());
       if (arrayType == null) {
         throw new ParseRuntimeException(

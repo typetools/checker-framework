@@ -1,5 +1,6 @@
 package org.checkerframework.checker.optional;
 
+import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ConditionalExpressionTree;
@@ -8,6 +9,7 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IfTree;
 import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
@@ -17,10 +19,14 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
@@ -28,6 +34,8 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
+import org.checkerframework.checker.nonempty.qual.NonEmpty;
+import org.checkerframework.checker.nonempty.qual.RequiresNonEmpty;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.optional.qual.OptionalCreator;
 import org.checkerframework.checker.optional.qual.OptionalEliminator;
@@ -37,20 +45,23 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeValidator;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.IPair;
 
 /**
- * The OptionalVisitor enforces the Optional Checker rules. These rules are described in the Checker
- * Framework Manual.
+ * The OptionalImplVisitor enforces the Optional Checker rules. These rules are described in the
+ * Checker Framework Manual.
  *
  * @checker_framework.manual #optional-checker Optional Checker
  */
-public class OptionalVisitor
+public class OptionalImplVisitor
     extends BaseTypeVisitor</* OptionalAnnotatedTypeFactory*/ BaseAnnotatedTypeFactory> {
 
   /** The Collection type. */
@@ -72,11 +83,49 @@ public class OptionalVisitor
   private final ExecutableElement streamMap;
 
   /**
-   * Create an OptionalVisitor.
+   * The set of names of methods to be verified by the Non-Empty Checker.
    *
-   * @param checker the associated OptionalChecker
+   * <p>This set is updated whenever a method that depends on the {@link NonEmpty} type system is
+   * visited. A method depends on the {@link NonEmpty} type system if any of the following is true:
+   *
+   * <ul>
+   *   <li>Has any formal parameters annotated with {@link NonEmpty}
+   *   <li>Has pre- or post-conditions from the {@link NonEmpty} type system (e.g., {@link
+   *       RequiresNonEmpty}, {@link org.checkerframework.checker.nonempty.qual.EnsuresNonEmpty},
+   *       {@link org.checkerframework.checker.nonempty.qual.EnsuresNonEmptyIf}
+   *   <li>Its body contains a variable or value that is annotated with {@link NonEmpty}
+   * </ul>
+   *
+   * <p>This set is used to help compute {@link calleesToCallers} whenever a method invocation is
+   * visited. The method being invoked is checked for membership in this set. If it is found, then
+   * the caller of the method (i.e., the method that encloses the method invocation) is added to the
+   * list of callers of the method being invoked (i.e., the callee) in {@link calleesToCallers}.
    */
-  public OptionalVisitor(BaseTypeChecker checker) {
+  private final Set<String> namesOfMethodsToVerifyWithNonEmptyChecker = new HashSet<>();
+
+  /**
+   * Map from simple names of callees to the simple names of methods that call them. Use of simple
+   * names (rather than fully-qualified names or signatures) is a bit imprecise, because it includes
+   * all overloads.
+   *
+   * <p>This is not a complete mapping of <i>all</i> callees and callers in a program. It comprises
+   * methods that have programmer-written annotations from the {@link NonEmpty} type system, and
+   * their immediate dependents.
+   *
+   * <p>This mapping is used to help compute {@link namesOfMethodsToVerifyWithNonEmptyChecker}.
+   * Whenever a method declaration is visited, its name is checked in the keys (i.e., the set of
+   * callees). If it is found, then the corresponding values (i.e., the names of the callers of the
+   * method being visited) are added to {@link namesOfMethodsToVerifyWithNonEmptyChecker}.
+   */
+  private final Map<String, Set<String>> calleesToCallers = new HashMap<>();
+
+  /**
+   * Create an OptionalImplVisitor.
+   *
+   * @param checker the associated instance of {@link
+   *     org.checkerframework.checker.optional.OptionalImplChecker}
+   */
+  public OptionalImplVisitor(BaseTypeChecker checker) {
     super(checker);
     collectionType = types.erasure(TypesUtils.typeFromClass(Collection.class, types, elements));
 
@@ -91,7 +140,21 @@ public class OptionalVisitor
 
   @Override
   protected BaseTypeValidator createTypeValidator() {
-    return new OptionalTypeValidator(checker, this, atypeFactory);
+    return new OptionalImplTypeValidator(checker, this, atypeFactory);
+  }
+
+  /**
+   * Returns the set of methods that should be verified using the {@link
+   * org.checkerframework.checker.nonempty.NonEmptyChecker}.
+   *
+   * <p>This should only be called by the Non-Empty Checker.
+   *
+   * @return the set of methods that should be verified using the {@link
+   *     org.checkerframework.checker.nonempty.NonEmptyChecker}
+   */
+  @Pure
+  public Set<String> getNamesOfMethodsToVerifyWithNonEmptyChecker() {
+    return namesOfMethodsToVerifyWithNonEmptyChecker;
   }
 
   /**
@@ -145,7 +208,8 @@ public class OptionalVisitor
   }
 
   /**
-   * Returns true iff the method being called is Optional creation: empty, of, ofNullable.
+   * Returns true iff the method being called is annotated with {@code @}{@link OptionalCreator}.
+   * This is the Optional creation methods: empty, of, ofNullable.
    *
    * @param methInvok a method invocation
    * @return true iff the method being called is Optional creation: empty, of, ofNullable
@@ -156,10 +220,11 @@ public class OptionalVisitor
   }
 
   /**
-   * Returns true iff the method being called is Optional propagation: filter, flatMap, map, or.
+   * Returns true iff the method being called is annotated with {@code @}{@link OptionalPropagator}.
+   * This is the Optional propagation methods: filter, flatMap, map, or.
    *
    * @param methInvok a method invocation
-   * @return true true iff the method being called is Optional propagation: filter, flatMap, map, or
+   * @return true iff the method being called is Optional propagation: filter, flatMap, map, or
    */
   private boolean isOptionalPropagation(MethodInvocationTree methInvok) {
     ExecutableElement method = TreeUtils.elementFromUse(methInvok);
@@ -167,8 +232,8 @@ public class OptionalVisitor
   }
 
   /**
-   * Returns true iff the method being called is Optional elimination: get, orElse, orElseGet,
-   * orElseThrow.
+   * Returns true iff the method being called is annotated with {@code @}{@link OptionalEliminator}.
+   * This is the Optional elimination methods: get, orElse, orElseGet, orElseThrow.
    *
    * @param methInvok a method invocation
    * @return true iff the method being called is Optional elimination: get, orElse, orElseGet,
@@ -219,11 +284,13 @@ public class OptionalVisitor
     }
     ExpressionTree getReceiver = TreeUtils.getReceiverTree(trueReceiver);
 
-    // What is a better way to do this than string comparison?
-    // Use transfer functions and Store entries.
     ExpressionTree receiver = isPresentCall.second;
-    if (sameExpression(receiver, getReceiver)) {
-      ExecutableElement ele = TreeUtils.elementFromUse((MethodInvocationTree) trueExpr);
+    ExecutableElement ele = TreeUtils.elementFromUse((MethodInvocationTree) trueExpr);
+    boolean isPure =
+        PurityUtils.isDeterministic(atypeFactory, ele)
+            && PurityUtils.isSideEffectFree(atypeFactory, ele);
+
+    if (sameExpression(receiver, getReceiver) && isPure) {
 
       checker.reportWarning(
           tree,
@@ -240,6 +307,13 @@ public class OptionalVisitor
   /**
    * Returns true if the two trees represent the same expression.
    *
+   * <p>This method would ideally be in {@link TreeUtils} as a public static method, but this would
+   * introduce the {@code dataflow} package as a dependency in {@code javacutil}, which is
+   * undesirable.
+   *
+   * <p>See https://github.com/typetools/checker-framework/pull/6901#discussion_r1889461449 for
+   * additional details and discussion.
+   *
    * @param tree1 the first tree
    * @param tree2 the second tree
    * @return true if the two trees represent the same expression
@@ -247,7 +321,9 @@ public class OptionalVisitor
   private boolean sameExpression(ExpressionTree tree1, ExpressionTree tree2) {
     JavaExpression r1 = JavaExpression.fromTree(tree1);
     JavaExpression r2 = JavaExpression.fromTree(tree2);
-    if (r1 != null && !r1.containsUnknown() && r2 != null && !r2.containsUnknown()) {
+    // What is a better way to do this than string comparison?
+    // Use transfer functions and Store entries.
+    if (!r1.containsUnknown() && !r2.containsUnknown()) {
       return r1.equals(r2);
     } else {
       return tree1.toString().equals(tree2.toString());
@@ -267,6 +343,20 @@ public class OptionalVisitor
    *
    * <p>Prefer: {@code VAR.ifPresent(METHOD);}
    *
+   * <p>Also matches:
+   *
+   * <pre>
+   *     if (VAR.isPresent()) {
+   *        x = METHOD(VAR.get());
+   *     } else {
+   *        x = OTHER;
+   *     }
+   * </pre>
+   *
+   * Where {@code x} is some variable (e.g., a field, a local variable).
+   *
+   * <p>Prefer: {@code x = VAR.map(METHOD).orElse(OTHER);}
+   *
    * @param tree an if statement that can perhaps be simplified
    */
   public void handleConditionalStatementIsPresentGet(IfTree tree) {
@@ -285,11 +375,35 @@ public class OptionalVisitor
       elseStmt = tmp;
     }
 
+    ExpressionTree isPresentReceiver = TreeUtils.getReceiverTree(condExpr);
+    if (isPresentReceiver instanceof MethodInvocationTree) {
+      ExecutableElement ele = TreeUtils.elementFromUse((MethodInvocationTree) isPresentReceiver);
+      boolean isPure =
+          PurityUtils.isDeterministic(atypeFactory, ele)
+              && PurityUtils.isSideEffectFree(atypeFactory, ele);
+      if (!isPure) {
+        return;
+      }
+    }
+
+    if (thenStmt != null && elseStmt != null) {
+      handleAssignmentInConditional(tree, thenStmt, elseStmt);
+    }
+
     if (!(elseStmt == null
         || (elseStmt.getKind() == Tree.Kind.BLOCK
             && ((BlockTree) elseStmt).getStatements().isEmpty()))) {
       // else block is missing or is an empty block: "{}"
       return;
+    }
+
+    if (thenStmt != null && thenStmt.getKind() == Tree.Kind.VARIABLE) {
+      ExpressionTree initializer = ((VariableTree) thenStmt).getInitializer();
+      if (initializer.getKind() == Tree.Kind.METHOD_INVOCATION) {
+        checkConditionalStatementIsPresentGetCall(
+            tree, (MethodInvocationTree) initializer, isPresentCall, "prefer.map.and.orelse");
+        return;
+      }
     }
 
     if (thenStmt.getKind() != Tree.Kind.EXPRESSION_STATEMENT) {
@@ -299,18 +413,92 @@ public class OptionalVisitor
     if (thenExpr.getKind() != Tree.Kind.METHOD_INVOCATION) {
       return;
     }
-    MethodInvocationTree invok = (MethodInvocationTree) thenExpr;
-    List<? extends ExpressionTree> args = invok.getArguments();
-    if (args.size() != 1) {
+    checkConditionalStatementIsPresentGetCall(
+        tree, (MethodInvocationTree) thenExpr, isPresentCall, "prefer.ifpresent");
+  }
+
+  /**
+   * Part of rule #3.
+   *
+   * <p>Pattern match for:
+   *
+   * <pre>
+   *   if (opt.isPresent()) {
+   *    x = opt.get().METHOD();
+   *   } else {
+   *    x = VALUE;
+   *   }
+   * </pre>
+   *
+   * Where {@code x} is some variable (e.g., a field, a local variable).
+   *
+   * <p>Prefer: {@code x = opt.map(METHOD).orElse(VALUE);}
+   *
+   * @param tree a conditional expression that can perhaps be simplified
+   * @param thenStmt the "then" part of {@code tree}
+   * @param elseStmt the "else" part of {@code tree}
+   */
+  private void handleAssignmentInConditional(
+      IfTree tree, StatementTree thenStmt, StatementTree elseStmt) {
+    AssignmentTree trueAssignment = TreeUtils.asAssignmentTree(thenStmt);
+    AssignmentTree falseAssignment = TreeUtils.asAssignmentTree(elseStmt);
+
+    if (trueAssignment == null || falseAssignment == null) {
       return;
     }
-    ExpressionTree arg = TreeUtils.withoutParens(args.get(0));
-    if (!isCallToGet(arg)) {
+
+    if (sameExpression(trueAssignment.getVariable(), falseAssignment.getVariable())) {
+      if (trueAssignment.getExpression().getKind() == Kind.METHOD_INVOCATION) {
+        ExecutableElement ele =
+            TreeUtils.elementFromUse((MethodInvocationTree) trueAssignment.getExpression());
+        checker.reportWarning(
+            tree,
+            "prefer.map.and.orelse",
+            trueAssignment.getVariable(),
+            // The literal "ENCLOSINGCLASS::" is gross.
+            // TODO: add this to the error message.
+            // ElementUtils.getQualifiedClassName(ele);
+            ele.getSimpleName(),
+            falseAssignment.getExpression());
+      }
+    }
+  }
+
+  /**
+   * Helps implement part of rule #3.
+   *
+   * <p>Pattern match for the following code:
+   *
+   * <ul>
+   *   <li>{@code METHOD(VAR.get());}
+   *   <li>{@code OTHER_VAR = METHOD(VAR.get());}
+   * </ul>
+   *
+   * inside the body of the {@code then} block for {@code VAR.isPresent()} or the {@code else} block
+   * for {@code VAR.isEmpty()}.
+   *
+   * @param tree the conditional statement tree
+   * @param invok the entire method invocation statement or the initializer of an assignment
+   * @param isPresentCall the pair comprising a boolean (indicating whether the expression is a call
+   *     to {@code Optional.isPresent} or to {@code Optional.isEmpty}) and its receiver
+   * @param messageKey the message key, either "prefer.ifPresent" or "prefer.map.and.orelse"
+   */
+  private void checkConditionalStatementIsPresentGetCall(
+      IfTree tree,
+      MethodInvocationTree invok,
+      IPair<Boolean, ExpressionTree> isPresentCall,
+      @CompilerMessageKey String messageKey) {
+    List<? extends ExpressionTree> invokArgs = invok.getArguments();
+    if (invokArgs.size() != 1) {
       return;
     }
-    ExpressionTree receiver = isPresentCall.second;
-    ExpressionTree getReceiver = TreeUtils.getReceiverTree(arg);
-    if (!receiver.toString().equals(getReceiver.toString())) {
+    ExpressionTree invokArg = TreeUtils.withoutParens(invokArgs.get(0));
+    if (!isCallToGet(invokArg)) {
+      return;
+    }
+    ExpressionTree isPresentReceiver = isPresentCall.second;
+    ExpressionTree getReceiver = TreeUtils.getReceiverTree(invokArg);
+    if (!isPresentReceiver.toString().equals(getReceiver.toString())) {
       return;
     }
     ExpressionTree method = invok.getMethodSelect();
@@ -321,14 +509,119 @@ public class OptionalVisitor
       methodString = methodString.substring(0, dotPos) + "::" + methodString.substring(dotPos + 1);
     }
 
-    checker.reportWarning(tree, "prefer.ifpresent", receiver, methodString);
+    checker.reportWarning(tree, messageKey, isPresentReceiver, methodString);
   }
 
   @Override
   public Void visitMethodInvocation(MethodInvocationTree tree, Void p) {
     handleCreationElimination(tree);
     handleNestedOptionalCreation(tree);
+    updateCalleesToCallers(tree);
     return super.visitMethodInvocation(tree, p);
+  }
+
+  /**
+   * Updates {@link calleesToCallers} given a method invocation, if the caller of the method is
+   * known to rely on the {@link NonEmpty} type system.
+   *
+   * <p>The caller is the method that <i>encloses</i> the given method invocation. The map is
+   * updated if the callee of the invocation is present in the map. That is, the map is updated with
+   * the callers of any methods that have programmer-written annotations from the {@link NonEmpty}
+   * system.
+   *
+   * <p>These annotations may appear on the return type, formal parameters, or on the declaration of
+   * local variables within method bodies.
+   *
+   * @param tree a method invocation tree
+   */
+  private void updateCalleesToCallers(MethodInvocationTree tree) {
+    MethodTree caller = TreePathUtil.enclosingMethod(this.getCurrentPath());
+    if (caller != null) {
+      // Using the names of methods (as opposed to their fully-qualified name or signature) is a
+      // safe (but imprecise) over-approximation of all the methods that must be verified with the
+      // Non-Empty Checker. Overloads of methods will be included.
+      String callee = tree.getMethodSelect().toString();
+      boolean isCalleeInMethodsToVerifyWithNonEmptyChecker =
+          namesOfMethodsToVerifyWithNonEmptyChecker.stream()
+              .anyMatch(nameOfMethodToVerify -> nameOfMethodToVerify.equals(callee));
+      if (isCalleeInMethodsToVerifyWithNonEmptyChecker) {
+        Set<String> callers = calleesToCallers.computeIfAbsent(callee, (__) -> new HashSet<>());
+        callers.add(caller.getName().toString());
+      }
+    }
+  }
+
+  @Override
+  public void processMethodTree(String className, MethodTree methodDecl) {
+    if (isAnnotatedWithNonEmptyPrecondition(methodDecl)
+        || isAnyFormalAnnotatedWithNonEmpty(methodDecl)) {
+      addMethodToVerifyWithNonEmptyChecker(methodDecl);
+    }
+    if (isReturnTypeAnnotatedWithNonEmpty(methodDecl)) {
+      namesOfMethodsToVerifyWithNonEmptyChecker.add(methodDecl.getName().toString());
+    }
+    super.processMethodTree(className, methodDecl);
+  }
+
+  /**
+   * Updates {@link namesOfMethodsToVerifyWithNonEmptyChecker}.
+   *
+   * @param methodDecl a method declaration that definitely has a precondition regarding
+   *     {@code @NonEmpty}
+   */
+  private void addMethodToVerifyWithNonEmptyChecker(MethodTree methodDecl) {
+    String methodName = methodDecl.getName().toString();
+    if (calleesToCallers.containsKey(methodName)) {
+      namesOfMethodsToVerifyWithNonEmptyChecker.addAll(calleesToCallers.get(methodName));
+    }
+    namesOfMethodsToVerifyWithNonEmptyChecker.add(methodDecl.getName().toString());
+  }
+
+  /**
+   * Returns true if the method is explicitly annotated with {@link RequiresNonEmpty}.
+   *
+   * @param methodDecl the method declaration
+   * @return true if the method is explicitly annotated with {@link RequiresNonEmpty}
+   */
+  private boolean isAnnotatedWithNonEmptyPrecondition(MethodTree methodDecl) {
+    List<? extends AnnotationMirror> annos =
+        TreeUtils.annotationsFromTypeAnnotationTrees(methodDecl.getModifiers().getAnnotations());
+    return atypeFactory.containsSameByClass(annos, RequiresNonEmpty.class);
+  }
+
+  /**
+   * Returns true if any formal parameter of the method is explicitly annotated with {@link
+   * NonEmpty}.
+   *
+   * @param methodDecl a method declaration
+   * @return true if any formal parameter of the method is explicitly annotated with {@link
+   *     NonEmpty}
+   */
+  private boolean isAnyFormalAnnotatedWithNonEmpty(MethodTree methodDecl) {
+    List<? extends VariableTree> params = methodDecl.getParameters();
+    for (VariableTree vt : params) {
+      List<? extends AnnotationMirror> annos =
+          TreeUtils.annotationsFromTypeAnnotationTrees(vt.getModifiers().getAnnotations());
+      if (atypeFactory.containsSameByClass(annos, NonEmpty.class)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Returns true if the return type of the method is explicitly annotated with {@link NonEmpty}.
+   *
+   * @param methodDecl a method declaration
+   * @return true if the return type of the method is explicitly annotated with {@link NonEmpty}
+   */
+  private boolean isReturnTypeAnnotatedWithNonEmpty(MethodTree methodDecl) {
+    Tree returnType = methodDecl.getReturnType();
+    if (returnType == null) {
+      return false;
+    }
+    List<? extends AnnotationMirror> annos = TreeUtils.typeOf(returnType).getAnnotationMirrors();
+    return atypeFactory.containsSameByClass(annos, NonEmpty.class);
   }
 
   @Override
@@ -351,13 +644,11 @@ public class OptionalVisitor
     }
     ExpressionTree leftOp = TreeUtils.withoutParens(tree.getLeftOperand());
     ExpressionTree rightOp = TreeUtils.withoutParens(tree.getRightOperand());
-    TypeMirror leftOpType = TreeUtils.typeOf(leftOp);
-    TypeMirror rightOpType = TreeUtils.typeOf(rightOp);
 
-    if (leftOp.getKind() == Tree.Kind.NULL_LITERAL && isOptionalType(rightOpType)) {
+    if (leftOp.getKind() == Tree.Kind.NULL_LITERAL && isOptionalType(TreeUtils.typeOf(rightOp))) {
       checker.reportWarning(tree, "optional.null.comparison");
     }
-    if (rightOp.getKind() == Tree.Kind.NULL_LITERAL && isOptionalType(leftOpType)) {
+    if (rightOp.getKind() == Tree.Kind.NULL_LITERAL && isOptionalType(TreeUtils.typeOf(leftOp))) {
       checker.reportWarning(tree, "optional.null.comparison");
     }
   }
@@ -394,7 +685,13 @@ public class OptionalVisitor
    *
    * <p>Pattern match for: {@code CREATION().PROPAGATION()*.ELIMINATION()}
    *
-   * <p>Prefer: {@code VAR.ifPresent(METHOD);}
+   * <p>{@code CREATION()} wraps a value in an instance of {@link java.util.Optional}, and {@code
+   * PROPAGATION()} is a method (or a sequence of methods) that operate on and return {@link
+   * java.util.Optional}. {@code ELIMINATION()} is the terminal operation that unwraps the {@link
+   * java.util.Optional} value (i.e., {@link Optional#get()}).
+   *
+   * <p>This creation-propagation-elimination pattern can be eliminated by directly checking whether
+   * a value is null before invoking methods on it.
    *
    * @param tree a method invocation that can perhaps be simplified
    */
@@ -446,7 +743,8 @@ public class OptionalVisitor
    * <p>TODO: Also check at collection creation sites, but there are so many of them, and there
    * often are not values of the element type at the collection creation site.
    *
-   * @param tree a method invocation that might create an Optional of an illegal type
+   * @param tree a method invocation that might create {@code Optional<X>} where X is impermissable:
+   *     Optional or Collection
    */
   public void handleNestedOptionalCreation(MethodInvocationTree tree) {
     if (!isOptionalCreation(tree)) {
@@ -473,6 +771,7 @@ public class OptionalVisitor
    */
   @Override
   public Void visitVariable(VariableTree tree, Void p) {
+    updateMethodsToVerifyWithNonEmptyCheckerGivenNonEmptyVariable(tree);
     VariableElement ve = TreeUtils.elementFromDeclaration(tree);
     TypeMirror tm = ve.asType();
     if (isOptionalType(tm)) {
@@ -493,6 +792,24 @@ public class OptionalVisitor
   }
 
   /**
+   * Given a variable declaration annotated with @{@link NonEmpty}, add the enclosing method in
+   * which it is found (if one exists) to the set of methods that must be verified with the
+   * Non-Empty Checker.
+   *
+   * @param tree a variable declaration
+   */
+  private void updateMethodsToVerifyWithNonEmptyCheckerGivenNonEmptyVariable(VariableTree tree) {
+    List<? extends AnnotationMirror> annos =
+        TreeUtils.annotationsFromTypeAnnotationTrees(tree.getModifiers().getAnnotations());
+    if (atypeFactory.containsSameByClass(annos, NonEmpty.class)) {
+      MethodTree enclosingMethod = TreePathUtil.enclosingMethod(this.getCurrentPath());
+      if (enclosingMethod != null) {
+        namesOfMethodsToVerifyWithNonEmptyChecker.add(enclosingMethod.getName().toString());
+      }
+    }
+  }
+
+  /**
    * Handles Rule #5, part of Rule #6, and also Rule #7.
    *
    * <p>Rule #5: Avoid nested Optional chains, or operations that have an intermediate Optional
@@ -508,9 +825,16 @@ public class OptionalVisitor
    * check for improper types, it is necessary to examine, in the type checker, the argument to
    * construction of an Optional. Method {@link #handleNestedOptionalCreation} does so.
    */
-  private final class OptionalTypeValidator extends BaseTypeValidator {
+  private final class OptionalImplTypeValidator extends BaseTypeValidator {
 
-    public OptionalTypeValidator(
+    /**
+     * Create an OptionalImplTypeValidator.
+     *
+     * @param checker the type-checker associated with this type validator
+     * @param visitor the visitor associated with this type validator
+     * @param atypeFactory the type factory associated with this type validator
+     */
+    public OptionalImplTypeValidator(
         BaseTypeChecker checker, BaseTypeVisitor<?> visitor, AnnotatedTypeFactory atypeFactory) {
       super(checker, visitor, atypeFactory);
     }
@@ -542,11 +866,10 @@ public class OptionalVisitor
         // If typeArgs.size()==0, then the user wrote a raw type `Optional`.
         if (typeArgs.size() == 1) {
           TypeMirror typeArg = typeArgs.get(0);
-          if (isCollectionType(typeArg)) {
-            checker.reportWarning(tree, "optional.collection");
-          }
           if (isOptionalType(typeArg)) {
             checker.reportWarning(tree, "optional.nesting");
+          } else if (isCollectionType(typeArg)) {
+            checker.reportWarning(tree, "optional.collection");
           }
         }
       }
