@@ -222,35 +222,47 @@ public class OptionalImplTransfer extends CFTransfer {
       }
     }
 
-    Element e = TreeUtils.elementFromTree(receiverTree);
-    if (e == null) {
+    Element receiverElement = TreeUtils.elementFromTree(receiverTree);
+    if (receiverElement == null) {
       return false;
     }
-    if (e.getKind() == ElementKind.LOCAL_VARIABLE
-        || e.getKind() == ElementKind.RESOURCE_VARIABLE
-        || e.getKind() == ElementKind.PARAMETER) {
-      // Annotations for local variables can be looked up in the tree.
-      VariableTree receiverDeclaration =
-          (VariableTree) optionalTypeFactory.declarationFromElement(e);
-      if (receiverDeclaration == null) {
-        return false;
-      }
 
+    VariableTree receiverDeclarationInMethod = getReceiverInMethodBody(receiverElement);
+    if (receiverDeclarationInMethod != null) {
+      // The receiver was found in the method as a local variable or a formal parameter
       List<? extends AnnotationTree> receiverAnnotationTrees =
-          receiverDeclaration.getModifiers().getAnnotations();
+          receiverDeclarationInMethod.getModifiers().getAnnotations();
       List<AnnotationMirror> receiverAnnotationMirrors =
           TreeUtils.annotationsFromTypeAnnotationTrees(receiverAnnotationTrees);
       return AnnotationUtils.containsSame(receiverAnnotationMirrors, NON_EMPTY);
     }
 
-    TypeMirror receiverType = e.asType();
+    TypeMirror receiverType = receiverElement.asType();
     if (receiverType.getKind() == TypeKind.DECLARED) {
-      AnnotationMirrorSet annos =
-          AnnotatedDeclaredType.primaryAnnotationsFromElement(
-              e, (DeclaredType) receiverType, optionalTypeFactory);
-      return annos.contains(NON_EMPTY);
+      // The receiver is a field, not a local variable
+      AnnotationMirrorSet receiverAnnos =
+          AnnotatedDeclaredType.getPrimaryAnnotationsFromElement(
+              receiverElement, (DeclaredType) receiverType, optionalTypeFactory);
+      return receiverAnnos.contains(NON_EMPTY);
     }
 
     return false;
+  }
+
+  /**
+   * Returns the {@link VariableTree} for a receiver element if it is declared in a method body
+   * (i.e., it is either a local variable, resource variable, or a formal parameter), otherwise
+   * return null.
+   *
+   * @param receiverElement the receiver element
+   * @return the {@link VariableTree} if the receiver is declared in a method body
+   */
+  private @Nullable VariableTree getReceiverInMethodBody(Element receiverElement) {
+    if (receiverElement.getKind() == ElementKind.LOCAL_VARIABLE
+        || receiverElement.getKind() == ElementKind.RESOURCE_VARIABLE
+        || receiverElement.getKind() == ElementKind.PARAMETER) {
+      return (VariableTree) optionalTypeFactory.declarationFromElement(receiverElement);
+    }
+    return null;
   }
 }

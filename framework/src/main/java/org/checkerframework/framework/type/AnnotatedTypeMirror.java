@@ -1226,7 +1226,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
      * @return all the primary annotations, even those that are not qualifiers in this type system,
      *     on {@code e}
      */
-    public static AnnotationMirrorSet primaryAnnotationsFromElement(
+    public static AnnotationMirrorSet getPrimaryAnnotationsFromElement(
         Element e, DeclaredType declaredType, AnnotatedTypeFactory annotatedTypeFactory) {
       AnnotatedTypeMirror atm =
           new AnnotatedDeclaredTypeNoHierarchy(declaredType, annotatedTypeFactory);
