@@ -8,8 +8,6 @@ plugins {
   id 'java'
   // https://github.com/tbroyer/gradle-errorprone-plugin
   id 'net.ltgt.errorprone' version '4.1.0'
-  // https://plugins.gradle.org/plugin/org.ajoberstar.grgit
-  id 'org.ajoberstar.grgit' version '5.3.0' apply false
   // https://docs.gradle.org/current/userguide/eclipse_plugin.html
   id 'eclipse'
 
@@ -676,13 +674,9 @@ def createJavadocTask(taskName, taskDescription, memberLevel) {
 
 createJavadocTask('javadocDoclintAll', 'Runs javadoc with -Xdoclint:all option.', JavadocMemberLevel.PRIVATE)
 
-task manual(group: 'Documentation') {
+task manual(type: Exec, group: 'Documentation') {
   description 'Build the manual'
-  doLast {
-    exec {
-      commandLine 'make', '-C', 'docs/manual', 'all'
-    }
-  }
+  commandLine 'make', '-C', 'docs/manual', 'all'
 }
 
 /**
