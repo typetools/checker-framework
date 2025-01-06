@@ -307,7 +307,7 @@ task jtregJdk11Tests(group: 'Verification') {
   String jtregOutput = "${buildDir}/jtregJdk11"
   String name = 'all'
   doLast {
-    exec {
+    providers.exec {
       executable 'jtreg'
       args = [
         "-dir:${projectDir}/jtregJdk11",
@@ -608,7 +608,7 @@ task ainferTestCheckerGenerateJaifs(type: Test) {
     }
 
     def checkerQualJarFile = file(project(':checker-qual').tasks.getByName('jar').archiveFile)
-    exec {
+    providers.exec {
       executable "${afu}/scripts/insert-annotations-to-source"
       // Script argument -cp must precede Java program argument -i.
       // checker-qual is needed for Constant Value Checker annotations.
@@ -829,7 +829,7 @@ task ainferNullnessGenerateJaifs(type: Test) {
       throw new GradleException("no .java files found in ${javasDir}")
     }
     def checkerQualJarFile = file(project(':checker-qual').tasks.getByName('jar').archiveFile)
-    exec {
+    providers.exec {
       executable "${afu}/scripts/insert-annotations-to-source"
       // Script argument -cp must precede Java program argument -i.
       // Note that "/" works on Windows as well as on Linux.
@@ -910,7 +910,7 @@ task wpiManyTest(group: 'Verification') {
     // Run wpi-many.sh
     def typecheckFilesDir = "${project.projectDir}/build/wpi-many-tests-results/"
     try {
-      exec {
+      providers.exec {
         environment CHECKERFRAMEWORK: "${projectDir}/.."
         commandLine 'bin/wpi-many.sh',
             '-i', "${project.projectDir}/tests/wpi-many/testin.txt",
@@ -924,7 +924,7 @@ task wpiManyTest(group: 'Verification') {
       File wpiOut = new File("${typecheckFilesDir}/wpi-out")
       if (wpiOut.exists()) {
         println("========= Start of output from last run of wpi.sh (${typecheckFilesDir}/wpi-out): ========")
-        exec {
+        providers.exec {
           commandLine 'cat', "${typecheckFilesDir}/wpi-out"
         }
         println("========= End of output from last run of wpi.sh (${typecheckFilesDir}/wpi-out): ========")
@@ -945,15 +945,15 @@ task wpiManyTest(group: 'Verification') {
       println("Failure: Too few *-typecheck.out files in ${typecheckFilesDir}: " +
           "found ${actualTypecheckFileCount} but expected ${expectedTypecheckFileCount}.")
       println("========= Found in ${typecheckFilesDir} ========")
-      exec {
+      providers.exec {
         commandLine 'ls', '-al', "${typecheckFilesDir}"
       }
       println("========= Expected in ${typecheckFilesDir} ========")
-      exec {
+      providers.exec {
         commandLine 'cat', "${project.projectDir}/tests/wpi-many/testin.txt"
       }
       println("========= Start of output from last run of wpi.sh (${typecheckFilesDir}/wpi-out): ========")
-      exec {
+      providers.exec {
         commandLine 'cat', "${typecheckFilesDir}/wpi-out"
       }
       println("========= End of output from last run of wpi.sh (${typecheckFilesDir}/wpi-out): ========")
@@ -1027,7 +1027,7 @@ task wpiPlumeLibTest(group: 'Verification') {
   outputs.upToDateWhen { false }
 
   doLast {
-    exec {
+    providers.exec {
       commandLine 'bin-devel/wpi-plumelib/test-wpi-plumelib.sh'
       ignoreExitValue = false
     }
