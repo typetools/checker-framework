@@ -605,7 +605,7 @@ task allJavadoc(type: Javadoc, group: 'Documentation') {
       rename('CFCheckmark_favicon.png', 'favicon-checkerframework.png')
       into "${rootDir}/docs/api"
     }
-    providers.exec {
+    exec {
       workingDir "${rootDir}/docs/api"
       executable "${htmlToolsHome}/html-add-favicon"
       args += [
@@ -622,7 +622,7 @@ javadoc.dependsOn(allJavadoc)
 clean {
   delete(file("${rootDir}/docs/api"))
   doLast {
-    providers.exec {
+    exec {
       commandLine 'make', '-C', 'docs/manual', 'clean'
     }
   }
@@ -679,7 +679,7 @@ createJavadocTask('javadocDoclintAll', 'Runs javadoc with -Xdoclint:all option.'
 task manual(group: 'Documentation') {
   description 'Build the manual'
   doLast {
-    providers.exec {
+    exec {
       commandLine 'make', '-C', 'docs/manual', 'all'
     }
   }
@@ -693,7 +693,7 @@ task manual(group: 'Documentation') {
  * @param extraArgs any extra arguments to pass to git
  */
 void clone(url, directory, ignoreError, extraArgs = []){
-  providers.exec {
+  exec {
     workingDir "${directory}/../"
     executable 'git'
     args = [
@@ -726,7 +726,7 @@ def createCloneTask(taskName, url, directory, extraArgs = []) {
     outputs.upToDateWhen { false }
     doLast {
       if (file(directory).exists()) {
-        providers.exec {
+        exec {
           workingDir directory
           executable 'git'
           args = ['pull', '-q']
@@ -767,10 +767,10 @@ task tags {
   group 'Emacs'
   description 'Create Emacs TAGS table'
   doLast {
-    providers.exec {
+    exec {
       commandLine 'etags', '-i', 'checker/TAGS', '-i', 'checker-qual/TAGS', '-i', 'checker-util/TAGS', '-i', 'dataflow/TAGS', '-i', 'framework/TAGS', '-i', 'framework-test/TAGS', '-i', 'javacutil/TAGS', '-i', 'docs/manual/TAGS'
     }
-    providers.exec {
+    exec {
       commandLine 'make', '-C', 'docs/manual', 'tags'
     }
   }
@@ -909,7 +909,7 @@ subprojects {
         String tests = '.'
         doLast {
           try {
-            providers.exec {
+            exec {
               executable 'jtreg'
               args = [
                 "-dir:${projectDir}/jtreg",

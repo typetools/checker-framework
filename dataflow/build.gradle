@@ -66,7 +66,7 @@ createDataflowShaded('errorprone')
 task manual(group: 'Documentation') {
   description 'Build the manual'
   doLast {
-    providers.exec {
+    exec {
       commandLine 'make', '-C', 'manual'
     }
   }
@@ -109,7 +109,7 @@ def testDataflowAnalysis(taskName, dirName, className, diff) {
     delete("tests/${dirName}/Out.txt")
     delete("tests/${dirName}/Test.class")
     doLast {
-      providers.javaexec {
+      javaexec {
         workingDir = "tests/${dirName}"
         if (!JavaVersion.current().java9Compatible) {
           jvmArgs += "-Xbootclasspath/p:${configurations.javacJar.asPath}".toString()
@@ -138,7 +138,7 @@ def testDataflowAnalysis(taskName, dirName, className, diff) {
         mainClass = "${className}"
       }
       if (diff) {
-        providers.exec {
+        exec {
           workingDir = "tests/${dirName}"
           executable 'diff'
           args = [

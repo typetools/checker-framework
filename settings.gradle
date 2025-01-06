@@ -15,7 +15,7 @@ include 'checker-util'
 include 'framework-test'
 includeBuild ('../annotation-tools/annotation-file-utilities') {
   if (!file('../annotation-tools/annotation-file-utilities').exists()) {
-    providers.exec {
+    exec {
       executable 'checker/bin-devel/clone-related.sh'
     }
   }

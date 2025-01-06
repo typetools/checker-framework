@@ -63,7 +63,7 @@ task cloneTypetoolsJdk() {
   description 'Obtain or update the annotated JDK.'
   doLast {
     if (file(annotatedJdkHome).exists()) {
-      providers.exec {
+      exec {
         workingDir annotatedJdkHome
         executable 'git'
         args = ['pull', '-q']
@@ -71,7 +71,7 @@ task cloneTypetoolsJdk() {
       }
     } else {
       println 'Cloning annotated JDK repository.'
-      providers.exec {
+      exec {
         workingDir "${annotatedJdkHome}/../"
         executable 'git'
         args = [
@@ -125,7 +125,7 @@ task copyAndMinimizeAnnotatedJdkFiles(dependsOn: cloneTypetoolsJdk, group: 'Buil
         include filename.substring(jdkDirStringSize)
       }
     }
-    providers.javaexec {
+    javaexec {
       classpath = sourceSets.main.runtimeClasspath
       standardOutput = System.out
       errorOutput = System.err
@@ -186,7 +186,7 @@ task loaderTests(dependsOn: 'shadowJar', group: 'Verification') {
   dependsOn project(':checker-qual').tasks.jar
   dependsOn project(':checker').tasks.assemble
   doLast {
-    providers.exec {
+    exec {
       executable 'make'
       args = [
         '-C',
