@@ -63,7 +63,7 @@ task cloneTypetoolsJdk() {
   description 'Obtain or update the annotated JDK.'
   doLast {
     if (file(annotatedJdkHome).exists()) {
-      exec {
+      providers.exec {
         workingDir annotatedJdkHome
         executable 'git'
         args = ['pull', '-q']
@@ -71,7 +71,7 @@ task cloneTypetoolsJdk() {
       }
     } else {
       println 'Cloning annotated JDK repository.'
-      exec {
+      providers.exec {
         workingDir "${annotatedJdkHome}/../"
         executable 'git'
         args = [
