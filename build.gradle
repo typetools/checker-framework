@@ -674,13 +674,9 @@ def createJavadocTask(taskName, taskDescription, memberLevel) {
 
 createJavadocTask('javadocDoclintAll', 'Runs javadoc with -Xdoclint:all option.', JavadocMemberLevel.PRIVATE)
 
-task manual(group: 'Documentation') {
+task manual(type: Exec, group: 'Documentation') {
   description 'Build the manual'
-  doLast {
-    exec {
-      commandLine 'make', '-C', 'docs/manual', 'all'
-    }
-  }
+  commandLine 'make', '-C', 'docs/manual', 'all'
 }
 
 /**
