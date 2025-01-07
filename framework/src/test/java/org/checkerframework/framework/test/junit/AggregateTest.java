@@ -1,18 +1,17 @@
 package org.checkerframework.framework.test.junit;
 
 import java.io.File;
-import java.util.List;
-import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
+import org.checkerframework.framework.test.CheckerFrameworkPerFileTest;
 import org.checkerframework.framework.testchecker.aggregate.AggregateOfCompoundChecker;
 import org.junit.runners.Parameterized.Parameters;
 
-public class AggregateTest extends CheckerFrameworkPerDirectoryTest {
+public class AggregateTest extends CheckerFrameworkPerFileTest {
 
   /**
-   * @param testFiles the files containing test code, which will be type-checked
+   * @param file the file containing test code, which will be type-checked
    */
-  public AggregateTest(List<File> testFiles) {
-    super(testFiles, AggregateOfCompoundChecker.class, "aggregate", "-AresolveReflection");
+  public AggregateTest(File file) {
+    super(file, AggregateOfCompoundChecker.class, "aggregate", "-AresolveReflection");
   }
 
   @Parameters

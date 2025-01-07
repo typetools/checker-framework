@@ -228,15 +228,15 @@ do
     # repos that are different but have the same name to be treated
     # as different repos, but forks with the same content to be skipped.
     # TODO: consider just using hash, to skip hard forks?
-    mkdir -p "./${REPO_NAME_HASH}" || (echo "command failed in $(pwd): mkdir -p ./${REPO_NAME_HASH}" && exit 5)
+    mkdir -p "./${REPO_NAME_HASH}" || { echo "command failed in $(pwd): mkdir -p ./${REPO_NAME_HASH}"; exit 5; }
 
-    cd "./${REPO_NAME_HASH}" || (echo "command failed in $(pwd): cd ./${REPO_NAME_HASH}" && exit 5)
+    cd "./${REPO_NAME_HASH}" || { echo "command failed in $(pwd): cd ./${REPO_NAME_HASH}"; exit 5; }
 
     if [ ! -d "${REPO_NAME}" ]; then
         # see https://stackoverflow.com/questions/3489173/how-to-clone-git-repository-with-specific-revision-changeset
         # for the inspiration for this code
-        mkdir "./${REPO_NAME}" || (echo "command failed in $(pwd): mkdir ./${REPO_NAME}" && exit 5)
-        cd "./${REPO_NAME}" || (echo "command failed in $(pwd): cd ./${REPO_NAME}" && exit 5)
+        mkdir "./${REPO_NAME}" || { echo "command failed in $(pwd): mkdir ./${REPO_NAME}"; exit 5; }
+        cd "./${REPO_NAME}" || { echo "command failed in $(pwd): cd ./${REPO_NAME}"; exit 5; }
         git init
         git remote add origin "${REPO}"
 
@@ -263,9 +263,9 @@ do
         exit 5
     fi
 
-    cd "./${REPO_NAME}" || (echo "command failed in $(pwd): cd ./${REPO_NAME}" && exit 5)
+    cd "./${REPO_NAME}" || { echo "command failed in $(pwd): cd ./${REPO_NAME}"; exit 5; }
 
-    git checkout "${HASH}" || (echo "command failed in $(pwd): git checkout ${HASH}" && exit 5)
+    git checkout "${HASH}" || { echo "command failed in $(pwd): git checkout ${HASH}"; exit 5; }
 
     REPO_FULLPATH=$(pwd)
 
@@ -454,7 +454,7 @@ else
       echo "  generated from ${OUTDIR}-results/results_available.txt"
       echo "---------------- start of listpath = ${listpath} ----------------"
       cat "${listpath}"
-      echo "---------------- end of ${listpath} ----------------"
+      echo "---------------- end of listpath = ${listpath} ----------------"
       echo "---------------- start of ${OUTDIR}-results/results_available.txt ----------------"
       cat "${OUTDIR}-results/results_available.txt"
       echo "---------------- end of ${OUTDIR}-results/results_available.txt ----------------"

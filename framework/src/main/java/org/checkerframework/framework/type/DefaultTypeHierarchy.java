@@ -412,7 +412,20 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     if (canBeCovariant) {
       return isSubtype(inside, outside, currentTop);
     }
-    return areEqualInHierarchy(inside, outside);
+
+    try {
+      return areEqualInHierarchy(inside, outside);
+    } catch (Exception e) {
+      // Ignore exception and try capturing.
+      // See https://github.com/typetools/checker-framework/issues/6867.
+      // https://bugs.openjdk.org/browse/JDK-8054309
+    }
+    AnnotatedTypeMirror capturedOutside = outside.atypeFactory.applyCaptureConversion(outside);
+    previousResult = areEqualVisitHistory.get(inside, capturedOutside, currentTop);
+    if (previousResult != null) {
+      return previousResult;
+    }
+    return areEqualInHierarchy(inside, capturedOutside);
   }
 
   /**

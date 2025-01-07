@@ -893,6 +893,17 @@ public class AnnotatedTypes {
     TypeMirror tm1 = type1.getUnderlyingType();
     TypeMirror tm2 = type2.getUnderlyingType();
     TypeMirror glbJava = TypesUtils.greatestLowerBound(tm1, tm2, atypeFactory.getProcessingEnv());
+    if (glbJava.getKind() == TypeKind.ERROR) {
+      if (type1.getKind() == TypeKind.TYPEVAR) {
+        return type1;
+      }
+      if (type2.getKind() == TypeKind.TYPEVAR) {
+        return type2;
+      }
+      // I think the only way error happens is when one of the types is a typevarible, but
+      // just in case, just return type1.
+      return type1;
+    }
     Types types = atypeFactory.types;
     QualifierHierarchy qualHierarchy = atypeFactory.getQualifierHierarchy();
     if (types.isSubtype(tm1, tm2)) {

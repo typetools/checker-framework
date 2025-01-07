@@ -160,7 +160,7 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
   // Ensure that method annotations are not written on methods they don't apply to.
   // Copied from InterningVisitor
   @Override
-  public void processMethodTree(MethodTree tree) {
+  public void processMethodTree(String className, MethodTree tree) {
     ExecutableElement methElt = TreeUtils.elementFromDeclaration(tree);
     boolean hasEqualsMethodAnno =
         atypeFactory.getDeclAnnotation(methElt, EqualsMethod.class) != null;
@@ -170,7 +170,7 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
           tree, "invalid.method.annotation", "@EqualsMethod", "1 or 2", methElt, params);
     }
 
-    super.processMethodTree(tree);
+    super.processMethodTree(className, tree);
   }
 
   @Override

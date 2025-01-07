@@ -4,7 +4,7 @@
 # Per comments in ../../build.gradle, allTests = test + nonJunitTests + inferenceTests + typecheck .
 
 set -e
-set -o verbose
+# set -o verbose
 set -o xtrace
 export SHELLOPTS
 echo "SHELLOPTS=${SHELLOPTS}"

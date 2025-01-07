@@ -49,6 +49,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceImplementation;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceJavaParserStorage;
+import org.checkerframework.common.wholeprograminference.WholeProgramInferenceJavaParserStorage.InferredDeclared;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenesStorage;
 import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.dataflow.analysis.Analysis.BeforeOrAfter;
@@ -89,6 +90,7 @@ import org.checkerframework.framework.qual.QualifierForLiterals;
 import org.checkerframework.framework.qual.RelevantJavaTypes;
 import org.checkerframework.framework.qual.RequiresQualifier;
 import org.checkerframework.framework.qual.TypeUseLocation;
+import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.poly.DefaultQualifierPolymorphism;
@@ -2228,7 +2230,7 @@ public abstract class GenericAnnotatedTypeFactory<
    */
   @SuppressWarnings("TypeParameterUnusedInFormals") // Intentional abuse
   public final <T extends GenericAnnotatedTypeFactory<?, ?, ?, ?>> T getTypeFactoryOfSubchecker(
-      Class<? extends BaseTypeChecker> subCheckerClass) {
+      Class<? extends SourceChecker> subCheckerClass) {
     T result = getTypeFactoryOfSubcheckerOrNull(subCheckerClass);
     if (result == null) {
       throw new TypeSystemError(
@@ -2254,11 +2256,13 @@ public abstract class GenericAnnotatedTypeFactory<
    * @see #getTypeFactoryOfSubchecker
    */
   @SuppressWarnings("TypeParameterUnusedInFormals") // Intentional abuse
-  public <T extends GenericAnnotatedTypeFactory<?, ?, ?, ?>> @Nullable T getTypeFactoryOfSubcheckerOrNull(Class<? extends BaseTypeChecker> subCheckerClass) {
-    BaseTypeChecker subchecker = checker.getSubchecker(subCheckerClass);
-    if (subchecker == null) {
+  public <T extends GenericAnnotatedTypeFactory<?, ?, ?, ?>> @Nullable T getTypeFactoryOfSubcheckerOrNull(Class<? extends SourceChecker> subCheckerClass) {
+    SourceChecker subSouceChecker = checker.getSubchecker(subCheckerClass);
+    if (subSouceChecker == null || !(subSouceChecker instanceof BaseTypeChecker)) {
       return null;
     }
+
+    BaseTypeChecker subchecker = (BaseTypeChecker) subSouceChecker;
 
     @SuppressWarnings(
         "unchecked" // This might not be safe, but the caller of the method should use the
@@ -2300,7 +2304,7 @@ public abstract class GenericAnnotatedTypeFactory<
       }
       boolean verbose = checker.hasOption("verbosecfg");
 
-      Map<String, Object> args = new HashMap<>(2);
+      Map<String, Object> args = new HashMap<>(4);
       args.put("outdir", flowdotdir);
       args.put("verbose", verbose);
       args.put("checkerName", getCheckerName());
@@ -2759,11 +2763,10 @@ public abstract class GenericAnnotatedTypeFactory<
   public List<AnnotationMirror> getPreconditionAnnotations(
       WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos methodAnnos) {
     List<AnnotationMirror> result = new ArrayList<>();
-    for (Map.Entry<String, IPair<AnnotatedTypeMirror, AnnotatedTypeMirror>> entry :
-        methodAnnos.getPreconditions().entrySet()) {
+    for (Map.Entry<String, InferredDeclared> entry : methodAnnos.getPreconditions().entrySet()) {
       result.addAll(
           getPreconditionAnnotations(
-              entry.getKey(), entry.getValue().first, entry.getValue().second));
+              entry.getKey(), entry.getValue().inferred, entry.getValue().declared));
     }
     Collections.sort(result, Ordering.usingToString());
     return result;
@@ -2784,11 +2787,10 @@ public abstract class GenericAnnotatedTypeFactory<
       WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos methodAnnos,
       List<AnnotationMirror> preconds) {
     List<AnnotationMirror> result = new ArrayList<>();
-    for (Map.Entry<String, IPair<AnnotatedTypeMirror, AnnotatedTypeMirror>> entry :
-        methodAnnos.getPostconditions().entrySet()) {
+    for (Map.Entry<String, InferredDeclared> entry : methodAnnos.getPostconditions().entrySet()) {
       result.addAll(
           getPostconditionAnnotations(
-              entry.getKey(), entry.getValue().first, entry.getValue().second, preconds));
+              entry.getKey(), entry.getValue().inferred, entry.getValue().declared, preconds));
     }
     Collections.sort(result, Ordering.usingToString());
     return result;

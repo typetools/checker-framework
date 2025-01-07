@@ -2,7 +2,7 @@
 # Use `bash` instead of `sh` because of use of BASH_SOURCE.
 
 set -e
-set -o verbose
+# set -o verbose
 set -o xtrace
 export SHELLOPTS
 echo "SHELLOPTS=${SHELLOPTS}"

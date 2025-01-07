@@ -239,7 +239,9 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
       }
     }
     if (index == -1) {
-      throw new BugInCF("Argument argTree not found in list of arguments.");
+      // This happens for an invocation of an inner constructor:
+      // var x = new Issue6839<>(1). new Inner<>(1);
+      return false;
     }
 
     ExecutableType executableType = (ExecutableType) executableElement.asType();

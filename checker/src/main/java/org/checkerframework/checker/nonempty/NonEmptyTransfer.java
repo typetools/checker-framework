@@ -23,7 +23,6 @@ import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
-import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -189,7 +188,7 @@ public class NonEmptyTransfer extends CFTransfer {
       TransferInput<CFValue, CFStore> in, MethodInvocationNode methodAccessNode) {
     Node receiver = methodAccessNode.getTarget().getReceiver();
 
-    return AnnotationUtils.containsSameByClass(
+    return aTypeFactory.containsSameByClass(
         in.getValueOfSubNode(receiver).getAnnotations(), NonEmpty.class);
   }
 
