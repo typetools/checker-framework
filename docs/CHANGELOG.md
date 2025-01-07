@@ -1,4 +1,4 @@
-Version 3.48.2 (November 1, 2024)
+Version 3.48.5 (February 3, 2025)
 --------------------------------
 
 **User-visible changes:**
@@ -6,6 +6,30 @@ Version 3.48.2 (November 1, 2024)
 **Implementation details:**
 
 **Closed issues:**
+
+
+Version 3.48.4 (January 2, 2025)
+--------------------------------
+
+**Closed issues:**
+
+#6919, #6630.
+
+
+Version 3.48.3 (December 2, 2024)
+--------------------------------
+
+**Closed issues:**
+
+#6886.
+
+
+Version 3.48.2 (November 1, 2024)
+--------------------------------
+
+**Closed issues:**
+
+#6371, #6867.
 
 
 Version 3.48.1 (October 11, 2024)

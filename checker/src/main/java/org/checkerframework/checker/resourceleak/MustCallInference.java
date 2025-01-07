@@ -842,10 +842,13 @@ public class MustCallInference {
       }
 
       Node arg = mcca.removeCastsAndGetTmpVarIfPresent(arguments.get(i));
+      if (!(arg instanceof LocalVariableNode)) {
+        continue;
+      }
       Obligation argObligation =
           MustCallConsistencyAnalyzer.getObligationForVar(obligations, (LocalVariableNode) arg);
       if (argObligation == null) {
-        return;
+        continue;
       }
       int index = getIndexOfParam(argObligation);
       if (index != -1) {

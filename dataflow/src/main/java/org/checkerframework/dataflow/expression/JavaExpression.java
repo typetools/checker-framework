@@ -253,6 +253,7 @@ public abstract class JavaExpression {
    * @param lst2 the second list to compare
    * @return true if the corresponding list elements satisfy {@link #syntacticEquals}
    */
+  @SuppressWarnings("RedundantControlFlow")
   @Pure
   public static boolean syntacticEqualsList(
       List<? extends @Nullable JavaExpression> lst1,

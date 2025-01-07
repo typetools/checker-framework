@@ -124,7 +124,7 @@ Other \par tools
 
 
 The Base Checker
-(more precisely, the \refclass{framework/common/basetype}{BaseTypeChecker})
+(more precisely, the \refclass{common/basetype}{BaseTypeChecker})
 enforces the standard subtyping rules.
 The Subtyping Checker is a simple use of the Base Checker that supports
 providing type qualifiers on the command line.
@@ -926,10 +926,8 @@ it, or to compare to the string expression of an existing expression
 annotation.
 To obtain the string, first create a
 \refclass{dataflow/expression}{JavaExpression} object by calling
-\refmethodanchortext{dataflow/expression}{JavaExpression}{fromTree}{(com.sun.source.tree.ExpressionTree)}{fromTree(
-ExpressionTree)} or
-\refmethodanchortext{dataflow/expression}{JavaExpression}{fromNode}{(org.checkerframework.dataflow.cfg.node.Node)}{fromNode(
-Node)}.
+\refmethodanchortext{dataflow/expression}{JavaExpression}{fromTree}{(com.sun.source.tree.ExpressionTree)}{fromTree(ExpressionTree)} or
+\refmethodanchortext{dataflow/expression}{JavaExpression}{fromNode}{(org.checkerframework.dataflow.cfg.node.Node)}{fromNode(Node)}.
 Then, call \<toString()> on the \<JavaExpression> object.
 
 
@@ -953,7 +951,7 @@ Make an annotation \emph{A} repeatable by defining a nested annotation (within
 
 A checker's entry point is a subclass of
 \refclass{framework/source}{SourceChecker}, and is usually a direct subclass
-of either \refclass{framework/common/basetype}{BaseTypeChecker} or
+of either \refclass{common/basetype}{BaseTypeChecker} or
 \refclass{framework/source}{AggregateChecker}.
 This entry
 point, which we call the checker class, serves two
@@ -993,7 +991,7 @@ hierarchy representation.  It is a convention that, for
 a type system named Foo, the compiler
 interface (checker), the visitor, and the annotated type factory are
 named as \<FooChecker>, \<FooVisitor>, and \<FooAnnotatedTypeFactory>.
-\refclass{framework/common/basetype}{BaseTypeChecker} uses the convention to
+\refclass{common/basetype}{BaseTypeChecker} uses the convention to
 reflectively construct the components.  Otherwise, the checker writer
 must specify the component classes for construction.
 
@@ -1075,14 +1073,17 @@ the user can write
 
 \noindent
 if you define an aggregate checker class.  Extend \refclass{framework/source}{AggregateChecker} and override
-the \<getImmediateSubcheckerClasses> method, like the following:
+the \<getSupportedCheckers> method, like the following:
 
 \begin{Verbatim}
   public class MyUnitCheckers extends AggregateChecker {
-    protected Set<Class<? extends SourceChecker>> getImmediateSubcheckerClasses() {
-      return new LinkedHashSet<>(Arrays.asList(DistanceUnitChecker.class,
-                                               VelocityUnitChecker.class,
-                                               MassUnitChecker.class));
+    @Override
+    protected Collection<Class<? extends SourceChecker>> getSupportedCheckers() {
+      Collection<Class<? extends SourceChecker>> checkers = new ArrayList<>(3);
+      Collections.addAll(
+        checkers,
+        DistanceUnitChecker.class, VelocityUnitChecker.class, MassUnitChecker.class);
+      return checkers;
     }
   }
 \end{Verbatim}
@@ -1100,7 +1101,7 @@ that might be the case if MyHelperChecker computes some information that
 MyChecker needs to use.
 
 Override
-\<MyChecker.\refmethodterse{framework/common/basetype}{BaseTypeChecker}{getImmediateSubcheckerClasses}{()}>
+\<MyChecker.\refmethodterse{framework/source}{SourceChecker}{getImmediateSubcheckerClasses}{()}>
 to return a list of the checkers that MyChecker depends on.  Every one of
 them will be run before MyChecker is run.  One of MyChecker's subcheckers
 may itself be a compound checker, and multiple checkers may declare a
@@ -1111,7 +1112,7 @@ A checker obtains information from its subcheckers (those that ran before
 it) by querying their \refclass{framework/type}{AnnotatedTypeFactory} to
 determine the types of variables.  Obtain the \<AnnotatedTypeFactory> by
 calling
-\refmethodterse{framework/common/basetype}{BaseTypeChecker}{getTypeFactoryOfSubcheckerOrNull}{(java.lang.Class)}.
+\refmethodterse{common/basetype}{BaseTypeChecker}{getTypeFactoryOfSubcheckerOrNull}{(java.lang.Class)}.
 
 An example of a compound checker is
 \refclass{checker/signedness}{SignednessChecker}
@@ -1180,12 +1181,12 @@ required parsing of the option.
 \subsubsectionAndLabel{Default Options}{creating-providing-command-line-options-default-options}
 
 The default options passed to a custom checker may be customized by overriding the
-\refmethodterse{framework/common/basetype}{BaseTypeChecker}{getOptions}{()} method in the
+\refmethodterse{common/basetype}{BaseTypeChecker}{getOptions}{()} method in the
 custom checker class.
 
 For example, to ignore the \<introduce.eliminate> warnings raised by the
 Optional Checker (Chapter~\ref{optional-checker}), override
-\refmethodterse{framework/common/basetype}{BaseTypeChecker}{getOptions}{()} as follows:
+\refmethodterse{common/basetype}{BaseTypeChecker}{getOptions}{()} as follows:
 
 \begin{Verbatim}
   @Override

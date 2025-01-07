@@ -64,11 +64,11 @@ dependencies {
   testImplementation 'com.amazonaws:aws-java-sdk-ec2'
   testImplementation 'com.amazonaws:aws-java-sdk-kms'
   // The AWS SDK is used for testing the Called Methods Checker.
-  testImplementation platform('com.amazonaws:aws-java-sdk-bom:1.12.770')
+  testImplementation platform('com.amazonaws:aws-java-sdk-bom:1.12.779')
   // For the Resource Leak Checker's support for JavaEE.
   testImplementation 'javax.servlet:javax.servlet-api:4.0.1'
   // For the Resource Leak Checker's support for IOUtils.
-  testImplementation 'commons-io:commons-io:2.17.0'
+  testImplementation 'commons-io:commons-io:2.18.0'
   // To test for an obscure crash in CFG construction for try-with-resources;
   // see https://github.com/typetools/checker-framework/issues/6396
   testImplementation 'org.apache.spark:spark-sql_2.12:3.3.2'

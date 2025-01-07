@@ -33,6 +33,7 @@ import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.MethodCall;
+import org.checkerframework.dataflow.expression.SuperReference;
 import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.qual.MonotonicQualifier;
@@ -494,6 +495,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   public static boolean canInsertJavaExpression(JavaExpression expr) {
     if (expr instanceof FieldAccess
         || expr instanceof ThisReference
+        || expr instanceof SuperReference
         || expr instanceof LocalVariable
         || expr instanceof MethodCall
         || expr instanceof ArrayAccess
@@ -660,9 +662,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
           arrayValues.put(arrayAccess, newValue);
         }
       }
-    } else if (expr instanceof ThisReference) {
-      ThisReference thisRef = (ThisReference) expr;
-      if (sequentialSemantics || !thisRef.isAssignableByOtherCode()) {
+    } else if (expr instanceof ThisReference || expr instanceof SuperReference) {
+      if (sequentialSemantics || !expr.isAssignableByOtherCode()) {
         V oldValue = thisValue;
         V newValue = merger.apply(oldValue, value);
         if (newValue != null) {
@@ -772,7 +773,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     } else if (expr instanceof ClassName) {
       ClassName c = (ClassName) expr;
       classValues.remove(c);
-    } else { // thisValue ...
+    } else if (expr instanceof ThisReference) {
+      thisValue = null;
+    } else {
       // No other types of expressions are stored.
     }
   }
@@ -788,7 +791,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     if (expr instanceof LocalVariable) {
       LocalVariable localVar = (LocalVariable) expr;
       return localVariableValues.get(localVar);
-    } else if (expr instanceof ThisReference) {
+    } else if (expr instanceof ThisReference || expr instanceof SuperReference) {
       return thisValue;
     } else if (expr instanceof FieldAccess) {
       FieldAccess fieldAcc = (FieldAccess) expr;
@@ -821,7 +824,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       return fieldValues.get((FieldAccess) je);
     } else if (je instanceof ClassName) {
       return classValues.get((ClassName) je);
-    } else if (je instanceof ThisReference) {
+    } else if (je instanceof ThisReference || je instanceof SuperReference) {
       // "return thisValue" is wrong, because the node refers to an outer this.
       // So, return null for now.  TODO: improve.
       return null;
@@ -1190,9 +1193,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     {
       V otherVal = other.thisValue;
       V myVal = thisValue;
-      V mergedVal = myVal == null ? null : upperBoundOfValues(otherVal, myVal, shouldWiden);
-      if (mergedVal != null) {
-        newStore.thisValue = mergedVal;
+      if (myVal == null || otherVal == null) {
+        newStore.thisValue = null;
+      } else {
+        newStore.thisValue = upperBoundOfValues(otherVal, myVal, shouldWiden);
       }
     }
 

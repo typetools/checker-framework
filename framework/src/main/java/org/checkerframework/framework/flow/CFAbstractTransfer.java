@@ -226,7 +226,10 @@ public abstract class CFAbstractTransfer<
     return analysis.createAbstractValue(at);
   }
 
-  /** The fixed initial store. */
+  /**
+   * The fixed initial store which includes values from field initialization and, if analyzing a
+   * lambda, final local variables.
+   */
   private @Nullable S fixedInitialStore = null;
 
   /**
@@ -266,6 +269,12 @@ public abstract class CFAbstractTransfer<
       for (LocalVariableNode p : parameters) {
         AnnotatedTypeMirror anno = atypeFactory.getAnnotatedType(p.getElement());
         store.initializeMethodParameter(p, analysis.createAbstractValue(anno));
+      }
+
+      AnnotatedTypeMirror implicitThis = atypeFactory.getSelfType(underlyingAST.getCode());
+      if (implicitThis != null) {
+        V thisSelf = analysis.createAbstractValue(implicitThis);
+        store.thisValue = thisSelf.mostSpecific(store.thisValue, null);
       }
 
       // add properties known through precondition
@@ -1061,7 +1070,8 @@ public abstract class CFAbstractTransfer<
         analysis
             .atypeFactory
             .getWholeProgramInference()
-            .updateFromObjectCreation(n, constructorElt, p.getRegularStore());
+            .updateFromObjectCreation(
+                "<unknown from visitObjectCreation>", n, constructorElt, p.getRegularStore());
       }
     }
     ExecutableElement constructorElt = TreeUtils.getSuperConstructor(newClassTree);

@@ -31,10 +31,10 @@ public abstract class AggregateChecker extends SourceChecker {
   protected AggregateChecker() {}
 
   /**
-   * Returns the list of independent subcheckers to be run together. Subclasses need to override
-   * this method.
+   * Returns the list of independent subcheckers to be run together. An aggregate checker overrides
+   * this method to indicate its immediate subcheckers.
    *
-   * @return the list of checkers to be run
+   * @return the list of immediate subcheckers checkers to be run
    */
   protected abstract Collection<Class<? extends SourceChecker>> getSupportedCheckers();
 
