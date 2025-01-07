@@ -1,0 +1,75 @@
+import  org.gradle.process.ExecOperations
+import javax.inject.Inject
+import org.gradle.api.DefaultTask
+import org.gradle.api.tasks.TaskAction
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.OutputDirectory
+import org.gradle.api.file.DirectoryProperty
+
+
+abstract class CloneTask extends DefaultTask {
+  private ExecOperations execOperations
+
+  @Inject //@javax.inject.Inject
+  CloneTask(ExecOperations execOperations) {
+    this.execOperations = execOperations
+  }
+
+  @Input
+  def url = project.objects.property(String)
+
+  @OutputDirectory
+  def directoryP = project.objects.property(File)
+  @TaskAction
+  void doTaskAction() {
+   File directory = directoryP.get()
+    String urlS = url.get();
+
+
+      if (new File(directory, ".git").exists()) {
+        execOperations.exec {
+          workingDir directory
+          executable 'git'
+          args = ['pull', '-q']
+          ignoreExitValue = true
+          timeout = 60000 // 60 seconds
+        }
+      } else {
+        try {
+          clone(urlS, directory.toString(), true)
+        } catch (Throwable t) {
+          println "Exception while cloning ${url}"
+          t.printStackTrace()
+        }
+        if (!directory.exists()) {
+          println "Cloning failed, will try again in 1 minute: clone(${url}, ${directory}, true, ${extraArgs})"
+          sleep(60000) // wait 1 minute, then try again
+          clone(urlS, getDirectory(), false)
+        }
+      }
+
+  }
+  /**
+   * Quietly clones the given git repository, {@code url}, to {@directory} at a depth of 1.
+   * @param url git repository to clone
+   * @param directory where to clone
+   * @param ignoreError whether to fail the build if the clone command fails
+   * @param extraArgs any extra arguments to pass to git
+   */
+  void clone(url, directory, ignoreError, extraArgs = []){
+    execOperations.exec {
+      workingDir "${directory}/../"
+      executable 'git'
+      args = [
+          'clone',
+          '-q',
+          '--depth=1',
+          url,
+          new File(directory).toPath().last()
+      ]
+      args += extraArgs
+      ignoreExitValue = ignoreError
+      timeout = 60000 // 60 seconds
+    }
+  }
+}
