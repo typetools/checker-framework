@@ -87,7 +87,7 @@ task cloneTypetoolsJdk() {
 }
 
 
-task copyAndMinimizeAnnotatedJdkFiles(dependsOn: cloneTypetoolsJdk, group: 'Build') {
+task copyAndMinimizeAnnotatedJdkFiles(type: JavaExec, dependsOn: cloneTypetoolsJdk, group: 'Build') {
   dependsOn ':framework:compileJava'
   // we need the next two dependencies because we run JavaStubifier using this project's runtimeClasspath,
   // which refers to the jars for these other projects
@@ -101,7 +101,15 @@ task copyAndMinimizeAnnotatedJdkFiles(dependsOn: cloneTypetoolsJdk, group: 'Buil
   inputs.dir file(inputDir)
   outputs.dir file(outputDir)
 
-  doLast {
+
+  classpath = sourceSets.main.runtimeClasspath
+  standardOutput = System.out
+  errorOutput = System.err
+
+  mainClass = 'org.checkerframework.framework.stub.JavaStubifier'
+  args outputDir
+
+  doFirst {
     FileTree tree = fileTree(dir: inputDir)
     NavigableSet<String> annotatedForFiles = new TreeSet<>();
     // Populate `annotatedForFiles`.
@@ -125,19 +133,9 @@ task copyAndMinimizeAnnotatedJdkFiles(dependsOn: cloneTypetoolsJdk, group: 'Buil
         include filename.substring(jdkDirStringSize)
       }
     }
-    javaexec {
-      classpath = sourceSets.main.runtimeClasspath
-      standardOutput = System.out
-      errorOutput = System.err
-
-      mainClass = 'org.checkerframework.framework.stub.JavaStubifier'
-      args outputDir
-    }
   }
 }
 sourcesJar.dependsOn(copyAndMinimizeAnnotatedJdkFiles)
-
-processResources.dependsOn(copyAndMinimizeAnnotatedJdkFiles)
 
 task allSourcesJar(type: Jar, group: 'Build') {
   description 'Creates a sources jar that includes sources for all Checker Framework classes in framework.jar'
