@@ -35,7 +35,7 @@ abstract class CloneTask extends DefaultTask {
         executable 'git'
         args = ['pull', '-q']
         ignoreExitValue = true
-        timeout = 60000 // 60 seconds
+        timeout =  Duration.ofSeconds(60)
       }
     } else {
       try {
