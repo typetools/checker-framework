@@ -27,11 +27,105 @@ import android.widget.ListView;
 import com.android.internal.R;
 import com.android.internal.app.AlertController;
 
-import org.checkerframework.checker.confidential.qual.NonConfidential;
+import org.checkerframework.checker.confidential.qual.*;
 
 public class AlertDialog extends Dialog implements DialogInterface {
 
-    public void setMessage(@NonConfidential CharSequence message);
+    protected AlertDialog(@UnknownConfidential Context context);
 
-    public Builder setMessage(@NonConfidential CharSequence message);
+    protected AlertDialog(@UnknownConfidential Context context, boolean cancelable,
+        @UnknownConfidential OnCancelListener cancelListener);
+
+    protected AlertDialog(@UnknownConfidential Context context, @StyleRes int themeResId);
+
+    AlertDialog(@UnknownConfidential Context context, @StyleRes int themeResId,
+        boolean createContextThemeWrapper);
+
+    static @StyleRes int resolveDialogTheme(@UnknownConfidential Context context,
+        @StyleRes int themeResId);
+
+    public static class Builder {
+        public @UnknownConfidential Builder(@UnknownConfidential Context context);
+
+        public @UnknownConfidential Builder(@UnknownConfidential Context context, int themeResId);
+
+        public @UnknownConfidential Context getContext();
+
+        public @UnknownConfidential Builder setTitle(@StringRes int titleId);
+
+        public @UnknownConfidential Builder setTitle(CharSequence title);
+
+        public @UnknownConfidential Builder setCustomTitle(View customTitleView);
+
+        public @UnknownConfidential Builder setMessage(@StringRes int messageId);
+
+        public @UnknownConfidential Builder setMessage(CharSequence message);
+
+        public @UnknownConfidential Builder setIcon(@DrawableRes int iconId);
+
+        public @UnknownConfidential Builder setIcon(Drawable icon);
+
+        public @UnknownConfidential Builder setIconAttribute(@AttrRes int attrId);
+
+        public @UnknownConfidential Builder setPositiveButton(@StringRes int textId, final @UnknownConfidential OnClickListener listener);
+
+        public @UnknownConfidential Builder setPositiveButton(CharSequence text, final @UnknownConfidential OnClickListener listener);
+
+        public @UnknownConfidential Builder setNegativeButton(@StringRes int textId, final @UnknownConfidential OnClickListener listener);
+
+        public @UnknownConfidential Builder setNegativeButton(CharSequence text, final @UnknownConfidential OnClickListener listener);
+
+        public @UnknownConfidential Builder setNeutralButton(@StringRes int textId, final @UnknownConfidential OnClickListener listener);
+
+        public @UnknownConfidential Builder setNeutralButton(CharSequence text, final @UnknownConfidential OnClickListener listener);
+
+        public @UnknownConfidential Builder setCancelable(boolean cancelable);
+
+        public @UnknownConfidential Builder setOnCancelListener(@UnknownConfidential OnCancelListener onCancelListener);
+
+        public @UnknownConfidential Builder setOnDismissListener(@UnknownConfidential OnDismissListener onDismissListener);
+
+        public @UnknownConfidential Builder setOnKeyListener(@UnknownConfidential OnKeyListener onKeyListener);
+
+        public @UnknownConfidential Builder setItems(@ArrayRes int itemsId, final @UnknownConfidential OnClickListener listener);
+
+        public @UnknownConfidential Builder setItems(CharSequence[] items, final @UnknownConfidential OnClickListener listener);
+
+        public @UnknownConfidential Builder setAdapter(final @UnknownConfidential ListAdapter adapter, final @UnknownConfidential OnClickListener listener);
+
+        public @UnknownConfidential Builder setCursor(final @UnknownConfidential Cursor cursor, final @UnknownConfidential OnClickListener listener,
+                String labelColumn);
+
+        public @UnknownConfidential Builder setMultiChoiceItems(@ArrayRes int itemsId, boolean[] checkedItems,
+                final @UnknownConfidential OnMultiChoiceClickListener listener);
+
+        public @UnknownConfidential Builder setMultiChoiceItems(CharSequence[] items, boolean[] checkedItems,
+                final @UnknownConfidential OnMultiChoiceClickListener listener);
+
+        public @UnknownConfidential Builder setMultiChoiceItems(@UnknownConfidential Cursor cursor, String isCheckedColumn, String labelColumn,
+                final @UnknownConfidential OnMultiChoiceClickListener listener);
+
+        public @UnknownConfidential Builder setSingleChoiceItems(@ArrayRes int itemsId, int checkedItem,
+                final @UnknownConfidential OnClickListener listener);
+
+        public @UnknownConfidential Builder setSingleChoiceItems(@UnknownConfidential Cursor cursor, int checkedItem, String labelColumn,
+                final @UnknownConfidential OnClickListener listener);
+
+        public @UnknownConfidential Builder setSingleChoiceItems(CharSequence[] items, int checkedItem, final @UnknownConfidential OnClickListener listener);
+
+        public @UnknownConfidential Builder setSingleChoiceItems(@UnknownConfidential ListAdapter adapter, int checkedItem, final @UnknownConfidential OnClickListener listener);
+
+        public @UnknownConfidential Builder setOnItemSelectedListener(final @UnknownConfidential AdapterView.OnItemSelectedListener listener);
+
+        public @UnknownConfidential Builder setView(int layoutResId);
+
+        public @UnknownConfidential Builder setView(View view);
+
+        @UnsupportedAppUsage
+        public @UnknownConfidential Builder setRecycleOnMeasureEnabled(boolean enabled);
+
+        public @UnknownConfidential AlertDialog create();
+
+        public @UnknownConfidential AlertDialog show();
+    }
 }

@@ -1067,7 +1067,7 @@ publishing {
       checkerPom it
       artifact checkerJar
       artifact allSourcesJar
-      artifact allJavadocJar
+      // artifact allJavadocJar
     }
   }
 }

@@ -16,29 +16,35 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.net.UnknownHostException;
 
-import org.checkerframework.checker.confidential.qual.NonConfidential;
+import org.checkerframework.checker.confidential.qual.*;
 
 public final class Log {
 
-    public static int d(@Nullable @NonConfidential String tag, @NonNull @NonConfidential String msg);
+    public static int d(@Nullable String tag, @Nullable String msg, @Nullable @UnknownConfidential Throwable tr);
 
-    public static int d(@Nullable @NonConfidential String tag, @Nullable @NonConfidential String msg, @Nullable @NonConfidential Throwable tr);
+    public static int w(@Nullable String tag, @Nullable String msg, @Nullable @UnknownConfidential Throwable tr);
 
-    public static int w(@Nullable @NonConfidential String tag, @NonNull @NonConfidential String msg);
+    public static int w(@Nullable String tag, @Nullable @UnknownConfidential Throwable tr);
 
-    public static int w(@Nullable @NonConfidential String tag, @Nullable @NonConfidential String msg, @Nullable @NonConfidential Throwable tr);
+    public static int v(@Nullable String tag, @Nullable String msg, @Nullable @UnknownConfidential Throwable tr);
 
-    public static int w(@Nullable @NonConfidential String tag, @Nullable @NonConfidential Throwable tr);
+    public static int i(@Nullable String tag, @Nullable String msg, @Nullable @UnknownConfidential Throwable tr);
 
-    public static int v(@Nullable @NonConfidential String tag, @NonNull @NonConfidential String msg);
+    public static int e(@Nullable String tag, @Nullable String msg, @Nullable @UnknownConfidential Throwable tr);
 
-    public static int v(@Nullable @NonConfidential String tag, @Nullable @NonConfidential String msg, @Nullable @NonConfidential Throwable tr);
+    public static int wtf(@Nullable String tag, @NonNull @UnknownConfidential Throwable tr);
 
-    public static int i(@Nullable @NonConfidential String tag, @NonNull @NonConfidential String msg);
+    public static int wtf(@Nullable String tag, @Nullable String msg, @Nullable @UnknownConfidential Throwable tr);
 
-    public static int i(@Nullable @NonConfidential String tag, @Nullable @NonConfidential String msg, @Nullable @NonConfidential Throwable tr);
+    static int wtf(int logId, @Nullable String tag, @Nullable String msg, @Nullable @UnknownConfidential Throwable tr,
+                boolean localStack, boolean system);
 
-    public static int e(@Nullable @NonConfidential String tag, @NonNull @NonConfidential String msg);
+    @NonNull
+    public static @UnknownConfidential TerribleFailureHandler setWtfHandler(@NonNull @UnknownConfidential TerribleFailureHandler handler);
 
-    public static int e(@Nullable @NonConfidential String tag, @Nullable @NonConfidential String msg, @Nullable @NonConfidential Throwable tr);
+    @NonNull
+    public static String getStackTraceString(@Nullable @UnknownConfidential Throwable tr);
+
+    public static int printlns(int bufID, int priority, @Nullable String tag, @NonNull String msg,
+            @Nullable @UnknownConfidential Throwable tr);
 }

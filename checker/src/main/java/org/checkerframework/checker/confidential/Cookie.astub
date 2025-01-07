@@ -1,17 +1,14 @@
-package javax.servlet.http;
+package jakarta.servlet.http;
 
 import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
-import org.checkerframework.checker.confidential.qual.NonConfidential;
+import org.checkerframework.checker.confidential.qual.*;
 
 public class Cookie implements Cloneable, Serializable {
 
-    public void setComment(@NonConfidential String purpose);
-
-    public void setDomain(@NonConfidential String domain);
-
-    public void setValue(@NonConfidential String newValue);
+    @Override
+    public boolean equals(@UnknownConfidential Object obj);
 }

@@ -8,1117 +8,1139 @@ import org.apache.logging.log4j.message.MessageFactory2;
 import org.apache.logging.log4j.util.MessageSupplier;
 import org.apache.logging.log4j.util.Supplier;
 
-import org.checkerframework.checker.confidential.qual.NonConfidential;
+import org.checkerframework.checker.confidential.qual.*;
 
 public interface Logger {
 
-    void error(@NonConfidential Marker marker, @NonConfidential Message message);
+    void error(@UnknownConfidential Marker marker, Message message);
 
-    void error(@NonConfidential Marker marker, @NonConfidential Message message, @NonConfidential Throwable throwable);
+    void error(@UnknownConfidential Marker marker, Message message, @UnknownConfidential Throwable throwable);
 
-    void error(@NonConfidential Marker marker, @NonConfidential MessageSupplier messageSupplier);
+    void error(@UnknownConfidential Marker marker, @UnknownConfidential MessageSupplier messageSupplier);
 
-    void error(@NonConfidential Marker marker, @NonConfidential MessageSupplier messageSupplier, @NonConfidential Throwable throwable);
+    void error(@UnknownConfidential Marker marker, @UnknownConfidential MessageSupplier messageSupplier, @UnknownConfidential Throwable throwable);
 
-    void error(@NonConfidential Marker marker, @NonConfidential CharSequence message);
+    void error(@UnknownConfidential Marker marker, CharSequence message);
 
-    void error(@NonConfidential Marker marker, @NonConfidential CharSequence message, @NonConfidential Throwable throwable);
+    void error(@UnknownConfidential Marker marker, CharSequence message, @UnknownConfidential Throwable throwable);
 
-    void error(@NonConfidential Marker marker, @NonConfidential Object message);
+    void error(@UnknownConfidential Marker marker, Object message);
 
-    void error(@NonConfidential Marker marker, @NonConfidential Object message, @NonConfidential Throwable throwable);
+    void error(@UnknownConfidential Marker marker, Object message, @UnknownConfidential Throwable throwable);
 
-    void error(@NonConfidential Marker marker, @NonConfidential String message);
+    void error(@UnknownConfidential Marker marker, String message);
 
-    void error(@NonConfidential Marker marker, @NonConfidential String message, @NonConfidential Object... params);
+    void error(@UnknownConfidential Marker marker, String message, @UnknownConfidential Object... params);
 
-    void error(@NonConfidential Marker marker, @NonConfidential String message, @NonConfidential Supplier<?>... paramSuppliers);
+    void error(@UnknownConfidential Marker marker, String message, @UnknownConfidential Supplier<?>... paramSuppliers);
 
-    void error(@NonConfidential Marker marker, @NonConfidential String message, @NonConfidential Throwable throwable);
+    void error(@UnknownConfidential Marker marker, String message, @UnknownConfidential Throwable throwable);
 
-    void error(@NonConfidential Marker marker, @NonConfidential Supplier<?> messageSupplier);
+    void error(@UnknownConfidential Marker marker, @UnknownConfidential Supplier<?> messageSupplier);
 
-    void error(@NonConfidential Marker marker, @NonConfidential Supplier<?> messageSupplier, @NonConfidential Throwable throwable);
+    void error(@UnknownConfidential Marker marker, @UnknownConfidential Supplier<?> messageSupplier, @UnknownConfidential Throwable throwable);
 
-    void error(@NonConfidential Message message);
+    void error(Message message);
 
-    void error(@NonConfidential Message message, @NonConfidential Throwable throwable);
+    void error(Message message, @UnknownConfidential Throwable throwable);
 
-    void error(@NonConfidential MessageSupplier messageSupplier);
+    void error(@UnknownConfidential MessageSupplier messageSupplier);
 
-    void error(@NonConfidential MessageSupplier messageSupplier, @NonConfidential Throwable throwable);
+    void error(@UnknownConfidential MessageSupplier messageSupplier, @UnknownConfidential Throwable throwable);
 
-    void error(@NonConfidential CharSequence message);
+    void error(CharSequence message);
 
-    void error(@NonConfidential CharSequence message, @NonConfidential Throwable throwable);
+    void error(CharSequence message, @UnknownConfidential Throwable throwable);
 
-    void error(@NonConfidential Object message);
+    void error(Object message);
 
-    void error(@NonConfidential Object message, @NonConfidential Throwable throwable);
+    void error(Object message, @UnknownConfidential Throwable throwable);
 
-    void error(@NonConfidential String message);
+    void error(String message);
 
-    void error(@NonConfidential String message, @NonConfidential Object... params);
+    void error(String message, @UnknownConfidential Object... params);
 
-    void error(@NonConfidential String message, @NonConfidential Supplier<?>... paramSuppliers);
+    void error(String message, @UnknownConfidential Supplier<?>... paramSuppliers);
 
-    void error(@NonConfidential String message, @NonConfidential Throwable throwable);
+    void error(String message, @UnknownConfidential Throwable throwable);
 
-    void error(@NonConfidential Supplier<?> messageSupplier);
+    void error(@UnknownConfidential Supplier<?> messageSupplier);
 
-    void error(@NonConfidential Supplier<?> messageSupplier, @NonConfidential Throwable throwable);
+    void error(@UnknownConfidential Supplier<?> messageSupplier, @UnknownConfidential Throwable throwable);
 
-    void error(@NonConfidential Marker marker, @NonConfidential String message, Object p0);
+    void error(@UnknownConfidential Marker marker, String message, @UnknownConfidential Object p0);
 
-    void error(@NonConfidential Marker marker, @NonConfidential String message, Object p0, Object p1);
+    void error(@UnknownConfidential Marker marker, String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1);
 
-    void error(@NonConfidential Marker marker, @NonConfidential String message, Object p0, Object p1, Object p2);
+    void error(@UnknownConfidential Marker marker, String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2);
 
-    void error(@NonConfidential Marker marker, @NonConfidential String message, Object p0, Object p1, Object p2, Object p3);
+    void error(@UnknownConfidential Marker marker, String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2, @UnknownConfidential Object p3);
 
-    void error(@NonConfidential Marker marker, @NonConfidential String message, Object p0, Object p1, Object p2, Object p3, Object p4);
+    void error(@UnknownConfidential Marker marker, String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2, @UnknownConfidential Object p3, @UnknownConfidential Object p4);
 
-    void error(@NonConfidential Marker marker, @NonConfidential String message, Object p0, Object p1, Object p2, Object p3, Object p4, Object p5);
-
-    void error(
-            @NonConfidential Marker marker, @NonConfidential String message, Object p0, Object p1, Object p2, Object p3, Object p4, Object p5, Object p6);
+    void error(@UnknownConfidential Marker marker, String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2, @UnknownConfidential Object p3, @UnknownConfidential Object p4, @UnknownConfidential Object p5);
 
     void error(
-            @NonConfidential Marker marker,
-            @NonConfidential String message,
-            Object p0,
-            Object p1,
-            Object p2,
-            Object p3,
-            Object p4,
-            Object p5,
-            Object p6,
-            Object p7);
+            @UnknownConfidential Marker marker, String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2, @UnknownConfidential Object p3, @UnknownConfidential Object p4, @UnknownConfidential Object p5, @UnknownConfidential Object p6);
 
     void error(
-            @NonConfidential Marker marker,
-            @NonConfidential String message,
-            Object p0,
-            Object p1,
-            Object p2,
-            Object p3,
-            Object p4,
-            Object p5,
-            Object p6,
-            Object p7,
-            Object p8);
-
-    void error(
-            @NonConfidential Marker marker,
-            @NonConfidential String message,
-            Object p0,
-            Object p1,
-            Object p2,
-            Object p3,
-            Object p4,
-            Object p5,
-            Object p6,
-            Object p7,
-            Object p8,
-            Object p9);
-
-    void error(@NonConfidential String message, Object p0);
-
-    void error(@NonConfidential String message, Object p0, Object p1);
-
-    void error(@NonConfidential String message, Object p0, Object p1, Object p2);
-
-    void error(@NonConfidential String message, Object p0, Object p1, Object p2, Object p3);
-
-    void error(@NonConfidential String message, Object p0, Object p1, Object p2, Object p3, Object p4);
-
-    void error(@NonConfidential String message, Object p0, Object p1, Object p2, Object p3, Object p4, Object p5);
-
-    void error(@NonConfidential String message, Object p0, Object p1, Object p2, Object p3, Object p4, Object p5, Object p6);
-
-    void error(@NonConfidential String message, Object p0, Object p1, Object p2, Object p3, Object p4, Object p5, Object p6, Object p7);
-
-    void error(
-            @NonConfidential String message,
-            Object p0,
-            Object p1,
-            Object p2,
-            Object p3,
-            Object p4,
-            Object p5,
-            Object p6,
-            Object p7,
-            Object p8);
-
-    void error(
-            @NonConfidential String message,
-            Object p0,
-            Object p1,
-            Object p2,
-            Object p3,
-            Object p4,
-            Object p5,
-            Object p6,
-            Object p7,
-            Object p8,
-            Object p9);
-
-    void info(@NonConfidential Marker marker, @NonConfidential Message message);
-
-    void info(@NonConfidential Marker marker, @NonConfidential Message message, @NonConfidential Throwable throwable);
-
-    void info(@NonConfidential Marker marker, @NonConfidential MessageSupplier messageSupplier);
-
-    void info(@NonConfidential Marker marker, @NonConfidential MessageSupplier messageSupplier, @NonConfidential Throwable throwable);
-
-    void info(@NonConfidential Marker marker, @NonConfidential CharSequence message);
-
-    void info(@NonConfidential Marker marker, @NonConfidential CharSequence message, @NonConfidential Throwable throwable);
-
-    void info(@NonConfidential Marker marker, @NonConfidential Object message);
-
-    void info(@NonConfidential Marker marker, @NonConfidential Object message, @NonConfidential Throwable throwable);
-
-    void info(@NonConfidential Marker marker, @NonConfidential String message);
-
-    void info(@NonConfidential Marker marker, @NonConfidential String message, Object... params);
-
-    void info(@NonConfidential Marker marker, @NonConfidential String message, @NonConfidential Supplier<?>... paramSuppliers);
-
-    void info(@NonConfidential Marker marker, @NonConfidential String message, @NonConfidential Throwable throwable);
-
-    void info(@NonConfidential Marker marker, @NonConfidential Supplier<?> messageSupplier);
-
-    void info(@NonConfidential Marker marker, @NonConfidential Supplier<?> messageSupplier, @NonConfidential Throwable throwable);
-
-    void info(@NonConfidential Message message);
-
-    void info(@NonConfidential Message message, @NonConfidential Throwable throwable);
-
-    void info(@NonConfidential MessageSupplier messageSupplier);
-
-    void info(@NonConfidential MessageSupplier messageSupplier, @NonConfidential Throwable throwable);
-
-    void info(@NonConfidential CharSequence message);
-
-    void info(@NonConfidential CharSequence message, @NonConfidential Throwable throwable);
-
-    void info(@NonConfidential Object message);
-
-    void info(@NonConfidential Object message, @NonConfidential Throwable throwable);
-
-    void info(@NonConfidential String message);
-
-    void info(@NonConfidential String message, Object... params);
-
-    void info(@NonConfidential String message, @NonConfidential Supplier<?>... paramSuppliers);
-
-    void info(@NonConfidential String message, @NonConfidential Throwable throwable);
-
-    void info(@NonConfidential Supplier<?> messageSupplier);
-
-    void info(@NonConfidential Supplier<?> messageSupplier, @NonConfidential Throwable throwable);
-
-    void info(@NonConfidential Marker marker, @NonConfidential String message, Object p0);
-
-    void info(@NonConfidential Marker marker, @NonConfidential String message, Object p0, Object p1);
-
-    void info(@NonConfidential Marker marker, @NonConfidential String message, Object p0, Object p1, Object p2);
-
-    void info(@NonConfidential Marker marker, @NonConfidential String message, Object p0, Object p1, Object p2, Object p3);
-
-    void info(@NonConfidential Marker marker, @NonConfidential String message, Object p0, Object p1, Object p2, Object p3, Object p4);
-
-    void info(@NonConfidential Marker marker, @NonConfidential String message, Object p0, Object p1, Object p2, Object p3, Object p4, Object p5);
-
-    void info(
-            @NonConfidential Marker marker, @NonConfidential String message, Object p0, Object p1, Object p2, Object p3, Object p4, Object p5, Object p6);
-
-    void info(
-            @NonConfidential Marker marker,
-            @NonConfidential String message,
-            Object p0,
-            Object p1,
-            Object p2,
-            Object p3,
-            Object p4,
-            Object p5,
-            Object p6,
-            Object p7);
-
-    void info(
-            @NonConfidential Marker marker,
-            @NonConfidential String message,
-            Object p0,
-            Object p1,
-            Object p2,
-            Object p3,
-            Object p4,
-            Object p5,
-            Object p6,
-            Object p7,
-            Object p8);
-
-    void info(
-            @NonConfidential Marker marker,
-            @NonConfidential String message,
-            Object p0,
-            Object p1,
-            Object p2,
-            Object p3,
-            Object p4,
-            Object p5,
-            Object p6,
-            Object p7,
-            Object p8,
-            Object p9);
-
-    void info(@NonConfidential String message, Object p0);
-
-    void info(@NonConfidential String message, Object p0, Object p1);
-
-    void info(@NonConfidential String message, Object p0, Object p1, Object p2);
-
-    void info(@NonConfidential String message, Object p0, Object p1, Object p2, Object p3);
-
-    void info(@NonConfidential String message, Object p0, Object p1, Object p2, Object p3, Object p4);
-
-    void info(@NonConfidential String message, Object p0, Object p1, Object p2, Object p3, Object p4, Object p5);
-
-    void info(@NonConfidential String message, Object p0, Object p1, Object p2, Object p3, Object p4, Object p5, Object p6);
-
-    void info(@NonConfidential String message, Object p0, Object p1, Object p2, Object p3, Object p4, Object p5, Object p6, Object p7);
-
-    void info(
-            @NonConfidential String message,
-            Object p0,
-            Object p1,
-            Object p2,
-            Object p3,
-            Object p4,
-            Object p5,
-            Object p6,
-            Object p7,
-            Object p8);
-
-    void info(
-            @NonConfidential String message,
-            Object p0,
-            Object p1,
-            Object p2,
-            Object p3,
-            Object p4,
-            Object p5,
-            Object p6,
-            Object p7,
-            Object p8,
-            Object p9);
-
-    void catching(Level level, @NonConfidential Throwable throwable);
-
-    void catching(@NonConfidential Throwable throwable);
-
-    void debug(@NonConfidential Marker marker, @NonConfidential Message message);
-
-    void debug(@NonConfidential Marker marker, @NonConfidential Message message, @NonConfidential Throwable throwable);
-
-    void debug(@NonConfidential Marker marker, @NonConfidential MessageSupplier messageSupplier);
-
-    void debug(@NonConfidential Marker marker, @NonConfidential MessageSupplier messageSupplier, @NonConfidential Throwable throwable);
-
-    void debug(@NonConfidential Marker marker, @NonConfidential CharSequence message);
-
-    void debug(@NonConfidential Marker marker, @NonConfidential CharSequence message, @NonConfidential Throwable throwable);
-
-    void debug(@NonConfidential Marker marker, @NonConfidential Object message);
-
-    void debug(@NonConfidential Marker marker, @NonConfidential Object message, @NonConfidential Throwable throwable);
-
-    void debug(@NonConfidential Marker marker, @NonConfidential String message);
-
-    void debug(@NonConfidential Marker marker, @NonConfidential String message, Object... params);
-
-    void debug(@NonConfidential Marker marker, @NonConfidential String message, @NonConfidential Supplier<?>... paramSuppliers);
-
-    void debug(@NonConfidential Marker marker, @NonConfidential String message, @NonConfidential Throwable throwable);
-
-    void debug(@NonConfidential Marker marker, @NonConfidential Supplier<?> messageSupplier);
-
-    void debug(@NonConfidential Marker marker, @NonConfidential Supplier<?> messageSupplier, @NonConfidential Throwable throwable);
-
-    void debug(@NonConfidential Message message);
-
-    void debug(@NonConfidential Message message, @NonConfidential Throwable throwable);
-
-    void debug(@NonConfidential MessageSupplier messageSupplier);
-
-    void debug(@NonConfidential MessageSupplier messageSupplier, @NonConfidential Throwable throwable);
-
-    void debug(@NonConfidential CharSequence message);
-
-    void debug(@NonConfidential CharSequence message, @NonConfidential Throwable throwable);
-
-    void debug(@NonConfidential Object message);
-
-    void debug(@NonConfidential Object message, @NonConfidential Throwable throwable);
-
-    void debug(@NonConfidential String message);
-
-    void debug(@NonConfidential String message, Object... params);
-
-    void debug(@NonConfidential String message, @NonConfidential Supplier<?>... paramSuppliers);
-
-    void debug(@NonConfidential String message, @NonConfidential Throwable throwable);
-
-    void debug(@NonConfidential Supplier<?> messageSupplier);
-
-    void debug(@NonConfidential Supplier<?> messageSupplier, @NonConfidential Throwable throwable);
-
-    void debug(@NonConfidential Marker marker, @NonConfidential String message, Object p0);
-
-    void debug(@NonConfidential Marker marker, @NonConfidential String message, Object p0, Object p1);
-
-    void debug(@NonConfidential Marker marker, @NonConfidential String message, Object p0, Object p1, Object p2);
-
-    void debug(@NonConfidential Marker marker, @NonConfidential String message, Object p0, Object p1, Object p2, Object p3);
-
-    void debug(@NonConfidential Marker marker, @NonConfidential String message, Object p0, Object p1, Object p2, Object p3, Object p4);
-
-    void debug(@NonConfidential Marker marker, @NonConfidential String message, Object p0, Object p1, Object p2, Object p3, Object p4, Object p5);
-
-    void debug(
-            @NonConfidential Marker marker, @NonConfidential String message, Object p0, Object p1, Object p2, Object p3, Object p4, Object p5, Object p6);
-
-    void debug(
-            @NonConfidential Marker marker,
-            @NonConfidential String message,
-            Object p0,
-            Object p1,
-            Object p2,
-            Object p3,
-            Object p4,
-            Object p5,
-            Object p6,
-            Object p7);
-
-    void debug(
-            @NonConfidential Marker marker,
-            @NonConfidential String message,
-            Object p0,
-            Object p1,
-            Object p2,
-            Object p3,
-            Object p4,
-            Object p5,
-            Object p6,
-            Object p7,
-            Object p8);
-
-    void debug(
-            @NonConfidential Marker marker,
-            @NonConfidential String message,
-            Object p0,
-            Object p1,
-            Object p2,
-            Object p3,
-            Object p4,
-            Object p5,
-            Object p6,
-            Object p7,
-            Object p8,
-            Object p9);
-
-    void debug(@NonConfidential String message, Object p0);
-
-    void debug(@NonConfidential String message, Object p0, Object p1);
-
-    void debug(@NonConfidential String message, Object p0, Object p1, Object p2);
-
-    void debug(@NonConfidential String message, Object p0, Object p1, Object p2, Object p3);
-
-    void debug(@NonConfidential String message, Object p0, Object p1, Object p2, Object p3, Object p4);
-
-    void debug(@NonConfidential String message, Object p0, Object p1, Object p2, Object p3, Object p4, Object p5);
-
-    void debug(@NonConfidential String message, Object p0, Object p1, Object p2, Object p3, Object p4, Object p5, Object p6);
-
-    void debug(@NonConfidential String message, Object p0, Object p1, Object p2, Object p3, Object p4, Object p5, Object p6, Object p7);
-
-    void debug(
-            @NonConfidential String message,
-            Object p0,
-            Object p1,
-            Object p2,
-            Object p3,
-            Object p4,
-            Object p5,
-            Object p6,
-            Object p7,
-            Object p8);
-
-    void debug(
-            @NonConfidential String message,
-            Object p0,
-            Object p1,
-            Object p2,
-            Object p3,
-            Object p4,
-            Object p5,
-            Object p6,
-            Object p7,
-            Object p8,
-            Object p9);
-
-    void fatal(@NonConfidential Marker marker, @NonConfidential Message message);
-
-    void fatal(@NonConfidential Marker marker, @NonConfidential Message message, @NonConfidential Throwable throwable);
-
-    void fatal(@NonConfidential Marker marker, @NonConfidential MessageSupplier messageSupplier);
-
-    void fatal(@NonConfidential Marker marker, @NonConfidential MessageSupplier messageSupplier, @NonConfidential Throwable throwable);
-
-    void fatal(@NonConfidential Marker marker, @NonConfidential CharSequence message);
-
-    void fatal(@NonConfidential Marker marker, @NonConfidential CharSequence message, @NonConfidential Throwable throwable);
-
-    void fatal(@NonConfidential Marker marker, @NonConfidential Object message);
-
-    void fatal(@NonConfidential Marker marker, @NonConfidential Object message, @NonConfidential Throwable throwable);
-
-    void fatal(@NonConfidential Marker marker, @NonConfidential String message);
-
-    void fatal(@NonConfidential Marker marker, @NonConfidential String message, Object... params);
-
-    void fatal(@NonConfidential Marker marker, @NonConfidential String message, @NonConfidential Supplier<?>... paramSuppliers);
-
-    void fatal(@NonConfidential Marker marker, @NonConfidential String message, @NonConfidential Throwable throwable);
-
-    void fatal(@NonConfidential Marker marker, @NonConfidential Supplier<?> messageSupplier);
-
-    void fatal(@NonConfidential Marker marker, @NonConfidential Supplier<?> messageSupplier, @NonConfidential Throwable throwable);
-
-    void fatal(@NonConfidential Message message);
-
-    void fatal(@NonConfidential Message message, @NonConfidential Throwable throwable);
-
-    void fatal(@NonConfidential MessageSupplier messageSupplier);
-
-    void fatal(@NonConfidential MessageSupplier messageSupplier, @NonConfidential Throwable throwable);
-
-    void fatal(@NonConfidential CharSequence message);
-
-    void fatal(@NonConfidential CharSequence message, @NonConfidential Throwable throwable);
-
-    void fatal(@NonConfidential Object message);
-
-    void fatal(@NonConfidential Object message, @NonConfidential Throwable throwable);
-
-    void fatal(@NonConfidential String message);
-
-    void fatal(@NonConfidential String message, Object... params);
-
-    void fatal(@NonConfidential String message, @NonConfidential Supplier<?>... paramSuppliers);
-
-    void fatal(@NonConfidential String message, @NonConfidential Throwable throwable);
-
-    void fatal(@NonConfidential Supplier<?> messageSupplier);
-
-    void fatal(@NonConfidential Supplier<?> messageSupplier, @NonConfidential Throwable throwable);
-
-    void fatal(@NonConfidential Marker marker, @NonConfidential String message, Object p0);
-
-    void fatal(@NonConfidential Marker marker, @NonConfidential String message, Object p0, Object p1);
-
-    void fatal(@NonConfidential Marker marker, @NonConfidential String message, Object p0, Object p1, Object p2);
-
-    void fatal(@NonConfidential Marker marker, @NonConfidential String message, Object p0, Object p1, Object p2, Object p3);
-
-    void fatal(@NonConfidential Marker marker, @NonConfidential String message, Object p0, Object p1, Object p2, Object p3, Object p4);
-
-    void fatal(@NonConfidential Marker marker, @NonConfidential String message, Object p0, Object p1, Object p2, Object p3, Object p4, Object p5);
-
-    void fatal(
-            @NonConfidential Marker marker, @NonConfidential String message, Object p0, Object p1, Object p2, Object p3, Object p4, Object p5, Object p6);
-
-    void fatal(
-            @NonConfidential Marker marker,
-            @NonConfidential String message,
-            Object p0,
-            Object p1,
-            Object p2,
-            Object p3,
-            Object p4,
-            Object p5,
-            Object p6,
-            Object p7);
-
-    void fatal(
-            @NonConfidential Marker marker,
-            @NonConfidential String message,
-            Object p0,
-            Object p1,
-            Object p2,
-            Object p3,
-            Object p4,
-            Object p5,
-            Object p6,
-            Object p7,
-            Object p8);
-
-    void fatal(
-            @NonConfidential Marker marker,
-            @NonConfidential String message,
-            Object p0,
-            Object p1,
-            Object p2,
-            Object p3,
-            Object p4,
-            Object p5,
-            Object p6,
-            Object p7,
-            Object p8,
-            Object p9);
-
-    void fatal(@NonConfidential String message, Object p0);
-
-    void fatal(@NonConfidential String message, Object p0, Object p1);
-
-    void fatal(@NonConfidential String message, Object p0, Object p1, Object p2);
-
-    void fatal(@NonConfidential String message, Object p0, Object p1, Object p2, Object p3);
-
-    void fatal(@NonConfidential String message, Object p0, Object p1, Object p2, Object p3, Object p4);
-
-    void fatal(@NonConfidential String message, Object p0, Object p1, Object p2, Object p3, Object p4, Object p5);
-
-    void fatal(@NonConfidential String message, Object p0, Object p1, Object p2, Object p3, Object p4, Object p5, Object p6);
-
-    void fatal(@NonConfidential String message, Object p0, Object p1, Object p2, Object p3, Object p4, Object p5, Object p6, Object p7);
-
-    void fatal(
-            @NonConfidential String message,
-            Object p0,
-            Object p1,
-            Object p2,
-            Object p3,
-            Object p4,
-            Object p5,
-            Object p6,
-            Object p7,
-            Object p8);
-
-    void fatal(
-            @NonConfidential String message,
-            Object p0,
-            Object p1,
-            Object p2,
-            Object p3,
-            Object p4,
-            Object p5,
-            Object p6,
-            Object p7,
-            Object p8,
-            Object p9);
-
-    void log(Level level, @NonConfidential Marker marker, @NonConfidential Message message);
-
-    void log(Level level, @NonConfidential Marker marker, @NonConfidential Message message, @NonConfidential Throwable throwable);
-
-    void log(Level level, @NonConfidential Marker marker, @NonConfidential MessageSupplier messageSupplier);
-
-    void log(Level level, @NonConfidential Marker marker, @NonConfidential MessageSupplier messageSupplier, @NonConfidential Throwable throwable);
-
-    void log(Level level, @NonConfidential Marker marker, @NonConfidential CharSequence message);
-
-    void log(Level level, @NonConfidential Marker marker, @NonConfidential CharSequence message, @NonConfidential Throwable throwable);
-
-    void log(Level level, @NonConfidential Marker marker, @NonConfidential Object message);
-
-    void log(Level level, @NonConfidential Marker marker, @NonConfidential Object message, @NonConfidential Throwable throwable);
-
-    void log(Level level, @NonConfidential Marker marker, @NonConfidential String message);
-
-    void log(Level level, @NonConfidential Marker marker, @NonConfidential String message, Object... params);
-
-    void log(Level level, @NonConfidential Marker marker, @NonConfidential String message, @NonConfidential Supplier<?>... paramSuppliers);
-
-    void log(Level level, @NonConfidential Marker marker, @NonConfidential String message, @NonConfidential Throwable throwable);
-
-    void log(Level level, @NonConfidential Marker marker, @NonConfidential Supplier<?> messageSupplier);
-
-    void log(Level level, @NonConfidential Marker marker, @NonConfidential Supplier<?> messageSupplier, @NonConfidential Throwable throwable);
-
-    void log(Level level, @NonConfidential Message message);
-
-    void log(Level level, @NonConfidential Message message, @NonConfidential Throwable throwable);
-
-    void log(Level level, @NonConfidential MessageSupplier messageSupplier);
-
-    void log(Level level, @NonConfidential MessageSupplier messageSupplier, @NonConfidential Throwable throwable);
-
-    void log(Level level, @NonConfidential CharSequence message);
-
-    void log(Level level, @NonConfidential CharSequence message, @NonConfidential Throwable throwable);
-
-    void log(Level level, @NonConfidential Object message);
-
-    void log(Level level, @NonConfidential Object message, @NonConfidential Throwable throwable);
-
-    void log(Level level, @NonConfidential String message);
-
-    void log(Level level, @NonConfidential String message, Object... params);
-
-    void log(Level level, @NonConfidential String message, @NonConfidential Supplier<?>... paramSuppliers);
-
-    void log(Level level, @NonConfidential String message, @NonConfidential Throwable throwable);
-
-    void log(Level level, @NonConfidential Supplier<?> messageSupplier);
-
-    void log(Level level, @NonConfidential Supplier<?> messageSupplier, @NonConfidential Throwable throwable);
-
-    void log(Level level, @NonConfidential Marker marker, @NonConfidential String message, Object p0);
-
-    void log(Level level, @NonConfidential Marker marker, @NonConfidential String message, Object p0, Object p1);
-
-    void log(Level level, @NonConfidential Marker marker, @NonConfidential String message, Object p0, Object p1, Object p2);
-
-    void log(Level level, @NonConfidential Marker marker, @NonConfidential String message, Object p0, Object p1, Object p2, Object p3);
-
-    void log(Level level, @NonConfidential Marker marker, @NonConfidential String message, Object p0, Object p1, Object p2, Object p3, Object p4);
-
-    void log(
-            Level level,
-            Marker marker,
+            @UnknownConfidential Marker marker,
             String message,
-            Object p0,
-            Object p1,
-            Object p2,
-            Object p3,
-            Object p4,
-            Object p5);
+            @UnknownConfidential Object p0,
+            @UnknownConfidential Object p1,
+            @UnknownConfidential Object p2,
+            @UnknownConfidential Object p3,
+            @UnknownConfidential Object p4,
+            @UnknownConfidential Object p5,
+            @UnknownConfidential Object p6,
+            @UnknownConfidential Object p7);
+
+    void error(
+            @UnknownConfidential Marker marker,
+            String message,
+            @UnknownConfidential Object p0,
+            @UnknownConfidential Object p1,
+            @UnknownConfidential Object p2,
+            @UnknownConfidential Object p3,
+            @UnknownConfidential Object p4,
+            @UnknownConfidential Object p5,
+            @UnknownConfidential Object p6,
+            @UnknownConfidential Object p7,
+            @UnknownConfidential Object p8);
+
+    void error(
+            @UnknownConfidential Marker marker,
+            String message,
+            @UnknownConfidential Object p0,
+            @UnknownConfidential Object p1,
+            @UnknownConfidential Object p2,
+            @UnknownConfidential Object p3,
+            @UnknownConfidential Object p4,
+            @UnknownConfidential Object p5,
+            @UnknownConfidential Object p6,
+            @UnknownConfidential Object p7,
+            @UnknownConfidential Object p8,
+            @UnknownConfidential Object p9);
+
+    void error(String message, @UnknownConfidential Object p0);
+
+    void error(String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1);
+
+    void error(String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2);
+
+    void error(String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2, @UnknownConfidential Object p3);
+
+    void error(String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2, @UnknownConfidential Object p3, @UnknownConfidential Object p4);
+
+    void error(String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2, @UnknownConfidential Object p3, @UnknownConfidential Object p4, @UnknownConfidential Object p5);
+
+    void error(String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2, @UnknownConfidential Object p3, @UnknownConfidential Object p4, @UnknownConfidential Object p5, @UnknownConfidential Object p6);
+
+    void error(String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2, @UnknownConfidential Object p3, @UnknownConfidential Object p4, @UnknownConfidential Object p5, @UnknownConfidential Object p6, @UnknownConfidential Object p7);
+
+    void error(
+            String message,
+            @UnknownConfidential Object p0,
+            @UnknownConfidential Object p1,
+            @UnknownConfidential Object p2,
+            @UnknownConfidential Object p3,
+            @UnknownConfidential Object p4,
+            @UnknownConfidential Object p5,
+            @UnknownConfidential Object p6,
+            @UnknownConfidential Object p7,
+            @UnknownConfidential Object p8);
+
+    void error(
+            String message,
+            @UnknownConfidential Object p0,
+            @UnknownConfidential Object p1,
+            @UnknownConfidential Object p2,
+            @UnknownConfidential Object p3,
+            @UnknownConfidential Object p4,
+            @UnknownConfidential Object p5,
+            @UnknownConfidential Object p6,
+            @UnknownConfidential Object p7,
+            @UnknownConfidential Object p8,
+            @UnknownConfidential Object p9);
+
+    void info(@UnknownConfidential Marker marker, Message message);
+
+    void info(@UnknownConfidential Marker marker, Message message, @UnknownConfidential Throwable throwable);
+
+    void info(@UnknownConfidential Marker marker, @UnknownConfidential MessageSupplier messageSupplier);
+
+    void info(@UnknownConfidential Marker marker, @UnknownConfidential MessageSupplier messageSupplier, @UnknownConfidential Throwable throwable);
+
+    void info(@UnknownConfidential Marker marker, CharSequence message);
+
+    void info(@UnknownConfidential Marker marker, CharSequence message, @UnknownConfidential Throwable throwable);
+
+    void info(@UnknownConfidential Marker marker, Object message);
+
+    void info(@UnknownConfidential Marker marker, Object message, @UnknownConfidential Throwable throwable);
+
+    void info(@UnknownConfidential Marker marker, String message);
+
+    void info(@UnknownConfidential Marker marker, String message, @UnknownConfidential Object... params);
+
+    void info(@UnknownConfidential Marker marker, String message, @UnknownConfidential Supplier<?>... paramSuppliers);
+
+    void info(@UnknownConfidential Marker marker, String message, @UnknownConfidential Throwable throwable);
+
+    void info(@UnknownConfidential Marker marker, @UnknownConfidential Supplier<?> messageSupplier);
+
+    void info(@UnknownConfidential Marker marker, @UnknownConfidential Supplier<?> messageSupplier, @UnknownConfidential Throwable throwable);
+
+    void info(Message message);
+
+    void info(Message message, @UnknownConfidential Throwable throwable);
+
+    void info(@UnknownConfidential MessageSupplier messageSupplier);
+
+    void info(@UnknownConfidential MessageSupplier messageSupplier, @UnknownConfidential Throwable throwable);
+
+    void info(CharSequence message);
+
+    void info(CharSequence message, @UnknownConfidential Throwable throwable);
+
+    void info(Object message);
+
+    void info(Object message, @UnknownConfidential Throwable throwable);
+
+    void info(String message);
+
+    void info(String message, @UnknownConfidential Object... params);
+
+    void info(String message, @UnknownConfidential Supplier<?>... paramSuppliers);
+
+    void info(String message, @UnknownConfidential Throwable throwable);
+
+    void info(@UnknownConfidential Supplier<?> messageSupplier);
+
+    void info(@UnknownConfidential Supplier<?> messageSupplier, @UnknownConfidential Throwable throwable);
+
+    void info(@UnknownConfidential Marker marker, String message, @UnknownConfidential Object p0);
+
+    void info(@UnknownConfidential Marker marker, String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1);
+
+    void info(@UnknownConfidential Marker marker, String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2);
+
+    void info(@UnknownConfidential Marker marker, String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2, @UnknownConfidential Object p3);
+
+    void info(@UnknownConfidential Marker marker, String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2, @UnknownConfidential Object p3, @UnknownConfidential Object p4);
+
+    void info(@UnknownConfidential Marker marker, String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2, @UnknownConfidential Object p3, @UnknownConfidential Object p4, @UnknownConfidential Object p5);
+
+    void info(
+            @UnknownConfidential Marker marker, String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2, @UnknownConfidential Object p3, @UnknownConfidential Object p4, @UnknownConfidential Object p5, @UnknownConfidential Object p6);
+
+    void info(
+            @UnknownConfidential Marker marker,
+            String message,
+            @UnknownConfidential Object p0,
+            @UnknownConfidential Object p1,
+            @UnknownConfidential Object p2,
+            @UnknownConfidential Object p3,
+            @UnknownConfidential Object p4,
+            @UnknownConfidential Object p5,
+            @UnknownConfidential Object p6,
+            @UnknownConfidential Object p7);
+
+    void info(
+            @UnknownConfidential Marker marker,
+            String message,
+            @UnknownConfidential Object p0,
+            @UnknownConfidential Object p1,
+            @UnknownConfidential Object p2,
+            @UnknownConfidential Object p3,
+            @UnknownConfidential Object p4,
+            @UnknownConfidential Object p5,
+            @UnknownConfidential Object p6,
+            @UnknownConfidential Object p7,
+            @UnknownConfidential Object p8);
+
+    void info(
+            @UnknownConfidential Marker marker,
+            String message,
+            @UnknownConfidential Object p0,
+            @UnknownConfidential Object p1,
+            @UnknownConfidential Object p2,
+            @UnknownConfidential Object p3,
+            @UnknownConfidential Object p4,
+            @UnknownConfidential Object p5,
+            @UnknownConfidential Object p6,
+            @UnknownConfidential Object p7,
+            @UnknownConfidential Object p8,
+            @UnknownConfidential Object p9);
+
+    void info(String message, @UnknownConfidential Object p0);
+
+    void info(String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1);
+
+    void info(String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2);
+
+    void info(String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2, @UnknownConfidential Object p3);
+
+    void info(String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2, @UnknownConfidential Object p3, @UnknownConfidential Object p4);
+
+    void info(String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2, @UnknownConfidential Object p3, @UnknownConfidential Object p4, @UnknownConfidential Object p5);
+
+    void info(String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2, @UnknownConfidential Object p3, @UnknownConfidential Object p4, @UnknownConfidential Object p5, @UnknownConfidential Object p6);
+
+    void info(String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2, @UnknownConfidential Object p3, @UnknownConfidential Object p4, @UnknownConfidential Object p5, @UnknownConfidential Object p6, @UnknownConfidential Object p7);
+
+    void info(
+            String message,
+            @UnknownConfidential Object p0,
+            @UnknownConfidential Object p1,
+            @UnknownConfidential Object p2,
+            @UnknownConfidential Object p3,
+            @UnknownConfidential Object p4,
+            @UnknownConfidential Object p5,
+            @UnknownConfidential Object p6,
+            @UnknownConfidential Object p7,
+            @UnknownConfidential Object p8);
+
+    void info(
+            String message,
+            @UnknownConfidential Object p0,
+            @UnknownConfidential Object p1,
+            @UnknownConfidential Object p2,
+            @UnknownConfidential Object p3,
+            @UnknownConfidential Object p4,
+            @UnknownConfidential Object p5,
+            @UnknownConfidential Object p6,
+            @UnknownConfidential Object p7,
+            @UnknownConfidential Object p8,
+            @UnknownConfidential Object p9);
+
+    void catching(Level level, @UnknownConfidential Throwable throwable);
+
+    void catching(@UnknownConfidential Throwable throwable);
+
+    void debug(@UnknownConfidential Marker marker, Message message);
+
+    void debug(@UnknownConfidential Marker marker, Message message, @UnknownConfidential Throwable throwable);
+
+    void debug(@UnknownConfidential Marker marker, @UnknownConfidential MessageSupplier messageSupplier);
+
+    void debug(@UnknownConfidential Marker marker, @UnknownConfidential MessageSupplier messageSupplier, @UnknownConfidential Throwable throwable);
+
+    void debug(@UnknownConfidential Marker marker, CharSequence message);
+
+    void debug(@UnknownConfidential Marker marker, CharSequence message, @UnknownConfidential Throwable throwable);
+
+    void debug(@UnknownConfidential Marker marker, Object message);
+
+    void debug(@UnknownConfidential Marker marker, Object message, @UnknownConfidential Throwable throwable);
+
+    void debug(@UnknownConfidential Marker marker, String message);
+
+    void debug(@UnknownConfidential Marker marker, String message, @UnknownConfidential Object... params);
+
+    void debug(@UnknownConfidential Marker marker, String message, @UnknownConfidential Supplier<?>... paramSuppliers);
+
+    void debug(@UnknownConfidential Marker marker, String message, @UnknownConfidential Throwable throwable);
+
+    void debug(@UnknownConfidential Marker marker, @UnknownConfidential Supplier<?> messageSupplier);
+
+    void debug(@UnknownConfidential Marker marker, @UnknownConfidential Supplier<?> messageSupplier, @UnknownConfidential Throwable throwable);
+
+    void debug(Message message);
+
+    void debug(Message message, @UnknownConfidential Throwable throwable);
+
+    void debug(@UnknownConfidential MessageSupplier messageSupplier);
+
+    void debug(@UnknownConfidential MessageSupplier messageSupplier, @UnknownConfidential Throwable throwable);
+
+    void debug(CharSequence message);
+
+    void debug(CharSequence message, @UnknownConfidential Throwable throwable);
+
+    void debug(Object message);
+
+    void debug(Object message, @UnknownConfidential Throwable throwable);
+
+    void debug(String message);
+
+    void debug(String message, @UnknownConfidential Object... params);
+
+    void debug(String message, @UnknownConfidential Supplier<?>... paramSuppliers);
+
+    void debug(String message, @UnknownConfidential Throwable throwable);
+
+    void debug(@UnknownConfidential Supplier<?> messageSupplier);
+
+    void debug(@UnknownConfidential Supplier<?> messageSupplier, @UnknownConfidential Throwable throwable);
+
+    void debug(@UnknownConfidential Marker marker, String message, @UnknownConfidential Object p0);
+
+    void debug(@UnknownConfidential Marker marker, String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1);
+
+    void debug(@UnknownConfidential Marker marker, String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2);
+
+    void debug(@UnknownConfidential Marker marker, String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2, @UnknownConfidential Object p3);
+
+    void debug(@UnknownConfidential Marker marker, String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2, @UnknownConfidential Object p3, @UnknownConfidential Object p4);
+
+    void debug(@UnknownConfidential Marker marker, String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2, @UnknownConfidential Object p3, @UnknownConfidential Object p4, @UnknownConfidential Object p5);
+
+    void debug(
+            @UnknownConfidential Marker marker, String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2, @UnknownConfidential Object p3, @UnknownConfidential Object p4, @UnknownConfidential Object p5, @UnknownConfidential Object p6);
+
+    void debug(
+            @UnknownConfidential Marker marker,
+            String message,
+            @UnknownConfidential Object p0,
+            @UnknownConfidential Object p1,
+            @UnknownConfidential Object p2,
+            @UnknownConfidential Object p3,
+            @UnknownConfidential Object p4,
+            @UnknownConfidential Object p5,
+            @UnknownConfidential Object p6,
+            @UnknownConfidential Object p7);
+
+    void debug(
+            @UnknownConfidential Marker marker,
+            String message,
+            @UnknownConfidential Object p0,
+            @UnknownConfidential Object p1,
+            @UnknownConfidential Object p2,
+            @UnknownConfidential Object p3,
+            @UnknownConfidential Object p4,
+            @UnknownConfidential Object p5,
+            @UnknownConfidential Object p6,
+            @UnknownConfidential Object p7,
+            @UnknownConfidential Object p8);
+
+    void debug(
+            @UnknownConfidential Marker marker,
+            String message,
+            @UnknownConfidential Object p0,
+            @UnknownConfidential Object p1,
+            @UnknownConfidential Object p2,
+            @UnknownConfidential Object p3,
+            @UnknownConfidential Object p4,
+            @UnknownConfidential Object p5,
+            @UnknownConfidential Object p6,
+            @UnknownConfidential Object p7,
+            @UnknownConfidential Object p8,
+            @UnknownConfidential Object p9);
+
+    void debug(String message, @UnknownConfidential Object p0);
+
+    void debug(String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1);
+
+    void debug(String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2);
+
+    void debug(String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2, @UnknownConfidential Object p3);
+
+    void debug(String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2, @UnknownConfidential Object p3, @UnknownConfidential Object p4);
+
+    void debug(String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2, @UnknownConfidential Object p3, @UnknownConfidential Object p4, @UnknownConfidential Object p5);
+
+    void debug(String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2, @UnknownConfidential Object p3, @UnknownConfidential Object p4, @UnknownConfidential Object p5, @UnknownConfidential Object p6);
+
+    void debug(String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2, @UnknownConfidential Object p3, @UnknownConfidential Object p4, @UnknownConfidential Object p5, @UnknownConfidential Object p6, @UnknownConfidential Object p7);
+
+    void debug(
+            String message,
+            @UnknownConfidential Object p0,
+            @UnknownConfidential Object p1,
+            @UnknownConfidential Object p2,
+            @UnknownConfidential Object p3,
+            @UnknownConfidential Object p4,
+            @UnknownConfidential Object p5,
+            @UnknownConfidential Object p6,
+            @UnknownConfidential Object p7,
+            @UnknownConfidential Object p8);
+
+    void debug(
+            String message,
+            @UnknownConfidential Object p0,
+            @UnknownConfidential Object p1,
+            @UnknownConfidential Object p2,
+            @UnknownConfidential Object p3,
+            @UnknownConfidential Object p4,
+            @UnknownConfidential Object p5,
+            @UnknownConfidential Object p6,
+            @UnknownConfidential Object p7,
+            @UnknownConfidential Object p8,
+            @UnknownConfidential Object p9);
+
+    void fatal(@UnknownConfidential Marker marker, Message message);
+
+    void fatal(@UnknownConfidential Marker marker, Message message, @UnknownConfidential Throwable throwable);
+
+    void fatal(@UnknownConfidential Marker marker, @UnknownConfidential MessageSupplier messageSupplier);
+
+    void fatal(@UnknownConfidential Marker marker, @UnknownConfidential MessageSupplier messageSupplier, @UnknownConfidential Throwable throwable);
+
+    void fatal(@UnknownConfidential Marker marker, CharSequence message);
+
+    void fatal(@UnknownConfidential Marker marker, CharSequence message, @UnknownConfidential Throwable throwable);
+
+    void fatal(@UnknownConfidential Marker marker, Object message);
+
+    void fatal(@UnknownConfidential Marker marker, Object message, @UnknownConfidential Throwable throwable);
+
+    void fatal(@UnknownConfidential Marker marker, String message);
+
+    void fatal(@UnknownConfidential Marker marker, String message, @UnknownConfidential Object... params);
+
+    void fatal(@UnknownConfidential Marker marker, String message, @UnknownConfidential Supplier<?>... paramSuppliers);
+
+    void fatal(@UnknownConfidential Marker marker, String message, @UnknownConfidential Throwable throwable);
+
+    void fatal(@UnknownConfidential Marker marker, @UnknownConfidential Supplier<?> messageSupplier);
+
+    void fatal(@UnknownConfidential Marker marker, @UnknownConfidential Supplier<?> messageSupplier, @UnknownConfidential Throwable throwable);
+
+    void fatal(Message message);
+
+    void fatal(Message message, @UnknownConfidential Throwable throwable);
+
+    void fatal(@UnknownConfidential MessageSupplier messageSupplier);
+
+    void fatal(@UnknownConfidential MessageSupplier messageSupplier, @UnknownConfidential Throwable throwable);
+
+    void fatal(CharSequence message);
+
+    void fatal(CharSequence message, @UnknownConfidential Throwable throwable);
+
+    void fatal(Object message);
+
+    void fatal(Object message, @UnknownConfidential Throwable throwable);
+
+    void fatal(String message);
+
+    void fatal(String message, @UnknownConfidential Object... params);
+
+    void fatal(String message, @UnknownConfidential Supplier<?>... paramSuppliers);
+
+    void fatal(String message, @UnknownConfidential Throwable throwable);
+
+    void fatal(@UnknownConfidential Supplier<?> messageSupplier);
+
+    void fatal(@UnknownConfidential Supplier<?> messageSupplier, @UnknownConfidential Throwable throwable);
+
+    void fatal(@UnknownConfidential Marker marker, String message, @UnknownConfidential Object p0);
+
+    void fatal(@UnknownConfidential Marker marker, String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1);
+
+    void fatal(@UnknownConfidential Marker marker, String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2);
+
+    void fatal(@UnknownConfidential Marker marker, String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2, @UnknownConfidential Object p3);
+
+    void fatal(@UnknownConfidential Marker marker, String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2, @UnknownConfidential Object p3, @UnknownConfidential Object p4);
+
+    void fatal(@UnknownConfidential Marker marker, String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2, @UnknownConfidential Object p3, @UnknownConfidential Object p4, @UnknownConfidential Object p5);
+
+    void fatal(
+            @UnknownConfidential Marker marker, String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2, @UnknownConfidential Object p3, @UnknownConfidential Object p4, @UnknownConfidential Object p5, @UnknownConfidential Object p6);
+
+    void fatal(
+            @UnknownConfidential Marker marker,
+            String message,
+            @UnknownConfidential Object p0,
+            @UnknownConfidential Object p1,
+            @UnknownConfidential Object p2,
+            @UnknownConfidential Object p3,
+            @UnknownConfidential Object p4,
+            @UnknownConfidential Object p5,
+            @UnknownConfidential Object p6,
+            @UnknownConfidential Object p7);
+
+    void fatal(
+            @UnknownConfidential Marker marker,
+            String message,
+            @UnknownConfidential Object p0,
+            @UnknownConfidential Object p1,
+            @UnknownConfidential Object p2,
+            @UnknownConfidential Object p3,
+            @UnknownConfidential Object p4,
+            @UnknownConfidential Object p5,
+            @UnknownConfidential Object p6,
+            @UnknownConfidential Object p7,
+            @UnknownConfidential Object p8);
+
+    void fatal(
+            @UnknownConfidential Marker marker,
+            String message,
+            @UnknownConfidential Object p0,
+            @UnknownConfidential Object p1,
+            @UnknownConfidential Object p2,
+            @UnknownConfidential Object p3,
+            @UnknownConfidential Object p4,
+            @UnknownConfidential Object p5,
+            @UnknownConfidential Object p6,
+            @UnknownConfidential Object p7,
+            @UnknownConfidential Object p8,
+            @UnknownConfidential Object p9);
+
+    void fatal(String message, @UnknownConfidential Object p0);
+
+    void fatal(String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1);
+
+    void fatal(String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2);
+
+    void fatal(String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2, @UnknownConfidential Object p3);
+
+    void fatal(String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2, @UnknownConfidential Object p3, @UnknownConfidential Object p4);
+
+    void fatal(String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2, @UnknownConfidential Object p3, @UnknownConfidential Object p4, @UnknownConfidential Object p5);
+
+    void fatal(String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2, @UnknownConfidential Object p3, @UnknownConfidential Object p4, @UnknownConfidential Object p5, @UnknownConfidential Object p6);
+
+    void fatal(String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2, @UnknownConfidential Object p3, @UnknownConfidential Object p4, @UnknownConfidential Object p5, @UnknownConfidential Object p6, @UnknownConfidential Object p7);
+
+    void fatal(
+            String message,
+            @UnknownConfidential Object p0,
+            @UnknownConfidential Object p1,
+            @UnknownConfidential Object p2,
+            @UnknownConfidential Object p3,
+            @UnknownConfidential Object p4,
+            @UnknownConfidential Object p5,
+            @UnknownConfidential Object p6,
+            @UnknownConfidential Object p7,
+            @UnknownConfidential Object p8);
+
+    void fatal(
+            String message,
+            @UnknownConfidential Object p0,
+            @UnknownConfidential Object p1,
+            @UnknownConfidential Object p2,
+            @UnknownConfidential Object p3,
+            @UnknownConfidential Object p4,
+            @UnknownConfidential Object p5,
+            @UnknownConfidential Object p6,
+            @UnknownConfidential Object p7,
+            @UnknownConfidential Object p8,
+            @UnknownConfidential Object p9);
+
+    void log(Level level, @UnknownConfidential Marker marker, Message message);
+
+    void log(Level level, @UnknownConfidential Marker marker, Message message, @UnknownConfidential Throwable throwable);
+
+    void log(Level level, @UnknownConfidential Marker marker, @UnknownConfidential MessageSupplier messageSupplier);
+
+    void log(Level level, @UnknownConfidential Marker marker, @UnknownConfidential MessageSupplier messageSupplier, @UnknownConfidential Throwable throwable);
+
+    void log(Level level, @UnknownConfidential Marker marker, CharSequence message);
+
+    void log(Level level, @UnknownConfidential Marker marker, CharSequence message, @UnknownConfidential Throwable throwable);
+
+    void log(Level level, @UnknownConfidential Marker marker, Object message);
+
+    void log(Level level, @UnknownConfidential Marker marker, Object message, @UnknownConfidential Throwable throwable);
+
+    void log(Level level, @UnknownConfidential Marker marker, String message);
+
+    void log(Level level, @UnknownConfidential Marker marker, String message, @UnknownConfidential Object... params);
+
+    void log(Level level, @UnknownConfidential Marker marker, String message, @UnknownConfidential Supplier<?>... paramSuppliers);
+
+    void log(Level level, @UnknownConfidential Marker marker, String message, @UnknownConfidential Throwable throwable);
+
+    void log(Level level, @UnknownConfidential Marker marker, @UnknownConfidential Supplier<?> messageSupplier);
+
+    void log(Level level, @UnknownConfidential Marker marker, @UnknownConfidential Supplier<?> messageSupplier, @UnknownConfidential Throwable throwable);
+
+    void log(Level level, Message message);
+
+    void log(Level level, Message message, @UnknownConfidential Throwable throwable);
+
+    void log(Level level, @UnknownConfidential MessageSupplier messageSupplier);
+
+    void log(Level level, @UnknownConfidential MessageSupplier messageSupplier, @UnknownConfidential Throwable throwable);
+
+    void log(Level level, CharSequence message);
+
+    void log(Level level, CharSequence message, @UnknownConfidential Throwable throwable);
+
+    void log(Level level, Object message);
+
+    void log(Level level, Object message, @UnknownConfidential Throwable throwable);
+
+    void log(Level level, String message);
+
+    void log(Level level, String message, @UnknownConfidential Object... params);
+
+    void log(Level level, String message, @UnknownConfidential Supplier<?>... paramSuppliers);
+
+    void log(Level level, String message, @UnknownConfidential Throwable throwable);
+
+    void log(Level level, @UnknownConfidential Supplier<?> messageSupplier);
+
+    void log(Level level, @UnknownConfidential Supplier<?> messageSupplier, @UnknownConfidential Throwable throwable);
+
+    void log(Level level, @UnknownConfidential Marker marker, String message, @UnknownConfidential Object p0);
+
+    void log(Level level, @UnknownConfidential Marker marker, String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1);
+
+    void log(Level level, @UnknownConfidential Marker marker, String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2);
+
+    void log(Level level, @UnknownConfidential Marker marker, String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2, @UnknownConfidential Object p3);
+
+    void log(Level level, @UnknownConfidential Marker marker, String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2, @UnknownConfidential Object p3, @UnknownConfidential Object p4);
 
     void log(
             Level level,
-            @NonConfidential Marker marker,
-            @NonConfidential String message,
-            Object p0,
-            Object p1,
-            Object p2,
-            Object p3,
-            Object p4,
-            Object p5,
-            Object p6);
+            @UnknownConfidential Marker marker,
+            String message,
+            @UnknownConfidential Object p0,
+            @UnknownConfidential Object p1,
+            @UnknownConfidential Object p2,
+            @UnknownConfidential Object p3,
+            @UnknownConfidential Object p4,
+            @UnknownConfidential Object p5);
 
     void log(
             Level level,
-            @NonConfidential Marker marker,
-            @NonConfidential String message,
-            Object p0,
-            Object p1,
-            Object p2,
-            Object p3,
-            Object p4,
-            Object p5,
-            Object p6,
-            Object p7);
+            @UnknownConfidential Marker marker,
+            String message,
+            @UnknownConfidential Object p0,
+            @UnknownConfidential Object p1,
+            @UnknownConfidential Object p2,
+            @UnknownConfidential Object p3,
+            @UnknownConfidential Object p4,
+            @UnknownConfidential Object p5,
+            @UnknownConfidential Object p6);
 
     void log(
             Level level,
-            @NonConfidential Marker marker,
-            @NonConfidential String message,
-            Object p0,
-            Object p1,
-            Object p2,
-            Object p3,
-            Object p4,
-            Object p5,
-            Object p6,
-            Object p7,
-            Object p8);
+            @UnknownConfidential Marker marker,
+            String message,
+            @UnknownConfidential Object p0,
+            @UnknownConfidential Object p1,
+            @UnknownConfidential Object p2,
+            @UnknownConfidential Object p3,
+            @UnknownConfidential Object p4,
+            @UnknownConfidential Object p5,
+            @UnknownConfidential Object p6,
+            @UnknownConfidential Object p7);
 
     void log(
             Level level,
-            @NonConfidential Marker marker,
-            @NonConfidential String message,
-            Object p0,
-            Object p1,
-            Object p2,
-            Object p3,
-            Object p4,
-            Object p5,
-            Object p6,
-            Object p7,
-            Object p8,
-            Object p9);
-
-    void log(Level level, @NonConfidential String message, Object p0);
-
-    void log(Level level, @NonConfidential String message, Object p0, Object p1);
-
-    void log(Level level, @NonConfidential String message, Object p0, Object p1, Object p2);
-
-    void log(Level level, @NonConfidential String message, Object p0, Object p1, Object p2, Object p3);
-
-    void log(Level level, @NonConfidential String message, Object p0, Object p1, Object p2, Object p3, Object p4);
-
-    void log(Level level, @NonConfidential String message, Object p0, Object p1, Object p2, Object p3, Object p4, Object p5);
-
-    void log(Level level, @NonConfidential String message, Object p0, Object p1, Object p2, Object p3, Object p4, Object p5, Object p6);
+            @UnknownConfidential Marker marker,
+            String message,
+            @UnknownConfidential Object p0,
+            @UnknownConfidential Object p1,
+            @UnknownConfidential Object p2,
+            @UnknownConfidential Object p3,
+            @UnknownConfidential Object p4,
+            @UnknownConfidential Object p5,
+            @UnknownConfidential Object p6,
+            @UnknownConfidential Object p7,
+            @UnknownConfidential Object p8);
 
     void log(
             Level level,
-            @NonConfidential String message,
-            Object p0,
-            Object p1,
-            Object p2,
-            Object p3,
-            Object p4,
-            Object p5,
-            Object p6,
-            Object p7);
+            @UnknownConfidential Marker marker,
+            String message,
+            @UnknownConfidential Object p0,
+            @UnknownConfidential Object p1,
+            @UnknownConfidential Object p2,
+            @UnknownConfidential Object p3,
+            @UnknownConfidential Object p4,
+            @UnknownConfidential Object p5,
+            @UnknownConfidential Object p6,
+            @UnknownConfidential Object p7,
+            @UnknownConfidential Object p8,
+            @UnknownConfidential Object p9);
+
+    void log(Level level, String message, @UnknownConfidential Object p0);
+
+    void log(Level level, String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1);
+
+    void log(Level level, String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2);
+
+    void log(Level level, String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2, @UnknownConfidential Object p3);
+
+    void log(Level level, String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2, @UnknownConfidential Object p3, @UnknownConfidential Object p4);
+
+    void log(Level level, String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2, @UnknownConfidential Object p3, @UnknownConfidential Object p4, @UnknownConfidential Object p5);
+
+    void log(Level level, String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2, @UnknownConfidential Object p3, @UnknownConfidential Object p4, @UnknownConfidential Object p5, @UnknownConfidential Object p6);
 
     void log(
             Level level,
-            @NonConfidential String message,
-            Object p0,
-            Object p1,
-            Object p2,
-            Object p3,
-            Object p4,
-            Object p5,
-            Object p6,
-            Object p7,
-            Object p8);
+            String message,
+            @UnknownConfidential Object p0,
+            @UnknownConfidential Object p1,
+            @UnknownConfidential Object p2,
+            @UnknownConfidential Object p3,
+            @UnknownConfidential Object p4,
+            @UnknownConfidential Object p5,
+            @UnknownConfidential Object p6,
+            @UnknownConfidential Object p7);
 
     void log(
             Level level,
-            @NonConfidential String message,
-            Object p0,
-            Object p1,
-            Object p2,
-            Object p3,
-            Object p4,
-            Object p5,
-            Object p6,
-            Object p7,
-            Object p8,
-            Object p9);
+            String message,
+            @UnknownConfidential Object p0,
+            @UnknownConfidential Object p1,
+            @UnknownConfidential Object p2,
+            @UnknownConfidential Object p3,
+            @UnknownConfidential Object p4,
+            @UnknownConfidential Object p5,
+            @UnknownConfidential Object p6,
+            @UnknownConfidential Object p7,
+            @UnknownConfidential Object p8);
+
+    void log(
+            Level level,
+            String message,
+            @UnknownConfidential Object p0,
+            @UnknownConfidential Object p1,
+            @UnknownConfidential Object p2,
+            @UnknownConfidential Object p3,
+            @UnknownConfidential Object p4,
+            @UnknownConfidential Object p5,
+            @UnknownConfidential Object p6,
+            @UnknownConfidential Object p7,
+            @UnknownConfidential Object p8,
+            @UnknownConfidential Object p9);
 
     default void logMessage(
                 final Level level,
-                final @NonConfidential Marker marker,
-                final @NonConfidential String fqcn,
-                final @NonConfidential StackTraceElement location,
-                final @NonConfidential Message message,
-                final @NonConfidential Throwable throwable);
+                final @UnknownConfidential Marker marker,
+                final String fqcn,
+                final StackTraceElement location,
+                final Message message,
+                final @UnknownConfidential Throwable throwable);
 
-    void printf(Level level, @NonConfidential Marker marker, @NonConfidential String format, Object... params);
+    void printf(Level level, @UnknownConfidential Marker marker, String format, @UnknownConfidential Object... params);
 
-    void printf(Level level, @NonConfidential String format, Object... params);
+    void printf(Level level, String format, @UnknownConfidential Object... params);
 
-    void trace(@NonConfidential Marker marker, @NonConfidential Message message);
+    void trace(@UnknownConfidential Marker marker, Message message);
 
-    void trace(@NonConfidential Marker marker, @NonConfidential Message message, @NonConfidential Throwable throwable);
+    void trace(@UnknownConfidential Marker marker, Message message, @UnknownConfidential Throwable throwable);
 
-    void trace(@NonConfidential Marker marker, @NonConfidential MessageSupplier messageSupplier);
+    void trace(@UnknownConfidential Marker marker, @UnknownConfidential MessageSupplier messageSupplier);
 
-    void trace(@NonConfidential Marker marker, @NonConfidential MessageSupplier messageSupplier, @NonConfidential Throwable throwable);
+    void trace(@UnknownConfidential Marker marker, @UnknownConfidential MessageSupplier messageSupplier, @UnknownConfidential Throwable throwable);
 
-    void trace(@NonConfidential Marker marker, @NonConfidential CharSequence message);
+    void trace(@UnknownConfidential Marker marker, CharSequence message);
 
-    void trace(@NonConfidential Marker marker, @NonConfidential CharSequence message, @NonConfidential Throwable throwable);
+    void trace(@UnknownConfidential Marker marker, CharSequence message, @UnknownConfidential Throwable throwable);
 
-    void trace(@NonConfidential Marker marker, @NonConfidential Object message);
+    void trace(@UnknownConfidential Marker marker, Object message);
 
-    void trace(@NonConfidential Marker marker, @NonConfidential Object message, @NonConfidential Throwable throwable);
+    void trace(@UnknownConfidential Marker marker, Object message, @UnknownConfidential Throwable throwable);
 
-    void trace(@NonConfidential Marker marker, @NonConfidential String message);
+    void trace(@UnknownConfidential Marker marker, String message);
 
-    void trace(@NonConfidential Marker marker, @NonConfidential String message, Object... params);
+    void trace(@UnknownConfidential Marker marker, String message, @UnknownConfidential Object... params);
 
-    void trace(@NonConfidential Marker marker, @NonConfidential String message, @NonConfidential Supplier<?>... paramSuppliers);
+    void trace(@UnknownConfidential Marker marker, String message, @UnknownConfidential Supplier<?>... paramSuppliers);
 
-    void trace(@NonConfidential Marker marker, @NonConfidential String message, @NonConfidential Throwable throwable);
+    void trace(@UnknownConfidential Marker marker, String message, @UnknownConfidential Throwable throwable);
 
-    void trace(@NonConfidential Marker marker, @NonConfidential Supplier<?> messageSupplier);
+    void trace(@UnknownConfidential Marker marker, @UnknownConfidential Supplier<?> messageSupplier);
 
-    void trace(@NonConfidential Marker marker, @NonConfidential Supplier<?> messageSupplier, @NonConfidential Throwable throwable);
+    void trace(@UnknownConfidential Marker marker, @UnknownConfidential Supplier<?> messageSupplier, @UnknownConfidential Throwable throwable);
 
-    void trace(@NonConfidential Message message);
+    void trace(Message message);
 
-    void trace(@NonConfidential Message message, @NonConfidential Throwable throwable);
+    void trace(Message message, @UnknownConfidential Throwable throwable);
 
-    void trace(@NonConfidential MessageSupplier messageSupplier);
+    void trace(@UnknownConfidential MessageSupplier messageSupplier);
 
-    void trace(@NonConfidential MessageSupplier messageSupplier, @NonConfidential Throwable throwable);
+    void trace(@UnknownConfidential MessageSupplier messageSupplier, @UnknownConfidential Throwable throwable);
 
-    void trace(@NonConfidential CharSequence message);
+    void trace(CharSequence message);
 
-    void trace(@NonConfidential CharSequence message, @NonConfidential Throwable throwable);
+    void trace(CharSequence message, @UnknownConfidential Throwable throwable);
 
-    void trace(@NonConfidential Object message);
+    void trace(Object message);
 
-    void trace(@NonConfidential Object message, @NonConfidential Throwable throwable);
+    void trace(Object message, @UnknownConfidential Throwable throwable);
 
-    void trace(@NonConfidential String message);
+    void trace(String message);
 
-    void trace(@NonConfidential String message, Object... params);
+    void trace(String message, @UnknownConfidential Object... params);
 
-    void trace(@NonConfidential String message, @NonConfidential Supplier<?>... paramSuppliers);
+    void trace(String message, @UnknownConfidential Supplier<?>... paramSuppliers);
 
-    void trace(@NonConfidential String message, @NonConfidential Throwable throwable);
+    void trace(String message, @UnknownConfidential Throwable throwable);
 
-    void trace(@NonConfidential Supplier<?> messageSupplier);
+    void trace(@UnknownConfidential Supplier<?> messageSupplier);
 
-    void trace(@NonConfidential Supplier<?> messageSupplier, @NonConfidential Throwable throwable);
+    void trace(@UnknownConfidential Supplier<?> messageSupplier, @UnknownConfidential Throwable throwable);
 
-    void trace(@NonConfidential Marker marker, @NonConfidential String message, Object p0);
+    void trace(@UnknownConfidential Marker marker, String message, @UnknownConfidential Object p0);
 
-    void trace(@NonConfidential Marker marker, @NonConfidential String message, Object p0, Object p1);
+    void trace(@UnknownConfidential Marker marker, String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1);
 
-    void trace(@NonConfidential Marker marker, @NonConfidential String message, Object p0, Object p1, Object p2);
+    void trace(@UnknownConfidential Marker marker, String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2);
 
-    void trace(@NonConfidential Marker marker, @NonConfidential String message, Object p0, Object p1, Object p2, Object p3);
+    void trace(@UnknownConfidential Marker marker, String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2, @UnknownConfidential Object p3);
 
-    void trace(@NonConfidential Marker marker, @NonConfidential String message, Object p0, Object p1, Object p2, Object p3, Object p4);
+    void trace(@UnknownConfidential Marker marker, String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2, @UnknownConfidential Object p3, @UnknownConfidential Object p4);
 
-    void trace(@NonConfidential Marker marker, @NonConfidential String message, Object p0, Object p1, Object p2, Object p3, Object p4, Object p5);
-
-    void trace(
-            @NonConfidential Marker marker, @NonConfidential String message, Object p0, Object p1, Object p2, Object p3, Object p4, Object p5, Object p6);
+    void trace(@UnknownConfidential Marker marker, String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2, @UnknownConfidential Object p3, @UnknownConfidential Object p4, @UnknownConfidential Object p5);
 
     void trace(
-            @NonConfidential Marker marker,
-            @NonConfidential String message,
-            Object p0,
-            Object p1,
-            Object p2,
-            Object p3,
-            Object p4,
-            Object p5,
-            Object p6,
-            Object p7);
+            @UnknownConfidential Marker marker, String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2, @UnknownConfidential Object p3, @UnknownConfidential Object p4, @UnknownConfidential Object p5, @UnknownConfidential Object p6);
 
     void trace(
-            @NonConfidential Marker marker,
-            @NonConfidential String message,
-            Object p0,
-            Object p1,
-            Object p2,
-            Object p3,
-            Object p4,
-            Object p5,
-            Object p6,
-            Object p7,
-            Object p8);
+            @UnknownConfidential Marker marker,
+            String message,
+            @UnknownConfidential Object p0,
+            @UnknownConfidential Object p1,
+            @UnknownConfidential Object p2,
+            @UnknownConfidential Object p3,
+            @UnknownConfidential Object p4,
+            @UnknownConfidential Object p5,
+            @UnknownConfidential Object p6,
+            @UnknownConfidential Object p7);
 
     void trace(
-            @NonConfidential Marker marker,
-            @NonConfidential String message,
-            Object p0,
-            Object p1,
-            Object p2,
-            Object p3,
-            Object p4,
-            Object p5,
-            Object p6,
-            Object p7,
-            Object p8,
-            Object p9);
-
-    void trace(@NonConfidential String message, Object p0);
-
-    void trace(@NonConfidential String message, Object p0, Object p1);
-
-    void trace(@NonConfidential String message, Object p0, Object p1, Object p2);
-
-    void trace(@NonConfidential String message, Object p0, Object p1, Object p2, Object p3);
-
-    void trace(@NonConfidential String message, Object p0, Object p1, Object p2, Object p3, Object p4);
-
-    void trace(@NonConfidential String message, Object p0, Object p1, Object p2, Object p3, Object p4, Object p5);
-
-    void trace(@NonConfidential String message, Object p0, Object p1, Object p2, Object p3, Object p4, Object p5, Object p6);
-
-    void trace(@NonConfidential String message, Object p0, Object p1, Object p2, Object p3, Object p4, Object p5, Object p6, Object p7);
+            @UnknownConfidential Marker marker,
+            String message,
+            @UnknownConfidential Object p0,
+            @UnknownConfidential Object p1,
+            @UnknownConfidential Object p2,
+            @UnknownConfidential Object p3,
+            @UnknownConfidential Object p4,
+            @UnknownConfidential Object p5,
+            @UnknownConfidential Object p6,
+            @UnknownConfidential Object p7,
+            @UnknownConfidential Object p8);
 
     void trace(
-            @NonConfidential String message,
-            Object p0,
-            Object p1,
-            Object p2,
-            Object p3,
-            Object p4,
-            Object p5,
-            Object p6,
-            Object p7,
-            Object p8);
+            @UnknownConfidential Marker marker,
+            String message,
+            @UnknownConfidential Object p0,
+            @UnknownConfidential Object p1,
+            @UnknownConfidential Object p2,
+            @UnknownConfidential Object p3,
+            @UnknownConfidential Object p4,
+            @UnknownConfidential Object p5,
+            @UnknownConfidential Object p6,
+            @UnknownConfidential Object p7,
+            @UnknownConfidential Object p8,
+            @UnknownConfidential Object p9);
+
+    void trace(String message, @UnknownConfidential Object p0);
+
+    void trace(String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1);
+
+    void trace(String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2);
+
+    void trace(String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2, @UnknownConfidential Object p3);
+
+    void trace(String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2, @UnknownConfidential Object p3, @UnknownConfidential Object p4);
+
+    void trace(String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2, @UnknownConfidential Object p3, @UnknownConfidential Object p4, @UnknownConfidential Object p5);
+
+    void trace(String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2, @UnknownConfidential Object p3, @UnknownConfidential Object p4, @UnknownConfidential Object p5, @UnknownConfidential Object p6);
+
+    void trace(String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2, @UnknownConfidential Object p3, @UnknownConfidential Object p4, @UnknownConfidential Object p5, @UnknownConfidential Object p6, @UnknownConfidential Object p7);
 
     void trace(
-            @NonConfidential String message,
-            Object p0,
-            Object p1,
-            Object p2,
-            Object p3,
-            Object p4,
-            Object p5,
-            Object p6,
-            Object p7,
-            Object p8,
-            Object p9);
+            String message,
+            @UnknownConfidential Object p0,
+            @UnknownConfidential Object p1,
+            @UnknownConfidential Object p2,
+            @UnknownConfidential Object p3,
+            @UnknownConfidential Object p4,
+            @UnknownConfidential Object p5,
+            @UnknownConfidential Object p6,
+            @UnknownConfidential Object p7,
+            @UnknownConfidential Object p8);
 
-    void warn(@NonConfidential Marker marker, @NonConfidential Message message);
+    void trace(
+            String message,
+            @UnknownConfidential Object p0,
+            @UnknownConfidential Object p1,
+            @UnknownConfidential Object p2,
+            @UnknownConfidential Object p3,
+            @UnknownConfidential Object p4,
+            @UnknownConfidential Object p5,
+            @UnknownConfidential Object p6,
+            @UnknownConfidential Object p7,
+            @UnknownConfidential Object p8,
+            @UnknownConfidential Object p9);
 
-    void warn(@NonConfidential Marker marker, @NonConfidential Message message, @NonConfidential Throwable throwable);
+    void warn(@UnknownConfidential Marker marker, Message message);
 
-    void warn(@NonConfidential Marker marker, @NonConfidential MessageSupplier messageSupplier);
+    void warn(@UnknownConfidential Marker marker, Message message, @UnknownConfidential Throwable throwable);
 
-    void warn(@NonConfidential Marker marker, @NonConfidential MessageSupplier messageSupplier, @NonConfidential Throwable throwable);
+    void warn(@UnknownConfidential Marker marker, @UnknownConfidential MessageSupplier messageSupplier);
 
-    void warn(@NonConfidential Marker marker, @NonConfidential CharSequence message);
+    void warn(@UnknownConfidential Marker marker, @UnknownConfidential MessageSupplier messageSupplier, @UnknownConfidential Throwable throwable);
 
-    void warn(@NonConfidential Marker marker, @NonConfidential CharSequence message, @NonConfidential Throwable throwable);
+    void warn(@UnknownConfidential Marker marker, CharSequence message);
 
-    void warn(@NonConfidential Marker marker, @NonConfidential Object message);
+    void warn(@UnknownConfidential Marker marker, CharSequence message, @UnknownConfidential Throwable throwable);
 
-    void warn(@NonConfidential Marker marker, @NonConfidential Object message, @NonConfidential Throwable throwable);
+    void warn(@UnknownConfidential Marker marker, Object message);
 
-    void warn(@NonConfidential Marker marker, @NonConfidential String message);
+    void warn(@UnknownConfidential Marker marker, Object message, @UnknownConfidential Throwable throwable);
 
-    void warn(@NonConfidential Marker marker, @NonConfidential String message, Object... params);
+    void warn(@UnknownConfidential Marker marker, String message);
 
-    void warn(@NonConfidential Marker marker, @NonConfidential String message, @NonConfidential Supplier<?>... paramSuppliers);
+    void warn(@UnknownConfidential Marker marker, String message, @UnknownConfidential Object... params);
 
-    void warn(@NonConfidential Marker marker, @NonConfidential String message, @NonConfidential Throwable throwable);
+    void warn(@UnknownConfidential Marker marker, String message, @UnknownConfidential Supplier<?>... paramSuppliers);
 
-    void warn(@NonConfidential Marker marker, @NonConfidential Supplier<?> messageSupplier);
+    void warn(@UnknownConfidential Marker marker, String message, @UnknownConfidential Throwable throwable);
 
-    void warn(@NonConfidential Marker marker, @NonConfidential Supplier<?> messageSupplier, @NonConfidential Throwable throwable);
+    void warn(@UnknownConfidential Marker marker, @UnknownConfidential Supplier<?> messageSupplier);
 
-    void warn(@NonConfidential Message message);
+    void warn(@UnknownConfidential Marker marker, @UnknownConfidential Supplier<?> messageSupplier, @UnknownConfidential Throwable throwable);
 
-    void warn(@NonConfidential Message message, @NonConfidential Throwable throwable);
+    void warn(Message message);
 
-    void warn(@NonConfidential MessageSupplier messageSupplier);
+    void warn(Message message, @UnknownConfidential Throwable throwable);
 
-    void warn(@NonConfidential MessageSupplier messageSupplier, @NonConfidential Throwable throwable);
+    void warn(@UnknownConfidential MessageSupplier messageSupplier);
 
-    void warn(@NonConfidential CharSequence message);
+    void warn(@UnknownConfidential MessageSupplier messageSupplier, @UnknownConfidential Throwable throwable);
 
-    void warn(@NonConfidential CharSequence message, @NonConfidential Throwable throwable);
+    void warn(CharSequence message);
 
-    void warn(@NonConfidential Object message);
+    void warn(CharSequence message, @UnknownConfidential Throwable throwable);
 
-    void warn(@NonConfidential Object message, @NonConfidential Throwable throwable);
+    void warn(Object message);
 
-    void warn(@NonConfidential String message);
+    void warn(Object message, @UnknownConfidential Throwable throwable);
 
-    void warn(@NonConfidential String message, Object... params);
+    void warn(String message);
 
-    void warn(@NonConfidential String message, @NonConfidential Supplier<?>... paramSuppliers);
+    void warn(String message, @UnknownConfidential Object... params);
 
-    void warn(@NonConfidential String message, @NonConfidential Throwable throwable);
+    void warn(String message, @UnknownConfidential Supplier<?>... paramSuppliers);
 
-    void warn(@NonConfidential Supplier<?> messageSupplier);
+    void warn(String message, @UnknownConfidential Throwable throwable);
 
-    void warn(@NonConfidential Supplier<?> messageSupplier, @NonConfidential Throwable throwable);
+    void warn(@UnknownConfidential Supplier<?> messageSupplier);
 
-    void warn(@NonConfidential Marker marker, @NonConfidential String message, Object p0);
+    void warn(@UnknownConfidential Supplier<?> messageSupplier, @UnknownConfidential Throwable throwable);
 
-    void warn(@NonConfidential Marker marker, @NonConfidential String message, Object p0, Object p1);
+    void warn(@UnknownConfidential Marker marker, String message, @UnknownConfidential Object p0);
 
-    void warn(@NonConfidential Marker marker, @NonConfidential String message, Object p0, Object p1, Object p2);
+    void warn(@UnknownConfidential Marker marker, String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1);
 
-    void warn(@NonConfidential Marker marker, @NonConfidential String message, Object p0, Object p1, Object p2, Object p3);
+    void warn(@UnknownConfidential Marker marker, String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2);
 
-    void warn(@NonConfidential Marker marker, @NonConfidential String message, Object p0, Object p1, Object p2, Object p3, Object p4);
+    void warn(@UnknownConfidential Marker marker, String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2, @UnknownConfidential Object p3);
 
-    void warn(@NonConfidential Marker marker, @NonConfidential String message, Object p0, Object p1, Object p2, Object p3, Object p4, Object p5);
+    void warn(@UnknownConfidential Marker marker, String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2, @UnknownConfidential Object p3, @UnknownConfidential Object p4);
 
-    void warn(
-            @NonConfidential Marker marker, @NonConfidential String message, Object p0, Object p1, Object p2, Object p3, Object p4, Object p5, Object p6);
-
-    void warn(
-            @NonConfidential Marker marker,
-            @NonConfidential String message,
-            Object p0,
-            Object p1,
-            Object p2,
-            Object p3,
-            Object p4,
-            Object p5,
-            Object p6,
-            Object p7);
+    void warn(@UnknownConfidential Marker marker, String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2, @UnknownConfidential Object p3, @UnknownConfidential Object p4, @UnknownConfidential Object p5);
 
     void warn(
-            @NonConfidential Marker marker,
-            @NonConfidential String message,
-            Object p0,
-            Object p1,
-            Object p2,
-            Object p3,
-            Object p4,
-            Object p5,
-            Object p6,
-            Object p7,
-            Object p8);
+            @UnknownConfidential Marker marker, String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2, @UnknownConfidential Object p3, @UnknownConfidential Object p4, @UnknownConfidential Object p5, @UnknownConfidential Object p6);
 
     void warn(
-            @NonConfidential Marker marker,
-            @NonConfidential String message,
-            Object p0,
-            Object p1,
-            Object p2,
-            Object p3,
-            Object p4,
-            Object p5,
-            Object p6,
-            Object p7,
-            Object p8,
-            Object p9);
-
-    void warn(@NonConfidential String message, Object p0);
-
-    void warn(@NonConfidential String message, Object p0, Object p1);
-
-    void warn(@NonConfidential String message, Object p0, Object p1, Object p2);
-
-    void warn(@NonConfidential String message, Object p0, Object p1, Object p2, Object p3);
-
-    void warn(@NonConfidential String message, Object p0, Object p1, Object p2, Object p3, Object p4);
-
-    void warn(@NonConfidential String message, Object p0, Object p1, Object p2, Object p3, Object p4, Object p5);
-
-    void warn(@NonConfidential String message, Object p0, Object p1, Object p2, Object p3, Object p4, Object p5, Object p6);
-
-    void warn(@NonConfidential String message, Object p0, Object p1, Object p2, Object p3, Object p4, Object p5, Object p6, Object p7);
+            @UnknownConfidential Marker marker,
+            String message,
+            @UnknownConfidential Object p0,
+            @UnknownConfidential Object p1,
+            @UnknownConfidential Object p2,
+            @UnknownConfidential Object p3,
+            @UnknownConfidential Object p4,
+            @UnknownConfidential Object p5,
+            @UnknownConfidential Object p6,
+            @UnknownConfidential Object p7);
 
     void warn(
-            @NonConfidential String message,
-            Object p0,
-            Object p1,
-            Object p2,
-            Object p3,
-            Object p4,
-            Object p5,
-            Object p6,
-            Object p7,
-            Object p8);
+            @UnknownConfidential Marker marker,
+            String message,
+            @UnknownConfidential Object p0,
+            @UnknownConfidential Object p1,
+            @UnknownConfidential Object p2,
+            @UnknownConfidential Object p3,
+            @UnknownConfidential Object p4,
+            @UnknownConfidential Object p5,
+            @UnknownConfidential Object p6,
+            @UnknownConfidential Object p7,
+            @UnknownConfidential Object p8);
 
     void warn(
-            @NonConfidential String message,
-            Object p0,
-            Object p1,
-            Object p2,
-            Object p3,
-            Object p4,
-            Object p5,
-            Object p6,
-            Object p7,
-            Object p8,
-            Object p9);
+            @UnknownConfidential Marker marker,
+            String message,
+            @UnknownConfidential Object p0,
+            @UnknownConfidential Object p1,
+            @UnknownConfidential Object p2,
+            @UnknownConfidential Object p3,
+            @UnknownConfidential Object p4,
+            @UnknownConfidential Object p5,
+            @UnknownConfidential Object p6,
+            @UnknownConfidential Object p7,
+            @UnknownConfidential Object p8,
+            @UnknownConfidential Object p9);
 
-    <T extends Throwable> T throwing(Level level, @NonConfidential T throwable);
+    void warn(String message, @UnknownConfidential Object p0);
 
-    <T extends Throwable> T throwing(@NonConfidential T throwable);
+    void warn(String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1);
+
+    void warn(String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2);
+
+    void warn(String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2, @UnknownConfidential Object p3);
+
+    void warn(String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2, @UnknownConfidential Object p3, @UnknownConfidential Object p4);
+
+    void warn(String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2, @UnknownConfidential Object p3, @UnknownConfidential Object p4, @UnknownConfidential Object p5);
+
+    void warn(String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2, @UnknownConfidential Object p3, @UnknownConfidential Object p4, @UnknownConfidential Object p5, @UnknownConfidential Object p6);
+
+    void warn(String message, @UnknownConfidential Object p0, @UnknownConfidential Object p1, @UnknownConfidential Object p2, @UnknownConfidential Object p3, @UnknownConfidential Object p4, @UnknownConfidential Object p5, @UnknownConfidential Object p6, @UnknownConfidential Object p7);
+
+    void warn(
+            String message,
+            @UnknownConfidential Object p0,
+            @UnknownConfidential Object p1,
+            @UnknownConfidential Object p2,
+            @UnknownConfidential Object p3,
+            @UnknownConfidential Object p4,
+            @UnknownConfidential Object p5,
+            @UnknownConfidential Object p6,
+            @UnknownConfidential Object p7,
+            @UnknownConfidential Object p8);
+
+    void warn(
+            String message,
+            @UnknownConfidential Object p0,
+            @UnknownConfidential Object p1,
+            @UnknownConfidential Object p2,
+            @UnknownConfidential Object p3,
+            @UnknownConfidential Object p4,
+            @UnknownConfidential Object p5,
+            @UnknownConfidential Object p6,
+            @UnknownConfidential Object p7,
+            @UnknownConfidential Object p8,
+            @UnknownConfidential Object p9);
+
+    <T extends Throwable> T throwing(Level level, T throwable);
+
+    <T extends Throwable> T throwing(T throwable);
+
+    boolean isDebugEnabled(@UnknownConfidential Marker marker);
+
+    boolean isEnabled(Level level);
+
+    boolean isEnabled(Level level, @UnknownConfidential Marker marker);
+
+    boolean isErrorEnabled(@UnknownConfidential Marker marker);
+
+    boolean isFatalEnabled(@UnknownConfidential Marker marker);
+
+    boolean isInfoEnabled(@UnknownConfidential Marker marker);
+
+    boolean isTraceEnabled(@UnknownConfidential Marker marker);
+
+    boolean isWarnEnabled(@UnknownConfidential Marker marker);
+
+    EntryMessage traceEntry(String format, @UnknownConfidential Object... params);
+
+    EntryMessage traceEntry(@UnknownConfidential Supplier<?>... paramSuppliers);
+
+    EntryMessage traceEntry(String format, @UnknownConfidential Supplier<?>... paramSuppliers);
 }

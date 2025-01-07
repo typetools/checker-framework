@@ -16,9 +16,6 @@ import org.checkerframework.framework.source.SuppressWarningsPrefix;
   "Log4jLogger.astub",
   "AndroidLog.astub",
   "Slf4jLogger.astub",
-  // "Handler.astub",
-  // "JavaLogger.astub",
-  // "Formatter.astub",
   "ApacheLog.astub",
   "Toast.astub",
   "TextView.astub",
@@ -26,9 +23,9 @@ import org.checkerframework.framework.source.SuppressWarningsPrefix;
   "AbstractAuthenticationTargetUrlRequestHandler.astub",
   "UsernamePasswordAuthenticationToken.astub",
   "PasswordEncoder.astub",
-  // "PrintStream.astub",
   "HttpServletResponse.astub",
-  "Cookie.astub"
+  "Cookie.astub",
+  "UserDetails.astub"
 })
 @SuppressWarningsPrefix({"confidential"})
 public class ConfidentialChecker extends BaseTypeChecker {}

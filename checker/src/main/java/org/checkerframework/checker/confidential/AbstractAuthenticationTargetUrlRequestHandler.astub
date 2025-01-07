@@ -16,11 +16,12 @@ import org.springframework.security.web.util.UrlUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
-import org.checkerframework.checker.confidential.qual.NonConfidential;
+import org.checkerframework.checker.confidential.qual.UnknownConfidential;
 
 public abstract class AbstractAuthenticationTargetUrlRequestHandler {
 
-    public void setDefaultTargetUrl(@NonConfidential String defaultTargetUrl);
+	protected void handle(HttpServletRequest request, HttpServletResponse response, @UnknownConfidential Authentication authentication);
 
-    public void setTargetUrlParameter(@NonConfidential String targetUrlParameter);
+	protected String determineTargetUrl(HttpServletRequest request, HttpServletResponse response,
+			@UnknownConfidential Authentication authentication);
 }

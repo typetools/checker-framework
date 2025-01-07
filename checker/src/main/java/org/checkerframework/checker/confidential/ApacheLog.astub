@@ -1,30 +1,18 @@
 package org.apache.commons.logging;
 
-import org.checkerframework.checker.confidential.qual.NonConfidential;
+import org.checkerframework.checker.confidential.qual.*;
 
 public interface Log {
 
-    void debug(@NonConfidential Object var1);
+    void debug(Object var1, Throwable var2);
 
-    void debug(@NonConfidential Object var1, @NonConfidential Throwable var2);
+    void error(Object var1, Throwable var2);
 
-    void error(@NonConfidential Object var1);
+    void fatal(Object var1, Throwable var2);
 
-    void error(@NonConfidential Object var1, @NonConfidential Throwable var2);
+    void info(Object var1, Throwable var2);
 
-    void fatal(@NonConfidential Object var1);
+    void trace(Object var1, Throwable var2);
 
-    void fatal(@NonConfidential Object var1, @NonConfidential Throwable var2);
-
-    void info(@NonConfidential Object var1);
-
-    void info(@NonConfidential Object var1, @NonConfidential Throwable var2);
-
-    void trace(@NonConfidential Object var1);
-
-    void trace(@NonConfidential Object var1, @NonConfidential Throwable var2);
-
-    void warn(@NonConfidential Object var1);
-
-    void warn(@NonConfidential Object var1, @NonConfidential Throwable var2);
+    void warn(Object var1, Throwable var2);
 }
