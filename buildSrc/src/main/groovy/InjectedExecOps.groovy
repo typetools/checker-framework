@@ -2,7 +2,10 @@ import  org.gradle.process.ExecOperations
 import javax.inject.Inject
 
 /**
- * This class is for calling out to the command line. Use this, rather than writing a custom task class
+ * This class is for calling out to the command line.  You probably don't need this class and can
+ * use an Exec task instead.
+ *
+ * Use this, rather than writing a custom task class
  * when the call is simple and only used once in the builds files.
  * You can use it like so:
  * <pre>
