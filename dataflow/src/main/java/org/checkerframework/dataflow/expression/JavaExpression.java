@@ -253,6 +253,7 @@ public abstract class JavaExpression {
    * @param lst2 the second list to compare
    * @return true if the corresponding list elements satisfy {@link #syntacticEquals}
    */
+  @SuppressWarnings("RedundantControlFlow")
   @Pure
   public static boolean syntacticEqualsList(
       List<? extends @Nullable JavaExpression> lst1,
@@ -325,9 +326,9 @@ public abstract class JavaExpression {
     return String.format("%s(%s): %s", getClass().getSimpleName(), type, toString());
   }
 
-  ///
-  /// Static methods
-  ///
+  //
+  // Static methods
+  //
 
   /**
    * Returns the Java expression for a {@link FieldAccessNode}. The result may contain {@link
@@ -712,9 +713,9 @@ public abstract class JavaExpression {
     return parameters;
   }
 
-  ///
-  /// Obtaining the receiver
-  ///
+  //
+  // Obtaining the receiver
+  //
 
   /**
    * Returns the receiver of the given invocation.
@@ -868,7 +869,7 @@ public abstract class JavaExpression {
    */
   private static List<JavaExpression> argumentTreesToJavaExpressions(
       ExecutableElement method, List<? extends ExpressionTree> argTrees) {
-    if (isVarArgsInvocation(method, argTrees)) {
+    if (isVarargsInvocation(method, argTrees)) {
       List<JavaExpression> result = new ArrayList<>(method.getParameters().size());
       for (int i = 0; i < method.getParameters().size() - 1; i++) {
         result.add(JavaExpression.fromTree(argTrees.get(i)));
@@ -897,7 +898,7 @@ public abstract class JavaExpression {
    * @param args the arguments at the call site
    * @return true if method is a varargs method and its varargs arguments are not passed in an array
    */
-  private static boolean isVarArgsInvocation(
+  private static boolean isVarargsInvocation(
       ExecutableElement method, List<? extends ExpressionTree> args) {
     if (!method.isVarArgs()) {
       return false;

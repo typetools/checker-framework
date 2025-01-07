@@ -1,7 +1,7 @@
 #!/bin/bash
 
 set -e
-set -o verbose
+# set -o verbose
 set -o xtrace
 export SHELLOPTS
 echo "SHELLOPTS=${SHELLOPTS}"
@@ -16,7 +16,7 @@ status=0
 
 ## Code style and formatting
 JAVA_VER=$(java -version 2>&1 | head -1 | cut -d'"' -f2 | sed '/^1\./s///' | cut -d'.' -f1 | sed 's/-ea//')
-if [ "${JAVA_VER}" != "8" ] && [ "${JAVA_VER}" != "20" ] ; then
+if [ "${JAVA_VER}" != "8" ] ; then
   ./gradlew spotlessCheck --console=plain --warning-mode=all
 fi
 if grep -n -r --exclude-dir=build --exclude-dir=examples --exclude-dir=jtreg --exclude-dir=tests --exclude="*.astub" --exclude="*.tex" '^\(import static \|import .*\*;$\)'; then

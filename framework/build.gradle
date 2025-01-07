@@ -31,7 +31,7 @@ configurations {
 dependencies {
   api project(':javacutil')
   api project(':dataflow')
-  api 'org.checkerframework:stubparser:3.26.1'
+  api 'org.checkerframework:stubparser:3.26.2'
   // AFU is an "includedBuild" imported in checker-framework/settings.gradle, so the version number doesn't matter.
   // https://docs.gradle.org/current/userguide/composite_builds.html#settings_defined_composite
   api('org.checkerframework:annotation-file-utilities:*') {
@@ -45,7 +45,7 @@ dependencies {
   implementation "org.plumelib:hashmap-util:${versions.hashmapUtil}"
   implementation "org.plumelib:plume-util:${versions.plumeUtil}"
   implementation "org.plumelib:reflection-util:${versions.reflectionUtil}"
-  implementation 'io.github.classgraph:classgraph:4.8.174'
+  implementation 'io.github.classgraph:classgraph:4.8.179'
 
   testImplementation group: 'junit', name: 'junit', version: '4.13.2'
   testImplementation project(':framework-test')
@@ -104,6 +104,7 @@ task copyAndMinimizeAnnotatedJdkFiles(dependsOn: cloneTypetoolsJdk, group: 'Buil
   doLast {
     FileTree tree = fileTree(dir: inputDir)
     NavigableSet<String> annotatedForFiles = new TreeSet<>();
+    // Populate `annotatedForFiles`.
     tree.visit { FileVisitDetails fvd ->
       if (!fvd.file.isDirectory() && fvd.file.name.matches('.*\\.java')
           && !fvd.file.path.contains('org/checkerframework')) {

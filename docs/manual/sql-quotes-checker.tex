@@ -1,0 +1,106 @@
+\htmlhr
+\chapterAndLabel{SQL Quotes Checker}{sql-quotes-checker}
+
+The SQL Quotes Checker helps prevent SQL injection vulnerabilities. Many
+\href{https://en.wikipedia.org/wiki/Sql_injection}{SQL injection} attacks
+involve malicious user input containing unescaped special characters such as the
+single quote, which can change whether subsequent concatenations are interpreted
+as SQL command code or as SQL query values.
+
+The SQL Quotes Checker determines whether a string contains an unescaped
+single quote character.  Furthermore, it marks user-supplied Strings as
+unsafe for SQL query use, because their quoting is unknown; the program
+must \emph{sanitize} or \emph{validate} all such values before concatenating
+them to a SQL query for execution. Sanitization can be done by quoting user
+input as necessary to ensure special characters are properly escaped.  The
+SQL Quotes Checker follows the ANSI standard and considers two consecutive
+single quote characters as one escaped single quote.  (Some databases
+support the use of the backslash as an escape character for single quotes.
+The SQL Quotes Checker does not support that syntax because it is not safe
+for all SQL database implementations.)
+
+The SQL Quotes Checker guarantees that no unchecked values are passed to a
+SQL query execution statement.  It does \emph{not} guarantee that SQL
+queries written by the code author are safe for execution; e.g., the
+checker will not warn at compile time about syntax errors or improper uses
+of \code{DELETE} or \code{DROP} statements.
+
+When possible, it is better code style to use a prepared statement or other mechanisms
+that automatically handle quoting without the need for the programmer to do
+any work.  The SQL Quotes Checker is useful for the large quantity of code
+that still uses string concatenation to create SQL queries.
+
+To run the SQL Quotes Checker, supply the
+\code{-processor SqlQuotesChecker}
+or
+\code{-processor org.checkerframework.checker.sqlquotes.SqlQuotesChecker}
+command-line option to javac.
+
+
+\sectionAndLabel{SQL Quotes annotations}{sql-quotes-annotations}
+
+The SQL Quotes type system uses the following annotations:
+
+\begin{description}
+\item[\refqualclass{checker/sqlquotes/qual}{SqlEvenQuotes}]
+    indicates a String literal that contains an even number of
+    single quotes (possibly zero).
+\item[\refqualclass{checker/sqlquotes/qual}{SqlOddQuotes}]
+    indicates a String literal that contains an odd number of single
+    quotes.
+\item[\refqualclass{checker/sqlquotes/qual}{SqlQuotesUnknown}]
+    indicates a String whose quoting is unknown.
+    It is the default qualifier for non-literal
+    Strings.
+\item[\refqualclass{checker/sqlquotes/qual}{SqlQuotesBottom}]
+    is the bottom qualifier.  Programmers rarely need to write it.
+\end{description}
+
+The subtyping hierarchy of the SQL Quotes Checker's qualifiers is shown in
+Figure~\ref{fig-sql-quotes-hierarchy}.
+
+\begin{figure}
+\includeimage{sql-quotes}{5.5cm}
+\caption{The subtyping relationship of the SQL Quotes Checker's qualifiers.
+  The type qualifiers are applicable to Strings. Qualifiers in gray are
+  used internally by the type system but should never be written by a programmer.}
+\label{fig-sql-quotes-hierarchy}
+\end{figure}
+
+
+\sectionAndLabel{What the SQL Quotes Checker checker}{sql-quotes-checks}
+
+Concatenation of \code{@SqlEvenQuotes} and \code{@SqlOddQuotes} Strings parallels
+integer parity over addition. In other words, concatenation of \code{@SqlOddQuotes}
+and \code{@SqlEvenQuotes} Strings are most narrowly typed as follows:
+
+\begin{Verbatim}
+    @SqlOddQuotes + @SqlOddQuotes = @SqlEvenQuotes
+    @SqlOddQuotes + @SqlEvenQuotes = @SqlOddQuotes
+    @SqlEvenQuotes + @SqlOddQuotes = @SqlOddQuotes
+    @SqlEvenQuotes + @SqlEvenQuotes = @SqlEvenQuotes
+\end{Verbatim}
+
+
+\sectionAndLabel{Library annotations}{sql-quotes-library-annotations}
+
+The programmer needs to write trusted annotations on SQL-related methods.
+This is already done for you, for commonly-used libraries such as
+\<java.sql> and
+\<org.springframework.security.crypto.bcrypt>.
+(If you annotate other libraries, please contribute them to the Checker
+Framework project.  Thanks!)
+
+A SQL query execution method such as \code{Statement.executeQuery} must be
+annotated to take a \code{@SqlEvenQuotes} string as a parameter.
+
+A sanitization or quoting method should be annotated to take a
+\refqualclass{checker/sqlquotes/qual}{SqlQuotesUnknown} parameter and to
+return a \refqualclass{checker/sqlquotes/qual}{SqlEvenQuotes} result.
+
+Given such annotations, the type system will issue an error if an
+un-sanitized value can ever flow into a database query.
+(You might need to write some annotations in your own code as well.)
+
+% LocalWords:  unescaped SqlQuotesChecker sql SqlEvenQuotes SqlOddQuotes
+% LocalWords:  SqlQuotesUnknown SqlQuotesBottom executeQuery un

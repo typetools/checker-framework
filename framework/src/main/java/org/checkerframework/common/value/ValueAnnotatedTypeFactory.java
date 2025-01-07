@@ -641,7 +641,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /*package-private*/ AnnotationMirror convertSpecialIntRangeToStandardIntRange(
       AnnotationMirror anm, TypeKind primitiveKind) {
     long max = Long.MAX_VALUE;
-    if (TypesUtils.isIntegralPrimitive(primitiveKind)) {
+    if (TypeKindUtils.isIntegral(primitiveKind)) {
       Range maxRange = Range.create(primitiveKind);
       max = maxRange.to;
     }

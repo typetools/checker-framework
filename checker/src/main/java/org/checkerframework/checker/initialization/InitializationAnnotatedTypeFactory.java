@@ -632,8 +632,6 @@ public abstract class InitializationAnnotatedTypeFactory<
    * @return the fields that have the invariant annotation and are initialized in a given store
    */
   public List<VariableTree> getInitializedInvariantFields(Store store, TreePath path) {
-    // TODO: Instead of passing the TreePath around, can we use
-    // getCurrentClassTree?
     ClassTree currentClass = TreePathUtil.enclosingClass(path);
     List<VariableTree> fields = TreeUtils.fieldsFromClassTree(currentClass);
     List<VariableTree> initializedFields = new ArrayList<>();

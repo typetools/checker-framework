@@ -395,8 +395,8 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   @Override
   public TreeAnnotator createTreeAnnotator() {
-    // Don't call super.createTreeAnnotator because it includes PropagationTreeAnnotator which
-    // is incorrect.
+    // Don't call super.createTreeAnnotator() because it includes PropagationTreeAnnotator,
+    // but we want to use UnitsPropagationTreeAnnotator instead.
     return new ListTreeAnnotator(
         new UnitsPropagationTreeAnnotator(this),
         new LiteralTreeAnnotator(this).addStandardLiteralQualifiers(),
@@ -425,10 +425,16 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /** A class for adding annotations based on tree. */
   private class UnitsTreeAnnotator extends TreeAnnotator {
 
+    /**
+     * Creates a new UnitsTreeAnnotator.
+     *
+     * @param atypeFactory the type factory
+     */
     UnitsTreeAnnotator(UnitsAnnotatedTypeFactory atypeFactory) {
       super(atypeFactory);
     }
 
+    @SuppressWarnings("DuplicateBranches")
     @Override
     public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
       AnnotatedTypeMirror lht = getAnnotatedType(tree.getLeftOperand());
@@ -611,8 +617,11 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       throw new TypeSystemError("Unexpected QualifierKinds: %s %s", qualifierKind1, qualifierKind2);
     }
 
-    @SuppressWarnings("nullness:return")
     @Override
+    @SuppressWarnings(
+        "nullness:return" // This class UnitsQualifierHierarchy is annotated for nullness,
+    // but the outer class UnitsAnnotatedTypeFactory is not, so the type of fields is @Nullable.
+    )
     protected AnnotationMirror greatestLowerBoundWithElements(
         AnnotationMirror a1,
         QualifierKind qualifierKind1,

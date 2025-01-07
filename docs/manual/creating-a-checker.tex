@@ -926,10 +926,8 @@ it, or to compare to the string expression of an existing expression
 annotation.
 To obtain the string, first create a
 \refclass{dataflow/expression}{JavaExpression} object by calling
-\refmethodanchortext{dataflow/expression}{JavaExpression}{fromTree}{(com.sun.source.tree.ExpressionTree)}{fromTree(
-ExpressionTree)} or
-\refmethodanchortext{dataflow/expression}{JavaExpression}{fromNode}{(org.checkerframework.dataflow.cfg.node.Node)}{fromNode(
-Node)}.
+\refmethodanchortext{dataflow/expression}{JavaExpression}{fromTree}{(com.sun.source.tree.ExpressionTree)}{fromTree(ExpressionTree)} or
+\refmethodanchortext{dataflow/expression}{JavaExpression}{fromNode}{(org.checkerframework.dataflow.cfg.node.Node)}{fromNode(Node)}.
 Then, call \<toString()> on the \<JavaExpression> object.
 
 
@@ -1056,7 +1054,9 @@ An aggregate checker runs multiple independent, unrelated checkers.  There
 is no communication or cooperation among them.
 
 The effect is the same as if a user passes
-multiple processors to the \<-processor> command-line option.
+multiple processors to the \<-processor> command-line option,
+except the error messages are interleaved
+such that all errors about a line of code appear together.
 
 For example, instead of a user having to run
 
@@ -1073,14 +1073,17 @@ the user can write
 
 \noindent
 if you define an aggregate checker class.  Extend \refclass{framework/source}{AggregateChecker} and override
-the \<getSupportedTypeCheckers> method, like the following:
+the \<getSupportedCheckers> method, like the following:
 
 \begin{Verbatim}
   public class MyUnitCheckers extends AggregateChecker {
+    @Override
     protected Collection<Class<? extends SourceChecker>> getSupportedCheckers() {
-      return Arrays.asList(DistanceUnitChecker.class,
-                           VelocityUnitChecker.class,
-                           MassUnitChecker.class);
+      Collection<Class<? extends SourceChecker>> checkers = new ArrayList<>(3);
+      Collections.addAll(
+        checkers,
+        DistanceUnitChecker.class, VelocityUnitChecker.class, MassUnitChecker.class);
+      return checkers;
     }
   }
 \end{Verbatim}
@@ -1098,7 +1101,7 @@ that might be the case if MyHelperChecker computes some information that
 MyChecker needs to use.
 
 Override
-\<MyChecker.\refmethodterse{common/basetype}{BaseTypeChecker}{getImmediateSubcheckerClasses}{()}>
+\<MyChecker.\refmethodterse{framework/source}{SourceChecker}{getImmediateSubcheckerClasses}{()}>
 to return a list of the checkers that MyChecker depends on.  Every one of
 them will be run before MyChecker is run.  One of MyChecker's subcheckers
 may itself be a compound checker, and multiple checkers may declare a
@@ -1178,12 +1181,12 @@ required parsing of the option.
 \subsubsectionAndLabel{Default Options}{creating-providing-command-line-options-default-options}
 
 The default options passed to a custom checker may be customized by overriding the
-\refmethodterse{framework/source}{BaseTypeChecker}{getOptions}{()} method in the
+\refmethodterse{common/basetype}{BaseTypeChecker}{getOptions}{()} method in the
 custom checker class.
 
 For example, to ignore the \<introduce.eliminate> warnings raised by the
 Optional Checker (Chapter~\ref{optional-checker}), override
-\refmethodterse{framework/source}{BaseTypeChecker}{getOptions}{()} as follows:
+\refmethodterse{common/basetype}{BaseTypeChecker}{getOptions}{()} as follows:
 
 \begin{Verbatim}
   @Override
@@ -1412,6 +1415,34 @@ which is the Checker Framework's representation of an annotated type.
   your logic to be run even earlier or even later.
 
 \end{enumerate}
+
+
+\subsectionAndLabel{Recursion in \<TreeAnnotator>s}{creating-procedurally-recursion-in-treeannotators}
+
+A subclass of \<TreeAnnotator> should not, in general, call
+\<getAnnotatedType()> more than once.
+This is primarily a concern for \<visitBinary()> and \<visitCompoundAssignment()>.
+For example, the implementation of \<visitBinary()> should not start with
+
+\begin{Verbatim}
+    AnnotatedTypeMirror lExpr = getAnnotatedType(tree.getLeftOperand());
+    AnnotatedTypeMirror rExpr = getAnnotatedType(tree.getRightOperand());
+\end{Verbatim}
+
+\noindent
+The reason is that \<PropagationTreeAnnotator> already does such recursion.  If
+two \<TreeAnnotator>s do so, then expressions at the base of a large binary tree
+will be visited exponentially many times, leading to slowdowns or the appearance
+of an infinite loop.
+
+One approach is to not call \<getAnnotatedType()> in \<visitBinary()>; this is
+what \<UpperBoundAnnotatedTypeFactory> does.
+
+Another approach is to disable \<PropagationTreeAnnotator>, doing all work in a
+different \<TreeAnnotator>.  Create a subclass of \<PropagationTreeAnnotator>
+whose \<visitBinary()> method does no work, and use that subclass in place of
+\<PropagationTreeAnnotator> itself.  This is what \<RegexAnnotatedTypeFactory>
+and \<UnitsAnnotatedTypeFactory> do.
 
 
 \sectionAndLabel{Dataflow: enhancing flow-sensitive type refinement}{creating-dataflow}
@@ -2025,6 +2056,10 @@ This prevents the message from being elevated to an error by \code{-Werror}.
 
 \item \code{-AdumpOnErrors}: Outputs a stack trace when reporting errors or warnings.
 
+\item \code{-AexceptionLineSeparator}: Controls what line separator is used when printing exceptions.
+This is useful when tools, such as Maven, only display the first line of exception messsages. For
+example, \code{-AexceptionLineSeparator="    "}.
+
 \end{itemize}
 
 
@@ -2199,11 +2234,11 @@ command-line options. \\
 
   The argument is a comma-separated sequence.
   The first element is the fully-qualified name of the
-  \<org.checkerframework.dataflow.cfg.visualize.>\refclass{org/checkerframework/dataflow/cfg/visualize}{CFGVisualizer} implementation
+  \<org.checkerframework.dataflow.cfg.visualize.>\refclass{dataflow/cfg/visualize}{CFGVisualizer} implementation
   that should be used. Currently, the possibilities are:
   \begin{itemize}
-  \item \<org.checkerframework.dataflow.cfg.visualize.>\refclass{org/checkerframework/dataflow/cfg/visualize}{DOTCFGVisualizer}
-  \item \<org.checkerframework.dataflow.cfg.visualize.>\refclass{org/checkerframework/dataflow/cfg/visualize}{StringCFGVisualizer}
+  \item \<org.checkerframework.dataflow.cfg.visualize.>\refclass{dataflow/cfg/visualize}{DOTCFGVisualizer}
+  \item \<org.checkerframework.dataflow.cfg.visualize.>\refclass{dataflow/cfg/visualize}{StringCFGVisualizer}
   \end{itemize}
   The remaining keys or key--value pairs are
   passed to \<CFGVisualizer.init>.  Supported keys include
@@ -2608,7 +2643,7 @@ build powerful and useful checkers.
 Beyond this document,
 other useful resources include the Java Infrastructure
 Developer's guide at
-\url{https://netbeans.apache.org/wiki/Java_DevelopersGuide.html} and the compiler
+\url{https://netbeans.apache.org/wiki/main/javahowto/Java_DevelopersGuide/} and the compiler
 mailing list archives at
 \url{https://mail.openjdk.org/pipermail/compiler-dev/}
 (subscribe at

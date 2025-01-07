@@ -54,7 +54,6 @@ import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.Block.BlockType;
 import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
-import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlock;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.ClassNameNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
@@ -66,7 +65,6 @@ import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.cfg.node.SuperNode;
 import org.checkerframework.dataflow.cfg.node.ThisNode;
-import org.checkerframework.dataflow.cfg.node.TypeCastNode;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.LocalVariable;
@@ -458,7 +456,7 @@ class MustCallConsistencyAnalyzer {
      *
      * <ul>
      *   <li>it is passed to another method or constructor in an @MustCallAlias position, and then
-     *       the enclosing method returns that method’s result, or the call is a super() constructor
+     *       the enclosing method returns that method's result, or the call is a super() constructor
      *       call annotated with {@link MustCallAlias}, or
      *   <li>it is stored in an owning field of the class under analysis
      * </ul>
@@ -941,9 +939,9 @@ class MustCallConsistencyAnalyzer {
     // Now callTree.getKind() == Tree.Kind.METHOD_INVOCATION.
     MethodInvocationTree methodInvokeTree = (MethodInvocationTree) callTree;
 
-    // For must call inference, we do not want to bail out on tracking the obligations for 'this()'
-    // or 'super()' calls because this tracking is necessary to correctly infer the @MustCallAlias
-    // annotation for the constructor and its aliasing parameter.
+    // For must call inference, we do not want to bail out on tracking the obligations for
+    // 'this()' or 'super()' calls because this tracking is necessary to correctly infer the
+    // @MustCallAlias annotation for the constructor and its aliasing parameter.
     if (!isMustCallInference
         && (TreeUtils.isSuperConstructorCall(methodInvokeTree)
             || TreeUtils.isThisConstructorCall(methodInvokeTree))) {
@@ -984,36 +982,6 @@ class MustCallConsistencyAnalyzer {
       }
     }
     return !mustCallAliasArguments.isEmpty();
-  }
-
-  /**
-   * Checks if {@code node} is either directly enclosed by a {@link TypeCastNode}, by looking at the
-   * successor block in the CFG. In this case the enclosing operator is a "no-op" that evaluates to
-   * the same value as {@code node}. This method is only used within {@link
-   * #propagateObligationsToSuccessorBlocks(ControlFlowGraph, Set, Block, Set, Deque)} to ensure
-   * Obligations are propagated to cast nodes properly. It relies on the assumption that a {@link
-   * TypeCastNode} will only appear in a CFG as the first node in a block.
-   *
-   * @param node the CFG node
-   * @return {@code true} if {@code node} is in a {@link SingleSuccessorBlock} {@code b}, the first
-   *     {@link Node} in {@code b}'s successor block is a {@link TypeCastNode}, and {@code node} is
-   *     an operand of the successor node; {@code false} otherwise
-   */
-  private boolean inCast(Node node) {
-    if (!(node.getBlock() instanceof SingleSuccessorBlock)) {
-      return false;
-    }
-    Block successorBlock = ((SingleSuccessorBlock) node.getBlock()).getSuccessor();
-    if (successorBlock != null) {
-      List<Node> succNodes = successorBlock.getNodes();
-      if (succNodes.size() > 0) {
-        Node succNode = succNodes.get(0);
-        if (succNode instanceof TypeCastNode) {
-          return ((TypeCastNode) succNode).getOperand().equals(node);
-        }
-      }
-    }
-    return false;
   }
 
   /**
@@ -2071,17 +2039,6 @@ class MustCallConsistencyAnalyzer {
               && obligation.canBeSatisfiedThrough(tmpVarForExcNode)) {
             continue;
           }
-        }
-
-        // Always propagate the Obligation to the successor if current block represents
-        // code nested in a cast.  Without this logic, the analysis may report a false
-        // positive when the Obligation represents a temporary variable for a nested
-        // expression, as the temporary may not appear in the successor store and hence
-        // seems to be going out of scope.  The temporary will be handled with special
-        // logic; casts are unwrapped at various points in the analysis.
-        if (currentBlockNodes.size() == 1 && inCast(currentBlockNodes.get(0))) {
-          successorObligations.add(obligation);
-          continue;
         }
 
         // At this point, a consistency check will definitely occur, unless the

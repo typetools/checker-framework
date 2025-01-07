@@ -264,7 +264,7 @@ public class InvocationTypeInference {
       ExpressionTree ei = args.get(i);
       AbstractType fi = formals.get(i);
 
-      if (!notPertinentToApplicability(ei, fi.isUseOfVariable())) {
+      if (!notPertinentToApplicability(ei, fi)) {
         c.add(new Expression(ei, fi));
       }
     }
@@ -436,7 +436,7 @@ public class InvocationTypeInference {
     for (int i = 0; i < formals.size(); i++) {
       ExpressionTree ei = args.get(i);
       AbstractType fi = formals.get(i);
-      if (notPertinentToApplicability(ei, fi.isUseOfVariable())) {
+      if (notPertinentToApplicability(ei, fi)) {
         c.add(new Expression(ei, fi));
       }
       if (ei.getKind() == Tree.Kind.METHOD_INVOCATION || ei.getKind() == Tree.Kind.NEW_CLASS) {
@@ -581,16 +581,15 @@ public class InvocationTypeInference {
    * provide explicit type arguments)
    *
    * @param expressionTree expression tree
-   * @param isTargetVariable whether the corresponding target type (as derived from the signature of
-   *     m) is a type parameter of m and therefore a variable
+   * @param formalParameterType the formal parameter type of the method invocation
    * @return whether {@code expressionTree} is pertinent to applicability
    */
   private boolean notPertinentToApplicability(
-      ExpressionTree expressionTree, boolean isTargetVariable) {
+      ExpressionTree expressionTree, AbstractType formalParameterType) {
     switch (expressionTree.getKind()) {
       case LAMBDA_EXPRESSION:
         LambdaExpressionTree lambda = (LambdaExpressionTree) expressionTree;
-        if (TreeUtils.isImplicitlyTypedLambda(lambda) || isTargetVariable) {
+        if (TreeUtils.isImplicitlyTypedLambda(lambda) || formalParameterType.isUseOfVariable()) {
           // An implicitly typed lambda expression.
           return true;
         } else {
@@ -598,8 +597,9 @@ public class InvocationTypeInference {
           // where at least one result expression is not pertinent to applicability.
           // An explicitly typed lambda expression whose body is an expression that is
           // not pertinent to applicability.
+          AbstractType funcReturn = formalParameterType.getFunctionTypeReturnType();
           for (ExpressionTree result : TreeUtils.getReturnedExpressions(lambda)) {
-            if (notPertinentToApplicability(result, isTargetVariable)) {
+            if (notPertinentToApplicability(result, funcReturn)) {
               return true;
             }
           }
@@ -607,25 +607,25 @@ public class InvocationTypeInference {
         }
       case MEMBER_REFERENCE:
         // An inexact method reference expression.
-        return isTargetVariable
+        return formalParameterType.isUseOfVariable()
             || !TreeUtils.isExactMethodReference((MemberReferenceTree) expressionTree);
       case PARENTHESIZED:
         // A parenthesized expression whose contained expression is not pertinent to
         // applicability.
         return notPertinentToApplicability(
-            TreeUtils.withoutParens(expressionTree), isTargetVariable);
+            TreeUtils.withoutParens(expressionTree), formalParameterType);
       case CONDITIONAL_EXPRESSION:
         ConditionalExpressionTree conditional = (ConditionalExpressionTree) expressionTree;
         // A conditional expression whose second or third operand is not pertinent to
         // applicability.
-        return notPertinentToApplicability(conditional.getTrueExpression(), isTargetVariable)
-            || notPertinentToApplicability(conditional.getFalseExpression(), isTargetVariable);
+        return notPertinentToApplicability(conditional.getTrueExpression(), formalParameterType)
+            || notPertinentToApplicability(conditional.getFalseExpression(), formalParameterType);
       default:
         if (TreeUtils.isSwitchExpression(expressionTree)) {
           SwitchExpressionScanner<Boolean, Void> scanner =
               new FunctionalSwitchExpressionScanner<>(
                   (ExpressionTree tree, Void unused) ->
-                      notPertinentToApplicability(tree, isTargetVariable),
+                      notPertinentToApplicability(tree, formalParameterType),
                   (r1, r2) -> (r1 != null && r1) || (r2 != null && r2));
           ;
           return scanner.scanSwitchExpression(expressionTree, null);
@@ -668,7 +668,14 @@ public class InvocationTypeInference {
         c.applyInstantiations();
       }
       c.remove(subset);
-      BoundSet newBounds = subset.reduce(context);
+      BoundSet newBounds = subset.reduceAdditionalArgOnce(context);
+      if (!subset.isEmpty()) {
+        // The subset is not empty at this point if an additional argument constraint was
+        // found.  In this case, a new subset needs to be picked so that dependencies of
+        // the constraints from reducing the additional argument constraint can be taken
+        // into account.
+        c.addAll(subset);
+      }
       b3.incorporateToFixedPoint(newBounds);
     }
     return b3;

@@ -118,11 +118,12 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
           .getChecker()
           .getBooleanOption("convertTypeArgInferenceCrashToWarning", true)) {
         // This should never happen, if javac infers type arguments so should the Checker
-        // Framework. However, given how buggy javac inference is, this probably will, so deal
-        // with it gracefully.
+        // Framework. However, given how buggy javac inference is, this probably will, so
+        // deal with it gracefully.
         return new InferenceResult(
             Collections.emptyList(),
             false,
+            true,
             true,
             "An exception occurred: " + ex.getLocalizedMessage());
       }
@@ -238,7 +239,9 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
       }
     }
     if (index == -1) {
-      throw new BugInCF("Argument argTree not found in list of arguments.");
+      // This happens for an invocation of an inner constructor:
+      // var x = new Issue6839<>(1). new Inner<>(1);
+      return false;
     }
 
     ExecutableType executableType = (ExecutableType) executableElement.asType();

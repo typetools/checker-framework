@@ -64,11 +64,11 @@ dependencies {
   testImplementation 'com.amazonaws:aws-java-sdk-ec2'
   testImplementation 'com.amazonaws:aws-java-sdk-kms'
   // The AWS SDK is used for testing the Called Methods Checker.
-  testImplementation platform('com.amazonaws:aws-java-sdk-bom:1.12.753')
+  testImplementation platform('com.amazonaws:aws-java-sdk-bom:1.12.779')
   // For the Resource Leak Checker's support for JavaEE.
   testImplementation 'javax.servlet:javax.servlet-api:4.0.1'
   // For the Resource Leak Checker's support for IOUtils.
-  testImplementation 'commons-io:commons-io:2.16.1'
+  testImplementation 'commons-io:commons-io:2.18.0'
   // To test for an obscure crash in CFG construction for try-with-resources;
   // see https://github.com/typetools/checker-framework/issues/6396
   testImplementation 'org.apache.spark:spark-sql_2.12:3.3.2'
@@ -370,9 +370,9 @@ if (skipDelombok) {
   tasks.test.dependsOn('delombok')
 }
 
-///
-/// Tests of the -Ainfer command-line argument.  These are not whole-program inference tests.
-///
+//
+// Tests of the -Ainfer command-line argument.  These are not whole-program inference tests.
+//
 
 test {
   useJUnit {
@@ -884,9 +884,9 @@ task ainferTest(group: 'Verification') {
   dependsOn('ainferResourceLeakAjavaTest')
 }
 
-///
-/// Whole-program inference tests
-///
+//
+// Whole-program inference tests
+//
 
 // This is run as part of the inferenceTests task.
 task wpiManyTest(group: 'Verification') {
@@ -1064,10 +1064,6 @@ publishing {
   publications {
     checker(MavenPublication) {
       project.shadow.component it
-      // reset the artifacts because of project.shadow.component changes
-      // the classifier from 'all' to '' because of
-      // https://github.com/johnrengelman/shadow/issues/860
-      artifacts = [shadowJar]
       checkerPom it
       artifact checkerJar
       artifact allSourcesJar

@@ -361,9 +361,9 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     return AnnotationUtils.getElementValueArray(sameLenAnno, sameLenValueElement, String.class);
   }
 
-  ///
-  /// Creating @SameLen annotations
-  ///
+  //
+  // Creating @SameLen annotations
+  //
 
   /**
    * Creates a @SameLen annotation whose values are the given strings.

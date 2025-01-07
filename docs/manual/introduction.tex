@@ -44,6 +44,10 @@ The Checker Framework comes with checkers for specific types of errors:
   \ahrefloc{tainting-checker}{Tainting Checker} for trust and security errors
   (see \chapterpageref{tainting-checker})
 \item
+  \ahrefloc{sql-quotes-checker}{SQL Quotes Checker} to mitigate SQL injection
+  attacks
+  (see \chapterpageref{sql-quotes-checker})
+\item
   \ahrefloc{lock-checker}{Lock Checker} for concurrency and lock errors
   (see \chapterpageref{lock-checker})
 \item
@@ -210,7 +214,7 @@ optional step.
   %BEGIN LATEX
   \\
   %END LATEX
-  \url{https://checkerframework.org/checker-framework-3.45.0.zip}
+  \url{https://checkerframework.org/checker-framework-3.48.4.zip}
 
 \item
   Unzip it to create a \code{checker-framework-\ReleaseVersion{}} directory.
@@ -648,15 +652,6 @@ More sound (strict) checking: enable errors that are disabled by default
 \item \<-AconcurrentSemantics>
   Whether to assume concurrent semantics (field values may change at any
   time) or sequential semantics; see Section~\ref{faq-concurrency}.
-\item \<-AconservativeUninferredTypeArguments>
-  Whether an error should be issued if type arguments could not be inferred and
-  whether method type arguments that could not be inferred should use
-  conservative defaults.
-  By default, such type arguments are (largely) ignored in later
-  checks.
-  Passing this option uses a conservative value instead.
-  See \href{https://github.com/typetools/checker-framework/issues/979}{Issue
-  979}.
 \item \<-AignoreRawTypeArguments=false>
   Do not ignore subtype tests for type arguments that were inferred for a
   raw type.  See Section~\ref{generics-raw-types}.
@@ -773,6 +768,7 @@ Debugging
  \<-AprintVerboseGenerics>,
  \<-Anomsgtext>,
  \<-AdumpOnErrors>
+ \<-AexceptionLineSeparator>
 Amount of detail in messages; see Section~\ref{creating-debugging-options-detail}.
 
 \item
@@ -1665,7 +1661,7 @@ or suppress warnings.
 % LocalWords:  Djsr qual Alint javac's dotequals nullable supertype JLS Papi
 % LocalWords:  deserialization Mahmood Telmo Correa changelog txt nullness ESC
 % LocalWords:  Nullness unselect checkbox unsetting PolyNull typedefs arg
-% LocalWords:  bashrc IDE xml buildfile enum API elts INF
+% LocalWords:  bashrc IDE xml buildfile enum API elts INF sql WPI
 % LocalWords:  type-checker proc discoverable Xlint util QualifierDefaults Foo
 % LocalWords:  DefaultQualifier SoyLatte GetStarted Formatter bcel csv sbt
 % LocalWords:  Dcheckers Warski MyClass ProcessorName compareTo toString myDate
@@ -1705,3 +1701,4 @@ or suppress warnings.
 % LocalWords:  AwarnRedundantAnnotations AinferOutputOriginal
 % LocalWords:  AshowPrefixInWarningMessages AstubNoWarnIfNotFound
 % LocalWords:  AshowWpiFailedInferences AassumePureGetters AonlyFiles AskipFiles
+% LocalWords:  AexceptionLineSeparator

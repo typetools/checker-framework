@@ -2,8 +2,8 @@ package org.checkerframework.framework.testchecker.lib;
 
 import org.checkerframework.common.value.qual.StaticallyExecutable;
 
-/** Used by framework/tests/value/VarArgRe.java */
-public class VarArgMethods {
+/** Used by framework/tests/value/VarargsRe.java */
+public class VarargsMethods {
   @StaticallyExecutable
   public static int test0(Object... objects) {
     if (objects == null) {

@@ -93,8 +93,8 @@ public class DefaultReflectionResolver implements ReflectionResolver {
   @Override
   public boolean isReflectiveMethodInvocation(MethodInvocationTree tree) {
     ExecutableElement methodElt = TreeUtils.elementFromUse(tree);
-    return (provider.getDeclAnnotation(methodElt, Invoke.class) != null
-        || provider.getDeclAnnotation(methodElt, NewInstance.class) != null);
+    return provider.getDeclAnnotation(methodElt, Invoke.class) != null
+        || provider.getDeclAnnotation(methodElt, NewInstance.class) != null;
   }
 
   @Override

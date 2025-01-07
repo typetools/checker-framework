@@ -59,7 +59,7 @@ public final class TypesUtils {
     throw new AssertionError("Class TypesUtils cannot be instantiated.");
   }
 
-  /// Creating types
+  // Creating types
 
   /**
    * Returns the {@link TypeMirror} for a given {@link Class}.
@@ -102,7 +102,7 @@ public final class TypesUtils {
     return t.getArrayType(componentType);
   }
 
-  /// Creating a Class<?>
+  // Creating a Class<?>
 
   /**
    * Returns the {@link Class} for a given {@link TypeMirror}. Returns {@code Object.class} if it
@@ -157,7 +157,7 @@ public final class TypesUtils {
     }
   }
 
-  /// Getters
+  // Getters
 
   /**
    * Gets the fully qualified name for a provided type. It returns an empty name if type is an
@@ -268,7 +268,7 @@ public final class TypesUtils {
     return result;
   }
 
-  /// Equality
+  // Equality
 
   /**
    * Returns true iff the arguments are both the same declared types.
@@ -302,7 +302,7 @@ public final class TypesUtils {
     return (left.getKind() == right.getKind());
   }
 
-  /// Predicates
+  // Predicates
 
   /**
    * Checks if the type represents a java.lang.Object declared type.
@@ -374,7 +374,7 @@ public final class TypesUtils {
    *
    * @param type the type
    * @param qualifiedNames fully-qualified type names to check for
-   * @return type iff type represents a declared type whose fully-qualified name is one of the given
+   * @return true iff type represents a declared type whose fully-qualified name is one of the given
    *     names
    */
   public static boolean isDeclaredOfName(TypeMirror type, Collection<String> qualifiedNames) {
@@ -542,26 +542,7 @@ public final class TypesUtils {
    * @return whether the argument is an integral primitive type
    */
   public static boolean isIntegralPrimitive(TypeMirror type) {
-    return isIntegralPrimitive(type.getKind());
-  }
-
-  /**
-   * Returns true iff the argument is an integral primitive type.
-   *
-   * @param typeKind a type kind
-   * @return whether the argument is an integral primitive type
-   */
-  public static boolean isIntegralPrimitive(TypeKind typeKind) {
-    switch (typeKind) {
-      case BYTE:
-      case CHAR:
-      case INT:
-      case LONG:
-      case SHORT:
-        return true;
-      default:
-        return false;
-    }
+    return TypeKindUtils.isIntegral(type.getKind());
   }
 
   /**
@@ -573,6 +554,28 @@ public final class TypesUtils {
   public static boolean isIntegralPrimitiveOrBoxed(TypeMirror type) {
     TypeKind kind = TypeKindUtils.primitiveOrBoxedToTypeKind(type);
     return kind != null && TypeKindUtils.isIntegral(kind);
+  }
+
+  /**
+   * Returns true iff the argument is an integral primitive type.
+   *
+   * @param type a type
+   * @return whether the argument is an integral primitive type
+   */
+  public static boolean isIntegralNumericPrimitive(TypeMirror type) {
+    return TypeKindUtils.isIntegralNumeric(type.getKind());
+  }
+
+  /**
+   * Return true if the argument TypeMirror is a (possibly boxed) integral type, excluding char and
+   * Character which do not print as numbers.
+   *
+   * @param type the type to inspect
+   * @return true if type is an integral numeric type
+   */
+  public static boolean isIntegralNumericOrBoxed(TypeMirror type) {
+    TypeKind kind = TypeKindUtils.primitiveOrBoxedToTypeKind(type);
+    return kind != null && TypeKindUtils.isIntegralNumeric(kind);
   }
 
   /**
@@ -713,7 +716,7 @@ public final class TypesUtils {
     return e.getKind() != TypeKind.NONE;
   }
 
-  /// Type variables and wildcards
+  // Type variables and wildcards
 
   /**
    * If the argument is a bounded TypeVariable or WildcardType, return its non-variable,
@@ -977,7 +980,7 @@ public final class TypesUtils {
     return null;
   }
 
-  /// Least upper bound and greatest lower bound
+  // Least upper bound and greatest lower bound
 
   /**
    * Returns the least upper bound of two {@link TypeMirror}s, ignoring any annotations on the
@@ -1146,7 +1149,7 @@ public final class TypesUtils {
     return com.sun.tools.javac.util.List.from(typeList);
   }
 
-  /// Substitutions
+  // Substitutions
 
   /**
    * Returns the return type of a method, given the receiver of the method call.

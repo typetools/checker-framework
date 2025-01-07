@@ -1,12 +1,12 @@
-///////////////////////////////////////////////////////////////////////////
-/// Checker Framework pluggable type-checking and Error Prone example
-///
+// ///////////////////////////////////////////////////////////////////////////
+// Checker Framework pluggable type-checking and Error Prone example
+//
 
 plugins {
   id 'java'
-  id 'net.ltgt.errorprone' version '2.0.2'
+  id 'net.ltgt.errorprone' version '4.1.0'
   // Checker Framework pluggable type-checking
-  id 'org.checkerframework' version '0.6.42'
+  id 'org.checkerframework' version '0.6.46'
 }
 
 apply plugin: 'org.checkerframework'

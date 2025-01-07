@@ -210,9 +210,9 @@ public class DependentTypesHelper {
     return new DependentTypesTreeAnnotator(factory, this);
   }
 
-  ///
-  /// Methods that convert annotations
-  ///
+  //
+  // Methods that convert annotations
+  //
 
   /** If true, log information about where lambdas are created. */
   // This variable is only set here; edit the source code to modify it.
@@ -986,9 +986,9 @@ public class DependentTypesHelper {
     }
   }
 
-  ///
-  /// Methods that check and report errors
-  ///
+  //
+  // Methods that check and report errors
+  //
 
   /**
    * Reports an expression.unparsable error for each Java expression in the given type that is an

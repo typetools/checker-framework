@@ -13,7 +13,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.tools.Diagnostic;
 import org.checkerframework.checker.calledmethods.builder.BuilderFrameworkSupport;
 import org.checkerframework.checker.calledmethods.qual.CalledMethods;
-import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethodsVarArgs;
+import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethodsVarargs;
 import org.checkerframework.common.accumulation.AccumulationVisitor;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.expression.JavaExpression;
@@ -43,13 +43,16 @@ public class CalledMethodsVisitor extends AccumulationVisitor {
   }
 
   /**
-   * Issue an error at every EnsuresCalledMethodsVarArgs annotation, because using it is unsound.
+   * Issue an error at every EnsuresCalledMethodsVarargs annotation, because using it is unsound.
    */
   @Override
   public Void visitAnnotation(AnnotationTree tree, Void p) {
     AnnotationMirror anno = TreeUtils.annotationFromAnnotationTree(tree);
     if (AnnotationUtils.areSameByName(
-        anno, "org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethodsVarArgs")) {
+            anno, "org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethodsVarargs")
+        // Temporary, for backward compatibility.
+        || AnnotationUtils.areSameByName(
+            anno, "org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethodsVarArgs")) {
       // We can't verify these yet.  Emit an error (which will have to be suppressed) for now.
       checker.report(tree, new DiagMessage(Diagnostic.Kind.ERROR, "ensuresvarargs.unverified"));
     }
@@ -57,10 +60,11 @@ public class CalledMethodsVisitor extends AccumulationVisitor {
   }
 
   @Override
-  public void processMethodTree(MethodTree tree) {
+  @SuppressWarnings("deprecation") // EnsuresCalledMethodsVarArgs
+  public void processMethodTree(String className, MethodTree tree) {
     ExecutableElement elt = TreeUtils.elementFromDeclaration(tree);
-    AnnotationMirror ecmva = atypeFactory.getDeclAnnotation(elt, EnsuresCalledMethodsVarArgs.class);
-    if (ecmva != null) {
+    AnnotationMirror ecmv = atypeFactory.getDeclAnnotation(elt, EnsuresCalledMethodsVarargs.class);
+    if (ecmv != null) {
       if (!elt.isVarArgs()) {
         checker.report(tree, new DiagMessage(Diagnostic.Kind.ERROR, "ensuresvarargs.invalid"));
       }
@@ -69,7 +73,7 @@ public class CalledMethodsVisitor extends AccumulationVisitor {
         ((CalledMethodsAnnotatedTypeFactory) atypeFactory).getExceptionalPostconditions(elt)) {
       checkExceptionalPostcondition(postcond, tree);
     }
-    super.processMethodTree(tree);
+    super.processMethodTree(className, tree);
   }
 
   /**

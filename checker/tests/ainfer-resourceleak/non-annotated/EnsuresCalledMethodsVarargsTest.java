@@ -1,7 +1,7 @@
 import org.checkerframework.checker.calledmethods.qual.*;
 import org.checkerframework.checker.mustcall.qual.*;
 
-class EnsuresCalledMethodsVarArgsTest {
+class EnsuresCalledMethodsVarargsTest {
 
   @InheritableMustCall("a")
   static class Foo {
@@ -10,7 +10,7 @@ class EnsuresCalledMethodsVarArgsTest {
 
   static class Utils {
     @SuppressWarnings("ensuresvarargs.unverified")
-    @EnsuresCalledMethodsVarArgs("a")
+    @EnsuresCalledMethodsVarargs("a")
     public static void close(Foo... foos) {
       for (Foo f : foos) {
         if (f != null) {

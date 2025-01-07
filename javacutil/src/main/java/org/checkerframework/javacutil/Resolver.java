@@ -65,6 +65,9 @@ public class Resolver {
   /** Whether we are running on at least Java 13. */
   private static final boolean atLeastJava13 = sourceVersionNumber >= 13;
 
+  /** Whether we are running on at least Java 23. */
+  private static final boolean atLeastJava23 = sourceVersionNumber >= 23;
+
   static {
     try {
       FIND_METHOD =
@@ -79,7 +82,13 @@ public class Resolver {
               boolean.class);
       FIND_METHOD.setAccessible(true);
 
-      FIND_VAR = Resolve.class.getDeclaredMethod("findVar", Env.class, Name.class);
+      if (atLeastJava23) {
+        FIND_VAR =
+            Resolve.class.getDeclaredMethod(
+                "findVar", DiagnosticPosition.class, Env.class, Name.class);
+      } else {
+        FIND_VAR = Resolve.class.getDeclaredMethod("findVar", Env.class, Name.class);
+      }
       FIND_VAR.setAccessible(true);
 
       if (atLeastJava13) {
@@ -128,7 +137,7 @@ public class Resolver {
       FIND_TYPE.setAccessible(true);
     } catch (Exception e) {
       Error err =
-          new AssertionError("Compiler 'Resolve' class doesn't contain required 'find' method");
+          new AssertionError("Compiler 'Resolve' class doesn't contain required 'find*' method");
       err.initCause(e);
       throw err;
     }
@@ -275,7 +284,12 @@ public class Resolver {
     try {
       Env<AttrContext> env = getEnvForPath(path);
       // Either a VariableElement or a SymbolNotFoundError.
-      Element res = wrapInvocationOnResolveInstance(FIND_VAR, env, names.fromString(name));
+      Element res;
+      if (atLeastJava23) {
+        res = wrapInvocationOnResolveInstance(FIND_VAR, null, env, names.fromString(name));
+      } else {
+        res = wrapInvocationOnResolveInstance(FIND_VAR, env, names.fromString(name));
+      }
       // Every kind in the documentation of Element.getKind() is explicitly tested, possibly
       // in the "default:" case.
       switch (res.getKind()) {

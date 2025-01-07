@@ -115,6 +115,7 @@ public interface WholeProgramInferenceStorage<T> {
    * postconditions), "this" (postconditions only), and method parameters (e.g. "#1", "#2",
    * postconditions only).
    *
+   * @param className the class that contains the method, for diagnostics only
    * @param preOrPost whether to get the precondition or postcondition
    * @param methodElement the method
    * @param expression the expression
@@ -124,6 +125,7 @@ public interface WholeProgramInferenceStorage<T> {
    *     expression is not a supported expression type
    */
   public @Nullable T getPreOrPostconditions(
+      String className,
       Analysis.BeforeOrAfter preOrPost,
       ExecutableElement methodElement,
       String expression,

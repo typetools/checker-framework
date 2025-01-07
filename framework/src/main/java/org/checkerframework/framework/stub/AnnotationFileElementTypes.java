@@ -660,9 +660,9 @@ public class AnnotationFileElementTypes {
         fakeReceiverType, candidates, applicableClasses, applicableInterfaces);
   }
 
-  ///
-  /// End of public methods, private helper methods follow
-  ///
+  //
+  // End of public methods, private helper methods follow
+  //
 
   /**
    * Parses the outermost enclosing class of {@code e} if it is in the annotated JDK and it has not

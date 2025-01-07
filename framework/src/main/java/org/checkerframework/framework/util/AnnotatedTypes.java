@@ -692,9 +692,8 @@ public class AnnotatedTypes {
    * A pair of an empty map and false. Used in {@link #findTypeArguments(AnnotatedTypeFactory,
    * ExpressionTree, ExecutableElement, AnnotatedExecutableType, boolean)}.
    */
-  private static final IPair<Map<TypeVariable, AnnotatedTypeMirror>, Boolean> emptyFalsePair =
-      IPair.of(Collections.emptyMap(), false);
-  ;
+  private static final TypeArguments emptyFalsePair =
+      new TypeArguments(Collections.emptyMap(), false, false);
 
   /**
    * Given a method or constructor invocation, return a mapping of the type variables to their type
@@ -712,9 +711,10 @@ public class AnnotatedTypes {
    *     AnnotatedTypes.asMemberOf with the receiver and elt
    * @param inferTypeArgs whether the type argument should be inferred
    * @return the mapping of type variables to type arguments for this method or constructor
-   *     invocation, and whether unchecked conversion was required to infer the type arguments
+   *     invocation, and whether unchecked conversion was required to infer the type arguments, and
+   *     whether type argument inference crashed
    */
-  public static IPair<Map<TypeVariable, AnnotatedTypeMirror>, Boolean> findTypeArguments(
+  public static TypeArguments findTypeArguments(
       AnnotatedTypeFactory atypeFactory,
       ExpressionTree expr,
       ExecutableElement elt,
@@ -737,9 +737,10 @@ public class AnnotatedTypes {
       if (inferTypeArgs && TreeUtils.needsTypeArgInference(memRef)) {
         InferenceResult inferenceResult =
             atypeFactory.getTypeArgumentInference().inferTypeArgs(atypeFactory, expr, preType);
-        return IPair.of(
+        return new TypeArguments(
             inferenceResult.getTypeArgumentsForExpression(expr),
-            inferenceResult.isUncheckedConversion());
+            inferenceResult.isUncheckedConversion(),
+            inferenceResult.inferenceCrashed());
       }
       targs = memRef.getTypeArguments();
       if (memRef.getTypeArguments() == null) {
@@ -774,17 +775,49 @@ public class AnnotatedTypes {
         // already should be a declaration.
         typeArguments.put(typeVar.getUnderlyingType(), typeArg);
       }
-      return IPair.of(typeArguments, false);
+      return new TypeArguments(typeArguments, false, false);
     } else {
       if (inferTypeArgs) {
         InferenceResult inferenceResult =
             atypeFactory.getTypeArgumentInference().inferTypeArgs(atypeFactory, expr, preType);
-        return IPair.of(
+        return new TypeArguments(
             inferenceResult.getTypeArgumentsForExpression(expr),
-            inferenceResult.isUncheckedConversion());
+            inferenceResult.isUncheckedConversion(),
+            inferenceResult.inferenceCrashed());
       } else {
         return emptyFalsePair;
       }
+    }
+  }
+
+  /**
+   * Class representing type arguments for a method, constructor, or method reference expression.
+   */
+  public static class TypeArguments {
+
+    /** A mapping from {@link TypeVariable} to its annotated type argument. */
+    public final Map<TypeVariable, AnnotatedTypeMirror> typeArguments;
+
+    /** Whether unchecked conversion was needed for inference. */
+    public final boolean uncheckedConversion;
+
+    /** Whether type argument inference crashed. */
+    public final boolean inferenceCrash;
+
+    /**
+     * Creates a {@link TypeArguments} object.
+     *
+     * @param typeArguments a mapping from {@link TypeVariable} to its annotated type argument
+     * @param uncheckedConversion whether unchecked conversion was needed for inference
+     * @param inferenceCrash whether type argument inference crashed
+     */
+    public TypeArguments(
+        Map<TypeVariable, AnnotatedTypeMirror> typeArguments,
+        boolean uncheckedConversion,
+        boolean inferenceCrash) {
+      this.typeArguments = typeArguments;
+      this.uncheckedConversion = uncheckedConversion;
+      this.inferenceCrash = inferenceCrash;
     }
   }
 
@@ -860,6 +893,17 @@ public class AnnotatedTypes {
     TypeMirror tm1 = type1.getUnderlyingType();
     TypeMirror tm2 = type2.getUnderlyingType();
     TypeMirror glbJava = TypesUtils.greatestLowerBound(tm1, tm2, atypeFactory.getProcessingEnv());
+    if (glbJava.getKind() == TypeKind.ERROR) {
+      if (type1.getKind() == TypeKind.TYPEVAR) {
+        return type1;
+      }
+      if (type2.getKind() == TypeKind.TYPEVAR) {
+        return type2;
+      }
+      // I think the only way error happens is when one of the types is a typevarible, but
+      // just in case, just return type1.
+      return type1;
+    }
     Types types = atypeFactory.types;
     QualifierHierarchy qualHierarchy = atypeFactory.getQualifierHierarchy();
     if (types.isSubtype(tm1, tm2)) {
@@ -1083,7 +1127,7 @@ public class AnnotatedTypes {
    * @param args the types of the arguments at the call site
    * @return the method parameters, with varargs replaced by instances of its component type
    */
-  public static List<AnnotatedTypeMirror> expandVarArgsParametersFromTypes(
+  public static List<AnnotatedTypeMirror> expandVarargsParametersFromTypes(
       AnnotatedExecutableType method, List<AnnotatedTypeMirror> args) {
     List<AnnotatedTypeMirror> parameters = method.getParameterTypes();
     if (!method.getElement().isVarArgs()) {
@@ -1125,14 +1169,14 @@ public class AnnotatedTypes {
   public static AnnotatedTypeMirror getAnnotatedTypeMirrorOfParameter(
       AnnotatedExecutableType methodType, int index) {
     List<AnnotatedTypeMirror> parameterTypes = methodType.getParameterTypes();
-    boolean hasVarArg = methodType.getElement().isVarArgs();
+    boolean hasVarargs = methodType.getElement().isVarArgs();
 
     int lastIndex = parameterTypes.size() - 1;
     AnnotatedTypeMirror lastType = parameterTypes.get(lastIndex);
     boolean parameterBeforeVarargs = index < lastIndex;
     if (!parameterBeforeVarargs && lastType instanceof AnnotatedArrayType) {
       AnnotatedArrayType arrayType = (AnnotatedArrayType) lastType;
-      if (hasVarArg) {
+      if (hasVarargs) {
         return arrayType.getComponentType();
       }
     }

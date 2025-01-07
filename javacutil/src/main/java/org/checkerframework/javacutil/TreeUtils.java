@@ -1844,6 +1844,9 @@ public final class TreeUtils {
    * Returns the type as a TypeMirror of {@code tree}. To obtain {@code tree}'s AnnotatedTypeMirror,
    * call {@code AnnotatedTypeFactory.getAnnotatedType()}.
    *
+   * <p>Note that for the expression "super", this method returns the type of "this", not "this"'s
+   * superclass.
+   *
    * @return the type as a TypeMirror of {@code tree}
    */
   public static TypeMirror typeOf(Tree tree) {
@@ -2623,8 +2626,8 @@ public final class TreeUtils {
       return true;
     }
 
-    // For some calls the varargsElement element disappears when it should not. This seems to only
-    // be a problem with MethodHandle#invoke and only with no arguments.  See
+    // For some calls the varargsElement element disappears when it should not. This seems to
+    // only be a problem with MethodHandle#invoke and only with no arguments.  See
     // framework/tests/all-systems/Issue6078.java.
     // So also check for a mismatch between parameter and argument size.
     // Such a mismatch occurs for every enum constructor: no args, two params (String name, int
@@ -2649,13 +2652,13 @@ public final class TreeUtils {
    * @return true if the given method invocation is an invocation of a method with a vararg
    *     parameter, and the invocation has with zero vararg actuals
    */
-  public static boolean isCallToVarArgsMethodWithZeroVarargsActuals(MethodInvocationTree invok) {
+  public static boolean isCallToVarargsMethodWithZeroVarargsActuals(MethodInvocationTree invok) {
     if (!TreeUtils.isVarArgs(invok)) {
       return false;
     }
     int numParams = elementFromUse(invok).getParameters().size();
-    // The comparison of the number of arguments to the number of formals (minus one) checks whether
-    // there are no varargs actuals
+    // The comparison of the number of arguments to the number of formals (minus one) checks
+    // whether there are no varargs actuals.
     return invok.getArguments().size() == numParams - 1;
   }
 
@@ -2846,6 +2849,7 @@ public final class TreeUtils {
    * @return whether or not {@code expression} is a standalone expression
    */
   public static boolean isStandaloneExpression(ExpressionTree expression) {
+    expression = TreeUtils.withoutParens(expression);
     if (expression instanceof JCTree.JCExpression) {
       if (((JCTree.JCExpression) expression).isStandalone()) {
         return true;

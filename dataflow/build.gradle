@@ -10,6 +10,8 @@ dependencies {
   // Node implements org.plumelib.util.UniqueId, so this dependency must be "api".
   api "org.plumelib:plume-util:${versions.plumeUtil}"
 
+  implementation "org.plumelib:hashmap-util:${versions.hashmapUtil}"
+
   // External dependencies:
   // If you add an external dependency, you must shadow its packages both in the dataflow-shaded
   // artifact (see shadowJar block below) and also in checker.jar (see the comment in
@@ -31,6 +33,9 @@ def createDataflowShaded(shadedPkgName) {
     includeEmptyDirs = false
     base {
       archivesName = "dataflow-${shadedPkgName}"
+    }
+    dependencies {
+      exclude(project(':checker-qual'))
     }
     // Without this line, the Maven artifact will have the classifier "all".
     archiveClassifier.set('')
@@ -157,6 +162,11 @@ testDataflowAnalysis("issue3447Test", "issue3447", "livevar.LiveVariable", false
 testDataflowAnalysis("liveVariableTest", "live-variable", "livevar.LiveVariable", true)
 testDataflowAnalysis("reachingDefinitionTest", "reachingdef", "reachingdef.ReachingDefinition", true)
 
+test {
+  // The tests are run by allDataflowTests.
+  exclude '**/*'
+}
+
 apply from: rootProject.file('gradle-mvn-push.gradle')
 
 /** Adds information to the publication for uploading the dataflow artifacts to Maven repositories. */
@@ -200,6 +210,15 @@ final dataflowShadedPom(MavenPublication publication, String shadedPkgName) {
         url = 'http://www.gnu.org/software/classpath/license.html'
         distribution = 'repo'
       }
+    }
+    withXml {
+      // This should just happen automatically, but I can't figure out how to make it happen with
+      // a custom Shadow task.
+      asNode().appendNode('dependencies').appendNode('dependency')
+          .appendNode('groupId', 'org.checkerframework').parent()
+          .appendNode('artifactId', 'checker-qual').parent()
+          .appendNode('version', version).parent()
+          .appendNode('scope','runtime')
     }
   }
 }

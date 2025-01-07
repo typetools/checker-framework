@@ -106,7 +106,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
     this.atypeFactory = atypeFactory;
   }
 
-  /// This class doesn't customize the clone() method; use deepCopy() instead.
+  // // This class doesn't customize the clone() method; use deepCopy() instead.
   // @Override
   // public AnnotatedTypeMirror clone() { ... }
 
@@ -1271,7 +1271,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
      *
      * @return true if this type represents a varargs method
      */
-    public boolean isVarArgs() {
+    public boolean isVarargs() {
       return this.element.isVarArgs();
     }
 
@@ -1716,7 +1716,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
 
       AnnotatedTypeVariable result = this.shallowCopy();
       result.declaration = false;
-      Map<TypeVariable, AnnotatedTypeMirror> mapping = new HashMap<>(1);
+      Map<TypeVariable, AnnotatedTypeMirror> mapping = new HashMap<>(4);
       mapping.put(getUnderlyingType(), result);
       AnnotatedTypeMirror upperBound =
           atypeFactory

@@ -901,6 +901,8 @@ represent kilometers or miles.
 
 % Keep these lists in sync with the list in introduction.tex .
 
+% Anything that has "@QualifierForLiterals(stringPatterns = "...")" belongs
+% in this section.
 Type systems that support a run-time test are:
 \begin{itemize}
 \item
@@ -926,6 +928,10 @@ Type systems that support a run-time test are:
 \item
   \ahrefloc{resource-leak-checker}{Resource Leak Checker} for ensuring that resources are disposed of properly
   (see \chapterpageref{resource-leak-checker})
+\item
+  \ahrefloc{sql-quotes-checker}{SQL Quotes Checker} to mitigate SQL injection
+  attacks
+  (see \chapterpageref{sql-quotes-checker})
 \item
   \ahrefloc{regex-checker}{Regex Checker} to prevent use of syntactically
   invalid regular expressions (see \chapterpageref{regex-checker})

@@ -1,15 +1,15 @@
 import de.undercouch.gradle.tasks.download.Download
 
 plugins {
-  // https://plugins.gradle.org/plugin/com.github.johnrengelman.shadow
-  id 'com.github.johnrengelman.shadow' version '8.1.1'
+  // https://plugins.gradle.org/plugin/com.gradleup.shadow
+  id 'com.gradleup.shadow' version '8.3.5'
   // https://plugins.gradle.org/plugin/de.undercouch.download
   id 'de.undercouch.download' version '5.6.0'
   id 'java'
   // https://github.com/tbroyer/gradle-errorprone-plugin
-  id 'net.ltgt.errorprone' version '3.1.0'
-  // https://plugins.gradle.org/plugin/org.ajoberstar.grgit
-  id 'org.ajoberstar.grgit' version '5.2.2' apply false
+  id 'net.ltgt.errorprone' version '4.1.0'
+  // https://docs.gradle.org/current/userguide/eclipse_plugin.html
+  id 'eclipse'
 
   id 'groovy' // needed for formatting Gradle files
   // Code formatting; defines targets "spotlessApply" and "spotlessCheck".
@@ -17,9 +17,6 @@ plugins {
   // Only works on JDK 11+ (even including the plugin crashes Gradle on JDK 8).
   id 'com.diffplug.spotless' version '6.25.0'
 }
-apply plugin: 'de.undercouch.download'
-
-import org.ajoberstar.grgit.Grgit
 
 // There is another `repositories { ... }` block below; if you change this one, change that one as well.
 repositories {
@@ -33,7 +30,7 @@ ext {
   isJava17orHigher = JavaVersion.current() >= JavaVersion.VERSION_17
   isJava21orHigher = JavaVersion.current() >= JavaVersion.VERSION_21
 
-  // As of 2023-09-23, delombok doesn't yet support JDK 22; see https://projectlombok.org/changelog .
+  // As of 2024-08-19 (Lombok 1.18.34), delombok doesn't yet support JDK 23; see https://projectlombok.org/changelog .
   skipDelombok = JavaVersion.current() > JavaVersion.VERSION_21
 
   parentDir = file("${rootDir}/../").absolutePath
@@ -55,11 +52,17 @@ ext {
   versions = [
     autoValue       : '1.11.0',
     googleJavaFormat : '1.19.2',
-    lombok          : '1.18.34',
+    lombok          : '1.18.36',
     hashmapUtil : '0.0.1',
-    reflectionUtil : '1.1.3',
-    plumeUtil : '1.9.3',
-    errorprone : '2.28.0',
+    reflectionUtil : '1.1.4',
+    plumeUtil : '1.10.0',
+
+    // https://mvnrepository.com/artifact/com.google.errorprone/error_prone_core
+    // If you update this:
+    //  * Temporarily comment out "-Werror" elsewhere in this file
+    //  * Repeatedly run `./gradlew clean compileJava` and fix all errors
+    //  * Uncomment "-Werror"
+    errorprone : '2.36.0',
   ]
 }
 
@@ -114,14 +117,15 @@ allprojects { currentProj ->
   //   * any new checkers have been added, or
   //   * backward-incompatible changes have been made to APIs or elsewhere.
   // To make a snapshot release, version should end in "-SNAPSHOT", then: ./gradlew publish
-  version '3.45.1-SNAPSHOT'
+  version '3.48.5-SNAPSHOT'
 
   tasks.withType(JavaCompile).configureEach {
     options.fork = true
   }
 
   apply plugin: 'java'
-  apply plugin: 'com.github.johnrengelman.shadow'
+  apply plugin: 'eclipse'
+  apply plugin: 'com.gradleup.shadow'
   apply plugin: 'de.undercouch.download'
   apply plugin: 'net.ltgt.errorprone'
 
@@ -142,13 +146,34 @@ allprojects { currentProj ->
 
     // Exclude checker-qual dependency added by Error Prone to avoid a circular dependency.
     annotationProcessor.exclude group:'org.checkerframework', module:'checker-qual'
+
+    // This is to be used to add errorprone to the processorpath of the compile task.  The errorprone
+    // configuration can't be used directly because it is marked unresolvable by the errorprone plugin.
+    errorProneAnnotationProcessor.extendsFrom(errorprone)
   }
+
   dependencies {
+    errorprone group: 'com.google.errorprone', name: 'error_prone_core', version: versions.errorprone
+
     javacJar group: 'com.google.errorprone', name: 'javac', version: "9+181-r4173-1"
 
     errorproneJavac("com.google.errorprone:javac:9+181-r4173-1")
 
     allProjects subprojects
+  }
+
+  eclipse.classpath {
+    defaultOutputDir = file("build/default")
+    file.whenMerged { cp ->
+      cp.entries.forEach { cpe ->
+        if (cpe instanceof org.gradle.plugins.ide.eclipse.model.SourceFolder) {
+          cpe.output = cpe.output.replace "bin/", "build/classes/java/"
+        }
+        if (cpe instanceof org.gradle.plugins.ide.eclipse.model.Output) {
+          cpe.path = cpe.path.replace "bin/", "build/"
+        }
+      }
+    }
   }
 
   ext {
@@ -434,13 +459,14 @@ allprojects { currentProj ->
       options.encoding = 'UTF-8'
       options.fork = true
 
-      // Error Prone depends on checker-qual.jar, so don't run it on that project to avoid a circular dependency.
       // TODO: enable Error Prone on test classes.
-      if (compilationTask.name.equals('compileJava') && !project.name.startsWith('checker-qual')) {
+      if (compilationTask.name.equals('compileJava')
+          // Error Prone depends on checker-qual.jar, so don't run it on that project to avoid a circular dependency.
+          && !project.name.startsWith('checker-qual')) {
         // Error Prone must be available in the annotation processor path
-        options.annotationProcessorPath = configurations.errorprone
+        options.annotationProcessorPath = configurations.errorProneAnnotationProcessor
         // Enable Error Prone
-        options.errorprone.enabled = true
+        options.errorprone.enabled = isJava17orHigher
         options.errorprone.disableWarningsInGeneratedCode = true
         options.errorprone.errorproneArgs = [
           // Many compiler classes are interned.
@@ -591,6 +617,15 @@ task allJavadoc(type: Javadoc, group: 'Documentation') {
 // See documentation for allJavadoc task.
 javadoc.dependsOn(allJavadoc)
 
+clean {
+  delete(file("${rootDir}/docs/api"))
+  doLast {
+    exec {
+      commandLine 'make', '-C', 'docs/manual', 'clean'
+    }
+  }
+}
+
 configurations {
   requireJavadoc
 }
@@ -639,13 +674,9 @@ def createJavadocTask(taskName, taskDescription, memberLevel) {
 
 createJavadocTask('javadocDoclintAll', 'Runs javadoc with -Xdoclint:all option.', JavadocMemberLevel.PRIVATE)
 
-task manual(group: 'Documentation') {
+task manual(type: Exec, group: 'Documentation') {
   description 'Build the manual'
-  doLast {
-    exec {
-      commandLine 'make', '-C', 'docs/manual', 'all'
-    }
-  }
+  commandLine 'make', '-C', 'docs/manual', 'all'
 }
 
 /**
@@ -741,18 +772,10 @@ task tags {
 
 subprojects {
   configurations {
-    errorprone
     annotatedGuava
   }
 
   dependencies {
-    // https://mvnrepository.com/artifact/com.google.errorprone/error_prone_core
-    // If you update this:
-    //  * Temporarily comment out "-Werror" elsewhere in this file
-    //  * Repeatedly run `./gradlew clean compileJava` and fix all errors
-    //  * Uncomment "-Werror"
-    errorprone group: 'com.google.errorprone', name: 'error_prone_core', version: versions.errorprone
-
     // TODO: it's a bug that annotatedlib:guava requires the error_prone_annotations dependency.
     annotatedGuava "com.google.errorprone:error_prone_annotations:${versions.errorprone}"
     annotatedGuava ('org.checkerframework.annotatedlib:guava:33.1.0.2-jre') {

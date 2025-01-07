@@ -17,6 +17,7 @@ index-checker.tex \
 called-methods-checker.tex \
 fenum-checker.tex \
 tainting-checker.tex \
+sql-quotes-checker.tex \
 regex-checker.tex \
 formatter-checker.tex \
 i18n-format-checker.tex \

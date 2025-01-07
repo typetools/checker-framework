@@ -124,7 +124,7 @@ annotations, each from a different type system:
 
   \begin{Verbatim}
   class String {
-    char charAt(@IndexFor("this") index) { ... }
+    char charAt(@IndexFor("this") int index) { ... }
   }
   \end{Verbatim}
 
@@ -329,7 +329,7 @@ or \code{@LTOMLengthOf("arr")}.
   offset=x+1)> for any x.
 
 \item[\refqualclass{checker/index/qual}{UpperBoundLiteral}]
-  repesents a constant value, typically a literal written in source code.
+  represents a constant value, typically a literal written in source code.
   Its subtyping relationship is:
   \<@UpperBoundLiteral(lit)> <: \<LTLengthOf(value="myArray", offset=off)>
   if \<lit>+\<offset> $\le$ -1.
@@ -817,4 +817,5 @@ warnings:
 %%  LocalWords:  SearchIndex bitwise SearchIndexBottom SearchIndexUnknown
 %%  LocalWords:  Substring substringindex substring SubstringIndexFor
 %%  LocalWords:  SubstringIndexBottom SubstringIndexUnknown LessThanBottom
-%%  LocalWords:  LessThanUnknown typecheck typechecks
+%%  LocalWords:  LessThanUnknown typecheck typechecks system''
+% LocalWords:  UpperBoundLiteral

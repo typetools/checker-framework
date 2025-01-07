@@ -398,6 +398,7 @@ public class OptionalVisitor
    *
    * @param tree a method invocation that can perhaps be simplified
    */
+  @SuppressWarnings("RedundantControlFlow")
   public void handleCreationElimination(MethodInvocationTree tree) {
     if (!isOptionalElimination(tree)) {
       return;
@@ -505,7 +506,7 @@ public class OptionalVisitor
    * {@code x = Optional.of(Optional.of("baz"));}. However, the type of the right-hand side is
    * {@code Optional<? extends Object>}, not {@code Optional<Optional<String>>}. Therefore, to fully
    * check for improper types, it is necessary to examine, in the type checker, the argument to
-   * construction of an Optional. Method {@link handleNestedOptionalCreation} does so.
+   * construction of an Optional. Method {@link #handleNestedOptionalCreation} does so.
    */
   private final class OptionalTypeValidator extends BaseTypeValidator {
 

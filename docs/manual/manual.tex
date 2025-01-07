@@ -4,8 +4,8 @@
 
 \title{The Checker Framework Manual: \\ Custom pluggable types for Java}
 \author{\url{https://checkerframework.org}}
-\newcommand{\ReleaseVersion}{3.45.0}
-\newcommand{\ReleaseInfo}{3.45.0 (1 Jul 2024)}
+\newcommand{\ReleaseVersion}{3.48.4}
+\newcommand{\ReleaseInfo}{3.48.4 (2 Jan 2025)}
 \date{Version \ReleaseInfo{}}
 
 \begin{document}
@@ -55,11 +55,14 @@ describes how to \textbf{install and use} pluggable type-checkers.
 \input{called-methods-checker}
 \input{resource-leak-checker}
 \input{fenum-checker.tex}
-\input{tainting-checker.tex}
 \input{lock-checker.tex}
 \input{index-checker.tex}
 % TODO: Uncomment when the Non-Empty Checker is ready to be publicized.
 % \input{non-empty-checker.tex}
+
+% These are related to tainting:
+\input{tainting-checker.tex}
+\input{sql-quotes-checker.tex}
 
 % These are focused on strings:
 \input{regex-checker.tex}

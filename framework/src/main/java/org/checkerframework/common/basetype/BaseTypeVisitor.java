@@ -263,10 +263,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   /** True if "-AajavaChecks" was passed on the command line. */
   private final boolean ajavaChecks;
 
-  /** True if "-AassumeSideEffectFree" or "-aassumePure" was passed on the command line. */
+  /** True if "-AassumeSideEffectFree" or "-AassumePure" was passed on the command line. */
   private final boolean assumeSideEffectFree;
 
-  /** True if "-AassumeDeterministic" or "-aassumePure" was passed on the command line. */
+  /** True if "-AassumeDeterministic" or "-AassumePure" was passed on the command line. */
   private final boolean assumeDeterministic;
 
   /** True if "-AassumePureGetters" was passed on the command line. */
@@ -276,7 +276,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   private final boolean checkCastElementType;
 
   /** True if "-AwarnRedundantAnnotations" was passed on the command line */
-  private final boolean warnRedundantAnnotations;
+  protected final boolean warnRedundantAnnotations;
 
   /** The tree of the enclosing method that is currently being visited, if any. */
   protected @Nullable MethodTree methodTree = null;
@@ -390,9 +390,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   // **********************************************************************
 
   @Override
-  public void setRoot(CompilationUnitTree root) {
-    atypeFactory.setRoot(root);
-    super.setRoot(root);
+  public void setRoot(CompilationUnitTree newRoot) {
+    atypeFactory.setRoot(newRoot);
+    super.setRoot(newRoot);
     testJointJavacJavaParserVisitor();
     testAnnotationInsertion();
   }
@@ -589,24 +589,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     Tree ext = classTree.getExtendsClause();
     if (ext != null) {
-      for (AnnotatedDeclaredType superType : classType.directSupertypes()) {
-        if (superType.getUnderlyingType().asElement().getKind().isClass()) {
-          validateType(ext, superType);
-          break;
-        }
-      }
+      AnnotatedTypeMirror superClass = atypeFactory.getTypeOfExtendsImplements(ext);
+      validateType(ext, superClass);
     }
 
     List<? extends Tree> impls = classTree.getImplementsClause();
     if (impls != null) {
       for (Tree im : impls) {
-        for (AnnotatedDeclaredType superType : classType.directSupertypes()) {
-          if (superType.getUnderlyingType().asElement().getKind().isInterface()
-              && types.isSameType(superType.getUnderlyingType(), TreeUtils.typeOf(im))) {
-            validateType(im, superType);
-            break;
-          }
-        }
+        AnnotatedTypeMirror superInterface = atypeFactory.getTypeOfExtendsImplements(im);
+        validateType(im, superInterface);
       }
     }
 
@@ -967,7 +958,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     if (checker.shouldSkipDefs(enclosingClass, tree)) {
       return null;
     }
-    processMethodTree(tree);
+    processMethodTree("<unknown from visitMethod>", tree);
     return null;
   }
 
@@ -975,9 +966,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * Type-check {@literal methodTree}. Subclasses should override this method instead of {@link
    * #visitMethod(MethodTree, Void)}.
    *
+   * @param className the class that contains the method, for diagnostics only
    * @param tree the method to type-check
    */
-  public void processMethodTree(MethodTree tree) {
+  public void processMethodTree(String className, MethodTree tree) {
 
     // We copy the result from getAnnotatedType to ensure that circular types (e.g. K extends
     // Comparable<K>) are represented by circular AnnotatedTypeMirrors, which avoids problems
@@ -1065,7 +1057,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         if (store != null) {
           atypeFactory
               .getWholeProgramInference()
-              .updateContracts(Analysis.BeforeOrAfter.AFTER, methodElement, store);
+              .updateContracts(className, Analysis.BeforeOrAfter.AFTER, methodElement, store);
         }
       }
 
@@ -1293,7 +1285,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
   /**
    * Returns true if the given method is explicitly annotated with both @{@link SideEffectFree}
-   * and @{@link Deterministic}.
+   * and @{@link Deterministic}. Those annotations can be replaced by @{@link Pure}.
    *
    * @param tree a method
    * @return true if a method is explicitly annotated with both @{@link SideEffectFree} and @{@link
@@ -1998,6 +1990,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     if (args != null && !args.inferenceFailed()) {
       return true;
     }
+    if (args.inferenceCrashed()) {
+      checker.reportError(
+          tree,
+          "type.argument.inference.crashed",
+          ElementUtils.getSimpleDescription(methodType.getElement()),
+          args == null ? "" : args.getErrorMsg());
+      return false;
+    }
     checker.reportError(
         tree,
         "type.arguments.not.inferred",
@@ -2366,22 +2366,21 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     Tree enclosing = TreePathUtil.enclosingOfKind(getCurrentPath(), methodAndLambdaExpression);
 
-    AnnotatedTypeMirror ret = null;
+    AnnotatedTypeMirror declaredReturnType = null;
     if (enclosing.getKind() == Tree.Kind.METHOD) {
-
-      MethodTree enclosingMethod = TreePathUtil.enclosingMethod(getCurrentPath());
-      boolean valid = validateTypeOf(enclosing);
+      MethodTree enclosingMethod = (MethodTree) enclosing;
+      boolean valid = validateTypeOf(enclosingMethod);
       if (valid) {
-        ret = atypeFactory.getMethodReturnType(enclosingMethod, tree);
+        declaredReturnType = atypeFactory.getMethodReturnType(enclosingMethod, tree);
       }
     } else {
       AnnotatedExecutableType result =
           atypeFactory.getFunctionTypeFromTree((LambdaExpressionTree) enclosing);
-      ret = result.getReturnType();
+      declaredReturnType = result.getReturnType();
     }
 
-    if (ret != null) {
-      commonAssignmentCheck(ret, tree.getExpression(), "return");
+    if (declaredReturnType != null) {
+      commonAssignmentCheck(declaredReturnType, tree.getExpression(), "return");
     }
     return super.visitReturn(tree, p);
   }
@@ -3658,20 +3657,22 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       return;
     }
 
-    AnnotatedTypeMirror methodReceiver = method.getReceiverType().getErased();
-    AnnotatedTypeMirror treeReceiver = methodReceiver.shallowCopy(false);
-    AnnotatedTypeMirror rcv = atypeFactory.getReceiverType(tree);
+    AnnotatedTypeMirror erasedMethodReceiver = method.getReceiverType().getErased();
+    AnnotatedTypeMirror erasedTreeReceiver = erasedMethodReceiver.shallowCopy(false);
+    AnnotatedTypeMirror treeReceiver = atypeFactory.getReceiverType(tree);
 
-    treeReceiver.addAnnotations(rcv.getEffectiveAnnotations());
+    erasedTreeReceiver.addAnnotations(treeReceiver.getEffectiveAnnotations());
 
-    if (!skipReceiverSubtypeCheck(tree, methodReceiver, rcv)) {
+    if (!skipReceiverSubtypeCheck(tree, erasedMethodReceiver, treeReceiver)) {
       // The diagnostic can be a bit misleading because the check is of the receiver but
       // `tree` is the entire method invocation (where the receiver might be implicit).
-      commonAssignmentCheckStartDiagnostic(methodReceiver, treeReceiver, tree);
-      boolean success = typeHierarchy.isSubtype(treeReceiver, methodReceiver);
-      commonAssignmentCheckEndDiagnostic(success, null, methodReceiver, treeReceiver, tree);
+      commonAssignmentCheckStartDiagnostic(erasedMethodReceiver, erasedTreeReceiver, tree);
+      boolean success = typeHierarchy.isSubtype(erasedTreeReceiver, erasedMethodReceiver);
+      commonAssignmentCheckEndDiagnostic(
+          success, null, erasedMethodReceiver, erasedTreeReceiver, tree);
       if (!success) {
-        reportMethodInvocabilityError(tree, treeReceiver, methodReceiver);
+        // Don't report the erased types because they show up with '</*RAW*/>' as type args.
+        reportMethodInvocabilityError(tree, treeReceiver, method.getReceiverType());
       }
     }
   }
@@ -4387,9 +4388,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           overriddenParams.remove(0);
         }
         // Deal with varargs
-        if (overrider.isVarArgs() && !overridden.isVarArgs()) {
+        if (overrider.isVarargs() && !overridden.isVarargs()) {
           overriderParams =
-              AnnotatedTypes.expandVarArgsParametersFromTypes(overrider, overriddenParams);
+              AnnotatedTypes.expandVarargsParametersFromTypes(overrider, overriddenParams);
         }
       }
 
@@ -4758,7 +4759,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Issues an error if access not allowed, based on an @Unused annotation.
+   * Issues an error if access is not allowed, based on an {@code @Unused} annotation.
    *
    * @param identifierTree the identifier being accessed; the method does nothing if it is not a
    *     field

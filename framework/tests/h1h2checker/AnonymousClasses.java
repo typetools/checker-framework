@@ -4,7 +4,7 @@ import org.checkerframework.framework.testchecker.h1h2checker.quals.H1S2;
 
 public class AnonymousClasses {
   private <@H1S1 T extends @H1S1 Comparator<T>> void testGenericAnonymous() {
-    // :: error: (type.argument) :: error: (constructor.invocation)
+    // :: error: (type.argument) :: warning: (cast.unsafe.constructor.invocation)
     new @H1S1 Gen<T>() {};
     // :: error: (type.argument) :: warning: (cast.unsafe.constructor.invocation)
     new @H1S1 GenInter<T>() {};

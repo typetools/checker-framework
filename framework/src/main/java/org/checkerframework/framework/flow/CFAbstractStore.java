@@ -33,6 +33,7 @@ import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.MethodCall;
+import org.checkerframework.dataflow.expression.SuperReference;
 import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.qual.SideEffectsOnly;
@@ -148,19 +149,19 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    */
   protected CFAbstractStore(CFAbstractAnalysis<V, S, ?> analysis, boolean sequentialSemantics) {
     this.analysis = analysis;
-    localVariableValues = new HashMap<>();
-    thisValue = null;
-    fieldValues = new HashMap<>();
-    methodCallExpressions = new HashMap<>();
-    arrayValues = new HashMap<>();
-    classValues = new HashMap<>();
+    this.localVariableValues = new HashMap<>();
+    this.thisValue = null;
+    this.fieldValues = new HashMap<>();
+    this.methodCallExpressions = new HashMap<>();
+    this.arrayValues = new HashMap<>();
+    this.classValues = new HashMap<>();
     this.sequentialSemantics = sequentialSemantics;
     sideEffectsOnlyValueElement =
         TreeUtils.getMethod(SideEffectsOnly.class, "value", 0, analysis.env);
-    assumeSideEffectFree =
+    this.assumeSideEffectFree =
         analysis.checker.hasOption("assumeSideEffectFree")
             || analysis.checker.hasOption("assumePure");
-    assumePureGetters = analysis.checker.hasOption("assumePureGetters");
+    this.assumePureGetters = analysis.checker.hasOption("assumePureGetters");
   }
 
   /**
@@ -170,16 +171,16 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    */
   protected CFAbstractStore(CFAbstractStore<V, S> other) {
     this.analysis = other.analysis;
-    localVariableValues = new HashMap<>(other.localVariableValues);
-    thisValue = other.thisValue;
-    fieldValues = new HashMap<>(other.fieldValues);
-    methodCallExpressions = new HashMap<>(other.methodCallExpressions);
-    arrayValues = new HashMap<>(other.arrayValues);
-    classValues = new HashMap<>(other.classValues);
-    sequentialSemantics = other.sequentialSemantics;
-    sideEffectsOnlyValueElement = other.sideEffectsOnlyValueElement;
-    assumeSideEffectFree = other.assumeSideEffectFree;
-    assumePureGetters = other.assumePureGetters;
+    this.localVariableValues = new HashMap<>(other.localVariableValues);
+    this.thisValue = other.thisValue;
+    this.fieldValues = new HashMap<>(other.fieldValues);
+    this.methodCallExpressions = new HashMap<>(other.methodCallExpressions);
+    this.arrayValues = new HashMap<>(other.arrayValues);
+    this.classValues = new HashMap<>(other.classValues);
+    this.sequentialSemantics = other.sequentialSemantics;
+    this.sideEffectsOnlyValueElement = other.sideEffectsOnlyValueElement;
+    this.assumeSideEffectFree = other.assumeSideEffectFree;
+    this.assumePureGetters = other.assumePureGetters;
   }
 
   /**
@@ -564,6 +565,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   public static boolean canInsertJavaExpression(JavaExpression expr) {
     if (expr instanceof FieldAccess
         || expr instanceof ThisReference
+        || expr instanceof SuperReference
         || expr instanceof LocalVariable
         || expr instanceof MethodCall
         || expr instanceof ArrayAccess
@@ -730,9 +732,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
           arrayValues.put(arrayAccess, newValue);
         }
       }
-    } else if (expr instanceof ThisReference) {
-      ThisReference thisRef = (ThisReference) expr;
-      if (sequentialSemantics || !thisRef.isAssignableByOtherCode()) {
+    } else if (expr instanceof ThisReference || expr instanceof SuperReference) {
+      if (sequentialSemantics || !expr.isAssignableByOtherCode()) {
         V oldValue = thisValue;
         V newValue = merger.apply(oldValue, value);
         if (newValue != null) {
@@ -842,7 +843,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     } else if (expr instanceof ClassName) {
       ClassName c = (ClassName) expr;
       classValues.remove(c);
-    } else { // thisValue ...
+    } else if (expr instanceof ThisReference) {
+      thisValue = null;
+    } else {
       // No other types of expressions are stored.
     }
   }
@@ -858,7 +861,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     if (expr instanceof LocalVariable) {
       LocalVariable localVar = (LocalVariable) expr;
       return localVariableValues.get(localVar);
-    } else if (expr instanceof ThisReference) {
+    } else if (expr instanceof ThisReference || expr instanceof SuperReference) {
       return thisValue;
     } else if (expr instanceof FieldAccess) {
       FieldAccess fieldAcc = (FieldAccess) expr;
@@ -891,7 +894,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       return fieldValues.get((FieldAccess) je);
     } else if (je instanceof ClassName) {
       return classValues.get((ClassName) je);
-    } else if (je instanceof ThisReference) {
+    } else if (je instanceof ThisReference || je instanceof SuperReference) {
       // "return thisValue" is wrong, because the node refers to an outer this.
       // So, return null for now.  TODO: improve.
       return null;
@@ -1260,9 +1263,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     {
       V otherVal = other.thisValue;
       V myVal = thisValue;
-      V mergedVal = myVal == null ? null : upperBoundOfValues(otherVal, myVal, shouldWiden);
-      if (mergedVal != null) {
-        newStore.thisValue = mergedVal;
+      if (myVal == null || otherVal == null) {
+        newStore.thisValue = null;
+      } else {
+        newStore.thisValue = upperBoundOfValues(otherVal, myVal, shouldWiden);
       }
     }
 
