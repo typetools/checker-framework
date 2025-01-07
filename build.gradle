@@ -109,6 +109,9 @@ spotlessPredeclare {
   groovyGradle {
     greclipse()
   }
+  groovy {
+    greclipse()
+  }
 }
 
 allprojects { currentProj ->
@@ -301,6 +304,17 @@ allprojects { currentProj ->
         }
         trimTrailingWhitespace()
         // endWithNewline() // Don't want to end empty files with a newline
+      }
+
+      groovy {
+        target 'buildSrc/**/*.groovy'
+        importOrder()
+
+        // removes semicolons at the end of lines
+        removeSemicolons()
+        greclipse()
+        indentWithSpaces(2)
+        trimTrailingWhitespace()
       }
     }
 
