@@ -1,16 +1,18 @@
 import  org.gradle.process.ExecOperations
 import javax.inject.Inject
 import org.gradle.api.DefaultTask
-import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
 
 
+/**
+ * Custom class that clones or updates a given Git repository.
+ */
 abstract class CloneTask extends DefaultTask {
   private ExecOperations execOperations
 
-  @Inject //@javax.inject.Inject
+  @Inject
   CloneTask(ExecOperations execOperations) {
     this.execOperations = execOperations
   }
@@ -19,13 +21,14 @@ abstract class CloneTask extends DefaultTask {
   def url = project.objects.property(String)
 
   @OutputDirectory
-  def directoryP = project.objects.property(File)
+  def directory = project.objects.property(File)
+
   @TaskAction
   void doTaskAction() {
-    File directory = directoryP.get()
-    String urlS = url.get()
+    cloneAndUpdate(url.get(), directory.get())
+  }
 
-
+  void cloneAndUpdate(String url, File directory) {
     if (new File(directory, ".git").exists()) {
       execOperations.exec {
         workingDir directory
@@ -36,7 +39,7 @@ abstract class CloneTask extends DefaultTask {
       }
     } else {
       try {
-        clone(urlS, directory.toString(), true)
+        clone(url, directory.toString(), true)
       } catch (Throwable t) {
         println "Exception while cloning ${url}"
         t.printStackTrace()

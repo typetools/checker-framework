@@ -696,25 +696,25 @@ task manual(type: Exec, group: 'Documentation') {
 
 tasks.register('getGitScripts', CloneTask) {
   url.set('https://github.com/plume-lib/git-scripts.git')
-  directoryP.set(file(gitScriptsHome))
+  directory.set(file(gitScriptsHome))
   outputs.upToDateWhen { false }
 }
 
 tasks.register('getPlumeScripts', CloneTask) {
   url.set('https://github.com/plume-lib/plume-scripts.git')
-  directoryP.set(file(plumeScriptsHome))
+  directory.set(file(plumeScriptsHome))
   outputs.upToDateWhen { false }
 }
 
 tasks.register('getHtmlTools', CloneTask) {
   url.set('https://github.com/plume-lib/html-tools.git')
-  directoryP.set(file(htmlToolsHome))
+  directory.set(file(htmlToolsHome))
   outputs.upToDateWhen { false }
 }
 
 tasks.register('getDoLikeJavac', CloneTask) {
   url.set('https://github.com/kelloggm/do-like-javac.git')
-  directoryP.set(file(doLikeJavacHome))
+  directory.set(file(doLikeJavacHome))
   outputs.upToDateWhen { false }
 }
 

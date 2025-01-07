@@ -62,7 +62,7 @@ dependencies {
 tasks.register('cloneTypetoolsJdk', CloneTask) {
   description 'Obtain or update the annotated JDK.'
   url.set('https://github.com/typetools/jdk.git')
-  directoryP.set(file(annotatedJdkHome))
+  directory.set(file(annotatedJdkHome))
   outputs.upToDateWhen { false }
 }
 
