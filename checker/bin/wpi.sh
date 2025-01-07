@@ -289,9 +289,9 @@ function configure_and_exec_dljc {
 
   export PATH="${PATH_BACKUP}"
 
-  echo "=== DLJC standard out/err (${dljc_stdout}) follows: ==="
+  echo "=== Start of DLJC standard out/err (${dljc_stdout}) ==="
   cat "${dljc_stdout}"
-  echo "=== End of DLJC standard out/err.  ==="
+  echo "=== End of DLJC standard out/err (${dljc_stdout}) ==="
 
   # The wpi.py script in do-like-javac outputs the following text if no build/whole-program-inference directory
   # exists, which means that WPI produced no output. When that happens, the reason is usually that the Checker
