@@ -631,14 +631,13 @@ task allJavadoc(type: Javadoc, group: 'Documentation') {
 // See documentation for allJavadoc task.
 javadoc.dependsOn(allJavadoc)
 
+task cleanManual(type: Exec) {
+  description 'Clean the manual'
+  commandLine 'make', '-C', 'docs/manual', 'clean'
+}
+clean.dependsOn(cleanManual)
 clean {
   delete(file("${rootDir}/docs/api"))
-  def injected = project.objects.newInstance(InjectedExecOps)
-  doLast {
-    injected.execOps.exec {
-      commandLine 'make', '-C', 'docs/manual', 'clean'
-    }
-  }
 }
 
 configurations {

@@ -1,10 +1,10 @@
-import  org.gradle.process.ExecOperations
+import java.time.Duration
 import javax.inject.Inject
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
-
+import org.gradle.process.ExecOperations
 
 /**
  * Custom class that clones or updates a given Git repository.
@@ -29,6 +29,7 @@ abstract class CloneTask extends DefaultTask {
   }
 
   void cloneAndUpdate(String url, File directory) {
+    // Gradle creates the directory if it does not exist, so check to see if the director has a .git directory.
     if (new File(directory, ".git").exists()) {
       execOperations.exec {
         workingDir directory
@@ -44,7 +45,7 @@ abstract class CloneTask extends DefaultTask {
         println "Exception while cloning ${url}"
         t.printStackTrace()
       }
-      if (!directory.exists()) {
+      if (!new File(directory, ".git").exists()) {
         println "Cloning failed, will try again in 1 minute: clone(${url}, ${directory}, true, ${extraArgs})"
         sleep(60000) // wait 1 minute, then try again
         clone(urlS, getDirectory(), false)
@@ -71,7 +72,7 @@ abstract class CloneTask extends DefaultTask {
       ]
       args += extraArgs
       ignoreExitValue = ignoreError
-      timeout = 60000 // 60 seconds
+      timeout = Duration.ofSeconds(60)
     }
   }
 }
