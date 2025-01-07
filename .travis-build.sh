@@ -8,7 +8,7 @@ set -e
 
 ## Diagnostic output
 # Output lines of this script as they are read.
-set -o verbose
+# set -o verbose
 # Output expanded lines of this script as they are executed.
 set -o xtrace
 
