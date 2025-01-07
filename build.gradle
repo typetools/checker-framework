@@ -757,17 +757,14 @@ task pythonIsInstalled(type: Exec) {
   args '--version'
 }
 
-task tags {
-  group 'Emacs'
+task etags(type: Exec, group: 'Emacs') {
+  commandLine 'etags', '-i', 'checker/TAGS', '-i', 'checker-qual/TAGS', '-i', 'checker-util/TAGS', '-i', 'dataflow/TAGS', '-i', 'framework/TAGS', '-i', 'framework-test/TAGS', '-i', 'javacutil/TAGS', '-i', 'docs/manual/TAGS'
+}
+
+task tags(type: Exec, group: 'Emacs') {
+  dependsOn etags
   description 'Create Emacs TAGS table'
-  doLast {
-    exec {
-      commandLine 'etags', '-i', 'checker/TAGS', '-i', 'checker-qual/TAGS', '-i', 'checker-util/TAGS', '-i', 'dataflow/TAGS', '-i', 'framework/TAGS', '-i', 'framework-test/TAGS', '-i', 'javacutil/TAGS', '-i', 'docs/manual/TAGS'
-    }
-    exec {
-      commandLine 'make', '-C', 'docs/manual', 'tags'
-    }
-  }
+  commandLine 'make', '-C', 'docs/manual', 'tags'
 }
 
 subprojects {
