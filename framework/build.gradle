@@ -185,12 +185,7 @@ task loaderTests(type: Exec, dependsOn: 'shadowJar', group: 'Verification') {
   // TODO: this dependency on checker is a bit ugly.
   dependsOn project(':checker-qual').tasks.jar
   dependsOn project(':checker').tasks.assemble
-  executable 'make'
-  args = [
-    '-C',
-    'tests/annotationclassloader/',
-    'all'
-  ]
+  commandLine 'make', '-C', 'tests/annotationclassloader/', 'all'
 }
 
 clean {
