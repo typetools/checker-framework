@@ -33,11 +33,11 @@ public class NonEmptyChecker extends BaseTypeChecker {
   @Override
   protected Set<Class<? extends SourceChecker>> getImmediateSubcheckerClasses() {
     Set<Class<? extends SourceChecker>> checkers = super.getImmediateSubcheckerClasses();
-    // Ideally, the OptionalImplChecker should only be added as a subchecker if this Non-Empty
-    // Checker is being run in aggregate with the top-level Optional Checker
-    // However, it appears that this information (via SourceChecker#getParentChecker()) is not
-    // available at the time when this method is called.
-    checkers.add(OptionalImplChecker.class);
+    if (this.parentChecker instanceof OptionalChecker) {
+      // Add the OptionalImplChecker as a subchecker if this Non-Empty
+      // Checker is being run in aggregate with the top-level Optional Checker
+      checkers.add(OptionalImplChecker.class);
+    }
     return checkers;
   }
 
