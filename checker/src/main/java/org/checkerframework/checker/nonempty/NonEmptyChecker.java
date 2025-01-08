@@ -48,7 +48,7 @@ public class NonEmptyChecker extends BaseTypeChecker {
       // indicates that this Non-Empty Checker is being run independently.
       // Check all definitions in this case, not just the ones relevant to the Optional Checker's
       // guarantee.
-      return false;
+      return super.shouldSkipDefs(tree);
     }
     return !getMethodsToVerify().contains(tree.getName().toString());
   }
