@@ -3,16 +3,13 @@ Version 3.48.5 (February 3, 2025)
 
 **User-visible changes:**
 
-The Optional Checker now employs an analysis that increases its
-precision around `Optional` values resulting from operations on
-container types (e.g., `List`, `Map`, `Iterable`).
-
-**Implementation details:**
-
-Added annotations:
-
+The Optional Checker is more precise for `Optional` values resulting from
+operations on container types (e.g., `List`, `Map`, `Iterable`).  It supports
+two new annotations:
   * `@NonEmpty`
   * `@UnknownNonEmpty`
+
+**Implementation details:**
 
 **Closed issues:**
 
