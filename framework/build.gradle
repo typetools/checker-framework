@@ -16,6 +16,7 @@ sourceSets {
     }
   }
   testannotations
+  stubifier
 }
 
 sourcesJar {
@@ -25,6 +26,7 @@ sourcesJar {
 
 
 configurations {
+  implementation.extendsFrom(stubifierImplementation)
   implementation.extendsFrom(annotatedGuava)
 }
 
@@ -32,6 +34,8 @@ dependencies {
   api project(':javacutil')
   api project(':dataflow')
   api 'org.checkerframework:stubparser:3.26.2'
+  stubifierImplementation 'org.checkerframework:stubparser:3.26.2'
+  implementation sourceSets.stubifier.output
   // AFU is an "includedBuild" imported in checker-framework/settings.gradle, so the version number doesn't matter.
   // https://docs.gradle.org/current/userguide/composite_builds.html#settings_defined_composite
   api('org.checkerframework:annotation-file-utilities:*') {
@@ -68,7 +72,7 @@ tasks.register('cloneTypetoolsJdk', CloneTask) {
 
 
 task copyAndMinimizeAnnotatedJdkFiles(type: JavaExec, dependsOn: cloneTypetoolsJdk, group: 'Build') {
-  dependsOn ':framework:compileJava'
+  dependsOn ':framework:compileStubifierJava'
   // we need the next two dependencies because we run JavaStubifier using this project's runtimeClasspath,
   // which refers to the jars for these other projects
   dependsOn ':javacutil:jar'
@@ -82,11 +86,11 @@ task copyAndMinimizeAnnotatedJdkFiles(type: JavaExec, dependsOn: cloneTypetoolsJ
   outputs.dir file(outputDir)
 
 
-  classpath = sourceSets.main.runtimeClasspath
+  classpath = sourceSets.stubifier.runtimeClasspath
   standardOutput = System.out
   errorOutput = System.err
 
-  mainClass = 'org.checkerframework.framework.stub.JavaStubifier'
+  mainClass = 'org.checkerframework.framework.stubifier.JavaStubifier'
   args outputDir
 
   doFirst {
@@ -116,6 +120,7 @@ task copyAndMinimizeAnnotatedJdkFiles(type: JavaExec, dependsOn: cloneTypetoolsJ
   }
 }
 sourcesJar.dependsOn(copyAndMinimizeAnnotatedJdkFiles)
+processResources.dependsOn(copyAndMinimizeAnnotatedJdkFiles)
 
 task allSourcesJar(type: Jar, group: 'Build') {
   description 'Creates a sources jar that includes sources for all Checker Framework classes in framework.jar'
