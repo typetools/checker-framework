@@ -1,32 +1,36 @@
 package org.checkerframework.checker.optional;
 
-import java.util.Optional;
-import java.util.Set;
-import org.checkerframework.common.aliasing.AliasingChecker;
-import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.framework.qual.RelevantJavaTypes;
-import org.checkerframework.framework.qual.StubFiles;
+import java.util.ArrayList;
+import java.util.Collection;
+import org.checkerframework.checker.nonempty.NonEmptyChecker;
+import org.checkerframework.framework.source.AggregateChecker;
 import org.checkerframework.framework.source.SourceChecker;
-import org.checkerframework.framework.source.SupportedOptions;
 
+// The Optional Checker aggregates two checkers, the Non-Empty Checker and the
+// OptionalImplChecker. The Optional Checker behaves as the ultimate parent of those two checkers
+// and has no qualifiers or transfer function class of its own.
+//
+// When the Non-Empty Checker is executed as a subchecker of the Optional Checker, it runs the
+// OptionalImplChecker. It only type-checks the methods that the OptionalImplChecker passes to it.
+//
+// The OptionalImplChecker implements a type system for Optional values (i.e., what users would
+// expect the Optional Checker to implement). It reads programmer-written annotations from the
+// Non-Empty type system, and keeps track of the methods that the Non-Empty Checker should check.
 /**
- * A type-checker that prevents misuse of the {@link java.util.Optional} class.
+ * A type-checker that prevents {@link java.util.NoSuchElementException} in the use of the {@link
+ * java.util.Optional} class.
  *
  * @checker_framework.manual #optional-checker Optional Checker
  */
-// TODO: For a call to `@Optional#ofNullable`, if the argument has type
-// @NonNull, make the return type have type @Present.
-@RelevantJavaTypes(Optional.class)
-@StubFiles({"javaparser.astub"})
-@SupportedOptions("optionalMapAssumeNonNull")
-public class OptionalChecker extends BaseTypeChecker {
-  /** Create an OptionalChecker. */
+public class OptionalChecker extends AggregateChecker {
+
+  /** Creates a new {@link org.checkerframework.checker.optional.OptionalChecker} */
   public OptionalChecker() {}
 
   @Override
-  protected Set<Class<? extends SourceChecker>> getImmediateSubcheckerClasses() {
-    Set<Class<? extends SourceChecker>> subcheckers = super.getImmediateSubcheckerClasses();
-    subcheckers.add(AliasingChecker.class);
-    return subcheckers;
+  protected Collection<Class<? extends SourceChecker>> getSupportedCheckers() {
+    Collection<Class<? extends SourceChecker>> checkers = new ArrayList<>(2);
+    checkers.add(NonEmptyChecker.class);
+    return checkers;
   }
 }
