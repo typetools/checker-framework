@@ -59,31 +59,11 @@ dependencies {
   testImplementation "org.projectlombok:lombok:${versions.lombok}"
 }
 
-task cloneTypetoolsJdk() {
+tasks.register('cloneTypetoolsJdk', CloneTask) {
   description 'Obtain or update the annotated JDK.'
-  doLast {
-    if (file(annotatedJdkHome).exists()) {
-      exec {
-        workingDir annotatedJdkHome
-        executable 'git'
-        args = ['pull', '-q']
-        ignoreExitValue = true
-      }
-    } else {
-      println 'Cloning annotated JDK repository.'
-      exec {
-        workingDir "${annotatedJdkHome}/../"
-        executable 'git'
-        args = [
-          'clone',
-          '-q',
-          '--depth=1',
-          'https://github.com/typetools/jdk.git',
-          'jdk'
-        ]
-      }
-    }
-  }
+  url.set('https://github.com/typetools/jdk.git')
+  directory.set(file(annotatedJdkHome))
+  outputs.upToDateWhen { false }
 }
 
 
