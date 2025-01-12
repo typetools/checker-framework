@@ -30,7 +30,7 @@ examples appear in a table below.
   string representations of a Java type.
   The type qualifiers are applicable to \<CharSequence> and its subtypes.
   Programmers usually only need to write
-  the boldfaced qualifiers; other qualifiers are
+  the boldfaced qualifiers.  The other qualifiers (and some not shown) are
   included to improve the internal handling of String literals.}
 \label{fig-signature-hierarchy}
 \end{figure}
@@ -110,8 +110,8 @@ examples appear in a table below.
 
 Other type qualifiers are the intersection of two or more qualifiers listed
 above; for example, a
-\refqualclass{checker/signature/qual}{BinaryNameWithoutPackage} is a string
-that is a valid internal form \emph{and} a valid binary name.  A
+\refqualclass{checker/signature/qual}{DotSeparatedIdentifiers} is a string
+that is a valid fully-qualified name \emph{and} a valid binary name.  A
 programmer should never or rarely use these qualifiers, and you can ignore
 them as implementation details of the Signature Checker, though you might
 occasionally see them in an error message.  These qualifiers exist to give
@@ -197,4 +197,3 @@ command-line option to javac.
 % LocalWords:  DotSeparatedIdentifiers CharSequence Lmypackage mypackage
 % LocalWords:  FieldDescriptorWithoutPackage InternalForm getSimpleName
 % LocalWords:  ClassGetSimpleName FqBinaryName CanonicalName
-% LocalWords:  BinaryNameWithoutPackage

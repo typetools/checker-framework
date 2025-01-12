@@ -20,7 +20,6 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.signature.qual.ArrayWithoutPackage;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.BinaryNameOrPrimitiveType;
-import org.checkerframework.checker.signature.qual.BinaryNameWithoutPackage;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.checker.signature.qual.CanonicalNameAndBinaryName;
 import org.checkerframework.checker.signature.qual.ClassGetName;
@@ -160,9 +159,6 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     result.addStringPattern(
         SignatureRegexes.BinaryNameOrPrimitiveTypePattern,
         AnnotationBuilder.fromClass(elements, BinaryNameOrPrimitiveType.class));
-    result.addStringPattern(
-        SignatureRegexes.BinaryNameWithoutPackagePattern,
-        AnnotationBuilder.fromClass(elements, BinaryNameWithoutPackage.class));
     result.addStringPattern(
         SignatureRegexes.ClassGetNamePattern,
         AnnotationBuilder.fromClass(elements, ClassGetName.class));
