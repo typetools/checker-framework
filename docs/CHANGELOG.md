@@ -1,7 +1,16 @@
-Version 3.48.5 (February 3, 2025)
+Version 3.49.0 (February 3, 2025)
 --------------------------------
 
 **User-visible changes:**
+
+The Optional Checker is more precise for `Optional` values resulting from
+operations on container types (e.g., `List`, `Map`, `Iterable`).  It supports
+two new annotations:
+  * `@NonEmpty`
+  * `@UnknownNonEmpty`
+
+The Signature Checker no longer supports `@BinaryNameWithoutPackage` because
+it is equivalent to `@Identifier`; use `@Identifier` instead.
 
 **Implementation details:**
 

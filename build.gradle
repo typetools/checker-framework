@@ -109,6 +109,9 @@ spotlessPredeclare {
   groovyGradle {
     greclipse()
   }
+  groovy {
+    greclipse()
+  }
 }
 
 allprojects { currentProj ->
@@ -301,6 +304,17 @@ allprojects { currentProj ->
         }
         trimTrailingWhitespace()
         // endWithNewline() // Don't want to end empty files with a newline
+      }
+
+      groovy {
+        target 'buildSrc/**/*.groovy'
+        importOrder()
+
+        // removes semicolons at the end of lines
+        removeSemicolons()
+        greclipse()
+        indentWithSpaces(2)
+        trimTrailingWhitespace()
       }
     }
 
@@ -617,13 +631,13 @@ task allJavadoc(type: Javadoc, group: 'Documentation') {
 // See documentation for allJavadoc task.
 javadoc.dependsOn(allJavadoc)
 
+task cleanManual(type: Exec) {
+  description 'Clean the manual'
+  commandLine 'make', '-C', 'docs/manual', 'clean'
+}
+clean.dependsOn(cleanManual)
 clean {
   delete(file("${rootDir}/docs/api"))
-  doLast {
-    exec {
-      commandLine 'make', '-C', 'docs/manual', 'clean'
-    }
-  }
 }
 
 configurations {
@@ -679,76 +693,29 @@ task manual(type: Exec, group: 'Documentation') {
   commandLine 'make', '-C', 'docs/manual', 'all'
 }
 
-/**
- * Quietly clones the given git repository, {@code url}, to {@directory} at a depth of 1.
- * @param url git repository to clone
- * @param directory where to clone
- * @param ignoreError whether to fail the build if the clone command fails
- * @param extraArgs any extra arguments to pass to git
- */
-void clone(url, directory, ignoreError, extraArgs = []){
-  exec {
-    workingDir "${directory}/../"
-    executable 'git'
-    args = [
-      'clone',
-      '-q',
-      '--depth=1',
-      url,
-      file(directory).toPath().last()
-    ]
-    args += extraArgs
-    ignoreExitValue = ignoreError
-    timeout = 60000 // 60 seconds
-  }
+tasks.register('getGitScripts', CloneTask) {
+  url.set('https://github.com/plume-lib/git-scripts.git')
+  directory.set(file(gitScriptsHome))
+  outputs.upToDateWhen { false }
 }
 
-/**
- * Creates a task named {@code taskName} that updates or clones the git repository at
- * {@code url} into {@code directory}.  If the clone command fails, the tasks waits
- * a minute and then trys again.
- * @param taskName name of the created task
- * @param url location of the git repository
- * @param directory where to clone the repository
- * @param extraArgs arguments to pass to the git command
- */
-def createCloneTask(taskName, url, directory, extraArgs = []) {
-  tasks.create(name: taskName) {
-    description "Obtain or update ${url}"
-
-    // Always run.
-    outputs.upToDateWhen { false }
-    doLast {
-      if (file(directory).exists()) {
-        exec {
-          workingDir directory
-          executable 'git'
-          args = ['pull', '-q']
-          ignoreExitValue = true
-          timeout = 60000 // 60 seconds
-        }
-      } else {
-        try {
-          clone(url, directory, true, extraArgs)
-        } catch (Throwable t) {
-          println "Exception while cloning ${url}"
-          t.printStackTrace()
-        }
-        if (!file(directory).exists()) {
-          println "Cloning failed, will try again in 1 minute: clone(${url}, ${directory}, true, ${extraArgs})"
-          sleep(60000) // wait 1 minute, then try again
-          clone(url, directory, false, extraArgs)
-        }
-      }
-    }
-  }
+tasks.register('getPlumeScripts', CloneTask) {
+  url.set('https://github.com/plume-lib/plume-scripts.git')
+  directory.set(file(plumeScriptsHome))
+  outputs.upToDateWhen { false }
 }
 
+tasks.register('getHtmlTools', CloneTask) {
+  url.set('https://github.com/plume-lib/html-tools.git')
+  directory.set(file(htmlToolsHome))
+  outputs.upToDateWhen { false }
+}
 
-createCloneTask('getGitScripts', 'https://github.com/plume-lib/git-scripts.git', gitScriptsHome)
-createCloneTask('getPlumeScripts', 'https://github.com/plume-lib/plume-scripts.git', plumeScriptsHome)
-createCloneTask('getHtmlTools', 'https://github.com/plume-lib/html-tools.git', htmlToolsHome)
-createCloneTask('getDoLikeJavac', 'https://github.com/kelloggm/do-like-javac.git', doLikeJavacHome)
+tasks.register('getDoLikeJavac', CloneTask) {
+  url.set('https://github.com/kelloggm/do-like-javac.git')
+  directory.set(file(doLikeJavacHome))
+  outputs.upToDateWhen { false }
+}
 
 // No group so it does not show up in the output of `gradlew tasks`
 task pythonIsInstalled(type: Exec) {
