@@ -1,13 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg
-   xmlns:xhtml="http://www.w3.org/1999/xhtml"
-   xmlns:dc="http://purl.org/dc/elements/1.1/"
-   xmlns:cc="http://creativecommons.org/ns#"
-   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-   xmlns:svg="http://www.w3.org/2000/svg"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    width="1061px"
    height="467px"
    version="1.1"
@@ -15,7 +7,14 @@
    style="background-color: rgb(255, 255, 255);"
    id="svg190"
    sodipodi:docname="signature-types.svg"
-   inkscape:version="0.92.5 (2060ec1f9f, 2020-04-08)">
+   inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
   <metadata
      id="metadata194">
     <rdf:RDF>
@@ -37,18 +36,98 @@
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
      inkscape:window-width="2560"
-     inkscape:window-height="1536"
+     inkscape:window-height="1531"
      id="namedview192"
      showgrid="false"
      inkscape:zoom="2"
-     inkscape:cx="256.24737"
-     inkscape:cy="133.08719"
+     inkscape:cx="492.75"
+     inkscape:cy="205.25"
      inkscape:window-x="0"
-     inkscape:window-y="27"
+     inkscape:window-y="0"
      inkscape:window-maximized="1"
-     inkscape:current-layer="g188" />
+     inkscape:current-layer="g188"
+     inkscape:showpageshadow="2"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1" />
   <defs
-     id="defs2" />
+     id="defs2">
+    <marker
+       style="overflow:visible"
+       id="marker3430"
+       refX="0"
+       refY="0"
+       orient="auto-start-reverse"
+       inkscape:stockid="Arrow2"
+       markerWidth="7.6999998"
+       markerHeight="5.5999999"
+       viewBox="0 0 7.7 5.6"
+       inkscape:isstock="true"
+       inkscape:collect="always"
+       preserveAspectRatio="xMidYMid">
+      <path
+         transform="scale(0.7)"
+         d="M -2,-4 9,0 -2,4 c 2,-2.33 2,-5.66 0,-8 z"
+         style="fill:context-stroke;fill-rule:evenodd;stroke:none"
+         id="path3428" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="marker1333"
+       refX="0"
+       refY="0"
+       orient="auto-start-reverse"
+       inkscape:stockid="Arrow2"
+       markerWidth="7.6999998"
+       markerHeight="5.5999999"
+       viewBox="0 0 7.7 5.6"
+       inkscape:isstock="true"
+       inkscape:collect="always"
+       preserveAspectRatio="xMidYMid">
+      <path
+         transform="scale(0.7)"
+         d="M -2,-4 9,0 -2,4 c 2,-2.33 2,-5.66 0,-8 z"
+         style="fill:context-stroke;fill-rule:evenodd;stroke:none"
+         id="path1331" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="marker1184"
+       refX="0"
+       refY="0"
+       orient="auto-start-reverse"
+       inkscape:stockid="Arrow2"
+       markerWidth="7.6999998"
+       markerHeight="5.5999999"
+       viewBox="0 0 7.7 5.6"
+       inkscape:isstock="true"
+       inkscape:collect="always"
+       preserveAspectRatio="xMidYMid">
+      <path
+         transform="scale(0.7)"
+         d="M -2,-4 9,0 -2,4 c 2,-2.33 2,-5.66 0,-8 z"
+         style="fill:context-stroke;fill-rule:evenodd;stroke:none"
+         id="path1182" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="Arrow2"
+       refX="0"
+       refY="0"
+       orient="auto-start-reverse"
+       inkscape:stockid="Arrow2"
+       markerWidth="7.6999998"
+       markerHeight="5.5999999"
+       viewBox="0 0 7.7 5.6"
+       inkscape:isstock="true"
+       inkscape:collect="always"
+       preserveAspectRatio="xMidYMid">
+      <path
+         transform="scale(0.7)"
+         d="M -2,-4 9,0 -2,4 c 2,-2.33 2,-5.66 0,-8 z"
+         style="fill:context-stroke;fill-rule:evenodd;stroke:none"
+         id="arrow2L" />
+    </marker>
+  </defs>
   <g
      transform="translate(0.5,0.5)"
      id="g188">
@@ -71,7 +150,7 @@
            y="19"
            font-size="12px"
            id="text6"
-           style="font-size:12px;font-family:'Helvetica Bold','Helvetica Neue Bold','Arial','sans-serif';font-weight:700;text-anchor:middle;fill:#000000">@ClassGetSimpleName</text>
+           style="font-weight:700;font-size:12px;font-family:'Helvetica Bold', 'Helvetica Neue Bold', Arial, sans-serif;text-anchor:middle;fill:#000000">@ClassGetSimpleName</text>
       </switch>
     </g>
     <rect
@@ -93,7 +172,7 @@
            y="19"
            font-size="12px"
            id="text14"
-           style="font-size:12px;font-family:'Helvetica Bold','Helvetica Neue Bold','Arial','sans-serif';font-weight:700;text-anchor:middle;fill:#000000">@InternalForm</text>
+           style="font-weight:700;font-size:12px;font-family:'Helvetica Bold', 'Helvetica Neue Bold', Arial, sans-serif;text-anchor:middle;fill:#000000">@InternalForm</text>
       </switch>
     </g>
     <rect
@@ -115,7 +194,7 @@
            y="19"
            font-size="12px"
            id="text22"
-           style="font-size:12px;font-family:'Helvetica Bold','Helvetica Neue Bold','Arial','sans-serif';font-weight:700;text-anchor:middle;fill:#000000">@FieldDescriptor</text>
+           style="font-weight:700;font-size:12px;font-family:'Helvetica Bold', 'Helvetica Neue Bold', Arial, sans-serif;text-anchor:middle;fill:#000000">@FieldDescriptor</text>
       </switch>
     </g>
     <rect
@@ -137,7 +216,7 @@
            y="19"
            font-size="12px"
            id="text30"
-           style="font-size:12px;font-family:'Helvetica Bold','Helvetica Neue Bold','Arial','sans-serif';font-weight:700;text-anchor:middle;fill:#000000">@ClassGetName</text>
+           style="font-weight:700;font-size:12px;font-family:'Helvetica Bold', 'Helvetica Neue Bold', Arial, sans-serif;text-anchor:middle;fill:#000000">@ClassGetName</text>
       </switch>
     </g>
     <rect
@@ -158,7 +237,7 @@
            y="19"
            font-size="12px"
            id="text38"
-           style="font-size:12px;font-family:'Helvetica Bold','Helvetica Neue Bold','Arial','sans-serif';font-weight:700;text-anchor:middle;fill:#000000">@BinaryName</text>
+           style="font-weight:700;font-size:12px;font-family:'Helvetica Bold', 'Helvetica Neue Bold', Arial, sans-serif;text-anchor:middle;fill:#000000">@BinaryName</text>
       </switch>
     </g>
     <rect
@@ -180,7 +259,7 @@
            y="19"
            font-size="12px"
            id="text46"
-           style="font-size:12px;font-family:'Helvetica Bold','Helvetica Neue Bold','Arial','sans-serif';font-weight:700;text-anchor:middle;fill:#000000">@FullyQualifiedName</text>
+           style="font-weight:700;font-size:12px;font-family:'Helvetica Bold', 'Helvetica Neue Bold', Arial, sans-serif;text-anchor:middle;fill:#000000">@FullyQualifiedName</text>
       </switch>
     </g>
     <rect
@@ -247,7 +326,7 @@
       </switch>
     </g>
     <rect
-       x="340"
+       x="508"
        y="371"
        width="120"
        height="40"
@@ -255,7 +334,7 @@
        id="rect76"
        style="fill:#ffffff;stroke:#000000" />
     <g
-       transform="translate(369.5,377.5)"
+       transform="translate(537.5,377.5)"
        id="g82">
       <switch
          id="switch80">
@@ -267,26 +346,11 @@
            style="font-size:12px;font-family:Helvetica;text-anchor:middle;fill:#000000">@Identifier</text>
       </switch>
     </g>
-    <rect
-       x="530"
-       y="260"
-       width="220"
-       height="40"
-       pointer-events="none"
-       id="rect84"
-       style="fill:#ffffff;stroke:#000000" />
     <g
        transform="translate(545.5,268.5)"
        id="g90">
       <switch
-         id="switch88">
-        <text
-           x="93"
-           y="19"
-           font-size="12px"
-           id="text86"
-           style="font-size:12px;font-family:Helvetica;text-anchor:middle;fill:#000000">@BinaryNameWithoutPackage</text>
-      </switch>
+         id="switch88" />
     </g>
     <path
        d="M 565.29711,190.25289 532.76289,165.56711"
@@ -352,40 +416,19 @@
        inkscape:connector-curvature="0"
        style="fill:#000000;stroke:#000000;stroke-miterlimit:10" />
     <path
-       d="M 623.33,260 608.2,238.3"
+       d="M 578.00571,368.51819 606.30554,238.88728"
        stroke-miterlimit="10"
        pointer-events="none"
        id="path116"
        inkscape:connector-curvature="0"
-       style="fill:none;stroke:#000000;stroke-width:1.12663662;stroke-miterlimit:10" />
+       style="fill:none;stroke:#000000;stroke-width:1;stroke-miterlimit:10;marker-end:url(#marker1184);stroke-dasharray:none" />
     <path
-       d="m 605.29,233.93 6.79,3.88 -3.88,0.49 -1.94,3.4 z"
-       stroke-miterlimit="10"
-       pointer-events="none"
-       id="path118"
-       inkscape:connector-curvature="0"
-       style="fill:#000000;stroke:#000000;stroke-miterlimit:10" />
-    <path
-       d="M 541.85568,258.3775 423.60432,169.0925"
+       d="M 576.16164,369.04529 425.81723,171.91603"
        stroke-miterlimit="10"
        pointer-events="none"
        id="path120"
        inkscape:connector-curvature="0"
-       style="fill:none;stroke:#000000;stroke-width:0.76448315;stroke-miterlimit:10" />
-    <path
-       d="m 418.85,166.96 7.82,-0.28 -3.04,2.46 0.14,3.91 z"
-       stroke-miterlimit="10"
-       pointer-events="none"
-       id="path122"
-       inkscape:connector-curvature="0"
-       style="fill:#000000;stroke:#000000;stroke-miterlimit:10" />
-    <path
-       d="m 553.74,300.31 -5.73,5.33 0.69,-3.85 -2.66,-2.86 z"
-       stroke-miterlimit="10"
-       pointer-events="none"
-       id="path134"
-       inkscape:connector-curvature="0"
-       style="fill:#000000;stroke:#000000;stroke-miterlimit:10" />
+       style="fill:none;stroke:#000000;stroke-width:1;stroke-miterlimit:10;marker-end:url(#Arrow2);stroke-dasharray:none" />
     <path
        d="M 146,260.33 126,171.21"
        stroke-miterlimit="10"
@@ -450,20 +493,6 @@
        inkscape:connector-curvature="0"
        style="fill:#000000;stroke:#000000;stroke-miterlimit:10" />
     <path
-       d="m 401.43,411.55 7.54,-2.11 -2.38,3.1 1.05,3.77 z"
-       stroke-miterlimit="10"
-       pointer-events="none"
-       id="path174"
-       inkscape:connector-curvature="0"
-       style="fill:#000000;stroke:#000000;stroke-miterlimit:10" />
-    <path
-       d="m 395.46,301.44 4.25,6.58 -3.67,-1.36 -3.29,2.13 z"
-       stroke-miterlimit="10"
-       pointer-events="none"
-       id="path178"
-       inkscape:connector-curvature="0"
-       style="fill:#000000;stroke:#000000;stroke-miterlimit:10" />
-    <path
        d="M 415.33,260.33 523.88,229.05"
        stroke-miterlimit="10"
        pointer-events="none"
@@ -510,7 +539,7 @@
            y="19"
            font-size="12px"
            id="text30-5"
-           style="font-size:12px;font-family:'Helvetica Bold','Helvetica Neue Bold','Arial','sans-serif';font-weight:700,'Helvetica Neue Bold','Arial','sans-serif';font-weight:700;text-anchor:middle;fill:#000000">@FqBinaryName</text>
+           style="font-weight:700;font-size:12px;font-family:'Helvetica Bold', 'Helvetica Neue Bold', Arial, sans-serif;text-anchor:middle;fill:#000000">@FqBinaryName</text>
       </switch>
     </g>
     <path
@@ -561,7 +590,7 @@
        pointer-events="none"
        id="path96-6"
        inkscape:connector-curvature="0"
-       style="fill:none;stroke:#000000;stroke-width:0.62068641;stroke-miterlimit:10" />
+       style="fill:none;stroke:#000000;stroke-width:1;stroke-miterlimit:10;stroke-dasharray:none" />
     <path
        d="m 787.71994,165.57595 4.95,6.06 -3.8,-0.94 -3.03,2.48 z"
        stroke-miterlimit="10"
@@ -596,7 +625,7 @@
        pointer-events="none"
        id="path132-3"
        inkscape:connector-curvature="0"
-       style="fill:none;stroke:#000000;stroke-width:0.52591407;stroke-miterlimit:10" />
+       style="fill:none;stroke:#000000;stroke-width:1;stroke-miterlimit:10;stroke-dasharray:none" />
     <path
        d="m 490.2387,165.31833 -5.73,5.33 0.69,-3.85 -2.66,-2.86 z"
        stroke-miterlimit="10"
@@ -650,13 +679,11 @@
            y="19"
            font-size="12px"
            id="text78-5"
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12px;font-family:Helvetica;-inkscape-font-specification:'Helvetica, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#000000">
-          <tspan
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12px;font-family:Helvetica;-inkscape-font-specification:'Helvetica, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#000000"><tspan
              sodipodi:role="line"
              id="tspan4658"
              x="29"
-             y="19">@PrimitiveType</tspan>
-        </text>
+             y="19">@PrimitiveType</tspan></text>
       </switch>
     </g>
     <rect
@@ -677,13 +704,11 @@
            y="19"
            font-size="12px"
            id="text78-1"
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12px;font-family:Helvetica;-inkscape-font-specification:'Helvetica, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#000000">
-          <tspan
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12px;font-family:Helvetica;-inkscape-font-specification:'Helvetica, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#000000"><tspan
              sodipodi:role="line"
              id="tspan4656"
              x="28.999996"
-             y="19">@IdentifierOrPrimitiveType</tspan>
-        </text>
+             y="19">@IdentifierOrPrimitiveType</tspan></text>
       </switch>
     </g>
     <path
@@ -699,18 +724,13 @@
        id="path4660"
        inkscape:connector-curvature="0" />
     <path
-       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       d="M 395.46,301.44 399,371 553.74,300.31"
-       id="path4662"
-       inkscape:connector-curvature="0" />
-    <path
-       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       d="M 399,371 264.09,360.4816"
+       style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-dasharray:none"
+       d="M 574.03679,367.89705 263.99852,360.41658"
        id="path4664"
        inkscape:connector-curvature="0" />
     <path
-       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       d="M 509,424.5 406.59,412.54"
+       style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker1333)"
+       d="m 565.89165,423.98882 -10.30931,-9.43948"
        id="path4666"
        inkscape:connector-curvature="0" />
     <path
@@ -737,5 +757,9 @@
        id="path102-0-8"
        inkscape:connector-curvature="0"
        style="fill:#000000;stroke:#000000;stroke-miterlimit:10" />
+    <path
+       style="fill:#000000;stroke:#000000;stroke-width:1.00939;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker3430)"
+       d="M 576.39187,368.4294 395.89025,302.761"
+       id="path2994" />
   </g>
 </svg>
