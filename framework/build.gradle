@@ -159,22 +159,13 @@ checkCompilerMessages {
   ]
 }
 
-task loaderTests(dependsOn: 'shadowJar', group: 'Verification') {
+task loaderTests(type: Exec, dependsOn: 'shadowJar', group: 'Verification') {
   description 'Run tests for the annotation class loader'
   dependsOn(compileTestJava)
   // TODO: this dependency on checker is a bit ugly.
   dependsOn project(':checker-qual').tasks.jar
   dependsOn project(':checker').tasks.assemble
-  doLast {
-    exec {
-      executable 'make'
-      args = [
-        '-C',
-        'tests/annotationclassloader/',
-        'all'
-      ]
-    }
-  }
+  commandLine 'make', '-C', 'tests/annotationclassloader/', 'all'
 }
 
 clean {

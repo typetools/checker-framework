@@ -63,13 +63,9 @@ createDataflowShaded('shaded')
 createDataflowShaded('nullaway')
 createDataflowShaded('errorprone')
 
-task manual(group: 'Documentation') {
+task manual(type: Exec, group: 'Documentation') {
   description 'Build the manual'
-  doLast {
-    exec {
-      commandLine 'make', '-C', 'manual'
-    }
-  }
+  commandLine 'make', '-C', 'manual'
 }
 
 tasks.withType(Test) {

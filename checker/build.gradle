@@ -1018,7 +1018,7 @@ task wpiManyTest(group: 'Verification') {
 }
 
 // This is run as part of the inferenceTests task.
-task wpiPlumeLibTest(group: 'Verification') {
+task wpiPlumeLibTest(type: Exec, group: 'Verification') {
   description 'Tests whole-program inference on the plume-lib projects. Requires an Internet connection.'
   dependsOn(assembleForJavac)
   dependsOn(':getDoLikeJavac')
@@ -1026,12 +1026,8 @@ task wpiPlumeLibTest(group: 'Verification') {
   // This test must always be re-run when requested.
   outputs.upToDateWhen { false }
 
-  doLast {
-    exec {
-      commandLine 'bin-devel/wpi-plumelib/test-wpi-plumelib.sh'
-      ignoreExitValue = false
-    }
-  }
+  commandLine 'bin-devel/wpi-plumelib/test-wpi-plumelib.sh'
+  ignoreExitValue = false
 }
 
 apply from: rootProject.file('gradle-mvn-push.gradle')
