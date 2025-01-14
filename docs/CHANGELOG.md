@@ -12,6 +12,8 @@ two new annotations:
 The Signature Checker no longer supports `@BinaryNameWithoutPackage` because
 it is equivalent to `@Identifier`; use `@Identifier` instead.
 
+The JavaStubifier implementation now appears in package `org.checkerframework.framework.stubifier.JavaStubifier`.
+
 **Implementation details:**
 
 **Closed issues:**
