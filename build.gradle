@@ -857,8 +857,8 @@ subprojects {
 
     // Add jtregTests to framework and checker modules
     if (project.name.is('framework') || project.name.is('checker')) {
-      tasks.create(name: 'jtregTests', group: 'Verification') {
-        description 'Run the jtreg tests.'
+      tasks.create(name: 'jtregTests', type: Exec, group: 'Verification') {
+        description 'Run the jtreg tests. Requires jtreg to be installed.'
         dependsOn('compileJava')
         dependsOn('compileTestJava')
         dependsOn('shadowJar')
@@ -866,64 +866,49 @@ subprojects {
         String jtregOutput = "${buildDir}/jtreg"
         String name = 'all'
         String tests = '.'
-        doLast {
-          try {
-            exec {
-              executable 'jtreg'
-              args = [
-                "-dir:${projectDir}/jtreg",
-                "-workDir:${jtregOutput}/${name}/work",
-                "-reportDir:${jtregOutput}/${name}/report",
-                '-verbose:error,fail,nopass',
-                // Don't add debugging information
-                //  '-javacoptions:-g',
-                '-keywords:!ignore',
-                '-samevm',
-                "-javacoptions:-classpath ${tasks.shadowJar.archiveFile.get()}:${sourceSets.test.output.asPath}",
-                // Required for checker/jtreg/nullness/PersistUtil.java and other tests
-                "-vmoptions:-classpath ${tasks.shadowJar.archiveFile.get()}:${sourceSets.test.output.asPath}",
-              ]
-              args += [
-                // checker/jtreg/nullness/defaultsPersist/ReferenceInfoUtil.java
-                // uses the jdk.jdeps module.
-                '-javacoptions:--add-modules jdk.jdeps',
-                '-javacoptions:--add-exports=jdk.jdeps/com.sun.tools.classfile=ALL-UNNAMED',
-                '-vmoptions:--add-opens=jdk.jdeps/com.sun.tools.classfile=ALL-UNNAMED',
-                '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED',
-                '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED',
-                '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED',
-                '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED',
-                '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED',
-                '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED',
-                '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED',
-                '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED',
-                '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED',
-              ]
-              if (project.name.is('framework')) {
-                // Do not check for the annotated JDK
-                args += [
-                  '-javacoptions:-ApermitMissingJdk'
-                ]
-              } else if (project.name.is('checker')) {
-                args += [
-                  "-javacoptions:-classpath ${sourceSets.testannotations.output.asPath}",
-                ]
-              }
-
-              // Location of jtreg tests
-              args += "${tests}"
-            }
-          } catch (Exception ex) {
-            if (ex.getCause() != null && ex.getCause().getCause()!= null) {
-              String msg = String.join(System.lineSeparator(),
-                  ex.getCause().getLocalizedMessage() + ':',
-                  ex.getCause().getCause().getLocalizedMessage(),
-                  'Have you installed jtreg?')
-              println msg
-            }
-            throw ex
-          }
+        executable 'jtreg'
+        args = [
+          "-dir:${projectDir}/jtreg",
+          "-workDir:${jtregOutput}/${name}/work",
+          "-reportDir:${jtregOutput}/${name}/report",
+          '-verbose:error,fail,nopass',
+          // Don't add debugging information
+          //  '-javacoptions:-g',
+          '-keywords:!ignore',
+          '-samevm',
+          "-javacoptions:-classpath ${tasks.shadowJar.archiveFile.get()}:${sourceSets.test.output.asPath}",
+          // Required for checker/jtreg/nullness/PersistUtil.java and other tests
+          "-vmoptions:-classpath ${tasks.shadowJar.archiveFile.get()}:${sourceSets.test.output.asPath}",
+        ]
+        args += [
+          // checker/jtreg/nullness/defaultsPersist/ReferenceInfoUtil.java
+          // uses the jdk.jdeps module.
+          '-javacoptions:--add-modules jdk.jdeps',
+          '-javacoptions:--add-exports=jdk.jdeps/com.sun.tools.classfile=ALL-UNNAMED',
+          '-vmoptions:--add-opens=jdk.jdeps/com.sun.tools.classfile=ALL-UNNAMED',
+          '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED',
+          '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED',
+          '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED',
+          '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED',
+          '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED',
+          '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED',
+          '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED',
+          '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED',
+          '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED',
+        ]
+        if (project.name.is('framework')) {
+          // Do not check for the annotated JDK
+          args += [
+            '-javacoptions:-ApermitMissingJdk'
+          ]
+        } else if (project.name.is('checker')) {
+          args += [
+            "-javacoptions:-classpath ${sourceSets.testannotations.output.asPath}",
+          ]
         }
+
+        // Location of jtreg tests
+        args += "${tests}"
       }
     }
 
