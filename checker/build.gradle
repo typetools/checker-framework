@@ -298,7 +298,7 @@ task allResourceLeakTests(type: Test, group: 'Verification') {
 }
 
 // These are tests that should only be run with JDK 11+.
-task jtregJdk11Tests(group: 'Verification') {
+task jtregJdk11Tests(type: Exec, group: 'Verification') {
   description 'Run the jtreg tests made for JDK 11+.'
   dependsOn('compileJava')
   dependsOn('compileTestJava')
@@ -306,34 +306,30 @@ task jtregJdk11Tests(group: 'Verification') {
 
   String jtregOutput = "${buildDir}/jtregJdk11"
   String name = 'all'
-  doLast {
-    exec {
-      executable 'jtreg'
-      args = [
-        "-dir:${projectDir}/jtregJdk11",
-        "-workDir:${jtregOutput}/${name}/work",
-        "-reportDir:${jtregOutput}/${name}/report",
-        '-verbose:summary',
-        '-javacoptions:-g',
-        '-keywords:!ignore',
-        '-samevm',
-        "-javacoptions:-classpath ${tasks.shadowJar.archiveFile.get()}:${sourceSets.test.output.asPath}",
-        "-vmoptions:-classpath ${tasks.shadowJar.archiveFile.get()}:${sourceSets.test.output.asPath}",
-        '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED',
-        '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED',
-        '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED',
-        '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED',
-        '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED',
-        '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED',
-        '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED',
-        '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED',
-        '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED',
-        "-javacoptions:-classpath ${sourceSets.testannotations.output.asPath}",
-        // Location of jtreg tests
-        '.'
-      ]
-    }
-  }
+  executable 'jtreg'
+  args = [
+    "-dir:${projectDir}/jtregJdk11",
+    "-workDir:${jtregOutput}/${name}/work",
+    "-reportDir:${jtregOutput}/${name}/report",
+    '-verbose:summary',
+    '-javacoptions:-g',
+    '-keywords:!ignore',
+    '-samevm',
+    "-javacoptions:-classpath ${tasks.shadowJar.archiveFile.get()}:${sourceSets.test.output.asPath}",
+    "-vmoptions:-classpath ${tasks.shadowJar.archiveFile.get()}:${sourceSets.test.output.asPath}",
+    '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED',
+    '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED',
+    '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED',
+    '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED',
+    '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED',
+    '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED',
+    '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED',
+    '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED',
+    '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED',
+    "-javacoptions:-classpath ${sourceSets.testannotations.output.asPath}",
+    // Location of jtreg tests
+    '.'
+  ]
 }
 
 // JSpecify tests are excluded by default.  To run them:
