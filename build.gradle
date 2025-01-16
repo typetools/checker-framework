@@ -581,6 +581,7 @@ task htmlValidate(type: Exec, group: 'Format') {
 }
 
 task addFavicon(type: Exec) {
+  dependsOn 'allJavadoc'
   workingDir "${rootDir}/docs/api"
   executable "${htmlToolsHome}/html-add-favicon"
   args += [
