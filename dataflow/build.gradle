@@ -94,6 +94,7 @@ tasks.create(name: 'allDataflowTests', group: 'Verification') {
 def testDataflowAnalysis(taskName, dirName, className, diff) {
   if(diff) {
     tasks.create(name: "${taskName}Diff", type: Exec) {
+      dependsOn taskName
       workingDir = "tests/${dirName}"
       executable 'diff'
       args = [
