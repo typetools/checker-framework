@@ -156,6 +156,7 @@ task allSourcesJar(type: Jar, group: 'Build') {
 task allJavadocJar(type: Jar, group: 'Build') {
   description 'Creates javadoc jar including Javadoc for all of the Checker Framework'
   dependsOn rootProject.tasks.allJavadoc
+  dependsOn rootProject.tasks.addFavicon
   destinationDirectory = file("${projectDir}/dist")
   archiveFileName = 'checker-javadoc.jar'
   archiveClassifier = 'javadoc'
