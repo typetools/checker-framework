@@ -29,7 +29,7 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
  */
 def createDataflowShaded(shadedPkgName) {
   tasks.create(name: "dataflow${shadedPkgName}Jar", type: ShadowJar, dependsOn: compileJava, group: 'Build') {
-    description "Builds dataflow-${shadedPkgName}.jar."
+    description = "Builds dataflow-${shadedPkgName}.jar."
     includeEmptyDirs = false
     base {
       archivesName = "dataflow-${shadedPkgName}"
@@ -64,7 +64,7 @@ createDataflowShaded('nullaway')
 createDataflowShaded('errorprone')
 
 task manual(type: Exec, group: 'Documentation') {
-  description 'Build the manual'
+  description = 'Build the manual'
   commandLine 'make', '-C', 'manual'
 }
 
@@ -73,7 +73,7 @@ tasks.withType(Test) {
 }
 
 tasks.create(name: 'allDataflowTests', group: 'Verification') {
-  description 'Run all dataflow analysis tests'
+  description = 'Run all dataflow analysis tests'
   // 'allDataflowTests' is automatically populated by testDataflowAnalysis().
 }
 
@@ -105,7 +105,7 @@ def testDataflowAnalysis(taskName, dirName, className, diff) {
     }
   }
   tasks.create(name: taskName, type: JavaExec, dependsOn: [assemble, compileTestJava], group: 'Verification') {
-    description "Run the ${dirName} dataflow framework test."
+    description = "Run the ${dirName} dataflow framework test."
     if (diff) {
       inputs.file("tests/${dirName}/Expected.txt")
     }

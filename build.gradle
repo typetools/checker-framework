@@ -20,7 +20,7 @@ plugins {
 
 // There is another `repositories { ... }` block below; if you change this one, change that one as well.
 repositories {
-  maven { url 'https://oss.sonatype.org/content/repositories/snapshots/'}
+  maven { url = 'https://oss.sonatype.org/content/repositories/snapshots/'}
   mavenCentral()
 }
 
@@ -77,7 +77,7 @@ task setLocalRepo(type:Exec) {
 
 // No group so it does not show up in the output of `gradlew tasks`
 task installGitHooks(type: Copy, dependsOn: 'setLocalRepo') {
-  description 'Copies git hooks to .git directory'
+  description = 'Copies git hooks to .git directory'
   from files('checker/bin-devel/git.post-merge', 'checker/bin-devel/git.pre-commit')
   rename('git\\.(.*)', '$1')
   into localRepo + '/hooks'
@@ -120,7 +120,7 @@ allprojects { currentProj ->
   //   * any new checkers have been added, or
   //   * backward-incompatible changes have been made to APIs or elsewhere.
   // To make a snapshot release, version should end in "-SNAPSHOT", then: ./gradlew publish
-  version '3.48.5-SNAPSHOT'
+  version = '3.48.5-SNAPSHOT'
 
   tasks.withType(JavaCompile).configureEach {
     options.fork = true
@@ -132,11 +132,11 @@ allprojects { currentProj ->
   apply plugin: 'de.undercouch.download'
   apply plugin: 'net.ltgt.errorprone'
 
-  group 'org.checkerframework'
+  group = 'org.checkerframework'
 
   // Keep in sync with "repositories { ... }" block above.
   repositories {
-    maven { url 'https://oss.sonatype.org/content/repositories/snapshots/'}
+    maven { url = 'https://oss.sonatype.org/content/repositories/snapshots/'}
     mavenCentral()
   }
 
@@ -520,7 +520,7 @@ allprojects { currentProj ->
 } // end allProjects
 
 task version(group: 'Documentation') {
-  description 'Print Checker Framework version'
+  description = 'Print Checker Framework version'
   doLast {
     println version
   }
@@ -537,8 +537,8 @@ task version(group: 'Documentation') {
  */
 def createCheckTypeTask(projectName, taskName, checker, args = []) {
   project("${projectName}").tasks.create(name: "check${taskName}", type: JavaCompile, dependsOn: ':checker:shadowJar') {
-    description "Run the ${taskName} Checker on the main sources."
-    group 'Verification'
+    description = "Run the ${taskName} Checker on the main sources."
+    group = 'Verification'
     // Always run the task.
     outputs.upToDateWhen { false }
     source = project("${projectName}").sourceSets.main.java
@@ -568,7 +568,7 @@ def createCheckTypeTask(projectName, taskName, checker, args = []) {
 }
 
 task htmlValidate(type: Exec, group: 'Format') {
-  description 'Validate that HTML files are well-formed'
+  description = 'Validate that HTML files are well-formed'
   executable 'html5validator'
   args = [
     '--ignore',
@@ -634,7 +634,7 @@ task allJavadoc(type: Javadoc, group: 'Documentation') {
 javadoc.dependsOn(allJavadoc)
 
 task cleanManual(type: Exec) {
-  description 'Clean the manual'
+  description = 'Clean the manual'
   commandLine 'make', '-C', 'docs/manual', 'clean'
 }
 clean.dependsOn(cleanManual)
@@ -691,7 +691,7 @@ def createJavadocTask(taskName, taskDescription, memberLevel) {
 createJavadocTask('javadocDoclintAll', 'Runs javadoc with -Xdoclint:all option.', JavadocMemberLevel.PRIVATE)
 
 task manual(type: Exec, group: 'Documentation') {
-  description 'Build the manual'
+  description = 'Build the manual'
   commandLine 'make', '-C', 'docs/manual', 'all'
 }
 
@@ -721,7 +721,7 @@ tasks.register('getDoLikeJavac', CloneTask) {
 
 // No group so it does not show up in the output of `gradlew tasks`
 task pythonIsInstalled(type: Exec) {
-  description 'Check that the python3 executable is installed.'
+  description = 'Check that the python3 executable is installed.'
   executable = 'python3'
   args '--version'
 }
@@ -732,7 +732,7 @@ task docTags(type: Exec, group: 'Emacs') {
 
 task tags(type: Exec, group: 'Emacs') {
   dependsOn docTags
-  description 'Create Emacs TAGS table'
+  description = 'Create Emacs TAGS table'
   // running this task will also run the tags task in the subprojects, which is defined later in this file.
   commandLine 'etags', '-i', 'checker/TAGS', '-i', 'checker-qual/TAGS', '-i', 'checker-util/TAGS', '-i', 'dataflow/TAGS', '-i', 'framework/TAGS', '-i', 'framework-test/TAGS', '-i', 'javacutil/TAGS', '-i', 'docs/manual/TAGS'
 }
@@ -776,7 +776,7 @@ subprojects {
 
   if (!project.name.startsWith('checker-qual-android')) {
     task tags(type: Exec) {
-      description 'Create Emacs TAGS table'
+      description = 'Create Emacs TAGS table'
       commandLine 'bash', '-c', "find . \\( -name build -o -name jtreg -o -name tests \\) -prune -o -name '*.java' -print | sort-directory-order | xargs ctags -e -f TAGS"
     }
   }
@@ -860,7 +860,7 @@ subprojects {
     // Add jtregTests to framework and checker modules
     if (project.name.is('framework') || project.name.is('checker')) {
       tasks.create(name: 'jtregTests', type: Exec, group: 'Verification') {
-        description 'Run the jtreg tests. Requires jtreg to be installed.'
+        description = 'Run the jtreg tests. Requires jtreg to be installed.'
         dependsOn('compileJava')
         dependsOn('compileTestJava')
         dependsOn('shadowJar')
@@ -918,7 +918,7 @@ subprojects {
     sourceSets.test.allJava.filter { it.path.contains('test/junit') }.forEach { file ->
       String junitClassName = file.name.replaceAll('.java', '')
       tasks.create(name: "${junitClassName}", type: Test) {
-        description "Run ${junitClassName} tests."
+        description = "Run ${junitClassName} tests."
         include "**/${name}.class"
         testClassesDirs = testing.suites.test.sources.output.classesDirs
         classpath = testing.suites.test.sources.runtimeClasspath
@@ -965,7 +965,7 @@ subprojects {
         outputs.upToDateWhen { false }
 
         // Show the found unexpected diagnostics and expected diagnostics not found.
-        exceptionFormat 'full'
+        exceptionFormat = 'full'
         events 'failed'
 
         // Don't show the uninteresting stack traces from the exceptions.
@@ -975,7 +975,7 @@ subprojects {
 
     // Create a nonJunitTests task per project
     tasks.create(name: 'nonJunitTests', group: 'Verification') {
-      description 'Run all Checker Framework tests except for the Junit tests and inference tests.'
+      description = 'Run all Checker Framework tests except for the Junit tests and inference tests.'
       if (project.name.is('framework') || project.name.is('checker')) {
         dependsOn('jtregTests')
       }
@@ -994,19 +994,19 @@ subprojects {
 
     // Create an inferenceTests task per project
     tasks.create(name: 'inferenceTests', group: 'Verification') {
-      description 'Run inference tests.'
+      description = 'Run inference tests.'
       if (project.name.is('checker')) {
         dependsOn('inferenceTests-part1', 'inferenceTests-part1')
       }
     }
     tasks.create(name: 'inferenceTests-part1', group: 'Verification') {
-      description 'Run inference tests (part 1).'
+      description = 'Run inference tests (part 1).'
       if (project.name.is('checker')) {
         dependsOn('ainferTest', 'wpiManyTest')
       }
     }
     tasks.create(name: 'inferenceTests-part2', group: 'Verification') {
-      description 'Run inference tests (part 2).'
+      description = 'Run inference tests (part 2).'
       if (project.name.is('checker')) {
         dependsOn('wpiPlumeLibTest')
       }
@@ -1016,15 +1016,15 @@ subprojects {
     // This isn't a test of the Checker Framework as the test and nonJunitTests tasks are.
     // Tasks such as 'checkInterning' are constructed by createCheckTypeTask.
     tasks.create(name: 'typecheck', group: 'Verification') {
-      description 'Run the Checker Framework on itself'
+      description = 'Run the Checker Framework on itself'
       dependsOn('typecheck-part1', 'typecheck-part2')
     }
     tasks.create(name: 'typecheck-part1', group: 'Verification') {
-      description 'Run the Checker Framework on itself (part 1)'
+      description = 'Run the Checker Framework on itself (part 1)'
       dependsOn('checkFormatter', 'checkInterning', 'checkOptional', 'checkPurity')
     }
     tasks.create(name: 'typecheck-part2', group: 'Verification') {
-      description 'Run the Checker Framework on itself (part 2)'
+      description = 'Run the Checker Framework on itself (part 2)'
       dependsOn('checkResourceLeak', 'checkSignature')
       if (project.name.is('framework') || project.name.is('checker')) {
         dependsOn('checkCompilerMessages')
@@ -1036,7 +1036,7 @@ subprojects {
     // Create an allTests task per project.
     // allTests = test + nonJunitTests + inferenceTests + typecheck
     tasks.create(name: 'allTests', group: 'Verification') {
-      description 'Run all Checker Framework tests'
+      description = 'Run all Checker Framework tests'
       // The 'test' target is just the JUnit tests.
       dependsOn('test', 'nonJunitTests', 'inferenceTests', 'typecheck')
     }
@@ -1062,7 +1062,7 @@ assemble.dependsOn(':checker:assembleForJavac')
 assemble.mustRunAfter(clean)
 
 task buildAll(group: 'Build') {
-  description 'Build all jar files, including source and javadoc jars'
+  description = 'Build all jar files, including source and javadoc jars'
   dependsOn(allJavadoc)
   subprojects { Project subproject ->
     dependsOn("${subproject.name}:assemble")
@@ -1074,14 +1074,14 @@ task buildAll(group: 'Build') {
 }
 
 task releaseBuild(group: 'Build') {
-  description 'Cleans, then builds everything required for a release'
+  description = 'Cleans, then builds everything required for a release'
   dependsOn(clean)
   dependsOn(buildAll)
 }
 
 // No group so it does not show up in the output of `gradlew tasks`
 task releaseAndTest {
-  description 'Build everything required for a release and run allTests'
+  description = 'Build everything required for a release and run allTests'
   dependsOn(releaseBuild)
   subprojects { Project subproject ->
     dependsOn("${subproject.name}:allTests")
