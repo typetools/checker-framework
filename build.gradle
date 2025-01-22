@@ -580,6 +580,22 @@ task htmlValidate(type: Exec, group: 'Format') {
   ]
 }
 
+task addFavicon(type: Exec) {
+  dependsOn 'allJavadoc'
+  workingDir "${rootDir}/docs/api"
+  executable "${htmlToolsHome}/html-add-favicon"
+  args += [
+    '.',
+    'favicon-checkerframework.png'
+  ]
+  doFirst {
+    copy {
+      from 'docs/logo/Checkmark/CFCheckmark_favicon.png'
+      rename('CFCheckmark_favicon.png', 'favicon-checkerframework.png')
+      into "${rootDir}/docs/api"
+    }
+  }
+}
 
 // `gradle allJavadoc` builds the Javadoc for all modules in `docs/api`.
 //   This is what is published to checkerframework.org.
@@ -611,21 +627,7 @@ task allJavadoc(type: Javadoc, group: 'Documentation') {
   // disable interpreting module-info.java files until all sub-modules support them
   modularity.inferModulePath = false
 
-  doLast {
-    copy {
-      from 'docs/logo/Checkmark/CFCheckmark_favicon.png'
-      rename('CFCheckmark_favicon.png', 'favicon-checkerframework.png')
-      into "${rootDir}/docs/api"
-    }
-    exec {
-      workingDir "${rootDir}/docs/api"
-      executable "${htmlToolsHome}/html-add-favicon"
-      args += [
-        '.',
-        'favicon-checkerframework.png'
-      ]
-    }
-  }
+  finalizedBy 'addFavicon'
 }
 
 // See documentation for allJavadoc task.
