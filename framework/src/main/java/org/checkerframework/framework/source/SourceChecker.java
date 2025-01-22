@@ -1187,7 +1187,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       } catch (Exception e) {
         throw new TypeSystemError("Could not create an instance of " + subcheckerClass, e);
       }
-
+      instance.setParentChecker(this);
       immediateSubcheckers.add(instance);
       instance.setProcessingEnvironment(this.processingEnv);
       instance.treePathCacher = this.getTreePathCacher();
@@ -1195,7 +1195,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       instance.subcheckers = Collections.emptyList();
       instance.immediateSubcheckers =
           instance.instantiateSubcheckers(alreadyInitializedSubcheckerMap);
-      instance.setParentChecker(this);
       alreadyInitializedSubcheckerMap.put(subcheckerClass, instance);
     }
 

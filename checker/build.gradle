@@ -298,7 +298,7 @@ task allResourceLeakTests(type: Test, group: 'Verification') {
 }
 
 // These are tests that should only be run with JDK 11+.
-task jtregJdk11Tests(group: 'Verification') {
+task jtregJdk11Tests(type: Exec, group: 'Verification') {
   description 'Run the jtreg tests made for JDK 11+.'
   dependsOn('compileJava')
   dependsOn('compileTestJava')
@@ -306,34 +306,30 @@ task jtregJdk11Tests(group: 'Verification') {
 
   String jtregOutput = "${buildDir}/jtregJdk11"
   String name = 'all'
-  doLast {
-    exec {
-      executable 'jtreg'
-      args = [
-        "-dir:${projectDir}/jtregJdk11",
-        "-workDir:${jtregOutput}/${name}/work",
-        "-reportDir:${jtregOutput}/${name}/report",
-        '-verbose:summary',
-        '-javacoptions:-g',
-        '-keywords:!ignore',
-        '-samevm',
-        "-javacoptions:-classpath ${tasks.shadowJar.archiveFile.get()}:${sourceSets.test.output.asPath}",
-        "-vmoptions:-classpath ${tasks.shadowJar.archiveFile.get()}:${sourceSets.test.output.asPath}",
-        '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED',
-        '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED',
-        '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED',
-        '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED',
-        '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED',
-        '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED',
-        '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED',
-        '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED',
-        '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED',
-        "-javacoptions:-classpath ${sourceSets.testannotations.output.asPath}",
-        // Location of jtreg tests
-        '.'
-      ]
-    }
-  }
+  executable 'jtreg'
+  args = [
+    "-dir:${projectDir}/jtregJdk11",
+    "-workDir:${jtregOutput}/${name}/work",
+    "-reportDir:${jtregOutput}/${name}/report",
+    '-verbose:summary',
+    '-javacoptions:-g',
+    '-keywords:!ignore',
+    '-samevm',
+    "-javacoptions:-classpath ${tasks.shadowJar.archiveFile.get()}:${sourceSets.test.output.asPath}",
+    "-vmoptions:-classpath ${tasks.shadowJar.archiveFile.get()}:${sourceSets.test.output.asPath}",
+    '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED',
+    '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED',
+    '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED',
+    '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED',
+    '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED',
+    '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED',
+    '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED',
+    '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED',
+    '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED',
+    "-javacoptions:-classpath ${sourceSets.testannotations.output.asPath}",
+    // Location of jtreg tests
+    '.'
+  ]
 }
 
 // JSpecify tests are excluded by default.  To run them:
@@ -590,42 +586,17 @@ task ainferTestCheckerGenerateJaifs(type: Test) {
     // JAIF-based WPI fails this test, too, because the insertion of a declaration annotation
     // onto a field with a multi-part type (e.g. Outer.Inner) doesn't appear to be supported by the AFU.
     delete('tests/ainfer-testchecker/annotated/InnerClassFieldDeclAnno.java')
-
-    // Inserting annotations from .jaif files in-place.
-    String jaifsDir = 'tests/ainfer-testchecker/inference-output';
-    List<File> jaifs = fileTree(jaifsDir).matching {
-      include '*.jaif'
-    }.asList()
-    if (jaifs.isEmpty()) {
-      throw new GradleException("no .jaif files found in ${jaifsDir}")
-    }
-    String javasDir = 'tests/ainfer-testchecker/annotated/';
-    List<File> javas = fileTree(javasDir).matching {
-      include '*.java'
-    }.asList()
-    if (javas.isEmpty()) {
-      throw new GradleException("no .java files found in ${javasDir}")
-    }
-
-    def checkerQualJarFile = file(project(':checker-qual').tasks.getByName('jar').archiveFile)
-    exec {
-      executable "${afu}/scripts/insert-annotations-to-source"
-      // Script argument -cp must precede Java program argument -i.
-      // checker-qual is needed for Constant Value Checker annotations.
-      // Note that "/" works on Windows as well as on Linux.
-      args = [
-        '-cp',
-        "${sourceSets.test.output.asPath}:${checkerQualJarFile}:" + file('tests/build/testclasses')
-      ]
-      args += ['-i']
-      for (File jaif : jaifs) {
-        args += [jaif.toString()]
-      }
-      for (File javaFile : javas) {
-        args += [javaFile.toString()]
-      }
-    }
   }
+  finalizedBy 'ainferTestCheckerGenerateJaifsInsertAnnotations'
+}
+
+tasks.register('ainferTestCheckerGenerateJaifsInsertAnnotations', InsertAnnotationsToSource) {
+  dependsOn ainferTestCheckerGenerateJaifs
+
+  afuDir = afu
+  testDir = 'tests/ainfer-testchecker'
+  def checkerQualJarFile = file(project(':checker-qual').tasks.getByName('jar').archiveFile)
+  classpath = "${sourceSets.test.output.asPath}:${checkerQualJarFile}:"
 }
 
 task ainferTestCheckerValidateJaifs(type: Test) {
@@ -812,40 +783,16 @@ task ainferNullnessGenerateJaifs(type: Test) {
     // JAIF-based WPI does not infer annotations on uses of type variables correctly.
     delete('tests/ainfer-nullness/annotated/TwoCtorGenericAbstract.java')
     delete('tests/ainfer-nullness/annotated/TypeVarReturnAnnotated.java')
-
-    // Inserting annotations from .jaif files in-place.
-    String jaifsDir = 'tests/ainfer-nullness/inference-output';
-    List<File> jaifs = fileTree(jaifsDir).matching {
-      include '*.jaif'
-    }.asList()
-    if (jaifs.isEmpty()) {
-      throw new GradleException("no .jaif files found in ${jaifsDir}")
-    }
-    String javasDir = 'tests/ainfer-nullness/annotated/';
-    List<File> javas = fileTree(javasDir).matching {
-      include '*.java'
-    }.asList()
-    if (javas.isEmpty()) {
-      throw new GradleException("no .java files found in ${javasDir}")
-    }
-    def checkerQualJarFile = file(project(':checker-qual').tasks.getByName('jar').archiveFile)
-    exec {
-      executable "${afu}/scripts/insert-annotations-to-source"
-      // Script argument -cp must precede Java program argument -i.
-      // Note that "/" works on Windows as well as on Linux.
-      args = [
-        '-cp',
-        "${sourceSets.test.output.asPath}:${checkerQualJarFile}:" + file('tests/build/testclasses')
-      ]
-      args += ['-i']
-      for (File jaif : jaifs) {
-        args += [jaif.toString()]
-      }
-      for (File javaFile : javas) {
-        args += [javaFile.toString()]
-      }
-    }
   }
+  finalizedBy 'ainferNullnessGenerateJaifsInsertAnnotations'
+}
+tasks.register('ainferNullnessGenerateJaifsInsertAnnotations', InsertAnnotationsToSource) {
+  dependsOn ainferNullnessGenerateJaifs
+
+  afuDir = afu
+  testDir = 'tests/ainfer-nullness/'
+  def checkerQualJarFile = file(project(':checker-qual').tasks.getByName('jar').archiveFile)
+  classpath = "${sourceSets.test.output.asPath}:${checkerQualJarFile}:"
 }
 
 task ainferNullnessValidateJaifs(type: Test) {
@@ -1018,7 +965,7 @@ task wpiManyTest(group: 'Verification') {
 }
 
 // This is run as part of the inferenceTests task.
-task wpiPlumeLibTest(group: 'Verification') {
+task wpiPlumeLibTest(type: Exec, group: 'Verification') {
   description 'Tests whole-program inference on the plume-lib projects. Requires an Internet connection.'
   dependsOn(assembleForJavac)
   dependsOn(':getDoLikeJavac')
@@ -1026,12 +973,8 @@ task wpiPlumeLibTest(group: 'Verification') {
   // This test must always be re-run when requested.
   outputs.upToDateWhen { false }
 
-  doLast {
-    exec {
-      commandLine 'bin-devel/wpi-plumelib/test-wpi-plumelib.sh'
-      ignoreExitValue = false
-    }
-  }
+  commandLine 'bin-devel/wpi-plumelib/test-wpi-plumelib.sh'
+  ignoreExitValue = false
 }
 
 apply from: rootProject.file('gradle-mvn-push.gradle')

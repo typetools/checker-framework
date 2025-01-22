@@ -454,7 +454,7 @@ else
       echo "  generated from ${OUTDIR}-results/results_available.txt"
       echo "---------------- start of listpath = ${listpath} ----------------"
       cat "${listpath}"
-      echo "---------------- end of ${listpath} ----------------"
+      echo "---------------- end of listpath = ${listpath} ----------------"
       echo "---------------- start of ${OUTDIR}-results/results_available.txt ----------------"
       cat "${OUTDIR}-results/results_available.txt"
       echo "---------------- end of ${OUTDIR}-results/results_available.txt ----------------"

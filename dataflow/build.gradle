@@ -63,13 +63,9 @@ createDataflowShaded('shaded')
 createDataflowShaded('nullaway')
 createDataflowShaded('errorprone')
 
-task manual(group: 'Documentation') {
+task manual(type: Exec, group: 'Documentation') {
   description 'Build the manual'
-  doLast {
-    exec {
-      commandLine 'make', '-C', 'manual'
-    }
-  }
+  commandLine 'make', '-C', 'manual'
 }
 
 tasks.withType(Test) {
@@ -96,7 +92,19 @@ tasks.create(name: 'allDataflowTests', group: 'Verification') {
  * @return
  */
 def testDataflowAnalysis(taskName, dirName, className, diff) {
-  tasks.create(name: taskName, dependsOn: [assemble, compileTestJava], group: 'Verification') {
+  if(diff) {
+    tasks.create(name: "${taskName}Diff", type: Exec) {
+      dependsOn taskName
+      workingDir = "tests/${dirName}"
+      executable 'diff'
+      args = [
+        '-u',
+        'Expected.txt',
+        'Out.txt'
+      ]
+    }
+  }
+  tasks.create(name: taskName, type: JavaExec, dependsOn: [assemble, compileTestJava], group: 'Verification') {
     description "Run the ${dirName} dataflow framework test."
     if (diff) {
       inputs.file("tests/${dirName}/Expected.txt")
@@ -108,49 +116,36 @@ def testDataflowAnalysis(taskName, dirName, className, diff) {
 
     delete("tests/${dirName}/Out.txt")
     delete("tests/${dirName}/Test.class")
-    doLast {
-      javaexec {
-        workingDir = "tests/${dirName}"
-        if (!JavaVersion.current().java9Compatible) {
-          jvmArgs += "-Xbootclasspath/p:${configurations.javacJar.asPath}".toString()
-        }
-        else if (JavaVersion.current() > JavaVersion.VERSION_11) {
-          jvmArgs += [
-            '--add-opens',
-            'jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED',
-            '--add-opens',
-            'jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED',
-            '--add-opens',
-            'jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED',
-            '--add-opens',
-            'jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED',
-            '--add-opens',
-            'jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED',
-            '--add-opens',
-            'jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED',
-            '--add-opens',
-            'jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED',
-          ]
-        }
 
-        classpath = sourceSets.test.runtimeClasspath
-        classpath += sourceSets.test.output
-        mainClass = "${className}"
-      }
-      if (diff) {
-        exec {
-          workingDir = "tests/${dirName}"
-          executable 'diff'
-          args = [
-            '-u',
-            'Expected.txt',
-            'Out.txt'
-          ]
-        }
-      }
+    workingDir = "tests/${dirName}"
+    if (!JavaVersion.current().java9Compatible) {
+      jvmArgs += "-Xbootclasspath/p:${configurations.javacJar.asPath}".toString()
+    } else if (JavaVersion.current() > JavaVersion.VERSION_11) {
+      jvmArgs += [
+        '--add-opens',
+        'jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED',
+        '--add-opens',
+        'jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED',
+        '--add-opens',
+        'jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED',
+        '--add-opens',
+        'jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED',
+        '--add-opens',
+        'jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED',
+        '--add-opens',
+        'jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED',
+        '--add-opens',
+        'jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED',
+      ]
+    }
+
+    classpath = sourceSets.test.runtimeClasspath
+    classpath += sourceSets.test.output
+    mainClass = "${className}"
+    if (diff) {
+      finalizedBy "${taskName}Diff"
     }
   }
-
   allDataflowTests.dependsOn << taskName
 }
 
