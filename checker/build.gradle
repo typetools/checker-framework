@@ -836,7 +836,7 @@ task ainferTest(group: 'Verification') {
 //
 
 // This is run as part of the inferenceTests task.
-task wpiManyTest(group: 'Verification') {
+task wpiManyTest(type: Exec, group: 'Verification') {
   description 'Tests the wpi-many.sh script (and indirectly the wpi.sh script). Requires an Internet connection.'
   dependsOn(assembleForJavac)
   dependsOn(':getDoLikeJavac')
@@ -853,32 +853,29 @@ task wpiManyTest(group: 'Verification') {
     }
   }
 
+  environment CHECKERFRAMEWORK: "${projectDir}/.."
+  commandLine 'bin/wpi-many.sh',
+      '-i', "${project.projectDir}/tests/wpi-many/testin.txt",
+      '-o', "${project.projectDir}/build/wpi-many-tests",
+      '-s',
+      '--', '--checker', 'nullness,interning,lock,regex,signature,calledmethods,resourceleak',
+      '--extraJavacArgs=-AenableWpiForRlc'
+
+  ignoreExitValue true
+
+  def typecheckFilesDir = "${project.projectDir}/build/wpi-many-tests-results/"
   doLast {
-    // Run wpi-many.sh
-    def typecheckFilesDir = "${project.projectDir}/build/wpi-many-tests-results/"
-    try {
-      exec {
-        environment CHECKERFRAMEWORK: "${projectDir}/.."
-        commandLine 'bin/wpi-many.sh',
-            '-i', "${project.projectDir}/tests/wpi-many/testin.txt",
-            '-o', "${project.projectDir}/build/wpi-many-tests",
-            '-s',
-            '--', '--checker', 'nullness,interning,lock,regex,signature,calledmethods,resourceleak',
-            '--extraJavacArgs=-AenableWpiForRlc'
-      }
-    } catch (Exception e) {
+    if (executionResult.get().exitValue != 0) {
       println('Failure: Running wpi-many.sh failed with a non-zero exit code.')
       File wpiOut = new File("${typecheckFilesDir}/wpi-out")
       if (wpiOut.exists()) {
         println("========= Start of output from last run of wpi.sh (${typecheckFilesDir}/wpi-out): ========")
-        exec {
-          commandLine 'cat', "${typecheckFilesDir}/wpi-out"
-        }
+        println wpiOut.text
         println("========= End of output from last run of wpi.sh (${typecheckFilesDir}/wpi-out): ========")
       } else {
         println("========= File ${typecheckFilesDir}/wpi-out does not exist. ========")
       }
-      throw e
+      executionResult.get().rethrowFailure()
     }
     // collect the logs from running WPI
     def typecheckFiles = fileTree(typecheckFilesDir).matching {
@@ -892,17 +889,12 @@ task wpiManyTest(group: 'Verification') {
       println("Failure: Too few *-typecheck.out files in ${typecheckFilesDir}: " +
           "found ${actualTypecheckFileCount} but expected ${expectedTypecheckFileCount}.")
       println("========= Found in ${typecheckFilesDir} ========")
-      exec {
-        commandLine 'ls', '-al', "${typecheckFilesDir}"
-      }
+      new File(typecheckFilesDir).list().each { println it}
       println("========= Expected in ${typecheckFilesDir} ========")
-      exec {
-        commandLine 'cat', "${project.projectDir}/tests/wpi-many/testin.txt"
-      }
+      println( new File("${project.projectDir}/tests/wpi-many/testin.txt"))
+
       println("========= Start of output from last run of wpi.sh (${typecheckFilesDir}/wpi-out): ========")
-      exec {
-        commandLine 'cat', "${typecheckFilesDir}/wpi-out"
-      }
+      println( new File("${project.projectDir}/wpi-out"))
       println("========= End of output from last run of wpi.sh (${typecheckFilesDir}/wpi-out): ========")
       def logFiles = fileTree(typecheckFilesDir).matching {
         include '**/*.log'
