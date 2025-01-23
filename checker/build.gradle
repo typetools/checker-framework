@@ -402,7 +402,7 @@ task ainferTestCheckerGenerateStubs(type: Test) {
     outputs.upToDateWhen { false }
 
     // Show the found unexpected diagnostics and the expected diagnostics not found.
-    exceptionFormat ='full'
+    exceptionFormat = 'full'
     events 'passed', 'skipped', 'failed'
   }
 
