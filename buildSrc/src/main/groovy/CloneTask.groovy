@@ -1,3 +1,4 @@
+import java.time.Duration
 import javax.inject.Inject
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.Input
@@ -35,7 +36,7 @@ abstract class CloneTask extends DefaultTask {
         executable 'git'
         args = ['pull', '-q']
         ignoreExitValue = true
-        timeout =  6000
+        timeout = Duration.ofMinutes(1)
       }
     } else {
       try {
@@ -71,7 +72,7 @@ abstract class CloneTask extends DefaultTask {
       ]
       args += extraArgs
       ignoreExitValue = ignoreError
-      timeout = 6000
+      timeout = Duration.ofMinutes(1)
     }
   }
 }
