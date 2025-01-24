@@ -100,7 +100,7 @@ jar {
 // It is useful for those who only want to run `javac`.
 // checker.jar is copied to checker/dist/ when it is built by the shadowJar task.
 task assembleForJavac(dependsOn: shadowJar, group: 'Build') {
-  description 'Builds or downloads jars required by CheckerMain and puts them in checker/dist/.'
+  description = 'Builds or downloads jars required by CheckerMain and puts them in checker/dist/.'
   dependsOn project(':checker-qual').tasks.jar
   doLast {
     def checkerQualJarFile = file(project(':checker-qual').tasks.getByName('jar').archiveFile)
@@ -144,7 +144,7 @@ assemble.dependsOn assembleForJavac
 assemble.dependsOn(':getDoLikeJavac')
 
 task allSourcesJar(type: Jar, group: 'Build') {
-  description 'Creates a sources jar that includes sources for all Checker Framework classes in checker.jar'
+  description = 'Creates a sources jar that includes sources for all Checker Framework classes in checker.jar'
   destinationDirectory = file("${projectDir}/dist")
   archiveFileName = 'checker-source.jar'
   archiveClassifier = 'sources'
@@ -154,8 +154,12 @@ task allSourcesJar(type: Jar, group: 'Build') {
 }
 
 task allJavadocJar(type: Jar, group: 'Build') {
-  description 'Creates javadoc jar including Javadoc for all of the Checker Framework'
+  description = 'Creates javadoc jar including Javadoc for all of the Checker Framework'
   dependsOn rootProject.tasks.allJavadoc
+  // TODO: This should not be required, but without it the addFavicon task is sometimes not run
+  // before this one.
+  dependsOn rootProject.tasks.addFavicon
+
   destinationDirectory = file("${projectDir}/dist")
   archiveFileName = 'checker-javadoc.jar'
   archiveClassifier = 'javadoc'
@@ -166,7 +170,7 @@ task allJavadocJar(type: Jar, group: 'Build') {
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 task checkerJar(type: ShadowJar, dependsOn: compileJava, group: 'Build') {
-  description "Builds checker-${project.version}.jar with all dependencies except checker-qual and checker-util."
+  description = "Builds checker-${project.version}.jar with all dependencies except checker-qual and checker-util."
   includeEmptyDirs = false
   base {
     archivesName = 'checker'
@@ -192,7 +196,7 @@ jar {
 }
 
 shadowJar {
-  description 'Creates checker-VERSION-all.jar and copies it to dist/checker.jar.'
+  description = 'Creates checker-VERSION-all.jar and copies it to dist/checker.jar.'
   // To see what files are incorporated into the shadow jar file:
   // doFirst { println sourceSets.main.runtimeClasspath.asPath }
   archiveClassifier = 'all'
@@ -249,21 +253,21 @@ checkCompilerMessages {
 }
 
 task nullnessExtraTests(type: Exec, dependsOn: assembleForJavac, group: 'Verification') {
-  description 'Run extra tests for the Nullness Checker.'
+  description = 'Run extra tests for the Nullness Checker.'
   executable 'make'
   environment JAVAC: "${projectDir}/bin/javac", JAVAP: 'javap'
   args = ['-C', 'tests/nullness-extra/']
 }
 
 task commandLineTests(type: Exec, dependsOn: assembleForJavac, group: 'Verification') {
-  description 'Run tests that need a special command line.'
+  description = 'Run tests that need a special command line.'
   executable 'make'
   environment JAVAC: "${projectDir}/bin/javac"
   args = ['-C', 'tests/command-line/']
 }
 
 task tutorialTests(dependsOn: assembleForJavac, group: 'Verification') {
-  description 'Test that the tutorial is working as expected.'
+  description = 'Test that the tutorial is working as expected.'
   doLast {
     ant.ant(dir: "${rootDir}/docs/tutorial/tests", useNativeBasedir: 'true', inheritAll: 'false') {
       target(name: 'check-tutorial')
@@ -272,19 +276,19 @@ task tutorialTests(dependsOn: assembleForJavac, group: 'Verification') {
 }
 
 task exampleTests(type: Exec, dependsOn: assembleForJavac, group: 'Verification') {
-  description 'Run tests for the example programs.'
+  description = 'Run tests for the example programs.'
   executable 'make'
   environment JAVAC: "${projectDir}/bin/javac"
   args = ['-C', '../docs/examples']
 }
 
 task allNullnessTests(type: Test, group: 'Verification') {
-  description 'Run all Junit tests for the Nullness Checker.'
+  description = 'Run all Junit tests for the Nullness Checker.'
   include '**/Nullness*.class'
 }
 
 task allCalledMethodsTests(type: Test, group: 'Verification') {
-  description 'Run all Junit tests for the Called Methods Checker.'
+  description = 'Run all Junit tests for the Called Methods Checker.'
   include '**/CalledMethods*.class'
   if (!skipDelombok) {
     dependsOn 'delombok'
@@ -292,48 +296,44 @@ task allCalledMethodsTests(type: Test, group: 'Verification') {
 }
 
 task allResourceLeakTests(type: Test, group: 'Verification') {
-  description 'Run all Junit tests for the Resource Leak Checker.'
+  description = 'Run all Junit tests for the Resource Leak Checker.'
   include '**/ResourceLeak*.class'
   include '**/MustCall*.class'
 }
 
 // These are tests that should only be run with JDK 11+.
-task jtregJdk11Tests(group: 'Verification') {
-  description 'Run the jtreg tests made for JDK 11+.'
+task jtregJdk11Tests(type: Exec, group: 'Verification') {
+  description = 'Run the jtreg tests made for JDK 11+.'
   dependsOn('compileJava')
   dependsOn('compileTestJava')
   dependsOn('shadowJar')
 
   String jtregOutput = "${buildDir}/jtregJdk11"
   String name = 'all'
-  doLast {
-    exec {
-      executable 'jtreg'
-      args = [
-        "-dir:${projectDir}/jtregJdk11",
-        "-workDir:${jtregOutput}/${name}/work",
-        "-reportDir:${jtregOutput}/${name}/report",
-        '-verbose:summary',
-        '-javacoptions:-g',
-        '-keywords:!ignore',
-        '-samevm',
-        "-javacoptions:-classpath ${tasks.shadowJar.archiveFile.get()}:${sourceSets.test.output.asPath}",
-        "-vmoptions:-classpath ${tasks.shadowJar.archiveFile.get()}:${sourceSets.test.output.asPath}",
-        '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED',
-        '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED',
-        '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED',
-        '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED',
-        '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED',
-        '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED',
-        '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED',
-        '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED',
-        '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED',
-        "-javacoptions:-classpath ${sourceSets.testannotations.output.asPath}",
-        // Location of jtreg tests
-        '.'
-      ]
-    }
-  }
+  executable 'jtreg'
+  args = [
+    "-dir:${projectDir}/jtregJdk11",
+    "-workDir:${jtregOutput}/${name}/work",
+    "-reportDir:${jtregOutput}/${name}/report",
+    '-verbose:summary',
+    '-javacoptions:-g',
+    '-keywords:!ignore',
+    '-samevm',
+    "-javacoptions:-classpath ${tasks.shadowJar.archiveFile.get()}:${sourceSets.test.output.asPath}",
+    "-vmoptions:-classpath ${tasks.shadowJar.archiveFile.get()}:${sourceSets.test.output.asPath}",
+    '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED',
+    '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED',
+    '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED',
+    '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED',
+    '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED',
+    '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED',
+    '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED',
+    '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED',
+    '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED',
+    "-javacoptions:-classpath ${sourceSets.testannotations.output.asPath}",
+    // Location of jtreg tests
+    '.'
+  ]
 }
 
 // JSpecify tests are excluded by default.  To run them:
@@ -343,7 +343,7 @@ test {
 }
 
 task delombok {
-  description 'Delomboks the source code tree in tests/calledmethods-lombok'
+  description = 'Delomboks the source code tree in tests/calledmethods-lombok'
 
   def srcDelomboked = 'tests/calledmethods-delomboked'
   def srcJava = 'tests/calledmethods-lombok'
@@ -388,7 +388,7 @@ test {
 }
 
 task ainferTestCheckerGenerateStubs(type: Test) {
-  description 'Internal task.  Users should run ainferTestCheckerStubTest instead.  This type-checks the ainfer-testchecker files with -Ainfer=stubs to generate stub files.'
+  description = 'Internal task.  Users should run ainferTestCheckerStubTest instead.  This type-checks the ainfer-testchecker files with -Ainfer=stubs to generate stub files.'
 
   dependsOn(compileTestJava)
   doFirst {
@@ -402,7 +402,7 @@ task ainferTestCheckerGenerateStubs(type: Test) {
     outputs.upToDateWhen { false }
 
     // Show the found unexpected diagnostics and the expected diagnostics not found.
-    exceptionFormat 'full'
+    exceptionFormat = 'full'
     events 'passed', 'skipped', 'failed'
   }
 
@@ -431,7 +431,7 @@ task ainferTestCheckerGenerateStubs(type: Test) {
 }
 
 task ainferTestCheckerValidateStubs(type: Test) {
-  description 'Internal task.  Users should run ainferTestCheckerStubTest instead.  This type-checks the ainfer-testchecker tests using the stub files generated by ainferTestCheckerGenerateStubs.'
+  description = 'Internal task.  Users should run ainferTestCheckerStubTest instead.  This type-checks the ainfer-testchecker tests using the stub files generated by ainferTestCheckerGenerateStubs.'
 
   dependsOn(ainferTestCheckerGenerateStubs)
   outputs.upToDateWhen { false }
@@ -441,13 +441,13 @@ task ainferTestCheckerValidateStubs(type: Test) {
     outputs.upToDateWhen { false }
 
     // Show the found unexpected diagnostics and the expected diagnostics not found.
-    exceptionFormat 'full'
+    exceptionFormat = 'full'
     events 'passed', 'skipped', 'failed'
   }
 }
 
 task ainferTestCheckerGenerateAjava(type: Test) {
-  description 'Internal task.  Users should run ainferTestCheckerAjavaTest instead.  This type-checks the ainfer-testchecker files with -Ainfer=ajava to generate ajava files.'
+  description = 'Internal task.  Users should run ainferTestCheckerAjavaTest instead.  This type-checks the ainfer-testchecker files with -Ainfer=ajava to generate ajava files.'
 
   dependsOn(compileTestJava)
   doFirst {
@@ -461,7 +461,7 @@ task ainferTestCheckerGenerateAjava(type: Test) {
     outputs.upToDateWhen { false }
 
     // Show the found unexpected diagnostics and the expected diagnostics not found.
-    exceptionFormat 'full'
+    exceptionFormat = 'full'
     events 'passed', 'skipped', 'failed'
   }
 
@@ -490,7 +490,7 @@ task ainferTestCheckerGenerateAjava(type: Test) {
 }
 
 task ainferTestCheckerValidateAjava(type: Test) {
-  description 'Internal task.  Users should run ainferTestCheckerAjavaTest instead.  This re-type-checks the ainfer-testchecker files using the ajava files generated by ainferTestCheckerGenerateAjava'
+  description = 'Internal task.  Users should run ainferTestCheckerAjavaTest instead.  This re-type-checks the ainfer-testchecker files using the ajava files generated by ainferTestCheckerGenerateAjava'
 
   dependsOn(ainferTestCheckerGenerateAjava)
   outputs.upToDateWhen { false }
@@ -500,7 +500,7 @@ task ainferTestCheckerValidateAjava(type: Test) {
     outputs.upToDateWhen { false }
 
     // Show the found unexpected diagnostics and the expected diagnostics not found.
-    exceptionFormat 'full'
+    exceptionFormat = 'full'
     events 'passed', 'skipped', 'failed'
   }
 }
@@ -539,20 +539,20 @@ void copyNonannotatedToAnnotatedDirectory(String testdir) {
 // run the insert-annotations-to-source tool. Instead, it tests the -Ainfer=stubs feature
 // and the -AmergeStubsWithSource feature to do WPI using stub files.
 task ainferTestCheckerStubTest(dependsOn: 'shadowJar', group: 'Verification') {
-  description 'Run tests for whole-program inference using stub files'
+  description = 'Run tests for whole-program inference using stub files'
   dependsOn(ainferTestCheckerValidateStubs)
   outputs.upToDateWhen { false }
 }
 
 // Like ainferTestCheckerStubTest, but with ajava files instead
 task ainferTestCheckerAjavaTest(dependsOn: 'shadowJar', group: 'Verification') {
-  description 'Run tests for whole-program inference using ajava files'
+  description = 'Run tests for whole-program inference using ajava files'
   dependsOn(ainferTestCheckerValidateAjava)
   outputs.upToDateWhen { false }
 }
 
 task ainferTestCheckerGenerateJaifs(type: Test) {
-  description 'Internal task.  Users should run ainferTestCheckerJaifTest instead.  This type-checks the ainfer-testchecker files with -Ainfer=jaifs to generate .jaif files'
+  description = 'Internal task.  Users should run ainferTestCheckerJaifTest instead.  This type-checks the ainfer-testchecker files with -Ainfer=jaifs to generate .jaif files'
 
   dependsOn(compileTestJava)
   dependsOn(':checker-qual:jar')  // For the Value Checker annotations.
@@ -566,7 +566,7 @@ task ainferTestCheckerGenerateJaifs(type: Test) {
     outputs.upToDateWhen { false }
 
     // Show the found unexpected diagnostics and expected diagnostics not found.
-    exceptionFormat 'full'
+    exceptionFormat = 'full'
     events 'passed', 'skipped', 'failed'
   }
 
@@ -590,46 +590,21 @@ task ainferTestCheckerGenerateJaifs(type: Test) {
     // JAIF-based WPI fails this test, too, because the insertion of a declaration annotation
     // onto a field with a multi-part type (e.g. Outer.Inner) doesn't appear to be supported by the AFU.
     delete('tests/ainfer-testchecker/annotated/InnerClassFieldDeclAnno.java')
-
-    // Inserting annotations from .jaif files in-place.
-    String jaifsDir = 'tests/ainfer-testchecker/inference-output';
-    List<File> jaifs = fileTree(jaifsDir).matching {
-      include '*.jaif'
-    }.asList()
-    if (jaifs.isEmpty()) {
-      throw new GradleException("no .jaif files found in ${jaifsDir}")
-    }
-    String javasDir = 'tests/ainfer-testchecker/annotated/';
-    List<File> javas = fileTree(javasDir).matching {
-      include '*.java'
-    }.asList()
-    if (javas.isEmpty()) {
-      throw new GradleException("no .java files found in ${javasDir}")
-    }
-
-    def checkerQualJarFile = file(project(':checker-qual').tasks.getByName('jar').archiveFile)
-    exec {
-      executable "${afu}/scripts/insert-annotations-to-source"
-      // Script argument -cp must precede Java program argument -i.
-      // checker-qual is needed for Constant Value Checker annotations.
-      // Note that "/" works on Windows as well as on Linux.
-      args = [
-        '-cp',
-        "${sourceSets.test.output.asPath}:${checkerQualJarFile}:" + file('tests/build/testclasses')
-      ]
-      args += ['-i']
-      for (File jaif : jaifs) {
-        args += [jaif.toString()]
-      }
-      for (File javaFile : javas) {
-        args += [javaFile.toString()]
-      }
-    }
   }
+  finalizedBy 'ainferTestCheckerGenerateJaifsInsertAnnotations'
+}
+
+tasks.register('ainferTestCheckerGenerateJaifsInsertAnnotations', InsertAnnotationsToSource) {
+  dependsOn ainferTestCheckerGenerateJaifs
+
+  afuDir = afu
+  testDir = 'tests/ainfer-testchecker'
+  def checkerQualJarFile = file(project(':checker-qual').tasks.getByName('jar').archiveFile)
+  classpath = "${sourceSets.test.output.asPath}:${checkerQualJarFile}:"
 }
 
 task ainferTestCheckerValidateJaifs(type: Test) {
-  description 'Internal task.  Users should run ainferTestCheckerJaifTest instead.  This type-checks the ainfer-testchecker files using the .jaif files generated by ainferTestCheckerGenerateJaifs'
+  description = 'Internal task.  Users should run ainferTestCheckerJaifTest instead.  This type-checks the ainfer-testchecker files using the .jaif files generated by ainferTestCheckerGenerateJaifs'
 
   dependsOn(ainferTestCheckerGenerateJaifs)
   outputs.upToDateWhen { false }
@@ -639,19 +614,19 @@ task ainferTestCheckerValidateJaifs(type: Test) {
     outputs.upToDateWhen { false }
 
     // Show the found unexpected diagnostics and expected diagnostics not found.
-    exceptionFormat 'full'
+    exceptionFormat = 'full'
     events 'passed', 'skipped', 'failed'
   }
 }
 
 task ainferTestCheckerJaifTest(dependsOn: 'shadowJar', group: 'Verification') {
-  description 'Run tests for whole-program inference using .jaif files'
+  description = 'Run tests for whole-program inference using .jaif files'
   dependsOn(ainferTestCheckerValidateJaifs)
   outputs.upToDateWhen { false }
 }
 
 task ainferIndexGenerateAjava(type: Test) {
-  description 'Internal task.  Users should run ainferIndexAjavaTest instead.  This type-checks the ainfer-index files with -Ainfer=ajava to generate ajava files.'
+  description = 'Internal task.  Users should run ainferIndexAjavaTest instead.  This type-checks the ainfer-index files with -Ainfer=ajava to generate ajava files.'
 
   dependsOn(compileTestJava)
   doFirst {
@@ -665,7 +640,7 @@ task ainferIndexGenerateAjava(type: Test) {
     outputs.upToDateWhen { false }
 
     // Show the found unexpected diagnostics and the expected diagnostics not found.
-    exceptionFormat 'full'
+    exceptionFormat = 'full'
     events 'passed', 'skipped', 'failed'
   }
 
@@ -675,7 +650,7 @@ task ainferIndexGenerateAjava(type: Test) {
 }
 
 task ainferIndexValidateAjava(type: Test) {
-  description 'Internal task.  Users should run ainferIndexAjavaTest instead.  This re-type-checks the ainfer-index files using the ajava files generated by ainferIndexGenerateAjava'
+  description = 'Internal task.  Users should run ainferIndexAjavaTest instead.  This re-type-checks the ainfer-index files using the ajava files generated by ainferIndexGenerateAjava'
 
   dependsOn(ainferIndexGenerateAjava)
   outputs.upToDateWhen { false }
@@ -685,19 +660,19 @@ task ainferIndexValidateAjava(type: Test) {
     outputs.upToDateWhen { false }
 
     // Show the found unexpected diagnostics and the expected diagnostics not found.
-    exceptionFormat 'full'
+    exceptionFormat = 'full'
     events 'passed', 'skipped', 'failed'
   }
 }
 
 task ainferIndexAjavaTest(dependsOn: 'shadowJar', group: 'Verification') {
-  description 'Run tests for whole-program inference using ajava files and the Index Checker'
+  description = 'Run tests for whole-program inference using ajava files and the Index Checker'
   dependsOn(ainferIndexValidateAjava)
   outputs.upToDateWhen { false }
 }
 
 task ainferNullnessGenerateAjava(type: Test) {
-  description 'Internal task.  Users should run ainferNullnessAjavaTest instead.  This type-checks the ainfer-nullness files with -Ainfer=ajava to generate ajava files.'
+  description = 'Internal task.  Users should run ainferNullnessAjavaTest instead.  This type-checks the ainfer-nullness files with -Ainfer=ajava to generate ajava files.'
 
   dependsOn(compileTestJava)
   doFirst {
@@ -711,7 +686,7 @@ task ainferNullnessGenerateAjava(type: Test) {
     outputs.upToDateWhen { false }
 
     // Show the found unexpected diagnostics and the expected diagnostics not found.
-    exceptionFormat 'full'
+    exceptionFormat = 'full'
     events 'passed', 'skipped', 'failed'
   }
 
@@ -721,7 +696,7 @@ task ainferNullnessGenerateAjava(type: Test) {
 }
 
 task ainferNullnessValidateAjava(type: Test) {
-  description 'Internal task.  Users should run ainferNullnessAjavaTest instead.  This re-type-checks the ainfer-nullness files using the ajava files generated by ainferNullnessGenerateAjava'
+  description = 'Internal task.  Users should run ainferNullnessAjavaTest instead.  This re-type-checks the ainfer-nullness files using the ajava files generated by ainferNullnessGenerateAjava'
 
   dependsOn(ainferNullnessGenerateAjava)
   outputs.upToDateWhen { false }
@@ -731,19 +706,19 @@ task ainferNullnessValidateAjava(type: Test) {
     outputs.upToDateWhen { false }
 
     // Show the found unexpected diagnostics and the expected diagnostics not found.
-    exceptionFormat 'full'
+    exceptionFormat = 'full'
     events 'passed', 'skipped', 'failed'
   }
 }
 
 task ainferNullnessAjavaTest(dependsOn: 'shadowJar', group: 'Verification') {
-  description 'Run tests for whole-program inference using ajava files and the Nullness Checker'
+  description = 'Run tests for whole-program inference using ajava files and the Nullness Checker'
   dependsOn(ainferNullnessValidateAjava)
   outputs.upToDateWhen { false }
 }
 
 task ainferResourceLeakGenerateAjava(type: Test) {
-  description 'Internal task.  Users should run ainferResourceLeakAjavaTest instead.  This type-checks the ainfer-index files with -Ainfer=ajava to generate ajava files.'
+  description = 'Internal task.  Users should run ainferResourceLeakAjavaTest instead.  This type-checks the ainfer-index files with -Ainfer=ajava to generate ajava files.'
 
   dependsOn(compileTestJava)
   doFirst {
@@ -757,7 +732,7 @@ task ainferResourceLeakGenerateAjava(type: Test) {
     outputs.upToDateWhen { false }
 
     // Show the found unexpected diagnostics and the expected diagnostics not found.
-    exceptionFormat 'full'
+    exceptionFormat = 'full'
     events 'passed', 'skipped', 'failed'
   }
 
@@ -767,7 +742,7 @@ task ainferResourceLeakGenerateAjava(type: Test) {
 }
 
 task ainferResourceLeakValidateAjava(type: Test) {
-  description 'Internal task.  Users should run ainferResourceLeakAjavaTest instead.  This re-type-checks the ainfer-resourceleak files using the ajava files generated by ainferResourceLeakGenerateAjava'
+  description = 'Internal task.  Users should run ainferResourceLeakAjavaTest instead.  This re-type-checks the ainfer-resourceleak files using the ajava files generated by ainferResourceLeakGenerateAjava'
 
   dependsOn(ainferResourceLeakGenerateAjava)
   outputs.upToDateWhen { false }
@@ -777,19 +752,19 @@ task ainferResourceLeakValidateAjava(type: Test) {
     outputs.upToDateWhen { false }
 
     // Show the found unexpected diagnostics and the expected diagnostics not found.
-    exceptionFormat 'full'
+    exceptionFormat = 'full'
     events 'passed', 'skipped', 'failed'
   }
 }
 
 task ainferResourceLeakAjavaTest(dependsOn: 'shadowJar', group: 'Verification') {
-  description 'Run tests for whole-program inference using ajava files and the Resource Leak Checker'
+  description = 'Run tests for whole-program inference using ajava files and the Resource Leak Checker'
   dependsOn(ainferResourceLeakValidateAjava)
   outputs.upToDateWhen { false }
 }
 
 task ainferNullnessGenerateJaifs(type: Test) {
-  description 'Internal task.  Users should run ainferNullnessJaifTest instead.  This type-checks the ainfer-nullness files with -Ainfer=jaifs to generate .jaif files'
+  description = 'Internal task.  Users should run ainferNullnessJaifTest instead.  This type-checks the ainfer-nullness files with -Ainfer=jaifs to generate .jaif files'
 
   dependsOn(compileTestJava)
   doFirst {
@@ -802,7 +777,7 @@ task ainferNullnessGenerateJaifs(type: Test) {
     outputs.upToDateWhen { false }
 
     // Show the found unexpected diagnostics and expected diagnostics not found.
-    exceptionFormat 'full'
+    exceptionFormat = 'full'
     events 'passed', 'skipped', 'failed'
   }
 
@@ -812,44 +787,20 @@ task ainferNullnessGenerateJaifs(type: Test) {
     // JAIF-based WPI does not infer annotations on uses of type variables correctly.
     delete('tests/ainfer-nullness/annotated/TwoCtorGenericAbstract.java')
     delete('tests/ainfer-nullness/annotated/TypeVarReturnAnnotated.java')
-
-    // Inserting annotations from .jaif files in-place.
-    String jaifsDir = 'tests/ainfer-nullness/inference-output';
-    List<File> jaifs = fileTree(jaifsDir).matching {
-      include '*.jaif'
-    }.asList()
-    if (jaifs.isEmpty()) {
-      throw new GradleException("no .jaif files found in ${jaifsDir}")
-    }
-    String javasDir = 'tests/ainfer-nullness/annotated/';
-    List<File> javas = fileTree(javasDir).matching {
-      include '*.java'
-    }.asList()
-    if (javas.isEmpty()) {
-      throw new GradleException("no .java files found in ${javasDir}")
-    }
-    def checkerQualJarFile = file(project(':checker-qual').tasks.getByName('jar').archiveFile)
-    exec {
-      executable "${afu}/scripts/insert-annotations-to-source"
-      // Script argument -cp must precede Java program argument -i.
-      // Note that "/" works on Windows as well as on Linux.
-      args = [
-        '-cp',
-        "${sourceSets.test.output.asPath}:${checkerQualJarFile}:" + file('tests/build/testclasses')
-      ]
-      args += ['-i']
-      for (File jaif : jaifs) {
-        args += [jaif.toString()]
-      }
-      for (File javaFile : javas) {
-        args += [javaFile.toString()]
-      }
-    }
   }
+  finalizedBy 'ainferNullnessGenerateJaifsInsertAnnotations'
+}
+tasks.register('ainferNullnessGenerateJaifsInsertAnnotations', InsertAnnotationsToSource) {
+  dependsOn ainferNullnessGenerateJaifs
+
+  afuDir = afu
+  testDir = 'tests/ainfer-nullness/'
+  def checkerQualJarFile = file(project(':checker-qual').tasks.getByName('jar').archiveFile)
+  classpath = "${sourceSets.test.output.asPath}:${checkerQualJarFile}:"
 }
 
 task ainferNullnessValidateJaifs(type: Test) {
-  description 'Internal task.  Users should run ainferNullnessJaifTest instead.  This re-type-checks the ainfer-nullness files using the .jaif files generated by ainferNullnessGenerateJaifs'
+  description = 'Internal task.  Users should run ainferNullnessJaifTest instead.  This re-type-checks the ainfer-nullness files using the .jaif files generated by ainferNullnessGenerateJaifs'
 
   dependsOn(ainferNullnessGenerateJaifs)
   outputs.upToDateWhen { false }
@@ -859,13 +810,13 @@ task ainferNullnessValidateJaifs(type: Test) {
     outputs.upToDateWhen { false }
 
     // Show the found unexpected diagnostics and expected diagnostics not found.
-    exceptionFormat 'full'
+    exceptionFormat = 'full'
     events 'passed', 'skipped', 'failed'
   }
 }
 
 task ainferNullnessJaifTest(dependsOn: 'shadowJar', group: 'Verification') {
-  description 'Run tests for whole-program inference using .jaif files'
+  description = 'Run tests for whole-program inference using .jaif files'
   dependsOn(ainferNullnessValidateJaifs)
   outputs.upToDateWhen { false }
 }
@@ -874,7 +825,7 @@ task ainferNullnessJaifTest(dependsOn: 'shadowJar', group: 'Verification') {
 // Empty task that just runs both the jaif and stub WPI tests.
 // It is run as part of the inferenceTests task.
 task ainferTest(group: 'Verification') {
-  description 'Run tests for all whole program inference modes.'
+  description = 'Run tests for all whole program inference modes.'
   dependsOn('ainferTestCheckerJaifTest')
   dependsOn('ainferTestCheckerStubTest')
   dependsOn('ainferTestCheckerAjavaTest')
@@ -889,8 +840,8 @@ task ainferTest(group: 'Verification') {
 //
 
 // This is run as part of the inferenceTests task.
-task wpiManyTest(group: 'Verification') {
-  description 'Tests the wpi-many.sh script (and indirectly the wpi.sh script). Requires an Internet connection.'
+task wpiManyTest(type: Exec, group: 'Verification') {
+  description = 'Tests the wpi-many.sh script (and indirectly the wpi.sh script). Requires an Internet connection.'
   dependsOn(assembleForJavac)
   dependsOn(':getDoLikeJavac')
   // This test must always be re-run when requested.
@@ -906,32 +857,29 @@ task wpiManyTest(group: 'Verification') {
     }
   }
 
+  environment CHECKERFRAMEWORK: "${projectDir}/.."
+  commandLine 'bin/wpi-many.sh',
+      '-i', "${project.projectDir}/tests/wpi-many/testin.txt",
+      '-o', "${project.projectDir}/build/wpi-many-tests",
+      '-s',
+      '--', '--checker', 'nullness,interning,lock,regex,signature,calledmethods,resourceleak',
+      '--extraJavacArgs=-AenableWpiForRlc'
+
+  ignoreExitValue = true
+
+  def typecheckFilesDir = "${project.projectDir}/build/wpi-many-tests-results/"
   doLast {
-    // Run wpi-many.sh
-    def typecheckFilesDir = "${project.projectDir}/build/wpi-many-tests-results/"
-    try {
-      exec {
-        environment CHECKERFRAMEWORK: "${projectDir}/.."
-        commandLine 'bin/wpi-many.sh',
-            '-i', "${project.projectDir}/tests/wpi-many/testin.txt",
-            '-o', "${project.projectDir}/build/wpi-many-tests",
-            '-s',
-            '--', '--checker', 'nullness,interning,lock,regex,signature,calledmethods,resourceleak',
-            '--extraJavacArgs=-AenableWpiForRlc'
-      }
-    } catch (Exception e) {
+    if (executionResult.get().exitValue != 0) {
       println('Failure: Running wpi-many.sh failed with a non-zero exit code.')
       File wpiOut = new File("${typecheckFilesDir}/wpi-out")
       if (wpiOut.exists()) {
         println("========= Start of output from last run of wpi.sh (${typecheckFilesDir}/wpi-out): ========")
-        exec {
-          commandLine 'cat', "${typecheckFilesDir}/wpi-out"
-        }
+        println wpiOut.text
         println("========= End of output from last run of wpi.sh (${typecheckFilesDir}/wpi-out): ========")
       } else {
         println("========= File ${typecheckFilesDir}/wpi-out does not exist. ========")
       }
-      throw e
+      executionResult.get().rethrowFailure()
     }
     // collect the logs from running WPI
     def typecheckFiles = fileTree(typecheckFilesDir).matching {
@@ -945,17 +893,12 @@ task wpiManyTest(group: 'Verification') {
       println("Failure: Too few *-typecheck.out files in ${typecheckFilesDir}: " +
           "found ${actualTypecheckFileCount} but expected ${expectedTypecheckFileCount}.")
       println("========= Found in ${typecheckFilesDir} ========")
-      exec {
-        commandLine 'ls', '-al', "${typecheckFilesDir}"
-      }
+      new File(typecheckFilesDir).list().each { println it}
       println("========= Expected in ${typecheckFilesDir} ========")
-      exec {
-        commandLine 'cat', "${project.projectDir}/tests/wpi-many/testin.txt"
-      }
+      println( new File("${project.projectDir}/tests/wpi-many/testin.txt"))
+
       println("========= Start of output from last run of wpi.sh (${typecheckFilesDir}/wpi-out): ========")
-      exec {
-        commandLine 'cat', "${typecheckFilesDir}/wpi-out"
-      }
+      println( new File("${project.projectDir}/wpi-out"))
       println("========= End of output from last run of wpi.sh (${typecheckFilesDir}/wpi-out): ========")
       def logFiles = fileTree(typecheckFilesDir).matching {
         include '**/*.log'
@@ -1018,20 +961,16 @@ task wpiManyTest(group: 'Verification') {
 }
 
 // This is run as part of the inferenceTests task.
-task wpiPlumeLibTest(group: 'Verification') {
-  description 'Tests whole-program inference on the plume-lib projects. Requires an Internet connection.'
+task wpiPlumeLibTest(type: Exec, group: 'Verification') {
+  description = 'Tests whole-program inference on the plume-lib projects. Requires an Internet connection.'
   dependsOn(assembleForJavac)
   dependsOn(':getDoLikeJavac')
 
   // This test must always be re-run when requested.
   outputs.upToDateWhen { false }
 
-  doLast {
-    exec {
-      commandLine 'bin-devel/wpi-plumelib/test-wpi-plumelib.sh'
-      ignoreExitValue = false
-    }
-  }
+  commandLine 'bin-devel/wpi-plumelib/test-wpi-plumelib.sh'
+  ignoreExitValue = false
 }
 
 apply from: rootProject.file('gradle-mvn-push.gradle')

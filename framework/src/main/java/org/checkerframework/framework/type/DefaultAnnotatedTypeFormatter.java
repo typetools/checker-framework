@@ -390,8 +390,9 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
         if (!(component instanceof AnnotatedArrayType)) {
           if (component == null) {
             sb.insert(0, "/*Not Initialized*/");
+          } else {
+            sb.insert(0, visit(component, visiting));
           }
-          sb.insert(0, visit(component, visiting));
           break;
         }
         array = (AnnotatedArrayType) component;
