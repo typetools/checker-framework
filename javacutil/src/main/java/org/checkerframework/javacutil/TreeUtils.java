@@ -1519,6 +1519,23 @@ public final class TreeUtils {
   }
 
   /**
+   * Return the {@code statementTree} as an instance of {@link AssignmentTree}, or null.
+   *
+   * @param statementTree a statement tree that might represent an assignment
+   * @return the {@code statementTree} as an instance of {@link AssignmentTree}, or null
+   */
+  public static @Nullable AssignmentTree asAssignmentTree(StatementTree statementTree) {
+    if (statementTree.getKind() != Tree.Kind.EXPRESSION_STATEMENT) {
+      return null;
+    }
+    ExpressionTree exprTree = ((ExpressionStatementTree) statementTree).getExpression();
+    if (exprTree.getKind() != Tree.Kind.ASSIGNMENT) {
+      return null;
+    }
+    return (AssignmentTree) exprTree;
+  }
+
+  /**
    * Compute the name of the field that the field access {@code tree} accesses. Requires {@code
    * tree} to be a field access, as determined by {@code isFieldAccess} (which currently also
    * returns true for class literals and qualified this).

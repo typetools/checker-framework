@@ -2,6 +2,7 @@ package org.checkerframework.checker.test.junit;
 
 import java.io.File;
 import java.util.List;
+import org.checkerframework.checker.optional.OptionalChecker;
 import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
@@ -14,11 +15,7 @@ public class OptionalTest extends CheckerFrameworkPerDirectoryTest {
    * @param testFiles the files containing test code, which will be type-checked
    */
   public OptionalTest(List<File> testFiles) {
-    super(
-        testFiles,
-        org.checkerframework.checker.optional.OptionalChecker.class,
-        "optional",
-        "-AoptionalMapAssumeNonNull");
+    super(testFiles, OptionalChecker.class, "optional", "-AoptionalMapAssumeNonNull");
   }
 
   @Parameters

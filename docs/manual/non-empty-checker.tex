@@ -11,6 +11,21 @@ throw \<NoSuchElementException> as a result of calling methods such as
 \<Deque.getFirst()>, \<Deque.removeFirst()>, \<Queue.remove()>, or
 \<Queue.element()>.
 
+The Optional Checker~(\sectionpageref{optional-checker}) uses information from the
+Non-Empty Checker to increase its precision around \<Optional> values whose
+presence relies on whether a container is non-empty (or empty).
+
+Under this default modality, the Non-Empty Checker verifies methods and
+declarations that are:
+\begin{itemize}
+
+\item explicitly annotated with non-empty annotations (i.e., programmer-written
+  annotations from the Non-Empty type system
+  (\sectionpageref{non-empty-annotations}).
+\item passed to it from the Optional Checker.
+
+\end{itemize}
+
 To run the Non-Empty Checker, run either of these commands:
 
 \begin{alltt}
@@ -95,6 +110,14 @@ more details):
     }
 \end{Verbatim}
 
+\noindent
+or on the result of a method that returns a non-empty collection:
+
+\begin{Verbatim}
+    List<String> countryCodes; // Has default type @UnknownNonEmpty
+    List<String> countryCodes = List.of("CA", "US"); // Has type @NonEmpty
+\end{Verbatim}
+
 A programmer can manually annotate code in cases where a collection,
 iterator, iterable, or map is always known to be non-empty, but that fact is
 unable to be inferred by the type system:
@@ -170,4 +193,3 @@ Here are two ways to suppress a warning in such cases:
   Use the \<@AssumeAssertion> string in
   an \<assert> message (see Section~\ref{assumeassertion}).
 \end{itemize}
-
