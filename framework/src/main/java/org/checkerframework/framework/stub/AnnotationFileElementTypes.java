@@ -457,7 +457,7 @@ public class AnnotationFileElementTypes {
             elt, elt.getClass());
       } else {
         System.out.printf(
-            "AFET.getDeclAnnotations(%s [%s]): isParsing() => false, proceeding%n",
+            "AFET.getDeclAnnotations(%s [%s]): isParsing() => false, proceeding.%n",
             elt, elt.getClass());
       }
     }
