@@ -140,6 +140,28 @@ public class ConstraintSet implements ReductionResult {
   }
 
   /**
+   * Adds the constraint to the beginning of the set.
+   *
+   * @param constraint a constraint
+   */
+  public void push(Constraint constraint) {
+    if (constraint != null && !list.contains(constraint)) {
+      list.add(0, constraint);
+    }
+  }
+
+  /**
+   * Adds the constraints to the beginning of the set and matatines the order of the constraints.
+   *
+   * @param constraints constraints
+   */
+  public void push(ConstraintSet constraints) {
+    for (int i = constraints.list.size() - 1; i > -1; i--) {
+      push(constraints.list.get(i));
+    }
+  }
+
+  /**
    * Remove all constraints in {@code subset} from this constraint set.
    *
    * @param subset the set of constraints to remove from this set
@@ -334,9 +356,15 @@ public class ConstraintSet implements ReductionResult {
       }
       this.addAll(((ReductionResultPair) result).constraintSet);
     } else if (result instanceof TypeConstraint) {
-      this.add((Constraint) result);
+      // Add the new constraints to the beginning of the list so they are reduced first. This is
+      // because
+      // each constraint is supposed to be fully resolved before moving onto another one.
+      this.push((Constraint) result);
     } else if (result instanceof ConstraintSet) {
-      this.addAll((ConstraintSet) result);
+      // Add the new constraints to the beginning of the list so they are reduced first. This is
+      // because
+      // each constraint is supposed to be fully resolved before moving onto another one.
+      this.push((ConstraintSet) result);
     } else if (result instanceof BoundSet) {
       boundSet.merge((BoundSet) result);
       if (boundSet.containsFalse()) {

@@ -496,7 +496,7 @@ public class InvocationTypeInference {
       case METHOD_INVOCATION:
       case NEW_CLASS:
         if (TreeUtils.isPolyExpression(ei)) {
-          c.add(new AdditionalArgument(ei));
+          c.addAll(new AdditionalArgument(ei).reduce(context));
         }
         break;
       case PARENTHESIZED:
@@ -547,7 +547,7 @@ public class InvocationTypeInference {
       case METHOD_INVOCATION:
       case NEW_CLASS:
         if (TreeUtils.isPolyExpression(expression)) {
-          c.add(new AdditionalArgument(expression));
+          c.addAll(new AdditionalArgument(expression).reduce(context));
         }
         break;
       case PARENTHESIZED:
