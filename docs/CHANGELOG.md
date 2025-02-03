@@ -14,9 +14,8 @@ it is equivalent to `@Identifier`; use `@Identifier` instead.
 
 The JavaStubifier implementation now appears in package `org.checkerframework.framework.stubifier.JavaStubifier`.
 
-**Implementation details:**
-
 **Closed issues:**
+#6935, #6936, #6939.
 
 
 Version 3.48.4 (January 2, 2025)
