@@ -1,3 +1,12 @@
+Version 3.49.1 (March 3, 2025)
+------------------------------
+
+**User-visible changes:**
+
+**Implementation details:**
+
+**Closed issues:**
+
 Version 3.49.0 (February 3, 2025)
 --------------------------------
 
@@ -15,6 +24,7 @@ it is equivalent to `@Identifier`; use `@Identifier` instead.
 The JavaStubifier implementation now appears in package `org.checkerframework.framework.stubifier.JavaStubifier`.
 
 **Closed issues:**
+
 #6935, #6936, #6939.
 
 
