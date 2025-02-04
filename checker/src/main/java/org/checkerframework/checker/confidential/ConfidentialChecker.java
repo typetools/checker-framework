@@ -17,8 +17,6 @@ import org.checkerframework.framework.source.SuppressWarningsPrefix;
   "AndroidLog.astub",
   "Slf4jLogger.astub",
   "ApacheLog.astub",
-  "Toast.astub",
-  "TextView.astub",
   "AlertDialog.astub",
   "AbstractAuthenticationTargetUrlRequestHandler.astub",
   "UsernamePasswordAuthenticationToken.astub",
