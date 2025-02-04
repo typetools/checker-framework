@@ -770,7 +770,8 @@ public class AnnotationFileParser {
 
   /**
    * Process {@link #stubUnit}, which is the AST produced by {@link #parseStubUnit}. Processing
-   * means copying annotations from Stub Parser data structures to {@code #annotationFileAnnos}.
+   * means copying annotations from Stub Parser data structures to argument {@code
+   * annotationFileAnnos}.
    *
    * @param annotationFileAnnos annotations from the file; side-effected by this method
    */
@@ -781,7 +782,7 @@ public class AnnotationFileParser {
   }
 
   /**
-   * Process the given StubUnit: copy its annotations to {@code #annotationFileAnnos}.
+   * Process the given StubUnit: copy its annotations to {@code this.annotationFileAnnos}.
    *
    * @param su the StubUnit to process
    */
