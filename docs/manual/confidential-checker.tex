@@ -1,43 +1,71 @@
 \htmlhr
 \chapterAndLabel{Confidential Checker}{confidential-checker}
 
-The Confidential Checker helps identify insecure software implementations that may
-lead to \href{https://cwe.mitre.org/data/definitions/1417.html}{sensitive information
-exposure}. These vulnerabilities arise when developers allow information such as PII,
-passwords, or local file paths to be passed to potentially public-facing sinks, which
-include website and app user interfaces, log files, error messages, and URL targets.
+The Confidential Checker identifies
+\href{https://cwe.mitre.org/data/definitions/1417.html}{sensitive information
+exposure}, also known as information leakage. An information leak occurs when private information
+such as PII (personally identifiable information), passwords, or local file
+paths is revealed.  Information is revealed by being passed to
+a public-facing sink, such as website and app user interfaces,
+log files, error messages, and URL targets.
 
-Exposure may occur mistakenly or with a benign objective in mind. For instance, a developer
-may unwittingly write code that exposes sensitive information, or they may output
-sensitive information to error messages with the intention of supplying helpful
-troubleshooting direction; the Confidential Checker covers both of these cases by
-guaranteeing that no values marked as sensitive information will be passed to a
-location marked as public-facing.
+The Confidential Checker guarantees that no values marked as
+\emph{confidential} flow to a location marked as
+\emph{non-confidential}.
 
-However, the Confidential Checker cannot guarantee the correctness or completeness
-of the annotations themselves. In other words, the onus of comprehensively annotating
-sensitive information falls solely upon the developer. The Confidential Checker does
-provide preliminary annotations for certain public-facing sinks, but developers should
-always verify that any sinks used in their code are annotated appropriately.
+It is the responsibility of the user to annotate sources and sinks as
+confidential or non-confidential.
+Since \code{@NonConfidential} is the default annotation, if a programmer
+forgets to annotate a sensitive source as \<@Confidential>, then there will
+be an information leak that the Confidential Checker cannot warn about.
+Once sources and sinks are annotated, the Confidential
+Checker guarantees that any other annotations in the program are consistent
+with those annotations, and that no information flows from confidential to
+non-confidential locations.
 
-To run the Confidential Checker, supply the
-\code{-processor ConfidentialChecker}
-or
-\code{-processor org.checkerframework.checker.confidential.ConfidentialChecker}
-command-line option to javac.
+The confidential checker does not identify \emph{indirect} information flows, such
+as in:
+
+\begin{Verbatim}
+  // Information is leaked, but the Confidential Checker issues no error.
+  @Confidential boolean secret = ...;
+  @NonConfidential boolean revealed;
+  if (secret) {
+    revealed = true;
+  } else {
+    revealed = false;
+  }
+\end{Verbatim}
+
+Exposure may occur mistakenly --- in which case
+it should be fixed --- or with a benign objective in mind, such as when
+logging to aid troubleshooting.  After the Confidential Checker reveals a
+leak, it is up to the user to decide whether the leakage is acceptable.
+
+To run the Confidential Checker, supply one of these
+command-line options to javac:
+\begin{Verbatim}
+-processor ConfidentialChecker
+-processor org.checkerframework.checker.confidential.ConfidentialChecker
+\end{Verbatim}
 
 
 \sectionAndLabel{Confidential annotations}{confidential-annotations}
 
-The Confidential Checker type system uses the following annotations:
+The Confidential Checker type system uses the following type qualifiers;
+their subtyping hierarchy is shown in
+Figure~\ref{fig-confidential-hierarchy}.
 
 \begin{description}
 \item[\refqualclass{checker/confidential/qual}{Confidential}]
-    indicates a value that will not be exposed to end users or a sink that
-    will not be able to be accessed by end users.
+    An expression whose type is qualified with
+    \refqualclass{checker/confidential/qual}{Confidential} may evaluate to
+    a value that should not be exposed.
 \item[\refqualclass{checker/confidential/qual}{NonConfidential}]
-    indicates a value that may be exposed to end users, or a location that
-    may be accessed by end users. It is the default qualifier.
+    The value of an expression of type
+    \refqualclass{checker/confidential/qual}{NonConfidential} might be
+    exposed.  It is written on the formal parameter type of a method such
+    as \<println> that may leak its argument.  It is the default qualifier.
 \item[\refqualclass{checker/confidential/qual}{UnknownConfidential}]
     indicates a value whose confidentiality is unknown.
     \code{@UnknownConfidential} is a supertype of \code{@Confidential}
@@ -49,29 +77,27 @@ The Confidential Checker type system uses the following annotations:
     is the bottom qualifier. Programmers rarely need to write it.
 \end{description}
 
-The subtyping hierarchy of the Confidential Checker's qualifiers is shown in
-Figure~\ref{fig-confidential-hierarchy}.
 
 \begin{figure}
 \includeimage{confidential}{5.5cm}
 \caption{The subtyping relationship of the Confidential Checker's qualifiers.
-  Qualifiers in gray are used internally by the type system but should never
+  Qualifiers in gray are used internally by the type system and should rarely
   be written by a programmer.}
 \label{fig-confidential-hierarchy}
 \end{figure}
 
-Although parallels could be drawn between the Confidential Checker's
-\code{@Confidential} annotation and the Taint Checker's \code{@Tainted}
-annotation (see Section~\ref{tainting-annotations}), it should be noted that
+The Confidential Checker's
+\code{@Confidential} qualifier has similarities to the Taint Checker's \code{@Tainted}
+qualifier.  One difference is that
 there is no subtyping relationship between \code{@Confidential} and
 \code{@NonConfidential}. However, the external behavior of these annotations
 can strongly resemble that of a supertype and subtype, as casts from the latter
 to the former are always permitted (see Section~\ref{confidential-checks}). As
 a result, while the Confidential Checker (correctly) does not allow
-\code{@Confidential} values to be passed to \code{@NonConfidential} sinks, it does
+\code{@Confidential} values to flow to \code{@NonConfidential} sinks, it does
 allow \code{@NonConfidential} values in \code{@Confidential} sinks.
 
-\sectionAndLabel{What the Confidential Checker checks}{confidential-checks}
+\sectionAndLabel{Concatenation}{confidential-concatenation}
 
 Concatenation of \code{@Confidential} and \code{@NonConfidential} values is
 always dominated by \code{@Confidential}. In other words, concatenation of
@@ -95,23 +121,26 @@ casts from \code{@NonConfidential} to \code{@Confidential}.
 
 \sectionAndLabel{Library annotations}{confidential-library-annotations}
 
-As mentioned prior, the Confidential Checker provides preliminary annotations
-for certain public-facing sinks either in the form of stub files or within the
-Checker Framework's annotated JDK. For instance, the \code{TextView} class for Android
-apps requires that a \code{@NonConfidential CharSequence} should be passed to
-its \code{setText} method to avoid displaying sensitive information on the user's
-viewport.
+The Confidential Checker provides annotations for certain public-facing
+sinks.  For instance, methods in Android's \code{TextView} class have a
+formal parameter of type \code{@NonConfidential CharSequence}, indicating
+that they display the argument on the user's viewport.  The Confidential
+Checker will issue a type error if a \<@Confidential> value can be passed
+to such functions.
 
-If necessary, developers can write methods to vet \code{@Confidential} or
-\code{@UnknownConfidential} values and determine which, if any, parts of the
-value can be safely cast to \code{@NonConfidential} under a \code{@SuppressWarnings}
-annotation and passed to user-facing sinks.
+The built-in annotations appear in the Checker
+Framework's annotated JDK and in stub files in directory
+\<checker/src/main/java/org/checkerframework/checker/confidential/>.
+A developer can write more annotations in stub files
+(\chapterpageref{stub}), especially for libraries that do not already have
+annotations.  (Please share these with the Checker Framework developers, so
+that they can distribute them to all users.)
 
-It should be noted that, since \code{@NonConfidential} is the default annotation,
-developers must be particularly attentive to explicitly annotating their variables
-to avoid accidentally passing a secret value to a public-facing sink. For this reason,
-it may seem insecure to set \code{@NonConfidential} as the default rather than
-\code{@UnknownConfidential} or \code{@Confidential}. However, this implementation
-significantly decreases the number of \code{@SuppressWarnings} annotations (and
-overall annotations)that the developer must write, as in practice, values are more
-often \code{@NonConfidential} than \code{@Confidential}.
+If a program contains a method that tests whether a run-time value is
+confidential, use annotation
+\refqualclass{framework/qual}{EnsuresQualifierIf} (\chapterpageref{type-refinement}).
+
+If a program contains a method that takes a possibly-confidential argument
+and returns a non-confidential result, then suppress the warning
+(\chapterpageref{suppressing-warnings}) after manually validating the
+method's behavior.
