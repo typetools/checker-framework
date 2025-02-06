@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import javax.lang.model.type.TypeKind;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
 import org.checkerframework.framework.util.typeinference8.types.UseOfVariable;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
@@ -27,14 +28,33 @@ public abstract class TypeConstraint implements Constraint {
   /** T, the type on the right hand side of the constraint; may contain inference variables. */
   protected AbstractType T;
 
+  protected @Nullable Constraint parent;
+  protected @Nullable String source;
+
   /**
    * Creates a type constraint
    *
+   * @param source
    * @param T the type of the right hand side of the constraint
    */
-  protected TypeConstraint(AbstractType T) {
+  protected TypeConstraint(String source, AbstractType T) {
     assert T != null : "Can't create a constraint with a null type.";
     this.T = T;
+    this.parent = null;
+    this.source = source;
+  }
+
+  /**
+   * Creates a type constraint
+   *
+   * @param parent
+   * @param T the type of the right hand side of the constraint
+   */
+  protected TypeConstraint(Constraint parent, AbstractType T) {
+    assert T != null : "Can't create a constraint with a null type.";
+    this.T = T;
+    this.parent = parent;
+    this.source = null;
   }
 
   /**
@@ -113,7 +133,7 @@ public abstract class TypeConstraint implements Constraint {
             return inputs;
           }
           for (ExpressionTree e : TreeUtils.getReturnedExpressions(lambdaTree)) {
-            TypeConstraint c = new Expression(e, R);
+            TypeConstraint c = new Expression("Returned expression", e, R);
             inputs.addAll(c.getInputVariables());
           }
           return inputs;

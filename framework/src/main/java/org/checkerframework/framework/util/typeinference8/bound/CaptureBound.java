@@ -50,6 +50,8 @@ public class CaptureBound {
    */
   private final List<CaptureVariable> captureVariables = new ArrayList<>();
 
+  private final ExpressionTree invocation;
+
   /**
    * Creates a captured bound.
    *
@@ -61,6 +63,7 @@ public class CaptureBound {
   private CaptureBound(
       AbstractType capturedType, ExpressionTree invocation, Java8InferenceContext context) {
     this.capturedType = capturedType;
+    this.invocation = invocation;
     DeclaredType underlying = (DeclaredType) capturedType.getJavaType();
     TypeElement ele = TypesUtils.getTypeElement(underlying);
     this.map = context.inferenceTypeFactory.createThetaForCapture(invocation, capturedType);
@@ -123,7 +126,8 @@ public class CaptureBound {
       }
     }
 
-    ConstraintSet set = new ConstraintSet(new Typing(lhs, target, Kind.TYPE_COMPATIBILITY));
+    String source = String.format("Captured constraint from method: %s", invocation);
+    ConstraintSet set = new ConstraintSet(new Typing(source, lhs, target, Kind.TYPE_COMPATIBILITY));
     // Reduce and incorporate so that the capture variables bounds are set.
     BoundSet b1 = set.reduce(context);
     b1.incorporateToFixedPoint(new BoundSet(context));
