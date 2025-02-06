@@ -35,7 +35,7 @@ ifelse($1,lts_version,,[  dependsOn:
   - bash: ./checker/bin-devel/test-cftests-nonjunit.sh
     displayName: test-cftests-nonjunit.sh])dnl
 dnl
-define([inference_job_lts], [dnl
+define([inference_job_split], [dnl
 # Split into part1 and part2 only for the inference job that "canary_jobs" depends on.
 - job: inference_part1_jdk$1
   pool:
@@ -91,7 +91,7 @@ ifelse($1,lts_version,,$1,latest_version,,[  dependsOn:
   - bash: ./checker/bin-devel/test-misc.sh
     displayName: test-misc.sh])dnl
 dnl
-define([typecheck_job_lts], [dnl
+define([typecheck_job_split], [dnl
 - job: typecheck_part1_jdk$1
   pool:
     vmImage: 'ubuntu-latest'
@@ -126,7 +126,7 @@ define([typecheck_job], [dnl
   - bash: ./checker/bin-devel/test-typecheck.sh
     displayName: test-typecheck.sh])dnl
 dnl
-define([daikon_job_lts], [dnl
+define([daikon_job_split], [dnl
 - job: daikon_part1_jdk$1
   dependsOn:
    - canary_jobs

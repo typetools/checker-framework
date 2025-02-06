@@ -50,7 +50,7 @@ nonjunit_job(23)
 # So use a timeout of 90 minutes, and hope that is enough.
 inference_job(11)
 inference_job(17)
-inference_job_lts(21)
+inference_job_split(21)
 inference_job(23)
 
 # Do not run misc_job daily, because it does diffs that assume it is running in
@@ -58,12 +58,12 @@ inference_job(23)
 
 typecheck_job(11)
 typecheck_job(17)
-typecheck_job_lts(21)
+typecheck_job_split(21)
 typecheck_job(23)
 
 daikon_job(11)
 daikon_job(17)
-daikon_job_lts(21)
+daikon_job_split(21)
 daikon_job(23)
 
 ## I'm not sure why the guava_jdk11 job is failing (it's due to Error Prone).
