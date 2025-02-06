@@ -1,14 +1,14 @@
 changequote
 changequote(`[',`]')dnl
-define([lts_version], [21])dnl
+define([canary_version], [21])dnl
 define([latest_version], [23])dnl
 ifelse([each macro takes one argument, the JDK version])dnl
 dnl
 define([junit_job], [dnl
 - job: junit_jdk$1
-ifelse($1,lts_version,,[  dependsOn:
+ifelse($1,canary_version,,[  dependsOn:
    - canary_jobs
-   - junit_jdk21
+   - junit_jdk[]canary_version
 ])dnl
   pool:
     vmImage: 'ubuntu-latest'
@@ -22,9 +22,9 @@ ifelse($1,lts_version,,[  dependsOn:
 dnl
 define([nonjunit_job], [dnl
 - job: nonjunit_jdk$1
-ifelse($1,lts_version,,[  dependsOn:
+ifelse($1,canary_version,,[  dependsOn:
    - canary_jobs
-   - nonjunit_jdk21
+   - nonjunit_jdk[]canary_version
 ])dnl
   pool:
     vmImage: 'ubuntu-latest'
@@ -61,10 +61,10 @@ define([inference_job_split], [dnl
 dnl
 define([inference_job], [dnl
 - job: inference_jdk$1
-ifelse($1,lts_version,,[  dependsOn:
+ifelse($1,canary_version,,[  dependsOn:
    - canary_jobs
-   - inference_part1_jdk21
-   - inference_part2_jdk21
+   - inference_part1_jdk[]canary_version
+   - inference_part2_jdk[]canary_version
 ])dnl
   pool:
     vmImage: 'ubuntu-latest'
@@ -79,9 +79,9 @@ ifelse($1,lts_version,,[  dependsOn:
 dnl
 define([misc_job], [dnl
 - job: misc_jdk$1
-ifelse($1,lts_version,,$1,latest_version,,[  dependsOn:
+ifelse($1,canary_version,,$1,latest_version,,[  dependsOn:
    - canary_jobs
-   - misc_jdk21
+   - misc_jdk[]canary_version
 ])dnl
   pool:
     vmImage: 'ubuntu-latest'
@@ -115,8 +115,8 @@ define([typecheck_job], [dnl
 - job: typecheck_jdk$1
   dependsOn:
    - canary_jobs
-   - typecheck_part1_jdk21
-   - typecheck_part2_jdk21
+   - typecheck_part1_jdk[]canary_version
+   - typecheck_part2_jdk[]canary_version
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk$1-plus:latest
@@ -156,8 +156,8 @@ define([daikon_job], [dnl
 - job: daikon_jdk$1
   dependsOn:
    - canary_jobs
-   - daikon_part1_jdk21
-   - daikon_part2_jdk21
+   - daikon_part1_jdk[]canary_version
+   - daikon_part2_jdk[]canary_version
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk$1:latest
@@ -172,8 +172,8 @@ define([guava_job], [dnl
 - job: guava_jdk$1
   dependsOn:
    - canary_jobs
-ifelse($1,lts_version,,[dnl
-   - guava_jdk21
+ifelse($1,canary_version,,[dnl
+   - guava_jdk[]canary_version
 ])dnl
   pool:
     vmImage: 'ubuntu-latest'
@@ -189,8 +189,8 @@ define([plume_lib_job], [dnl
 - job: plume_lib_jdk$1
   dependsOn:
    - canary_jobs
-ifelse($1,lts_version,,[dnl
-   - plume_lib_jdk21
+ifelse($1,canary_version,,[dnl
+   - plume_lib_jdk[]canary_version
 ])dnl
   pool:
     vmImage: 'ubuntu-latest'

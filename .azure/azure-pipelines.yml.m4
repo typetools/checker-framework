@@ -21,14 +21,14 @@ jobs:
 
 - job: canary_jobs
   dependsOn:
-   - junit_jdk21
-   - nonjunit_jdk21
-   - inference_part1_jdk21
-   - inference_part2_jdk21
-   - typecheck_part1_jdk21
-   - typecheck_part2_jdk21
-   - misc_jdk21
-   - misc_jdk23
+   - junit_jdk[]canary_version
+   - nonjunit_jdk[]canary_version
+   - inference_part1_jdk[]canary_version
+   - inference_part2_jdk[]canary_version
+   - typecheck_part1_jdk[]canary_version
+   - typecheck_part2_jdk[]canary_version
+   - misc_jdk[]canary_version
+   - misc_jdk[]latest_version
   pool:
     vmImage: 'ubuntu-latest'
   steps:
