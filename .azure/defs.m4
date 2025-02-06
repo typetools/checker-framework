@@ -1,5 +1,6 @@
 changequote
 changequote(`[',`]')dnl
+ifelse([The "dnl" m4 macro means "discard to end of line",])dnl
 define([canary_version], [21])dnl
 define([latest_version], [23])dnl
 ifelse([each macro takes one argument, the JDK version])dnl
