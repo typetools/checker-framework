@@ -28,8 +28,8 @@ public abstract class TypeConstraint implements Constraint {
   /** T, the type on the right hand side of the constraint; may contain inference variables. */
   protected AbstractType T;
 
-  protected @Nullable Constraint parent;
-  protected @Nullable String source;
+  public @Nullable Constraint parent;
+  public @Nullable String source;
 
   /**
    * Creates a type constraint
