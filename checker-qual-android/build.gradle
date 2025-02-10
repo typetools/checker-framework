@@ -1,7 +1,7 @@
 evaluationDependsOn(':checker-qual')
 
 task copySources(type: Copy) {
-  description 'Copy checker-qual source to checker-qual-android'
+  description = 'Copy checker-qual source to checker-qual-android'
   includeEmptyDirs = false
   doFirst {
     // Delete the directory in case a previously copied file should no longer be in checker-qual

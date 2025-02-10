@@ -44,6 +44,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.framework.stubifier.JavaStubifier;
 import org.checkerframework.framework.util.JavaParserUtil;
 import org.checkerframework.javacutil.BugInCF;
 import org.plumelib.util.ArraysPlume;

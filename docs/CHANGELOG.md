@@ -1,4 +1,13 @@
-Version 3.48.5 (February 3, 2025)
+Version 3.49.1 (March 3, 2025)
+------------------------------
+
+**User-visible changes:**
+
+**Implementation details:**
+
+**Closed issues:**
+
+Version 3.49.0 (February 3, 2025)
 --------------------------------
 
 **User-visible changes:**
@@ -9,9 +18,14 @@ two new annotations:
   * `@NonEmpty`
   * `@UnknownNonEmpty`
 
-**Implementation details:**
+The Signature Checker no longer supports `@BinaryNameWithoutPackage` because
+it is equivalent to `@Identifier`; use `@Identifier` instead.
+
+The JavaStubifier implementation now appears in package `org.checkerframework.framework.stubifier.JavaStubifier`.
 
 **Closed issues:**
+
+#6935, #6936, #6939.
 
 
 Version 3.48.4 (January 2, 2025)
