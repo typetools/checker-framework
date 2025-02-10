@@ -130,7 +130,6 @@ public class SignatureTypeFactoryTest {
     bn = s2;
     fbn = s2;
     // :: error: (assignment)
-    // :: error: (assignment)
     i = s2;
 
     us = s3;
@@ -144,7 +143,6 @@ public class SignatureTypeFactoryTest {
     sn = s3;
     bn = s3;
     fbn = s3;
-    // :: error: (assignment)
     // :: error: (assignment)
     i = s3;
 
@@ -172,7 +170,6 @@ public class SignatureTypeFactoryTest {
     // :: error: (assignment)
     fbn = s5;
     // :: error: (assignment)
-    // :: error: (assignment)
     i = s5;
 
     us = s6;
@@ -190,7 +187,6 @@ public class SignatureTypeFactoryTest {
     // :: error: (assignment)
     fbn = s6;
     // :: error: (assignment)
-    // :: error: (assignment)
     i = s6;
 
     us = s7;
@@ -207,7 +203,6 @@ public class SignatureTypeFactoryTest {
     bn = s7;
     // :: error: (assignment)
     fbn = s7;
-    // :: error: (assignment)
     // :: error: (assignment)
     i = s7;
 
@@ -227,7 +222,6 @@ public class SignatureTypeFactoryTest {
     // :: error: (assignment)
     fbn = s8;
     // :: error: (assignment)
-    // :: error: (assignment)
     i = s8;
 
     us = s9;
@@ -241,7 +235,6 @@ public class SignatureTypeFactoryTest {
     sn = s9;
     bn = s9;
     fbn = s9;
-    // :: error: (assignment)
     // :: error: (assignment)
     i = s9;
 
@@ -280,7 +273,6 @@ public class SignatureTypeFactoryTest {
     bn = s12;
     fbn = s12;
     // :: error: (assignment)
-    // :: error: (assignment)
     i = s12;
 
     us = s13;
@@ -296,7 +288,6 @@ public class SignatureTypeFactoryTest {
     // :: error: (assignment)
     bn = s13;
     fbn = s13;
-    // :: error: (assignment)
     // :: error: (assignment)
     i = s13;
 
@@ -315,7 +306,6 @@ public class SignatureTypeFactoryTest {
     // :: error: (assignment)
     fbn = s14;
     // :: error: (assignment)
-    // :: error: (assignment)
     i = s14;
 
     us = s15;
@@ -332,7 +322,6 @@ public class SignatureTypeFactoryTest {
     bn = s15;
     // :: error: (assignment)
     fbn = s15;
-    // :: error: (assignment)
     // :: error: (assignment)
     i = s15;
 
@@ -351,7 +340,6 @@ public class SignatureTypeFactoryTest {
     // :: error: (assignment)
     fbn = s16;
     // :: error: (assignment)
-    // :: error: (assignment)
     i = s16;
 
     us = s17;
@@ -368,7 +356,6 @@ public class SignatureTypeFactoryTest {
     bn = s17;
     // :: error: (assignment)
     fbn = s17;
-    // :: error: (assignment)
     // :: error: (assignment)
     i = s17;
 
@@ -388,7 +375,6 @@ public class SignatureTypeFactoryTest {
     // :: error: (assignment)
     fbn = s18;
     // :: error: (assignment)
-    // :: error: (assignment)
     i = s18;
 
     us = s19;
@@ -407,7 +393,6 @@ public class SignatureTypeFactoryTest {
     // :: error: (assignment)
     fbn = s19;
     // :: error: (assignment)
-    // :: error: (assignment)
     i = s19;
 
     us = s20;
@@ -421,7 +406,6 @@ public class SignatureTypeFactoryTest {
     // :: error: (assignment)
     bn = s20;
     fbn = s20;
-    // :: error: (assignment)
     // :: error: (assignment)
     i = s20;
 
@@ -441,7 +425,6 @@ public class SignatureTypeFactoryTest {
     // :: error: (assignment)
     fbn = s21;
     // :: error: (assignment)
-    // :: error: (assignment)
     i = s21;
 
     us = s22;
@@ -460,7 +443,6 @@ public class SignatureTypeFactoryTest {
     // :: error: (assignment)
     fbn = s22;
     // :: error: (assignment)
-    // :: error: (assignment)
     i = s22;
 
     // Examples from the manual start here
@@ -476,7 +458,6 @@ public class SignatureTypeFactoryTest {
     // :: error: (assignment)
     bn = t13;
     fbn = t13;
-    // :: error: (assignment)
     // :: error: (assignment)
     i = t13;
 
@@ -516,7 +497,6 @@ public class SignatureTypeFactoryTest {
     // :: error: (assignment)
     fbn = t12;
     // :: error: (assignment)
-    // :: error: (assignment)
     i = t12;
 
     us = t5;
@@ -545,7 +525,6 @@ public class SignatureTypeFactoryTest {
     // :: error: (assignment)
     fbn = t2;
     // :: error: (assignment)
-    // :: error: (assignment)
     i = t2;
 
     us = t6;
@@ -560,7 +539,6 @@ public class SignatureTypeFactoryTest {
     // :: error: (assignment)
     bn = t6;
     fbn = t6;
-    // :: error: (assignment)
     // :: error: (assignment)
     i = t6;
 
@@ -577,7 +555,6 @@ public class SignatureTypeFactoryTest {
     bn = t7;
     // :: error: (assignment)
     fbn = t7;
-    // :: error: (assignment)
     // :: error: (assignment)
     i = t7;
 
@@ -596,7 +573,6 @@ public class SignatureTypeFactoryTest {
     // :: error: (assignment)
     fbn = t29;
     // :: error: (assignment)
-    // :: error: (assignment)
     i = t29;
 
     us = t33;
@@ -614,7 +590,6 @@ public class SignatureTypeFactoryTest {
     // :: error: (assignment)
     fbn = t33;
     // :: error: (assignment)
-    // :: error: (assignment)
     i = t33;
 
     us = t15;
@@ -628,7 +603,6 @@ public class SignatureTypeFactoryTest {
     sn = t15;
     bn = t15;
     fbn = t15;
-    // :: error: (assignment)
     // :: error: (assignment)
     i = t15;
 
@@ -660,7 +634,6 @@ public class SignatureTypeFactoryTest {
     // :: error: (assignment)
     fbn = t22;
     // :: error: (assignment)
-    // :: error: (assignment)
     i = t22;
 
     us = t23;
@@ -679,7 +652,6 @@ public class SignatureTypeFactoryTest {
     // :: error: (assignment)
     fbn = t23;
     // :: error: (assignment)
-    // :: error: (assignment)
     i = t23;
 
     us = t3;
@@ -696,7 +668,6 @@ public class SignatureTypeFactoryTest {
     bn = t3;
     // :: error: (assignment)
     fbn = t3;
-    // :: error: (assignment)
     // :: error: (assignment)
     i = t3;
 
@@ -715,7 +686,6 @@ public class SignatureTypeFactoryTest {
     // :: error: (assignment)
     fbn = t8;
     // :: error: (assignment)
-    // :: error: (assignment)
     i = t8;
 
     us = t9;
@@ -733,7 +703,6 @@ public class SignatureTypeFactoryTest {
     // :: error: (assignment)
     fbn = t9;
     // :: error: (assignment)
-    // :: error: (assignment)
     i = t9;
 
     us = t24;
@@ -750,7 +719,6 @@ public class SignatureTypeFactoryTest {
     bn = t24;
     // :: error: (assignment)
     fbn = t24;
-    // :: error: (assignment)
     // :: error: (assignment)
     i = t24;
 
@@ -770,7 +738,6 @@ public class SignatureTypeFactoryTest {
     // :: error: (assignment)
     fbn = t25;
     // :: error: (assignment)
-    // :: error: (assignment)
     i = t25;
 
     us = t28;
@@ -787,7 +754,6 @@ public class SignatureTypeFactoryTest {
     bn = t28;
     // :: error: (assignment)
     fbn = t28;
-    // :: error: (assignment)
     // :: error: (assignment)
     i = t28;
 
@@ -806,7 +772,6 @@ public class SignatureTypeFactoryTest {
     // :: error: (assignment)
     fbn = t27;
     // :: error: (assignment)
-    // :: error: (assignment)
     i = t27;
 
     us = t26;
@@ -820,7 +785,6 @@ public class SignatureTypeFactoryTest {
     sn = t26;
     bn = t26;
     fbn = t26;
-    // :: error: (assignment)
     // :: error: (assignment)
     i = t26;
 
@@ -839,7 +803,6 @@ public class SignatureTypeFactoryTest {
     bn = t32;
     // :: error: (assignment)
     fbn = t32;
-    // :: error: (assignment)
     // :: error: (assignment)
     i = t32;
 
@@ -871,7 +834,6 @@ public class SignatureTypeFactoryTest {
     // :: error: (assignment)
     fbn = t31;
     // :: error: (assignment)
-    // :: error: (assignment)
     i = t31;
 
     us = t34;
@@ -886,7 +848,6 @@ public class SignatureTypeFactoryTest {
     bn = t34;
     fbn = t34;
     // :: error: (assignment)
-    // :: error: (assignment)
     i = t34;
 
     us = t17;
@@ -900,7 +861,6 @@ public class SignatureTypeFactoryTest {
     sn = t17;
     bn = t17;
     fbn = t17;
-    // :: error: (assignment)
     // :: error: (assignment)
     i = t17;
 
@@ -928,7 +888,6 @@ public class SignatureTypeFactoryTest {
     sn = t19;
     bn = t19;
     fbn = t19;
-    // :: error: (assignment)
     // :: error: (assignment)
     i = t19;
 
@@ -961,7 +920,6 @@ public class SignatureTypeFactoryTest {
     // :: error: (assignment)
     fbn = t20;
     // :: error: (assignment)
-    // :: error: (assignment)
     i = t20;
 
     us = t10;
@@ -978,7 +936,6 @@ public class SignatureTypeFactoryTest {
     bn = t10;
     // :: error: (assignment)
     fbn = t10;
-    // :: error: (assignment)
     // :: error: (assignment)
     i = t10;
 
@@ -997,7 +954,6 @@ public class SignatureTypeFactoryTest {
     // :: error: (assignment)
     fbn = t4;
     // :: error: (assignment)
-    // :: error: (assignment)
     i = t4;
 
     us = t11;
@@ -1014,7 +970,6 @@ public class SignatureTypeFactoryTest {
     bn = t11;
     // :: error: (assignment)
     fbn = t11;
-    // :: error: (assignment)
     // :: error: (assignment)
     i = t11;
   }
