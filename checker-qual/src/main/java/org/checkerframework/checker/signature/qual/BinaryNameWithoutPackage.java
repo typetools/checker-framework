@@ -8,9 +8,8 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * Represents a string that is a {@link BinaryName}, an {@link InternalForm}, and a {@link
- * ClassGetName}. The string represents a class that is in the unnamed package (also known as the
- * default package).
+ * Represents a string that is a {@link BinaryName} and an {@link InternalForm}. The string
+ * represents a class that is in the unnamed package (also known as the default package).
  *
  * <p>Examples:
  *

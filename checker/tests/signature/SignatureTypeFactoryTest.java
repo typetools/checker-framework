@@ -104,6 +104,8 @@ public class SignatureTypeFactoryTest {
     @ClassGetSimpleName String sn;
     @FqBinaryName String fbn;
     @BinaryName String bn;
+    @BinaryNameWithoutPackage String bnwp;
+    @Identifier String i;
     // not public, so a user can't write it.
     // @SignatureBottom String sb;
 
@@ -116,6 +118,8 @@ public class SignatureTypeFactoryTest {
     sn = s1;
     bn = s1;
     fbn = s1;
+    bnwp = s1;
+    i = s1;
 
     us = s2;
     fqn = s2;
@@ -128,6 +132,10 @@ public class SignatureTypeFactoryTest {
     sn = s2;
     bn = s2;
     fbn = s2;
+    // :: error: (assignment)
+    bnwp = s2;
+    // :: error: (assignment)
+    i = s2;
 
     us = s3;
     fqn = s3;
@@ -140,6 +148,10 @@ public class SignatureTypeFactoryTest {
     sn = s3;
     bn = s3;
     fbn = s3;
+    // :: error: (assignment)
+    bnwp = s3;
+    // :: error: (assignment)
+    i = s3;
 
     us = s4;
     fqn = s4;
@@ -149,6 +161,8 @@ public class SignatureTypeFactoryTest {
     sn = s4;
     bn = s4;
     fbn = s4;
+    bnwp = s4;
+    i = s4;
 
     us = s5;
     // :: error: (assignment)
@@ -163,6 +177,10 @@ public class SignatureTypeFactoryTest {
     bn = s5;
     // :: error: (assignment)
     fbn = s5;
+    // :: error: (assignment)
+    bnwp = s5;
+    // :: error: (assignment)
+    i = s5;
 
     us = s6;
     // :: error: (assignment)
@@ -178,6 +196,10 @@ public class SignatureTypeFactoryTest {
     bn = s6;
     // :: error: (assignment)
     fbn = s6;
+    // :: error: (assignment)
+    bnwp = s6;
+    // :: error: (assignment)
+    i = s6;
 
     us = s7;
     // :: error: (assignment)
@@ -193,6 +215,10 @@ public class SignatureTypeFactoryTest {
     bn = s7;
     // :: error: (assignment)
     fbn = s7;
+    // :: error: (assignment)
+    bnwp = s7;
+    // :: error: (assignment)
+    i = s7;
 
     us = s8;
     // :: error: (assignment)
@@ -209,6 +235,10 @@ public class SignatureTypeFactoryTest {
     bn = s8;
     // :: error: (assignment)
     fbn = s8;
+    // :: error: (assignment)
+    bnwp = s8;
+    // :: error: (assignment)
+    i = s8;
 
     us = s9;
     fqn = s9;
@@ -221,6 +251,10 @@ public class SignatureTypeFactoryTest {
     sn = s9;
     bn = s9;
     fbn = s9;
+    // :: error: (assignment)
+    bnwp = s9;
+    // :: error: (assignment)
+    i = s9;
 
     us = s10;
     fqn = s10;
@@ -231,6 +265,8 @@ public class SignatureTypeFactoryTest {
     sn = s10;
     bn = s10;
     fbn = s10;
+    bnwp = s10;
+    i = s10;
 
     us = s11;
     fqn = s11;
@@ -240,6 +276,8 @@ public class SignatureTypeFactoryTest {
     sn = s11;
     bn = s11;
     fbn = s11;
+    bnwp = s11;
+    i = s11;
 
     us = s12;
     fqn = s12;
@@ -254,6 +292,10 @@ public class SignatureTypeFactoryTest {
     // :: error: (assignment)
     bn = s12;
     fbn = s12;
+    // :: error: (assignment)
+    bnwp = s12;
+    // :: error: (assignment)
+    i = s12;
 
     us = s13;
     fqn = s13;
@@ -268,6 +310,10 @@ public class SignatureTypeFactoryTest {
     // :: error: (assignment)
     bn = s13;
     fbn = s13;
+    // :: error: (assignment)
+    bnwp = s13;
+    // :: error: (assignment)
+    i = s13;
 
     us = s14;
     // :: error: (assignment)
@@ -283,6 +329,10 @@ public class SignatureTypeFactoryTest {
     bn = s14;
     // :: error: (assignment)
     fbn = s14;
+    // :: error: (assignment)
+    bnwp = s14;
+    // :: error: (assignment)
+    i = s14;
 
     us = s15;
     // :: error: (assignment)
@@ -298,6 +348,10 @@ public class SignatureTypeFactoryTest {
     bn = s15;
     // :: error: (assignment)
     fbn = s15;
+    // :: error: (assignment)
+    bnwp = s15;
+    // :: error: (assignment)
+    i = s15;
 
     us = s16;
     // :: error: (assignment)
@@ -313,6 +367,10 @@ public class SignatureTypeFactoryTest {
     bn = s16;
     // :: error: (assignment)
     fbn = s16;
+    // :: error: (assignment)
+    bnwp = s16;
+    // :: error: (assignment)
+    i = s16;
 
     us = s17;
     // :: error: (assignment)
@@ -328,6 +386,10 @@ public class SignatureTypeFactoryTest {
     bn = s17;
     // :: error: (assignment)
     fbn = s17;
+    // :: error: (assignment)
+    bnwp = s17;
+    // :: error: (assignment)
+    i = s17;
 
     us = s18;
     // :: error: (assignment)
@@ -344,6 +406,10 @@ public class SignatureTypeFactoryTest {
     bn = s18;
     // :: error: (assignment)
     fbn = s18;
+    // :: error: (assignment)
+    bnwp = s18;
+    // :: error: (assignment)
+    i = s18;
 
     us = s19;
     // :: error: (assignment)
@@ -360,6 +426,10 @@ public class SignatureTypeFactoryTest {
     bn = s19;
     // :: error: (assignment)
     fbn = s19;
+    // :: error: (assignment)
+    bnwp = s19;
+    // :: error: (assignment)
+    i = s19;
 
     us = s20;
     fqn = s20;
@@ -372,6 +442,10 @@ public class SignatureTypeFactoryTest {
     // :: error: (assignment)
     bn = s20;
     fbn = s20;
+    // :: error: (assignment)
+    bnwp = s20;
+    // :: error: (assignment)
+    i = s20;
 
     us = s21;
     // :: error: (assignment)
@@ -388,6 +462,10 @@ public class SignatureTypeFactoryTest {
     bn = s21;
     // :: error: (assignment)
     fbn = s21;
+    // :: error: (assignment)
+    bnwp = s21;
+    // :: error: (assignment)
+    i = s21;
 
     us = s22;
     // :: error: (assignment)
@@ -404,6 +482,10 @@ public class SignatureTypeFactoryTest {
     bn = s22;
     // :: error: (assignment)
     fbn = s22;
+    // :: error: (assignment)
+    bnwp = s22;
+    // :: error: (assignment)
+    i = s22;
 
     // Examples from the manual start here
 
@@ -418,6 +500,10 @@ public class SignatureTypeFactoryTest {
     // :: error: (assignment)
     bn = t13;
     fbn = t13;
+    // :: error: (assignment)
+    bnwp = t13;
+    // :: error: (assignment)
+    i = t13;
 
     us = t14;
     fqn = t14;
@@ -439,6 +525,8 @@ public class SignatureTypeFactoryTest {
     sn = t1;
     bn = t1;
     fbn = t1;
+    bnwp = t1;
+    i = t1;
 
     us = t12;
     // :: error: (assignment)
@@ -453,6 +541,10 @@ public class SignatureTypeFactoryTest {
     bn = t12;
     // :: error: (assignment)
     fbn = t12;
+    // :: error: (assignment)
+    bnwp = t12;
+    // :: error: (assignment)
+    i = t12;
 
     us = t5;
     fqn = t5;
@@ -463,6 +555,8 @@ public class SignatureTypeFactoryTest {
     sn = t5;
     bn = t5;
     fbn = t5;
+    bnwp = t5;
+    i = t5;
 
     us = t2;
     // :: error: (assignment)
@@ -478,6 +572,10 @@ public class SignatureTypeFactoryTest {
     bn = t2;
     // :: error: (assignment)
     fbn = t2;
+    // :: error: (assignment)
+    bnwp = t2;
+    // :: error: (assignment)
+    i = t2;
 
     us = t6;
     fqn = t6;
@@ -491,6 +589,10 @@ public class SignatureTypeFactoryTest {
     // :: error: (assignment)
     bn = t6;
     fbn = t6;
+    // :: error: (assignment)
+    bnwp = t6;
+    // :: error: (assignment)
+    i = t6;
 
     us = t7;
     // :: error: (assignment)
@@ -505,6 +607,10 @@ public class SignatureTypeFactoryTest {
     bn = t7;
     // :: error: (assignment)
     fbn = t7;
+    // :: error: (assignment)
+    bnwp = t7;
+    // :: error: (assignment)
+    i = t7;
 
     us = t29;
     // :: error: (assignment)
@@ -520,6 +626,10 @@ public class SignatureTypeFactoryTest {
     bn = t29;
     // :: error: (assignment)
     fbn = t29;
+    // :: error: (assignment)
+    bnwp = t29;
+    // :: error: (assignment)
+    i = t29;
 
     us = t33;
     // :: error: (assignment)
@@ -535,6 +645,10 @@ public class SignatureTypeFactoryTest {
     bn = t33;
     // :: error: (assignment)
     fbn = t33;
+    // :: error: (assignment)
+    bnwp = t33;
+    // :: error: (assignment)
+    i = t33;
 
     us = t15;
     fqn = t15;
@@ -547,6 +661,10 @@ public class SignatureTypeFactoryTest {
     sn = t15;
     bn = t15;
     fbn = t15;
+    // :: error: (assignment)
+    bnwp = t15;
+    // :: error: (assignment)
+    i = t15;
 
     us = t16;
     fqn = t16;
@@ -575,6 +693,10 @@ public class SignatureTypeFactoryTest {
     bn = t22;
     // :: error: (assignment)
     fbn = t22;
+    // :: error: (assignment)
+    bnwp = t22;
+    // :: error: (assignment)
+    i = t22;
 
     us = t23;
     // :: error: (assignment)
@@ -591,6 +713,10 @@ public class SignatureTypeFactoryTest {
     bn = t23;
     // :: error: (assignment)
     fbn = t23;
+    // :: error: (assignment)
+    bnwp = t23;
+    // :: error: (assignment)
+    i = t23;
 
     us = t3;
     // :: error: (assignment)
@@ -606,6 +732,10 @@ public class SignatureTypeFactoryTest {
     bn = t3;
     // :: error: (assignment)
     fbn = t3;
+    // :: error: (assignment)
+    bnwp = t3;
+    // :: error: (assignment)
+    i = t3;
 
     us = t8;
     // :: error: (assignment)
@@ -621,6 +751,10 @@ public class SignatureTypeFactoryTest {
     bn = t8;
     // :: error: (assignment)
     fbn = t8;
+    // :: error: (assignment)
+    bnwp = t8;
+    // :: error: (assignment)
+    i = t8;
 
     us = t9;
     // :: error: (assignment)
@@ -636,6 +770,10 @@ public class SignatureTypeFactoryTest {
     bn = t9;
     // :: error: (assignment)
     fbn = t9;
+    // :: error: (assignment)
+    bnwp = t9;
+    // :: error: (assignment)
+    i = t9;
 
     us = t24;
     // :: error: (assignment)
@@ -651,6 +789,10 @@ public class SignatureTypeFactoryTest {
     bn = t24;
     // :: error: (assignment)
     fbn = t24;
+    // :: error: (assignment)
+    bnwp = t24;
+    // :: error: (assignment)
+    i = t24;
 
     us = t25;
     // :: error: (assignment)
@@ -667,6 +809,10 @@ public class SignatureTypeFactoryTest {
     bn = t25;
     // :: error: (assignment)
     fbn = t25;
+    // :: error: (assignment)
+    bnwp = t25;
+    // :: error: (assignment)
+    i = t25;
 
     us = t28;
     // :: error: (assignment)
@@ -682,6 +828,10 @@ public class SignatureTypeFactoryTest {
     bn = t28;
     // :: error: (assignment)
     fbn = t28;
+    // :: error: (assignment)
+    bnwp = t28;
+    // :: error: (assignment)
+    i = t28;
 
     us = t27;
     // :: error: (assignment)
@@ -697,6 +847,10 @@ public class SignatureTypeFactoryTest {
     bn = t27;
     // :: error: (assignment)
     fbn = t27;
+    // :: error: (assignment)
+    bnwp = t27;
+    // :: error: (assignment)
+    i = t27;
 
     us = t26;
     fqn = t26;
@@ -709,6 +863,10 @@ public class SignatureTypeFactoryTest {
     sn = t26;
     bn = t26;
     fbn = t26;
+    // :: error: (assignment)
+    bnwp = t26;
+    // :: error: (assignment)
+    i = t26;
 
     us = t32;
     // :: error: (assignment)
@@ -725,6 +883,10 @@ public class SignatureTypeFactoryTest {
     bn = t32;
     // :: error: (assignment)
     fbn = t32;
+    // :: error: (assignment)
+    bnwp = t32;
+    // :: error: (assignment)
+    i = t32;
 
     us = t30;
     fqn = t30;
@@ -753,6 +915,10 @@ public class SignatureTypeFactoryTest {
     bn = t31;
     // :: error: (assignment)
     fbn = t31;
+    // :: error: (assignment)
+    bnwp = t31;
+    // :: error: (assignment)
+    i = t31;
 
     us = t34;
     fqn = t34;
@@ -765,6 +931,10 @@ public class SignatureTypeFactoryTest {
     sn = t34;
     bn = t34;
     fbn = t34;
+    // :: error: (assignment)
+    bnwp = t34;
+    // :: error: (assignment)
+    i = t34;
 
     us = t17;
     fqn = t17;
@@ -777,6 +947,10 @@ public class SignatureTypeFactoryTest {
     sn = t17;
     bn = t17;
     fbn = t17;
+    // :: error: (assignment)
+    bnwp = t17;
+    // :: error: (assignment)
+    i = t17;
 
     us = t18;
     fqn = t18;
@@ -802,6 +976,10 @@ public class SignatureTypeFactoryTest {
     sn = t19;
     bn = t19;
     fbn = t19;
+    // :: error: (assignment)
+    bnwp = t19;
+    // :: error: (assignment)
+    i = t19;
 
     us = t21;
     fqn = t21;
@@ -831,6 +1009,10 @@ public class SignatureTypeFactoryTest {
     bn = t20;
     // :: error: (assignment)
     fbn = t20;
+    // :: error: (assignment)
+    bnwp = t20;
+    // :: error: (assignment)
+    i = t20;
 
     us = t10;
     // :: error: (assignment)
@@ -846,6 +1028,10 @@ public class SignatureTypeFactoryTest {
     bn = t10;
     // :: error: (assignment)
     fbn = t10;
+    // :: error: (assignment)
+    bnwp = t10;
+    // :: error: (assignment)
+    i = t10;
 
     us = t4;
     // :: error: (assignment)
@@ -861,6 +1047,10 @@ public class SignatureTypeFactoryTest {
     bn = t4;
     // :: error: (assignment)
     fbn = t4;
+    // :: error: (assignment)
+    bnwp = t4;
+    // :: error: (assignment)
+    i = t4;
 
     us = t11;
     // :: error: (assignment)
@@ -876,5 +1066,9 @@ public class SignatureTypeFactoryTest {
     bn = t11;
     // :: error: (assignment)
     fbn = t11;
+    // :: error: (assignment)
+    bnwp = t11;
+    // :: error: (assignment)
+    i = t11;
   }
 }
