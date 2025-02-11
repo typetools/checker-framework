@@ -50,7 +50,6 @@ public class Typing extends TypeConstraint {
   /**
    * Creates a typing constraint.
    *
-   * @param parent
    * @param S left hand side type
    * @param t right hand side type
    * @param kind the kind of constraint
@@ -62,7 +61,6 @@ public class Typing extends TypeConstraint {
   /**
    * Creates a typing constraint.
    *
-   * @param source
    * @param S left hand side type
    * @param t right hand side type
    * @param kind the kind of constraint
@@ -75,7 +73,6 @@ public class Typing extends TypeConstraint {
   /**
    * Creates a typing constraint.
    *
-   * @param source
    * @param S left hand side type
    * @param t right hand side type
    * @param kind the kind of constraint
@@ -89,7 +86,6 @@ public class Typing extends TypeConstraint {
   /**
    * Creates a typing constraint.
    *
-   * @param parent
    * @param S left hand side type
    * @param t right hand side type
    * @param kind the kind of constraint

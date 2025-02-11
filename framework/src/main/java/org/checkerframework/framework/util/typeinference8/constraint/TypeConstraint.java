@@ -34,7 +34,6 @@ public abstract class TypeConstraint implements Constraint {
   /**
    * Creates a type constraint
    *
-   * @param source
    * @param T the type of the right hand side of the constraint
    */
   protected TypeConstraint(String source, AbstractType T) {
@@ -47,7 +46,6 @@ public abstract class TypeConstraint implements Constraint {
   /**
    * Creates a type constraint
    *
-   * @param parent
    * @param T the type of the right hand side of the constraint
    */
   protected TypeConstraint(Constraint parent, AbstractType T) {
@@ -55,6 +53,27 @@ public abstract class TypeConstraint implements Constraint {
     this.T = T;
     this.parent = parent;
     this.source = null;
+  }
+
+  public String constraintHistory() {
+    StringBuilder constraintStack = new StringBuilder(" False bound for: Constraint: ");
+    constraintStack.append(this).append("\n");
+
+    Constraint parent = this.parent;
+    String source = this.source;
+    while (parent != null) {
+      constraintStack.append(parent).append("\n");
+      if (parent instanceof TypeConstraint) {
+        source = ((TypeConstraint) parent).source;
+        parent = ((TypeConstraint) parent).parent;
+      } else {
+        parent = null;
+      }
+    }
+    if (source != null) {
+      constraintStack.append("From: ").append(source);
+    }
+    return constraintStack.toString();
   }
 
   /**
