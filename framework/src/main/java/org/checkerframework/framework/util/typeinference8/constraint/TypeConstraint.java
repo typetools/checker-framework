@@ -63,6 +63,9 @@ public abstract class TypeConstraint implements Constraint {
     String source = this.source;
     while (parent != null) {
       constraintStack.append(parent).append("\n");
+      if (source != null) {
+        constraintStack.append(source).append("\n");
+      }
       if (parent instanceof TypeConstraint) {
         source = ((TypeConstraint) parent).source;
         parent = ((TypeConstraint) parent).parent;

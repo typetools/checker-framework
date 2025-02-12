@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
+import org.checkerframework.framework.util.typeinference8.constraint.Constraint;
 import org.checkerframework.framework.util.typeinference8.constraint.Constraint.Kind;
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
 import org.checkerframework.framework.util.typeinference8.constraint.QualifierTyping;
@@ -149,7 +150,7 @@ public class VariableBounds {
    * @param otherType the bound type
    * @return if a new bound was added
    */
-  public boolean addBound(BoundKind kind, AbstractType otherType) {
+  public boolean addBound(Constraint parent, BoundKind kind, AbstractType otherType) {
     if (otherType.isUseOfVariable() && ((UseOfVariable) otherType).getVariable() == variable) {
       return false;
     }
@@ -157,7 +158,7 @@ public class VariableBounds {
       instantiation = ((ProperType) otherType).boxType();
     }
     if (bounds.get(kind).add(otherType)) {
-      addConstraintsFromComplementaryBounds(kind, otherType);
+      addConstraintsFromComplementaryBounds(parent, kind, otherType);
       Set<AbstractQualifier> aQuals = otherType.getQualifiers();
       addConstraintsFromComplementaryQualifierBounds(kind, aQuals);
       return true;
@@ -234,47 +235,50 @@ public class VariableBounds {
    * @param boundType the type of the bound
    */
   @SuppressWarnings("interning:not.interned") // Checking for exact object.
-  public void addConstraintsFromComplementaryBounds(BoundKind kind, AbstractType boundType) {
-    String source = "Constraint from complementary bound.";
+  public void addConstraintsFromComplementaryBounds(
+      Constraint parent, BoundKind kind, AbstractType boundType) {
+    if (parent instanceof TypeConstraint) {
+      ((TypeConstraint) parent).source = "From complementary bound.";
+    }
     switch (kind) {
       case EQUAL:
         for (AbstractType t : bounds.get(BoundKind.EQUAL)) {
           if (boundType != t) {
-            constraints.add(new Typing(source, boundType, t, Kind.TYPE_EQUALITY));
+            constraints.add(new Typing(parent, boundType, t, Kind.TYPE_EQUALITY));
           }
         }
         for (AbstractType t : bounds.get(BoundKind.LOWER)) {
           if (boundType != t) {
-            constraints.add(new Typing(source, t, boundType, Kind.SUBTYPE));
+            constraints.add(new Typing(parent, t, boundType, Kind.SUBTYPE));
           }
         }
         for (AbstractType t : bounds.get(BoundKind.UPPER)) {
           if (boundType != t) {
-            constraints.add(new Typing(source, boundType, t, Kind.SUBTYPE));
+            constraints.add(new Typing(parent, boundType, t, Kind.SUBTYPE));
           }
         }
         break;
       case LOWER:
         for (AbstractType t : bounds.get(BoundKind.EQUAL)) {
           if (boundType != t) {
-            constraints.add(new Typing(source, boundType, t, Kind.SUBTYPE));
+            constraints.add(new Typing(parent, boundType, t, Kind.SUBTYPE));
           }
         }
         for (AbstractType t : bounds.get(BoundKind.UPPER)) {
           if (boundType != t) {
-            constraints.add(new Typing(source, boundType, t, Kind.SUBTYPE));
+            constraints.add(new Typing(parent, boundType, t, Kind.SUBTYPE));
           }
         }
         break;
       case UPPER:
         for (AbstractType t : bounds.get(BoundKind.EQUAL)) {
           if (boundType != t) {
-            constraints.add(new Typing(source, t, boundType, Kind.SUBTYPE));
+            constraints.add(new Typing(parent, t, boundType, Kind.SUBTYPE));
           }
         }
         for (AbstractType t : bounds.get(BoundKind.LOWER)) {
           if (boundType != t) {
-            constraints.add(new Typing(source, t, boundType, Kind.SUBTYPE));
+            constraints.add(new Typing(parent, t, boundType, Kind.SUBTYPE));
           }
         }
         break;

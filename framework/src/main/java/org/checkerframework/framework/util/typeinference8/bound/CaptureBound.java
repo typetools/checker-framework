@@ -122,7 +122,7 @@ public class CaptureBound {
     for (CaptureTuple t : tuples) {
       if (t.capturedTypeArg.getTypeKind() != TypeKind.WILDCARD) {
         // If Ai is not a wildcard, then the bound alphai = Ai is implied.
-        t.alpha.getBounds().addBound(VariableBounds.BoundKind.EQUAL, t.capturedTypeArg);
+        t.alpha.getBounds().addBound(null, VariableBounds.BoundKind.EQUAL, t.capturedTypeArg);
       }
     }
 

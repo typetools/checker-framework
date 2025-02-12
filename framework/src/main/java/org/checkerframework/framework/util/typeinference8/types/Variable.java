@@ -120,13 +120,13 @@ import org.checkerframework.javacutil.TypesUtils;
             ((IntersectionType) upperBound).getBounds().iterator();
         for (AnnotatedTypeMirror bound : typeVariable.getUpperBound().directSupertypes()) {
           AbstractType t1 = InferenceType.create(bound, iter.next(), map, context);
-          variableBounds.addBound(BoundKind.UPPER, t1);
+          variableBounds.addBound(null, BoundKind.UPPER, t1);
         }
         break;
       default:
         AbstractType t1 =
             InferenceType.create(typeVariable.getUpperBound(), upperBound, map, context);
-        variableBounds.addBound(BoundKind.UPPER, t1);
+        variableBounds.addBound(null, BoundKind.UPPER, t1);
         break;
     }
 
