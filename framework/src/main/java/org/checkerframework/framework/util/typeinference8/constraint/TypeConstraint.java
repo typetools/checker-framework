@@ -56,16 +56,16 @@ public abstract class TypeConstraint implements Constraint {
   }
 
   public String constraintHistory() {
-    StringBuilder constraintStack = new StringBuilder(" False bound for: Constraint: ");
-    constraintStack.append(this).append("\n");
+    StringBuilder constraintStack = new StringBuilder(this.toString()).append("\n");
 
     Constraint parent = this.parent;
     String source = this.source;
     while (parent != null) {
-      constraintStack.append(parent).append("\n");
       if (source != null) {
-        constraintStack.append(source).append("\n");
+        constraintStack.append(source).append(": ");
       }
+      constraintStack.append(parent).append("\n");
+
       if (parent instanceof TypeConstraint) {
         source = ((TypeConstraint) parent).source;
         parent = ((TypeConstraint) parent).parent;

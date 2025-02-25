@@ -172,10 +172,12 @@ import org.checkerframework.javacutil.TypesUtils;
 
   @Override
   public String toString() {
-    if (variableBounds.hasInstantiation()) {
-      return "a" + id + " := " + variableBounds.getInstantiation();
-    }
-    return "a" + id;
+    return String.format("%s from %s", typeVariableJava, invocation);
+
+    // if (variableBounds.hasInstantiation()) {
+    //    return "a" + id + " := " + variableBounds.getInstantiation();
+    //  }
+    //  return "a" + id;
   }
 
   /**
