@@ -202,23 +202,26 @@ public class OptionalImplTransfer extends CFTransfer {
   }
 
   /**
-   * Returns true if the receiver parameter of the method being invoked is explicitly annotated
-   * with @{@link NonEmpty}.
+   * Returns true if the receiver parameter of the first method being invoked is explicitly
+   * annotated with @{@link NonEmpty}.
    *
    * @param methodInvok a method invocation node
-   * @return true if the receiver parameter of the method being invoked is explicitly annotated
-   *     with @{@link NonEmpty}
+   * @return true if the receiver parameter of the first method being invoked is explicitly
+   *     annotated with @{@link NonEmpty}
    */
   private boolean isReceiverParameterNonEmpty(MethodInvocationNode methodInvok) {
-    ExpressionTree receiverTree = TreeUtils.getReceiverTree(methodInvok.getTree());
-    if (receiverTree instanceof MethodInvocationTree) {
-      // TODO(https://github.com/typetools/checker-framework/issues/6848): this logic needs further
-      // refinement to eliminate a source of false positives in the Optional Checker.
-      // Also see the discussion in:
-      // https://github.com/typetools/checker-framework/pull/6685#discussion_r1788632663 for
-      // additional context.
-      while (receiverTree instanceof MethodInvocationTree) {
-        receiverTree = TreeUtils.getReceiverTree(receiverTree);
+    ExpressionTree receiverTree = methodInvok.getTree();
+    // TODO(https://github.com/typetools/checker-framework/issues/6848): this logic needs further
+    // refinement to eliminate a source of false positives in the Optional Checker.
+    // Also see the discussion in:
+    // https://github.com/typetools/checker-framework/pull/6685#discussion_r1788632663 for
+    // additional context.
+    while (receiverTree instanceof MethodInvocationTree) {
+      ExpressionTree newReceiverTree = TreeUtils.getReceiverTree(receiverTree);
+      if (newReceiverTree == null) {
+        break;
+      } else {
+        receiverTree = newReceiverTree;
       }
     }
 
