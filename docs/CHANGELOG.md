@@ -1,11 +1,10 @@
 Version 3.49.1 (March 3, 2025)
 ------------------------------
 
-**User-visible changes:**
-
-**Implementation details:**
-
 **Closed issues:**
+
+#6970, #6974.
+
 
 Version 3.49.0 (February 3, 2025)
 --------------------------------
