@@ -146,6 +146,7 @@ public class VariableBounds {
   /**
    * Adds {@code otherType} as bound against this variable.
    *
+   * @param parent the constraint whose reduction created this bound
    * @param kind the kind of bound
    * @param otherType the bound type
    * @return if a new bound was added
@@ -231,6 +232,7 @@ public class VariableBounds {
   /**
    * Add constraints created via incorporation of the bound. See JLS 18.3.1.
    *
+   * @param parent the constraint whose reduction created this bound
    * @param kind the kind of bound
    * @param boundType the type of the bound
    */

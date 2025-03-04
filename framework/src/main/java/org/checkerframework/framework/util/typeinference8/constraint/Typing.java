@@ -50,6 +50,7 @@ public class Typing extends TypeConstraint {
   /**
    * Creates a typing constraint.
    *
+   * @param parent the constraint whose reduction created this constraint
    * @param S left hand side type
    * @param t right hand side type
    * @param kind the kind of constraint
@@ -61,25 +62,13 @@ public class Typing extends TypeConstraint {
   /**
    * Creates a typing constraint.
    *
+   * @param source a string describing where this constraint came from
    * @param S left hand side type
    * @param t right hand side type
    * @param kind the kind of constraint
    */
   public Typing(String source, AbstractType S, AbstractType t, Kind kind) {
     this((Constraint) null, S, t, kind);
-    this.source = source;
-  }
-
-  /**
-   * Creates a typing constraint.
-   *
-   * @param S left hand side type
-   * @param t right hand side type
-   * @param kind the kind of constraint
-   * @param covarTypeArg whether the constraint is for a covariant type argument
-   */
-  public Typing(String source, AbstractType S, AbstractType t, Kind kind, boolean covarTypeArg) {
-    this((Constraint) null, S, t, kind, covarTypeArg);
     this.source = source;
   }
 

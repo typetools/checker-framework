@@ -156,6 +156,7 @@ public class UseOfVariable extends AbstractType {
   /**
    * Adds a bound for this variable, is this use does not have a primary annotation.
    *
+   * @param parent the constraint whose reduction created this bound
    * @param kind the kind of bound
    * @param bound the type of the bound
    */
