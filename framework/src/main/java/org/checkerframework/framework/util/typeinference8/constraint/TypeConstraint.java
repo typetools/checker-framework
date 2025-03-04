@@ -60,6 +60,11 @@ public abstract class TypeConstraint implements Constraint {
     this.source = null;
   }
 
+  /**
+   * Returns a string explain where this constraint came from.
+   *
+   * @return a string explain where this constraint came from
+   */
   public String constraintHistory() {
     StringBuilder constraintStack = new StringBuilder(this.toString()).append("\n");
 
