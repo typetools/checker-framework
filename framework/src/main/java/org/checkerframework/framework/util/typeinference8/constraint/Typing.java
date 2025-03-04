@@ -86,6 +86,7 @@ public class Typing extends TypeConstraint {
   /**
    * Creates a typing constraint.
    *
+   * @param parent the constraint whose reduction created this constraint
    * @param S left hand side type
    * @param t right hand side type
    * @param kind the kind of constraint

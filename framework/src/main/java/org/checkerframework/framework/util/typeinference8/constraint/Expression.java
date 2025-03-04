@@ -39,6 +39,7 @@ public class Expression extends TypeConstraint {
   /**
    * Creates an expression constraint.
    *
+   * @param parent the constraint whose reduction created this constraint
    * @param expressionTree the expression for the constraint
    * @param t the type that the expression is compatible in a loose invocation context
    */
@@ -48,6 +49,13 @@ public class Expression extends TypeConstraint {
     assert expression != null;
   }
 
+  /**
+   * Creates an expression constraint.
+   *
+   * @param source a string describing where this constraint came from
+   * @param expressionTree the expression for the constraint
+   * @param t the type that the expression is compatible in a loose invocation context
+   */
   public Expression(String source, ExpressionTree expressionTree, AbstractType t) {
     super(source, t);
     this.expression = expressionTree;

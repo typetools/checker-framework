@@ -28,12 +28,16 @@ public abstract class TypeConstraint implements Constraint {
   /** T, the type on the right hand side of the constraint; may contain inference variables. */
   protected AbstractType T;
 
+  /** The constraint whose reduction created this constraint. */
   public @Nullable Constraint parent;
+
+  /** A string that describes where this constraint is from. */
   public @Nullable String source;
 
   /**
    * Creates a type constraint
    *
+   * @param source a string describing where this constraint came from
    * @param T the type of the right hand side of the constraint
    */
   protected TypeConstraint(String source, AbstractType T) {
@@ -46,6 +50,7 @@ public abstract class TypeConstraint implements Constraint {
   /**
    * Creates a type constraint
    *
+   * @param parent the constraint whose reduction created this constraint
    * @param T the type of the right hand side of the constraint
    */
   protected TypeConstraint(Constraint parent, AbstractType T) {
