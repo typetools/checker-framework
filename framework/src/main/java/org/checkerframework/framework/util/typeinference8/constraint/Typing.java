@@ -50,24 +50,40 @@ public class Typing extends TypeConstraint {
   /**
    * Creates a typing constraint.
    *
+   * @param parent the constraint whose reduction created this constraint
    * @param S left hand side type
    * @param t right hand side type
    * @param kind the kind of constraint
    */
-  public Typing(AbstractType S, AbstractType t, Kind kind) {
-    this(S, t, kind, false);
+  public Typing(Constraint parent, AbstractType S, AbstractType t, Kind kind) {
+    this(parent, S, t, kind, false);
   }
 
   /**
    * Creates a typing constraint.
    *
+   * @param source a string describing where this constraint came from
+   * @param S left hand side type
+   * @param t right hand side type
+   * @param kind the kind of constraint
+   */
+  public Typing(String source, AbstractType S, AbstractType t, Kind kind) {
+    this((Constraint) null, S, t, kind);
+    this.source = source;
+  }
+
+  /**
+   * Creates a typing constraint.
+   *
+   * @param parent the constraint whose reduction created this constraint
    * @param S left hand side type
    * @param t right hand side type
    * @param kind the kind of constraint
    * @param covarTypeArg whether the constraint is for a covariant type argument
    */
-  public Typing(AbstractType S, AbstractType t, Kind kind, boolean covarTypeArg) {
-    super(t);
+  public Typing(
+      Constraint parent, AbstractType S, AbstractType t, Kind kind, boolean covarTypeArg) {
+    super(parent, t);
     assert S != null;
     switch (kind) {
       case TYPE_COMPATIBILITY:
@@ -167,16 +183,18 @@ public class Typing extends TypeConstraint {
     if (S.isUseOfVariable() || T.isUseOfVariable()) {
       if (S.isUseOfVariable()) {
         if (T.getTypeKind() == TypeKind.TYPEVAR && T.isLowerBoundTypeVariable()) {
-          ((UseOfVariable) S).addBound(VariableBounds.BoundKind.UPPER, T.getTypeVarLowerBound());
+          ((UseOfVariable) S)
+              .addBound(this, VariableBounds.BoundKind.UPPER, T.getTypeVarLowerBound());
         } else {
-          ((UseOfVariable) S).addBound(VariableBounds.BoundKind.UPPER, T);
+          ((UseOfVariable) S).addBound(this, VariableBounds.BoundKind.UPPER, T);
         }
       }
       if (T.isUseOfVariable()) {
         if (TypesUtils.isCapturedTypeVariable(S.getJavaType())) {
-          ((UseOfVariable) T).addBound(VariableBounds.BoundKind.LOWER, S.getTypeVarUpperBound());
+          ((UseOfVariable) T)
+              .addBound(this, VariableBounds.BoundKind.LOWER, S.getTypeVarUpperBound());
         }
-        ((UseOfVariable) T).addBound(VariableBounds.BoundKind.LOWER, S);
+        ((UseOfVariable) T).addBound(this, VariableBounds.BoundKind.LOWER, S);
       }
       return ConstraintSet.TRUE;
     }
@@ -232,7 +250,7 @@ public class Typing extends TypeConstraint {
       for (AbstractType b : Bs) {
         AbstractType a = As.next();
         boolean convarArg = covariantArgIndexes.contains(index);
-        set.add(new Typing(b, a, Kind.CONTAINED, convarArg));
+        set.add(new Typing(this, b, a, Kind.CONTAINED, convarArg));
         index++;
       }
 
@@ -258,7 +276,7 @@ public class Typing extends TypeConstraint {
     if (msArrayType.isPrimitiveArray() && T.isPrimitiveArray()) {
       return ConstraintSet.TRUE;
     } else {
-      return new Typing(msArrayType.getComponentType(), T.getComponentType(), Kind.SUBTYPE);
+      return new Typing(this, msArrayType.getComponentType(), T.getComponentType(), Kind.SUBTYPE);
     }
   }
 
@@ -272,9 +290,9 @@ public class Typing extends TypeConstraint {
     if (S.getTypeKind() == TypeKind.INTERSECTION) {
       return ConstraintSet.TRUE;
     } else if (T.getTypeKind() == TypeKind.TYPEVAR && T.isLowerBoundTypeVariable()) {
-      return new Typing(S, T.getTypeVarLowerBound(), Kind.SUBTYPE);
+      return new Typing(this, S, T.getTypeVarLowerBound(), Kind.SUBTYPE);
     } else if (T.getTypeKind() == TypeKind.WILDCARD && T.isLowerBoundedWildcard()) {
-      return new Typing(S, T.getWildcardLowerBound(), Kind.SUBTYPE);
+      return new Typing(this, S, T.getWildcardLowerBound(), Kind.SUBTYPE);
     } else {
       return ConstraintSet.FALSE;
     }
@@ -289,7 +307,7 @@ public class Typing extends TypeConstraint {
   private ReductionResult reduceSubtypingIntersection() {
     ConstraintSet constraintSet = new ConstraintSet();
     for (AbstractType bound : T.getIntersectionBounds()) {
-      constraintSet.add(new Typing(S, bound, Kind.SUBTYPE));
+      constraintSet.add(new Typing(this, S, bound, Kind.SUBTYPE));
     }
     return constraintSet;
   }
@@ -306,9 +324,9 @@ public class Typing extends TypeConstraint {
         return ConstraintSet.FALSE;
       }
       if (isCovarTypeArg) {
-        return new Typing(S, T, Kind.SUBTYPE);
+        return new Typing(this, S, T, Kind.SUBTYPE);
       }
-      return new Typing(S, T, Kind.TYPE_EQUALITY);
+      return new Typing(this, S, T, Kind.TYPE_EQUALITY);
 
     } else if (T.isUnboundWildcard()) {
       return ConstraintSet.TRUE;
@@ -316,19 +334,19 @@ public class Typing extends TypeConstraint {
       AbstractType bound = T.getWildcardUpperBound();
       if (S.getTypeKind() == TypeKind.WILDCARD) {
         if (S.isUnboundWildcard() || S.isUpperBoundedWildcard()) {
-          return new Typing(S.getWildcardUpperBound(), bound, Kind.SUBTYPE);
+          return new Typing(this, S.getWildcardUpperBound(), bound, Kind.SUBTYPE);
         } else {
-          return new Typing(S.getWildcardLowerBound(), bound, Kind.TYPE_EQUALITY);
+          return new Typing(this, S.getWildcardLowerBound(), bound, Kind.TYPE_EQUALITY);
         }
       } else {
-        return new Typing(S, bound, Kind.SUBTYPE);
+        return new Typing(this, S, bound, Kind.SUBTYPE);
       }
     } else { // T is lower bounded wildcard
       AbstractType tPrime = T.getWildcardLowerBound();
       if (S.getTypeKind() != TypeKind.WILDCARD) {
-        return new Typing(tPrime, S, Kind.SUBTYPE);
+        return new Typing(this, tPrime, S, Kind.SUBTYPE);
       } else if (S.isLowerBoundedWildcard()) {
-        return new Typing(tPrime, S.getWildcardLowerBound(), Kind.SUBTYPE);
+        return new Typing(this, tPrime, S.getWildcardLowerBound(), Kind.SUBTYPE);
       } else {
         return ConstraintSet.FALSE;
       }
@@ -351,9 +369,9 @@ public class Typing extends TypeConstraint {
       }
       return ((ProperType) S).isAssignable((ProperType) T);
     } else if (S.isProper() && S.getTypeKind().isPrimitive()) {
-      return new Typing(((ProperType) S).boxType(), T, Kind.TYPE_COMPATIBILITY);
+      return new Typing(this, ((ProperType) S).boxType(), T, Kind.TYPE_COMPATIBILITY);
     } else if (T.isProper() && T.getTypeKind().isPrimitive()) {
-      return new Typing(S, ((ProperType) T).boxType(), Kind.TYPE_EQUALITY);
+      return new Typing(this, S, ((ProperType) T).boxType(), Kind.TYPE_EQUALITY);
     } else if (T.isParameterizedType() && !S.isUseOfVariable()) {
       // Otherwise, if T is a parameterized type of the form G<T1, ..., Tn>,
       // and there exists no type of the form G<...> that is a supertype of S,
@@ -369,7 +387,7 @@ public class Typing extends TypeConstraint {
       }
     }
 
-    return new Typing(S, T, Kind.SUBTYPE);
+    return new Typing(this, S, T, Kind.SUBTYPE);
   }
 
   /**
@@ -401,10 +419,10 @@ public class Typing extends TypeConstraint {
 
     if (S.isUseOfVariable() || T.isUseOfVariable()) {
       if (S.isUseOfVariable()) {
-        ((UseOfVariable) S).addBound(VariableBounds.BoundKind.EQUAL, T);
+        ((UseOfVariable) S).addBound(this, VariableBounds.BoundKind.EQUAL, T);
       }
       if (T.isUseOfVariable()) {
-        ((UseOfVariable) T).addBound(VariableBounds.BoundKind.EQUAL, S);
+        ((UseOfVariable) T).addBound(this, VariableBounds.BoundKind.EQUAL, S);
       }
       return ConstraintSet.TRUE;
     }
@@ -417,7 +435,8 @@ public class Typing extends TypeConstraint {
       ConstraintSet constraintSet = new ConstraintSet();
       for (int i = 0; i < tTypeArgs.size(); i++) {
         if (tTypeArgs.get(i) != sTypeArgs.get(i)) {
-          constraintSet.add(new Typing(tTypeArgs.get(i), sTypeArgs.get(i), Kind.TYPE_EQUALITY));
+          constraintSet.add(
+              new Typing(this, tTypeArgs.get(i), sTypeArgs.get(i), Kind.TYPE_EQUALITY));
         }
       }
       return constraintSet;
@@ -426,16 +445,18 @@ public class Typing extends TypeConstraint {
     AbstractType sComponentType = S.getComponentType();
     AbstractType tComponentType = T.getComponentType();
     if (sComponentType != null && tComponentType != null) {
-      return new Typing(sComponentType, tComponentType, Kind.TYPE_EQUALITY);
+      return new Typing(this, sComponentType, tComponentType, Kind.TYPE_EQUALITY);
     }
 
     if (T.getTypeKind() == TypeKind.WILDCARD && S.getTypeKind() == TypeKind.WILDCARD) {
       if (T.isUnboundWildcard() && S.isUnboundWildcard()) {
         return ConstraintSet.TRUE;
       } else if (!S.isLowerBoundedWildcard() && !T.isLowerBoundedWildcard()) {
-        return new Typing(S.getWildcardUpperBound(), T.getWildcardUpperBound(), Kind.TYPE_EQUALITY);
+        return new Typing(
+            this, S.getWildcardUpperBound(), T.getWildcardUpperBound(), Kind.TYPE_EQUALITY);
       } else if (T.isLowerBoundedWildcard() && S.isLowerBoundedWildcard()) {
-        return new Typing(T.getWildcardLowerBound(), S.getWildcardLowerBound(), Kind.TYPE_EQUALITY);
+        return new Typing(
+            this, T.getWildcardLowerBound(), S.getWildcardLowerBound(), Kind.TYPE_EQUALITY);
       }
     }
     return ConstraintSet.FALSE;
