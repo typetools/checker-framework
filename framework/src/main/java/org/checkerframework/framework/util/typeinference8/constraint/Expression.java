@@ -45,8 +45,8 @@ public class Expression extends TypeConstraint {
    */
   public Expression(Constraint parent, ExpressionTree expressionTree, AbstractType t) {
     super(parent, t);
+    assert expressionTree != null;
     this.expression = expressionTree;
-    assert expression != null;
   }
 
   /**

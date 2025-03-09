@@ -50,7 +50,7 @@ public class CaptureBound {
    */
   private final List<CaptureVariable> captureVariables = new ArrayList<>();
 
-  /** Method invocation where is variable is from. */
+  /** Method invocation where variable is from. */
   private final ExpressionTree invocation;
 
   /**
