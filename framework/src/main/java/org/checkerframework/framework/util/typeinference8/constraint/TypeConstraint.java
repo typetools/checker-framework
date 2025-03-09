@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import javax.lang.model.type.TypeKind;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
 import org.checkerframework.framework.util.typeinference8.types.UseOfVariable;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
@@ -27,14 +28,65 @@ public abstract class TypeConstraint implements Constraint {
   /** T, the type on the right hand side of the constraint; may contain inference variables. */
   protected AbstractType T;
 
+  /** The constraint whose reduction created this constraint. */
+  public @Nullable Constraint parent;
+
+  /** A string that describes where this constraint is from. */
+  public @Nullable String source;
+
   /**
    * Creates a type constraint
    *
+   * @param source a string describing where this constraint came from
    * @param T the type of the right hand side of the constraint
    */
-  protected TypeConstraint(AbstractType T) {
+  protected TypeConstraint(String source, AbstractType T) {
     assert T != null : "Can't create a constraint with a null type.";
     this.T = T;
+    this.parent = null;
+    this.source = source;
+  }
+
+  /**
+   * Creates a type constraint
+   *
+   * @param parent the constraint whose reduction created this constraint
+   * @param T the type of the right hand side of the constraint
+   */
+  protected TypeConstraint(Constraint parent, AbstractType T) {
+    assert T != null : "Can't create a constraint with a null type.";
+    this.T = T;
+    this.parent = parent;
+    this.source = null;
+  }
+
+  /**
+   * Returns a string explain where this constraint came from.
+   *
+   * @return a string explain where this constraint came from
+   */
+  public String constraintHistory() {
+    StringBuilder constraintStack = new StringBuilder(this.toString()).append("\n");
+
+    Constraint parent = this.parent;
+    String source = this.source;
+    while (parent != null) {
+      if (source != null) {
+        constraintStack.append(source).append(": ");
+      }
+      constraintStack.append(parent).append("\n");
+
+      if (parent instanceof TypeConstraint) {
+        source = ((TypeConstraint) parent).source;
+        parent = ((TypeConstraint) parent).parent;
+      } else {
+        parent = null;
+      }
+    }
+    if (source != null) {
+      constraintStack.append("From: ").append(source);
+    }
+    return constraintStack.toString();
   }
 
   /**
@@ -113,7 +165,7 @@ public abstract class TypeConstraint implements Constraint {
             return inputs;
           }
           for (ExpressionTree e : TreeUtils.getReturnedExpressions(lambdaTree)) {
-            TypeConstraint c = new Expression(e, R);
+            TypeConstraint c = new Expression("Returned expression", e, R);
             inputs.addAll(c.getInputVariables());
           }
           return inputs;
