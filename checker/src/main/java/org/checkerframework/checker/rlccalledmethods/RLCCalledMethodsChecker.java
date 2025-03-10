@@ -22,6 +22,9 @@ public class RLCCalledMethodsChecker extends CalledMethodsChecker {
   /** Creates a RLCCalledMethodsChecker. */
   public RLCCalledMethodsChecker() {}
 
+  /** The parent resource leak checker */
+  private ResourceLeakChecker rlc;
+
   @Override
   protected BaseTypeVisitor<?> createSourceVisitor() {
     return new RLCCalledMethodsVisitor(this);
@@ -35,7 +38,7 @@ public class RLCCalledMethodsChecker extends CalledMethodsChecker {
    * @return the set of exceptions to ignore
    */
   public SetOfTypes getIgnoredExceptions() {
-    return ResourceLeakUtils.getResourceLeakChecker(this).getIgnoredExceptions();
+    return getResourceLeakChecker().getIgnoredExceptions();
   }
 
   @Override
@@ -56,12 +59,11 @@ public class RLCCalledMethodsChecker extends CalledMethodsChecker {
     return checkers;
   }
 
-  // /**
-  //  * Returns the ResourceLeakChecker.
-  //  *
-  //  * @return the ResourceLeakChecker
-  //  */
-  // public ResourceLeakChecker getResourceLeakChecker() {
-  //   return (ResourceLeakChecker) getParentChecker().getParentChecker();
-  // }
+  private ResourceLeakChecker getResourceLeakChecker() {
+    if (this.rlc == null) {
+      this.rlc = ResourceLeakUtils.getResourceLeakChecker(this);
+    }
+
+    return this.rlc;
+  }
 }
