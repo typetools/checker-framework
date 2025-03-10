@@ -16,7 +16,6 @@ import org.checkerframework.checker.mustcall.MustCallChecker;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsChecker;
-import org.checkerframework.framework.qual.StubFiles;
 import org.checkerframework.framework.source.AggregateChecker;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.source.SupportedOptions;
@@ -46,7 +45,6 @@ import org.checkerframework.framework.source.SupportedOptions;
   ResourceLeakChecker.ENABLE_WPI_FOR_RLC,
   ResourceLeakChecker.ENABLE_RETURNS_RECEIVER
 })
-@StubFiles("IOUtils.astub")
 public class ResourceLeakChecker extends AggregateChecker {
 
   /** Creates a ResourceLeakChecker. */
@@ -186,15 +184,14 @@ public class ResourceLeakChecker extends AggregateChecker {
     super.typeProcessingOver();
   }
 
-  /**
-   * Disable the Returns Receiver Checker unless it has been explicitly enabled with the {@link
-   * #ENABLE_RETURNS_RECEIVER} option.
-   */
-  protected boolean isReturnsReceiverDisabled() {
-    RLCCalledMethodsChecker rlccmc =
-        (RLCCalledMethodsChecker) ResourceLeakUtils.getChecker(RLCCalledMethodsChecker.class, this);
-    return !hasOption(ENABLE_RETURNS_RECEIVER) || rlccmc.isReturnsReceiverDisabled();
-  }
+  // /**
+  //  * Disable the Returns Receiver Checker unless it has been explicitly enabled with the {@link
+  //  * #ENABLE_RETURNS_RECEIVER} option.
+  //  */
+  // protected boolean isReturnsReceiverDisabled() {
+  //   RLCCalledMethodsChecker rlccmc = ResourceLeakUtils.getRLCCalledMethodsChecker(this);
+  //   return !hasOption(ENABLE_RETURNS_RECEIVER) || rlccmc.isReturnsReceiverDisabled();
+  // }
 
   /**
    * Get the set of exceptions that should be ignored. This set comes from the {@link
@@ -306,12 +303,4 @@ public class ResourceLeakChecker extends AggregateChecker {
     }
     return types.getDeclaredType(elem);
   }
-
-  // @Override
-  // public NavigableSet<String> getSuppressWarningsPrefixes() {
-  //   NavigableSet<String> result = super.getSuppressWarningsPrefixes();
-  //   result.add("builder");
-  //   return result;
-  // }
-
 }
