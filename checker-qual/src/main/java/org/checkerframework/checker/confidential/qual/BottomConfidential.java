@@ -1,11 +1,5 @@
 package org.checkerframework.checker.confidential.qual;
 
-/**
- * The bottom type in the Confidential type system. Programmers should rarely write this type.
- *
- * @checker_framework.manual #confidential-checker Confidential Checker
- * @checker_framework.manual #bottom-type the bottom type
- */
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -17,6 +11,12 @@ import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TargetLocations;
 import org.checkerframework.framework.qual.TypeUseLocation;
 
+/**
+ * The bottom type in the Confidential type system. Programmers should rarely write this type.
+ *
+ * @checker_framework.manual #confidential-checker Confidential Checker
+ * @checker_framework.manual #bottom-type the bottom type
+ */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})

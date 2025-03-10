@@ -30,4 +30,7 @@ import org.checkerframework.framework.source.SuppressWarningsPrefix;
   "Claims.astub"
 })
 @SuppressWarningsPrefix({"confidential"})
-public class ConfidentialChecker extends BaseTypeChecker {}
+public class ConfidentialChecker extends BaseTypeChecker {
+  /** Creates a ConfidentialChecker. */
+  public ConfidentialChecker() {}
+}
