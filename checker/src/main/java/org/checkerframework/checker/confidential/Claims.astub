@@ -1,4 +1,4 @@
-import org.checkerframework.checker.confidential.qual.*;
+import org.checkerframework.checker.confidential.qual.PolyConfidential;
 
 import java.util.Date;
 import java.util.Map;
