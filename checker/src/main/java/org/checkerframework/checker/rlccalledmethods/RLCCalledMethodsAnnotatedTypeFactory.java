@@ -30,6 +30,7 @@ import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer;
 import org.checkerframework.checker.resourceleak.MustCallInference;
+import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
 import org.checkerframework.checker.resourceleak.ResourceLeakUtils;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
@@ -54,6 +55,9 @@ import org.checkerframework.javacutil.TypeSystemError;
  */
 public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotatedTypeFactory
     implements CreatesMustCallForElementSupplier {
+
+  /** The rlc parent checker. */
+  private ResourceLeakChecker rlc;
 
   /** The MustCall.value element/field. */
   private final ExecutableElement mustCallValueElement =
@@ -105,8 +109,11 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
    */
   public RLCCalledMethodsAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
-    this.noResourceAliases = checker.hasOption(MustCallChecker.NO_RESOURCE_ALIASES);
-    this.postInit();
+    this.rlc = ResourceLeakUtils.getResourceLeakChecker(checker);
+    this.noResourceAliases = rlc.hasOption(MustCallChecker.NO_RESOURCE_ALIASES);
+    if (this.getClass() == RLCCalledMethodsAnnotatedTypeFactory.class) {
+      this.postInit();
+    }
   }
 
   @Override
@@ -127,10 +134,9 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
 
   @Override
   public void postAnalyze(ControlFlowGraph cfg) {
+    rlc.setRoot(root);
     MustCallConsistencyAnalyzer mustCallConsistencyAnalyzer =
-        new MustCallConsistencyAnalyzer(
-            ResourceLeakUtils.getResourceLeakChecker(this),
-            (RLCCalledMethodsAnalysis) this.analysis);
+        new MustCallConsistencyAnalyzer(rlc, (RLCCalledMethodsAnalysis) this.analysis);
     mustCallConsistencyAnalyzer.analyze(cfg);
 
     // Inferring owning annotations for @Owning fields/parameters, @EnsuresCalledMethods for
@@ -378,7 +384,7 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
    */
   public boolean canCreateObligations() {
     // Precomputing this call to `hasOption` causes a NullPointerException, so leave it as is.
-    return !checker.hasOption(MustCallChecker.NO_CREATES_MUSTCALLFOR);
+    return !rlc.hasOption(MustCallChecker.NO_CREATES_MUSTCALLFOR);
   }
 
   @Override
