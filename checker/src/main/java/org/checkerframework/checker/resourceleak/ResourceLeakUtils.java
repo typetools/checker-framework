@@ -114,7 +114,7 @@ public class ResourceLeakUtils {
       throw new IllegalArgumentException("Argument referenceChecker cannot be null");
     }
 
-    String className = referenceChecker.getClass().getCanonicalName();
+    String className = referenceChecker.getClass().getSimpleName();
     if ("ResourceLeakChecker".equals(className)) {
       return (ResourceLeakChecker) referenceChecker;
     } else if ("RLCCalledMethodsChecker".equals(className)
@@ -143,7 +143,7 @@ public class ResourceLeakUtils {
       throw new IllegalArgumentException("Argument referenceChecker cannot be null");
     }
 
-    String className = referenceChecker.getClass().getCanonicalName();
+    String className = referenceChecker.getClass().getSimpleName();
     if ("RLCCalledMethodsChecker".equals(className)) {
       return (RLCCalledMethodsChecker) referenceChecker;
     } else if ("ResourceLeakChecker".equals(className)) {
