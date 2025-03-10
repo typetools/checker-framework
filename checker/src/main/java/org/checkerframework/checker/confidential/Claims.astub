@@ -1,0 +1,36 @@
+import org.checkerframework.checker.confidential.qual.*;
+
+import java.util.Date;
+import java.util.Map;
+
+public interface Claims extends Map<@PolyConfidential String, @PolyConfidential Object>, ClaimsMutator<Claims> {
+    String getIssuer();
+
+    Claims setIssuer(String var1);
+
+    String getSubject(@PolyConfidential Claims this);
+
+    Claims setSubject(String var1);
+
+    String getAudience(@PolyConfidential Claims this);
+
+    Claims setAudience(String var1);
+
+    Date getExpiration(@PolyConfidential Claims this);
+
+    Claims setExpiration(Date var1);
+
+    Date getNotBefore(@PolyConfidential Claims this);
+
+    Claims setNotBefore(Date var1);
+
+    Date getIssuedAt(@PolyConfidential Claims this);
+
+    Claims setIssuedAt(Date var1);
+
+    String getId(@PolyConfidential Claims this);
+
+    Claims setId(String var1);
+
+    <T> T get(String var1, Class<T> var2);
+}

@@ -26,7 +26,8 @@ import org.checkerframework.framework.source.SuppressWarningsPrefix;
   "UserDetails.astub",
   "ExpiringMap.astub",
   "JwtParser.astub",
-  "Authentication.astub"
+  "Authentication.astub",
+  "Claims.astub"
 })
 @SuppressWarningsPrefix({"confidential"})
 public class ConfidentialChecker extends BaseTypeChecker {}
