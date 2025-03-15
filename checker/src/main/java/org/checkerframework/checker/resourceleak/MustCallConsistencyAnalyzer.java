@@ -193,6 +193,10 @@ class MustCallConsistencyAnalyzer {
     /** The method exits by throwing an exception. */
     EXCEPTIONAL_EXIT;
 
+    /** An immutable set containing only {@link #NORMAL_RETURN}. */
+    public static final Set<MethodExitKind> ONLY_NORMAL_RETURN =
+        Collections.singleton(NORMAL_RETURN);
+
     /** An immutable set containing all possible ways for a method to exit. */
     public static final Set<MethodExitKind> ALL =
         ImmutableSet.copyOf(EnumSet.allOf(MethodExitKind.class));
@@ -1061,7 +1065,11 @@ class MustCallConsistencyAnalyzer {
       Node returnExpr = node.getResult();
       returnExpr = getTempVarOrNode(returnExpr);
       if (returnExpr instanceof LocalVariableNode) {
-        removeObligationsContainingVar(obligations, (LocalVariableNode) returnExpr);
+        removeObligationsContainingVar(
+            obligations,
+            (LocalVariableNode) returnExpr,
+            MustCallAliasHandling.NO_SPECIAL_HANDLING,
+            MethodExitKind.ONLY_NORMAL_RETURN);
       }
     }
   }
