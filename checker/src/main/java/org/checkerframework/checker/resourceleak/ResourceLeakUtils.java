@@ -16,6 +16,9 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
  */
 public class ResourceLeakUtils {
 
+  /** Shouldn't be instantiated, pure utility class. */
+  public ResourceLeakUtils() {}
+
   /** List of checker names associated with the Resource Leak Checker. */
   public static List<String> rlcCheckers =
       new ArrayList<>(
