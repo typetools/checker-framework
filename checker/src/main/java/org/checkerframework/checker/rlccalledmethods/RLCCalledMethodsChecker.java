@@ -59,6 +59,12 @@ public class RLCCalledMethodsChecker extends CalledMethodsChecker {
     return checkers;
   }
 
+  /**
+   * Finds the {@link ResourceLeakChecker} in the checker hierarchy, caches it in a field, and
+   * returns it.
+   *
+   * @return the {@link ResourceLeakChecker} in the checker hierarchy
+   */
   private ResourceLeakChecker getResourceLeakChecker() {
     if (this.rlc == null) {
       this.rlc = ResourceLeakUtils.getResourceLeakChecker(this);
