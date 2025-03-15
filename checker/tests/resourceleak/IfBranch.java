@@ -8,8 +8,6 @@ abstract class IfBranch {
 
   public abstract boolean choice();
 
-  public abstract @Owning Closeable alloc() throws IOException;
-
   // False positive.  The then-branch moves r1 to result, and the else-branch closes r1.
   // After the if-else block we should be left only with an obligation to close result,
   // which should be satisfied by `retun result`.
