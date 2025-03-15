@@ -10,14 +10,23 @@ abstract class IfBranch {
 
   public abstract @Owning Closeable alloc() throws IOException;
 
-  // False positive that confuses the consistency analyzer:
-  //  - The then-branch makes r1 and result resource aliases.
-  //  - The else-branch closes r1.
-  //  - When control flow merges, we end up with
-  //    + An obligation to close r1 (from the then-branch)
-  //    + r1 has no called methods (from the else-branch)
-  //    + r1 and result are not necessarily aliases
-  //    resulting in a spurious violation on return.
+  // False positive.  The then-branch moves r1 to result, and the else-branch closes r1.
+  // After the if-else block we should be left only with an obligation to close result,
+  // which should be satisfied by `retun result`.
+  //
+  // Obligation tracking by the MustCallConsistencyAnalyzer is indeed path sensitive, in that it
+  // does not lose information at control-flow merges; it just tracks the obligation(s) from each
+  // incoming path separately.  But, local inference of @CalledMethods types in the Called Methods
+  // Checker is path insensitive; the @CalledMethods inference computes a least-upper bound at
+  // merges using set intersection.  At the program point before the return statement, we get that
+  // r1 has type @CalledMethods({}) since no method is called on r1 in the preceding then branch.
+  // So, despite tracking the obligation from the else branch separately, we lose the information
+  // that close was called on that path and report a false positive.
+  //
+  // One possible fix would be to stop relying on the local type inference from the Called Methods
+  // Checker and instead track called methods for each alias alongside obligations in
+  // MustCallConsistencyAnalyzer.
+  //
   // :: error: (required.method.not.called)
   public @Owning @Nullable Closeable test1(@Owning Closeable r1) throws IOException {
     Closeable result;
