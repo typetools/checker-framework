@@ -444,7 +444,7 @@ public class AnnotationFileUtil {
   @SuppressWarnings({
     "JdkObsolete", // JarFile.entries()
     "nullness:argument", // inference failed in Arrays.sort
-    "builder:required.method.not.called" // ownership passed to list of
+    "resourceleak:required.method.not.called" // ownership passed to list of
     // JarEntryAnnotationFileResource, where `file` appears in every element of the list
   })
   private static void addAnnotationFilesToList(
