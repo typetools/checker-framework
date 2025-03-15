@@ -12,6 +12,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.calledmethods.CalledMethodsAnnotatedTypeFactory;
 import org.checkerframework.checker.calledmethods.EnsuresCalledMethodOnExceptionContract;
 import org.checkerframework.checker.calledmethods.qual.CalledMethods;
@@ -527,5 +528,18 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
             Collections.emptyList());
     String methodName = elt.getSimpleName().toString();
     return mcValues.contains(methodName);
+  }
+
+  /**
+   * Returns true if the checker should ignore exceptional control flow due to the given exception
+   * type.
+   *
+   * @param exceptionType exception type
+   * @return {@code true} if {@code exceptionType} is a member of {@link
+   *     RLCCalledMethodsAnalysis#ignoredExceptionTypes}, {@code false} otherwise
+   */
+  @Override
+  public boolean isIgnoredExceptionType(TypeMirror exceptionType) {
+    return ((RLCCalledMethodsAnalysis) analysis).isIgnoredExceptionType(exceptionType);
   }
 }

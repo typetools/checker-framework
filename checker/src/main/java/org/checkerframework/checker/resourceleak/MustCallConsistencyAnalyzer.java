@@ -1860,7 +1860,7 @@ public class MustCallConsistencyAnalyzer {
       Map<TypeMirror, Set<Block>> exceptionalSuccessors = excBlock.getExceptionalSuccessors();
       for (Map.Entry<TypeMirror, Set<Block>> entry : exceptionalSuccessors.entrySet()) {
         TypeMirror exceptionType = entry.getKey();
-        if (!analysis.isIgnoredExceptionType(exceptionType)) {
+        if (!cmAtf.isIgnoredExceptionType(exceptionType)) {
           for (Block exSucc : entry.getValue()) {
             result.add(IPair.of(exSucc, exceptionType));
           }
