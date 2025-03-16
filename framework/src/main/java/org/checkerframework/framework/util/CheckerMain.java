@@ -581,8 +581,7 @@ public class CheckerMain {
       String errorMessage = null;
 
       try {
-        @SuppressWarnings(
-            "resourceleak:required.method.not.called") // don't want to close System.out
+        @SuppressWarnings("builder:required.method.not.called") // don't want to close System.out
         PrintWriter writer =
             (outputFilename.equals("-")
                 ? new PrintWriter(
