@@ -549,11 +549,11 @@ public class MustCallConsistencyAnalyzer {
    * #analyze(ControlFlowGraph)}.
    *
    * @param rlc the resource leak checker
-   * @param analysis the analysis from the type factory. Usually this would have protected access,
-   *     so this constructor cannot get it directly.
    */
-  public MustCallConsistencyAnalyzer(ResourceLeakChecker rlc, RLCCalledMethodsAnalysis analysis) {
-    this.cmAtf = (RLCCalledMethodsAnnotatedTypeFactory) analysis.getTypeFactory();
+  public MustCallConsistencyAnalyzer(ResourceLeakChecker rlc) {
+    this.cmAtf =
+        (RLCCalledMethodsAnnotatedTypeFactory)
+            ResourceLeakUtils.getRLCCalledMethodsChecker(rlc).getTypeFactory();
     this.checker = rlc;
     this.permitStaticOwning = checker.hasOption("permitStaticOwning");
     this.permitInitializationLeak = checker.hasOption("permitInitializationLeak");
