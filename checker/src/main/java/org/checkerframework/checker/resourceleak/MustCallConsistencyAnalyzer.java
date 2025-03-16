@@ -177,9 +177,6 @@ public class MustCallConsistencyAnalyzer {
   /** The Resource Leak Checker, used to issue errors. */
   private final ResourceLeakChecker checker;
 
-  /** The analysis from the Resource Leak Checker, used to get input stores based on CFG blocks. */
-  private final RLCCalledMethodsAnalysis analysis;
-
   /** True if -AnoLightweightOwnership was passed on the command line. */
   private final boolean noLightweightOwnership;
 
@@ -558,7 +555,6 @@ public class MustCallConsistencyAnalyzer {
   public MustCallConsistencyAnalyzer(ResourceLeakChecker rlc, RLCCalledMethodsAnalysis analysis) {
     this.cmAtf = (RLCCalledMethodsAnnotatedTypeFactory) analysis.getTypeFactory();
     this.checker = rlc;
-    this.analysis = analysis;
     this.permitStaticOwning = checker.hasOption("permitStaticOwning");
     this.permitInitializationLeak = checker.hasOption("permitInitializationLeak");
     this.noLightweightOwnership = checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP);
@@ -1992,7 +1988,7 @@ public class MustCallConsistencyAnalyzer {
                 + " with exception type "
                 + exceptionType;
     // Computed outside the Obligation loop for efficiency.
-    AccumulationStore regularStoreOfSuccessor = analysis.getInput(successor).getRegularStore();
+    AccumulationStore regularStoreOfSuccessor = cmAtf.getInput(successor).getRegularStore();
     for (Obligation obligation : obligations) {
       // This boolean is true if there is no evidence that the Obligation does not go out
       // of scope - that is, if there is definitely a resource alias that is in scope in
@@ -2159,14 +2155,14 @@ public class MustCallConsistencyAnalyzer {
       case CONDITIONAL_BLOCK:
         ConditionalBlock condBlock = (ConditionalBlock) currentBlock;
         if (condBlock.getThenSuccessor().equals(successor)) {
-          return analysis.getInput(currentBlock).getThenStore();
+          return cmAtf.getInput(currentBlock).getThenStore();
         } else if (condBlock.getElseSuccessor().equals(successor)) {
-          return analysis.getInput(currentBlock).getElseStore();
+          return cmAtf.getInput(currentBlock).getElseStore();
         } else {
           throw new BugInCF("successor not found");
         }
       case SPECIAL_BLOCK:
-        return analysis.getInput(successor).getRegularStore();
+        return cmAtf.getInput(successor).getRegularStore();
       default:
         throw new BugInCF("unexpected block type " + currentBlock.getType());
     }
