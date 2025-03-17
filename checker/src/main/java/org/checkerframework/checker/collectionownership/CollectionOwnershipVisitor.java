@@ -9,7 +9,7 @@ import org.checkerframework.common.basetype.BaseTypeVisitor;
  * the top type as the default type.
  */
 public class CollectionOwnershipVisitor
-    extends BaseTypeVisitor<ResourceCollectionAnnotatedTypeFactory> {
+    extends BaseTypeVisitor<CollectionOwnershipAnnotatedTypeFactory> {
 
   /**
    * Creates a new CollectionOwnershipVisitor.
