@@ -1,14 +1,14 @@
 package org.checkerframework.checker.collectionownership;
 
 import javax.lang.model.element.AnnotationMirror;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
+import org.checkerframework.checker.resourceleak.ResourceLeakUtils;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
-import org.checkerframework.dataflow.cfg.node.SwitchExpressionNode;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
@@ -26,6 +26,9 @@ public class CollectionOwnershipTransfer extends CFTransfer {
   /** The type factory. */
   private final CollectionOwnershipAnnotatedTypeFactory atypeFactory;
 
+  /** The MustCall type factory to manage temp vars. */
+  private final MustCallAnnotatedTypeFactory mcAtf;
+
   /**
    * Create a CollectionOwnershipTransfer.
    *
@@ -33,7 +36,8 @@ public class CollectionOwnershipTransfer extends CFTransfer {
    */
   public CollectionOwnershipTransfer(CFAnalysis analysis) {
     super(analysis);
-    atypeFactory = (CollectionOwnershipTypeFactory) analysis.getTypeFactory();
+    atypeFactory = (CollectionOwnershipAnnotatedTypeFactory) analysis.getTypeFactory();
+    mcAtf = ResourceLeakUtils.getMustCallAnnotatedTypeFactory(atypeFactory);
   }
 
   @Override
@@ -92,17 +96,19 @@ public class CollectionOwnershipTransfer extends CFTransfer {
     return result;
   }
 
-  @Override
-  public TransferResult<CFValue, CFStore> visitSwitchExpressionNode(
-      SwitchExpressionNode node, TransferInput<CFValue, CFStore> input) {
-    TransferResult<CFValue, CFStore> result = super.visitSwitchExpressionNode(node, input);
-    if (!TypesUtils.isPrimitiveOrBoxed(node.getType())) {
-      // Add the synthetic variable created during CFG construction to the temporary
-      // variable map (rather than creating a redundant temp var)
-      atypeFactory.tempVars.put(node.getTree(), node.getSwitchExpressionVar());
-    }
-    return result;
-  }
+  // TODO sck: I think that I can use the temp var management from MC checker and don't
+  // need to replicate that in the COatf. If that turns out to not work, uncomment this
+  // @Override
+  // public TransferResult<CFValue, CFStore> visitSwitchExpressionNode(
+  //     SwitchExpressionNode node, TransferInput<CFValue, CFStore> input) {
+  //   TransferResult<CFValue, CFStore> result = super.visitSwitchExpressionNode(node, input);
+  //   if (!TypesUtils.isPrimitiveOrBoxed(node.getType())) {
+  //     // Add the synthetic variable created during CFG construction to the temporary
+  //     // variable map (rather than creating a redundant temp var)
+  //     atypeFactory.tempVars.put(node.getTree(), node.getSwitchExpressionVar());
+  //   }
+  //   return result;
+  // }
 
   /**
    * This method either creates or looks up the temp var t for node, and then updates the store to
@@ -114,27 +120,25 @@ public class CollectionOwnershipTransfer extends CFTransfer {
   public void updateStoreWithTempVar(TransferResult<CFValue, CFStore> result, Node node) {
     // Must-call obligations on primitives are not supported.
     if (!TypesUtils.isPrimitiveOrBoxed(node.getType())) {
-      LocalVariableNode temp = getTempVar(node);
+      LocalVariableNode temp = mcAtf.getTempVar(node);
       if (temp != null) {
+        // atypeFactory.addTempVar(temp, node.getTree());
         JavaExpression localExp = JavaExpression.fromNode(temp);
         AnnotationMirror anm =
             atypeFactory
                 .getAnnotatedType(node.getTree())
                 .getPrimaryAnnotationInHierarchy(atypeFactory.TOP);
         insertIntoStores(result, localExp, anm == null ? atypeFactory.TOP : anm);
+        // if (anm == null) {
+        //   anm = atypeFactory.TOP;
+        // }
+        // if (result.containsTwoStores()) {
+        //   result.getThenStore().insertValue(localExp, anm);
+        //   result.getElseStore().insertValue(localExp, anm);
+        // } else {
+        //   result.getRegularStore().insertValue(localExp, anm);
+        // }
       }
     }
-  }
-
-  /**
-   * Returns the temporary variable associated with node if it exists, or else null.
-   *
-   * @param node a node, which must be an expression (not a statement)
-   * @return a temporary variable node representing {@code node} that can be placed into a store or
-   *     null if it doesn't exist
-   */
-  private @Nullable LocalVariableNode getTempVar(Node node) {
-    // TODO sck: might have to query the mustcallAtf instead
-    return atypeFactory.tempVars.get(node.getTree());
   }
 }
