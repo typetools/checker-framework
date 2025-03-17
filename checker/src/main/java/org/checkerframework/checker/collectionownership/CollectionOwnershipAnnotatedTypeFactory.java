@@ -4,7 +4,9 @@ import com.sun.source.tree.CompilationUnitTree;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.util.Elements;
@@ -162,7 +164,9 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
   //   }
 
   /** CollectionOwnership qualifier hierarchy. */
-  private static class CollectionOwnershipQualifierHierarchy extends NoElementQualifierHierarchy {
+  protected class CollectionOwnershipQualifierHierarchy extends NoElementQualifierHierarchy {
+
+    private Map<Class<?>, Integer> hierarchyLevel = new HashMap<>();
 
     /**
      * Creates a NoElementQualifierHierarchy from the given classes.
@@ -176,6 +180,29 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
         Elements elements,
         GenericAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory) {
       super(qualifierClasses, elements, atypeFactory);
+      initializeHierarchyLevels();
+    }
+
+    private void initializeHierarchyLevels() {
+      hierarchyLevel.put(CollectionOwnershipAnnotatedTypeFactory.this.TOP.getClass(), 3);
+      hierarchyLevel.put(
+          CollectionOwnershipAnnotatedTypeFactory.this.OWNINGCOLLECTION.getClass(), 2);
+      hierarchyLevel.put(
+          CollectionOwnershipAnnotatedTypeFactory.this.OWNINGCOLLECTIONWITHOUTOBLIGATION.getClass(),
+          1);
+      hierarchyLevel.put(CollectionOwnershipAnnotatedTypeFactory.this.BOTTOM.getClass(), 0);
+    }
+
+    private boolean isCollectionOwnershipQualifier(AnnotationMirror anno) {
+      return hierarchyLevel.containsKey(anno.getClass());
+    }
+
+    @Override
+    public boolean isSubtypeQualifiers(AnnotationMirror subAnno, AnnotationMirror superAnno) {
+      if (isCollectionOwnershipQualifier(subAnno) && isCollectionOwnershipQualifier(superAnno)) {
+        return hierarchyLevel.get(subAnno.getClass()) <= hierarchyLevel.get(superAnno.getClass());
+      }
+      return super.isSubtypeQualifiers(subAnno, superAnno);
     }
   }
 }
