@@ -15,8 +15,15 @@ import org.checkerframework.checker.collectionownership.qual.OwningCollection;
 import org.checkerframework.checker.collectionownership.qual.OwningCollectionBottom;
 import org.checkerframework.checker.collectionownership.qual.OwningCollectionWithoutObligation;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer;
+import org.checkerframework.checker.resourceleak.MustCallInference;
+import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
+import org.checkerframework.checker.resourceleak.ResourceLeakUtils;
+import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.dataflow.cfg.ControlFlowGraph;
+import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
@@ -144,6 +151,28 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
       }
       return super.isSubtypeQualifiers(subAnno, superAnno);
     }
+  }
+
+  @Override
+  public void postAnalyze(ControlFlowGraph cfg) {
+    ResourceLeakChecker rlc = ResourceLeakUtils.getResourceLeakChecker(this);
+    RLCCalledMethodsAnnotatedTypeFactory cmAtf =
+        (RLCCalledMethodsAnnotatedTypeFactory)
+            ResourceLeakUtils.getRLCCalledMethodsChecker(this).getTypeFactory();
+    rlc.setRoot(root);
+    MustCallConsistencyAnalyzer mustCallConsistencyAnalyzer = new MustCallConsistencyAnalyzer(rlc);
+    mustCallConsistencyAnalyzer.analyze(cfg);
+
+    // Inferring owning annotations for @Owning fields/parameters, @EnsuresCalledMethods for
+    // finalizer methods and @InheritableMustCall annotations for the class declarations.
+    if (cmAtf.getWholeProgramInference() != null) {
+      if (cfg.getUnderlyingAST().getKind() == UnderlyingAST.Kind.METHOD) {
+        MustCallInference.runMustCallInference(cmAtf, cfg, mustCallConsistencyAnalyzer);
+      }
+    }
+
+    super.postAnalyze(cfg);
+    // tempVarToTree.clear();
   }
 }
 
