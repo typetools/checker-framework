@@ -76,21 +76,6 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
             OwningCollectionBottom.class));
   }
 
-  // @Override
-  // protected TreeAnnotator createTreeAnnotator() {
-  //   return new ListTreeAnnotator(super.createTreeAnnotator(), new MustCallTreeAnnotator(this));
-  // }
-
-  // @Override
-  // protected TypeAnnotator createTypeAnnotator() {
-  //   return new ListTypeAnnotator(super.createTypeAnnotator(), new MustCallTypeAnnotator(this));
-  // }
-
-  // @Override
-  // protected QualifierPolymorphism createQualifierPolymorphism() {
-  //   return new MustCallQualifierPolymorphism(processingEnv, this);
-  // }
-
   @Override
   protected QualifierHierarchy createQualifierHierarchy() {
     return new CollectionOwnershipQualifierHierarchy(
@@ -112,6 +97,70 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
   public CFStore getStoreForBlock(boolean afterFirstStore, Block first, Block succ) {
     return afterFirstStore ? flowResult.getStoreAfter(first) : flowResult.getStoreBefore(succ);
   }
+
+  /** CollectionOwnership qualifier hierarchy. */
+  protected class CollectionOwnershipQualifierHierarchy extends NoElementQualifierHierarchy {
+
+    /** Maps Collection Ownership annotations to their hierarchy level. */
+    private Map<Class<?>, Integer> hierarchyLevel = new HashMap<>();
+
+    /**
+     * Creates a NoElementQualifierHierarchy from the given classes.
+     *
+     * @param qualifierClasses classes of annotations that are the qualifiers for this hierarchy
+     * @param elements element utils
+     * @param atypeFactory the associated type factory
+     */
+    public CollectionOwnershipQualifierHierarchy(
+        Collection<Class<? extends Annotation>> qualifierClasses,
+        Elements elements,
+        GenericAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory) {
+      super(qualifierClasses, elements, atypeFactory);
+      hierarchyLevel.put(CollectionOwnershipAnnotatedTypeFactory.this.TOP.getClass(), 3);
+      hierarchyLevel.put(
+          CollectionOwnershipAnnotatedTypeFactory.this.OWNINGCOLLECTION.getClass(), 2);
+      hierarchyLevel.put(
+          CollectionOwnershipAnnotatedTypeFactory.this.OWNINGCOLLECTIONWITHOUTOBLIGATION.getClass(),
+          1);
+      hierarchyLevel.put(CollectionOwnershipAnnotatedTypeFactory.this.BOTTOM.getClass(), 0);
+    }
+
+    /**
+     * Returns whether the given {@code AnnotationMirror} is part of the Collection Ownership
+     * qualifier hierarchy.
+     *
+     * @param anno the annotationmirror
+     * @return whether the given {@code AnnotationMirror} is part of the Collection Ownership
+     *     qualifier hierarchy.
+     */
+    private boolean isCollectionOwnershipQualifier(AnnotationMirror anno) {
+      return hierarchyLevel.containsKey(anno.getClass());
+    }
+
+    @Override
+    public boolean isSubtypeQualifiers(AnnotationMirror subAnno, AnnotationMirror superAnno) {
+      if (isCollectionOwnershipQualifier(subAnno) && isCollectionOwnershipQualifier(superAnno)) {
+        return hierarchyLevel.get(subAnno.getClass()) <= hierarchyLevel.get(superAnno.getClass());
+      }
+      return super.isSubtypeQualifiers(subAnno, superAnno);
+    }
+  }
+}
+
+  // @Override
+  // protected TreeAnnotator createTreeAnnotator() {
+  //   return new ListTreeAnnotator(super.createTreeAnnotator(), new MustCallTreeAnnotator(this));
+  // }
+
+  // @Override
+  // protected TypeAnnotator createTypeAnnotator() {
+  //   return new ListTypeAnnotator(super.createTypeAnnotator(), new MustCallTypeAnnotator(this));
+  // }
+
+  // @Override
+  // protected QualifierPolymorphism createQualifierPolymorphism() {
+  //   return new MustCallQualifierPolymorphism(processingEnv, this);
+  // }
 
   //   /**
   //    * The TreeAnnotator for the MustCall type system.
@@ -162,47 +211,3 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
   //       return super.visitIdentifier(tree, type);
   //     }
   //   }
-
-  /** CollectionOwnership qualifier hierarchy. */
-  protected class CollectionOwnershipQualifierHierarchy extends NoElementQualifierHierarchy {
-
-    private Map<Class<?>, Integer> hierarchyLevel = new HashMap<>();
-
-    /**
-     * Creates a NoElementQualifierHierarchy from the given classes.
-     *
-     * @param qualifierClasses classes of annotations that are the qualifiers for this hierarchy
-     * @param elements element utils
-     * @param atypeFactory the associated type factory
-     */
-    public CollectionOwnershipQualifierHierarchy(
-        Collection<Class<? extends Annotation>> qualifierClasses,
-        Elements elements,
-        GenericAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory) {
-      super(qualifierClasses, elements, atypeFactory);
-      initializeHierarchyLevels();
-    }
-
-    private void initializeHierarchyLevels() {
-      hierarchyLevel.put(CollectionOwnershipAnnotatedTypeFactory.this.TOP.getClass(), 3);
-      hierarchyLevel.put(
-          CollectionOwnershipAnnotatedTypeFactory.this.OWNINGCOLLECTION.getClass(), 2);
-      hierarchyLevel.put(
-          CollectionOwnershipAnnotatedTypeFactory.this.OWNINGCOLLECTIONWITHOUTOBLIGATION.getClass(),
-          1);
-      hierarchyLevel.put(CollectionOwnershipAnnotatedTypeFactory.this.BOTTOM.getClass(), 0);
-    }
-
-    private boolean isCollectionOwnershipQualifier(AnnotationMirror anno) {
-      return hierarchyLevel.containsKey(anno.getClass());
-    }
-
-    @Override
-    public boolean isSubtypeQualifiers(AnnotationMirror subAnno, AnnotationMirror superAnno) {
-      if (isCollectionOwnershipQualifier(subAnno) && isCollectionOwnershipQualifier(superAnno)) {
-        return hierarchyLevel.get(subAnno.getClass()) <= hierarchyLevel.get(superAnno.getClass());
-      }
-      return super.isSubtypeQualifiers(subAnno, superAnno);
-    }
-  }
-}
