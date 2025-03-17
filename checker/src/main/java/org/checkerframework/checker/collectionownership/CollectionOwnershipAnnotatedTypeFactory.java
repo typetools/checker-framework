@@ -26,6 +26,9 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   /** The {@code @}{@link NotOwningCollection} annotation. */
+  public final AnnotationMirror TOP;
+
+  /** The {@code @}{@link NotOwningCollection} annotation. Equals TOP. */
   public final AnnotationMirror NOTOWNINGCOLLECTION;
 
   /** The {@code @}{@link OwningCollection} annotation. */
@@ -48,6 +51,7 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
   public CollectionOwnershipAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     NOTOWNINGCOLLECTION = AnnotationBuilder.fromClass(elements, NotOwningCollection.class);
+    TOP = NOTOWNINGCOLLECTION;
     OWNINGCOLLECTION = AnnotationBuilder.fromClass(elements, OwningCollection.class);
     OWNINGCOLLECTIONWITHOUTOBLIGATION =
         AnnotationBuilder.fromClass(elements, OwningCollectionWithoutObligation.class);
