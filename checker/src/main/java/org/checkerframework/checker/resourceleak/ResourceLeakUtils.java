@@ -3,6 +3,7 @@ package org.checkerframework.checker.resourceleak;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.checkerframework.checker.collectionownership.CollectionOwnershipChecker;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.MustCallChecker;
 import org.checkerframework.checker.mustcall.MustCallNoCreatesMustCallForChecker;
@@ -25,6 +26,7 @@ public class ResourceLeakUtils {
       new ArrayList<>(
           Arrays.asList(
               ResourceLeakChecker.class.getCanonicalName(),
+              CollectionOwnershipChecker.class.getCanonicalName(),
               RLCCalledMethodsChecker.class.getCanonicalName(),
               MustCallChecker.class.getCanonicalName(),
               MustCallNoCreatesMustCallForChecker.class.getCanonicalName()));
@@ -62,6 +64,7 @@ public class ResourceLeakUtils {
     if ("ResourceLeakChecker".equals(className)) {
       return (ResourceLeakChecker) referenceChecker;
     } else if ("RLCCalledMethodsChecker".equals(className)
+        || "CollectionOwnershipChecker".equals(className)
         || "MustCallChecker".equals(className)
         || "MustCallNoCreatesMustCallForChecker".equals(className)) {
       return getResourceLeakChecker(referenceChecker.getParentChecker());
@@ -105,6 +108,9 @@ public class ResourceLeakUtils {
     if ("MustCallChecker".equals(className)
         || "MustCallNoCreatesMustCallForChecker".equals(className)) {
       return (MustCallAnnotatedTypeFactory) ((MustCallChecker) referenceChecker).getTypeFactory();
+    } else if ("CollectionOwnershipChecker".equals(className)) {
+      return getMustCallAnnotatedTypeFactory(
+          referenceChecker.getSubchecker(RLCCalledMethodsChecker.class));
     } else if ("RLCCalledMethodsChecker".equals(className)) {
       MustCallChecker mcc = referenceChecker.getSubchecker(MustCallChecker.class);
       return getMustCallAnnotatedTypeFactory(
@@ -113,7 +119,7 @@ public class ResourceLeakUtils {
               : referenceChecker.getSubchecker(MustCallNoCreatesMustCallForChecker.class));
     } else if ("ResourceLeakChecker".equals(className)) {
       return getMustCallAnnotatedTypeFactory(
-          referenceChecker.getSubchecker(RLCCalledMethodsChecker.class));
+          referenceChecker.getSubchecker(CollectionOwnershipChecker.class));
     } else {
       throw new IllegalArgumentException(
           "Argument referenceChecker to ResourceLeakUtils#getMustCallAnnotatedTypeFactory(referenceChecker) expected to be an RLC checker but is "
@@ -154,6 +160,9 @@ public class ResourceLeakUtils {
     if ("RLCCalledMethodsChecker".equals(className)) {
       return (RLCCalledMethodsChecker) referenceChecker;
     } else if ("ResourceLeakChecker".equals(className)) {
+      return getRLCCalledMethodsChecker(
+          referenceChecker.getSubchecker(CollectionOwnershipChecker.class));
+    } else if ("CollectionOwnershipChecker".equals(className)) {
       return getRLCCalledMethodsChecker(
           referenceChecker.getSubchecker(RLCCalledMethodsChecker.class));
     } else if ("MustCallChecker".equals(className)

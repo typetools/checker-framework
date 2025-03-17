@@ -12,6 +12,7 @@ import java.util.regex.Pattern;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic;
+import org.checkerframework.checker.collectionownership.CollectionOwnershipChecker;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.mustcall.MustCallChecker;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
@@ -24,16 +25,17 @@ import org.checkerframework.framework.source.SupportedOptions;
 /**
  * The entry point for the Resource Leak Checker. This checker only counts the number of {@link
  * org.checkerframework.checker.mustcall.qual.MustCall} annotations and defines a set of ignored
- * exceptions. This checker calls the {@link RLCCalledMethodsChecker} as a direct subchecker, which
- * then in turn calls the {@link MustCallChecker} as a subchecker, and afterwards traverses the cfg
+ * exceptions. This checker calls the {@link CollectionOwnershipChecker} as a direct subchecker,
+ * which then in turn calls the {@link RLCCalledMethodsChecker} as a subchecker, which calls the
+ * {@link MustCallChecker} as a subchecker. Afterwards, the consistency analyzer traverses the cfg
  * to check whether all MustCall obligations are fulfilled.
  *
- * <p>The checker hierarchy is: this "empty" RLC &rarr; RLCCalledMethodsChecker &rarr;
- * MustCallChecker
+ * <p>The checker hierarchy is: this "empty" RLC &rarr; CollectionOwnershipChecker &rarr;
+ * RLCCalledMethodsChecker &rarr; MustCallChecker
  *
- * <p>The MustCallChecker is a subchecker of the RLCCm checker (instead of a sibling), since we want
- * them to operate on the same cfg (so we can get both a CM and MC store for a given cfg block),
- * which only works if one of them is a subchecker of the other.
+ * <p>The subchecker hierarchy is a line graph (instead of siblings), since we want them to operate
+ * on the same cfg (so we can get both a CM, MC, and CO store for a given cfg block), which only
+ * works if they are in a linear subchecker hierarchy.
  */
 @SupportedOptions({
   "permitStaticOwning",
@@ -154,7 +156,7 @@ public class ResourceLeakChecker extends AggregateChecker {
   @Override
   protected Set<Class<? extends SourceChecker>> getSupportedCheckers() {
     Set<Class<? extends SourceChecker>> checkers = new LinkedHashSet<>(1);
-    checkers.add(RLCCalledMethodsChecker.class);
+    checkers.add(CollectionOwnershipChecker.class);
 
     return checkers;
   }
