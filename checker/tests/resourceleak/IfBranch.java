@@ -10,7 +10,7 @@ abstract class IfBranch {
 
   // False positive.  The then-branch moves r1 to result, and the else-branch closes r1.
   // After the if-else block we should be left only with an obligation to close result,
-  // which should be satisfied by `retun result`.
+  // which should be satisfied by `return result`.
   //
   // Obligation tracking by the MustCallConsistencyAnalyzer is indeed path sensitive, in that it
   // does not lose information at control-flow merges; it just tracks the obligation(s) from each
