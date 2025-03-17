@@ -4,8 +4,10 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import org.checkerframework.framework.qual.DefaultFor;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.SubtypeOf;
+import org.checkerframework.framework.qual.TypeUseLocation;
 
 /**
  * The bottom qualifier of the Collection Ownership type hierarchy, and the default qualifier.
@@ -17,4 +19,5 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf({OwningCollectionWithoutObligation.class})
 @DefaultQualifierInHierarchy
+@DefaultFor({TypeUseLocation.EXCEPTION_PARAMETER}) // , TypeUseLocation.UPPER_BOUND})
 public @interface OwningCollectionBottom {}
