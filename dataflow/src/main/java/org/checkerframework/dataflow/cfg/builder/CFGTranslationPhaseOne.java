@@ -882,7 +882,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   /* --------------------------------------------------------- */
 
   /** The UID for the next unique name. */
-  protected long uid = 0;
+  protected static long uid = 0;
 
   /**
    * Returns a unique name starting with {@code prefix}.
