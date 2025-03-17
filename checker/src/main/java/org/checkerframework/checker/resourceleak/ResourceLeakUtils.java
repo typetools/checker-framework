@@ -3,6 +3,7 @@ package org.checkerframework.checker.resourceleak;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.MustCallChecker;
 import org.checkerframework.checker.mustcall.MustCallNoCreatesMustCallForChecker;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -67,6 +68,55 @@ public class ResourceLeakUtils {
     } else {
       throw new IllegalArgumentException(
           "Argument referenceChecker to ResourceLeakUtils#getResourceLeakChecker(referenceChecker) expected to be an RLC checker but is "
+              + className);
+    }
+  }
+
+  /**
+   * Given a type factory part of the resource leak ecosystem, returns the {@link
+   * MustCallAnnotatedTypeFactory} in the checker hierarchy.
+   *
+   * @param referenceAtf the type factory to retrieve the {@link MustCallAnnotatedTypeFactory} from
+   * @return the {@link MustCallAnnotatedTypeFactory} in the checker hierarchy
+   */
+  public static @NonNull MustCallAnnotatedTypeFactory getMustCallAnnotatedTypeFactory(
+      AnnotatedTypeFactory referenceAtf) {
+    if (referenceAtf == null) {
+      throw new IllegalArgumentException("Argument referenceAtf cannot be null");
+    } else {
+      return getMustCallAnnotatedTypeFactory(referenceAtf.getChecker());
+    }
+  }
+
+  /**
+   * Given a checker part of the resource leak ecosystem, returns the {@link
+   * MustCallAnnotatedTypeFactory} in the checker hierarchy.
+   *
+   * @param referenceChecker the checker to retrieve the {@link MustCallAnnotatedTypeFactory} from
+   * @return the {@link MustCallAnnotatedTypeFactory} in the checker hierarchy
+   */
+  public static MustCallAnnotatedTypeFactory getMustCallAnnotatedTypeFactory(
+      SourceChecker referenceChecker) {
+    if (referenceChecker == null) {
+      throw new IllegalArgumentException("Argument referenceChecker cannot be null");
+    }
+
+    String className = referenceChecker.getClass().getSimpleName();
+    if ("MustCallChecker".equals(className)
+        || "MustCallNoCreatesMustCallForChecker".equals(className)) {
+      return (MustCallAnnotatedTypeFactory) ((MustCallChecker) referenceChecker).getTypeFactory();
+    } else if ("RLCCalledMethodsChecker".equals(className)) {
+      MustCallChecker mcc = referenceChecker.getSubchecker(MustCallChecker.class);
+      return getMustCallAnnotatedTypeFactory(
+          mcc != null
+              ? mcc
+              : referenceChecker.getSubchecker(MustCallNoCreatesMustCallForChecker.class));
+    } else if ("ResourceLeakChecker".equals(className)) {
+      return getMustCallAnnotatedTypeFactory(
+          referenceChecker.getSubchecker(RLCCalledMethodsChecker.class));
+    } else {
+      throw new IllegalArgumentException(
+          "Argument referenceChecker to ResourceLeakUtils#getMustCallAnnotatedTypeFactory(referenceChecker) expected to be an RLC checker but is "
               + className);
     }
   }
