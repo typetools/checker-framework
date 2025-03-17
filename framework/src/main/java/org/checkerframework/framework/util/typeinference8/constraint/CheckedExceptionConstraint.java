@@ -2,6 +2,7 @@ package org.checkerframework.framework.util.typeinference8.constraint;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
+import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.Tree;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -73,6 +74,28 @@ public class CheckedExceptionConstraint extends TypeConstraint {
           for (AbstractType param : params) {
             inputs.addAll(param.getInferenceVariables());
           }
+        }
+        AbstractType R = this.T.getFunctionTypeReturnType();
+        if (R == null || R.getTypeKind() == TypeKind.NONE) {
+          return inputs;
+        }
+        inputs.addAll(R.getInferenceVariables());
+        return inputs;
+      }
+    } else if (getKind() == Kind.METHOD_REF_EXCEPTION) {
+      if (T.isUseOfVariable()) {
+        return Collections.singletonList(((UseOfVariable) T).getVariable());
+      } else if (TreeUtils.isExactMethodReference((MemberReferenceTree) expression)) {
+        return Collections.emptyList();
+      } else {
+        List<AbstractType> params = this.T.getFunctionTypeParameterTypes();
+        if (params == null) {
+          // T is not a function type.
+          return Collections.emptyList();
+        }
+        List<Variable> inputs = new ArrayList<>();
+        for (AbstractType param : params) {
+          inputs.addAll(param.getInferenceVariables());
         }
         AbstractType R = this.T.getFunctionTypeReturnType();
         if (R == null || R.getTypeKind() == TypeKind.NONE) {
