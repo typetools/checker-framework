@@ -1,7 +1,12 @@
 package org.checkerframework.checker.collectionownership;
 
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.javacutil.ElementUtils;
 
 /**
  * The visitor for the Collection Ownership Checker. This visitor is similar to BaseTypeVisitor, but
@@ -179,34 +184,32 @@ public class CollectionOwnershipVisitor
   // }
 
   // TODO this might be a good solution if I run into this problem, since bot is default type
-  // /**
-  //  * This method typically issues a warning if the result type of the constructor is not top,
-  //  * because in top-default type systems that indicates a potential problem. The Must Call
-  // Checker
-  //  * does not need this warning, because it expects the type of all constructors to be {@code
-  //  * MustCall({})} (by default) or some other {@code MustCall} type, not the top type.
-  //  *
-  //  * <p>Instead, this method checks that the result type of a constructor is a supertype of the
-  //  * declared type on the class, if one exists.
-  //  *
-  //  * @param constructorType an AnnotatedExecutableType for the constructor
-  //  * @param constructorElement element that declares the constructor
-  //  */
-  // @Override
-  // protected void checkConstructorResult(
-  //     AnnotatedExecutableType constructorType, ExecutableElement constructorElement) {
-  //   AnnotatedTypeMirror defaultType =
-  //       atypeFactory.getAnnotatedType(ElementUtils.enclosingTypeElement(constructorElement));
-  //   AnnotationMirror defaultAnno = defaultType.getPrimaryAnnotationInHierarchy(atypeFactory.TOP);
-  //   AnnotatedTypeMirror resultType = constructorType.getReturnType();
-  //   AnnotationMirror resultAnno = resultType.getPrimaryAnnotationInHierarchy(atypeFactory.TOP);
-  //   if (!qualHierarchy.isSubtypeShallow(
-  //       defaultAnno, defaultType.getUnderlyingType(), resultAnno,
-  // resultType.getUnderlyingType())) {
-  //     checker.reportError(
-  //         constructorElement, "inconsistent.constructor.type", resultAnno, defaultAnno);
-  //   }
-  // }
+  /**
+   * This method typically issues a warning if the result type of the constructor is not top,
+   * because in top-default type systems that indicates a potential problem. The Must Call Checker
+   * does not need this warning, because it expects the type of all constructors to be {@code
+   * OwningCollectionBottom} (by default).
+   *
+   * <p>Instead, this method checks that the result type of a constructor is a supertype of the
+   * declared type on the class, if one exists.
+   *
+   * @param constructorType an AnnotatedExecutableType for the constructor
+   * @param constructorElement element that declares the constructor
+   */
+  @Override
+  protected void checkConstructorResult(
+      AnnotatedExecutableType constructorType, ExecutableElement constructorElement) {
+    AnnotatedTypeMirror defaultType =
+        atypeFactory.getAnnotatedType(ElementUtils.enclosingTypeElement(constructorElement));
+    AnnotationMirror defaultAnno = defaultType.getPrimaryAnnotationInHierarchy(atypeFactory.TOP);
+    AnnotatedTypeMirror resultType = constructorType.getReturnType();
+    AnnotationMirror resultAnno = resultType.getPrimaryAnnotationInHierarchy(atypeFactory.TOP);
+    if (!qualHierarchy.isSubtypeShallow(
+        defaultAnno, defaultType.getUnderlyingType(), resultAnno, resultType.getUnderlyingType())) {
+      checker.reportError(
+          constructorElement, "inconsistent.constructor.type", resultAnno, defaultAnno);
+    }
+  }
 
   // /**
   //  * Change the default for exception parameter lower bounds to bottom (the default), to prevent
