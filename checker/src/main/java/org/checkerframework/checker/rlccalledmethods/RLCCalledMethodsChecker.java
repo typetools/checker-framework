@@ -14,7 +14,7 @@ import org.checkerframework.framework.source.SourceChecker;
 /**
  * The entry point for the RLCCalledMethodsChecker. This checker is a modifed {@link
  * CalledMethodsChecker} used as a subchecker in the ResourceLeakChecker, and never independently.
- * Runs the MustCallChecker as a subchecker in order to share the cfg.
+ * Runs the MustCallChecker as a subchecker in order to share the CFG.
  */
 @StubFiles("IOUtils.astub")
 public class RLCCalledMethodsChecker extends CalledMethodsChecker {
