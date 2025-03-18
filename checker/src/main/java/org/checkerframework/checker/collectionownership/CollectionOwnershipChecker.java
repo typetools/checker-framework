@@ -13,6 +13,9 @@ import org.checkerframework.framework.source.SourceChecker;
  */
 public class CollectionOwnershipChecker extends BaseTypeChecker {
 
+  /** Creates a CollectionOwnershipChecker. */
+  public CollectionOwnershipChecker() {}
+
   // TODO sck: not sure if this is necessary
   @Override
   protected BaseTypeVisitor<?> createSourceVisitor() {
