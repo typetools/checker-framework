@@ -19,5 +19,22 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf({OwningCollectionWithoutObligation.class})
 @DefaultQualifierInHierarchy
-@DefaultFor({TypeUseLocation.EXCEPTION_PARAMETER}) // , TypeUseLocation.UPPER_BOUND})
+@DefaultFor({
+  TypeUseLocation.ALL,
+  TypeUseLocation.CONSTRUCTOR_RESULT,
+  TypeUseLocation.EXCEPTION_PARAMETER,
+  TypeUseLocation.EXPLICIT_LOWER_BOUND,
+  TypeUseLocation.EXPLICIT_UPPER_BOUND,
+  TypeUseLocation.FIELD,
+  // TypeUseLocation.IMPLICIT_LOWER_BOUND,
+  TypeUseLocation.IMPLICIT_UPPER_BOUND,
+  TypeUseLocation.LOCAL_VARIABLE,
+  // TypeUseLocation.LOWER_BOUND,
+  TypeUseLocation.OTHERWISE,
+  // TypeUseLocation.PARAMETER,
+  TypeUseLocation.RECEIVER,
+  TypeUseLocation.RESOURCE_VARIABLE,
+  TypeUseLocation.RETURN,
+  TypeUseLocation.UPPER_BOUND
+})
 public @interface OwningCollectionBottom {}
