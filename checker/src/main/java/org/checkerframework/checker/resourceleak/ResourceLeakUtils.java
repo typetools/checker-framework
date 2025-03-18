@@ -57,17 +57,15 @@ public class ResourceLeakUtils {
       throw new IllegalArgumentException("Argument referenceChecker cannot be null");
     }
 
-    String className = referenceChecker.getClass().getSimpleName();
-    if ("ResourceLeakChecker".equals(className)) {
+    if (referenceChecker instanceof ResourceLeakChecker) {
       return (ResourceLeakChecker) referenceChecker;
-    } else if ("RLCCalledMethodsChecker".equals(className)
-        || "MustCallChecker".equals(className)
-        || "MustCallNoCreatesMustCallForChecker".equals(className)) {
+    } else if (referenceChecker instanceof RLCCalledMethodsChecker
+        || referenceChecker instanceof MustCallChecker) {
       return getResourceLeakChecker(referenceChecker.getParentChecker());
     } else {
       throw new IllegalArgumentException(
           "Argument referenceChecker to ResourceLeakUtils#getResourceLeakChecker(referenceChecker) expected to be an RLC checker but is "
-              + className);
+              + referenceChecker.getClass().getSimpleName());
     }
   }
 
@@ -100,19 +98,17 @@ public class ResourceLeakUtils {
       throw new IllegalArgumentException("Argument referenceChecker cannot be null");
     }
 
-    String className = referenceChecker.getClass().getSimpleName();
-    if ("RLCCalledMethodsChecker".equals(className)) {
+    if (referenceChecker instanceof RLCCalledMethodsChecker) {
       return (RLCCalledMethodsChecker) referenceChecker;
-    } else if ("ResourceLeakChecker".equals(className)) {
+    } else if (referenceChecker instanceof ResourceLeakChecker) {
       return getRLCCalledMethodsChecker(
           referenceChecker.getSubchecker(RLCCalledMethodsChecker.class));
-    } else if ("MustCallChecker".equals(className)
-        || "MustCallNoCreatesMustCallForChecker".equals(className)) {
+    } else if (referenceChecker instanceof MustCallChecker) {
       return getRLCCalledMethodsChecker(referenceChecker.getParentChecker());
     } else {
       throw new IllegalArgumentException(
           "Argument referenceChecker to ResourceLeakUtils#getRLCCalledMethodsChecker(referenceChecker) expected to be an RLC checker but is "
-              + className);
+              + referenceChecker.getClass().getSimpleName());
     }
   }
 }
