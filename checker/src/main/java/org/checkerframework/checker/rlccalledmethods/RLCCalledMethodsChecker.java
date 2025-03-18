@@ -41,9 +41,14 @@ public class RLCCalledMethodsChecker extends CalledMethodsChecker {
     return getResourceLeakChecker().getIgnoredExceptions();
   }
 
+  /**
+   * Disable the Returns Receiver Checker unless it has been explicitly enabled with the {@link
+   * ResourceLeakChecker#ENABLE_RETURNS_RECEIVER} option.
+   */
   @Override
-  public boolean isReturnsReceiverDisabled() {
-    return super.isReturnsReceiverDisabled();
+  protected boolean isReturnsReceiverDisabled() {
+    return !getResourceLeakChecker().hasOption(ResourceLeakChecker.ENABLE_RETURNS_RECEIVER)
+        || super.isReturnsReceiverDisabled();
   }
 
   @Override
