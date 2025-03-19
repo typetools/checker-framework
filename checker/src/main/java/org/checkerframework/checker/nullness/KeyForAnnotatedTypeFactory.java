@@ -170,6 +170,18 @@ public class KeyForAnnotatedTypeFactory
     AnnotationMirror keyForAnno = type.getEffectiveAnnotation(KeyFor.class);
     if (keyForAnno != null) {
       maps = AnnotationUtils.getElementValueArray(keyForAnno, keyForValueElement, String.class);
+      // Special handling for static fields with KeyFor annotations.
+      if (isUseOfStaticField(tree)) {
+        // Check if any map specified in KeyFor annotation has the form "this.fieldName"
+        for (String map : maps) {
+          if (map.startsWith("this.")) {
+            String fieldName = map.substring(5);
+            if (mapExpression.endsWith("." + fieldName)) {
+              return true;
+            }
+          }
+        }
+      }
     } else {
       KeyForValue value = getInferredValueFor(tree);
       if (value != null) {
@@ -178,6 +190,23 @@ public class KeyForAnnotatedTypeFactory
     }
 
     return maps != null && maps.contains(mapExpression);
+  }
+
+  /**
+   * Returns true if the expression tree represents a use of a static field.
+   *
+   * @param tree the tree to check
+   * @return true if the tree is a use of a static field
+   */
+  private boolean isUseOfStaticField(ExpressionTree tree) {
+    if (!(tree instanceof com.sun.source.tree.IdentifierTree)) {
+      return false;
+    }
+    javax.lang.model.element.Element element =
+        TreeUtils.elementFromUse((com.sun.source.tree.IdentifierTree) tree);
+    return element != null
+        && element.getKind() == javax.lang.model.element.ElementKind.FIELD
+        && element.getModifiers().contains(javax.lang.model.element.Modifier.STATIC);
   }
 
   @Override
