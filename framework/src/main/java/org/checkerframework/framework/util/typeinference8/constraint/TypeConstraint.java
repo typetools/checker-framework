@@ -170,7 +170,7 @@ public abstract class TypeConstraint implements Constraint {
             return inputs;
           }
           for (ExpressionTree e : TreeUtils.getReturnedExpressions(lambdaTree)) {
-            TypeConstraint c = new Expression("Returned expression", e, R);
+            TypeConstraint c = new Expression("Returned expression constraint", e, R);
             inputs.addAll(c.getInputVariables());
           }
           return inputs;

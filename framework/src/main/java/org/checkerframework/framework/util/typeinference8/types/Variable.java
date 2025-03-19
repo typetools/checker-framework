@@ -174,6 +174,7 @@ import org.checkerframework.javacutil.TypesUtils;
   public String toString() {
     return String.format("%s from %s", typeVariableJava, invocation);
 
+    // Uncomment for easier to read names for debugging.
     // if (variableBounds.hasInstantiation()) {
     //    return "a" + id + " := " + variableBounds.getInstantiation();
     //  }

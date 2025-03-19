@@ -354,7 +354,8 @@ public class InvocationTypeInference {
       // constraint set reduction in 18.5.1, the constraint formula <|R| -> T> is reduced and
       // incorporated with B2.
       String source =
-          "Unchecked conversion method return against target type for method: " + invocation;
+          "Constraint between method call type and target type for method call (unchecked conversion): "
+              + invocation;
       BoundSet b =
           new ConstraintSet(new Typing(source, r.getErased(), target, Kind.TYPE_COMPATIBILITY))
               .reduce(context);
@@ -400,9 +401,8 @@ public class InvocationTypeInference {
         BoundSet resolve = Resolution.resolve(alpha, b2, context);
         ProperType u = (ProperType) alpha.getBounds().getInstantiation().capture(context);
         String source =
-            String.format(
-                "Compatibility constraint method return against target type for method: %s",
-                invocation);
+            "Constraint between method call type and target type for method call (compatibility constraint): "
+                + invocation;
 
         ConstraintSet constraintSet =
             new ConstraintSet(new Typing(source, u, target, Kind.TYPE_COMPATIBILITY));
@@ -414,7 +414,8 @@ public class InvocationTypeInference {
         // From the JLS:
         // "T is a primitive type, and one of the primitive wrapper classes mentioned in
         // 5.1.7 is an instantiation, upper bound, or lower bound for [the variable] in B2."
-        String source = "Method return against target type for method: " + invocation;
+        String source =
+            "Constraint between method call type and target type for method call: " + invocation;
 
         ConstraintSet constraintSet =
             new ConstraintSet(new Typing(source, r, target, Kind.SUBTYPE));
@@ -423,7 +424,8 @@ public class InvocationTypeInference {
         return b2;
       }
     }
-    String source = "Method return against target type for method: " + invocation;
+    String source =
+        "Constraint between method call type and target type for method call:" + invocation;
     ConstraintSet constraintSet =
         new ConstraintSet(new Typing(source, r, target, Kind.TYPE_COMPATIBILITY));
     BoundSet newBounds = constraintSet.reduce(context);
