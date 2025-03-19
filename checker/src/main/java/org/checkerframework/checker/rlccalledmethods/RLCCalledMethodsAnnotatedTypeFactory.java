@@ -61,7 +61,7 @@ import org.checkerframework.javacutil.TypeSystemError;
 public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotatedTypeFactory
     implements CreatesMustCallForElementSupplier {
 
-  /** The rlc parent checker. */
+  /** The RLC parent checker. */
   private ResourceLeakChecker rlc;
 
   /** The MustCall.value element/field. */
