@@ -354,8 +354,7 @@ public class InvocationTypeInference {
       // constraint set reduction in 18.5.1, the constraint formula <|R| -> T> is reduced and
       // incorporated with B2.
       String source =
-          String.format(
-              "Unchecked conversion method return against target type for method: %s", invocation);
+          "Unchecked conversion method return against target type for method: " + invocation;
       BoundSet b =
           new ConstraintSet(new Typing(source, r.getErased(), target, Kind.TYPE_COMPATIBILITY))
               .reduce(context);
@@ -415,8 +414,7 @@ public class InvocationTypeInference {
         // From the JLS:
         // "T is a primitive type, and one of the primitive wrapper classes mentioned in
         // 5.1.7 is an instantiation, upper bound, or lower bound for [the variable] in B2."
-        String source =
-            String.format("Method return against target type for method: %s", invocation);
+        String source = "Method return against target type for method: " + invocation;
 
         ConstraintSet constraintSet =
             new ConstraintSet(new Typing(source, r, target, Kind.SUBTYPE));
@@ -425,7 +423,7 @@ public class InvocationTypeInference {
         return b2;
       }
     }
-    String source = String.format("Method return against target type for method: %s", invocation);
+    String source = "Method return against target type for method: " + invocation;
     ConstraintSet constraintSet =
         new ConstraintSet(new Typing(source, r, target, Kind.TYPE_COMPATIBILITY));
     BoundSet newBounds = constraintSet.reduce(context);

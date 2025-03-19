@@ -1032,7 +1032,7 @@ public class InferenceFactory {
         for (UseOfVariable ei : es) {
           constraintSet.add(
               new Typing(
-                  String.format("Exception constraint for %s", expression),
+                  "Exception constraint for %s" + expression,
                   new ProperType(iter2.next(), xi, context),
                   ei,
                   TypeConstraint.Kind.SUBTYPE));

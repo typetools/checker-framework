@@ -127,7 +127,7 @@ public class CaptureBound {
       }
     }
 
-    String source = String.format("Captured constraint from method: %s", invocation);
+    String source = "Captured constraint from method call: " + invocation;
     ConstraintSet set = new ConstraintSet(new Typing(source, lhs, target, Kind.TYPE_COMPATIBILITY));
     // Reduce and incorporate so that the capture variables bounds are set.
     BoundSet b1 = set.reduce(context);

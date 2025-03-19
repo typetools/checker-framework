@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.StringJoiner;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
@@ -66,15 +67,13 @@ public abstract class TypeConstraint implements Constraint {
    * @return a string that explains where this constraint came from
    */
   public String constraintHistory() {
-    StringBuilder constraintStack = new StringBuilder(this.toString()).append("\n");
+    StringJoiner constraintStack = new StringJoiner(System.lineSeparator());
+    constraintStack.add(this.toString());
 
     Constraint parent = this.parent;
     String source = this.source;
     while (parent != null) {
-      if (source != null) {
-        constraintStack.append(source).append(": ");
-      }
-      constraintStack.append(parent).append("\n");
+      constraintStack.add((source != null ? source + ": " : "") + parent);
 
       if (parent instanceof TypeConstraint) {
         source = ((TypeConstraint) parent).source;
@@ -84,7 +83,7 @@ public abstract class TypeConstraint implements Constraint {
       }
     }
     if (source != null) {
-      constraintStack.append("From: ").append(source);
+      constraintStack.add("From: " + source);
     }
     return constraintStack.toString();
   }
