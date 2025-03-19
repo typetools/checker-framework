@@ -25,8 +25,8 @@ import org.checkerframework.framework.source.SupportedOptions;
  * The entry point for the Resource Leak Checker. This checker only counts the number of {@link
  * org.checkerframework.checker.mustcall.qual.MustCall} annotations and defines a set of ignored
  * exceptions. This checker calls the {@link RLCCalledMethodsChecker} as a direct subchecker, which
- * then in turn calls the {@link MustCallChecker} as a subchecker, and afterwards traverses the CFG
- * to check whether all MustCall obligations are fulfilled.
+ * then in turn calls the {@link MustCallChecker} as a subchecker, and afterwards this checker
+ * traverses the CFG to check whether all MustCall obligations are fulfilled.
  *
  * <p>The checker hierarchy is: this "empty" RLC &rarr; RLCCalledMethodsChecker &rarr;
  * MustCallChecker
@@ -186,7 +186,7 @@ public class ResourceLeakChecker extends AggregateChecker {
   }
 
   /**
-   * Get the set of exceptions that should be ignored. This set comes from the {@link
+   * Returns the set of exceptions that should be ignored. This set comes from the {@link
    * #IGNORED_EXCEPTIONS} option if it was provided, or {@link #DEFAULT_IGNORED_EXCEPTIONS} if not.
    *
    * @return the set of exceptions to ignore
