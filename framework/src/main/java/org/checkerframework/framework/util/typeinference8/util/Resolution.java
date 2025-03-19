@@ -215,27 +215,37 @@ public class Resolution {
   /**
    * Resolves all the non-capture variables in {@code variables}.
    *
-   * @param variables the variables
+   * @param vars the variables
    */
-  private void resolveNoCapturesFirst(List<Variable> variables) {
+  private void resolveNoCapturesFirst(List<Variable> vars) {
     Variable smallV;
+    List<Variable> variables = new ArrayList<>(vars.size());
+    vars.forEach(
+        variable -> {
+          if (!variable.isCaptureVariable() && !variable.getBounds().hasInstantiation()) {
+            variables.add(variable);
+          }
+        });
     do {
       smallV = null;
       int smallest = Integer.MAX_VALUE;
-      for (Variable v : variables) {
-        v.getBounds().applyInstantiationsToBounds();
-        if (v.getBounds().hasInstantiation()) {
-          variables.remove(v);
-          // loop again because a new instantiation has been found.
-          // (Also avoids concurrent modification exception.)
-          break;
-        }
-        if (!v.isCaptureVariable()) {
-          int size = v.getBounds().getVariablesMentionedInBounds().size();
-          if (size < smallest) {
-            smallest = size;
-            smallV = v;
+      boolean change;
+      do {
+        change = false;
+        for (Variable v : new ArrayList<>(variables)) {
+          v.getBounds().applyInstantiationsToBounds();
+          if (v.getBounds().hasInstantiation()) {
+            variables.remove(v);
+            // loop again because a new instantiation has been found.
+            change = true;
           }
+        }
+      } while (change);
+      for (Variable v : variables) {
+        int size = v.getBounds().getVariablesMentionedInBounds().size();
+        if (size < smallest) {
+          smallest = size;
+          smallV = v;
         }
       }
       if (smallV != null) {
