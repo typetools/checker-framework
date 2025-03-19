@@ -30,7 +30,7 @@ public class ResourceLeakUtils {
               MustCallNoCreatesMustCallForChecker.class.getCanonicalName()));
 
   /**
-   * Given a type factory part of the resource leak ecosystem, returns the {@link
+   * Given a type factory that is part of the resource leak ecosystem, returns the {@link
    * ResourceLeakChecker} in the checker hierarchy.
    *
    * @param referenceAtf the type factory to retrieve the {@link ResourceLeakChecker} from; must be
@@ -42,13 +42,12 @@ public class ResourceLeakUtils {
   }
 
   /**
-   * Given a checker part of the resource leak ecosystem, returns the {@link ResourceLeakChecker} in
-   * the checker hierarchy.
+   * Given a checker that is part of the resource leak ecosystem, returns the {@link
+   * ResourceLeakChecker} in the checker hierarchy.
    *
-   * @param referenceChecker the checker to retrieve the {@link ResourceLeakChecker} from
+   * @param referenceChecker the checker to retrieve the {@link ResourceLeakChecker} from; must be
+   *     part of the Resource Leak hierarchy
    * @return the {@link ResourceLeakChecker} in the checker hierarchy
-   * @throws IllegalArgumentException if {@code referenceChecker} is {@code null} or not part of the
-   *     Resource Leak hierarchy
    */
   public static ResourceLeakChecker getResourceLeakChecker(SourceChecker referenceChecker) {
     if (referenceChecker instanceof ResourceLeakChecker) {
@@ -64,13 +63,12 @@ public class ResourceLeakUtils {
   }
 
   /**
-   * Given a type factory part of the resource leak ecosystem, returns the {@link
+   * Given a type factory that is part of the resource leak ecosystem, returns the {@link
    * RLCCalledMethodsChecker} in the checker hierarchy.
    *
-   * @param referenceAtf the type factory to retrieve the {@link RLCCalledMethodsChecker} from
+   * @param referenceAtf the type factory to retrieve the {@link RLCCalledMethodsChecker} from; must
+   *     be part of the Resource Leak hierarchy
    * @return the {@link RLCCalledMethodsChecker} in the checker hierarchy
-   * @throws IllegalArgumentException if {@code referenceAtf} is {@code null} or not part of the
-   *     Resource Leak hierarchy
    */
   public static RLCCalledMethodsChecker getRLCCalledMethodsChecker(
       AnnotatedTypeFactory referenceAtf) {
@@ -78,13 +76,12 @@ public class ResourceLeakUtils {
   }
 
   /**
-   * Given a checker part of the resource leak ecosystem, returns the {@link
+   * Given a checker that is part of the resource leak ecosystem, returns the {@link
    * RLCCalledMethodsChecker} in the checker hierarchy.
    *
-   * @param referenceChecker the checker to retrieve the {@link RLCCalledMethodsChecker} from
+   * @param referenceChecker the checker to retrieve the {@link RLCCalledMethodsChecker} from; must
+   *     be part of the Resource Leak hierarchy
    * @return the {@link RLCCalledMethodsChecker} in the checker hierarchy
-   * @throws IllegalArgumentException if {@code referenceChecker} is {@code null} or not part of the
-   *     Resource Leak hierarchy
    */
   public static RLCCalledMethodsChecker getRLCCalledMethodsChecker(SourceChecker referenceChecker) {
     if (referenceChecker instanceof RLCCalledMethodsChecker) {
