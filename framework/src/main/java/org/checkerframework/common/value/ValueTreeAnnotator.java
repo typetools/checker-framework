@@ -275,27 +275,29 @@ class ValueTreeAnnotator extends TreeAnnotator {
 
       TypeMirror newType = atm.getUnderlyingType();
       AnnotationMirror newAnno;
-      Range range;
 
       if (TypesUtils.isString(newType) || newType.getKind() == TypeKind.ARRAY) {
         // Strings and arrays do not allow conversions
         newAnno = oldAnno;
-      } else if (atypeFactory.isIntRange(oldAnno)
-          && (range = atypeFactory.getRange(oldAnno))
-              .isWiderThan(ValueAnnotatedTypeFactory.MAX_VALUES)) {
-        Class<?> newClass = TypesUtils.getClassFromType(newType);
-        if (newClass == String.class) {
-          newAnno = atypeFactory.UNKNOWNVAL;
-        } else if (newClass == Boolean.class || newClass == boolean.class) {
-          throw new UnsupportedOperationException(
-              "ValueAnnotatedTypeFactory: can't convert int to boolean");
-        } else {
-          newAnno = atypeFactory.createIntRangeAnnotation(NumberUtils.castRange(newType, range));
-        }
       } else {
-        List<?> values =
-            ValueCheckerUtils.getValuesCastedToType(oldAnno, newType, isUnsigned, atypeFactory);
-        newAnno = atypeFactory.createResultingAnnotation(atm.getUnderlyingType(), values);
+        Range oldAnnoRange = atypeFactory.getRange(oldAnno);
+        if (atypeFactory.isIntRange(oldAnno)
+            && oldAnnoRange.isWiderThan(ValueAnnotatedTypeFactory.MAX_VALUES)) {
+          Class<?> newClass = TypesUtils.getClassFromType(newType);
+          if (newClass == String.class) {
+            newAnno = atypeFactory.UNKNOWNVAL;
+          } else if (newClass == Boolean.class || newClass == boolean.class) {
+            throw new UnsupportedOperationException(
+                "ValueAnnotatedTypeFactory: can't convert int to boolean");
+          } else {
+            newAnno =
+                atypeFactory.createIntRangeAnnotation(NumberUtils.castRange(newType, oldAnnoRange));
+          }
+        } else {
+          List<?> values =
+              ValueCheckerUtils.getValuesCastedToType(oldAnno, newType, isUnsigned, atypeFactory);
+          newAnno = atypeFactory.createResultingAnnotation(atm.getUnderlyingType(), values);
+        }
       }
       atm.addMissingAnnotations(Collections.singleton(newAnno));
     } else if (atm.getKind() == TypeKind.ARRAY) {
