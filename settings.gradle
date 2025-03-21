@@ -15,9 +15,10 @@ include 'checker-util'
 include 'framework-test'
 includeBuild ('../annotation-tools/annotation-file-utilities') {
   if (!file('../annotation-tools/annotation-file-utilities').exists()) {
-    def output = providers.exec {
+    def executed = providers.exec {
       commandLine("checker/bin-devel/clone-related.sh")
-    }.standardOutput.asText.get()
-    println output
+    }
+    println executed.standardOutput.asText.get()
+    println executed.standardError.asText.get()
   }
 }

@@ -62,7 +62,7 @@ ext {
     //  * Temporarily comment out "-Werror" elsewhere in this file
     //  * Repeatedly run `./gradlew clean compileJava` and fix all errors
     //  * Uncomment "-Werror"
-    errorprone : '2.36.0',
+    errorprone : '2.37.0',
   ]
 }
 
