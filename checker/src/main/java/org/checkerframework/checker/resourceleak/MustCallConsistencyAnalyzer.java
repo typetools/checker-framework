@@ -353,7 +353,7 @@ class MustCallConsistencyAnalyzer {
     }
 
     /**
-     * Gets the must-call type associated with the given resource alias, falling on back on the
+     * Gets the must-call type associated with the given resource alias, falling back on the
      * declared type if there is no refined type for the alias in the store.
      *
      * @param alias a resource alias
@@ -367,7 +367,9 @@ class MustCallConsistencyAnalyzer {
       CFValue value = mcStore == null ? null : mcStore.getValue(reference);
       if (value != null) {
         AnnotationMirror result =
-            AnnotationUtils.getAnnotationByClass(value.getAnnotations(), MustCall.class);
+            mcAtf
+                .getQualifierHierarchy()
+                .findAnnotationInHierarchy(value.getAnnotations(), mcAtf.TOP);
         if (result != null) {
           return result;
         }
