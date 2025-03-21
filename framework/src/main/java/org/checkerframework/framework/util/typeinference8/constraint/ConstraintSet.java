@@ -186,24 +186,32 @@ public class ConstraintSet implements ReductionResult {
     ConstraintSet subset = new ConstraintSet();
     Set<Variable> inputDependencies = new LinkedHashSet<>();
     Set<Variable> outDependencies = new LinkedHashSet<>();
+    Set<Variable> allOutputsOfC = new LinkedHashSet<>();
+    for (Constraint constraint : list) {
+      if (constraint instanceof TypeConstraint) {
+        allOutputsOfC.addAll(((TypeConstraint) constraint).getOutputVariables());
+      }
+      // No other constraints have output variables
+    }
     for (Constraint constraint : list) {
       if (constraint.getKind() == Kind.EXPRESSION
           || constraint.getKind() == Kind.LAMBDA_EXCEPTION
           || constraint.getKind() == Kind.METHOD_REF_EXCEPTION) {
         TypeConstraint c = (TypeConstraint) constraint;
-        Set<Variable> newInputs = dependencies.get(c.getInputVariables());
-        Set<Variable> newOutputs = dependencies.get(c.getOutputVariables());
-        if (Collections.disjoint(newInputs, outDependencies)
-            && Collections.disjoint(newOutputs, inputDependencies)) {
-          inputDependencies.addAll(newInputs);
-          outDependencies.addAll(newOutputs);
-          subset.add(c);
-        } else {
-          // A cycle (or cycles) in the graph of dependencies between constraints exists.
-          subset = new ConstraintSet();
-          break;
+        List<Variable> inputs = c.getInputVariables();
+        boolean found = false;
+        for (Variable in : inputs) {
+          for (Variable out : allOutputsOfC) {
+            if (dependencies.get(in).contains(out) || dependencies.get(out).contains(in)) {
+              found = true;
+            }
+          }
+        }
+        if (!found) {
+          subset.add(constraint);
         }
       } else {
+        // Other kinds of constraints do not have input variables.
         subset.add(constraint);
       }
     }
