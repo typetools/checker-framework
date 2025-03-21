@@ -31,11 +31,14 @@ import org.checkerframework.framework.util.typeinference8.util.Theta;
 
   @Override
   public String toString() {
-    // Use "b" instead of "a" like super so it is apparent that this is a capture variable.
-    if (variableBounds.hasInstantiation()) {
-      return "b" + id + " := " + variableBounds.getInstantiation();
-    }
-    return "b" + id;
+    return String.format("captured %s from %s", typeVariableJava, invocation);
+
+    // Uncomment for easier to read names for debugging.
+    //    // Use "b" instead of "a" like super so it is apparent that this is a capture variable.
+    //    if (variableBounds.hasInstantiation()) {
+    //      return "b" + id + " := " + variableBounds.getInstantiation();
+    //    }
+    //    return "b" + id;
   }
 
   /**
