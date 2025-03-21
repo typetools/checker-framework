@@ -101,7 +101,7 @@ public class I18nFormatterVisitor extends BaseTypeVisitor<I18nFormatterAnnotated
             }
             break;
           case NULLARRAY:
-            // fall-through
+          // fall-through
           case ARRAY:
             for (I18nConversionCategory cat : formatCats) {
               if (cat == I18nConversionCategory.UNUSED) {

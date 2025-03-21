@@ -325,11 +325,11 @@ public final class CFGVisualizeLauncher {
    */
   private static <V extends AbstractValue<V>, S extends Store<S>, T extends TransferFunction<V, S>>
       @Nullable Map<String, Object> generateStringOfCFG(
-      String inputFile,
-      String method,
-      String clas,
-      boolean verbose,
-      @Nullable Analysis<V, S, T> analysis) {
+          String inputFile,
+          String method,
+          String clas,
+          boolean verbose,
+          @Nullable Analysis<V, S, T> analysis) {
     ControlFlowGraph cfg = generateMethodCFG(inputFile, clas, method);
     if (analysis != null) {
       analysis.performAnalysis(cfg);

@@ -187,7 +187,8 @@ public class CheckerFrameworkBuilder {
 
   @org.checkerframework.dataflow.qual.SideEffectFree
   @java.lang.SuppressWarnings("all")
-  public static CheckerFrameworkBuilder.@org.checkerframework.common.aliasing.qual.Unique CheckerFrameworkBuilderBuilder builder() {
+  public static CheckerFrameworkBuilder.@org.checkerframework.common.aliasing.qual.Unique CheckerFrameworkBuilderBuilder
+      builder() {
     return new CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder();
   }
 }
