@@ -4,6 +4,7 @@ import java.util.Set;
 import org.checkerframework.checker.calledmethods.CalledMethodsChecker;
 import org.checkerframework.checker.mustcall.MustCallChecker;
 import org.checkerframework.checker.mustcall.MustCallNoCreatesMustCallForChecker;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
 import org.checkerframework.checker.resourceleak.ResourceLeakUtils;
 import org.checkerframework.checker.resourceleak.SetOfTypes;
@@ -25,7 +26,7 @@ public class RLCCalledMethodsChecker extends CalledMethodsChecker {
   public RLCCalledMethodsChecker() {}
 
   /** The parent resource leak checker */
-  private ResourceLeakChecker rlc;
+  private @MonotonicNonNull ResourceLeakChecker rlc;
 
   @Override
   protected BaseTypeVisitor<?> createSourceVisitor() {
