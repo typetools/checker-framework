@@ -2672,23 +2672,23 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
           return dt.getTypeArguments().get(0);
         }
 
-        // TODO: Properly desugar Iterator.next(), which is needed if an annotated JDK has
-        // annotations on Iterator#next.
-        // The below doesn't work because methodFromUse() assumes that the expression tree
-        // matches the method element.
-        // TypeElement iteratorElement =
-        //         ElementUtils.getTypeElement(processingEnv, Iterator.class);
-        // AnnotatedTypeMirror iteratorType =
-        //         AnnotatedTypeMirror.createType(iteratorElement.asType(), this, false);
-        // Map<TypeVariable, AnnotatedTypeMirror> mapping = new HashMap<>();
-        // mapping.put(
-        //         (TypeVariable) iteratorElement.getTypeParameters().get(0).asType(),
-        //          typeArg);
-        // iteratorType = typeVarSubstitutor.substitute(mapping, iteratorType);
-        // ExecutableElement next =
-        //         TreeUtils.getMethod("java.util.Iterator", "next", 0, processingEnv);
-        // ParameterizedExecutableType m = methodFromUse(expression, next, iteratorType);
-        // return m.executableType.getReturnType();
+      // TODO: Properly desugar Iterator.next(), which is needed if an annotated JDK has
+      // annotations on Iterator#next.
+      // The below doesn't work because methodFromUse() assumes that the expression tree
+      // matches the method element.
+      // TypeElement iteratorElement =
+      //         ElementUtils.getTypeElement(processingEnv, Iterator.class);
+      // AnnotatedTypeMirror iteratorType =
+      //         AnnotatedTypeMirror.createType(iteratorElement.asType(), this, false);
+      // Map<TypeVariable, AnnotatedTypeMirror> mapping = new HashMap<>();
+      // mapping.put(
+      //         (TypeVariable) iteratorElement.getTypeParameters().get(0).asType(),
+      //          typeArg);
+      // iteratorType = typeVarSubstitutor.substitute(mapping, iteratorType);
+      // ExecutableElement next =
+      //         TreeUtils.getMethod("java.util.Iterator", "next", 0, processingEnv);
+      // ParameterizedExecutableType m = methodFromUse(expression, next, iteratorType);
+      // return m.executableType.getReturnType();
       default:
         throw new BugInCF(
             "AnnotatedTypeFactory.getIterableElementType: not iterable type: " + iterableType);

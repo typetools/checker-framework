@@ -1088,19 +1088,19 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         break;
       case WILDCARD:
         break;
-        // throw new BugInCF("This can't happen");
-        // TODO: This comment is wrong: the wildcard case does get entered.
-        // Because inferring type arguments is not supported, wildcards won't be
-        // encountered.
-        // updateATMWithLUB(
-        //         atf,
-        //         ((AnnotatedWildcardType) sourceCodeATM).getExtendsBound(),
-        //         ((AnnotatedWildcardType) ajavaATM).getExtendsBound());
-        // updateATMWithLUB(
-        //         atf,
-        //         ((AnnotatedWildcardType) sourceCodeATM).getSuperBound(),
-        //         ((AnnotatedWildcardType) ajavaATM).getSuperBound());
-        // break;
+      // throw new BugInCF("This can't happen");
+      // TODO: This comment is wrong: the wildcard case does get entered.
+      // Because inferring type arguments is not supported, wildcards won't be
+      // encountered.
+      // updateATMWithLUB(
+      //         atf,
+      //         ((AnnotatedWildcardType) sourceCodeATM).getExtendsBound(),
+      //         ((AnnotatedWildcardType) ajavaATM).getExtendsBound());
+      // updateATMWithLUB(
+      //         atf,
+      //         ((AnnotatedWildcardType) sourceCodeATM).getSuperBound(),
+      //         ((AnnotatedWildcardType) ajavaATM).getSuperBound());
+      // break;
       case ARRAY:
         AnnotatedTypeMirror sourceCodeComponent =
             ((AnnotatedArrayType) sourceCodeATM).getComponentType();
@@ -1120,11 +1120,11 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
           }
         }
         break;
-        // case DECLARED:
-        // Inferring annotations on type arguments is not supported, so no need to recur on
-        // generic types. If this was ever implemented, this method would need a
-        // VisitHistory object to prevent infinite recursion on types such as T extends
-        // List<T>.
+      // case DECLARED:
+      // Inferring annotations on type arguments is not supported, so no need to recur on
+      // generic types. If this was ever implemented, this method would need a
+      // VisitHistory object to prevent infinite recursion on types such as T extends
+      // List<T>.
       default:
         // ATM only has primary annotations
         break;

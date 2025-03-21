@@ -628,25 +628,25 @@ public class WholeProgramInferenceScenesStorage
             ((AnnotatedTypeVariable) sourceCodeATM).getUpperBound(),
             ((AnnotatedTypeVariable) jaifATM).getUpperBound());
         break;
-        //        case WILDCARD:
-        // Because inferring type arguments is not supported, wildcards won't be encoutered
-        //            updateAtmWithLub(((AnnotatedWildcardType)
-        // sourceCodeATM).getExtendsBound(),
-        //                              ((AnnotatedWildcardType)
-        // jaifATM).getExtendsBound());
-        //            updateAtmWithLub(((AnnotatedWildcardType)
-        // sourceCodeATM).getSuperBound(),
-        //                              ((AnnotatedWildcardType) jaifATM).getSuperBound());
-        //            break;
+      //        case WILDCARD:
+      // Because inferring type arguments is not supported, wildcards won't be encoutered
+      //            updateAtmWithLub(((AnnotatedWildcardType)
+      // sourceCodeATM).getExtendsBound(),
+      //                              ((AnnotatedWildcardType)
+      // jaifATM).getExtendsBound());
+      //            updateAtmWithLub(((AnnotatedWildcardType)
+      // sourceCodeATM).getSuperBound(),
+      //                              ((AnnotatedWildcardType) jaifATM).getSuperBound());
+      //            break;
       case ARRAY:
         updateAtmWithLub(
             ((AnnotatedArrayType) sourceCodeATM).getComponentType(),
             ((AnnotatedArrayType) jaifATM).getComponentType());
         break;
-        // case DECLARED:
-        // inferring annotations on type arguments is not supported, so no need to recur on
-        // generic types. If this was every implemented, this method would need VisitHistory
-        // object to prevent infinite recursion on types such as T extends List<T>.
+      // case DECLARED:
+      // inferring annotations on type arguments is not supported, so no need to recur on
+      // generic types. If this was every implemented, this method would need VisitHistory
+      // object to prevent infinite recursion on types such as T extends List<T>.
       default:
         // ATM only has primary annotations
         break;

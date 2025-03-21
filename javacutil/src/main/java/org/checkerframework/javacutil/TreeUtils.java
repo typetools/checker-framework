@@ -687,8 +687,8 @@ public final class TreeUtils {
     }
 
     switch (tree.getKind()) {
-        // symbol() only works on MethodSelects, so we need to get it manually
-        // for method invocations.
+      // symbol() only works on MethodSelects, so we need to get it manually
+      // for method invocations.
       case METHOD_INVOCATION:
         return TreeInfo.symbol(((JCMethodInvocation) tree).getMethodSelect());
 
@@ -2186,7 +2186,7 @@ public final class TreeUtils {
         // These operators do binary promotion on the two arguments together.
         return true;
 
-        // TODO: CONDITIONAL_EXPRESSION (?:) sometimes does numeric promotion.
+      // TODO: CONDITIONAL_EXPRESSION (?:) sometimes does numeric promotion.
 
       default:
         return false;

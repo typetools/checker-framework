@@ -152,7 +152,9 @@ public abstract class BaseTypeChecker extends SourceChecker {
    * @return the type factory of the requested subchecker or null if not found
    */
   @SuppressWarnings("TypeParameterUnusedInFormals") // Intentional abuse
-  public <T extends GenericAnnotatedTypeFactory<?, ?, ?, ?>> @Nullable T getTypeFactoryOfSubcheckerOrNull(Class<? extends BaseTypeChecker> subCheckerClass) {
+  public <T extends GenericAnnotatedTypeFactory<?, ?, ?, ?>>
+      @Nullable T getTypeFactoryOfSubcheckerOrNull(
+          Class<? extends BaseTypeChecker> subCheckerClass) {
     return getTypeFactory().getTypeFactoryOfSubcheckerOrNull(subCheckerClass);
   }
 

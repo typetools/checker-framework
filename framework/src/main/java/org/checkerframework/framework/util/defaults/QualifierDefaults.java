@@ -533,9 +533,9 @@ public class QualifierDefaults {
         elt = TreeUtils.elementFromUse((MethodInvocationTree) tree);
         break;
 
-        // TODO cases for array access, etc. -- every expression tree
-        // (The above probably means that we should use defaults in the
-        // scope of the declaration of the array.  Is that right?  -MDE)
+      // TODO cases for array access, etc. -- every expression tree
+      // (The above probably means that we should use defaults in the
+      // scope of the declaration of the array.  Is that right?  -MDE)
 
       default:
         // If no associated symbol was found, use the tree's (lexical) scope.
