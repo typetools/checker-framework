@@ -31,7 +31,7 @@ public class ResourceLeakUtils {
               MustCallNoCreatesMustCallForChecker.class.getCanonicalName()));
 
   /**
-   * Given a type factory that is part of the resource leak ecosystem, returns the {@link
+   * Given a type factory that is part of the resource leak checker hierarchy, returns the {@link
    * ResourceLeakChecker} in the checker hierarchy.
    *
    * @param referenceAtf the type factory to retrieve the {@link ResourceLeakChecker} from; must be
@@ -43,7 +43,7 @@ public class ResourceLeakUtils {
   }
 
   /**
-   * Given a checker that is part of the resource leak ecosystem, returns the {@link
+   * Given a checker that is part of the resource leak checker hierarchy, returns the {@link
    * ResourceLeakChecker} in the checker hierarchy.
    *
    * @param referenceChecker the checker to retrieve the {@link ResourceLeakChecker} from; must be
@@ -57,14 +57,14 @@ public class ResourceLeakUtils {
         || referenceChecker instanceof MustCallChecker) {
       return getResourceLeakChecker(referenceChecker.getParentChecker());
     } else {
-      throw new IllegalArgumentException(
+      throw new TypeSystemError(
           "Bad argument to ResourceLeakUtils#getResourceLeakChecker(): "
               + (referenceChecker == null ? "null" : referenceChecker.getClass().getSimpleName()));
     }
   }
 
   /**
-   * Given a type factory that is part of the resource leak ecosystem, returns the {@link
+   * Given a type factory that is part of the resource leak checker hierarchy, returns the {@link
    * RLCCalledMethodsChecker} in the checker hierarchy.
    *
    * @param referenceAtf the type factory to retrieve the {@link RLCCalledMethodsChecker} from; must
@@ -77,7 +77,7 @@ public class ResourceLeakUtils {
   }
 
   /**
-   * Given a checker that is part of the resource leak ecosystem, returns the {@link
+   * Given a checker that is part of the resource leak checker hierarchy, returns the {@link
    * RLCCalledMethodsChecker} in the checker hierarchy.
    *
    * @param referenceChecker the checker to retrieve the {@link RLCCalledMethodsChecker} from; must
