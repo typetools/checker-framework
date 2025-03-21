@@ -275,14 +275,12 @@ class ValueTreeAnnotator extends TreeAnnotator {
 
       TypeMirror newType = atm.getUnderlyingType();
       AnnotationMirror newAnno;
-      Range range;
 
       if (TypesUtils.isString(newType) || newType.getKind() == TypeKind.ARRAY) {
         // Strings and arrays do not allow conversions
         newAnno = oldAnno;
       } else if (atypeFactory.isIntRange(oldAnno)
-          && (range = atypeFactory.getRange(oldAnno))
-              .isWiderThan(ValueAnnotatedTypeFactory.MAX_VALUES)) {
+          && atypeFactory.getRange(oldAnno).isWiderThan(ValueAnnotatedTypeFactory.MAX_VALUES)) {
         Class<?> newClass = TypesUtils.getClassFromType(newType);
         if (newClass == String.class) {
           newAnno = atypeFactory.UNKNOWNVAL;
@@ -290,7 +288,9 @@ class ValueTreeAnnotator extends TreeAnnotator {
           throw new UnsupportedOperationException(
               "ValueAnnotatedTypeFactory: can't convert int to boolean");
         } else {
-          newAnno = atypeFactory.createIntRangeAnnotation(NumberUtils.castRange(newType, range));
+          newAnno =
+              atypeFactory.createIntRangeAnnotation(
+                  NumberUtils.castRange(newType, atypeFactory.getRange(oldAnno)));
         }
       } else {
         List<?> values =
