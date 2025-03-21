@@ -1,4 +1,4 @@
-package org.checkerframework.checker.resourceleak;
+package org.checkerframework.checker.rlccalledmethods;
 
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.VariableTree;
@@ -25,6 +25,8 @@ import org.checkerframework.checker.mustcall.qual.NotOwning;
 import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.mustcall.qual.PolyMustCall;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer;
+import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
@@ -44,17 +46,17 @@ import org.checkerframework.javacutil.TypesUtils;
  * Owning} fields are satisfied, and for checking that {@link CreatesMustCallFor} overrides are
  * valid.
  */
-public class ResourceLeakVisitor extends CalledMethodsVisitor {
+public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
 
   /** True if errors related to static owning fields should be suppressed. */
   private final boolean permitStaticOwning;
 
   /**
    * Because CalledMethodsVisitor doesn't have a type parameter, we need a reference to the type
-   * factory that has this static type to access the features that ResourceLeakAnnotatedTypeFactory
-   * implements but CalledMethodsAnnotatedTypeFactory does not.
+   * factory that has this static type to access the features that
+   * RLCCalledMethodsAnnotatedTypeFactory implements but CalledMethodsAnnotatedTypeFactory does not.
    */
-  private final ResourceLeakAnnotatedTypeFactory rlTypeFactory;
+  private final RLCCalledMethodsAnnotatedTypeFactory rlTypeFactory;
 
   /** True if -AnoLightweightOwnership was supplied on the command line. */
   private final boolean noLightweightOwnership;
@@ -70,17 +72,17 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
    *
    * @param checker the type-checker associated with this visitor
    */
-  public ResourceLeakVisitor(BaseTypeChecker checker) {
+  public RLCCalledMethodsVisitor(BaseTypeChecker checker) {
     super(checker);
-    rlTypeFactory = (ResourceLeakAnnotatedTypeFactory) atypeFactory;
+    rlTypeFactory = (RLCCalledMethodsAnnotatedTypeFactory) atypeFactory;
     permitStaticOwning = checker.hasOption("permitStaticOwning");
     noLightweightOwnership = checker.hasOption("noLightweightOwnership");
     enableWpiForRlc = checker.hasOption(ResourceLeakChecker.ENABLE_WPI_FOR_RLC);
   }
 
   @Override
-  protected ResourceLeakAnnotatedTypeFactory createTypeFactory() {
-    return new ResourceLeakAnnotatedTypeFactory(checker);
+  protected RLCCalledMethodsAnnotatedTypeFactory createTypeFactory() {
+    return new RLCCalledMethodsAnnotatedTypeFactory(checker);
   }
 
   @Override
@@ -343,16 +345,16 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
    *
    * @param elt an executable element
    * @param mcAtf a MustCallAnnotatedTypeFactory, to source the value element
-   * @param atypeFactory a ResourceLeakAnnotatedTypeFactory
+   * @param atypeFactory a RLCCalledMethodsAnnotatedTypeFactory
    * @return the literal strings present in the @CreatesMustCallFor annotation(s) of that element,
    *     substituting the default "this" for empty annotations. This method returns the empty list
    *     iff there are no @CreatesMustCallFor annotations on elt. The returned list is always
    *     modifiable if it is non-empty.
    */
-  /*package-private*/ static List<String> getCreatesMustCallForValues(
+  public static List<String> getCreatesMustCallForValues(
       ExecutableElement elt,
       MustCallAnnotatedTypeFactory mcAtf,
-      ResourceLeakAnnotatedTypeFactory atypeFactory) {
+      RLCCalledMethodsAnnotatedTypeFactory atypeFactory) {
     AnnotationMirror createsMustCallForList =
         atypeFactory.getDeclAnnotation(elt, CreatesMustCallFor.List.class);
     List<String> result = new ArrayList<>(4);
@@ -378,12 +380,12 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
    * Get all {@link EnsuresCalledMethods} annotations on an element.
    *
    * @param elt an executable element that might have {@link EnsuresCalledMethods} annotations
-   * @param atypeFactory a <code>ResourceLeakAnnotatedTypeFactory</code>
+   * @param atypeFactory a {@link RLCCalledMethodsAnnotatedTypeFactory}
    * @return a set of {@link EnsuresCalledMethods} annotations
    */
   @Pure
   private static AnnotationMirrorSet getEnsuresCalledMethodsAnnotations(
-      ExecutableElement elt, ResourceLeakAnnotatedTypeFactory atypeFactory) {
+      ExecutableElement elt, RLCCalledMethodsAnnotatedTypeFactory atypeFactory) {
     AnnotationMirror ensuresCalledMethodsAnnos =
         atypeFactory.getDeclAnnotation(elt, EnsuresCalledMethods.List.class);
     AnnotationMirrorSet result = new AnnotationMirrorSet();
