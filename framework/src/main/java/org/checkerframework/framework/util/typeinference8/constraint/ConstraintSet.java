@@ -184,8 +184,6 @@ public class ConstraintSet implements ReductionResult {
    */
   public ConstraintSet getClosedSubset(Dependencies dependencies) {
     ConstraintSet subset = new ConstraintSet();
-    Set<Variable> inputDependencies = new LinkedHashSet<>();
-    Set<Variable> outDependencies = new LinkedHashSet<>();
     Set<Variable> allOutputsOfC = new LinkedHashSet<>();
     for (Constraint constraint : list) {
       if (constraint instanceof TypeConstraint) {
@@ -220,12 +218,17 @@ public class ConstraintSet implements ReductionResult {
       return subset;
     }
 
-    outDependencies.clear();
-    inputDependencies.clear();
+    // TODO: double check that this code is correct.
+    // checker/tests/all-systems/java8inference/MapEntryGetFails.java is a test that uses this code.
+    Set<Variable> inputDependencies = new LinkedHashSet<>();
+    Set<Variable> outDependencies = new LinkedHashSet<>();
     // If this subset is empty, then there is a cycle (or cycles) in the graph of dependencies
     // between constraints.
+    // In this case, the constraints in C that participate in a dependency cycle (or cycles) and do
+    // not depend on any constraints outside of the cycle (or cycles) are considered.
     List<Constraint> consideredConstraints = new ArrayList<>();
     for (Constraint constraint : list) {
+
       if (!(constraint instanceof TypeConstraint)) {
         continue;
       }
