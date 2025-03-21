@@ -8,6 +8,7 @@ import org.checkerframework.checker.mustcall.MustCallNoCreatesMustCallForChecker
 import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsChecker;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.javacutil.TypeSystemError;
 
 /**
  * Collection of static utility functions related to the various (sub-) checkers within the
@@ -92,7 +93,7 @@ public class ResourceLeakUtils {
     } else if (referenceChecker instanceof MustCallChecker) {
       return getRLCCalledMethodsChecker(referenceChecker.getParentChecker());
     } else {
-      throw new IllegalArgumentException(
+      throw new TypeSystemError(
           "Bad argument to"
               + " ResourceLeakUtils#getRLCCalledMethodsChecker(): "
               + (referenceChecker == null ? "null" : referenceChecker.getClass().getSimpleName()));

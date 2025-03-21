@@ -10,6 +10,7 @@ import org.checkerframework.checker.resourceleak.SetOfTypes;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.qual.StubFiles;
 import org.checkerframework.framework.source.SourceChecker;
+import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.UserError;
 
 /**
@@ -75,7 +76,7 @@ public class RLCCalledMethodsChecker extends CalledMethodsChecker {
     if (this.rlc == null) {
       try {
         this.rlc = ResourceLeakUtils.getResourceLeakChecker(this);
-      } catch (IllegalArgumentException e) {
+      } catch (TypeSystemError e) {
         throw new UserError(
             "Cannot find ResourceLeakChecker in checker hierarchy. The RLCCalledMethods checker shouldn't be invoked directly, it is only a subchecker of the ResourceLeakChecker. Use the ResourceLeakChecker or the CalledMethodsChecker instead.");
       }
