@@ -8,7 +8,7 @@ public class Test {
     int x = 0;
 		switch(i) {
 			case WrappedInt(_) -> { x = x + 1; }
-			case WrappedBoolean(_) -> { x = x + 2; }
+			case WrappedBoolean(_) -> { x = x + 3; }
 		}
     return x;
 	}
