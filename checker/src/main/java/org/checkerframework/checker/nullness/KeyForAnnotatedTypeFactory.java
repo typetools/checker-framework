@@ -172,24 +172,65 @@ public class KeyForAnnotatedTypeFactory
       maps = AnnotationUtils.getElementValueArray(keyForAnno, keyForValueElement, String.class);
       // Special handling for static fields with KeyFor annotations.
       if (isUseOfStaticField(tree)) {
-        // Check if any map specified in KeyFor annotation has the form "this.fieldName"
+        // Get the element for the static field
+        javax.lang.model.element.Element element =
+            TreeUtils.elementFromUse((com.sun.source.tree.IdentifierTree) tree);
+
+        // Get the name of class for the static field
+        javax.lang.model.element.Element enclosingClass = element.getEnclosingElement();
+        String className = enclosingClass.toString();
+
+        // Get the class and field name from the map expression
+        String mapClass = null;
+        String mapField = null;
+
+        int lastDotIndex = mapExpression.lastIndexOf(".");
+        if (lastDotIndex > 0) {
+          mapClass = mapExpression.substring(0, lastDotIndex);
+          mapField = mapExpression.substring(lastDotIndex + 1);
+        }
+
+        // Check if any map in KeyFor annotation matches this map
         for (String map : maps) {
           if (map.startsWith("this.")) {
             String fieldName = map.substring(5);
-            if (mapExpression.endsWith("." + fieldName)) {
+
+            // Create canonical form by replacing "this." with class name
+            String canonicalMapReference = className + "." + fieldName;
+
+            // For static field access (Class.field) - direct match with canonical form
+            if (mapExpression.equals(canonicalMapReference)) {
               return true;
+            }
+            // For instance access (instance.field) - field name match
+            // This ensures static keys work with any instance's map
+            if (mapField != null && mapField.equals(fieldName)) {
+              // Verify mapClass is same as or subclass of className
+              try {
+                Class<?> mapClassType = Class.forName(mapClass);
+                Class<?> keyClassType = Class.forName(className);
+
+                if (keyClassType.isAssignableFrom(mapClassType)) {
+                  return true;
+                }
+              } catch (ClassNotFoundException e) {
+                // Fall back to string comparison
+                if (mapClass.equals(className)) {
+                  return true;
+                }
+              }
             }
           }
         }
+      } else {
+        KeyForValue value = getInferredValueFor(tree);
+        if (value != null) {
+          maps = value.getKeyForMaps();
+        }
       }
-    } else {
-      KeyForValue value = getInferredValueFor(tree);
-      if (value != null) {
-        maps = value.getKeyForMaps();
-      }
-    }
 
-    return maps != null && maps.contains(mapExpression);
+      return maps != null && maps.contains(mapExpression);
+    }
   }
 
   /**
