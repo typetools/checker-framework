@@ -16,6 +16,7 @@ import org.checkerframework.checker.nullness.qual.KeyForBottom;
 import org.checkerframework.checker.nullness.qual.PolyKeyFor;
 import org.checkerframework.checker.nullness.qual.UnknownKeyFor;
 import org.checkerframework.checker.signature.qual.CanonicalName;
+import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.util.NodeUtils;
@@ -29,7 +30,6 @@ import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.checker.signature.qual.ClassGetName;
 
 public class KeyForAnnotatedTypeFactory
     extends GenericAnnotatedTypeFactory<KeyForValue, KeyForStore, KeyForTransfer, KeyForAnalysis> {
