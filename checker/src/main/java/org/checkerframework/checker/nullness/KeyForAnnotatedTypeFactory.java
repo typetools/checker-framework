@@ -16,6 +16,7 @@ import org.checkerframework.checker.nullness.qual.KeyForBottom;
 import org.checkerframework.checker.nullness.qual.PolyKeyFor;
 import org.checkerframework.checker.nullness.qual.UnknownKeyFor;
 import org.checkerframework.checker.signature.qual.CanonicalName;
+import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.util.NodeUtils;
@@ -170,14 +171,88 @@ public class KeyForAnnotatedTypeFactory
     AnnotationMirror keyForAnno = type.getEffectiveAnnotation(KeyFor.class);
     if (keyForAnno != null) {
       maps = AnnotationUtils.getElementValueArray(keyForAnno, keyForValueElement, String.class);
-    } else {
-      KeyForValue value = getInferredValueFor(tree);
-      if (value != null) {
-        maps = value.getKeyForMaps();
-      }
-    }
+      // Special handling for static fields with KeyFor annotations.
+      if (isUseOfStaticField(tree)) {
+        // Get the element for the static field
+        javax.lang.model.element.Element element =
+            TreeUtils.elementFromUse((com.sun.source.tree.IdentifierTree) tree);
 
-    return maps != null && maps.contains(mapExpression);
+        // Get the name of class for the static field
+        javax.lang.model.element.Element enclosingClass = element.getEnclosingElement();
+        String className = enclosingClass.toString();
+
+        // Get the class and field name from the map expression
+        String mapClass = null;
+        String mapField = null;
+
+        int lastDotIndex = mapExpression.lastIndexOf(".");
+        if (lastDotIndex > 0) {
+          mapClass = mapExpression.substring(0, lastDotIndex);
+          mapField = mapExpression.substring(lastDotIndex + 1);
+        }
+
+        // Check if any map in KeyFor annotation matches this map
+        for (String map : maps) {
+          if (map.startsWith("this.")) {
+            String fieldName = map.substring(5);
+
+            // Create canonical form by replacing "this." with class name
+            String canonicalMapReference = className + "." + fieldName;
+
+            // For static field access (Class.field) - direct match with canonical form
+            if (mapExpression.equals(canonicalMapReference)) {
+              return true;
+            }
+            // For instance access (instance.field) - field name match
+            // This ensures static keys work with any instance's map
+            if (mapField != null && mapField.equals(fieldName)) {
+              // Verify mapClass is same as or subclass of className
+              try {
+                @SuppressWarnings("signature")
+                @ClassGetName
+                String classGetName = mapClass;
+                Class<?> mapClassType = Class.forName(classGetName);
+                Class<?> keyClassType = Class.forName(className);
+
+                if (keyClassType.isAssignableFrom(mapClassType)) {
+                  return true;
+                }
+              } catch (ClassNotFoundException e) {
+                // Fall back to string comparison
+                if (mapClass.equals(className)) {
+                  return true;
+                }
+              }
+            }
+          }
+        }
+      } else {
+        KeyForValue value = getInferredValueFor(tree);
+        if (value != null) {
+          maps = value.getKeyForMaps();
+        }
+      }
+
+      return maps != null && maps.contains(mapExpression);
+    }
+    return false;
+  }
+
+  /**
+   * Returns true if the expression tree represents a use of a static field.
+   *
+   * @param tree the tree to check
+   * @return true if the tree is a use of a static field
+   */
+  private boolean isUseOfStaticField(ExpressionTree tree) {
+    if (!(tree instanceof com.sun.source.tree.IdentifierTree)) {
+      return false;
+    }
+    javax.lang.model.element.Element element =
+        TreeUtils.elementFromUse((com.sun.source.tree.IdentifierTree) tree);
+    return element != null
+        && element.getKind() == javax.lang.model.element.ElementKind.FIELD
+        && element.getModifiers().contains(javax.lang.model.element.Modifier.STATIC);
   }
 
   @Override
