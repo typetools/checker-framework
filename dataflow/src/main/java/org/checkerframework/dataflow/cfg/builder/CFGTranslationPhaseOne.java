@@ -586,7 +586,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @return the result of visiting the tree
    */
   private Node visitAnyPattern22(Tree anyPatternTree, Void unused) {
-    return new AnyPatternNode(TreeUtils.typeOf(anyPatternTree), anyPatternTree);
+    AnyPatternNode anyPatternNode =
+        new AnyPatternNode(TreeUtils.typeOf(anyPatternTree), anyPatternTree);
+    extendWithNode(anyPatternNode);
+    return anyPatternNode;
   }
 
   /**
