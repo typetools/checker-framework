@@ -29,6 +29,7 @@ import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.checker.signature.qual.ClassGetName;
 
 public class KeyForAnnotatedTypeFactory
     extends GenericAnnotatedTypeFactory<KeyForValue, KeyForStore, KeyForTransfer, KeyForAnalysis> {
@@ -207,7 +208,8 @@ public class KeyForAnnotatedTypeFactory
             if (mapField != null && mapField.equals(fieldName)) {
               // Verify mapClass is same as or subclass of className
               try {
-                Class<?> mapClassType = Class.forName(mapClass);
+                @ClassGetName String classGetName = mapClass;
+                Class<?> mapClassType = Class.forName(classGetName);
                 Class<?> keyClassType = Class.forName(className);
 
                 if (keyClassType.isAssignableFrom(mapClassType)) {
