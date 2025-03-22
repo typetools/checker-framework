@@ -208,6 +208,7 @@ public class KeyForAnnotatedTypeFactory
             if (mapField != null && mapField.equals(fieldName)) {
               // Verify mapClass is same as or subclass of className
               try {
+                @SuppressWarnings("signature")
                 @ClassGetName String classGetName = mapClass;
                 Class<?> mapClassType = Class.forName(classGetName);
                 Class<?> keyClassType = Class.forName(className);
