@@ -580,8 +580,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   /**
    * Visit a AnyPatternTree.
    *
-   * @param anyPatternTree an AnyPatternTree, typed as Tree so the Checker
-   *     Framework compiles under JDK 21 and earlier
+   * @param anyPatternTree an AnyPatternTree, typed as Tree so the Checker Framework compiles under
+   *     JDK 21 and earlier
    * @param unused an unused parameter
    * @return the result of visiting the tree
    */

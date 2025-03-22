@@ -1,11 +1,10 @@
 package org.checkerframework.dataflow.cfg.node;
 
 import com.sun.source.tree.Tree;
-import org.checkerframework.checker.nullness.qual.Nullable;
-import javax.lang.model.type.TypeMirror;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
+import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class AnyPatternNode extends Node {
 
