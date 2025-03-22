@@ -231,6 +231,7 @@ public class KeyForAnnotatedTypeFactory
 
       return maps != null && maps.contains(mapExpression);
     }
+    return false;
   }
 
   /**
