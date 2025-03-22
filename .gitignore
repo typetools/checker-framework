@@ -163,6 +163,8 @@ dataflow/tests/live-variable/Out.txt
 dataflow/tests/live-variable/*.class
 dataflow/tests/reachingdef/Out.txt
 dataflow/tests/reachingdef/*.class
+dataflow/tests/unnamed-pattern/Out.txt
+dataflow/tests/unnamed-pattern/*.class
 
 
 checker/jtreg/multipleexecutions/Main.class
