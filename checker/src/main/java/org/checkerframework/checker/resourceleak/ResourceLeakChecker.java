@@ -187,17 +187,8 @@ public class ResourceLeakChecker extends AggregateChecker {
     super.typeProcessingOver();
   }
 
-  // /**
-  //  * Disable the Returns Receiver Checker unless it has been explicitly enabled with the {@link
-  //  * #ENABLE_RETURNS_RECEIVER} option.
-  //  */
-  // protected boolean isReturnsReceiverDisabled() {
-  //   RLCCalledMethodsChecker rlccmc = ResourceLeakUtils.getRLCCalledMethodsChecker(this);
-  //   return !hasOption(ENABLE_RETURNS_RECEIVER) || rlccmc.isReturnsReceiverDisabled();
-  // }
-
   /**
-   * Get the set of exceptions that should be ignored. This set comes from the {@link
+   * Returns the set of exceptions that should be ignored. This set comes from the {@link
    * #IGNORED_EXCEPTIONS} option if it was provided, or {@link #DEFAULT_IGNORED_EXCEPTIONS} if not.
    *
    * @return the set of exceptions to ignore

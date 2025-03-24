@@ -127,7 +127,7 @@ class SwitchTests {
     switch (myInt) {
       case 1:
         System.out.print("Hello ");
-        // Fall through to next case
+      // Fall through to next case
       case 2:
         System.out.println("World");
         break;

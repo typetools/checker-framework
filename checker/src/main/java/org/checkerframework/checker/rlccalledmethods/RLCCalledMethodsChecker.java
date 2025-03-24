@@ -4,17 +4,20 @@ import java.util.Set;
 import org.checkerframework.checker.calledmethods.CalledMethodsChecker;
 import org.checkerframework.checker.mustcall.MustCallChecker;
 import org.checkerframework.checker.mustcall.MustCallNoCreatesMustCallForChecker;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
 import org.checkerframework.checker.resourceleak.ResourceLeakUtils;
 import org.checkerframework.checker.resourceleak.SetOfTypes;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.qual.StubFiles;
 import org.checkerframework.framework.source.SourceChecker;
+import org.checkerframework.javacutil.TypeSystemError;
+import org.checkerframework.javacutil.UserError;
 
 /**
  * The entry point for the RLCCalledMethodsChecker. This checker is a modifed {@link
  * CalledMethodsChecker} used as a subchecker in the ResourceLeakChecker, and never independently.
- * Runs the MustCallChecker as a subchecker in order to share the cfg.
+ * Runs the MustCallChecker as a subchecker in order to share the CFG.
  */
 @StubFiles("IOUtils.astub")
 public class RLCCalledMethodsChecker extends CalledMethodsChecker {
@@ -23,7 +26,7 @@ public class RLCCalledMethodsChecker extends CalledMethodsChecker {
   public RLCCalledMethodsChecker() {}
 
   /** The parent resource leak checker */
-  private ResourceLeakChecker rlc;
+  private @MonotonicNonNull ResourceLeakChecker rlc;
 
   @Override
   protected BaseTypeVisitor<?> createSourceVisitor() {
@@ -41,9 +44,14 @@ public class RLCCalledMethodsChecker extends CalledMethodsChecker {
     return getResourceLeakChecker().getIgnoredExceptions();
   }
 
+  /**
+   * Disable the Returns Receiver Checker unless it has been explicitly enabled with the {@link
+   * ResourceLeakChecker#ENABLE_RETURNS_RECEIVER} option.
+   */
   @Override
-  public boolean isReturnsReceiverDisabled() {
-    return super.isReturnsReceiverDisabled();
+  protected boolean isReturnsReceiverDisabled() {
+    return !getResourceLeakChecker().hasOption(ResourceLeakChecker.ENABLE_RETURNS_RECEIVER)
+        || super.isReturnsReceiverDisabled();
   }
 
   @Override
@@ -67,7 +75,12 @@ public class RLCCalledMethodsChecker extends CalledMethodsChecker {
    */
   private ResourceLeakChecker getResourceLeakChecker() {
     if (this.rlc == null) {
-      this.rlc = ResourceLeakUtils.getResourceLeakChecker(this);
+      try {
+        this.rlc = ResourceLeakUtils.getResourceLeakChecker(this);
+      } catch (TypeSystemError e) {
+        throw new UserError(
+            "Cannot find ResourceLeakChecker in checker hierarchy. The RLCCalledMethods checker shouldn't be invoked directly, it is only a subchecker of the ResourceLeakChecker. Use the ResourceLeakChecker or the CalledMethodsChecker instead.");
+      }
     }
 
     return this.rlc;
