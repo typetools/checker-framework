@@ -56,10 +56,10 @@ public class ResourceLeakUtils {
   public static ResourceLeakChecker getResourceLeakChecker(SourceChecker referenceChecker) {
     if (referenceChecker instanceof ResourceLeakChecker) {
       return (ResourceLeakChecker) referenceChecker;
-    } else if ("RLCCalledMethodsChecker".equals(className)
-        || "CollectionOwnershipChecker".equals(className)
-        || "MustCallChecker".equals(className)
-        || "MustCallNoCreatesMustCallForChecker".equals(className)) {
+    } else if (referenceChecker instanceof RLCCalledMethodsChecker
+        || referenceChecker instanceof CollectionOwnershipChecker
+        || referenceChecker instanceof MustCallChecker
+        || referenceChecker instanceof MustCallNoCreatesMustCallForChecker) {
       return getResourceLeakChecker(referenceChecker.getParentChecker());
     } else {
       throw new TypeSystemError(
@@ -115,7 +115,9 @@ public class ResourceLeakUtils {
           referenceChecker.getSubchecker(CollectionOwnershipChecker.class));
     } else {
       throw new IllegalArgumentException(
-          "Argument referenceChecker to ResourceLeakUtils#getMustCallAnnotatedTypeFactory(referenceChecker) expected to be an RLC checker but is "
+          "Argument referenceChecker to"
+              + " ResourceLeakUtils#getMustCallAnnotatedTypeFactory(referenceChecker) expected to"
+              + " be an RLC checker but is "
               + className);
     }
   }
