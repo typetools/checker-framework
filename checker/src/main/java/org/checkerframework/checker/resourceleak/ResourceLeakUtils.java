@@ -58,8 +58,7 @@ public class ResourceLeakUtils {
       return (ResourceLeakChecker) referenceChecker;
     } else if (referenceChecker instanceof RLCCalledMethodsChecker
         || referenceChecker instanceof CollectionOwnershipChecker
-        || referenceChecker instanceof MustCallChecker
-        || referenceChecker instanceof MustCallNoCreatesMustCallForChecker) {
+        || referenceChecker instanceof MustCallChecker) {
       return getResourceLeakChecker(referenceChecker.getParentChecker());
     } else {
       throw new TypeSystemError(
@@ -123,7 +122,7 @@ public class ResourceLeakUtils {
   }
 
   /**
-   * Given a type factory part of the resource leak ecosystem, returns the {@link
+   * Given a type factory that is part of the resource leak checker hierarchy, returns the {@link
    * RLCCalledMethodsChecker} in the checker hierarchy.
    *
    * @param referenceAtf the type factory to retrieve the {@link RLCCalledMethodsChecker} from; must
