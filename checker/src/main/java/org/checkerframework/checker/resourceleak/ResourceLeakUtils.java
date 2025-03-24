@@ -149,7 +149,7 @@ public class ResourceLeakUtils {
     } else if (referenceChecker instanceof ResourceLeakChecker) {
       return getRLCCalledMethodsChecker(
           referenceChecker.getSubchecker(CollectionOwnershipChecker.class));
-    } else if ("CollectionOwnershipChecker".equals(className)) {
+    } else if (referenceChecker instanceof CollectionOwnershipChecker) {
       return getRLCCalledMethodsChecker(
           referenceChecker.getSubchecker(RLCCalledMethodsChecker.class));
     } else if (referenceChecker instanceof MustCallChecker) {
