@@ -1,4 +1,4 @@
-package org.checkerframework.checker.resourceleak;
+package org.checkerframework.checker.rlccalledmethods;
 
 import com.sun.source.tree.MethodInvocationTree;
 import java.util.List;
@@ -9,6 +9,7 @@ import org.checkerframework.checker.calledmethods.CalledMethodsTransfer;
 import org.checkerframework.checker.mustcall.CreatesMustCallForToJavaExpression;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.MustCallChecker;
+import org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer;
 import org.checkerframework.common.accumulation.AccumulationStore;
 import org.checkerframework.common.accumulation.AccumulationValue;
 import org.checkerframework.dataflow.analysis.TransferInput;
@@ -25,23 +26,23 @@ import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /** The transfer function for the resource-leak extension to the called-methods type system. */
-public class ResourceLeakTransfer extends CalledMethodsTransfer {
+public class RLCCalledMethodsTransfer extends CalledMethodsTransfer {
 
   /**
    * Shadowed because we must dispatch to the Resource Leak Checker's version of
    * getTypefactoryOfSubchecker to get the correct MustCallAnnotatedTypeFactory.
    */
-  private final ResourceLeakAnnotatedTypeFactory rlTypeFactory;
+  private final RLCCalledMethodsAnnotatedTypeFactory rlTypeFactory;
 
   /**
    * Create a new resource leak transfer function.
    *
    * @param analysis the analysis. Its type factory must be a {@link
-   *     ResourceLeakAnnotatedTypeFactory}.
+   *     RLCCalledMethodsAnnotatedTypeFactory}.
    */
-  public ResourceLeakTransfer(ResourceLeakAnalysis analysis) {
+  public RLCCalledMethodsTransfer(RLCCalledMethodsAnalysis analysis) {
     super(analysis);
-    this.rlTypeFactory = (ResourceLeakAnnotatedTypeFactory) analysis.getTypeFactory();
+    this.rlTypeFactory = (RLCCalledMethodsAnnotatedTypeFactory) analysis.getTypeFactory();
   }
 
   @Override
