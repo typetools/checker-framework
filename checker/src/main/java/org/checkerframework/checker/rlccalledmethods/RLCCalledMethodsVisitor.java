@@ -380,7 +380,7 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
    * Get all {@link EnsuresCalledMethods} annotations on an element.
    *
    * @param elt an executable element that might have {@link EnsuresCalledMethods} annotations
-   * @param atypeFactory a <code>RLCCalledMethodsAnnotatedTypeFactory</code>
+   * @param atypeFactory a {@link RLCCalledMethodsAnnotatedTypeFactory}
    * @return a set of {@link EnsuresCalledMethods} annotations
    */
   @Pure

@@ -4,12 +4,14 @@ import java.util.Set;
 import org.checkerframework.checker.calledmethods.CalledMethodsChecker;
 import org.checkerframework.checker.mustcall.MustCallChecker;
 import org.checkerframework.checker.mustcall.MustCallNoCreatesMustCallForChecker;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
 import org.checkerframework.checker.resourceleak.ResourceLeakUtils;
 import org.checkerframework.checker.resourceleak.SetOfTypes;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.qual.StubFiles;
 import org.checkerframework.framework.source.SourceChecker;
+import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.UserError;
 
 /**
@@ -24,7 +26,7 @@ public class RLCCalledMethodsChecker extends CalledMethodsChecker {
   public RLCCalledMethodsChecker() {}
 
   /** The parent resource leak checker */
-  private ResourceLeakChecker rlc;
+  private @MonotonicNonNull ResourceLeakChecker rlc;
 
   @Override
   protected BaseTypeVisitor<?> createSourceVisitor() {
@@ -75,7 +77,7 @@ public class RLCCalledMethodsChecker extends CalledMethodsChecker {
     if (this.rlc == null) {
       try {
         this.rlc = ResourceLeakUtils.getResourceLeakChecker(this);
-      } catch (IllegalArgumentException e) {
+      } catch (TypeSystemError e) {
         throw new UserError(
             "Cannot find ResourceLeakChecker in checker hierarchy. The RLCCalledMethods checker shouldn't be invoked directly, it is only a subchecker of the ResourceLeakChecker. Use the ResourceLeakChecker or the CalledMethodsChecker instead.");
       }
