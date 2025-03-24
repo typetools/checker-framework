@@ -2,6 +2,7 @@
  * Demonstrates an issue in the Checker Framework with handling the nearest enclosing element for
  * temporary variable declarations, leading to a crash during analysis.
  */
+@SuppressWarnings("all") // only check for crashes
 public abstract class CrashForTempVar<T extends Number> {
 
   private final CrashForTempVar<T> _base;
