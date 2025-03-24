@@ -372,10 +372,13 @@ public class ConstraintSet implements ReductionResult {
       // each constraint is supposed to be fully resolved before moving onto another one.
       this.push((Constraint) result);
     } else if (result instanceof ConstraintSet) {
-      // Add the new constraints to the beginning of the list so they are reduced first. This is
-      // because
-      // each constraint is supposed to be fully resolved before moving onto another one.
-      this.push((ConstraintSet) result);
+      if (result == TRUE_ANNO_FAIL) {
+        this.annotationFailure = true;
+      } else {
+        // Add the new constraints to the beginning of the list so they are reduced first. This is
+        // because each constraint is supposed to be fully resolved before moving onto another one.
+        this.push((ConstraintSet) result);
+      }
     } else if (result instanceof BoundSet) {
       boundSet.merge((BoundSet) result);
       if (boundSet.containsFalse()) {
