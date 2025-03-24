@@ -75,7 +75,7 @@ public class ResourceLeakUtils {
    * @param referenceAtf the type factory to retrieve the {@link MustCallAnnotatedTypeFactory} from
    * @return the {@link MustCallAnnotatedTypeFactory} in the checker hierarchy
    */
-  public static @NonNull MustCallAnnotatedTypeFactory getMustCallAnnotatedTypeFactory(
+  public static MustCallAnnotatedTypeFactory getMustCallAnnotatedTypeFactory(
       AnnotatedTypeFactory referenceAtf) {
     if (referenceAtf == null) {
       throw new IllegalArgumentException("Argument referenceAtf cannot be null");
