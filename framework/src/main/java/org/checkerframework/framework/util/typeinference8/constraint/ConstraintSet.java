@@ -394,7 +394,11 @@ public class ConstraintSet implements ReductionResult {
     if (this.annotationFailure) {
       boundSet.annoInferenceFailed = true;
       if (!alreadyFailed && boundSet.errorMsg.isEmpty()) {
-        boundSet.errorMsg = constraint.toString();
+        if (constraint instanceof TypeConstraint) {
+          boundSet.errorMsg = ((TypeConstraint) constraint).constraintHistory();
+        } else {
+          boundSet.errorMsg = constraint.toString();
+        }
       }
     }
     return boundSet;
