@@ -161,8 +161,8 @@ public class CFTreeBuilder extends TreeBuilder {
         }
         typeTree = maker.TypeIntersection(components);
         break;
-        // case UNION:
-        // TODO: case UNION similar to INTERSECTION, but write test first.
+      // case UNION:
+      // TODO: case UNION similar to INTERSECTION, but write test first.
       case DECLARED:
         typeTree = maker.Type((Type) type);
 
