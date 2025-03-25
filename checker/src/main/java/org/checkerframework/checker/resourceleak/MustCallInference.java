@@ -33,6 +33,7 @@ import org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer.Blo
 import org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer.MethodExitKind;
 import org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer.Obligation;
 import org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer.ResourceAlias;
+import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsAnnotatedTypeFactory;
 import org.checkerframework.common.accumulation.AccumulationStore;
 import org.checkerframework.common.accumulation.AccumulationValue;
 import org.checkerframework.common.wholeprograminference.WholeProgramInference;
@@ -69,9 +70,9 @@ import org.plumelib.util.CollectionsPlume;
  *
  * <p>Each instance of this class corresponds to a single control flow graph (CFG), typically
  * representing a method. The entry method of this class is {@link
- * #runMustCallInference(ResourceLeakAnnotatedTypeFactory, ControlFlowGraph,
+ * #runMustCallInference(RLCCalledMethodsAnnotatedTypeFactory, ControlFlowGraph,
  * MustCallConsistencyAnalyzer)}, invoked from the {@link
- * ResourceLeakAnnotatedTypeFactory#postAnalyze} method when Whole Program Inference is enabled.
+ * RLCCalledMethodsAnnotatedTypeFactory#postAnalyze} method when Whole Program Inference is enabled.
  *
  * <p>The algorithm determines if the @MustCall obligation of a field is satisfied along some path
  * leading to the regular exit point of the method. If the obligation is satisfied, the algorithm
@@ -120,7 +121,7 @@ public class MustCallInference {
   /**
    * The type factory for the Resource Leak Checker, which is used to access the Must Call Checker.
    */
-  private final ResourceLeakAnnotatedTypeFactory resourceLeakAtf;
+  private final RLCCalledMethodsAnnotatedTypeFactory resourceLeakAtf;
 
   /** The MustCallConsistencyAnalyzer. */
   private final MustCallConsistencyAnalyzer mcca;
@@ -172,7 +173,7 @@ public class MustCallInference {
    * @param mcca the MustCallConsistencyAnalyzer
    */
   /*package-private*/ MustCallInference(
-      ResourceLeakAnnotatedTypeFactory resourceLeakAtf,
+      RLCCalledMethodsAnnotatedTypeFactory resourceLeakAtf,
       ControlFlowGraph cfg,
       MustCallConsistencyAnalyzer mcca) {
     this.resourceLeakAtf = resourceLeakAtf;
@@ -198,15 +199,15 @@ public class MustCallInference {
 
   /**
    * Creates a MustCallInference instance and runs the inference algorithm. This method is called by
-   * the {@link ResourceLeakAnnotatedTypeFactory#postAnalyze} method if Whole Program Inference is
-   * enabled.
+   * the {@link RLCCalledMethodsAnnotatedTypeFactory#postAnalyze} method if Whole Program Inference
+   * is enabled.
    *
    * @param resourceLeakAtf the type factory
    * @param cfg the control flow graph of the method to check
    * @param mcca the MustCallConsistencyAnalyzer
    */
-  /*package-private*/ static void runMustCallInference(
-      ResourceLeakAnnotatedTypeFactory resourceLeakAtf,
+  public static void runMustCallInference(
+      RLCCalledMethodsAnnotatedTypeFactory resourceLeakAtf,
       ControlFlowGraph cfg,
       MustCallConsistencyAnalyzer mcca) {
     MustCallInference mustCallInferenceLogic = new MustCallInference(resourceLeakAtf, cfg, mcca);
@@ -248,7 +249,7 @@ public class MustCallInference {
         // before the checking phase. However, calling
         // updateObligationsWithInvocationResult() will not have any side effects on the
         // outcome of the Resource Leak Checker. This is because the inference occurs within
-        // the postAnalyze method of the ResourceLeakAnnotatedTypeFactory, once the
+        // the postAnalyze method of the RLCCalledMethodsAnnotatedTypeFactory, once the
         // consistency analyzer has completed its process.
         if (node instanceof MethodInvocationNode || node instanceof ObjectCreationNode) {
           if (mcca.shouldTrackInvocationResult(obligations, node, true)) {
@@ -393,7 +394,7 @@ public class MustCallInference {
    * @return true if the field is an owning candidate, false otherwise
    */
   private boolean isFieldOwningCandidate(
-      ResourceLeakAnnotatedTypeFactory resourceLeakAtf, Element field) {
+      RLCCalledMethodsAnnotatedTypeFactory resourceLeakAtf, Element field) {
     AnnotationMirror mustCallAnnotation = resourceLeakAtf.getMustCallAnnotation(field);
     if (mustCallAnnotation == null) {
       // Indicates @MustCallUnknown. We want to  conservatively avoid inferring an @Owning
