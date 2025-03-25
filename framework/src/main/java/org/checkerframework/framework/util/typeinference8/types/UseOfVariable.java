@@ -10,6 +10,7 @@ import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.framework.util.typeinference8.constraint.Constraint;
 import org.checkerframework.framework.util.typeinference8.types.VariableBounds.BoundKind;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.AnnotationMirrorMap;
@@ -155,31 +156,32 @@ public class UseOfVariable extends AbstractType {
   /**
    * Adds a bound for this variable, is this use does not have a primary annotation.
    *
+   * @param parent the constraint whose reduction created this bound
    * @param kind the kind of bound
    * @param bound the type of the bound
    */
-  public void addBound(BoundKind kind, AbstractType bound) {
+  public void addBound(Constraint parent, BoundKind kind, AbstractType bound) {
     if (!hasPrimaryAnno) {
-      variable.getBounds().addBound(kind, bound);
+      variable.getBounds().addBound(parent, kind, bound);
     } else {
       // If the use has a primary annotation, then add the bound but with that annotations
       // set to bottom or top.  This makes it so that the java type is still a bound, but
       // the qualifiers do not change the results of inference.
       if (kind == BoundKind.LOWER) {
         bound.getAnnotatedType().replaceAnnotations(bots);
-        variable.getBounds().addBound(kind, bound);
+        variable.getBounds().addBound(parent, kind, bound);
       } else if (kind == BoundKind.UPPER) {
         bound.getAnnotatedType().replaceAnnotations(tops);
-        variable.getBounds().addBound(kind, bound);
+        variable.getBounds().addBound(parent, kind, bound);
       } else {
         AnnotatedTypeMirror copyATM = bound.getAnnotatedType().deepCopy();
         AbstractType boundCopy = bound.create(copyATM, bound.getJavaType());
 
         bound.getAnnotatedType().replaceAnnotations(tops);
-        variable.getBounds().addBound(BoundKind.UPPER, bound);
+        variable.getBounds().addBound(parent, BoundKind.UPPER, bound);
 
         boundCopy.getAnnotatedType().replaceAnnotations(bots);
-        variable.getBounds().addBound(BoundKind.LOWER, boundCopy);
+        variable.getBounds().addBound(parent, BoundKind.LOWER, boundCopy);
       }
     }
   }
