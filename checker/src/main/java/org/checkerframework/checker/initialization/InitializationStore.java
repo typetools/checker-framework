@@ -29,6 +29,8 @@ import org.plumelib.util.ToStringComparator;
  * A store that extends {@code CFAbstractStore} and additionally tracks which fields of the 'self'
  * reference have been initialized.
  *
+ * @param <V> the type of values in the abstract store
+ * @param <S> the type of teh abstract store
  * @see InitializationTransfer
  */
 public class InitializationStore<
