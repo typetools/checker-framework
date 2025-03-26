@@ -7,7 +7,7 @@ export SHELLOPTS
 echo "SHELLOPTS=${SHELLOPTS}"
 
 SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-export ORG_GRADLE_PROJECT_useJdk17Compiler=true
+export ORG_GRADLE_PROJECT_useJdk21Compiler=true
 source "$SCRIPTDIR"/clone-related.sh
 
 # Run assembleForJavac because it does not build the javadoc, so it is faster than assemble.
