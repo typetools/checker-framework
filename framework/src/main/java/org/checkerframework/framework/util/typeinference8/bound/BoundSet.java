@@ -125,7 +125,7 @@ public class BoundSet implements ReductionResult {
     if (this.errorMsg.isEmpty()) {
       this.errorMsg = newSet.errorMsg;
     } else if (!newSet.errorMsg.isEmpty()) {
-      this.errorMsg += " " + newSet.errorMsg;
+      this.errorMsg += System.lineSeparator() + newSet.errorMsg;
     }
     return changed;
   }
