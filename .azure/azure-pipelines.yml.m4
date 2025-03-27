@@ -1,3 +1,5 @@
+# DO NOT EDIT azure-pipelines.yml.  Edit azure-pipelines.yml.m4 and defs.m4 instead.
+
 changequote(`[',`]')dnl
 include([defs.m4])dnl
 # Workaround for https://status.dev.azure.com/_event/179641421
@@ -45,7 +47,7 @@ nonjunit_job(21)
 # So use a timeout of 90 minutes, and hope that is enough.
 inference_job_split(21)
 
-# Unlimited fetchDepth for misc_jobs, because of need to make contributors.tex
+# Unlimited fetchDepth (0) for misc_jobs, because of need to make contributors.tex .
 misc_job(11)
 misc_job(17)
 misc_job(21)
