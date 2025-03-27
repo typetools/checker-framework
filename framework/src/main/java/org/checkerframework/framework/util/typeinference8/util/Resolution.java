@@ -189,7 +189,7 @@ public class Resolution {
     assert !boundSet.containsFalse();
 
     if (boundSet.containsCapture(as)) {
-      resolveNoCapturesFirst(new ArrayList<>(as));
+      resolveNonCapturesFirst(new ArrayList<>(as));
       boundSet.getInstantiatedVariables().forEach(as::remove);
       // Then resolve the capture variables
       return resolveWithCapture(as, boundSet, context);
@@ -217,7 +217,7 @@ public class Resolution {
    *
    * @param variables the variables
    */
-  private void resolveNoCapturesFirst(List<Variable> variables) {
+  private void resolveNonCapturesFirst(List<Variable> variables) {
     Variable smallV;
     do {
       smallV = null;
