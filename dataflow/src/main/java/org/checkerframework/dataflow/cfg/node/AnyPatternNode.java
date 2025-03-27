@@ -7,7 +7,10 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 
-/** A node for an any pattern ({@code _}). */
+/**
+ * A node for an any pattern, which is "{@code _}" in "{@code case _ -> ...code that ignores the
+ * switched value...}" or "{@code case MyType(_) -> ...}".
+ */
 public class AnyPatternNode extends Node {
 
   /**
