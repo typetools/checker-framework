@@ -140,7 +140,7 @@ public class ConstraintSet implements ReductionResult {
   }
 
   /**
-   * Adds the constraint to the beginning of the set.
+   * Adds the constraint to the beginning of this set.
    *
    * @param constraint a constraint
    */
@@ -151,7 +151,7 @@ public class ConstraintSet implements ReductionResult {
   }
 
   /**
-   * Adds the constraints to the beginning of the set and matatines the order of the constraints.
+   * Adds the constraints to the beginning of this set and matatines the order of the constraints.
    *
    * @param constraints constraints
    */
