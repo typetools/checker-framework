@@ -52,6 +52,7 @@ public class AnnotationMirrorSet
    *
    * @param value the AnnotationMirror to put in the set
    */
+  @SuppressWarnings("this-escape") // suppression only required under JDK 11
   public AnnotationMirrorSet(AnnotationMirror value) {
     this.add(value);
   }
