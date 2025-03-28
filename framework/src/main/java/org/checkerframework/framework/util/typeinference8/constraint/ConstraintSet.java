@@ -374,8 +374,7 @@ public class ConstraintSet implements ReductionResult {
       this.addAll(((ReductionResultPair) result).constraintSet);
     } else if (result instanceof TypeConstraint) {
       // Add the new constraints to the beginning of the list so they are reduced first. This is
-      // because
-      // each constraint is supposed to be fully resolved before moving onto another one.
+      // because each constraint is supposed to be fully resolved before moving onto another one.
       this.push((Constraint) result);
     } else if (result instanceof ConstraintSet) {
       if (result == TRUE_ANNO_FAIL) {
