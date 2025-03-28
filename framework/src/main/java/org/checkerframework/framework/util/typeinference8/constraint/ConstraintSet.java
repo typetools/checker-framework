@@ -56,7 +56,7 @@ public class ConstraintSet implements ReductionResult {
   /**
    * A list of constraints in this set. It does not contain constraints that are equal. This needs
    * to be kept in the order created, which should be lexically left to right. This is so the {@link
-   * #getClosedSubset(Dependencies)} is computed correctly.
+   * #getClosedSubset(ConstraintSet, Dependencies)} is computed correctly.
    */
   private final List<Constraint> list;
 
@@ -175,43 +175,45 @@ public class ConstraintSet implements ReductionResult {
   }
 
   /**
-   * A subset of constraints is selected in this constraint set, satisfying the property that, for
-   * each constraint, no input variable can influence an output variable of another constraint in
-   * this constraint set. (See JLS 18.5.2.2)
+   * A subset of constraints is selected in C, satisfying the property that, for each constraint, no
+   * input variable can influence an output variable of another constraint in C. (See JLS 18.5.2.2)
    *
+   * @param c a constraint set
    * @param dependencies an object describing the dependencies of inference variables
    * @return s a subset of constraints is this constraint set
    */
-  public ConstraintSet getClosedSubset(Dependencies dependencies) {
+  public static ConstraintSet getClosedSubset(ConstraintSet c, Dependencies dependencies) {
     ConstraintSet subset = new ConstraintSet();
-    // Collection of all outputs of the constraints in this set.
-    Set<Variable> allOutputs = new LinkedHashSet<>();
-    for (Constraint constraint : list) {
+    // Collection of all outputs of c.
+    Set<Variable> allOutputsOfC = new LinkedHashSet<>();
+    for (Constraint constraint : c.list) {
       if (constraint instanceof TypeConstraint) {
-        allOutputs.addAll(((TypeConstraint) constraint).getOutputVariables());
+        allOutputsOfC.addAll(((TypeConstraint) constraint).getOutputVariables());
       }
       // No other constraints have output variables
     }
 
     // Find a subset of this set where the following is true for all the constraints in the subset:
-    // no input variable of a constraint can influence an output variable of another constraint in
-    // the subset.
+    // no input variable of a constraint can influence an output variable of another constraint in c
     // (Influence means that neither variable can depend on the other.)
-    for (Constraint constraint : list) {
+    // The JLS does not specify whether this subset should be as large as possible, but this
+    // implementation returns the largest subset possible.
+    for (Constraint constraint : c.list) {
       if (constraint.getKind() == Kind.EXPRESSION
           || constraint.getKind() == Kind.LAMBDA_EXCEPTION
           || constraint.getKind() == Kind.METHOD_REF_EXCEPTION) {
-        TypeConstraint c = (TypeConstraint) constraint;
-        List<Variable> inputs = c.getInputVariables();
-        boolean found = false;
-        for (Variable in : inputs) {
-          for (Variable out : allOutputs) {
+        List<Variable> inputsOfSingleConstraint = ((TypeConstraint) constraint).getInputVariables();
+        boolean foundInfluence = false;
+        for (Variable in : inputsOfSingleConstraint) {
+          for (Variable out : allOutputsOfC) {
             if (dependencies.get(in).contains(out) || dependencies.get(out).contains(in)) {
-              found = true;
+              foundInfluence = true;
+              break;
             }
           }
         }
-        if (!found) {
+        if (!foundInfluence) {
+          // None of the inputs of constraint influence any output of any constraint in C.
           subset.add(constraint);
         }
       } else {
@@ -226,30 +228,15 @@ public class ConstraintSet implements ReductionResult {
 
     // TODO: double check that this code is correct.
     // checker/tests/all-systems/java8inference/MapEntryGetFails.java is a test that uses this code.
+
     Set<Variable> inputDependencies = new LinkedHashSet<>();
     Set<Variable> outDependencies = new LinkedHashSet<>();
-    // If this subset is empty, then there is a cycle (or cycles) in the graph of dependencies
-    // between constraints.
+    // If this subset is empty then no closed subset was found and there is a cycle (or cycles) in
+    // the graph of dependencies between constraints.
+
+    // From JLS 18.5.2.2:
     // In this case, the constraints in C that participate in a dependency cycle (or cycles) and do
     // not depend on any constraints outside of the cycle (or cycles) are considered.
-    List<Constraint> consideredConstraints = new ArrayList<>();
-    for (Constraint constraint : list) {
-
-      if (!(constraint instanceof TypeConstraint)) {
-        continue;
-      }
-      TypeConstraint c = (TypeConstraint) constraint;
-      Set<Variable> newInputs = dependencies.get(c.getInputVariables());
-      Set<Variable> newOutputs = dependencies.get(c.getOutputVariables());
-      if (inputDependencies.isEmpty()
-          || !Collections.disjoint(newInputs, outDependencies)
-          || !Collections.disjoint(newOutputs, inputDependencies)) {
-        inputDependencies.addAll(newInputs);
-        outDependencies.addAll(newOutputs);
-        consideredConstraints.add(c);
-      }
-    }
-
     // A single constraint is selected from the considered constraints, as follows:
 
     // If any of the considered constraints have the form <Expression -> T>, then the selected
@@ -259,10 +246,27 @@ public class ConstraintSet implements ReductionResult {
     // If no considered constraint has the form <Expression -> T>, then the selected constraint
     // is the considered constraint that contains the expression to the left of the expression
     // of every other considered constraint.
+    List<Constraint> consideredConstraints = new ArrayList<>();
+    for (Constraint constraint : c.list) {
+      if (!(constraint instanceof TypeConstraint)) {
+        continue;
+      }
 
-    for (Constraint c : consideredConstraints) {
-      if (c.getKind() == Kind.EXPRESSION) {
-        return new ConstraintSet(c);
+      TypeConstraint typeConstraint = (TypeConstraint) constraint;
+      Set<Variable> newInputs = dependencies.get(typeConstraint.getInputVariables());
+      Set<Variable> newOutputs = dependencies.get(typeConstraint.getOutputVariables());
+      if (inputDependencies.isEmpty()
+          || !Collections.disjoint(newInputs, outDependencies)
+          || !Collections.disjoint(newOutputs, inputDependencies)) {
+        inputDependencies.addAll(newInputs);
+        outDependencies.addAll(newOutputs);
+        consideredConstraints.add(typeConstraint);
+      }
+    }
+
+    for (Constraint constraint : consideredConstraints) {
+      if (constraint.getKind() == Kind.EXPRESSION) {
+        return new ConstraintSet(constraint);
       }
     }
 
