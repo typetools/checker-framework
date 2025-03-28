@@ -62,7 +62,7 @@ public class TestUtilities {
   public static final boolean IS_AT_LEAST_21_JVM = SystemUtil.jreVersion >= 21;
 
   /** True if the JVM is version 22 or above. */
-  public static final boolean IS_AT_LEAST_22_JVM = SystemUtil.jreVersion >= 21;
+  public static final boolean IS_AT_LEAST_22_JVM = SystemUtil.jreVersion >= 22;
 
   static {
     JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
