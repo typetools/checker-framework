@@ -184,13 +184,19 @@ public class ConstraintSet implements ReductionResult {
    */
   public ConstraintSet getClosedSubset(Dependencies dependencies) {
     ConstraintSet subset = new ConstraintSet();
-    Set<Variable> allOutputsOfC = new LinkedHashSet<>();
+    // Collection all outputs of the constraints in this set.
+    Set<Variable> allOutputs = new LinkedHashSet<>();
     for (Constraint constraint : list) {
       if (constraint instanceof TypeConstraint) {
-        allOutputsOfC.addAll(((TypeConstraint) constraint).getOutputVariables());
+        allOutputs.addAll(((TypeConstraint) constraint).getOutputVariables());
       }
       // No other constraints have output variables
     }
+
+    // Find a subset of this set where  the following is true for all the constraints in the subset:
+    //  no input variable of a constraint can influence an output variable of another constraint in
+    // the subset.
+    // (Influence means that neither variable can depend on the other.)
     for (Constraint constraint : list) {
       if (constraint.getKind() == Kind.EXPRESSION
           || constraint.getKind() == Kind.LAMBDA_EXCEPTION
@@ -199,7 +205,7 @@ public class ConstraintSet implements ReductionResult {
         List<Variable> inputs = c.getInputVariables();
         boolean found = false;
         for (Variable in : inputs) {
-          for (Variable out : allOutputsOfC) {
+          for (Variable out : allOutputs) {
             if (dependencies.get(in).contains(out) || dependencies.get(out).contains(in)) {
               found = true;
             }
