@@ -26,9 +26,9 @@ switch#num0   [ LocalVariable ]
 i   [ LocalVariable ]
 switch#num0 = i   [ Assignment ]
 marker (start of switch statement #0)   [ Marker ]
-org.checkerframework.dataflow.cfg.node.AnyPatternNode@6743e411   [ AnyPattern ]
-org.checkerframework.dataflow.cfg.node.DeconstructorPatternNode@3eb25e1a   [ DeconstructorPattern ]
-case org.checkerframework.dataflow.cfg.node.DeconstructorPatternNode@3eb25e1a:   [ Case ]
+_   [ AnyPattern ]
+WrappedInt(_)   [ DeconstructorPattern ]
+case WrappedInt(_):   [ Case ]
 ~~~~~~~~~
 AnalysisResult#0
 After:   reaching definitions = { x = 0, switch#num0 = i }
