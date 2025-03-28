@@ -219,21 +219,22 @@ public class Resolution {
    */
   private void resolveNonCapturesFirst(List<Variable> vars) {
     // Variables that are not captures and need to be resolved. (Avoid side-effecting vars)
-    List<Variable> variables = new ArrayList<>(vars);
-    variables.removeIf(Variable::isCaptureVariable);
-    applyInstantiationsToBounds(variables);
-    variables.removeIf(v -> v.getBounds().hasInstantiation());
+    List<Variable> varsToResolve = new ArrayList<>(vars);
+    varsToResolve.removeIf(Variable::isCaptureVariable);
+    applyInstantiationsToBounds(varsToResolve);
+    varsToResolve.removeIf(v -> v.getBounds().hasInstantiation());
 
-    // Until variables is empty:
-    // Find the variable, alpha, in `variables` that has the fewest variables (that do not already
-    // have an instantiation) mentioned in alpha's bounds.
-    // Resolve alpha using the "noncapture" resolution method.
-    // Remove alpha from `variables`.
-    while (!variables.isEmpty()) {
+    // Until varsToResolve is empty:
+    // Find the variable, alpha, in `varsToResolve` that has the fewest varsToResolve mentioned in
+    // alpha's bounds.
+    // Resolve alpha using the "noncapture" resolution method. (That is find an instantiation of
+    // alpha using the "noncapture" resolution method.)
+    // Remove alpha from `varsToResolve`.
+    while (!varsToResolve.isEmpty()) {
       Variable alpha = null;
-      // Smallest number of variables mentioned in alpha's bounds so far.
+      // Smallest number of varsToResolve mentioned in alpha's bounds so far.
       int fewestVarsInBounds = Integer.MAX_VALUE;
-      for (Variable v : variables) {
+      for (Variable v : varsToResolve) {
         int size = v.getBounds().getVariablesMentionedInBounds().size();
         if (size < fewestVarsInBounds) {
           fewestVarsInBounds = size;
@@ -242,10 +243,10 @@ public class Resolution {
       }
       if (alpha != null) {
         resolveNoCapture(alpha);
-        variables.remove(alpha);
+        varsToResolve.remove(alpha);
       }
-      applyInstantiationsToBounds(variables);
-      variables.removeIf(v -> v.getBounds().hasInstantiation());
+      applyInstantiationsToBounds(varsToResolve);
+      varsToResolve.removeIf(v -> v.getBounds().hasInstantiation());
     }
   }
 
