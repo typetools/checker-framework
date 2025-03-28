@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 
 public class Issue6891 {
 
-  @SuppressWarnings("optional") // true positives
+  @SuppressWarnings("optional") // true positives, but this test is not about Optional
   private Map<String, String> func(Set<Entity> entities) {
 
     return Optional.ofNullable(entities)

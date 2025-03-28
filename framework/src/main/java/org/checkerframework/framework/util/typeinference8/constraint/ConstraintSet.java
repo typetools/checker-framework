@@ -140,7 +140,7 @@ public class ConstraintSet implements ReductionResult {
   }
 
   /**
-   * Adds the constraint to the beginning of the set.
+   * Adds the constraint to the beginning of this set.
    *
    * @param constraint a constraint
    */
@@ -151,7 +151,7 @@ public class ConstraintSet implements ReductionResult {
   }
 
   /**
-   * Adds the constraints to the beginning of the set and maintains the order of the constraints.
+   * Adds the constraints to the beginning of this set and maintains the order of the constraints.
    *
    * @param constraints constraints
    */
@@ -394,7 +394,11 @@ public class ConstraintSet implements ReductionResult {
     if (this.annotationFailure) {
       boundSet.annoInferenceFailed = true;
       if (!alreadyFailed && boundSet.errorMsg.isEmpty()) {
-        boundSet.errorMsg = constraint.toString();
+        if (constraint instanceof TypeConstraint) {
+          boundSet.errorMsg = ((TypeConstraint) constraint).constraintHistory();
+        } else {
+          boundSet.errorMsg = constraint.toString();
+        }
       }
     }
     return boundSet;

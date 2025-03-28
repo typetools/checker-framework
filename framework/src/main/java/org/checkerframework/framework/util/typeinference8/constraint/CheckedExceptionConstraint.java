@@ -43,7 +43,7 @@ public class CheckedExceptionConstraint extends TypeConstraint {
    * @param map The mapping from type variable to inference variable to use with this constraint
    */
   public CheckedExceptionConstraint(ExpressionTree expression, AbstractType t, Theta map) {
-    super(t);
+    super("Checked exception for " + expression, t);
     assert expression.getKind() == Tree.Kind.LAMBDA_EXPRESSION
         || expression.getKind() == Tree.Kind.MEMBER_REFERENCE;
     this.expression = expression;
