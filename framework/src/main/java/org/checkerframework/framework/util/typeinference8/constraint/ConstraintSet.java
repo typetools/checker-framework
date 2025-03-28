@@ -151,13 +151,13 @@ public class ConstraintSet implements ReductionResult {
   }
 
   /**
-   * Adds the constraints to the beginning of the set and matatines the order of the constraints.
+   * Adds the constraints to the beginning of the set and maintains the order of the constraints.
    *
    * @param constraints constraints
    */
-  public void push(ConstraintSet constraints) {
+  public void pushAll(ConstraintSet constraints) {
     for (int i = constraints.list.size() - 1; i > -1; i--) {
-      push(constraints.list.get(i));
+      this.push(constraints.list.get(i));
     }
   }
 
@@ -377,7 +377,7 @@ public class ConstraintSet implements ReductionResult {
       } else {
         // Add the new constraints to the beginning of the list so they are reduced first. This is
         // because each constraint is supposed to be fully resolved before moving onto another one.
-        this.push((ConstraintSet) result);
+        this.pushAll((ConstraintSet) result);
       }
     } else if (result instanceof BoundSet) {
       boundSet.merge((BoundSet) result);
