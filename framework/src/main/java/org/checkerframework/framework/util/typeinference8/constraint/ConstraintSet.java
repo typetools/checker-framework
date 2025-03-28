@@ -184,7 +184,7 @@ public class ConstraintSet implements ReductionResult {
    */
   public ConstraintSet getClosedSubset(Dependencies dependencies) {
     ConstraintSet subset = new ConstraintSet();
-    // Collection all outputs of the constraints in this set.
+    // Collection of all outputs of the constraints in this set.
     Set<Variable> allOutputs = new LinkedHashSet<>();
     for (Constraint constraint : list) {
       if (constraint instanceof TypeConstraint) {
@@ -193,8 +193,8 @@ public class ConstraintSet implements ReductionResult {
       // No other constraints have output variables
     }
 
-    // Find a subset of this set where  the following is true for all the constraints in the subset:
-    //  no input variable of a constraint can influence an output variable of another constraint in
+    // Find a subset of this set where the following is true for all the constraints in the subset:
+    // no input variable of a constraint can influence an output variable of another constraint in
     // the subset.
     // (Influence means that neither variable can depend on the other.)
     for (Constraint constraint : list) {
