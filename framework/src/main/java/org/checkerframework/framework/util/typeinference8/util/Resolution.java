@@ -189,7 +189,7 @@ public class Resolution {
     assert !boundSet.containsFalse();
 
     if (boundSet.containsCapture(as)) {
-      resolveNoCapturesFirst(new ArrayList<>(as));
+      resolveNonCapturesFirst(new ArrayList<>(as));
       boundSet.getInstantiatedVariables().forEach(as::remove);
       // Then resolve the capture variables
       return resolveWithCapture(as, boundSet, context);
@@ -213,46 +213,65 @@ public class Resolution {
   }
 
   /**
-   * Resolves all the non-capture variables in {@code variables}.
+   * Resolves all the non-capture variables in {@code vars}.
    *
    * @param vars the variables
    */
-  private void resolveNoCapturesFirst(List<Variable> vars) {
-    Variable smallV;
-    List<Variable> variables = new ArrayList<>(vars.size());
-    vars.forEach(
-        variable -> {
-          if (!variable.isCaptureVariable() && !variable.getBounds().hasInstantiation()) {
-            variables.add(variable);
-          }
-        });
-    do {
-      smallV = null;
+  private void resolveNonCapturesFirst(List<Variable> vars) {
+    // Variables that are not captures and need to be resolved. (Avoid side-effecting vars)
+    List<Variable> variables = new ArrayList<>(vars);
+    variables.removeIf(Variable::isCaptureVariable);
+    applyInstantiationsToBounds(variables);
+    variables.removeIf(v -> v.getBounds().hasInstantiation());
+
+    // Find the variable, alpha, in `variables` with the fewest variables (that do not already have
+    // an instantiation)
+    // mention in alpha's bounds.
+    //  Resolve alpha using the "noncapture" resolution method.
+    // Remove alpha from `variables`.
+    // Find a new alpha until `variables` is empty
+    while (!variables.isEmpty()) {
+      Variable alpha = null;
+      // Smallest number of variables mentioned in alpha's bounds so far.
       int smallest = Integer.MAX_VALUE;
-      boolean change;
-      do {
-        change = false;
-        for (Variable v : new ArrayList<>(variables)) {
-          v.getBounds().applyInstantiationsToBounds();
-          if (v.getBounds().hasInstantiation()) {
-            variables.remove(v);
-            // loop again because a new instantiation has been found.
-            change = true;
-          }
-        }
-      } while (change);
       for (Variable v : variables) {
         int size = v.getBounds().getVariablesMentionedInBounds().size();
         if (size < smallest) {
           smallest = size;
-          smallV = v;
+          alpha = v;
         }
       }
-      if (smallV != null) {
-        resolveNoCapture(smallV);
-        variables.remove(smallV);
+      if (alpha != null) {
+        resolveNoCapture(alpha);
+        variables.remove(alpha);
       }
-    } while (smallV != null);
+      applyInstantiationsToBounds(variables);
+      variables.removeIf(v -> v.getBounds().hasInstantiation());
+    }
+  }
+
+  /**
+   * Apply the instantiated variables to the bounds of the variables in {@code variables}. This may
+   * result in an instantiation being found of a variable in {@code variables}.
+   *
+   * @param variables a list of variables
+   */
+  private static void applyInstantiationsToBounds(List<Variable> variables) {
+    boolean changed;
+    do {
+      changed = false;
+      for (Variable v : variables) {
+        if (v.getBounds().hasInstantiation()) {
+          continue;
+        }
+        v.getBounds().applyInstantiationsToBounds();
+        if (v.getBounds().hasInstantiation()) {
+          // If v now has an instantiation, then loop through all the variables again to apply it to
+          // all the bounds of the other variables.
+          changed = true;
+        }
+      }
+    } while (changed);
   }
 
   /**

@@ -17,39 +17,41 @@ env:
   global:
     - THIS_REPO=checker-framework
     - OS=ubuntu
+    - TESTING=
+#    - TESTING=-testing
   matrix:
-    - GROUP=cftests-junit JDKVER=jdk11 TESTING=
-    - GROUP=cftests-junit JDKVER=jdk17 TESTING=
-    - GROUP=cftests-nonjunit JDKVER=jdk11 TESTING=
-    - GROUP=cftests-nonjunit JDKVER=jdk17 TESTING=
-    - GROUP=cftests-inference JDKVER=jdk11 TESTING=
-    - GROUP=cftests-inference JDKVER=jdk17 TESTING=
-    - GROUP=misc JDKVER=jdk11-plus TESTING=
-    - GROUP=misc JDKVER=jdk17-plus TESTING=
-#    - GROUP=cf-inference JDKVER=jdk11 TESTING=
-#    - GROUP=cf-inference JDKVER=jdk17 TESTING=
-    - GROUP=daikon-part1 JDKVER=jdk11 TESTING=
-    - GROUP=daikon-part1 JDKVER=jdk17 TESTING=
-    - GROUP=daikon-part2 JDKVER=jdk11 TESTING=
-    - GROUP=daikon-part2 JDKVER=jdk17 TESTING=
-    - GROUP=guava-formatter JDKVER=jdk11 TESTING=
-    - GROUP=guava-formatter JDKVER=jdk17 TESTING=
-    - GROUP=guava-index JDKVER=jdk11 TESTING=
-    - GROUP=guava-index JDKVER=jdk17 TESTING=
-    - GROUP=guava-interning JDKVER=jdk11 TESTING=
-    - GROUP=guava-interning JDKVER=jdk17 TESTING=
-    - GROUP=guava-lock JDKVER=jdk11 TESTING=
-    - GROUP=guava-lock JDKVER=jdk17 TESTING=
-    - GROUP=guava-nullness JDKVER=jdk11 TESTING=
-    - GROUP=guava-nullness JDKVER=jdk17 TESTING=
-    - GROUP=guava-regex JDKVER=jdk11 TESTING=
-    - GROUP=guava-regex JDKVER=jdk17 TESTING=
-    - GROUP=guava-signature JDKVER=jdk11 TESTING=
-    - GROUP=guava-signature JDKVER=jdk17 TESTING=
-    - GROUP=plume-lib JDKVER=jdk11 TESTING=
-    - GROUP=plume-lib JDKVER=jdk17 TESTING=
-    - GROUP=downstream JDKVER=jdk11 TESTING=
-    - GROUP=downstream JDKVER=jdk17 TESTING=
+    - GROUP=cftests-junit JDKVER=jdk11
+    - GROUP=cftests-junit JDKVER=jdk17
+    - GROUP=cftests-nonjunit JDKVER=jdk11
+    - GROUP=cftests-nonjunit JDKVER=jdk17
+    - GROUP=cftests-inference JDKVER=jdk11
+    - GROUP=cftests-inference JDKVER=jdk17
+    - GROUP=misc JDKVER=jdk11-plus
+    - GROUP=misc JDKVER=jdk17-plus
+#    - GROUP=cf-inference JDKVER=jdk11
+#    - GROUP=cf-inference JDKVER=jdk17
+    - GROUP=daikon-part1 JDKVER=jdk11
+    - GROUP=daikon-part1 JDKVER=jdk17
+    - GROUP=daikon-part2 JDKVER=jdk11
+    - GROUP=daikon-part2 JDKVER=jdk17
+    - GROUP=guava-formatter JDKVER=jdk11
+    - GROUP=guava-formatter JDKVER=jdk17
+    - GROUP=guava-index JDKVER=jdk11
+    - GROUP=guava-index JDKVER=jdk17
+    - GROUP=guava-interning JDKVER=jdk11
+    - GROUP=guava-interning JDKVER=jdk17
+    - GROUP=guava-lock JDKVER=jdk11
+    - GROUP=guava-lock JDKVER=jdk17
+    - GROUP=guava-nullness JDKVER=jdk11
+    - GROUP=guava-nullness JDKVER=jdk17
+    - GROUP=guava-regex JDKVER=jdk11
+    - GROUP=guava-regex JDKVER=jdk17
+    - GROUP=guava-signature JDKVER=jdk11
+    - GROUP=guava-signature JDKVER=jdk17
+    - GROUP=plume-lib JDKVER=jdk11
+    - GROUP=plume-lib JDKVER=jdk17
+    - GROUP=downstream JDKVER=jdk11
+    - GROUP=downstream JDKVER=jdk17
 
 # The "docker run" command will pull if needed.
 # Running this first gives two tries in case of network lossage.
