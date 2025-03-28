@@ -156,6 +156,9 @@ testDataflowAnalysis("constantPropagationTest", "constant-propagation", "constan
 testDataflowAnalysis("issue3447Test", "issue3447", "livevar.LiveVariable", false)
 testDataflowAnalysis("liveVariableTest", "live-variable", "livevar.LiveVariable", true)
 testDataflowAnalysis("reachingDefinitionTest", "reachingdef", "reachingdef.ReachingDefinition", true)
+if (JavaVersion.current() >= JavaVersion.VERSION_22) {
+  testDataflowAnalysis("unnamedPatternTest", "java22/unnamed-pattern", "reachingdef.ReachingDefinition", true)
+}
 
 test {
   // The tests are run by allDataflowTests.

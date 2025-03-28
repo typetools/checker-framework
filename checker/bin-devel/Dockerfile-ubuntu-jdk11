@@ -31,6 +31,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 && aptitude -y install \
   openjdk-11-jdk \
   openjdk-17-jdk \
+  openjdk-21-jdk \
 && update-java-alternatives -s java-1.11.0-openjdk-amd64
 
 # Known good combinations of JTReg and the JDK appear at https://builds.shipilev.net/jtreg/ .
