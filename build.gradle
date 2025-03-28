@@ -461,8 +461,8 @@ allprojects { currentProj ->
       // -fallthrough: Don't check fallthroughs.  Instead, use Error Prone.  Its
       //   warnings are suppressible with a "// fall through" comment.
       String lint = '-Xlint:-options,-fallthrough'
-      if (isJava21orHigher) {
-        // TODO: Ignore this-escape for now, we may want to review and suppress each one later.
+      if (isJava21orHigher || "true".equals(System.getenv("ORG_GRADLE_PROJECT_useJdk21Compiler"))) {
+        // TODO: Ignore this-escape warnings for now; perhaps review and suppress each one later.
         lint +=',-this-escape'
       }
       options.compilerArgs += [
