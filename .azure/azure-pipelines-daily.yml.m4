@@ -1,3 +1,5 @@
+# DO NOT EDIT azure-pipelines-daily.yml.  Edit azure-pipelines-daily.yml.m4 and defs.m4 instead.
+
 changequote(`[',`]')dnl
 include([defs.m4])dnl
 trigger: none
