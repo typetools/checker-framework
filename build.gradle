@@ -29,6 +29,7 @@ ext {
   // isJava17compatible = JavaVersion.isCompatibleWith(JavaVersion.VERSION_17)
   isJava17orHigher = JavaVersion.current() >= JavaVersion.VERSION_17
   isJava21orHigher = JavaVersion.current() >= JavaVersion.VERSION_21
+  isJava22orHigher = JavaVersion.current() >= JavaVersion.VERSION_22
 
   // As of 2024-08-19 (Lombok 1.18.34), delombok doesn't yet support JDK 23; see https://projectlombok.org/changelog .
   skipDelombok = JavaVersion.current() > JavaVersion.VERSION_21
@@ -250,6 +251,9 @@ allprojects { currentProj ->
 
       if (!isJava21orHigher) {
         doNotFormat += ['tests/**/java21/']
+      }
+      if (!isJava22orHigher) {
+        doNotFormat += ['tests/**/java22/']
       }
     }
 

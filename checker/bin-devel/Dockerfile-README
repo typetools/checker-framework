@@ -27,7 +27,7 @@ Create the Docker image:
 # Run from a terminal, NOT from Emacs, because it produces vast amounts of output.
 # Takes about 12 minutes for jdk*, about 1 hour for jdk*-plus.
 DOCKERTESTING=""
-# When DOCKERTESTING is enabled, also edit any file containing the string "mdernst/".
+# When DOCKERTESTING is enabled, also edit `.azure/defs.m4` and `.travis.yml`.
 # DOCKERTESTING="-testing"
 alias create_upload_docker_image=' \
   ( [ -z "$INSIDE_EMACS" ] || (echo "Do not run within Emacs" && false) ) && \
