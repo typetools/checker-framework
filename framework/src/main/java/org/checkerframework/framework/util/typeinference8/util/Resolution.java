@@ -224,20 +224,19 @@ public class Resolution {
     applyInstantiationsToBounds(variables);
     variables.removeIf(v -> v.getBounds().hasInstantiation());
 
-    // Find the variable, alpha, in `variables` with the fewest variables (that do not already have
-    // an instantiation)
-    // mention in alpha's bounds.
-    //  Resolve alpha using the "noncapture" resolution method.
+    // Until variables is empty:
+    // Find the variable, alpha, in `variables` that has the fewest variables (that do not already
+    // have an instantiation) mentioned in alpha's bounds.
+    // Resolve alpha using the "noncapture" resolution method.
     // Remove alpha from `variables`.
-    // Find a new alpha until `variables` is empty
     while (!variables.isEmpty()) {
       Variable alpha = null;
       // Smallest number of variables mentioned in alpha's bounds so far.
-      int smallest = Integer.MAX_VALUE;
+      int fewestVarsInBounds = Integer.MAX_VALUE;
       for (Variable v : variables) {
         int size = v.getBounds().getVariablesMentionedInBounds().size();
-        if (size < smallest) {
-          smallest = size;
+        if (size < fewestVarsInBounds) {
+          fewestVarsInBounds = size;
           alpha = v;
         }
       }
