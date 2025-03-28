@@ -100,17 +100,14 @@ public class UnnamedVars {
 
   record ColoredPoint(Point p, Color c) {}
 
-  // TODO: This crashes
-  //  double getDistance(Object obj1, Object obj2) {
-  //    if (obj1 instanceof ColoredPoint(Point p1, _) &&
-  //        obj2 instanceof ColoredPoint(Point p2, _)) {
-  //      return java.lang.Math.sqrt(
-  //          java.lang.Math.pow(p2.x - p1.x, 2) +
-  //              java.lang.Math.pow(p2.y - p1.y, 2));
-  //    } else {
-  //      return -1;
-  //    }
-  //  }
+  double getDistance(Object obj1, Object obj2) {
+    if (obj1 instanceof ColoredPoint(Point p1, _) && obj2 instanceof ColoredPoint(Point p2, _)) {
+      return java.lang.Math.sqrt(
+          java.lang.Math.pow(p2.x - p1.x, 2) + java.lang.Math.pow(p2.y - p1.y, 2));
+    } else {
+      return -1;
+    }
+  }
 
   double getDistance2(Object obj1, Object obj2) {
     if (obj1 instanceof ColoredPoint(Point p1, Color _)
