@@ -17,8 +17,8 @@ env:
   global:
     - THIS_REPO=checker-framework
     - OS=ubuntu
-#    - TESTING=
-    - TESTING=-testing
+    - TESTING=
+#    - TESTING=-testing
   matrix:
     - GROUP=cftests-junit JDKVER=jdk11
     - GROUP=cftests-junit JDKVER=jdk17
