@@ -175,12 +175,14 @@ public class ConstraintSet implements ReductionResult {
   }
 
   /**
-   * A subset of constraints is selected in C, satisfying the property that, for each constraint, no
-   * input variable can influence an output variable of another constraint in C. (See JLS 18.5.2.2)
+   * Returns a subset of {@code c}; for each constraint in the subset, no input variable can
+   * influence an output variable of another constraint in C. If that subset is empty, returns a set
+   * containing a single constraint that participates in a constraint cycle. (See JLS 18.5.2.2)
    *
    * @param c a constraint set
    * @param dependencies an object describing the dependencies of inference variables
-   * @return s a subset of constraints is this constraint set
+   * @return s a subset of constraints in {@code c} whose inputs do not affect {@code c}'s outputs,
+   *     or a singleton constraint from a constraint cycle
    */
   public static ConstraintSet getClosedSubset(ConstraintSet c, Dependencies dependencies) {
     ConstraintSet subset = new ConstraintSet();
@@ -193,8 +195,17 @@ public class ConstraintSet implements ReductionResult {
       // No other constraints have output variables
     }
 
-    // Find a subset of this set where the following is true for all the constraints in the subset:
-    // no input variable of a constraint can influence an output variable of another constraint in c
+    // From JLS 18.5.2.2:
+    // A subset of constraints is selected in C, satisfying the property that, for each
+    // constraint, no input variable can influence an output variable of another
+    // constraint in C. The terms input variable and output variable are defined
+    // below. An inference variable alpha can influence an inference variable beta if alpha
+    // depends on the resolution of beta (§18.4), or vice versa; or if there exists a third
+    // inference variable gamma such that alpha can influence gamma and gamma can influence beta.
+
+    // Put another way:
+    // Find a subset of the set c where the following is true for all the constraints in the subset:
+    // no input variable of a constraint can influence an output variable of any constraint in c.
     // (Influence means that neither variable can depend on the other.)
     // The JLS does not specify whether this subset should be as large as possible, but this
     // implementation returns the largest subset possible.
