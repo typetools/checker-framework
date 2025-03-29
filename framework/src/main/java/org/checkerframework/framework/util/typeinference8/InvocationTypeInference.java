@@ -462,9 +462,6 @@ public class InvocationTypeInference {
           c.addAll(aa.reduce(context));
         }
       } else {
-        // Wait to reduce additional argument constraints from lambdas and method references
-        // because the additional constraints might require other inference variables to be
-        // resolved before the constraint can be created.
         c.addAll(createAdditionalArgConstraints(ei, fi, map));
       }
     }
@@ -513,7 +510,7 @@ public class InvocationTypeInference {
       case METHOD_INVOCATION:
       case NEW_CLASS:
         if (TreeUtils.isPolyExpression(ei)) {
-          c.add(new AdditionalArgument(ei));
+          c.addAll(new AdditionalArgument(ei).reduce(context));
         }
         break;
       case PARENTHESIZED:
@@ -564,7 +561,15 @@ public class InvocationTypeInference {
       case METHOD_INVOCATION:
       case NEW_CLASS:
         if (TreeUtils.isPolyExpression(expression)) {
-          c.add(new AdditionalArgument(expression));
+          try {
+            c.addAll(new AdditionalArgument(expression).reduce(context));
+          } catch (Exception e) {
+            // Sometimes in order to create the additional argument constraint, other inference
+            // variables must be resolved first. This happens when a lambda parameter is used in the
+            // additional argument constraint.
+            // See framework/tests/all-systems/SimpleLambdaParameter.java
+            c.add(new AdditionalArgument(expression));
+          }
         }
         break;
       case PARENTHESIZED:
@@ -666,7 +671,7 @@ public class InvocationTypeInference {
     Set<Variable> newVariables = c.getAllInferenceVariables();
     while (!c.isEmpty()) {
 
-      ConstraintSet subset = c.getClosedSubset(b3.getDependencies(newVariables));
+      ConstraintSet subset = ConstraintSet.getClosedSubset(c, b3.getDependencies(newVariables));
       Set<Variable> alphas = subset.getAllInputVariables();
       if (!alphas.isEmpty()) {
         // First resolve only the variables with proper bounds.
