@@ -213,36 +213,65 @@ public class Resolution {
   }
 
   /**
-   * Resolves all the non-capture variables in {@code variables}.
+   * Resolves all the non-capture variables in {@code vars}.
    *
-   * @param variables the variables
+   * @param vars the variables
    */
-  private void resolveNonCapturesFirst(List<Variable> variables) {
-    Variable smallV;
+  private void resolveNonCapturesFirst(List<Variable> vars) {
+    // Variables that are not captures and need to be resolved. (Avoid side-effecting vars)
+    List<Variable> varsToResolve = new ArrayList<>(vars);
+    varsToResolve.removeIf(Variable::isCaptureVariable);
+    applyInstantiationsToBounds(varsToResolve);
+    varsToResolve.removeIf(v -> v.getBounds().hasInstantiation());
+
+    // Until varsToResolve is empty:
+    // Find the variable, alpha, in `varsToResolve` that has the fewest varsToResolve mentioned in
+    // alpha's bounds.
+    // Resolve alpha using the "noncapture" resolution method. (That is find an instantiation of
+    // alpha using the "noncapture" resolution method.)
+    // Remove alpha from `varsToResolve`.
+    while (!varsToResolve.isEmpty()) {
+      Variable alpha = null;
+      // Smallest number of varsToResolve mentioned in alpha's bounds so far.
+      int fewestVarsInBounds = Integer.MAX_VALUE;
+      for (Variable v : varsToResolve) {
+        int size = v.getBounds().getVariablesMentionedInBounds().size();
+        if (size < fewestVarsInBounds) {
+          fewestVarsInBounds = size;
+          alpha = v;
+        }
+      }
+      if (alpha != null) {
+        resolveNoCapture(alpha);
+        varsToResolve.remove(alpha);
+      }
+      applyInstantiationsToBounds(varsToResolve);
+      varsToResolve.removeIf(v -> v.getBounds().hasInstantiation());
+    }
+  }
+
+  /**
+   * Apply the instantiated variables to the bounds of the variables in {@code variables}. This may
+   * result in an instantiation being found of a variable in {@code variables}.
+   *
+   * @param variables a list of variables
+   */
+  private static void applyInstantiationsToBounds(List<Variable> variables) {
+    boolean changed;
     do {
-      smallV = null;
-      int smallest = Integer.MAX_VALUE;
+      changed = false;
       for (Variable v : variables) {
+        if (v.getBounds().hasInstantiation()) {
+          continue;
+        }
         v.getBounds().applyInstantiationsToBounds();
         if (v.getBounds().hasInstantiation()) {
-          variables.remove(v);
-          // loop again because a new instantiation has been found.
-          // (Also avoids concurrent modification exception.)
-          break;
-        }
-        if (!v.isCaptureVariable()) {
-          int size = v.getBounds().getVariablesMentionedInBounds().size();
-          if (size < smallest) {
-            smallest = size;
-            smallV = v;
-          }
+          // If v now has an instantiation, then loop through all the variables again to apply it to
+          // all the bounds of the other variables.
+          changed = true;
         }
       }
-      if (smallV != null) {
-        resolveNoCapture(smallV);
-        variables.remove(smallV);
-      }
-    } while (smallV != null);
+    } while (changed);
   }
 
   /**
