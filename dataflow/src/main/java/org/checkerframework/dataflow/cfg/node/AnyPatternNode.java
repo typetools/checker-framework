@@ -46,4 +46,9 @@ public class AnyPatternNode extends Node {
   public Collection<Node> getOperands() {
     return Collections.emptySet();
   }
+
+  @Override
+  public String toString() {
+    return "_";
+  }
 }

@@ -93,4 +93,9 @@ public class DeconstructorPatternNode extends Node {
     }
     return bindingVariables;
   }
+
+  @Override
+  public String toString() {
+    return deconstructorPattern.toString();
+  }
 }
