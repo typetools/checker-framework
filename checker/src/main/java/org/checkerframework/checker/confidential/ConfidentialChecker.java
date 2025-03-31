@@ -31,6 +31,6 @@ import org.checkerframework.framework.source.SuppressWarningsPrefix;
 })
 @SuppressWarningsPrefix({"confidential"})
 public class ConfidentialChecker extends BaseTypeChecker {
-  /** Creates a ConfidentialChecker. */
+  /** Creates a ConfidentialChecker.  */
   public ConfidentialChecker() {}
 }
