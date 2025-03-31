@@ -3,7 +3,7 @@ plugins {
   id 'base'
   // https://github.com/n0mer/gradle-git-properties
   // Generates file build/resources/main/git.properties when the `classes` task runs.
-  id 'com.gorylenko.gradle-git-properties' version '2.4.2'
+  id 'com.gorylenko.gradle-git-properties' version '2.5.0'
 }
 
 sourceSets {
@@ -64,7 +64,7 @@ dependencies {
   testImplementation 'com.amazonaws:aws-java-sdk-ec2'
   testImplementation 'com.amazonaws:aws-java-sdk-kms'
   // The AWS SDK is used for testing the Called Methods Checker.
-  testImplementation platform('com.amazonaws:aws-java-sdk-bom:1.12.779')
+  testImplementation platform('com.amazonaws:aws-java-sdk-bom:1.12.782')
   // For the Resource Leak Checker's support for JavaEE.
   testImplementation 'javax.servlet:javax.servlet-api:4.0.1'
   // For the Resource Leak Checker's support for IOUtils.
@@ -89,6 +89,9 @@ dependencies {
 //   https://docs.gradle.org/7.1/userguide/validation_problems.html#implicit_dependency for more
 //   details about this problem.
 generateGitProperties.dependsOn(':installGitHooks')
+gitProperties {
+  dotGitDirectory = project.rootProject.layout.projectDirectory.dir(".git")
+}
 
 jar {
   manifest {
