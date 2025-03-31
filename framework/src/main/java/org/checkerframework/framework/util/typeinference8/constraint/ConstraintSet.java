@@ -215,11 +215,12 @@ public class ConstraintSet implements ReductionResult {
           || constraint.getKind() == Kind.METHOD_REF_EXCEPTION) {
         List<Variable> inputsOfSingleConstraint = ((TypeConstraint) constraint).getInputVariables();
         boolean foundInfluence = false;
+        inputLoop:
         for (Variable in : inputsOfSingleConstraint) {
           for (Variable out : allOutputsOfC) {
             if (dependencies.get(in).contains(out) || dependencies.get(out).contains(in)) {
               foundInfluence = true;
-              break;
+              break inputLoop;
             }
           }
         }
