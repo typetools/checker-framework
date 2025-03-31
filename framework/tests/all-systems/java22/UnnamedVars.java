@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 // @infer-jaifs-skip-test
 // @infer-ajava-skip-test
 // @infer-stubs-skip-test
+@SuppressWarnings("all") // Just check for crashes.
 public class UnnamedVars {
 
   void example1() {
