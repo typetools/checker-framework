@@ -142,8 +142,8 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
           }
           break;
         }
-        // Other plus binary trees should be handled in the default case.
-        // fall through
+      // Other plus binary trees should be handled in the default case.
+      // fall through
       default:
         if (leftOpType.hasPrimaryAnnotation(Unsigned.class)
             && rightOpType.hasPrimaryAnnotation(Signed.class)) {
@@ -305,8 +305,8 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
           }
           break;
         }
-        // Other plus binary trees should be handled in the default case.
-        // fall through
+      // Other plus binary trees should be handled in the default case.
+      // fall through
       default:
         if (varType.hasPrimaryAnnotation(Unsigned.class)
             && exprType.hasPrimaryAnnotation(Signed.class)) {

@@ -1,8 +1,10 @@
 changequote
 changequote(`[',`]')dnl
 ifelse([The "dnl" m4 macro means "discard to end of line",])dnl
-define([canary_version], [21])dnl
-define([latest_version], [23])dnl
+define([canary_version], [23])dnl
+define([latest_version], [21])dnl
+define([docker_testing], [])dnl
+# define([docker_testing], [-testing])dnl
 ifelse([each macro takes one argument, the JDK version])dnl
 dnl
 define([junit_job], [dnl
@@ -13,7 +15,7 @@ ifelse($1,canary_version,,[  dependsOn:
 ])dnl
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk$1:latest
+  container: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
   timeoutInMinutes: 70
   steps:
   - checkout: self
@@ -29,7 +31,7 @@ ifelse($1,canary_version,,[  dependsOn:
 ])dnl
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk$1:latest
+  container: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
   steps:
   - checkout: self
     fetchDepth: 25
@@ -41,7 +43,7 @@ define([inference_job_split], [dnl
 - job: inference_part1_jdk$1
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk$1:latest
+  container: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
   timeoutInMinutes: 90
   steps:
   - checkout: self
@@ -51,7 +53,7 @@ define([inference_job_split], [dnl
 - job: inference_part2_jdk$1
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk$1:latest
+  container: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
   timeoutInMinutes: 90
   steps:
   - checkout: self
@@ -69,7 +71,7 @@ ifelse($1,canary_version,,[  dependsOn:
 ])dnl
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk$1:latest
+  container: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
   timeoutInMinutes: 90
   steps:
   - checkout: self
@@ -86,9 +88,10 @@ ifelse($1,canary_version,,$1,latest_version,,[  dependsOn:
 ])dnl
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk$1-plus:latest
+  container: mdernst/cf-ubuntu-jdk$1-plus[]docker_testing:latest
   steps:
   - checkout: self
+    fetchDepth: 0
   - bash: ./checker/bin-devel/test-misc.sh
     displayName: test-misc.sh])dnl
 dnl
@@ -96,7 +99,7 @@ define([typecheck_job_split], [dnl
 - job: typecheck_part1_jdk$1
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk$1-plus:latest
+  container: mdernst/cf-ubuntu-jdk$1-plus[]docker_testing:latest
   steps:
   - checkout: self
     fetchDepth: 1000
@@ -105,7 +108,7 @@ define([typecheck_job_split], [dnl
 - job: typecheck_part2_jdk$1
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk$1-plus:latest
+  container: mdernst/cf-ubuntu-jdk$1-plus[]docker_testing:latest
   steps:
   - checkout: self
     fetchDepth: 1000
@@ -120,7 +123,7 @@ define([typecheck_job], [dnl
    - typecheck_part2_jdk[]canary_version
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk$1-plus:latest
+  container: mdernst/cf-ubuntu-jdk$1-plus[]docker_testing:latest
   steps:
   - checkout: self
     fetchDepth: 1000
@@ -133,7 +136,7 @@ define([daikon_job_split], [dnl
    - canary_jobs
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk$1:latest
+  container: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
   timeoutInMinutes: 70
   steps:
   - checkout: self
@@ -145,7 +148,7 @@ define([daikon_job_split], [dnl
    - canary_jobs
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk$1:latest
+  container: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
   timeoutInMinutes: 80
   steps:
   - checkout: self
@@ -161,7 +164,7 @@ define([daikon_job], [dnl
    - daikon_part2_jdk[]canary_version
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk$1:latest
+  container: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
   timeoutInMinutes: 80
   steps:
   - checkout: self
@@ -178,7 +181,7 @@ ifelse($1,canary_version,,[dnl
 ])dnl
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk$1:latest
+  container: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
   timeoutInMinutes: 70
   steps:
   - checkout: self
@@ -195,7 +198,7 @@ ifelse($1,canary_version,,[dnl
 ])dnl
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk$1:latest
+  container: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
   steps:
   - checkout: self
     fetchDepth: 25

@@ -421,7 +421,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     if (root == null
         || !ajavaChecks
         // TODO: Make annotation insertion work for Java 21.
-        || root.getSourceFile().toUri().toString().contains("java21")) {
+        || root.getSourceFile().toUri().toString().contains("java21")
+        || root.getSourceFile().toUri().toString().contains("java22")) {
       return;
     }
 
@@ -470,7 +471,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     if (root == null
         || !ajavaChecks
         // TODO: Make annotation insertion work for Java 21.
-        || root.getSourceFile().toUri().toString().contains("java21")) {
+        || root.getSourceFile().toUri().toString().contains("java21")
+        || root.getSourceFile().toUri().toString().contains("java22")) {
       return;
     }
 
@@ -2773,7 +2775,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     while (true) {
       switch (t.getKind()) {
 
-          // Recurse for compound types whose top level is not at the far left.
+        // Recurse for compound types whose top level is not at the far left.
         case ARRAY_TYPE:
           t = ((ArrayTypeTree) t).getType();
           continue;
@@ -2784,7 +2786,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           t = ((ParameterizedTypeTree) t).getType();
           continue;
 
-          // Base cases
+        // Base cases
         case PRIMITIVE_TYPE:
         case IDENTIFIER:
           maybeReportAnnoOnIrrelevant(t, TreeUtils.typeOf(t), annoTrees);

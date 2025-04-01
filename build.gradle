@@ -15,7 +15,7 @@ plugins {
   // Code formatting; defines targets "spotlessApply" and "spotlessCheck".
   // https://github.com/diffplug/spotless/tags ; see tags starting "gradle/"
   // Only works on JDK 11+ (even including the plugin crashes Gradle on JDK 8).
-  id 'com.diffplug.spotless' version '6.25.0'
+  id 'com.diffplug.spotless' version '7.0.2'
 }
 
 // There is another `repositories { ... }` block below; if you change this one, change that one as well.
@@ -29,6 +29,7 @@ ext {
   // isJava17compatible = JavaVersion.isCompatibleWith(JavaVersion.VERSION_17)
   isJava17orHigher = JavaVersion.current() >= JavaVersion.VERSION_17
   isJava21orHigher = JavaVersion.current() >= JavaVersion.VERSION_21
+  isJava22orHigher = JavaVersion.current() >= JavaVersion.VERSION_22
 
   // As of 2024-08-19 (Lombok 1.18.34), delombok doesn't yet support JDK 23; see https://projectlombok.org/changelog .
   skipDelombok = JavaVersion.current() > JavaVersion.VERSION_21
@@ -51,10 +52,12 @@ ext {
 
   versions = [
     autoValue       : '1.11.0',
-    googleJavaFormat : '1.19.2',
-    lombok          : '1.18.36',
+    // NOTE: Google Java Format requires JDK 17 or higher as of version 1.25.0.
+    googleJavaFormat : '1.25.2',
+    lombok          : '1.18.38',
     hashmapUtil : '0.0.1',
-    reflectionUtil : '1.1.4',
+    // DO NOT UPGRADE TO 1.1.4 which requires Java 11
+    reflectionUtil : '1.1.3',
     plumeUtil : '1.10.0',
 
     // https://mvnrepository.com/artifact/com.google.errorprone/error_prone_core
@@ -62,7 +65,7 @@ ext {
     //  * Temporarily comment out "-Werror" elsewhere in this file
     //  * Repeatedly run `./gradlew clean compileJava` and fix all errors
     //  * Uncomment "-Werror"
-    errorprone : '2.36.0',
+    errorprone : '2.37.0',
   ]
 }
 
@@ -120,7 +123,7 @@ allprojects { currentProj ->
   //   * any new checkers have been added, or
   //   * backward-incompatible changes have been made to APIs or elsewhere.
   // To make a snapshot release, version should end in "-SNAPSHOT", then: ./gradlew publish
-  version = '3.49.2-SNAPSHOT'
+  version = '3.49.2'
 
   tasks.withType(JavaCompile).configureEach {
     options.fork = true
@@ -249,6 +252,9 @@ allprojects { currentProj ->
       if (!isJava21orHigher) {
         doNotFormat += ['tests/**/java21/']
       }
+      if (!isJava22orHigher) {
+        doNotFormat += ['tests/**/java22/']
+      }
     }
 
     format 'misc', {
@@ -256,7 +262,7 @@ allprojects { currentProj ->
       target '*.md', '*.tex', '.gitignore', 'Makefile'
       targetExclude doNotFormat
       // define the steps to apply to those files
-      indentWithSpaces(2)
+      leadingTabsToSpaces(2)
       trimTrailingWhitespace()
       // endWithNewline() // Don't want to end empty files with a newline
     }
@@ -298,9 +304,9 @@ allprojects { currentProj ->
         targetExclude doNotFormat
         greclipse()  // which formatter Spotless should use to format .gradle files.
         if (project.hasProperty('eisopFormatting')) {
-          indentWithSpaces(4)
+          leadingTabsToSpaces(4)
         } else {
-          indentWithSpaces(2)
+          leadingTabsToSpaces(2)
         }
         trimTrailingWhitespace()
         // endWithNewline() // Don't want to end empty files with a newline
@@ -313,7 +319,7 @@ allprojects { currentProj ->
         // removes semicolons at the end of lines
         removeSemicolons()
         greclipse()
-        indentWithSpaces(2)
+        leadingTabsToSpaces(2)
         trimTrailingWhitespace()
       }
     }
@@ -391,12 +397,12 @@ allprojects { currentProj ->
     // Add standard javac options
     tasks.withType(JavaCompile) { compilationTask ->
       dependsOn(':installGitHooks')
-      boolean jdk17Compiler = project.getProperties().getOrDefault('useJdk17Compiler', false)
-      if (jdk17Compiler) {
-        // This uses the Java 17 compiler to compile all code.
+      boolean jdk21Compiler = project.getProperties().getOrDefault('useJdk21Compiler', false)
+      if (jdk21Compiler) {
+        // This uses the Java 21 compiler to compile all code.
         //  https://docs.gradle.org/current/userguide/toolchains.html
         javaCompiler = javaToolchains.compilerFor {
-          languageVersion = JavaLanguageVersion.of(17)
+          languageVersion = JavaLanguageVersion.of(21)
         }
       }
 
@@ -459,8 +465,8 @@ allprojects { currentProj ->
       // -fallthrough: Don't check fallthroughs.  Instead, use Error Prone.  Its
       //   warnings are suppressible with a "// fall through" comment.
       String lint = '-Xlint:-options,-fallthrough'
-      if (isJava21orHigher && !jdk17Compiler) {
-        // TODO: Ignore this-escape for now, we may want to review and suppress each one later.
+      if (isJava21orHigher || jdk21Compiler) {
+        // TODO: Ignore this-escape warnings for now; perhaps review and suppress each one later.
         lint +=',-this-escape'
       }
       options.compilerArgs += [

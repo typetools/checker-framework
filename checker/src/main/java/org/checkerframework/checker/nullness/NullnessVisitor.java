@@ -191,7 +191,7 @@ public class NullnessVisitor
             || !((IdentifierTree) receiver).getName().contentEquals("this")) {
           return null;
         }
-        // fallthrough
+      // fallthrough
       case IDENTIFIER:
         TreePath path = getCurrentPath();
         if (TreePathUtil.inConstructor(path)) {
