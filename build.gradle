@@ -56,9 +56,13 @@ ext {
     googleJavaFormat : '1.25.2',
     lombok          : '1.18.38',
     hashmapUtil : '0.0.1',
+
     // DO NOT UPGRADE TO 1.1.4 which requires Java 11
+    // Also, the version in AFU should match this one.
     reflectionUtil : '1.1.3',
-    plumeUtil : '1.10.0',
+    // DO NOT UPGRADE TO 1.10.0 which depends on reflectionUtil 1.1.4 which requires Java 11
+    // Also, the version in AFU should match this one.
+    plumeUtil : '1.9.3',
 
     // https://mvnrepository.com/artifact/com.google.errorprone/error_prone_core
     // If you update this:
