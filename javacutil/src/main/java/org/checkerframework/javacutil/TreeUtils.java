@@ -687,8 +687,8 @@ public final class TreeUtils {
     }
 
     switch (tree.getKind()) {
-        // symbol() only works on MethodSelects, so we need to get it manually
-        // for method invocations.
+      // symbol() only works on MethodSelects, so we need to get it manually
+      // for method invocations.
       case METHOD_INVOCATION:
         return TreeInfo.symbol(((JCMethodInvocation) tree).getMethodSelect());
 
@@ -1519,6 +1519,23 @@ public final class TreeUtils {
   }
 
   /**
+   * Return the {@code statementTree} as an instance of {@link AssignmentTree}, or null.
+   *
+   * @param statementTree a statement tree that might represent an assignment
+   * @return the {@code statementTree} as an instance of {@link AssignmentTree}, or null
+   */
+  public static @Nullable AssignmentTree asAssignmentTree(StatementTree statementTree) {
+    if (statementTree.getKind() != Tree.Kind.EXPRESSION_STATEMENT) {
+      return null;
+    }
+    ExpressionTree exprTree = ((ExpressionStatementTree) statementTree).getExpression();
+    if (exprTree.getKind() != Tree.Kind.ASSIGNMENT) {
+      return null;
+    }
+    return (AssignmentTree) exprTree;
+  }
+
+  /**
    * Compute the name of the field that the field access {@code tree} accesses. Requires {@code
    * tree} to be a field access, as determined by {@code isFieldAccess} (which currently also
    * returns true for class literals and qualified this).
@@ -2169,7 +2186,7 @@ public final class TreeUtils {
         // These operators do binary promotion on the two arguments together.
         return true;
 
-        // TODO: CONDITIONAL_EXPRESSION (?:) sometimes does numeric promotion.
+      // TODO: CONDITIONAL_EXPRESSION (?:) sometimes does numeric promotion.
 
       default:
         return false;

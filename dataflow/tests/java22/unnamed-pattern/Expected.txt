@@ -1,0 +1,90 @@
+2 -> 3 EACH_TO_EACH
+3 -> 4 EACH_TO_EACH
+4 -> 8 THEN_TO_BOTH
+4 -> 10 ELSE_TO_BOTH
+8 -> 12 EACH_TO_EACH
+10 -> 12 EACH_TO_EACH
+12 -> 0 EACH_TO_EACH
+
+2:
+Process order: 1
+TransferInput#0
+Before:   reaching definitions = none
+~~~~~~~~~
+<entry>
+
+3:
+Process order: 2
+TransferInput#1
+Before:   reaching definitions = none
+~~~~~~~~~
+x   [ VariableDeclaration ]
+0   [ IntegerLiteral ]
+x = 0   [ Assignment ]
+switch#num0   [ VariableDeclaration ]
+switch#num0   [ LocalVariable ]
+i   [ LocalVariable ]
+switch#num0 = i   [ Assignment ]
+marker (start of switch statement #0)   [ Marker ]
+_   [ AnyPattern ]
+WrappedInt(_)   [ DeconstructorPattern ]
+case WrappedInt(_):   [ Case ]
+~~~~~~~~~
+AnalysisResult#0
+After:   reaching definitions = { x = 0, switch#num0 = i }
+
+4:
+Process order: 3
+TransferInput#14
+Before:   reaching definitions = { x = 0, switch#num0 = i }
+~~~~~~~~~
+ConditionalBlock: then: 8, else: 10
+
+8:
+Process order: 4
+TransferInput#16
+Before:   reaching definitions = { x = 0, switch#num0 = i }
+~~~~~~~~~
+x   [ LocalVariable ]
+x   [ LocalVariable ]
+1   [ IntegerLiteral ]
+(x + 1)   [ NumericalAddition ]
+x = (x + 1)   [ Assignment ]
+expression statement x = x + 1   [ ExpressionStatement ]
+~~~~~~~~~
+AnalysisResult#0
+After:   reaching definitions = { switch#num0 = i, x = (x + 1) }
+
+10:
+Process order: 5
+TransferInput#17
+Before:   reaching definitions = { x = 0, switch#num0 = i }
+~~~~~~~~~
+x   [ LocalVariable ]
+x   [ LocalVariable ]
+2   [ IntegerLiteral ]
+(x + 2)   [ NumericalAddition ]
+x = (x + 2)   [ Assignment ]
+expression statement x = x + 2   [ ExpressionStatement ]
+~~~~~~~~~
+AnalysisResult#0
+After:   reaching definitions = { switch#num0 = i, x = (x + 2) }
+
+12:
+Process order: 6
+TransferInput#33
+Before:   reaching definitions = { switch#num0 = i, x = (x + 2), x = (x + 1) }
+~~~~~~~~~
+marker (end of switch statement #0)   [ Marker ]
+x   [ LocalVariable ]
+return x   [ Return ]
+~~~~~~~~~
+AnalysisResult#0
+After:   reaching definitions = { switch#num0 = i, x = (x + 2), x = (x + 1) }
+
+0:
+Process order: 7
+TransferInput#38
+Before:   reaching definitions = { switch#num0 = i, x = (x + 2), x = (x + 1) }
+~~~~~~~~~
+<exit>

@@ -82,6 +82,8 @@ public class DeconstructorPatternNode extends Node {
         for (Node patternNode : nestedPatterns) {
           if (patternNode instanceof LocalVariableNode) {
             bindingVariables.add((LocalVariableNode) patternNode);
+          } else if (patternNode instanceof AnyPatternNode) {
+            // Do nothing, as AnyPatternNode does not have binding variables.
           } else {
             bindingVariables.addAll(((DeconstructorPatternNode) patternNode).getBindingVariables());
           }
@@ -90,5 +92,10 @@ public class DeconstructorPatternNode extends Node {
       }
     }
     return bindingVariables;
+  }
+
+  @Override
+  public String toString() {
+    return deconstructorPattern.toString();
   }
 }

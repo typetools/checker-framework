@@ -38,6 +38,7 @@ import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGLambda;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
 import org.checkerframework.dataflow.cfg.node.AbstractNodeVisitor;
+import org.checkerframework.dataflow.cfg.node.AnyPatternNode;
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.CaseNode;
@@ -1128,6 +1129,13 @@ public abstract class CFAbstractTransfer<
   }
 
   @Override
+  public TransferResult<V, S> visitAnyPattern(AnyPatternNode n, TransferInput<V, S> in) {
+    // This is an unnamed variable, so ignored it.
+    V value = null;
+    return createTransferResult(value, in);
+  }
+
+  @Override
   public TransferResult<V, S> visitInstanceOf(InstanceOfNode node, TransferInput<V, S> in) {
     TransferResult<V, S> result = super.visitInstanceOf(node, in);
     for (LocalVariableNode bindingVar : node.getBindingVariables()) {
@@ -1500,6 +1508,26 @@ public abstract class CFAbstractTransfer<
       result.getElseStore().insertValue(target, newAnno);
     } else {
       result.getRegularStore().insertValue(target, newAnno);
+    }
+  }
+
+  /**
+   * Inserts {@code newAnno} into all stores (conditional or not) in the result for {@code target},
+   * while permitting non-deterministic values to be stored. This is a utility method for
+   * subclasses.
+   *
+   * @param result the {@link TransferResult} holding the stores to modify
+   * @param target the {@link JavaExpression} for which the stores should be modified to contain the
+   *     value {@code newAnno}
+   * @param newAnno the new value
+   */
+  protected static void insertIntoStoresPermitNonDeterministic(
+      TransferResult<CFValue, CFStore> result, JavaExpression target, AnnotationMirror newAnno) {
+    if (result.containsTwoStores()) {
+      result.getThenStore().insertValuePermitNondeterministic(target, newAnno);
+      result.getElseStore().insertValuePermitNondeterministic(target, newAnno);
+    } else {
+      result.getRegularStore().insertValuePermitNondeterministic(target, newAnno);
     }
   }
 }

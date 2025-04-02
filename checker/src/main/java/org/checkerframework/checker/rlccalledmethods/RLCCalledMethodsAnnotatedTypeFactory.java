@@ -1,4 +1,4 @@
-package org.checkerframework.checker.resourceleak;
+package org.checkerframework.checker.rlccalledmethods;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -12,6 +12,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.calledmethods.CalledMethodsAnnotatedTypeFactory;
 import org.checkerframework.checker.calledmethods.EnsuresCalledMethodOnExceptionContract;
 import org.checkerframework.checker.calledmethods.qual.CalledMethods;
@@ -28,9 +29,17 @@ import org.checkerframework.checker.mustcall.qual.MustCallAlias;
 import org.checkerframework.checker.mustcall.qual.NotOwning;
 import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer;
+import org.checkerframework.checker.resourceleak.MustCallInference;
+import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
+import org.checkerframework.checker.resourceleak.ResourceLeakUtils;
+import org.checkerframework.common.accumulation.AccumulationStore;
+import org.checkerframework.common.accumulation.AccumulationValue;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
+import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
@@ -45,23 +54,26 @@ import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 
 /**
- * The type factory for the Resource Leak Checker. The main difference between this and the Called
+ * The type factory for the RLCCalledMethodsChecker. The main difference between this and the Called
  * Methods type factory from which it is derived is that this version's {@link
  * #postAnalyze(ControlFlowGraph)} method checks that must-call obligations are fulfilled.
  */
-public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedTypeFactory
+public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotatedTypeFactory
     implements CreatesMustCallForElementSupplier {
+
+  /** The RLC parent checker. */
+  private ResourceLeakChecker rlc;
 
   /** The MustCall.value element/field. */
   private final ExecutableElement mustCallValueElement =
       TreeUtils.getMethod(MustCall.class, "value", 0, processingEnv);
 
   /** The EnsuresCalledMethods.value element/field. */
-  /*package-private*/ final ExecutableElement ensuresCalledMethodsValueElement =
+  public final ExecutableElement ensuresCalledMethodsValueElement =
       TreeUtils.getMethod(EnsuresCalledMethods.class, "value", 0, processingEnv);
 
   /** The EnsuresCalledMethods.methods element/field. */
-  /*package-private*/ final ExecutableElement ensuresCalledMethodsMethodsElement =
+  public final ExecutableElement ensuresCalledMethodsMethodsElement =
       TreeUtils.getMethod(EnsuresCalledMethods.class, "methods", 0, processingEnv);
 
   /** The EnsuresCalledMethods.List.value element/field. */
@@ -96,14 +108,17 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
   private final BiMap<LocalVariableNode, Tree> tempVarToTree = HashBiMap.create();
 
   /**
-   * Creates a new ResourceLeakAnnotatedTypeFactory.
+   * Creates a new RLCCalledMethodsAnnotatedTypeFactory.
    *
    * @param checker the checker associated with this type factory
    */
-  public ResourceLeakAnnotatedTypeFactory(BaseTypeChecker checker) {
+  public RLCCalledMethodsAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
-    this.noResourceAliases = checker.hasOption(MustCallChecker.NO_RESOURCE_ALIASES);
-    this.postInit();
+    this.rlc = ResourceLeakUtils.getResourceLeakChecker(checker);
+    this.noResourceAliases = rlc.hasOption(MustCallChecker.NO_RESOURCE_ALIASES);
+    if (this.getClass() == RLCCalledMethodsAnnotatedTypeFactory.class) {
+      this.postInit();
+    }
   }
 
   @Override
@@ -124,8 +139,8 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
 
   @Override
   public void postAnalyze(ControlFlowGraph cfg) {
-    MustCallConsistencyAnalyzer mustCallConsistencyAnalyzer =
-        new MustCallConsistencyAnalyzer(this, (ResourceLeakAnalysis) this.analysis);
+    rlc.setRoot(root);
+    MustCallConsistencyAnalyzer mustCallConsistencyAnalyzer = new MustCallConsistencyAnalyzer(rlc);
     mustCallConsistencyAnalyzer.analyze(cfg);
 
     // Inferring owning annotations for @Owning fields/parameters, @EnsuresCalledMethods for
@@ -141,8 +156,8 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
   }
 
   @Override
-  protected ResourceLeakAnalysis createFlowAnalysis() {
-    return new ResourceLeakAnalysis((ResourceLeakChecker) checker, this);
+  protected RLCCalledMethodsAnalysis createFlowAnalysis() {
+    return new RLCCalledMethodsAnalysis((RLCCalledMethodsChecker) checker, this);
   }
 
   /**
@@ -180,7 +195,7 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
    * @param tree a tree
    * @return true if the Must Call type is non-empty or top
    */
-  /*package-private*/ boolean hasEmptyMustCallValue(Tree tree) {
+  public boolean hasEmptyMustCallValue(Tree tree) {
     AnnotationMirror mustCallAnnotation = getMustCallAnnotation(tree);
     if (mustCallAnnotation != null) {
       return getMustCallValues(mustCallAnnotation).isEmpty();
@@ -201,7 +216,7 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
    * @param element an element
    * @return true if the Must Call type is non-empty or top
    */
-  /*package-private*/ boolean hasEmptyMustCallValue(Element element) {
+  public boolean hasEmptyMustCallValue(Element element) {
     AnnotationMirror mustCallAnnotation = getMustCallAnnotation(element);
     if (mustCallAnnotation != null) {
       return getMustCallValues(mustCallAnnotation).isEmpty();
@@ -219,7 +234,7 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
    * <p>Do not use this method to get the MustCall values of an {@link
    * org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer.Obligation}. Instead, use
    * {@link
-   * org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer.Obligation#getMustCallMethods(ResourceLeakAnnotatedTypeFactory,
+   * org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer.Obligation#getMustCallMethods(RLCCalledMethodsAnnotatedTypeFactory,
    * CFStore)}.
    *
    * <p>Do not call {@link List#isEmpty()} on the result of this method: prefer to call {@link
@@ -228,7 +243,7 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
    * @param element an element
    * @return the strings in its must-call type
    */
-  /*package-private*/ List<String> getMustCallValues(Element element) {
+  public List<String> getMustCallValues(Element element) {
     MustCallAnnotatedTypeFactory mustCallAnnotatedTypeFactory =
         getTypeFactoryOfSubchecker(MustCallChecker.class);
     AnnotatedTypeMirror mustCallAnnotatedType =
@@ -245,8 +260,7 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
    * @return the strings in mustCallAnnotation's value element, or the empty list if
    *     mustCallAnnotation is null
    */
-  /*package-private*/ List<String> getMustCallValues(
-      @Nullable AnnotationMirror mustCallAnnotation) {
+  public List<String> getMustCallValues(@Nullable AnnotationMirror mustCallAnnotation) {
     if (mustCallAnnotation == null) {
       return Collections.emptyList();
     }
@@ -260,7 +274,7 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
    * @param node a node
    * @return the tempvar for node's expression, or null if one does not exist
    */
-  /*package-private*/ @Nullable LocalVariableNode getTempVarForNode(Node node) {
+  public @Nullable LocalVariableNode getTempVarForNode(Node node) {
     return tempVarToTree.inverse().get(node.getTree());
   }
 
@@ -270,7 +284,7 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
    * @param node a node
    * @return true iff the given node is a temporary variable
    */
-  /*package-private*/ boolean isTempVar(Node node) {
+  public boolean isTempVar(Node node) {
     return tempVarToTree.containsKey(node);
   }
 
@@ -280,7 +294,7 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
    * @param node a node for a temporary variable
    * @return the tree for {@code node}
    */
-  /*package-private*/ Tree getTreeForTempVar(Node node) {
+  public Tree getTreeForTempVar(Node node) {
     if (!tempVarToTree.containsKey(node)) {
       throw new TypeSystemError(node + " must be a temporary variable");
     }
@@ -293,7 +307,7 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
    * @param tmpVar a temporary variable
    * @param tree the tree of the expression the tempvar represents
    */
-  /*package-private*/ void addTempVar(LocalVariableNode tmpVar, Tree tree) {
+  public void addTempVar(LocalVariableNode tmpVar, Tree tree) {
     if (!tempVarToTree.containsValue(tree)) {
       tempVarToTree.put(tmpVar, tree);
     }
@@ -314,7 +328,7 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
    * @param tree a tree
    * @return whether the tree has declared must-call obligations
    */
-  /*package-private*/ boolean declaredTypeHasMustCall(Tree tree) {
+  public boolean declaredTypeHasMustCall(Tree tree) {
     assert tree.getKind() == Tree.Kind.METHOD
             || tree.getKind() == Tree.Kind.VARIABLE
             || tree.getKind() == Tree.Kind.NEW_CLASS
@@ -330,7 +344,7 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
    * @param tree a tree
    * @return true if the given tree has an {@link MustCallAlias} annotation
    */
-  /*package-private*/ boolean hasMustCallAlias(Tree tree) {
+  public boolean hasMustCallAlias(Tree tree) {
     Element elt = TreeUtils.elementFromTree(tree);
     return hasMustCallAlias(elt);
   }
@@ -342,7 +356,7 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
    * @param elt an element
    * @return true if the given element has an {@link MustCallAlias} annotation
    */
-  /*package-private*/ boolean hasMustCallAlias(Element elt) {
+  public boolean hasMustCallAlias(Element elt) {
     if (noResourceAliases) {
       return false;
     }
@@ -374,12 +388,13 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
    */
   public boolean canCreateObligations() {
     // Precomputing this call to `hasOption` causes a NullPointerException, so leave it as is.
-    return !checker.hasOption(MustCallChecker.NO_CREATES_MUSTCALLFOR);
+    return !rlc.hasOption(MustCallChecker.NO_CREATES_MUSTCALLFOR);
   }
 
   @Override
   @SuppressWarnings("TypeParameterUnusedInFormals") // Intentional abuse
-  public <T extends GenericAnnotatedTypeFactory<?, ?, ?, ?>> @Nullable T getTypeFactoryOfSubcheckerOrNull(Class<? extends SourceChecker> subCheckerClass) {
+  public <T extends GenericAnnotatedTypeFactory<?, ?, ?, ?>>
+      @Nullable T getTypeFactoryOfSubcheckerOrNull(Class<? extends SourceChecker> subCheckerClass) {
     if (subCheckerClass == MustCallChecker.class) {
       if (!canCreateObligations()) {
         return super.getTypeFactoryOfSubcheckerOrNull(MustCallNoCreatesMustCallForChecker.class);
@@ -457,7 +472,7 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
 
     // This override is a sneaky way to satisfy a few subtle design constraints:
     //   1. The RLC requires destructors to close the class's @Owning fields even on exception
-    //      (see ResourceLeakVisitor.checkOwningField).
+    //      (see RLCCalledMethodsVisitor.checkOwningField).
     //   2. In versions 3.39.0 and earlier, the RLC did not have the annotation
     //      @EnsuresCalledMethodsOnException, meaning that for destructors it had to treat
     //      a simple @EnsuresCalledMethods annotation as serving both purposes.
@@ -517,5 +532,33 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
             Collections.emptyList());
     String methodName = elt.getSimpleName().toString();
     return mcValues.contains(methodName);
+  }
+
+  /**
+   * Returns true if the checker should ignore exceptional control flow due to the given exception
+   * type.
+   *
+   * @param exceptionType exception type
+   * @return {@code true} if {@code exceptionType} is a member of {@link
+   *     RLCCalledMethodsAnalysis#ignoredExceptionTypes}, {@code false} otherwise
+   */
+  @Override
+  public boolean isIgnoredExceptionType(TypeMirror exceptionType) {
+    return ((RLCCalledMethodsAnalysis) analysis).isIgnoredExceptionType(exceptionType);
+  }
+
+  /**
+   * Fetches the transfer input for the given block, either from the flowResult, if the analysis is
+   * still running, or else from the analysis itself.
+   *
+   * @param block a block
+   * @return the appropriate TransferInput from the results of running dataflow
+   */
+  public TransferInput<AccumulationValue, AccumulationStore> getInput(Block block) {
+    if (!analysis.isRunning()) {
+      return flowResult.getInput(block);
+    } else {
+      return analysis.getInput(block);
+    }
   }
 }

@@ -1,3 +1,5 @@
+# DO NOT EDIT azure-pipelines-daily.yml.  Edit azure-pipelines-daily.yml.m4 and defs.m4 instead.
+
 changequote(`[',`]')dnl
 include([defs.m4])dnl
 trigger: none
@@ -22,12 +24,12 @@ jobs:
 
 - job: canary_jobs
   dependsOn:
-   - junit_jdk21
-   - nonjunit_jdk21
-   - inference_part1_jdk21
-   - inference_part2_jdk21
-   - typecheck_part1_jdk21
-   - typecheck_part2_jdk21
+   - junit_jdk[]canary_version
+   - nonjunit_jdk[]canary_version
+   - inference_part1_jdk[]canary_version
+   - inference_part2_jdk[]canary_version
+   - typecheck_part1_jdk[]canary_version
+   - typecheck_part2_jdk[]canary_version
   pool:
     vmImage: 'ubuntu-latest'
   steps:
@@ -50,23 +52,23 @@ nonjunit_job(23)
 # So use a timeout of 90 minutes, and hope that is enough.
 inference_job(11)
 inference_job(17)
-inference_job_lts(21)
-inference_job(23)
+inference_job(21)
+inference_job_split(23)
 
 # Do not run misc_job daily, because it does diffs that assume it is running in
 # a pull request.
 
 typecheck_job(11)
 typecheck_job(17)
-typecheck_job_lts(21)
-typecheck_job(23)
+typecheck_job
+typecheck_job_split(21)(23)
 
 daikon_job(11)
 daikon_job(17)
-daikon_job_lts(21)
-daikon_job(23)
+daikon_job_split(21)
+daikon_job_split(23)
 
-## I'm not sure why the guava_jdk11 job is failing (it's due to Error Prone).
+## I think the guava_jdk11 job is failing due to Error Prone not supporting JDK 11.
 guava_job(17)
 guava_job(21)
 guava_job(23)

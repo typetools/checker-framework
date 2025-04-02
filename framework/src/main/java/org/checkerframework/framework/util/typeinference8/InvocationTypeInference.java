@@ -265,7 +265,7 @@ public class InvocationTypeInference {
       AbstractType fi = formals.get(i);
 
       if (!notPertinentToApplicability(ei, fi)) {
-        c.add(new Expression(ei, fi));
+        c.add(new Expression("Argument constraint", ei, fi));
       }
     }
 
@@ -315,7 +315,11 @@ public class InvocationTypeInference {
     for (int i = 0; i < formals.size(); i++) {
       AbstractType ei = args.get(i);
       AbstractType fi = formals.get(i);
-      c.add(new Typing(ei, fi, Kind.TYPE_COMPATIBILITY));
+      String source =
+          String.format(
+              "Method reference: %s, constraint against arguments, index %s.",
+              methodType.getInvocation(), i);
+      c.add(new Typing(source, ei, fi, Kind.TYPE_COMPATIBILITY));
     }
 
     BoundSet newBounds = c.reduce(context);
@@ -349,8 +353,11 @@ public class InvocationTypeInference {
       // If unchecked conversion was necessary for the method to be applicable during
       // constraint set reduction in 18.5.1, the constraint formula <|R| -> T> is reduced and
       // incorporated with B2.
+      String source =
+          "Constraint between method call type and target type for method call (unchecked conversion): "
+              + invocation;
       BoundSet b =
-          new ConstraintSet(new Typing(r.getErased(), target, Kind.TYPE_COMPATIBILITY))
+          new ConstraintSet(new Typing(source, r.getErased(), target, Kind.TYPE_COMPATIBILITY))
               .reduce(context);
       b2.incorporateToFixedPoint(b);
       return b2;
@@ -393,8 +400,12 @@ public class InvocationTypeInference {
       if (compatibility) {
         BoundSet resolve = Resolution.resolve(alpha, b2, context);
         ProperType u = (ProperType) alpha.getBounds().getInstantiation().capture(context);
+        String source =
+            "Constraint between method call type and target type for method call (compatibility constraint): "
+                + invocation;
+
         ConstraintSet constraintSet =
-            new ConstraintSet(new Typing(u, target, Kind.TYPE_COMPATIBILITY));
+            new ConstraintSet(new Typing(source, u, target, Kind.TYPE_COMPATIBILITY));
         BoundSet newBounds = constraintSet.reduce(context);
         resolve.incorporateToFixedPoint(newBounds);
         return resolve;
@@ -403,14 +414,20 @@ public class InvocationTypeInference {
         // From the JLS:
         // "T is a primitive type, and one of the primitive wrapper classes mentioned in
         // 5.1.7 is an instantiation, upper bound, or lower bound for [the variable] in B2."
-        ConstraintSet constraintSet = new ConstraintSet(new Typing(r, target, Kind.SUBTYPE));
+        String source =
+            "Constraint between method call type and target type for method call: " + invocation;
+
+        ConstraintSet constraintSet =
+            new ConstraintSet(new Typing(source, r, target, Kind.SUBTYPE));
         BoundSet newBounds = constraintSet.reduce(context);
         b2.incorporateToFixedPoint(newBounds);
         return b2;
       }
     }
-
-    ConstraintSet constraintSet = new ConstraintSet(new Typing(r, target, Kind.TYPE_COMPATIBILITY));
+    String source =
+        "Constraint between method call type and target type for method call:" + invocation;
+    ConstraintSet constraintSet =
+        new ConstraintSet(new Typing(source, r, target, Kind.TYPE_COMPATIBILITY));
     BoundSet newBounds = constraintSet.reduce(context);
     b2.incorporateToFixedPoint(newBounds);
     return b2;
@@ -437,7 +454,7 @@ public class InvocationTypeInference {
       ExpressionTree ei = args.get(i);
       AbstractType fi = formals.get(i);
       if (notPertinentToApplicability(ei, fi)) {
-        c.add(new Expression(ei, fi));
+        c.add(new Expression("Argument constraint", ei, fi));
       }
       if (ei.getKind() == Tree.Kind.METHOD_INVOCATION || ei.getKind() == Tree.Kind.NEW_CLASS) {
         if (TreeUtils.isPolyExpression(ei)) {
@@ -445,9 +462,6 @@ public class InvocationTypeInference {
           c.addAll(aa.reduce(context));
         }
       } else {
-        // Wait to reduce additional argument constraints from lambdas and method references
-        // because the additional constraints might require other inference variables to be
-        // resolved before the constraint can be created.
         c.addAll(createAdditionalArgConstraints(ei, fi, map));
       }
     }
@@ -496,7 +510,7 @@ public class InvocationTypeInference {
       case METHOD_INVOCATION:
       case NEW_CLASS:
         if (TreeUtils.isPolyExpression(ei)) {
-          c.add(new AdditionalArgument(ei));
+          c.addAll(new AdditionalArgument(ei).reduce(context));
         }
         break;
       case PARENTHESIZED:
@@ -547,7 +561,15 @@ public class InvocationTypeInference {
       case METHOD_INVOCATION:
       case NEW_CLASS:
         if (TreeUtils.isPolyExpression(expression)) {
-          c.add(new AdditionalArgument(expression));
+          try {
+            c.addAll(new AdditionalArgument(expression).reduce(context));
+          } catch (Exception e) {
+            // Sometimes in order to create the additional argument constraint, other inference
+            // variables must be resolved first. This happens when a lambda parameter is used in the
+            // additional argument constraint.
+            // See framework/tests/all-systems/SimpleLambdaParameter.java
+            c.add(new AdditionalArgument(expression));
+          }
         }
         break;
       case PARENTHESIZED:
@@ -649,7 +671,7 @@ public class InvocationTypeInference {
     Set<Variable> newVariables = c.getAllInferenceVariables();
     while (!c.isEmpty()) {
 
-      ConstraintSet subset = c.getClosedSubset(b3.getDependencies(newVariables));
+      ConstraintSet subset = ConstraintSet.getClosedSubset(c, b3.getDependencies(newVariables));
       Set<Variable> alphas = subset.getAllInputVariables();
       if (!alphas.isEmpty()) {
         // First resolve only the variables with proper bounds.

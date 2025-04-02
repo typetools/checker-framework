@@ -770,7 +770,8 @@ public class AnnotationFileParser {
 
   /**
    * Process {@link #stubUnit}, which is the AST produced by {@link #parseStubUnit}. Processing
-   * means copying annotations from Stub Parser data structures to {@code #annotationFileAnnos}.
+   * means copying annotations from Stub Parser data structures to argument {@code
+   * annotationFileAnnos}.
    *
    * @param annotationFileAnnos annotations from the file; side-effected by this method
    */
@@ -781,7 +782,7 @@ public class AnnotationFileParser {
   }
 
   /**
-   * Process the given StubUnit: copy its annotations to {@code #annotationFileAnnos}.
+   * Process the given StubUnit: copy its annotations to {@code this.annotationFileAnnos}.
    *
    * @param su the StubUnit to process
    */
@@ -2577,9 +2578,9 @@ public class AnnotationFileParser {
       return convert(((LongLiteralExpr) expr).asNumber(), valueKind);
     } else if (expr instanceof UnaryExpr) {
       switch (expr.toString()) {
-          // Special-case the minimum values.  Separately parsing a "-" and a value
-          // doesn't correctly handle the minimum values, because the absolute value of
-          // the smallest member of an integral type is larger than the largest value.
+        // Special-case the minimum values.  Separately parsing a "-" and a value
+        // doesn't correctly handle the minimum values, because the absolute value of
+        // the smallest member of an integral type is larger than the largest value.
         case "-9223372036854775808L":
         case "-9223372036854775808l":
           return convert(Long.MIN_VALUE, valueKind, false);

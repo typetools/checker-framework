@@ -51,7 +51,7 @@ javac -processor org.checkerframework.checker.resourceleak.ResourceLeakChecker M
 
 The Resource Leak Checker supports all the command-line arguments
 listed in Section~\ref{called-methods-run-checker} for
-the Called Methods Checker, plus three others:
+the Called Methods Checker, plus four others:
 
 \begin{description}
 \item[\<-ApermitStaticOwning>]
@@ -60,6 +60,12 @@ the Called Methods Checker, plus three others:
   See Section~\ref{resource-leak-ignored-exceptions}.
 \item[\<-ApermitInitializationLeak>]
   See Section~\ref{resource-leak-field-initialization}.
+\item[\<-AenableReturnsReceiverForRlc>]
+  Enables the Returns Receiver Checker (Section~\ref{returns-reciever-checker})
+  when running this checker. By default, the Returns Receiver checker is
+  disabled when running the Called Methods Checker as part of the RLC,
+  because it has a significant runtime cost but provides little benefit in the common case,
+  since resources are rarely combined with fluent builders.
 %% TODO: Uncomment when the feature is ready to be publicized.
 % \item[\<-AenableWpiForRlc>]
 %   See Section~\ref{resource-leak-checker-inference-algo}.

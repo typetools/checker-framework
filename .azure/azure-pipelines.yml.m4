@@ -1,3 +1,5 @@
+# DO NOT EDIT azure-pipelines.yml.  Edit azure-pipelines.yml.m4 and defs.m4 instead.
+
 changequote(`[',`]')dnl
 include([defs.m4])dnl
 # Workaround for https://status.dev.azure.com/_event/179641421
@@ -21,44 +23,44 @@ jobs:
 
 - job: canary_jobs
   dependsOn:
-   - junit_jdk21
-   - nonjunit_jdk21
-   - inference_part1_jdk21
-   - inference_part2_jdk21
-   - typecheck_part1_jdk21
-   - typecheck_part2_jdk21
-   - misc_jdk21
-   - misc_jdk23
+   - junit_jdk[]canary_version
+   - nonjunit_jdk[]canary_version
+   - inference_part1_jdk[]canary_version
+   - inference_part2_jdk[]canary_version
+   - typecheck_part1_jdk[]canary_version
+   - typecheck_part2_jdk[]canary_version
+   - misc_jdk[]canary_version
+   - misc_jdk[]latest_version
   pool:
     vmImage: 'ubuntu-latest'
   steps:
   - bash: true
     displayName: canary_jobs
 
-junit_job(21)
+junit_job(canary_version)
 
-nonjunit_job(21)
+nonjunit_job(canary_version)
 
 # Sometimes one of the invocations of wpi-many in `./gradlew wpiManyTest`
 # takes much longer to complete than normal, and this Azure job times out.
 # When there is a timeout, one cannot examine wpi or wpi-many logs.
 # So use a timeout of 90 minutes, and hope that is enough.
-inference_job_lts(21)
+inference_job_split(canary_version)
 
-# Unlimited fetchDepth for misc_jobs, because of need to make contributors.tex
+# Unlimited fetchDepth (0) for misc_jobs, because of need to make contributors.tex .
 misc_job(11)
 misc_job(17)
 misc_job(21)
 misc_job(23)
 
-typecheck_job_lts(21)
+typecheck_job_split(canary_version)
 
-daikon_job_lts(21)
+daikon_job_split(canary_version)
 
 ## I'm not sure why the guava_jdk11 job is failing (it's due to Error Prone).
-guava_job(21)
+guava_job(canary_version)
 
-plume_lib_job(21)
+plume_lib_job(canary_version)
 
 ## The downstream jobs are not currently needed because test-downstream.sh is empty.
 # - job: downstream_jdk11
