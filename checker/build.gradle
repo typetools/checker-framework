@@ -45,12 +45,7 @@ dependencies {
   // If you add an external dependency, you must shadow its packages.
   // See the comment in ../build.gradle in the shadowJar block.
 
-  implementation ("org.plumelib:reflection-util") {
-    version {
-      strictly("${versions.reflectionUtil}")
-    }
-  }
-
+  implementation ("org.plumelib:reflection-util:${versions.reflectionUtil}")
   implementation "org.plumelib:plume-util:${versions.plumeUtil}"
 
   // Dependencies added to "shadow" appear as dependencies in Maven Central.
