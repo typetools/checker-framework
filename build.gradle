@@ -59,7 +59,7 @@ ext {
 
     // DO NOT UPGRADE TO 1.1.4 which requires Java 11
     // Also, the version in AFU should match this one.
-    reflectionUtil : '1.1.3',
+    reflectionUtil : '1.1.5',
     // DO NOT UPGRADE TO 1.10.0 which depends on reflectionUtil 1.1.4 which requires Java 11
     // Also, the version in AFU should match this one.
     plumeUtil : '1.9.3',
