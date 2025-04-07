@@ -3,7 +3,11 @@ package org.checkerframework.checker.confidential;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import java.util.Set;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.Tree;
 import org.checkerframework.checker.confidential.qual.BottomConfidential;
 import org.checkerframework.checker.confidential.qual.Confidential;
 import org.checkerframework.checker.confidential.qual.NonConfidential;
@@ -16,6 +20,7 @@ import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /** Annotated type factory for the Confidential Checker. */
@@ -36,6 +41,9 @@ public class ConfidentialAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /** A singleton set containing the {@code @}{@link NonConfidential} annotation mirror. */
   private final AnnotationMirrorSet setOfNonConfidential;
 
+  /** The processing environment to use for accessing compiler internals. */
+  protected final ProcessingEnvironment processingEnv;
+
   /**
    * Creates a {@link ConfidentialAnnotatedTypeFactory}.
    *
@@ -50,6 +58,7 @@ public class ConfidentialAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     this.BOTTOM_CONFIDENTIAL =
         AnnotationBuilder.fromClass(getElementUtils(), BottomConfidential.class);
     this.setOfNonConfidential = AnnotationMirrorSet.singleton(NONCONFIDENTIAL);
+    this.processingEnv = checker.getProcessingEnvironment();
     postInit();
   }
 
@@ -133,5 +142,22 @@ public class ConfidentialAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
       return NONCONFIDENTIAL;
     }
+  }
+
+  @Override
+  public void addComputedTypeAnnotations(Tree tree, AnnotatedTypeMirror type, boolean useFlow) {
+    Element element = TreeUtils.elementFromTree(tree);
+    if (TreeUtils.isMethodAccess(tree)) {
+      MethodInvocationTree methodInvoc = (MethodInvocationTree) tree;
+      if (TreeUtils.isMethodInvocation(methodInvoc,
+          TreeUtils.getMethod(Object.class, "toString", 1, processingEnv),
+          processingEnv)) {
+        Element arg = TreeUtils.elementFromTree(methodInvoc.getTypeArguments().get(0));
+        if (ElementUtils.hasAnnotation(arg, "NonConfidential")) {
+          type.replaceAnnotation(NONCONFIDENTIAL);
+        }
+      }
+    }
+    super.addComputedTypeAnnotations(tree, type, useFlow);
   }
 }
