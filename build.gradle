@@ -56,9 +56,8 @@ ext {
     googleJavaFormat : '1.25.2',
     lombok          : '1.18.38',
     hashmapUtil : '0.0.1',
-    // DO NOT UPGRADE TO 1.1.4 which requires Java 11
-    reflectionUtil : '1.1.3',
-    plumeUtil : '1.10.0',
+    reflectionUtil : '1.1.5',
+    plumeUtil : '1.10.1',
 
     // https://mvnrepository.com/artifact/com.google.errorprone/error_prone_core
     // If you update this:
@@ -123,7 +122,7 @@ allprojects { currentProj ->
   //   * any new checkers have been added, or
   //   * backward-incompatible changes have been made to APIs or elsewhere.
   // To make a snapshot release, version should end in "-SNAPSHOT", then: ./gradlew publish
-  version = '3.49.2'
+  version = '3.49.3-SNAPSHOT'
 
   tasks.withType(JavaCompile).configureEach {
     options.fork = true
@@ -397,6 +396,8 @@ allprojects { currentProj ->
     // Add standard javac options
     tasks.withType(JavaCompile) { compilationTask ->
       dependsOn(':installGitHooks')
+      // Use JDK 21 because that is what used in the release.  If you update this line, also update,
+      // JAVA_HOME in docs/developer/release/release_vars.py.
       boolean jdk21Compiler = project.getProperties().getOrDefault('useJdk21Compiler', false)
       if (jdk21Compiler) {
         // This uses the Java 21 compiler to compile all code.
