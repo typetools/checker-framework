@@ -6,6 +6,7 @@ import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 import org.checkerframework.checker.confidential.qual.BottomConfidential;
@@ -40,6 +41,10 @@ public class ConfidentialAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   /** A singleton set containing the {@code @}{@link NonConfidential} annotation mirror. */
   private final AnnotationMirrorSet setOfNonConfidential;
+
+  /** The Object.toString method. */
+  private final ExecutableElement objectToString =
+      TreeUtils.getMethod("java.lang.Object", "toString", 0, processingEnv);
 
   /**
    * Creates a {@link ConfidentialAnnotatedTypeFactory}.
@@ -138,29 +143,28 @@ public class ConfidentialAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
       return NONCONFIDENTIAL;
     }
-  }
 
-  /**
-   * Defines specific type-checking rules for Object.toString() that allow
-   * @NonConfidential Objects to return @NonConfidential Strings.
-   *
-   * @param tree an AST node
-   * @param type the type obtained from tree
-   * @param useFlow whether to use information from dataflow analysis
-   */
-  @Override
-  public void addComputedTypeAnnotations(Tree tree, AnnotatedTypeMirror type, boolean useFlow) {
-    if (TreeUtils.isMethodAccess(tree)) {
-      MethodInvocationTree methodInvoc = (MethodInvocationTree) tree;
-      if (TreeUtils.isMethodInvocation(methodInvoc,
-          TreeUtils.getMethod(Object.class, "toString", 1, processingEnv),
-          processingEnv)) {
-        Element arg = TreeUtils.elementFromTree(methodInvoc.getTypeArguments().get(0));
+    /**
+     * Visits a method invocation node. Enforces specific type-checking rules
+     * for Object.toString() that allow a @NonConfidential Object to return
+     * a @NonConfidential String.
+     *
+     * Supplements the @Confidential String return in Object.toString() to cover
+     * all secure use cases, i.e. all cases covered by a @PolyConfidential receiver
+     * and return excepting a @NonConfidential String from a @Confidential receiver.
+     *
+     * @param tree an AST node representing a method call
+     * @param type the type obtained from tree
+     */
+    @Override
+    public Void visitMethodInvocation(MethodInvocationTree tree, AnnotatedTypeMirror type) {
+      if (TreeUtils.isMethodInvocation(tree, objectToString, processingEnv)) {
+        Element arg = TreeUtils.elementFromTree(tree.getTypeArguments().get(0));
         if (fromElement(arg).hasPrimaryAnnotation(NONCONFIDENTIAL)) {
           type.replaceAnnotation(NONCONFIDENTIAL);
         }
       }
+      return super.visitMethodInvocation(tree, type);
     }
-    super.addComputedTypeAnnotations(tree, type, useFlow);
   }
 }
