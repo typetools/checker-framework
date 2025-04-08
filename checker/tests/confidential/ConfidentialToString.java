@@ -1,7 +1,7 @@
 import org.checkerframework.checker.confidential.qual.Confidential;
 import org.checkerframework.checker.confidential.qual.NonConfidential;
 
-public ConfidentialToString {
+public class ConfidentialToString {
   void confParam(@Confidential Object confObj) {
     // :: error: (assignment)
     @NonConfidential String nonConfRes = confObj.toString();
