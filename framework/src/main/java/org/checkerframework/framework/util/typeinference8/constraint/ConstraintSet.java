@@ -236,6 +236,7 @@ public class ConstraintSet implements ReductionResult {
     }
 
     if (!subset.isEmpty()) {
+      // Return the first expression constraint; if there are none, return the first constraint.
       for (Constraint constraint : subset.list) {
         if (constraint.getKind() == Kind.EXPRESSION) {
           return new ConstraintSet(constraint);
