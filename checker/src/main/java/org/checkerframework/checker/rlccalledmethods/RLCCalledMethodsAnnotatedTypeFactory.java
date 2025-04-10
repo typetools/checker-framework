@@ -29,8 +29,6 @@ import org.checkerframework.checker.mustcall.qual.MustCallAlias;
 import org.checkerframework.checker.mustcall.qual.NotOwning;
 import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer;
-import org.checkerframework.checker.resourceleak.MustCallInference;
 import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
 import org.checkerframework.checker.resourceleak.ResourceLeakUtils;
 import org.checkerframework.common.accumulation.AccumulationStore;
@@ -38,7 +36,6 @@ import org.checkerframework.common.accumulation.AccumulationValue;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
-import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
@@ -135,24 +132,6 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
    */
   public AnnotationMirror createCalledMethods(String... val) {
     return createAccumulatorAnnotation(Arrays.asList(val));
-  }
-
-  @Override
-  public void postAnalyze(ControlFlowGraph cfg) {
-    rlc.setRoot(root);
-    MustCallConsistencyAnalyzer mustCallConsistencyAnalyzer = new MustCallConsistencyAnalyzer(rlc);
-    mustCallConsistencyAnalyzer.analyze(cfg);
-
-    // Inferring owning annotations for @Owning fields/parameters, @EnsuresCalledMethods for
-    // finalizer methods and @InheritableMustCall annotations for the class declarations.
-    if (getWholeProgramInference() != null) {
-      if (cfg.getUnderlyingAST().getKind() == UnderlyingAST.Kind.METHOD) {
-        MustCallInference.runMustCallInference(this, cfg, mustCallConsistencyAnalyzer);
-      }
-    }
-
-    super.postAnalyze(cfg);
-    tempVarToTree.clear();
   }
 
   @Override
