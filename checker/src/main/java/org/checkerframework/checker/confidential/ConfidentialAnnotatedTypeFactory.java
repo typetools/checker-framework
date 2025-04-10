@@ -159,9 +159,11 @@ public class ConfidentialAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     public Void visitMethodInvocation(MethodInvocationTree tree, AnnotatedTypeMirror type) {
       if (TreeUtils.isMethodInvocation(tree, objectToString, processingEnv)) {
-        Element arg = TreeUtils.elementFromTree(tree.getTypeArguments().get(0));
-        if (fromElement(arg).hasPrimaryAnnotation(NONCONFIDENTIAL)) {
+        AnnotatedTypeMirror receiver = getReceiverType(tree);
+        if (receiver.hasPrimaryAnnotation(NONCONFIDENTIAL)) {
           type.replaceAnnotation(NONCONFIDENTIAL);
+        } else {
+          type.replaceAnnotation(CONFIDENTIAL);
         }
       }
       return super.visitMethodInvocation(tree, type);
