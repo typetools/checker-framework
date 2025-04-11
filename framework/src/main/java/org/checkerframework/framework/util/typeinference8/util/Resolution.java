@@ -189,10 +189,10 @@ public class Resolution {
     assert !boundSet.containsFalse();
 
     if (boundSet.containsCapture(as)) {
-      resolveNonCapturesFirst(new ArrayList<>(as));
+      BoundSet resolvedBounds = resolveNoCapture(as, boundSet);
       boundSet.getInstantiatedVariables().forEach(as::remove);
       // Then resolve the capture variables
-      return resolveWithCapture(as, boundSet, context);
+      return resolveWithCapture(as, resolvedBounds, context);
     } else {
       BoundSet copy = new BoundSet(boundSet);
       // Save the current bounds in case the first attempt at resolution fails.
@@ -209,44 +209,6 @@ public class Resolution {
       // If resolveNoCapture fails, then undo all resolved variables from the failed attempt.
       boundSet.restore();
       return resolveWithCapture(as, boundSet, context);
-    }
-  }
-
-  /**
-   * Resolves all the non-capture variables in {@code vars}.
-   *
-   * @param vars the variables
-   */
-  private void resolveNonCapturesFirst(List<Variable> vars) {
-    // Variables that are not captures and need to be resolved. (Avoid side-effecting vars)
-    List<Variable> varsToResolve = new ArrayList<>(vars);
-    varsToResolve.removeIf(Variable::isCaptureVariable);
-    applyInstantiationsToBounds(varsToResolve);
-    varsToResolve.removeIf(v -> v.getBounds().hasInstantiation());
-
-    // Until varsToResolve is empty:
-    // Find the variable, alpha, in `varsToResolve` that has the fewest varsToResolve mentioned in
-    // alpha's bounds.
-    // Resolve alpha using the "noncapture" resolution method. (That is find an instantiation of
-    // alpha using the "noncapture" resolution method.)
-    // Remove alpha from `varsToResolve`.
-    while (!varsToResolve.isEmpty()) {
-      Variable alpha = null;
-      // Smallest number of varsToResolve mentioned in alpha's bounds so far.
-      int fewestVarsInBounds = Integer.MAX_VALUE;
-      for (Variable v : varsToResolve) {
-        int size = v.getBounds().getVariablesMentionedInBounds().size();
-        if (size < fewestVarsInBounds) {
-          fewestVarsInBounds = size;
-          alpha = v;
-        }
-      }
-      if (alpha != null) {
-        resolveNoCapture(alpha);
-        varsToResolve.remove(alpha);
-      }
-      applyInstantiationsToBounds(varsToResolve);
-      varsToResolve.removeIf(v -> v.getBounds().hasInstantiation());
     }
   }
 
