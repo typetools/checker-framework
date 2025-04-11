@@ -214,11 +214,12 @@ public class Resolution {
 
   /**
    * Apply the instantiated variables to the bounds of the variables in {@code variables}. This may
-   * result in an instantiation being found of a variable in {@code variables}.
+   * result in an instantiation being found of a variable in {@code variables}. All instantiated
+   * variables are removed from {@code variables}.
    *
-   * @param variables a list of variables
+   * @param variables a list of variables; side-effected by this method
    */
-  private static void applyInstantiationsToBounds(List<Variable> variables) {
+  private static void applyAndRemoveInstantiations(List<Variable> variables) {
     boolean changed;
     do {
       changed = false;
@@ -241,16 +242,30 @@ public class Resolution {
    * Resolves all variables in {@code as} by instantiating each to the greatest lower bound of its
    * proper upper bounds. This may fail and resolveWithCapture will need to be used instead.
    *
+   * <p>Resolves all non-captured variables in {@code as} by:
+   *
+   * <ul>
+   *   <li>Resolving all variables with proper lower bounds by instantiating them to the least upper
+   *       bound of their proper lower bounds. The instantiations are apply to the bounds of all
+   *       variables in as. Then this step is repeated until no new instantiations are found.
+   *   <li>Resolving all remaining variables using the greatest lower bound of their proper upper
+   *       bounds.
+   * </ul>
+   *
+   * Then all bounds are reduce and incorporated into {@code boundSet}.
+   *
+   * <p>Any of these steps may fail in which case the resulting bound set will contain false and
+   * {@link #resolveWithCapture(Set, BoundSet, Java8InferenceContext)} should be used instead.
+   *
    * @param as variables to resolve
    * @param boundSet the bound set to use
    * @return the resolved bound st
    */
-  // TODO: This should be the same as resolveNonCapturesFirst.
   private BoundSet resolveWithoutCapture(Set<Variable> as, BoundSet boundSet) {
     BoundSet resolvedBoundSet = new BoundSet(context);
     List<Variable> varsToResolve = new ArrayList<>(as);
     varsToResolve.removeIf(Variable::isCaptureVariable);
-    applyInstantiationsToBounds(varsToResolve);
+    applyAndRemoveInstantiations(varsToResolve);
 
     // Resolve variables with proper lower bounds first.
     boolean changed = true;
@@ -263,45 +278,46 @@ public class Resolution {
           changed = true;
         }
       }
-      applyInstantiationsToBounds(varsToResolve);
+      applyAndRemoveInstantiations(varsToResolve);
     }
 
     // Resolve with upper bounds.
     for (Variable ai : varsToResolve) {
       Set<ProperType> upperBounds = ai.getBounds().findProperUpperBounds();
       if (!upperBounds.isEmpty()) {
-        ProperType ti = null;
-        boolean useRuntimeEx = false;
-        for (ProperType liProperType : upperBounds) {
-          TypeMirror li = liProperType.getJavaType();
-          if (ai.getBounds().hasThrowsBound()
-              && context.env.getTypeUtils().isSubtype(context.runtimeEx, li)) {
-            useRuntimeEx = true;
-          }
-          if (ti == null) {
-            ti = liProperType;
-          } else {
-            ti = (ProperType) context.inferenceTypeFactory.glb(ti, liProperType);
-          }
-        }
-        if (useRuntimeEx) {
-          ai.getBounds()
-              .addBound(
-                  null,
-                  VariableBounds.BoundKind.EQUAL,
-                  context.inferenceTypeFactory.getRuntimeException());
-        } else {
-          ai.getBounds().addBound(null, VariableBounds.BoundKind.EQUAL, ti);
-        }
+        resolveWithUpperBounds(ai, upperBounds);
       }
     }
-    applyInstantiationsToBounds(varsToResolve);
+    applyAndRemoveInstantiations(varsToResolve);
 
     if (!varsToResolve.isEmpty()) {
       resolvedBoundSet.addFalse();
     }
     boundSet.incorporateToFixedPoint(resolvedBoundSet);
     return boundSet;
+  }
+
+  private void resolveWithUpperBounds(Variable ai, Set<ProperType> upperBounds) {
+    ProperType ti = null;
+    boolean useRuntimeEx = false;
+    for (ProperType liProperType : upperBounds) {
+      TypeMirror li = liProperType.getJavaType();
+      if (ai.getBounds().hasThrowsBound()
+          && context.env.getTypeUtils().isSubtype(context.runtimeEx, li)) {
+        useRuntimeEx = true;
+      }
+      if (ti == null) {
+        ti = liProperType;
+      } else {
+        ti = (ProperType) context.inferenceTypeFactory.glb(ti, liProperType);
+      }
+    }
+    if (useRuntimeEx) {
+      ai.getBounds()
+          .addBound(null, BoundKind.EQUAL, context.inferenceTypeFactory.getRuntimeException());
+    } else {
+      ai.getBounds().addBound(null, BoundKind.EQUAL, ti);
+    }
   }
 
   private void resolveWithLowerBounds(Variable ai, Set<ProperType> lowerBounds) {
