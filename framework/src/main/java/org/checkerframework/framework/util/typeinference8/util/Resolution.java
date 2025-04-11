@@ -285,6 +285,7 @@ public class Resolution {
     for (Variable ai : varsToResolve) {
       Set<ProperType> upperBounds = ai.getBounds().findProperUpperBounds();
       if (!upperBounds.isEmpty()) {
+        // Object is always an upper bound so this branch is always executed.
         resolveWithUpperBounds(ai, upperBounds);
       }
     }
@@ -297,6 +298,12 @@ public class Resolution {
     return boundSet;
   }
 
+  /**
+   * Resolve {@code ai} by instantiating it to the greatest lower bound of its proper upper bounds.
+   *
+   * @param ai a variable to resolve
+   * @param upperBounds {@code ai}'s set of proper upper bounds
+   */
   private void resolveWithUpperBounds(Variable ai, Set<ProperType> upperBounds) {
     ProperType ti = null;
     boolean useRuntimeEx = false;
@@ -320,30 +327,34 @@ public class Resolution {
     }
   }
 
+  /**
+   * Resolve {@code ai} by instantiating it to the least upper bound of its proper lower bounds.
+   *
+   * @param ai a variable to resolve
+   * @param lowerBounds {@code ai}'s set of proper lower bounds
+   */
   private void resolveWithLowerBounds(Variable ai, Set<ProperType> lowerBounds) {
-    if (!lowerBounds.isEmpty()) {
-      ProperType lubProperType = context.inferenceTypeFactory.lub(lowerBounds);
-      Set<AbstractQualifier> qualifierLowerBounds =
-          ai.getBounds().qualifierBounds.get(BoundKind.LOWER);
-      if (!qualifierLowerBounds.isEmpty()) {
-        QualifierHierarchy qh = context.typeFactory.getQualifierHierarchy();
-        Set<AnnotationMirror> lubAnnos = AbstractQualifier.lub(qualifierLowerBounds, context);
-        if (lubProperType.getAnnotatedType().getKind() != TypeKind.TYPEVAR) {
-          Set<? extends AnnotationMirror> newLubAnnos =
-              qh.leastUpperBoundsQualifiersOnly(
-                  lubAnnos, lubProperType.getAnnotatedType().getPrimaryAnnotations());
-          lubProperType.getAnnotatedType().replaceAnnotations(newLubAnnos);
-        } else {
+    ProperType lubProperType = context.inferenceTypeFactory.lub(lowerBounds);
+    Set<AbstractQualifier> qualifierLowerBounds =
+        ai.getBounds().qualifierBounds.get(BoundKind.LOWER);
+    if (!qualifierLowerBounds.isEmpty()) {
+      QualifierHierarchy qh = context.typeFactory.getQualifierHierarchy();
+      Set<AnnotationMirror> lubAnnos = AbstractQualifier.lub(qualifierLowerBounds, context);
+      if (lubProperType.getAnnotatedType().getKind() != TypeKind.TYPEVAR) {
+        Set<? extends AnnotationMirror> newLubAnnos =
+            qh.leastUpperBoundsQualifiersOnly(
+                lubAnnos, lubProperType.getAnnotatedType().getPrimaryAnnotations());
+        lubProperType.getAnnotatedType().replaceAnnotations(newLubAnnos);
+      } else {
 
-          AnnotatedTypeVariable lubTV = (AnnotatedTypeVariable) lubProperType.getAnnotatedType();
-          Set<? extends AnnotationMirror> newLubAnnos =
-              qh.leastUpperBoundsQualifiersOnly(
-                  lubAnnos, lubTV.getLowerBound().getPrimaryAnnotations());
-          lubTV.getLowerBound().replaceAnnotations(newLubAnnos);
-        }
+        AnnotatedTypeVariable lubTV = (AnnotatedTypeVariable) lubProperType.getAnnotatedType();
+        Set<? extends AnnotationMirror> newLubAnnos =
+            qh.leastUpperBoundsQualifiersOnly(
+                lubAnnos, lubTV.getLowerBound().getPrimaryAnnotations());
+        lubTV.getLowerBound().replaceAnnotations(newLubAnnos);
       }
-      ai.getBounds().addBound(null, BoundKind.EQUAL, lubProperType);
     }
+    ai.getBounds().addBound(null, BoundKind.EQUAL, lubProperType);
   }
 
   /**
