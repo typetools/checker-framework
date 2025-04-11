@@ -234,6 +234,7 @@ public class Resolution {
         }
       }
     } while (changed);
+    variables.removeIf(v -> v.getBounds().hasInstantiation());
   }
 
   /**
@@ -250,7 +251,6 @@ public class Resolution {
     List<Variable> varsToResolve = new ArrayList<>(as);
     varsToResolve.removeIf(Variable::isCaptureVariable);
     applyInstantiationsToBounds(varsToResolve);
-    varsToResolve.removeIf(v -> v.getBounds().hasInstantiation());
 
     // Resolve variables with proper lower bounds first.
     for (Variable ai : varsToResolve) {
@@ -260,10 +260,8 @@ public class Resolution {
     }
 
     applyInstantiationsToBounds(varsToResolve);
-    varsToResolve.removeIf(v -> v.getBounds().hasInstantiation());
     varsToResolve.forEach(this::resolveWithoutCapture);
     applyInstantiationsToBounds(varsToResolve);
-    varsToResolve.removeIf(v -> v.getBounds().hasInstantiation());
 
     if (!varsToResolve.isEmpty()) {
       resolvedBoundSet.addFalse();
