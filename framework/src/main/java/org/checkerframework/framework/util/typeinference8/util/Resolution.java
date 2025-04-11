@@ -282,18 +282,29 @@ public class Resolution {
    * @param boundSet the bound set to use
    * @return the resolved bound st
    */
+  // TODO: This should be the same as resolveNonCapturesFirst.
   private BoundSet resolveNoCapture(Set<Variable> as, BoundSet boundSet) {
     BoundSet resolvedBoundSet = new BoundSet(context);
-    for (Variable ai : as) {
-      ai.getBounds().applyInstantiationsToBounds();
-      if (ai.getBounds().hasInstantiation()) {
-        continue;
+    List<Variable> varsToResolve = new ArrayList<>(as);
+    varsToResolve.removeIf(Variable::isCaptureVariable);
+    applyInstantiationsToBounds(varsToResolve);
+    varsToResolve.removeIf(v -> v.getBounds().hasInstantiation());
+
+    // Resolve variables with proper lower bounds first.
+    for (Variable ai : varsToResolve) {
+      if (!ai.getBounds().findProperLowerBounds().isEmpty()) {
+        resolveNoCapture(ai);
       }
-      resolveNoCapture(ai);
-      if (!ai.getBounds().hasInstantiation()) {
-        resolvedBoundSet.addFalse();
-        break;
-      }
+    }
+
+    applyInstantiationsToBounds(varsToResolve);
+    varsToResolve.removeIf(v -> v.getBounds().hasInstantiation());
+    varsToResolve.forEach(this::resolveNoCapture);
+    applyInstantiationsToBounds(varsToResolve);
+    varsToResolve.removeIf(v -> v.getBounds().hasInstantiation());
+
+    if (!varsToResolve.isEmpty()) {
+      resolvedBoundSet.addFalse();
     }
     boundSet.incorporateToFixedPoint(resolvedBoundSet);
     return boundSet;
