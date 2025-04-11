@@ -189,7 +189,7 @@ public class Resolution {
     assert !boundSet.containsFalse();
 
     if (boundSet.containsCapture(as)) {
-      BoundSet resolvedBounds = resolveNoCapture(as, boundSet);
+      BoundSet resolvedBounds = resolveWithoutCapture(as, boundSet);
       boundSet.getInstantiatedVariables().forEach(as::remove);
       // Then resolve the capture variables
       return resolveWithCapture(as, resolvedBounds, context);
@@ -198,7 +198,7 @@ public class Resolution {
       // Save the current bounds in case the first attempt at resolution fails.
       copy.saveBounds();
       try {
-        BoundSet resolvedBounds = resolveNoCapture(as, boundSet);
+        BoundSet resolvedBounds = resolveWithoutCapture(as, boundSet);
         if (!resolvedBounds.containsFalse()) {
           return resolvedBounds;
         }
@@ -206,7 +206,7 @@ public class Resolution {
         // Try with capture.
       }
       boundSet = copy;
-      // If resolveNoCapture fails, then undo all resolved variables from the failed attempt.
+      // If resolveWithoutCapture fails, then undo all resolved variables from the failed attempt.
       boundSet.restore();
       return resolveWithCapture(as, boundSet, context);
     }
@@ -245,7 +245,7 @@ public class Resolution {
    * @return the resolved bound st
    */
   // TODO: This should be the same as resolveNonCapturesFirst.
-  private BoundSet resolveNoCapture(Set<Variable> as, BoundSet boundSet) {
+  private BoundSet resolveWithoutCapture(Set<Variable> as, BoundSet boundSet) {
     BoundSet resolvedBoundSet = new BoundSet(context);
     List<Variable> varsToResolve = new ArrayList<>(as);
     varsToResolve.removeIf(Variable::isCaptureVariable);
@@ -255,13 +255,13 @@ public class Resolution {
     // Resolve variables with proper lower bounds first.
     for (Variable ai : varsToResolve) {
       if (!ai.getBounds().findProperLowerBounds().isEmpty()) {
-        resolveNoCapture(ai);
+        resolveWithoutCapture(ai);
       }
     }
 
     applyInstantiationsToBounds(varsToResolve);
     varsToResolve.removeIf(v -> v.getBounds().hasInstantiation());
-    varsToResolve.forEach(this::resolveNoCapture);
+    varsToResolve.forEach(this::resolveWithoutCapture);
     applyInstantiationsToBounds(varsToResolve);
     varsToResolve.removeIf(v -> v.getBounds().hasInstantiation());
 
@@ -277,7 +277,7 @@ public class Resolution {
    *
    * @param ai variable to resolve
    */
-  private void resolveNoCapture(Variable ai) {
+  private void resolveWithoutCapture(Variable ai) {
     assert !ai.getBounds().hasInstantiation();
     Set<ProperType> lowerBounds = ai.getBounds().findProperLowerBounds();
 
