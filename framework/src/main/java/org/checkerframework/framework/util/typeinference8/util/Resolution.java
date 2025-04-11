@@ -246,13 +246,14 @@ public class Resolution {
    *
    * <ul>
    *   <li>Resolving all variables with proper lower bounds by instantiating them to the least upper
-   *       bound of their proper lower bounds. The instantiations are apply to the bounds of all
-   *       variables in as. Then this step is repeated until no new instantiations are found.
+   *       bound of their proper lower bounds. The instantiations are applies to the bounds of all
+   *       variables in {@code as}. Then this step is repeated until no new instantiations are
+   *       found.
    *   <li>Resolving all remaining variables using the greatest lower bound of their proper upper
    *       bounds.
    * </ul>
    *
-   * Then all bounds are reduce and incorporated into {@code boundSet}.
+   * Then all bounds are reduced and incorporated into {@code boundSet}.
    *
    * <p>Any of these steps may fail in which case the resulting bound set will contain false and
    * {@link #resolveWithCapture(Set, BoundSet, Java8InferenceContext)} should be used instead.
@@ -299,7 +300,7 @@ public class Resolution {
   }
 
   /**
-   * Resolve {@code ai} by instantiating it to the greatest lower bound of its proper upper bounds.
+   * Resolves {@code ai} by instantiating it to the greatest lower bound of its proper upper bounds.
    *
    * @param ai a variable to resolve
    * @param upperBounds {@code ai}'s set of proper upper bounds
