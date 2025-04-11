@@ -253,36 +253,48 @@ public class Resolution {
     applyInstantiationsToBounds(varsToResolve);
 
     // Resolve variables with proper lower bounds first.
-    for (Variable ai : varsToResolve) {
-      Set<ProperType> lowerBounds = ai.getBounds().findProperLowerBounds();
-
-      if (!lowerBounds.isEmpty()) {
-        ProperType lubProperType = context.inferenceTypeFactory.lub(lowerBounds);
-        Set<AbstractQualifier> qualifierLowerBounds =
-            ai.getBounds().qualifierBounds.get(BoundKind.LOWER);
-        if (!qualifierLowerBounds.isEmpty()) {
-          QualifierHierarchy qh = context.typeFactory.getQualifierHierarchy();
-          Set<AnnotationMirror> lubAnnos = AbstractQualifier.lub(qualifierLowerBounds, context);
-          if (lubProperType.getAnnotatedType().getKind() != TypeKind.TYPEVAR) {
-            Set<? extends AnnotationMirror> newLubAnnos =
-                qh.leastUpperBoundsQualifiersOnly(
-                    lubAnnos, lubProperType.getAnnotatedType().getPrimaryAnnotations());
-            lubProperType.getAnnotatedType().replaceAnnotations(newLubAnnos);
-          } else {
-
-            AnnotatedTypeVariable lubTV = (AnnotatedTypeVariable) lubProperType.getAnnotatedType();
-            Set<? extends AnnotationMirror> newLubAnnos =
-                qh.leastUpperBoundsQualifiersOnly(
-                    lubAnnos, lubTV.getLowerBound().getPrimaryAnnotations());
-            lubTV.getLowerBound().replaceAnnotations(newLubAnnos);
-          }
+    boolean changed = true;
+    while (changed) {
+      changed = false;
+      for (Variable ai : varsToResolve) {
+        Set<ProperType> lowerBounds = ai.getBounds().findProperLowerBounds();
+        if (!lowerBounds.isEmpty()) {
+          resolveWithLowerBounds(ai, lowerBounds);
+          changed = true;
         }
-        ai.getBounds().addBound(null, VariableBounds.BoundKind.EQUAL, lubProperType);
       }
+      applyInstantiationsToBounds(varsToResolve);
     }
 
-    applyInstantiationsToBounds(varsToResolve);
-    varsToResolve.forEach(this::resolveWithoutCapture);
+    // Resolve with upper bounds.
+    for (Variable ai : varsToResolve) {
+      Set<ProperType> upperBounds = ai.getBounds().findProperUpperBounds();
+      if (!upperBounds.isEmpty()) {
+        ProperType ti = null;
+        boolean useRuntimeEx = false;
+        for (ProperType liProperType : upperBounds) {
+          TypeMirror li = liProperType.getJavaType();
+          if (ai.getBounds().hasThrowsBound()
+              && context.env.getTypeUtils().isSubtype(context.runtimeEx, li)) {
+            useRuntimeEx = true;
+          }
+          if (ti == null) {
+            ti = liProperType;
+          } else {
+            ti = (ProperType) context.inferenceTypeFactory.glb(ti, liProperType);
+          }
+        }
+        if (useRuntimeEx) {
+          ai.getBounds()
+              .addBound(
+                  null,
+                  VariableBounds.BoundKind.EQUAL,
+                  context.inferenceTypeFactory.getRuntimeException());
+        } else {
+          ai.getBounds().addBound(null, VariableBounds.BoundKind.EQUAL, ti);
+        }
+      }
+    }
     applyInstantiationsToBounds(varsToResolve);
 
     if (!varsToResolve.isEmpty()) {
@@ -292,15 +304,7 @@ public class Resolution {
     return boundSet;
   }
 
-  /**
-   * Resolves {@code ai} by instantiating it to the greatest lower bound of its proper upper bounds.
-   *
-   * @param ai variable to resolve
-   */
-  private void resolveWithoutCapture(Variable ai) {
-    assert !ai.getBounds().hasInstantiation();
-    Set<ProperType> lowerBounds = ai.getBounds().findProperLowerBounds();
-
+  private void resolveWithLowerBounds(Variable ai, Set<ProperType> lowerBounds) {
     if (!lowerBounds.isEmpty()) {
       ProperType lubProperType = context.inferenceTypeFactory.lub(lowerBounds);
       Set<AbstractQualifier> qualifierLowerBounds =
@@ -322,35 +326,7 @@ public class Resolution {
           lubTV.getLowerBound().replaceAnnotations(newLubAnnos);
         }
       }
-      ai.getBounds().addBound(null, VariableBounds.BoundKind.EQUAL, lubProperType);
-      return;
-    }
-
-    Set<ProperType> upperBounds = ai.getBounds().findProperUpperBounds();
-    if (!upperBounds.isEmpty()) {
-      ProperType ti = null;
-      boolean useRuntimeEx = false;
-      for (ProperType liProperType : upperBounds) {
-        TypeMirror li = liProperType.getJavaType();
-        if (ai.getBounds().hasThrowsBound()
-            && context.env.getTypeUtils().isSubtype(context.runtimeEx, li)) {
-          useRuntimeEx = true;
-        }
-        if (ti == null) {
-          ti = liProperType;
-        } else {
-          ti = (ProperType) context.inferenceTypeFactory.glb(ti, liProperType);
-        }
-      }
-      if (useRuntimeEx) {
-        ai.getBounds()
-            .addBound(
-                null,
-                VariableBounds.BoundKind.EQUAL,
-                context.inferenceTypeFactory.getRuntimeException());
-      } else {
-        ai.getBounds().addBound(null, VariableBounds.BoundKind.EQUAL, ti);
-      }
+      ai.getBounds().addBound(null, BoundKind.EQUAL, lubProperType);
     }
   }
 
