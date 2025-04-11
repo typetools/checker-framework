@@ -6,6 +6,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 // @below-java17-jdk-skip-test
+// @infer-jaifs-skip-test The AFU's JAIF reading/writing libraries don't support records.
+
 @SuppressWarnings("all")
 public class Issue7029 {
 
