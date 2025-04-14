@@ -146,7 +146,7 @@ public class ConfidentialAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      *
      * <p>Supplements the @Confidential String return in Object.toString() to cover all secure use
      * cases, i.e. all cases covered by a @PolyConfidential receiver and return excepting
-     * a @NonConfidential String from a @Confidential receiver.
+     * a @NonConfidential String from @Confidential receivers.
      *
      * @param tree an AST node representing a method call
      * @param type the type obtained from tree
