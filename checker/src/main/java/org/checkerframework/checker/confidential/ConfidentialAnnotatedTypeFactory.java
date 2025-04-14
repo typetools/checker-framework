@@ -2,13 +2,10 @@ package org.checkerframework.checker.confidential;
 
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;
-import java.util.Set;
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
 import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.Tree;
+import java.util.Set;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.checker.confidential.qual.BottomConfidential;
 import org.checkerframework.checker.confidential.qual.Confidential;
 import org.checkerframework.checker.confidential.qual.NonConfidential;
@@ -21,7 +18,6 @@ import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
-import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /** Annotated type factory for the Confidential Checker. */
@@ -145,13 +141,12 @@ public class ConfidentialAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Visits a method invocation node. Enforces specific type-checking rules
-     * for Object.toString() that allow a @NonConfidential Object to return
-     * a @NonConfidential String.
+     * Visits a method invocation node. Enforces specific type-checking rules for Object.toString()
+     * that allow a @NonConfidential Object to return a @NonConfidential String.
      *
-     * Supplements the @Confidential String return in Object.toString() to cover
-     * all secure use cases, i.e. all cases covered by a @PolyConfidential receiver
-     * and return excepting a @NonConfidential String from a @Confidential receiver.
+     * <p>Supplements the @Confidential String return in Object.toString() to cover all secure use
+     * cases, i.e. all cases covered by a @PolyConfidential receiver and return excepting
+     * a @NonConfidential String from a @Confidential receiver.
      *
      * @param tree an AST node representing a method call
      * @param type the type obtained from tree
