@@ -48,7 +48,7 @@ public class I18nFormatUtil {
    */
   public static I18nConversionCategory[] formatParameterCategories(String format)
       throws IllegalFormatException {
-  
+
     tryFormatSatisfiability(format);
 
     I18nConversion[] cs;
