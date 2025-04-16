@@ -176,6 +176,25 @@ Java defines one format for the string representation of a method signature:
 \end{description}
 
 
+\subsectionAndLabel{How to choose which annotation to use}{signature-choosing-annotation}
+
+Sometimes, there are multiple valid annotations for a value.  As an
+example, a non-primitive non-array type is represented identically by
+\<@BinaryName>, \<@ClassGetName>, and \<@FqBinaryName>.  Using the lowest
+type in the type hierarchy (in this case, \<@BinaryName>) has two
+advantages.  First, it acts as documentation that the value is never a
+primitive or array.  Second, it permits the value to be used in any of the
+three contexts:  as a \<@BinaryName>, a \<@ClassGetName>, or a
+\<@FqBinaryName>.
+
+Casting to \<@BinaryName> from one of the other types adds clutter if it is not
+necessary.  Suppose that a method returns a \<@ClassGetName> and the value will
+only be used in contexts that require a \<@ClassGetName> (say, it is passed to a
+method that requires an argument of that type).  Then there is no point in
+casting to \<@BinaryName> in between, even if you know the type being
+represented is not a primitive or an array.
+
+
 \sectionAndLabel{What the Signature Checker checks}{signature-checks}
 
 Certain methods in the JDK, such as \<Class.forName>, are annotated
@@ -196,4 +215,5 @@ command-line option to javac.
 % LocalWords:  jls getName ClassGetName ClassLoader LMyClass Ljava jvms
 % LocalWords:  DotSeparatedIdentifiers CharSequence Lmypackage mypackage
 % LocalWords:  FieldDescriptorWithoutPackage InternalForm getSimpleName
-% LocalWords:  ClassGetSimpleName FqBinaryName CanonicalName
+% LocalWords:  ClassGetSimpleName FqBinaryName CanonicalName checkers''
+% LocalWords:  Lpkg

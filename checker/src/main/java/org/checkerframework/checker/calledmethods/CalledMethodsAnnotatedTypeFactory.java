@@ -293,7 +293,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
    * At a fluent method call (which returns {@code this}), add the method to the type of the return
    * value.
    */
-  private class CalledMethodsTreeAnnotator extends AccumulationTreeAnnotator {
+  private class CalledMethodsTreeAnnotator extends TreeAnnotator {
     /**
      * Creates an instance of this tree annotator for the given type factory.
      *
