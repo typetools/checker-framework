@@ -7,6 +7,7 @@ import com.github.javaparser.ast.expr.ArrayAccessExpr;
 import com.github.javaparser.ast.expr.ArrayCreationExpr;
 import com.github.javaparser.ast.expr.BinaryExpr;
 import com.github.javaparser.ast.expr.BooleanLiteralExpr;
+import com.github.javaparser.ast.expr.CastExpr;
 import com.github.javaparser.ast.expr.CharLiteralExpr;
 import com.github.javaparser.ast.expr.ClassExpr;
 import com.github.javaparser.ast.expr.DoubleLiteralExpr;
@@ -22,6 +23,8 @@ import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.expr.SuperExpr;
 import com.github.javaparser.ast.expr.ThisExpr;
 import com.github.javaparser.ast.expr.UnaryExpr;
+import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.github.javaparser.ast.type.PrimitiveType;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.visitor.GenericVisitorWithDefaults;
 import com.sun.source.tree.Tree;
@@ -51,6 +54,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
+import org.checkerframework.checker.interning.qual.Interned;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -226,11 +230,35 @@ public class JavaExpressionParseUtil {
     /** The type utilities. */
     private final Types types;
 
+    /** The java.lang.Object type. */
+    private final TypeMirror objectTypeMirror;
+
     /** The java.lang.String type. */
     private final TypeMirror stringTypeMirror;
 
     /** The primitive boolean type. */
-    private final TypeMirror booleanTypeMirror;
+    private final TypeMirror primitiveBooleanTypeMirror;
+
+    /** The primitive boolean type. */
+    private final TypeMirror primitiveByteTypeMirror;
+
+    /** The primitive boolean type. */
+    private final TypeMirror primitiveCharTypeMirror;
+
+    /** The primitive boolean type. */
+    private final TypeMirror primitiveDoubleTypeMirror;
+
+    /** The primitive boolean type. */
+    private final TypeMirror primitiveFloatTypeMirror;
+
+    /** The primitive boolean type. */
+    private final TypeMirror primitiveIntTypeMirror;
+
+    /** The primitive boolean type. */
+    private final TypeMirror primitiveLongTypeMirror;
+
+    /** The primitive boolean type. */
+    private final TypeMirror primitiveShortTypeMirror;
 
     /** The enclosing type. Used to look up unqualified method, field, and class names. */
     private final TypeMirror enclosingType;
@@ -272,8 +300,16 @@ public class JavaExpressionParseUtil {
       this.localVarPath = localVarPath;
       this.env = env;
       this.types = env.getTypeUtils();
+      this.objectTypeMirror = ElementUtils.getTypeElement(env, Object.class).asType();
       this.stringTypeMirror = ElementUtils.getTypeElement(env, String.class).asType();
-      this.booleanTypeMirror = types.getPrimitiveType(TypeKind.BOOLEAN);
+      this.primitiveBooleanTypeMirror = types.getPrimitiveType(TypeKind.BOOLEAN);
+      this.primitiveByteTypeMirror = types.getPrimitiveType(TypeKind.BYTE);
+      this.primitiveCharTypeMirror = types.getPrimitiveType(TypeKind.CHAR);
+      this.primitiveDoubleTypeMirror = types.getPrimitiveType(TypeKind.DOUBLE);
+      this.primitiveFloatTypeMirror = types.getPrimitiveType(TypeKind.FLOAT);
+      this.primitiveIntTypeMirror = types.getPrimitiveType(TypeKind.INT);
+      this.primitiveLongTypeMirror = types.getPrimitiveType(TypeKind.LONG);
+      this.primitiveShortTypeMirror = types.getPrimitiveType(TypeKind.SHORT);
       this.enclosingType = enclosingType;
       this.thisReference = thisReference;
       this.parameters = parameters;
@@ -977,7 +1013,7 @@ public class JavaExpressionParseUtil {
         type = stringTypeMirror;
       } else if (COMPARISON_OPERATORS.contains(op)) {
         if (types.isSubtype(leftType, rightType) || types.isSubtype(rightType, leftType)) {
-          type = booleanTypeMirror;
+          type = primitiveBooleanTypeMirror;
         } else {
           // Don't fall through, issue an error immediately instead.
           throw new ParseRuntimeException(
@@ -997,6 +1033,77 @@ public class JavaExpressionParseUtil {
       }
       return new BinaryOperation(
           type, javaParserBinaryOperatorToTreeKind(expr.getOperator()), leftJe, rightJe);
+    }
+
+    @Override
+    public JavaExpression visit(CastExpr expr, Void aVoid) {
+      Type jpType = expr.getType();
+      JavaExpression innerJe = expr.getExpression().accept(this, null);
+      TypeMirror innerTM = innerJe.getType();
+
+      TypeMirror type = null;
+      if (jpType instanceof PrimitiveType) {
+        type = jpPrimitiveTypeToTypeMirror((PrimitiveType) jpType);
+      } else if (jpType instanceof ClassOrInterfaceType) {
+        @Interned String fullTypeName = ((ClassOrInterfaceType) jpType).getNameWithScope().intern();
+        if (fullTypeName == "String" || fullTypeName == "java.lang.String") { // interned
+          type = stringTypeMirror;
+        } else if (fullTypeName == "Object" || fullTypeName == "java.lang.Object") { // interned
+          type = objectTypeMirror;
+        }
+      }
+
+      if (type != null) {
+        return innerJe.cloneAndSetType(type);
+      }
+
+      // `type` is null.
+      String msg =
+          String.format(
+              "CastExpr %s [%s], JavaParser-type %s [%s], inner-type %s, inner-JavaExpression %s"
+                  + " [%s], type %s [%s]%n",
+              expr,
+              expr.getClass(),
+              jpType,
+              jpType.getClass(),
+              innerTM,
+              innerJe,
+              innerJe.getClass(),
+              type,
+              type.getClass());
+      System.out.println(msg);
+      throw new ParseRuntimeException(
+          constructJavaExpressionParseError(
+              expr.toString(), expr.getClass() + " is not a supported expression: " + msg));
+    }
+
+    /**
+     * Converts a JavaParser primitive type to a TypeMirror.
+     *
+     * @param jpType a JavaParser primitive type
+     * @return the corresponding TypeMirror
+     */
+    private TypeMirror jpPrimitiveTypeToTypeMirror(PrimitiveType jpType) {
+      switch (jpType.getType()) {
+        case BOOLEAN:
+          return primitiveBooleanTypeMirror;
+        case BYTE:
+          return primitiveByteTypeMirror;
+        case CHAR:
+          return primitiveCharTypeMirror;
+        case DOUBLE:
+          return primitiveDoubleTypeMirror;
+        case FLOAT:
+          return primitiveFloatTypeMirror;
+        case INT:
+          return primitiveIntTypeMirror;
+        case LONG:
+          return primitiveLongTypeMirror;
+        case SHORT:
+          return primitiveShortTypeMirror;
+        default:
+          throw new BugInCF("what primitive? " + jpType + " [" + jpType.getClass() + "]");
+      }
     }
 
     /**
