@@ -316,7 +316,7 @@ public final class TypeKindUtils {
    * Performs numeric promotion, as defined by JLS section 5.6.
    *
    * @param tk1 the first type kind, which must be numeric primitive
-   * @param tk1 the second type kind, which must be numeric primitive
+   * @param tk2 the second type kind, which must be numeric primitive
    * @param choiceContext true if the expressions are the second or third arguments of a ternary
    *     conditional expression, or if from a standalone switch expression all of whose values are
    *     numeric
