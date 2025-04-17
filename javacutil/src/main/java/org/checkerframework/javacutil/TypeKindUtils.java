@@ -73,7 +73,10 @@ public final class TypeKindUtils {
    * @param typeKind a type kind
    * @return true if the argument is a primitive numeric type kind
    */
-  public static boolean isNumeric(TypeKind typeKind) {
+  public static boolean isNumeric(@Nullable TypeKind typeKind) {
+    if (typeKind == null) {
+      return false;
+    }
     switch (typeKind) {
       case BYTE:
       case CHAR:
