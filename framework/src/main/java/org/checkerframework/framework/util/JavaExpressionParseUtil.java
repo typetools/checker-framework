@@ -9,6 +9,7 @@ import com.github.javaparser.ast.expr.BinaryExpr;
 import com.github.javaparser.ast.expr.BooleanLiteralExpr;
 import com.github.javaparser.ast.expr.CharLiteralExpr;
 import com.github.javaparser.ast.expr.ClassExpr;
+import com.github.javaparser.ast.expr.ConditionalExpr;
 import com.github.javaparser.ast.expr.DoubleLiteralExpr;
 import com.github.javaparser.ast.expr.EnclosedExpr;
 import com.github.javaparser.ast.expr.Expression;
@@ -46,6 +47,7 @@ import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
@@ -68,12 +70,15 @@ import org.checkerframework.dataflow.expression.MethodCall;
 import org.checkerframework.dataflow.expression.SuperReference;
 import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.expression.UnaryOperation;
+import org.checkerframework.dataflow.expression.Unknown;
 import org.checkerframework.dataflow.expression.ValueLiteral;
 import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
+import org.checkerframework.framework.util.typeinference8.types.InferenceFactory;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Resolver;
+import org.checkerframework.javacutil.TypeKindUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.trees.TreeBuilder;
 import org.plumelib.util.CollectionsPlume;
@@ -230,7 +235,28 @@ public class JavaExpressionParseUtil {
     private final TypeMirror stringTypeMirror;
 
     /** The primitive boolean type. */
-    private final TypeMirror booleanTypeMirror;
+    private final TypeMirror primitiveBooleanTypeMirror;
+
+    /** The primitive boolean type. */
+    private final TypeMirror primitiveByteTypeMirror;
+
+    /** The primitive boolean type. */
+    private final TypeMirror primitiveCharTypeMirror;
+
+    /** The primitive boolean type. */
+    private final TypeMirror primitiveDoubleTypeMirror;
+
+    /** The primitive boolean type. */
+    private final TypeMirror primitiveFloatTypeMirror;
+
+    /** The primitive boolean type. */
+    private final TypeMirror primitiveIntTypeMirror;
+
+    /** The primitive boolean type. */
+    private final TypeMirror primitiveLongTypeMirror;
+
+    /** The primitive boolean type. */
+    private final TypeMirror primitiveShortTypeMirror;
 
     /** The enclosing type. Used to look up unqualified method, field, and class names. */
     private final TypeMirror enclosingType;
@@ -273,7 +299,14 @@ public class JavaExpressionParseUtil {
       this.env = env;
       this.types = env.getTypeUtils();
       this.stringTypeMirror = ElementUtils.getTypeElement(env, String.class).asType();
-      this.booleanTypeMirror = types.getPrimitiveType(TypeKind.BOOLEAN);
+      this.primitiveBooleanTypeMirror = types.getPrimitiveType(TypeKind.BOOLEAN);
+      this.primitiveByteTypeMirror = types.getPrimitiveType(TypeKind.BYTE);
+      this.primitiveCharTypeMirror = types.getPrimitiveType(TypeKind.CHAR);
+      this.primitiveDoubleTypeMirror = types.getPrimitiveType(TypeKind.DOUBLE);
+      this.primitiveFloatTypeMirror = types.getPrimitiveType(TypeKind.FLOAT);
+      this.primitiveIntTypeMirror = types.getPrimitiveType(TypeKind.INT);
+      this.primitiveLongTypeMirror = types.getPrimitiveType(TypeKind.LONG);
+      this.primitiveShortTypeMirror = types.getPrimitiveType(TypeKind.SHORT);
       this.enclosingType = enclosingType;
       this.thisReference = thisReference;
       this.parameters = parameters;
@@ -977,7 +1010,7 @@ public class JavaExpressionParseUtil {
         type = stringTypeMirror;
       } else if (COMPARISON_OPERATORS.contains(op)) {
         if (types.isSubtype(leftType, rightType) || types.isSubtype(rightType, leftType)) {
-          type = booleanTypeMirror;
+          type = primitiveBooleanTypeMirror;
         } else {
           // Don't fall through, issue an error immediately instead.
           throw new ParseRuntimeException(
@@ -997,6 +1030,96 @@ public class JavaExpressionParseUtil {
       }
       return new BinaryOperation(
           type, javaParserBinaryOperatorToTreeKind(expr.getOperator()), leftJe, rightJe);
+    }
+
+    @Override
+    public JavaExpression visit(ConditionalExpr expr, Void aVoid) {
+      // Determine the type from JLS sections 15.25.1, 15.25.2, and 15.25.3.
+      JavaExpression thenJe = expr.getThenExpr().accept(this, null);
+      JavaExpression elseJe = expr.getElseExpr().accept(this, null);
+      TypeMirror thenType = thenJe.getType();
+      TypeMirror elseType = elseJe.getType();
+      TypeMirror type;
+      if (types.isSameType(thenType, elseType)) {
+        type = thenType;
+      } else {
+        // This block handles section 15.25.1.
+        TypeKind thenPrimitiveTypeKind = TypeKindUtils.primitiveOrBoxedToTypeKind(thenType);
+        TypeKind elsePrimitiveTypeKind = TypeKindUtils.primitiveOrBoxedToTypeKind(elseType);
+        if (thenPrimitiveTypeKind == TypeKind.BOOLEAN
+            && elsePrimitiveTypeKind == TypeKind.BOOLEAN) {
+          // The types are not equal, so one is `boolean` and the other is `Boolean`.
+          type = primitiveBooleanTypeMirror;
+        } else if (TypeKindUtils.isNumeric(thenPrimitiveTypeKind)
+            && TypeKindUtils.isNumeric(elsePrimitiveTypeKind)) {
+          // This block handles section 15.25.2.
+          if (thenPrimitiveTypeKind == elsePrimitiveTypeKind) {
+            // The types are not equal, so one is a primitive and the other is a boxed primitive.
+            // Use the primitive.
+            type = TypesUtils.isPrimitive(thenType) ? thenType : elseType;
+          } else if ((thenPrimitiveTypeKind == TypeKind.BYTE
+                  && elsePrimitiveTypeKind == TypeKind.SHORT)
+              || (thenPrimitiveTypeKind == TypeKind.SHORT
+                  && elsePrimitiveTypeKind == TypeKind.BYTE)) {
+            type = primitiveShortTypeMirror;
+          }
+          // At this point, the JLS says to look at the values of constants.  I'm skipping that.
+          else {
+            TypeKind promoted =
+                TypeKindUtils.numericPromotion(thenPrimitiveTypeKind, elsePrimitiveTypeKind, true);
+            type = numericTypeKindToTypeMirror(promoted);
+          }
+        } else {
+          // This block handles section 15.25.3.
+          TypeKind thenTypeKind = thenType.getKind();
+          TypeKind elseTypeKind = thenType.getKind();
+          if (thenTypeKind == TypeKind.NULL) {
+            type = elseType;
+          } else if (elseTypeKind == TypeKind.NULL) {
+            type = thenType;
+          } else {
+            // If either type is numeric, box it.
+            if (TypesUtils.isPrimitive(thenType)) {
+              thenType = types.getDeclaredType(types.boxedClass((PrimitiveType) thenType));
+            }
+            if (TypesUtils.isPrimitive(elseType)) {
+              elseType = types.getDeclaredType(types.boxedClass((PrimitiveType) elseType));
+            }
+            // Now, "the type ... is the result of applying capture conversion to lub(T1, T2)."
+            type = types.capture(InferenceFactory.lub(env, thenType, elseType));
+          }
+        }
+      }
+      // Now `type` is set.
+      return new Unknown(type, expr.toString());
+    }
+
+    /**
+     * Given a numeric primitive TypeMirror, return the corresponding TypeMirror.
+     *
+     * @param tk a type kind
+     * @return the corresponding TypeMirror
+     */
+    private TypeMirror numericTypeKindToTypeMirror(TypeKind tk) {
+      switch (tk) {
+        case BYTE:
+          return primitiveByteTypeMirror;
+        case CHAR:
+          return primitiveCharTypeMirror;
+        case DOUBLE:
+          return primitiveDoubleTypeMirror;
+        case FLOAT:
+          return primitiveFloatTypeMirror;
+        case INT:
+          return primitiveIntTypeMirror;
+        case LONG:
+          return primitiveLongTypeMirror;
+        case SHORT:
+          return primitiveShortTypeMirror;
+
+        default:
+          throw new BugInCF("Not numeric: " + tk);
+      }
     }
 
     /**

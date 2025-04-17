@@ -311,4 +311,45 @@ public final class TypeKindUtils {
         throw new BugInCF(tk + " does not have a maximum value");
     }
   }
+
+  /**
+   * Performs numeric promotion, as defined by JLS section 5.6.
+   *
+   * @param tk1 the first type kind, which must be numeric primitive
+   * @param tk1 the second type kind, which must be numeric primitive
+   * @param choiceContext true if the expressions are the second or third arguments of a ternary
+   *     conditional expression, or if from a standalone switch expression all of whose values are
+   *     numeric
+   * @return the numeric promotion of the two arguments
+   */
+  public static TypeKind numericPromotion(TypeKind tk1, TypeKind tk2, boolean choiceContext) {
+    assert isNumeric(tk1);
+    assert isNumeric(tk2);
+
+    if (tk1 == TypeKind.DOUBLE || tk2 == TypeKind.DOUBLE) {
+      return TypeKind.DOUBLE;
+    } else if (tk1 == TypeKind.FLOAT || tk2 == TypeKind.FLOAT) {
+      return TypeKind.FLOAT;
+    } else if (tk1 == TypeKind.LONG || tk2 == TypeKind.LONG) {
+      return TypeKind.LONG;
+    } else if (!choiceContext) {
+      return TypeKind.INT;
+    }
+    // The below should also look at the values of constant expressions.  (But the signature of this
+    // method does not provide such information.)
+    else if (tk1 == TypeKind.INT || tk2 == TypeKind.INT) {
+      return TypeKind.INT;
+    } else if (tk1 == TypeKind.SHORT || tk2 == TypeKind.SHORT) {
+      return TypeKind.SHORT;
+    } else if (tk1 == TypeKind.CHAR || tk2 == TypeKind.CHAR) {
+      return TypeKind.CHAR;
+    }
+    // Byte is preferred over CHAR if all values fit in byte; but this method doesn't have access to
+    // constant values.
+    else if (tk1 == TypeKind.BYTE || tk2 == TypeKind.BYTE) {
+      return TypeKind.BYTE;
+    } else {
+      return TypeKind.INT;
+    }
+  }
 }
