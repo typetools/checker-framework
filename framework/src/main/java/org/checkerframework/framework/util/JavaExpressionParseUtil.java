@@ -24,7 +24,6 @@ import com.github.javaparser.ast.expr.SuperExpr;
 import com.github.javaparser.ast.expr.ThisExpr;
 import com.github.javaparser.ast.expr.UnaryExpr;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
-import com.github.javaparser.ast.type.PrimitiveType;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.visitor.GenericVisitorWithDefaults;
 import com.sun.source.tree.Tree;
@@ -1042,8 +1041,8 @@ public class JavaExpressionParseUtil {
       TypeMirror innerTM = innerJe.getType();
 
       TypeMirror type = null;
-      if (jpType instanceof PrimitiveType) {
-        type = jpPrimitiveTypeToTypeMirror((PrimitiveType) jpType);
+      if (jpType instanceof com.github.javaparser.ast.type.PrimitiveType) {
+        type = jpPrimitiveTypeToTypeMirror((com.github.javaparser.ast.type.PrimitiveType) jpType);
       } else if (jpType instanceof ClassOrInterfaceType) {
         @Interned String fullTypeName = ((ClassOrInterfaceType) jpType).getNameWithScope().intern();
         if (fullTypeName == "String" || fullTypeName == "java.lang.String") { // interned
@@ -1083,7 +1082,8 @@ public class JavaExpressionParseUtil {
      * @param jpType a JavaParser primitive type
      * @return the corresponding TypeMirror
      */
-    private TypeMirror jpPrimitiveTypeToTypeMirror(PrimitiveType jpType) {
+    private TypeMirror jpPrimitiveTypeToTypeMirror(
+        com.github.javaparser.ast.type.PrimitiveType jpType) {
       switch (jpType.getType()) {
         case BOOLEAN:
           return primitiveBooleanTypeMirror;
