@@ -387,13 +387,13 @@ import org.plumelib.util.UtilPlume;
   // as initialized by
   // org.checkerframework.framework.type.GenericAnnotatedTypeFactory.createCFGVisualizer()
   // -Aflowdotdir=xyz
-  // is short-hand for
+  // is shorthand for
   // -Acfgviz=org.checkerframework.dataflow.cfg.DOTCFGVisualizer,outdir=xyz
   "flowdotdir",
 
   // Enable additional output in the CFG visualization.
   // -Averbosecfg
-  // is short-hand for
+  // is shorthand for
   // -Acfgviz=MyClass,verbose
   "verbosecfg",
 
