@@ -1,0 +1,43 @@
+package org.slf4j;
+
+import static org.slf4j.event.EventConstants.DEBUG_INT;
+import static org.slf4j.event.EventConstants.ERROR_INT;
+import static org.slf4j.event.EventConstants.INFO_INT;
+import static org.slf4j.event.EventConstants.TRACE_INT;
+import static org.slf4j.event.EventConstants.WARN_INT;
+import static org.slf4j.event.Level.DEBUG;
+import static org.slf4j.event.Level.ERROR;
+import static org.slf4j.event.Level.INFO;
+import static org.slf4j.event.Level.TRACE;
+import static org.slf4j.event.Level.WARN;
+
+import org.slf4j.event.Level;
+import org.slf4j.helpers.CheckReturnValue;
+import org.slf4j.spi.DefaultLoggingEventBuilder;
+import org.slf4j.spi.LoggingEventBuilder;
+import org.slf4j.spi.NOPLoggingEventBuilder;
+
+import org.checkerframework.checker.confidential.qual.UnknownConfidential;
+
+public interface Logger {
+
+    public void error(String msg, @UnknownConfidential Throwable t);
+
+    public void error(Marker marker, String msg, @UnknownConfidential Throwable t);
+
+    public void info(String msg, @UnknownConfidential Throwable t);
+
+    public void info(Marker marker, String msg, @UnknownConfidential Throwable t);
+
+    public void debug(String msg, @UnknownConfidential Throwable t);
+
+    public void debug(Marker marker, String msg, @UnknownConfidential Throwable t);
+
+    public void trace(String msg, @UnknownConfidential Throwable t);
+
+    public void trace(Marker marker, String msg, @UnknownConfidential Throwable t);
+
+    public void warn(String msg, @UnknownConfidential Throwable t);
+
+    public void warn(Marker marker, String msg, @UnknownConfidential Throwable t);
+}
