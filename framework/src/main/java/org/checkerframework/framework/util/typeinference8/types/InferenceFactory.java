@@ -945,8 +945,7 @@ public class InferenceFactory {
    * @return the proper type for RuntimeException
    */
   public ProperType getRuntimeException() {
-    AnnotatedTypeMirror runtimeEx =
-        AnnotatedTypeMirror.createType(context.runtimeEx, typeFactory, false);
+    AnnotatedTypeMirror runtimeEx = typeFactory.getAnnotatedType(RuntimeException.class);
     runtimeEx.addMissingAnnotations(typeFactory.getQualifierHierarchy().getTopAnnotations());
     return new ProperType(runtimeEx, context.runtimeEx, context);
   }
