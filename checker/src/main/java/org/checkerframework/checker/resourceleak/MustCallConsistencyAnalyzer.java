@@ -48,6 +48,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.calledmethods.qual.CalledMethods;
+import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.mustcall.CreatesMustCallForToJavaExpression;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.MustCallChecker;
@@ -1661,14 +1662,15 @@ public class MustCallConsistencyAnalyzer {
    * assignment that might write to the field. - there are no method invocations before the given
    * field assignment
    *
-   * @param field The field being assigned
-   * @param constructor The constructor where the assignment appears
-   * @param currentAssignment The actual assignment tree being analyzed
+   * @param field the field being assigned
+   * @param constructor the constructor where the assignment appears
+   * @param currentAssignment the actual assignment tree being analyzed, which is a statement in
+   *     {@code constructor}
    * @return true if this assignment can be safely considered the first and only one during
    *     construction
    */
   private boolean isFirstAssignmentToField(
-      VariableElement field, MethodTree constructor, Tree currentAssignment) {
+      VariableElement field, MethodTree constructor, @FindDistinct Tree currentAssignment) {
     @Nullable TreePath constructorPath = cmAtf.getPath(constructor);
     ClassTree classTree = TreePathUtil.enclosingClass(constructorPath);
     String fieldName = field.getSimpleName().toString();
