@@ -9,8 +9,8 @@
 # Both might lag behind; as of 2024-11-16, ubuntu:rolling was still 24.04 rather than 24.10.
 # See releases at https://hub.docker.com/_/ubuntu for available images.
 # See https://packages.ubuntu.com/search?suite=default&section=all&arch=any&keywords=openjdk-23-jdk&searchon=names
-# to see what Ubuntu versions support a particular OpenJDK version.
-FROM ubuntu:oracular
+# to see what Ubuntu versions support a particular OpenJDK version (for the given URL, JDK 23).
+FROM ubuntu:24.10
 LABEL org.opencontainers.image.authors="Michael Ernst <mernst@cs.washington.edu>"
 
 # According to

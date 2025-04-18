@@ -7,7 +7,7 @@ plugins {
   id 'de.undercouch.download' version '5.6.0'
   id 'java'
   // https://github.com/tbroyer/gradle-errorprone-plugin
-  id 'net.ltgt.errorprone' version '4.1.0'
+  id 'net.ltgt.errorprone' version '4.2.0'
   // https://docs.gradle.org/current/userguide/eclipse_plugin.html
   id 'eclipse'
 
@@ -15,7 +15,7 @@ plugins {
   // Code formatting; defines targets "spotlessApply" and "spotlessCheck".
   // https://github.com/diffplug/spotless/tags ; see tags starting "gradle/"
   // Only works on JDK 11+ (even including the plugin crashes Gradle on JDK 8).
-  id 'com.diffplug.spotless' version '7.0.2'
+  id 'com.diffplug.spotless' version '7.0.3'
 }
 
 // There is another `repositories { ... }` block below; if you change this one, change that one as well.
@@ -784,7 +784,8 @@ subprojects {
   if (!project.name.startsWith('checker-qual-android')) {
     task tags(type: Exec) {
       description = 'Create Emacs TAGS table'
-      commandLine 'bash', '-c', "find . \\( -name build -o -name jtreg -o -name tests \\) -prune -o -name '*.java' -print | sort-directory-order | xargs ctags -e -f TAGS"
+      // `ctags -e -f TAGS` used to work in place of `etags`, but apparently no longer.
+      commandLine 'bash', '-c', "find . \\( -name build -o -name jtreg -o -name tests \\) -prune -o -name '*.java' -print | sort-directory-order | xargs etags"
     }
   }
 
