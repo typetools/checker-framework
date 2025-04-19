@@ -154,8 +154,8 @@ os.environ["BIBINPUTS"] = ".:" + PLUME_BIB
 os.environ["TEXINPUTS"] = ".:/homes/gws/mernst/tex/sty:/homes/gws/mernst/tex:..:"
 os.environ["PERLLIB"] = getAndAppend("PERLLIB", ":") + perl_libs
 os.environ["PERL5LIB"] = getAndAppend("PERL5LIB", ":") + perl_libs
-os.environ["JAVA_17_HOME"] = "/usr/lib/jvm/java-17-openjdk/"
-os.environ["JAVA_HOME"] = os.environ["JAVA_17_HOME"]
+os.environ["JAVA_21_HOME"] = "/usr/lib/jvm/java-21-openjdk/"
+os.environ["JAVA_HOME"] = os.environ["JAVA_21_HOME"]
 
 EDITOR = os.getenv("EDITOR")
 if EDITOR is None:

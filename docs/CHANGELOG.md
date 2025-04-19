@@ -1,4 +1,4 @@
-Version 3.49.2 (April 1, 2025)
+Version 3.49.3 (May 1, 2025)
 ------------------------------
 
 **User-visible changes:**
@@ -6,6 +6,14 @@ Version 3.49.2 (April 1, 2025)
 **Implementation details:**
 
 **Closed issues:**
+
+
+Version 3.49.2 (April 1, 2025)
+------------------------------
+
+**Closed issues:**
+
+#6747, #6755, #6789, #6891, #6963, #6996, #7001, #7008, #7014.
 
 
 Version 3.49.1 (March 3, 2025)

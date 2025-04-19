@@ -88,6 +88,7 @@ import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store.FlowRule;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
+import org.checkerframework.dataflow.cfg.node.AnyPatternNode;
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
 import org.checkerframework.dataflow.cfg.node.ArrayCreationNode;
 import org.checkerframework.dataflow.cfg.node.ArrayTypeNode;
@@ -563,6 +564,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
             return visitYield17(tree, p);
           case "DECONSTRUCTION_PATTERN":
             return visitDeconstructionPattern21(tree, p);
+          case "ANY_PATTERN":
+            return visitAnyPattern22(tree, p);
           default:
             // fall through to generic behavior
         }
@@ -572,6 +575,21 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     } finally {
       path = prev;
     }
+  }
+
+  /**
+   * Visit a AnyPatternTree.
+   *
+   * @param anyPatternTree an AnyPatternTree, typed as Tree so the Checker Framework compiles under
+   *     JDK 21 and earlier
+   * @param unused an unused parameter
+   * @return the result of visiting the tree
+   */
+  private Node visitAnyPattern22(Tree anyPatternTree, Void unused) {
+    AnyPatternNode anyPatternNode =
+        new AnyPatternNode(TreeUtils.typeOf(anyPatternTree), anyPatternTree);
+    extendWithNode(anyPatternNode);
+    return anyPatternNode;
   }
 
   /**
