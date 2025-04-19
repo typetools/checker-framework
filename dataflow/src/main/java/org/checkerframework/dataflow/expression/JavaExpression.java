@@ -72,9 +72,11 @@ import org.plumelib.util.CollectionsPlume;
  * @see <a href="https://checkerframework.org/manual/#java-expressions-as-arguments">the syntax of
  *     Java expressions supported by the Checker Framework</a>
  */
-public abstract class JavaExpression {
-  /** The type of this expression. */
-  protected final TypeMirror type;
+public abstract class JavaExpression implements Cloneable {
+  /**
+   * The type of this expression. It should be final, but {@link #cloneAndSetType} needs to set it.
+   */
+  protected TypeMirror type;
 
   /**
    * Create a JavaExpression.
@@ -88,6 +90,22 @@ public abstract class JavaExpression {
 
   public TypeMirror getType() {
     return type;
+  }
+
+  /**
+   * Returns a copy of this, but with the given type.
+   *
+   * @param newType the type to use in the copy
+   * @return a copy of this, but with the given type
+   */
+  public JavaExpression cloneAndSetType(TypeMirror newType) {
+    try {
+      JavaExpression result = (JavaExpression) this.clone();
+      result.type = newType;
+      return result;
+    } catch (CloneNotSupportedException e) {
+      throw new BugInCF(e, "Trouble cloning %s [%s]", this, this.getClass());
+    }
   }
 
   /**
