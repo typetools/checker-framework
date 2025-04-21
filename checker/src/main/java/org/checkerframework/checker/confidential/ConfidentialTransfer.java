@@ -71,6 +71,7 @@ public class ConfidentialTransfer extends CFTransfer {
 
   /**
    * Creates an annotation for a result of string concatenation.
+   *
    * @param leftOperand the left operand to be concatenated
    * @param rightOperand the right operand to be concatenated
    * @param p the input types
