@@ -12,6 +12,11 @@ import org.checkerframework.checker.confidential.qual.NonConfidential;
 import org.checkerframework.checker.confidential.qual.UnknownConfidential;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.common.value.ValueTransfer;
+import org.checkerframework.framework.flow.CFAbstractAnalysis;
+import org.checkerframework.framework.flow.CFStore;
+import org.checkerframework.framework.flow.CFTransfer;
+import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
@@ -24,16 +29,16 @@ import org.checkerframework.javacutil.TreeUtils;
 public class ConfidentialAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   /** The {@code @}{@link NonConfidential} annotation mirror. */
-  private final AnnotationMirror NONCONFIDENTIAL;
+  protected final AnnotationMirror NONCONFIDENTIAL;
 
   /** The {@code @}{@link Confidential} annotation mirror. */
-  private final AnnotationMirror CONFIDENTIAL;
+  protected final AnnotationMirror CONFIDENTIAL;
 
   /** The {@code @}{@link UnknownConfidential} annotation mirror. */
-  private final AnnotationMirror UNKNOWN_CONFIDENTIAL;
+  protected final AnnotationMirror UNKNOWN_CONFIDENTIAL;
 
   /** The {@code @}{@link BottomConfidential} annotation mirror. */
-  private final AnnotationMirror BOTTOM_CONFIDENTIAL;
+  protected final AnnotationMirror BOTTOM_CONFIDENTIAL;
 
   /** A singleton set containing the {@code @}{@link NonConfidential} annotation mirror. */
   private final AnnotationMirrorSet setOfNonConfidential;
@@ -71,6 +76,12 @@ public class ConfidentialAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         new ConfidentialAnnotatedTypeFactory.ConfidentialTreeAnnotator(this));
   }
 
+  @Override
+  public CFTransfer createFlowTransferFunction(
+      CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
+    return new ConfidentialTransfer(analysis);
+  }
+
   /**
    * A TreeAnnotator to enforce Confidential String concatenation rules:
    *
@@ -90,54 +101,6 @@ public class ConfidentialAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     public ConfidentialTreeAnnotator(AnnotatedTypeFactory atypeFactory) {
       super(atypeFactory);
-    }
-
-    @Override
-    public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
-      if (TreeUtils.isStringConcatenation(tree)) {
-        AnnotatedTypeMirror leftType = getAnnotatedType(tree.getLeftOperand());
-        AnnotatedTypeMirror rightType = getAnnotatedType(tree.getRightOperand());
-        type.replaceAnnotation(getResultingType(leftType, rightType));
-      }
-      return null;
-    }
-
-    @Override
-    public Void visitCompoundAssignment(CompoundAssignmentTree tree, AnnotatedTypeMirror type) {
-      if (TreeUtils.isStringCompoundConcatenation(tree)) {
-        AnnotatedTypeMirror leftType = getAnnotatedType(tree.getVariable());
-        AnnotatedTypeMirror rightType = getAnnotatedType(tree.getExpression());
-        type.replaceAnnotation(getResultingType(leftType, rightType));
-      }
-      return null;
-    }
-
-    /**
-     * Returns the type of concatenating leftType and rightType.
-     *
-     * @param leftType the type on the left of the expression
-     * @param rightType the type on the right of the expression
-     * @return the resulting type after concatenation
-     */
-    private AnnotationMirror getResultingType(
-        AnnotatedTypeMirror leftType, AnnotatedTypeMirror rightType) {
-      if (leftType.hasPrimaryAnnotation(UNKNOWN_CONFIDENTIAL)
-          || rightType.hasPrimaryAnnotation(UNKNOWN_CONFIDENTIAL)) {
-        return UNKNOWN_CONFIDENTIAL;
-      }
-
-      if (leftType.hasPrimaryAnnotation(BOTTOM_CONFIDENTIAL)) {
-        return rightType.getPrimaryAnnotation();
-      } else if (rightType.hasPrimaryAnnotation(BOTTOM_CONFIDENTIAL)) {
-        return leftType.getPrimaryAnnotation();
-      }
-
-      if (leftType.hasPrimaryAnnotation(CONFIDENTIAL)
-          || rightType.hasPrimaryAnnotation(CONFIDENTIAL)) {
-        return CONFIDENTIAL;
-      }
-
-      return NONCONFIDENTIAL;
     }
 
     /**
