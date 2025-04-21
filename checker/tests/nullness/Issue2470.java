@@ -30,7 +30,7 @@ public class Issue2470 {
 
   static void buggy() {
     new Example()
-        // :: error: (contracts.precondition)
+        // :: error: (flowexpr.parse.error)
         .print();
   }
 
@@ -43,7 +43,7 @@ public class Issue2470 {
   static void buggy2() {
     new Example()
         .setS("test")
-        // :: error:(contracts.precondition)
+        // :: error: (flowexpr.parse.error)
         .print();
   }
 

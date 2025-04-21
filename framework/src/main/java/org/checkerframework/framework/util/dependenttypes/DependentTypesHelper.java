@@ -47,6 +47,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeParameterBounds;
+import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.type.visitor.DoubleAnnotatedTypeScanner;
@@ -120,6 +121,12 @@ public class DependentTypesHelper {
   private final ExpressionErrorCollector expressionErrorCollector = new ExpressionErrorCollector();
 
   /**
+   * This scans the annotated type and replaces any dependent type annotation that has a parse error
+   * with the top annotation in the hierarchy.
+   */
+  private final ErrorAnnoReplacer errorAnnoReplacer;
+
+  /**
    * A scanner that applies a function to each {@link AnnotationMirror} and replaces it in the given
    * {@code AnnotatedTypeMirror}. (This side-effects the {@code AnnotatedTypeMirror}.)
    */
@@ -141,7 +148,7 @@ public class DependentTypesHelper {
    */
   public DependentTypesHelper(AnnotatedTypeFactory factory) {
     this.factory = factory;
-
+    this.errorAnnoReplacer = new ErrorAnnoReplacer(factory.getQualifierHierarchy());
     this.annoToElements = new HashMap<>();
     for (Class<? extends Annotation> expressionAnno : factory.getSupportedTypeQualifiers()) {
       List<ExecutableElement> elementList =
@@ -340,6 +347,7 @@ public class DependentTypesHelper {
       throw new BugInCF("Unexpected tree: %s kind: %s", tree, tree.getKind());
     }
     convertAnnotatedTypeMirror(stringToJavaExpr, declaredMethodType);
+    this.errorAnnoReplacer.visit(declaredMethodType.getReturnType());
     this.viewpointAdaptedCopier.visit(declaredMethodType, methodType);
   }
 
@@ -1199,6 +1207,31 @@ public class DependentTypesHelper {
   }
 
   /**
+   * Replaces an dependent type annotation with a parser error with the top qualifier in the
+   * hierarchy.
+   */
+  class ErrorAnnoReplacer extends SimpleAnnotatedTypeScanner<Void, Void> {
+
+    /** Create ExpressionErrorCollector. */
+    private ErrorAnnoReplacer(QualifierHierarchy qh) {
+      super(
+          (AnnotatedTypeMirror type, Void aVoid) -> {
+            AnnotationMirrorSet newAnnos = new AnnotationMirrorSet();
+            for (AnnotationMirror am : type.getPrimaryAnnotations()) {
+              if (isExpressionAnno(am) && !errorElements(am).isEmpty()) {
+                newAnnos.add(qh.getTopAnnotation(am));
+              } else {
+                newAnnos.add(am);
+              }
+            }
+            type.clearPrimaryAnnotations();
+            type.addAnnotations(newAnnos);
+            return null;
+          });
+    }
+  }
+
+  /**
    * Appends list2 to list1 in a new list. If either list is empty, returns the other. Thus, the
    * result may be aliased to one of the arguments and the client should only read, not write into,
    * the result.
@@ -1226,21 +1259,13 @@ public class DependentTypesHelper {
    * visited type to the second formal parameter except for annotations on types that have been
    * substituted.
    */
-  private class ViewpointAdaptedCopier extends DoubleAnnotatedTypeScanner<Void> {
+  private static class ViewpointAdaptedCopier extends DoubleAnnotatedTypeScanner<Void> {
     @Override
     protected Void scan(AnnotatedTypeMirror from, AnnotatedTypeMirror to) {
       if (from == null || to == null) {
         return null;
       }
-      AnnotationMirrorSet replacements = new AnnotationMirrorSet();
-      for (String vpa : annoToElements.keySet()) {
-        AnnotationMirror anno = from.getPrimaryAnnotation(vpa);
-        if (anno != null) {
-          // Only replace annotations that might have been changed.
-          replacements.add(anno);
-        }
-      }
-      to.replaceAnnotations(replacements);
+      to.replaceAnnotations(from.getPrimaryAnnotations());
       if (from.getKind() != to.getKind()
           || (from.getKind() == TypeKind.TYPEVAR
               && TypesUtils.isCapturedTypeVariable(to.getUnderlyingType()))) {
