@@ -13,6 +13,7 @@ import org.checkerframework.checker.confidential.qual.UnknownConfidential;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueTransfer;
+import org.checkerframework.common.value.qual.MatchesRegex;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
@@ -39,6 +40,22 @@ public class ConfidentialAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   /** The {@code @}{@link BottomConfidential} annotation mirror. */
   protected final AnnotationMirror BOTTOM_CONFIDENTIAL;
+
+  /** Fully-qualified class name of {@link NonConfidential}. */
+  public static final String NONCONFIDENTIAL_NAME =
+      "org.checkerframework.checker.confidential.qual.NonConfidential";
+
+  /** Fully-qualified class name of {@link Confidential}. */
+  public static final String CONFIDENTIAL_NAME =
+      "org.checkerframework.checker.confidential.qual.Confidential";
+
+  /** Fully-qualified class name of {@link UnknownConfidential}. */
+  public static final String UNKNOWN_CONFIDENTIAL_NAME =
+      "org.checkerframework.checker.confidential.qual.UnknownConfidential";
+
+  /** Fully-qualified class name of {@link BottomConfidential}. */
+  public static final String BOTTOM_CONFIDENTIAL_NAME =
+      "org.checkerframework.checker.confidential.qual.BottomConfidential";
 
   /** A singleton set containing the {@code @}{@link NonConfidential} annotation mirror. */
   private final AnnotationMirrorSet setOfNonConfidential;
