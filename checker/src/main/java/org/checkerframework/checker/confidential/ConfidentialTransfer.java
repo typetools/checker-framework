@@ -111,7 +111,12 @@ public class ConfidentialTransfer extends CFTransfer {
     return atypeFactory.NONCONFIDENTIAL;
   }
 
-  /** Returns the annotation in the Confidential type hierarchy for the given value. */
+  /**
+   * Returns the annotation in the Confidential type hierarchy for the given value.
+   *
+   * @param cfValue the value
+   * @return the value's AnnotationMirror from the Confidential hierarchy.
+   */
   private AnnotationMirror getValueAnnotation(CFValue cfValue) {
     return qualHierarchy.findAnnotationInHierarchy(
         cfValue.getAnnotations(), atypeFactory.UNKNOWN_CONFIDENTIAL);
