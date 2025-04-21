@@ -50,6 +50,15 @@ public class ConfidentialTransfer extends CFTransfer {
     return stringConcatenation(n.getLeftOperand(), n.getRightOperand(), p, result);
   }
 
+  /**
+   * Determines the resulting type of the string concatenation.
+   *
+   * @param leftOperand the left operand to be concatenated
+   * @param rightOperand the right operand to be concatenated
+   * @param p the input types
+   * @param result the result types
+   * @return the resulting type of the string concatenation operation.
+   */
   public TransferResult<CFValue, CFStore> stringConcatenation(
       Node leftOperand,
       Node rightOperand,
@@ -95,6 +104,7 @@ public class ConfidentialTransfer extends CFTransfer {
     return atypeFactory.NONCONFIDENTIAL;
   }
 
+  /** Returns the annotation in the Confidential type hierarchy for the given value. */
   private AnnotationMirror getValueAnnotation(CFValue cfValue) {
     return qualHierarchy.findAnnotationInHierarchy(
         cfValue.getAnnotations(), atypeFactory.UNKNOWN_CONFIDENTIAL);
