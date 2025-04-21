@@ -69,7 +69,13 @@ public class ConfidentialTransfer extends CFTransfer {
     return recreateTransferResult(resultAnno, result);
   }
 
-  /** Creates an annotation for a result of string concatenation. */
+  /**
+   * Creates an annotation for a result of string concatenation.
+   * @param leftOperand the left operand to be concatenated
+   * @param rightOperand the right operand to be concatenated
+   * @param p the input types
+   * @return the resulting AnnotationMirror of the string concatenation operation.
+   */
   private AnnotationMirror createAnnotationForStringConcatenation(
       Node leftOperand, Node rightOperand, TransferInput<CFValue, CFStore> p) {
     CFValue leftValue = p.getValueOfSubNode(leftOperand);
