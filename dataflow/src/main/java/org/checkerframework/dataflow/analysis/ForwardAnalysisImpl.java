@@ -348,7 +348,7 @@ public class ForwardAnalysisImpl<
     try {
       initialStore = transferFunction.initialStore(underlyingAST, parameters);
     } catch (Exception e) {
-      throw new Error(
+      throw new BugInCF(
           "Problem with initial store for " + underlyingAST + ", parameters=" + parameters);
     }
     thenStores.put(entry, initialStore);

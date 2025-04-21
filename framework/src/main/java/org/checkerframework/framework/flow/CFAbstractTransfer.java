@@ -336,7 +336,7 @@ public abstract class CFAbstractTransfer<
           AnnotatedTypeMirror anno = atypeFactory.getAnnotatedType(p.getElement());
           store.initializeMethodParameter(p, analysis.createAbstractValue(anno));
         } catch (Exception e) {
-          throw new Error("Problem in parameter " + p + " of lambda " + lambda, e);
+          throw new BugInCF("Problem in parameter " + p + " of lambda " + lambda, e);
         }
       }
 
