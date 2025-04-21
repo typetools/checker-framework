@@ -1,7 +1,5 @@
 package org.checkerframework.checker.confidential;
 
-import com.sun.source.tree.BinaryTree;
-import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.MethodInvocationTree;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
@@ -12,8 +10,6 @@ import org.checkerframework.checker.confidential.qual.NonConfidential;
 import org.checkerframework.checker.confidential.qual.UnknownConfidential;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.common.value.ValueTransfer;
-import org.checkerframework.common.value.qual.MatchesRegex;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;

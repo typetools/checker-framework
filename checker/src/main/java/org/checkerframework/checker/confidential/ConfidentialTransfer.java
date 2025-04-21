@@ -1,6 +1,6 @@
 package org.checkerframework.checker.confidential;
 
-import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
+import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.Node;
@@ -11,7 +11,6 @@ import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
-import javax.lang.model.element.AnnotationMirror;
 
 /** The transfer class for the Confidential Checker. */
 public class ConfidentialTransfer extends CFTransfer {
