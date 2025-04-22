@@ -344,7 +344,13 @@ public class ForwardAnalysisImpl<
     UnderlyingAST underlyingAST = cfg.getUnderlyingAST();
     List<LocalVariableNode> parameters = getParameters(underlyingAST);
     assert transferFunction != null : "@AssumeAssertion(nullness): invariant";
-    S initialStore = transferFunction.initialStore(underlyingAST, parameters);
+    S initialStore;
+    try {
+      initialStore = transferFunction.initialStore(underlyingAST, parameters);
+    } catch (Exception e) {
+      throw new BugInCF(
+          "Problem with initial store for " + underlyingAST + ", parameters=" + parameters);
+    }
     thenStores.put(entry, initialStore);
     elseStores.put(entry, initialStore);
     inputs.put(entry, new TransferInput<>(null, this, initialStore));
