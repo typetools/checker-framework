@@ -1207,12 +1207,16 @@ public class DependentTypesHelper {
   }
 
   /**
-   * Replaces an dependent type annotation with a parser error with the top qualifier in the
+   * Replaces a dependent type annotation with a parser error with the top qualifier in the
    * hierarchy.
    */
   class ErrorAnnoReplacer extends SimpleAnnotatedTypeScanner<Void, Void> {
 
-    /** Create ExpressionErrorCollector. */
+    /**
+     * Create ErrorAnnoReplacer
+     *
+     * @param qh qualifier hierarchy
+     */
     private ErrorAnnoReplacer(QualifierHierarchy qh) {
       super(
           (AnnotatedTypeMirror type, Void aVoid) -> {
@@ -1260,6 +1264,10 @@ public class DependentTypesHelper {
    * substituted.
    */
   private static class ViewpointAdaptedCopier extends DoubleAnnotatedTypeScanner<Void> {
+
+    /** Create a ViewpointAdaptedCopier. */
+    private ViewpointAdaptedCopier() {}
+
     @Override
     protected Void scan(AnnotatedTypeMirror from, AnnotatedTypeMirror to) {
       if (from == null || to == null) {

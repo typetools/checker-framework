@@ -502,19 +502,19 @@ public class ChapterExamples {
   @GuardedBy("lock2") MyClass extension;
 
   void method0() {
-    // :: error: (lock.not.held) :: error: (lock.not.held)
+    // :: error: (lock.not.held) :: error: (lock.not.held) :: error: (assignment)
     filename = filename.append(extension);
   }
 
   void method1() {
     lock1.lock();
-    // :: error: (lock.not.held)
+    // :: error: (lock.not.held) :: error: (assignment)
     filename = filename.append(extension);
   }
 
   void method2() {
     lock2.lock();
-    // :: error: (lock.not.held)
+    // :: error: (lock.not.held) :: error: (assignment)
     filename = filename.append(extension);
   }
 
