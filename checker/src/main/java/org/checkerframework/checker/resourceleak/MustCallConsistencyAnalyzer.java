@@ -36,6 +36,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.StringJoiner;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -1528,7 +1529,7 @@ public class MustCallConsistencyAnalyzer {
         if (Objects.equals(enclosingClassElement, receiverElement)) {
           VariableElement lhsElement = lhs.getElement();
           if (lhsElement.getModifiers().contains(Modifier.PRIVATE)
-              && isFirstAssignmentToField(lhsElement, enclosingMethodTree, node.getTree())) {
+              && isOnlyAssignmentToField(lhsElement, enclosingMethodTree, node.getTree())) {
             return;
           }
         }
@@ -1653,14 +1654,24 @@ public class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Determines whether the given assignment is the first write to a private field during a
-   * potential non-final owning field overwrite. This is used to suppress false positive resource
-   * leak warnings when it is safe to assume that a constructor initializes the field for the first
-   * time. This method returns {@code true} if: - the field is private, - it has no non-null inline
-   * initializer, - it is not assigned in any instance initializer block, - the constructor does not
-   * use constructor chaining (this(...)), - there are no earlier assignment before the given field
-   * assignment that might write to the field. - there are no method invocations before the given
-   * field assignment
+   * Determines whether the given assignment is the first write to a private field during object
+   * construction, in order to suppress potential false positive resource leak warnings.
+   *
+   * <p>This method takes a conservative approach: it returns {@code true} only if it can
+   * definitively prove that this is the first and only assignment to the field during construction.
+   * If there is any uncertainty (e.g., earlier method calls or ambiguous writes), it returns {@code
+   * false}.
+   *
+   * <p>The result is {@code true} if all the following hold:
+   *
+   * <ul>
+   *   <li>The field is private
+   *   <li>It has no non-null inline initializer
+   *   <li>It is not assigned in any instance initializer block
+   *   <li>The constructor does not use constructor chaining via {@code this(...)}
+   *   <li>There are no earlier assignments to the same field before this one in the constructor
+   *   <li>There are no method calls before this assignment that might modify the field
+   * </ul>
    *
    * @param field the field being assigned
    * @param constructor the constructor where the assignment appears
@@ -1669,7 +1680,7 @@ public class MustCallConsistencyAnalyzer {
    * @return true if this assignment can be safely considered the first and only one during
    *     construction
    */
-  private boolean isFirstAssignmentToField(
+  private boolean isOnlyAssignmentToField(
       VariableElement field, MethodTree constructor, @FindDistinct Tree currentAssignment) {
     @Nullable TreePath constructorPath = cmAtf.getPath(constructor);
     ClassTree classTree = TreePathUtil.enclosingClass(constructorPath);
@@ -1692,7 +1703,7 @@ public class MustCallConsistencyAnalyzer {
       if (member instanceof BlockTree) {
         BlockTree block = (BlockTree) member;
         if (block.isStatic()) continue;
-        boolean[] found = {false};
+        AtomicBoolean found = new AtomicBoolean(false);
         block.accept(
             new TreeScanner<Void, Void>() {
               @Override
@@ -1703,13 +1714,13 @@ public class MustCallConsistencyAnalyzer {
                         ? ((MemberSelectTree) lhs).getIdentifier()
                         : lhs instanceof IdentifierTree ? ((IdentifierTree) lhs).getName() : null;
                 if (lhsName != null && lhsName.contentEquals(fieldName)) {
-                  found[0] = true;
+                  found.set(true);
                 }
                 return super.visitAssignment(node, unused);
               }
             },
             null);
-        if (found[0]) {
+        if (found.get()) {
           return false;
         }
       }
