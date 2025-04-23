@@ -1,6 +1,7 @@
 package org.checkerframework.checker.nullness;
 
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
@@ -20,12 +21,15 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.SubtypeIsSupersetQualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
+import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -220,5 +224,33 @@ public class KeyForAnnotatedTypeFactory
   @Override
   public boolean shouldWarnIfStubRedundantWithBytecode() {
     return false;
+  }
+
+  @Override
+  protected DependentTypesHelper createDependentTypesHelper() {
+    // Allows + or - in a @LessThan.
+    return new KeyForDependentTypesHelper(this);
+  }
+
+  static class KeyForDependentTypesHelper extends DependentTypesHelper {
+
+    /**
+     * Creates a {@code KeyForDependentTypesHelper}.
+     *
+     * @param factory annotated type factory
+     */
+    public KeyForDependentTypesHelper(AnnotatedTypeFactory factory) {
+      super(factory);
+    }
+
+    @Override
+    public void atMethodInvocation(
+        AnnotatedExecutableType methodType, MethodInvocationTree methodInvocationTree) {
+      if (!hasDependentAnnotations()) {
+        return;
+      }
+      super.atMethodInvocation(methodType, methodInvocationTree);
+      this.errorAnnoReplacer.visit(methodType.getReturnType());
+    }
   }
 }

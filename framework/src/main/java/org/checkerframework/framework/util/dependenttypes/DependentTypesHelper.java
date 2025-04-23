@@ -124,7 +124,7 @@ public class DependentTypesHelper {
    * This scans the annotated type and replaces any dependent type annotation that has a parse error
    * with the top annotation in the hierarchy.
    */
-  private final ErrorAnnoReplacer errorAnnoReplacer;
+  protected final ErrorAnnoReplacer errorAnnoReplacer;
 
   /**
    * A scanner that applies a function to each {@link AnnotationMirror} and replaces it in the given
@@ -348,7 +348,6 @@ public class DependentTypesHelper {
     }
     convertAnnotatedTypeMirror(stringToJavaExpr, declaredMethodType);
     this.viewpointAdaptedCopier.visit(declaredMethodType, methodType);
-    this.errorAnnoReplacer.visit(methodType.getReturnType());
   }
 
   /**
@@ -1210,7 +1209,7 @@ public class DependentTypesHelper {
    * Replaces a dependent type annotation with a parser error with the top qualifier in the
    * hierarchy.
    */
-  class ErrorAnnoReplacer extends SimpleAnnotatedTypeScanner<Void, Void> {
+  protected class ErrorAnnoReplacer extends SimpleAnnotatedTypeScanner<Void, Void> {
 
     /**
      * Create ErrorAnnoReplacer
