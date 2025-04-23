@@ -228,10 +228,15 @@ public class KeyForAnnotatedTypeFactory
 
   @Override
   protected DependentTypesHelper createDependentTypesHelper() {
-    // Allows + or - in a @LessThan.
+    // Converts KeyFor annotations with errors into @UnknownKeyFor in the type of method
+    // invocations.
     return new KeyForDependentTypesHelper(this);
   }
 
+  /**
+   * Converts KeyFor annotations with errors into {@code @UnknownKeyFor} in the type of method
+   * invocations.
+   */
   static class KeyForDependentTypesHelper extends DependentTypesHelper {
 
     /**
