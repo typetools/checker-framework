@@ -347,8 +347,8 @@ public class DependentTypesHelper {
       throw new BugInCF("Unexpected tree: %s kind: %s", tree, tree.getKind());
     }
     convertAnnotatedTypeMirror(stringToJavaExpr, declaredMethodType);
-    this.errorAnnoReplacer.visit(declaredMethodType.getReturnType());
     this.viewpointAdaptedCopier.visit(declaredMethodType, methodType);
+    this.errorAnnoReplacer.visit(methodType.getReturnType());
   }
 
   /**
@@ -1263,7 +1263,7 @@ public class DependentTypesHelper {
    * visited type to the second formal parameter except for annotations on types that have been
    * substituted.
    */
-  private static class ViewpointAdaptedCopier extends DoubleAnnotatedTypeScanner<Void> {
+  private class ViewpointAdaptedCopier extends DoubleAnnotatedTypeScanner<Void> {
 
     /** Create a ViewpointAdaptedCopier. */
     private ViewpointAdaptedCopier() {}
@@ -1273,7 +1273,16 @@ public class DependentTypesHelper {
       if (from == null || to == null) {
         return null;
       }
-      to.replaceAnnotations(from.getPrimaryAnnotations());
+      AnnotationMirrorSet replacements = new AnnotationMirrorSet();
+      for (String vpa : annoToElements.keySet()) {
+        AnnotationMirror anno = from.getPrimaryAnnotation(vpa);
+        if (anno != null) {
+          // Only replace annotations that might have been changed.
+          replacements.add(anno);
+        }
+      }
+      to.replaceAnnotations(replacements);
+
       if (from.getKind() != to.getKind()
           || (from.getKind() == TypeKind.TYPEVAR
               && TypesUtils.isCapturedTypeVariable(to.getUnderlyingType()))) {
