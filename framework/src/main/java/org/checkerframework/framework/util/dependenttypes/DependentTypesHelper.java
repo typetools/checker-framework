@@ -124,7 +124,7 @@ public class DependentTypesHelper {
    * This scans the annotated type and replaces any dependent type annotation that has a parse error
    * with the top annotation in the hierarchy.
    */
-  private final ErrorAnnoReplacer errorAnnoReplacer;
+  protected final ErrorAnnoReplacer errorAnnoReplacer;
 
   /**
    * A scanner that applies a function to each {@link AnnotationMirror} and replaces it in the given
@@ -136,7 +136,7 @@ public class DependentTypesHelper {
    * Copies annotations that might have been viewpoint adapted from the visited type (the first
    * formal parameter of {@code ViewpointAdaptedCopier#visit}) to the second formal parameter.
    */
-  private final ViewpointAdaptedCopier viewpointAdaptedCopier = new ViewpointAdaptedCopier();
+  protected final ViewpointAdaptedCopier viewpointAdaptedCopier = new ViewpointAdaptedCopier();
 
   /** The type mirror for java.lang.Object. */
   protected final TypeMirror objectTM;
@@ -347,7 +347,6 @@ public class DependentTypesHelper {
       throw new BugInCF("Unexpected tree: %s kind: %s", tree, tree.getKind());
     }
     convertAnnotatedTypeMirror(stringToJavaExpr, declaredMethodType);
-    this.errorAnnoReplacer.visit(declaredMethodType.getReturnType());
     this.viewpointAdaptedCopier.visit(declaredMethodType, methodType);
   }
 
@@ -1210,7 +1209,7 @@ public class DependentTypesHelper {
    * Replaces a dependent type annotation with a parser error with the top qualifier in the
    * hierarchy.
    */
-  class ErrorAnnoReplacer extends SimpleAnnotatedTypeScanner<Void, Void> {
+  protected class ErrorAnnoReplacer extends SimpleAnnotatedTypeScanner<Void, Void> {
 
     /**
      * Create an ErrorAnnoReplacer.
@@ -1263,7 +1262,7 @@ public class DependentTypesHelper {
    * visited type to the second formal parameter except for annotations on types that have been
    * substituted.
    */
-  private static class ViewpointAdaptedCopier extends DoubleAnnotatedTypeScanner<Void> {
+  protected class ViewpointAdaptedCopier extends DoubleAnnotatedTypeScanner<Void> {
 
     /** Create a ViewpointAdaptedCopier. */
     private ViewpointAdaptedCopier() {}
@@ -1273,7 +1272,16 @@ public class DependentTypesHelper {
       if (from == null || to == null) {
         return null;
       }
-      to.replaceAnnotations(from.getPrimaryAnnotations());
+      AnnotationMirrorSet replacements = new AnnotationMirrorSet();
+      for (String vpa : annoToElements.keySet()) {
+        AnnotationMirror anno = from.getPrimaryAnnotation(vpa);
+        if (anno != null) {
+          // Only replace annotations that might have been changed.
+          replacements.add(anno);
+        }
+      }
+      to.replaceAnnotations(replacements);
+
       if (from.getKind() != to.getKind()
           || (from.getKind() == TypeKind.TYPEVAR
               && TypesUtils.isCapturedTypeVariable(to.getUnderlyingType()))) {
@@ -1310,7 +1318,7 @@ public class DependentTypesHelper {
    * @param atm a type
    * @return true if {@code atm} has any dependent type annotations
    */
-  private boolean hasDependentType(AnnotatedTypeMirror atm) {
+  protected boolean hasDependentType(AnnotatedTypeMirror atm) {
     if (atm == null) {
       return false;
     }
