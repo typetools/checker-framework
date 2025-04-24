@@ -8,11 +8,11 @@ public class Issue2407 {
   void setMessage(String message) {}
 
   @EnsuresNonNull("1")
-  // :: error: (contracts.precondition)
+  // :: error: (flowexpr.parse.error)
   void method() {}
 
   @EnsuresNonNullIf(expression = "1", result = true)
-  // :: error: (contracts.precondition)
+  // :: error: (flowexpr.parse.error)
   void method2() {}
 
   void main() {
