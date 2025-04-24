@@ -233,25 +233,26 @@ public class KeyForAnnotatedTypeFactory
 
   @Override
   protected DependentTypesHelper createDependentTypesHelper() {
-    // Converts KeyFor annotations with errors into @UnknownKeyFor in the type of method
-    // invocations. This changes all qualifiers on the type of a method invocation expression, even
-    // qualifiers that are not primary annotations. This is unsound for qualifiers on type arguments
-    // or array elements on modifiable objects.
-    //
-    // For example, if they type of some method called, getList(...), is changed from
-    // List<@KeyFor("a ? b : c") String> to List<@UnknownKeyFor String>, then the returned list may
-    // have @UnknownKeyFor strings added.
-    //
-    // List<String> l = getList(...);
-    // l.add(randoString);
-    // This is probably ok for the KeyFor Checker because most of the collections of keys are
-    // unmodifiable.
     return new KeyForDependentTypesHelper(this);
   }
 
   /**
    * Converts KeyFor annotations with errors into {@code @UnknownKeyFor} in the type of method
-   * invocations.
+   * invocations. This changes all qualifiers on the type of a method invocation expression, even
+   * qualifiers that are not primary annotations. This is unsound for qualifiers on type arguments
+   * or array elements on modifiable objects.
+   *
+   * <p>For example, if the type of some method called, {@code getList(...)}, is changed from {@code
+   * List<@KeyFor("a ? b : c") String>} to {@code List<@UnknownKeyFor String>}, then the returned
+   * list may have @UnknownKeyFor strings added.
+   *
+   * <pre>{@code
+   * List<String> l = getList(...);
+   * l.add(randoString);
+   * }</pre>
+   *
+   * This is probably ok for the KeyFor Checker because most of the collections of keys are
+   * unmodifiable.
    */
   static class KeyForDependentTypesHelper extends DependentTypesHelper {
 
