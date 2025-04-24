@@ -332,8 +332,12 @@ public abstract class CFAbstractTransfer<
       }
 
       for (LocalVariableNode p : parameters) {
-        AnnotatedTypeMirror anno = atypeFactory.getAnnotatedType(p.getElement());
-        store.initializeMethodParameter(p, analysis.createAbstractValue(anno));
+        try {
+          AnnotatedTypeMirror anno = atypeFactory.getAnnotatedType(p.getElement());
+          store.initializeMethodParameter(p, analysis.createAbstractValue(anno));
+        } catch (Exception e) {
+          throw new BugInCF("Problem in parameter " + p + " of lambda " + lambda, e);
+        }
       }
 
       @SuppressWarnings("interning:assignment") // used in == tests
