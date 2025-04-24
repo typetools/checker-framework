@@ -136,7 +136,7 @@ public class DependentTypesHelper {
    * Copies annotations that might have been viewpoint adapted from the visited type (the first
    * formal parameter of {@code ViewpointAdaptedCopier#visit}) to the second formal parameter.
    */
-  private final ViewpointAdaptedCopier viewpointAdaptedCopier = new ViewpointAdaptedCopier();
+  protected final ViewpointAdaptedCopier viewpointAdaptedCopier = new ViewpointAdaptedCopier();
 
   /** The type mirror for java.lang.Object. */
   protected final TypeMirror objectTM;
@@ -1262,7 +1262,7 @@ public class DependentTypesHelper {
    * visited type to the second formal parameter except for annotations on types that have been
    * substituted.
    */
-  private class ViewpointAdaptedCopier extends DoubleAnnotatedTypeScanner<Void> {
+  protected class ViewpointAdaptedCopier extends DoubleAnnotatedTypeScanner<Void> {
 
     /** Create a ViewpointAdaptedCopier. */
     private ViewpointAdaptedCopier() {}
@@ -1318,7 +1318,7 @@ public class DependentTypesHelper {
    * @param atm a type
    * @return true if {@code atm} has any dependent type annotations
    */
-  private boolean hasDependentType(AnnotatedTypeMirror atm) {
+  protected boolean hasDependentType(AnnotatedTypeMirror atm) {
     if (atm == null) {
       return false;
     }

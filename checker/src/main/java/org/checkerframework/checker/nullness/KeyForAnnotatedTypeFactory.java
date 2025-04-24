@@ -11,6 +11,7 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.KeyForBottom;
@@ -19,6 +20,8 @@ import org.checkerframework.checker.nullness.qual.UnknownKeyFor;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.Unknown;
 import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -29,6 +32,8 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.SubtypeIsSupersetQualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
+import org.checkerframework.framework.util.JavaExpressionParseUtil;
+import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -254,7 +259,31 @@ public class KeyForAnnotatedTypeFactory
       if (!hasDependentAnnotations()) {
         return;
       }
-      super.atMethodInvocation(methodType, methodInvocationTree);
+      Element methodElt = TreeUtils.elementFromUse(methodInvocationTree);
+
+      // The annotations on `declaredMethodType` will be copied to `methodType`.
+      AnnotatedExecutableType declaredMethodType =
+          (AnnotatedExecutableType) factory.getAnnotatedType(methodElt);
+      if (!hasDependentType(declaredMethodType)) {
+        return;
+      }
+
+      StringToJavaExpression stringToJavaExpr;
+      stringToJavaExpr =
+          stringExpr -> {
+            JavaExpression result =
+                StringToJavaExpression.atMethodInvocation(
+                    stringExpr, methodInvocationTree, factory.getChecker());
+            Unknown unknown = result.containedOfClass(Unknown.class);
+            if (unknown != null) {
+              throw JavaExpressionParseUtil.constructJavaExpressionParseError(
+                  result.toString(), "Expression " + unknown.toString() + " is unparsable.");
+            }
+            return result;
+          };
+
+      convertAnnotatedTypeMirror(stringToJavaExpr, declaredMethodType);
+      this.viewpointAdaptedCopier.visit(declaredMethodType, methodType);
       this.errorAnnoReplacer.visit(methodType.getReturnType());
     }
   }

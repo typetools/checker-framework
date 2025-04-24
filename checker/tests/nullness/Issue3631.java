@@ -4,7 +4,7 @@ public class Issue3631 {
 
   void f(Object otherArg) {
     // Casts aren't a supported JavaExpression.
-    // :: error: (flowexpr.parse.error)
+    // :: error: (contracts.precondition)
     ((Issue3631Helper) otherArg).m();
   }
 }

@@ -19,7 +19,6 @@ import org.checkerframework.dataflow.expression.FormalParameter;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.ThisReference;
-import org.checkerframework.dataflow.expression.Unknown;
 import org.checkerframework.dataflow.expression.ViewpointAdaptJavaExpression;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
@@ -190,13 +189,7 @@ public interface StringToJavaExpression {
       throws JavaExpressionParseException {
     ExecutableElement ee = TreeUtils.elementFromUse(methodInvocationTree);
     JavaExpression javaExpr = StringToJavaExpression.atMethodDecl(expression, ee, checker);
-    JavaExpression result = javaExpr.atMethodInvocation(methodInvocationTree);
-    Unknown unknown = result.containedOfClass(Unknown.class);
-    if (unknown != null) {
-      throw JavaExpressionParseUtil.constructJavaExpressionParseError(
-          result.toString(), "Expression " + unknown.toString() + " is unparsable.");
-    }
-    return result;
+    return javaExpr.atMethodInvocation(methodInvocationTree);
   }
 
   /**
