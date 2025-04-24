@@ -1213,9 +1213,9 @@ public class DependentTypesHelper {
   class ErrorAnnoReplacer extends SimpleAnnotatedTypeScanner<Void, Void> {
 
     /**
-     * Create ErrorAnnoReplacer
+     * Create an ErrorAnnoReplacer.
      *
-     * @param qh qualifier hierarchy
+     * @param qh the qualifier hierarchy
      */
     private ErrorAnnoReplacer(QualifierHierarchy qh) {
       super(
