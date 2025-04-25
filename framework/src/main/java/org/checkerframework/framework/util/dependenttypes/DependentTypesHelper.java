@@ -1219,16 +1219,19 @@ public class DependentTypesHelper {
     private ErrorAnnoReplacer(QualifierHierarchy qh) {
       super(
           (AnnotatedTypeMirror type, Void aVoid) -> {
-            AnnotationMirrorSet newAnnos = new AnnotationMirrorSet();
+            AnnotationMirrorSet replaceAnnos = null;
             for (AnnotationMirror am : type.getPrimaryAnnotations()) {
               if (isExpressionAnno(am) && !errorElements(am).isEmpty()) {
-                newAnnos.add(qh.getTopAnnotation(am));
-              } else {
-                newAnnos.add(am);
+                if (replaceAnnos == null) {
+                  replaceAnnos = new AnnotationMirrorSet();
+                }
+                replaceAnnos.add(qh.getTopAnnotation(am));
               }
             }
-            type.clearPrimaryAnnotations();
-            type.addAnnotations(newAnnos);
+
+            if (replaceAnnos != null) {
+              type.replaceAnnotations(replaceAnnos);
+            }
             return null;
           });
     }
