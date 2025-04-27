@@ -413,7 +413,7 @@ echo "results_available = ${results_available}"
 if [ -z "${results_available}" ]; then
   echo "No results are available."
   echo "Log files:"
-  ls "${OUTDIR}-results"/*.log
+  ls -l "${OUTDIR}-results"/*.log
   echo "End of log files."
   for file in "${OUTDIR}-results"/*.log; do
     echo "---------------- Start of ${file} ----------------"

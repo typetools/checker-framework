@@ -895,11 +895,11 @@ task wpiManyTest(type: Exec, group: 'Verification') {
       println("Failure: Too few *-typecheck.out files in ${typecheckFilesDir}: " +
           "found ${actualTypecheckFileCount} but expected ${expectedTypecheckFileCount}.")
       println("========= Found ${actualTypecheckFileCount} *-typecheck.out files in ${typecheckFilesDir} ========")
-      new File(typecheckFilesDir).list().each { println it}
+      new File(typecheckFilesDir).list().each { println it }
       println("========= The ${expectedTypecheckFileCount} expected files are in ${typecheckFilesDir}/tests/wpi-many/testin.txt ========")
 
       println("========= Start of output from last run of wpi.sh (${typecheckFilesDir}/wpi-out): ========")
-      new File("${projectDir}/wpi-out").list().each { println it}
+      new File("${projectDir}/wpi-out").list().each { println it }
       println("========= End of output from last run of wpi.sh (${typecheckFilesDir}/wpi-out): ========")
       def logFiles = fileTree(typecheckFilesDir).matching {
         include '**/*.log'
