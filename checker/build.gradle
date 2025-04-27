@@ -892,10 +892,9 @@ task wpiManyTest(type: Exec, group: 'Verification') {
     if (actualTypecheckFileCount != expectedTypecheckFileCount) {
       println("Failure: Too few *-typecheck.out files in ${typecheckFilesDir}: " +
           "found ${actualTypecheckFileCount} but expected ${expectedTypecheckFileCount}.")
-      println("========= Found in ${typecheckFilesDir} ========")
+      println("========= Found ${actualTypecheckFileCount} *-typecheck.out files in ${typecheckFilesDir} ========")
       new File(typecheckFilesDir).list().each { println it}
-      println("========= Expected in ${typecheckFilesDir} ========")
-      println( new File("${project.projectDir}/tests/wpi-many/testin.txt"))
+      println("========= The ${expectedTypecheckFileCount} expected files are in ${typecheckFilesDir}/tests/wpi-many/testin.txt ========")
 
       println("========= Start of output from last run of wpi.sh (${typecheckFilesDir}/wpi-out): ========")
       println( new File("${project.projectDir}/wpi-out"))
