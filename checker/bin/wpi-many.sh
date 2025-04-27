@@ -260,6 +260,7 @@ do
         echo "In $(pwd): no directory ${REPO_NAME}/.git"
         echo "Listing of ${REPO_NAME}:"
         ls -al -- "${REPO_NAME}"
+        echo "End of listing of ${REPO_NAME}"
         exit 5
     fi
 
@@ -296,10 +297,13 @@ do
       if [ "$DEBUG" -eq "1" ]; then
           echo "Listing of $(pwd):"
           ls -al "$(pwd)"
+          echo "End of listing of $(pwd)"
           echo "Listing of ${REPO_FULLPATH}:"
           ls -al "${REPO_FULLPATH}"
+          echo "End of listing of ${REPO_FULLPATH}"
           echo "Listing of ${REPO_FULLPATH}/dljc-out:"
           ls -al "${REPO_FULLPATH}/dljc-out"
+          echo "End of listing of ${REPO_FULLPATH}/dljc-out"
       fi
     fi
 
@@ -310,13 +314,16 @@ do
         cat "${REPO_FULLPATH}/.cannot-run-wpi"
         echo "Listing of $(pwd):"
         ls -al "$(pwd)"
+        echo "End of listing of $(pwd)"
         echo "Listing of ${REPO_FULLPATH}:"
         ls -al "${REPO_FULLPATH}"
+        echo "End of listing of ${REPO_FULLPATH}"
         if [ ! -d "${REPO_FULLPATH}/dljc-out" ] ; then
             echo "Does not exist: ${REPO_FULLPATH}/dljc-out"
         else
             echo "Listing of ${REPO_FULLPATH}/dljc-out:"
             ls -al "${REPO_FULLPATH}"/dljc-out
+            echo "End of listing of ${REPO_FULLPATH}/dljc-out"
             for f in "${REPO_FULLPATH}"/dljc-out/* ; do
                 echo "==== start of tail of ${f} ===="
                 tail -n 2000 "${f}"
@@ -338,6 +345,7 @@ do
           echo "Files are empty: ${REPO_FULLPATH}/dljc-out/wpi-stdout.log ${RESULT_LOG}"
           echo "Listing of ${REPO_FULLPATH}/dljc-out:"
           ls -al "${REPO_FULLPATH}/dljc-out"
+          echo "End of listing of ${REPO_FULLPATH}/dljc-out"
           wpi_status=9999
         fi
         TYPECHECK_FILE=${REPO_FULLPATH}/dljc-out/typecheck.out
@@ -352,7 +360,7 @@ do
             echo "File does not exist: ${OUTDIR}-results/${REPO_NAME_HASH}-typecheck.out"
             echo "Listing of ${REPO_FULLPATH}/dljc-out:"
             ls -al "${REPO_FULLPATH}/dljc-out"
-            cat "${REPO_FULLPATH}"/dljc-out/*.log
+            echo "End of listing of ${REPO_FULLPATH}/dljc-out"
             echo "Start of toplevel.log:"
             cat "${REPO_FULLPATH}"/dljc-out/toplevel.log
             echo "End of toplevel.log."
@@ -368,6 +376,7 @@ do
             ls -l "${OUTDIR}-results/${REPO_NAME_HASH}-typecheck.out"
             echo "Listing of ${OUTDIR}-results:"
             ls -al "${OUTDIR}-results"
+            echo "End of listing of ${OUTDIR}-results"
         fi
         if [ ! -s "${RESULT_LOG}" ] ; then
             echo "File does not exist: ${RESULT_LOG}"
@@ -380,6 +389,7 @@ do
         if [[ "$wpi_status" != 0 ]]; then
             echo "Listing of ${OUTDIR}-results:"
             ls -al "${OUTDIR}-results"
+            echo "End of listing of ${OUTDIR}-results"
             echo "==== start of ${OUTDIR}-results/wpi-out; printed because wpi_status=${wpi_status} ===="
             cat "${OUTDIR}-results/wpi-out"
             echo "==== end of ${OUTDIR}-results/wpi-out ===="
