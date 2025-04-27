@@ -153,7 +153,7 @@ if [ "${has_java8}" = "no" ] && [ "${has_java11}" = "no" ] && [ "${has_java17}" 
     exit 11
 fi
 
-if [ "${CHECKERFRAMEWORK}" = "" ]; then
+if [ -z "${CHECKERFRAMEWORK}" ]; then
     echo "CHECKERFRAMEWORK is not set; it must be set to a locally-built Checker Framework. Please clone and build https://github.com/typetools/checker-framework"
     exit 2
 fi
@@ -260,16 +260,16 @@ function configure_and_exec_dljc {
 
   # Ensure the project is clean before invoking DLJC.
   DLJC_CLEAN_STATUS=0
-  eval "${CLEAN_CMD}" < /dev/null > /dev/null 2>&1 || DLJC_CLEAN_STATUS=$?
+  CLEAN_OUTPUT_FILE=${DIR}/dljc-out/clean-output
+  ## TODO: Why is this `eval` rather than just running the command?
+  eval "${CLEAN_CMD} < /dev/null > ${CLEAN_OUTPUT_FILE}" 2>&1 || DLJC_CLEAN_STATUS=$?
   if [[ $DLJC_CLEAN_STATUS -ne 0 ]] ; then
-    WPI_RESULTS_AVAILABLE="dljc failed to clean with ${JDK_VERSION_ARG}: ${CLEAN_CMD}"
-    echo "${WPI_RESULTS_AVAILABLE}"
-    echo "Re-running clean command."
-    # Cleaning failed.  Re-run without piping output to /dev/null.
-    echo "${CLEAN_CMD}" > "${DIR}/dljc-out/clean-output"
-    (eval "${CLEAN_CMD}" < /dev/null | tee -a "${DIR}/dljc-out/clean-output") || true
+    WPI_RESULTS_AVAILABLE="dljc failed to clean with ${JDK_VERSION_ARG}"
+    echo "${WPI_RESULTS_AVAILABLE}; see ${CLEAN_OUTPUT_FILE}"
+    echo "Contents of ${DIR}/dljc-out:"
     ls -al "${DIR}/dljc-out"
-    WPI_RESULTS_AVAILABLE="${WPI_RESULTS_AVAILABLE}"$'\n'"$(cat "${DIR}/dljc-out/clean-output")"
+    echo "End of contents of ${DIR}/dljc-out:"
+    WPI_RESULTS_AVAILABLE="${WPI_RESULTS_AVAILABLE}"$'\n'"${CLEAN_CMD}"$'\n'"$(cat "${CLEAN_OUTPUT_FILE}")"
     return
   fi
 

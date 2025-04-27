@@ -311,7 +311,9 @@ do
 
     if [ -f "${REPO_FULLPATH}/.cannot-run-wpi" ]; then
         echo "Cannot run WPI: file ${REPO_FULLPATH}/.cannot-run-wpi exists."
+        echo "Start of ${REPO_FULLPATH}/.cannot-run-wpi"
         cat "${REPO_FULLPATH}/.cannot-run-wpi"
+        echo "End of ${REPO_FULLPATH}/.cannot-run-wpi"
         echo "Listing of $(pwd):"
         ls -al "$(pwd)"
         echo "End of listing of $(pwd)"
