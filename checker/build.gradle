@@ -897,7 +897,7 @@ task wpiManyTest(type: Exec, group: 'Verification') {
       println("========= The ${expectedTypecheckFileCount} expected files are in ${typecheckFilesDir}/tests/wpi-many/testin.txt ========")
 
       println("========= Start of output from last run of wpi.sh (${typecheckFilesDir}/wpi-out): ========")
-      println( new File("${project.projectDir}/wpi-out"))
+      new File("${project.projectDir}/wpi-out").list().each { println it}
       println("========= End of output from last run of wpi.sh (${typecheckFilesDir}/wpi-out): ========")
       def logFiles = fileTree(typecheckFilesDir).matching {
         include '**/*.log'
