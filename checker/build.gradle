@@ -905,7 +905,7 @@ task wpiManyTest(type: Exec, group: 'Verification') {
         include '**/*.log'
       }
       logFiles.visit { FileVisitDetails details ->
-        def filename = "${typecheckFilesDir}" + details.getName()
+        def filename = "${typecheckFilesDir}/" + details.getName()
         println("======== start of contents of ${filename} ========")
         details.getFile().eachLine { line -> println(line) }
         println("======== end of contents of ${filename} ========")
@@ -917,7 +917,7 @@ task wpiManyTest(type: Exec, group: 'Verification') {
         include '**/.cannot-run-wpi'
       }
       cannotRunWpiFiles.visit { FileVisitDetails details ->
-        def filename = "${typecheckFilesDir}" + details.getName()
+        def filename = "${typecheckFilesDir}/" + details.getName()
         println("======== start of contents of ${filename} ========")
         details.getFile().eachLine { line -> println(line) }
         println("======== end of contents of ${filename} ========")
