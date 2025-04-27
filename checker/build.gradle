@@ -869,7 +869,7 @@ task wpiManyTest(type: Exec, group: 'Verification') {
 
   ignoreExitValue = true
 
-  def typecheckFilesDir = "${projectDir}/build/wpi-many-tests-results/"
+  def typecheckFilesDir = "${projectDir}/build/wpi-many-tests-results"
   doLast {
     if (executionResult.get().exitValue != 0) {
       println('Failure: Running wpi-many.sh failed with a non-zero exit code.')

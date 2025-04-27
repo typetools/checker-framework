@@ -397,9 +397,10 @@ done < "${INLIST}"
 ## wpi-summary.sh is intended to be run while a human waits (unlike this script), so this script
 ## precomputes as much as it can, to make wpi-summary.sh faster.
 
-# this command is allowed to fail, because if no projects returned results then none
+# `results_available` is all the files that do NOT match any of the given patterns.
+# This command is allowed to fail, because if no projects returned results then none
 # of these expressions will match, and we want to enter the special handling for that
-# case that appears below
+# case that appears below.
 results_available=$(grep -vl -e "no build file found for" \
     -e "dljc could not run the Checker Framework" \
     -e "dljc could not run the build successfully" \
@@ -414,6 +415,13 @@ if [ -z "${results_available}" ]; then
   echo "Log files:"
   ls "${OUTDIR}-results"/*.log
   echo "End of log files."
+  for file in "${OUTDIR}-results"/*.log; do
+    echo "---------------- Start of ${file} ----------------"
+    cat "${file}"
+    echo "---------------- End of ${file} ----------------"
+    # Only output the first file, for brevity.  (Otherwise Azure cuts off the output.)
+    break
+  done
 else
   if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     listpath=$(mktemp "/tmp/cloc-file-list-$(date +%Y%m%d-%H%M%S)-XXX.txt")
@@ -434,10 +442,13 @@ else
         echo "---------------- start of names of log files from which results_available.txt was constructed ----------------"
         ls -al "${OUTDIR}-results/"*.log
         echo "---------------- end of names of log files from which results_available.txt was constructed ----------------"
-        ## This is too much output; Azure cuts it off.
-        # echo "---------------- start of log files from which results_available.txt was constructed ----------------"
-        # cat "${OUTDIR}-results/"*.log
-        # echo "---------------- end of log files from which results_available.txt was constructed ----------------"
+        for file in "${OUTDIR}-results"/*.log; do
+          echo "---------------- Start of ${file} ----------------"
+          cat "${file}"
+          echo "---------------- End of ${file} ----------------"
+          # Only output the first file, for brevity.  (Otherwise Azure cuts off the output.)
+          break
+        done
         exit 1
     fi
 
