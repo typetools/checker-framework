@@ -342,6 +342,10 @@ task jtregJdk11Tests(type: Exec, group: 'Verification') {
 // ./gradlew NullnessJSpecifySamplesTest
 test {
   exclude '**/org/checkerframework/checker/test/junit/NullnessJSpecifySamplesTest.class'
+  if (skipDelombok) {
+    exclude '**/org/checkerframework/checker/test/junit/CalledMethodsNoDelombokTest.class'
+    exclude '**/org/checkerframework/checker/test/junit/CalledMethodsDisableReturnsReceiverTest.class'
+  }
 }
 
 if (!skipDelombok) {
