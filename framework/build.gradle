@@ -33,7 +33,7 @@ configurations {
 dependencies {
   api project(':javacutil')
   api project(':dataflow')
-  api 'org.checkerframework:stubparser:3.26.4-SNAPSHOT'
+  api 'org.checkerframework:stubparser:3.26.4'
   stubifierImplementation 'org.checkerframework:stubparser:3.26.4'
   implementation sourceSets.stubifier.output
   // AFU is an "includedBuild" imported in checker-framework/settings.gradle, so the version number doesn't matter.
