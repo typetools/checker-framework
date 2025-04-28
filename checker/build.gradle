@@ -948,7 +948,8 @@ task wpiManyTest(type: Exec, group: 'Verification') {
             || line.endsWith(' warnings')
             || line.startsWith('warning: No processor claimed any of these annotations: ')
             // Ignore debugging output created with this specific prefix
-            || line.startsWith('DEBUG: ')) {
+            || line.startsWith('DEBUG: ')
+            || line.startsWith('warning: DEBUG: ')) {
           return;
         }
         if (!line.trim().equals('')) {

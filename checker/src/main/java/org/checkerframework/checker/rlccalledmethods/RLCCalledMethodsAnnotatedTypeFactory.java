@@ -145,11 +145,11 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
 
     // Inferring owning annotations for @Owning fields/parameters, @EnsuresCalledMethods for
     // finalizer methods and @InheritableMustCall annotations for the class declarations.
-    rlc.reportWarning(root, "has wpi? " + getWholeProgramInference());
+    rlc.reportWarning(root, "DEBUG: has wpi? " + getWholeProgramInference());
     if (getWholeProgramInference() != null) {
-      rlc.reportWarning(root, "cmAtf has wpi");
+      rlc.reportWarning(root, "DEBUG: cmAtf has wpi");
       if (cfg.getUnderlyingAST().getKind() == UnderlyingAST.Kind.METHOD) {
-        rlc.reportWarning(root, "running mci");
+        rlc.reportWarning(root, "DEBUG: running mci");
         MustCallInference.runMustCallInference(this, cfg, mustCallConsistencyAnalyzer);
       }
     }
