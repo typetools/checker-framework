@@ -614,6 +614,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     this.annotationFormatter = createAnnotationFormatter();
     this.typeInformationPresenter = createTypeInformationPresenter();
 
+    String msg =
+        String.format("DEBUG: hasOption(infer) = %s for %s", checker.hasOption("infer"), checker);
+    System.out.println(msg);
     if (checker.hasOption("infer")) {
       checkInvalidOptionsInferSignatures();
       String inferArg = checker.getOption("infer");

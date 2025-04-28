@@ -840,6 +840,7 @@ task ainferTest(group: 'Verification') {
 //
 
 // This is run as part of the inferenceTests task.
+// The tests run are in checker/tests/wpi-many/testin.txt .
 task wpiManyTest(type: Exec, group: 'Verification') {
   description = 'Tests the wpi-many.sh script (and indirectly the wpi.sh script). Requires an Internet connection.'
   dependsOn(assembleForJavac)
@@ -945,7 +946,9 @@ task wpiManyTest(type: Exec, group: 'Verification') {
             // Ignore the summary line that reports the total number of warnings (which can be single or plural).
             || line.endsWith(' warning')
             || line.endsWith(' warnings')
-            || line.startsWith('warning: No processor claimed any of these annotations: ')) {
+            || line.startsWith('warning: No processor claimed any of these annotations: ')
+            // Ignore debugging output created with this specific prefix
+            || line.startsWith('DEBUG: ')) {
           return;
         }
         if (!line.trim().equals('')) {
