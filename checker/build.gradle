@@ -342,31 +342,28 @@ test {
   exclude '**/org/checkerframework/checker/test/junit/NullnessJSpecifySamplesTest.class'
 }
 
-task delombok {
-  description = 'Delomboks the source code tree in tests/calledmethods-lombok'
+if (!skipDelombok) {
+  task delombok {
+    description = 'Delomboks the source code tree in tests/calledmethods-lombok'
 
-  def srcDelomboked = 'tests/calledmethods-delomboked'
-  def srcJava = 'tests/calledmethods-lombok'
+    def srcDelomboked = 'tests/calledmethods-delomboked'
+    def srcJava = 'tests/calledmethods-lombok'
 
-  inputs.files file(srcJava)
-  outputs.dir file(srcDelomboked)
+    inputs.files file(srcJava)
+    outputs.dir file(srcDelomboked)
 
-  // Because there are Checker Framework annotations in the test source.
-  dependsOn project(':checker-qual').tasks.jar
+    // Because there are Checker Framework annotations in the test source.
+    dependsOn project(':checker-qual').tasks.jar
 
-  doLast {
-    if(!skipDelombok) {
-      def collection = files(configurations.testCompileClasspath)
-      ant.taskdef(name: 'delombok', classname: 'lombok.delombok.ant.Tasks$Delombok',
-      classpath: collection.asPath)
-      ant.delombok(from: srcJava, to: srcDelomboked, classpath: collection.asPath)
+    doLast {
+      if(!skipDelombok) {
+        def collection = files(configurations.testCompileClasspath)
+        ant.taskdef(name: 'delombok', classname: 'lombok.delombok.ant.Tasks$Delombok',
+        classpath: collection.asPath)
+        ant.delombok(from: srcJava, to: srcDelomboked, classpath: collection.asPath)
+      }
     }
   }
-}
-
-if (skipDelombok) {
-  delombok.enabled = false
-} else {
   tasks.test.dependsOn('delombok')
 }
 
