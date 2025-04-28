@@ -31,8 +31,8 @@ ext {
   isJava21orHigher = JavaVersion.current() >= JavaVersion.VERSION_21
   isJava22orHigher = JavaVersion.current() >= JavaVersion.VERSION_22
 
-  // As of 2024-08-19 (Lombok 1.18.34), delombok doesn't yet support JDK 23; see https://projectlombok.org/changelog .
-  skipDelombok = JavaVersion.current() > JavaVersion.VERSION_24
+  // As of 2025-04-28 (Lombok 1.18.38), delombok supports JDK 24-ea but not JDK 24 proper; see https://projectlombok.org/changelog .
+  skipDelombok = JavaVersion.current() >= JavaVersion.VERSION_24
 
   parentDir = file("${rootDir}/../").absolutePath
 
