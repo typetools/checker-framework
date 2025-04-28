@@ -434,6 +434,7 @@ if [ -z "${results_available}" ]; then
     # Only output the first file, for brevity.  (Otherwise Azure cuts off the output.)
     break
   done
+  exit 1
 else
   if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     listpath=$(mktemp "/tmp/cloc-file-list-$(date +%Y%m%d-%H%M%S)-XXX.txt")
