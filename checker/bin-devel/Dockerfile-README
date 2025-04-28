@@ -83,6 +83,10 @@ export DPROJECT=cf
 create_upload_docker_image
 
 
+Note: when updating to a newer version of the JDK, it is necessary to
+update the Gradle version to one that supports that JDK, in projects
+such as wpi-many-tests-bcel-util.
+
 Cleanup:
 
 After creating docker images, if you are low on disk space,
