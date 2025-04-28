@@ -950,7 +950,7 @@ task wpiManyTest(type: Exec, group: 'Verification') {
             // Ignore debugging output created with this specific prefix
             || line.startsWith('DEBUG: ')
             || line.startsWith('warning: DEBUG: ')
-            || line.startsWith('warning: [DEBUG: ')) {
+            || line.contains('warning: [DEBUG: ')) {
           return;
         }
         if (!line.trim().equals('')) {
