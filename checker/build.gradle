@@ -906,7 +906,7 @@ task wpiManyTest(type: Exec, group: 'Verification') {
       }
       logFiles.visit { FileVisitDetails details ->
         def filename = "${typecheckFilesDir}" + details.getName()
-        println("======== start of contents of ${filename} ========")
+        println("======== start of contents of ${filename}, which is TYPECHECKING output, not WPI output ========")
         details.getFile().eachLine { line -> println(line) }
         println("======== end of contents of ${filename} ========")
       }
@@ -954,7 +954,7 @@ task wpiManyTest(type: Exec, group: 'Verification') {
           return;
         }
         if (!line.trim().equals('')) {
-          println("======== start of contents of ${filename} ========")
+          println("======== start of contents of ${filename}, which is TYPECHECKING output, not WPI output ========")
           details.getFile().eachLine { l -> println(l) }
           println("======== end of contents of ${filename} ========")
           throw new GradleException('Failure: WPI scripts produced an unexpected output in ' + filename + '. ' +
