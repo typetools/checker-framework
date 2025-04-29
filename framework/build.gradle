@@ -60,9 +60,7 @@ dependencies {
   testImplementation "com.google.auto.value:auto-value:${versions.autoValue}"
 
   // Lombok support in Returns Receiver Checker
-  if (!skipDelombok) {
-    testImplementation "org.projectlombok:lombok:${versions.lombok}"
-  }
+  testImplementation "org.projectlombok:lombok:${versions.lombok}"
 }
 
 tasks.register('cloneTypetoolsJdk', CloneTask) {

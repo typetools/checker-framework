@@ -56,9 +56,8 @@ dependencies {
   testImplementation "com.google.auto.value:auto-value-annotations:${versions.autoValue}"
   testImplementation "com.google.auto.value:auto-value:${versions.autoValue}"
   testImplementation 'com.ryanharter.auto.value:auto-value-parcel:0.2.9'
-  if (!skipDelombok) {
-    testImplementation "org.projectlombok:lombok:${versions.lombok}"
-  }
+  testImplementation "org.projectlombok:lombok:${versions.lombok}"
+
   // Called Methods Checker support for detecting misuses of AWS APIs
   testImplementation 'com.amazonaws:aws-java-sdk-ec2'
   testImplementation 'com.amazonaws:aws-java-sdk-kms'
@@ -345,6 +344,7 @@ test {
   if (skipDelombok) {
     exclude '**/org/checkerframework/checker/test/junit/CalledMethodsNoDelombokTest.class'
     exclude '**/org/checkerframework/checker/test/junit/CalledMethodsDisableReturnsReceiverTest.class'
+    exclude '**/org/checkerframework/checker/test/junit/NullnessNoDelombokTest.class'
   }
 }
 
