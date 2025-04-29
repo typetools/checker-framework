@@ -165,9 +165,7 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
 
     // Inferring owning annotations for @Owning fields/parameters, @EnsuresCalledMethods for
     // finalizer methods and @InheritableMustCall annotations for the class declarations.
-    rlc.reportWarning(root, "DEBUG: has wpi? " + cmAtf.getWholeProgramInference());
     if (cmAtf.getWholeProgramInference() != null) {
-      rlc.reportWarning(root, "DEBUG: cmAtf has wpi");
       if (cfg.getUnderlyingAST().getKind() == UnderlyingAST.Kind.METHOD) {
         rlc.reportWarning(root, "DEBUG: running mci");
         MustCallInference.runMustCallInference(cmAtf, cfg, mustCallConsistencyAnalyzer);
