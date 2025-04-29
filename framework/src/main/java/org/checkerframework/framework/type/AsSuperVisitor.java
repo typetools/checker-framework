@@ -599,6 +599,12 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
   }
 
   @Override
+  public AnnotatedTypeMirror visitTypevar_Array(
+      AnnotatedTypeVariable type, AnnotatedArrayType superType, Void p) {
+    return visitTypevar_NotTypevarNorWildcard(type, superType, p);
+  }
+
+  @Override
   public AnnotatedTypeMirror visitTypevar_Declared(
       AnnotatedTypeVariable type, AnnotatedDeclaredType superType, Void p) {
     return visitTypevar_NotTypevarNorWildcard(type, superType, p);
