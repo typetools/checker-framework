@@ -141,4 +141,13 @@ public abstract class TransferResult<V extends AbstractValue<V>, S extends Store
    *     changed the regularStore, elseStore, or thenStore
    */
   public abstract boolean storeChanged();
+
+  /**
+   * Construct a copy of this {@code TransferResult} that uses the given {@code exceptionalStores}.
+   *
+   * @param exceptionalStores the new exceptional stores to use
+   * @return a copy of this object modified to use the given exceptional stores
+   * @see #getExceptionalStores()
+   */
+  public abstract TransferResult<V, S> withExceptionalStores(Map<TypeMirror, S> exceptionalStores);
 }
