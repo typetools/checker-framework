@@ -143,7 +143,8 @@ public abstract class TransferResult<V extends AbstractValue<V>, S extends Store
   public abstract boolean storeChanged();
 
   /**
-   * Construct a copy of this {@code TransferResult} that uses the given {@code exceptionalStores}.
+   * Construct a shallow copy of this {@code TransferResult}, but with the given {@code
+   * exceptionalStores}.
    *
    * @param exceptionalStores the new exceptional stores to use
    * @return a copy of this object modified to use the given exceptional stores
