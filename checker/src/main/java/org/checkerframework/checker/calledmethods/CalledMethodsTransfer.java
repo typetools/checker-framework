@@ -106,6 +106,11 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
   @Override
   public TransferResult<AccumulationValue, AccumulationStore> visitMethodInvocation(
       MethodInvocationNode node, TransferInput<AccumulationValue, AccumulationStore> input) {
+
+    // The call to `super.visitMethodInvocation()` modifies the input store in-place.  So if we end
+    // up needing to create the exceptional stores, then we'll need this copy taken beforehand.
+    AccumulationStore inputStore = input.getRegularStore().copy();
+
     TransferResult<AccumulationValue, AccumulationStore> superResult =
         super.visitMethodInvocation(node, input);
 
@@ -113,7 +118,7 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
     // accumulate(), which will accumulate values into the result's exceptional stores as well.
     Map<TypeMirror, AccumulationStore> exceptionalStores = superResult.getExceptionalStores();
     if (exceptionalStores == null) {
-      exceptionalStores = makeExceptionalStores(node, input);
+      exceptionalStores = makeExceptionalStores(node, inputStore);
       superResult = superResult.withExceptionalStores(exceptionalStores);
     }
 
@@ -180,13 +185,13 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
    * node} was definitely called.
    *
    * @param node a method invocation
-   * @param input the transfer input associated with the method invocation
+   * @param inputStore the transfer input associated with the method invocation
    * @return a map from types to stores. The keys are the same keys used by {@link
    *     ExceptionBlock#getExceptionalSuccessors()}. The values are copies of the regular store from
    *     {@code input}.
    */
   private Map<TypeMirror, AccumulationStore> makeExceptionalStores(
-      MethodInvocationNode node, TransferInput<AccumulationValue, AccumulationStore> input) {
+      MethodInvocationNode node, AccumulationStore inputStore) {
     if (!(node.getBlock() instanceof ExceptionBlock)) {
       // This can happen in some weird (buggy?) cases:
       // see https://github.com/typetools/checker-framework/issues/3585
@@ -194,9 +199,7 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
     }
     ExceptionBlock block = (ExceptionBlock) node.getBlock();
     Map<TypeMirror, AccumulationStore> result = new LinkedHashMap<>();
-    block
-        .getExceptionalSuccessors()
-        .forEach((tm, b) -> result.put(tm, input.getRegularStore().copy()));
+    block.getExceptionalSuccessors().forEach((tm, b) -> result.put(tm, inputStore.copy()));
     return result;
   }
 
