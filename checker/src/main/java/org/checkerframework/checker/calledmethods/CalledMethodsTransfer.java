@@ -141,7 +141,7 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
       Node node, TransferResult<AccumulationValue, AccumulationStore> result, String... values) {
     super.accumulate(node, result, values);
 
-    @Nullable Map<TypeMirror, AccumulationStore> exceptionalStores = result.getExceptionalStores();
+    Map<TypeMirror, AccumulationStore> exceptionalStores = result.getExceptionalStores();
     if (exceptionalStores == null) {
       return;
     }
