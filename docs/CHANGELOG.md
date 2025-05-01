@@ -3,6 +3,8 @@ Version 3.49.3 (May 1, 2025)
 
 **User-visible changes:**
 
+The Checker Framework runs under JDK 24 -- that is, it runs on a version 24 JVM.
+
 **Implementation details:**
 
 **Closed issues:**

@@ -83,7 +83,7 @@ public class Syntax {
     MessageFormat.format("{0, number, #.#.#}", 1);
     // :: error: (i18nformat.string)
     MessageFormat.format("{0, date, y.m.d.x}", new Date());
-    // This seems to be permitted by Java 23.
+    // This seems to be permitted by Java 23+.
     // // :: error: (i18nformat.string)
     // MessageFormat.format("{0, choice, 0##zero}", 0);
 

@@ -75,11 +75,11 @@ else
   has_java21="yes"
 fi
 
-# shellcheck disable=SC2153 # testing for JAVA23_HOME, not a typo of JAVA_HOME
-if [ "${JAVA23_HOME}" = "" ]; then
-  has_java23="no"
+# shellcheck disable=SC2153 # testing for JAVA24_HOME, not a typo of JAVA_HOME
+if [ "${JAVA24_HOME}" = "" ]; then
+  has_java24="no"
 else
-  has_java23="yes"
+  has_java24="yes"
 fi
 
 if [ "${has_java_home}" = "yes" ] && [ ! -d "${JAVA_HOME}" ]; then
@@ -105,9 +105,9 @@ if [ "${has_java_home}" = "yes" ]; then
       export JAVA21_HOME="${JAVA_HOME}"
       has_java21="yes"
     fi
-    if [ "${has_java23}" = "no" ] && [ "${java_version}" = 23 ]; then
-      export JAVA23_HOME="${JAVA_HOME}"
-      has_java23="yes"
+    if [ "${has_java24}" = "no" ] && [ "${java_version}" = 24 ]; then
+      export JAVA24_HOME="${JAVA_HOME}"
+      has_java24="yes"
     fi
 fi
 
@@ -131,29 +131,29 @@ if [ "${has_java21}" = "yes" ] && [ ! -d "${JAVA21_HOME}" ]; then
     exit 9
 fi
 
-if [ "${has_java23}" = "yes" ] && [ ! -d "${JAVA23_HOME}" ]; then
-    echo "JAVA23_HOME is set to a non-existent directory ${JAVA23_HOME}"
+if [ "${has_java24}" = "yes" ] && [ ! -d "${JAVA24_HOME}" ]; then
+    echo "JAVA24_HOME is set to a non-existent directory ${JAVA24_HOME}"
     exit 10
 fi
 
-if [ "${has_java8}" = "no" ] && [ "${has_java11}" = "no" ] && [ "${has_java17}" = "no" ] && [ "${has_java21}" = "no" ] && [ "${has_java23}" = "no" ]; then
+if [ "${has_java8}" = "no" ] && [ "${has_java11}" = "no" ] && [ "${has_java17}" = "no" ] && [ "${has_java21}" = "no" ] && [ "${has_java24}" = "no" ]; then
     if [ "${has_java_home}" = "yes" ]; then
       echo "Cannot determine Java version from JAVA_HOME"
     else
-      echo "No Java 8, 11, 17, 21, or 23 JDKs found. At least one of JAVA_HOME, JAVA8_HOME, JAVA11_HOME, JAVA17_HOME, JAVA21_HOME, or JAVA23_HOME must be set."
+      echo "No Java 8, 11, 17, 21, or 24 JDKs found. At least one of JAVA_HOME, JAVA8_HOME, JAVA11_HOME, JAVA17_HOME, JAVA21_HOME, or JAVA24_HOME must be set."
     fi
     echo "JAVA_HOME = ${JAVA_HOME}"
     echo "JAVA8_HOME = ${JAVA8_HOME}"
     echo "JAVA11_HOME = ${JAVA11_HOME}"
     echo "JAVA17_HOME = ${JAVA17_HOME}"
     echo "JAVA21_HOME = ${JAVA21_HOME}"
-    echo "JAVA23_HOME = ${JAVA23_HOME}"
+    echo "JAVA24_HOME = ${JAVA24_HOME}"
     command -v java
     java -version
     exit 11
 fi
 
-if [ "${CHECKERFRAMEWORK}" = "" ]; then
+if [ -z "${CHECKERFRAMEWORK}" ]; then
     echo "CHECKERFRAMEWORK is not set; it must be set to a locally-built Checker Framework. Please clone and build https://github.com/typetools/checker-framework"
     exit 2
 fi
@@ -260,16 +260,16 @@ function configure_and_exec_dljc {
 
   # Ensure the project is clean before invoking DLJC.
   DLJC_CLEAN_STATUS=0
-  eval "${CLEAN_CMD}" < /dev/null > /dev/null 2>&1 || DLJC_CLEAN_STATUS=$?
+  CLEAN_OUTPUT_FILE=${DIR}/dljc-out/clean-output
+  ## TODO: Why is this `eval` rather than just running the command?
+  eval "${CLEAN_CMD} < /dev/null > ${CLEAN_OUTPUT_FILE}" 2>&1 || DLJC_CLEAN_STATUS=$?
   if [[ $DLJC_CLEAN_STATUS -ne 0 ]] ; then
-    WPI_RESULTS_AVAILABLE="dljc failed to clean with ${JDK_VERSION_ARG}: ${CLEAN_CMD}"
-    echo "${WPI_RESULTS_AVAILABLE}"
-    echo "Re-running clean command."
-    # Cleaning failed.  Re-run without piping output to /dev/null.
-    echo "${CLEAN_CMD}" > "${DIR}/dljc-out/clean-output"
-    (eval "${CLEAN_CMD}" < /dev/null | tee -a "${DIR}/dljc-out/clean-output") || true
+    WPI_RESULTS_AVAILABLE="dljc failed to clean with ${JDK_VERSION_ARG}"
+    echo "${WPI_RESULTS_AVAILABLE}; see ${CLEAN_OUTPUT_FILE}"
+    echo "Contents of ${DIR}/dljc-out:"
     ls -al "${DIR}/dljc-out"
-    WPI_RESULTS_AVAILABLE="${WPI_RESULTS_AVAILABLE}"$'\n'"$(cat "${DIR}/dljc-out/clean-output")"
+    echo "End of contents of ${DIR}/dljc-out:"
+    WPI_RESULTS_AVAILABLE="${WPI_RESULTS_AVAILABLE}"$'\n'"${CLEAN_CMD}"$'\n'"$(cat "${CLEAN_OUTPUT_FILE}")"
     return
   fi
 
