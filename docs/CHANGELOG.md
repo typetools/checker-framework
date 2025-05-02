@@ -1,4 +1,4 @@
-Version 3.49.3 (May 1, 2025)
+Version 3.49.3 (May 2, 2025)
 ------------------------------
 
 **User-visible changes:**
