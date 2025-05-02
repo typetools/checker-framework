@@ -15,15 +15,16 @@ svg-copy:
 	chmod -f a-w ../*.svg
 
 %.pdf : %.svg
-ifdef RSVG_CONVERT_VERSION
-	rsvg-convert -f pdf -o $@ $<
-else
-  ifdef INKSCAPE_VERSION
-	inkscape $< --export-pdf=$@
-  else
-	convert $< $@
-  endif
-endif
+	svg2pdf.bash $< $@
+# ifdef RSVG_CONVERT_VERSION
+# 	rsvg-convert -f pdf -o $@ $<
+# else
+#   ifdef INKSCAPE_VERSION
+# 	inkscape $< --export-pdf=$@
+#   else
+# 	convert $< $@
+#   endif
+# endif
 
 clean: clean-obsolete-files
 	@\rm -f ${PDFFILES}
