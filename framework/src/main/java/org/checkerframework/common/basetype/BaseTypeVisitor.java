@@ -593,7 +593,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    *     of {@code tree} began
    * @param startMillis the time when type-checking of {@code tree} began
    */
-  final void checkSlowTypechecking(Tree tree, Tree startSlowTypeCheckingTree, Long startMillis) {
+  final void checkSlowTypechecking(
+      Tree tree, @FindDistinct Tree startSlowTypeCheckingTree, Long startMillis) {
     if (startSlowTypeCheckingTree == slowTypecheckingTree) {
       long timeMillis = System.currentTimeMillis() - startMillis;
       if (timeMillis > slowTypecheckingSeconds * 1000) {
