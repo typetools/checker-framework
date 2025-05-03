@@ -545,7 +545,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * Type-check classTree and skips classes specified by the skipDef option. Subclasses should
    * override {@link #processClassTree(ClassTree)} instead of this method.
    *
-   * @param classTree class to check
+   * @param tree class to check
    * @param p null
    * @return null
    */
@@ -578,7 +578,20 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       methodTree = preMT;
     }
 
-    // boilerplate
+    checkSlowTypechecking(tree, startSlowTypeCheckingTree, startMillis);
+
+    return null;
+  }
+
+  /**
+   * Issue a warning if type-checking took too long.
+   *
+   * @param tree the tree being type-checked
+   * @param startSlowTypeCheckingTree the value of {@link #slowTypecheckingTree}, when type-checking
+   *     of {@code tree} began
+   * @param startMillis the time when type-checking of {@code tree} began
+   */
+  final void checkSlowTypechecking(Tree tree, Tree startSlowTypeCheckingTree, Long startMillis) {
     if (startSlowTypeCheckingTree == slowTypecheckingTree) {
       long timeMillis = System.currentTimeMillis() - startMillis;
       if (timeMillis > slowTypecheckingSeconds * 1000) {
@@ -586,15 +599,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         slowTypecheckingTree = tree;
       }
     }
-
-    return null;
   }
 
   /**
    * Type-check classTree. Subclasses should override this method instead of {@link
    * #visitClass(ClassTree, Void)}.
    *
-   * @param tree class to check
+   * @param classTree class to check
    */
   public void processClassTree(ClassTree classTree) {
     checkFieldInvariantDeclarations(classTree);
@@ -1091,14 +1102,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       methodTree = preMT;
     }
 
-    // boilerplate
-    if (startSlowTypeCheckingTree == slowTypecheckingTree) {
-      long timeMillis = System.currentTimeMillis() - startMillis;
-      if (timeMillis > slowTypecheckingSeconds * 1000) {
-        checker.reportWarning(tree, "slow.typechecking", timeMillis / 1000);
-        slowTypecheckingTree = tree;
-      }
-    }
+    checkSlowTypechecking(tree, startSlowTypeCheckingTree, startMillis);
   }
 
   /**
@@ -1659,14 +1663,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     warnRedundantAnnotations(tree, variableType);
     Void result = super.visitVariable(tree, p);
 
-    // boilerplate
-    if (startSlowTypeCheckingTree == slowTypecheckingTree) {
-      long timeMillis = System.currentTimeMillis() - startMillis;
-      if (timeMillis > slowTypecheckingSeconds * 1000) {
-        checker.reportWarning(tree, "slow.typechecking", timeMillis / 1000);
-        slowTypecheckingTree = tree;
-      }
-    }
+    checkSlowTypechecking(tree, startSlowTypeCheckingTree, startMillis);
 
     return result;
   }
@@ -1850,14 +1847,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
     Void result = super.visitEnhancedForLoop(tree, p);
 
-    // boilerplate
-    if (startSlowTypeCheckingTree == slowTypecheckingTree) {
-      long timeMillis = System.currentTimeMillis() - startMillis;
-      if (timeMillis > slowTypecheckingSeconds * 1000) {
-        checker.reportWarning(tree, "slow.typechecking", timeMillis / 1000);
-        slowTypecheckingTree = tree;
-      }
-    }
+    checkSlowTypechecking(tree, startSlowTypeCheckingTree, startMillis);
 
     return result;
   }
@@ -2354,14 +2344,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
     Void result = super.visitReturn(tree, p);
 
-    // boilerplate
-    if (startSlowTypeCheckingTree == slowTypecheckingTree) {
-      long timeMillis = System.currentTimeMillis() - startMillis;
-      if (timeMillis > slowTypecheckingSeconds * 1000) {
-        checker.reportWarning(tree, "slow.typechecking", timeMillis / 1000);
-        slowTypecheckingTree = tree;
-      }
-    }
+    checkSlowTypechecking(tree, startSlowTypeCheckingTree, startMillis);
 
     return result;
   }
@@ -2814,14 +2797,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     checkThrownExpression(tree);
     Void result = super.visitThrow(tree, p);
 
-    // boilerplate
-    if (startSlowTypeCheckingTree == slowTypecheckingTree) {
-      long timeMillis = System.currentTimeMillis() - startMillis;
-      if (timeMillis > slowTypecheckingSeconds * 1000) {
-        checker.reportWarning(tree, "slow.typechecking", timeMillis / 1000);
-        slowTypecheckingTree = tree;
-      }
-    }
+    checkSlowTypechecking(tree, startSlowTypeCheckingTree, startMillis);
 
     return result;
   }
