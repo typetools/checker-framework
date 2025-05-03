@@ -286,6 +286,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   protected @Nullable Tree slowTypecheckingTree = null;
 
   /**
+   * Create a new BaseTypeChecker.
+   *
    * @param checker the type-checker associated with this visitor (for callbacks to {@link
    *     TypeHierarchy#isSubtype})
    */
