@@ -598,7 +598,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     if (startSlowTypeCheckingTree == slowTypecheckingTree) {
       long timeMillis = System.currentTimeMillis() - startMillis;
       if (timeMillis > slowTypecheckingSeconds * 1000) {
-        checker.reportWarning(tree, "slow.typechecking", timeMillis / 1000);
+        // No warning for extremely long source code.
+        if (tree.toString().length() < 200000) {
+          checker.reportWarning(tree, "slow.typechecking", timeMillis / 1000);
+        }
         slowTypecheckingTree = tree;
       }
     }
