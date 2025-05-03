@@ -594,7 +594,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * Type-check classTree. Subclasses should override this method instead of {@link
    * #visitClass(ClassTree, Void)}.
    *
-   * @param classTree class to check
+   * @param tree class to check
    */
   public void processClassTree(ClassTree classTree) {
     checkFieldInvariantDeclarations(classTree);
