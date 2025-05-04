@@ -276,8 +276,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   /** The tree of the enclosing method that is currently being visited, if any. */
   protected @Nullable MethodTree methodTree = null;
 
-  /** The number of seconds that typechecking must take, to issue a "slow typechecking" warning. */
-  protected long slowTypecheckingSeconds = 30;
+  /**
+   * The number of seconds that typechecking must take for a single tree, to issue a "slow
+   * typechecking" warning; default 30.
+   */
+  protected final long slowTypecheckingSeconds;
 
   /**
    * The tree of the most recent "slow typechecking" warning. This is used to avoid warning about
@@ -327,6 +330,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     assumePureGetters = checker.hasOption("assumePureGetters");
     checkCastElementType = checker.hasOption("checkCastElementType");
     warnRedundantAnnotations = checker.hasOption("warnRedundantAnnotations");
+    // This construct is because `slowTypecheckingSeconds` is a final variable.
+    long slowTypecheckingSecondsOption;
+    try {
+      slowTypecheckingSecondsOption =
+          Integer.parseInt(checker.getOption("slowTypecheckingSeconds", "30"));
+    } catch (NumberFormatException e) {
+      slowTypecheckingSecondsOption = 30;
+    }
+    slowTypecheckingSeconds = slowTypecheckingSecondsOption;
   }
 
   /** An array containing just {@code BaseTypeChecker.class}. */

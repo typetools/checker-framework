@@ -294,6 +294,9 @@ import org.plumelib.util.UtilPlume;
 
   // Amount of detail in messages
 
+  // Warn about trees that take a long time to typecheck
+  "slowTypecheckingSeconds",
+
   // Print the version of the Checker Framework
   "version",
   // Print info about git repository from which the Checker Framework was compiled
