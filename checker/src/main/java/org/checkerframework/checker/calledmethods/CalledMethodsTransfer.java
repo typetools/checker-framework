@@ -40,18 +40,6 @@ import org.plumelib.util.CollectionsPlume;
 public class CalledMethodsTransfer extends AccumulationTransfer {
 
   /**
-   * {@link #makeExceptionalStores(MethodInvocationNode, TransferInput)} requires a TransferInput,
-   * but the actual exceptional stores need to be modified in {@link #accumulate(Node,
-   * TransferResult, String...)}, which only has access to a TransferResult. So this field is set to
-   * non-null in {@link #visitMethodInvocation(MethodInvocationNode, TransferInput)} via a call to
-   * {@link #makeExceptionalStores(MethodInvocationNode, TransferInput)} (which reads the CFStores
-   * from the TransferInput) before the call to accumulate(); accumulate() can then use this field
-   * to read the CFStores; and then finally this field is then reset to null afterwards to prevent
-   * it from being used somewhere it shouldn't be.
-   */
-  private @Nullable Map<TypeMirror, AccumulationStore> exceptionalStores;
-
-  /**
    * The element for the CalledMethods annotation's value element. Stored in a field in this class
    * to prevent the need to cast to CalledMethods ATF every time it's used.
    */
@@ -118,9 +106,21 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
   @Override
   public TransferResult<AccumulationValue, AccumulationStore> visitMethodInvocation(
       MethodInvocationNode node, TransferInput<AccumulationValue, AccumulationStore> input) {
-    exceptionalStores = makeExceptionalStores(node, input);
+
+    // The call to `super.visitMethodInvocation()` modifies the input store in-place.  So if we end
+    // up needing to create the exceptional stores, then we'll need this copy taken beforehand.
+    AccumulationStore inputStore = input.getRegularStore().copy();
+
     TransferResult<AccumulationValue, AccumulationStore> superResult =
         super.visitMethodInvocation(node, input);
+
+    // Ensure that the result has a store for each possible exception.  This affects the behavior of
+    // accumulate(), which will accumulate values into the result's exceptional stores as well.
+    Map<TypeMirror, AccumulationStore> exceptionalStores = superResult.getExceptionalStores();
+    if (exceptionalStores == null) {
+      exceptionalStores = makeExceptionalStores(node, inputStore);
+      superResult = superResult.withExceptionalStores(exceptionalStores);
+    }
 
     ExecutableElement method = TreeUtils.elementFromUse(node.getTree());
     handleEnsuresCalledMethodsVarargs(node, method, superResult);
@@ -134,20 +134,19 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
               .adjustMethodNameUsingValueChecker(methodName, node.getTree());
       accumulate(receiver, superResult, methodName);
     }
-    TransferResult<AccumulationValue, AccumulationStore> finalResult =
-        new ConditionalTransferResult<>(
-            superResult.getResultValue(),
-            superResult.getThenStore(),
-            superResult.getElseStore(),
-            exceptionalStores);
-    exceptionalStores = null;
-    return finalResult;
+    return new ConditionalTransferResult<>(
+        superResult.getResultValue(),
+        superResult.getThenStore(),
+        superResult.getElseStore(),
+        exceptionalStores);
   }
 
   @Override
   public void accumulate(
       Node node, TransferResult<AccumulationValue, AccumulationStore> result, String... values) {
     super.accumulate(node, result, values);
+
+    Map<TypeMirror, AccumulationStore> exceptionalStores = result.getExceptionalStores();
     if (exceptionalStores == null) {
       return;
     }
@@ -186,13 +185,13 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
    * node} was definitely called.
    *
    * @param node a method invocation
-   * @param input the transfer input associated with the method invocation
+   * @param inputStore the transfer input associated with the method invocation
    * @return a map from types to stores. The keys are the same keys used by {@link
    *     ExceptionBlock#getExceptionalSuccessors()}. The values are copies of the regular store from
    *     {@code input}.
    */
   private Map<TypeMirror, AccumulationStore> makeExceptionalStores(
-      MethodInvocationNode node, TransferInput<AccumulationValue, AccumulationStore> input) {
+      MethodInvocationNode node, AccumulationStore inputStore) {
     if (!(node.getBlock() instanceof ExceptionBlock)) {
       // This can happen in some weird (buggy?) cases:
       // see https://github.com/typetools/checker-framework/issues/3585
@@ -200,9 +199,7 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
     }
     ExceptionBlock block = (ExceptionBlock) node.getBlock();
     Map<TypeMirror, AccumulationStore> result = new LinkedHashMap<>();
-    block
-        .getExceptionalSuccessors()
-        .forEach((tm, b) -> result.put(tm, input.getRegularStore().copy()));
+    block.getExceptionalSuccessors().forEach((tm, b) -> result.put(tm, inputStore.copy()));
     return result;
   }
 
