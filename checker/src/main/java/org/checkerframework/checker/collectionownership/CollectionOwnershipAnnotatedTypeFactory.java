@@ -167,13 +167,11 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
     // finalizer methods and @InheritableMustCall annotations for the class declarations.
     if (cmAtf.getWholeProgramInference() != null) {
       if (cfg.getUnderlyingAST().getKind() == UnderlyingAST.Kind.METHOD) {
-        System.out.println("DEBUG: running mci");
         MustCallInference.runMustCallInference(cmAtf, cfg, mustCallConsistencyAnalyzer);
       }
     }
 
     super.postAnalyze(cfg);
-    // tempVarToTree.clear();
   }
 }
 
