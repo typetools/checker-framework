@@ -9,6 +9,7 @@ public class Issue6282 {
     throw new RuntimeException();
   }
 
+  @SuppressWarnings("confidential") // correctly prevents exposing @UnknownConfidential throwable
   public static void setAccessible(final AccessibleObject accessibleObject) {
 
     try {
