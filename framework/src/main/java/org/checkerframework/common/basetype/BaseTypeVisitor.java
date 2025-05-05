@@ -533,32 +533,32 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Type-check classTree and skips classes specified by the skipDef option. Subclasses should
-   * override {@link #processClassTree(ClassTree)} instead of this method.
+   * Type-check tree and skips classes specified by the skipDef option. Subclasses should override
+   * {@link #processClassTree(ClassTree)} instead of this method.
    *
-   * @param classTree class to check
+   * @param tree class to check
    * @param p null
    * @return null
    */
   @Override
-  public final Void visitClass(ClassTree classTree, Void p) {
-    if (checker.shouldSkipDefs(classTree) || checker.shouldSkipFiles(classTree)) {
-      // Not "return super.visitClass(classTree, p);" because that would recursively call
+  public final Void visitClass(ClassTree tree, Void p) {
+    if (checker.shouldSkipDefs(tree) || checker.shouldSkipFiles(tree)) {
+      // Not "return super.visitClass(tree, p);" because that would recursively call
       // visitors on subtrees; we want to skip the class entirely.
       return null;
     }
-    atypeFactory.preProcessClassTree(classTree);
+    atypeFactory.preProcessClassTree(tree);
 
     TreePath preTreePath = atypeFactory.getVisitorTreePath();
     MethodTree preMT = methodTree;
 
     // Don't use atypeFactory.getPath, because that depends on the visitor path.
-    atypeFactory.setVisitorTreePath(TreePath.getPath(root, classTree));
+    atypeFactory.setVisitorTreePath(TreePath.getPath(root, tree));
     methodTree = null;
 
     try {
-      processClassTree(classTree);
-      atypeFactory.postProcessClassTree(classTree);
+      processClassTree(tree);
+      atypeFactory.postProcessClassTree(tree);
     } finally {
       atypeFactory.setVisitorTreePath(preTreePath);
       methodTree = preMT;
