@@ -108,7 +108,11 @@ public class ConfidentialTransfer extends CFTransfer {
       return atypeFactory.CONFIDENTIAL;
     }
 
-    return atypeFactory.NONCONFIDENTIAL;
+    if (leftAnnoName.equals(ConfidentialAnnotatedTypeFactory.NONCONFIDENTIAL_NAME)
+        && rightAnnoName.equals(ConfidentialAnnotatedTypeFactory.NONCONFIDENTIAL_NAME)) {
+      return atypeFactory.NONCONFIDENTIAL;
+    }
+    return null;
   }
 
   /**

@@ -5,10 +5,12 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import org.checkerframework.framework.qual.DefaultFor;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.LiteralKind;
 import org.checkerframework.framework.qual.QualifierForLiterals;
 import org.checkerframework.framework.qual.SubtypeOf;
+import org.checkerframework.framework.qual.TypeUseLocation;
 
 /**
  * Denotes a value that may be exposed to end users, or a location that may be accessed by end
@@ -21,6 +23,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf(UnknownConfidential.class)
-@QualifierForLiterals(LiteralKind.ALL)
+@QualifierForLiterals({LiteralKind.STRING, LiteralKind.PRIMITIVE})
 @DefaultQualifierInHierarchy
+@DefaultFor(value = {TypeUseLocation.LOCAL_VARIABLE, TypeUseLocation.UPPER_BOUND})
 public @interface NonConfidential {}
