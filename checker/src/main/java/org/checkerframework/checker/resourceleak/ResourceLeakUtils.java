@@ -3,6 +3,8 @@ package org.checkerframework.checker.resourceleak;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import org.checkerframework.checker.collectionownership.CollectionOwnershipAnnotatedTypeFactory;
 import org.checkerframework.checker.collectionownership.CollectionOwnershipChecker;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.MustCallChecker;
@@ -158,6 +160,56 @@ public class ResourceLeakUtils {
           "Bad argument to"
               + " ResourceLeakUtils#getRLCCalledMethodsChecker(): "
               + (referenceChecker == null ? "null" : referenceChecker.getClass().getSimpleName()));
+    }
+  }
+
+  /**
+   * Given a checker part of the resource leak ecosystem, returns the {@link
+   * CollectionOwnershipAnnotatedTypeFactory} in the checker hierarchy.
+   *
+   * @param referenceChecker the checker to retrieve the {@link CollectionOwnershipAnnotatedTypeFactory} from
+   * @return the {@link CollectionOwnershipAnnotatedTypeFactory} in the checker hierarchy
+   */
+  public static CollectionOwnershipAnnotatedTypeFactory getCollectionOwnershipAnnotatedTypeFactory(SourceChecker referenceChecker) {
+    if (referenceChecker == null) {
+      throw new IllegalArgumentException("Argument referenceChecker cannot be null");
+    }
+
+    String className = referenceChecker.getClass().getSimpleName();
+    if ("CollectionOwnershipChecker".equals(className) 
+        || "MustCallNoCreatesMustCallForChecker".equals(className)) {
+      return (CollectionOwnershipAnnotatedTypeFactory) ((CollectionOwnershipChecker) referenceChecker).getTypeFactory();
+    } else if ("RLCCalledMethodsChecker".equals(className)) {
+      return getCollectionOwnershipAnnotatedTypeFactory(
+          referenceChecker.getParentChecker());
+    } else if ("MustCallChecker".equals(className)) {
+      return getCollectionOwnershipAnnotatedTypeFactory(
+          referenceChecker.getParentChecker());
+    } else if ("ResourceLeakChecker".equals(className)) {
+      return getCollectionOwnershipAnnotatedTypeFactory(
+          referenceChecker.getSubchecker(CollectionOwnershipChecker.class));
+    } else {
+      throw new IllegalArgumentException(
+          "Argument referenceChecker to"
+              + " ResourceLeakUtils#getCollectionOwnershipAnnotatedTypeFactory(referenceChecker) expected to"
+              + " be an RLC checker but is "
+              + className);
+    }
+  }
+
+  /**
+   * Given a type factory part of the resource leak ecosystem, returns the {@link
+   * CollectionOwnershipAnnotatedTypeFactory} in the checker hierarchy.
+   *
+   * @param referenceAtf the type factory to retrieve the {@link CollectionOwnershipAnnotatedTypeFactory} from
+   * @return the {@link CollectionOwnershipAnnotatedTypeFactory} in the checker hierarchy
+   */
+  public static CollectionOwnershipAnnotatedTypeFactory getCollectionOwnershipAnnotatedTypeFactory(
+      AnnotatedTypeFactory referenceAtf) {
+    if (referenceAtf == null) {
+      throw new IllegalArgumentException("Argument referenceAtf cannot be null");
+    } else {
+      return getCollectionOwnershipAnnotatedTypeFactory(referenceAtf.getChecker());
     }
   }
 }
