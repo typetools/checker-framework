@@ -840,7 +840,8 @@ task ainferTest(group: 'Verification') {
 //
 
 // This is run as part of the inferenceTests task.
-// The tests run are in checker/tests/wpi-many/testin.txt .
+// File checker/tests/wpi-many/testin.txt lists the tests that are run.  To
+// debug one WPI test, comment out all but one line of that file.
 task wpiManyTest(type: Exec, group: 'Verification') {
   description = 'Tests the wpi-many.sh script (and indirectly the wpi.sh script). Requires an Internet connection.'
   dependsOn(assembleForJavac)

@@ -312,7 +312,8 @@ public class MustCallInference {
    * {@literal @InheritableMustCall} annotations to the enclosing class.
    */
   private void addMemberAndClassAnnotations() {
-    CollectionOwnershipAnnotatedTypeFactory coAtf = ResourceLeakUtils.getCollectionOwnershipAnnotatedTypeFactory(resourceLeakAtf);
+    CollectionOwnershipAnnotatedTypeFactory coAtf =
+        ResourceLeakUtils.getCollectionOwnershipAnnotatedTypeFactory(resourceLeakAtf);
     WholeProgramInference wpi = coAtf.getWholeProgramInference();
     assert wpi != null : "MustCallInference is running without WPI.";
     for (VariableElement fieldElt : getOwningFields()) {
