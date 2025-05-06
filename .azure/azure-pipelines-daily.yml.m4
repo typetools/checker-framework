@@ -19,8 +19,8 @@ variables:
 jobs:
 
 # The dependsOn clauses are:
-#  * Everything depends on the canary jobs (the main jdk21 jobs), except those jobs themselves.
-#  * Anything *_jdk11 or *_jdk17 or *_jdk23 depends on *_jdk21.
+#  * Everything depends on the canary jobs (the main jdk24 jobs), except those jobs themselves.
+#  * Anything *_jdk11 or *_jdk17 or *_jdk21 depends on *_jdk24.
 
 - job: canary_jobs
   dependsOn:
@@ -39,12 +39,12 @@ jobs:
 junit_job(11)
 junit_job(17)
 junit_job(21)
-junit_job(23)
+junit_job(24)
 
 nonjunit_job(11)
 nonjunit_job(17)
 nonjunit_job(21)
-nonjunit_job(23)
+nonjunit_job(24)
 
 # Sometimes one of the invocations of wpi-many in `./gradlew wpiManyTest`
 # takes much longer to complete than normal, and this Azure job times out.
@@ -53,30 +53,30 @@ nonjunit_job(23)
 inference_job(11)
 inference_job(17)
 inference_job(21)
-inference_job_split(23)
+inference_job_split(24)
 
 # Do not run misc_job daily, because it does diffs that assume it is running in
 # a pull request.
 
 typecheck_job(11)
 typecheck_job(17)
-typecheck_job
-typecheck_job_split(21)(23)
+typecheck_job(21)
+typecheck_job_split(24)
 
 daikon_job(11)
 daikon_job(17)
-daikon_job_split(21)
-daikon_job_split(23)
+daikon_job(21)
+daikon_job_split(24)
 
 ## I think the guava_jdk11 job is failing due to Error Prone not supporting JDK 11.
 guava_job(17)
 guava_job(21)
-guava_job(23)
+guava_job(24)
 
 plume_lib_job(11)
 plume_lib_job(17)
 plume_lib_job(21)
-plume_lib_job(23)
+plume_lib_job(24)
 
 ## The downstream jobs are not currently needed because test-downstream.sh is empty.
 # - job: downstream_jdk11
@@ -114,13 +114,13 @@ plume_lib_job(23)
 #     fetchDepth: 25
 #   - bash: ./checker/bin-devel/test-downstream.sh
 #     displayName: test-downstream.sh
-# - job: downstream_jdk23
+# - job: downstream_jdk24
 #   dependsOn:
 #    - canary_jobs
 #    - downstream_jdk21
 #   pool:
 #     vmImage: 'ubuntu-latest'
-#   container: mdernst/cf-ubuntu-jdk23:latest
+#   container: mdernst/cf-ubuntu-jdk24:latest
 #   steps:
 #   - checkout: self
 #     fetchDepth: 25

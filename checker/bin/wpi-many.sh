@@ -80,11 +80,11 @@ else
   has_java21="yes"
 fi
 
-# shellcheck disable=SC2153 # testing for JAVA23_HOME, not a typo of JAVA_HOME
-if [ "${JAVA23_HOME}" = "" ]; then
-  has_java23="no"
+# shellcheck disable=SC2153 # testing for JAVA24_HOME, not a typo of JAVA_HOME
+if [ "${JAVA24_HOME}" = "" ]; then
+  has_java24="no"
 else
-  has_java23="yes"
+  has_java24="yes"
 fi
 
 if [ "${has_java_home}" = "yes" ] && [ ! -d "${JAVA_HOME}" ]; then
@@ -110,9 +110,9 @@ if [ "${has_java_home}" = "yes" ]; then
       export JAVA21_HOME="${JAVA_HOME}"
       has_java21="yes"
     fi
-    if [ "${has_java23}" = "no" ] && [ "${java_version}" = 23 ]; then
-      export JAVA23_HOME="${JAVA_HOME}"
-      has_java23="yes"
+    if [ "${has_java24}" = "no" ] && [ "${java_version}" = 24 ]; then
+      export JAVA24_HOME="${JAVA_HOME}"
+      has_java24="yes"
     fi
 fi
 
@@ -136,23 +136,23 @@ if [ "${has_java21}" = "yes" ] && [ ! -d "${JAVA21_HOME}" ]; then
     exit 1
 fi
 
-if [ "${has_java23}" = "yes" ] && [ ! -d "${JAVA23_HOME}" ]; then
-    echo "JAVA23_HOME is set to a non-existent directory ${JAVA23_HOME}"
+if [ "${has_java24}" = "yes" ] && [ ! -d "${JAVA24_HOME}" ]; then
+    echo "JAVA24_HOME is set to a non-existent directory ${JAVA24_HOME}"
     exit 1
 fi
 
-if [ "${has_java8}" = "no" ] && [ "${has_java11}" = "no" ] && [ "${has_java17}" = "no" ] && [ "${has_java21}" = "no" ] && [ "${has_java23}" = "no" ]; then
+if [ "${has_java8}" = "no" ] && [ "${has_java11}" = "no" ] && [ "${has_java17}" = "no" ] && [ "${has_java21}" = "no" ] && [ "${has_java24}" = "no" ]; then
     if [ "${has_java_home}" = "yes" ]; then
       echo "Cannot determine Java version from JAVA_HOME"
     else
-      echo "No Java 8, 11, 17, 21, or 23 JDKs found. At least one of JAVA_HOME, JAVA8_HOME, JAVA11_HOME, JAVA17_HOME, JAVA21_HOME, or JAVA23_HOME must be set."
+      echo "No Java 8, 11, 17, 21, or 24 JDKs found. At least one of JAVA_HOME, JAVA8_HOME, JAVA11_HOME, JAVA17_HOME, JAVA21_HOME, or JAVA24_HOME must be set."
     fi
     echo "JAVA_HOME = ${JAVA_HOME}"
     echo "JAVA8_HOME = ${JAVA8_HOME}"
     echo "JAVA11_HOME = ${JAVA11_HOME}"
     echo "JAVA17_HOME = ${JAVA17_HOME}"
     echo "JAVA21_HOME = ${JAVA21_HOME}"
-    echo "JAVA23_HOME = ${JAVA23_HOME}"
+    echo "JAVA24_HOME = ${JAVA24_HOME}"
     command -v java
     java -version
     exit 1
@@ -260,6 +260,7 @@ do
         echo "In $(pwd): no directory ${REPO_NAME}/.git"
         echo "Listing of ${REPO_NAME}:"
         ls -al -- "${REPO_NAME}"
+        echo "End of listing of ${REPO_NAME}"
         exit 5
     fi
 
@@ -296,10 +297,13 @@ do
       if [ "$DEBUG" -eq "1" ]; then
           echo "Listing of $(pwd):"
           ls -al "$(pwd)"
+          echo "End of listing of $(pwd)"
           echo "Listing of ${REPO_FULLPATH}:"
           ls -al "${REPO_FULLPATH}"
+          echo "End of listing of ${REPO_FULLPATH}"
           echo "Listing of ${REPO_FULLPATH}/dljc-out:"
           ls -al "${REPO_FULLPATH}/dljc-out"
+          echo "End of listing of ${REPO_FULLPATH}/dljc-out"
       fi
     fi
 
@@ -307,16 +311,21 @@ do
 
     if [ -f "${REPO_FULLPATH}/.cannot-run-wpi" ]; then
         echo "Cannot run WPI: file ${REPO_FULLPATH}/.cannot-run-wpi exists."
+        echo "Start of ${REPO_FULLPATH}/.cannot-run-wpi"
         cat "${REPO_FULLPATH}/.cannot-run-wpi"
+        echo "End of ${REPO_FULLPATH}/.cannot-run-wpi"
         echo "Listing of $(pwd):"
         ls -al "$(pwd)"
+        echo "End of listing of $(pwd)"
         echo "Listing of ${REPO_FULLPATH}:"
         ls -al "${REPO_FULLPATH}"
+        echo "End of listing of ${REPO_FULLPATH}"
         if [ ! -d "${REPO_FULLPATH}/dljc-out" ] ; then
             echo "Does not exist: ${REPO_FULLPATH}/dljc-out"
         else
             echo "Listing of ${REPO_FULLPATH}/dljc-out:"
             ls -al "${REPO_FULLPATH}"/dljc-out
+            echo "End of listing of ${REPO_FULLPATH}/dljc-out"
             for f in "${REPO_FULLPATH}"/dljc-out/* ; do
                 echo "==== start of tail of ${f} ===="
                 tail -n 2000 "${f}"
@@ -338,6 +347,7 @@ do
           echo "Files are empty: ${REPO_FULLPATH}/dljc-out/wpi-stdout.log ${RESULT_LOG}"
           echo "Listing of ${REPO_FULLPATH}/dljc-out:"
           ls -al "${REPO_FULLPATH}/dljc-out"
+          echo "End of listing of ${REPO_FULLPATH}/dljc-out"
           wpi_status=9999
         fi
         TYPECHECK_FILE=${REPO_FULLPATH}/dljc-out/typecheck.out
@@ -352,7 +362,7 @@ do
             echo "File does not exist: ${OUTDIR}-results/${REPO_NAME_HASH}-typecheck.out"
             echo "Listing of ${REPO_FULLPATH}/dljc-out:"
             ls -al "${REPO_FULLPATH}/dljc-out"
-            cat "${REPO_FULLPATH}"/dljc-out/*.log
+            echo "End of listing of ${REPO_FULLPATH}/dljc-out"
             echo "Start of toplevel.log:"
             cat "${REPO_FULLPATH}"/dljc-out/toplevel.log
             echo "End of toplevel.log."
@@ -368,6 +378,7 @@ do
             ls -l "${OUTDIR}-results/${REPO_NAME_HASH}-typecheck.out"
             echo "Listing of ${OUTDIR}-results:"
             ls -al "${OUTDIR}-results"
+            echo "End of listing of ${OUTDIR}-results"
         fi
         if [ ! -s "${RESULT_LOG}" ] ; then
             echo "File does not exist: ${RESULT_LOG}"
@@ -380,6 +391,7 @@ do
         if [[ "$wpi_status" != 0 ]]; then
             echo "Listing of ${OUTDIR}-results:"
             ls -al "${OUTDIR}-results"
+            echo "End of listing of ${OUTDIR}-results"
             echo "==== start of ${OUTDIR}-results/wpi-out; printed because wpi_status=${wpi_status} ===="
             cat "${OUTDIR}-results/wpi-out"
             echo "==== end of ${OUTDIR}-results/wpi-out ===="
@@ -397,9 +409,10 @@ done < "${INLIST}"
 ## wpi-summary.sh is intended to be run while a human waits (unlike this script), so this script
 ## precomputes as much as it can, to make wpi-summary.sh faster.
 
-# this command is allowed to fail, because if no projects returned results then none
+# `results_available` is all the files that do NOT match any of the given patterns.
+# This command is allowed to fail, because if no projects returned results then none
 # of these expressions will match, and we want to enter the special handling for that
-# case that appears below
+# case that appears below.
 results_available=$(grep -vl -e "no build file found for" \
     -e "dljc could not run the Checker Framework" \
     -e "dljc could not run the build successfully" \
@@ -412,8 +425,16 @@ echo "results_available = ${results_available}"
 if [ -z "${results_available}" ]; then
   echo "No results are available."
   echo "Log files:"
-  ls "${OUTDIR}-results"/*.log
+  ls -l "${OUTDIR}-results"/*.log
   echo "End of log files."
+  for file in "${OUTDIR}-results"/*.log; do
+    echo "---------------- Start of ${file} ----------------"
+    cat "${file}"
+    echo "---------------- End of ${file} ----------------"
+    # Only output the first file, for brevity.  (Otherwise Azure cuts off the output.)
+    break
+  done
+  exit 1
 else
   if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     listpath=$(mktemp "/tmp/cloc-file-list-$(date +%Y%m%d-%H%M%S)-XXX.txt")
@@ -434,10 +455,13 @@ else
         echo "---------------- start of names of log files from which results_available.txt was constructed ----------------"
         ls -al "${OUTDIR}-results/"*.log
         echo "---------------- end of names of log files from which results_available.txt was constructed ----------------"
-        ## This is too much output; Azure cuts it off.
-        # echo "---------------- start of log files from which results_available.txt was constructed ----------------"
-        # cat "${OUTDIR}-results/"*.log
-        # echo "---------------- end of log files from which results_available.txt was constructed ----------------"
+        for file in "${OUTDIR}-results"/*.log; do
+          echo "---------------- Start of ${file} ----------------"
+          cat "${file}"
+          echo "---------------- End of ${file} ----------------"
+          # Only output the first file, for brevity.  (Otherwise Azure cuts off the output.)
+          break
+        done
         exit 1
     fi
 

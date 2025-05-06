@@ -1,6 +1,7 @@
 package org.checkerframework.checker.nullness;
 
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
@@ -10,6 +11,7 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.KeyForBottom;
@@ -18,14 +20,21 @@ import org.checkerframework.checker.nullness.qual.UnknownKeyFor;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.Unknown;
 import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.SubtypeIsSupersetQualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
+import org.checkerframework.framework.util.JavaExpressionParseUtil;
+import org.checkerframework.framework.util.StringToJavaExpression;
+import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -220,5 +229,74 @@ public class KeyForAnnotatedTypeFactory
   @Override
   public boolean shouldWarnIfStubRedundantWithBytecode() {
     return false;
+  }
+
+  @Override
+  protected DependentTypesHelper createDependentTypesHelper() {
+    return new KeyForDependentTypesHelper(this);
+  }
+
+  /**
+   * Converts KeyFor annotations with errors into {@code @UnknownKeyFor} in the type of method
+   * invocations. This changes all qualifiers on the type of a method invocation expression, even
+   * qualifiers that are not primary annotations. This is unsound for qualifiers on type arguments
+   * or array elements on modifiable objects.
+   *
+   * <p>For example, if the type of some method called, {@code getList(...)}, is changed from {@code
+   * List<@KeyFor("a ? b : c") String>} to {@code List<@UnknownKeyFor String>}, then the returned
+   * list may have @UnknownKeyFor strings added.
+   *
+   * <pre>{@code
+   * List<String> l = getList(...);
+   * l.add(randoString);
+   * }</pre>
+   *
+   * This is probably ok for the KeyFor Checker because most of the collections of keys are
+   * unmodifiable.
+   */
+  static class KeyForDependentTypesHelper extends DependentTypesHelper {
+
+    /**
+     * Creates a {@code KeyForDependentTypesHelper}.
+     *
+     * @param factory annotated type factory
+     */
+    public KeyForDependentTypesHelper(AnnotatedTypeFactory factory) {
+      super(factory);
+    }
+
+    @Override
+    public void atMethodInvocation(
+        AnnotatedExecutableType methodType, MethodInvocationTree methodInvocationTree) {
+      if (!hasDependentAnnotations()) {
+        return;
+      }
+      Element methodElt = TreeUtils.elementFromUse(methodInvocationTree);
+
+      // The annotations on `declaredMethodType` will be copied to `methodType`.
+      AnnotatedExecutableType declaredMethodType =
+          (AnnotatedExecutableType) factory.getAnnotatedType(methodElt);
+      if (!hasDependentType(declaredMethodType)) {
+        return;
+      }
+
+      StringToJavaExpression stringToJavaExpr;
+      stringToJavaExpr =
+          stringExpr -> {
+            JavaExpression result =
+                StringToJavaExpression.atMethodInvocation(
+                    stringExpr, methodInvocationTree, factory.getChecker());
+            Unknown unknown = result.containedOfClass(Unknown.class);
+            if (unknown != null) {
+              throw JavaExpressionParseUtil.constructJavaExpressionParseError(
+                  result.toString(), "Expression " + unknown.toString() + " is unparsable.");
+            }
+            return result;
+          };
+
+      convertAnnotatedTypeMirror(stringToJavaExpr, declaredMethodType);
+      this.viewpointAdaptedCopier.visit(declaredMethodType, methodType);
+      this.errorAnnoReplacer.visit(methodType.getReturnType());
+    }
   }
 }
