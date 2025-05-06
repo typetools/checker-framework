@@ -220,6 +220,7 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
    * @param field a field
    * @return true if the default field value is consistent with the field's declared type
    */
+  @SuppressWarnings("collectionownership:argument")
   private boolean defaultValueIsOK(VariableElement field) {
     if (defaultValueAtypeFactories.isEmpty()) {
       return false;
