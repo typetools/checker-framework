@@ -2,10 +2,9 @@
 // https://github.com/typetools/checker-framework/issues/775
 
 @SuppressWarnings({
-  "ainfertest",
-  "confidential"
-}) // only check WPI for crashes; correctly prevents cast of @UnknownConfidential to
-// @NonConfidential
+  "ainfertest", // only check WPI for crashes
+  "confidential" // correctly prevents cast of @UnknownConfidential to @NonConfidential
+})
 public class UnionCrash {
   void foo(MyInterface<Throwable> param) throws Throwable {
     try {
