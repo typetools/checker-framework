@@ -843,6 +843,8 @@ task ainferTest(group: 'Verification') {
 //
 
 // This is run as part of the inferenceTests task.
+// File checker/tests/wpi-many/testin.txt lists the tests that are run.  To
+// debug one WPI test, comment out all but one line of that file.
 task wpiManyTest(type: Exec, group: 'Verification') {
   description = 'Tests the wpi-many.sh script (and indirectly the wpi.sh script). Requires an Internet connection.'
   dependsOn(assembleForJavac)
@@ -909,7 +911,7 @@ task wpiManyTest(type: Exec, group: 'Verification') {
       }
       logFiles.visit { FileVisitDetails details ->
         def filename = "${typecheckFilesDir}/" + details.getName()
-        println("======== start of contents of ${filename} ========")
+        println("======== start of contents of ${filename}, which is TYPECHECKING output, not WPI output ========")
         details.getFile().eachLine { line -> println(line) }
         println("======== end of contents of ${filename} ========")
       }
@@ -949,11 +951,15 @@ task wpiManyTest(type: Exec, group: 'Verification') {
             // Ignore the summary line that reports the total number of warnings (which can be single or plural).
             || line.endsWith(' warning')
             || line.endsWith(' warnings')
-            || line.startsWith('warning: No processor claimed any of these annotations: ')) {
+            || line.startsWith('warning: No processor claimed any of these annotations: ')
+            // Ignore debugging output with the prefix "DEBUG: ".
+            || line.startsWith('DEBUG: ')
+            || line.startsWith('warning: DEBUG: ')
+            || line.contains('warning: [DEBUG: ')) {
           return;
         }
         if (!line.trim().equals('')) {
-          println("======== start of contents of ${filename} ========")
+          println("======== start of contents of ${filename}, which is TYPECHECKING output, not WPI output ========")
           details.getFile().eachLine { l -> println(l) }
           println("======== end of contents of ${filename} ========")
           throw new GradleException('Failure: WPI scripts produced an unexpected output in ' + filename + '. ' +
