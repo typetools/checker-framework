@@ -73,15 +73,19 @@ export DPROJECT=cf
 create_upload_docker_image
 
 export OS=ubuntu
-export JDKVER=jdk23
+export JDKVER=jdk24
 export DPROJECT=cf
 create_upload_docker_image
 
 export OS=ubuntu
-export JDKVER=jdk23-plus
+export JDKVER=jdk24-plus
 export DPROJECT=cf
 create_upload_docker_image
 
+
+Note: when updating to a newer version of the JDK, it is necessary to
+update the Gradle version to one that supports that JDK, in projects
+such as wpi-many-tests-bcel-util.
 
 Cleanup:
 

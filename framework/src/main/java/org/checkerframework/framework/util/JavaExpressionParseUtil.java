@@ -1221,7 +1221,7 @@ public class JavaExpressionParseUtil {
    * @return a {@link JavaExpressionParseException} for the expression {@code expr} with explanation
    *     {@code explanation}.
    */
-  private static JavaExpressionParseException constructJavaExpressionParseError(
+  public static JavaExpressionParseException constructJavaExpressionParseError(
       String expr, String explanation) {
     if (expr == null) {
       throw new BugInCF("Must have an expression.");
