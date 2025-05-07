@@ -4,7 +4,7 @@ import java.util.Optional;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-public class Issue6740A {
+public class Issue7070 {
   static class MyClass<Z> {}
 
   <T> @Nullable T getNullable(MyClass<T> type) {
