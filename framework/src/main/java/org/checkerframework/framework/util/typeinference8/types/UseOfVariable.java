@@ -167,21 +167,22 @@ public class UseOfVariable extends AbstractType {
       // If the use has a primary annotation, then add the bound but with that annotations
       // set to bottom or top.  This makes it so that the java type is still a bound, but
       // the qualifiers do not change the results of inference.
+      AnnotatedTypeMirror copyATM = bound.getAnnotatedType().deepCopy();
+      AbstractType boundCopy = bound.create(copyATM, bound.getJavaType());
       if (kind == BoundKind.LOWER) {
-        bound.getAnnotatedType().replaceAnnotations(bots);
-        variable.getBounds().addBound(parent, kind, bound);
+        copyATM.replaceAnnotations(bots);
+        variable.getBounds().addBound(parent, kind, boundCopy);
       } else if (kind == BoundKind.UPPER) {
-        bound.getAnnotatedType().replaceAnnotations(tops);
-        variable.getBounds().addBound(parent, kind, bound);
+        copyATM.replaceAnnotations(tops);
+        variable.getBounds().addBound(parent, kind, boundCopy);
       } else {
-        AnnotatedTypeMirror copyATM = bound.getAnnotatedType().deepCopy();
-        AbstractType boundCopy = bound.create(copyATM, bound.getJavaType());
+        copyATM.replaceAnnotations(tops);
+        variable.getBounds().addBound(parent, BoundKind.UPPER, boundCopy);
 
-        bound.getAnnotatedType().replaceAnnotations(tops);
-        variable.getBounds().addBound(parent, BoundKind.UPPER, bound);
-
-        boundCopy.getAnnotatedType().replaceAnnotations(bots);
-        variable.getBounds().addBound(parent, BoundKind.LOWER, boundCopy);
+        AnnotatedTypeMirror copyATM2 = bound.getAnnotatedType().deepCopy();
+        AbstractType boundCopy2 = bound.create(copyATM2, bound.getJavaType());
+        copyATM2.replaceAnnotations(bots);
+        variable.getBounds().addBound(parent, BoundKind.LOWER, boundCopy2);
       }
     }
   }
