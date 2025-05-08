@@ -1,7 +1,8 @@
 #!/bin/bash
 #
 # Convert an SVG file to a PDF file by using headless Chrome.
-#
+# Useful when standard techniques, such as inkscape, do not work.
+# From https://gist.github.com/s417-lama/84bf66de1096c4587e8187092fb41684 .
 
 if [ $# -ne 2 ]; then
   echo "Usage: ./svg2pdf.bash input.svg output.pdf" 1>&2
@@ -39,7 +40,7 @@ window.onload = init;
 "
 
 tmpfile=$(mktemp XXXXXX.html)
-trap "rm -f $tmpfile" EXIT
-echo $HTML > $tmpfile
+trap 'rm -f $tmpfile' EXIT
+echo "$HTML" > "$tmpfile"
 
-google-chrome --headless --disable-gpu --print-to-pdf=$OUTPUT $tmpfile
+google-chrome --headless --disable-gpu --print-to-pdf="$OUTPUT" "$tmpfile"
