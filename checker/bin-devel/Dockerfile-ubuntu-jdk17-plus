@@ -73,6 +73,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   pdf2svg \
   rsync \
   shellcheck \
+  shfmt \
   texlive-font-utils \
   texlive-fonts-recommended \
   texlive-latex-base \
