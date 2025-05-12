@@ -6,7 +6,7 @@ set -o xtrace
 export SHELLOPTS
 echo "SHELLOPTS=${SHELLOPTS}"
 
-SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" > /dev/null 2>&1 && pwd)"
 export ORG_GRADLE_PROJECT_useJdk21Compiler=true
 source "$SCRIPTDIR"/clone-related.sh
 
@@ -16,16 +16,14 @@ status=0
 
 ## Code style and formatting
 JAVA_VER=$(java -version 2>&1 | head -1 | cut -d'"' -f2 | sed '/^1\./s///' | cut -d'.' -f1 | sed 's/-ea//')
-if [ "${JAVA_VER}" != "8" ] && [ "${JAVA_VER}" != "11" ] ; then
+if [ "${JAVA_VER}" != "8" ] && [ "${JAVA_VER}" != "11" ]; then
   ./gradlew spotlessCheck --console=plain --warning-mode=all
 fi
 if grep -n -r --exclude-dir=build --exclude-dir=examples --exclude-dir=jtreg --exclude-dir=tests --exclude="*.astub" --exclude="*.tex" '^\(import static \|import .*\*;$\)'; then
   echo "Don't use static import or wildcard import"
   exit 1
 fi
-make -C checker/bin --jobs="$(getconf _NPROCESSORS_ONLN)"
-make -C checker/bin-devel --jobs="$(getconf _NPROCESSORS_ONLN)"
-make -C docs/developer/release check-python-style --jobs="$(getconf _NPROCESSORS_ONLN)"
+make style-check --jobs="$(getconf _NPROCESSORS_ONLN)"
 
 ## HTML legality
 ./gradlew htmlValidate --console=plain --warning-mode=all
@@ -46,20 +44,16 @@ else
 fi
 if [ $status -ne 0 ]; then exit $status; fi
 
-# Shell script style
-make -C checker/bin --jobs="$(getconf _NPROCESSORS_ONLN)" shell-script-style
-make -C checker/bin-devel --jobs="$(getconf _NPROCESSORS_ONLN)" shell-script-style
-
 ## User documentation
 ./gradlew manual
-git diff --exit-code docs/manual/contributors.tex || \
-    (set +x && set +v &&
-     echo "docs/manual/contributors.tex is not up to date." &&
-     echo "If the above suggestion is appropriate, run: make -C docs/manual contributors.tex" &&
-     echo "If the suggestion contains a username rather than a human name, then do all the following:" &&
-     echo "  * Update your git configuration by running:  git config --global user.name \"YOURFULLNAME\"" &&
-     echo "  * Add your name to your GitHub account profile at https://github.com/settings/profile" &&
-     echo "  * Make a pull request to add your GitHub ID to" &&
-     echo "    https://github.com/plume-lib/git-scripts/blob/master/git-authors.sed" &&
-     echo "    and remake contributors.tex after that pull request is merged." &&
-     false)
+git diff --exit-code docs/manual/contributors.tex \
+  || (set +x && set +v \
+    && echo "docs/manual/contributors.tex is not up to date." \
+    && echo "If the above suggestion is appropriate, run: make -C docs/manual contributors.tex" \
+    && echo "If the suggestion contains a username rather than a human name, then do all the following:" \
+    && echo "  * Update your git configuration by running:  git config --global user.name \"YOURFULLNAME\"" \
+    && echo "  * Add your name to your GitHub account profile at https://github.com/settings/profile" \
+    && echo "  * Make a pull request to add your GitHub ID to" \
+    && echo "    https://github.com/plume-lib/git-scripts/blob/master/git-authors.sed" \
+    && echo "    and remake contributors.tex after that pull request is merged." \
+    && false)

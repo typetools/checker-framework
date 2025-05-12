@@ -6,10 +6,9 @@ set -o xtrace
 export SHELLOPTS
 echo "SHELLOPTS=${SHELLOPTS}"
 
-SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" > /dev/null 2>&1 && pwd)"
 export ORG_GRADLE_PROJECT_useJdk21Compiler=true
 source "$SCRIPTDIR"/clone-related.sh
-
 
 ## downstream tests:  projects that depend on the Checker Framework.
 ## (There are none currently in this file.)
