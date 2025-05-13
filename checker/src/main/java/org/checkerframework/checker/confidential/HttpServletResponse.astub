@@ -1,0 +1,18 @@
+package jakarta.servlet.http;
+
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Map;
+import java.util.function.Supplier;
+import javax.servlet.ServletResponse;
+
+import org.checkerframework.checker.confidential.qual.*;
+
+public interface HttpServletResponse extends ServletResponse {
+
+    void addCookie(@UnknownConfidential Cookie cookie);
+
+    default void setTrailerFields(@UnknownConfidential Supplier<Map<String, String>> supplier);
+
+    default @UnknownConfidential Supplier<Map<String, String>> getTrailerFields();
+}

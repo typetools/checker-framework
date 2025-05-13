@@ -6,6 +6,9 @@ public class UnionTypes {
       int[] arr = new int[10];
       arr[4] = 1;
     } catch (ArrayIndexOutOfBoundsException | StringIndexOutOfBoundsException exc) {
+      @SuppressWarnings(
+          "confidential") // correctly prevents cast of @UnknownConfidential to @NonConfidential
+      // Exception
       Exception e = exc;
     }
   }
