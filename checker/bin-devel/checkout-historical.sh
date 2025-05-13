@@ -68,7 +68,6 @@
 # export CHECKERFRAMEWORK=/tmp/test-historical/checker-framework-201801
 # export CFCOMMIT=1f48ddb600620454731170eb2628e5f7efa93c3e
 
-
 # Fail the whole script if any command fails
 set -e
 
@@ -88,11 +87,11 @@ git checkout -B __merge_eval__
 # Initial commit is September 2023
 echo "git-scripts"
 GIT_SCRIPTS="checker/bin-devel/.git-scripts"
-if [ ! -d "$GIT_SCRIPTS" ] ; then
+if [ ! -d "$GIT_SCRIPTS" ]; then
   git clone -q https://github.com/plume-lib/git-scripts.git "${GIT_SCRIPTS}"
 fi
 COMMIT="$(cd "${GIT_SCRIPTS}" && git rev-list -n 1 --first-parent --before="${commit_date}" master)"
-if [ -n "${COMMIT}" ] ; then
+if [ -n "${COMMIT}" ]; then
   # COMMIT is non-empty
   (cd "${GIT_SCRIPTS}" && git checkout -B __merge_eval__ "${COMMIT}")
 fi
@@ -100,11 +99,11 @@ fi
 # Initial commit is June 2018
 echo "plume-scripts"
 PLUME_SCRIPTS="checker/bin-devel/.plume-scripts"
-if [ ! -d "$PLUME_SCRIPTS" ] ; then
+if [ ! -d "$PLUME_SCRIPTS" ]; then
   git clone -q https://github.com/plume-lib/plume-scripts.git "${PLUME_SCRIPTS}"
 fi
 COMMIT="$(cd "${PLUME_SCRIPTS}" && git rev-list -n 1 --first-parent --before="${commit_date}" master)"
-if [ -n "${COMMIT}" ] ; then
+if [ -n "${COMMIT}" ]; then
   # COMMIT is non-empty
   (cd "${PLUME_SCRIPTS}" && git checkout -B __merge_eval__ "${COMMIT}")
 fi
@@ -113,23 +112,23 @@ fi
 echo "html-tools"
 HTML_TOOLS="checker/bin-devel/.plume-scripts"
 COMMIT="$(cd "${HTML_TOOLS}" && git rev-list -n 1 --first-parent --before="${commit_date}" master)"
-if [ ! -d "$HTML_TOOLS" ] ; then
+if [ ! -d "$HTML_TOOLS" ]; then
   git clone -q https://github.com/plume-lib/html-tools.git "${HTML_TOOLS}"
 fi
-if [ -n "${COMMIT}" ] ; then
+if [ -n "${COMMIT}" ]; then
   # COMMIT is non-empty
   (cd "${HTML_TOOLS}" && git checkout -B __merge_eval__ "${COMMIT}")
 fi
 
 echo "Stubparser"
 STUBPARSER="../stubparser"
-if [ ! -d "${STUBPARSER}" ] ; then
+if [ ! -d "${STUBPARSER}" ]; then
   git clone https://github.com/typetools/stubparser.git "${STUBPARSER}"
 fi
 (cd "${STUBPARSER}" && git checkout -B __merge_eval__ "$(git rev-list -n 1 --first-parent --before="${commit_date}" master)")
-if [ -f ${STUBPARSER}/.build-without-test.sh ] ; then
+if [ -f ${STUBPARSER}/.build-without-test.sh ]; then
   STUBPARSER_BUILD=.build-without-test.sh
-elif [ -f ${STUBPARSER}/.travis-build-without-test.sh ] ; then
+elif [ -f ${STUBPARSER}/.travis-build-without-test.sh ]; then
   STUBPARSER_BUILD=.travis-build-without-test.sh
 else
   echo "Can't find stubparser build script"
@@ -141,13 +140,13 @@ echo "... done: (cd ../stubparser/ && ./${STUBPARSER_BUILD})"
 
 echo "Annotation File Utilities"
 AT="../annotation-tools"
-if [ ! -d "${AT}" ] ; then
+if [ ! -d "${AT}" ]; then
   git clone https://github.com/typetools/annotation-tools.git "${AT}"
 fi
 (cd "${AT}" && git checkout -B __merge_eval__ "$(git rev-list -n 1 --first-parent --before="${commit_date}" master)")
-if [ -f ${AT}/.build-without-test.sh ] ; then
+if [ -f ${AT}/.build-without-test.sh ]; then
   AT_BUILD=.build-without-test.sh
-elif [ -f ${AT}/.travis-build-without-test.sh ] ; then
+elif [ -f ${AT}/.travis-build-without-test.sh ]; then
   AT_BUILD=.travis-build-without-test.sh
 else
   echo "Can't find stubparser build script"
@@ -158,7 +157,7 @@ echo "Running:  (cd ${AT} && ./${AT_BUILD})"
 echo "... done: (cd ${AT} && ./${AT_BUILD})"
 
 JDK_DIR="../jdk"
-if [ ! -d "${JDK_DIR}" ] ; then
+if [ ! -d "${JDK_DIR}" ]; then
   git clone https://github.com/typetools/jdk.git $JDK_DIR
 fi
 (cd "${JDK_DIR}" && git checkout -B __merge_eval__ "$(git rev-list -n 1 --first-parent --before="${commit_date}" master)")
