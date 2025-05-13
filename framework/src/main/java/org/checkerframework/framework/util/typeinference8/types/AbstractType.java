@@ -68,14 +68,19 @@ public abstract class AbstractType {
   /** The {@link AnnotatedTypeFactory}. */
   protected final AnnotatedTypeFactory typeFactory;
 
+  /** Whether the annotations on this type should be ignored. */
+  public final boolean ignoreAnnotations;
+
   /**
    * Creates an {@link AbstractType}.
    *
    * @param context the context object
+   * @param ignoreAnnotations whether the annotations on this type should be ignored
    */
-  protected AbstractType(Java8InferenceContext context) {
+  protected AbstractType(Java8InferenceContext context, boolean ignoreAnnotations) {
     this.context = context;
     this.typeFactory = context.typeFactory;
+    this.ignoreAnnotations = ignoreAnnotations;
   }
 
   /**
@@ -126,9 +131,11 @@ public abstract class AbstractType {
    *
    * @param atm annotated type mirror
    * @param type type mirror
+   * @param ignoreAnnotations whether the annotations on this type should be ignored
    * @return the new type
    */
-  public abstract AbstractType create(AnnotatedTypeMirror atm, TypeMirror type);
+  public abstract AbstractType create(
+      AnnotatedTypeMirror atm, TypeMirror type, boolean ignoreAnnotations);
 
   /**
    * Return the underlying Java type without inference variables.
@@ -183,7 +190,9 @@ public abstract class AbstractType {
 
     for (AnnotatedTypeParameterBounds bound : typeVars) {
       TypeVariable typeVariable = (TypeVariable) javaEle.next().asType();
-      bounds.add(new ProperType(bound.getUpperBound(), typeVariable.getUpperBound(), context));
+      bounds.add(
+          new ProperType(
+              bound.getUpperBound(), typeVariable.getUpperBound(), context, ignoreAnnotations));
     }
     return bounds;
   }
@@ -197,7 +206,7 @@ public abstract class AbstractType {
   public AbstractType capture(Java8InferenceContext context) {
     AnnotatedTypeMirror capturedType =
         context.typeFactory.applyCaptureConversion(getAnnotatedType());
-    return create(capturedType, capturedType.getUnderlyingType());
+    return create(capturedType, capturedType.getUnderlyingType(), ignoreAnnotations);
   }
 
   /**
@@ -228,7 +237,7 @@ public abstract class AbstractType {
         AnnotatedTypeMirror.createType(superType, typeFactory, type.isDeclaration());
     typeFactory.initializeAtm(superAnnotatedType);
     AnnotatedTypeMirror asSuper = AnnotatedTypes.asSuper(typeFactory, type, superAnnotatedType);
-    return create(asSuper, asSuper.getUnderlyingType());
+    return create(asSuper, asSuper.getUnderlyingType(), ignoreAnnotations);
   }
 
   /**
@@ -277,7 +286,7 @@ public abstract class AbstractType {
       if (returnType.getKind() == TypeKind.VOID) {
         return null;
       }
-      return create(returnType, returnTypeJava);
+      return create(returnType, returnTypeJava, ignoreAnnotations);
     } else {
       return null;
     }
@@ -297,7 +306,7 @@ public abstract class AbstractType {
       List<AbstractType> params = new ArrayList<>();
       Iterator<? extends TypeMirror> iter = paramsTypeMirror.iterator();
       for (AnnotatedTypeMirror param : pair.first.getParameterTypes()) {
-        params.add(create(param, iter.next()));
+        params.add(create(param, iter.next(), ignoreAnnotations));
       }
       return params;
     } else {
@@ -385,7 +394,7 @@ public abstract class AbstractType {
     }
     newType.setTypeArguments(argTypes);
     newType.replaceAnnotations(getAnnotatedType().getPrimaryAnnotations());
-    return create(newType, newTypeJava);
+    return create(newType, newTypeJava, ignoreAnnotations);
   }
 
   /**
@@ -416,7 +425,7 @@ public abstract class AbstractType {
       TypeMirror typeMirror =
           TypesUtils.getMostSpecificArrayType(getJavaType(), context.modelTypes);
       if (msat != null) {
-        return create(msat, typeMirror);
+        return create(msat, typeMirror, ignoreAnnotations);
       }
       return null;
     }
@@ -466,7 +475,7 @@ public abstract class AbstractType {
     List<AbstractType> bounds = new ArrayList<>();
     for (AnnotatedTypeMirror bound :
         ((AnnotatedIntersectionType) getAnnotatedType()).directSupertypes()) {
-      bounds.add(create(bound, iter.next()));
+      bounds.add(create(bound, iter.next(), ignoreAnnotations));
     }
     return bounds;
   }
@@ -478,7 +487,10 @@ public abstract class AbstractType {
    */
   public AbstractType getTypeVarUpperBound() {
     TypeMirror javaUpperBound = ((TypeVariable) getJavaType()).getUpperBound();
-    return create(((AnnotatedTypeVariable) getAnnotatedType()).getUpperBound(), javaUpperBound);
+    return create(
+        ((AnnotatedTypeVariable) getAnnotatedType()).getUpperBound(),
+        javaUpperBound,
+        ignoreAnnotations);
   }
 
   /**
@@ -490,7 +502,10 @@ public abstract class AbstractType {
    */
   public AbstractType getTypeVarLowerBound() {
     TypeMirror lowerBound = ((TypeVariable) getJavaType()).getLowerBound();
-    return create(((AnnotatedTypeVariable) getAnnotatedType()).getLowerBound(), lowerBound);
+    return create(
+        ((AnnotatedTypeVariable) getAnnotatedType()).getLowerBound(),
+        lowerBound,
+        ignoreAnnotations);
   }
 
   /**
@@ -530,7 +545,7 @@ public abstract class AbstractType {
     List<AbstractType> list = new ArrayList<>();
     for (AnnotatedTypeMirror typeArg :
         ((AnnotatedDeclaredType) getAnnotatedType()).getTypeArguments()) {
-      list.add(create(typeArg, iter.next()));
+      list.add(create(typeArg, iter.next(), ignoreAnnotations));
     }
     return list;
   }
@@ -571,7 +586,9 @@ public abstract class AbstractType {
     if (getJavaType().getKind() == TypeKind.WILDCARD) {
       WildcardType wild = (WildcardType) getJavaType();
       return create(
-          ((AnnotatedWildcardType) getAnnotatedType()).getSuperBound(), wild.getSuperBound());
+          ((AnnotatedWildcardType) getAnnotatedType()).getSuperBound(),
+          wild.getSuperBound(),
+          ignoreAnnotations);
     }
     return null;
   }
@@ -587,7 +604,10 @@ public abstract class AbstractType {
       if (upperBoundJava == null) {
         upperBoundJava = context.object.getJavaType();
       }
-      return create(((AnnotatedWildcardType) getAnnotatedType()).getExtendsBound(), upperBoundJava);
+      return create(
+          ((AnnotatedWildcardType) getAnnotatedType()).getExtendsBound(),
+          upperBoundJava,
+          ignoreAnnotations);
     } else {
       return null;
     }
@@ -600,7 +620,7 @@ public abstract class AbstractType {
    */
   public AbstractType getErased() {
     TypeMirror typeMirror = context.env.getTypeUtils().erasure(getJavaType());
-    return create(getAnnotatedType().getErased(), typeMirror);
+    return create(getAnnotatedType().getErased(), typeMirror, ignoreAnnotations);
   }
 
   /**
@@ -611,7 +631,10 @@ public abstract class AbstractType {
   public final AbstractType getComponentType() {
     if (getJavaType().getKind() == TypeKind.ARRAY) {
       TypeMirror javaType = ((ArrayType) getJavaType()).getComponentType();
-      return create(((AnnotatedArrayType) getAnnotatedType()).getComponentType(), javaType);
+      return create(
+          ((AnnotatedArrayType) getAnnotatedType()).getComponentType(),
+          javaType,
+          ignoreAnnotations);
     } else {
       return null;
     }
@@ -634,6 +657,9 @@ public abstract class AbstractType {
     }
 
     AbstractType that = (AbstractType) o;
+    if (ignoreAnnotations != that.ignoreAnnotations) {
+      return false;
+    }
 
     if (!context.equals(that.context)) {
       return false;

@@ -47,13 +47,15 @@ public class UseOfVariable extends AbstractType {
    * @param variable variable that this is a use of
    * @param qualifierVars a mapping from polymorphic annotation to {@link QualifierVar}
    * @param context the context
+   * @param ignoreAnnotations whether the annotations on this type should be ignored
    */
   public UseOfVariable(
       AnnotatedTypeVariable type,
       Variable variable,
       AnnotationMirrorMap<QualifierVar> qualifierVars,
-      Java8InferenceContext context) {
-    super(context);
+      Java8InferenceContext context,
+      boolean ignoreAnnotations) {
+    super(context, ignoreAnnotations);
     QualifierHierarchy qh = context.typeFactory.getQualifierHierarchy();
     this.qualifierVars = qualifierVars;
     this.variable = variable;
@@ -70,8 +72,8 @@ public class UseOfVariable extends AbstractType {
   }
 
   @Override
-  public AbstractType create(AnnotatedTypeMirror atm, TypeMirror type) {
-    return InferenceType.create(atm, type, variable.map, qualifierVars, context);
+  public AbstractType create(AnnotatedTypeMirror atm, TypeMirror type, boolean ignoreAnnotations) {
+    return InferenceType.create(atm, type, variable.map, qualifierVars, context, ignoreAnnotations);
   }
 
   @Override
@@ -164,26 +166,9 @@ public class UseOfVariable extends AbstractType {
     if (!hasPrimaryAnno) {
       variable.getBounds().addBound(parent, kind, bound);
     } else {
-      // If the use has a primary annotation, then add the bound but with that annotations
-      // set to bottom or top.  This makes it so that the java type is still a bound, but
-      // the qualifiers do not change the results of inference.
       AnnotatedTypeMirror boundCopyATM = bound.getAnnotatedType().deepCopy();
-      AbstractType boundCopy = bound.create(boundCopyATM, bound.getJavaType());
-      if (kind == BoundKind.LOWER) {
-        boundCopyATM.replaceAnnotations(bots);
-        variable.getBounds().addBound(parent, kind, boundCopy);
-      } else if (kind == BoundKind.UPPER) {
-        boundCopyATM.replaceAnnotations(tops);
-        variable.getBounds().addBound(parent, kind, boundCopy);
-      } else {
-        boundCopyATM.replaceAnnotations(tops);
-        variable.getBounds().addBound(parent, BoundKind.UPPER, boundCopy);
-
-        AnnotatedTypeMirror boundCopyATM2 = bound.getAnnotatedType().deepCopy();
-        AbstractType boundCopy2 = bound.create(boundCopyATM2, bound.getJavaType());
-        boundCopyATM2.replaceAnnotations(bots);
-        variable.getBounds().addBound(parent, BoundKind.LOWER, boundCopy2);
-      }
+      AbstractType boundCopy = bound.create(boundCopyATM, bound.getJavaType(), true);
+      variable.getBounds().addBound(parent, kind, boundCopy);
     }
   }
 
