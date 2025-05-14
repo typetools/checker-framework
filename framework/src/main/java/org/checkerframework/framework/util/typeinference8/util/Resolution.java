@@ -287,8 +287,7 @@ public class Resolution {
       Set<ProperType> upperBounds = ai.getBounds().findProperUpperBounds();
       if (!upperBounds.isEmpty()) {
         // Object is always an upper bound so this branch is always executed.
-        ProperType ti = resolveWithUpperBounds(ai, upperBounds);
-        ai.getBounds().addBound(null, BoundKind.EQUAL, ti);
+        resolveWithUpperBounds(ai, upperBounds);
       }
     }
     applyAndRemoveInstantiations(varsToResolve);
@@ -306,7 +305,7 @@ public class Resolution {
    * @param ai a variable to resolve
    * @param upperBounds {@code ai}'s set of proper upper bounds
    */
-  private ProperType resolveWithUpperBounds(Variable ai, Set<ProperType> upperBounds) {
+  private void resolveWithUpperBounds(Variable ai, Set<ProperType> upperBounds) {
     ProperType ti = null;
     boolean useRuntimeEx = false;
     for (ProperType liProperType : upperBounds) {
@@ -322,10 +321,9 @@ public class Resolution {
       }
     }
     if (useRuntimeEx) {
-      return context.inferenceTypeFactory.getRuntimeException();
-    } else {
-      return ti;
+      ti = context.inferenceTypeFactory.getRuntimeException();
     }
+    ai.getBounds().addBound(null, BoundKind.EQUAL, ti);
   }
 
   /**
@@ -355,13 +353,6 @@ public class Resolution {
         lubTV.getLowerBound().replaceAnnotations(newLubAnnos);
       }
     }
-    //    if (lubProperType.ignoreAnnotations) {
-    //      Set<ProperType> upperBounds = ai.getBounds().findProperUpperBounds();
-    //      ProperType p = resolveWithUpperBounds(ai, upperBounds);
-    //      lubProperType
-    //          .getAnnotatedType()
-    //          .replaceAnnotations(p.getAnnotatedType().getPrimaryAnnotations());
-    //    }
     ai.getBounds().addBound(null, BoundKind.EQUAL, lubProperType);
   }
 
