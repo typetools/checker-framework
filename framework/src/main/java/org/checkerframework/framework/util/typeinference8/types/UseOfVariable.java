@@ -169,7 +169,7 @@ public class UseOfVariable extends AbstractType {
     } else {
       AnnotatedTypeMirror boundCopyATM = bound.getAnnotatedType().deepCopy();
       AbstractType boundCopy = bound.create(boundCopyATM, bound.getJavaType(), true);
-      if (boundCopyATM.getKind() == TypeKind.TYPEVAR) {
+      if (boundCopyATM.getKind() == TypeKind.TYPEVAR && kind == BoundKind.EQUAL) {
         variable.getBounds().addBound(parent, kind, boundCopy);
       } else if (kind == BoundKind.LOWER) {
         boundCopyATM.replaceAnnotations(bots);
