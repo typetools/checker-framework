@@ -1355,6 +1355,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // Annotations explicitly written in the source code,
     // or obtained from bytecode.
     AnnotatedTypeMirror type = fromElement(elt);
+    System.out.println("Debug: getAnnotatedType: " + elt + " of type " + type + "\n");
     addComputedTypeAnnotations(elt, type);
     return type;
   }
