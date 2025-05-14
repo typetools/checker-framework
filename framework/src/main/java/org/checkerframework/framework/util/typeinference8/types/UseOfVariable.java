@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -168,7 +169,23 @@ public class UseOfVariable extends AbstractType {
     } else {
       AnnotatedTypeMirror boundCopyATM = bound.getAnnotatedType().deepCopy();
       AbstractType boundCopy = bound.create(boundCopyATM, bound.getJavaType(), true);
-      variable.getBounds().addBound(parent, kind, boundCopy);
+      if (boundCopyATM.getKind() == TypeKind.TYPEVAR) {
+        variable.getBounds().addBound(parent, kind, boundCopy);
+      } else if (kind == BoundKind.LOWER) {
+        boundCopyATM.replaceAnnotations(bots);
+        variable.getBounds().addBound(parent, kind, boundCopy);
+      } else if (kind == BoundKind.UPPER) {
+        boundCopyATM.replaceAnnotations(tops);
+        variable.getBounds().addBound(parent, kind, boundCopy);
+      } else {
+        boundCopyATM.replaceAnnotations(tops);
+        variable.getBounds().addBound(parent, BoundKind.UPPER, boundCopy);
+
+        AnnotatedTypeMirror boundCopyATM2 = bound.getAnnotatedType().deepCopy();
+        AbstractType boundCopy2 = bound.create(boundCopyATM2, bound.getJavaType(), true);
+        boundCopyATM2.replaceAnnotations(bots);
+        variable.getBounds().addBound(parent, BoundKind.LOWER, boundCopy2);
+      }
     }
   }
 

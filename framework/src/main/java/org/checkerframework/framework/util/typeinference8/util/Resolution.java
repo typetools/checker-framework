@@ -355,13 +355,13 @@ public class Resolution {
         lubTV.getLowerBound().replaceAnnotations(newLubAnnos);
       }
     }
-    if (lubProperType.ignoreAnnotations) {
-      Set<ProperType> upperBounds = ai.getBounds().findProperUpperBounds();
-      ProperType p = resolveWithUpperBounds(ai, upperBounds);
-      lubProperType
-          .getAnnotatedType()
-          .replaceAnnotations(p.getAnnotatedType().getPrimaryAnnotations());
-    }
+    //    if (lubProperType.ignoreAnnotations) {
+    //      Set<ProperType> upperBounds = ai.getBounds().findProperUpperBounds();
+    //      ProperType p = resolveWithUpperBounds(ai, upperBounds);
+    //      lubProperType
+    //          .getAnnotatedType()
+    //          .replaceAnnotations(p.getAnnotatedType().getPrimaryAnnotations());
+    //    }
     ai.getBounds().addBound(null, BoundKind.EQUAL, lubProperType);
   }
 
