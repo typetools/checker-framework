@@ -216,7 +216,9 @@ allprojects { currentProj ->
   // patterns of files to skip for individual sub-projects
   def perProjectDoNotFormat = [
     'checker': [
+      'bin/.do-like-javac/**',
       'bin-devel/.git-scripts/**',
+      'bin-devel/.html-tools/**',
       'bin-devel/.plume-scripts/**',
       'dist/**',
       'tests/ainfer-*/annotated/*',
@@ -234,7 +236,7 @@ allprojects { currentProj ->
     // If you add any formatters to this block that require dependencies, then you must also
     // add them to the spotlessPredeclare block.
 
-    // Always skip formatting of files under build directory
+    // Never format files under build/ directory.
     def doNotFormat = ['build/**']
     if (currentProj != project.rootProject) {
       if (perProjectDoNotFormat.containsKey(currentProj.name)) {
@@ -258,12 +260,21 @@ allprojects { currentProj ->
 
     format 'misc', {
       // define the files to apply `misc` to
-      target '*.md', '*.tex', '.gitignore', 'Makefile'
+      target '*.md', '*.tex', '.gitignore'
       targetExclude doNotFormat
       // define the steps to apply to those files
       leadingTabsToSpaces(2)
       trimTrailingWhitespace()
       // endWithNewline() // Don't want to end empty files with a newline
+    }
+
+    format 'make', {
+      // define the files to apply `make` to
+      target 'Makefile'
+      targetExclude doNotFormat
+      // define the steps to apply to those files
+      trimTrailingWhitespace()
+      endWithNewline() // Don't want to end empty files with a newline
     }
 
     java {
@@ -321,6 +332,12 @@ allprojects { currentProj ->
         leadingTabsToSpaces(2)
         trimTrailingWhitespace()
       }
+
+      // Don't do this, because it does not respect "ignore=true" in .editorconfig nor `doNotFormat` here.
+      // shell {
+      //   targetExclude doNotFormat
+      //   shfmt() // configuration is in .editorconfig
+      // }
     }
 
     // a useful task for debugging; prints exactly which files are getting formatted by spotless

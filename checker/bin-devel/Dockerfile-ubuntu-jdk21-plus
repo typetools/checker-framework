@@ -86,6 +86,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   pdf2svg \
   rsync \
   shellcheck \
+  shfmt \
   texlive-font-utils \
   texlive-fonts-recommended \
   texlive-latex-base \
@@ -102,7 +103,8 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   pipx \
 && PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install black \
 && PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install flake8 \
-&& PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install html5validator
+&& PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install html5validator \
+&& PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install ruff
 
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt-get autoremove \

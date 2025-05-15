@@ -30,12 +30,10 @@ if [ -z ${PACKAGES+x} ]; then
 fi
 echo "PACKAGES=" "${PACKAGES[@]}"
 
-
-SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" > /dev/null 2>&1 && pwd)"
 export ORG_GRADLE_PROJECT_useJdk21Compiler=true
 source "$SCRIPTDIR"/clone-related.sh
 ./gradlew assembleForJavac --console=plain -Dorg.gradle.internal.http.socketTimeout=60000 -Dorg.gradle.internal.http.connectionTimeout=60000
-
 
 failing_packages=""
 echo "PACKAGES=" "${PACKAGES[@]}"
@@ -51,7 +49,7 @@ for PACKAGE in "${PACKAGES[@]}"; do
   (cd "${PACKAGEDIR}" && (./gradlew --console=plain -PcfLocal compileJava || (sleep 60 && ./gradlew --console=plain -PcfLocal compileJava))) || failing_packages="${failing_packages} ${PACKAGE}"
 done
 
-if [ -n "${failing_packages}" ] ; then
+if [ -n "${failing_packages}" ]; then
   echo "Failing packages: ${failing_packages}"
   exit 1
 fi
