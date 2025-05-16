@@ -83,12 +83,6 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
             OwningCollectionBottom.class));
   }
 
-  @Override
-  protected QualifierHierarchy createQualifierHierarchy() {
-    return new CollectionOwnershipQualifierHierarchy(
-        this.getSupportedTypeQualifiers(), elements, this);
-  }
-
   /**
    * Fetches the store from the results of dataflow for {@code first}. If {@code afterFirstStore} is
    * true, then the store after {@code first} is returned; if {@code afterFirstStore} is false, the
