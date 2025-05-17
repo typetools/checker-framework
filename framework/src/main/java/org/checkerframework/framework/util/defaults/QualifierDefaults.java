@@ -391,7 +391,6 @@ public class QualifierDefaults {
    */
   public void annotate(Element elt, AnnotatedTypeMirror type) {
     if (elt != null) {
-      // System.out.println("Debug: annotate: " + elt + " of type " + type + "\n");
       switch (elt.getKind()) {
         case FIELD:
         case LOCAL_VARIABLE:
