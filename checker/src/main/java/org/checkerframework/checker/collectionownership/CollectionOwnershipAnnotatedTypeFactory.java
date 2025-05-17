@@ -3,13 +3,9 @@ package org.checkerframework.checker.collectionownership;
 import com.sun.source.tree.CompilationUnitTree;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.LinkedHashSet;
-import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.util.Elements;
 import org.checkerframework.checker.collectionownership.qual.NotOwningCollection;
 import org.checkerframework.checker.collectionownership.qual.OwningCollection;
 import org.checkerframework.checker.collectionownership.qual.OwningCollectionBottom;
@@ -26,9 +22,6 @@ import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.framework.flow.CFStore;
-import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
-import org.checkerframework.framework.type.NoElementQualifierHierarchy;
-import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationBuilder;
 
 /** The annotated type factory for the Collection Ownership Checker. */

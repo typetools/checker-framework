@@ -64,7 +64,6 @@ public class CollectionOwnershipVisitor
     return new AnnotationMirrorSet(atypeFactory.BOTTOM);
   }
 
-
   // TODO maybe check contravariance for parameters and covariance for return types here
   // (and invariance for fields)
   // @Override
