@@ -40,7 +40,7 @@
   <li><a href="#create-new-type-system">Create a new type system</a>
     <ul>
       <li><a href="#ownership-type-system">Ownership type system</a></li>
-      <li><a href="#non-empty-checker">Nullness Checker precise handling of Queue.peek() and poll()</a></li>
+      <li><a href="#nullness-queue">Nullness Checker precise handling of Queue.peek() and poll()</a></li>
       <li><a href="#non-empty-checker">Non-Empty Checker</a></li>
       <li><a href="#iteration-checker">Iteration Checker to prevent <code>NoSuchElementException</code></a></li>
       <li><a href="#custom-tainting-checking">Preventing injection vulnerabilities via specialized taint analysis</a></li>
@@ -826,7 +826,7 @@ annotation erased</a>.
 
 
 
-<h2 id="non-empty-checker">Nullness Checker precise handling of Queue.peek() and poll()</h2>
+<h2 id="nullness-queue">Nullness Checker precise handling of Queue.peek() and poll()</h2>
 
 <p>
 The Nullness Checker issues a false positive warning for this code:
@@ -1893,6 +1893,6 @@ thought about the problem nor tried to solve it.
 <!--  LocalWords:  fqBinaryName ClassGetName componentType substring ajava
  -->
 <!--  LocalWords:  indexOf getArrayElementType unrefine unrefines
-<!--  LocalWords:  unrefinement
  -->
+<!--  LocalWords:  unrefinement
  -->
