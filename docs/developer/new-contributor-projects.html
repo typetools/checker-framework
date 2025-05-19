@@ -40,7 +40,8 @@
   <li><a href="#create-new-type-system">Create a new type system</a>
     <ul>
       <li><a href="#ownership-type-system">Ownership type system</a></li>
-      <li><a href="#non-empty-checker">Non-Empty Checker for precise handling of Queue.peek() and poll()</a></li>
+      <li><a href="#non-empty-checker">Nullness Checker precise handling of Queue.peek() and poll()</a></li>
+      <li><a href="#non-empty-checker">Non-Empty Checker</a></li>
       <li><a href="#iteration-checker">Iteration Checker to prevent <code>NoSuchElementException</code></a></li>
       <li><a href="#custom-tainting-checking">Preventing injection vulnerabilities via specialized taint analysis</a></li>
       <li><a href="#track-unsupported-operations">Warn about unsupported operations</a></li>
@@ -825,7 +826,7 @@ annotation erased</a>.
 
 
 
-<h2 id="non-empty-checker">Non-Empty Checker for precise handling of Queue.peek() and poll()</h2>
+<h2 id="non-empty-checker">Nullness Checker precise handling of Queue.peek() and poll()</h2>
 
 <p>
 The Nullness Checker issues a false positive warning for this code:
@@ -860,7 +861,32 @@ value <a href="https://checkerframework.org/manual/#map-key-checker">is a key in
 
 <p>
 It should be handled the same way:  by adding a new subchecker, called the
-  Nonempty Checker, to the Nullness Checker.  Its types are:
+Nonempty Checker, to the Nullness Checker.  The Nonempty Checker already
+exists in the Checker Framework, though it is not advertised.
+</p>
+
+<p>
+When you are done, the Nullness Checker should issue only the <code>// ::</code> diagnostics from <code>checker/tests/nullness/IsEmptyPoll.java</code> &mdash; no more and no fewer.
+You can test that by running the Nullness Checker on the file, and when you are done you should delete the <code>// @skip-test</code> line so that the file is run as part of the Checker Framework test suite.
+</p>
+
+<p>
+  The best approach may be to have the Nullness Checker run the Nonempty
+  Checker as a subchecker but suppress the Nonempty Checker warnings.  That
+  is, the Nullness Checker takes advantage of information that the Nonempty
+  Checker verifies, without caring about code that the Nonempty Checker
+  cannot verify.  The Optional Checker takes this approach in its
+  integration with the Nonempty Checker.
+</p>
+
+
+<h2 id="non-empty-checker">Non-Empty Checker</h2>
+
+<p>
+  The Checker Framework contains a checker named the Nonempty Checker (<a href="https://github.com/typetools/checker-framework/tree/master/checker/src/main/java/org/checkerframework/checker/nonempty">code</a>,
+  <a href="https://github.com/typetools/checker-framework/tree/master/checker/tests/nonempty">tests</a>
+  which can be run via <code>gradlew NonemptyTest</code>).
+Its types are:
 </p>
 <ul>
 <li><code>@UnknownNonEmpty</code> &mdash; the queue might or might not be empty
@@ -868,22 +894,14 @@ It should be handled the same way:  by adding a new subchecker, called the
 </ul>
 
 <p>
-There is a start at this type-checker in branch <code>nonempty-checker</code>.  It:
-</p>
-<ul>
-  <li>defines the annotations
-  </li>
-  <li>creates the integration into the Nullness Checker
-  </li>
-</ul>
-<p>
-However, it is not done.  (In fact, it doesn't even compile.)
-For information about what needs to be done, see <a href="https://github.com/typetools/checker-framework/issues/399">issue #399</a>.
+  This type-checker is not yet publicized in the Checker Framework manual.
+  The reason is that the type-checker's false positive rate is too high.
+  The key task for this project is to determine the cause of these false
+  positives and find ways to eliminate them.
 </p>
 
 <p>
-When you are done, the Nullness Checker should issue only the <code>// ::</code> diagnostics from <code>checker/tests/nullness/IsEmptyPoll.java</code> &mdash; no more and no fewer.
-You can test that by running the Nullness Checker on the file, and when you are done you should delete the <code>// @skip-test</code> line so that the file is run as part of the Checker Framework test suite.
+For information about what needs to be done, see <a href="https://github.com/typetools/checker-framework/issues/399">issue #399</a>.
 </p>
 
 
@@ -949,12 +967,16 @@ Other vulnerabilities result from leaking private data, such as credit card numb
 </p>
 
 <p>
-We have built a generalized taint analysis that can address any of these problems.  However, because it is so general, it is not very useful.  A user must customize it for each particular problem.
+We have built a generalized taint analysis that can address any of these
+problems.  However, because it is so general, it is not very useful.  A
+user must customize it for each particular problem.
 </p>
 
 <p>
-The goal of this project is to make those customizations, and to evaluate their usefulness.
-A specific research question is:  "To what extent is a general taint analysis useful in eliminating a wide variety of security vulnerabilities?  How much customization, if any, is needed?"
+The goal of this project is to make those customizations, and to evaluate
+their usefulness.  A specific research question is:  "To what extent is a
+general taint analysis useful in eliminating a wide variety of security
+vulnerabilities?  How much customization, if any, is needed?"
 </p>
 
 <p>
@@ -967,8 +989,10 @@ a <a href="https://checkerframework.org/manual/#tainting-checker">Tainting
     rename the <code>@Tainted</code> and <code>@Untainted</code> qualifiers
     to something more specific (such as <code>@Private</code>
     or <code>@PaymentDetails</code> or <code>@HtmlQuoted</code>), and
+  </li>
   <li>
     annotate libraries.
+  </li>
 </ul>
 
 <p>
@@ -993,18 +1017,30 @@ studies showing the utility of compile-time taint checking.
   Possible examples include:
 </p>
 <ul>
-  <li>SQL injection
-  <li>OS command injection
-  <li>the <code>@PrivacySource</code> and <code>@PrivacySink</code>
+  <li>
+    SQL injection
+    (the <a href="https://checkerframework.org/manual/#sql-quotes-checker">SQL
+      Quotes Checker</a> is a lightweight version of this)
+  </li>
+  <li>
+    OS command injection
+  </li>
+  <li>
+    the <code>@PrivacySource</code> and <code>@PrivacySink</code>
     annotations used by the Meta <a href="https://fbinfer.com/">Infer
     static analyzer</a>.
-  <li>information flow
-  <li>many of the <a href="http://cwe.mitre.org/top25/">CWE/SANS most
-  dangerous software programming errors</a> (and the "on the cusp" ones too)
-  <!-- More details appear in these files:
+  </li>
+  <li>
+    information flow
+  </li>
+  <li>
+    many of the <a href="http://cwe.mitre.org/top25/">CWE/SANS most
+      dangerous software programming errors</a> (and the "on the cusp" ones too)
+    <!-- More details appear in these files:
       ~/research/games/notes/notes
       ~/prof/grants/2012-02-darpa-verigames/proposal/top25-as-types.pdf
-  -->
+    -->
+  </li>
 </ul>
 
 <p>
@@ -1301,7 +1337,7 @@ It would behave similarly for other library methods.
   buggy and should not be incorporated into the Checker Framework.  Another
   challenge is that many EISOP enhancements do not conform to the Checker
   Framework's code quality and testing standards.  Nonetheless, most are
-  worthy of inclusing in the Checker Framework.
+  worthy of including in the Checker Framework.
 </p>
 
 
@@ -1546,11 +1582,13 @@ on some called method, report that fact to the user.
 
 <ol>
   <li>
-  For each warning issued by BaseTypeVisitor, record the &ldquo;required&rdquo; type and the expression that requires it.
+    For each warning issued by <code>BaseTypeVisitor</code>, record the
+    &ldquo;required&rdquo; type and the expression that requires it.
   </li>
   <li>
     Do a backwards search over the CFG from the warning location, searching
-    for a dataflow store that contains the required type (or a subtype) for the required expression.
+    for a dataflow store that contains the required type (or a subtype) for
+    the required expression.
   </li>
   <li>
     For all such locations (or maybe just for the frontier of such
@@ -1827,7 +1865,7 @@ thought about the problem nor tried to solve it.
  -->
 <!--  LocalWords:  deterministically prototyped Stateful plugins plugin '
  -->
-<!--  LocalWords:  PDFs Stubparser JLint NullnessLight bytecodes YourKit
+<!--  LocalWords:  PDFs Stubparser JLint NullnessLight bytecodes YourKit '
  -->
 <!--  LocalWords:  timeline Uber's NullAway Uber coala BCEL mvn BCEL's AFU
  -->
@@ -1837,9 +1875,9 @@ thought about the problem nor tried to solve it.
  -->
 <!--  LocalWords:  checklink subparts UnsignedBytes runtime MyClass jOOU
  -->
-<!--  LocalWords:  usePriorityQueue PriorityQueue queueMinPathNode didn
+<!--  LocalWords:  usePriorityQueue PriorityQueue queueMinPathNode didn f1
  -->
-<!--  LocalWords:  subchecker IntScope UnsignedLong UnsignedLongs doesn
+<!--  LocalWords:  subchecker IntScope UnsignedLong UnsignedLongs doesn f2
  -->
 <!--  LocalWords:  rasmud nondet Geffken Dort unmodifiable MightNotSupport
  -->
@@ -1847,9 +1885,11 @@ thought about the problem nor tried to solve it.
  -->
 <!--  LocalWords:  MightSupportNothing Waataja Siwakorn Srisakaokul Papi
  -->
-<!--  LocalWords:  Quinonez Mah Telmo Correa rdf4j Doop FqBinaryName
+<!--  LocalWords:  Quinonez Mah Telmo Correa rdf4j Doop FqBinaryName EISOP
  -->
-<!--  LocalWords:  fqBinaryName ClassGetName componentType substring
+<!--  LocalWords:  fqBinaryName ClassGetName componentType substring ajava
  -->
-<!--  LocalWords:  indexOf getArrayElementType
+<!--  LocalWords:  indexOf getArrayElementType unrefine unrefines
+<!--  LocalWords:  unrefinement
+ -->
  -->
