@@ -19,10 +19,10 @@ if [ -n "$CHANGED_JAVA_FILES" ]; then
   if [ "$BRANCH" = "master" ]; then
     git diff --staged > /tmp/diff.txt
     ./gradlew --stacktrace getPlumeScripts
-    (./gradlew requireJavadoc > /tmp/warnings-rjp.txt 2>&1) || true
-    checker/bin-devel/.plume-scripts/lint-diff.py --guess-strip /tmp/diff.txt /tmp/warnings-rjp.txt
-    (./gradlew javadocDoclintAll > /tmp/warnings-jda.txt 2>&1) || true
-    checker/bin-devel/.plume-scripts/lint-diff.py --guess-strip /tmp/diff.txt /tmp/warnings-jda.txt
+    (./gradlew requireJavadoc > /tmp/warnings-requireJavadoc.txt 2>&1) || true
+    checker/bin-devel/.plume-scripts/lint-diff.py --guess-strip /tmp/diff.txt /tmp/warnings-requireJavadoc.txt
+    (./gradlew javadocDoclintAll > /tmp/warnings-javadocDoclintAll.txt 2>&1) || true
+    checker/bin-devel/.plume-scripts/lint-diff.py --guess-strip /tmp/diff.txt /tmp/warnings-javadocDoclintAll.txt
   fi
 fi
 
