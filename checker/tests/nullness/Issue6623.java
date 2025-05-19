@@ -1,5 +1,6 @@
 import java.util.List;
 
+// @below-java17-jdk-skip-test
 public class Issue6623 {
 
   public List<TargetOuter> getUserData(List<SrcOuter> input) {
