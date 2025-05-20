@@ -1,7 +1,6 @@
 @SuppressWarnings("ainfertest") // only check WPI for crashes
 public class Unions {
-  @SuppressWarnings(
-      "confidential") // correctly prevents cast of @UnknownConfidential to @NonConfidential
+  @SuppressWarnings("confidential") // true positive: thrown exception might be @UnknownConfidential
   void foo1(MyInterface<Throwable> param) throws Throwable {
     try {
       bar();
@@ -14,8 +13,7 @@ public class Unions {
     }
   }
 
-  @SuppressWarnings(
-      "confidential") // correctly prevents cast of @UnknownConfidential to @NonConfidential
+  @SuppressWarnings("confidential") // true positive: thrown exception might be @UnknownConfidential
   void foo2(MyInterface<Throwable> param) throws Throwable {
     try {
       bar();

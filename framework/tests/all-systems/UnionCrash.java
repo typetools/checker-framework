@@ -3,7 +3,7 @@
 
 @SuppressWarnings({
   "ainfertest", // only check WPI for crashes
-  "confidential" // correctly prevents cast of @UnknownConfidential to @NonConfidential
+  "confidential" // true positive: thrown exception might be @UnknownConfidential
 })
 public class UnionCrash {
   void foo(MyInterface<Throwable> param) throws Throwable {
