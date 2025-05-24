@@ -2,7 +2,10 @@ package org.checkerframework.checker.resourceleak;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import javax.lang.model.element.Element;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.collectionownership.CollectionOwnershipAnnotatedTypeFactory;
 import org.checkerframework.checker.collectionownership.CollectionOwnershipChecker;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
@@ -11,7 +14,9 @@ import org.checkerframework.checker.mustcall.MustCallNoCreatesMustCallForChecker
 import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsChecker;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.TypeSystemError;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * Collection of static utility functions related to the various (sub-) checkers within the
@@ -212,5 +217,36 @@ public class ResourceLeakUtils {
     } else {
       return getCollectionOwnershipAnnotatedTypeFactory(referenceAtf.getChecker());
     }
+  }
+
+  /**
+   * Returns whether the given Element is a java.util.Collection type by checking whether the raw
+   * type of the element is assignable from java.util.Collection. Returns false if element is null,
+   * or has no valid type.
+   *
+   * @param element the element
+   * @param atf an AnnotatedTypeFactory to get the annotated type of the element
+   * @return whether the given element is a Java.util.Collection type
+   */
+  public static boolean isCollection(Element element, AnnotatedTypeFactory atf) {
+    if (element == null) return false;
+    AnnotatedTypeMirror elementTypeMirror = atf.getAnnotatedType(element).getErased();
+    if (elementTypeMirror == null || elementTypeMirror.getUnderlyingType() == null) return false;
+    return isCollection(elementTypeMirror.getUnderlyingType());
+  }
+
+  /**
+   * Returns whether the given {@link TypeMirror} is a java.util.Collection subclass. This is
+   * determined by getting the class of the TypeMirror and checking whether it is assignable from
+   * java.util.Collection.
+   *
+   * @param type the TypeMirror
+   * @return whether type is a java.util.Collection
+   */
+  public static boolean isCollection(TypeMirror type) {
+    if (type == null) return false;
+    Class<?> elementRawType = TypesUtils.getClassFromType(type);
+    if (elementRawType == null) return false;
+    return Collection.class.isAssignableFrom(elementRawType);
   }
 }
