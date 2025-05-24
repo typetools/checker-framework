@@ -22,6 +22,10 @@ import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.framework.flow.CFStore;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
+import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
 
 /** The annotated type factory for the Collection Ownership Checker. */
@@ -112,17 +116,59 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
 
     super.postAnalyze(cfg);
   }
+
+  @Override
+  protected TypeAnnotator createTypeAnnotator() {
+    return new ListTypeAnnotator(
+        super.createTypeAnnotator(), new CollectionOwnershipTypeAnnotator(this));
+  }
+
+  private static class CollectionOwnershipTypeAnnotator extends TypeAnnotator {
+
+    /**
+     * Constructor matching super.
+     *
+     * @param atypeFactory the type factory
+     */
+    public CollectionOwnershipTypeAnnotator(AnnotatedTypeFactory atypeFactory) {
+      super(atypeFactory);
+    }
+
+    @Override
+    public Void visitExecutable(AnnotatedTypeMirror.AnnotatedExecutableType t, Void p) {
+      AnnotatedTypeMirror returnType = t.getReturnType();
+      // check whether return type is resource collection
+
+      boolean returnTypeIsCollection =
+          ResourceLeakUtils.isCollection(returnType.getUnderlyingType());
+      // boolean returnTypeIsArray =
+      //     returnType.getKind() == TypeKind.ARRAY;
+      if (returnTypeIsCollection) {
+        // System.out.println(t.getClass());
+      }
+      // AnnotatedTypeMirror componentType =
+      //     returnTypeIsArray ? ((AnnotatedArrayType) returnType).getComponentType()
+      //      : (returnTypeIsCollection ? )
+      //     ;
+
+      return super.visitExecutable(t, p);
+    }
+  }
+
+  // /*
+  //  * The bulk of adding computed type annotations happens in the other overload
+  //  * addComputedTypeAnnotations(Element, AnnotatedTypeMirror).
+  //  * Here, we change the return type of methods annotated CollectionAlias to
+  // MustCallOnElementsUnknown,
+  //  * such that at call-site, the returned alias will be guarded by the proper restrictions.
+  //  *
+  //  * Also the type of fields when they are accessed.
+  //  */
+  // @Override
+  // public void addComputedTypeAnnotations(Tree tree, AnnotatedTypeMirror type, boolean useFlow) {
+  //   super.addComputedTypeAnnotations(tree, type, useFlow);
+  // }
 }
-
-  // @Override
-  // protected TreeAnnotator createTreeAnnotator() {
-  //   return new ListTreeAnnotator(super.createTreeAnnotator(), new MustCallTreeAnnotator(this));
-  // }
-
-  // @Override
-  // protected TypeAnnotator createTypeAnnotator() {
-  //   return new ListTypeAnnotator(super.createTypeAnnotator(), new MustCallTypeAnnotator(this));
-  // }
 
   // @Override
   // protected QualifierPolymorphism createQualifierPolymorphism() {
