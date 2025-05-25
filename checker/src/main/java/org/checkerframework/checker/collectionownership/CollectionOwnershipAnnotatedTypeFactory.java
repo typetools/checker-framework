@@ -2,7 +2,6 @@ package org.checkerframework.checker.collectionownership;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.NewArrayTree;
-import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
@@ -11,8 +10,6 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.collectionownership.qual.NotOwningCollection;
@@ -37,11 +34,10 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
-import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
+import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
-import org.checkerframework.javacutil.TreeUtils;
 
 /** The annotated type factory for the Collection Ownership Checker. */
 public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
@@ -154,8 +150,7 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
             ? ((AnnotatedArrayType) t).getComponentType()
             : (isCollectionType ? ((AnnotatedDeclaredType) t).getTypeArguments().get(0) : null);
 
-    MustCallAnnotatedTypeFactory mcAtf =
-        ResourceLeakUtils.getMustCallAnnotatedTypeFactory(this);
+    MustCallAnnotatedTypeFactory mcAtf = ResourceLeakUtils.getMustCallAnnotatedTypeFactory(this);
 
     if (componentType != null) {
       List<String> list = ResourceLeakUtils.getMcValues(componentType.getUnderlyingType(), mcAtf);
@@ -200,7 +195,8 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
         if (isResourceCollection(paramType)) {
           boolean hasManualAnno = paramType.getEffectiveAnnotationInHierarchy(TOP) != null;
           if (!hasManualAnno) {
-            paramType.replaceAnnotation(CollectionOwnershipAnnotatedTypeFactory.this.NOTOWNINGCOLLECTION);
+            paramType.replaceAnnotation(
+                CollectionOwnershipAnnotatedTypeFactory.this.NOTOWNINGCOLLECTION);
           }
         }
       }
@@ -237,8 +233,8 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
   /**
    * The TreeAnnotator for the Collection Ownership type system.
    *
-   * <p>This tree annotator treats newly allocated resource arrays (arrays, whose component type has non-empty
-   * MustCall value).
+   * <p>This tree annotator treats newly allocated resource arrays (arrays, whose component type has
+   * non-empty MustCall value).
    */
   private class CollectionOwnershipTreeAnnotator extends TreeAnnotator {
 
@@ -247,7 +243,8 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
      *
      * @param collectionOwnershipAtf the type factory
      */
-    public CollectionOwnershipTreeAnnotator(CollectionOwnershipAnnotatedTypeFactory collectionOwnershipAtf) {
+    public CollectionOwnershipTreeAnnotator(
+        CollectionOwnershipAnnotatedTypeFactory collectionOwnershipAtf) {
       super(collectionOwnershipAtf);
     }
 
@@ -265,4 +262,3 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
   // protected QualifierPolymorphism createQualifierPolymorphism() {
   //   return new MustCallQualifierPolymorphism(processingEnv, this);
   // }
-
