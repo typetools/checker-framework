@@ -188,7 +188,6 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
       super(atypeFactory);
     }
 
-
     @Override
     public Void visitExecutable(AnnotatedTypeMirror.AnnotatedExecutableType t, Void p) {
       AnnotatedTypeMirror returnType = t.getReturnType();
