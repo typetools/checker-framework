@@ -28,7 +28,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
   // TypeUseLocation.FIELD,
   // TypeUseLocation.IMPLICIT_LOWER_BOUND,
   // TypeUseLocation.IMPLICIT_UPPER_BOUND,
-  TypeUseLocation.LOCAL_VARIABLE,
+  // TypeUseLocation.LOCAL_VARIABLE,
   // TypeUseLocation.LOWER_BOUND,
   // TypeUseLocation.OTHERWISE,
   // TypeUseLocation.PARAMETER,
