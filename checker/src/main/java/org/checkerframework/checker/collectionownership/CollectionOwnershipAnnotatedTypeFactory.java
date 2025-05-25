@@ -4,12 +4,15 @@ import com.sun.source.tree.CompilationUnitTree;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.collectionownership.qual.NotOwningCollection;
 import org.checkerframework.checker.collectionownership.qual.OwningCollection;
 import org.checkerframework.checker.collectionownership.qual.OwningCollectionBottom;
 import org.checkerframework.checker.collectionownership.qual.OwningCollectionWithoutObligation;
+import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer;
 import org.checkerframework.checker.resourceleak.MustCallInference;
@@ -24,6 +27,8 @@ import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
@@ -123,7 +128,7 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
         super.createTypeAnnotator(), new CollectionOwnershipTypeAnnotator(this));
   }
 
-  private static class CollectionOwnershipTypeAnnotator extends TypeAnnotator {
+  private class CollectionOwnershipTypeAnnotator extends TypeAnnotator {
 
     /**
      * Constructor matching super.
@@ -134,22 +139,33 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
       super(atypeFactory);
     }
 
+    public boolean isResourceCollection(AnnotatedTypeMirror t) {
+      boolean isCollectionType = ResourceLeakUtils.isCollection(t.getUnderlyingType());
+      boolean isArrayType = t.getKind() == TypeKind.ARRAY;
+      AnnotatedTypeMirror componentType =
+          isArrayType
+              ? ((AnnotatedArrayType) t).getComponentType()
+              : (isCollectionType ? ((AnnotatedDeclaredType) t).getTypeArguments().get(0) : null);
+
+      MustCallAnnotatedTypeFactory mcAtf =
+          ResourceLeakUtils.getMustCallAnnotatedTypeFactory(
+              CollectionOwnershipAnnotatedTypeFactory.this);
+
+      if (componentType != null) {
+        List<String> list = ResourceLeakUtils.getMcValues(componentType.getUnderlyingType(), mcAtf);
+        return list != null && list.size() > 0;
+      } else {
+        return false;
+      }
+    }
+
     @Override
     public Void visitExecutable(AnnotatedTypeMirror.AnnotatedExecutableType t, Void p) {
       AnnotatedTypeMirror returnType = t.getReturnType();
-      // check whether return type is resource collection
 
-      boolean returnTypeIsCollection =
-          ResourceLeakUtils.isCollection(returnType.getUnderlyingType());
-      // boolean returnTypeIsArray =
-      //     returnType.getKind() == TypeKind.ARRAY;
-      if (returnTypeIsCollection) {
-        // System.out.println(t.getClass());
+      if (isResourceCollection(returnType)) {
+        returnType.replaceAnnotation(CollectionOwnershipAnnotatedTypeFactory.this.OWNINGCOLLECTION);
       }
-      // AnnotatedTypeMirror componentType =
-      //     returnTypeIsArray ? ((AnnotatedArrayType) returnType).getComponentType()
-      //      : (returnTypeIsCollection ? )
-      //     ;
 
       return super.visitExecutable(t, p);
     }
