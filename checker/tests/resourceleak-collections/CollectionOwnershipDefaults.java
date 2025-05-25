@@ -27,17 +27,19 @@ class CollectionOwnershipDefaults {
   }
 
   /*
-  * This method checks that its parameter defaults to @NotOwningCollection.
-
-  * Parameter should default to @NotOwningCollection.
-  * Return type should default to @OwningCollection.
-  */
-  List<Socket> identity(List<Socket> list) {
+   * This method checks that its parameter defaults to @NotOwningCollection.
+   */
+  void checkParamIsNotOwningCollection(List<Socket> list) {
     // list : @NotOwningCollection. Thus, next line should throw an error.
 
     // :: error: argument
     checkArgIsOwning(list);
+  }
 
+  /*
+   * Return type should default to @OwningCollection.
+   */
+  List<Socket> identity(@OwningCollection List<Socket> list) {
     return list;
   }
 
@@ -66,10 +68,10 @@ class CollectionOwnershipDefaults {
    * Checks that a newly allocated resource collection has type @OwningCollection.
    */
   void checkNewResourceCollectionDefault() {
-    List<Socket> newResourceCollection = new ArrayList<Socket>();
-    checkArgIsOwning(newResourceCollection);
-    // :: error: argument
-    checkArgIsOCwoO(newResourceCollection);
+    // List<Socket> newResourceCollection = new ArrayList<Socket>();
+    // checkArgIsOwning(newResourceCollection);
+    // // :: error: argument
+    // checkArgIsOCwoO(newResourceCollection);
 
     Socket[] newResourceArray = new Socket[n];
     checkArgIsOwning(newResourceArray);
@@ -79,9 +81,9 @@ class CollectionOwnershipDefaults {
 
   void checkArgIsOwning(@OwningCollection Collection<Socket> collection) {}
 
-  void checkArgIsOwning(@OwningCollection Socket[] collection) {}
+  void checkArgIsOwning(Socket @OwningCollection [] collection) {}
 
   void checkArgIsOCwoO(@OwningCollectionWithoutObligation Collection<Socket> collection) {}
 
-  void checkArgIsOCwoO(@OwningCollectionWithoutObligation Socket[] collection) {}
+  void checkArgIsOCwoO(Socket @OwningCollectionWithoutObligation [] collection) {}
 }

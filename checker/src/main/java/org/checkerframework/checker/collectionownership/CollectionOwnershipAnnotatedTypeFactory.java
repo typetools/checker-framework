@@ -172,6 +172,12 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
         super.createTreeAnnotator(), new CollectionOwnershipTreeAnnotator(this));
   }
 
+  /**
+   * The TypeAnnotator for the Collection Ownership type system.
+   *
+   * <p>This TypeAnnotator defaults resource collection return types to OwningCollection, and
+   * resource collection parameters to NotOwningCollection.
+   */
   private class CollectionOwnershipTypeAnnotator extends TypeAnnotator {
 
     /**
@@ -206,13 +212,11 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
   }
 
   /*
-   * Change the default @MustCallOnElements type value of @OwningCollection fields and @OwningCollection
-   * method parameters to contain the @MustCall methods of the component, if no manual annotation is
-   * present. For example the type of:
+   * Default resource collection fields to @OwningCollection and resource collection parameters to
+   * @NotOwningCollection (inside the method).
    *
-   * final @OwningCollection Socket[] s;
-   *
-   * is changed to @MustCallOnElements("close").
+   * Resource collections are either java.util.Collection's or arrays, whose component has
+   * non-empty @MustCall type, as defined by the predicate isResourceCollection(AnnotatedTypeMirror).
    */
   @Override
   public void addComputedTypeAnnotations(Element elt, AnnotatedTypeMirror type) {
@@ -220,11 +224,20 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
 
     if (elt instanceof VariableElement) {
       boolean isField = elt.getKind() == ElementKind.FIELD;
+      boolean isParam = elt.getKind() == ElementKind.PARAMETER;
+      boolean isResourceCollection = isResourceCollection(type);
 
-      if (isResourceCollection(type) && isField) {
-        AnnotationMirror fieldAnno = type.getEffectiveAnnotationInHierarchy(TOP);
-        if (fieldAnno == null || fieldAnno != BOTTOM) {
-          type.replaceAnnotation(OWNINGCOLLECTION);
+      if (isResourceCollection) {
+        if (isField) {
+          AnnotationMirror fieldAnno = type.getEffectiveAnnotationInHierarchy(TOP);
+          if (fieldAnno == null || fieldAnno == BOTTOM) {
+            type.replaceAnnotation(OWNINGCOLLECTION);
+          }
+        } else if (isParam) {
+          AnnotationMirror paramAnno = type.getEffectiveAnnotationInHierarchy(TOP);
+          if (paramAnno == null || paramAnno == BOTTOM) {
+            type.replaceAnnotation(NOTOWNINGCOLLECTION);
+          }
         }
       }
     }
@@ -234,7 +247,7 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
    * The TreeAnnotator for the Collection Ownership type system.
    *
    * <p>This tree annotator treats newly allocated resource arrays (arrays, whose component type has
-   * non-empty MustCall value).
+   * non-empty MustCall value) as @OwningCollection.
    */
   private class CollectionOwnershipTreeAnnotator extends TreeAnnotator {
 
