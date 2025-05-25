@@ -1,12 +1,19 @@
 package org.checkerframework.checker.collectionownership;
 
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.collectionownership.qual.NotOwningCollection;
 import org.checkerframework.checker.collectionownership.qual.OwningCollection;
@@ -29,9 +36,12 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
+import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.TreeUtils;
 
 /** The annotated type factory for the Collection Ownership Checker. */
 public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
@@ -122,10 +132,49 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
     super.postAnalyze(cfg);
   }
 
+  /**
+   * Returns whether the given type is a resource collection.
+   *
+   * <p>That is, whether the given type is:
+   *
+   * <ol>
+   *   <li>An array type, whose component has non-empty MustCall type.
+   *   <li>A type assignable from java.util.Collection, whose only type var has non-empty MustCall
+   *       type.
+   * </ol>
+   *
+   * @param t the AnnotatedTypeMirror
+   * @return whether t is a resource collection
+   */
+  public boolean isResourceCollection(AnnotatedTypeMirror t) {
+    boolean isCollectionType = ResourceLeakUtils.isCollection(t.getUnderlyingType());
+    boolean isArrayType = t.getKind() == TypeKind.ARRAY;
+    AnnotatedTypeMirror componentType =
+        isArrayType
+            ? ((AnnotatedArrayType) t).getComponentType()
+            : (isCollectionType ? ((AnnotatedDeclaredType) t).getTypeArguments().get(0) : null);
+
+    MustCallAnnotatedTypeFactory mcAtf =
+        ResourceLeakUtils.getMustCallAnnotatedTypeFactory(this);
+
+    if (componentType != null) {
+      List<String> list = ResourceLeakUtils.getMcValues(componentType.getUnderlyingType(), mcAtf);
+      return list != null && list.size() > 0;
+    } else {
+      return false;
+    }
+  }
+
   @Override
   protected TypeAnnotator createTypeAnnotator() {
     return new ListTypeAnnotator(
         super.createTypeAnnotator(), new CollectionOwnershipTypeAnnotator(this));
+  }
+
+  @Override
+  public TreeAnnotator createTreeAnnotator() {
+    return new ListTreeAnnotator(
+        super.createTreeAnnotator(), new CollectionOwnershipTreeAnnotator(this));
   }
 
   private class CollectionOwnershipTypeAnnotator extends TypeAnnotator {
@@ -139,39 +188,6 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
       super(atypeFactory);
     }
 
-    /**
-     * Returns whether the given type is a resource collection.
-     *
-     * <p>That is, whether the given type is:
-     *
-     * <ol>
-     *   <li>An array type, whose component has non-empty MustCall type.
-     *   <li>A type assignable from java.util.Collection, whose only type var has non-empty MustCall
-     *       type.
-     * </ol>
-     *
-     * @param t the AnnotatedTypeMirror
-     * @return whether t is a resource collection
-     */
-    public boolean isResourceCollection(AnnotatedTypeMirror t) {
-      boolean isCollectionType = ResourceLeakUtils.isCollection(t.getUnderlyingType());
-      boolean isArrayType = t.getKind() == TypeKind.ARRAY;
-      AnnotatedTypeMirror componentType =
-          isArrayType
-              ? ((AnnotatedArrayType) t).getComponentType()
-              : (isCollectionType ? ((AnnotatedDeclaredType) t).getTypeArguments().get(0) : null);
-
-      MustCallAnnotatedTypeFactory mcAtf =
-          ResourceLeakUtils.getMustCallAnnotatedTypeFactory(
-              CollectionOwnershipAnnotatedTypeFactory.this);
-
-      if (componentType != null) {
-        List<String> list = ResourceLeakUtils.getMcValues(componentType.getUnderlyingType(), mcAtf);
-        return list != null && list.size() > 0;
-      } else {
-        return false;
-      }
-    }
 
     @Override
     public Void visitExecutable(AnnotatedTypeMirror.AnnotatedExecutableType t, Void p) {
@@ -181,23 +197,69 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
         returnType.replaceAnnotation(CollectionOwnershipAnnotatedTypeFactory.this.OWNINGCOLLECTION);
       }
 
+      for (AnnotatedTypeMirror paramType : t.getParameterTypes()) {
+        if (isResourceCollection(paramType)) {
+          boolean hasManualAnno = paramType.getEffectiveAnnotationInHierarchy(TOP) != null;
+          if (!hasManualAnno) {
+            paramType.replaceAnnotation(CollectionOwnershipAnnotatedTypeFactory.this.NOTOWNINGCOLLECTION);
+          }
+        }
+      }
+
       return super.visitExecutable(t, p);
     }
   }
 
-  // /*
-  //  * The bulk of adding computed type annotations happens in the other overload
-  //  * addComputedTypeAnnotations(Element, AnnotatedTypeMirror).
-  //  * Here, we change the return type of methods annotated CollectionAlias to
-  // MustCallOnElementsUnknown,
-  //  * such that at call-site, the returned alias will be guarded by the proper restrictions.
-  //  *
-  //  * Also the type of fields when they are accessed.
-  //  */
-  // @Override
-  // public void addComputedTypeAnnotations(Tree tree, AnnotatedTypeMirror type, boolean useFlow) {
-  //   super.addComputedTypeAnnotations(tree, type, useFlow);
-  // }
+  /*
+   * Change the default @MustCallOnElements type value of @OwningCollection fields and @OwningCollection
+   * method parameters to contain the @MustCall methods of the component, if no manual annotation is
+   * present. For example the type of:
+   *
+   * final @OwningCollection Socket[] s;
+   *
+   * is changed to @MustCallOnElements("close").
+   */
+  @Override
+  public void addComputedTypeAnnotations(Element elt, AnnotatedTypeMirror type) {
+    super.addComputedTypeAnnotations(elt, type);
+
+    if (elt instanceof VariableElement) {
+      boolean isField = elt.getKind() == ElementKind.FIELD;
+
+      if (isResourceCollection(type) && isField) {
+        AnnotationMirror fieldAnno = type.getEffectiveAnnotationInHierarchy(TOP);
+        if (fieldAnno == null || fieldAnno != BOTTOM) {
+          type.replaceAnnotation(OWNINGCOLLECTION);
+        }
+      }
+    }
+  }
+
+  /**
+   * The TreeAnnotator for the Collection Ownership type system.
+   *
+   * <p>This tree annotator treats newly allocated resource arrays (arrays, whose component type has non-empty
+   * MustCall value).
+   */
+  private class CollectionOwnershipTreeAnnotator extends TreeAnnotator {
+
+    /**
+     * Create a CollectionOwnershipTreeAnnotator.
+     *
+     * @param collectionOwnershipAtf the type factory
+     */
+    public CollectionOwnershipTreeAnnotator(CollectionOwnershipAnnotatedTypeFactory collectionOwnershipAtf) {
+      super(collectionOwnershipAtf);
+    }
+
+    @Override
+    public Void visitNewArray(NewArrayTree tree, AnnotatedTypeMirror type) {
+      if (isResourceCollection(type)) {
+        type.replaceAnnotation(OWNINGCOLLECTION);
+      }
+      return super.visitNewArray(tree, type);
+    }
+  }
 }
 
   // @Override
@@ -205,52 +267,3 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
   //   return new MustCallQualifierPolymorphism(processingEnv, this);
   // }
 
-  //   /**
-  //    * The TreeAnnotator for the MustCall type system.
-  //    *
-  //    * <p>This tree annotator treats non-owning method parameters as bottom, regardless of their
-  //    * declared type, when they appear in the body of the method. Doing so is safe because being
-  //    * non-owning means, by definition, that their must-call obligations are only relevant in the
-  //    * callee. (This behavior is disabled if the {@code -AnoLightweightOwnership} option is
-  // passed
-  // to
-  //    * the checker.)
-  //    *
-  //    * <p>The tree annotator also changes the type of resource variables to remove "close" from
-  // their
-  //    * must-call types, because the try-with-resources statement guarantees that close() is
-  // called
-  // on
-  //    * all such variables.
-  //    */
-  //   private class MustCallTreeAnnotator extends TreeAnnotator {
-  //     /**
-  //      * Create a MustCallTreeAnnotator.
-  //      *
-  //      * @param mustCallAnnotatedTypeFactory the type factory
-  //      */
-  //     public MustCallTreeAnnotator(MustCallAnnotatedTypeFactory mustCallAnnotatedTypeFactory) {
-  //       super(mustCallAnnotatedTypeFactory);
-  //     }
-
-  //     @Override
-  //     public Void visitIdentifier(IdentifierTree tree, AnnotatedTypeMirror type) {
-  //       Element elt = TreeUtils.elementFromUse(tree);
-  //       // The following changes are not desired for RLC _inference_ in unannotated programs,
-  //       // where a goal is to infer and add @Owning annotations to formal parameters.
-  //       // Therefore, if WPI is enabled, they should not be executed.
-  //       if (getWholeProgramInference() == null
-  //           && elt.getKind() == ElementKind.PARAMETER
-  //           && (noLightweightOwnership || getDeclAnnotation(elt, Owning.class) == null)) {
-  //         if (!type.hasPrimaryAnnotation(POLY)) {
-  //           // Parameters that are not annotated with @Owning should be treated as bottom
-  //           // (to suppress warnings about them). An exception is polymorphic parameters,
-  //           // which might be @MustCallAlias (and so wouldn't be annotated with @Owning):
-  //           // these are not modified, to support verification of @MustCallAlias
-  //           // annotations.
-  //           type.replaceAnnotation(BOTTOM);
-  //         }
-  //       }
-  //       return super.visitIdentifier(tree, type);
-  //     }
-  //   }
