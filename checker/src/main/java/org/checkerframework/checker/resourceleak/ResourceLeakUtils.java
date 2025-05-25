@@ -3,18 +3,28 @@ package org.checkerframework.checker.resourceleak;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
+import javax.lang.model.type.WildcardType;
 import org.checkerframework.checker.collectionownership.CollectionOwnershipAnnotatedTypeFactory;
 import org.checkerframework.checker.collectionownership.CollectionOwnershipChecker;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.MustCallChecker;
 import org.checkerframework.checker.mustcall.MustCallNoCreatesMustCallForChecker;
+import org.checkerframework.checker.mustcall.qual.InheritableMustCall;
+import org.checkerframework.checker.mustcall.qual.MustCall;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsChecker;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -248,5 +258,50 @@ public class ResourceLeakUtils {
     Class<?> elementRawType = TypesUtils.getClassFromType(type);
     if (elementRawType == null) return false;
     return Collection.class.isAssignableFrom(elementRawType);
+  }
+
+  /**
+   * Returns the list of mustcall obligations for the given {@code TypeMirror} upper bound (either
+   * the type variable itself if it is concrete or the upper bound if its a wildcard or generic).
+   *
+   * <p>If the type variable has no upper bound, for instance if it is a wildcard with no extends
+   * clause the method returns null
+   *
+   * @param type the {@code TypeMirror}
+   * @param mcAtf the {@code MustCallAnnotatedTypeFactory} to get the {@code MustCall} type
+   * @return the list of mustcall obligations for the upper bound of {@code type} or null if the
+   *     upper bound is null.
+   */
+  public static @Nullable List<String> getMcValues(
+      TypeMirror type, MustCallAnnotatedTypeFactory mcAtf) {
+    if (type instanceof TypeVariable) {
+      // a generic - replace with upper bound and return null if it has no upper bound
+      type = ((TypeVariable) type).getUpperBound();
+      if (type == null) {
+        return null;
+      }
+    } else if (type instanceof WildcardType) {
+      // a wildcard - replace with upper bound and return null if it has no upper bound
+      type = ((WildcardType) type).getExtendsBound();
+      if (type == null) {
+        return null;
+      }
+    }
+    TypeElement typeElement = TypesUtils.getTypeElement(type);
+    AnnotationMirror imcAnnotation =
+        mcAtf.getDeclAnnotation(typeElement, InheritableMustCall.class);
+    AnnotationMirror mcAnnotation = mcAtf.getDeclAnnotation(typeElement, MustCall.class);
+    Set<String> mcValues = new HashSet<>();
+    if (mcAnnotation != null) {
+      mcValues.addAll(
+          AnnotationUtils.getElementValueArray(
+              mcAnnotation, mcAtf.getMustCallValueElement(), String.class));
+    }
+    if (imcAnnotation != null) {
+      mcValues.addAll(
+          AnnotationUtils.getElementValueArray(
+              imcAnnotation, mcAtf.getInheritableMustCallValueElement(), String.class));
+    }
+    return new ArrayList<>(mcValues);
   }
 }
