@@ -1246,29 +1246,48 @@ severe limitation for the Index Checker.
 </p>
 
 <p>
-The limitation is caused by the Index Checker's use of types that are dependent on the length of data structures,
-like <code>@LTLengthOf("data_structure")</code>. If <code>data_structure</code>'s length could change,
-then the correctness of this type might change.
+The limitation is caused by the Index Checker's use of types that are
+dependent on the length of data structures,
+like <code>@LTLengthOf("data_structure")</code>. If <code>data_structure</code>'s
+length could change, then the correctness of this type might change.
 </p>
 
 <p>
-A naive solution would be to invalidate these types any time a method is called on <code>data_structure</code>.
-Unfortunately, aliasing makes this still unsound. Even more, a great solution to this problem would keep
-the information in the type when a method like add or remove is called on <code>data_structure</code>.
-A more complete solution might involve some special annotations on List that permit the information to be persisted.
+A first step is to invalidate all Index Checker qualifiers on
+mutable-length data structures whenever a side effect may occur (for
+example, whenever a method that might have side effects is called).  This
+is imprecise and will lead to frequently losing refined type information.
+However, it is sound, which is most important.
 </p>
 
 <p>
-Another approach would be to run a pointer analysis before type-checking,
-then use that information for precise information about what lists might be
-changed by each call to <code>add</code> or <code>remove</code>.  One
+Next, improve precision by only invalidating <em>some</em> Index Checker
+qualifiers on mutable-length data when a side effect may occur.  Here are
+several approaches to the problem.
+</p>
+
+<ol>
+  <li>
+    Implement
+    the <a href="#SideEffectsOnly"><code>@SideEffectsOnly</code></a>
+    annotation.  Suppose that a method is called that only side-effects
+    variable <code>a</code> of type <code>T</code> and
+    variable <code>b</code> of type <code>U</code>.  Then Index Checker
+    qualifiers on all expressions of type <code>T</code> and <code>U</code>
+    (and their supertypes and subtypes) need to be invalidated, but Index
+    Checker qualifiers on types that are unrelated to <code>T</code>
+    and <code>U</code> can be retained.
+  </li>
+  <li>
+    Run a pointer analysis before type-checking.
+    Now, at a possible side effect to expressions <code>a</code>
+    and <code>b</code>, it is only necessary to invalidate Index Checker
+    qualifiers on expressions that may be aliased to <code>a</code>
+    or <code>b</code>.  One
 possible pointer analysis would be that
-of <a href="https://github.com/plast-lab/doop-mirror">Doop</a>.
-</p>
-
-<p>
-This project would involve designing and implementing a solution to this problem.
-</p>
+    of <a href="https://github.com/plast-lab/doop-mirror">Doop</a>.
+  </li>
+</ol>
 
 
 <h1 id="cf-other">Enhance the toolset</h1>
