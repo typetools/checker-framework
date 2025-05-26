@@ -1253,9 +1253,9 @@ length could change, then the correctness of this type might change.
 </p>
 
 <p>
-A first step is to invalidate all Index Checker qualifiers on
+A first step is to invalidate all Index Checker qualifiers on all
 mutable-length data structures whenever a side effect may occur (for
-example, whenever a method that might have side effects is called).  This
+example, at every call to a method that might have side effects).  This
 is imprecise and will lead to frequently losing refined type information.
 However, it is sound, which is most important.
 </p>
@@ -1263,7 +1263,7 @@ However, it is sound, which is most important.
 <p>
 Next, improve precision by only invalidating <em>some</em> Index Checker
 qualifiers on mutable-length data when a side effect may occur.  Here are
-several approaches to the problem.
+some ways to improve precision.
 </p>
 
 <ol>
@@ -1279,12 +1279,11 @@ several approaches to the problem.
     and <code>U</code> can be retained.
   </li>
   <li>
-    Run a pointer analysis before type-checking.
-    Now, at a possible side effect to expressions <code>a</code>
-    and <code>b</code>, it is only necessary to invalidate Index Checker
-    qualifiers on expressions that may be aliased to <code>a</code>
-    or <code>b</code>.  One
-possible pointer analysis would be that
+    Run a pointer analysis before type-checking.  Now, at a possible side
+    effect to expressions <code>a</code> and <code>b</code>, it is only
+    necessary to invalidate Index Checker qualifiers on expressions that
+    may be aliased to <code>a</code> or <code>b</code>.  One possible
+    pointer analysis is that
     of <a href="https://github.com/plast-lab/doop-mirror">Doop</a>.
   </li>
 </ol>
