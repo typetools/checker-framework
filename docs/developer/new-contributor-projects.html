@@ -1272,19 +1272,37 @@ some ways to improve precision.
     the <a href="#SideEffectsOnly"><code>@SideEffectsOnly</code></a>
     annotation.  Suppose that a method is called that only side-effects
     variable <code>a</code> of type <code>T</code> and
-    variable <code>b</code> of type <code>U</code>.  Then Index Checker
-    qualifiers on all expressions of type <code>T</code> and <code>U</code>
-    (and their supertypes and subtypes) need to be invalidated, but Index
-    Checker qualifiers on types that are unrelated to <code>T</code>
-    and <code>U</code> can be retained.
+    variable <code>b</code> of type <code>U</code>.  Then the Index Checker
+    needs to invalidate:
+    <ul>
+      <li>
+        qualifiers on all expressions of type <code>T</code>
+        or <code>U</code> (and their supertypes and subtypes).  Index
+        Checker qualifiers on types that are unrelated to <code>T</code>
+        and <code>U</code> can be retained.
+      </li>
+      <li>
+        dependent type qualifiers that mention any expression of
+        type <code>T</code> or <code>U</code>.
+      </li>
+    </ul>
   </li>
   <li>
     Run a pointer analysis before type-checking.  Now, at a possible side
     effect to expressions <code>a</code> and <code>b</code>, it is only
-    necessary to invalidate Index Checker qualifiers on expressions that
-    may be aliased to <code>a</code> or <code>b</code>.  One possible
+    necessary to invalidate Index Checker qualifiers related to expressions
+    that may be aliased to <code>a</code> or <code>b</code>.  One possible
     pointer analysis is that
     of <a href="https://github.com/plast-lab/doop-mirror">Doop</a>.
+  </li>
+  <li>
+    Modify rather than discarding the Index Checker qualifiers on
+    possibly-aliased data structures.  If an expression is must-aliased
+    to <code>a</code>, then its type should be updated in exactly the way
+    that <code>a</code>'s is.  If an expression is may-aliased
+    to <code>a</code>, then its type should become the LUB of its old type
+    and <code>a</code>'s new type.  Adjusting the types of
+    dependently-typed variables is a bit more complicated.
   </li>
 </ol>
 
@@ -1892,7 +1910,7 @@ thought about the problem nor tried to solve it.
  -->
 <!--  LocalWords:  Signedness Jake2 README Lookup ASM's Nayuki CRC mis CWE
  -->
-<!--  LocalWords:  BigInteger lockB lockA signedness microbenchmarks pre
+<!--  LocalWords:  BigInteger lockB lockA signedness microbenchmarks pre '
  -->
 <!--  LocalWords:  checklink subparts UnsignedBytes runtime MyClass jOOU
  -->
