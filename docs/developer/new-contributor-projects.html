@@ -1253,10 +1253,12 @@ length could change, then the correctness of this type might change.
 </p>
 
 <p>
-A first step is to invalidate all Index Checker qualifiers on all
-mutable-length data structures whenever a side effect may occur (for
-example, at every call to a method that might have side effects).  This
-is imprecise and will lead to frequently losing refined type information.
+A first step is to invalidate many Index Checker qualifiers whenever a side
+effect may occur (for example, at every call to a method that might have
+side effects).  The qualifiers that need to be invalidated (unrefined) are
+all qualifiers on mutable-length data structures and all dependent type
+qualifiers that mention any mutable-length data structures.  This is
+imprecise and will lead to frequently losing refined type information.
 However, it is sound, which is most important.
 </p>
 
