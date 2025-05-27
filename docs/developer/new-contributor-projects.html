@@ -1252,23 +1252,22 @@ like <code>@LTLengthOf("data_structure")</code>. If <code>data_structure</code>'
 length could change, then the correctness of this type might change.
 </p>
 
-<p>
-A first step is to invalidate many Index Checker qualifiers whenever a side
-effect may occur (for example, at every call to a method that might have
-side effects).  The qualifiers that need to be invalidated (unrefined) are
-all qualifiers on mutable-length data structures and all dependent type
-qualifiers that mention any mutable-length data structures.  This is
-imprecise and will lead to frequently losing refined type information.
-However, it is sound, which is most important.
-</p>
-
-<p>
-Next, improve precision by only invalidating <em>some</em> Index Checker
-qualifiers on mutable-length data when a side effect may occur.  Here are
-some ways to improve precision.
-</p>
-
 <ol>
+  <li>
+    Invalidate all Index Checker qualifiers whenever a side effect may
+    occur (for example, at every call to a method that might have side
+    effects).  This is imprecise (it loses refined type information) and
+    therefore will result in many false positive alarms, so it is an
+    impractical solution.  However, it is sound, which is most important.
+    Subsequent steps will improve its precision.
+  </li>
+  <li>
+    Only invalidate <em>some</em> Index Checker qualifiers when a side
+    effect may occur &mdash; namely, those relating to mutable-length data
+    structures.  This requires determining which indexable datatypes have
+    mutable lengths, which can be hard-coded for the collection classes in
+    the JDK.
+  </li>
   <li>
     Implement
     the <a href="#SideEffectsOnly"><code>@SideEffectsOnly</code></a>
@@ -1301,12 +1300,22 @@ some ways to improve precision.
     when one of its <code>@ChangesLength</code> methods is called.
   </li>
   <li>
+    The <code>@LengthOf</code> annotation is currently an alias
+    for <code>@LTELengthOf</code>.  But its definition is a value that
+    indicates the size of a data structure.  It can perhaps be used.
+  </li>
+  <li>
     Run a pointer analysis before type-checking.  Now, at a possible side
     effect to expressions <code>a</code> and <code>b</code>, it is only
     necessary to invalidate Index Checker qualifiers related to expressions
     that may be aliased to <code>a</code> or <code>b</code>.  One possible
     pointer analysis is that
     of <a href="https://github.com/plast-lab/doop-mirror">Doop</a>.
+    <p>
+    A significant downside to this approach is that it is a whole-program
+    analysis rather than a modular one.  A modular analysis works
+    method-by-method.  A whole-program analysis requires that the entire
+    program is present to be analyzed, and it is slow.
   </li>
   <li>
     Modify rather than discarding the Index Checker qualifiers on
