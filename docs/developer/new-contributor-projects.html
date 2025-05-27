@@ -1290,6 +1290,17 @@ some ways to improve precision.
     </ul>
   </li>
   <li>
+    Alternatively, devise and implement a new annotation (e.g., <code>@BackedBy</code>)
+    that connects the length of a data structure to the length of its backing data structure.
+    For example, an annotation on `ArrayList` could tell the checker which field
+    of the `ArrayList` class is the backing array. Then, make it an error if
+    any method of a class with such an annotation re-assigns the backing array
+    unless it has a new annotation (e.g., <code>@ChangesLength</code>). This annotation
+    could apply recursively, to allow data structures that are themselves backed by
+    mutable-length data structures. Only invalidate facts about a mutable length data structure
+    when one of its <code>@ChangesLength</code> methods is called.
+  </li>
+  <li>
     Run a pointer analysis before type-checking.  Now, at a possible side
     effect to expressions <code>a</code> and <code>b</code>, it is only
     necessary to invalidate Index Checker qualifiers related to expressions
