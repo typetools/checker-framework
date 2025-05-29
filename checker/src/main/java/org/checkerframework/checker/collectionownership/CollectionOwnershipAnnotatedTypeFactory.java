@@ -38,6 +38,7 @@ import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationUtils;
 
 /** The annotated type factory for the Collection Ownership Checker. */
 public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
@@ -199,8 +200,8 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
 
       for (AnnotatedTypeMirror paramType : t.getParameterTypes()) {
         if (isResourceCollection(paramType)) {
-          boolean hasManualAnno = paramType.getEffectiveAnnotationInHierarchy(TOP) != null;
-          if (!hasManualAnno) {
+          AnnotationMirror manualAnno = paramType.getEffectiveAnnotationInHierarchy(TOP);
+          if (manualAnno == null || AnnotationUtils.areSameByName(BOTTOM, manualAnno)) {
             paramType.replaceAnnotation(
                 CollectionOwnershipAnnotatedTypeFactory.this.NOTOWNINGCOLLECTION);
           }
@@ -230,12 +231,12 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
       if (isResourceCollection) {
         if (isField) {
           AnnotationMirror fieldAnno = type.getEffectiveAnnotationInHierarchy(TOP);
-          if (fieldAnno == null || fieldAnno == BOTTOM) {
+          if (fieldAnno == null || AnnotationUtils.areSameByName(BOTTOM, fieldAnno)) {
             type.replaceAnnotation(OWNINGCOLLECTION);
           }
         } else if (isParam) {
           AnnotationMirror paramAnno = type.getEffectiveAnnotationInHierarchy(TOP);
-          if (paramAnno == null || paramAnno == BOTTOM) {
+          if (paramAnno == null || AnnotationUtils.areSameByName(BOTTOM, paramAnno)) {
             type.replaceAnnotation(NOTOWNINGCOLLECTION);
           }
         }
