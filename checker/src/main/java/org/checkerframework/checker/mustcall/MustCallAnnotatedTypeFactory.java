@@ -23,6 +23,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.mustcall.qual.CreatesMustCallFor;
 import org.checkerframework.checker.mustcall.qual.InheritableMustCall;
@@ -33,6 +34,7 @@ import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.mustcall.qual.PolyMustCall;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
+import org.checkerframework.checker.resourceleak.ResourceLeakUtils;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.cfg.block.Block;
@@ -42,6 +44,7 @@ import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
@@ -155,6 +158,76 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     // GenericAnnotatedTypeFactory, but this works here because we know the Must Call Checker is
     // always the first subchecker that's sharing tempvars.
     tempVars.clear();
+  }
+
+  /**
+   * Called in addComputedTypeAnnotations. Changes the type parameters referring to collections and
+   * iterators to {@code @MustCall} if they are currently {@code @MustCallUnknown}.
+   *
+   * <p>This is necessary, as the type variable upper bounds for collections is
+   * {@code @MustCallUnknown}. When the type variable is a generic or wildcard with no upper bound,
+   * the type parameter does default to {@code @MustCallUnknown}, which is both unsound and
+   * imprecise.
+   *
+   * @param elt the element
+   * @param type the type of the element
+   */
+  private void changeCollectionTypeParameters(Element elt, AnnotatedTypeMirror type) {
+    if (elt.getKind() != ElementKind.CLASS && elt.getKind() != ElementKind.INTERFACE) {
+      if (type.getKind() == TypeKind.DECLARED) {
+        replaceResourceHoldingTypeVarsWithBottomIfTop(type);
+      } else if (type.getKind() == TypeKind.EXECUTABLE) {
+        AnnotatedExecutableType methodType = (AnnotatedExecutableType) type;
+        AnnotatedTypeMirror returnType = methodType.getReturnType();
+
+        replaceResourceHoldingTypeVarsWithBottomIfTop(returnType);
+
+        String enclosingClass = ElementUtils.getEnclosingClassName((ExecutableElement) elt);
+        if (enclosingClass.startsWith("java.")) {
+          // this is a jdk method - do not change the upper bound
+        } else {
+          for (AnnotatedTypeMirror paramType : methodType.getParameterTypes()) {
+            replaceResourceHoldingTypeVarsWithBottomIfTop(paramType);
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * Replace all the type variables of the given AnnotatedTypeMirror that refer to Collections or
+   * Iterators with Bottom if they are Top. This is because having a Top type parameter is unsafe
+   * and occurs when the type variable is a generic or wildcard without upper bound. We want to
+   * prevent such a Collection/Iterator from holding elements with MustCall obligations.
+   *
+   * @param typeMirror the annotated type mirror for which all Collection/Iterator type variables
+   *     with Top type are to be replaced with Bottom.
+   */
+  private void replaceResourceHoldingTypeVarsWithBottomIfTop(AnnotatedTypeMirror typeMirror) {
+    if (ResourceLeakUtils.isCollection(typeMirror.getUnderlyingType())) {
+      // || ResourceLeakUtils.isIterator(typeMirror.getUnderlyingType())) {
+      if (typeMirror.getKind() == TypeKind.DECLARED) {
+        AnnotatedDeclaredType adt = (AnnotatedDeclaredType) typeMirror;
+        for (AnnotatedTypeMirror typeArg : adt.getTypeArguments()) {
+          if (typeArg == null) continue;
+          AnnotationMirror mcAnno = typeArg.getEffectiveAnnotation();
+          boolean typeArgIsMcoeUnknown =
+              mcAnno != null
+                  && processingEnv
+                      .getTypeUtils()
+                      .isSameType(mcAnno.getAnnotationType(), TOP.getAnnotationType());
+          if (typeArgIsMcoeUnknown) {
+            typeArg.replaceAnnotation(BOTTOM);
+          }
+        }
+      }
+    }
+  }
+
+  @Override
+  public void addComputedTypeAnnotations(Element elt, AnnotatedTypeMirror type) {
+    super.addComputedTypeAnnotations(elt, type);
+    changeCollectionTypeParameters(elt, type);
   }
 
   @Override
