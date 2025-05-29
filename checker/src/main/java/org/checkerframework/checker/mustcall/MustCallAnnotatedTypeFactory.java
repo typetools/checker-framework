@@ -161,40 +161,6 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   }
 
   /**
-   * Called in addComputedTypeAnnotations. Changes the type parameters referring to collections and
-   * iterators to {@code @MustCall} if they are currently {@code @MustCallUnknown}.
-   *
-   * <p>This is necessary, as the type variable upper bounds for collections is
-   * {@code @MustCallUnknown}. When the type variable is a generic or wildcard with no upper bound,
-   * the type parameter does default to {@code @MustCallUnknown}, which is both unsound and
-   * imprecise.
-   *
-   * @param elt the element
-   * @param type the type of the element
-   */
-  private void changeCollectionTypeParameters(Element elt, AnnotatedTypeMirror type) {
-    if (elt.getKind() != ElementKind.CLASS && elt.getKind() != ElementKind.INTERFACE) {
-      if (type.getKind() == TypeKind.DECLARED) {
-        replaceResourceHoldingTypeVarsWithBottomIfTop(type);
-      } else if (type.getKind() == TypeKind.EXECUTABLE) {
-        AnnotatedExecutableType methodType = (AnnotatedExecutableType) type;
-        AnnotatedTypeMirror returnType = methodType.getReturnType();
-
-        replaceResourceHoldingTypeVarsWithBottomIfTop(returnType);
-
-        String enclosingClass = ElementUtils.getEnclosingClassName((ExecutableElement) elt);
-        if (enclosingClass.startsWith("java.")) {
-          // this is a jdk method - do not change the upper bound
-        } else {
-          for (AnnotatedTypeMirror paramType : methodType.getParameterTypes()) {
-            replaceResourceHoldingTypeVarsWithBottomIfTop(paramType);
-          }
-        }
-      }
-    }
-  }
-
-  /**
    * Replace all the type variables of the given AnnotatedTypeMirror that refer to Collections or
    * Iterators with Bottom if they are Top. This is because having a Top type parameter is unsafe
    * and occurs when the type variable is a generic or wildcard without upper bound. We want to
@@ -224,10 +190,37 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     }
   }
 
+  /*
+   * Changes the type parameters of collections and iteratos to @MustCall if they are currently
+   * @MustCallUnknown.
+   *
+   * <p>This is necessary, as the type variable upper bounds for collections is
+   * {@code @MustCallUnknown}. When the type variable is a generic or wildcard with no upper bound,
+   * the type parameter does default to {@code @MustCallUnknown}, which is both unsound and
+   * imprecise.
+   */
   @Override
   public void addComputedTypeAnnotations(Element elt, AnnotatedTypeMirror type) {
     super.addComputedTypeAnnotations(elt, type);
-    changeCollectionTypeParameters(elt, type);
+    if (elt.getKind() != ElementKind.CLASS && elt.getKind() != ElementKind.INTERFACE) {
+      if (type.getKind() == TypeKind.DECLARED) {
+        replaceResourceHoldingTypeVarsWithBottomIfTop(type);
+      } else if (type.getKind() == TypeKind.EXECUTABLE) {
+        AnnotatedExecutableType methodType = (AnnotatedExecutableType) type;
+        AnnotatedTypeMirror returnType = methodType.getReturnType();
+
+        replaceResourceHoldingTypeVarsWithBottomIfTop(returnType);
+
+        String enclosingClass = ElementUtils.getEnclosingClassName((ExecutableElement) elt);
+        if (enclosingClass.startsWith("java.")) {
+          // this is a jdk method - do not change the upper bound
+        } else {
+          for (AnnotatedTypeMirror paramType : methodType.getParameterTypes()) {
+            replaceResourceHoldingTypeVarsWithBottomIfTop(paramType);
+          }
+        }
+      }
+    }
   }
 
   @Override
