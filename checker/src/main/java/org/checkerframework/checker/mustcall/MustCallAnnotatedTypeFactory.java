@@ -166,25 +166,34 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
    * and occurs when the type variable is a generic or wildcard without upper bound. We want to
    * prevent such a Collection/Iterator from holding elements with MustCall obligations.
    *
-   * @param typeMirror the annotated type mirror for which all Collection/Iterator type variables
-   *     with Top type are to be replaced with Bottom.
+   * @param tree the tree
+   * @param adt the annotated declared type for which all Collection type variables with Top type
+   *     are to be replaced with Bottom.
    */
-  private void replaceResourceHoldingTypeVarsWithBottomIfTop(AnnotatedTypeMirror typeMirror) {
-    if (ResourceLeakUtils.isCollection(typeMirror.getUnderlyingType())) {
-      // || ResourceLeakUtils.isIterator(typeMirror.getUnderlyingType())) {
-      if (typeMirror.getKind() == TypeKind.DECLARED) {
-        AnnotatedDeclaredType adt = (AnnotatedDeclaredType) typeMirror;
-        for (AnnotatedTypeMirror typeArg : adt.getTypeArguments()) {
-          if (typeArg == null) continue;
+  private void replaceCollectionTypeVarsWithBottomIfTop(Tree tree, AnnotatedDeclaredType adt) {
+    if (ResourceLeakUtils.isCollection(adt.getUnderlyingType())) {
+      // || ResourceLeakUtils.isIterator(adt.getUnderlyingType())) {
+      for (AnnotatedTypeMirror typeArg : adt.getTypeArguments()) {
+        if (typeArg == null) continue;
+        if (typeArg.getKind() == TypeKind.WILDCARD || typeArg.getKind() == TypeKind.TYPEVAR) {
+          if (tree != null && tree instanceof NewClassTree) {
+            if (((NewClassTree) tree).getTypeArguments().isEmpty()) {
+              // Diamond [new Class()<>]. Not explicit generic type param.
+              // This will be inferred later. Don't put it to bottom here.
+              continue;
+            }
+          }
           AnnotationMirror mcAnno = typeArg.getEffectiveAnnotation();
-          boolean typeArgIsMcoeUnknown =
+          boolean typeArgIsMcUnknown =
               mcAnno != null
                   && processingEnv
                       .getTypeUtils()
                       .isSameType(mcAnno.getAnnotationType(), TOP.getAnnotationType());
-          if (typeArgIsMcoeUnknown) {
+          if (typeArgIsMcUnknown) {
             typeArg.replaceAnnotation(BOTTOM);
           }
+        } else if (typeArg.getKind() == TypeKind.DECLARED) {
+          replaceCollectionTypeVarsWithBottomIfTop(null, (AnnotatedDeclaredType) typeArg);
         }
       }
     }
@@ -200,23 +209,31 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
    * imprecise.
    */
   @Override
-  public void addComputedTypeAnnotations(Element elt, AnnotatedTypeMirror type) {
-    super.addComputedTypeAnnotations(elt, type);
-    if (elt.getKind() != ElementKind.CLASS && elt.getKind() != ElementKind.INTERFACE) {
+  public void addComputedTypeAnnotations(Tree tree, AnnotatedTypeMirror type, boolean useFlow) {
+    super.addComputedTypeAnnotations(tree, type, useFlow);
+
+    if (tree.getKind() != Tree.Kind.CLASS && tree.getKind() != Tree.Kind.INTERFACE) {
       if (type.getKind() == TypeKind.DECLARED) {
-        replaceResourceHoldingTypeVarsWithBottomIfTop(type);
+        replaceCollectionTypeVarsWithBottomIfTop(tree, (AnnotatedDeclaredType) type);
       } else if (type.getKind() == TypeKind.EXECUTABLE) {
         AnnotatedExecutableType methodType = (AnnotatedExecutableType) type;
         AnnotatedTypeMirror returnType = methodType.getReturnType();
 
-        replaceResourceHoldingTypeVarsWithBottomIfTop(returnType);
+        if (returnType.getKind() == TypeKind.DECLARED) {
+          replaceCollectionTypeVarsWithBottomIfTop(null, (AnnotatedDeclaredType) returnType);
+        }
 
-        String enclosingClass = ElementUtils.getEnclosingClassName((ExecutableElement) elt);
-        if (enclosingClass.startsWith("java.")) {
-          // this is a jdk method - do not change the upper bound
-        } else {
-          for (AnnotatedTypeMirror paramType : methodType.getParameterTypes()) {
-            replaceResourceHoldingTypeVarsWithBottomIfTop(paramType);
+        Element elt = TreeUtils.elementFromTree(tree);
+        if (elt != null && elt instanceof ExecutableElement) {
+          String enclosingClass = ElementUtils.getEnclosingClassName((ExecutableElement) elt);
+          if (enclosingClass.startsWith("java.")) {
+            // this is a jdk method - do not change the upper bound
+          } else {
+            for (AnnotatedTypeMirror paramType : methodType.getParameterTypes()) {
+              if (paramType.getKind() == TypeKind.DECLARED) {
+                replaceCollectionTypeVarsWithBottomIfTop(null, (AnnotatedDeclaredType) paramType);
+              }
+            }
           }
         }
       }
