@@ -11,7 +11,10 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.collectionownership.qual.NotOwningCollection;
 import org.checkerframework.checker.collectionownership.qual.OwningCollection;
 import org.checkerframework.checker.collectionownership.qual.OwningCollectionBottom;
@@ -31,8 +34,6 @@ import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
@@ -146,15 +147,18 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
   public boolean isResourceCollection(AnnotatedTypeMirror t) {
     boolean isCollectionType = ResourceLeakUtils.isCollection(t.getUnderlyingType());
     boolean isArrayType = t.getKind() == TypeKind.ARRAY;
-    AnnotatedTypeMirror componentType =
+
+    TypeMirror componentType =
         isArrayType
-            ? ((AnnotatedArrayType) t).getComponentType()
-            : (isCollectionType ? ((AnnotatedDeclaredType) t).getTypeArguments().get(0) : null);
+            ? ((ArrayType) t.getUnderlyingType()).getComponentType()
+            : (isCollectionType
+                ? ((DeclaredType) t.getUnderlyingType()).getTypeArguments().get(0)
+                : null);
 
     MustCallAnnotatedTypeFactory mcAtf = ResourceLeakUtils.getMustCallAnnotatedTypeFactory(this);
 
     if (componentType != null) {
-      List<String> list = ResourceLeakUtils.getMcValues(componentType.getUnderlyingType(), mcAtf);
+      List<String> list = ResourceLeakUtils.getMcValues(componentType, mcAtf);
       return list != null && list.size() > 0;
     } else {
       return false;

@@ -287,6 +287,13 @@ public class ResourceLeakUtils {
         return null;
       }
     }
+
+    AnnotationMirror manualAnno =
+        AnnotationUtils.getAnnotationByClass(type.getAnnotationMirrors(), MustCall.class);
+    if (manualAnno != null) {
+      return AnnotationUtils.getElementValueArray(
+          manualAnno, mcAtf.getMustCallValueElement(), String.class);
+    }
     TypeElement typeElement = TypesUtils.getTypeElement(type);
     AnnotationMirror imcAnnotation =
         mcAtf.getDeclAnnotation(typeElement, InheritableMustCall.class);
