@@ -15,7 +15,7 @@ plugins {
   // Code formatting; defines targets "spotlessApply" and "spotlessCheck".
   // https://github.com/diffplug/spotless/tags ; see tags starting "gradle/"
   // Only works on JDK 11+ (even including the plugin crashes Gradle on JDK 8).
-  id 'com.diffplug.spotless' version '7.0.3'
+  id 'com.diffplug.spotless' version '7.0.4'
 }
 
 // There is another `repositories { ... }` block below; if you change this one, change that one as well.
