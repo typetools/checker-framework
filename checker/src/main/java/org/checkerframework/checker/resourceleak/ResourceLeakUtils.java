@@ -3,11 +3,11 @@ package org.checkerframework.checker.resourceleak;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
@@ -25,6 +25,7 @@ import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -261,11 +262,33 @@ public class ResourceLeakUtils {
   }
 
   /**
+   * Safely extract the values of a given element in an {@link AnnotationMirror}. Returns the list
+   * of such values and the empty list if the element is not present.
+   *
+   * @param anno the annotation to extract values from
+   * @param element the element to access from the annotation
+   * @return the list of values of the given element in the given annotation and the empty list if
+   *     it is not present
+   */
+  public static List<String> getValuesInAnno(AnnotationMirror anno, ExecutableElement element) {
+    if (anno == null) {
+      throw new BugInCF("Annotation " + anno + " must not be null.");
+    } else {
+      AnnotationValue av = anno.getElementValues().get(element);
+      if (av == null) {
+        return new ArrayList<String>();
+      } else {
+        return AnnotationUtils.annotationValueToList(av, String.class);
+      }
+    }
+  }
+
+  /**
    * Returns the list of mustcall obligations for the given {@code TypeMirror} upper bound (either
    * the type variable itself if it is concrete or the upper bound if its a wildcard or generic).
    *
    * <p>If the type variable has no upper bound, for instance if it is a wildcard with no extends
-   * clause the method returns null
+   * clause the method returns null.
    *
    * @param type the {@code TypeMirror}
    * @param mcAtf the {@code MustCallAnnotatedTypeFactory} to get the {@code MustCall} type
@@ -291,24 +314,19 @@ public class ResourceLeakUtils {
     AnnotationMirror manualAnno =
         AnnotationUtils.getAnnotationByClass(type.getAnnotationMirrors(), MustCall.class);
     if (manualAnno != null) {
-      return AnnotationUtils.getElementValueArray(
-          manualAnno, mcAtf.getMustCallValueElement(), String.class);
+      return getValuesInAnno(manualAnno, mcAtf.getMustCallValueElement());
     }
+
     TypeElement typeElement = TypesUtils.getTypeElement(type);
     AnnotationMirror imcAnnotation =
         mcAtf.getDeclAnnotation(typeElement, InheritableMustCall.class);
     AnnotationMirror mcAnnotation = mcAtf.getDeclAnnotation(typeElement, MustCall.class);
-    Set<String> mcValues = new HashSet<>();
     if (mcAnnotation != null) {
-      mcValues.addAll(
-          AnnotationUtils.getElementValueArray(
-              mcAnnotation, mcAtf.getMustCallValueElement(), String.class));
+      return getValuesInAnno(mcAnnotation, mcAtf.getMustCallValueElement());
     }
     if (imcAnnotation != null) {
-      mcValues.addAll(
-          AnnotationUtils.getElementValueArray(
-              imcAnnotation, mcAtf.getInheritableMustCallValueElement(), String.class));
+      return getValuesInAnno(imcAnnotation, mcAtf.getInheritableMustCallValueElement());
     }
-    return new ArrayList<>(mcValues);
+    return new ArrayList<>();
   }
 }

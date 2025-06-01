@@ -118,7 +118,6 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
     rlc.setRoot(root);
     MustCallConsistencyAnalyzer mustCallConsistencyAnalyzer = new MustCallConsistencyAnalyzer(rlc);
     mustCallConsistencyAnalyzer.analyze(cfg);
-
     // Inferring owning annotations for @Owning fields/parameters, @EnsuresCalledMethods for
     // finalizer methods and @InheritableMustCall annotations for the class declarations.
     if (cmAtf.getWholeProgramInference() != null) {
