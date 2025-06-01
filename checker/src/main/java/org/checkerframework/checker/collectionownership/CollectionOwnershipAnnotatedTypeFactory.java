@@ -147,12 +147,16 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
     boolean isCollectionType = ResourceLeakUtils.isCollection(t.getUnderlyingType());
     boolean isArrayType = t.getKind() == TypeKind.ARRAY;
 
-    TypeMirror componentType =
-        isArrayType
-            ? ((ArrayType) t.getUnderlyingType()).getComponentType()
-            : (isCollectionType
-                ? ((DeclaredType) t.getUnderlyingType()).getTypeArguments().get(0)
-                : null);
+    TypeMirror componentType = null;
+    if (isArrayType) {
+      componentType = ((ArrayType) t.getUnderlyingType()).getComponentType();
+    } else if (isCollectionType) {
+      List<? extends TypeMirror> typeArgs =
+          ((DeclaredType) t.getUnderlyingType()).getTypeArguments();
+      if (typeArgs.size() != 0) {
+        componentType = typeArgs.get(0);
+      }
+    }
 
     MustCallAnnotatedTypeFactory mcAtf = ResourceLeakUtils.getMustCallAnnotatedTypeFactory(this);
 
@@ -198,7 +202,11 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
       AnnotatedTypeMirror returnType = t.getReturnType();
 
       if (isResourceCollection(returnType)) {
-        returnType.replaceAnnotation(CollectionOwnershipAnnotatedTypeFactory.this.OWNINGCOLLECTION);
+        AnnotationMirror manualAnno = returnType.getEffectiveAnnotationInHierarchy(TOP);
+        if (manualAnno == null || AnnotationUtils.areSameByName(BOTTOM, manualAnno)) {
+          returnType.replaceAnnotation(
+              CollectionOwnershipAnnotatedTypeFactory.this.OWNINGCOLLECTION);
+        }
       }
 
       for (AnnotatedTypeMirror paramType : t.getParameterTypes()) {
