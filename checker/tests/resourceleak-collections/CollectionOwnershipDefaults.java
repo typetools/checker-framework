@@ -1,6 +1,7 @@
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 import org.checkerframework.checker.calledmethods.qual.*;
 import org.checkerframework.checker.collectionownership.qual.*;
@@ -16,6 +17,31 @@ class CollectionOwnershipDefaults {
 
   /* This should default to @OwningCollection */
   Collection<Socket> resourceCollectionField;
+
+  /*
+   * Check that manual MustCall annotations are correctly considered when deciding whether
+   * something is a resoure collection.
+   */
+  public void detectResourceCollection(
+      List<@MustCall({}) Socket> l1,
+      Collection<@MustCall({"close"}) Socket> l2,
+      LinkedList<Socket> l3,
+      ArrayList<String> l4,
+      ArrayList<@MustCall({"a"}) String> l5) {
+    // not a resource collection, this call succeeds.
+    checkArgIsOwning(l1);
+    // a resource collection, this call fails.
+    // :: error: argument
+    checkArgIsOwning(l2);
+    // a resource collection, this call fails.
+    // :: error: argument
+    checkArgIsOwning(l3);
+    // not a resource collection, this call succeeds.
+    checkArgIsOwning(l4);
+    // a resource collection, this call fails.
+    // :: error: argument
+    checkArgIsOwning(l5);
+  }
 
   /*
    * Check that resource collection field defaults to @OwningCollection.
@@ -41,6 +67,23 @@ class CollectionOwnershipDefaults {
    */
   List<Socket> identity(@OwningCollection List<Socket> list) {
     return list;
+  }
+
+  /*
+   * Check whether manual annotations on the return type correctly override the default.
+   */
+  @NotOwningCollection
+  List<Socket> overrideReturnType(List<Socket> list) {
+    return list;
+  }
+
+  void overrideReturnTypeClient() {
+    List<Socket> notOwninglist = overrideReturnType(new ArrayList<Socket>());
+    List<Socket> owninglist = identity(new ArrayList<Socket>());
+
+    checkArgIsOwning(owninglist);
+    // :: error: argument
+    checkArgIsOwning(notOwninglist);
   }
 
   /*
@@ -79,11 +122,11 @@ class CollectionOwnershipDefaults {
     checkArgIsOCwoO(newResourceArray);
   }
 
-  void checkArgIsOwning(@OwningCollection Collection<Socket> collection) {}
+  void checkArgIsOwning(@OwningCollection Collection<?> collection) {}
 
   void checkArgIsOwning(Socket @OwningCollection [] collection) {}
 
-  void checkArgIsOCwoO(@OwningCollectionWithoutObligation Collection<Socket> collection) {}
+  void checkArgIsOCwoO(@OwningCollectionWithoutObligation Collection<?> collection) {}
 
   void checkArgIsOCwoO(Socket @OwningCollectionWithoutObligation [] collection) {}
 }
