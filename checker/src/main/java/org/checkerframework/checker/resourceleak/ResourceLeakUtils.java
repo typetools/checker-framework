@@ -318,6 +318,9 @@ public class ResourceLeakUtils {
     }
 
     TypeElement typeElement = TypesUtils.getTypeElement(type);
+    if (typeElement == null) {
+      return new ArrayList<>();
+    }
     AnnotationMirror imcAnnotation =
         mcAtf.getDeclAnnotation(typeElement, InheritableMustCall.class);
     AnnotationMirror mcAnnotation = mcAtf.getDeclAnnotation(typeElement, MustCall.class);
