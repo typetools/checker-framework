@@ -4,6 +4,7 @@
 
 import java.net.*;
 import java.util.List;
+import org.checkerframework.checker.collectionownership.qual.OwningCollection;
 import org.checkerframework.checker.mustcall.qual.*;
 
 public class SocketIntoList {
@@ -13,7 +14,7 @@ public class SocketIntoList {
     l.add(s);
   }
 
-  public void test2(List<Socket> l) {
+  public void test2(@OwningCollection List<Socket> l) {
     // s is unconnected, so no error is expected when it's stored into the list.
     // But, if the list is unannotated, we do get an error at its declaration site
     // (as expected, due to #5912).
