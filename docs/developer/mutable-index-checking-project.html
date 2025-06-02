@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Index checking for mutable length data structures</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- This link works on the web, but not from the file system. -->
+  <link rel="icon" type="image/png" href="favicon-checkerframework.png">
+</head>
+<body>
+
+<h2 id="index-checker-mutable-length">Index checking for mutable length data structures</h2>
+
+<p>
+The <a href="https://checkerframework.org/manual/#index-checker">Index
+Checker</a> is currently restricted to fixed-size data structures.  A
+fixed-size data structure is one whose length cannot be changed once it is
+created, such as arrays and Strings.  This limitation prevents the Index
+Checker from verifying indexing operations on mutable-size data structures,
+like Lists, that have <code>add</code> or <code>remove</code>
+methods. Since these kind of collections are common in practice, this is a
+severe limitation for the Index Checker.
+</p>
+
+<p>
+The limitation is caused by the Index Checker's use of types that are
+dependent on the length of data structures,
+like <code>@LTLengthOf("data_structure")</code>. If <code>data_structure</code>'s
+length could change, then the correctness of this type might change.
+</p>
+
+<ol>
+  <li>
+    Invalidate all Index Checker qualifiers whenever a side effect may
+    occur (for example, at every call to a method that might have side
+    effects).  This is imprecise (it loses refined type information) and
+    therefore will result in many false positive alarms, so it is an
+    impractical solution.  However, it is sound, which is most important.
+    Subsequent steps will improve its precision.
+  </li>
+  <li>
+    Only invalidate <em>some</em> Index Checker qualifiers when a side
+    effect may occur &mdash; namely, those relating to mutable-length data
+    structures.  This requires determining which indexable datatypes have
+    mutable lengths, which can be hard-coded for the collection classes in
+    the JDK.
+  </li>
+  <li>
+    Implement
+    the <a href="#SideEffectsOnly"><code>@SideEffectsOnly</code></a>
+    annotation.  Suppose that a method is called that only side-effects
+    variable <code>a</code> of type <code>T</code> and
+    variable <code>b</code> of type <code>U</code>.  Then the Index Checker
+    needs to invalidate:
+    <ul>
+      <li>
+        qualifiers on all expressions of type <code>T</code>
+        or <code>U</code> (and their supertypes and subtypes).  Index
+        Checker qualifiers on types that are unrelated to <code>T</code>
+        and <code>U</code> can be retained.
+      </li>
+      <li>
+        dependent type qualifiers that mention any expression of
+        type <code>T</code> or <code>U</code>.
+      </li>
+    </ul>
+  </li>
+  <li>
+    Alternatively, devise and implement a new annotation (e.g., <code>@BackedBy</code>)
+    that connects the length of a data structure to the length of its backing data structure.
+    For example, an annotation on `ArrayList` could tell the checker which field
+    of the `ArrayList` class is the backing array. Then, make it an error if
+    any method of a class with such an annotation re-assigns the backing array
+    unless it has a new annotation (e.g., <code>@ChangesLength</code>). This annotation
+    could apply recursively, to allow data structures that are themselves backed by
+    mutable-length data structures. Only invalidate facts about a mutable length data structure
+    when one of its <code>@ChangesLength</code> methods is called.
+  </li>
+  <li>
+    The <code>@LengthOf</code> annotation is currently an alias
+    for <code>@LTELengthOf</code>.  But its definition is a value that
+    indicates the size of a data structure.  It can perhaps be used.
+  </li>
+  <li>
+    Run a pointer analysis before type-checking.  Now, at a possible side
+    effect to expressions <code>a</code> and <code>b</code>, it is only
+    necessary to invalidate Index Checker qualifiers related to expressions
+    that may be aliased to <code>a</code> or <code>b</code>.  One possible
+    pointer analysis is that
+    of <a href="https://github.com/plast-lab/doop-mirror">Doop</a>.
+    <p>
+    A significant downside to this approach is that it is a whole-program
+    analysis rather than a modular one.  A modular analysis works
+    method-by-method.  A whole-program analysis requires that the entire
+    program is present to be analyzed, and it is slow.
+  </li>
+  <li>
+    Modify rather than discarding the Index Checker qualifiers on
+    possibly-aliased data structures.  If an expression is must-aliased
+    to <code>a</code>, then its type should be updated in exactly the way
+    that <code>a</code>'s is.  If an expression is may-aliased
+    to <code>a</code>, then its type should become the LUB of its old type
+    and <code>a</code>'s new type.  Adjusting the types of
+    dependently-typed variables is a bit more complicated.
+  </li>
+</ol>
+
+
+<h2>
+
+
+
+
+</body>
+</html>
