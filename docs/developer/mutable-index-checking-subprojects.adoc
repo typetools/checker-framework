@@ -2,7 +2,7 @@
 
 ## 1. First focus on a single collection
 
-Checking properties involving multiple collections - indices to multiple collections,
+Checking properties involving multiple collections -- indices to multiple collections,
 collections of the same length, etc., will be significantly more complex
 than properties involving a single collection (such as IndexFor).
 So let's focus on individual collections first, to limit the scope and make a base that can be built upon.
@@ -41,11 +41,14 @@ For collections that only grow, we don't need to track what methods can mutate t
 as long as we ensure that no code ever removes from them.
 
 We could make such collection with GrowOnly, a qualifier that ensures the object can not shrink.
+```java
 @GrowOnly ArrayList<T> growOnlyList = new @GrowOnly ArrayList<T>();
+```
 
 On the other hand, collections that actually can shrink will be qualified Shrinkable.
 Code that does not remove from a collection can accept both of these, with the qualifier CannotRemoveFrom.
 
+[%hardbreaks]
 This leads to the following 4-qualifier hierarchy:
 Bottom <: GrowOnly <: CannotRemoveFrom
 Bottom <: Shrinkable <: CannotRemoveFrom
@@ -57,20 +60,21 @@ we could limit the guarantees provided by the checker only to grow-only collecti
 It would still be an improvement over the situation where indices for mutable-length collections are not checked at all.
 
 The annotation UncheckedShrinkable would be used to opt out of index checking.
-If a list is UncheckedShrinkable, then @IndexFor(list) would be equivalent to @NonNegative
-- the checker would basically assume that all indices are valid for this collection.
+If a list is UncheckedShrinkable, then `@IndexFor(list)` would be equivalent to `@NonNegative`
+-- the checker would basically assume that all indices are valid for this collection.
 
+[%hardbreaks]
 This annotation would fit into the hierarchy like this:
 Bottom <: UncheckedShrinkable <: Shrinkable <: CannotRemoveFrom
 
 ## 8. Annotating the library
 
 Checking indices of a mutable collection type (such as List) in the Java library would require annotating its methods:
-- Methods that accept indices must have the parameters annotated IndexFor or IndexOrHigh. Missing annotation would create unsoundness.
-- Methods that return indices should have the return type annotated IndexFor or IndexOrHigh. Missing annotation would cause false positives.
-- Most methods do not remove from the collection - the default qualifier for this type should be CannotRemoveFrom.
-- Methods that can remove from the collection must use the Shrinkable annotation. Missing annotation would create unsoundness.
-- Methods that allocate and return a new list could also use the Shrinkable annotation.
+* Methods that accept indices must have the parameters annotated IndexFor or IndexOrHigh. Missing annotation would create unsoundness.
+* Methods that return indices should have the return type annotated IndexFor or IndexOrHigh. Missing annotation would cause false positives.
+* Most methods do not remove from the collection -- the default qualifier for this type should be CannotRemoveFrom.
+* Methods that can remove from the collection must use the Shrinkable annotation. Missing annotation would create unsoundness.
+* Methods that allocate and return a new list could also use the Shrinkable annotation.
 
 The annotations UncheckedShrinkable and GrowOnly should not be used for the library.
 
@@ -87,13 +91,13 @@ Some types within the application might need to be annotated CannotRemoveFrom to
 
 - Focus on checking IndexFor annotations limited to grow-only collections.
 - Implement the qualifier hierarchy (GrowOnly, UncheckedShrinkable, Shrinkable, CannotRemoveFrom).
-- Annotate methods of List which remove elements with @Shrinkable this.
-- Find if there are other methods in the Java library that may require @Shrinkable.
+- Annotate methods of List which remove elements with `@Shrinkable this`.
+- Find if there are other methods in the Java library that may require `@Shrinkable`.
 - Annotate methods of List which involve indices with IndexFor/IndexOrHigh.
-- Enable checking IndexFor annotations for Lists, with the exception for @UncheckedShrinkable.
+- Enable checking IndexFor annotations for Lists, with the exception for `@UncheckedShrinkable`.
 - For a case study, find a small application that uses ArrayList in a grow-only way.
   Start assuming that all collections are UncheckedShrinkable.
-  Continue by annotating allocation of collections with @GrowOnly where possible, and add annotations as necessary for checking.
+  Continue by annotating allocation of collections with `@GrowOnly` where possible, and add annotations as necessary for checking.
 
 # Ideas for advanced features
 
@@ -125,7 +129,8 @@ it is quite common that one index variable is used for multiple collections of t
 The reason why this emerges is that if there is only one collection, using an index variable is not necessary, because the enhanced for loop can be used.
 So this might be one of the next steps to consider.
 
-If the collections are constructed with all the elements, then maintaining the following annotations should suffice to show that @IndexFor(listA) is also IndexFor(listB):
+[%hardbreaks]
+If the collections are constructed with all the elements, then maintaining the following annotations should suffice to show that `@IndexFor(listA)` is also `@IndexFor(listB)`:
 listA: @ShrinkOnly
 listB: @AtLeastSameLen(listA) + @GrowOnly
 
@@ -135,15 +140,15 @@ the SameLen qualifier would need an offset that would be flow-sensitive and infe
 ## 4. Unified effect annotation
 
 If it comes to defining method effect annotations, considering the above point "Having more elements is fine":
-The methods add, remove, and non-mutating methods, can all use one annotation EnsuresRelativeMinLen(list, n),
+The methods add, remove, and non-mutating methods, can all use one annotation `@EnsuresRelativeMinLen(list, n)`,
 with the meaning "sizeOfListOnReturn >= sizeOfListOnEntry + n".
-Then we could have add: @EnsuresRelativeMinLen(list, 1), get: @EnsuresRelativeMinLen(list, 0), remove: @EnsuresRelativeMinLen(list, -1).
-An unrestricted method would - implementation details aside - be @EnsuresRelativeMinLen(list, -infinity).
+Then we could have add: `@EnsuresRelativeMinLen(list, 1)`, get: `@EnsuresRelativeMinLen(list, 0)`, remove: `@EnsuresRelativeMinLen(list, -1)`.
+An unrestricted method would -- implementation details aside -- be `@EnsuresRelativeMinLen(list`, -infinity).
 
 ## 5. Simple checking of effects
 
 Checking method effect annotation in general is hard, but a simple implementation might be able to cover a good number of cases:
-- For code executed in sequence, sum together the n in the EnsuresRelativeMinLen of all called methods that can mutate the collection.
-- For code executed conditionally, change @EnsuresRelativeMinLen(list, n) to @EnsuresRelativeMinLen(list, 0) if n > 0.
-- For code executed in a loop, additionally change @EnsuresRelativeMinLen(list, n) to @EnsuresRelativeMinLen(list, -infinity) if n < 0.
-- Consider using value range information about the loop bound, when it is available.
+* For code executed in sequence, sum together the n in the EnsuresRelativeMinLen of all called methods that can mutate the collection.
+* For code executed conditionally, change `@EnsuresRelativeMinLen(list, n)` to `@EnsuresRelativeMinLen(list, 0)` if n > 0.
+* For code executed in a loop, additionally change `@EnsuresRelativeMinLen(list, n)` to `@EnsuresRelativeMinLen(list, -infinity)` if n < 0.
+* Consider using value range information about the loop bound, when it is available.
