@@ -173,11 +173,17 @@ public class ValueCheckerUtils {
    * @param origValues the objects to format
    * @return a list of the formatted objects
    */
+  @SuppressWarnings("mustcall:type.arguments.not.inferred")
   private static @Nullable List<?> convertToStringVal(
       List<? extends @MustCallUnknown Object> origValues) {
     if (origValues == null) {
       return null;
     }
+    // this line is unsafe, which is why the warning suppression is required.
+    // `origValues` potentially carries elements with MustCall obligations,
+    // but the second parameter of mapList is not annotated to do so.
+    // It would have to have the same List<? extends @MustCallUnknown Object>
+    // annotation.
     return CollectionsPlume.mapList(Object::toString, origValues);
   }
 
