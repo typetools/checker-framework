@@ -122,11 +122,14 @@ class CollectionOwnershipDefaults {
     checkArgIsOCwoO(newResourceArray);
   }
 
-  void checkArgIsOwning(@OwningCollection Collection<?> collection) {}
+  void checkArgIsOwning(
+      @OwningCollection Collection<? extends @MustCallUnknown Object> collection) {}
 
   void checkArgIsOwning(Socket @OwningCollection [] collection) {}
 
-  void checkArgIsOCwoO(@OwningCollectionWithoutObligation Collection<?> collection) {}
+  void checkArgIsOCwoO(
+      @OwningCollectionWithoutObligation
+          Collection<? extends @MustCallUnknown Object> collection) {}
 
   void checkArgIsOCwoO(Socket @OwningCollectionWithoutObligation [] collection) {}
 }
