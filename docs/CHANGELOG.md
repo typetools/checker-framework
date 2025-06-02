@@ -1,4 +1,4 @@
-Version 3.49.4 (June 1, 2025)
+Version 3.49.4 (July 1, 2025)
 -----------------------------
 
 **User-visible changes:**
@@ -6,6 +6,14 @@ Version 3.49.4 (June 1, 2025)
 **Implementation details:**
 
 **Closed issues:**
+
+
+Version 3.49.4 (June 2, 2025)
+-----------------------------
+
+**Closed issues:**
+
+#6740, #7013, #7038, #7070, #7082.
 
 
 Version 3.49.3 (May 2, 2025)
