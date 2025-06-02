@@ -1,3 +1,13 @@
+Version 3.49.4 (July 1, 2025)
+-----------------------------
+
+**User-visible changes:**
+
+**Implementation details:**
+
+**Closed issues:**
+
+
 Version 3.49.4 (June 2, 2025)
 -----------------------------
 

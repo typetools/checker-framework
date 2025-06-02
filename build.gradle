@@ -122,7 +122,7 @@ allprojects { currentProj ->
   //   * any new checkers have been added, or
   //   * backward-incompatible changes have been made to APIs or elsewhere.
   // To make a snapshot release, version should end in "-SNAPSHOT", then: ./gradlew publish
-  version = '3.49.4'
+  version = '3.49.5-SNAPSHOT'
 
   tasks.withType(JavaCompile).configureEach {
     options.fork = true
