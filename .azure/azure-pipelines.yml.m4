@@ -19,7 +19,7 @@ jobs:
 
 # The dependsOn clauses are:
 #  * Everything depends on the canary jobs (the main jdk21 jobs), except those jobs themselves.
-#  * Anything *_jdk11 or *_jdk17 or *_jdk23 depends on *_jdk21.
+#  * Anything *_jdk11 or *_jdk17 or *_jdk21 depends on *_jdk24.
 
 - job: canary_jobs
   dependsOn:
@@ -51,7 +51,7 @@ inference_job_split(canary_version)
 misc_job(11)
 misc_job(17)
 misc_job(21)
-misc_job(23)
+misc_job(24)
 
 typecheck_job_split(canary_version)
 
@@ -98,13 +98,13 @@ plume_lib_job(canary_version)
 #     fetchDepth: 25
 #   - bash: ./checker/bin-devel/test-downstream.sh
 #     displayName: test-downstream.sh
-# - job: downstream_jdk23
+# - job: downstream_jdk24
 #   dependsOn:
 #    - canary_jobs
 #    - downstream_jdk21
 #   pool:
 #     vmImage: 'ubuntu-latest'
-#   container: mdernst/cf-ubuntu-jdk23:latest
+#   container: mdernst/cf-ubuntu-jdk24:latest
 #   steps:
 #   - checkout: self
 #     fetchDepth: 25

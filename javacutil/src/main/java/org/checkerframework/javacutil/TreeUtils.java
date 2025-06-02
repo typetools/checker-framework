@@ -1555,7 +1555,7 @@ public final class TreeUtils {
   }
 
   /**
-   * Determine whether {@code tree} refers to a method element, such as.
+   * Determine whether {@code tree} refers to a method element, such as "m" or "obj.m" in:
    *
    * <pre>
    *   <em>m</em>(...)

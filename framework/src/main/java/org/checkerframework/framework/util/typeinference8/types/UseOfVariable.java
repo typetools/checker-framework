@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -47,13 +48,15 @@ public class UseOfVariable extends AbstractType {
    * @param variable variable that this is a use of
    * @param qualifierVars a mapping from polymorphic annotation to {@link QualifierVar}
    * @param context the context
+   * @param ignoreAnnotations whether the annotations on this type should be ignored
    */
   public UseOfVariable(
       AnnotatedTypeVariable type,
       Variable variable,
       AnnotationMirrorMap<QualifierVar> qualifierVars,
-      Java8InferenceContext context) {
-    super(context);
+      Java8InferenceContext context,
+      boolean ignoreAnnotations) {
+    super(context, ignoreAnnotations);
     QualifierHierarchy qh = context.typeFactory.getQualifierHierarchy();
     this.qualifierVars = qualifierVars;
     this.variable = variable;
@@ -70,8 +73,8 @@ public class UseOfVariable extends AbstractType {
   }
 
   @Override
-  public AbstractType create(AnnotatedTypeMirror atm, TypeMirror type) {
-    return InferenceType.create(atm, type, variable.map, qualifierVars, context);
+  public AbstractType create(AnnotatedTypeMirror atm, TypeMirror type, boolean ignoreAnnotations) {
+    return InferenceType.create(atm, type, variable.map, qualifierVars, context, ignoreAnnotations);
   }
 
   @Override
@@ -164,24 +167,28 @@ public class UseOfVariable extends AbstractType {
     if (!hasPrimaryAnno) {
       variable.getBounds().addBound(parent, kind, bound);
     } else {
-      // If the use has a primary annotation, then add the bound but with that annotations
-      // set to bottom or top.  This makes it so that the java type is still a bound, but
-      // the qualifiers do not change the results of inference.
-      if (kind == BoundKind.LOWER) {
-        bound.getAnnotatedType().replaceAnnotations(bots);
-        variable.getBounds().addBound(parent, kind, bound);
+      // If the use has a primary annotation, then mark the bound so that the annotations will be
+      // ignored. Also, set to bottom or top, unless the bound is a type variable. This way if all
+      // the bounds of a variable have annotations to be ignored, the instantiation of that variable
+      // is as flexable as possible.
+      AnnotatedTypeMirror boundCopyATM = bound.getAnnotatedType().deepCopy();
+      AbstractType boundCopy = bound.create(boundCopyATM, bound.getJavaType(), true);
+      if (boundCopyATM.getKind() == TypeKind.TYPEVAR && kind == BoundKind.EQUAL) {
+        variable.getBounds().addBound(parent, kind, boundCopy);
+      } else if (kind == BoundKind.LOWER) {
+        boundCopyATM.replaceAnnotations(bots);
+        variable.getBounds().addBound(parent, kind, boundCopy);
       } else if (kind == BoundKind.UPPER) {
-        bound.getAnnotatedType().replaceAnnotations(tops);
-        variable.getBounds().addBound(parent, kind, bound);
+        boundCopyATM.replaceAnnotations(tops);
+        variable.getBounds().addBound(parent, kind, boundCopy);
       } else {
-        AnnotatedTypeMirror copyATM = bound.getAnnotatedType().deepCopy();
-        AbstractType boundCopy = bound.create(copyATM, bound.getJavaType());
+        boundCopyATM.replaceAnnotations(tops);
+        variable.getBounds().addBound(parent, BoundKind.UPPER, boundCopy);
 
-        bound.getAnnotatedType().replaceAnnotations(tops);
-        variable.getBounds().addBound(parent, BoundKind.UPPER, bound);
-
-        boundCopy.getAnnotatedType().replaceAnnotations(bots);
-        variable.getBounds().addBound(parent, BoundKind.LOWER, boundCopy);
+        AnnotatedTypeMirror boundCopyATM2 = bound.getAnnotatedType().deepCopy();
+        AbstractType boundCopy2 = bound.create(boundCopyATM2, bound.getJavaType(), true);
+        boundCopyATM2.replaceAnnotations(bots);
+        variable.getBounds().addBound(parent, BoundKind.LOWER, boundCopy2);
       }
     }
   }

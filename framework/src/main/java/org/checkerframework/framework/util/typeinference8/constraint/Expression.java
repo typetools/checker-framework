@@ -91,7 +91,7 @@ public class Expression extends TypeConstraint {
         s = new ProperType(expression, context);
       } else {
         AnnotatedTypeMirror atm = context.typeFactory.getAnnotatedType(expression);
-        s = getT().create(atm, atm.getUnderlyingType());
+        s = getT().create(atm, atm.getUnderlyingType(), false);
       }
       return new Typing(this, s, T, TypeConstraint.Kind.TYPE_COMPATIBILITY);
     }
@@ -200,7 +200,7 @@ public class Expression extends TypeConstraint {
         AbstractType referenceType;
         if (context.isLambdaParam(preColonTree)) {
           AnnotatedTypeMirror atm = context.typeFactory.getAnnotatedType(preColonTree);
-          referenceType = T.create(atm, atm.getUnderlyingType());
+          referenceType = T.create(atm, atm.getUnderlyingType(), false);
         } else {
           if (MemberReferenceKind.getMemberReferenceKind(memRef).isUnbound()) {
             AnnotatedTypeMirror atm =

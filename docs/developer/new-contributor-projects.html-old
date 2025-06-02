@@ -709,3 +709,75 @@ https://checkerframework.org/manual/#handling-warnings .
 -->
 
 
+<!--
+<h2 id="nullness-bug-detector">Nullness bug detector</h2>
+
+<p>
+Verifying a program to be free of errors can be a daunting task.  When
+starting out, a user may be more interested in
+<a href="https://checkerframework.org/manual/#faq-other-tools-section">bug-finding</a>
+than verification.  The goal of this project is to create a nullness bug
+detector that uses the powerful analysis of the Checker Framework and its
+Nullness Checker, but omits some of its more confusing or expensive
+features.  The goal is to create a fast, easy-to-use bug detector.  It
+would enable users to start small and advance to full verification in the
+future, rather than having to start out doing full verification.
+</p>
+
+<p>
+This could be structured as a new NullnessLight Checker, or as a
+command-line argument to the current Nullness Checker.  Here are some
+differences from the real Nullness checker:
+</p>
+<ul>
+  <li>No initialization analysis; the checker assumes that every value is
+  initialized.</li>
+  <li>No map key analysis; assume that, at every call to
+    <code>Map.get</code>, the given key appears in the map.</li>
+  <li>No invalidation of dataflow facts.  Assume all method calls are pure,
+  so method calls do not invalidate dataflow facts.  Assume there is no
+    aliasing, so field updates do not invalidate dataflow facts.
+    </li>
+  <li>Assume that boxing of primitives is <code>@Pure</code>: it returns
+  the same value on every call.</li>
+  <li>If the Checker Framework cannot infer a type argument, assume that
+  the type argument is <code>@NonNull</code>.</li>
+</ul>
+<p>
+  Each of these behaviors should be controlled by its own command-line
+  argument, as well as being enabled in the NullnessLight Checker.
+</p>
+
+<p>
+  The implementation may be relatively straightforward, since in most cases
+  the behavior is just to disable some functionality of existing checkers.
+</p>
+
+<p>Tools such as FindBugs, NullAway, NullnessLight, and the Nullness
+  Checker form a spectrum from easy-to-use bug detectors to sound
+  verification.  NullnessLight represents a new point in the design space.
+  It will be interesting to compare these checkers:
+</p>
+
+<ul>
+    <li>How much easier is it to use?  For example, how many fewer
+      annotations need to be written?</li>
+    <li>
+      How many more fewer true positives does it report &mdash; in other
+      words, how many more false negatives does it suffer?
+    </li>
+    <li>
+      How many fewer false positives does it report?
+    </li>
+</ul>
+
+<p>
+  Uber's <a href="https://github.com/uber/NullAway">NullAway</a> tool is also
+  an implementation of this idea (that is, a fast, but incomplete and
+  unsound, nullness checker).  NullAway doesn't let the user specify Java
+  Generics:  it assumes that every type parameter is <code>@NonNull</code>.
+  Does Uber's tool provide users a good
+  introduction to the ideas that a user can use to transition to a nullness
+  type system later?
+</p>
+-->

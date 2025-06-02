@@ -294,6 +294,9 @@ import org.plumelib.util.UtilPlume;
 
   // Amount of detail in messages
 
+  // Warn about trees that take a long time to typecheck
+  "slowTypecheckingSeconds",
+
   // Print the version of the Checker Framework
   "version",
   // Print info about git repository from which the Checker Framework was compiled
@@ -387,13 +390,13 @@ import org.plumelib.util.UtilPlume;
   // as initialized by
   // org.checkerframework.framework.type.GenericAnnotatedTypeFactory.createCFGVisualizer()
   // -Aflowdotdir=xyz
-  // is short-hand for
+  // is shorthand for
   // -Acfgviz=org.checkerframework.dataflow.cfg.DOTCFGVisualizer,outdir=xyz
   "flowdotdir",
 
   // Enable additional output in the CFG visualization.
   // -Averbosecfg
-  // is short-hand for
+  // is shorthand for
   // -Acfgviz=MyClass,verbose
   "verbosecfg",
 
