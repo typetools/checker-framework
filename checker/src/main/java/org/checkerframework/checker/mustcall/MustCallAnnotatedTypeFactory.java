@@ -25,6 +25,8 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
+import javax.lang.model.type.WildcardType;
 import org.checkerframework.checker.mustcall.qual.CreatesMustCallFor;
 import org.checkerframework.checker.mustcall.qual.InheritableMustCall;
 import org.checkerframework.checker.mustcall.qual.MustCall;
@@ -183,14 +185,32 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
               continue;
             }
           }
-          AnnotationMirror mcAnno = typeArg.getEffectiveAnnotation();
+          AnnotationMirror mcAnno = typeArg.getEffectiveAnnotationInHierarchy(TOP);
           boolean typeArgIsMcUnknown =
               mcAnno != null
                   && processingEnv
                       .getTypeUtils()
                       .isSameType(mcAnno.getAnnotationType(), TOP.getAnnotationType());
           if (typeArgIsMcUnknown) {
-            typeArg.replaceAnnotation(BOTTOM);
+            // check whether the upper bounds have manual MustCallUnknown annotations, in which case
+            // they should
+            // not be reset to bottom. For example like this:
+            // void m(List<? extends @MustCallUnknown Object>) {}
+
+            if (typeArg.getUnderlyingType() instanceof WildcardType) {
+              TypeMirror extendsBound =
+                  ((WildcardType) typeArg.getUnderlyingType()).getExtendsBound();
+              if (!ResourceLeakUtils.hasManualMustCallUnknownAnno(extendsBound)) {
+                typeArg.replaceAnnotation(BOTTOM);
+              }
+            } else if (typeArg.getUnderlyingType() instanceof TypeVariable) {
+              TypeMirror upperBound = ((TypeVariable) typeArg.getUnderlyingType()).getUpperBound();
+              if (!ResourceLeakUtils.hasManualMustCallUnknownAnno(upperBound)) {
+                typeArg.replaceAnnotation(BOTTOM);
+              }
+            } else {
+              typeArg.replaceAnnotation(BOTTOM);
+            }
           }
         } else if (typeArg.getKind() == TypeKind.DECLARED) {
           replaceCollectionTypeVarsWithBottomIfTop(null, (AnnotatedDeclaredType) typeArg);
@@ -200,13 +220,23 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   }
 
   /*
-   * Changes the type parameters of collections and iteratos to @MustCall if they are currently
+   * Changes the type parameter annotations of collections and iterators to @MustCall if they are currently
    * @MustCallUnknown.
    *
    * <p>This is necessary, as the type variable upper bounds for collections is
    * {@code @MustCallUnknown}. When the type variable is a generic or wildcard with no upper bound,
    * the type parameter does default to {@code @MustCallUnknown}, which is both unsound and
    * imprecise.
+   *
+   * <p>This method changes the type parameter annotations for declared types directly. The other overload
+   * with access to {@code Element}s handles type parameter annotations for method return types and parameters,
+   * such that the changes are 'visible' at call-site as well as within the method. Changing this on the
+   * {@code Tree} is not sufficient.
+   * The reason that declared types are handled here is that for object initializations where the type
+   * parameter is left for inference, we don't want to change the type parameter annotation here, but wait
+   * for the inference instead, which instantiates it with the inferred type and corresponding annotation.
+   * {@code new Object<>()}
+   * Access to the {@code Tree} allows us to detect whether we have a new class tree without type parameters.
    */
   @Override
   public void addComputedTypeAnnotations(Tree tree, AnnotatedTypeMirror type, boolean useFlow) {
@@ -215,7 +245,38 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     if (tree.getKind() != Tree.Kind.CLASS && tree.getKind() != Tree.Kind.INTERFACE) {
       if (type.getKind() == TypeKind.DECLARED) {
         replaceCollectionTypeVarsWithBottomIfTop(tree, (AnnotatedDeclaredType) type);
-      } else if (type.getKind() == TypeKind.EXECUTABLE) {
+      }
+    }
+  }
+
+  /*
+   * Changes the type parameter annotations of collections and iterators to @MustCall if they are currently
+   * @MustCallUnknown.
+   *
+   * <p>This is necessary, as the type variable upper bounds for collections is
+   * {@code @MustCallUnknown}. When the type variable is a generic or wildcard with no upper bound,
+   * the type parameter does default to {@code @MustCallUnknown}, which is both unsound and
+   * imprecise.
+   *
+   * <p>This method changes the type parameter annotations of {@code Element}s, which is the preferred
+   * way for method return types and parameters, such that the changes are 'visible' at call-site as well
+   * as within the method. The type parameter annotations at other places is handled in the overload of this
+   * method with access to the {@code Tree}. The reason is that for object initializations where the type
+   * parameter is left for inference, we don't want to change the type parameter annotation here, but wait
+   * for the inference instead, which instantiates it with the inferred type and corresponding annotation.
+   * {@code new Object<>()}
+   */
+  @Override
+  public void addComputedTypeAnnotations(Element elt, AnnotatedTypeMirror type) {
+    super.addComputedTypeAnnotations(elt, type);
+
+    if (type.getKind() == TypeKind.EXECUTABLE) {
+      String enclosingClass = ElementUtils.getEnclosingClassName((ExecutableElement) elt);
+      if (enclosingClass.startsWith("java.")) {
+        // this is a jdk method - do not change the upper bound. Defaults are only for user code.
+        // JDK methods have already been manually annotated.
+        return;
+      } else {
         AnnotatedExecutableType methodType = (AnnotatedExecutableType) type;
         AnnotatedTypeMirror returnType = methodType.getReturnType();
 
@@ -223,16 +284,10 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
           replaceCollectionTypeVarsWithBottomIfTop(null, (AnnotatedDeclaredType) returnType);
         }
 
-        Element elt = TreeUtils.elementFromTree(tree);
         if (elt != null && elt instanceof ExecutableElement) {
-          String enclosingClass = ElementUtils.getEnclosingClassName((ExecutableElement) elt);
-          if (enclosingClass.startsWith("java.")) {
-            // this is a jdk method - do not change the upper bound
-          } else {
-            for (AnnotatedTypeMirror paramType : methodType.getParameterTypes()) {
-              if (paramType.getKind() == TypeKind.DECLARED) {
-                replaceCollectionTypeVarsWithBottomIfTop(null, (AnnotatedDeclaredType) paramType);
-              }
+          for (AnnotatedTypeMirror paramType : methodType.getParameterTypes()) {
+            if (paramType.getKind() == TypeKind.DECLARED) {
+              replaceCollectionTypeVarsWithBottomIfTop(null, (AnnotatedDeclaredType) paramType);
             }
           }
         }
