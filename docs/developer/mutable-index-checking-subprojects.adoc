@@ -1,6 +1,6 @@
 ## Ideas for limited scope project
 
-Also see xref:mutable-index-checking-projects.adoc[Another perspective on the project].
+Also see xref:mutable-index-checking-projects.adoc[another perspective on the project].
 
 ### 1. First focus on a single collection
 
