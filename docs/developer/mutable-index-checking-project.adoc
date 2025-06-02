@@ -70,3 +70,5 @@ possibly-aliased data structures. If an expression is must-aliased to
 If an expression is may-aliased to `a`, then its type should become the
 LUB of its old type and `a`'s new type. Adjusting the types of
 dependently-typed variables is a bit more complicated.
+
+Also see xref:mutable-index-checking-subprojects.adoc[Another perspective on breaking the project into parts].

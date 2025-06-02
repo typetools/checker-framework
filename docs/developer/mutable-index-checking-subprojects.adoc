@@ -1,13 +1,15 @@
-# Ideas for limited scope project
+## Ideas for limited scope project
 
-## 1. First focus on a single collection
+Also see xref:mutable-index-checking-projects.adoc[Another perspective on the project].
+
+### 1. First focus on a single collection
 
 Checking properties involving multiple collections -- indices to multiple collections,
 collections of the same length, etc., will be significantly more complex
 than properties involving a single collection (such as IndexFor).
 So let's focus on individual collections first, to limit the scope and make a base that can be built upon.
 
-## 2. First focus on simple arithmetic
+### 2. First focus on simple arithmetic
 
 Code involving indices often contains simple arithmetic operations: `++i`, `i <= a.size()`,
 which are well supported by the Index Checker.
@@ -15,27 +17,27 @@ Addressing complicated arithmetic, such as multiple dimensions, binary search, e
 will encounter limitations of the Checker Framework,
 and likely produce lot of false positives without a powerful arithmetic solver.
 
-## 3. Having more elements is fine
+### 3. Having more elements is fine
 
 To check if an index is valid for a given collection, we don't need to worry if it has more elements than expected.
 Adding to a collection does not invalidate any existing indices.
 Therefore, for this point of view we don't need to distinguish code that can add to a collection from code that does not modify it.
 
-## 4. Some collections only grow (= never shrink)
+### 4. Some collections only grow (= never shrink)
 
 It is quite common to use a mutable-length collection and never remove elements from it.
 For example, building up a collection by appending individual items, and after that using it in a read-only way.
 
 As long as the collection never shrinks, the IndexFor annotations from the Index Checker will work soundly for it.
 
-## 5. Removing elements is hard
+### 5. Removing elements is hard
 
 On the other hand, removing elements can invalidate indices.
 Distinguishing code that does not shrink a given collection from code that can,
 brings in the whole problem of needing to reason about effects of methods and aliasing references,
 which may end up in having to annotate a lot of code, inventing complicated annotations that will not cover all cases anyway, etc.
 
-## 6. Checking that a collection is grow-only
+### 6. Checking that a collection is grow-only
 
 For collections that only grow, we don't need to track what methods can mutate them,
 as long as we ensure that no code ever removes from them.
@@ -53,7 +55,7 @@ This leads to the following 4-qualifier hierarchy:
 Bottom <: GrowOnly <: CannotRemoveFrom
 Bottom <: Shrinkable <: CannotRemoveFrom
 
-## 7. Limiting index checking to grow-only collections
+### 7. Limiting index checking to grow-only collections
 
 Because checking indices for shrinkable collections is too hard,
 we could limit the guarantees provided by the checker only to grow-only collections.
@@ -67,7 +69,7 @@ If a list is UncheckedShrinkable, then `@IndexFor(list)` would be equivalent to 
 This annotation would fit into the hierarchy like this:
 Bottom <: UncheckedShrinkable <: Shrinkable <: CannotRemoveFrom
 
-## 8. Annotating the library
+### 8. Annotating the library
 
 Checking indices of a mutable collection type (such as List) in the Java library would require annotating its methods:
 
@@ -79,7 +81,7 @@ Checking indices of a mutable collection type (such as List) in the Java library
 
 The annotations `@UncheckedShrinkable` and `@GrowOnly` should not be used for the library.
 
-## 9. Annotating application code
+### 9. Annotating application code
 
 In application code, each allocation of a list should be by default `@UncheckedShrinkable`.
 If all lists are `@UncheckedShrinkable`, it would ideally result in no warnings reported.
@@ -88,7 +90,7 @@ Then, collections that are intended to be grow-only should be annotated `@GrowOn
 Now, the Index Checker starts providing value by checking that the accesses are not out of bounds.
 Some types within the application might need to be annotated `@CannotRemoveFrom` to accept both kinds of collections.
 nn
-# Limited scope project proposal
+## Limited scope project proposal
 
 - Focus on checking IndexFor annotations limited to grow-only collections.
 - Implement the qualifier hierarchy (`@GrowOnly`, `@UncheckedShrinkable`, `@Shrinkable`, `@CannotRemoveFrom`).
@@ -100,9 +102,9 @@ nn
   Start assuming that all collections are `@UncheckedShrinkable`.
   Continue by annotating allocation of collections with `@GrowOnly` where possible, and add annotations as necessary for checking.
 
-# Ideas for advanced features
+## Ideas for advanced features
 
-## 1. Conversion of unique references
+### 1. Conversion of unique references
 
 If we know, by some means of alias tracking, that a reference to a collection is unique and used only in one place,
 then it may be safely converted both ways between `@GrowOnly` and Shrinkable.
@@ -110,7 +112,7 @@ This allows to "freeze" and "unfreeze" the collection for a while.
 That may be quite a common thing, so it could enable checking more code.
 On the other hand, satisfying the necessary uniqueness conditions might be difficult.
 
-## 2. Qualifier hierarchy for shrink-only
+### 2. Qualifier hierarchy for shrink-only
 
 [%hardbreaks]
 The above conversion could make useful a qualifier hierarchy that works in the opposite direction:
@@ -125,7 +127,7 @@ ConstLength = CannotAddTo + CannotRemoveFrom
 
 That could enable reasoning about collections that need to maintain fixed length.
 
-## 3. Same-length collections
+### 3. Same-length collections
 
 By quickly looking at the Checker Framework source code,
 it is quite common that one index variable is used for multiple collections of the same length.
@@ -140,7 +142,7 @@ listB: `@AtLeastSameLen(listA)` + `@GrowOnly`
 To support collections that are created by adding elements to all of them in a loop,
 the SameLen qualifier would need an offset that would be flow-sensitive and inferred.
 
-## 4. Unified effect annotation
+### 4. Unified effect annotation
 
 If it comes to defining method effect annotations, considering the above point "Having more elements is fine":
 The methods add, remove, and non-mutating methods, can all use one annotation `@EnsuresRelativeMinLen(list, n)`,
@@ -148,7 +150,7 @@ with the meaning "sizeOfListOnReturn >= sizeOfListOnEntry + n".
 Then we could have add: `@EnsuresRelativeMinLen(list, 1)`, get: `@EnsuresRelativeMinLen(list, 0)`, remove: `@EnsuresRelativeMinLen(list, -1)`.
 An unrestricted method would -- implementation details aside -- be `@EnsuresRelativeMinLen(list, -infinity)`.
 
-## 5. Simple checking of effects
+### 5. Simple checking of effects
 
 Checking method effect annotation in general is hard, but a simple implementation might be able to cover a good number of cases:
 
