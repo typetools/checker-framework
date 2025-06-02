@@ -70,6 +70,7 @@ Bottom <: UncheckedShrinkable <: Shrinkable <: CannotRemoveFrom
 ## 8. Annotating the library
 
 Checking indices of a mutable collection type (such as List) in the Java library would require annotating its methods:
+
 * Methods that accept indices must have the parameters annotated IndexFor or IndexOrHigh. Missing annotation would create unsoundness.
 * Methods that return indices should have the return type annotated IndexFor or IndexOrHigh. Missing annotation would cause false positives.
 * Most methods do not remove from the collection -- the default qualifier for this type should be CannotRemoveFrom.
