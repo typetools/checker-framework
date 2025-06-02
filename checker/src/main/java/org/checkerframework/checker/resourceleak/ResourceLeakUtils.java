@@ -19,6 +19,7 @@ import org.checkerframework.checker.mustcall.MustCallChecker;
 import org.checkerframework.checker.mustcall.MustCallNoCreatesMustCallForChecker;
 import org.checkerframework.checker.mustcall.qual.InheritableMustCall;
 import org.checkerframework.checker.mustcall.qual.MustCall;
+import org.checkerframework.checker.mustcall.qual.MustCallUnknown;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsChecker;
 import org.checkerframework.framework.source.SourceChecker;
@@ -331,5 +332,21 @@ public class ResourceLeakUtils {
       return getValuesInAnno(imcAnnotation, mcAtf.getInheritableMustCallValueElement());
     }
     return new ArrayList<>();
+  }
+
+  /**
+   * Return true if the passed {@code TypeMirror} has a manual {@code MustCallUnknown} annotation.
+   *
+   * @param typeMirror the {@code TypeMirror}
+   * @return true if the passed {@code TypeMirror} has a manual {@code MustCallUnknown} annotation
+   */
+  public static boolean hasManualMustCallUnknownAnno(TypeMirror typeMirror) {
+    if (typeMirror == null) return false;
+    for (AnnotationMirror paramAnno : typeMirror.getAnnotationMirrors()) {
+      if (AnnotationUtils.areSameByName(paramAnno, MustCallUnknown.class.getCanonicalName())) {
+        return true;
+      }
+    }
+    return false;
   }
 }
