@@ -120,7 +120,7 @@ Create the following 4-qualifier hierarchy:
 Bottom <: @GrowOnly <: @CannotRemoveFrom
 Bottom <: @UncheckedShrinkable <: @Shrinkable <: @CannotRemoveFrom
 
-WARNING: The document needs definitions for each annotation.
+WARNING: This document needs definitions for each annotation.
 
 The annotation `@UncheckedShrinkable` would be used to opt out of index
 checking.  If a list is `@UncheckedShrinkable`, then `@IndexFor(list)`
