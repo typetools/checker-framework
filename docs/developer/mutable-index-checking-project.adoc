@@ -39,7 +39,7 @@ permit the programmer to use any
 code, but to invalidate flow facts.
 
 
-=== Focus on side effects: permit mutation, but invalidate flow facts when a list might be modified
+== Focus on side effects: permit mutation, but invalidate flow facts when a list might be modified
 
 It is essential to invalidate some flow facts when a mutation may occur.
 It is a goal to invalidate as few as possible, while still retaining soundness.
@@ -101,7 +101,7 @@ If an expression is may-aliased to `a`, then its type should become the
 LUB of its old type and `a`'s new type. Adjusting the types of
 dependently-typed variables is a bit more complicated.
 
-=== Forbid problematic mutation: only permit lists to grow
+== Forbid problematic mutation: only permit lists to grow
 
 If an index is valid for a given collection, then the index is also valid
 for a bigger collection.  Adding to a collection does not invalidate any existing indices.
@@ -113,7 +113,7 @@ non-shrinking collections.  (Just as they are currenttly limited to
 collections whose size never changes.)
 
 
-==== Possible hierarchy 1
+=== Possible hierarchy 1
 
 TODO: Start with the names and definitions of the annotations.
 
@@ -134,7 +134,7 @@ Bottom <: UncheckedShrinkable <: Shrinkable <: CannotRemoveFrom
 The annotations `@UncheckedShrinkable` and `@GrowOnly` should not be used for the library.
 
 
-===== Library annotations
+==== Library annotations
 
 As is typical, JDK annotations are trusted, not checked.
 
@@ -147,7 +147,7 @@ Checking indices of a mutable collection type (such as List) in the Java library
 * Methods that allocate and return a new list could also use the Shrinkable annotation.
 
 
-===== Annotating application code
+==== Annotating application code
 
 In application code, each allocation of a list should be by default `@UncheckedShrinkable`.
 If all lists are `@UncheckedShrinkable`, it would ideally result in no warnings reported.
@@ -157,12 +157,12 @@ Now, the Index Checker starts providing value by checking that the accesses are 
 Some types within the application might need to be annotated `@CannotRemoveFrom` to accept both kinds of collections.
 
 
-===== Advanced features
+==== Advanced features
 
 Also see xref:mutable-index-checking-advanced.adoc[advanced features].
 
 
-==== Possible hierarchy 2
+=== Possible hierarchy 2
 
 [%hardbreaks]
 Here is the hierarchy:
