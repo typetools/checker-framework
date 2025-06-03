@@ -183,8 +183,10 @@ It is necessary to ensure that only no `@NonShrinkable` expression is
 aliased to any epression that may be shrunk (via `remove()`, etc.).  The
 type hierarchy guarantees that.
 
-[%hardbreaks]
-NOTE: Here are alternative qualifier hierarchy designs:
+[NOTE]
+====
+Here are alternative qualifier hierarchy designs:
+
 It does not work to have this hierarchy, because any `@NonShrinkable` can be cast to `@Shrinkable` and have `remove()` called on it:
 ----
 bottom <: @NonShrinkable <: @Shrinkable
@@ -193,5 +195,4 @@ It does not work to have this hierarchy, because any `@Shrinkable` can be cast t
 ----
 bottom <: @Shrinkable <: @NonShrinkable
 ----
-
-
+====
