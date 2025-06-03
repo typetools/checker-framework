@@ -31,11 +31,11 @@ but improving the checker to precisely handle it.  For example, the current
 Index Checker effectively forbids all mutable-length data structures, such
 as `List`s.
 
-One approach to solving the problem is to determine 
+One approach to solving the problem is to determine
 
 
 permit the programmer to use any
-code, but to invalidate flow facts.  
+code, but to invalidate flow facts.
 
 
 === Focus on side effects: permit mutation, but invalidate flow facts when a list might be modified
@@ -163,11 +163,13 @@ Also see xref:mutable-index-checking-advanced.adoc[advanced features].
 
 ==== Possible hierarchy 2
 
+[%hardbreaks]
 Here is the hierarchy:
 bottom <: @Shrinkable <: @UnknownShrinkable
 bottom <: @NonShrinkable <: @UnknownShrinkable
 
 These are the definitions:
+
  * `@Shrinkable`: calling `remove()`, `clear()`, etc. is permitted.
     No checking of indices is done.  In that sense, this is somewhat like
     `@SuppressWarnings`.  Users must explicitly write `@Shrinkable` to
@@ -185,7 +187,7 @@ type hierarchy guarantees that.
 
 [NOTE]
 ====
-Here are alternative qualifier hierarchy designs:
+Here are alternative qualifier hierarchy designs.
 
 It does not work to have this hierarchy, because any `@NonShrinkable` can be cast to `@Shrinkable` and have `remove()` called on it:
 ----
