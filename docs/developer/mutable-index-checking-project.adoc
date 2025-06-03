@@ -1,0 +1,74 @@
+[[index-checker-mutable-length]]
+=== Index checking for mutable length data structures
+
+The https://checkerframework.org/manual/#index-checker[Index Checker] is
+currently restricted to fixed-size data structures. A fixed-size data
+structure is one whose length cannot be changed once it is created, such
+as arrays and Strings. This limitation prevents the Index Checker from
+verifying indexing operations on mutable-size data structures, like
+Lists, that have `add` or `remove` methods. Since these kind of
+collections are common in practice, this is a severe limitation for the
+Index Checker.
+
+The limitation is caused by the Index Checker's use of types that are
+dependent on the length of data structures, like
+`@LTLengthOf("data++_++structure")`. If `data++_++structure`'s length
+could change, then the correctness of this type might change.
+
+. Invalidate all Index Checker qualifiers whenever a side effect may
+occur (for example, at every call to a method that might have side
+effects). This is imprecise (it loses refined type information) and
+therefore will result in many false positive alarms, so it is an
+impractical solution. However, it is sound, which is most important.
+Subsequent steps will improve its precision.
+
+. Only invalidate _some_ Index Checker qualifiers when a side effect may
+occur — namely, those relating to mutable-length data structures. This
+requires determining which indexable datatypes have mutable lengths,
+which can be hard-coded for the collection classes in the JDK.
+
+. Implement the link:https://rawgit.com/mernst/checker-framework/refs/heads/index-checker-mutable-project/docs/developer/new-contributor-projects.html#SideEffectsOnly[`@SideEffectsOnly`] annotation.
+Suppose that a method is called that only side-effects variable `a` of
+type `T` and variable `b` of type `U`. Then the Index Checker needs to
+invalidate:
+* qualifiers on all expressions of type `T` or `U` (and their supertypes
+and subtypes). Index Checker qualifiers on types that are unrelated to
+`T` and `U` can be retained.
+* dependent type qualifiers that mention any expression of type `T` or
+`U`.
+
+. Alternatively, devise and implement a new annotation (e.g.,
+`@BackedBy`) that connects the length of a data structure to the length
+of its backing data structure. For example, an annotation on
+`ArrayList` could tell the checker which field of the
+`ArrayList` class is the backing array. Then, make it an error
+if any method of a class with such an annotation re-assigns the backing
+array unless it has a new annotation (e.g., `@ChangesLength`). This
+annotation could apply recursively, to allow data structures that are
+themselves backed by mutable-length data structures. Only invalidate
+facts about a mutable length data structure when one of its
+`@ChangesLength` methods is called.
+
+. The `@LengthOf` annotation is currently an alias for `@LTELengthOf`.
+But its definition is a value that indicates the size of a data
+structure. It can perhaps be used.
+
+. Run a pointer analysis before type-checking. Now, at a possible side
+effect to expressions `a` and `b`, it is only necessary to invalidate
+Index Checker qualifiers related to expressions that may be aliased to
+`a` or `b`. One possible pointer analysis is that of
+https://github.com/plast-lab/doop-mirror[Doop].
++
+A significant downside to this approach is that it is a whole-program
+analysis rather than a modular one. A modular analysis works
+method-by-method. A whole-program analysis requires that the entire
+program is present to be analyzed, and it is slow.
+
+. Modify rather than discarding the Index Checker qualifiers on
+possibly-aliased data structures. If an expression is must-aliased to
+`a`, then its type should be updated in exactly the way that `a`'s is.
+If an expression is may-aliased to `a`, then its type should become the
+LUB of its old type and `a`'s new type. Adjusting the types of
+dependently-typed variables is a bit more complicated.
+
+Also see xref:mutable-index-checking-subprojects.adoc[another perspective on breaking the project into parts].
