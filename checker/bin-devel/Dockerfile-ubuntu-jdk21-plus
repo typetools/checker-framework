@@ -7,7 +7,7 @@
 
 # "ubuntu" is the latest LTS release.  "ubuntu:rolling" is the latest release.
 # Both might lag behind; as of 2024-11-16, ubuntu:rolling was still 24.04 rather than 24.10.
-FROM ubuntu:24.10
+FROM ubuntu:oracular-20250428
 LABEL org.opencontainers.image.authors="Michael Ernst <mernst@cs.washington.edu>"
 
 ## Keep this file in sync with ../../docs/manual/troubleshooting.tex
