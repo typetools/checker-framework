@@ -1,13 +1,14 @@
 = Index checking for mutable length data structures
 :toc:
+:toclevels: 4
 
 
 The https://checkerframework.org/manual/#index-checker[Index Checker] is
 currently restricted to fixed-size data structures. A fixed-size data
 structure is one whose length cannot be changed once it is created, such
-as arrays and Strings. This limitation prevents the Index Checker from
+as arrays and ``String``s. This limitation prevents the Index Checker from
 verifying indexing operations on mutable-size data structures, like
-Lists, that have `add` or `remove` methods. Since these kind of
+``List``s, that have `add()` or `remove()` methods. Since these kind of
 collections are common in practice, this is a severe limitation for the
 Index Checker.
 
@@ -30,21 +31,20 @@ problem can focus on the aliasing problem or the mutation problem.  Solving
 the problem could involve forbidding certain code, or permitting the code
 but improving the checker to precisely handle it.  For example, the current
 Index Checker effectively forbids all mutable-length data structures, such
-as `List`s.
-
-One approach to solving the problem is to determine
-
-
-permit the programmer to use any
-code, but to invalidate flow facts.
+as ``List``s.
 
 
 == Focus on side effects: permit mutation, but invalidate flow facts when a list might be modified
 
 It is essential to invalidate some flow facts when a mutation may occur.
-It is a goal to invalidate as few as possible, while still retaining soundness.
+(And to forbid mutation when prohibited by a a programmer-written annotation.)
+It is a goal to invalidate as few flow facts as possible, while still retaining soundness.
 
-Here are some steps toward deciding which flow facts to invalidate.
+When an `int` is mutated, then no change is needed:  use the Index
+Checker's current logic.  This section is about what to do when a `List` is
+mutated.
+
+Here are some steps toward invalidating fewer flow facts.
 
 . Invalidate all Index Checker qualifiers whenever a side effect may
 occur (for example, at every call to a method that might have side
@@ -63,8 +63,8 @@ Suppose that a method is called that only side-effects variable `a` of
 type `T` and variable `b` of type `U`. Then the Index Checker needs to
 invalidate:
 * qualifiers on all expressions of type `T` or `U` (and their supertypes
-and subtypes). Index Checker qualifiers on types that are unrelated to
-`T` and `U` can be retained.
+and subtypes). The Index Checker should retain qualifiers on types that are
+unrelated to `T` and `U`.
 * dependent type qualifiers that mention any expression of type `T` or
 `U`.
 
@@ -115,30 +115,26 @@ collections whose size never changes.)
 
 === Possible hierarchy 1
 
-TODO: Start with the names and definitions of the annotations.
-
 [%hardbreaks]
-Proposal 1: create the following 4-qualifier hierarchy:
+Create the following 4-qualifier hierarchy:
 Bottom <: @GrowOnly <: @CannotRemoveFrom
-Bottom <: @Shrinkable <: @CannotRemoveFrom
+Bottom <: @UncheckedShrinkable <: @Shrinkable <: @CannotRemoveFrom
+
+WARNING: The document needs definitions for each annotation.
 
 The annotation `@UncheckedShrinkable` would be used to opt out of index
 checking.  If a list is `@UncheckedShrinkable`, then `@IndexFor(list)`
 would be equivalent to `@NonNegative` -- the checker would basically assume
 that all indices are valid for this collection.
 
-[%hardbreaks]
-This annotation would fit into the hierarchy like this:
-Bottom <: UncheckedShrinkable <: Shrinkable <: CannotRemoveFrom
-
-The annotations `@UncheckedShrinkable` and `@GrowOnly` should not be used for the library.
+When annotating a library, do not use `@UncheckedShrinkable` and `@GrowOnly`.
 
 
 ==== Library annotations
 
 As is typical, JDK annotations are trusted, not checked.
 
-Checking indices of a mutable collection type (such as List) in the Java library would require annotating its methods:
+Checking indices of a mutable collection type (such as `List`) in the Java library would require annotating its methods:
 
 * Methods that accept indices must have the parameters annotated `@IndexFor` or `@IndexOrHigh`. Missing annotation would create unsoundness.
 * Methods that return indices should have the return type annotated `@IndexFor` or `@IndexOrHigh`. Missing annotation would cause false positives.
@@ -170,17 +166,16 @@ bottom <: @Shrinkable <: @UnknownShrinkable
 bottom <: @NonShrinkable <: @UnknownShrinkable
 
 These are the definitions:
-
- * `@Shrinkable`: calling `remove()`, `clear()`, etc. is permitted.
-    No checking of indices is done.  In that sense, this is somewhat like
-    `@SuppressWarnings`.  Users must explicitly write `@Shrinkable` to
-    prevent checking.
- * `@NonShrinkable`: calling `remove()`, `clear()`, etc. is forbidden.
-   The expression is not aliased to any `@Shrinkable` list.
-   Any valid index remains valid (unless the index is changed), regardless of
-   changes to any list.
-   This is the default type.
- * `@UnknownShrinkable`: calling `remove()`, `clear()`, etc. is forbidden.
+* `@Shrinkable`: calling `remove()`, `clear()`, etc. is permitted.
+  No checking of indices is done.  In that sense, this is somewhat like
+  `@SuppressWarnings`.  Users must explicitly write `@Shrinkable` to
+  prevent checking.
+* `@NonShrinkable`: calling `remove()`, `clear()`, etc. is forbidden.
+  The expression is not aliased to any `@Shrinkable` list.
+  Any valid index remains valid (unless the index is changed), regardless of
+  changes to any list.
+  This is the default type.
+* `@UnknownShrinkable`: calling `remove()`, `clear()`, etc. is forbidden.
 
 It is necessary to ensure that only no `@NonShrinkable` expression is
 aliased to any epression that may be shrunk (via `remove()`, etc.).  The
@@ -188,13 +183,14 @@ type hierarchy guarantees that.
 
 [NOTE]
 ====
-Here are alternative qualifier hierarchy designs.
+Here are alternative, unacceptable qualifier hierarchy designs.
 
-It does not work to have this hierarchy, because any `@NonShrinkable` can be cast to `@Shrinkable` and have `remove()` called on it:
+In this hierarchy, any `@NonShrinkable` can be cast to `@Shrinkable` and have `remove()` called on it:
 ----
 bottom <: @NonShrinkable <: @Shrinkable
 ----
-It does not work to have this hierarchy, because any `@Shrinkable` can be cast to `@NonShrinkable`, then an alias modified.
+In this hierarchy, any `@Shrinkable` can be cast to `@NonShrinkable`, then
+an alias of the it can be modified.
 ----
 bottom <: @Shrinkable <: @NonShrinkable
 ----
