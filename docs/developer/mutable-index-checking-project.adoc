@@ -1,5 +1,5 @@
 [[index-checker-mutable-length]]
-=== Index checking for mutable length data structures
+== Index checking for mutable length data structures
 
 The https://checkerframework.org/manual/#index-checker[Index Checker] is
 currently restricted to fixed-size data structures. A fixed-size data
@@ -10,10 +10,40 @@ Lists, that have `add` or `remove` methods. Since these kind of
 collections are common in practice, this is a severe limitation for the
 Index Checker.
 
-The limitation is caused by the Index Checker's use of types that are
-dependent on the length of data structures, like
-`@LTLengthOf("data++_++structure")`. If `data++_++structure`'s length
-could change, then the correctness of this type might change.
+The fundamental problem is the combination of *mutation* (side effects) and
+*aliasing*.  The Index Checker uses types that are dependent on the length
+of data structures.  Suppose you have the declaration
+
+```java
+@LTLengthOf("myList") int i;
+```
+
+If variable `myList` is aliased to some other variable (that is, both
+variables refer to the same Java list), then that other variable can change
+the length of the list, and then the annotation might no longer be correct
+about the integer `i`.  The Index Checker must ensure that all annotations
+always state correct facts.
+
+Since the problem is a combination of mutation and aliasing, overcoming the
+problem can focus on the aliasing problem or the mutation problem.  Solving
+the problem could involve forbidding certain code, or permitting the code
+but improving the checker to precisely handle it.  For example, the current
+Index Checker effectively forbids all mutable-length data structures, such
+as `List`s.
+
+One approach to solving the problem is to determine 
+
+
+permit the programmer to use any
+code, but to invalidate flow facts.  
+
+
+=== Focus on side effects: permit mutation, but invalidate flow facts when a list might be modified
+
+It is essential to invalidate some flow facts when a mutation may occur.
+It is a goal to invalidate as few as possible, while still retaining soundness.
+
+Here are some steps toward deciding which flow facts to invalidate.
 
 . Invalidate all Index Checker qualifiers whenever a side effect may
 occur (for example, at every call to a method that might have side
@@ -23,7 +53,7 @@ impractical solution. However, it is sound, which is most important.
 Subsequent steps will improve its precision.
 
 . Only invalidate _some_ Index Checker qualifiers when a side effect may
-occur — namely, those relating to mutable-length data structures. This
+occur -- namely, those relating to mutable-length data structures. This
 requires determining which indexable datatypes have mutable lengths,
 which can be hard-coded for the collection classes in the JDK.
 
@@ -37,17 +67,16 @@ and subtypes). Index Checker qualifiers on types that are unrelated to
 * dependent type qualifiers that mention any expression of type `T` or
 `U`.
 
-. Alternatively, devise and implement a new annotation (e.g.,
-`@BackedBy`) that connects the length of a data structure to the length
-of its backing data structure. For example, an annotation on
-`ArrayList` could tell the checker which field of the
-`ArrayList` class is the backing array. Then, make it an error
-if any method of a class with such an annotation re-assigns the backing
-array unless it has a new annotation (e.g., `@ChangesLength`). This
+. Devise and implement a new annotation (e.g., `@BackedBy`) that connects
+the length of a data structure to the length of its backing data
+structure. For example, an annotation on `ArrayList` could tell the checker
+which field of the `ArrayList` class is the backing array. Then, make it an
+error if any method of a class with such an annotation re-assigns the
+backing array unless it has a new annotation (e.g., `@ChangesLength`). This
 annotation could apply recursively, to allow data structures that are
-themselves backed by mutable-length data structures. Only invalidate
-facts about a mutable length data structure when one of its
-`@ChangesLength` methods is called.
+themselves backed by mutable-length data structures. Only invalidate facts
+about a mutable length data structure when one of its `@ChangesLength`
+methods is called.
 
 . The `@LengthOf` annotation is currently an alias for `@LTELengthOf`.
 But its definition is a value that indicates the size of a data
@@ -71,4 +100,95 @@ If an expression is may-aliased to `a`, then its type should become the
 LUB of its old type and `a`'s new type. Adjusting the types of
 dependently-typed variables is a bit more complicated.
 
-Also see xref:mutable-index-checking-subprojects.adoc[another perspective on breaking the project into parts].
+=== Forbid problematic mutation: only permit lists to grow
+
+If an index is valid for a given collection, then the index is also valid
+for a bigger collection.  Adding to a collection does not invalidate any existing indices.
+Therefore, we can ignore code that can add to a collection, treating it
+just like code that does not modify the collection at all.
+
+As a first step, limit the guarantees provided by the checker only to
+non-shrinking collections.  (Just as they are currenttly limited to
+collections whose size never changes.)
+
+
+==== Possible hierarchy 1
+
+TODO: Start with the names and definitions of the annotations.
+
+[%hardbreaks]
+Proposal 1: create the following 4-qualifier hierarchy:
+Bottom <: @GrowOnly <: @CannotRemoveFrom
+Bottom <: @Shrinkable <: @CannotRemoveFrom
+
+The annotation `@UncheckedShrinkable` would be used to opt out of index
+checking.  If a list is `@UncheckedShrinkable`, then `@IndexFor(list)`
+would be equivalent to `@NonNegative` -- the checker would basically assume
+that all indices are valid for this collection.
+
+[%hardbreaks]
+This annotation would fit into the hierarchy like this:
+Bottom <: UncheckedShrinkable <: Shrinkable <: CannotRemoveFrom
+
+The annotations `@UncheckedShrinkable` and `@GrowOnly` should not be used for the library.
+
+
+===== Library annotations
+
+As is typical, JDK annotations are trusted, not checked.
+
+Checking indices of a mutable collection type (such as List) in the Java library would require annotating its methods:
+
+* Methods that accept indices must have the parameters annotated `@IndexFor` or `@IndexOrHigh`. Missing annotation would create unsoundness.
+* Methods that return indices should have the return type annotated `@IndexFor` or `@IndexOrHigh`. Missing annotation would cause false positives.
+* Most methods do not remove from the collection -- the default qualifier for this type should be CannotRemoveFrom.
+* Methods that can remove from the collection must use the Shrinkable annotation. Missing annotation would create unsoundness.
+* Methods that allocate and return a new list could also use the Shrinkable annotation.
+
+
+===== Annotating application code
+
+In application code, each allocation of a list should be by default `@UncheckedShrinkable`.
+If all lists are `@UncheckedShrinkable`, it would ideally result in no warnings reported.
+
+Then, collections that are intended to be grow-only should be annotated `@GrowOnly`.
+Now, the Index Checker starts providing value by checking that the accesses are not out of bounds.
+Some types within the application might need to be annotated `@CannotRemoveFrom` to accept both kinds of collections.
+
+
+===== Advanced features
+
+Also see xref:mutable-index-checking-advanced.adoc[advanced features].
+
+
+==== Possible hierarchy 2
+
+Here is the hierarchy:
+bottom <: @Shrinkable <: @UnknownShrinkable
+bottom <: @NonShrinkable <: @UnknownShrinkable
+
+These are the definitions:
+ * `@Shrinkable`: calling `remove()`, `clear()`, etc. is permitted.
+    No checking of indices is done.  In that sense, this is somewhat like
+    `@SuppressWarnings`.  Users must explicitly write `@Shrinkable` to
+    prevent checking.
+ * `@NonShrinkable`: calling `remove()`, `clear()`, etc. is forbidden.
+   The expression is not aliased to any `@Shrinkable` list.
+   Any valid index remains valid (unless the index is changed), regardless of
+   changes to any list.
+   This is the default type.
+ * `@UnknownShrinkable`: calling `remove()`, `clear()`, etc. is forbidden.
+
+It is necessary to ensure that only no `@NonShrinkable` expression is
+aliased to any epression that may be shrunk (via `remove()`, etc.).  The
+type hierarchy guarantees that.
+
+[%hardbreaks]
+NOTE: Here are alternative qualifier hierarchy designs:
+It does not work to have this hierarchy, because any `@NonShrinkable` can be cast to `@Shrinkable` and have `remove()` called on it:
+bottom <: @NonShrinkable <: @Shrinkable
+It does not work to have this hierarchy, because any `@Shrinkable` can be cast to `@NonShrinkable`, then an alias modified.
+bottom <: @Shrinkable <: @NonShrinkable
+
+
+

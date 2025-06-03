@@ -8,7 +8,7 @@ ASCIIDOC_FILES:=$(shell find . -name "*.adoc")
 asciidoc-style-check:
 	asciidoctor -o /dev/null ${ASCIIDOC_FILES}
 
-PYTHON_FILES:=$(shell find . \( -name .do-like-javac \) -prune -o -name "*.py" -print)
+PYTHON_FILES:=$(shell find . \( -name .do-like-javac -o -name .git-scripts \) -prune -o -name "*.py" -print)
 install-ruff:
 	@if ! command -v ruff ; then pipx install ruff ; fi
 python-style-fix: install-ruff
