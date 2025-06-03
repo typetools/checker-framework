@@ -96,20 +96,20 @@ program is present to be analyzed, and it is slow.
 
 . Modify rather than discarding the Index Checker qualifiers on
 possibly-aliased data structures. If an expression is must-aliased to
-`a`, then its type should be updated in exactly the way that `a`'s is.
+`a`, then its type should be updated in exactly the way that ``a``'s is.
 If an expression is may-aliased to `a`, then its type should become the
-LUB of its old type and `a`'s new type. Adjusting the types of
+LUB of its old type and ``a``'s new type. Adjusting the types of
 dependently-typed variables is a bit more complicated.
 
 == Forbid problematic mutation: only permit lists to grow
 
 If an index is valid for a given collection, then the index is also valid
 for a bigger collection.  Adding to a collection does not invalidate any existing indices.
-Therefore, we can ignore code that can add to a collection, treating it
+Therefore, the Index Checker can ignore code that can add to a collection, treating it
 just like code that does not modify the collection at all.
 
 As a first step, limit the guarantees provided by the checker only to
-non-shrinking collections.  (Just as they are currenttly limited to
+non-shrinking collections.  (Just as they are currently limited to
 collections whose size never changes.)
 
 
@@ -178,7 +178,7 @@ These are the definitions:
 * `@UnknownShrinkable`: calling `remove()`, `clear()`, etc. is forbidden.
 
 It is necessary to ensure that only no `@NonShrinkable` expression is
-aliased to any epression that may be shrunk (via `remove()`, etc.).  The
+aliased to any expression that may be shrunk (via `remove()`, etc.).  The
 type hierarchy guarantees that.
 
 [NOTE]
@@ -195,3 +195,8 @@ an alias of the it can be modified.
 bottom <: @Shrinkable <: @NonShrinkable
 ----
 ====
+
+// LocalWords:  toc toclevels myList indexable SideEffectsOnly BackedBy Doop
+// LocalWords:  ChangesLength LengthOf LTELengthOf hardbreaks GrowOnly
+// LocalWords:  CannotRemoveFrom UncheckedShrinkable IndexFor NonShrinkable
+// LocalWords:  UnknownShrinkable
