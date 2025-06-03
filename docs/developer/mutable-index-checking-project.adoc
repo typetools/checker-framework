@@ -1,5 +1,4 @@
 = Index checking for mutable length data structures
-
 :toc:
 
 
