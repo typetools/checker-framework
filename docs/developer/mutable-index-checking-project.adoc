@@ -166,6 +166,7 @@ bottom <: @Shrinkable <: @UnknownShrinkable
 bottom <: @NonShrinkable <: @UnknownShrinkable
 
 These are the definitions:
+
 * `@Shrinkable`: calling `remove()`, `clear()`, etc. is permitted.
   No checking of indices is done.  In that sense, this is somewhat like
   `@SuppressWarnings`.  Users must explicitly write `@Shrinkable` to
