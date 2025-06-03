@@ -1,7 +1,7 @@
+:toc:
+
 [[index-checker-mutable-length]]
 == Index checking for mutable length data structures
-
-:toc:
 
 The https://checkerframework.org/manual/#index-checker[Index Checker] is
 currently restricted to fixed-size data structures. A fixed-size data
