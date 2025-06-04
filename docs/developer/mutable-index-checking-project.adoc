@@ -116,16 +116,23 @@ collections whose size never changes.)
 === Possible hierarchy 1
 
 [%hardbreaks]
-Create the following 4-qualifier hierarchy:
+Create the following qualifier hierarchy:
 Bottom <: @GrowOnly <: @CannotRemoveFrom
 Bottom <: @UncheckedShrinkable <: @Shrinkable <: @CannotRemoveFrom
 
-WARNING: This document needs definitions for each annotation.
+Definitions:
 
-The annotation `@UncheckedShrinkable` would be used to opt out of index
-checking.  If a list is `@UncheckedShrinkable`, then `@IndexFor(list)`
-would be equivalent to `@NonNegative` -- the checker would basically assume
-that all indices are valid for this collection.
+* A `@GrowOnly` reference to a collection states that as long as that reference exists, the size of the collection will not decrease (elements cannot be removed, but can be added).
+* A `@Shrinkable` reference to a collection allows removing elements from the collection using methods such as `remove` and `clear`.
+* A `@CannotRemoveFrom` reference to the collection cannot be used to remove elements, but admits the possibility to remove elements from the collection using another reference to it.
+* The annotation `@UncheckedShrinkable` is like `@Shrinkable`, but is used to opt out of index
+checking. If a list is `@UncheckedShrinkable`, then `@IndexFor(list)` is equivalent to `@NonNegative` and does not guarantee that the value is a valid index for the collection (in other words, the checker behaves as if all indices are valid for this collection).
+
+Unless a reference is `@GrowOnly` or `@UncheckedShrinkable`, the checker has to invalidate all `@IndexFor` qualifiers for it whenever a side effect may occur.
+
+The checker ensures there is never a `@GrowOnly` and `@Shrinkable` reference to the same object at the same time.
+
+A collection allocated with `new @GrowOnly` or `new @Shrinkable` will have indices checked.
 
 When annotating a library, do not use `@UncheckedShrinkable` and `@GrowOnly`.
 
