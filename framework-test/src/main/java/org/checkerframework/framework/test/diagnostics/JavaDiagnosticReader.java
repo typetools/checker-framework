@@ -14,6 +14,7 @@ import javax.tools.JavaFileObject;
 import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;
 import org.checkerframework.checker.index.qual.GTENegativeOne;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
+import org.checkerframework.checker.mustcall.qual.NotOwning;
 import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
@@ -233,7 +234,7 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine>, Close
   }
 
   @Override
-  public TestDiagnosticLine next() {
+  public @NotOwning TestDiagnosticLine next() {
     if (nextLine == null) {
       throw new NoSuchElementException();
     }
