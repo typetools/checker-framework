@@ -116,9 +116,9 @@ collections whose size never changes.)
 === Qualifier hierarchy
 
 [%hardbreaks]
-Create the following qualifier hierarchy:
-Bottom <: @GrowOnly <: @UnShrinkableRef
-Bottom <: @UncheckedShrinkable <: @Shrinkable <: @UnShrinkableRef
+This is the qualifier hierarchy:
+@BottomGrowShrink <: @GrowOnly <: @UnShrinkableRef
+@BottomGrowShrink <: @UncheckedShrinkable <: @Shrinkable <: @UnShrinkableRef
 
 * A `@GrowOnly` reference to a collection states that as long as that reference exists,
 the size of the collection will not decrease (elements cannot be removed, but can be added).
