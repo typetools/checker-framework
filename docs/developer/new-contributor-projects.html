@@ -46,7 +46,6 @@
       <li><a href="#custom-tainting-checking">Preventing injection vulnerabilities via specialized taint analysis</a></li>
       <li><a href="#track-unsupported-operations">Warn about unsupported operations</a></li>
       <li><a href="#overflow">Overflow checking</a></li>
-      <li><a href="#index-checker-mutable-length">Index checking for mutable length data structures</a></li>
     </ul></li>
   <li><a href="#cf-other">Enhance the toolset</a>
     <ul>
@@ -1232,45 +1231,6 @@ a loop (but maybe other approaches are possible):
 </ul>
 
 
-<h2 id="index-checker-mutable-length">Index checking for mutable length data structures</h2>
-
-<p>
-The <a href="https://checkerframework.org/manual/#index-checker">Index
-Checker</a> is currently restricted to fixed-size data structures.  A
-fixed-size data structure is one whose length cannot be changed once it is
-created, such as arrays and Strings.  This limitation prevents the Index
-Checker from verifying indexing operations on mutable-size data structures,
-like Lists, that have <code>add</code> or <code>remove</code>
-methods. Since these kind of collections are common in practice, this is a
-severe limitation for the Index Checker.
-</p>
-
-<p>
-The limitation is caused by the Index Checker's use of types that are dependent on the length of data structures,
-like <code>@LTLengthOf("data_structure")</code>. If <code>data_structure</code>'s length could change,
-then the correctness of this type might change.
-</p>
-
-<p>
-A naive solution would be to invalidate these types any time a method is called on <code>data_structure</code>.
-Unfortunately, aliasing makes this still unsound. Even more, a great solution to this problem would keep
-the information in the type when a method like add or remove is called on <code>data_structure</code>.
-A more complete solution might involve some special annotations on List that permit the information to be persisted.
-</p>
-
-<p>
-Another approach would be to run a pointer analysis before type-checking,
-then use that information for precise information about what lists might be
-changed by each call to <code>add</code> or <code>remove</code>.  One
-possible pointer analysis would be that
-of <a href="https://github.com/plast-lab/doop-mirror">Doop</a>.
-</p>
-
-<p>
-This project would involve designing and implementing a solution to this problem.
-</p>
-
-
 <h1 id="cf-other">Enhance the toolset</h1>
 
 
@@ -1874,7 +1834,7 @@ thought about the problem nor tried to solve it.
  -->
 <!--  LocalWords:  Signedness Jake2 README Lookup ASM's Nayuki CRC mis CWE
  -->
-<!--  LocalWords:  BigInteger lockB lockA signedness microbenchmarks pre
+<!--  LocalWords:  BigInteger lockB lockA signedness microbenchmarks pre '
  -->
 <!--  LocalWords:  checklink subparts UnsignedBytes runtime MyClass jOOU
  -->
