@@ -6,8 +6,8 @@ echo Entering checker/bin-devel/build.sh in "$(pwd)"
 # Fail the whole script if any command fails
 set -e
 
-SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" > /dev/null 2>&1 && pwd)"
-source "$SCRIPTDIR"/clone-related.sh
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
+source "$SCRIPT_DIR"/clone-related.sh
 # Download dependencies, trying a second time if there is a failure.
 # echo "NO_WRITE_VERIFICATION_METADATA=$NO_WRITE_VERIFICATION_METADATA"
 if [ -z "${NO_WRITE_VERIFICATION_METADATA+x}" ]; then
