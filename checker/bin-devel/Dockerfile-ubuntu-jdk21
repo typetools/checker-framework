@@ -12,12 +12,12 @@ LABEL org.opencontainers.image.authors="Michael Ernst <mernst@cs.washington.edu>
 
 # According to
 # https://docs.docker.com/engine/userguide/eng-image/dockerfile_best-practices/:
-#  * Put "apt-get update" and "apt-get install" and "apt cleanup" in the same RUN command.
-#  * Do not run "apt-get upgrade"; instead get upstream to update.
+#  * Put "apt update" and "apt install" and "apt cleanup" in the same RUN command.
+#  * Do not run "apt upgrade"; instead get upstream to update.
 
 RUN export DEBIAN_FRONTEND=noninteractive \
-&& apt-get -qqy update \
-&& apt-get install -y locales \
+&& apt -qqy update \
+&& apt install -y locales \
 && rm -rf /var/lib/apt/lists/* \
 && locale-gen "en_US.UTF-8"
 ENV LANG=en_US.UTF-8 \
@@ -25,22 +25,16 @@ ENV LANG=en_US.UTF-8 \
     LC_ALL=en_US.UTF-8
 
 RUN export DEBIAN_FRONTEND=noninteractive \
-&& apt-get -qqy update \
-&& apt-get -y install aptitude \
-&& aptitude -y install \
-  apt-utils
-
-RUN export DEBIAN_FRONTEND=noninteractive \
-&& apt-get -qqy update \
-&& aptitude -y install \
+&& apt -qqy update \
+&& apt -y install \
   openjdk-17-jdk \
   openjdk-21-jdk
 
 # Known good combinations of JTReg and the JDK appear at https://builds.shipilev.net/jtreg/ .
 
 RUN export DEBIAN_FRONTEND=noninteractive \
-&& apt-get -qqy update \
-&& aptitude -y install \
+&& apt -qqy update \
+&& apt -y install \
   ant \
   cpp \
   git \
@@ -52,7 +46,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   python3-setuptools \
   unzip \
   wget \
-&& aptitude -y install \
+&& apt -y install \
   jtreg7
 
 # Maven 3.8.7 is the default on Ubuntu 23.04, so the below is not needed.
@@ -64,11 +58,11 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 
 # Bug fix to make jtreg runnable: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=754942;msg=2
 RUN export DEBIAN_FRONTEND=noninteractive \
-&& apt-get -qqy update \
-&& aptitude -y install \
+&& apt -qqy update \
+&& apt -y install \
   default-jre-headless
 
 RUN export DEBIAN_FRONTEND=noninteractive \
-&& apt-get autoremove \
-&& apt-get clean \
+&& apt autoremove \
+&& apt clean \
 && rm -rf /var/lib/apt/lists/*
