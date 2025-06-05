@@ -6,8 +6,8 @@ set -o xtrace
 export SHELLOPTS
 echo "SHELLOPTS=${SHELLOPTS}"
 
-SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" > /dev/null 2>&1 && pwd)"
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
 export ORG_GRADLE_PROJECT_useJdk21Compiler=true
-source "$SCRIPTDIR"/clone-related.sh
+source "$SCRIPT_DIR"/clone-related.sh
 
 ./gradlew test --console=plain --warning-mode=all

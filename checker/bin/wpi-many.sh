@@ -38,13 +38,13 @@ done
 # Make $@ be the arguments that should be passed to dljc.
 shift $((OPTIND - 1))
 
-SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" > /dev/null 2>&1 && pwd)"
-SCRIPTPATH="${SCRIPTDIR}/wpi-many.sh"
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
+SCRIPT_PATH="${SCRIPT_DIR}/wpi-many.sh"
 
 # Report line numbers when the script fails, from
 # https://unix.stackexchange.com/a/522815 .
 trap 'echo >&2 "Error - exited with status $? at line $LINENO of wpi-many.sh:";
-         pr -tn ${SCRIPTPATH} | tail -n+$((LINENO - 3)) | head -n7' ERR
+         pr -tn ${SCRIPT_PATH} | tail -n+$((LINENO - 3)) | head -n7' ERR
 
 echo "Starting wpi-many.sh."
 
@@ -307,7 +307,7 @@ while IFS='' read -r line || [ "$line" ]; do
   else
     # it's important that </dev/null is on this line, or wpi.sh might consume stdin, which would stop the larger wpi-many loop early
     echo "wpi-many.sh about to call wpi.sh in $(pwd) at $(date)"
-    /bin/bash -x "${SCRIPTDIR}/wpi.sh" -d "${REPO_FULLPATH}" -t "${TIMEOUT}" -g "${GRADLECACHEDIR}" -- "$@" &> "${OUTDIR}-results/wpi-out" < /dev/null
+    /bin/bash -x "${SCRIPT_DIR}/wpi.sh" -d "${REPO_FULLPATH}" -t "${TIMEOUT}" -g "${GRADLECACHEDIR}" -- "$@" &> "${OUTDIR}-results/wpi-out" < /dev/null
     wpi_status=$?
     if [[ $wpi_status -eq 0 ]]; then
       wpi_status_string="success"
@@ -487,14 +487,14 @@ else
       exit 1
     fi
 
-    mkdir -p "${SCRIPTDIR}/.scc"
-    cd "${SCRIPTDIR}/.scc" || exit 5
+    mkdir -p "${SCRIPT_DIR}/.scc"
+    cd "${SCRIPT_DIR}/.scc" || exit 5
     wget -nc "https://github.com/boyter/scc/releases/download/v2.13.0/scc-2.13.0-i386-unknown-linux.zip" \
       || (sleep 60s && wget -nc "https://github.com/boyter/scc/releases/download/v2.13.0/scc-2.13.0-i386-unknown-linux.zip")
     unzip -o "scc-2.13.0-i386-unknown-linux.zip"
 
     # shellcheck disable=SC2046
-    if ! "${SCRIPTDIR}/.scc/scc" --output "${OUTDIR}-results/loc.txt" $(< "${listpath}"); then
+    if ! "${SCRIPT_DIR}/.scc/scc" --output "${OUTDIR}-results/loc.txt" $(< "${listpath}"); then
       echo "Problem in wpi-many.sh while running scc."
       echo "  listpath = ${listpath}"
       echo "  generated from ${OUTDIR}-results/results_available.txt"
