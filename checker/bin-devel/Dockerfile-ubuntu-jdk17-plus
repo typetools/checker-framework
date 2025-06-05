@@ -54,6 +54,7 @@ ENV PATH="/apache-maven-3.9.5/bin:$PATH"
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt -qqy update \
 && apt -y install \
+  asciidoctor \
   autoconf \
   devscripts \
   dia \
