@@ -51,12 +51,12 @@ public class ConfidentialTransfer extends CFTransfer {
   }
 
   /**
-   * Determines the resulting type of the string concatenation.
+   * Determines the type of a string concatenation.
    *
    * @param leftOperand the left operand to be concatenated
    * @param rightOperand the right operand to be concatenated
-   * @param p the input types
-   * @param result the result types
+   * @param p the input abstract values
+   * @param result the result abstract values
    * @return the resulting type of the string concatenation operation.
    */
   public TransferResult<CFValue, CFStore> stringConcatenation(
@@ -74,8 +74,8 @@ public class ConfidentialTransfer extends CFTransfer {
    *
    * @param leftOperand the left operand to be concatenated
    * @param rightOperand the right operand to be concatenated
-   * @param p the input types
-   * @return the resulting AnnotationMirror of the string concatenation operation.
+   * @param p the input abstract values
+   * @return the resulting AnnotationMirror of the string concatenation operation
    */
   private AnnotationMirror createAnnotationForStringConcatenation(
       Node leftOperand, Node rightOperand, TransferInput<CFValue, CFStore> p) {
