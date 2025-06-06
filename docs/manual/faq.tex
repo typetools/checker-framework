@@ -95,6 +95,8 @@ fully-qualified type name?
 \\ \ref{faq-type-checking-vs-bug-detectors}: Why not just use a bug detector (like SpotBugs or Error Prone)?
 \\ \ref{faq-eclipse}: How does the Checker Framework compare with Eclipse's Null Analysis?
 \\ \ref{faq-nullaway}: How does the Checker Framework compare with NullAway?
+\\ \ref{faq-jspecify}: How does the Checker Framework compare with JSpecify?
+\\ \ref{faq-eisop}: How does the Checker Framework compare with the EISOP Checker Framework?
 \\ \ref{faq-optional}: How does the Checker Framework compare with the JDK's \<Optional> type?
 \\ \ref{faq-jml}: How does pluggable type-checking compare with JML?
 \\ \ref{faq-checker-framework-part-of-java}: Is the Checker Framework an official part of Java?
@@ -2063,6 +2065,80 @@ arguments to be non-null, which is not an unsoundness but is less flexible
 than the Nullness Checker.
 
 
+\subsectionAndLabel{How does the Checker Framework compare with JSpecify?}{faq-jspecify}
+
+\href{JSpecify}{https://jspecify.dev/} is an attempt to define a new set of
+nullness annotations.  There are about 100 nullness annotations from
+various tools listed in Section~\ref{nullness-related-work}, so this might
+seem needed, but in fact it just adds one more possibility.  It is not an
+official standard.  But if it gets more people to verify their code (by
+writing nullness specifications and running a checker), that is great!
+
+You can use the JSpecify annotations or the Checker Framework ones,
+whichever you prefer.  All nullness checkers we know of (e.g., Eclipse,
+EISOP, IntelliJ, Nullaway, SpotBugs) recognize the common JSpecify and
+Nullness Checker type annotations, so there is no tooling reason to prefer
+one over the other.  JSpecify has only nullness annotations, and none for
+the dozens of other type-checkers that the Checker Framework supports.
+
+The JSpecify specification language is weaker than what the Nullness
+Checker supports.  For example, JSpecify lacks a polymorphic qualifier such
+as\refqualclass{checker/nullness/qual}{PolyNull}, and it lacks method
+specifications (Section~\ref{nullness-method-annotations}).  It lacks
+annotations for initialization (Chapter~\ref{initialization-checker}, but
+you could consider that a benefit, if you always suppress all
+initialization warnings, opting for convenience and simplicity over sound
+checking.  Even if your code does not use all the specification power of
+the Nullness Checker, you will benefit from expressive specifications on
+libraries that your code uses.
+
+If you want precise, sound type-checking, you will need to use some
+Nullness Checker annotations.  You can mix two sets of annotations (those
+of JSpecify and of the Nullness Checker), or you can use just those of the
+Nullness Checker.  Both approaches work.
+
+JSpecify contains a notion of ``unspecified nullness''.  It is typically
+used for warning suppression in unannotated code, but doing so has two
+problems.  First, it makes your specification tool-dependent, because a
+JSpecify-compliant tool may have \emph{any} behavior (including issuing
+warnings or not issuing warnings) for code that uses ``unspecified
+nullness'', including calling a method in a library that uses ``unspecified
+nullness''.  Second, it mixes notions of nullness specification and warning
+suppression, which are separate concepts.  The Checker Framework has
+well-defined behavior for all specifications, and it has rich facilities
+for warning suppression (Chapter~\ref{suppressing-warnings}).  For example,
+the \<-Askipuses> command-line option (Section~\ref{askipuses}) suppresses
+warnings relating to uses of unannotated libraries.
+
+The Checker Framework does not need JSpecify's \<@NullMarked>, which makes
+a checker treat unannotated references as \<@NonNull>.  The Nullness
+Checker by default treats unannotated references as \<@NonNull>.  The
+Checker Framework does not need JSpecify's \<@NullUnmarked>, which sets the
+default to ``unspecified nullness''.  The Nullness Checker supports
+explicit warning suppressions instead.
+
+
+\subsectionAndLabel{How does the Checker Framework compare with the EISOP Checker Framework?}{faq-eisop}
+
+The \href{https://github.com/eisop/checker-framework}{EISOP Checker
+Framework} (also called the \href{https://eisop.github.io/}{EISOP
+Framework}) is a fork of the Checker Framework.  The main difference is
+that the EISOP Nullness Checker supports one interpretation of the full
+JSpecify ``standard'' (see Section~\ref{faq-jspecify}), whereas the Checker
+Framework's Nullness Checker only supports the non-ambiguous parts of
+JSpecify.
+
+The EISOP Checker Framework is an ``unfriendly fork'' in that it
+incorporates improvements from the Checker Framework, but its developers do
+not make pull requests to the Checker Framework:  they only incorporate
+their improvements and bug fixes in their own version.  If you use the
+EISOP Checker Framework, please encourage its developers to be good
+open-source citizens and contribute back to the Checker Framework.  We wish
+the EISOP project well, because any project that gets more people to verify
+their code (by writing nullness specifications and running a checker) is a
+net positive for the programming community.
+
+
 \subsectionAndLabel{How does the Checker Framework compare with the JDK's \<Optional> type?}{faq-optional}
 
 JDK 8 introduced the \sunjavadoc{java.base/java/util/Optional.html}{\code{Optional}}
@@ -2172,4 +2248,5 @@ third-party tools.  The Checker Framework is one such tool.
 % LocalWords:  covariance InheritedAnnotation someMethod jml jsr Java''
 % LocalWords:  checkers'' covariance'' contravariance'' Xmx3g lookups
 % LocalWords:  checkerframework basetype strictfp JavaInputAstVisitor
-% LocalWords:  typeAnnotations formatannotations semver org's
+% LocalWords:  typeAnnotations formatannotations semver org's jspecify
+% LocalWords:  EISOP PolyNull eisop JSpecify
