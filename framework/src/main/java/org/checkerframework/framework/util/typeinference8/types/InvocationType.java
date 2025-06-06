@@ -210,7 +210,7 @@ public class InvocationType {
   /**
    * Whether this method has type variables.
    *
-   * @return whether this method has type variables.
+   * @return whether this method has type variables
    */
   public boolean hasTypeVariables() {
     return !annotatedExecutableType.getTypeVariables().isEmpty();
