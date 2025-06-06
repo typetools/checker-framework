@@ -397,7 +397,7 @@ public class VariableBounds {
   /**
    * Returns whether this variable only has bounds against proper types.
    *
-   * @return whether this variable only has bounds against proper types.
+   * @return whether this variable only has bounds against proper types
    */
   public boolean onlyProperBounds() {
     for (BoundKind k : BoundKind.values()) {
