@@ -84,7 +84,7 @@ public class QualifierVar extends AbstractQualifier {
    *
    * @param kind a bound kind
    * @param otherQual the bound to add
-   * @return a set of constraints generated from adding this bound.
+   * @return a set of constraints generated from adding this bound
    */
   @SuppressWarnings("interning:not.interned") // Checking for exact object.
   public ConstraintSet addBound(BoundKind kind, AbstractQualifier otherQual) {
