@@ -2156,7 +2156,7 @@ public class MustCallConsistencyAnalyzer {
    *
    * @param currentBlock source block of the CFG edge. Must contain no {@link Node}s.
    * @param successor target block of the CFG edge.
-   * @return store propagated by the {@link RLCCalledMethodsAnalysis} along the CFG edge.
+   * @return store propagated by the {@link RLCCalledMethodsAnalysis} along the CFG edge
    */
   private AccumulationStore getStoreForEdgeFromEmptyBlock(Block currentBlock, Block successor) {
     switch (currentBlock.getType()) {

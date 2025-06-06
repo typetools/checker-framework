@@ -34,13 +34,13 @@ done
 # Make $@ be the arguments that should be passed to dljc.
 shift $((OPTIND - 1))
 
-SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" > /dev/null 2>&1 && pwd)"
-SCRIPTPATH="${SCRIPTDIR}/wpi.sh"
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
+SCRIPT_PATH="${SCRIPT_DIR}/wpi.sh"
 
 # Report line numbers when the script fails, from
 # https://unix.stackexchange.com/a/522815 .
 trap 'echo >&2 "Error - exited with status $? at line $LINENO of wpi.sh:";
-         pr -tn ${SCRIPTPATH} | tail -n+$((LINENO - 3)) | head -n7' ERR
+         pr -tn ${SCRIPT_PATH} | tail -n+$((LINENO - 3)) | head -n7' ERR
 
 echo "Starting wpi.sh."
 
@@ -335,9 +335,9 @@ stdout is in      $dljc_stdout"
 # Clone or update DLJC
 if [ "${DLJC}" = "" ]; then
   # The user did not set the DLJC environment variable.
-  DLJC="${SCRIPTDIR}/.do-like-javac/dljc"
+  DLJC="${SCRIPT_DIR}/.do-like-javac/dljc"
   if [ ! -f "${DLJC}" ]; then
-    (cd "$SCRIPTDIR"/../.. && ./gradlew getDoLikeJavac)
+    (cd "$SCRIPT_DIR"/../.. && ./gradlew getDoLikeJavac)
   fi
 else
   # The user did set the DLJC environment variable.
@@ -346,8 +346,8 @@ else
     exit 1
   fi
 fi
-if [ ! -f "$SCRIPTDIR/../dist/checker.jar" ]; then
-  (cd "$SCRIPTDIR"/../.. && ./gradlew assembleForJavac)
+if [ ! -f "$SCRIPT_DIR/../dist/checker.jar" ]; then
+  (cd "$SCRIPT_DIR"/../.. && ./gradlew assembleForJavac)
 fi
 
 #### Main script
