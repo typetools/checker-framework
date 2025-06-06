@@ -57,7 +57,7 @@ public class ConfidentialTransfer extends CFTransfer {
    * @param rightOperand the right operand to be concatenated
    * @param p the input abstract values
    * @param result the result abstract values
-   * @return the resulting type of the string concatenation operation.
+   * @return the resulting type of the string concatenation operation
    */
   public TransferResult<CFValue, CFStore> stringConcatenation(
       Node leftOperand,
@@ -119,7 +119,7 @@ public class ConfidentialTransfer extends CFTransfer {
    * Returns the annotation in the Confidential type hierarchy for the given value.
    *
    * @param cfValue the value
-   * @return the value's AnnotationMirror from the Confidential hierarchy.
+   * @return the value's AnnotationMirror from the Confidential hierarchy
    */
   private AnnotationMirror getValueAnnotation(CFValue cfValue) {
     return qualHierarchy.findAnnotationInHierarchy(
