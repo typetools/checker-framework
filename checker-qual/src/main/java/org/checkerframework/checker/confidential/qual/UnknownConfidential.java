@@ -11,7 +11,8 @@ import org.checkerframework.framework.qual.TargetLocations;
 import org.checkerframework.framework.qual.TypeUseLocation;
 
 /**
- * Represents the top of the Confidential qualifier hierarchy.
+ * Represents a value that might or might not be confidential. This is the top of the Confidential
+ * qualifier hierarchy.
  *
  * @checker_framework.manual #confidential-checker Confidential Checker
  */
