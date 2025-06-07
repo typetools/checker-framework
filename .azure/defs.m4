@@ -3,8 +3,8 @@ changequote(`[',`]')dnl
 ifelse([The "dnl" m4 macro means "discard to end of line",])dnl
 define([canary_version], [24])dnl
 define([latest_version], [25])dnl
-# define([docker_testing], [])dnl
-define([docker_testing], [-testing])dnl
+define([docker_testing], [])dnl
+# define([docker_testing], [-testing])dnl
 ifelse([each macro takes one argument, the JDK version])dnl
 dnl
 define([junit_job], [dnl
