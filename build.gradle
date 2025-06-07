@@ -413,8 +413,8 @@ allprojects { currentProj ->
     // Add standard javac options
     tasks.withType(JavaCompile) { compilationTask ->
       dependsOn(':installGitHooks')
-      // Use JDK 21 because that is what used in the release.  If you update this line, also update,
-      // JAVA_HOME in docs/developer/release/release_vars.py.
+      // With 'useJdk21Compiler' property, use JDK 21 because the release uses it.
+      // If you update this line, also update JAVA_HOME in docs/developer/release/release_vars.py.
       boolean jdk21Compiler = project.getProperties().getOrDefault('useJdk21Compiler', false)
       if (jdk21Compiler) {
         // This uses the Java 21 compiler to compile all code.
