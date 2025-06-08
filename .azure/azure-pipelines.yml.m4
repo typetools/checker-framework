@@ -52,6 +52,7 @@ misc_job(11)
 misc_job(17)
 misc_job(21)
 misc_job(24)
+misc_job(25)
 
 typecheck_job_split(canary_version)
 
