@@ -26,6 +26,8 @@ public class ConfidentialVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactor
   /**
    * Don't check that the constructor result is top. Checking that the super() or this() call is a
    * subtype of the constructor result is sufficient.
+   *
+   * <p>{@inheritDoc}
    */
   @Override
   protected void checkConstructorResult(
@@ -39,6 +41,7 @@ public class ConfidentialVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactor
       Tree valueTree,
       @CompilerMessageKey String errorKey,
       Object... extraArgs) {
+    // Permit casting anything to @Confidential.
     if (varType.hasEffectiveAnnotation(Confidential.class)) {
       return true;
     }

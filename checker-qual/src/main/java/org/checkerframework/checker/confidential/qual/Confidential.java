@@ -11,8 +11,9 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * Denotes a value that will not be exposed to end users or a sink that will not be able to be
  * accessed by end users.
  *
- * <p>Typically, a Confidential value will contain sensitive, private, or otherwise
- * privileged-access information, such as passwords, PII, and private keys.
+ * <p>A Confidential value may contain sensitive, private, or otherwise privileged-access
+ * information. Examples include passwords, PII (personally identifiable information), and private
+ * keys.
  *
  * @see NonConfidential
  * @see org.checkerframework.checker.confidential.ConfidentialChecker
