@@ -96,14 +96,11 @@ public class ConfidentialAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
-   * A TreeAnnotator to enforce Confidential String concatenation rules:
+   * A TreeAnnotator to enforce certain toString return type rules:
    *
    * <ul>
-   *   <li>(Confidential + NonConfidential) returns Confidential (commutatively);
-   *   <li>(Confidential + Confidential) returns Confidential;
-   *   <li>(NonConfidential + NonConfidential) returns NonConfidential;
-   *   <li>UnknownConfidential dominates other types in concatenation;
-   *   <li>Non-bottom types dominate BottomConfidential in concatenation.
+   *   <li>toString(@NonConfidential this) can return @NonConfidential or @Confidential String
+   *   <li>toString(@Confidential this) can return @Confidential String
    * </ul>
    */
   private class ConfidentialTreeAnnotator extends TreeAnnotator {

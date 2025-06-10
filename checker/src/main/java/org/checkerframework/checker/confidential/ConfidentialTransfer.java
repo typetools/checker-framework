@@ -75,7 +75,9 @@ public class ConfidentialTransfer extends CFTransfer {
    * @param leftOperand the left operand to be concatenated
    * @param rightOperand the right operand to be concatenated
    * @param p the input types
-   * @return the resulting AnnotationMirror of the string concatenation operation.
+   * @return the resulting AnnotationMirror of the string concatenation operation, or
+   * null if either leftOperand or rightOperand are null or either operand does not
+   * belong to the Confidential hierarchy.
    */
   private AnnotationMirror createAnnotationForStringConcatenation(
       Node leftOperand, Node rightOperand, TransferInput<CFValue, CFStore> p) {
