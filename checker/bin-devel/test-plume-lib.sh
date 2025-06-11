@@ -31,7 +31,7 @@ fi
 echo "PACKAGES=" "${PACKAGES[@]}"
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
-export ORG_GRADLE_PROJECT_useJdk21Compiler=true
+# export ORG_GRADLE_PROJECT_useJdk21Compiler=true
 source "$SCRIPT_DIR"/clone-related.sh
 
 ./gradlew assembleForJavac --console=plain -Dorg.gradle.internal.http.socketTimeout=60000 -Dorg.gradle.internal.http.connectionTimeout=60000
