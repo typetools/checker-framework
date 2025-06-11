@@ -86,35 +86,20 @@ public class ConfidentialTransfer extends CFTransfer {
     if (leftAnno == null) {
       return null;
     }
-    String leftAnnoName = AnnotationUtils.annotationName(leftAnno);
     CFValue rightValue = p.getValueOfSubNode(rightOperand);
     AnnotationMirror rightAnno = getValueAnnotation(rightValue);
     if (rightAnno == null) {
       return null;
     }
-    String rightAnnoName = AnnotationUtils.annotationName(rightAnno);
 
-    if (leftAnnoName.equals(ConfidentialAnnotatedTypeFactory.UNKNOWN_CONFIDENTIAL_NAME)
-        || rightAnnoName.equals(ConfidentialAnnotatedTypeFactory.UNKNOWN_CONFIDENTIAL_NAME)) {
-      return atypeFactory.UNKNOWN_CONFIDENTIAL;
-    }
-
-    if (leftAnnoName.equals(ConfidentialAnnotatedTypeFactory.BOTTOM_CONFIDENTIAL_NAME)) {
-      return rightAnno;
-    } else if (rightAnnoName.equals(ConfidentialAnnotatedTypeFactory.BOTTOM_CONFIDENTIAL_NAME)) {
-      return leftAnno;
-    }
-
-    if (leftAnnoName.equals(ConfidentialAnnotatedTypeFactory.CONFIDENTIAL_NAME)
-        || rightAnnoName.equals(ConfidentialAnnotatedTypeFactory.CONFIDENTIAL_NAME)) {
+    if (AnnotationUtils.areSameByName(leftAnno, ConfidentialAnnotatedTypeFactory.CONFIDENTIAL_NAME)
+        || AnnotationUtils.areSameByName(
+            rightAnno, ConfidentialAnnotatedTypeFactory.CONFIDENTIAL_NAME)) {
       return atypeFactory.CONFIDENTIAL;
     }
 
-    if (leftAnnoName.equals(ConfidentialAnnotatedTypeFactory.NONCONFIDENTIAL_NAME)
-        && rightAnnoName.equals(ConfidentialAnnotatedTypeFactory.NONCONFIDENTIAL_NAME)) {
-      return atypeFactory.NONCONFIDENTIAL;
-    }
-    return null;
+    return qualHierarchy.leastUpperBoundShallow(
+        leftAnno, leftOperand.getType(), rightAnno, rightOperand.getType());
   }
 
   /**
