@@ -1,9 +1,16 @@
 # Create a Docker image that is ready to run the main Checker Framework tests,
-# using JDK 17.
+# using JDK 25.
+# (This is OpenJDK, not Oracle JDK.  There are different instructions for
+# installing a LTS release of Java.)
+# To convert this file to use a newer JDK, search (from the top level of the
+# Checker Framework and Annotation Tools repositories) for: (java|jdk).?23\b
 
 # "ubuntu" is the latest LTS release.  "ubuntu:rolling" is the latest release.
 # Both might lag behind; as of 2024-11-16, ubuntu:rolling was still 24.04 rather than 24.10.
-FROM ubuntu
+# See releases at https://hub.docker.com/_/ubuntu for available images.
+# See https://packages.ubuntu.com/search?suite=default&section=all&arch=any&keywords=openjdk-23-jdk&searchon=names
+# to see what Ubuntu versions support a particular OpenJDK version (for the given URL, JDK 23).
+FROM ubuntu:25.04
 LABEL org.opencontainers.image.authors="Michael Ernst <mernst@cs.washington.edu>"
 
 # According to
@@ -20,10 +27,14 @@ ENV LANG=en_US.UTF-8 \
     LANGUAGE=en_US:en \
     LC_ALL=en_US.UTF-8
 
+# ca-certificates-java is a dependency of openjdk-20-jdk, but the installation
+# process seems to fail sometimes when only openjdk-20-jdk is specified.
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt -qqy update \
 && apt -y install \
-  openjdk-17-jdk
+  ca-certificates-java \
+&& apt -y install \
+  openjdk-25-jdk
 
 # Known good combinations of JTReg and the JDK appear at https://builds.shipilev.net/jtreg/ .
 
@@ -34,21 +45,28 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   cpp \
   git \
   jq \
-  jtreg7 \
   libcurl3-gnutls \
   make \
   maven \
   python3-requests \
   python3-setuptools \
   unzip \
-  wget
+  wget \
+&& apt -y install \
+  jtreg7
 
-# # Maven 3.6.3 (the default on Ubuntu 22.10) does not run under JDK 17.
-# # (Don't try to use a variable here for the Maven version.)
+# Maven 3.8.7 is the default on Ubuntu 23.04, so the below is not needed.
+# (Don't try to use a variable here for the Maven version.)
 # RUN export DEBIAN_FRONTEND=noninteractive \
-# && wget https://dlcdn.apache.org/maven/maven-3/3.9.10/binaries/apache-maven-3.9.10-bin.tar.gz \ \
+# && wget https://dlcdn.apache.org/maven/maven-3/3.9.10/binaries/apache-maven-3.9.10-bin.tar.gz \
 # && tar xzvf apache-maven-3.9.10-bin.tar.gz
 # ENV PATH="/apache-maven-3.9.10/bin:$PATH"
+
+# Bug fix to make jtreg runnable: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=754942;msg=2
+RUN export DEBIAN_FRONTEND=noninteractive \
+&& apt -qqy update \
+&& apt -y install \
+  default-jre-headless
 
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt autoremove \
