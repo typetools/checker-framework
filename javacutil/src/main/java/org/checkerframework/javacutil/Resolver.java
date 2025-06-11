@@ -202,13 +202,9 @@ public class Resolver {
       Env<AttrContext> env = getEnvForPath(path);
       final Element res;
       if (atLeastJava13) {
-        res =
-            wrapInvocationOnResolveInstance(
-                FIND_IDENT, null, env, names.fromString(name), Kinds.KindSelector.PCK);
+        res = resolve(FIND_IDENT, null, env, names.fromString(name), Kinds.KindSelector.PCK);
       } else {
-        res =
-            wrapInvocationOnResolveInstance(
-                FIND_IDENT, env, names.fromString(name), Kinds.KindSelector.PCK);
+        res = resolve(FIND_IDENT, env, names.fromString(name), Kinds.KindSelector.PCK);
       }
 
       // findIdent will return a PackageSymbol even for a symbol that is not a package,
@@ -244,7 +240,7 @@ public class Resolver {
       final Element res;
       if (atLeastJava13) {
         res =
-            wrapInvocationOnResolveInstance(
+            resolve(
                 FIND_IDENT_IN_TYPE,
                 null,
                 env,
@@ -253,15 +249,14 @@ public class Resolver {
                 Kinds.KindSelector.VAR);
       } else {
         res =
-            wrapInvocationOnResolveInstance(
-                FIND_IDENT_IN_TYPE, env, type, names.fromString(name), Kinds.KindSelector.VAR);
+            resolve(FIND_IDENT_IN_TYPE, env, type, names.fromString(name), Kinds.KindSelector.VAR);
       }
 
       if (res.getKind().isField()) {
         return (VariableElement) res;
       } else if (res.getKind() == ElementKind.OTHER && ACCESSERROR.isInstance(res)) {
         // Return the inaccessible field that was found
-        return (VariableElement) wrapInvocation(res, ACCESSERROR_ACCESS, null, null);
+        return (VariableElement) invokeNoException(res, ACCESSERROR_ACCESS, null, null);
       } else {
         // Most likely didn't find the field and the Element is a SymbolNotFoundError
         return null;
@@ -286,9 +281,9 @@ public class Resolver {
       // Either a VariableElement or a SymbolNotFoundError.
       Element res;
       if (atLeastJava23) {
-        res = wrapInvocationOnResolveInstance(FIND_VAR, null, env, names.fromString(name));
+        res = resolve(FIND_VAR, null, env, names.fromString(name));
       } else {
-        res = wrapInvocationOnResolveInstance(FIND_VAR, env, names.fromString(name));
+        res = resolve(FIND_VAR, env, names.fromString(name));
       }
       // Every kind in the documentation of Element.getKind() is explicitly tested, possibly
       // in the "default:" case.
@@ -330,7 +325,7 @@ public class Resolver {
     Log.DiagnosticHandler discardDiagnosticHandler = new Log.DiscardDiagnosticHandler(log);
     try {
       Env<AttrContext> env = getEnvForPath(path);
-      return wrapInvocationOnResolveInstance(FIND_TYPE, env, names.fromString(name));
+      return resolve(FIND_TYPE, env, names.fromString(name));
     } finally {
       log.popDiagnosticHandler(discardDiagnosticHandler);
     }
@@ -351,7 +346,7 @@ public class Resolver {
       final Element res;
       if (atLeastJava13) {
         res =
-            wrapInvocationOnResolveInstance(
+            resolve(
                 FIND_IDENT_IN_PACKAGE,
                 null,
                 env,
@@ -360,7 +355,7 @@ public class Resolver {
                 Kinds.KindSelector.TYP);
       } else {
         res =
-            wrapInvocationOnResolveInstance(
+            resolve(
                 FIND_IDENT_IN_PACKAGE, env, pck, names.fromString(name), Kinds.KindSelector.TYP);
       }
 
@@ -416,8 +411,7 @@ public class Resolver {
         Object oldContext = getField(resolve, "currentResolutionContext");
         setField(resolve, "currentResolutionContext", methodContext);
         Element resolveResult =
-            wrapInvocationOnResolveInstance(
-                FIND_METHOD, env, site, name, argtypes, typeargtypes, allowBoxing, useVarargs);
+            resolve(FIND_METHOD, env, site, name, argtypes, typeargtypes, allowBoxing, useVarargs);
         setField(resolve, "currentResolutionContext", oldContext);
         ExecutableElement methodResult;
         if (resolveResult.getKind() == ElementKind.METHOD
@@ -427,7 +421,7 @@ public class Resolver {
             && ACCESSERROR.isInstance(resolveResult)) {
           // Return the inaccessible method that was found.
           methodResult =
-              (ExecutableElement) wrapInvocation(resolveResult, ACCESSERROR_ACCESS, null, null);
+              (ExecutableElement) invokeNoException(resolveResult, ACCESSERROR_ACCESS, null, null);
         } else {
           methodResult = null;
         }
@@ -509,15 +503,15 @@ public class Resolver {
   }
 
   /**
-   * Wrap a method invocation on the {@code resolve} object.
+   * Invoke the given method on the {@code resolve} field.
    *
    * @param method the method to called
    * @param args the arguments to the call
    * @return the result of invoking the method on {@code resolve} (as the receiver) and the
    *     arguments
    */
-  private Symbol wrapInvocationOnResolveInstance(Method method, @Nullable Object... args) {
-    return wrapInvocation(resolve, method, args);
+  private Symbol resolve(Method method, @Nullable Object... args) {
+    return invokeNoException(resolve, method, args);
   }
 
   /**
@@ -529,7 +523,7 @@ public class Resolver {
    * @param args the arguments to the call
    * @return the result of invoking the method on the receiver and arguments
    */
-  private Symbol wrapInvocation(Object receiver, Method method, @Nullable Object... args) {
+  private Symbol invokeNoException(Object receiver, Method method, @Nullable Object... args) {
     try {
       @SuppressWarnings("nullness") // assume arguments are OK
       @NonNull Symbol res = (Symbol) method.invoke(receiver, args);
@@ -537,7 +531,7 @@ public class Resolver {
     } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
       throw new BugInCF(
           e,
-          "Unexpected reflection error in wrapInvocation(%s, %s, %s)",
+          "Unexpected reflection error in invokeNoException(%s, %s, %s)",
           receiver,
           method,
           Arrays.toString(args));
