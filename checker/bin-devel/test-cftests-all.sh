@@ -9,7 +9,7 @@ set -o xtrace
 export SHELLOPTS
 echo "SHELLOPTS=${SHELLOPTS}"
 
-export ORG_GRADLE_PROJECT_useJdk21Compiler=true
+# export ORG_GRADLE_PROJECT_useJdk21Compiler=true
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
 source "$SCRIPT_DIR"/clone-related.sh
 
