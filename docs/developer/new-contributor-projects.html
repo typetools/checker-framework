@@ -34,27 +34,30 @@
   <li><a href="#annotate-library">Annotate a library</a>
     <ul>
       <li><a href="#choose-a-library">Choosing a library to annotate</a></li>
+      <li><a href="#case-study-jdk24">JDK 24 library</a></li>
       <li><a href="#case-study-nullness-guava">Guava library</a></li>
     </ul></li>
   <li><a href="#create-new-type-system">Create a new type system</a>
     <ul>
       <li><a href="#ownership-type-system">Ownership type system</a></li>
-      <li><a href="#non-empty-checker">Non-Empty Checker for precise handling of Queue.peek() and poll()</a></li>
+      <li><a href="#nullness-queue">Nullness Checker precise handling of Queue.peek() and poll()</a></li>
+      <li><a href="#non-empty-checker">Non-Empty Checker</a></li>
       <li><a href="#iteration-checker">Iteration Checker to prevent <code>NoSuchElementException</code></a></li>
       <li><a href="#custom-tainting-checking">Preventing injection vulnerabilities via specialized taint analysis</a></li>
       <li><a href="#track-unsupported-operations">Warn about unsupported operations</a></li>
       <li><a href="#overflow">Overflow checking</a></li>
-      <li><a href="#index-checker-mutable-length">Index checking for mutable length data structures</a></li>
-      <li><a href="#nullness-bug-detector">Nullness bug detector</a></li>
     </ul></li>
   <li><a href="#cf-other">Enhance the toolset</a>
     <ul>
       <li><a href="#hint-about-annotated-library-methods">Indicate library methods that should be used instead</a></li>
+      <li><a href="#eisop-features">EISOP features</a></li>
       <li><a href="#index-errors">Improving error messages</a></li>
       <li><a href="#javaparser-to-javac-parse">Replace JavaParser by javac</a></li>
       <li><a href="#java-expression-parser">Java expression parser</a></li>
       <li><a href="#dataflow">Dataflow enhancements</a></li>
-      <li><a href="#Purity_analysis">Side effect analysis, also known as purity analysis</a></li>
+      <li><a href="#SideEffectsOnly">More precise side effect annotations</a></li>
+      <li><a href="#unrefinement-warnings">Better error messages that are due to side effects</a></li>
+      <li><a href="#purity-inference">Side effect inference, also known as purity inference</a></li>
       <li><a href="#javadoc">Javadoc support</a></li>
     </ul></li>
   <li><a href="#apply">How to apply to GSoC (relevant to GSoC students only)</a></li>
@@ -374,13 +377,44 @@ One possible outcome is to identify
 </p>
 
 
-
 <h2 id="case-study-signature">Signature strings</h2>
 
 <p>
-Determine whether the <a href="https://asm.ow2.io/">ASM library</a>, or
-some other library, properly handles signature strings.
+  Java defines six formats for the string representation of a type.  (This
+  is a design mistake, but it is too late to fix it now.)  Because they all
+  differ, it is an error to use one in place of another.  But because some
+  of them are very similar to others, such as differing only for nested
+  classes, those errors might escape to production and lead to incorrect
+  behavior or crashes.
 </p>
+
+<p>
+  The <a href="https://checkerframework.org/manual/#signature-checker">Signature
+  String Checker</a> ensures that string representations of types are used
+  correctly.  It has discovered bugs in the JDK, ASM, BCEL, and in clients
+  of them.
+</p>
+
+<p>
+  Here are some possible case studies.
+</p>
+
+<ul>
+  <li>
+    Java 24 introduces a
+    new <a href="https://openjdk.org/jeps/484">class-file API</a>
+    in <a href="https://docs.oracle.com/en/java/javase/24/docs/api/java.base/java/lang/classfile/package-summary.html"><code>java.lang.classfile</code></a>.
+    Annotate it to determine that it is internally consistent and to enable
+    type-checking of its clients, such as that
+    in <a href="https://plse.cs.washington.edu/daikon/">Daikon</a>.
+  </li>
+
+  <li>
+    The <a href="https://asm.ow2.io/">ASM library</a> is another popular
+    bytecode manipulation library.  A client to annotate along with ASM is
+    the Checker Framework itself.
+  </li>
+</ul>
 
 <p>
    Some challenging aspects of this case study are:
@@ -720,6 +754,28 @@ Alternately, you can
 </ul>
 
 
+<h2 id="case-study-jdk24">JDK 24 library</h2>
+
+<p>
+  The Checker Framework ships with extensive annotations for the JDK.
+  These annotations are useful in type-checking any program, since all
+  programs use the JDK to some extent.  The JDK annotations need to be
+  updated from JDK 21 to JDK 24.  In particular, any new methods and
+  classes that have been recently introduced have no annotations.  They
+  need to be annotated.
+</p>
+
+<p>
+  This case study involves many different type systems rather than just
+  one.
+</p>
+
+<p>
+  This project would have high impact because the JDK is so widely used and
+  its annotations are so heavily depended on by the Checker Framework.
+</p>
+
+
 <h2 id="case-study-nullness-guava">Guava library</h2>
 
 <p>
@@ -769,7 +825,7 @@ annotation erased</a>.
 
 
 
-<h2 id="non-empty-checker">Non-Empty Checker for precise handling of Queue.peek() and poll()</h2>
+<h2 id="nullness-queue">Nullness Checker precise handling of Queue.peek() and poll()</h2>
 
 <p>
 The Nullness Checker issues a false positive warning for this code:
@@ -804,7 +860,32 @@ value <a href="https://checkerframework.org/manual/#map-key-checker">is a key in
 
 <p>
 It should be handled the same way:  by adding a new subchecker, called the
-  Nonempty Checker, to the Nullness Checker.  Its types are:
+Nonempty Checker, to the Nullness Checker.  The Nonempty Checker already
+exists in the Checker Framework, though it is not advertised.
+</p>
+
+<p>
+When you are done, the Nullness Checker should issue only the <code>// ::</code> diagnostics from <code>checker/tests/nullness/IsEmptyPoll.java</code> &mdash; no more and no fewer.
+You can test that by running the Nullness Checker on the file, and when you are done you should delete the <code>// @skip-test</code> line so that the file is run as part of the Checker Framework test suite.
+</p>
+
+<p>
+  The best approach may be to have the Nullness Checker run the Nonempty
+  Checker as a subchecker but suppress the Nonempty Checker warnings.  That
+  is, the Nullness Checker takes advantage of information that the Nonempty
+  Checker verifies, without caring about code that the Nonempty Checker
+  cannot verify.  The Optional Checker takes this approach in its
+  integration with the Nonempty Checker.
+</p>
+
+
+<h2 id="non-empty-checker">Non-Empty Checker</h2>
+
+<p>
+  The Checker Framework contains a checker named the Nonempty Checker (<a href="https://github.com/typetools/checker-framework/tree/master/checker/src/main/java/org/checkerframework/checker/nonempty">code</a>,
+  <a href="https://github.com/typetools/checker-framework/tree/master/checker/tests/nonempty">tests</a>
+  which can be run via <code>gradlew NonemptyTest</code>).
+Its types are:
 </p>
 <ul>
 <li><code>@UnknownNonEmpty</code> &mdash; the queue might or might not be empty
@@ -812,22 +893,14 @@ It should be handled the same way:  by adding a new subchecker, called the
 </ul>
 
 <p>
-There is a start at this type-checker in branch <code>nonempty-checker</code>.  It:
-</p>
-<ul>
-  <li>defines the annotations
-  </li>
-  <li>creates the integration into the Nullness Checker
-  </li>
-</ul>
-<p>
-However, it is not done.  (In fact, it doesn't even compile.)
-For information about what needs to be done, see <a href="https://github.com/typetools/checker-framework/issues/399">issue #399</a>.
+  This type-checker is not yet publicized in the Checker Framework manual.
+  The reason is that the type-checker's false positive rate is too high.
+  The key task for this project is to determine the cause of these false
+  positives and find ways to eliminate them.
 </p>
 
 <p>
-When you are done, the Nullness Checker should issue only the <code>// ::</code> diagnostics from <code>checker/tests/nullness/IsEmptyPoll.java</code> &mdash; no more and no fewer.
-You can test that by running the Nullness Checker on the file, and when you are done you should delete the <code>// @skip-test</code> line so that the file is run as part of the Checker Framework test suite.
+For information about what needs to be done, see <a href="https://github.com/typetools/checker-framework/issues/399">issue #399</a>.
 </p>
 
 
@@ -875,7 +948,11 @@ There are probably other special cases, which experimentation will reveal.
 </p>
 
 <p>
-Parts of this are already implemented, but it needs to be enhanced.  Once
+Parts of this are already implemented, but it needs to be enhanced.
+In particular, it depends on the
+<a href="#SideEffectsOnly"><code>@SideEffectsOnly</code></a> annotation
+mentioned elsewhere in this document.
+Once
 case studies have demonstrated its effectiveness, then it can be released
 to the world, and a scientific paper can be written.
 </p>
@@ -893,12 +970,16 @@ Other vulnerabilities result from leaking private data, such as credit card numb
 </p>
 
 <p>
-We have built a generalized taint analysis that can address any of these problems.  However, because it is so general, it is not very useful.  A user must customize it for each particular problem.
+We have built a generalized taint analysis that can address any of these
+problems.  However, because it is so general, it is not very useful.  A
+user must customize it for each particular problem.
 </p>
 
 <p>
-The goal of this project is to make those customizations, and to evaluate their usefulness.
-A specific research question is:  "To what extent is a general taint analysis useful in eliminating a wide variety of security vulnerabilities?  How much customization, if any, is needed?"
+The goal of this project is to make those customizations, and to evaluate
+their usefulness.  A specific research question is:  "To what extent is a
+general taint analysis useful in eliminating a wide variety of security
+vulnerabilities?  How much customization, if any, is needed?"
 </p>
 
 <p>
@@ -911,8 +992,10 @@ a <a href="https://checkerframework.org/manual/#tainting-checker">Tainting
     rename the <code>@Tainted</code> and <code>@Untainted</code> qualifiers
     to something more specific (such as <code>@Private</code>
     or <code>@PaymentDetails</code> or <code>@HtmlQuoted</code>), and
+  </li>
   <li>
     annotate libraries.
+  </li>
 </ul>
 
 <p>
@@ -937,18 +1020,30 @@ studies showing the utility of compile-time taint checking.
   Possible examples include:
 </p>
 <ul>
-  <li>SQL injection
-  <li>OS command injection
-  <li>the <code>@PrivacySource</code> and <code>@PrivacySink</code>
+  <li>
+    SQL injection
+    (the <a href="https://checkerframework.org/manual/#sql-quotes-checker">SQL
+      Quotes Checker</a> is a lightweight version of this)
+  </li>
+  <li>
+    OS command injection
+  </li>
+  <li>
+    the <code>@PrivacySource</code> and <code>@PrivacySink</code>
     annotations used by the Meta <a href="https://fbinfer.com/">Infer
     static analyzer</a>.
-  <li>information flow
-  <li>many of the <a href="http://cwe.mitre.org/top25/">CWE/SANS most
-  dangerous software programming errors</a> (and the "on the cusp" ones too)
-  <!-- More details appear in these files:
+  </li>
+  <li>
+    information flow
+  </li>
+  <li>
+    many of the <a href="http://cwe.mitre.org/top25/">CWE/SANS most
+      dangerous software programming errors</a> (and the "on the cusp" ones too)
+    <!-- More details appear in these files:
       ~/research/games/notes/notes
       ~/prof/grants/2012-02-darpa-verigames/proposal/top25-as-types.pdf
-  -->
+    -->
+  </li>
 </ul>
 
 <p>
@@ -1136,118 +1231,6 @@ a loop (but maybe other approaches are possible):
 </ul>
 
 
-<h2 id="index-checker-mutable-length">Index checking for mutable length data structures</h2>
-
-<p>
-The <a href="https://checkerframework.org/manual/#index-checker">Index
-Checker</a> is currently restricted to fixed-size data structures.  A
-fixed-size data structure is one whose length cannot be changed once it is
-created, such as arrays and Strings.  This limitation prevents the Index
-Checker from verifying indexing operations on mutable-size data structures,
-like Lists, that have <code>add</code> or <code>remove</code>
-methods. Since these kind of collections are common in practice, this is a
-severe limitation for the Index Checker.
-</p>
-
-<p>
-The limitation is caused by the Index Checker's use of types that are dependent on the length of data structures,
-like <code>@LTLengthOf("data_structure")</code>. If <code>data_structure</code>'s length could change,
-then the correctness of this type might change.
-</p>
-
-<p>
-A naive solution would be to invalidate these types any time a method is called on <code>data_structure</code>.
-Unfortunately, aliasing makes this still unsound. Even more, a great solution to this problem would keep
-the information in the type when a method like add or remove is called on <code>data_structure</code>.
-A more complete solution might involve some special annotations on List that permit the information to be persisted.
-</p>
-
-<p>
-Another approach would be to run a pointer analysis before type-checking,
-then use that information for precise information about what lists might be
-changed by each call to <code>add</code> or <code>remove</code>.  One
-possible pointer analysis would be that
-of <a href="https://github.com/plast-lab/doop-mirror">Doop</a>.
-</p>
-
-<p>
-This project would involve designing and implementing a solution to this problem.
-</p>
-
-
-<h2 id="nullness-bug-detector">Nullness bug detector</h2>
-
-<p>
-Verifying a program to be free of errors can be a daunting task.  When
-starting out, a user may be more interested in
-<a href="https://checkerframework.org/manual/#faq-other-tools-section">bug-finding</a>
-than verification.  The goal of this project is to create a nullness bug
-detector that uses the powerful analysis of the Checker Framework and its
-Nullness Checker, but omits some of its more confusing or expensive
-features.  The goal is to create a fast, easy-to-use bug detector.  It
-would enable users to start small and advance to full verification in the
-future, rather than having to start out doing full verification.
-</p>
-
-<p>
-This could be structured as a new NullnessLight Checker, or as a
-command-line argument to the current Nullness Checker.  Here are some
-differences from the real Nullness checker:
-</p>
-<ul>
-  <li>No initialization analysis; the checker assumes that every value is
-  initialized.</li>
-  <li>No map key analysis; assume that, at every call to
-    <code>Map.get</code>, the given key appears in the map.</li>
-  <li>No invalidation of dataflow facts.  Assume all method calls are pure,
-  so method calls do not invalidate dataflow facts.  Assume there is no
-    aliasing, so field updates do not invalidate dataflow facts.
-    </li>
-  <li>Assume that boxing of primitives is <code>@Pure</code>: it returns
-  the same value on every call.</li>
-  <li>If the Checker Framework cannot infer a type argument, assume that
-  the type argument is <code>@NonNull</code>.</li>
-</ul>
-<p>
-  Each of these behaviors should be controlled by its own command-line
-  argument, as well as being enabled in the NullnessLight Checker.
-</p>
-
-<p>
-  The implementation may be relatively straightforward, since in most cases
-  the behavior is just to disable some functionality of existing checkers.
-</p>
-
-<p>Tools such as FindBugs, NullAway, NullnessLight, and the Nullness
-  Checker form a spectrum from easy-to-use bug detectors to sound
-  verification.  NullnessLight represents a new point in the design space.
-  It will be interesting to compare these checkers:
-</p>
-
-<ul>
-    <li>How much easier is it to use?  For example, how many fewer
-      annotations need to be written?</li>
-    <li>
-      How many more fewer true positives does it report &mdash; in other
-      words, how many more false negatives does it suffer?
-    </li>
-    <li>
-      How many fewer false positives does it report?
-    </li>
-</ul>
-
-<p>
-  Uber's <a href="https://github.com/uber/NullAway">NullAway</a> tool is also
-  an implementation of this idea (that is, a fast, but incomplete and
-  unsound, nullness checker).  NullAway doesn't let the user specify Java
-  Generics:  it assumes that every type parameter is <code>@NonNull</code>.
-  Does Uber's tool provide users a good
-  introduction to the ideas that a user can use to transition to a nullness
-  type system later?
-</p>
-
-
-
 <h1 id="cf-other">Enhance the toolset</h1>
 
 
@@ -1293,6 +1276,34 @@ and the output is annotated
 as <a href="https://checkerframework.org/api/org/checkerframework/checker/signature/qual/ClassGetName.html"><code>ClassGetName</code></a>.
 It would behave similarly for other library methods.
 </p>
+
+
+<h2 id="eisop-features">EISOP features</h2>
+
+<p>
+  The <a href="https://eisop.github.io/">EISOP</a> <a href="https://github.com/eisop/checker-framework">Checker
+  Framework</a> is an "unfriendly fork" of the Checker Framework.  That is,
+  it incorporates improvements from the Checker Framework, but its
+  developers do not make pull requests to the Checker Framework:  they only
+  incorporate their improvements and bug fixes in their own version.
+</p>
+
+<p>
+  The goal of this project is to port EISOP's improvements to the Checker
+  Framework.  This has two positive effects.  First, it enhances the
+  Checker Framework.  Second, it reduces the differences between the two
+  projects, making it more feasible to merge them in the future.
+</p>
+
+<p>
+  One challenge is that we have discovered that some EISOP enhancements are
+  buggy and should not be incorporated into the Checker Framework.  Another
+  challenge is that some EISOP enhancements do not conform to the Checker
+  Framework's code quality and testing standards.  Nonetheless, most are
+  worthy of including in the Checker Framework.
+</p>
+
+
 
 
 <h2 id="index-errors">Improving error messages</h2>
@@ -1347,12 +1358,38 @@ some distinct challenges:
 <h2 id="javaparser-to-javac-parse">Replace JavaParser by javac</h2>
 
 <p>
-The Checker Framework uses JavaParser to parse
-<a href="https://checkerframework.org/manual/#java-expressions-as-arguments">a
-Java expressions</a>.  However, JavaParser is buggy and poorly maintained.
-The goal of this project is to replace every use of JavaParser by a use of
-<a href="https://github.com/plume-lib/javac-parse">javac-parse</a>.
+The Checker Framework uses JavaParser to parse Java code.  However,
+JavaParser is buggy and poorly maintained.  A better Java parser exists:
+the one in javac!  There are libraries that make javac's parser available,
+such as <a href="https://github.com/plume-lib/javac-parse">javac-parse</a>.
 </p>
+
+<p>
+  The goal of this project is to replace every use of JavaParser by a use
+  of javac's parser.  Here are two examples; replacing each of them is a different project.
+</p>
+
+<ul>
+  <li>
+    Parsing of
+    <a href="https://checkerframework.org/manual/#java-expressions-as-arguments">a
+      Java expressions</a> used in annotations, such as in dependent types.
+  </li>
+  <li>
+    Parsing
+    of <a href="https://checkerframework.org/manual/#ajava-files">ajava</a>
+    files.  Because JavaParser cannot yet parse Java 24 files, it is
+    impossible to run
+    <a href="https://checkerframework.org/manual/#whole-program-inference">whole-program
+    inference</a> on programs that use Java 24 features.
+  </li>
+  <li>
+    Parsing of <a href="https://checkerframework.org/manual/#stub">stub
+      files</a>.  Because JavaParser cannot yet parse Java 24 files, it is
+      not yet possible for users to write Java 24 code in method bodies
+      within stub files.  This is an inconvenience.
+  </li>
+</ul>
 
 
 <h2 id="java-expression-parser">Java expression parser</h2>
@@ -1443,18 +1480,118 @@ use it.
 </p>
 
 
-<h2 id="Purity_analysis">Side effect analysis, also known as purity analysis</h2>
+<h2 id="SideEffectsOnly">More precise side effect annotations</h2>
+
+<p>
+  The Checker Framework contains
+  a <a href="https://checkerframework.org/api/org/checkerframework/dataflow/qual/SideEffectFree.html"><code>@SideEffectFree</code></a>
+  annotation that improves the precision of its type-checking.  The
+  <code>@SideEffectFree</code> annotation means that a method has <em>no</em>
+  side effects.  In some cases, it is enough to know that some particular
+  variable was not modified &mdash; it is not necessary that <em>no</em>
+  variable was modified.
+</p>
+
+<p>
+  This project would introduce a <code>@SideEffectsOnly</code>
+  annotation.  <code>@SideEffectsOnly</code> indicates all the expressions
+  whose value can possibly be modified by a particular method.  This will
+  make the Checker Framework more precise in many cases.
+</p>
+
+
+<h2 id="unrefinement-warnings">Better error messages that are due to side effects</h2>
+
+<p>
+A common and well-known cause of false positives from Checker Framework
+checkers is calls to impure methods, which unrefine dataflow facts. For
+example, a simple example is the following, which triggers a false positive
+in
+the <a href="https://checkerframework.org/manual/#resource-leak-checker">Resource
+Leak Checker (RLC)</a>:
+
+
+<pre>
+@EnsuresCalledMethods(value={“this.f1”, “this.f2”}, methods={“close”})
+void foo() {
+  try { f1.close(); } catch (Exception e) { }
+  try { f2.close(); } catch (Exception e) { }
+}
+</pre>
+
+<p>
+The call <code>f2.close()</code> unrefines the inferred dataflow fact
+that <code>f1.close()</code> has already been called, because it's possible
+that <code>f2.close()</code> re-assigns <code>f1</code>.  Therefore, the
+RLC reports that the <code>@EnsuresCalledMethods</code> annotation doesn’t
+verify because <code>f1</code> might not be closed at the moment of
+procedure exit.  Programmers who see the error message are mystified,
+because so far as they can see, <code>foo</code> closes
+both <code>f1</code> and <code>f2</code>.
+</p>
+
+<p>
+Non-experts (even competent engineers!) consistently don’t recognize that
+purity is even an issue in dataflow until it’s pointed out to them.  The
+goal of this project is to provide better error reporting, when an error
+message is reported only because unrefinement has removed a dataflow fact.
+For each warning that could have been avoided by having a purity annotation
+on some called method, report that fact to the user.
+</p>
+
+<p>
+  Here is a potential implementation design.
+</p>
+
+<ol>
+  <li>
+    For each warning issued by <code>BaseTypeVisitor</code>, record the
+    &ldquo;required&rdquo; type and the expression that requires it.
+  </li>
+  <li>
+    Do a backwards search over the CFG from the warning location, searching
+    for a dataflow store that contains the required type (or a subtype) for
+    the required expression.
+  </li>
+  <li>
+    For all such locations (or maybe just for the frontier of such
+    locations?), issue a new warning that includes both the original
+    warning text and the fact that expression U prevented the code from
+    being verified. The new warning message for the example above might
+    look something like this, where the &ldquo;found&rdquo; and
+    &ldquo;required&rdquo; types refer to the type of <code>f1</code>.
+
+<pre>
+…postcondition of foo() is not satisfied.
+found   : @CalledMethods({}) Socket
+required: @CalledMethods({“close”}) Socket
+caused by:
+  this.f1 has type @CalledMethods({“close”}) Socket before a possible side-effect from the call to f2.close(),
+  which has an implicit @Impure annotation (no purity annotation found for java.lang.AutoCloseable#close()):
+      try { f2.close(); } catch (Exception e) { }
+              ^
+</pre>
+  </li>
+</ol>
+
+
+
+<!-- For more details, see email thread "Some thoughts on purity", April 2025. -->
+
+
+<h2 id="purity-inference">Side effect inference, also known as purity inference</h2>
 
 <!-- This project is duplicated in the highlight section and in
 the Checker Framework's new-contributor-projects.html . -->
 
 <p>
-A side effect analysis reports what side effects a procedure may perform,
+A side effect analysis (or inference) reports what side effects a procedure may perform,
 such as what variable values it may modify.  A side effect analysis is
-essential to other program analyses.  A program analysis technique makes
+essential to other program analyses.  A program analysis makes
 estimates about the current values of expressions. When a method call
 occurs, the analysis has to throw away most of its estimates, because the
-method call might change any variable.  However, if the method is known to
+method call might change any variable.  (This process of discarding
+information is called "unrefinement".)  However, if the method is known to
 have no side effects, then the analysis doesn't need to throw away its
 estimates, and the analysis is more precise.  Thus, an improvement to the
 foundational side effect analysis can improve many other program analyses.
@@ -1691,19 +1828,19 @@ thought about the problem nor tried to solve it.
  -->
 <!--  LocalWords:  deterministically prototyped Stateful plugins plugin '
  -->
-<!--  LocalWords:  PDFs Stubparser JLint NullnessLight bytecodes YourKit
+<!--  LocalWords:  PDFs Stubparser JLint NullnessLight bytecodes YourKit '
  -->
 <!--  LocalWords:  timeline Uber's NullAway Uber coala BCEL mvn BCEL's AFU
  -->
 <!--  LocalWords:  Signedness Jake2 README Lookup ASM's Nayuki CRC mis CWE
  -->
-<!--  LocalWords:  BigInteger lockB lockA signedness microbenchmarks pre
+<!--  LocalWords:  BigInteger lockB lockA signedness microbenchmarks pre '
  -->
 <!--  LocalWords:  checklink subparts UnsignedBytes runtime MyClass jOOU
  -->
-<!--  LocalWords:  usePriorityQueue PriorityQueue queueMinPathNode didn
+<!--  LocalWords:  usePriorityQueue PriorityQueue queueMinPathNode didn f1
  -->
-<!--  LocalWords:  subchecker IntScope UnsignedLong UnsignedLongs doesn
+<!--  LocalWords:  subchecker IntScope UnsignedLong UnsignedLongs doesn f2
  -->
 <!--  LocalWords:  rasmud nondet Geffken Dort unmodifiable MightNotSupport
  -->
@@ -1711,9 +1848,11 @@ thought about the problem nor tried to solve it.
  -->
 <!--  LocalWords:  MightSupportNothing Waataja Siwakorn Srisakaokul Papi
  -->
-<!--  LocalWords:  Quinonez Mah Telmo Correa rdf4j Doop FqBinaryName
+<!--  LocalWords:  Quinonez Mah Telmo Correa rdf4j Doop FqBinaryName EISOP
  -->
-<!--  LocalWords:  fqBinaryName ClassGetName componentType substring
+<!--  LocalWords:  fqBinaryName ClassGetName componentType substring ajava
  -->
-<!--  LocalWords:  indexOf getArrayElementType
+<!--  LocalWords:  indexOf getArrayElementType unrefine unrefines
+ -->
+<!--  LocalWords:  unrefinement
  -->

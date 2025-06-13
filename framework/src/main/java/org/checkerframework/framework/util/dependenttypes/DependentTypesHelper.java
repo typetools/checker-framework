@@ -47,6 +47,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeParameterBounds;
+import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.type.visitor.DoubleAnnotatedTypeScanner;
@@ -120,6 +121,12 @@ public class DependentTypesHelper {
   private final ExpressionErrorCollector expressionErrorCollector = new ExpressionErrorCollector();
 
   /**
+   * This scans the annotated type and replaces any dependent type annotation that has a parse error
+   * with the top annotation in the hierarchy.
+   */
+  protected final ErrorAnnoReplacer errorAnnoReplacer;
+
+  /**
    * A scanner that applies a function to each {@link AnnotationMirror} and replaces it in the given
    * {@code AnnotatedTypeMirror}. (This side-effects the {@code AnnotatedTypeMirror}.)
    */
@@ -129,7 +136,7 @@ public class DependentTypesHelper {
    * Copies annotations that might have been viewpoint adapted from the visited type (the first
    * formal parameter of {@code ViewpointAdaptedCopier#visit}) to the second formal parameter.
    */
-  private final ViewpointAdaptedCopier viewpointAdaptedCopier = new ViewpointAdaptedCopier();
+  protected final ViewpointAdaptedCopier viewpointAdaptedCopier = new ViewpointAdaptedCopier();
 
   /** The type mirror for java.lang.Object. */
   protected final TypeMirror objectTM;
@@ -141,7 +148,7 @@ public class DependentTypesHelper {
    */
   public DependentTypesHelper(AnnotatedTypeFactory factory) {
     this.factory = factory;
-
+    this.errorAnnoReplacer = new ErrorAnnoReplacer(factory.getQualifierHierarchy());
     this.annoToElements = new HashMap<>();
     for (Class<? extends Annotation> expressionAnno : factory.getSupportedTypeQualifiers()) {
       List<ExecutableElement> elementList =
@@ -1199,6 +1206,38 @@ public class DependentTypesHelper {
   }
 
   /**
+   * Replaces a dependent type annotation with a parser error with the top qualifier in the
+   * hierarchy.
+   */
+  protected class ErrorAnnoReplacer extends SimpleAnnotatedTypeScanner<Void, Void> {
+
+    /**
+     * Create an ErrorAnnoReplacer.
+     *
+     * @param qh the qualifier hierarchy
+     */
+    private ErrorAnnoReplacer(QualifierHierarchy qh) {
+      super(
+          (AnnotatedTypeMirror type, Void aVoid) -> {
+            AnnotationMirrorSet replacementAnnos = null;
+            for (AnnotationMirror am : type.getPrimaryAnnotations()) {
+              if (isExpressionAnno(am) && !errorElements(am).isEmpty()) {
+                if (replacementAnnos == null) {
+                  replacementAnnos = new AnnotationMirrorSet();
+                }
+                replacementAnnos.add(qh.getTopAnnotation(am));
+              }
+            }
+
+            if (replacementAnnos != null) {
+              type.replaceAnnotations(replacementAnnos);
+            }
+            return null;
+          });
+    }
+  }
+
+  /**
    * Appends list2 to list1 in a new list. If either list is empty, returns the other. Thus, the
    * result may be aliased to one of the arguments and the client should only read, not write into,
    * the result.
@@ -1226,7 +1265,11 @@ public class DependentTypesHelper {
    * visited type to the second formal parameter except for annotations on types that have been
    * substituted.
    */
-  private class ViewpointAdaptedCopier extends DoubleAnnotatedTypeScanner<Void> {
+  protected class ViewpointAdaptedCopier extends DoubleAnnotatedTypeScanner<Void> {
+
+    /** Create a ViewpointAdaptedCopier. */
+    private ViewpointAdaptedCopier() {}
+
     @Override
     protected Void scan(AnnotatedTypeMirror from, AnnotatedTypeMirror to) {
       if (from == null || to == null) {
@@ -1241,6 +1284,7 @@ public class DependentTypesHelper {
         }
       }
       to.replaceAnnotations(replacements);
+
       if (from.getKind() != to.getKind()
           || (from.getKind() == TypeKind.TYPEVAR
               && TypesUtils.isCapturedTypeVariable(to.getUnderlyingType()))) {
@@ -1277,7 +1321,7 @@ public class DependentTypesHelper {
    * @param atm a type
    * @return true if {@code atm} has any dependent type annotations
    */
-  private boolean hasDependentType(AnnotatedTypeMirror atm) {
+  protected boolean hasDependentType(AnnotatedTypeMirror atm) {
     if (atm == null) {
       return false;
     }

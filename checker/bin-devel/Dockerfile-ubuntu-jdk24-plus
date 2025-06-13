@@ -1,54 +1,48 @@
 # Create a Docker image that is ready to run the full Checker Framework tests,
-# including building the manual and Javadoc, using JDK 23.
+# including building the manual and Javadoc, using JDK 24.
 # (This is OpenJDK, not Oracle JDK.  There are different instructions for
 # installing a LTS release of Java.)
 # To convert this file to use a newer JDK, search (from the top level of the
-# Checker Framework and Annotation Tools repositories) for: (java|jdk).?23\b
+# Checker Framework and Annotation Tools repositories) for: (java|jdk).?24\b
 
 # "ubuntu" is the latest LTS release.  "ubuntu:rolling" is the latest release.
 # Both might lag behind; as of 2024-11-16, ubuntu:rolling was still 24.04 rather than 24.10.
 # See releases at https://hub.docker.com/_/ubuntu for available images.
-# See https://packages.ubuntu.com/search?suite=default&section=all&arch=any&keywords=openjdk-23-jdk&searchon=names
-# to see what Ubuntu versions support a particular OpenJDK version (for the given URL, JDK 23).
-FROM ubuntu:24.10
+# See https://packages.ubuntu.com/search?suite=default&section=all&arch=any&keywords=openjdk-24-jdk&searchon=names
+# to see what Ubuntu versions support a particular OpenJDK version (for the given URL, JDK 24).
+FROM ubuntu:25.04
 LABEL org.opencontainers.image.authors="Michael Ernst <mernst@cs.washington.edu>"
 
 # According to
 # https://docs.docker.com/engine/userguide/eng-image/dockerfile_best-practices/:
-#  * Put "apt-get update" and "apt-get install" and "apt cleanup" in the same RUN command.
-#  * Do not run "apt-get upgrade"; instead get upstream to update.
+#  * Put "apt update" and "apt install" and "apt cleanup" in the same RUN command.
+#  * Do not run "apt upgrade"; instead get upstream to update.
 
 RUN export DEBIAN_FRONTEND=noninteractive \
-&& apt-get -qqy update \
-&& apt-get install -y locales \
+&& apt -qqy update \
+&& apt install -y locales \
 && rm -rf /var/lib/apt/lists/* \
 && locale-gen "en_US.UTF-8"
 ENV LANG=en_US.UTF-8 \
     LANGUAGE=en_US:en \
     LC_ALL=en_US.UTF-8
 
-RUN export DEBIAN_FRONTEND=noninteractive \
-&& apt-get -qqy update \
-&& apt-get -y install aptitude \
-&& aptitude -y install \
-  apt-utils
-
 # ca-certificates-java is a dependency of openjdk-20-jdk, but the installation
 # process seems to fail sometimes when only openjdk-20-jdk is specified.
 RUN export DEBIAN_FRONTEND=noninteractive \
-&& apt-get -qqy update \
-&& aptitude -y install \
+&& apt -qqy update \
+&& apt -y install \
   ca-certificates-java \
-&& aptitude -y install \
+&& apt -y install \
   openjdk-17-jdk \
   openjdk-21-jdk \
-  openjdk-23-jdk
+  openjdk-24-jdk
 
 # Known good combinations of JTReg and the JDK appear at https://builds.shipilev.net/jtreg/ .
 
 RUN export DEBIAN_FRONTEND=noninteractive \
-&& apt-get -qqy update \
-&& aptitude -y install \
+&& apt -qqy update \
+&& apt -y install \
   ant \
   cpp \
   git \
@@ -60,7 +54,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   python3-setuptools \
   unzip \
   wget \
-&& aptitude -y install \
+&& apt -y install \
   jtreg7
 
 # Maven 3.8.7 is the default on Ubuntu 23.04, so the below is not needed.
@@ -72,13 +66,14 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 
 # Bug fix to make jtreg runnable: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=754942;msg=2
 RUN export DEBIAN_FRONTEND=noninteractive \
-&& apt-get -qqy update \
-&& aptitude -y install \
+&& apt -qqy update \
+&& apt -y install \
   default-jre-headless
 
 RUN export DEBIAN_FRONTEND=noninteractive \
-&& apt-get -qqy update \
-&& aptitude -y install \
+&& apt -qqy update \
+&& apt -y install \
+  asciidoctor \
   autoconf \
   devscripts \
   dia \
@@ -92,6 +87,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   pdf2svg \
   rsync \
   shellcheck \
+  shfmt \
   texlive-font-utils \
   texlive-fonts-recommended \
   texlive-latex-base \
@@ -103,14 +99,15 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 # Azure creates a new user and runs jobs as it.
 # So, install into /usr/local/bin which is already on every user's path.
 RUN export DEBIAN_FRONTEND=noninteractive \
-&& apt-get -qqy update \
-&& aptitude -y install \
+&& apt -qqy update \
+&& apt -y install \
   pipx \
 && PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install black \
 && PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install flake8 \
-&& PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install html5validator
+&& PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install html5validator \
+&& PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install ruff
 
 RUN export DEBIAN_FRONTEND=noninteractive \
-&& apt-get autoremove \
-&& apt-get clean \
+&& apt autoremove \
+&& apt clean \
 && rm -rf /var/lib/apt/lists/*

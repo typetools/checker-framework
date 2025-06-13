@@ -7,7 +7,7 @@ plugins {
   id 'de.undercouch.download' version '5.6.0'
   id 'java'
   // https://github.com/tbroyer/gradle-errorprone-plugin
-  id 'net.ltgt.errorprone' version '4.1.0'
+  id 'net.ltgt.errorprone' version '4.2.0'
   // https://docs.gradle.org/current/userguide/eclipse_plugin.html
   id 'eclipse'
 
@@ -15,7 +15,7 @@ plugins {
   // Code formatting; defines targets "spotlessApply" and "spotlessCheck".
   // https://github.com/diffplug/spotless/tags ; see tags starting "gradle/"
   // Only works on JDK 11+ (even including the plugin crashes Gradle on JDK 8).
-  id 'com.diffplug.spotless' version '7.0.3'
+  id 'com.diffplug.spotless' version '7.0.4'
 }
 
 // There is another `repositories { ... }` block below; if you change this one, change that one as well.
@@ -31,8 +31,8 @@ ext {
   isJava21orHigher = JavaVersion.current() >= JavaVersion.VERSION_21
   isJava22orHigher = JavaVersion.current() >= JavaVersion.VERSION_22
 
-  // As of 2024-08-19 (Lombok 1.18.34), delombok doesn't yet support JDK 23; see https://projectlombok.org/changelog .
-  skipDelombok = JavaVersion.current() > JavaVersion.VERSION_21
+  // As of 2025-04-28 (Lombok 1.18.38), delombok supports JDK 24-ea but not JDK 24 proper; see https://projectlombok.org/changelog .
+  skipDelombok = JavaVersion.current() >= JavaVersion.VERSION_24
 
   parentDir = file("${rootDir}/../").absolutePath
 
@@ -64,7 +64,7 @@ ext {
     //  * Temporarily comment out "-Werror" elsewhere in this file
     //  * Repeatedly run `./gradlew clean compileJava` and fix all errors
     //  * Uncomment "-Werror"
-    errorprone : '2.37.0',
+    errorprone : '2.38.0',
   ]
 }
 
@@ -122,7 +122,7 @@ allprojects { currentProj ->
   //   * any new checkers have been added, or
   //   * backward-incompatible changes have been made to APIs or elsewhere.
   // To make a snapshot release, version should end in "-SNAPSHOT", then: ./gradlew publish
-  version = '3.49.3-SNAPSHOT'
+  version = '3.49.5-SNAPSHOT'
 
   tasks.withType(JavaCompile).configureEach {
     options.fork = true
@@ -216,7 +216,9 @@ allprojects { currentProj ->
   // patterns of files to skip for individual sub-projects
   def perProjectDoNotFormat = [
     'checker': [
+      'bin/.do-like-javac/**',
       'bin-devel/.git-scripts/**',
+      'bin-devel/.html-tools/**',
       'bin-devel/.plume-scripts/**',
       'dist/**',
       'tests/ainfer-*/annotated/*',
@@ -234,7 +236,7 @@ allprojects { currentProj ->
     // If you add any formatters to this block that require dependencies, then you must also
     // add them to the spotlessPredeclare block.
 
-    // Always skip formatting of files under build directory
+    // Never format files under build/ directory.
     def doNotFormat = ['build/**']
     if (currentProj != project.rootProject) {
       if (perProjectDoNotFormat.containsKey(currentProj.name)) {
@@ -258,12 +260,21 @@ allprojects { currentProj ->
 
     format 'misc', {
       // define the files to apply `misc` to
-      target '*.md', '*.tex', '.gitignore', 'Makefile'
+      target '*.md', '*.tex', '.gitignore'
       targetExclude doNotFormat
       // define the steps to apply to those files
       leadingTabsToSpaces(2)
       trimTrailingWhitespace()
       // endWithNewline() // Don't want to end empty files with a newline
+    }
+
+    format 'make', {
+      // define the files to apply `make` to
+      target 'Makefile'
+      targetExclude doNotFormat
+      // define the steps to apply to those files
+      trimTrailingWhitespace()
+      endWithNewline() // Don't want to end empty files with a newline
     }
 
     java {
@@ -321,6 +332,12 @@ allprojects { currentProj ->
         leadingTabsToSpaces(2)
         trimTrailingWhitespace()
       }
+
+      // Don't do this, because it does not respect "ignore=true" in .editorconfig nor `doNotFormat` here.
+      // shell {
+      //   targetExclude doNotFormat
+      //   shfmt() // configuration is in .editorconfig
+      // }
     }
 
     // a useful task for debugging; prints exactly which files are getting formatted by spotless
@@ -576,6 +593,7 @@ def createCheckTypeTask(projectName, taskName, checker, args = []) {
 
 task htmlValidate(type: Exec, group: 'Format') {
   description = 'Validate that HTML files are well-formed'
+  // This is the Nu Html Checker (v.Nu): https://github.com/validator/validator
   executable 'html5validator'
   args = [
     '--ignore',

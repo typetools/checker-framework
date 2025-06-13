@@ -182,7 +182,7 @@ public class NonEmptyTransfer extends CFTransfer {
    *
    * @param in used to get the type of {@code methodAccessNode}.
    * @param methodAccessNode method access
-   * @return true if the receiver of {@code methodAccessNode} is non-empty according to {@code in}.
+   * @return true if the receiver of {@code methodAccessNode} is non-empty according to {@code in}
    */
   private boolean isAccessOfNonEmptyCollection(
       TransferInput<CFValue, CFStore> in, MethodInvocationNode methodAccessNode) {

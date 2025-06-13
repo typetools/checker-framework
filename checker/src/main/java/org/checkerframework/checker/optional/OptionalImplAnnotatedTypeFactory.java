@@ -117,7 +117,7 @@ public class OptionalImplAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * Returns true if {@code annos} contains an annotation named "Nullable".
    *
    * @param annos a collection of annotations
-   * @return true if {@code annos} contains an annotation named "Nullable".
+   * @return true if {@code annos} contains an annotation named "Nullable"
    */
   private boolean containsNullable(Collection<? extends AnnotationMirror> annos) {
     for (AnnotationMirror anno : annos) {

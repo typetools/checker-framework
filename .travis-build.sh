@@ -1,7 +1,6 @@
 #!/bin/bash
 
-echo "Entering $(cd "$(dirname "$0")" >/dev/null 2>&1 && pwd -P)/$(basename "$0") in $(pwd)"
-
+echo "Entering $(cd "$(dirname "$0")" > /dev/null 2>&1 && pwd -P)/$(basename "$0") in $(pwd)"
 
 # Fail the whole script if any command fails
 set -e
@@ -13,7 +12,6 @@ set -e
 set -o xtrace
 
 export SHELLOPTS
-
 
 ###
 ### Argument parsing
@@ -32,15 +30,15 @@ fi
 export CHECKERFRAMEWORK="${CHECKERFRAMEWORK:-$(pwd -P)}"
 echo "CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
 
-ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-SCRIPTDIR=$ROOTDIR/checker/bin-devel/
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
+BIN_DEVEL_DIR="${SCRIPT_DIR}/checker/bin-devel/"
 
 # For debugging
 (cd "$CHECKERFRAMEWORK" && ./gradlew getPlumeScripts)
-"${SCRIPTDIR}/plume-scripts/ci-info" typetools
-eval $("${SCRIPTDIR}/plume-scripts/ci-info" typetools)
+"${BIN_DEVEL_DIR}/plume-scripts/ci-info" typetools
+eval "$("${BIN_DEVEL_DIR}/plume-scripts/ci-info" typetools)"
 
-source "$SCRIPTDIR/clone-related"
+source "$BIN_DEVEL_DIR/checker/bin-devel/clone-related.sh"
 
 ###
 ### Run the test
@@ -50,23 +48,23 @@ echo "In checker-framework/.travis-build.sh GROUP=$GROUP"
 
 ### TESTS OF THIS REPOSITORY
 
-case  $GROUP  in
-    all)
-        # Run cftests-junit, cftests-nonjunit, and cftests-inference separately,
-        # because cftests-all takes too long to run on Travis.
-        "$SCRIPTDIR/test-cftests-junit.sh"
-        "$SCRIPTDIR/test-cftests-nonjunit.sh"
-        "$SCRIPTDIR/test-cftests-inference.sh"
-        "$SCRIPTDIR/test-misc.sh"
-        "$SCRIPTDIR/test-typecheck.sh"
-        "$SCRIPTDIR/test-plume-lib.sh"
-        "$SCRIPTDIR/test-daikon.sh"
-        "$SCRIPTDIR/test-guava.sh"
-        "$SCRIPTDIR/test-downstream.sh"
-        ;;
-    *)
-        "${SCRIPTDIR}/test-${GROUP}.sh"
+case $GROUP in
+  all)
+    # Run cftests-junit, cftests-nonjunit, and cftests-inference separately,
+    # because cftests-all takes too long to run on Travis.
+    "$BIN_DEVEL_DIR/test-cftests-junit.sh"
+    "$BIN_DEVEL_DIR/test-cftests-nonjunit.sh"
+    "$BIN_DEVEL_DIR/test-cftests-inference.sh"
+    "$BIN_DEVEL_DIR/test-misc.sh"
+    "$BIN_DEVEL_DIR/test-typecheck.sh"
+    "$BIN_DEVEL_DIR/test-plume-lib.sh"
+    "$BIN_DEVEL_DIR/test-daikon.sh"
+    "$BIN_DEVEL_DIR/test-guava.sh"
+    "$BIN_DEVEL_DIR/test-downstream.sh"
+    ;;
+  *)
+    "${BIN_DEVEL_DIR}/test-${GROUP}.sh"
+    ;;
 esac
 
-
-echo Exiting "$(cd "$(dirname "$0")" >/dev/null 2>&1 && pwd -P)/$(basename "$0") in $(pwd)"
+echo Exiting "$(cd "$(dirname "$0")" > /dev/null 2>&1 && pwd -P)/$(basename "$0") in $(pwd)"

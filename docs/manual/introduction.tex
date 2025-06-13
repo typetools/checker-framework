@@ -214,7 +214,7 @@ optional step.
   %BEGIN LATEX
   \\
   %END LATEX
-  \url{https://checkerframework.org/checker-framework-3.49.2.zip}
+  \url{https://checkerframework.org/checker-framework-3.49.4.zip}
 
 \item
   Unzip it to create a \code{checker-framework-\ReleaseVersion{}} directory.
@@ -809,6 +809,11 @@ See Section~\ref{creating-debugging-options-output-args}.
  \<-AatfDoNotCache>,
  \<-AatfCacheSize>
 Miscellaneous debugging options; see Section~\ref{creating-debugging-options-misc}.
+
+\item
+ \<-AslowTypecheckingSeconds=N>
+Print a warning for any program construct, such as a method or class, whose
+type-checking takes more than N seconds (default 30).
 
 \item
  \<-Aversion>

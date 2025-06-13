@@ -39,7 +39,23 @@ public class ProperType extends AbstractType {
    */
   public ProperType(
       AnnotatedTypeMirror type, TypeMirror properType, Java8InferenceContext context) {
-    this(type, properType, AnnotationMirrorMap.emptyMap(), context);
+    this(type, properType, AnnotationMirrorMap.emptyMap(), context, false);
+  }
+
+  /**
+   * Creates a proper type.
+   *
+   * @param type the annotated type
+   * @param properType the java type
+   * @param context the context
+   * @param ignoreAnnotations whether the annotations on this type should be ignored
+   */
+  public ProperType(
+      AnnotatedTypeMirror type,
+      TypeMirror properType,
+      Java8InferenceContext context,
+      boolean ignoreAnnotations) {
+    this(type, properType, AnnotationMirrorMap.emptyMap(), context, ignoreAnnotations);
   }
 
   /**
@@ -49,13 +65,15 @@ public class ProperType extends AbstractType {
    * @param properType the java type
    * @param qualifierVars a mapping from polymorphic annotation to {@link QualifierVar}
    * @param context the context
+   * @param ignoreAnnotations whether the annotations on this type should be ignored
    */
   public ProperType(
       AnnotatedTypeMirror type,
       TypeMirror properType,
       AnnotationMirrorMap<QualifierVar> qualifierVars,
-      Java8InferenceContext context) {
-    super(context);
+      Java8InferenceContext context,
+      boolean ignoreAnnotations) {
+    super(context, ignoreAnnotations);
     this.properType = properType;
     this.type = type;
     this.qualifierVars = qualifierVars;
@@ -69,7 +87,7 @@ public class ProperType extends AbstractType {
    * @param context the context
    */
   public ProperType(ExpressionTree tree, Java8InferenceContext context) {
-    super(context);
+    super(context, false);
     this.type = context.typeFactory.getAnnotatedType(tree);
     this.properType = type.getUnderlyingType();
     this.qualifierVars = AnnotationMirrorMap.emptyMap();
@@ -83,7 +101,7 @@ public class ProperType extends AbstractType {
    * @param context the context
    */
   public ProperType(VariableTree varTree, Java8InferenceContext context) {
-    super(context);
+    super(context, false);
     this.type = context.typeFactory.getAnnotatedType(varTree);
     this.properType = TreeUtils.typeOf(varTree);
     this.qualifierVars = AnnotationMirrorMap.emptyMap();
@@ -111,8 +129,8 @@ public class ProperType extends AbstractType {
   }
 
   @Override
-  public AbstractType create(AnnotatedTypeMirror atm, TypeMirror type) {
-    return new ProperType(atm, type, qualifierVars, context);
+  public AbstractType create(AnnotatedTypeMirror atm, TypeMirror type, boolean ignoreAnnotations) {
+    return new ProperType(atm, type, qualifierVars, context, ignoreAnnotations);
   }
 
   /**
@@ -127,7 +145,8 @@ public class ProperType extends AbstractType {
       return new ProperType(
           typeFactory.getBoxedType((AnnotatedPrimitiveType) getAnnotatedType()),
           context.types.boxedClass((Type) properType).asType(),
-          context);
+          context,
+          ignoreAnnotations);
     }
     return this;
   }
@@ -151,6 +170,9 @@ public class ProperType extends AbstractType {
 
     if (context.typeFactory.types.isAssignable(subJavaType, superJavaType)
         || context.typeFactory.types.isAssignable(subErasedJavaType, superErasedJavaType)) {
+      if (ignoreAnnotations || superType.ignoreAnnotations) {
+        return ConstraintSet.TRUE;
+      }
       AnnotatedTypeMirror superATM = superType.getAnnotatedType();
       AnnotatedTypeMirror subATM = this.getAnnotatedType();
       if (typeFactory.getTypeHierarchy().isSubtype(subATM, superATM)) {
@@ -175,6 +197,9 @@ public class ProperType extends AbstractType {
     TypeMirror superJavaType = superType.getJavaType();
 
     if (context.types.isSubtypeUnchecked((Type) subType, (Type) superJavaType)) {
+      if (ignoreAnnotations || superType.ignoreAnnotations) {
+        return ConstraintSet.TRUE;
+      }
       AnnotatedTypeMirror superATM = superType.getAnnotatedType();
       AnnotatedTypeMirror subATM = this.getAnnotatedType();
       if (typeFactory.getTypeHierarchy().isSubtype(subATM, superATM)) {
@@ -199,6 +224,9 @@ public class ProperType extends AbstractType {
     TypeMirror superJavaType = superType.getJavaType();
 
     if (context.types.isAssignable((Type) subType, (Type) superJavaType)) {
+      if (ignoreAnnotations || superType.ignoreAnnotations) {
+        return ConstraintSet.TRUE;
+      }
       AnnotatedTypeMirror superATM = superType.getAnnotatedType();
       AnnotatedTypeMirror subATM = this.getAnnotatedType();
       if (typeFactory.getTypeHierarchy().isSubtype(subATM, superATM)) {

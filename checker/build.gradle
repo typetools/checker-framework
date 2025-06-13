@@ -57,11 +57,12 @@ dependencies {
   testImplementation "com.google.auto.value:auto-value:${versions.autoValue}"
   testImplementation 'com.ryanharter.auto.value:auto-value-parcel:0.2.9'
   testImplementation "org.projectlombok:lombok:${versions.lombok}"
+
   // Called Methods Checker support for detecting misuses of AWS APIs
   testImplementation 'com.amazonaws:aws-java-sdk-ec2'
   testImplementation 'com.amazonaws:aws-java-sdk-kms'
   // The AWS SDK is used for testing the Called Methods Checker.
-  testImplementation platform('com.amazonaws:aws-java-sdk-bom:1.12.782')
+  testImplementation platform('com.amazonaws:aws-java-sdk-bom:1.12.783')
   // For the Resource Leak Checker's support for JavaEE.
   testImplementation 'javax.servlet:javax.servlet-api:4.0.1'
   // For the Resource Leak Checker's support for IOUtils.
@@ -340,33 +341,35 @@ task jtregJdk11Tests(type: Exec, group: 'Verification') {
 // ./gradlew NullnessJSpecifySamplesTest
 test {
   exclude '**/org/checkerframework/checker/test/junit/NullnessJSpecifySamplesTest.class'
-}
-
-task delombok {
-  description = 'Delomboks the source code tree in tests/calledmethods-lombok'
-
-  def srcDelomboked = 'tests/calledmethods-delomboked'
-  def srcJava = 'tests/calledmethods-lombok'
-
-  inputs.files file(srcJava)
-  outputs.dir file(srcDelomboked)
-
-  // Because there are Checker Framework annotations in the test source.
-  dependsOn project(':checker-qual').tasks.jar
-
-  doLast {
-    if(!skipDelombok) {
-      def collection = files(configurations.testCompileClasspath)
-      ant.taskdef(name: 'delombok', classname: 'lombok.delombok.ant.Tasks$Delombok',
-      classpath: collection.asPath)
-      ant.delombok(from: srcJava, to: srcDelomboked, classpath: collection.asPath)
-    }
+  if (skipDelombok) {
+    exclude '**/org/checkerframework/checker/test/junit/CalledMethodsNoDelombokTest.class'
+    exclude '**/org/checkerframework/checker/test/junit/CalledMethodsDisableReturnsReceiverTest.class'
+    exclude '**/org/checkerframework/checker/test/junit/NullnessNoDelombokTest.class'
   }
 }
 
-if (skipDelombok) {
-  delombok.enabled = false
-} else {
+if (!skipDelombok) {
+  task delombok {
+    description = 'Delomboks the source code tree in tests/calledmethods-lombok'
+
+    def srcDelomboked = 'tests/calledmethods-delomboked'
+    def srcJava = 'tests/calledmethods-lombok'
+
+    inputs.files file(srcJava)
+    outputs.dir file(srcDelomboked)
+
+    // Because there are Checker Framework annotations in the test source.
+    dependsOn project(':checker-qual').tasks.jar
+
+    doLast {
+      if(!skipDelombok) {
+        def collection = files(configurations.testCompileClasspath)
+        ant.taskdef(name: 'delombok', classname: 'lombok.delombok.ant.Tasks$Delombok',
+        classpath: collection.asPath)
+        ant.delombok(from: srcJava, to: srcDelomboked, classpath: collection.asPath)
+      }
+    }
+  }
   tasks.test.dependsOn('delombok')
 }
 
@@ -840,6 +843,8 @@ task ainferTest(group: 'Verification') {
 //
 
 // This is run as part of the inferenceTests task.
+// File checker/tests/wpi-many/testin.txt lists the tests that are run.  To
+// debug one WPI test, comment out all but one line of that file.
 task wpiManyTest(type: Exec, group: 'Verification') {
   description = 'Tests the wpi-many.sh script (and indirectly the wpi.sh script). Requires an Internet connection.'
   dependsOn(assembleForJavac)
@@ -847,27 +852,29 @@ task wpiManyTest(type: Exec, group: 'Verification') {
   // This test must always be re-run when requested.
   outputs.upToDateWhen { false }
 
+  def projectDir = project.projectDir
+
   doFirst {
-    delete("${project.projectDir}/build/wpi-many-tests-results/")
+    delete("${projectDir}/build/wpi-many-tests-results/")
     // wpi-many.sh is run in skip mode so that logs are preserved, but
     // we don't actually want to skip previously-failing tests when we
     // re-run the tests locally.
-    delete fileTree("${project.projectDir}/build/wpi-many-tests") {
+    delete fileTree("${projectDir}/build/wpi-many-tests") {
       include '**/.cannot-run-wpi'
     }
   }
 
   environment CHECKERFRAMEWORK: "${projectDir}/.."
   commandLine 'bin/wpi-many.sh',
-      '-i', "${project.projectDir}/tests/wpi-many/testin.txt",
-      '-o', "${project.projectDir}/build/wpi-many-tests",
+      '-i', "${projectDir}/tests/wpi-many/testin.txt",
+      '-o', "${projectDir}/build/wpi-many-tests",
       '-s',
       '--', '--checker', 'nullness,interning,lock,regex,signature,calledmethods,resourceleak',
       '--extraJavacArgs=-AenableWpiForRlc'
 
   ignoreExitValue = true
 
-  def typecheckFilesDir = "${project.projectDir}/build/wpi-many-tests-results/"
+  def typecheckFilesDir = "${projectDir}/build/wpi-many-tests-results"
   doLast {
     if (executionResult.get().exitValue != 0) {
       println('Failure: Running wpi-many.sh failed with a non-zero exit code.')
@@ -885,27 +892,26 @@ task wpiManyTest(type: Exec, group: 'Verification') {
     def typecheckFiles = fileTree(typecheckFilesDir).matching {
       include '**/*-typecheck.out'
     }
-    def testinLines = file("${project.projectDir}/tests/wpi-many/testin.txt").text.readLines()
+    def testinLines = file("${projectDir}/tests/wpi-many/testin.txt").text.readLines()
     testinLines.removeIf { it.startsWith('#') }
     def expectedTypecheckFileCount = testinLines.size()
     def actualTypecheckFileCount = typecheckFiles.size()
     if (actualTypecheckFileCount != expectedTypecheckFileCount) {
       println("Failure: Too few *-typecheck.out files in ${typecheckFilesDir}: " +
           "found ${actualTypecheckFileCount} but expected ${expectedTypecheckFileCount}.")
-      println("========= Found in ${typecheckFilesDir} ========")
-      new File(typecheckFilesDir).list().each { println it}
-      println("========= Expected in ${typecheckFilesDir} ========")
-      println( new File("${project.projectDir}/tests/wpi-many/testin.txt"))
+      println("========= Found ${actualTypecheckFileCount} *-typecheck.out files in ${typecheckFilesDir} ========")
+      new File(typecheckFilesDir).list().each { println it }
+      println("========= The ${expectedTypecheckFileCount} expected files are in ${typecheckFilesDir}/tests/wpi-many/testin.txt ========")
 
       println("========= Start of output from last run of wpi.sh (${typecheckFilesDir}/wpi-out): ========")
-      println( new File("${project.projectDir}/wpi-out"))
+      new File("${projectDir}/wpi-out").list().each { println it }
       println("========= End of output from last run of wpi.sh (${typecheckFilesDir}/wpi-out): ========")
       def logFiles = fileTree(typecheckFilesDir).matching {
         include '**/*.log'
       }
       logFiles.visit { FileVisitDetails details ->
-        def filename = "${typecheckFilesDir}" + details.getName()
-        println("======== start of contents of ${filename} ========")
+        def filename = "${typecheckFilesDir}/" + details.getName()
+        println("======== start of contents of ${filename}, which is TYPECHECKING output, not WPI output ========")
         details.getFile().eachLine { line -> println(line) }
         println("======== end of contents of ${filename} ========")
       }
@@ -916,7 +922,7 @@ task wpiManyTest(type: Exec, group: 'Verification') {
         include '**/.cannot-run-wpi'
       }
       cannotRunWpiFiles.visit { FileVisitDetails details ->
-        def filename = "${typecheckFilesDir}" + details.getName()
+        def filename = "${typecheckFilesDir}/" + details.getName()
         println("======== start of contents of ${filename} ========")
         details.getFile().eachLine { line -> println(line) }
         println("======== end of contents of ${filename} ========")
@@ -927,7 +933,7 @@ task wpiManyTest(type: Exec, group: 'Verification') {
 
     // check that WPI causes the expected builds to succeed
     typecheckFiles.visit { FileVisitDetails details ->
-      def filename = "${project.projectDir}/build/wpi-many-tests-results/" + details.getName()
+      def filename = "${projectDir}/build/wpi-many-tests-results/" + details.getName()
       def file = details.getFile()
       if (file.length() == 0) {
         throw new GradleException('Failure: WPI produced empty typecheck file ' + filename)
@@ -945,11 +951,15 @@ task wpiManyTest(type: Exec, group: 'Verification') {
             // Ignore the summary line that reports the total number of warnings (which can be single or plural).
             || line.endsWith(' warning')
             || line.endsWith(' warnings')
-            || line.startsWith('warning: No processor claimed any of these annotations: ')) {
+            || line.startsWith('warning: No processor claimed any of these annotations: ')
+            // Ignore debugging output with the prefix "DEBUG: ".
+            || line.startsWith('DEBUG: ')
+            || line.startsWith('warning: DEBUG: ')
+            || line.contains('warning: [DEBUG: ')) {
           return;
         }
         if (!line.trim().equals('')) {
-          println("======== start of contents of ${filename} ========")
+          println("======== start of contents of ${filename}, which is TYPECHECKING output, not WPI output ========")
           details.getFile().eachLine { l -> println(l) }
           println("======== end of contents of ${filename} ========")
           throw new GradleException('Failure: WPI scripts produced an unexpected output in ' + filename + '. ' +
