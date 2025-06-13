@@ -1529,7 +1529,7 @@ public class MustCallConsistencyAnalyzer {
         if (Objects.equals(enclosingClassElement, receiverElement)) {
           VariableElement lhsElement = lhs.getElement();
           if (lhsElement.getModifiers().contains(Modifier.PRIVATE)
-              && isOnlyAssignmentToField(lhsElement, enclosingMethodTree, node.getTree())) {
+              && isFirstAndOnlyAssignmentToField(lhsElement, enclosingMethodTree, node.getTree())) {
             return;
           }
         }
@@ -1680,7 +1680,7 @@ public class MustCallConsistencyAnalyzer {
    * @return true if this assignment can be safely considered the first and only one during
    *     construction
    */
-  private boolean isOnlyAssignmentToField(
+  private boolean isFirstAndOnlyAssignmentToField(
       VariableElement field, MethodTree constructor, @FindDistinct Tree currentAssignment) {
     @Nullable TreePath constructorPath = cmAtf.getPath(constructor);
     ClassTree classTree = TreePathUtil.enclosingClass(constructorPath);
@@ -1703,6 +1703,8 @@ public class MustCallConsistencyAnalyzer {
       if (member instanceof BlockTree) {
         BlockTree block = (BlockTree) member;
         if (block.isStatic()) continue;
+        // The variables accessed from within the inner class need to be effectively final, so
+        // AtomicBoolean is used here.
         AtomicBoolean found = new AtomicBoolean(false);
         block.accept(
             new TreeScanner<Void, Void>() {
