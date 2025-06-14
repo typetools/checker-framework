@@ -173,7 +173,6 @@ public class ValueCheckerUtils {
    * @param origValues the objects to format
    * @return a list of the formatted objects
    */
-  @SuppressWarnings("mustcall:type.arguments.not.inferred")
   private static @Nullable List<?> convertToStringVal(
       List<? extends @MustCallUnknown Object> origValues) {
     if (origValues == null) {
