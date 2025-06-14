@@ -53,13 +53,6 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   unzip \
   wget
 
-# Maven 3.6.3 (the default on Ubuntu 22.10) does not run under JDK 17.
-# (Don't try to use a variable here for the Maven version.)
-RUN export DEBIAN_FRONTEND=noninteractive \
-&& wget https://mirrors.sonic.net/apache/maven/maven-3/3.9.5/binaries/apache-maven-3.9.5-bin.tar.gz \
-&& tar xzvf apache-maven-3.9.5-bin.tar.gz
-ENV PATH="/apache-maven-3.9.5/bin:$PATH"
-
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt -qqy update \
 && apt -y install \

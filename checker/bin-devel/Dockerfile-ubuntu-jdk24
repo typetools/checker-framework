@@ -56,13 +56,6 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   unzip \
   wget
 
-# Maven 3.8.7 is the default on Ubuntu 23.04, so the below is not needed.
-# (Don't try to use a variable here for the Maven version.)
-# RUN export DEBIAN_FRONTEND=noninteractive \
-# && wget https://mirrors.sonic.net/apache/maven/maven-3/3.9.5/binaries/apache-maven-3.9.5-bin.tar.gz \
-# && tar xzvf apache-maven-3.9.5-bin.tar.gz
-# ENV PATH="/apache-maven-3.9.5/bin:$PATH"
-
 # Bug fix to make jtreg runnable: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=754942;msg=2
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt -qqy update \
