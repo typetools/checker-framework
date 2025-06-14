@@ -122,7 +122,7 @@ public class AnnotationMirrorSet
   // Set methods
 
   @Override
-  // @SuppressWarnings("collectionownership:override.receiver")
+  @SuppressWarnings("collectionownership:override.receiver")
   public int size() {
     return shadowSet.size();
   }
@@ -156,8 +156,8 @@ public class AnnotationMirrorSet
     return shadowSet.toArray(a);
   }
 
-  @SuppressWarnings("keyfor:argument") // delegation
-  // @SuppressWarnings("collectionownership:override.receiver")
+  @SuppressWarnings({"keyfor:argument", // delegation
+                    "collectionownership:override.receiver"})
   @Override
   public boolean add(
       @UnknownInitialization(AnnotationMirrorSet.class) AnnotationMirrorSet this,
