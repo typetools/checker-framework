@@ -7,7 +7,8 @@ export SHELLOPTS
 echo "SHELLOPTS=${SHELLOPTS}"
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
-# export ORG_GRADLE_PROJECT_useJdk21Compiler=true
+# Test that the CF, when built with JDK 21, works on other JDKs.
+export ORG_GRADLE_PROJECT_useJdk21Compiler=true
 source "$SCRIPT_DIR"/clone-related.sh
 
 # Run assembleForJavac because it does not build the javadoc, so it is faster than assemble.

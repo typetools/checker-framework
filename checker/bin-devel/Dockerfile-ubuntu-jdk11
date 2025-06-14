@@ -20,6 +20,12 @@ ENV LANG=en_US.UTF-8 \
     LANGUAGE=en_US:en \
     LC_ALL=en_US.UTF-8
 
+# Always install JDK 21 to compile the code, even if tests run under a different JDK.
+RUN export DEBIAN_FRONTEND=noninteractive \
+&& apt -qqy update \
+&& apt -y install \
+  openjdk-21-jdk
+
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt -qqy update \
 && apt -y install \

@@ -24,6 +24,7 @@ ENV LANG=en_US.UTF-8 \
     LANGUAGE=en_US:en \
     LC_ALL=en_US.UTF-8
 
+# Always install JDK 21 to compile the code, even if tests run under a different JDK.
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt -qqy update \
 && apt -y install \
@@ -38,15 +39,14 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   cpp \
   git \
   jq \
+  jtreg7 \
   libcurl3-gnutls \
   make \
   maven \
   python3-requests \
   python3-setuptools \
   unzip \
-  wget \
-&& apt -y install \
-  jtreg7
+  wget
 
 # Maven 3.8.7 is the default on Ubuntu 23.04, so the below is not needed.
 # (Don't try to use a variable here for the Maven version.)
