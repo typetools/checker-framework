@@ -62,6 +62,7 @@ import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCNewArray;
 import com.sun.tools.javac.tree.JCTree.JCNewClass;
 import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
+import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.tree.TreeInfo;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Context;
@@ -2586,7 +2587,11 @@ public final class TreeUtils {
    * @return true if the variableTree is declared using the {@code var} Java keyword
    */
   public static boolean isVariableTreeDeclaredUsingVar(VariableTree variableTree) {
-    JCExpression type = (JCExpression) variableTree.getType();
+    JCVariableDecl variableDecl = (JCVariableDecl) variableTree;
+    if (variableDecl.declaredUsingVar()) {
+        return true;
+    }
+    JCExpression type = variableDecl.vartype;
     return type != null && type.pos == Position.NOPOS;
   }
 
