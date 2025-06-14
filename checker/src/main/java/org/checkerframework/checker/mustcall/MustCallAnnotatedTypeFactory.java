@@ -25,7 +25,6 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
 import org.checkerframework.checker.mustcall.qual.CreatesMustCallFor;
 import org.checkerframework.checker.mustcall.qual.InheritableMustCall;
@@ -48,6 +47,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.QualifierUpperBounds;
@@ -203,9 +203,12 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
               if (!ResourceLeakUtils.hasManualMustCallUnknownAnno(extendsBound)) {
                 typeArg.replaceAnnotation(BOTTOM);
               }
-            } else if (typeArg.getUnderlyingType() instanceof TypeVariable) {
-              TypeMirror upperBound = ((TypeVariable) typeArg.getUnderlyingType()).getUpperBound();
-              if (!ResourceLeakUtils.hasManualMustCallUnknownAnno(upperBound)) {
+            } else if (typeArg instanceof AnnotatedTypeVariable) {
+              AnnotatedTypeMirror upperBound = ((AnnotatedTypeVariable) typeArg).getUpperBound();
+              // set back to bottom if the type var is a captured wildcard
+              // or if it doesn't have a manual MustCallUnknown anno
+              if (typeArg.containsCapturedTypes()
+                  || !ResourceLeakUtils.hasManualMustCallUnknownAnno(upperBound, this)) {
                 typeArg.replaceAnnotation(BOTTOM);
               }
             } else {
@@ -271,25 +274,16 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     super.addComputedTypeAnnotations(elt, type);
 
     if (type.getKind() == TypeKind.EXECUTABLE) {
-      String enclosingClass = ElementUtils.getEnclosingClassName((ExecutableElement) elt);
-      if (enclosingClass.startsWith("java.")) {
-        // this is a jdk method - do not change the upper bound. Defaults are only for user code.
-        // JDK methods have already been manually annotated.
-        return;
-      } else {
-        AnnotatedExecutableType methodType = (AnnotatedExecutableType) type;
-        AnnotatedTypeMirror returnType = methodType.getReturnType();
+      AnnotatedExecutableType methodType = (AnnotatedExecutableType) type;
+      AnnotatedTypeMirror returnType = methodType.getReturnType();
 
-        if (returnType.getKind() == TypeKind.DECLARED) {
-          replaceCollectionTypeVarsWithBottomIfTop(null, (AnnotatedDeclaredType) returnType);
-        }
+      if (returnType.getKind() == TypeKind.DECLARED) {
+        replaceCollectionTypeVarsWithBottomIfTop(null, (AnnotatedDeclaredType) returnType);
+      }
 
-        if (elt != null && elt instanceof ExecutableElement) {
-          for (AnnotatedTypeMirror paramType : methodType.getParameterTypes()) {
-            if (paramType.getKind() == TypeKind.DECLARED) {
-              replaceCollectionTypeVarsWithBottomIfTop(null, (AnnotatedDeclaredType) paramType);
-            }
-          }
+      for (AnnotatedTypeMirror paramType : methodType.getParameterTypes()) {
+        if (paramType.getKind() == TypeKind.DECLARED) {
+          replaceCollectionTypeVarsWithBottomIfTop(null, (AnnotatedDeclaredType) paramType);
         }
       }
     }

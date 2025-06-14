@@ -349,4 +349,24 @@ public class ResourceLeakUtils {
     }
     return false;
   }
+
+  /**
+   * Return true if the passed {@code AnnotatedTypeMirror} has a manual {@code MustCallUnknown}
+   * annotation.
+   *
+   * @param annotatedTypeMirror the {@code AnnotatedTypeMirror}
+   * @param mcAtf the annotated type factory of the MustCall type system
+   * @return true if the passed {@code AnnotatedTypeMirror} has a manual {@code MustCallUnknown}
+   *     annotation
+   */
+  public static boolean hasManualMustCallUnknownAnno(
+      AnnotatedTypeMirror annotatedTypeMirror, MustCallAnnotatedTypeFactory mcAtf) {
+    if (annotatedTypeMirror == null) return false;
+    AnnotationMirror manualMcAnno = annotatedTypeMirror.getPrimaryAnnotationInHierarchy(mcAtf.TOP);
+    if (manualMcAnno == null) return false;
+    if (AnnotationUtils.areSameByName(manualMcAnno, MustCallUnknown.class.getCanonicalName())) {
+      return true;
+    }
+    return false;
+  }
 }
