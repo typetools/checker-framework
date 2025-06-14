@@ -57,14 +57,22 @@ function create_upload_docker_image {
 }
 
 
-create_upload_docker_image cf ubuntu jdk11 && \
-create_upload_docker_image cf ubuntu jdk11-plus && \
-create_upload_docker_image cf ubuntu jdk17 && \
-create_upload_docker_image cf ubuntu jdk17-plus && \
-create_upload_docker_image cf ubuntu jdk21 && \
-create_upload_docker_image cf ubuntu jdk21-plus && \
-create_upload_docker_image cf ubuntu jdk24 && \
-create_upload_docker_image cf ubuntu jdk24-plus && \
+create_upload_docker_image cf ubuntu jdkbase & \
+create_upload_docker_image cf ubunturolling jdkbase & \
+for p in $(jobs -p); do
+  wait "$p" || { echo "job $p failed" >&2; exit; }
+done && \
+(create_upload_docker_image cf ubuntu jdk11 && \
+create_upload_docker_image cf ubuntu jdk11-plus) & \
+(create_upload_docker_image cf ubuntu jdk17 && \
+create_upload_docker_image cf ubuntu jdk17-plus) & \
+(create_upload_docker_image cf ubuntu jdk21 && \
+create_upload_docker_image cf ubuntu jdk21-plus) & \
+(create_upload_docker_image cf ubuntu jdk24 && \
+create_upload_docker_image cf ubuntu jdk24-plus) & \
+for p in $(jobs -p); do
+  wait "$p" || { echo "job $p failed" >&2; exit; }
+done && \
 git push && \
 echo "success"
 

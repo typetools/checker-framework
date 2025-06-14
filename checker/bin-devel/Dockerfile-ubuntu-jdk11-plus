@@ -1,9 +1,6 @@
 # Create a Docker image that is ready to run the full Checker Framework tests,
 # including building the manual and Javadoc, using JDK 11.
-# (This is OpenJDK, not Oracle JDK.  There are different instructions for
-# installing a LTS release of Java.)
-# To convert this file to use a newer JDK, search (from the top level of the
-# Checker Framework and Annotation Tools repositories) for: (java|jdk).?23\b
+
 
 # "ubuntu" is the latest LTS release.  "ubuntu:rolling" is the latest release.
 # Both might lag behind; as of 2024-11-16, ubuntu:rolling was still 24.04 rather than 24.10.
@@ -30,12 +27,6 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 && apt -y install \
   openjdk-21-jdk
 
-RUN export DEBIAN_FRONTEND=noninteractive \
-&& apt -qqy update \
-&& apt -y install \
-  openjdk-11-jdk \
-&& update-java-alternatives -s java-1.11.0-openjdk-amd64
-
 # Known good combinations of JTReg and the JDK appear at https://builds.shipilev.net/jtreg/ .
 
 RUN export DEBIAN_FRONTEND=noninteractive \
@@ -53,6 +44,13 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   python3-setuptools \
   unzip \
   wget
+
+
+RUN export DEBIAN_FRONTEND=noninteractive \
+&& apt -qqy update \
+&& apt -y install \
+  openjdk-11-jdk \
+&& update-java-alternatives -s java-1.11.0-openjdk-amd64
 
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt -qqy update \

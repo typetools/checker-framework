@@ -1,5 +1,4 @@
-# Create a Docker image that is ready to run the main Checker Framework tests,
-# using JDK 11.
+# This Dockerfile creates a layer that later Dockerfiles can use.
 
 
 # "ubuntu" is the latest LTS release.  "ubuntu:rolling" is the latest release.
@@ -45,14 +44,3 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   unzip \
   wget
 
-
-RUN export DEBIAN_FRONTEND=noninteractive \
-&& apt -qqy update \
-&& apt -y install \
-  openjdk-11-jdk \
-&& update-java-alternatives -s java-1.11.0-openjdk-amd64
-
-RUN export DEBIAN_FRONTEND=noninteractive \
-&& apt autoremove \
-&& apt clean \
-&& rm -rf /var/lib/apt/lists/*

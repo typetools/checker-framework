@@ -1,50 +1,8 @@
 # Create a Docker image that is ready to run the full Checker Framework tests,
 # including building the manual and Javadoc, using JDK 17.
 
-
-# "ubuntu" is the latest LTS release.  "ubuntu:rolling" is the latest release.
-# Both might lag behind; as of 2024-11-16, ubuntu:rolling was still 24.04 rather than 24.10.
-FROM ubuntu
-LABEL org.opencontainers.image.authors="Michael Ernst <mernst@cs.washington.edu>"
-
-# According to
-# https://docs.docker.com/engine/userguide/eng-image/dockerfile_best-practices/:
-#  * Put "apt update" and "apt install" and "apt cleanup" in the same RUN command.
-#  * Do not run "apt upgrade"; instead get upstream to update.
-
-RUN export DEBIAN_FRONTEND=noninteractive \
-&& apt -qqy update \
-&& apt install -y locales \
-&& rm -rf /var/lib/apt/lists/* \
-&& locale-gen "en_US.UTF-8"
-ENV LANG=en_US.UTF-8 \
-    LANGUAGE=en_US:en \
-    LC_ALL=en_US.UTF-8
-
-# Always install JDK 21 to compile the code, even if tests run under a different JDK.
-RUN export DEBIAN_FRONTEND=noninteractive \
-&& apt -qqy update \
-&& apt -y install \
-  openjdk-21-jdk
-
-# Known good combinations of JTReg and the JDK appear at https://builds.shipilev.net/jtreg/ .
-
-RUN export DEBIAN_FRONTEND=noninteractive \
-&& apt -qqy update \
-&& apt -y install \
-  ant \
-  cpp \
-  git \
-  jq \
-  jtreg7 \
-  libcurl3-gnutls \
-  make \
-  maven \
-  python3-requests \
-  python3-setuptools \
-  unzip \
-  wget
-
+define(`UBUNTUVERSION', ubuntu)
+include(`Dockerfile-ubuntu-base-contents.txt')
 
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt -qqy update \
