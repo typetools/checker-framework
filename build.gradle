@@ -678,7 +678,7 @@ task requireJavadoc(type: JavaExec, group: 'Documentation') {
   mainClass = 'org.plumelib.javadoc.RequireJavadoc'
   classpath = configurations.requireJavadoc
   args 'checker/src/main/java', 'checker-qual/src/main/java', 'checker-util/src/main/java', 'dataflow/src/main/java', 'framework/src/main/java', 'framework-test/src/main/java', 'javacutil/src/main/java'
- jvmArgs += [
+  jvmArgs += [
     '--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED',
     '--add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED',
     '--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED',
