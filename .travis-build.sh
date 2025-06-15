@@ -30,15 +30,15 @@ fi
 export CHECKERFRAMEWORK="${CHECKERFRAMEWORK:-$(pwd -P)}"
 echo "CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
 
-ROOTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" > /dev/null 2>&1 && pwd)"
-SCRIPTDIR=$ROOTDIR/checker/bin-devel/
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
+BIN_DEVEL_DIR="${SCRIPT_DIR}/checker/bin-devel/"
 
 # For debugging
 (cd "$CHECKERFRAMEWORK" && ./gradlew getPlumeScripts)
-"${SCRIPTDIR}/plume-scripts/ci-info" typetools
-eval "$("${SCRIPTDIR}/plume-scripts/ci-info" typetools)"
+"${BIN_DEVEL_DIR}/plume-scripts/ci-info" typetools
+eval "$("${BIN_DEVEL_DIR}/plume-scripts/ci-info" typetools)"
 
-source "$SCRIPTDIR/checker/bin-devel/clone-related.sh"
+source "$BIN_DEVEL_DIR/checker/bin-devel/clone-related.sh"
 
 ###
 ### Run the test
@@ -52,18 +52,18 @@ case $GROUP in
   all)
     # Run cftests-junit, cftests-nonjunit, and cftests-inference separately,
     # because cftests-all takes too long to run on Travis.
-    "$SCRIPTDIR/test-cftests-junit.sh"
-    "$SCRIPTDIR/test-cftests-nonjunit.sh"
-    "$SCRIPTDIR/test-cftests-inference.sh"
-    "$SCRIPTDIR/test-misc.sh"
-    "$SCRIPTDIR/test-typecheck.sh"
-    "$SCRIPTDIR/test-plume-lib.sh"
-    "$SCRIPTDIR/test-daikon.sh"
-    "$SCRIPTDIR/test-guava.sh"
-    "$SCRIPTDIR/test-downstream.sh"
+    "$BIN_DEVEL_DIR/test-cftests-junit.sh"
+    "$BIN_DEVEL_DIR/test-cftests-nonjunit.sh"
+    "$BIN_DEVEL_DIR/test-cftests-inference.sh"
+    "$BIN_DEVEL_DIR/test-misc.sh"
+    "$BIN_DEVEL_DIR/test-typecheck.sh"
+    "$BIN_DEVEL_DIR/test-plume-lib.sh"
+    "$BIN_DEVEL_DIR/test-daikon.sh"
+    "$BIN_DEVEL_DIR/test-guava.sh"
+    "$BIN_DEVEL_DIR/test-downstream.sh"
     ;;
   *)
-    "${SCRIPTDIR}/test-${GROUP}.sh"
+    "${BIN_DEVEL_DIR}/test-${GROUP}.sh"
     ;;
 esac
 
