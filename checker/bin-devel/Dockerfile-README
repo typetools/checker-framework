@@ -64,7 +64,9 @@ create_upload_docker_image cf ubuntu jdk17-plus && \
 create_upload_docker_image cf ubuntu jdk21 && \
 create_upload_docker_image cf ubuntu jdk21-plus && \
 create_upload_docker_image cf ubuntu jdk24 && \
-create_upload_docker_image cf ubuntu jdk24-plus
+create_upload_docker_image cf ubuntu jdk24-plus && \
+git push && \
+echo "success"
 
 
 Note: when updating to a newer version of the JDK, it is necessary to

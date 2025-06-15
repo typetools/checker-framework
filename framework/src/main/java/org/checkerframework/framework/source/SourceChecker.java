@@ -1228,7 +1228,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   /**
    * Get the shared TreePathCacher instance.
    *
-   * @return the shared TreePathCacher instance.
+   * @return the shared TreePathCacher instance
    */
   public TreePathCacher getTreePathCacher() {
     if (treePathCacher == null) {
