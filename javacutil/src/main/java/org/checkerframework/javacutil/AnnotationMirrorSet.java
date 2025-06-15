@@ -156,8 +156,10 @@ public class AnnotationMirrorSet
     return shadowSet.toArray(a);
   }
 
-  @SuppressWarnings({"keyfor:argument", // delegation
-                    "collectionownership:override.receiver"})
+  @SuppressWarnings({
+    "keyfor:argument", // delegation
+    "collectionownership:override.receiver"
+  })
   @Override
   public boolean add(
       @UnknownInitialization(AnnotationMirrorSet.class) AnnotationMirrorSet this,
