@@ -15,7 +15,7 @@ plugins {
   // Code formatting; defines targets "spotlessApply" and "spotlessCheck".
   // https://github.com/diffplug/spotless/tags ; see tags starting "gradle/"
   // Only works on JDK 11+ (even including the plugin crashes Gradle on JDK 8).
-  id 'com.diffplug.spotless' version '7.0.3'
+  id 'com.diffplug.spotless' version '7.0.4'
 }
 
 // There is another `repositories { ... }` block below; if you change this one, change that one as well.
@@ -122,7 +122,7 @@ allprojects { currentProj ->
   //   * any new checkers have been added, or
   //   * backward-incompatible changes have been made to APIs or elsewhere.
   // To make a snapshot release, version should end in "-SNAPSHOT", then: ./gradlew publish
-  version = '3.49.4-SNAPSHOT'
+  version = '3.49.5-SNAPSHOT'
 
   tasks.withType(JavaCompile).configureEach {
     options.fork = true
@@ -216,7 +216,9 @@ allprojects { currentProj ->
   // patterns of files to skip for individual sub-projects
   def perProjectDoNotFormat = [
     'checker': [
+      'bin/.do-like-javac/**',
       'bin-devel/.git-scripts/**',
+      'bin-devel/.html-tools/**',
       'bin-devel/.plume-scripts/**',
       'dist/**',
       'tests/ainfer-*/annotated/*',
@@ -234,7 +236,7 @@ allprojects { currentProj ->
     // If you add any formatters to this block that require dependencies, then you must also
     // add them to the spotlessPredeclare block.
 
-    // Always skip formatting of files under build directory
+    // Never format files under build/ directory.
     def doNotFormat = ['build/**']
     if (currentProj != project.rootProject) {
       if (perProjectDoNotFormat.containsKey(currentProj.name)) {
@@ -258,12 +260,21 @@ allprojects { currentProj ->
 
     format 'misc', {
       // define the files to apply `misc` to
-      target '*.md', '*.tex', '.gitignore', 'Makefile'
+      target '*.md', '*.tex', '.gitignore'
       targetExclude doNotFormat
       // define the steps to apply to those files
       leadingTabsToSpaces(2)
       trimTrailingWhitespace()
       // endWithNewline() // Don't want to end empty files with a newline
+    }
+
+    format 'make', {
+      // define the files to apply `make` to
+      target 'Makefile'
+      targetExclude doNotFormat
+      // define the steps to apply to those files
+      trimTrailingWhitespace()
+      endWithNewline() // Don't want to end empty files with a newline
     }
 
     java {
@@ -321,6 +332,12 @@ allprojects { currentProj ->
         leadingTabsToSpaces(2)
         trimTrailingWhitespace()
       }
+
+      // Don't do this, because it does not respect "ignore=true" in .editorconfig nor `doNotFormat` here.
+      // shell {
+      //   targetExclude doNotFormat
+      //   shfmt() // configuration is in .editorconfig
+      // }
     }
 
     // a useful task for debugging; prints exactly which files are getting formatted by spotless
@@ -654,13 +671,23 @@ configurations {
   requireJavadoc
 }
 dependencies {
-  requireJavadoc 'org.plumelib:require-javadoc:1.0.9'
+  requireJavadoc 'org.plumelib:require-javadoc:2.0.0'
 }
 task requireJavadoc(type: JavaExec, group: 'Documentation') {
   description = 'Ensures that Javadoc documentation exists in source code.'
   mainClass = 'org.plumelib.javadoc.RequireJavadoc'
   classpath = configurations.requireJavadoc
   args 'checker/src/main/java', 'checker-qual/src/main/java', 'checker-util/src/main/java', 'dataflow/src/main/java', 'framework/src/main/java', 'framework-test/src/main/java', 'javacutil/src/main/java'
+  jvmArgs += [
+    '--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED',
+    '--add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED',
+    '--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED',
+    '--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED',
+    '--add-opens=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED',
+    '--add-opens=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED',
+    '--add-opens=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED',
+    '--add-opens=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED',
+  ]
 }
 
 

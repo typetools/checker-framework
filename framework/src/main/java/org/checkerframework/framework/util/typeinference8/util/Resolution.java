@@ -321,11 +321,9 @@ public class Resolution {
       }
     }
     if (useRuntimeEx) {
-      ai.getBounds()
-          .addBound(null, BoundKind.EQUAL, context.inferenceTypeFactory.getRuntimeException());
-    } else {
-      ai.getBounds().addBound(null, BoundKind.EQUAL, ti);
+      ti = context.inferenceTypeFactory.getRuntimeException();
     }
+    ai.getBounds().addBound(null, BoundKind.EQUAL, ti);
   }
 
   /**

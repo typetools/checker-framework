@@ -15,15 +15,15 @@ JAVA_VER=$(java -version 2>&1 | head -1 | cut -d'"' -f2 | sed '/^1\./s///' | cut
 CHANGED_JAVA_FILES=$(git diff --staged --name-only --diff-filter=ACM | grep '\.java$' | grep -v '/jdk/' | grep -v 'stubparser/' | grep -v '/nullness-javac-errors/' | grep -v 'dataflow/manual/examples/' | grep -v '/java17/' | grep -v 'records/') || true
 # echo "CHANGED_JAVA_FILES=${CHANGED_JAVA_FILES}"
 if [ -n "$CHANGED_JAVA_FILES" ]; then
-    BRANCH=$(git rev-parse --abbrev-ref HEAD)
-    if [ "$BRANCH" = "master" ]; then
-        git diff --staged > /tmp/diff.txt
-        ./gradlew --stacktrace getPlumeScripts
-        (./gradlew requireJavadoc > /tmp/warnings-rjp.txt 2>&1) || true
-        checker/bin-devel/.plume-scripts/lint-diff.py --guess-strip /tmp/diff.txt /tmp/warnings-rjp.txt
-        (./gradlew javadocDoclintAll > /tmp/warnings-jda.txt 2>&1) || true
-        checker/bin-devel/.plume-scripts/lint-diff.py --guess-strip /tmp/diff.txt /tmp/warnings-jda.txt
-    fi
+  BRANCH=$(git rev-parse --abbrev-ref HEAD)
+  if [ "$BRANCH" = "master" ]; then
+    git diff --staged > /tmp/diff.txt
+    ./gradlew --stacktrace getPlumeScripts
+    (./gradlew requireJavadoc > /tmp/warnings-requireJavadoc.txt 2>&1) || true
+    checker/bin-devel/.plume-scripts/lint-diff.py --guess-strip /tmp/diff.txt /tmp/warnings-requireJavadoc.txt
+    (./gradlew javadocDoclintAll > /tmp/warnings-javadocDoclintAll.txt 2>&1) || true
+    checker/bin-devel/.plume-scripts/lint-diff.py --guess-strip /tmp/diff.txt /tmp/warnings-javadocDoclintAll.txt
+  fi
 fi
 
 # This is to handle non-.java files, since the above already handled .java files.
@@ -31,12 +31,12 @@ fi
 # not text files.
 CHANGED_FILES=$(git diff --staged --name-only --diff-filter=ACM | grep -v '\.class$' | grep -v '\.gz$' | grep -v '\.jar$' | grep -v '\.pdf$' | grep -v '\.png$' | grep -v '\.xcf$' | grep -v '\.patch$') || true
 if [ -n "$CHANGED_FILES" ]; then
-    ## For debugging:
-    # echo "CHANGED_FILES: ${CHANGED_FILES}"
+  ## For debugging:
+  # echo "CHANGED_FILES: ${CHANGED_FILES}"
 
-    # shellcheck disable=SC2086
-    FILES_WITH_TRAILING_SPACES=$(grep -l -s '[[:blank:]]$' ${CHANGED_FILES} 2>&1) || true
-    if [ -n "$FILES_WITH_TRAILING_SPACES" ]; then
-        echo "Some files have trailing whitespace: ${FILES_WITH_TRAILING_SPACES}" && exit 1
-    fi
+  # shellcheck disable=SC2086
+  FILES_WITH_TRAILING_SPACES=$(grep -l -s '[[:blank:]]$' ${CHANGED_FILES} 2>&1) || true
+  if [ -n "$FILES_WITH_TRAILING_SPACES" ]; then
+    echo "Some files have trailing whitespace: ${FILES_WITH_TRAILING_SPACES}" && exit 1
+  fi
 fi

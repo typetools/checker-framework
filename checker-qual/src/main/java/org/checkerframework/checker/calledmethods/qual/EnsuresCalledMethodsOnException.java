@@ -63,7 +63,7 @@ public @interface EnsuresCalledMethodsOnException {
   //  /**
   //   * Returns the exception types under which the postcondition holds.
   //   *
-  //   * @return the exception types under which the postcondition holds.
+  //   * @return the exception types under which the postcondition holds
   //   */
   //  Class<? extends Throwable>[] exceptions();
 
