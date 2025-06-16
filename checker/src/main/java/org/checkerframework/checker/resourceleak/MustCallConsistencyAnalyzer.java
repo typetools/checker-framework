@@ -2343,6 +2343,11 @@ public class MustCallConsistencyAnalyzer {
     if (cfg.getUnderlyingAST().getKind() == Kind.METHOD) {
       MethodTree method = ((UnderlyingAST.CFGMethod) cfg.getUnderlyingAST()).getMethod();
       Set<Obligation> result = new LinkedHashSet<>(1);
+      CFStore coStore = coAtf.getInput(cfg.getEntryBlock()).getRegularStore();
+      if (coStore == null) {
+        throw new BugInCF("Cannot get initial store for " + cfg);
+      }
+
       for (VariableTree param : method.getParameters()) {
         VariableElement paramElement = TreeUtils.elementFromDeclaration(param);
         boolean hasMustCallAlias = cmAtf.hasMustCallAlias(paramElement);
@@ -2360,10 +2365,51 @@ public class MustCallConsistencyAnalyzer {
           // method.
           incrementNumMustCall(paramElement);
         }
+        CFValue paramCfVal = coStore.getValue(JavaExpression.fromVariableTree(param));
+        CollectionOwnershipType cotype = getCoType(paramCfVal);
+        if (cotype == CollectionOwnershipType.OwningCollection) {
+          List<String> mustCallValues =
+              coAtf.getMustCallValuesOfResourceCollectionComponent(paramCfVal.getUnderlyingType());
+          if (mustCallValues == null) {
+            throw new BugInCF(
+                "List of MustCall values of component type is null for OwningCollection parameter: "
+                    + param);
+          }
+          for (String mustCallMethod : mustCallValues) {
+            result.add(
+                new CollectionObligation(
+                    mustCallMethod,
+                    ImmutableSet.of(
+                        new ResourceAlias(
+                            new LocalVariable(paramElement),
+                            paramElement,
+                            param,
+                            hasMustCallAlias)),
+                    Collections.singleton(MethodExitKind.NORMAL_RETURN)));
+          }
+        }
       }
       return result;
     }
     return Collections.emptySet();
+  }
+
+  private CollectionOwnershipType getCoType(CFValue val) {
+    if (val == null) {
+      return CollectionOwnershipType.None;
+    }
+    for (AnnotationMirror anm : val.getAnnotations()) {
+      if (AnnotationUtils.areSame(anm, coAtf.NOTOWNINGCOLLECTION)) {
+        return CollectionOwnershipType.NotOwningCollection;
+      } else if (AnnotationUtils.areSame(anm, coAtf.OWNINGCOLLECTION)) {
+        return CollectionOwnershipType.OwningCollection;
+      } else if (AnnotationUtils.areSame(anm, coAtf.OWNINGCOLLECTIONWITHOUTOBLIGATION)) {
+        return CollectionOwnershipType.OwningCollectionWithoutObligation;
+      } else if (AnnotationUtils.areSame(anm, coAtf.BOTTOM)) {
+        return CollectionOwnershipType.OwningCollectionBottom;
+      }
+    }
+    return CollectionOwnershipType.None;
   }
 
   /**
