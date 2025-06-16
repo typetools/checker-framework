@@ -143,16 +143,37 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
    * @param t the AnnotatedTypeMirror
    * @return whether t is a resource collection
    */
-  public boolean isResourceCollection(AnnotatedTypeMirror t) {
-    boolean isCollectionType = ResourceLeakUtils.isCollection(t.getUnderlyingType());
+  public boolean isResourceCollection(TypeMirror t) {
+    List<String> list = getMustCallValuesOfResourceCollectionComponent(t);
+    return list != null && list.size() > 0;
+  }
+
+  /**
+   * If the given type is a collection, this method returns the MustCall values of its elements or
+   * null if there are none or if the given type is not a collection.
+   *
+   * <p>That is:
+   *
+   * <ol>
+   *   <li>if the given type is an array type, this method returns the MustCall values of its
+   *       component type if there are any or else null.
+   *   <li>if the given type is a Java.util.Collection implementation, this method returns the
+   *       MustCall values of its type variable upper bound if there are any or else null.
+   * </ol>
+   *
+   * @param t the AnnotatedTypeMirror
+   * @return if the given type is a collection, returns the MustCall values of its elements or null
+   *     if there are none or if the given type is not a collection.
+   */
+  public List<String> getMustCallValuesOfResourceCollectionComponent(TypeMirror t) {
+    boolean isCollectionType = ResourceLeakUtils.isCollection(t);
     boolean isArrayType = t.getKind() == TypeKind.ARRAY;
 
     TypeMirror componentType = null;
     if (isArrayType) {
-      componentType = ((ArrayType) t.getUnderlyingType()).getComponentType();
+      componentType = ((ArrayType) t).getComponentType();
     } else if (isCollectionType) {
-      List<? extends TypeMirror> typeArgs =
-          ((DeclaredType) t.getUnderlyingType()).getTypeArguments();
+      List<? extends TypeMirror> typeArgs = ((DeclaredType) t).getTypeArguments();
       if (typeArgs.size() != 0) {
         componentType = typeArgs.get(0);
       }
@@ -162,9 +183,9 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
 
     if (componentType != null) {
       List<String> list = ResourceLeakUtils.getMcValues(componentType, mcAtf);
-      return list != null && list.size() > 0;
+      return list;
     } else {
-      return false;
+      return null;
     }
   }
 
@@ -201,7 +222,7 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
     public Void visitExecutable(AnnotatedTypeMirror.AnnotatedExecutableType t, Void p) {
       AnnotatedTypeMirror returnType = t.getReturnType();
 
-      if (isResourceCollection(returnType)) {
+      if (isResourceCollection(returnType.getUnderlyingType())) {
         AnnotationMirror manualAnno = returnType.getEffectiveAnnotationInHierarchy(TOP);
         if (manualAnno == null || AnnotationUtils.areSameByName(BOTTOM, manualAnno)) {
           returnType.replaceAnnotation(
@@ -210,7 +231,7 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
       }
 
       for (AnnotatedTypeMirror paramType : t.getParameterTypes()) {
-        if (isResourceCollection(paramType)) {
+        if (isResourceCollection(paramType.getUnderlyingType())) {
           AnnotationMirror manualAnno = paramType.getEffectiveAnnotationInHierarchy(TOP);
           if (manualAnno == null || AnnotationUtils.areSameByName(BOTTOM, manualAnno)) {
             paramType.replaceAnnotation(
@@ -237,7 +258,7 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
     if (elt instanceof VariableElement) {
       boolean isField = elt.getKind() == ElementKind.FIELD;
       boolean isParam = elt.getKind() == ElementKind.PARAMETER;
-      boolean isResourceCollection = isResourceCollection(type);
+      boolean isResourceCollection = isResourceCollection(type.getUnderlyingType());
 
       if (isResourceCollection) {
         if (isField) {
@@ -275,7 +296,7 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
 
     @Override
     public Void visitNewArray(NewArrayTree tree, AnnotatedTypeMirror type) {
-      if (isResourceCollection(type)) {
+      if (isResourceCollection(type.getUnderlyingType())) {
         type.replaceAnnotation(OWNINGCOLLECTION);
       }
       return super.visitNewArray(tree, type);
