@@ -61,6 +61,7 @@ import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGLambda;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGStatement;
+import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
@@ -1211,6 +1212,23 @@ public abstract class GenericAnnotatedTypeFactory<
       }
     }
     return merge;
+  }
+
+  /**
+   * Returns the regular store for a given block.
+   *
+   * @param block a block whose regular store to return
+   * @return the regular store of {@code block}.
+   */
+  public Store getRegularStore(Block block) {
+    TransferInput<Value, Store> input;
+    if (!analysis.isRunning()) {
+      input = flowResult.getInput(block);
+    } else {
+      input = analysis.getInput(block);
+    }
+
+    return input.getRegularStore();
   }
 
   /**
