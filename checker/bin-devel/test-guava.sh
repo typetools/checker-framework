@@ -7,7 +7,8 @@ export SHELLOPTS
 echo "SHELLOPTS=${SHELLOPTS}"
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
-# export ORG_GRADLE_PROJECT_useJdk21Compiler=true
+# Test that the CF, when built with JDK 21, works on other JDKs.
+export ORG_GRADLE_PROJECT_useJdk21Compiler=true
 source "$SCRIPT_DIR"/clone-related.sh
 
 ./gradlew assembleForJavac --console=plain -Dorg.gradle.internal.http.socketTimeout=60000 -Dorg.gradle.internal.http.connectionTimeout=60000
