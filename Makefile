@@ -1,6 +1,6 @@
 all default: style-check
 	$(MAKE) -C .azure
-	$(MAKE) -C checker/bin-devel 
+	$(MAKE) -C checker/bin-devel
 
 style-fix: python-style-fix shell-style-fix
 style-check: asciidoc-style-check python-style-check shell-style-check
