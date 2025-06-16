@@ -423,6 +423,19 @@ allprojects { currentProj ->
           languageVersion = JavaLanguageVersion.of(21)
         }
       }
+      int jdkTestVersion = Integer.valueOf(project.getProperties().getOrDefault('jdkTestVersion', -1))
+      if(jdkTestVersion != -1) {
+        java {
+          toolchain {
+            languageVersion = JavaLanguageVersion.of(jdkTestVersion)
+          }
+        }
+        tasks.withType(JavaExec).configureEach {
+          javaLauncher = javaToolchains.launcherFor {
+            languageVersion = JavaLanguageVersion.of(jdkTestVersion)
+          }
+        }
+      }
 
       // Sorting is commented out because it disables incremental compilation.
       // Uncomment when needed.
@@ -1158,5 +1171,12 @@ final sharedPublicationConfiguration(publication) {
       connection = 'scm:git:https://github.com/typetools/checker-framework.git'
       developerConnection = 'scm:git:ssh://git@github.com/typetools/checker-framework.git'
     }
+  }
+}
+tasks.register('printJavaVersion') {
+  doLast {
+    println "Java version: ${System.getProperty('java.version')}"
+    def currentJvm = org.gradle.internal.jvm.Jvm.current()
+    println currentJvm
   }
 }
