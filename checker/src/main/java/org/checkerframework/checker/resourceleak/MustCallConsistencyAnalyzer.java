@@ -2343,7 +2343,7 @@ public class MustCallConsistencyAnalyzer {
     if (cfg.getUnderlyingAST().getKind() == Kind.METHOD) {
       MethodTree method = ((UnderlyingAST.CFGMethod) cfg.getUnderlyingAST()).getMethod();
       Set<Obligation> result = new LinkedHashSet<>(1);
-      CFStore coStore = coAtf.getInput(cfg.getEntryBlock()).getRegularStore();
+      CFStore coStore = coAtf.getRegularStore(cfg.getEntryBlock());
       if (coStore == null) {
         throw new BugInCF("Cannot get initial store for " + cfg);
       }
