@@ -671,13 +671,23 @@ configurations {
   requireJavadoc
 }
 dependencies {
-  requireJavadoc 'org.plumelib:require-javadoc:1.0.9'
+  requireJavadoc 'org.plumelib:require-javadoc:2.0.0'
 }
 task requireJavadoc(type: JavaExec, group: 'Documentation') {
   description = 'Ensures that Javadoc documentation exists in source code.'
   mainClass = 'org.plumelib.javadoc.RequireJavadoc'
   classpath = configurations.requireJavadoc
   args 'checker/src/main/java', 'checker-qual/src/main/java', 'checker-util/src/main/java', 'dataflow/src/main/java', 'framework/src/main/java', 'framework-test/src/main/java', 'javacutil/src/main/java'
+  jvmArgs += [
+    '--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED',
+    '--add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED',
+    '--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED',
+    '--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED',
+    '--add-opens=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED',
+    '--add-opens=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED',
+    '--add-opens=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED',
+    '--add-opens=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED',
+  ]
 }
 
 
