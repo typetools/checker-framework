@@ -62,6 +62,14 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
    */
   public final AnnotationMirror BOTTOM;
 
+  public enum CollectionOwnershipType {
+    NotOwningCollection,
+    OwningCollection,
+    OwningCollectionWithoutObligation,
+    OwningCollectionBottom,
+    None
+  };
+
   /**
    * Creates a CollectionOwnershipAnnotatedTypeFactory.
    *
