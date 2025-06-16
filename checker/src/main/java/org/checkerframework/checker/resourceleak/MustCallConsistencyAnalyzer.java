@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
@@ -37,6 +38,8 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.calledmethods.qual.CalledMethods;
+import org.checkerframework.checker.collectionownership.CollectionOwnershipAnnotatedTypeFactory;
+import org.checkerframework.checker.collectionownership.CollectionOwnershipAnnotatedTypeFactory.CollectionOwnershipType;
 import org.checkerframework.checker.mustcall.CreatesMustCallForToJavaExpression;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.MustCallChecker;
@@ -162,6 +165,9 @@ public class MustCallConsistencyAnalyzer {
    */
   private final RLCCalledMethodsAnnotatedTypeFactory cmAtf;
 
+  /** The type factory for the Collection Ownership Checker. */
+  private final CollectionOwnershipAnnotatedTypeFactory coAtf;
+
   /**
    * A cache for the result of calling {@code RLCCalledMethodsAnnotatedTypeFactory.getStoreAfter()}
    * on a node. The cache prevents repeatedly computing least upper bounds on stores
@@ -257,6 +263,48 @@ public class MustCallConsistencyAnalyzer {
     }
 
     /**
+     * Returns a new Obligation.
+     *
+     * <p>We need this method since we frequently need to replace obligations. If the old obligation
+     * was of a certain subclass, we want the replacement to be as well. Dynamic dispatch then
+     * allows us to simply call getReplacement() on an obligation and get the replacement of the
+     * right (sub)class.
+     *
+     * @param resourceAliases set of resource aliases for the new obligation
+     * @return a new Obligation with the passed traits
+     */
+    public Obligation getReplacement(
+        Set<ResourceAlias> resourceAliases, Set<MethodExitKind> whenToEnforce) {
+      return new Obligation(resourceAliases, whenToEnforce);
+    }
+
+    /**
+     * Creates and returns an obligation derived from the given tree that is either an {@code
+     * ExpressionTree} or a {@code VariableTree}.
+     *
+     * @param tree the tree from which the Obligation is to be created. Must be ExpressionTree or
+     *     VariableTree.
+     * @return an obligation derived from the given tree
+     */
+    public static Obligation fromTree(Tree tree) {
+      JavaExpression jx = null;
+      Element elem = null;
+      if (tree instanceof ExpressionTree) {
+        jx = JavaExpression.fromTree((ExpressionTree) tree);
+        elem = TreeUtils.elementFromTree((ExpressionTree) tree);
+      } else if (tree instanceof VariableTree) {
+        jx = JavaExpression.fromVariableTree((VariableTree) tree);
+        elem = TreeUtils.elementFromDeclaration((VariableTree) tree);
+      } else {
+        throw new IllegalArgumentException(
+            "Tree must be ExpressionTree or VariableTree but is " + tree.getClass());
+      }
+      return new Obligation(
+          ImmutableSet.of(new ResourceAlias(jx, elem, tree)),
+          Collections.singleton(MethodExitKind.NORMAL_RETURN));
+    }
+
+    /**
      * Returns the resource alias in this Obligation's resource alias set corresponding to {@code
      * localVariableNode} if one is present. Otherwise, returns null.
      *
@@ -302,6 +350,26 @@ public class MustCallConsistencyAnalyzer {
     private boolean canBeSatisfiedThrough(LocalVariableNode localVariableNode) {
       return getResourceAlias(localVariableNode) != null;
     }
+
+    // /**
+    //  * Returns true if this contains a resource alias corresponding to {@code localVariableNode},
+    //  * meaning that calling the required methods on {@code localVariableNode} is sufficient to
+    //  * satisfy the must-call obligation this object represents.
+    //  *
+    //  * @param tree a local variable tree
+    //  * @return true if a resource alias corresponding to {@code tree} is present
+    //  */
+    // private boolean canBeSatisfiedThrough(Tree tree) {
+    //   for (ResourceAlias alias : resourceAliases) {
+    //     if (alias.tree.equals(tree)
+    //         || ((tree instanceof ExpressionTree)
+    //             && JavaExpression.fromTree((ExpressionTree) tree) != null
+    //             && alias.reference.equals(JavaExpression.fromTree((ExpressionTree) tree)))) {
+    //       return true;
+    //     }
+    //   }
+    //   return false;
+    // }
 
     /**
      * Does this Obligation contain any resource aliases that were derived from {@link
@@ -422,6 +490,64 @@ public class MustCallConsistencyAnalyzer {
     @Override
     public int hashCode() {
       return Objects.hash(resourceAliases, whenToEnforce);
+    }
+  }
+
+  /** Obligation for a collection. To be fulfilled on its elements. */
+  static class CollectionObligation extends Obligation {
+
+    private String mustCallMethod;
+
+    /**
+     * Create a CollectionObligation from a set of resource aliases.
+     *
+     * @param resourceAliases a set of resource aliases
+     * @param whenToEnforce when this Obligation should be enforced
+     */
+    public CollectionObligation(
+        String mustCallMethod,
+        Set<ResourceAlias> resourceAliases,
+        Set<MethodExitKind> whenToEnforce) {
+      super(resourceAliases, whenToEnforce);
+      this.mustCallMethod = mustCallMethod;
+    }
+
+    /**
+     * Create a CollectionObligation from an Obligation
+     *
+     * @param obligation the obligation to create a CollectionObligation from
+     */
+    private CollectionObligation(Obligation obligation) {
+      super(obligation.resourceAliases, obligation.whenToEnforce);
+    }
+
+    /**
+     * Creates and returns a CollectionObligation derived from the given tree that is either an
+     * {@code ExpressionTree} or a {@code VariableTree}.
+     *
+     * @param tree the tree from which the CollectionObligation is to be created. Must be
+     *     ExpressionTree or VariableTree.
+     * @return a CollectionObligation derived from the given tree
+     */
+    public static CollectionObligation fromTree(Tree tree) {
+      return new CollectionObligation(Obligation.fromTree(tree));
+    }
+
+    /**
+     * Returns a new CollectionObligation.
+     *
+     * <p>We need this method since we frequently need to replace obligations. If the old obligation
+     * was a CollectionObligation, we want the replacement to be as well. Dynamic dispatch then
+     * allows us to simply call getReplacement() on an obligation and get the replacement of the
+     * right class.
+     *
+     * @param resourceAliases set of resource aliases for the new obligation
+     * @return a new CollectionObligation with the passed traits
+     */
+    @Override
+    public CollectionObligation getReplacement(
+        Set<ResourceAlias> resourceAliases, Set<MethodExitKind> whenToEnforce) {
+      return new CollectionObligation(this.mustCallMethod, resourceAliases, whenToEnforce);
     }
   }
 
@@ -558,6 +684,7 @@ public class MustCallConsistencyAnalyzer {
     this.cmAtf =
         (RLCCalledMethodsAnnotatedTypeFactory)
             ResourceLeakUtils.getRLCCalledMethodsChecker(rlc).getTypeFactory();
+    this.coAtf = ResourceLeakUtils.getCollectionOwnershipAnnotatedTypeFactory(cmAtf);
     this.checker = rlc;
     this.permitStaticOwning = checker.hasOption("permitStaticOwning");
     this.permitInitializationLeak = checker.hasOption("permitInitializationLeak");
