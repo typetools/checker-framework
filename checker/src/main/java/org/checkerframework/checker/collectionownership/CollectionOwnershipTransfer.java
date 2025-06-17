@@ -1,15 +1,19 @@
 package org.checkerframework.checker.collectionownership;
 
 import javax.lang.model.element.AnnotationMirror;
+import org.checkerframework.checker.collectionownership.CollectionOwnershipAnnotatedTypeFactory.CollectionOwnershipType;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.resourceleak.ResourceLeakUtils;
+import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
+import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
@@ -38,6 +42,50 @@ public class CollectionOwnershipTransfer extends CFTransfer {
     super(analysis);
     atypeFactory = (CollectionOwnershipAnnotatedTypeFactory) analysis.getTypeFactory();
     mcAtf = ResourceLeakUtils.getMustCallAnnotatedTypeFactory(atypeFactory);
+  }
+
+  @Override
+  public TransferResult<CFValue, CFStore> visitAssignment(
+      AssignmentNode node, TransferInput<CFValue, CFStore> in) {
+    TransferResult<CFValue, CFStore> res = super.visitAssignment(node, in);
+
+    CFStore store = res.getRegularStore();
+    // Node lhs = node.getTarget();
+    // lhs = getNodeOrTempVar(lhs);
+    Node rhs = node.getExpression();
+    rhs = getNodeOrTempVar(rhs);
+    // JavaExpression lhsJx = JavaExpression.fromNode(lhs);
+    JavaExpression rhsJx = JavaExpression.fromNode(rhs);
+
+    // CollectionOwnershipType lhsType = atypeFactory.getCoType(store.getValue(lhsJx));
+    CollectionOwnershipType rhsType = atypeFactory.getCoType(store.getValue(rhsJx));
+
+    // ownership transfer from rhs into lhs
+    if (rhsType == CollectionOwnershipType.OwningCollection
+        || rhsType == CollectionOwnershipType.OwningCollectionWithoutObligation) {
+      store.clearValue(rhsJx);
+      store.insertValue(rhsJx, atypeFactory.NOTOWNINGCOLLECTION);
+    }
+
+    // boolean assignmentOfOwningCollectionArrayElement =
+    //     lhsIsOwningCollection && lhs.getTree().getKind() == Tree.Kind.ARRAY_ACCESS;
+
+    // if (assignmentOfOwningCollectionArrayElement) {
+    //   ExpressionTree arrayExpression = ((ArrayAccessTree) lhs.getTree()).getExpression();
+    //   JavaExpression arrayJx = JavaExpression.fromTree(arrayExpression);
+
+    //   boolean inAssigningLoop =
+    //       MustCallOnElementsAnnotatedTypeFactory.doesAssignmentCreateArrayObligation(
+    //           (AssignmentTree) node.getTree());
+
+    //   // transformation of assigning loop is handled at the loop condition node,
+    //   // not the assignment node. So, only transform if not in an assigning loop.
+    //   if (!inAssigningLoop) {
+    //     store =
+    //         transformWriteToOwningCollection(arrayJx, arrayExpression, node.getExpression(),
+    // store);
+    //   }
+    return new RegularTransferResult<CFValue, CFStore>(res.getResultValue(), store);
   }
 
   @Override
@@ -140,5 +188,24 @@ public class CollectionOwnershipTransfer extends CFTransfer {
         // }
       }
     }
+  }
+
+  /**
+   * Removes casts from {@code node} and returns the temp-var corresponding to it if it exists or
+   * else {@code node} with removed casts.
+   *
+   * @param node the node
+   * @return the temp-var corresponding to {@code node} with casts removed if it exists or else
+   *     {@code node} with casts removed
+   */
+  protected Node getNodeOrTempVar(Node node) {
+    node = NodeUtils.removeCasts(node);
+    Node tempVarForNode =
+        ResourceLeakUtils.getRLCCalledMethodsAnnotatedTypeFactory(atypeFactory)
+            .getTempVarForNode(node);
+    if (tempVarForNode != null) {
+      return tempVarForNode;
+    }
+    return node;
   }
 }
