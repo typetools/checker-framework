@@ -5,6 +5,7 @@ import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.collectionownership.CollectionOwnershipAnnotatedTypeFactory.CollectionOwnershipType;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.resourceleak.ResourceLeakUtils;
@@ -194,7 +195,27 @@ public class CollectionOwnershipTransfer extends CFTransfer {
     ExecutableElement constructor = TreeUtils.elementFromUse(node.getTree());
     List<Node> args = node.getArguments();
     result = transferOwnershipForMethodInvocation(constructor, args, result);
-    return result;
+
+    // the return value defaulting logic cannot recognize that a diamond constructed collection
+    // is a resource collection, as it runs before the type variable is inferred:
+    // List<Socket> = new ArrayList<>();
+    // Thus, the following checks object creation expressions again on whether they are
+    // resource collections with no type variables, and if they are Bottom, they are
+    // unrefined to @OwningCollection.
+    CFStore store = result.getRegularStore();
+    Node tempVarNode = getNodeOrTempVar(node);
+    JavaExpression exprJx = JavaExpression.fromNode(tempVarNode);
+    CollectionOwnershipType resolvedType = atypeFactory.getCoType(store.getValue(exprJx));
+    TypeMirror javaTypeOfExpr = TreeUtils.elementFromTree(tempVarNode.getTree()).asType();
+    if (atypeFactory.isResourceCollection(javaTypeOfExpr)) {
+      boolean isDiamond = node.getTree().getTypeArguments().size() == 0;
+      if (isDiamond && resolvedType == CollectionOwnershipType.OwningCollectionBottom) {
+        store.clearValue(exprJx);
+        store.insertValue(exprJx, atypeFactory.OWNINGCOLLECTION);
+      }
+    }
+
+    return new RegularTransferResult<CFValue, CFStore>(result.getResultValue(), store);
   }
 
   // TODO sck: I think that I can use the temp var management from MC checker and don't
