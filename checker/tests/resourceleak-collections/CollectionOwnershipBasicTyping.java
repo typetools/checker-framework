@@ -34,7 +34,7 @@ class CollectionOwnershipBasicTyping {
     return list;
   }
 
-  void test() {
+  void testAssignmentTransfersOwnership() {
     Collection<Socket> col = new ArrayList<>();
     Collection<Socket> col2 = new ArrayList<>();
     // col : @OwningCollection, col2 : @OwningCollection
@@ -45,6 +45,27 @@ class CollectionOwnershipBasicTyping {
     checkArgIsOwning(col);
     // :: error: argument
     checkArgIsOwning(col2);
+
+    closeElements(col);
+  }
+
+  /*
+   * Check that a resource collection constructed without explicit type argument also is of type @OwningCollection.
+   */
+  void testDiamond() {
+    Collection<Socket> col = new ArrayList<>();
+    // :: error: arg
+    checkArgIsOCwoO(col);
+    closeElements(col);
+  }
+
+  void closeElements(@OwningCollection Collection<Socket> socketCollection) {
+    for (Socket s : socketCollection) {
+      try {
+        s.close();
+      } catch (Exception e) {
+      }
+    }
   }
 
   void checkArgIsOwning(
@@ -53,5 +74,4 @@ class CollectionOwnershipBasicTyping {
   void checkArgIsOCwoO(
       @OwningCollectionWithoutObligation
           Collection<? extends @MustCallUnknown Object> collection) {}
-
 }
