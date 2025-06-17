@@ -4,6 +4,7 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.NewArrayTree;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -32,6 +33,7 @@ import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.framework.flow.CFStore;
+import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
@@ -195,6 +197,28 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
     } else {
       return null;
     }
+  }
+
+  public CollectionOwnershipType getCoType(CFValue val) {
+    return val == null ? CollectionOwnershipType.None : getCoType(val.getAnnotations());
+  }
+
+  public CollectionOwnershipType getCoType(Collection<AnnotationMirror> annos) {
+    if (annos == null) {
+      return CollectionOwnershipType.None;
+    }
+    for (AnnotationMirror anm : annos) {
+      if (AnnotationUtils.areSame(anm, NOTOWNINGCOLLECTION)) {
+        return CollectionOwnershipType.NotOwningCollection;
+      } else if (AnnotationUtils.areSame(anm, OWNINGCOLLECTION)) {
+        return CollectionOwnershipType.OwningCollection;
+      } else if (AnnotationUtils.areSame(anm, OWNINGCOLLECTIONWITHOUTOBLIGATION)) {
+        return CollectionOwnershipType.OwningCollectionWithoutObligation;
+      } else if (AnnotationUtils.areSame(anm, BOTTOM)) {
+        return CollectionOwnershipType.OwningCollectionBottom;
+      }
+    }
+    return CollectionOwnershipType.None;
   }
 
   @Override

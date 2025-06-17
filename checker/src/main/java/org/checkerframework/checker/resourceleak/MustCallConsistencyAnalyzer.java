@@ -496,7 +496,7 @@ public class MustCallConsistencyAnalyzer {
   /** Obligation for a collection. To be fulfilled on its elements. */
   static class CollectionObligation extends Obligation {
 
-    private String mustCallMethod;
+    public String mustCallMethod;
 
     /**
      * Create a CollectionObligation from a set of resource aliases.
@@ -730,6 +730,38 @@ public class MustCallConsistencyAnalyzer {
   }
 
   /**
+   * Adds {@code CollectionObligation}s if the return type is {@code @OwningCollection}.
+   *
+   * @param obligations the set of tracked obligations
+   * @node the node the check
+   */
+  private void addObligationsForOwningCollectionReturn(Set<Obligation> obligations, Node node) {
+    LocalVariableNode tmpVar = cmAtf.getTempVarForNode(node);
+    if (tmpVar != null) {
+      CFStore coStore = coAtf.getStoreAfter(node);
+      CFValue returnCfVal = coStore.getValue(JavaExpression.fromNode(tmpVar));
+      CollectionOwnershipType cotype = coAtf.getCoType(returnCfVal);
+      if (cotype == CollectionOwnershipType.OwningCollection) {
+        ResourceAlias tmpVarAsResourceAlias =
+            new ResourceAlias(new LocalVariable(tmpVar), node.getTree());
+        List<String> mustCallValues =
+            coAtf.getMustCallValuesOfResourceCollectionComponent(returnCfVal.getUnderlyingType());
+        if (mustCallValues == null) {
+          throw new BugInCF(
+              "List of MustCall values of component type is null for OwningCollection return value: "
+                  + node);
+        }
+        for (String mustCallMethod : mustCallValues) {
+          System.out.println("adding obl for method: " + mustCallMethod);
+          obligations.add(
+              new CollectionObligation(
+                  mustCallMethod, ImmutableSet.of(tmpVarAsResourceAlias), MethodExitKind.ALL));
+        }
+      }
+    }
+  }
+
+  /**
    * Update a set of Obligations to account for a method or constructor invocation.
    *
    * @param obligations the Obligations to update
@@ -750,6 +782,8 @@ public class MustCallConsistencyAnalyzer {
       // a new resource is created: it just means that a new resource might have been created.
       incrementNumMustCall(node);
     }
+
+    addObligationsForOwningCollectionReturn(obligations, node);
 
     if (!shouldTrackInvocationResult(obligations, node, false)) {
       return;
@@ -877,7 +911,7 @@ public class MustCallConsistencyAnalyzer {
                   "tried to remove multiple sets containing a reset expression at once");
             }
             toRemove = obligation;
-            toAdd = new Obligation(ImmutableSet.of(alias), obligation.whenToEnforce);
+            toAdd = obligation.getReplacement(ImmutableSet.of(alias), obligation.whenToEnforce);
           }
         }
 
@@ -1006,7 +1040,7 @@ public class MustCallConsistencyAnalyzer {
                     .toSet();
             obligations.remove(obligationContainingMustCallAlias);
             obligations.add(
-                new Obligation(
+                obligationContainingMustCallAlias.getReplacement(
                     newResourceAliasSet, obligationContainingMustCallAlias.whenToEnforce));
             // It is not an error if there is no Obligation containing the must-call
             // alias. In that case, what has usually happened is that no Obligation was
@@ -1165,6 +1199,13 @@ public class MustCallConsistencyAnalyzer {
               // Transfer ownership!
               obligations.remove(localObligation);
             }
+          }
+          boolean paramHasManualOcAnno =
+              coAtf.getCoType(new HashSet<>(parameter.asType().getAnnotationMirrors()))
+                  == CollectionOwnershipType.OwningCollection;
+          if (paramHasManualOcAnno) {
+            Obligation localObligation = getObligationForVar(obligations, local);
+            obligations.remove(localObligation);
           }
         }
       }
@@ -1373,7 +1414,7 @@ public class MustCallConsistencyAnalyzer {
         Set<ResourceAlias> newAliases = new LinkedHashSet<>(obligation.resourceAliases);
         newAliases.add(newAlias);
 
-        newObligations.add(new Obligation(newAliases, obligation.whenToEnforce));
+        newObligations.add(obligation.getReplacement(newAliases, obligation.whenToEnforce));
       }
     }
 
@@ -1444,7 +1485,7 @@ public class MustCallConsistencyAnalyzer {
         whenToEnforce.removeAll(whatToClear);
 
         if (!whenToEnforce.isEmpty()) {
-          newObligations.add(new Obligation(obligation.resourceAliases, whenToEnforce));
+          newObligations.add(obligation.getReplacement(obligation.resourceAliases, whenToEnforce));
         }
       }
     }
@@ -1539,7 +1580,8 @@ public class MustCallConsistencyAnalyzer {
         replacements.put(obligation, null);
       } else {
         replacements.put(
-            obligation, new Obligation(newResourceAliasesForObligation, obligation.whenToEnforce));
+            obligation,
+            obligation.getReplacement(newResourceAliasesForObligation, obligation.whenToEnforce));
       }
     }
 
@@ -2269,7 +2311,8 @@ public class MustCallConsistencyAnalyzer {
         Set<ResourceAlias> copyOfResourceAliases = new LinkedHashSet<>(obligation.resourceAliases);
         copyOfResourceAliases.removeIf(
             alias -> !aliasInScopeInSuccessor(regularStoreOfSuccessor, alias));
-        successorObligations.add(new Obligation(copyOfResourceAliases, obligation.whenToEnforce));
+        successorObligations.add(
+            obligation.getReplacement(copyOfResourceAliases, obligation.whenToEnforce));
       }
     }
 
@@ -2366,7 +2409,7 @@ public class MustCallConsistencyAnalyzer {
           incrementNumMustCall(paramElement);
         }
         CFValue paramCfVal = coStore.getValue(JavaExpression.fromVariableTree(param));
-        CollectionOwnershipType cotype = getCoType(paramCfVal);
+        CollectionOwnershipType cotype = coAtf.getCoType(paramCfVal);
         if (cotype == CollectionOwnershipType.OwningCollection) {
           List<String> mustCallValues =
               coAtf.getMustCallValuesOfResourceCollectionComponent(paramCfVal.getUnderlyingType());
@@ -2392,24 +2435,6 @@ public class MustCallConsistencyAnalyzer {
       return result;
     }
     return Collections.emptySet();
-  }
-
-  private CollectionOwnershipType getCoType(CFValue val) {
-    if (val == null) {
-      return CollectionOwnershipType.None;
-    }
-    for (AnnotationMirror anm : val.getAnnotations()) {
-      if (AnnotationUtils.areSame(anm, coAtf.NOTOWNINGCOLLECTION)) {
-        return CollectionOwnershipType.NotOwningCollection;
-      } else if (AnnotationUtils.areSame(anm, coAtf.OWNINGCOLLECTION)) {
-        return CollectionOwnershipType.OwningCollection;
-      } else if (AnnotationUtils.areSame(anm, coAtf.OWNINGCOLLECTIONWITHOUTOBLIGATION)) {
-        return CollectionOwnershipType.OwningCollectionWithoutObligation;
-      } else if (AnnotationUtils.areSame(anm, coAtf.BOTTOM)) {
-        return CollectionOwnershipType.OwningCollectionBottom;
-      }
-    }
-    return CollectionOwnershipType.None;
   }
 
   /**
@@ -2462,6 +2487,21 @@ public class MustCallConsistencyAnalyzer {
    */
   private void checkMustCall(
       Obligation obligation, AccumulationStore cmStore, CFStore mcStore, String outOfScopeReason) {
+
+    if (obligation instanceof CollectionObligation) {
+      ResourceAlias firstAlias = obligation.resourceAliases.iterator().next();
+      if (!reportedErrorAliases.contains(firstAlias)) {
+        if (!checker.shouldSkipUses(TreeUtils.elementFromTree(firstAlias.tree))) {
+          reportedErrorAliases.add(firstAlias);
+          checker.reportError(
+              firstAlias.tree,
+              "unfulfilled.collection.obligations",
+              ((CollectionObligation) obligation).mustCallMethod,
+              firstAlias.stringForErrorMessage(),
+              outOfScopeReason);
+        }
+      }
+    }
 
     Map<ResourceAlias, List<String>> mustCallValues = obligation.getMustCallMethods(cmAtf, mcStore);
 

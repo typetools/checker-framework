@@ -21,6 +21,7 @@ import org.checkerframework.checker.mustcall.qual.InheritableMustCall;
 import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.checkerframework.checker.mustcall.qual.MustCallUnknown;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsAnnotatedTypeFactory;
 import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsChecker;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -177,6 +178,33 @@ public class ResourceLeakUtils {
               + " ResourceLeakUtils#getRLCCalledMethodsChecker(): "
               + (referenceChecker == null ? "null" : referenceChecker.getClass().getSimpleName()));
     }
+  }
+
+  /**
+   * Given a type factory that is part of the resource leak checker hierarchy, returns the {@link
+   * RLCCalledMethodsAnnotatedTypeFactory} in the checker hierarchy.
+   *
+   * @param referenceAtf the type factory to retrieve the {@link
+   *     RLCCalledMethodsAnnotatedTypeFactory} from; must be part of the Resource Leak hierarchy
+   * @return the {@link RLCCalledMethodsAnnotatedTypeFactory} in the checker hierarchy
+   */
+  public static RLCCalledMethodsAnnotatedTypeFactory getRLCCalledMethodsAnnotatedTypeFactory(
+      AnnotatedTypeFactory referenceAtf) {
+    return getRLCCalledMethodsAnnotatedTypeFactory(referenceAtf.getChecker());
+  }
+
+  /**
+   * Given a checker that is part of the resource leak checker hierarchy, returns the {@link
+   * RLCCalledMethodsAnnotatedTypeFactory} in the hierarchy.
+   *
+   * @param referenceChecker the checker to retrieve the {@link
+   *     RLCCalledMethodsAnnotatedTypeFactory} from; must be part of the Resource Leak hierarchy
+   * @return the {@link RLCCalledMethodsAnnotatedTypeFactory} in the hierarchy
+   */
+  public static RLCCalledMethodsAnnotatedTypeFactory getRLCCalledMethodsAnnotatedTypeFactory(
+      SourceChecker referenceChecker) {
+    return (RLCCalledMethodsAnnotatedTypeFactory)
+        getRLCCalledMethodsChecker(referenceChecker).getTypeFactory();
   }
 
   /**
