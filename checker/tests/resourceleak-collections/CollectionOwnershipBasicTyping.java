@@ -33,4 +33,25 @@ class CollectionOwnershipBasicTyping {
     // :: error: return
     return list;
   }
+
+  void test() {
+    Collection<Socket> col = new ArrayList<>();
+    Collection<Socket> col2 = new ArrayList<>();
+    // col : @OwningCollection, col2 : @OwningCollection
+    col = col2;
+    // col : @OwningCollection, col2 : @NotOwningCollection
+
+    // col2 is NotOwningCollection, so the second call should fail
+    checkArgIsOwning(col);
+    // :: error: argument
+    checkArgIsOwning(col2);
+  }
+
+  void checkArgIsOwning(
+      @OwningCollection Collection<? extends @MustCallUnknown Object> collection) {}
+
+  void checkArgIsOCwoO(
+      @OwningCollectionWithoutObligation
+          Collection<? extends @MustCallUnknown Object> collection) {}
+
 }
