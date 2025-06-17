@@ -14,18 +14,24 @@ public class SocketIntoList {
     l.add(s);
   }
 
-  public void test2(@OwningCollection List<Socket> l) {
+  public List<Socket> test2(@OwningCollection List<Socket> l) {
     // s is unconnected, so no error is expected when it's stored into the list.
     // But, if the list is unannotated, we do get an error at its declaration site
     // (as expected, due to #5912).
     Socket s = new Socket();
     l.add(s);
+    return l;
   }
 
   public void test3(List<@MustCall({}) Socket> l) throws Exception {
-    // :: error: required.method.not.called
+    // although s is illegally assigned into the list l, an error
+    // for required.method.not.called is not additionally reported at
+    // this declaration site of s. list#add(@Owning E) takes on
+    // the obligation of the argument.
     Socket s = new Socket();
     s.bind(new InetSocketAddress("192.168.0.1", 0));
+    // l cannot hold elements with non-empty @MustCall values
+    // :: error: argument
     l.add(s);
   }
 
