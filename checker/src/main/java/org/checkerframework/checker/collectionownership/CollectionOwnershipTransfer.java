@@ -1,6 +1,10 @@
 package org.checkerframework.checker.collectionownership;
 
+import java.util.HashSet;
+import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.collectionownership.CollectionOwnershipAnnotatedTypeFactory.CollectionOwnershipType;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.resourceleak.ResourceLeakUtils;
@@ -18,6 +22,7 @@ import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -90,10 +95,15 @@ public class CollectionOwnershipTransfer extends CFTransfer {
 
   @Override
   public TransferResult<CFValue, CFStore> visitMethodInvocation(
-      MethodInvocationNode n, TransferInput<CFValue, CFStore> in) {
-    TransferResult<CFValue, CFStore> result = super.visitMethodInvocation(n, in);
+      MethodInvocationNode node, TransferInput<CFValue, CFStore> in) {
+    TransferResult<CFValue, CFStore> res = super.visitMethodInvocation(node, in);
 
-    updateStoreWithTempVar(result, n);
+    updateStoreWithTempVar(res, node);
+
+    ExecutableElement method = node.getTarget().getMethod();
+    List<Node> args = node.getArguments();
+    res = transferOwnershipForMethodInvocation(method, args, res);
+
     // if (!noCreatesMustCallFor) {
     //   List<JavaExpression> targetExprs =
     //       CreatesMustCallForToJavaExpression.getCreatesMustCallForExpressionsAtInvocation(
@@ -116,7 +126,46 @@ public class CollectionOwnershipTransfer extends CFTransfer {
     //     }
     //   }
     // }
-    return result;
+    return res;
+  }
+
+  /**
+   * Executes collection ownership transfer in method invocations. Owning arguments to an owning
+   * parameter lose ownership.
+   *
+   * @param method the method whose parameters are checked
+   * @param args the list of method arguments
+   * @param res the transfer result so far
+   * @return the updated transfer result
+   */
+  private TransferResult<CFValue, CFStore> transferOwnershipForMethodInvocation(
+      ExecutableElement method, List<Node> args, TransferResult<CFValue, CFStore> res) {
+    List<? extends VariableElement> params = method.getParameters();
+
+    CFStore store = res.getRegularStore();
+    for (int i = 0; i < Math.min(args.size(), params.size()); i++) {
+      VariableElement param = params.get(i);
+      Node arg = args.get(i);
+      arg = getNodeOrTempVar(arg);
+      JavaExpression argJx = JavaExpression.fromNode(arg);
+      CollectionOwnershipType argType = atypeFactory.getCoType(store.getValue(argJx));
+      CollectionOwnershipType paramType =
+          atypeFactory.getCoType(new HashSet<>(param.asType().getAnnotationMirrors()));
+
+      if (paramType == CollectionOwnershipType.OwningCollection) {
+        if (argType == CollectionOwnershipType.OwningCollectionWithoutObligation
+            || argType == CollectionOwnershipType.OwningCollection) {
+          store.clearValue(argJx);
+          store.insertValue(argJx, atypeFactory.NOTOWNINGCOLLECTION);
+        }
+      } else if (paramType == CollectionOwnershipType.OwningCollectionWithoutObligation) {
+        if (argType == CollectionOwnershipType.OwningCollectionWithoutObligation) {
+          store.clearValue(argJx);
+          store.insertValue(argJx, atypeFactory.NOTOWNINGCOLLECTION);
+        }
+      }
+    }
+    return new RegularTransferResult<CFValue, CFStore>(res.getResultValue(), store);
   }
 
   // /**
@@ -141,6 +190,10 @@ public class CollectionOwnershipTransfer extends CFTransfer {
       ObjectCreationNode node, TransferInput<CFValue, CFStore> input) {
     TransferResult<CFValue, CFStore> result = super.visitObjectCreation(node, input);
     updateStoreWithTempVar(result, node);
+
+    ExecutableElement constructor = TreeUtils.elementFromUse(node.getTree());
+    List<Node> args = node.getArguments();
+    result = transferOwnershipForMethodInvocation(constructor, args, result);
     return result;
   }
 
