@@ -2589,7 +2589,7 @@ public final class TreeUtils {
   public static boolean isVariableTreeDeclaredUsingVar(VariableTree variableTree) {
     JCVariableDecl variableDecl = (JCVariableDecl) variableTree;
     if (variableDecl.declaredUsingVar()) {
-        return true;
+      return true;
     }
     JCExpression type = variableDecl.vartype;
     return type != null && type.pos == Position.NOPOS;
