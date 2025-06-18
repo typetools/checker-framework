@@ -64,7 +64,13 @@ public class CollectionOwnershipTransfer extends CFTransfer {
     JavaExpression rhsJx = JavaExpression.fromNode(rhs);
 
     // CollectionOwnershipType lhsType = atypeFactory.getCoType(store.getValue(lhsJx));
-    CollectionOwnershipType rhsType = atypeFactory.getCoType(store.getValue(rhsJx));
+    CFValue rhsValue = null;
+    try {
+      rhsValue = store.getValue(rhsJx);
+    } catch (Exception e) {
+      return res;
+    }
+    CollectionOwnershipType rhsType = atypeFactory.getCoType(rhsValue);
 
     // ownership transfer from rhs into lhs
     if (rhsType == CollectionOwnershipType.OwningCollection
@@ -149,7 +155,13 @@ public class CollectionOwnershipTransfer extends CFTransfer {
       Node arg = args.get(i);
       arg = getNodeOrTempVar(arg);
       JavaExpression argJx = JavaExpression.fromNode(arg);
-      CollectionOwnershipType argType = atypeFactory.getCoType(store.getValue(argJx));
+      CFValue argValue = null;
+      try {
+        argValue = store.getValue(argJx);
+      } catch (Exception e) {
+        continue;
+      }
+      CollectionOwnershipType argType = atypeFactory.getCoType(argValue);
       CollectionOwnershipType paramType =
           atypeFactory.getCoType(new HashSet<>(param.asType().getAnnotationMirrors()));
 
@@ -201,21 +213,25 @@ public class CollectionOwnershipTransfer extends CFTransfer {
     // List<Socket> = new ArrayList<>();
     // Thus, the following checks object creation expressions again on whether they are
     // resource collections with no type variables, and if they are Bottom, they are
-    // unrefined to @OwningCollection.
+    // unrefined to @OwningCollection. Change the type of both the type var and the computed
+    // expression itself.
     CFStore store = result.getRegularStore();
+    CFValue resultValue = result.getResultValue();
     Node tempVarNode = getNodeOrTempVar(node);
-    JavaExpression exprJx = JavaExpression.fromNode(tempVarNode);
-    CollectionOwnershipType resolvedType = atypeFactory.getCoType(store.getValue(exprJx));
+    JavaExpression tempVarJx = JavaExpression.fromNode(tempVarNode);
+    CollectionOwnershipType resolvedType = atypeFactory.getCoType(store.getValue(tempVarJx));
     TypeMirror javaTypeOfExpr = TreeUtils.elementFromTree(tempVarNode.getTree()).asType();
     if (atypeFactory.isResourceCollection(javaTypeOfExpr)) {
       boolean isDiamond = node.getTree().getTypeArguments().size() == 0;
       if (isDiamond && resolvedType == CollectionOwnershipType.OwningCollectionBottom) {
-        store.clearValue(exprJx);
-        store.insertValue(exprJx, atypeFactory.OWNINGCOLLECTION);
+        store.clearValue(tempVarJx);
+        store.insertValue(tempVarJx, atypeFactory.OWNINGCOLLECTION);
+        resultValue =
+            analysis.createSingleAnnotationValue(atypeFactory.OWNINGCOLLECTION, node.getType());
       }
     }
 
-    return new RegularTransferResult<CFValue, CFStore>(result.getResultValue(), store);
+    return new RegularTransferResult<CFValue, CFStore>(resultValue, store);
   }
 
   // TODO sck: I think that I can use the temp var management from MC checker and don't
