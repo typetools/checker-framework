@@ -752,7 +752,6 @@ public class MustCallConsistencyAnalyzer {
                   + node);
         }
         for (String mustCallMethod : mustCallValues) {
-          System.out.println("adding obl for method: " + mustCallMethod);
           obligations.add(
               new CollectionObligation(
                   mustCallMethod, ImmutableSet.of(tmpVarAsResourceAlias), MethodExitKind.ALL));
@@ -1204,8 +1203,10 @@ public class MustCallConsistencyAnalyzer {
               coAtf.getCoType(new HashSet<>(parameter.asType().getAnnotationMirrors()))
                   == CollectionOwnershipType.OwningCollection;
           if (paramHasManualOcAnno) {
-            Obligation localObligation = getObligationForVar(obligations, local);
-            obligations.remove(localObligation);
+            Set<Obligation> obligationsForVar = getObligationsForVar(obligations, local);
+            for (Obligation obligation : obligationsForVar) {
+              obligations.remove(obligation);
+            }
           }
         }
       }
@@ -2472,6 +2473,26 @@ public class MustCallConsistencyAnalyzer {
       }
     }
     return null;
+  }
+
+  /**
+   * Gets the set of Obligations whose resource alias set contain the given local variable, or an
+   * empty set if none exist. in {@code obligations}.
+   *
+   * @param obligations a set of Obligations
+   * @param node variable of interest
+   * @return the set of Obligations in {@code obligations} whose resource alias set contains {@code
+   *     node}, or an empty set if there is no such Obligation
+   */
+  /*package-private*/ static Set<Obligation> getObligationsForVar(
+      Set<Obligation> obligations, LocalVariableNode node) {
+    Set<Obligation> obligationsForVar = new HashSet<>();
+    for (Obligation obligation : obligations) {
+      if (obligation.canBeSatisfiedThrough(node)) {
+        obligationsForVar.add(obligation);
+      }
+    }
+    return obligationsForVar;
   }
 
   /**
