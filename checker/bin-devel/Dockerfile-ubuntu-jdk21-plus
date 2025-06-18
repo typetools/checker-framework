@@ -1,19 +1,10 @@
 # Create a Docker image that is ready to run the full Checker Framework tests,
 # including building the manual and Javadoc, using JDK 21.
-# (This is OpenJDK, not Oracle JDK.  There are different instructions for
-# installing a LTS release of Java.)
-# To convert this file to use a newer JDK, search (from the top level of the
-# Checker Framework and Annotation Tools repositories) for: (java|jdk).?21\b
 
 # "ubuntu" is the latest LTS release.  "ubuntu:rolling" is the latest release.
 # Both might lag behind; as of 2024-11-16, ubuntu:rolling was still 24.04 rather than 24.10.
-FROM ubuntu:24.10
-# See releases at https://hub.docker.com/_/ubuntu for available images.
-# See https://packages.ubuntu.com/search?suite=default&section=all&arch=any&keywords=openjdk-24-jdk&searchon=names
-# to see what Ubuntu versions support a particular OpenJDK version (for the given URL, JDK 24).
+FROM ubuntu
 LABEL org.opencontainers.image.authors="Michael Ernst <mernst@cs.washington.edu>"
-
-## Keep this file in sync with ../../docs/manual/troubleshooting.tex
 
 # According to
 # https://docs.docker.com/engine/userguide/eng-image/dockerfile_best-practices/:
@@ -53,11 +44,12 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   unzip \
   wget
 
-# Bug fix to make jtreg runnable: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=754942;msg=2
+
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt -qqy update \
 && apt -y install \
-  default-jre-headless
+  openjdk-21-jdk \
+&& update-java-alternatives -s java-1.21.0-openjdk-amd64
 
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt -qqy update \
