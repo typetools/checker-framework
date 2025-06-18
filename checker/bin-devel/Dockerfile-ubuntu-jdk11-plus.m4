@@ -1,7 +1,9 @@
 # Create a Docker image that is ready to run the full Checker Framework tests,
 # including building the manual and Javadoc, using JDK 11.
 
-define(`UBUNTUVERSION', ubuntu)
+# "ubuntu" is the latest LTS release.  "ubuntu:rolling" is the latest release.
+# Both might lag behind; as of 2024-11-16, ubuntu:rolling was still 24.04 rather than 24.10.
+FROM ubuntu
 include(`Dockerfile-ubuntu-base-contents.txt')
 
 RUN export DEBIAN_FRONTEND=noninteractive \
