@@ -63,7 +63,7 @@ class CollectionOwnershipDefaults {
   }
 
   /*
-   * Return type should default to @OwningCollection.
+   * Return type should default to @OwningCollection. Thus this is perfectly okay.
    */
   List<Socket> identity(@OwningCollection List<Socket> list) {
     return list;
@@ -78,6 +78,9 @@ class CollectionOwnershipDefaults {
   }
 
   void overrideReturnTypeClient() {
+    // the arraylist passed to the method is never closed. The ownership is not passed
+    // to overrideReturnType(), since parameters are @NotOwningCollection by default
+    // :: error: unfulfilled.collection.obligations
     List<Socket> notOwninglist = overrideReturnType(new ArrayList<Socket>());
     List<Socket> owninglist = identity(new ArrayList<Socket>());
 
@@ -91,8 +94,8 @@ class CollectionOwnershipDefaults {
    * to @OwningCollection). I.e. check that the resource collection parameter default is visible at call-site as well.
    */
   void checkResourceCollectionParameterDefault() {
-    @OwningCollection List<Socket> list = new ArrayList<Socket>();
-    identity(list);
+    List<Socket> list = new ArrayList<Socket>();
+    closeElements(identity(list));
   }
 
   /*
@@ -111,10 +114,10 @@ class CollectionOwnershipDefaults {
    * Checks that a newly allocated resource collection has type @OwningCollection.
    */
   void checkNewResourceCollectionDefault() {
-    // List<Socket> newResourceCollection = new ArrayList<Socket>();
-    // checkArgIsOwning(newResourceCollection);
-    // // :: error: argument
-    // checkArgIsOCwoO(newResourceCollection);
+    List<Socket> newResourceCollection = new ArrayList<Socket>();
+    checkArgIsOwning(newResourceCollection);
+    // :: error: argument
+    checkArgIsOCwoO(newResourceCollection);
 
     Socket[] newResourceArray = new Socket[n];
     checkArgIsOwning(newResourceArray);
@@ -122,9 +125,33 @@ class CollectionOwnershipDefaults {
     checkArgIsOCwoO(newResourceArray);
   }
 
+  // TODO remove once fulfillment works
+  // :: error: unfulfilled.collection.obligations
+  void closeElements(Socket @OwningCollection [] socketCollection) {
+    for (Socket s : socketCollection) {
+      try {
+        s.close();
+      } catch (Exception e) {
+      }
+    }
+  }
+
+  // TODO remove once fulfillment works
+  // :: error: unfulfilled.collection.obligations
+  void closeElements(@OwningCollection Collection<Socket> socketCollection) {
+    for (Socket s : socketCollection) {
+      try {
+        s.close();
+      } catch (Exception e) {
+      }
+    }
+  }
+
   void checkArgIsOwning(
+      // :: error: unfulfilled.collection.obligations
       @OwningCollection Collection<? extends @MustCallUnknown Object> collection) {}
 
+  // :: error: unfulfilled.collection.obligations
   void checkArgIsOwning(Socket @OwningCollection [] collection) {}
 
   void checkArgIsOCwoO(

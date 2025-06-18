@@ -35,6 +35,8 @@ class CollectionOwnershipBasicTyping {
   }
 
   void testAssignmentTransfersOwnership() {
+    // col is overwritten and its obligation never fulfilled or passed on
+    // :: error: unfulfilled.collection.obligations
     Collection<Socket> col = new ArrayList<>();
     Collection<Socket> col2 = new ArrayList<>();
     // col : @OwningCollection, col2 : @OwningCollection
@@ -45,20 +47,21 @@ class CollectionOwnershipBasicTyping {
     checkArgIsOwning(col);
     // :: error: argument
     checkArgIsOwning(col2);
-
-    closeElements(col);
   }
 
   /*
-   * Check that a resource collection constructed without explicit type argument also is of type @OwningCollection.
+   * Check that a resource collection constructed without explicit type argument is of type @OwningCollection
+   * as well.
    */
   void testDiamond() {
     Collection<Socket> col = new ArrayList<>();
-    // :: error: arg
+    // :: error: argument
     checkArgIsOCwoO(col);
     closeElements(col);
   }
 
+  // TODO remove once fulfillment works
+  // :: error: unfulfilled.collection.obligations
   void closeElements(@OwningCollection Collection<Socket> socketCollection) {
     for (Socket s : socketCollection) {
       try {
@@ -68,7 +71,10 @@ class CollectionOwnershipBasicTyping {
     }
   }
 
+  // these two methods take on unfulfillable obligations and thus throw an error
+
   void checkArgIsOwning(
+      // :: error: unfulfilled.collection.obligations
       @OwningCollection Collection<? extends @MustCallUnknown Object> collection) {}
 
   void checkArgIsOCwoO(
