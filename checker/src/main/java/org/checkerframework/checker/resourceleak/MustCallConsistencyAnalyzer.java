@@ -2493,10 +2493,13 @@ public class MustCallConsistencyAnalyzer {
       if (!reportedErrorAliases.contains(firstAlias)) {
         if (!checker.shouldSkipUses(TreeUtils.elementFromTree(firstAlias.tree))) {
           reportedErrorAliases.add(firstAlias);
+          String methodName = ((CollectionObligation) obligation).mustCallMethod;
           checker.reportError(
               firstAlias.tree,
               "unfulfilled.collection.obligations",
-              ((CollectionObligation) obligation).mustCallMethod,
+              methodName == CollectionOwnershipAnnotatedTypeFactory.UNKNOWN_METHOD_NAME
+                  ? "Unknown"
+                  : methodName,
               firstAlias.stringForErrorMessage(),
               outOfScopeReason);
         }

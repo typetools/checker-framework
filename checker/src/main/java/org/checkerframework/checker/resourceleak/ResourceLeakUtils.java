@@ -3,6 +3,7 @@ package org.checkerframework.checker.resourceleak;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
@@ -342,8 +343,13 @@ public class ResourceLeakUtils {
 
     AnnotationMirror manualAnno =
         AnnotationUtils.getAnnotationByClass(type.getAnnotationMirrors(), MustCall.class);
+    AnnotationMirror manualMcUnkownAnno =
+        AnnotationUtils.getAnnotationByClass(type.getAnnotationMirrors(), MustCallUnknown.class);
     if (manualAnno != null) {
       return getValuesInAnno(manualAnno, mcAtf.getMustCallValueElement());
+    }
+    if (manualMcUnkownAnno != null) {
+      return Collections.singletonList(CollectionOwnershipAnnotatedTypeFactory.UNKNOWN_METHOD_NAME);
     }
 
     TypeElement typeElement = TypesUtils.getTypeElement(type);
@@ -353,11 +359,16 @@ public class ResourceLeakUtils {
     AnnotationMirror imcAnnotation =
         mcAtf.getDeclAnnotation(typeElement, InheritableMustCall.class);
     AnnotationMirror mcAnnotation = mcAtf.getDeclAnnotation(typeElement, MustCall.class);
+    AnnotationMirror mcUnknownAnnotation =
+        mcAtf.getDeclAnnotation(typeElement, MustCallUnknown.class);
     if (mcAnnotation != null) {
       return getValuesInAnno(mcAnnotation, mcAtf.getMustCallValueElement());
     }
     if (imcAnnotation != null) {
       return getValuesInAnno(imcAnnotation, mcAtf.getInheritableMustCallValueElement());
+    }
+    if (mcUnknownAnnotation != null) {
+      return Collections.singletonList(CollectionOwnershipAnnotatedTypeFactory.UNKNOWN_METHOD_NAME);
     }
     return new ArrayList<>();
   }

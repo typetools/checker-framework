@@ -73,6 +73,12 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
   };
 
   /**
+   * The method name used for CollectionObligations that represent an obligation of MustCallUnkown.
+   * The digit in the first character ensures this cannot coincide with an actual method name.
+   */
+  public static final String UNKNOWN_METHOD_NAME = "1UNKNOWN";
+
+  /**
    * Creates a CollectionOwnershipAnnotatedTypeFactory.
    *
    * @param checker the checker associated with this type factory
