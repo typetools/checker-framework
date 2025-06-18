@@ -51,8 +51,16 @@
       <li><a href="#hint-about-annotated-library-methods">Indicate library methods that should be used instead</a></li>
       <li><a href="#eisop-features">EISOP features</a></li>
       <li><a href="#index-errors">Improving error messages</a></li>
-      <li><a href="#javaparser-to-javac-parse">Replace JavaParser by javac</a></li>
-      <li><a href="#java-expression-parser">Java expression parser</a></li>
+      <li><a href="#javaparser-to-javac-parse">Replace JavaParser by javac</a>
+        <ul>
+          <li><a href="#javaparser-ajava">Replace JavaParser for ajava files</a></li>
+          <li><a href="#javaparser-dependent-types">Replace JavaParser for dependent types</a>
+            <ul>
+              <li><a href="#javaparser-use-JavaExpression">Continue to use the JavaExpression class</a></li>
+              <li><a href="#java-expression-parser">Eliminate the JavaExpression class</a></li>
+            </ul></li>
+          <li><a href="#javaparser-stub">Replace JavaParser for stub files</a></li>
+        </ul></li>
       <li><a href="#dataflow">Dataflow enhancements</a></li>
       <li><a href="#SideEffectsOnly">More precise side effect annotations</a></li>
       <li><a href="#unrefinement-warnings">Better error messages that are due to side effects</a></li>
@@ -149,13 +157,11 @@
   both in theory and in Java.
 </p>
 
-
 <p>
 <b>Potential projects:</b>
 Most of this document lists potential projects.  The projects are
 grouped roughly from easiest to most challenging.
 </p>
-
 
 
 <h2 id="get-started">How to get started: do a case study</h2>
@@ -269,14 +275,12 @@ improvements you would like to make to the Checker Framework.
     fork of the library.
 </ol>
 
-
 <p>
 You can also try to fix problems that you find and submit a
 <a href="https://github.com/typetools/checker-framework/pulls">pull
   request</a>, but that is <em>not</em> a requirement to get started,
   because not all problems are good for new contributors.
 </p>
-
 
 
 <h2 id="ask-questions">How to get help and ask questions</h2>
@@ -407,7 +411,6 @@ One possible outcome is to identify
     type-checking of its clients, such as that
     in <a href="https://plse.cs.washington.edu/daikon/">Daikon</a>.
   </li>
-
   <li>
     The <a href="https://asm.ow2.io/">ASM library</a> is another popular
     bytecode manipulation library.  A client to annotate along with ASM is
@@ -630,7 +633,6 @@ in <a href="https://checkerframework.org/api/org/checkerframework/framework/type
   Framework.
 </p>
 
-
 <p>
 When type-checking a method call, the Checker Framework uses the method
 declaration's annotations.
@@ -780,7 +782,6 @@ annotation erased</a>.
 <p>
   We have some notes on possible implementation strategies.
 </p>
-
 
 
 <h2 id="nullness-queue">Nullness Checker precise handling of Queue.peek() and poll()</h2>
@@ -1262,8 +1263,6 @@ It would behave similarly for other library methods.
 </p>
 
 
-
-
 <h2 id="index-errors">Improving error messages</h2>
 
 <p>
@@ -1317,59 +1316,127 @@ some distinct challenges:
 
 <p>
 The Checker Framework uses JavaParser to parse Java code.  However,
-JavaParser is buggy and poorly maintained.  A better Java parser exists:
-the one in javac!  There are libraries that make javac's parser available,
-such as <a href="https://github.com/plume-lib/javac-parse">javac-parse</a>.
+JavaParser is buggy and poorly maintained.  Furthermore, JavaParser does
+not handle the latest version of Java.  As of this writing, because
+JavaParser cannot yet parse Java 24 files, users cannot run
+<a href="https://checkerframework.org/manual/#whole-program-inference">whole-program
+inference</a>, or
+write <a href="https://checkerframework.org/manual/#stub">stub files</a>,
+for projects that use Java 24 features.
 </p>
 
 <p>
-  The goal of this project is to replace every use of JavaParser by a use
-  of javac's parser.  Here are two examples; replacing each of them is a different project.
+A better Java parser exists:  the one in javac!  The goal of this project
+is to replace every use of JavaParser by a use of javac's parser.
 </p>
 
+<p>
+Here are three uses of JavaParser in the Checker Framework.  Replacing each of
+them is a different project.  The projects are listed from easiest to hardest.
+</p>
+
+
+<h3 id="javaparser-ajava">Replace JavaParser for ajava files</h3>
+
+<p>
+The Checker Framework
+uses <a href="https://checkerframework.org/manual/#ajava-files">ajava</a>
+files to specify types for unannotated libraries, notably in
+<a href="https://checkerframework.org/manual/#whole-program-inference">whole-program
+inference</a>.  Every <code>.ajava</code> file is a
+legal <code>.java</code> file, so it should be straightforward to use
+javac's parser instead of JavaParser to read ajava files and query their contents.
+</p>
+
+
+<h3 id="javaparser-dependent-types">Replace JavaParser for dependent types</h3>
+
+<p>
+Programmers can write 
+<a href="https://checkerframework.org/manual/#java-expressions-as-arguments">Java
+expressions</a> within annotations, such as in dependent types.  The
+Checker Framework currently uses JavaParser to parse these expressions.  We
+would rather use javac's parser instead.
+</p>
+
+<p>
+This project will resolve many of 
+<a href="https://github.com/typetools/checker-framework/issues?q=is%3Aopen+is%3Aissue+label%3AJavaExpressions">the
+issues that are labeled "JavaExpression".</a>
+</p>
+
+<p>
+Here are two different approaches to replace JavaParser for dependent
+types.
+</p>
+
+
+<h4 id="javaparser-use-JavaExpression">Continue to use the JavaExpression class</h4>
+
+<p>
+The Checker Framework parses a Java expression string written by a
+programmer into a 
+<a href="https://checkerframework.org/api/org/checkerframework/dataflow/expression/JavaExpression.html"><code>JavaExpression</code></a>.
+</p>
+
+<p>
+This parsing happens in  class
+<a href="https://checkerframework.org/api/org/checkerframework/framework/util/JavaExpressionParseUtil.html"><code>JavaExpressionParseUtil</code></a>,
+in
+method <a href="https://checkerframework.org/api/org/checkerframework/framework/util/JavaExpressionParseUtil.html#parse(java.lang.String,javax.lang.model.type.TypeMirror,org.checkerframework.dataflow.expression.ThisReference,java.util.List,com.sun.source.util.TreePath,com.sun.source.util.TreePath,javax.annotation.processing.ProcessingEnvironment)"><code>parse()</code></a>.
+You will change the implementation, but not the API (the interface),
+of <code>JavaExpressionParseUtil</code>.  You will change the line
+</p>
+
+<pre>{@code
+  expr = JavaParserUtil.parseExpression(expressionWithParameterNames, currentSourceVersion);
+}</pre>
+
+<p>
+to call the javac parser instead (currently, <code>expr</code> is a
+JavaParser datatype), and you will rewrite the
+<code>ExpressionToJavaExpressionVisitor</code> nested class so that it
+converts a javac parse tree in to a <code>JavaExpression</code>.
+</p>
+
+<p>
+Note that <code>JavaExpressionParseUtil</code> is also used by class 
+<a href="https://checkerframework.org/api/org/checkerframework/framework/util/StringToJavaExpression.html"><code>StringToJavaExpression</code></a>.
+</p>
+
+
+<h4 id="java-expression-parser">Eliminate the JavaExpression class</h4>
+
+<p>
+The approach in "Continue to use the JavaExpression class" (just above) has
+these steps: (1) parse a string into a javac tree, (2) convert the javac
+tree into a
+<a href="https://checkerframework.org/api/org/checkerframework/dataflow/expression/JavaExpression.html"><code>JavaExpression</code></a>,
+and (3) use the <code>JavaExpression</code> throughout the Checker
+Framework codebase.
+</p>
+
+<p>
+Is the <code>JavaExpression</code> class needed?  Would it be possible to
+skip the transformation from a javac tree into
+a <code>JavaExpression</code>, and instead have the Checker Framework
+codebase use a javac tree instead?
+</p>
+
+<p>
+  Here is a possible roadmap for this project:
+</p>
 <ul>
   <li>
-    Parsing of
-    <a href="https://checkerframework.org/manual/#java-expressions-as-arguments">a
-      Java expressions</a> used in annotations, such as in dependent types.
+    <code>JavaExpression</code> contains some methods that a standard AST,
+    like javac's, lacks; an example
+    is <code>isUnassignableByOtherCode</code>.  Refactor these methods from
+    instance methods of <code>JavaExpression</code> into static methods
+    in <code>JavaExpressions</code>, making <code>JavaExpression</code>
+    more like a standard AST that can be replaced by JavaParser classes.
+    You also need to decide how to store the <code>type</code> field
+    of <code>JavaExpression</code>, when <code>JavaExpression</code> is eliminated.
   </li>
-  <li>
-    Parsing
-    of <a href="https://checkerframework.org/manual/#ajava-files">ajava</a>
-    files.  Because JavaParser cannot yet parse Java 24 files, it is
-    impossible to run
-    <a href="https://checkerframework.org/manual/#whole-program-inference">whole-program
-    inference</a> on programs that use Java 24 features.
-  </li>
-  <li>
-    Parsing of <a href="https://checkerframework.org/manual/#stub">stub
-      files</a>.  Because JavaParser cannot yet parse Java 24 files, it is
-      not yet possible for users to write Java 24 code in method bodies
-      within stub files.  This is an inconvenience.
-  </li>
-</ul>
-
-
-<h2 id="java-expression-parser">Java expression parser</h2>
-
-<p>
-A number of type annotations take, as an
-argument, <a href="https://checkerframework.org/manual/#java-expressions-as-arguments">a
-Java expression</a>.  The representation for these is as a <a href="https://checkerframework.org/api/org/checkerframework/dataflow/expression/JavaExpression.html"><code>JavaExpression</code></a>.  The goal of this
-project is to remove it.
-</p>
-
-<p>
-The <code>JavaExpression</code> class
-represents an AST.  There is no need for the Checker Framework to
-define its own AST when the javac AST already exists and is
-maintained.
-</p>
-
-<p>
-  The goals for the project include:
-</p>
-<ul>
   <li>
     Replace every use
     of <a href="https://checkerframework.org/api/org/checkerframework/dataflow/expression/JavaExpression.html"><code>JavaExpression</code></a>
@@ -1388,30 +1455,37 @@ maintained.
   </li>
   <li>
     Replace the <a href="https://checkerframework.org/api/org/checkerframework/framework/util/JavaExpressionParseUtil.html"><code>JavaExpressionParseUtil</code></a>
-    class and delete <code>ExpressionToReceiverVisitor</code>.
+    class and delete <code>ExpressionToJavaExpressionVisitor</code>.
+    The deletion of 1000 lines of code
+    in <code>ExpressionToJavaExpressionVisitor</code> is an advantage of
+    this approach.
   </li>
 </ul>
 
+
+<h3 id="javaparser-stub">Replace JavaParser for stub files</h3>
+
 <p>
-Direct replacement of the classes is not possible, or we would have done it
-already.  For example, <code>JavaExpression</code> contains some methods that
-javac lacks, such as <code>isUnassignableByOtherCode</code>.  As a
-first step before doing the tasks listed above, you may want to convert
-these methods from instance methods of <code>JavaExpression</code> into static
-methods in <code>JavaExpressions</code>, making <code>JavaExpression</code> more
-like a standard AST that can be replaced by JavaParser classes.
-You also need to decide how to store the <code>type</code> field
-of <code>JavaExpression</code>, when <code>JavaExpression</code> is eliminated.
-An
-alternate design (or a partial step in the refactoring process) would be to
-retain the <code>JavaExpression</code> class, but make it a thin wrapper around
-javac classes that do most of the real work.
+<a href="https://checkerframework.org/manual/#stub">Stub files</a>, like
+ajava files, specify types for unannotated libraries.  A challenge is that
+a stub file is not necessarily a legal Java file.  A stub file looks like
+the concatenation of multiple Java files (for example, it can have
+multiple <code>package</code> declarations).  Furthermore, it is allowed to
+omit method bodies, replacing the body by ";".
 </p>
 
 <p>
-Another aspect of this project is
-fixing <a href="https://github.com/typetools/checker-framework/issues?q=is%3Aopen+is%3Aissue+label%3AJavaExpressions">the
-    issues that are labeled "JavaExpression".</a>
+Currently, the Checker Framework uses a modified version of JavaParser,
+called <a href="https://central.sonatype.com/artifact/org.checkerframework/stubparser/versions">StubParser</a>
+or <a href="https://checkerframework.org/api/org/checkerframework/framework/stub/AnnotationFileParser.html">AnnotationFileParser</a>.
+The modified version can parse stub files.
+</p>
+
+<p>
+Using javac to parse stub files would likewise require some modifications
+or wrappers.  One possibility would be to (1) split a stub file into many
+small files, (2) make those files legal Java (or at least parsable), and
+(3) parse those files.  There may be other implementation strategies as well.
 </p>
 
 
@@ -1467,7 +1541,6 @@ example, a simple example is the following, which triggers a false positive
 in
 the <a href="https://checkerframework.org/manual/#resource-leak-checker">Resource
 Leak Checker (RLC)</a>:
-
 
 <pre>
 @EnsuresCalledMethods(value={“this.f1”, “this.f2”}, methods={“close”})
@@ -1531,8 +1604,6 @@ caused by:
 </pre>
   </li>
 </ol>
-
-
 
 <!-- For more details, see email thread "Some thoughts on purity", April 2025. -->
 
@@ -1625,6 +1696,7 @@ This section is relevant only to Google Summer of Code Students.
       the GSoC submission system.  Don't use a title like "Checker
       Proposal" or "Proposal for GSoC".  Don't distract from content with
       gratuitous graphics.
+    </p>
 
     <p>List the tasks or subparts that are required to complete your
     project.  This will help you discover a part that you had forgotten.
@@ -1635,6 +1707,7 @@ This section is relevant only to Google Summer of Code Students.
     <p>
     If you want to do a
     case study, say what program you will do your case study on.
+    </p>
 
     <p>If you want to create a new type system (whether one proposed on
     this webpage or one of your own devising), then your proposal should include
@@ -1644,6 +1717,7 @@ This section is relevant only to Google Summer of Code Students.
     your proposed checker's <a href="https://checkerframework.org/manual/#creating-parts-of-a-checker">parts</a>
     in precise English or simple formalisms, and you should follow the
     suggested <a href="https://checkerframework.org/manual/#creating-documenting-a-checker">structure</a>.
+    </p>
 
     <p>
     If you want to do exactly what is already listed on this page, then
@@ -1794,7 +1868,7 @@ thought about the problem nor tried to solve it.
  -->
 <!--  LocalWords:  BigInteger lockB lockA signedness microbenchmarks pre '
  -->
-<!--  LocalWords:  checklink subparts UnsignedBytes runtime MyClass jOOU
+<!--  LocalWords:  checklink subparts UnsignedBytes runtime MyClass jOOU '
  -->
 <!--  LocalWords:  usePriorityQueue PriorityQueue queueMinPathNode didn f1
  -->
@@ -1810,7 +1884,11 @@ thought about the problem nor tried to solve it.
  -->
 <!--  LocalWords:  fqBinaryName ClassGetName componentType substring ajava
  -->
-<!--  LocalWords:  indexOf getArrayElementType unrefine unrefines
+<!--  LocalWords:  indexOf getArrayElementType unrefine unrefines expr RLC
  -->
-<!--  LocalWords:  unrefinement
+<!--  LocalWords:  unrefinement JavaParserUtil parseExpression StubParser
+ -->
+<!--  LocalWords:  expressionWithParameterNames currentSourceVersion
+ -->
+<!--  LocalWords:  AnnotationFileParser EnsuresCalledMethods CalledMethods
  -->
