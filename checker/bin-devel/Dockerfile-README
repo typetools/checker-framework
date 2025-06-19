@@ -54,14 +54,17 @@ function create_upload_docker_image {
   \cp -pf ../Dockerfile-$OS-$JDKVER Dockerfile && \
   docker build -t $DOCKERIMAGE . && \
   docker push $DOCKERIMAGE && \
+  cd .. &&
   rm -rf $DOCKERDIR && \
   echo "***** Success in $DOCKERIMAGE *****") || \
   (echo "*****"; echo "*****"; echo "FAILURE in $DOCKERIMAGE"; echo "*****"; echo "*****"; exit 1)
 }
 
 
-create_upload_docker_image cf ubuntu jdkbase & \
-create_upload_docker_image cf ubunturolling jdkbase & \
+(create_upload_docker_image cf ubuntu jdkbase && \
+create_upload_docker_image cf ubuntu jdkplus) & \
+(create_upload_docker_image cf ubunturolling jdkbase && \
+create_upload_docker_image cf ubunturolling jdkplus) & \
 wait && \
 (create_upload_docker_image cf ubuntu jdk11 && \
 create_upload_docker_image cf ubuntu jdk11-plus) & \

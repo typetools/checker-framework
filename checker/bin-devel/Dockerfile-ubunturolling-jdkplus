@@ -1,9 +1,8 @@
-# Create a Docker image that is ready to run the full Checker Framework tests,
-# including building the manual and Javadoc, using JDK 21.
+# This Dockerfile creates a layer that later Dockerfiles can use.
 
 # "ubuntu" is the latest LTS release.  "ubuntu:rolling" is the latest release.
 # Both might lag behind; as of 2024-11-16, ubuntu:rolling was still 24.04 rather than 24.10.
-FROM ubuntu
+FROM ubuntu:rolling
 LABEL org.opencontainers.image.authors="Michael Ernst <mernst@cs.washington.edu>"
 
 # According to
@@ -82,14 +81,3 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 && PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install html5validator \
 && PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install ruff
 
-
-RUN export DEBIAN_FRONTEND=noninteractive \
-&& apt -qqy update \
-&& apt -y install \
-  openjdk-21-jdk \
-&& update-java-alternatives -s java-1.21.0-openjdk-amd64
-
-RUN export DEBIAN_FRONTEND=noninteractive \
-&& apt autoremove \
-&& apt clean \
-&& rm -rf /var/lib/apt/lists/*

@@ -4,3 +4,5 @@
 # Both might lag behind; as of 2024-11-16, ubuntu:rolling was still 24.04 rather than 24.10.
 FROM ubuntu:rolling
 include(`Dockerfile-contents-ubuntu-base.txt')
+
+include(`Dockerfile-contents-ubuntu-plus.txt')
