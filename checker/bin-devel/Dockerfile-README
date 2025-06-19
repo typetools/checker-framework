@@ -41,32 +41,52 @@ function create_upload_docker_image {
   DPROJECT=$1
   OS=$2
   JDKVER=$3
-  DOCKERIMAGE="mdernst/$DPROJECT-$OS-$JDKVER$DOCKERTESTING"
+  IMAGENAME=$DPROJECT-$OS-$JDKVER$DOCKERTESTING
+  DOCKERIMAGE="mdernst/$IMAGENAME"
   if [ -n "$INSIDE_EMACS" ]; then
     echo "Do not run within Emacs"
     return 1
   fi
-  (rm -rf dockerdir && \
-  mkdir -p dockerdir && \
-  cd dockerdir && \
+  DOCKERDIR=dockerdir-$IMAGENAME
+  (rm -rf $DOCKERDIR && \
+  mkdir -p $DOCKERDIR && \
+  cd $DOCKERDIR && \
   \cp -pf ../Dockerfile-$OS-$JDKVER Dockerfile && \
   docker build -t $DOCKERIMAGE . && \
   docker push $DOCKERIMAGE && \
-  rm -rf dockerdir) || \
+  rm -rf $DOCKERDIR && \
+  echo "***** Success in $DOCKERIMAGE *****") || \
   (echo "*****"; echo "*****"; echo "FAILURE in $DOCKERIMAGE"; echo "*****"; echo "*****"; exit 1)
 }
 
 
-create_upload_docker_image cf ubuntu jdk11 && \
-create_upload_docker_image cf ubuntu jdk11-plus && \
-create_upload_docker_image cf ubuntu jdk17 && \
-create_upload_docker_image cf ubuntu jdk17-plus && \
-create_upload_docker_image cf ubuntu jdk21 && \
-create_upload_docker_image cf ubuntu jdk21-plus && \
-create_upload_docker_image cf ubuntu jdk24 && \
-create_upload_docker_image cf ubuntu jdk24-plus && \
+create_upload_docker_image cf ubuntu jdkbase & \
+create_upload_docker_image cf ubunturolling jdkbase & \
+wait && \
+(create_upload_docker_image cf ubuntu jdk11 && \
+create_upload_docker_image cf ubuntu jdk11-plus) & \
+(create_upload_docker_image cf ubuntu jdk17 && \
+create_upload_docker_image cf ubuntu jdk17-plus) & \
+(create_upload_docker_image cf ubuntu jdk21 && \
+create_upload_docker_image cf ubuntu jdk21-plus) & \
+(create_upload_docker_image cf ubuntu jdk24 && \
+create_upload_docker_image cf ubuntu jdk24-plus) & \
+wait && \
 git push && \
 echo "success"
+
+# Alternately, to run sequentially, which makes error messages easier to see:
+(create_upload_docker_image cf ubuntu jdk11 && \
+create_upload_docker_image cf ubuntu jdk11-plus) && \
+(create_upload_docker_image cf ubuntu jdk17 && \
+create_upload_docker_image cf ubuntu jdk17-plus) && \
+(create_upload_docker_image cf ubuntu jdk21 && \
+create_upload_docker_image cf ubuntu jdk21-plus) && \
+(create_upload_docker_image cf ubuntu jdk24 && \
+create_upload_docker_image cf ubuntu jdk24-plus) && \
+git push && \
+echo "success"
+
 
 
 Note: when updating to a newer version of the JDK, it is necessary to
