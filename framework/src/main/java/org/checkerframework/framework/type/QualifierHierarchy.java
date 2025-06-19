@@ -779,6 +779,10 @@ public abstract class QualifierHierarchy {
    * @param c2 the second collection
    * @param result the result collection
    */
+  // these parameters could accept any resource collection. By default, they are not owning, which
+  // means they don't have an obligation for calling methods on their elements, but that also means
+  // that they cannot be passed as argument to a paramter expecting bottom. This is harmless however.
+  @SuppressWarnings("collectionownership:argument") 
   public static void assertSameSize(
       @MustCallUnknown Collection<? extends @MustCallUnknown Object> c1,
       @MustCallUnknown Collection<? extends @MustCallUnknown Object> c2,
