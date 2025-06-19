@@ -1317,12 +1317,13 @@ some distinct challenges:
 <p>
 The Checker Framework uses JavaParser to parse Java code.  However,
 JavaParser is buggy and poorly maintained.  Furthermore, JavaParser does
-not handle the latest version of Java.  As of this writing, because
-JavaParser cannot yet parse Java 24 files, users cannot run
-<a href="https://checkerframework.org/manual/#whole-program-inference">whole-program
+not handle the latest version of Java.  As of this writing, Checker
+Framework users cannot
+run <a href="https://checkerframework.org/manual/#whole-program-inference">whole-program
 inference</a>, or
 write <a href="https://checkerframework.org/manual/#stub">stub files</a>,
-for projects that use Java 24 features.
+for projects that use Java 24 features &mdash; because JavaParser cannot
+yet parse Java 24 files.
 </p>
 
 <p>
@@ -1352,7 +1353,7 @@ javac's parser instead of JavaParser to read ajava files and query their content
 <h3 id="javaparser-dependent-types">Replace JavaParser for dependent types</h3>
 
 <p>
-Programmers can write 
+Programmers can write
 <a href="https://checkerframework.org/manual/#java-expressions-as-arguments">Java
 expressions</a> within annotations, such as in dependent types.  The
 Checker Framework currently uses JavaParser to parse these expressions.  We
@@ -1360,7 +1361,7 @@ would rather use javac's parser instead.
 </p>
 
 <p>
-This project will resolve many of 
+This project may resolve some of
 <a href="https://github.com/typetools/checker-framework/issues?q=is%3Aopen+is%3Aissue+label%3AJavaExpressions">the
 issues that are labeled "JavaExpression".</a>
 </p>
@@ -1375,7 +1376,7 @@ types.
 
 <p>
 The Checker Framework parses a Java expression string written by a
-programmer into a 
+programmer into a
 <a href="https://checkerframework.org/api/org/checkerframework/dataflow/expression/JavaExpression.html"><code>JavaExpression</code></a>.
 </p>
 
@@ -1388,19 +1389,19 @@ You will change the implementation, but not the API (the interface),
 of <code>JavaExpressionParseUtil</code>.  You will change the line
 </p>
 
-<pre>{@code
+<pre>
   expr = JavaParserUtil.parseExpression(expressionWithParameterNames, currentSourceVersion);
-}</pre>
+</pre>
 
 <p>
 to call the javac parser instead (currently, <code>expr</code> is a
 JavaParser datatype), and you will rewrite the
 <code>ExpressionToJavaExpressionVisitor</code> nested class so that it
-converts a javac parse tree in to a <code>JavaExpression</code>.
+converts a javac parse tree into a <code>JavaExpression</code>.
 </p>
 
 <p>
-Note that <code>JavaExpressionParseUtil</code> is also used by class 
+Note that <code>JavaExpressionParseUtil</code> is also used by class
 <a href="https://checkerframework.org/api/org/checkerframework/framework/util/StringToJavaExpression.html"><code>StringToJavaExpression</code></a>.
 </p>
 
@@ -1424,9 +1425,9 @@ codebase use a javac tree instead?
 </p>
 
 <p>
-  Here is a possible roadmap for this project:
+Here is a possible sequence of steps for this project:
 </p>
-<ul>
+<ol>
   <li>
     <code>JavaExpression</code> contains some methods that a standard AST,
     like javac's, lacks; an example
@@ -1434,16 +1435,17 @@ codebase use a javac tree instead?
     instance methods of <code>JavaExpression</code> into static methods
     in <code>JavaExpressions</code>, making <code>JavaExpression</code>
     more like a standard AST that can be replaced by JavaParser classes.
-    You also need to decide how to store the <code>type</code> field
-    of <code>JavaExpression</code>, when <code>JavaExpression</code> is eliminated.
+    This change can be pull-requested on its own.
   </li>
   <li>
     Replace every use
     of <a href="https://checkerframework.org/api/org/checkerframework/dataflow/expression/JavaExpression.html"><code>JavaExpression</code></a>
     by a use of the javac class
     class <a href="https://www.javadoc.io/static/org.kohsuke.sorcerer/sorcerer-javac/0.11/com/sun/tools/javac/tree/JCTree.JCExpression.html"><code>com.sun.tools.javac.tree.JCTree.JCExpression.html</code></a>.
-  </li>
-  <li>
+    You also need to decide how to store the <code>type</code> field
+    of <code>JavaExpression</code>, when <code>JavaExpression</code> is eliminated.
+
+    <p>
     Replace every use of a subclass of <code>JavaExpression</code> (listed in the
     "Direct Known Subclasses" section of
     the <a href="https://checkerframework.org/api/org/checkerframework/dataflow/expression/JavaExpression.html"><code>JavaExpression</code>
@@ -1452,15 +1454,15 @@ codebase use a javac tree instead?
     of <code>JCTree.JCExpression.html</code></a>.
     For example, replace every use
     of <a href="https://checkerframework.org/api/org/checkerframework/dataflow/expression/MethodCall.html"><code>MethodCall</code></a> by <a href="https://www.javadoc.io/static/org.kohsuke.sorcerer/sorcerer-javac/0.11/com/sun/tools/javac/tree/JCTree.JCMethodInvocation.html"><code>JCTree.JCMethodInvocation</code></a>.
+    </p>
   </li>
   <li>
-    Replace the <a href="https://checkerframework.org/api/org/checkerframework/framework/util/JavaExpressionParseUtil.html"><code>JavaExpressionParseUtil</code></a>
-    class and delete <code>ExpressionToJavaExpressionVisitor</code>.
-    The deletion of 1000 lines of code
-    in <code>ExpressionToJavaExpressionVisitor</code> is an advantage of
-    this approach.
+    Delete most or all of
+    the <a href="https://checkerframework.org/api/org/checkerframework/framework/util/JavaExpressionParseUtil.html"><code>JavaExpressionParseUtil</code></a>
+    class; <code>ExpressionToJavaExpressionVisitor</code> will definitely
+    be deleted.  The deletion of code is an advantage of this approach.
   </li>
-</ul>
+</ol>
 
 
 <h3 id="javaparser-stub">Replace JavaParser for stub files</h3>
@@ -1470,7 +1472,7 @@ codebase use a javac tree instead?
 ajava files, specify types for unannotated libraries.  A challenge is that
 a stub file is not necessarily a legal Java file.  A stub file looks like
 the concatenation of multiple Java files (for example, it can have
-multiple <code>package</code> declarations).  Furthermore, it is allowed to
+multiple <code>package</code> declarations).  Furthermore, a stub file may
 omit method bodies, replacing the body by ";".
 </p>
 
