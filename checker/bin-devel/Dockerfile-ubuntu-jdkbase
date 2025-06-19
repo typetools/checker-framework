@@ -1,6 +1,8 @@
 # This Dockerfile creates a layer that later Dockerfiles can use.
 
-
+# "ubuntu" is the latest LTS release.  "ubuntu:rolling" is the latest release.
+# Both might lag behind; as of 2024-11-16, ubuntu:rolling was still 24.04 rather than 24.10.
+FROM ubuntu
 LABEL org.opencontainers.image.authors="Michael Ernst <mernst@cs.washington.edu>"
 
 # According to
