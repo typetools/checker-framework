@@ -54,6 +54,7 @@ function create_upload_docker_image {
   \cp -pf ../Dockerfile-$OS-$JDKVER Dockerfile && \
   docker build -t $DOCKERIMAGE . && \
   docker push $DOCKERIMAGE && \
+  cd .. &&
   rm -rf $DOCKERDIR && \
   echo "***** Success in $DOCKERIMAGE *****") || \
   (echo "*****"; echo "*****"; echo "FAILURE in $DOCKERIMAGE"; echo "*****"; echo "*****"; exit 1)
