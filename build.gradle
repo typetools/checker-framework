@@ -1174,8 +1174,9 @@ final sharedPublicationConfiguration(publication) {
   }
 }
 tasks.register('printJavaVersion') {
+  description = "Prints the Java version used to run Gradle."
   doLast {
-    println "Java version: ${System.getProperty('java.version')}"
+    println "Java version used to run Gradle: ${System.getProperty('java.version')}"
     def currentJvm = org.gradle.internal.jvm.Jvm.current()
     println currentJvm
   }
