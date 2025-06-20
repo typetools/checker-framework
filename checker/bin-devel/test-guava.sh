@@ -6,15 +6,17 @@ set -o xtrace
 export SHELLOPTS
 echo "SHELLOPTS=${SHELLOPTS}"
 
-SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" > /dev/null 2>&1 && pwd)"
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
+# Test that the CF, when built with JDK 21, works on other JDKs.
 export ORG_GRADLE_PROJECT_useJdk21Compiler=true
-source "$SCRIPTDIR"/clone-related.sh
+source "$SCRIPT_DIR"/clone-related.sh
+
 ./gradlew assembleForJavac --console=plain -Dorg.gradle.internal.http.socketTimeout=60000 -Dorg.gradle.internal.http.connectionTimeout=60000
 
 # TODO: Maybe I should move this into the CI job, and do it for all CI jobs.
-cp "$SCRIPTDIR"/mvn-settings.xml ~/settings.xml
+cp "$SCRIPT_DIR"/mvn-settings.xml ~/settings.xml
 
-"$SCRIPTDIR/.git-scripts/git-clone-related" typetools guava
+"$SCRIPT_DIR/.git-scripts/git-clone-related" typetools guava
 cd ../guava
 
 if [ "$TRAVIS" = "true" ]; then
