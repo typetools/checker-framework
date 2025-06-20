@@ -2309,7 +2309,7 @@ public class MustCallConsistencyAnalyzer {
             exceptionType == null ? MethodExitKind.NORMAL_RETURN : MethodExitKind.EXCEPTIONAL_EXIT;
         if (obligation.whenToEnforce.contains(exitKind)) {
           checkMustCall(obligation, cmStore, mcStore, exitReasonForErrorMessage);
-        } else if (exitKind.equals(MethodExitKind.NORMAL_RETURN)) {
+        } else if (exitKind == MethodExitKind.NORMAL_RETURN) {
           // check normal returns where return type is @NotOwningCollection.
           UnderlyingAST underlyingAST = cfg.getUnderlyingAST();
           if (underlyingAST instanceof UnderlyingAST.CFGMethod) {
