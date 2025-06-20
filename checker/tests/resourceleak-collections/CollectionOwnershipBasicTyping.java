@@ -53,6 +53,16 @@ class CollectionOwnershipBasicTyping {
     return list;
   }
 
+  // check that unrefinement in assignments is allowed.
+  void checkUnrefinement() {
+    List<Socket> list = new ArrayList<>();
+    List<Socket> newOwner = list;
+    // newOwner : @OwningCollection, list: @NotOwningCollection
+    list = newOwner;
+    // newOwner = @NotOwningCollection, list: @OwningCollection
+    closeElements(list);
+  }
+
   void testAssignmentTransfersOwnership() {
     // col is overwritten and its obligation never fulfilled or passed on
     // :: error: unfulfilled.collection.obligations
