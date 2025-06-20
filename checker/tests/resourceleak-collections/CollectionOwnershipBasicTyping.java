@@ -34,6 +34,25 @@ class CollectionOwnershipBasicTyping {
     return list;
   }
 
+  // this return looks harmless. However, it returns a collection, but not its ownership.
+  // Since no obligation will be created at call-site (it expects a non-owning collection),
+  // this method must ensure the returned collection has no obligations, which it fails to
+  // do in this case.
+  @NotOwningCollection
+  Collection<Socket> checkIllegalNotOwningReturn() {
+    // :: error: unfulfilled.collection.obligations
+    return new ArrayList<>();
+  }
+
+  // this is the correct version of above. It passes ownership to another method first,
+  // and then returns the non-owning reference.
+  @NotOwningCollection
+  Collection<Socket> checkLegalNotOwningReturn() {
+    List<Socket> list = new ArrayList<>();
+    closeElements(list);
+    return list;
+  }
+
   void testAssignmentTransfersOwnership() {
     // col is overwritten and its obligation never fulfilled or passed on
     // :: error: unfulfilled.collection.obligations
