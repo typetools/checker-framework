@@ -24,6 +24,7 @@ import com.github.javaparser.ast.expr.ThisExpr;
 import com.github.javaparser.ast.expr.UnaryExpr;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.visitor.GenericVisitorWithDefaults;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol;
@@ -166,7 +167,11 @@ public class JavaExpressionParseUtil {
         StringsPlume.replaceAll(expression, FORMAL_PARAMETER, PARAMETER_REPLACEMENT);
     Expression expr;
     try {
-      expr = JavaParserUtil.parseExpression(expressionWithParameterNames, currentSourceVersion);
+      ExpressionTree expTree = JavacParseUtil.parseExpression(expressionWithParameterNames);
+      // System.out.println(expTree);
+      // expr = JavaParserUtil.parseExpression(expressionWithParameterNames,
+      // currentSourceVersion);//change to javac parser
+      expr = JavaParserUtil.parseExpression(expTree.toString(), currentSourceVersion);
     } catch (ParseProblemException e) {
       String extra = ".";
       if (!e.getProblems().isEmpty()) {
