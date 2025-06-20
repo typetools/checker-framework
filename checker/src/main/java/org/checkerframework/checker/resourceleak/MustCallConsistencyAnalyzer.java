@@ -2120,6 +2120,7 @@ public class MustCallConsistencyAnalyzer {
       }
 
       propagateObligationsToSuccessorBlock(
+          cfg,
           obligations,
           currentBlock,
           successorAndExceptionType.first,
@@ -2133,6 +2134,7 @@ public class MustCallConsistencyAnalyzer {
    * Helper for {@link #propagateObligationsToSuccessorBlocks(ControlFlowGraph, Set, Block, Set,
    * Deque)} that propagates obligations along a single edge.
    *
+   * @param cfg the control flow graph
    * @param obligations the Obligations for the current block
    * @param currentBlock the current block
    * @param successor a successor of the current block
@@ -2143,6 +2145,7 @@ public class MustCallConsistencyAnalyzer {
    * @param worklist current worklist
    */
   private void propagateObligationsToSuccessorBlock(
+      ControlFlowGraph cfg,
       Set<Obligation> obligations,
       Block currentBlock,
       Block successor,
@@ -2306,6 +2309,20 @@ public class MustCallConsistencyAnalyzer {
             exceptionType == null ? MethodExitKind.NORMAL_RETURN : MethodExitKind.EXCEPTIONAL_EXIT;
         if (obligation.whenToEnforce.contains(exitKind)) {
           checkMustCall(obligation, cmStore, mcStore, exitReasonForErrorMessage);
+        } else if (exitKind.equals(MethodExitKind.NORMAL_RETURN)) {
+          // check normal returns where return type is @NotOwningCollection.
+          UnderlyingAST underlyingAST = cfg.getUnderlyingAST();
+          if (underlyingAST instanceof UnderlyingAST.CFGMethod) {
+            MethodTree method = ((UnderlyingAST.CFGMethod) underlyingAST).getMethod();
+            ExecutableElement executableElement = TreeUtils.elementFromDeclaration(method);
+            boolean returnTypeHasManualNocAnno =
+                coAtf.getCoType(
+                        new HashSet<>(executableElement.getReturnType().getAnnotationMirrors()))
+                    == CollectionOwnershipType.NotOwningCollection;
+            if (returnTypeHasManualNocAnno) {
+              checkMustCall(obligation, cmStore, mcStore, exitReasonForErrorMessage);
+            }
+          }
         }
       } else {
         // In this case, there is info in the successor store about some alias in the
