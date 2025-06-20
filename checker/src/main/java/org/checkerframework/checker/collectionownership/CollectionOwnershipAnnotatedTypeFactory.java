@@ -64,11 +64,21 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
    */
   public final AnnotationMirror BOTTOM;
 
+  /**
+   * Enum for the types in the hierarchy. Combined with a few utility methods to get the right enum
+   * value from various sources, this is a convenient interface to deal with annotations in this
+   * hierarchy.
+   */
   public enum CollectionOwnershipType {
+    /** the @NotOwningCollection type */
     NotOwningCollection,
+    /** the @OwningCollection type */
     OwningCollection,
+    /** the @OwningCollectionWithoutObligation type */
     OwningCollectionWithoutObligation,
+    /** the @OwningCollectionBottom type */
     OwningCollectionBottom,
+    /** if no type in the hierarchy can be determined with certainty */
     None
   };
 
@@ -205,10 +215,24 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
     }
   }
 
+  /**
+   * Utility method to get the {@code CollectionOwnershipType} that the given value extracted from a
+   * store has.
+   *
+   * @param val the store value type
+   * @return the {@code CollectionOwnershipType} that the given value extracted from a store has
+   */
   public CollectionOwnershipType getCoType(CFValue val) {
     return val == null ? CollectionOwnershipType.None : getCoType(val.getAnnotations());
   }
 
+  /**
+   * Utility method to extract the {@code CollectionOwnershipType} from a collection of {@code
+   * AnnotationMirror}s.
+   *
+   * @param annos the {@code AnnotationMirror} collection
+   * @return the extracted {@code CollectionOwnershipType} from annos
+   */
   public CollectionOwnershipType getCoType(Collection<AnnotationMirror> annos) {
     if (annos == null) {
       return CollectionOwnershipType.None;

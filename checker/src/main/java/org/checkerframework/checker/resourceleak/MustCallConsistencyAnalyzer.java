@@ -271,6 +271,7 @@ public class MustCallConsistencyAnalyzer {
      * right (sub)class.
      *
      * @param resourceAliases set of resource aliases for the new obligation
+     * @param whenToEnforce when this Obligation should be enforced
      * @return a new Obligation with the passed traits
      */
     public Obligation getReplacement(
@@ -493,14 +494,16 @@ public class MustCallConsistencyAnalyzer {
     }
   }
 
-  /** Obligation for a collection. To be fulfilled on its elements. */
+  /** Obligation for calling a certain method on all elements of a collection. */
   static class CollectionObligation extends Obligation {
 
+    /** The method that must be called on all elements of the collection. */
     public String mustCallMethod;
 
     /**
      * Create a CollectionObligation from a set of resource aliases.
      *
+     * @param mustCallMethod the method to be called on all elements of the collection.
      * @param resourceAliases a set of resource aliases
      * @param whenToEnforce when this Obligation should be enforced
      */
@@ -733,7 +736,7 @@ public class MustCallConsistencyAnalyzer {
    * Adds {@code CollectionObligation}s if the return type is {@code @OwningCollection}.
    *
    * @param obligations the set of tracked obligations
-   * @node the node the check
+   * @param node the node of the return expression
    */
   private void addObligationsForOwningCollectionReturn(Set<Obligation> obligations, Node node) {
     LocalVariableNode tmpVar = cmAtf.getTempVarForNode(node);
