@@ -2,7 +2,6 @@ package org.checkerframework.checker.resourceleak;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
@@ -288,7 +287,7 @@ public class ResourceLeakUtils {
     if (type == null) return false;
     Class<?> elementRawType = TypesUtils.getClassFromType(type);
     if (elementRawType == null) return false;
-    return Collection.class.isAssignableFrom(elementRawType);
+    return Iterable.class.isAssignableFrom(elementRawType);
   }
 
   /**
