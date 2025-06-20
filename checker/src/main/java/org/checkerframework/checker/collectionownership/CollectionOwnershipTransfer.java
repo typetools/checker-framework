@@ -56,14 +56,10 @@ public class CollectionOwnershipTransfer extends CFTransfer {
     TransferResult<CFValue, CFStore> res = super.visitAssignment(node, in);
 
     CFStore store = res.getRegularStore();
-    // Node lhs = node.getTarget();
-    // lhs = getNodeOrTempVar(lhs);
     Node rhs = node.getExpression();
     rhs = getNodeOrTempVar(rhs);
-    // JavaExpression lhsJx = JavaExpression.fromNode(lhs);
     JavaExpression rhsJx = JavaExpression.fromNode(rhs);
 
-    // CollectionOwnershipType lhsType = atypeFactory.getCoType(store.getValue(lhsJx));
     CFValue rhsValue = null;
     try {
       rhsValue = store.getValue(rhsJx);
@@ -212,14 +208,22 @@ public class CollectionOwnershipTransfer extends CFTransfer {
     // is a resource collection, as it runs before the type variable is inferred:
     // List<Socket> = new ArrayList<>();
     // Thus, the following checks object creation expressions again on whether they are
-    // resource collections with no type variables, and if they are Bottom, they are
+    // resource collections with no type variables, and if they are @Bottom, they are
     // unrefined to @OwningCollection. Change the type of both the type var and the computed
     // expression itself.
     CFStore store = result.getRegularStore();
     CFValue resultValue = result.getResultValue();
     Node tempVarNode = getNodeOrTempVar(node);
     JavaExpression tempVarJx = JavaExpression.fromNode(tempVarNode);
-    CollectionOwnershipType resolvedType = atypeFactory.getCoType(store.getValue(tempVarJx));
+
+    CFValue tempVarVal = null;
+    try {
+      tempVarVal = store.getValue(tempVarJx);
+    } catch (Exception e) {
+      return result;
+    }
+
+    CollectionOwnershipType resolvedType = atypeFactory.getCoType(tempVarVal);
     TypeMirror javaTypeOfExpr = TreeUtils.elementFromTree(tempVarNode.getTree()).asType();
     if (atypeFactory.isResourceCollection(javaTypeOfExpr)) {
       boolean isDiamond = node.getTree().getTypeArguments().size() == 0;
