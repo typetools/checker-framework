@@ -178,11 +178,6 @@ public class ValueCheckerUtils {
     if (origValues == null) {
       return null;
     }
-    // this line is unsafe, which is why the warning suppression is required.
-    // `origValues` potentially carries elements with MustCall obligations,
-    // but the second parameter of mapList is not annotated to do so.
-    // It would have to have the same List<? extends @MustCallUnknown Object>
-    // annotation.
     return CollectionsPlume.mapList(Object::toString, origValues);
   }
 
