@@ -1,21 +1,25 @@
 package org.checkerframework.checker.index.qual;
 
-import java.lang.annotation.*;
-
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
+import org.checkerframework.framework.qual.InvisibleQualifier;
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
- * Represents a reference to a collection that must not be used to shrink it (e.g., remove or clear),
- * though other references might be able to do so. This is the most general qualifier in the hierarchy.
+ * Represents a reference to a collection that must not be used to shrink it (e.g., remove or
+ * clear), though other references might be able to do so. This is the most general qualifier in the
+ * hierarchy.
  *
- * This is the default qualifier in the GrowShrink index hierarchy.
+ * <p>This is the default qualifier in the GrowShrink index hierarchy.
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf({})
 @DefaultQualifierInHierarchy
-@TypeQualifier
+@InvisibleQualifier
 public @interface UnshrinkableRef {}
