@@ -423,8 +423,8 @@ allprojects { currentProj ->
           languageVersion = JavaLanguageVersion.of(21)
         }
       }
-      int jdkTestVersion = Integer.valueOf(project.getProperties().getOrDefault('jdkTestVersion', -1))
-      if(jdkTestVersion != -1) {
+      if(project.getProperties().containsKey('jdkTestVersion')) {
+        int jdkTestVersion = Integer.valueOf(project.getProperties().get('jdkTestVersion'))
         java {
           toolchain {
             languageVersion = JavaLanguageVersion.of(jdkTestVersion)
