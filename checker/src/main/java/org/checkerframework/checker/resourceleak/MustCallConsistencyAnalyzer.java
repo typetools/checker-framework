@@ -2518,7 +2518,7 @@ public class MustCallConsistencyAnalyzer {
           checker.reportError(
               firstAlias.tree,
               "unfulfilled.collection.obligations",
-              methodName == CollectionOwnershipAnnotatedTypeFactory.UNKNOWN_METHOD_NAME
+              methodName.equals(CollectionOwnershipAnnotatedTypeFactory.UNKNOWN_METHOD_NAME)
                   ? "Unknown"
                   : methodName,
               firstAlias.stringForErrorMessage(),
