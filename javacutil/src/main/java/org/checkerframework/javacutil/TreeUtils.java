@@ -102,6 +102,7 @@ import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.javacutil.TreeUtilsAfterJava11.BindingPatternUtils;
 import org.checkerframework.javacutil.TreeUtilsAfterJava11.CaseUtils;
 import org.checkerframework.javacutil.TreeUtilsAfterJava11.InstanceOfUtils;
+import org.checkerframework.javacutil.TreeUtilsAfterJava11.JCVariableDeclUtils;
 import org.checkerframework.javacutil.TreeUtilsAfterJava11.SwitchExpressionUtils;
 import org.checkerframework.javacutil.TreeUtilsAfterJava11.YieldUtils;
 import org.plumelib.util.CollectionsPlume;
@@ -2588,7 +2589,7 @@ public final class TreeUtils {
    */
   public static boolean isVariableTreeDeclaredUsingVar(VariableTree variableTree) {
     JCVariableDecl variableDecl = (JCVariableDecl) variableTree;
-    if (variableDecl.declaredUsingVar()) {
+    if (JCVariableDeclUtils.declaredUsingVar(variableDecl)) {
       return true;
     }
     JCExpression type = variableDecl.vartype;

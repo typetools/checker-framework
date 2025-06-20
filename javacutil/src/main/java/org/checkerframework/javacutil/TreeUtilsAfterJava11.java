@@ -5,6 +5,7 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.InstanceOfTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
+import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -462,6 +463,42 @@ public class TreeUtilsAfterJava11 {
         GET_VALUE = getMethod(yieldTreeClass, "getValue");
       }
       return (ExpressionTree) invokeNonNullResult(GET_VALUE, yieldTree);
+    }
+  }
+
+  /** Utility methods for accessing {@code JCVariableDecl} methods. */
+  public static class JCVariableDeclUtils {
+
+    /** Don't use. */
+    private JCVariableDeclUtils() {
+      throw new AssertionError("Cannot be instantiated.");
+    }
+
+    /**
+     * The {@code JCVariableDecl.declaredUsingVar} method for Java 16 and higher; null otherwise.
+     */
+    private static @Nullable Method DECLARED_USING_VAR = null;
+
+    /**
+     * For Java 17+, returns true if {@code variableTree} was declared using {@code var}. Otherwise,
+     * returns false.
+     *
+     * <p>Use {@link TreeUtils#isVariableTreeDeclaredUsingVar(VariableTree)} for a method that works
+     * on all versions of java.
+     *
+     * @param variableTree a variable tree.
+     * @return true if {@code variableTree} was declared using {@code var} and using Java 17+
+     */
+    @Pure
+    public static boolean declaredUsingVar(JCVariableDecl variableTree) {
+      if (sourceVersionNumber < 16) {
+        return false;
+      }
+      if (DECLARED_USING_VAR == null) {
+        DECLARED_USING_VAR = getMethod(JCVariableDecl.class, "declaredUsingVar");
+      }
+      Boolean result = (Boolean) invoke(DECLARED_USING_VAR, variableTree);
+      return result != null ? result : false;
     }
   }
 
