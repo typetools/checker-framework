@@ -8,8 +8,10 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * The bottom qualifier in the GrowShrink hierarchy. This is a subtype of both GrowOnly and
- * UncheckedShrinkable. Not intended to be written by users.
+ * The bottom qualifier in the GrowShrink hierarchy. Programmers should rarely write this type.
+ *
+ * @checker_framework.manual #index-checker Index Checker
+ * @checker_framework.manual #bottom-type the bottom type
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
