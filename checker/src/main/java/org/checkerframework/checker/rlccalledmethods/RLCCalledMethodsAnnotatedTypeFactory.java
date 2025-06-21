@@ -370,6 +370,18 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
     return !rlc.hasOption(MustCallChecker.NO_CREATES_MUSTCALLFOR);
   }
 
+  /**
+   * Fetches the store from the results of dataflow for {@code block}. The store after {@code block}
+   * is returned.
+   *
+   * @param block a block
+   * @return the appropriate CFStore, populated with CalledMethods annotations, from the results of
+   *     running dataflow
+   */
+  public AccumulationStore getStoreAfterBlock(Block block) {
+    return flowResult.getStoreAfter(block);
+  }
+
   @Override
   @SuppressWarnings("TypeParameterUnusedInFormals") // Intentional abuse
   public <T extends GenericAnnotatedTypeFactory<?, ?, ?, ?>>
