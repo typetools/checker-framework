@@ -119,7 +119,7 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
   /**
    * Returns the collection-obligation-fulfilling loop for which the given tree is the condition.
    *
-   * @param tree the loop wrapper
+   * @param tree the tree that is potentially the condition for a fulfilling loop
    * @return the collection-obligation-fulfilling loop for which the given tree is the condition
    */
   public static PotentiallyFulfillingLoop getFulfillingLoopForCondition(Tree tree) {
@@ -130,7 +130,7 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
    * Returns the collection-obligation-fulfilling loop for which the given block is the conditional
    * block for.
    *
-   * @param tree the loop wrapper
+   * @param block the block that is potentially the conditional block for a fulfilling loop
    * @return the collection-obligation-fulfilling loop for which the given block is the conditional
    *     block for
    */
