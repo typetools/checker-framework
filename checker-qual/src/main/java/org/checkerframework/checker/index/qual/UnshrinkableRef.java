@@ -15,6 +15,8 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * hierarchy.
  *
  * <p>This is the default qualifier in the GrowShrink index hierarchy.
+ *
+ * @checker_framework.manual #index-checker Index Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

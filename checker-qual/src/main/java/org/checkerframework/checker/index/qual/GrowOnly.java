@@ -10,6 +10,8 @@ import org.checkerframework.framework.qual.SubtypeOf;
 /**
  * A reference that may only grow the collection. Shrinking operations like remove(), clear() are
  * disallowed.
+ *
+ * @checker_framework.manual #index-checker Index Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

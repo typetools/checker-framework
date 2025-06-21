@@ -10,6 +10,8 @@ import org.checkerframework.framework.qual.SubtypeOf;
 /**
  * A Shrinkable reference that is no longer index-safe. Index accesses via this reference should be
  * considered potentially unsafe due to mutations.
+ *
+ * @checker_framework.manual #index-checker Index Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
