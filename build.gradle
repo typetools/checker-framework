@@ -424,6 +424,21 @@ allprojects { currentProj ->
         }
       }
 
+      // Use ./gradlew test -PjdkTestVersion=25 to test a specific version of Java.
+      if(project.getProperties().containsKey('jdkTestVersion')) {
+        int jdkTestVersion = Integer.valueOf(project.getProperties().get('jdkTestVersion'))
+        java {
+          toolchain {
+            languageVersion = JavaLanguageVersion.of(jdkTestVersion)
+          }
+        }
+        tasks.withType(JavaExec).configureEach {
+          javaLauncher = javaToolchains.launcherFor {
+            languageVersion = JavaLanguageVersion.of(jdkTestVersion)
+          }
+        }
+      }
+
       // Sorting is commented out because it disables incremental compilation.
       // Uncomment when needed.
       // // Put source files in deterministic order, for debugging.
@@ -1158,5 +1173,13 @@ final sharedPublicationConfiguration(publication) {
       connection = 'scm:git:https://github.com/typetools/checker-framework.git'
       developerConnection = 'scm:git:ssh://git@github.com/typetools/checker-framework.git'
     }
+  }
+}
+tasks.register('printJavaVersion') {
+  description = "Prints the Java version used to run Gradle."
+  doLast {
+    println "Java version used to run Gradle: ${System.getProperty('java.version')}"
+    def currentJvm = org.gradle.internal.jvm.Jvm.current()
+    println currentJvm
   }
 }
