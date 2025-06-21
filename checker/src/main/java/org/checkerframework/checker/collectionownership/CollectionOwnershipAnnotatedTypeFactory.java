@@ -27,6 +27,7 @@ import org.checkerframework.checker.resourceleak.MustCallInference;
 import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
 import org.checkerframework.checker.resourceleak.ResourceLeakUtils;
 import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsAnnotatedTypeFactory;
+import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsAnnotatedTypeFactory.PotentiallyFulfillingLoop;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
@@ -87,6 +88,10 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
    * The digit in the first character ensures this cannot coincide with an actual method name.
    */
   public static final String UNKNOWN_METHOD_NAME = "1UNKNOWN";
+
+  public static void markFulfillingLoop(PotentiallyFulfillingLoop loop) {
+    // TODO SCK: fill this out
+  }
 
   /**
    * Creates a CollectionOwnershipAnnotatedTypeFactory.

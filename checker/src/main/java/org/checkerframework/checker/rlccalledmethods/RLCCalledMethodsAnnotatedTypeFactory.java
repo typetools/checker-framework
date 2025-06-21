@@ -2,10 +2,13 @@ package org.checkerframework.checker.rlccalledmethods;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
@@ -29,6 +32,7 @@ import org.checkerframework.checker.mustcall.qual.MustCallAlias;
 import org.checkerframework.checker.mustcall.qual.NotOwning;
 import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer;
 import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
 import org.checkerframework.checker.resourceleak.ResourceLeakUtils;
 import org.checkerframework.common.accumulation.AccumulationStore;
@@ -551,5 +555,186 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
     } else {
       return analysis.getInput(block);
     }
+  }
+
+  /** Wrapper class for a loop that might have an effect on the obligation of a collection/array. */
+  public abstract static class CollectionObligationAlteringLoop {
+    /** Loop is either assigning or fulfilling. */
+    public static enum LoopKind {
+      /**
+       * Loop potentially assigns elements with non-empty {@code @MustCall} type to a collection.
+       */
+      ASSIGNING,
+
+      /** Loop potentially calls methods on all elements of a collection. */
+      FULFILLING
+    }
+
+    /** AST {@code Tree} for collection iterated over. */
+    public final ExpressionTree collectionTree;
+
+    /** AST {@code Tree} for collection element iterated over. */
+    public final Tree collectionElementTree;
+
+    /** AST {@code Tree} for loop condition. */
+    public final Tree condition;
+
+    /**
+     * methods associated with this loop. For assigning loops, these are methods that are to be
+     * added to the {@code MustCallOnElements} type and for fulfilling loops, methods that are to be
+     * removed from the {@code MustCallOnElements} and added to the {@code CalledMethodsOnElements}
+     * type.
+     */
+    protected final Set<String> associatedMethods;
+
+    /**
+     * Wether loop is assigning (elements with {@code MustCall} obligations to a collection) or
+     * fulfilling.
+     */
+    public final LoopKind loopKind;
+
+    /**
+     * Constructs a new {@code CollectionObligationAlteringLoop}. Called by subclass constructor.
+     *
+     * @param collectionTree AST {@code Tree} for collection iterated over
+     * @param collectionElementTree AST {@code Tree} for collection element iterated over
+     * @param condition AST {@code Tree} for loop condition
+     * @param associatedMethods set of methods associated with this loop
+     * @param loopKind whether this is an assigning/fulfilling loop
+     */
+    protected CollectionObligationAlteringLoop(
+        ExpressionTree collectionTree,
+        Tree collectionElementTree,
+        Tree condition,
+        Set<String> associatedMethods,
+        LoopKind loopKind) {
+      this.collectionTree = collectionTree;
+      this.collectionElementTree = collectionElementTree;
+      this.condition = condition;
+      this.loopKind = loopKind;
+      if (associatedMethods == null) {
+        associatedMethods = new HashSet<>();
+      }
+      this.associatedMethods = associatedMethods;
+    }
+
+    /**
+     * Add methods associated with this loop. For assigning loops, these are methods that are to be
+     * added to the {@code MustCallOnElements} type and for fulfilling loops, methods that are to be
+     * removed from the {@code MustCallOnElements} and added to the {@code CalledMethodsOnElements}
+     * type.
+     *
+     * @param methods the set of methods to add
+     */
+    public void addMethods(Set<String> methods) {
+      associatedMethods.addAll(methods);
+    }
+
+    /**
+     * Return methods associated with this loop. For assigning loops, these are methods that are to
+     * be added to the {@code MustCallOnElements} type and for fulfilling loops, methods that are to
+     * be removed from the {@code MustCallOnElements} and added to the {@code
+     * CalledMethodsOnElements} type.
+     *
+     * @return the set of associated methdos
+     */
+    public Set<String> getMethods() {
+      return associatedMethods;
+    }
+  }
+
+  /**
+   * Wrapper for a loop that potentially assigns elements with non-empty {@code MustCall}
+   * obligations to an array, thus creating {@code MustCallOnElements} obligations for the array.
+   */
+  public static class PotentiallyAssigningLoop extends CollectionObligationAlteringLoop {
+    /** The AST tree for the assignment of the resource into the array in the loop. */
+    public final AssignmentTree assignment;
+
+    /**
+     * Constructs a new {@code PotentiallyAssigningLoop}
+     *
+     * @param collectionTree AST {@code Tree} for collection iterated over
+     * @param collectionElementTree AST {@code Tree} for collection element iterated over
+     * @param condition AST {@code Tree} for loop condition
+     * @param assignment AST tree for the assignment of the resource into the array in the loop
+     * @param methodsToCall set of methods that are to be added to the {@code MustCallOnElements}
+     *     type of the array iterated over.
+     */
+    public PotentiallyAssigningLoop(
+        ExpressionTree collectionTree,
+        ExpressionTree collectionElementTree,
+        Tree condition,
+        AssignmentTree assignment,
+        Set<String> methodsToCall) {
+      super(
+          collectionTree,
+          collectionElementTree,
+          condition,
+          Set.copyOf(methodsToCall),
+          CollectionObligationAlteringLoop.LoopKind.ASSIGNING);
+      this.assignment = assignment;
+    }
+  }
+
+  /** Wrapper for a loop that potentially calls methods on all elements of a collection/array. */
+  public static class PotentiallyFulfillingLoop extends CollectionObligationAlteringLoop {
+    /** cfg {@code Block} for the loop body entry */
+    public final Block loopBodyEntryBlock;
+
+    /** cfg {@code Block} for the loop update */
+    public final Block loopUpdateBlock;
+
+    /** cfg {@code Node} for the collection element iterated over */
+    public final Node collectionElementNode;
+
+    /**
+     * Constructs a new {@code PotentiallyFulfillingLoop}
+     *
+     * @param collectionTree AST {@link Tree} for collection iterated over
+     * @param collectionElementTree AST {@link Tree} for collection element iterated over
+     * @param condition AST {@link Tree} for loop condition
+     * @param loopBodyEntryBlock cfg {@link Block} for the loop body entry
+     * @param loopUpdateBlock cfg {@link Block} for the loop update
+     * @param collectionEltNode cfg {@link Node} for the collection element iterated over
+     */
+    public PotentiallyFulfillingLoop(
+        ExpressionTree collectionTree,
+        Tree collectionElementTree,
+        Tree condition,
+        Block loopBodyEntryBlock,
+        Block loopUpdateBlock,
+        Node collectionEltNode) {
+      super(
+          collectionTree,
+          collectionElementTree,
+          condition,
+          new HashSet<>(),
+          CollectionObligationAlteringLoop.LoopKind.FULFILLING);
+      this.loopBodyEntryBlock = loopBodyEntryBlock;
+      this.loopUpdateBlock = loopUpdateBlock;
+      this.collectionElementNode = collectionEltNode;
+    }
+  }
+
+  /**
+   * After running the called-methods analysis, call the consistency analyzer to analyze the loop
+   * bodys of 'potentially-collection-obligation-fulfilling-loops', as determined by a
+   * pre-pattern-match in the MustCallVisitor.
+   *
+   * <p>The analysis uses the CalledMethods type of the collection element iterated over to
+   * determine the methods the loop calls on the collection elements.
+   *
+   * @param cfg the cfg of the enclosing method
+   */
+  @Override
+  public void postAnalyze(ControlFlowGraph cfg) {
+    MustCallConsistencyAnalyzer mustCallConsistencyAnalyzer =
+        new MustCallConsistencyAnalyzer(ResourceLeakUtils.getResourceLeakChecker(this));
+    // since this runs before the consistency analysis, we unfortunately have to traverse the cfg
+    // twice. The first time to find these for-each loop, and the second time much later to do the
+    // final consistency analysis.
+    mustCallConsistencyAnalyzer.findFulfillingForEachLoops(cfg);
+    super.postAnalyze(cfg);
   }
 }

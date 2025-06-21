@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
@@ -50,9 +51,11 @@ import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsAnalysis;
 import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsAnnotatedTypeFactory;
+import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsAnnotatedTypeFactory.PotentiallyFulfillingLoop;
 import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsVisitor;
 import org.checkerframework.common.accumulation.AccumulationStore;
 import org.checkerframework.common.accumulation.AccumulationValue;
+import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.Kind;
@@ -60,9 +63,12 @@ import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.Block.BlockType;
 import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
+import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlock;
+import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.ClassNameNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
+import org.checkerframework.dataflow.cfg.node.LessThanNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
@@ -71,7 +77,9 @@ import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.cfg.node.SuperNode;
 import org.checkerframework.dataflow.cfg.node.ThisNode;
+import org.checkerframework.dataflow.cfg.node.VariableDeclarationNode;
 import org.checkerframework.dataflow.expression.FieldAccess;
+import org.checkerframework.dataflow.expression.IteratedCollectionElement;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.ThisReference;
@@ -352,25 +360,25 @@ public class MustCallConsistencyAnalyzer {
       return getResourceAlias(localVariableNode) != null;
     }
 
-    // /**
-    //  * Returns true if this contains a resource alias corresponding to {@code localVariableNode},
-    //  * meaning that calling the required methods on {@code localVariableNode} is sufficient to
-    //  * satisfy the must-call obligation this object represents.
-    //  *
-    //  * @param tree a local variable tree
-    //  * @return true if a resource alias corresponding to {@code tree} is present
-    //  */
-    // private boolean canBeSatisfiedThrough(Tree tree) {
-    //   for (ResourceAlias alias : resourceAliases) {
-    //     if (alias.tree.equals(tree)
-    //         || ((tree instanceof ExpressionTree)
-    //             && JavaExpression.fromTree((ExpressionTree) tree) != null
-    //             && alias.reference.equals(JavaExpression.fromTree((ExpressionTree) tree)))) {
-    //       return true;
-    //     }
-    //   }
-    //   return false;
-    // }
+    /**
+     * Returns true if this contains a resource alias corresponding to {@code localVariableNode},
+     * meaning that calling the required methods on {@code localVariableNode} is sufficient to
+     * satisfy the must-call obligation this object represents.
+     *
+     * @param tree a local variable tree
+     * @return true if a resource alias corresponding to {@code tree} is present
+     */
+    private boolean canBeSatisfiedThrough(Tree tree) {
+      for (ResourceAlias alias : resourceAliases) {
+        if (alias.tree.equals(tree)
+            || ((tree instanceof ExpressionTree)
+                && JavaExpression.fromTree((ExpressionTree) tree) != null
+                && alias.reference.equals(JavaExpression.fromTree((ExpressionTree) tree)))) {
+          return true;
+        }
+      }
+      return false;
+    }
 
     /**
      * Does this Obligation contain any resource aliases that were derived from {@link
@@ -2119,14 +2127,19 @@ public class MustCallConsistencyAnalyzer {
         // tracking.
       }
 
-      propagateObligationsToSuccessorBlock(
-          cfg,
-          obligations,
-          currentBlock,
-          successorAndExceptionType.first,
-          successorAndExceptionType.second,
-          visited,
-          worklist);
+      try {
+        propagateObligationsToSuccessorBlock(
+            false,
+            cfg,
+            obligations,
+            currentBlock,
+            successorAndExceptionType.first,
+            successorAndExceptionType.second,
+            visited,
+            worklist);
+      } catch (InvalidLoopBodyAnalysisException e) {
+        // this exception is only thrown from the loop body analysis, which has another entry point.
+      }
     }
   }
 
@@ -2134,6 +2147,8 @@ public class MustCallConsistencyAnalyzer {
    * Helper for {@link #propagateObligationsToSuccessorBlocks(ControlFlowGraph, Set, Block, Set,
    * Deque)} that propagates obligations along a single edge.
    *
+   * @param isLoopBodyAnalysis true if part of a loop body analysis (instead of consistency
+   *     analysis)
    * @param cfg the control flow graph
    * @param obligations the Obligations for the current block
    * @param currentBlock the current block
@@ -2145,13 +2160,15 @@ public class MustCallConsistencyAnalyzer {
    * @param worklist current worklist
    */
   private void propagateObligationsToSuccessorBlock(
+      boolean isLoopBodyAnalysis,
       ControlFlowGraph cfg,
       Set<Obligation> obligations,
       Block currentBlock,
       Block successor,
       @Nullable TypeMirror exceptionType,
       Set<BlockWithObligations> visited,
-      Deque<BlockWithObligations> worklist) {
+      Deque<BlockWithObligations> worklist)
+      throws InvalidLoopBodyAnalysisException {
     List<Node> currentBlockNodes = currentBlock.getNodes();
     // successorObligations eventually contains the Obligations to propagate to successor.
     // The loop below mutates it.
@@ -2171,8 +2188,30 @@ public class MustCallConsistencyAnalyzer {
                 + ((ExceptionBlock) currentBlock).getNode().getTree()
                 + " with exception type "
                 + exceptionType;
+    TransferInput<AccumulationValue, AccumulationStore> input = cmAtf.getInput(successor);
+    if (input == null) {
+      if (isLoopBodyAnalysis) {
+        // there are CFG nodes that have no incoming store. In the consistency analysis,
+        // these are not explored. However, in the loop body analysis, such a node may be explicitly
+        // explored
+        // (if a potentially fulfilling loop is in an unreachable block). Hence it is safe to return
+        // here and
+        // not propagate obligations, since the state is not reached by the analysis anyways.
+        // Not just that, but note that if this state is reached, the entire loop is in an state
+        // unreachable
+        // by the analysis. If the beginning of the loop was reachable, the analysis wouldn't have
+        // taken a path that is
+        // unreachable for it. Hence, the entire loop body analysis can be aborted here.
+        // The thrown exception is caught in the caller and the loop body analysis aborts, i.e.
+        // returns
+        // immediately.
+        throw new InvalidLoopBodyAnalysisException("Block with no incoming store.");
+      } else {
+        throw new BugInCF("block with no outgoing incoming store: " + successor);
+      }
+    }
     // Computed outside the Obligation loop for efficiency.
-    AccumulationStore regularStoreOfSuccessor = cmAtf.getInput(successor).getRegularStore();
+    AccumulationStore regularStoreOfSuccessor = input.getRegularStore();
     for (Obligation obligation : obligations) {
       // This boolean is true if there is no evidence that the Obligation does not go out
       // of scope - that is, if there is definitely a resource alias that is in scope in
@@ -2489,6 +2528,25 @@ public class MustCallConsistencyAnalyzer {
       Set<Obligation> obligations, LocalVariableNode node) {
     for (Obligation obligation : obligations) {
       if (obligation.canBeSatisfiedThrough(node)) {
+        return obligation;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Gets the Obligation whose resource alias set contains the given tree, if one exists in {@code
+   * obligations}.
+   *
+   * @param obligations a set of Obligations
+   * @param tree variable tree of interest
+   * @return the Obligation in {@code obligations} whose resource alias set contains {@code tree},
+   *     or {@code null} if there is no such Obligation
+   */
+  /*package-private*/ static @Nullable Obligation getObligationForVar(
+      Set<Obligation> obligations, Tree tree) {
+    for (Obligation obligation : obligations) {
+      if (obligation.canBeSatisfiedThrough(tree)) {
         return obligation;
       }
     }
@@ -2814,6 +2872,459 @@ public class MustCallConsistencyAnalyzer {
         }
       }
       return result.toString();
+    }
+  }
+
+  /*
+   * SECTION: Loop Body Analysis. This section finds loops and analyzes them to determine whether they
+   * call methods on each element of a collection, which allows for fulfilling collection obligations.
+   * It reuses much of the cfg traversal logic of the consistency analysis, but is it's own separate
+   * thing.
+   */
+
+  /**
+   * Traverses the cfg of a method to find and mark enhanced-for-loops that potentially fulfill
+   * {@code CollectionObligation}s.
+   *
+   * @param cfg the cfg of the method to analyze
+   */
+  public void findFulfillingForEachLoops(ControlFlowGraph cfg) {
+    // The `visited` set contains everything that has been added to the worklist, even if it has
+    // not yet been removed and analyzed.
+    Set<BlockWithObligations> visited = new HashSet<>();
+    Deque<BlockWithObligations> worklist = new ArrayDeque<>();
+
+    // Add any owning parameters to the initial set of variables to track.
+    BlockWithObligations entry =
+        new BlockWithObligations(cfg.getEntryBlock(), new HashSet<Obligation>());
+    worklist.add(entry);
+    visited.add(entry);
+
+    while (!worklist.isEmpty()) {
+      BlockWithObligations current = worklist.remove();
+      Block currentBlock = current.block;
+
+      for (IPair<Block, @Nullable TypeMirror> successorAndExceptionType :
+          getSuccessorsExceptIgnoredExceptions(currentBlock)) {
+        for (Node node : currentBlock.getNodes()) {
+          if (node instanceof MethodInvocationNode) {
+            patternMatchEnhancedCollectionForLoop((MethodInvocationNode) node, cfg);
+          } else if (node instanceof ArrayAccessNode) {
+            patternMatchEnhancedArrayForLoop((ArrayAccessNode) node, cfg);
+          }
+        }
+        propagate(
+            new BlockWithObligations(successorAndExceptionType.first, new HashSet<Obligation>()),
+            visited,
+            worklist);
+      }
+    }
+  }
+
+  /**
+   * Checks whether the given {@code MethodInvocationNode} is desugared from an enhanced for loop
+   * and calls a loop-body-analysis on the detected loop if it is.
+   *
+   * <p>If a {@code MethodInvocationNode} is desugared from an enhanced for loop over a collection
+   * it corresponds to the node in the synthetic {@code Iterator.next()} method call, which is the
+   * loop update instruction. The AST node corresponding to the loop itself is in this case
+   * contained as a field in the {@code MethodInvocationNode}, which is set in the CFG translation
+   * phase one.
+   *
+   * <p>This method now traverses the CFG upwards to find the loop condition and downwards to find
+   * the first block of the loop body. With these two blocks, it can then call a loop-body-analysis
+   * to find the methods the loop calls on the elements of the iterated collection, as part of the
+   * MustCallOnElements checker.
+   *
+   * @param methodInvocationNode the {@code MethodInvocationNode}, for which it is checked, whether
+   *     it is desugared from an enhanced for loop.
+   * @param cfg the enclosing cfg of the {@code MethodInvocationNode}
+   */
+  private void patternMatchEnhancedCollectionForLoop(
+      MethodInvocationNode methodInvocationNode, ControlFlowGraph cfg) {
+    boolean nodeIsDesugaredFromEnhancedForLoop =
+        methodInvocationNode.getIterableExpression() != null;
+    if (nodeIsDesugaredFromEnhancedForLoop) {
+      // this is the Iterator.next() call desugared from an enhanced-for-loop
+      EnhancedForLoopTree loop = methodInvocationNode.getEnhancedForLoop();
+      if (loop == null) {
+        throw new BugInCF(
+            "MethodInvocationNode.iterableExpression should be non-null iff"
+                + " MethodInvocationNode.enhancedForLoop is non-null");
+      }
+
+      // Find the first block of the loop body.
+      // Start from the synthetic (desugared) iterator.next() node and traverse the cfg
+      // until the assignment of the loop iterator variable is found, which is the last
+      // desugared instruction. The next block is then the start of the loop body.
+      VariableTree loopVariable = loop.getVariable();
+      SingleSuccessorBlock ssblock = (SingleSuccessorBlock) methodInvocationNode.getBlock();
+      Iterator<Node> nodeIterator = ssblock.getNodes().iterator();
+      Node loopVarNode = null;
+      Node node;
+      boolean isAssignmentOfIterVar;
+      do {
+        while (!nodeIterator.hasNext()) {
+          ssblock = (SingleSuccessorBlock) ssblock.getSuccessor();
+          nodeIterator = ssblock.getNodes().iterator();
+        }
+        node = nodeIterator.next();
+        isAssignmentOfIterVar = false;
+        if ((node instanceof AssignmentNode) && node.getTree().getKind() == Tree.Kind.VARIABLE) {
+          loopVarNode = ((AssignmentNode) node).getTarget();
+          VariableTree iterVarDecl = (VariableTree) node.getTree();
+          isAssignmentOfIterVar = iterVarDecl.getName() == loopVariable.getName();
+        }
+      } while (!isAssignmentOfIterVar);
+      Block loopBodyEntryBlock = ssblock.getSuccessor();
+
+      // Find the loop-body-condition
+      // Start from the synthetic (desugared) iterator.next() node and traverse the cfg
+      // backwards until the conditional block is found. The previous block is then the block
+      // containing the desugared loop condition iterator.hasNext().
+      Block block = methodInvocationNode.getBlock();
+      nodeIterator = block.getNodes().iterator();
+      boolean isLoopCondition;
+      do {
+        while (!nodeIterator.hasNext()) {
+          Set<Block> predBlocks = block.getPredecessors();
+          if (predBlocks.size() == 1) {
+            block = predBlocks.iterator().next();
+            nodeIterator = block.getNodes().iterator();
+          } else {
+            System.out.println("predecessor: " + predBlocks);
+            throw new BugInCF(
+                "Encountered more than one CFG Block predeccessor trying to find the"
+                    + " enhanced-for-loop update block. Block: ");
+            // + block
+            // + "\nPredecessors: "
+            // + predBlocks);
+          }
+        }
+        node = nodeIterator.next();
+        isLoopCondition = false;
+        if (node instanceof MethodInvocationNode) {
+          MethodInvocationTree mit = ((MethodInvocationNode) node).getTree();
+          isLoopCondition = TreeUtils.isHasNextCall(mit);
+        }
+      } while (!isLoopCondition);
+
+      // add the blocks into a static datastructure in the calledmethodsatf, such that it can
+      // analyze
+      // them (call MustCallConsistencyAnalyzer.analyzeFulfillingLoops, which in turn adds the trees
+      // to the static datastructure in McoeAtf)
+      PotentiallyFulfillingLoop pfLoop =
+          new PotentiallyFulfillingLoop(
+              loop.getExpression(),
+              loopVarNode.getTree(),
+              node.getTree(),
+              loopBodyEntryBlock,
+              block,
+              loopVarNode);
+      this.analyzeObligationFulfillingLoop(cfg, pfLoop);
+    }
+  }
+
+  /**
+   * Checks whether the given {@code ArrayAccessNode} is desugared from an enhanced for loop and
+   * calls a loop-body-analysis on the detected loop if it is.
+   *
+   * <p>If an {@code ArrayAccessNode} is desugared from an enhanced for loop over an array, it
+   * corresponds to the node in the synthetic {@code s = array#numX[index#numY]} assignment, where
+   * the loop iterator variable is assigned. The AST node corresponding to the loop itself is in
+   * this case contained as a field in the {@code ArrayAccessNode}, which is set in the CFG
+   * translation phase one.
+   *
+   * <p>This method now traverses the CFG upwards to find the loop condition and downwards to find
+   * the first block of the loop body. With these two blocks, it can then call a loop-body-analysis
+   * to find the methods the loop calls on the elements of the iterated collection, as part of the
+   * MustCallOnElements checker.
+   *
+   * @param arrayAccessNode the {@code ArrayAccessNode}, for which it is checked, whether it is
+   *     desugared from an enhanced for loop.
+   * @param cfg the enclosing cfg of the {@code ArrayAccessNode}
+   */
+  private void patternMatchEnhancedArrayForLoop(
+      ArrayAccessNode arrayAccessNode, ControlFlowGraph cfg) {
+    boolean nodeIsDesugaredFromEnhancedForLoop = arrayAccessNode.getArrayExpression() != null;
+    if (nodeIsDesugaredFromEnhancedForLoop && cfg != null) {
+      // this is the arr[i] access desugared from an enhanced-for-loop (in iter = arr[i];)
+      EnhancedForLoopTree loop = arrayAccessNode.getEnhancedForLoop();
+      if (loop == null) {
+        throw new BugInCF(
+            "MethodInvocationNode.iterableExpression should be non-null iff"
+                + " MethodInvocationNode.enhancedForLoop is non-null");
+      }
+
+      // Find the first block of the loop body.
+      SingleSuccessorBlock ssblock = (SingleSuccessorBlock) arrayAccessNode.getBlock();
+      Block loopBodyEntryBlock = ssblock.getSuccessor();
+
+      // Find the loop condition
+      // Start from the synthetic (desugared) arr[i] node and traverse the cfg
+      // backwards until the LessThan node is found.
+      // It corresponds to the desugared loop condition (index#numX < array#numX.length).
+      Block block = arrayAccessNode.getBlock();
+      Iterator<Node> nodeIterator = block.getNodes().iterator();
+      Node loopVarNode = null;
+      Node node;
+      do {
+        while (!nodeIterator.hasNext()) {
+          Set<Block> predBlocks = block.getPredecessors();
+          if (predBlocks.size() == 1) {
+            block = predBlocks.iterator().next();
+            nodeIterator = block.getNodes().iterator();
+          } else {
+            throw new BugInCF(
+                "Encountered more than one CFG Block predeccessor trying to find the"
+                    + " enhanced-for-loop update block.");
+          }
+        }
+        node = nodeIterator.next();
+        if (node instanceof VariableDeclarationNode) {
+          // variable declaration of public iterator
+          loopVarNode = node;
+        }
+      } while (!(node instanceof LessThanNode));
+
+      // add the blocks into a static datastructure in the calledmethodsatf, such that it can
+      // analyze
+      // them (call MustCallConsistencyAnalyzer.analyzeFulfillingLoops, which in turn adds the trees
+      // to the static datastructure in McoeAtf)
+      PotentiallyFulfillingLoop pfLoop =
+          new PotentiallyFulfillingLoop(
+              loop.getExpression(),
+              loopVarNode.getTree(),
+              node.getTree(),
+              loopBodyEntryBlock,
+              block,
+              loopVarNode);
+      this.analyzeObligationFulfillingLoop(cfg, pfLoop);
+    }
+  }
+
+  /**
+   * Analyze the loop body of a 'potentially-mcoe-obligation-fulfilling-loop', as determined by a
+   * pre-pattern-match in the MustCallVisitor (in the case of a normal for-loop) or determined by a
+   * pre-pattern-match in {@code this.patternMatchEnhancedForLoop(MethodInvocationNode)} (in the
+   * case of an enhanced-for-loop).
+   *
+   * <p>The analysis uses the CalledMethods type of the collection element iterated over to
+   * determine the methods the loop calls on the collection elements.
+   *
+   * <p>This method should be called after the called-method-analysis is finished (in the {@code
+   * postAnalyze(cfg)} method of the {@code RLCCalledMethodsAnnotatedTypeFactory}).
+   *
+   * @param cfg the cfg of the enclosing method
+   * @param potentiallyFulfillingLoop the loop to check
+   */
+  public void analyzeObligationFulfillingLoop(
+      ControlFlowGraph cfg, PotentiallyFulfillingLoop potentiallyFulfillingLoop) {
+
+    // ensure checked loop is initialized in a valid way
+    Objects.requireNonNull(
+        potentiallyFulfillingLoop.collectionElementTree,
+        "CollectionElementAccess tree provided to analyze loop body of an"
+            + " mcoe-obligation-fulfilling loop is null.");
+    Objects.requireNonNull(
+        potentiallyFulfillingLoop.loopBodyEntryBlock,
+        "Block provided to analyze loop body of an mcoe-obligation-fulfilling loop is null.");
+    Objects.requireNonNull(
+        potentiallyFulfillingLoop.loopUpdateBlock,
+        "Block provided to analyze loop body of an mcoe-obligation-fulfilling loop is null.");
+
+    Block loopBodyEntryBlock = potentiallyFulfillingLoop.loopBodyEntryBlock;
+    Block loopUpdateBlock = potentiallyFulfillingLoop.loopUpdateBlock;
+    Tree collectionElement = potentiallyFulfillingLoop.collectionElementTree;
+
+    boolean emptyLoopBody = loopBodyEntryBlock == loopUpdateBlock;
+    if (emptyLoopBody) {
+      return;
+    }
+
+    // The `visited` set contains everything that has been added to the worklist, even if it has
+    // not yet been removed and analyzed.
+    Set<BlockWithObligations> visited = new HashSet<>();
+    Deque<BlockWithObligations> worklist = new ArrayDeque<>();
+
+    // Add an obligation for the element of the collection iterated over
+
+    Obligation collectionElementObligation = Obligation.fromTree(collectionElement);
+    if (collectionElement.getKind() == Tree.Kind.VARIABLE) {
+      VariableElement varElt = TreeUtils.elementFromDeclaration((VariableTree) collectionElement);
+      boolean hasMustCallAlias = cmAtf.hasMustCallAlias(varElt);
+      collectionElementObligation =
+          new Obligation(
+              ImmutableSet.of(
+                  new ResourceAlias(
+                      new LocalVariable(varElt), varElt, collectionElement, hasMustCallAlias)),
+              Collections.singleton(MethodExitKind.NORMAL_RETURN));
+    }
+
+    BlockWithObligations loopBodyEntry =
+        new BlockWithObligations(
+            loopBodyEntryBlock, Collections.singleton(collectionElementObligation));
+
+    worklist.add(loopBodyEntry);
+    visited.add(loopBodyEntry);
+    Set<String> calledMethodsInLoop = null;
+
+    // main loop: propagate obligations block-by-block
+    while (!worklist.isEmpty()) {
+      BlockWithObligations current = worklist.remove();
+      Block currentBlock = current.block;
+
+      for (IPair<Block, @Nullable TypeMirror> successorAndExceptionType :
+          getSuccessorsExceptIgnoredExceptions(currentBlock)) {
+        Set<Obligation> obligations = new LinkedHashSet<>(current.obligations);
+        for (Node node : currentBlock.getNodes()) {
+          if (node instanceof AssignmentNode) {
+            updateObligationsForAssignment(obligations, cfg, (AssignmentNode) node);
+          }
+        }
+
+        @SuppressWarnings("interning:not.interned")
+        boolean isLastBlockOfBody = successorAndExceptionType.first == loopUpdateBlock;
+        if (isLastBlockOfBody) {
+          Set<String> calledMethodsAfterBlock =
+              analyzeTypeOfCollectionElement(currentBlock, potentiallyFulfillingLoop, obligations);
+          // intersect the called methods after this block with the accumulated ones so far.
+          // This is required because there may be multiple "back edges" of the loop, in which
+          // case we must intersect the called methods between those.
+          if (calledMethodsInLoop == null) {
+            calledMethodsInLoop = calledMethodsAfterBlock;
+          } else {
+            calledMethodsInLoop.retainAll(calledMethodsAfterBlock);
+          }
+        } else {
+          try {
+            propagateObligationsToSuccessorBlock(
+                true,
+                cfg,
+                obligations,
+                currentBlock,
+                successorAndExceptionType.first,
+                successorAndExceptionType.second,
+                visited,
+                worklist);
+          } catch (InvalidLoopBodyAnalysisException e) {
+            return;
+          }
+        }
+      }
+    }
+
+    System.out.println("calledmethodsinloop: " + calledMethodsInLoop);
+    // now put the loop into the static datastructure if it calls any methods on the element
+    if (calledMethodsInLoop != null && calledMethodsInLoop.size() > 0) {
+      potentiallyFulfillingLoop.addMethods(calledMethodsInLoop);
+      CollectionOwnershipAnnotatedTypeFactory.markFulfillingLoop(potentiallyFulfillingLoop);
+    }
+  }
+
+  /**
+   * Checks the CalledMethods store after the given block and determines the CalledMethods type of
+   * the given tree (which corresponds to the collection element iterated over) and returns the
+   * union of methods in the CalledMethods type of the collection element and all its resource
+   * aliases.
+   *
+   * @param lastLoopBodyBlock last block of loop body
+   * @param potentiallyFulfillingLoop loop wrapper of the loop to analyze
+   * @param obligations the set of tracked obligations
+   * @return the union of methods in the CalledMethods type of the collection element and all its
+   *     resource aliases.
+   */
+  private Set<String> analyzeTypeOfCollectionElement(
+      Block lastLoopBodyBlock,
+      PotentiallyFulfillingLoop potentiallyFulfillingLoop,
+      Set<Obligation> obligations) {
+    AccumulationStore store = null;
+    if (lastLoopBodyBlock.getLastNode() == null) {
+      // TODO is this really the right store? I think we need to get the then-or else store
+      store = cmAtf.getStoreAfterBlock(lastLoopBodyBlock);
+    } else {
+      store = cmAtf.getStoreAfter(lastLoopBodyBlock.getLastNode());
+    }
+    Obligation collectionElementObligation =
+        getObligationForVar(obligations, potentiallyFulfillingLoop.collectionElementTree);
+    if (collectionElementObligation == null) {
+      // the loop did something weird. Might have reassigned the collection element.
+      // The sound thing to do is return an empty list.
+      System.out.println("obligation gone for collection element");
+      return new HashSet<>();
+      // throw new BugInCF(
+      //     "No obligation for collection element "
+      //         + potentiallyFulfillingLoop.collectionElementTree);
+    }
+
+    Set<String> calledMethodsAfterThisBlock = new HashSet<>();
+
+    // add the called methods of the ICE
+    IteratedCollectionElement ice =
+        store.getIteratedCollectionElement(
+            potentiallyFulfillingLoop.collectionElementNode,
+            potentiallyFulfillingLoop.collectionElementTree);
+    if (ice != null) {
+      AccumulationValue cmValOfIce = store.getValue(ice);
+      List<String> calledMethods = getCalledMethods(cmValOfIce);
+      if (calledMethods != null && calledMethods.size() > 0) {
+        calledMethodsAfterThisBlock.addAll(calledMethods);
+      }
+    }
+
+    // add the called methods of possible aliases of the collection element
+    for (ResourceAlias alias : collectionElementObligation.resourceAliases) {
+      AccumulationValue cmValOfAlias = store.getValue(alias.reference);
+      if (cmValOfAlias == null) continue;
+      List<String> calledMethods = getCalledMethods(cmValOfAlias);
+      if (calledMethods != null && calledMethods.size() > 0) {
+        calledMethodsAfterThisBlock.addAll(calledMethods);
+      }
+    }
+
+    return calledMethodsAfterThisBlock;
+  }
+
+  /**
+   * Returns the set of called methods values given an AccumulationValue.
+   *
+   * @param cmVal the accumulation value
+   * @return the set of called methods of the given value
+   */
+  private List<String> getCalledMethods(AccumulationValue cmVal) {
+    Set<String> calledMethods = cmVal.getAccumulatedValues();
+    if (calledMethods != null) {
+      return new ArrayList<>(calledMethods);
+    } else {
+      for (AnnotationMirror anno : cmVal.getAnnotations()) {
+        if (AnnotationUtils.areSameByName(
+            anno, "org.checkerframework.checker.calledmethods.qual.CalledMethods")) {
+          return cmAtf.getCalledMethods(anno);
+        }
+      }
+    }
+    return new ArrayList<>();
+  }
+
+  /**
+   * If this exception is thrown, it indicates to the caller of the method that the loop body
+   * analysis should be aborted and immediately return. This happens if a {@code Block} is
+   * encountered, which does not have an incoming store, meaning the analysis is not supposed to
+   * reach it. However, in the loop body analysis, such a store may be explicitly explored (if a
+   * potentially fulfilling loop is in an unreachable {@code Block}). It is then impossible to
+   * proceed with the analysis, since stores for these {@code Block}s don't exist. Hence, the
+   * analysis should abort.
+   */
+  @SuppressWarnings("serial")
+  private static class InvalidLoopBodyAnalysisException extends Exception {
+
+    /**
+     * Construct an InvalidLoopBodyAnalysisException
+     *
+     * @param message the error message
+     */
+    public InvalidLoopBodyAnalysisException(String message) {
+      super(message);
     }
   }
 }
