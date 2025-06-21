@@ -166,6 +166,16 @@ public final class TreeUtils {
   public static boolean isConstructor(MethodTree tree) {
     return tree.getName().contentEquals("<init>");
   }
+  
+  /**
+   * Checks if the method invocation is a call to hasNext.
+   *
+   * @param tree a tree defining a method invocation
+   * @return true iff tree describes a call to hasNext
+   */
+  public static boolean isHasNextCall(MethodInvocationTree tree) {
+    return isNamedMethodCall("hasNext", tree);
+  }
 
   /**
    * Checks if the method invocation is a call to super.
