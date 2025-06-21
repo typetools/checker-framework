@@ -167,14 +167,14 @@ When annotating a library, do not use `@UncheckedShrinkable` and `@GrowOnly`.
 TODO: why not use `@GrowOnly`?
 
 
-==== Implementation strategy for `@Shrinkable` and `@UncheckedShrinkable`
+=== Implementation strategy for `@Shrinkable` and `@UncheckedShrinkable`
 
 One approach is to implement `@Shrinkable` and `@UncheckedShrinkable`.
 Another approach is to initially implement only `@UncheckedShrinkable` (and
 probably also treat `@UnshrinkableRef` as unchecked).
 
 
-==== Library annotations
+=== Library annotations
 
 As is typical, JDK annotations are trusted, not checked.
 
@@ -187,7 +187,7 @@ Checking indices of a mutable collection type (such as `List`) in the Java libra
 * Methods that allocate and return a new list could also use the Shrinkable annotation.
 
 
-==== Annotating application code
+=== Annotating application code
 
 In application code, each allocation of a list should be by default `@UncheckedShrinkable`.
 If all lists are `@UncheckedShrinkable`, it would ideally result in no warnings reported.
@@ -197,12 +197,12 @@ Now, the Index Checker starts providing value by checking that the accesses are 
 Some types within the application might need to be annotated `@UnshrinkableRef` to accept both kinds of collections.
 
 
-==== Advanced features
+=== Advanced features
 
 Also see xref:mutable-index-checking-advanced.adoc[advanced features].
 
 
-==== Alternate qualifier hierarchies
+=== Alternate qualifier hierarchies
 
 [NOTE]
 ====
