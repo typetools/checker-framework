@@ -2,11 +2,14 @@ package org.checkerframework.checker.collectionownership;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -89,8 +92,50 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
    */
   public static final String UNKNOWN_METHOD_NAME = "1UNKNOWN";
 
+  /**
+   * Maps the AST-tree corresponding to the loop condition of a collection-obligation-fulfilling
+   * loop to the loop wrapper.
+   */
+  private static Map<Tree, PotentiallyFulfillingLoop> conditionToFulfillingLoopMap =
+      new HashMap<>();
+
+  /**
+   * Maps the cfg-block corresponding to the loop conditional block of a
+   * collection-obligation-fulfilling loop to the loop wrapper.
+   */
+  private static Map<Block, PotentiallyFulfillingLoop> conditionalBlockToFulfillingLoopMap =
+      new HashMap<>();
+
+  /**
+   * Marks the specified loop as fulfilling a collection obligation
+   *
+   * @param loop the loop wrapper
+   */
   public static void markFulfillingLoop(PotentiallyFulfillingLoop loop) {
-    // TODO SCK: fill this out
+    conditionToFulfillingLoopMap.put(loop.condition, loop);
+    conditionalBlockToFulfillingLoopMap.put(loop.loopConditionalBlock, loop);
+  }
+
+  /**
+   * Returns the collection-obligation-fulfilling loop for which the given tree is the condition.
+   *
+   * @param tree the loop wrapper
+   * @return the collection-obligation-fulfilling loop for which the given tree is the condition
+   */
+  public static PotentiallyFulfillingLoop getFulfillingLoopForCondition(Tree tree) {
+    return conditionToFulfillingLoopMap.get(tree);
+  }
+
+  /**
+   * Returns the collection-obligation-fulfilling loop for which the given block is the conditional
+   * block for.
+   *
+   * @param tree the loop wrapper
+   * @return the collection-obligation-fulfilling loop for which the given block is the conditional
+   *     block for
+   */
+  public static PotentiallyFulfillingLoop getFulfillingLoopForConditionalBlock(Block block) {
+    return conditionalBlockToFulfillingLoopMap.get(block);
   }
 
   /**

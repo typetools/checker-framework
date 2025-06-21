@@ -41,6 +41,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.block.Block;
+import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
@@ -679,11 +680,15 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
 
   /** Wrapper for a loop that potentially calls methods on all elements of a collection/array. */
   public static class PotentiallyFulfillingLoop extends CollectionObligationAlteringLoop {
-    /** cfg {@code Block} for the loop body entry */
+
+    /** cfg {@code Block} containing the loop body entry */
     public final Block loopBodyEntryBlock;
 
-    /** cfg {@code Block} for the loop update */
+    /** cfg {@code Block} containing the loop update */
     public final Block loopUpdateBlock;
+
+    /** cfg conditional {@link Block} following loop condition */
+    public final ConditionalBlock loopConditionalBlock;
 
     /** cfg {@code Node} for the collection element iterated over */
     public final Node collectionElementNode;
@@ -696,6 +701,7 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
      * @param condition AST {@link Tree} for loop condition
      * @param loopBodyEntryBlock cfg {@link Block} for the loop body entry
      * @param loopUpdateBlock cfg {@link Block} for the loop update
+     * @param loopConditionalBlock cfg conditional {@link Block} following loop condition
      * @param collectionEltNode cfg {@link Node} for the collection element iterated over
      */
     public PotentiallyFulfillingLoop(
@@ -704,6 +710,7 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
         Tree condition,
         Block loopBodyEntryBlock,
         Block loopUpdateBlock,
+        ConditionalBlock loopConditionalBlock,
         Node collectionEltNode) {
       super(
           collectionTree,
@@ -713,6 +720,7 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
           CollectionObligationAlteringLoop.LoopKind.FULFILLING);
       this.loopBodyEntryBlock = loopBodyEntryBlock;
       this.loopUpdateBlock = loopUpdateBlock;
+      this.loopConditionalBlock = loopConditionalBlock;
       this.collectionElementNode = collectionEltNode;
     }
   }

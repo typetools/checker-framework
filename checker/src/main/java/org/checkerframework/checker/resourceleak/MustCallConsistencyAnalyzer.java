@@ -2210,9 +2210,35 @@ public class MustCallConsistencyAnalyzer {
         throw new BugInCF("block with no outgoing incoming store: " + successor);
       }
     }
+
+    // check whether this corresponds to the else-cfg-edge of a conditional block
+    // corresponding to the loop condition of a collection-obligation-fulfilling
+    // loop. If yes, don't propagate the collection obligations that are fulfilled
+    // inside the loop.
+    boolean isElseEdgeOfFulfillingLoop = false;
+    PotentiallyFulfillingLoop loop =
+        CollectionOwnershipAnnotatedTypeFactory.getFulfillingLoopForConditionalBlock(currentBlock);
+    if ((currentBlock instanceof ConditionalBlock) && loop != null) {
+      ConditionalBlock conditionalBlock = (ConditionalBlock) currentBlock;
+      if (conditionalBlock.getElseSuccessor() == successor) {
+        isElseEdgeOfFulfillingLoop = true;
+      }
+    }
+
     // Computed outside the Obligation loop for efficiency.
     AccumulationStore regularStoreOfSuccessor = input.getRegularStore();
+
     for (Obligation obligation : obligations) {
+      if (isElseEdgeOfFulfillingLoop) {
+        if (obligation instanceof CollectionObligation) {
+          String mustCallMethodOfCo = ((CollectionObligation) obligation).mustCallMethod;
+          if (loop.getMethods().contains(mustCallMethodOfCo)) {
+            // don't propagate this obligation along this edge, as it was fulfilled
+            // in the loop that the currentBlock is the conditional block of
+            continue;
+          }
+        }
+      }
       // This boolean is true if there is no evidence that the Obligation does not go out
       // of scope - that is, if there is definitely a resource alias that is in scope in
       // the successor.
@@ -3009,6 +3035,20 @@ public class MustCallConsistencyAnalyzer {
         }
       } while (!isLoopCondition);
 
+      Block blockContainingLoopCondition = node.getBlock();
+      if (blockContainingLoopCondition.getSuccessors().size() != 1) {
+        throw new BugInCF(
+            "loop condition has: "
+                + blockContainingLoopCondition.getSuccessors().size()
+                + " successors instead of 1.");
+      }
+      Block conditionalBlock = blockContainingLoopCondition.getSuccessors().iterator().next();
+      if (!(conditionalBlock instanceof ConditionalBlock)) {
+        throw new BugInCF(
+            "loop condition successor is not ConditionalBlock, but: "
+                + conditionalBlock.getClass());
+      }
+
       // add the blocks into a static datastructure in the calledmethodsatf, such that it can
       // analyze
       // them (call MustCallConsistencyAnalyzer.analyzeFulfillingLoops, which in turn adds the trees
@@ -3020,6 +3060,7 @@ public class MustCallConsistencyAnalyzer {
               node.getTree(),
               loopBodyEntryBlock,
               block,
+              (ConditionalBlock) conditionalBlock,
               loopVarNode);
       this.analyzeObligationFulfillingLoop(cfg, pfLoop);
     }
@@ -3087,6 +3128,20 @@ public class MustCallConsistencyAnalyzer {
         }
       } while (!(node instanceof LessThanNode));
 
+      Block blockContainingLoopCondition = node.getBlock();
+      if (blockContainingLoopCondition.getSuccessors().size() != 1) {
+        throw new BugInCF(
+            "loop condition has: "
+                + blockContainingLoopCondition.getSuccessors().size()
+                + " successors instead of 1.");
+      }
+      Block conditionalBlock = blockContainingLoopCondition.getSuccessors().iterator().next();
+      if (!(conditionalBlock instanceof ConditionalBlock)) {
+        throw new BugInCF(
+            "loop condition successor is not ConditionalBlock, but: "
+                + conditionalBlock.getClass());
+      }
+
       // add the blocks into a static datastructure in the calledmethodsatf, such that it can
       // analyze
       // them (call MustCallConsistencyAnalyzer.analyzeFulfillingLoops, which in turn adds the trees
@@ -3098,6 +3153,7 @@ public class MustCallConsistencyAnalyzer {
               node.getTree(),
               loopBodyEntryBlock,
               block,
+              (ConditionalBlock) conditionalBlock,
               loopVarNode);
       this.analyzeObligationFulfillingLoop(cfg, pfLoop);
     }
