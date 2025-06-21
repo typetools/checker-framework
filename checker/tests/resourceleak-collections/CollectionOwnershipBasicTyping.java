@@ -89,8 +89,6 @@ class CollectionOwnershipBasicTyping {
     closeElements(col);
   }
 
-  // TODO remove once fulfillment works
-  // :: error: unfulfilled.collection.obligations
   void closeElements(@OwningCollection Collection<Socket> socketCollection) {
     for (Socket s : socketCollection) {
       try {

@@ -125,8 +125,6 @@ class CollectionOwnershipDefaults {
     checkArgIsOCwoO(newResourceArray);
   }
 
-  // TODO remove once fulfillment works
-  // :: error: unfulfilled.collection.obligations
   void closeElements(Socket @OwningCollection [] socketCollection) {
     for (Socket s : socketCollection) {
       try {
@@ -136,8 +134,6 @@ class CollectionOwnershipDefaults {
     }
   }
 
-  // TODO remove once fulfillment works
-  // :: error: unfulfilled.collection.obligations
   void closeElements(@OwningCollection Collection<Socket> socketCollection) {
     for (Socket s : socketCollection) {
       try {
