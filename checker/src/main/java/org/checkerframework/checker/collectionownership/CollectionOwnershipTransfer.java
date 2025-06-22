@@ -81,7 +81,7 @@ public class CollectionOwnershipTransfer extends CFTransfer {
     // special case desugared assignments of a temporary array variable.
     if (rhsType == CollectionOwnershipType.OwningCollection
         || rhsType == CollectionOwnershipType.OwningCollectionWithoutObligation) {
-      if (node.isDesugared()) {
+      if (node.isDesugaredFromEnhancedArrayForLoop()) {
         store.clearValue(lhsJx);
         store.insertValue(lhsJx, atypeFactory.NOTOWNINGCOLLECTION);
       } else {
