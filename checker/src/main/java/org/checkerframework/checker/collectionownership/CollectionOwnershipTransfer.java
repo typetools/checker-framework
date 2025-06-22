@@ -1,5 +1,6 @@
 package org.checkerframework.checker.collectionownership;
 
+import com.sun.source.tree.Tree;
 import java.util.HashSet;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
@@ -15,6 +16,7 @@ import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
+import org.checkerframework.dataflow.cfg.node.LessThanNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
@@ -58,6 +60,11 @@ public class CollectionOwnershipTransfer extends CFTransfer {
     TransferResult<CFValue, CFStore> res = super.visitAssignment(node, in);
 
     CFStore store = res.getRegularStore();
+
+    Node lhs = node.getTarget();
+    lhs = getNodeOrTempVar(lhs);
+    JavaExpression lhsJx = JavaExpression.fromNode(lhs);
+
     Node rhs = node.getExpression();
     rhs = getNodeOrTempVar(rhs);
     JavaExpression rhsJx = JavaExpression.fromNode(rhs);
@@ -70,11 +77,17 @@ public class CollectionOwnershipTransfer extends CFTransfer {
     }
     CollectionOwnershipType rhsType = atypeFactory.getCoType(rhsValue);
 
-    // ownership transfer from rhs into lhs
+    // ownership transfer from rhs into lhs usually.
+    // special case desugared assignments of a temporary array variable.
     if (rhsType == CollectionOwnershipType.OwningCollection
         || rhsType == CollectionOwnershipType.OwningCollectionWithoutObligation) {
-      store.clearValue(rhsJx);
-      store.insertValue(rhsJx, atypeFactory.NOTOWNINGCOLLECTION);
+      if (node.isDesugared()) {
+        store.clearValue(lhsJx);
+        store.insertValue(lhsJx, atypeFactory.NOTOWNINGCOLLECTION);
+      } else {
+        store.clearValue(rhsJx);
+        store.insertValue(rhsJx, atypeFactory.NOTOWNINGCOLLECTION);
+      }
     }
 
     // boolean assignmentOfOwningCollectionArrayElement =
@@ -98,25 +111,21 @@ public class CollectionOwnershipTransfer extends CFTransfer {
     return new RegularTransferResult<CFValue, CFStore>(res.getResultValue(), store);
   }
 
-  @Override
-  public TransferResult<CFValue, CFStore> visitMethodInvocation(
-      MethodInvocationNode node, TransferInput<CFValue, CFStore> in) {
-    TransferResult<CFValue, CFStore> res = super.visitMethodInvocation(node, in);
-
-    updateStoreWithTempVar(res, node);
-
-    ExecutableElement method = node.getTarget().getMethod();
-    List<Node> args = node.getArguments();
-    res = transferOwnershipForMethodInvocation(method, args, res);
-
-    // check if the MethodInvocationNode is the condition for a collection-obligation-fulfilling
-    // loop,
-    // and whether the loop calls all methods in the MustCall type of the collection elements.
-    // In this case, refine the type of the collection to @OwningCollectionWithoutObligation in the
-    // else
-    // store.
+  /**
+   * Checks if the given AST tree is the condition for a collection-obligation-fulfilling and
+   * whether this loop calls all methods in the MustCall type of the elements of some collection. In
+   * this case, refine the type of the collection to @OwningCollectionWithoutObligation in the else
+   * store of the incoming transfer result.
+   *
+   * @param res the incoming transfer result
+   * @param tree the AST tree that is possibly the loop condition for a
+   *     collection-obligation-fulfilling loop
+   * @return the resulting transfer result
+   */
+  private TransferResult<CFValue, CFStore> transformPotentiallyFulfillingLoop(
+      TransferResult<CFValue, CFStore> res, Tree tree) {
     PotentiallyFulfillingLoop loop =
-        CollectionOwnershipAnnotatedTypeFactory.getFulfillingLoopForCondition(node.getTree());
+        CollectionOwnershipAnnotatedTypeFactory.getFulfillingLoopForCondition(tree);
     if (loop != null) {
       CFStore elseStore = res.getElseStore();
       JavaExpression collectionJx = JavaExpression.fromTree(loop.collectionTree);
@@ -140,6 +149,28 @@ public class CollectionOwnershipTransfer extends CFTransfer {
         }
       }
     }
+    return res;
+  }
+
+  @Override
+  public TransferResult<CFValue, CFStore> visitLessThan(
+      LessThanNode node, TransferInput<CFValue, CFStore> in) {
+    TransferResult<CFValue, CFStore> res = super.visitLessThan(node, in);
+    return transformPotentiallyFulfillingLoop(res, node.getTree());
+  }
+
+  @Override
+  public TransferResult<CFValue, CFStore> visitMethodInvocation(
+      MethodInvocationNode node, TransferInput<CFValue, CFStore> in) {
+    TransferResult<CFValue, CFStore> res = super.visitMethodInvocation(node, in);
+
+    updateStoreWithTempVar(res, node);
+
+    ExecutableElement method = node.getTarget().getMethod();
+    List<Node> args = node.getArguments();
+    res = transferOwnershipForMethodInvocation(method, args, res);
+
+    res = transformPotentiallyFulfillingLoop(res, node.getTree());
 
     // if (!noCreatesMustCallFor) {
     //   List<JavaExpression> targetExprs =
