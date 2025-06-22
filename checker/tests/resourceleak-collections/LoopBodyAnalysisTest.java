@@ -15,18 +15,42 @@ class Resource implements AutoCloseable {
 
 class LoopBodyAnalysisTests {
 
-  void fullSatisfyArray(Resource @OwningCollection [] resources) {
-    for (Resource r : resources) {
-      r.close();
-      r.flush();
-    }
-  }
-
   void fullSatisfyCollection(@OwningCollection Collection<Resource> resources) {
     for (Resource r : resources) {
       r.close();
       r.flush();
     }
+    checkArgIsOCWO(resources);
+  }
+
+  void fullSatisfyArray(Resource @OwningCollection [] resources) {
+    for (Resource r : resources) {
+      r.close();
+      r.flush();
+    }
+    checkArgIsOCWO(resources);
+  }
+
+  // here, the argument defaults to @NotOwningCollection.
+  // the loop should not change that type
+  void fullSatisfyCollectionNotOwning(Collection<Resource> resources) {
+    for (Resource r : resources) {
+      r.close();
+      r.flush();
+    }
+    // :: error: argument
+    checkArgIsOCWO(resources);
+  }
+
+  // here, the argument defaults to @NotOwningCollection.
+  // the loop should not change that type
+  void fullSatisfyArrayNotOwning(Resource[] resources) {
+    for (Resource r : resources) {
+      r.close();
+      r.flush();
+    }
+    // :: error: argument
+    checkArgIsOCWO(resources);
   }
 
   // :: error: unfulfilled.collection.obligations
@@ -34,6 +58,8 @@ class LoopBodyAnalysisTests {
     for (Resource r : resources) {
       r.close();
     }
+    // :: error: argument
+    checkArgIsOCWO(resources);
   }
 
   // :: error: unfulfilled.collection.obligations
@@ -41,26 +67,29 @@ class LoopBodyAnalysisTests {
     for (Resource r : resources) {
       r.close();
     }
+    // :: error: argument
+    checkArgIsOCWO(resources);
   }
 
   void multipleMustCallPartial() {
     // :: error: unfulfilled.collection.obligations
     List<Resource> l = new ArrayList<>();
     l.add(new Resource());
-    l.add(new Resource());
     for (Resource r : l) {
       r.close();
     }
+    // :: error: argument
+    checkArgIsOCWO(l);
   }
 
   void multipleMustCallFull() {
     List<Resource> l = new ArrayList<>();
     l.add(new Resource());
-    l.add(new Resource());
     for (Resource r : l) {
       r.close();
       r.flush();
     }
+    checkArgIsOCWO(l);
   }
 
   void tryCatchShouldWork(Resource @OwningCollection [] resources) {
@@ -120,4 +149,8 @@ class LoopBodyAnalysisTests {
     r.close();
     r.flush();
   }
+
+  void checkArgIsOCWO(@OwningCollectionWithoutObligation Iterable<Resource> arg) {}
+
+  void checkArgIsOCWO(Resource @OwningCollectionWithoutObligation [] arg) {}
 }
