@@ -3020,7 +3020,6 @@ public class MustCallConsistencyAnalyzer {
             block = predBlocks.iterator().next();
             nodeIterator = block.getNodes().iterator();
           } else {
-            System.out.println("predecessor: " + predBlocks);
             throw new BugInCF(
                 "Encountered more than one CFG Block predeccessor trying to find the"
                     + " enhanced-for-loop update block. Block: ");
@@ -3272,7 +3271,6 @@ public class MustCallConsistencyAnalyzer {
       }
     }
 
-    System.out.println("calledmethodsinloop: " + calledMethodsInLoop);
     // now put the loop into the static datastructure if it calls any methods on the element
     if (calledMethodsInLoop != null && calledMethodsInLoop.size() > 0) {
       potentiallyFulfillingLoop.addMethods(calledMethodsInLoop);
@@ -3308,7 +3306,8 @@ public class MustCallConsistencyAnalyzer {
     if (collectionElementObligation == null) {
       // the loop did something weird. Might have reassigned the collection element.
       // The sound thing to do is return an empty list.
-      System.out.println("obligation gone for collection element");
+      // TODO SCK look at this. Why is the collection element obligaiton gone?
+      // System.out.println("obligation gone for collection element");
       return new HashSet<>();
       // throw new BugInCF(
       //     "No obligation for collection element "
