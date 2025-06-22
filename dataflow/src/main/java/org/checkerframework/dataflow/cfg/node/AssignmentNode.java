@@ -47,6 +47,9 @@ public class AssignmentNode extends Node {
   /** Whether the assignment node is synthetic */
   protected final boolean synthetic;
 
+  /** Whether the assignment node is desugared from an enhanced-for-loop over an array. */
+  protected boolean desugared;
+
   /**
    * Create a (non-synthetic) AssignmentNode.
    *
@@ -79,6 +82,7 @@ public class AssignmentNode extends Node {
     this.lhs = target;
     this.rhs = expression;
     this.synthetic = synthetic;
+    this.desugared = false;
   }
 
   /**
@@ -115,6 +119,20 @@ public class AssignmentNode extends Node {
    */
   public boolean isSynthetic() {
     return synthetic;
+  }
+
+  /**
+   * Check if the assignment node is desugared from an enhanced-for-loop over an array.
+   *
+   * @return true if the assignment node is desugared
+   */
+  public boolean isDesugared() {
+    return desugared;
+  }
+
+  /** set the assignment node as desugared from an enhanced-for-loop over an array */
+  public void setDesugared() {
+    desugared = true;
   }
 
   @Override
