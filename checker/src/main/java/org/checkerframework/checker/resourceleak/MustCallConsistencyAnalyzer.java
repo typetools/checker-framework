@@ -567,7 +567,7 @@ public class MustCallConsistencyAnalyzer {
         return false;
       } else {
         return (obj instanceof CollectionObligation)
-            && ((CollectionObligation) obj).mustCallMethod == this.mustCallMethod;
+            && ((CollectionObligation) obj).mustCallMethod.equals(this.mustCallMethod);
       }
     }
   }
