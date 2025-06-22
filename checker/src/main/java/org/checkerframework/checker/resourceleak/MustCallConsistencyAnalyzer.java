@@ -560,6 +560,16 @@ public class MustCallConsistencyAnalyzer {
         Set<ResourceAlias> resourceAliases, Set<MethodExitKind> whenToEnforce) {
       return new CollectionObligation(this.mustCallMethod, resourceAliases, whenToEnforce);
     }
+
+    @Override
+    public boolean equals(@Nullable Object obj) {
+      if (!super.equals(obj)) {
+        return false;
+      } else {
+        return (obj instanceof CollectionObligation)
+            && ((CollectionObligation) obj).mustCallMethod == this.mustCallMethod;
+      }
+    }
   }
 
   // Is there a different Obligation on every line of the program, or is Obligation mutable?
