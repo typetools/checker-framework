@@ -1,10 +1,13 @@
 package org.checkerframework.checker.rlccalledmethods;
 
 import com.sun.source.tree.MethodInvocationTree;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.calledmethods.CalledMethodsTransfer;
 import org.checkerframework.checker.mustcall.CreatesMustCallForToJavaExpression;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
@@ -14,13 +17,17 @@ import org.checkerframework.common.accumulation.AccumulationStore;
 import org.checkerframework.common.accumulation.AccumulationValue;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
+import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.cfg.node.SwitchExpressionNode;
 import org.checkerframework.dataflow.cfg.node.TernaryExpressionNode;
+import org.checkerframework.dataflow.expression.IteratedCollectionElement;
 import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -43,6 +50,83 @@ public class RLCCalledMethodsTransfer extends CalledMethodsTransfer {
   public RLCCalledMethodsTransfer(RLCCalledMethodsAnalysis analysis) {
     super(analysis);
     this.rlTypeFactory = (RLCCalledMethodsAnnotatedTypeFactory) analysis.getTypeFactory();
+  }
+
+  @Override
+  public void accumulate(
+      Node node, TransferResult<AccumulationValue, AccumulationStore> result, String... values) {
+    super.accumulate(node, result, values);
+    updateStoreForIteratedCollectionElement(Arrays.asList(values), result, node);
+  }
+
+  /**
+   * Add the collection elements iterated over in potentially Mcoe-obligation-fulfilling loops to
+   * the store.
+   */
+  @Override
+  public AccumulationStore initialStore(
+      UnderlyingAST underlyingAST, List<LocalVariableNode> parameters) {
+    AccumulationStore store = super.initialStore(underlyingAST, parameters);
+    RLCCalledMethodsAnnotatedTypeFactory cmAtf =
+        (RLCCalledMethodsAnnotatedTypeFactory) this.analysis.getTypeFactory();
+    for (RLCCalledMethodsAnnotatedTypeFactory.PotentiallyFulfillingLoop loop :
+        RLCCalledMethodsAnnotatedTypeFactory.getPotentiallyFulfillingLoops()) {
+      IteratedCollectionElement collectionElementJx =
+          new IteratedCollectionElement(loop.collectionElementNode, loop.collectionElementTree);
+      store.insertValue(collectionElementJx, cmAtf.top);
+    }
+    return store;
+  }
+
+  /**
+   * Checks whether the given node is the element of a collection iterated over in a
+   * potentially-Mcoe-obligation-fulfilling loop. If it is, accumulates the called methods to this
+   * collection element.
+   *
+   * @param valuesAsList the list of called methods
+   * @param result the transfer result
+   * @param node a cfg node
+   */
+  private void updateStoreForIteratedCollectionElement(
+      List<String> valuesAsList,
+      TransferResult<AccumulationValue, AccumulationStore> result,
+      Node node) {
+    IteratedCollectionElement collectionElement =
+        result.getRegularStore().getIteratedCollectionElement(node, node.getTree());
+    if (collectionElement != null) {
+      AccumulationValue flowValue = result.getRegularStore().getValue(collectionElement);
+      if (flowValue != null) {
+        // Dataflow has already recorded information about the target.  Integrate it into
+        // the list of values in the new annotation.
+        AnnotationMirrorSet flowAnnos = flowValue.getAnnotations();
+        assert flowAnnos.size() <= 1;
+        for (AnnotationMirror anno : flowAnnos) {
+          if (atypeFactory.isAccumulatorAnnotation(anno)) {
+            List<String> oldFlowValues =
+                AnnotationUtils.getElementValueArray(anno, calledMethodsValueElement, String.class);
+            // valuesAsList cannot have its length changed -- it is backed by an
+            // array.  getElementValueArray returns a new, modifiable list.
+            oldFlowValues.addAll(valuesAsList);
+            valuesAsList = oldFlowValues;
+          }
+        }
+      }
+      AnnotationMirror newAnno = atypeFactory.createAccumulatorAnnotation(valuesAsList);
+      if (result.containsTwoStores()) {
+        updateValueAndInsertIntoStore(result.getThenStore(), collectionElement, valuesAsList);
+        updateValueAndInsertIntoStore(result.getElseStore(), collectionElement, valuesAsList);
+      } else {
+        updateValueAndInsertIntoStore(result.getRegularStore(), collectionElement, valuesAsList);
+      }
+      Map<TypeMirror, AccumulationStore> exceptionalStores = result.getExceptionalStores();
+      exceptionalStores.forEach(
+          (tm, s) ->
+              s.replaceValue(
+                  collectionElement,
+                  analysis.createSingleAnnotationValue(newAnno, collectionElement.getType())));
+      // TODO unsure this is necessary/harmful
+      result.withExceptionalStores(exceptionalStores);
+    }
   }
 
   @Override

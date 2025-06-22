@@ -110,6 +110,52 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
   private final BiMap<LocalVariableNode, Tree> tempVarToTree = HashBiMap.create();
 
   /**
+   * Set of potentially collection-obligation-fulfilling loops. Found in the MustCallVisitor, which
+   * checks the header and (parts of the) body.
+   */
+  private static final Set<PotentiallyFulfillingLoop> potentiallyFulfillingLoops = new HashSet<>();
+
+  /**
+   * Construct a {@code PotentiallyFulfillingLoop} and add it to the static set of such loops to
+   * have their loop body analyzed for possibly fulfilling collection obligations.
+   *
+   * @param collectionTree AST {@code Tree} for collection iterated over
+   * @param collectionElementTree AST {@code Tree} for collection element iterated over
+   * @param condition AST {@code Tree} for loop condition
+   * @param loopBodyEntryBlock cfg {@code Block} for loop body entry
+   * @param loopUpdateBlock {@code Block} containing loop update
+   * @param loopConditionalBlock {@code Block} containing loop condition
+   * @param collectionEltNode cfg {@code Node} for collection element iterated over
+   */
+  public static void addPotentiallyFulfillingLoop(
+      ExpressionTree collectionTree,
+      Tree collectionElementTree,
+      Tree condition,
+      Block loopBodyEntryBlock,
+      Block loopUpdateBlock,
+      ConditionalBlock loopConditionalBlock,
+      Node collectionEltNode) {
+    potentiallyFulfillingLoops.add(
+        new PotentiallyFulfillingLoop(
+            collectionTree,
+            collectionElementTree,
+            condition,
+            loopBodyEntryBlock,
+            loopUpdateBlock,
+            loopConditionalBlock,
+            collectionEltNode));
+  }
+
+  /**
+   * Return the static set of {@code PotentiallyFulfillingLoop}s scheduled for analysis.
+   *
+   * @return the static set of {@code PotentiallyFulfillingLoop}s scheduled for analysis.
+   */
+  public static Set<PotentiallyFulfillingLoop> getPotentiallyFulfillingLoops() {
+    return potentiallyFulfillingLoops;
+  }
+
+  /**
    * Creates a new RLCCalledMethodsAnnotatedTypeFactory.
    *
    * @param checker the checker associated with this type factory
@@ -739,10 +785,31 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
   public void postAnalyze(ControlFlowGraph cfg) {
     MustCallConsistencyAnalyzer mustCallConsistencyAnalyzer =
         new MustCallConsistencyAnalyzer(ResourceLeakUtils.getResourceLeakChecker(this));
+
+    // traverse the cfg to find enhanced-for-loops over collections and perform a
+    // loop-body-analysis.
     // since this runs before the consistency analysis, we unfortunately have to traverse the cfg
     // twice. The first time to find these for-each loop, and the second time much later to do the
     // final consistency analysis.
     mustCallConsistencyAnalyzer.findFulfillingForEachLoops(cfg);
+
+    // perform loop-body-analysis on normal for-loops that were pattern matched on the AST
+    if (potentiallyFulfillingLoops.size() > 0) {
+      Set<PotentiallyFulfillingLoop> analyzed = new HashSet<>();
+      for (PotentiallyFulfillingLoop potentiallyFulfillingLoop : potentiallyFulfillingLoops) {
+        Tree collectionElementTree = potentiallyFulfillingLoop.collectionElementTree;
+        boolean loopContainedInThisMethod =
+            cfg.getNodesCorrespondingToTree(collectionElementTree) != null;
+        if (loopContainedInThisMethod) {
+          System.out.println("analyzing loop " + potentiallyFulfillingLoop.collectionTree);
+          mustCallConsistencyAnalyzer.analyzeObligationFulfillingLoop(
+              cfg, potentiallyFulfillingLoop);
+          analyzed.add(potentiallyFulfillingLoop);
+        }
+      }
+      potentiallyFulfillingLoops.removeAll(analyzed);
+    }
+
     super.postAnalyze(cfg);
   }
 }
