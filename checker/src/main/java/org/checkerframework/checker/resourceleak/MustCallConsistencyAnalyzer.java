@@ -2158,6 +2158,8 @@ public class MustCallConsistencyAnalyzer {
    *     control flow
    * @param visited block-Obligations pairs already analyzed or already on the worklist
    * @param worklist current worklist
+   * @throws InvalidLoopBodyAnalysisException if the propagation is called as part of a loop body
+   *     analysis and a state without input (unreachable in conventional analysis) is reached
    */
   private void propagateObligationsToSuccessorBlock(
       boolean isLoopBodyAnalysis,
