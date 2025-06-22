@@ -166,7 +166,7 @@ public final class TreeUtils {
   public static boolean isConstructor(MethodTree tree) {
     return tree.getName().contentEquals("<init>");
   }
-  
+
   /**
    * Checks if the method invocation is a call to hasNext.
    *
