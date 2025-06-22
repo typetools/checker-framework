@@ -9,6 +9,8 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.collectionownership.CollectionOwnershipAnnotatedTypeFactory.CollectionOwnershipType;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.resourceleak.ResourceLeakUtils;
+import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsAnnotatedTypeFactory.PotentiallyFulfillingLoop;
+import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
@@ -106,6 +108,38 @@ public class CollectionOwnershipTransfer extends CFTransfer {
     ExecutableElement method = node.getTarget().getMethod();
     List<Node> args = node.getArguments();
     res = transferOwnershipForMethodInvocation(method, args, res);
+
+    // check if the MethodInvocationNode is the condition for a collection-obligation-fulfilling
+    // loop,
+    // and whether the loop calls all methods in the MustCall type of the collection elements.
+    // In this case, refine the type of the collection to @OwningCollectionWithoutObligation in the
+    // else
+    // store.
+    PotentiallyFulfillingLoop loop =
+        CollectionOwnershipAnnotatedTypeFactory.getFulfillingLoopForCondition(node.getTree());
+    if (loop != null) {
+      CFStore elseStore = res.getElseStore();
+      JavaExpression collectionJx = JavaExpression.fromTree(loop.collectionTree);
+      CFValue collectionValue = null;
+      try {
+        collectionValue = elseStore.getValue(collectionJx);
+      } catch (Exception e) {
+        return res;
+      }
+
+      CollectionOwnershipType collectionCoType = atypeFactory.getCoType(collectionValue);
+      if (collectionCoType == CollectionOwnershipType.OwningCollection) {
+        List<String> mustCallValuesOfElements =
+            atypeFactory.getMustCallValuesOfResourceCollectionComponent(
+                collectionValue.getUnderlyingType());
+        if (loop.getMethods().containsAll(mustCallValuesOfElements)) {
+          elseStore.clearValue(collectionJx);
+          elseStore.insertValue(collectionJx, atypeFactory.OWNINGCOLLECTIONWITHOUTOBLIGATION);
+          return new ConditionalTransferResult<>(
+              res.getResultValue(), res.getThenStore(), elseStore);
+        }
+      }
+    }
 
     // if (!noCreatesMustCallFor) {
     //   List<JavaExpression> targetExprs =
