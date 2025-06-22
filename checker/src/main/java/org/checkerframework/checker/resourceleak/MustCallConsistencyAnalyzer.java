@@ -2220,7 +2220,7 @@ public class MustCallConsistencyAnalyzer {
         CollectionOwnershipAnnotatedTypeFactory.getFulfillingLoopForConditionalBlock(currentBlock);
     if ((currentBlock instanceof ConditionalBlock) && loop != null) {
       ConditionalBlock conditionalBlock = (ConditionalBlock) currentBlock;
-      if (conditionalBlock.getElseSuccessor() == successor) {
+      if (conditionalBlock.getElseSuccessor().equals(successor)) {
         isElseEdgeOfFulfillingLoop = true;
       }
     }
@@ -3193,7 +3193,7 @@ public class MustCallConsistencyAnalyzer {
     Block loopUpdateBlock = potentiallyFulfillingLoop.loopUpdateBlock;
     Tree collectionElement = potentiallyFulfillingLoop.collectionElementTree;
 
-    boolean emptyLoopBody = loopBodyEntryBlock == loopUpdateBlock;
+    boolean emptyLoopBody = loopBodyEntryBlock.equals(loopUpdateBlock);
     if (emptyLoopBody) {
       return;
     }
