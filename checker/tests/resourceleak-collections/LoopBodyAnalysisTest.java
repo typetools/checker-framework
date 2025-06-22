@@ -150,6 +150,29 @@ class LoopBodyAnalysisTests {
     r.flush();
   }
 
+  void indexForLoop(Resource @OwningCollection [] resources) {
+    for (int i = 0; i < resources.length; i++) {
+      resources[i].close();
+      resources[i].flush();
+    }
+  }
+
+  // :: error: unfulfilled.collection.obligations
+  void indexForLoopPartial(Resource @OwningCollection [] resources) {
+    for (int i = 0; i < resources.length; i++) {
+      resources[i].close();
+      // missing flush
+    }
+  }
+
+  void indexForLoopList(@OwningCollection List<Resource> resources) {
+    for (int i = 0; i < resources.size(); i++) {
+      Resource r = resources.get(i);
+      r.close();
+      r.flush();
+    }
+  }
+
   void checkArgIsOCWO(@OwningCollectionWithoutObligation Iterable<Resource> arg) {}
 
   void checkArgIsOCWO(Resource @OwningCollectionWithoutObligation [] arg) {}
