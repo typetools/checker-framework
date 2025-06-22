@@ -3087,7 +3087,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       extendWithNode(arrayVariableNode);
       Node expressionNode = scan(expression, p);
 
-      translateAssignment(arrayVariable, new LocalVariableNode(arrayVariable), expressionNode);
+      translateAssignment(arrayVariable, new LocalVariableNode(arrayVariable), expressionNode)
+          .setDesugaredFromEnhancedArrayForLoop();
 
       // Declare and initialize the loop index variable
       TypeMirror intType = types.getPrimitiveType(TypeKind.INT);
