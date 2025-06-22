@@ -784,7 +784,7 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
   @Override
   public void postAnalyze(ControlFlowGraph cfg) {
     MustCallConsistencyAnalyzer mustCallConsistencyAnalyzer =
-        new MustCallConsistencyAnalyzer(ResourceLeakUtils.getResourceLeakChecker(this));
+        new MustCallConsistencyAnalyzer(ResourceLeakUtils.getResourceLeakChecker(this), true);
 
     // traverse the cfg to find enhanced-for-loops over collections and perform a
     // loop-body-analysis.
@@ -801,7 +801,6 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
         boolean loopContainedInThisMethod =
             cfg.getNodesCorrespondingToTree(collectionElementTree) != null;
         if (loopContainedInThisMethod) {
-          System.out.println("analyzing loop " + potentiallyFulfillingLoop.collectionTree);
           mustCallConsistencyAnalyzer.analyzeObligationFulfillingLoop(
               cfg, potentiallyFulfillingLoop);
           analyzed.add(potentiallyFulfillingLoop);

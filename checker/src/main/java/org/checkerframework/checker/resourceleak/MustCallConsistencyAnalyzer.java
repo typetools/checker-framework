@@ -177,6 +177,12 @@ public class MustCallConsistencyAnalyzer {
   private final CollectionOwnershipAnnotatedTypeFactory coAtf;
 
   /**
+   * True if currently executing a loop body analysis and false if executing a normal consistency
+   * analysis.
+   */
+  private boolean isLoopBodyAnalysis;
+
+  /**
    * A cache for the result of calling {@code RLCCalledMethodsAnnotatedTypeFactory.getStoreAfter()}
    * on a node. The cache prevents repeatedly computing least upper bounds on stores
    */
@@ -701,11 +707,12 @@ public class MustCallConsistencyAnalyzer {
    *
    * @param rlc the resource leak checker
    */
-  public MustCallConsistencyAnalyzer(ResourceLeakChecker rlc) {
+  public MustCallConsistencyAnalyzer(ResourceLeakChecker rlc, boolean isLoopBodyAnalysis) {
     this.cmAtf =
         (RLCCalledMethodsAnnotatedTypeFactory)
             ResourceLeakUtils.getRLCCalledMethodsChecker(rlc).getTypeFactory();
     this.coAtf = ResourceLeakUtils.getCollectionOwnershipAnnotatedTypeFactory(cmAtf);
+    this.isLoopBodyAnalysis = isLoopBodyAnalysis;
     this.checker = rlc;
     this.permitStaticOwning = checker.hasOption("permitStaticOwning");
     this.permitInitializationLeak = checker.hasOption("permitInitializationLeak");
@@ -1317,8 +1324,8 @@ public class MustCallConsistencyAnalyzer {
       return;
     }
     // Use the temporary variable for the rhs if it exists.
-    Node rhs = NodeUtils.removeCasts(assignmentNode.getExpression());
-    rhs = getTempVarOrNode(rhs);
+    Node rhsExpr = NodeUtils.removeCasts(assignmentNode.getExpression());
+    Node rhs = getTempVarOrNode(rhsExpr);
 
     // Ownership transfer to @Owning field.
     if (lhsElement.getKind() == ElementKind.FIELD) {
@@ -1388,6 +1395,66 @@ public class MustCallConsistencyAnalyzer {
     } else if (lhs instanceof LocalVariableNode) {
       LocalVariableNode lhsVar = (LocalVariableNode) lhs;
       updateObligationsForPseudoAssignment(obligations, assignmentNode, lhsVar, rhs);
+      if (isLoopBodyAnalysis) {
+        handleAssignmentToCollectionElementVariable(obligations, assignmentNode, lhsVar, rhsExpr);
+      }
+    }
+  }
+
+  /**
+   * In the case of a loop body analysis, this method checks whether the rhs of the assignment
+   * corresponds to the collection element iterated over, by comparing the AST-trees of the
+   * collection element and the rhs for structural equality (as defined by
+   * TreeUtils#sameTree(ExpressionTree, ExpressionTree)).
+   *
+   * <p>If they are determined equal, the lhs variable is added as a resource alias to the
+   * obligation of the collection element.
+   *
+   * @param obligations the set of tracked obligations
+   * @param node the assignment node to handle
+   * @param lhsVar the left-hand side for the pseudo-assignment
+   * @param rhsExpr the right-hand side for the pseudo-assignment, without conversion to a
+   *     temp-variable
+   */
+  private void handleAssignmentToCollectionElementVariable(
+      Set<Obligation> obligations, AssignmentNode node, LocalVariableNode lhsVar, Node rhsExpr) {
+    if (!isLoopBodyAnalysis) {
+      return;
+    }
+    Obligation oldObligation = null, newObligation = null;
+    for (Obligation o : obligations) {
+      if (oldObligation != null && newObligation != null) break;
+      for (ResourceAlias alias : o.resourceAliases) {
+        if ((alias.tree instanceof ExpressionTree)
+            && (rhsExpr.getTree() instanceof ExpressionTree)
+            && TreeUtils.sameTree(
+                (ExpressionTree) alias.tree, (ExpressionTree) rhsExpr.getTree())) {
+          Set<ResourceAlias> newResourceAliasesForObligation =
+              new LinkedHashSet<>(o.resourceAliases);
+          // It is possible to observe assignments to temporary variables, e.g.,
+          // synthetic assignments to ternary expression variables in the CFG.  For such
+          // cases, use the tree associated with the temp var for the resource alias,
+          // as that is the tree where errors should be reported.
+          Tree treeForAlias =
+              // I don't think we need a tempVar here, since the only case where we're interested
+              // in such an assignment in the loopBodyAnalysis is if the lhs is an actual variable
+              // to be used as an alias, so we don't care about the case where lhs is a temp-var.
+              // typeFactory.isTempVar(lhsVar)
+              //     ? typeFactory.getTreeForTempVar(lhsVar)
+              //     : node.getTree();
+              node.getTree();
+          ResourceAlias aliasForAssignment =
+              new ResourceAlias(new LocalVariable(lhsVar), treeForAlias);
+          newResourceAliasesForObligation.add(aliasForAssignment);
+          oldObligation = o;
+          newObligation = new Obligation(newResourceAliasesForObligation, o.whenToEnforce);
+          break;
+        }
+      }
+    }
+    if (oldObligation != null && newObligation != null) {
+      obligations.remove(oldObligation);
+      obligations.add(newObligation);
     }
   }
 
@@ -2139,7 +2206,6 @@ public class MustCallConsistencyAnalyzer {
 
       try {
         propagateObligationsToSuccessorBlock(
-            false,
             cfg,
             obligations,
             currentBlock,
@@ -2157,8 +2223,6 @@ public class MustCallConsistencyAnalyzer {
    * Helper for {@link #propagateObligationsToSuccessorBlocks(ControlFlowGraph, Set, Block, Set,
    * Deque)} that propagates obligations along a single edge.
    *
-   * @param isLoopBodyAnalysis true if part of a loop body analysis (instead of consistency
-   *     analysis)
    * @param cfg the control flow graph
    * @param obligations the Obligations for the current block
    * @param currentBlock the current block
@@ -2172,7 +2236,6 @@ public class MustCallConsistencyAnalyzer {
    *     analysis and a state without input (unreachable in conventional analysis) is reached
    */
   private void propagateObligationsToSuccessorBlock(
-      boolean isLoopBodyAnalysis,
       ControlFlowGraph cfg,
       Set<Obligation> obligations,
       Block currentBlock,
@@ -2265,8 +2328,9 @@ public class MustCallConsistencyAnalyzer {
       // going out of scope: if this is an exit block or there is no information about any
       // of them in the successor store, all aliases must be going out of scope and a
       // consistency check should occur.
-      if (successor.getType() == BlockType.SPECIAL_BLOCK /* special blocks are exit blocks */
-          || obligationGoesOutOfScopeBeforeSuccessor) {
+      if (!isLoopBodyAnalysis
+          && (successor.getType() == BlockType.SPECIAL_BLOCK /* special blocks are exit blocks */
+              || obligationGoesOutOfScopeBeforeSuccessor)) {
         MustCallAnnotatedTypeFactory mcAtf =
             cmAtf.getTypeFactoryOfSubchecker(MustCallChecker.class);
 
@@ -2408,7 +2472,8 @@ public class MustCallConsistencyAnalyzer {
         // scope.
         Set<ResourceAlias> copyOfResourceAliases = new LinkedHashSet<>(obligation.resourceAliases);
         copyOfResourceAliases.removeIf(
-            alias -> !aliasInScopeInSuccessor(regularStoreOfSuccessor, alias));
+            alias ->
+                !isLoopBodyAnalysis && !aliasInScopeInSuccessor(regularStoreOfSuccessor, alias));
         successorObligations.add(
             obligation.getReplacement(copyOfResourceAliases, obligation.whenToEnforce));
       }
@@ -2446,9 +2511,9 @@ public class MustCallConsistencyAnalyzer {
 
   /**
    * Returns true if {@code alias.reference} is definitely in-scope in the successor store: that is,
-   * there is a value for it in {@code successorStore}.
+   * there is a value for it in {@code successorStore} or {@code coStore}.
    *
-   * @param successorStore the regular store of the successor block
+   * @param successorStore the regular CalledMethods store of the successor block
    * @param alias the resource alias to check
    * @return true if the variable is definitely in scope for the purposes of the consistency
    *     checking algorithm in the successor block from which the store came
@@ -2624,6 +2689,11 @@ public class MustCallConsistencyAnalyzer {
    */
   private void checkMustCall(
       Obligation obligation, AccumulationStore cmStore, CFStore mcStore, String outOfScopeReason) {
+
+    if (isLoopBodyAnalysis) {
+      // don't report warnings in loop body analysis
+      return;
+    }
 
     if (obligation instanceof CollectionObligation) {
       ResourceAlias firstAlias = obligation.resourceAliases.iterator().next();
@@ -3266,7 +3336,6 @@ public class MustCallConsistencyAnalyzer {
         } else {
           try {
             propagateObligationsToSuccessorBlock(
-                true,
                 cfg,
                 obligations,
                 currentBlock,
@@ -3317,7 +3386,6 @@ public class MustCallConsistencyAnalyzer {
       // the loop did something weird. Might have reassigned the collection element.
       // The sound thing to do is return an empty list.
       // TODO SCK look at this. Why is the collection element obligaiton gone?
-      // System.out.println("obligation gone for collection element");
       return new HashSet<>();
       // throw new BugInCF(
       //     "No obligation for collection element "

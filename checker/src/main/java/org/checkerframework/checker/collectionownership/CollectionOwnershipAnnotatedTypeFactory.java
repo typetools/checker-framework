@@ -192,7 +192,8 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
         (RLCCalledMethodsAnnotatedTypeFactory)
             ResourceLeakUtils.getRLCCalledMethodsChecker(this).getTypeFactory();
     rlc.setRoot(root);
-    MustCallConsistencyAnalyzer mustCallConsistencyAnalyzer = new MustCallConsistencyAnalyzer(rlc);
+    MustCallConsistencyAnalyzer mustCallConsistencyAnalyzer =
+        new MustCallConsistencyAnalyzer(rlc, false);
     mustCallConsistencyAnalyzer.analyze(cfg);
     // Inferring owning annotations for @Owning fields/parameters, @EnsuresCalledMethods for
     // finalizer methods and @InheritableMustCall annotations for the class declarations.
