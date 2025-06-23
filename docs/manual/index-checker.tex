@@ -803,6 +803,459 @@ warnings:
     }
 \end{Verbatim}
 
+
+\sectionAndLabel{Support for mutable-length data structures}{index-mutable-length}
+
+The Index Checker was originally limited to \emph{fixed-size} sequences whose
+lengths never change after creation. However, many real-world collections
+(e.g., {\tt List} or other containers) can grow or shrink at runtime.
+This section extends the Index Checker to handle such \emph{mutable-length} data
+structures, addressing the challenges of mutation and aliasing. In particular,
+we permit certain safe mutations (like growing a collection) while restricting or
+carefully checking mutations that shrink a collection’s length, in order to
+preserve index safety.
+
+\subsectionAndLabel{The challenges of mutation and aliasing}{index-mutable-overview}
+
+When a collection’s length can change, an index that was valid at one point may
+become invalid later. For example, if an element is removed from a list after
+an index is verified, that index might now be out of bounds. The core problem is
+that \textbf{shrinking} a collection invalidates earlier index assumptions.
+Aliasing exacerbates this – if multiple references point to the same collection,
+a mutation via one reference can affect the others. The current Index Checker
+assumes no aliasing or length changes, so it would incorrectly treat a
+previously-validated index as safe even after the collection has shrunk.
+
+To maintain soundness, the extended Index Checker must treat certain operations
+as potential invalidations of index information. The key insight is that
+\textbf{growing} a collection (adding elements) never invalidates existing indices
+(any index valid before remains valid after an increase in length), whereas
+\textbf{shrinking} a collection (removing elements) can render previously valid
+indices too high. Therefore, the type system distinguishes situations where length
+decreases are possible from those where they are not, and it invalidates (forgets)
+index facts upon operations that could reduce a collection’s length or otherwise
+disrupt earlier assumptions.
+
+\subsectionAndLabel{Permitting growth and restricting shrinking}{index-mutable-approach}
+
+The extended Index Checker’s approach is to allow mutations that increase length
+with minimal overhead, while placing restrictions on operations that might decrease
+length. In practice, this means a programmer can freely append to a collection without
+breaking index safety, but removals must be tracked and often require revalidation of
+indices. We introduce a set of type qualifiers on collection references that encode
+what mutations are permitted through that reference. By writing these annotations
+in your code (or relying on defaults), you communicate to the type checker which
+references will be used to modify lengths and how.
+
+In essence, a reference to a mutable collection can be in one of several “modes”:
+\begin{itemize}
+\item
+  A reference that is used only for reading or growing the collection
+  (never to remove elements) can be treated almost like a fixed-size collection,
+  since it will never witness a length-decreasing mutation.
+\item
+  A reference through which elements may be removed (shrinking the collection)
+  is considered more volatile – the checker must enforce additional checks and
+  may invalidate some facts after mutations.
+\item
+  In special cases, a programmer can declare that a reference’s mutations are not
+  being checked for index safety (opting out for difficult scenarios or incremental
+  adoption).
+\end{itemize}
+
+By permitting some references to only grow (or not mutate at all) and requiring
+explicit annotation for those that can shrink, the type system ensures that any
+potential unsafe scenario (like using an index after an element removal) is either
+prevented or re-checked. We next define the qualifier hierarchy that implements
+these ideas.
+
+\subsectionAndLabel{Qualifier hierarchy for mutable-length collections}{index-mutable-qualifiers}
+
+Four new type qualifiers describe how a reference to a sequence can be used with
+respect to length mutations. They form a qualifier hierarchy that the checker
+enforces on assignments and method calls. The qualifiers are:
+\footnote{These annotations apply to references of sequence types
+(e.g., \code{List<E>}, arrays, etc.) that are subject to index checking.}
+
+\begin{description}
+\item[\refqualclass{checker/index/qual}{UnShrinkableRef}]
+  Indicates that this reference will not be used to shrink the collection. In other
+  words, calling methods that remove elements (such as \code{remove()} or \code{clear()})
+  through this reference is forbidden. However, the collection \emph{could} still be
+  modified by other aliases. An @UnShrinkableRef reference guarantees that as long as
+  this reference is used exclusively, the collection’s size will not decrease. This is
+  the \textbf{default qualifier} for mutable-length structures: if no annotation is written,
+  a reference is assumed to be @UnShrinkableRef. It places a restriction on the
+  \emph{current reference’s} usage (no removal through it) but does \emph{not} promise
+  that the collection’s size cannot change via other references. The Index Checker will
+  thus allow index-safe operations under the assumption that this reference doesn’t shrink
+  the sequence, but it remains cautious about possible external mutations (see aliasing below).
+
+\item[\refqualclass{checker/index/qual}{GrowOnly}]
+  A stronger qualifier that indicates the reference will be used only to \emph{grow}
+  the collection and not to shrink it. Like @UnShrinkableRef, it forbids calling any
+  shrinking methods through this reference. In addition, @GrowOnly implies that no other
+  alias will shrink the collection while this reference is alive. In effect, the
+  collection’s length can only stay the same or increase. This means any index that is
+  valid at one point remains valid later (unless the index itself is reassigned). The
+  type system ensures that a @GrowOnly reference cannot coexist (alias) with any reference
+  that permits shrinking. Using a @GrowOnly reference, one can safely append to a collection
+  without invalidating existing index relationships, and the checker will not unnecessarily
+  invalidate index information on that reference after additions. (Any attempt to call a
+  removal method on a @GrowOnly reference is a type error.)
+
+\item[\refqualclass{checker/index/qual}{Shrinkable}]
+  Indicates that this reference may be used to shrink the collection (e.g., via removals).
+  When a reference is @Shrinkable, the Index Checker allows calls to element-removing methods
+  through it. However, because such calls can reduce the length, the checker takes extra
+  precautions: it will typically require that code re-establish index bounds after a mutation,
+  and it will *invalidate any previously inferred index facts* for this collection when a shrink
+  operation occurs. In other words, after a removal, the checker treats the size and safe indices
+  of the collection as potentially changed (unless proven otherwise by new checks). A @Shrinkable reference also signifies that other aliases might shrink the collection as well. The presence of a @Shrinkable reference is what truly marks a data structure as mutable-length from the checker’s perspective, so it is used only when needed. In practice, you should annotate a variable as @Shrinkable if you intend to call methods that remove elements through it (or pass it to code that might do so). All @Shrinkable references are considered supertype-compatible with @UnShrinkableRef (meaning you can use a shrinkable collection in a context that doesn’t remove elements), but not vice versa.
+
+\item[\refqualclass{checker/index/qual}{UncheckedShrinkable}]
+  This qualifier also permits shrinking, but it signals the type checker to \emph{opt out} of
+  index safety guarantees for this reference. In effect, @UncheckedShrinkable tells the checker,
+  “assume all indices are valid, even across mutations.” It is an escape hatch for cases where
+  the aliasing or mutation patterns are too complex for the current type system, or during
+  incremental adoption of the checker. You should rarely use this qualifier in application code —
+  it’s mainly provided for situations where full checking is impractical. A reference annotated
+  @UncheckedShrinkable is treated as potentially shrinkable, but the checker will not issue
+  warnings for index operations on it (making it the programmer’s responsibility to ensure safety).
+  Internally, @UncheckedShrinkable can be thought of as a subtype of @Shrinkable that disables
+  warnings. It can be freely cast to @Shrinkable or vice versa when needed, but doing so means
+  relinquishing or reinstating compile-time guarantees.  (Using @UncheckedShrinkable is analogous
+  to using a @SuppressWarnings in that it trades soundness for expedience.)
+
+\item[\refqualclass{checker/index/qual}{BottomGrowShrink}]
+  This is the bottom qualifier in the mutable-length collection hierarchy. It is used
+  internally by the type system to represent the most restrictive reference — one that
+  permits neither growth nor shrinking of a collection. This qualifier is not intended
+  to be written in source code and will typically only appear in diagnostics or in
+  subtyping relationships as part of type inference. As with other bottom types such as
+  \refqualclass{checker/index/qual}{LowerBoundBottom} or
+  \refqualclass{checker/index/qual}{UpperBoundBottom}, its main role is to serve as
+  the subtype of all other mutability qualifiers. The type system ensures that no
+  reference in a user program will be assigned this type, and it should never be used
+  explicitly in annotations.
+\end{description}
+
+These qualifiers work together to enforce safe patterns. The qualifier hierarchy
+(shown schematically in Figure 11.10) has @UnShrinkableRef as its top (most general) type,
+since any reference that promises not to shrink the collection can be treated as an
+@UnShrinkableRef. Both @Shrinkable and @GrowOnly are sub-types of @UnShrinkableRef –
+they add stronger conditions (allowing or disallowing certain mutations). In the hierarchy,
+@GrowOnly is incompatible with @Shrinkable (neither is a subtype of the other); they represent
+distinct mutation permissions. The @UncheckedShrinkable qualifier is considered a subtype of
+@Shrinkable (it is a special case of a shrinkable reference that bypasses checking). At the very
+bottom is an implicit “bottom” qualifier that represents a reference that can neither grow nor
+shrink – this is used internally by the type system and is not written by programmers.
+Assignments and method calls must respect this hierarchy. For example, you can use a @Shrinkable
+collection in any context that expects an @UnShrinkableRef (because a shrinkable collection can
+certainly be used in a read-only way), but you cannot pass an @UnShrinkableRef where a @Shrinkable
+is required (because the callee might attempt to remove an element). Likewise, the type system
+prevents a @GrowOnly reference from being aliased by (or assigned to) a @Shrinkable reference,
+since that would violate the guarantee that no shrink will occur.
+
+\begin{figure}
+\begin{center}
+  \hfill
+  \includeimage{index-mutability-lattice}{5cm}
+  \hfill
+\end{center}
+  \caption{Qualifier hierarchy for Index Checker with mutable-length support.
+    Arrows denote subtype relationships (lower means stricter/safer).}
+  \label{index-mutability-lattice}
+\end{figure}
+
+\emph{Default behavior:} By default, the Index Checker treats unannotated collection references
+as \refqualclass{checker/index/qual}{UnShrinkableRef}. This means that in typical code (without
+new annotations), the checker assumes your code will not remove elements via those references.
+This default was chosen because most collection operations are additions or reads; relatively
+fewer places actually remove elements. If you do attempt to call a mutating method that shrinks
+the collection without the reference being annotated as @Shrinkable (or @UncheckedShrinkable),
+the checker will issue an error. In practice, you only need to add annotations in the parts of
+your code that perform removals (or that need the special @GrowOnly or @UncheckedShrinkable
+behavior). This default helps minimize the annotation burden while still catching places where
+index safety could be compromised.
+
+\subsectionAndLabel{Aliasing and effect annotations}{index-mutable-aliasing}
+
+A critical aspect of supporting mutable-length structures is handling \textbf{aliasing}:
+multiple references to the same collection. If one reference is used to shrink a collection,
+other aliases to that collection must be aware that the length has changed. The extended Index
+Checker uses a combination of type qualifiers and method annotations to account for aliasing:
+\begin{itemize}
+\item
+  \textbf{Qualifiers prevent unsafe alias combinations:}
+  The type hierarchy ensures that a @GrowOnly reference cannot exist at the same time as a
+  @Shrinkable reference to the \emph{same} collection. If one part of the code treats a collection
+  as grow-only, another part of the code cannot legally treat the same collection as shrinkable
+  without a type error or explicit cast. This consistency check means that if you have a @GrowOnly
+  List, you know no other part of the program is removing elements from it (otherwise the other
+  part would have to be @Shrinkable and the checker would report a conflict). In contrast, an
+  @UnShrinkableRef reference may alias a @Shrinkable one — which means the collection might be shrunk
+  through the other alias. The checker will handle that scenario by invalidating index information (see below),
+  but it does not prohibit the aliasing.
+
+\item
+  \textbf{The @BackedBy annotation:}
+  To assist the checker in reasoning about two objects that share the same backing storage,
+  we introduce an annotation \code{@BackedBy(<reference>)}. This is a class or method annotation
+  that declares an aliasing relationship. For example, the \code{subList} method of \code{List}
+  could be annotated to indicate that the returned list is backed by (and thus aliases) the original
+  list. In code, it might look like:
+
+\begin{Verbatim}
+    public List<E> subList(int from, int to) @BackedBy("this");
+\end{Verbatim}
+
+  This means the result of \code{subList} is a view into the original list. The Index Checker uses
+  @BackedBy information to propagate mutations: if a sub-list is modified (e.g., an element removed),
+  the checker treats the original list’s length as changed as well. Without pointer analysis,
+  these explicit alias annotations are crucial for soundness. They are used in library annotations
+  to inform the checker of common aliasing patterns (views, wrappers, etc.). If your code uses a
+  custom data structure where one collection is backed by another, you may use @BackedBy in a similar
+  way.
+
+\item
+  \textbf{Method effects on length:}
+  In order to know when to invalidate index-related facts, the checker must know which methods
+  can change a collection’s length. Many standard methods (like \code{add}, \code{remove},
+  \code{clear}, etc.) are obviously length-changing. The Checker Framework uses two mechanisms
+  to handle this. First, it relies on the qualifier of the receiver or argument: for instance,
+  calling \code{remove} on a @Shrinkable reference is understood to shrink the collection.
+  Second, it provides a method annotation \code{@ChangesLength} to explicitly mark a method as
+  modifying the length of a structure. For example, the \code{remove} method in \code{List} might
+  be annotated as \code{@ChangesLength} (on the receiver), and a method like \code{Collections.shuffle(List)}
+  could be annotated as \code{@ChangesLength("arg0")} if it may remove or add elements to its
+  first argument. These annotations help the checker conservatively assume that after such a call,
+  the length of the specified collection has changed (unless it can prove otherwise).
+  In practice, the JDK’s annotated signatures use @ChangesLength on any method that can add or
+  remove elements from a collection.
+
+\item
+  \textbf{Future pointer analysis:}
+  Currently, the Index Checker does not perform whole-program pointer/alias analysis.
+  It relies on the annotations described above to be informed of aliasing relationships and
+  mutation effects. In the future, a pointer analysis could be integrated to automatically
+  detect when two references might alias the same collection, or to determine more precisely
+  which objects a given method might modify. This would reduce the need for manual @BackedBy
+  annotations and could allow more fine-grained invalidation (for example, only dropping index
+  facts for the specific collection that was mutated, rather than for all collections or all
+  aliases). As of now, pointer analysis remains an area of future work; the present system
+  strikes a balance by requiring the programmer to annotate tricky aliasing cases.
+\end{itemize}
+
+\subsectionAndLabel{Flow-sensitivity and side-effect invalidation}{index-mutable-flow}
+
+Because of mutations, the Index Checker must sometimes forget (invalidate) information that was
+established earlier in the code. The checker is \emph{flow-sensitive}: it tracks facts like
+“\code{i} is a valid index for \code{list}” within a certain scope, but if something happens
+that could falsify that fact, the checker will revoke it.
+
+\textbf{Invalidation after side effects:}
+If a reference is not known to be safe from shrinking (i.e., it is not @GrowOnly and not
+explicitly opted-out), the checker takes a conservative approach: it
+\textbf{invalidates all index-related qualifiers for that collection whenever a side effect may occur on it}.
+In practice, this means that after any call to a method that might mutate the collection’s
+length (or an alias of it), any previously inferred type like \code{@IndexFor("list")} or
+\code{@LTLengthOf("list")} is cleared or downgraded. For example, consider this snippet:
+
+\begin{Verbatim}
+  // list is @Shrinkable List<String>
+  if (0 <= idx && idx < list.size()) {
+  // idx is considered @IndexFor("list") here
+  list.remove(0);       // shrink the list
+  String s = list.get(idx);  // <-- must recheck, idx may now be out of range
+}
+\end{Verbatim}
+
+After the call to \code{list.remove(0)}, the checker invalidates the fact that \code{idx}
+was a valid index, because the removal may have decreased the list’s length (or shifted indices).
+It will warn that the subsequent \code{list.get(idx)} is unsafe unless the code re-establishes
+the index bound (for instance, by checking \code{idx < list.size()} again after the removal).
+
+\textbf{The @SideEffectsOnly annotation:} To help identify methods that have important side effects
+(and no relevant return value), the Index Checker provides a method annotation \code{@SideEffectsOnly}.
+This annotation indicates that the method’s primary purpose is to produce side effects, and thus any
+index facts involving objects that the method could modify should be invalidated afterward. In
+contrast to @ChangesLength (which is specific to length changes of a particular collection),
+@SideEffectsOnly is a broader signal: when a method is marked @SideEffectsOnly, the checker will
+conservatively assume that it may have changed the state of any object it had access to (particularly
+via its parameters or the receiver). For index checking, this means the method call acts as a “hard stop”
+for flow-sensitive information: after the call, indices that were previously considered safe may need to
+be re-validated. For example, if you call a method \code{updateList(List\<?> lst) @SideEffectsOnly} on
+a list, the checker will not carry any index assumptions about \code{lst} across that call (because
+\code{updateList} might have added or removed elements). In effect, marking a method @SideEffectsOnly
+forces the same kind of index fact invalidation as an explicit mutation. Library developers can use this
+annotation on void methods or others that solely mutate structures to ensure soundness. Combined with the
+Purity Checker (which marks side-effect-free methods), this mechanism helps the Index Checker distinguish
+pure computations from mutating ones. A method that is known to be @Pure (no side effects) will \emph{not}
+invalidate index facts for its arguments, whereas a @SideEffectsOnly method will.
+
+\textbf{Summary of flow rules:} In summary, whenever your code performs an operation that might affect a collection’s length:
+\begin{itemize}
+\item
+  If the operation is through a @Shrinkable (or unannotated, defaulting to @UnShrinkableRef) reference,
+  the checker will drop any knowledge about indices for that collection. You must add new checks
+  after the mutation if you want to use indices safely.
+\item
+  If the operation is through a @GrowOnly reference, the checker does not need to drop index facts for that collection,
+  because the length can only increase (making previously safe indices still safe).
+\item
+  If a method call is made and that method is neither known to be pure nor annotated otherwise, the checker errs on the
+  side of caution and may invalidate index info for any involved collections. By using @ChangesLength and @SideEffectsOnly
+  annotations in the library, this behavior is made more precise, targeting the specific collections that are affected.
+\item
+  Code that relies on previously checked indices across mutating calls will trigger warnings, prompting the developer
+  to either adjust the code structure or add appropriate re-checks or annotations (such as splitting a single method
+  into two phases, or copying the collection size to a local variable before mutation, etc.).
+\end{itemize}
+
+\subsectionAndLabel{Using the new annotations in practice}{index-mutable-usage}
+
+The implementation of these features involves adding annotations to both library code (the JDK or third-party collection classes)
+and your application code:
+\begin{itemize}
+\item
+  \textbf{Library annotation (JDK):}
+    The Java collections library is annotated so that the Index Checker knows how its methods affect lengths. For example,
+    \code{List.remove} is annotated to indicate it requires a @Shrinkable receiver (meaning you should have the reference as
+    @Shrinkable to call it without error), and it is marked @ChangesLength on the receiver. Methods like \code{add} might be marked
+    @ChangesLength as well (to indicate growth), and \code{subList} returns a list annotated with @BackedBy("this"). These annotations
+    are trusted by the checker. (The framework does not re-verify the JDK itself; it assumes the library methods behave as annotated.)
+    As a result, when you use standard collections, you’ll get appropriate warnings or lack thereof based on these annotations. For
+    instance, calling \code{myList.remove(i)} where \code{myList} is not annotated as @Shrinkable will produce an error, because the
+    library method signature effectively expects a Shrinkable receiver.
+
+% \item
+%   \textbf{Application code:}
+%   As an application developer, you primarily use these qualifiers to document and verify your intended mutation patterns. Here are some guidelines:
+
+%   * If you never remove elements from a particular collection (you only add or read), you don’t need to write any annotation – it will default to @UnShrinkableRef and the checker will assume no removals. If you want to be explicit (for documentation), you can annotate it as @UnShrinkableRef or @GrowOnly. Use @GrowOnly if you want to make the stronger claim that not only will you not remove, but also that the collection isn’t shrunk via any alias. This could be the case for a list that is built up over time but never pruned.
+%   * If you do remove elements from a collection, annotate the reference (or variable) as \refqualclass{checker/index/qual}{Shrinkable}. For example:
+%     \begin{Verbatim}
+%     import org.checkerframework.checker.index.qual.Shrinkable;
+%     @Shrinkable List<String> lines = new ArrayList<>();
+%     ...
+%     lines.add("first");
+%     lines.remove(0);
+%     \end{Verbatim}
+%     Marking \code{lines} as @Shrinkable tells the checker that removals are intentional. The checker will allow \code{lines.remove(0)} to be called. It will, however, invalidate index facts for \code{lines} afterward as discussed. If you omit the @Shrinkable annotation in this scenario, the checker would produce an error at the call to \code{remove}, because by default it assumes such calls are not allowed.
+%   * If you have a reference that you know may be subject to complex mutations that the checker cannot easily reason about (perhaps the collection is modified in deeply aliasing structures or via reflection, etc.), you can use \refqualclass{checker/index/qual}{UncheckedShrinkable} as a last resort. For example, \code{@UncheckedShrinkable List<Foo> legacyList;}. This will suppress index-out-of-bounds errors for operations on \code{legacyList}, under the assumption that you will manage its safety manually or via tests. Use this sparingly – it’s better to design your code such that @Shrinkable and @UnShrinkableRef/@GrowOnly references are sufficient.
+%   * When writing new APIs or methods in your code, consider whether they mutate collections. If a method’s sole purpose is to mutate a collection, you might mark it as @SideEffectsOnly and/or @ChangesLength on the relevant parameters. For example:
+%     \begin{Verbatim}
+%     @SideEffectsOnly
+%     void trimList(@Shrinkable List\<?> list) { ... remove elements from list ... }
+%     \end{Verbatim}
+%     Annotating \code{list} as @Shrinkable makes it clear the method might shrink it, and @SideEffectsOnly on the method means callers should not expect any index relationships to remain valid after calling \code{trimList}. The Index Checker will enforce these expectations at call sites.
+%   * The @BackedBy annotation would mostly appear in library or framework code. In your own code, you might use it if you implement a view onto a collection. For instance, if you wrote a custom class \code{FilteredList} that presents a filtered view of an underlying list, you could annotate \code{FilteredList} with @BackedBy to link it to the original. This will help the checker understand that a mutation to the filtered view affects the base list.
+
+\item
+  \textbf{Example:}
+    Suppose you maintain two lists that should always have the same length (parallel arrays pattern).
+    You can use the Index Checker’s existing same-length mechanism (the @SameLen annotation)
+    \emph{together} with the new qualifiers. You might declare:
+
+    \begin{Verbatim}
+      List<String> @SameLen("ids") @Shrinkable names;
+      List<Integer> @Shrinkable ids;
+    \end{Verbatim}
+  and ensure that you perform removals on both lists in tandem. The @SameLen("ids") on \code{names}
+  tells the Index Checker that \code{names} and \code{ids} start with the same length, but because
+  they are Shrinkable, you must also ensure any removal keeps them in sync. The checker will
+  invalidate index info on both if one is mutated, so you would re-establish the relationship
+  after any modifications (perhaps by asserting their sizes match within the code). In future, the
+  checker might provide a more automated way to handle such “linked-list” mutations (see below).
+
+\item
+  \textbf{Implementation notes:}
+    Under the hood, the Index Checker enforces these annotations by extending the type rules.
+    For instance, the method invocation rule checks the receiver’s qualifier against what the
+    method requires: calling a method that is known to shrink the list will produce an error if
+    the receiver is not @Shrinkable (or @UncheckedShrinkable). Additionally, the dataflow
+    (flow-sensitive analysis) component of the checker is augmented to drop information when it
+    encounters a method call or mutation on a potentially-shrinking reference. These changes are
+    largely transparent to users – you experience them as error messages or lack thereof.
+\end{itemize}
+Overall, using the new system typically involves adding a few well-placed annotations. The
+most common use case will be marking a variable as @Shrinkable in sections of code that
+remove elements from a collection. In exchange, you gain confidence (via compiler errors or
+lack of them) that you have correctly handled index-safety even as your collections change size.
+
+\subsectionAndLabel{Advanced features and future improvements}{index-mutable-future}
+
+The current design is a significant step toward handling mutable-length collections, but there
+are several advanced enhancements and alternate designs that may be explored in the future:
+\begin{itemize}
+\item
+  \textbf{Leveraging uniqueness for safe mutation:}
+  If a reference is known to be \emph{unique} (no other aliases to the same object exist),
+  then shrinking the collection through that reference can be made much safer. In such a scenario,
+  once you perform a removal, you as the programmer know exactly how the length changed and can
+  immediately adjust or re-check indices. A potential feature is automatic conversion of unique
+  references between mutation modes. For example, the checker (in conjunction with an Aliasing Checker)
+  could determine that a newly created list is unique, allow you to use it with full mutation
+  (treat it as @Shrinkable during a building phase), and then once it’s published to other code,
+  convert or restrict it to @UnShrinkableRef. This would let you mutate freely when it’s safe
+  (no aliases yet) and still have sound checking when aliases might appear.
+
+\item
+  \textbf{Alternate qualifier hierarchies:}
+    We have chosen one particular subtyping hierarchy for GrowOnly and Shrinkable references,
+    but other hierarchies were considered. For instance, one could imagine @Shrinkable and
+    @GrowOnly as two parallel dimensions (incomparable types) with a common supertype, or even
+    having @GrowOnly as a supertype of @Shrinkable (or vice versa). Each design has trade-offs
+    in terms of flexibility and complexity. In our design, @UnShrinkableRef is the top and we
+    introduced @UncheckedShrinkable as a subtype of @Shrinkable. Another possible design could
+    have been a single mutable qualifier with a flag for allowing removes. Through testing, the
+    chosen hierarchy proved to enforce the constraints without unduly burdening the developer.
+    This hierarchy ensures, for example, that no @GrowOnly can be mistakenly used in place of a
+    @Shrinkable (preventing silent unsoundness). The section in the developer manual discusses some
+    of these alternate designs and why they were not adopted.
+
+\item
+  \textbf{Same-length collection invariants:}
+    The Index Checker already supports a @SameLen annotation for fixed-size sequences, indicating
+    that two sequences have equal length. Extending this concept to mutable sequences is an area of
+    interest. For example, you might have two lists that are always mutated together, so that they
+    remain the same length at all times. A future enhancement could introduce a mechanism to declare
+    that relationship more directly for Shrinkable lists. This might involve an effect annotation
+    that a method changes two collections in tandem, or a stronger guarantee that a mutation on one
+    triggers an automatic mutation on the other. While currently the checker can verify equal lengths at
+    particular program points (you can always re-check sizes after mutations), a dedicated feature could
+    maintain an invariant of equal lengths throughout the scope. This would likely require more
+    sophisticated analysis (to ensure every mutation to one is matched by a mutation to the other),
+    or possibly integrating with a relational invariant checker.
+
+\item
+  \textbf{Unified effect and purity annotations:}
+    The introduction of @ChangesLength and @SideEffectsOnly raises the question of whether these can
+    be unified with existing effect systems (such as the Purity Checker’s @Pure and the generalized
+    effect system for determinism or thread-safety). In the future, we might generalize @ChangesLength
+    into a broader category of “effects on data structures” or integrate it with a more universal effect
+    tracking mechanism. For example, one could imagine an annotation that indicates a method
+    \emph{may modify its receiver’s state in ways that include length changes} and a type system that
+    reasons about such effects across the program. A unified effect system could reduce duplication of
+    annotations and provide a single framework to reason about side effects (with the Index Checker being
+    one consumer of that information). This is a complex undertaking, as it would require balancing precision
+    with usability, but it could make the framework more powerful and general.
+
+\item
+  \textbf{Simpler heuristic checks for side effects:}
+    In absence of full pointer analysis, the current approach is deliberately conservative. Future work
+    could introduce simpler, targeted analyses to catch common patterns of misuse without a full alias
+    analysis. For instance, a possible check could be: if a previously-validated index is used after a
+    method call that takes a collection as a parameter (and that method is not known to be pure), warn
+    the developer that the index might no longer be valid. This wouldn’t be sound in all cases, but it
+    could heuristically catch likely bugs even when the annotations are missing or incomplete. Another
+    idea is to integrate with the Must Call/Must Release framework (or other typestate-like checkers) to
+    ensure that any sequence that is shrunk has certain post-conditions (like re-checking its size or updating
+    related indices). These “simple effect checks” would not guarantee full safety, but they can provide
+    guidance in code that hasn’t yet been fully annotated for index mutability.
+\end{itemize}
+
 %%  LocalWords:  NegativeArraySizeException pre myArray IndexFor someArray
 %%  LocalWords:  MyJavaFile LTLengthOf LTEqLengthOf GTENegativeOne GTE str
 %%  LocalWords:  LowerBoundUnknown LTOMLengthOf LTEq LTOM UpperBoundBottom
