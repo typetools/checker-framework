@@ -785,7 +785,9 @@ cp -p /opt/homebrew/Cellar/hevea/2.36/lib/hevea/hevea.sty $HOME/Library/texmf/te
 
 Note: If copy permission is denied, try \<sudo>.
 
-In a startup file, write:
+If \<echo $JAVA\_HOME> outputs nothing (that is, if the \<JAVA\_HOME>
+environment variable is not set, then write the following
+in a startup file:
 
 \begin{Verbatim}
 export JAVA_HOME=$(/usr/libexec/java_home -v XX)
@@ -795,9 +797,7 @@ or
 export JAVA_HOME=/Library/Java/JavaVirtualMachines/adoptopenjdk-XX.jdk/Contents/Home/
 \end{Verbatim}
 
-where \emph{XX} is a JDK version such as 17, 21, 23, etc. that appears in one
-of the names for the files in \<checker/bin-devel>, e.g.,
-\<Dockerfile-ubuntu-jdk\emph{XX}-plus>.
+In the command, \emph{XX} is a JDK version such as 17, 21, 24, etc.
 
 \item[Windows]
   To build on Windows 10 or later,
