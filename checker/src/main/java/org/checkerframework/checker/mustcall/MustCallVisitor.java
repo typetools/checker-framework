@@ -401,7 +401,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
     ExpressionTree condition = tree.getCondition();
     ExpressionStatementTree update = tree.getUpdate().get(0);
     Name identifierInHeader = verifyAllElementsAreCalledOn(init, (BinaryTree) condition, update);
-    Name iterator = ((VariableTree) init).getName();
+    Name iterator = getNameFromStatementTree(init);
     if (identifierInHeader == null || iterator == null) {
       return;
     }
@@ -501,7 +501,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
         return null;
       }
       if (TreeUtils.isArrayLengthAccess(condition.getRightOperand())) {
-        return nameFromExpression(condition.getRightOperand());
+        return getNameFromExpressionTree(condition.getRightOperand());
       } else if ((condition.getRightOperand() instanceof MethodInvocationTree)
           && TreeUtils.isSizeAccess(condition.getRightOperand())) {
         ExpressionTree methodSelect =
@@ -512,10 +512,10 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
         MemberSelectTree mst = (MemberSelectTree) methodSelect;
         Element elt = TreeUtils.elementFromTree(mst.getExpression());
         if (ResourceLeakUtils.isCollection(elt, atypeFactory)) {
-          return nameFromExpression(mst.getExpression());
+          return getNameFromExpressionTree(mst.getExpression());
         }
       } else if (condition.getRightOperand().getKind() == Tree.Kind.IDENTIFIER) {
-        return nameFromExpression(condition.getRightOperand());
+        return getNameFromExpressionTree(condition.getRightOperand());
       }
     }
     return null;
@@ -549,7 +549,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
               case POSTFIX_DECREMENT:
               case PREFIX_INCREMENT:
               case POSTFIX_INCREMENT:
-                if (nameFromExpression(tree.getExpression()) == iterator) {
+                if (getNameFromExpressionTree(tree.getExpression()) == iterator) {
                   blockIsIllegal.set(true);
                 }
                 break;
@@ -561,7 +561,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
 
           @Override
           public Void visitCompoundAssignment(CompoundAssignmentTree tree, Void p) {
-            if (nameFromExpression(tree.getVariable()) == iterator) {
+            if (getNameFromExpressionTree(tree.getVariable()) == iterator) {
               blockIsIllegal.set(true);
             }
             return super.visitCompoundAssignment(tree, p);
@@ -569,7 +569,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
 
           @Override
           public Void visitAssignment(AssignmentTree tree, Void p) {
-            Name assignedVariable = nameFromExpression(tree.getVariable());
+            Name assignedVariable = getNameFromExpressionTree(tree.getVariable());
             if (assignedVariable == iterator || assignedVariable == identifierInHeader) {
               blockIsIllegal.set(true);
             }
@@ -594,7 +594,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
           public Void visitMethodInvocation(MethodInvocationTree mit, Void p) {
             if (isIthCollectionElement(mit, iterator)
                 && loopHeaderConsistentWithCollection(
-                    identifierInHeader, nameFromExpression(mit))) {
+                    identifierInHeader, getNameFromExpressionTree(mit))) {
               collectionElementTree[0] = mit;
             }
             return super.visitMethodInvocation(mit, p);
@@ -603,10 +603,10 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
           // check whether corresponds to arr[i]
           @Override
           public Void visitArrayAccess(ArrayAccessTree aat, Void p) {
-            boolean isIthArrayElement = nameFromExpression(aat.getIndex()) == iterator;
+            boolean isIthArrayElement = getNameFromExpressionTree(aat.getIndex()) == iterator;
             if (isIthArrayElement
                 && loopHeaderConsistentWithCollection(
-                    identifierInHeader, nameFromExpression(aat))) {
+                    identifierInHeader, getNameFromExpressionTree(aat))) {
               collectionElementTree[0] = aat;
             }
             return super.visitArrayAccess(aat, p);
@@ -628,22 +628,40 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
    * @param expr ExpressionTree
    * @return Name of the identifier the expression evaluates to or null if it doesn't
    */
-  protected Name nameFromExpression(ExpressionTree expr) {
+  protected Name getNameFromExpressionTree(ExpressionTree expr) {
     if (expr == null) return null;
     switch (expr.getKind()) {
       case IDENTIFIER:
         return ((IdentifierTree) expr).getName();
       case ARRAY_ACCESS:
-        return nameFromExpression(((ArrayAccessTree) expr).getExpression());
+        return getNameFromExpressionTree(((ArrayAccessTree) expr).getExpression());
       case MEMBER_SELECT:
         Element elt = TreeUtils.elementFromUse((MemberSelectTree) expr);
         if (elt.getKind() == ElementKind.METHOD || elt.getKind() == ElementKind.FIELD) {
-          return nameFromExpression(((MemberSelectTree) expr).getExpression());
+          return getNameFromExpressionTree(((MemberSelectTree) expr).getExpression());
         } else {
           return null;
         }
       case METHOD_INVOCATION:
-        return nameFromExpression(((MethodInvocationTree) expr).getMethodSelect());
+        return getNameFromExpressionTree(((MethodInvocationTree) expr).getMethodSelect());
+      default:
+        return null;
+    }
+  }
+
+  /**
+   * Get name from a {@code StatementTree}
+   *
+   * @param expr the {@code StatementTree}
+   * @return Name of the identifier the expression evaluates to or null if it doesn't
+   */
+  protected Name getNameFromStatementTree(StatementTree expr) {
+    if (expr == null) return null;
+    switch (expr.getKind()) {
+      case VARIABLE:
+        return ((VariableTree) expr).getName();
+      case EXPRESSION_STATEMENT:
+        return getNameFromExpressionTree(((ExpressionStatementTree) expr).getExpression());
       default:
         return null;
     }
@@ -708,7 +726,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
   private boolean isIthCollectionElement(Tree tree, Name index) {
     if (tree == null || index == null) return false;
     if (tree.getKind() == Tree.Kind.METHOD_INVOCATION
-        && index == nameFromExpression(TreeUtils.getIdxForGetCall(tree))) {
+        && index == getNameFromExpressionTree(TreeUtils.getIdxForGetCall(tree))) {
       MethodInvocationTree mit = (MethodInvocationTree) tree;
       ExpressionTree methodSelect = mit.getMethodSelect();
       assert methodSelect.getKind() == Tree.Kind.MEMBER_SELECT
