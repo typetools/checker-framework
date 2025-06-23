@@ -706,6 +706,7 @@ public class MustCallConsistencyAnalyzer {
    * #analyze(ControlFlowGraph)}.
    *
    * @param rlc the resource leak checker
+   * @param isLoopBodyAnalysis true if this is a loop body analysis
    */
   public MustCallConsistencyAnalyzer(ResourceLeakChecker rlc, boolean isLoopBodyAnalysis) {
     this.cmAtf =
