@@ -1129,29 +1129,56 @@ and your application code:
     instance, calling \code{myList.remove(i)} where \code{myList} is not annotated as @Shrinkable will produce an error, because the
     library method signature effectively expects a Shrinkable receiver.
 
-% \item
-%   \textbf{Application code:}
-%   As an application developer, you primarily use these qualifiers to document and verify your intended mutation patterns. Here are some guidelines:
-
-%   * If you never remove elements from a particular collection (you only add or read), you don’t need to write any annotation – it will default to @UnShrinkableRef and the checker will assume no removals. If you want to be explicit (for documentation), you can annotate it as @UnShrinkableRef or @GrowOnly. Use @GrowOnly if you want to make the stronger claim that not only will you not remove, but also that the collection isn’t shrunk via any alias. This could be the case for a list that is built up over time but never pruned.
-%   * If you do remove elements from a collection, annotate the reference (or variable) as \refqualclass{checker/index/qual}{Shrinkable}. For example:
-%     \begin{Verbatim}
-%     import org.checkerframework.checker.index.qual.Shrinkable;
-%     @Shrinkable List<String> lines = new ArrayList<>();
-%     ...
-%     lines.add("first");
-%     lines.remove(0);
-%     \end{Verbatim}
-%     Marking \code{lines} as @Shrinkable tells the checker that removals are intentional. The checker will allow \code{lines.remove(0)} to be called. It will, however, invalidate index facts for \code{lines} afterward as discussed. If you omit the @Shrinkable annotation in this scenario, the checker would produce an error at the call to \code{remove}, because by default it assumes such calls are not allowed.
-%   * If you have a reference that you know may be subject to complex mutations that the checker cannot easily reason about (perhaps the collection is modified in deeply aliasing structures or via reflection, etc.), you can use \refqualclass{checker/index/qual}{UncheckedShrinkable} as a last resort. For example, \code{@UncheckedShrinkable List<Foo> legacyList;}. This will suppress index-out-of-bounds errors for operations on \code{legacyList}, under the assumption that you will manage its safety manually or via tests. Use this sparingly – it’s better to design your code such that @Shrinkable and @UnShrinkableRef/@GrowOnly references are sufficient.
-%   * When writing new APIs or methods in your code, consider whether they mutate collections. If a method’s sole purpose is to mutate a collection, you might mark it as @SideEffectsOnly and/or @ChangesLength on the relevant parameters. For example:
-%     \begin{Verbatim}
-%     @SideEffectsOnly
-%     void trimList(@Shrinkable List\<?> list) { ... remove elements from list ... }
-%     \end{Verbatim}
-%     Annotating \code{list} as @Shrinkable makes it clear the method might shrink it, and @SideEffectsOnly on the method means callers should not expect any index relationships to remain valid after calling \code{trimList}. The Index Checker will enforce these expectations at call sites.
-%   * The @BackedBy annotation would mostly appear in library or framework code. In your own code, you might use it if you implement a view onto a collection. For instance, if you wrote a custom class \code{FilteredList} that presents a filtered view of an underlying list, you could annotate \code{FilteredList} with @BackedBy to link it to the original. This will help the checker understand that a mutation to the filtered view affects the base list.
-
+\item
+  \textbf{Application code:}
+  As an application developer, you primarily use these qualifiers to document and verify your intended mutation patterns. 
+  Here are some guidelines:
+  \begin{itemize}
+    \item 
+      If you never remove elements from a particular collection (you only add or read), you don’t need to write any 
+      annotation – it will default to @UnShrinkableRef and the checker will assume no removals. If you want to be explicit 
+      (for documentation), you can annotate it as @UnShrinkableRef or @GrowOnly. Use @GrowOnly if you want to make the stronger 
+      claim that not only will you not remove, but also that the collection isn’t shrunk via any alias. This could be the 
+      case for a list that is built up over time but never pruned.
+    \item 
+      If you do remove elements from a collection, annotate the reference (or variable) as \refqualclass{checker/index/qual}{Shrinkable}. 
+      For example:
+        \begin{Verbatim}
+          import org.checkerframework.checker.index.qual.Shrinkable;
+          @Shrinkable List<String> lines = new ArrayList<>();
+          ...
+          lines.add("first");
+          lines.remove(0);
+        \end{Verbatim}
+      Marking \code{lines} as @Shrinkable tells the checker that removals are intentional. 
+      The checker will allow \code{lines.remove(0)} to be called. It will, however, invalidate index facts for 
+      \code{lines} afterward as discussed. If you omit the @Shrinkable annotation in this scenario, the checker 
+      would produce an error at the call to \code{remove}, because by default it assumes such calls are not allowed.
+    \item 
+      If you have a reference that you know may be subject to complex mutations that the checker cannot easily reason 
+      about (perhaps the collection is modified in deeply aliasing structures or via reflection, etc.), you can use 
+      \refqualclass{checker/index/qual}{UncheckedShrinkable} as a last resort. For example, 
+      \code{@UncheckedShrinkable List<Foo> legacyList;}. This will suppress index-out-of-bounds errors for operations 
+      on \code{legacyList}, under the assumption that you will manage its safety manually or via tests. Use this 
+      sparingly – it’s better to design your code such that @Shrinkable and @UnShrinkableRef/@GrowOnly references are sufficient.
+    \item 
+      When writing new APIs or methods in your code, consider whether they mutate collections. If a method’s sole 
+      purpose is to mutate a collection, you might mark it as @SideEffectsOnly and/or @ChangesLength on the 
+      relevant parameters. For example:
+        \begin{Verbatim}
+          @SideEffectsOnly
+          void trimList(@Shrinkable List\<?> list) { ... remove elements from list ... }
+        \end{Verbatim}
+      Annotating \code{list} as @Shrinkable makes it clear the method might shrink it, and @SideEffectsOnly 
+      on the method means callers should not expect any index relationships to remain valid after calling 
+      \code{trimList}. The Index Checker will enforce these expectations at call sites.
+    \item 
+      The @BackedBy annotation would mostly appear in library or framework code. In your own code, you might use 
+      it if you implement a view onto a collection. For instance, if you wrote a custom class \code{FilteredList} 
+      that presents a filtered view of an underlying list, you could annotate \code{FilteredList} with @BackedBy 
+      to link it to the original. This will help the checker understand that a mutation to the filtered view 
+      affects the base list.
+  \end{itemize}
 \item
   \textbf{Example:}
     Suppose you maintain two lists that should always have the same length (parallel arrays pattern).
