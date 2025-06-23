@@ -16,7 +16,7 @@ import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.dataflow.qual.Pure;
 
 /**
- * This class contains util methods for reflective accessing Tree classes and methods that were
+ * This class contains utility methods for reflectively accessing Tree classes and methods that were
  * added after Java 11.
  */
 public class TreeUtilsAfterJava11 {
