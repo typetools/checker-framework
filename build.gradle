@@ -429,6 +429,27 @@ allprojects { currentProj ->
       // or
       //./gradlew sometask -PuseJdk21Compiler=true
 
+      // Use ./gradlew test -PjdkTestVersion=25 to test a specific version of Java.
+      int jdkTestVersion = Integer.valueOf(JavaVersion.current().getMajorVersion())
+      if(project.getProperties().containsKey('jdkTestVersion')) {
+        jdkTestVersion = Integer.valueOf(project.getProperties().get('jdkTestVersion'))
+        java {
+          toolchain {
+            languageVersion = JavaLanguageVersion.of(jdkTestVersion)
+          }
+        }
+
+        javaCompiler = javaToolchains.compilerFor {
+          languageVersion = JavaLanguageVersion.of(jdkTestVersion)
+        }
+
+        tasks.withType(JavaExec).configureEach {
+          javaLauncher = javaToolchains.launcherFor {
+            languageVersion = JavaLanguageVersion.of(jdkTestVersion)
+          }
+        }
+      }
+
       // Use JDK 21 because that is what used in the release.  If you update this line, also update,
       // JAVA_HOME in docs/developer/release/release_vars.py.
       boolean jdk21Compiler = project.getProperties().getOrDefault('useJdk21Compiler', false)
@@ -437,21 +458,6 @@ allprojects { currentProj ->
         //  https://docs.gradle.org/current/userguide/toolchains.html
         javaCompiler = javaToolchains.compilerFor {
           languageVersion = JavaLanguageVersion.of(21)
-        }
-      }
-
-      // Use ./gradlew test -PjdkTestVersion=25 to test a specific version of Java.
-      if(project.getProperties().containsKey('jdkTestVersion')) {
-        int jdkTestVersion = Integer.valueOf(project.getProperties().get('jdkTestVersion'))
-        java {
-          toolchain {
-            languageVersion = JavaLanguageVersion.of(jdkTestVersion)
-          }
-        }
-        tasks.withType(JavaExec).configureEach {
-          javaLauncher = javaToolchains.launcherFor {
-            languageVersion = JavaLanguageVersion.of(jdkTestVersion)
-          }
         }
       }
 
@@ -514,7 +520,7 @@ allprojects { currentProj ->
       // -fallthrough: Don't check fallthroughs.  Instead, use Error Prone.  Its
       //   warnings are suppressible with a "// fall through" comment.
       String lint = '-Xlint:-options,-fallthrough'
-      if (isJava21orHigher || jdk21Compiler) {
+      if (isJava21orHigher || jdk21Compiler || jdkTestVersion > 20) {
         // TODO: Ignore this-escape warnings for now; perhaps review and suppress each one later.
         lint +=',-this-escape'
       }
