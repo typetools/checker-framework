@@ -1149,74 +1149,55 @@ lack of them) that you have correctly handled index-safety even as your collecti
 
 \subsectionAndLabel{Advanced features and future improvements}{index-mutable-future}
 
-The current design is a significant step toward handling mutable-length collections, but there
-are several advanced enhancements and alternate designs that may be explored in the future:
 \begin{itemize}
 \item
   \textbf{Leveraging uniqueness for safe mutation:}
-  If a reference is known to be \emph{unique} (no other aliases to the same object exist),
-  then shrinking the collection through that reference can be made much safer. In such a scenario,
-  once you perform a removal, you as the programmer know exactly how the length changed and can
-  immediately adjust or re-check indices. A potential feature is automatic conversion of unique
-  references between mutation modes. For example, the checker (in conjunction with an Aliasing Checker)
-  could determine that a newly created list is unique, allow you to use it with full mutation
-  (treat it as @Shrinkable during a building phase), and then once it’s published to other code,
-  convert or restrict it to @UnShrinkableRef. This would let you mutate freely when it’s safe
-  (no aliases yet) and still have sound checking when aliases might appear.
+    A \emph{unique} reference can make shrinking a collection safer by allowing the programmer
+    to immediately adjust or re-check indices after removal. This feature can be automatic
+    between mutation modes, allowing for full mutation of a newly created list. The checker,
+    in conjunction with an Aliasing Checker, can determine if a list is unique, treat it as
+    @Shrinkable during the building phase, and then convert or restrict it to @UnShrinkableRef
+    once published. This allows for free mutation when safe, with sound checking for aliases.
 
 \item
   \textbf{Alternate qualifier hierarchies:}
-    We have chosen one particular subtyping hierarchy for GrowOnly and Shrinkable references,
-    but other hierarchies were considered. For instance, one could imagine @Shrinkable and
-    @GrowOnly as two parallel dimensions (incomparable types) with a common supertype, or even
-    having @GrowOnly as a supertype of @Shrinkable (or vice versa). Each design has trade-offs
-    in terms of flexibility and complexity. In our design, @UnShrinkableRef is the top and we
-    introduced @UncheckedShrinkable as a subtype of @Shrinkable. Another possible design could
-    have been a single mutable qualifier with a flag for allowing removes. Through testing, the
-    chosen hierarchy proved to enforce the constraints without unduly burdening the developer.
-    This hierarchy ensures, for example, that no @GrowOnly can be mistakenly used in place of a
-    @Shrinkable (preventing silent unsoundness). The section in the developer manual discusses some
-    of these alternate designs and why they were not adopted.
+    The subtyping hierarchy for GrowOnly and Shrinkable references has been chosen, but other
+    designs were considered. These could be two parallel dimensions with a common supertype or
+    @GrowOnly as a supertype of @Shrinkable. The chosen hierarchy enforces constraints without
+    burdening the developer, ensuring no @GrowOnly can be mistakenly used in place of @Shrinkable.
+    The developer manual discusses some alternate designs and why they were not adopted.
+    The top design, @UnShrinkableRef, introduces @UncheckedShrinkable as a subtype of @Shrinkable.
 
 \item
   \textbf{Same-length collection invariants:}
     The Index Checker already supports a @SameLen annotation for fixed-size sequences, indicating
-    that two sequences have equal length. Extending this concept to mutable sequences is an area of
-    interest. For example, you might have two lists that are always mutated together, so that they
-    remain the same length at all times. A future enhancement could introduce a mechanism to declare
-    that relationship more directly for Shrinkable lists. This might involve an effect annotation
-    that a method changes two collections in tandem, or a stronger guarantee that a mutation on one
-    triggers an automatic mutation on the other. While currently the checker can verify equal lengths at
-    particular program points (you can always re-check sizes after mutations), a dedicated feature could
-    maintain an invariant of equal lengths throughout the scope. This would likely require more
-    sophisticated analysis (to ensure every mutation to one is matched by a mutation to the other),
-    or possibly integrating with a relational invariant checker.
+    equal length between two sequences. However, it's a topic of interest to extend this concept
+    to mutable sequences, such as two lists that are always mutated together. A future enhancement
+    could introduce a mechanism to declare this relationship more directly for shrinkable lists,
+    such as an effect annotation or a stronger guarantee that a mutation on one triggers an automatic
+    mutation on the other. This would require more sophisticated analysis or integration with a
+    relational invariant checker.
 
 \item
   \textbf{Unified effect and purity annotations:}
-    The introduction of @ChangesLength and @SideEffectsOnly raises the question of whether these can
-    be unified with existing effect systems (such as the Purity Checker’s @Pure and the generalized
-    effect system for determinism or thread-safety). In the future, we might generalize @ChangesLength
-    into a broader category of “effects on data structures” or integrate it with a more universal effect
-    tracking mechanism. For example, one could imagine an annotation that indicates a method
-    \emph{may modify its receiver’s state in ways that include length changes} and a type system that
-    reasons about such effects across the program. A unified effect system could reduce duplication of
-    annotations and provide a single framework to reason about side effects (with the Index Checker being
-    one consumer of that information). This is a complex undertaking, as it would require balancing precision
-    with usability, but it could make the framework more powerful and general.
+    The introduction of @ChangesLength and @SideEffectsOnly raises the question of integrating these
+    with existing effect systems like the Purity Checker's @Pure and the generalized effect system
+    for determinism or thread-safety. A unified effect system could reduce duplication of annotations
+    and provide a single framework to reason about side effects, with the Index Checker being one
+    consumer of that information. Balancing precision with usability is a complex undertaking, but it
+    could make the framework more powerful and general. Future developments could include a broader
+    category of "effects on data structures" or integration with a more universal effect tracking mechanism.
 
 \item
   \textbf{Simpler heuristic checks for side effects:}
-    In absence of full pointer analysis, the current approach is deliberately conservative. Future work
-    could introduce simpler, targeted analyses to catch common patterns of misuse without a full alias
-    analysis. For instance, a possible check could be: if a previously-validated index is used after a
-    method call that takes a collection as a parameter (and that method is not known to be pure), warn
-    the developer that the index might no longer be valid. This wouldn’t be sound in all cases, but it
-    could heuristically catch likely bugs even when the annotations are missing or incomplete. Another
-    idea is to integrate with the Must Call/Must Release framework (or other typestate-like checkers) to
-    ensure that any sequence that is shrunk has certain post-conditions (like re-checking its size or updating
-    related indices). These “simple effect checks” would not guarantee full safety, but they can provide
-    guidance in code that hasn’t yet been fully annotated for index mutability.
+    The current approach to analyzing index mutability in code is conservative due to the lack of
+    full pointer analysis. Future work could introduce simpler, targeted analyses to catch common
+    misuse patterns without a full alias analysis. For example, if a previously-validated index
+    is used after a method call that takes a collection as a parameter, warning the developer that
+    the index might no longer be valid could heuristically catch likely bugs even when annotations
+    are missing or incomplete. Integrating with the Must Call/Must Release framework could ensure
+    post-conditions for shrunk sequences. These "simple effect checks" could provide guidance in
+    code that hasn't been fully annotated for index mutability.
 \end{itemize}
 
 %%  LocalWords:  NegativeArraySizeException pre myArray IndexFor someArray
