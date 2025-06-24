@@ -26,7 +26,7 @@ public class Issue6030 {
       return null;
     }
 
-    private I createIterator() {
+    private I createIterator(@NotOwningCollection MyScanner<T, I> this) {
       return null;
     }
 
