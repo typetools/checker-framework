@@ -1119,82 +1119,82 @@ and your application code:
 
     \begin{Verbatim}
       List<String> @SameLen("ids") @Shrinkable names;
-      List<Integer> @Shrinkable ids;
-    \end{Verbatim}
-  and ensure that you perform removals on both lists in tandem. The @SameLen("ids") on \code{names}
-  tells the Index Checker that \code{names} and \code{ids} start with the same length, but because
-  they are Shrinkable, you must also ensure any removal keeps them in sync. The checker will
-  invalidate index info on both if one is mutated, so you would re-establish the relationship
-  after any modifications (perhaps by asserting their sizes match within the code). In future, the
-  checker might provide a more automated way to handle such “linked-list” mutations (see below).
+          List<Integer> @Shrinkable ids;
+        \end{Verbatim}
+      and ensure that you perform removals on both lists in tandem. The @SameLen("ids") on \code{names}
+      tells the Index Checker that \code{names} and \code{ids} start with the same length, but because
+      they are Shrinkable, you must also ensure any removal keeps them in sync. The checker will
+      invalidate index info on both if one is mutated, so you would re-establish the relationship
+      after any modifications (perhaps by asserting their sizes match within the code). In future, the
+      checker might provide a more automated way to handle such “linked-list” mutations (see below).
 
-\item
-  \textbf{Implementation notes:}
-    Under the hood, the Index Checker enforces these annotations by extending the type rules.
-    For instance, the method invocation rule checks the receiver’s qualifier against what the
-    method requires: calling a method that is known to shrink the list will produce an error if
-    the receiver is not @Shrinkable (or @UncheckedShrinkable). Additionally, the dataflow
-    (flow-sensitive analysis) component of the checker is augmented to drop information when it
-    encounters a method call or mutation on a potentially-shrinking reference. These changes are
-    largely transparent to users – you experience them as error messages or lack thereof.
-\end{itemize}
-Overall, using the new system typically involves adding a few well-placed annotations. The
-most common use case will be marking a variable as @Shrinkable in sections of code that
-remove elements from a collection. In exchange, you gain confidence (via compiler errors or
-lack of them) that you have correctly handled index-safety even as your collections change size.
+    \item
+      \textbf{Implementation notes:}
+        Under the hood, the Index Checker enforces these annotations by extending the type rules.
+        For instance, the method invocation rule checks the receiver’s qualifier against what the
+        method requires: calling a method that is known to shrink the list will produce an error if
+        the receiver is not @Shrinkable (or @UncheckedShrinkable). Additionally, the dataflow
+        (flow-sensitive analysis) component of the checker is augmented to drop information when it
+        encounters a method call or mutation on a potentially-shrinking reference. These changes are
+        largely transparent to users – you experience them as error messages or lack thereof.
+    \end{itemize}
+    Overall, using the new system typically involves adding a few well-placed annotations. The
+    most common use case will be marking a variable as @Shrinkable in sections of code that
+    remove elements from a collection. In exchange, you gain confidence (via compiler errors or
+    lack of them) that you have correctly handled index-safety even as your collections change size.
 
-\subsectionAndLabel{Advanced features and future improvements}{index-mutable-future}
+    \subsectionAndLabel{Advanced features and future improvements}{index-mutable-future}
 
-\begin{itemize}
-\item
-  \textbf{Leveraging uniqueness for safe mutation:}
-    A \emph{unique} reference can make shrinking a collection safer by allowing the programmer
-    to immediately adjust or re-check indices after removal. This feature can be automatic
-    between mutation modes, allowing for full mutation of a newly created list. The checker,
-    in conjunction with an Aliasing Checker, can determine if a list is unique, treat it as
-    @Shrinkable during the building phase, and then convert or restrict it to @UnShrinkableRef
-    once published. This allows for free mutation when safe, with sound checking for aliases.
+    \begin{itemize}
+    \item
+      \textbf{Leveraging uniqueness for safe mutation:}
+        A \emph{unique} reference can make shrinking a collection safer by allowing the programmer
+        to immediately adjust or re-check indices after removal. This feature can be automatic
+        between mutation modes, allowing for full mutation of a newly created list. The checker,
+        in conjunction with an Aliasing Checker, can determine if a list is unique, treat it as
+        @Shrinkable during the building phase, and then convert or restrict it to @UnShrinkableRef
+        once published. This allows for free mutation when safe, with sound checking for aliases.
 
-\item
-  \textbf{Alternate qualifier hierarchies:}
-    The subtyping hierarchy for GrowOnly and Shrinkable references has been chosen, but other
-    designs were considered. These could be two parallel dimensions with a common supertype or
-    @GrowOnly as a supertype of @Shrinkable. The chosen hierarchy enforces constraints without
-    burdening the developer, ensuring no @GrowOnly can be mistakenly used in place of @Shrinkable.
-    The developer manual discusses some alternate designs and why they were not adopted.
-    The top design, @UnShrinkableRef, introduces @UncheckedShrinkable as a subtype of @Shrinkable.
+    \item
+      \textbf{Alternate qualifier hierarchies:}
+        The subtyping hierarchy for GrowOnly and Shrinkable references has been chosen, but other
+        designs were considered. These could be two parallel dimensions with a common supertype or
+        @GrowOnly as a supertype of @Shrinkable. The chosen hierarchy enforces constraints without
+        burdening the developer, ensuring no @GrowOnly can be mistakenly used in place of @Shrinkable.
+        The developer manual discusses some alternate designs and why they were not adopted.
+        The top design, @UnShrinkableRef, introduces @UncheckedShrinkable as a subtype of @Shrinkable.
 
-\item
-  \textbf{Same-length collection invariants:}
-    The Index Checker already supports a @SameLen annotation for fixed-size sequences, indicating
-    equal length between two sequences. However, it's a topic of interest to extend this concept
-    to mutable sequences, such as two lists that are always mutated together. A future enhancement
-    could introduce a mechanism to declare this relationship more directly for shrinkable lists,
-    such as an effect annotation or a stronger guarantee that a mutation on one triggers an automatic
-    mutation on the other. This would require more sophisticated analysis or integration with a
-    relational invariant checker.
+    \item
+      \textbf{Same-length collection invariants:}
+        The Index Checker already supports a @SameLen annotation for fixed-size sequences, indicating
+        equal length between two sequences. However, it's a topic of interest to extend this concept
+        to mutable sequences, such as two lists that are always mutated together. A future enhancement
+        could introduce a mechanism to declare this relationship more directly for shrinkable lists,
+        such as an effect annotation or a stronger guarantee that a mutation on one triggers an automatic
+        mutation on the other. This would require more sophisticated analysis or integration with a
+        relational invariant checker.
 
-\item
-  \textbf{Unified effect and purity annotations:}
-    The introduction of @ChangesLength and @SideEffectsOnly raises the question of integrating these
-    with existing effect systems like the Purity Checker's @Pure and the generalized effect system
-    for determinism or thread-safety. A unified effect system could reduce duplication of annotations
-    and provide a single framework to reason about side effects, with the Index Checker being one
-    consumer of that information. Balancing precision with usability is a complex undertaking, but it
-    could make the framework more powerful and general. Future developments could include a broader
-    category of "effects on data structures" or integration with a more universal effect tracking mechanism.
+    \item
+      \textbf{Unified effect and purity annotations:}
+        The introduction of @ChangesLength and @SideEffectsOnly raises the question of integrating these
+        with existing effect systems like the Purity Checker's @Pure and the generalized effect system
+        for determinism or thread-safety. A unified effect system could reduce duplication of annotations
+        and provide a single framework to reason about side effects, with the Index Checker being one
+        consumer of that information. Balancing precision with usability is a complex undertaking, but it
+        could make the framework more powerful and general. Future developments could include a broader
+        category of "effects on data structures" or integration with a more universal effect tracking mechanism.
 
-\item
-  \textbf{Simpler heuristic checks for side effects:}
-    The current approach to analyzing index mutability in code is conservative due to the lack of
-    full pointer analysis. Future work could introduce simpler, targeted analyses to catch common
-    misuse patterns without a full alias analysis. For example, if a previously-validated index
-    is used after a method call that takes a collection as a parameter, warning the developer that
-    the index might no longer be valid could heuristically catch likely bugs even when annotations
-    are missing or incomplete. Integrating with the Must Call/Must Release framework could ensure
-    post-conditions for shrunk sequences. These "simple effect checks" could provide guidance in
-    code that hasn't been fully annotated for index mutability.
-\end{itemize}
+    \item
+      \textbf{Simpler heuristic checks for side effects:}
+        The current approach to analyzing index mutability in code is conservative due to the lack of
+        full pointer analysis. Future work could introduce simpler, targeted analyses to catch common
+        misuse patterns without a full alias analysis. For example, if a previously-validated index
+        is used after a method call that takes a collection as a parameter, warning the developer that
+        the index might no longer be valid could heuristically catch likely bugs even when annotations
+        are missing or incomplete. Integrating with the Must Call/Must Release framework could ensure
+        post-conditions for shrunk sequences. These "simple effect checks" could provide guidance in
+        code that hasn't been fully annotated for index mutability.
+    \end{itemize}
 
 
 \sectionAndLabel{Technical papers}{index-papers}
