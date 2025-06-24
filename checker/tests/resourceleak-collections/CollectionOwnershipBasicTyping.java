@@ -89,6 +89,21 @@ class CollectionOwnershipBasicTyping {
     closeElements(col);
   }
 
+  void checkAdvancedDiamond() {
+    // check that this doesn't create an obligation and defaults to @OwningCollectionBottom
+    Collection<@MustCall Socket> c = new ArrayList<>();
+    checkArgIsBottom(c);
+    
+    // these all create obligations
+
+    // :: error: unfulfilled.collection.obligations
+    Collection<Socket> c1 = new ArrayList<>();
+    // :: error: unfulfilled.collection.obligations
+    Collection<@MustCall("close") Object> c2 = new ArrayList<>();
+    // :: error: unfulfilled.collection.obligations
+    Collection<@MustCallUnknown Object> c3 = new ArrayList<>();
+  }
+
   void closeElements(@OwningCollection Collection<Socket> socketCollection) {
     for (Socket s : socketCollection) {
       try {
@@ -97,6 +112,8 @@ class CollectionOwnershipBasicTyping {
       }
     }
   }
+
+  void checkArgIsBottom(Collection<? extends Object> collection) {}
 
   // these two methods take on unfulfillable obligations and thus throw an error
 
