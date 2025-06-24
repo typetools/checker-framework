@@ -93,7 +93,7 @@ class CollectionOwnershipBasicTyping {
     // check that this doesn't create an obligation and defaults to @OwningCollectionBottom
     Collection<@MustCall Socket> c = new ArrayList<>();
     checkArgIsBottom(c);
-    
+
     // these all create obligations
 
     // :: error: unfulfilled.collection.obligations
