@@ -23,6 +23,7 @@ import org.checkerframework.checker.collectionownership.qual.NotOwningCollection
 import org.checkerframework.checker.collectionownership.qual.OwningCollection;
 import org.checkerframework.checker.collectionownership.qual.OwningCollectionBottom;
 import org.checkerframework.checker.collectionownership.qual.OwningCollectionWithoutObligation;
+import org.checkerframework.checker.collectionownership.qual.PolyOwningCollection;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer;
@@ -165,6 +166,7 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
   protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
     return new LinkedHashSet<>(
         Arrays.asList(
+            PolyOwningCollection.class,
             NotOwningCollection.class,
             OwningCollection.class,
             OwningCollectionWithoutObligation.class,
