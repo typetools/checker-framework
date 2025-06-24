@@ -1,12 +1,8 @@
 \htmlhr
-% Reinstate when lists are supported:
-% \chapterAndLabel{Index Checker for sequence bounds (arrays, strings, lists)}{index-checker}
-\chapterAndLabel{Index Checker for sequence bounds (arrays and strings)}{index-checker}
+\chapterAndLabel{Index Checker for sequence bounds (arrays, strings, lists)}{index-checker}
 
 The Index Checker warns about potentially out-of-bounds accesses to sequence
-data structures, such as arrays
-% , lists,
-and strings.
+data structures, such as arrays, lists, and strings.
 
 The Index Checker prevents \<IndexOutOfBoundsException>s that result from
 an index expression that might be negative or might be equal to or larger
@@ -41,16 +37,20 @@ infers properties of indexes from
 the code around them. For example, it will infer that \<x> is positive
 within the \<then> block of an \code{if (x > 0)} statement.
 The programmer does need to write field types and method pre-conditions or post-conditions. For instance,
-if a method's formal parameter is used as an index for
-\<myArray>, the programmer might need to
-write an \refqualclasswithparams{checker/index/qual}{IndexFor}{"myArray"}
-annotation on the formal parameter's types.
+if a formal parameter \<i> is used as an index for
+\<myArray>, the programmer might need to declare it as
+\refqualclasswithparams{checker/index/qual}{IndexFor}{"myArray"}~\<int~i>.
 
-The Index Checker checks fixed-size data structures, whose size is never
-changed after creation.  A fixed-size data structure has no \<add> or
-\<remove> operation.  Examples are strings and arrays, and you can add
+The Index Checker checks sequences that do not shrink; that is, their
+size never decreases after creation.  There are two types of such sequences.
+(1) Fixed-size sequences (with no \<add> or
+\<remove> operation), such as strings and arrays.
+You can add
 support for other fixed-size data structures (see
 Section~\ref{index-annotating-fixed-size}).
+(2) Sequences that grow but do not shrink.  A program might use their
+\<add> operation, but not their \<remove> operation.  An example is a
+\<List> into which the program adds elements without removing any.
 
 To run the Index Checker, run either of these commands:
 
@@ -74,12 +74,6 @@ Here is how to declare a length-2 array of length-4 arrays:
 \begin{Verbatim}
   String @ArrayLen(2) [] @ArrayLen(4) []
 \end{Verbatim}
-
-The paper ``Lightweight Verification of Array Indexing'' (ISSTA 2018,
-\myurl{https://homes.cs.washington.edu/~mernst/pubs/array-indexing-issta2018-abstract.html})
-gives more details about the Index Checker.
-``Enforcing correct array indexes with a type system''~\cite{Santino2016} (FSE 2016) describes
-an earlier version.
 
 
 \sectionAndLabel{Index Checker structure and annotations}{index-annotations}
@@ -747,7 +741,7 @@ The Index Checker estimates which expression's values are less than other expres
 
 \end{description}
 
-\sectionAndLabel{Annotating fixed-size data structures}{index-annotating-fixed-size}
+\sectionAndLabel{Annotating your own fixed-size datatypes}{index-annotating-fixed-size}
 
 The Index Checker has built-in support for Strings and arrays.
 You can add support for additional fixed-size data structures by writing
@@ -856,6 +850,9 @@ that can shrink, and defines a qualifier hierarchy to implement these ideas.
 
 \subsectionAndLabel{Qualifier hierarchy for mutable-length collections}{index-mutable-qualifiers}
 
+The type system contains the following type qualifiers
+(Figure~\ref{index-mutability-lattice} shows their hierarchy).
+
 \begin{description}
 \item[\refqualclass{checker/index/qual}{UnShrinkableRef}]
   Ensures that the collection's size does not decrease as long as it is used exclusively.
@@ -905,8 +902,7 @@ that can shrink, and defines a qualifier hierarchy to implement these ideas.
   explicitly in annotations.
 \end{description}
 
-The qualifier hierarchy (shown schematically in Figure~\ref{index-mutability-lattice}) enforces
-safe patterns in programming. The top type is @UnShrinkableRef, which promises not to shrink the
+The top type is @UnShrinkableRef, which promises not to shrink the
 collection. Both @Shrinkable and @GrowOnly are sub-types of @UnShrinkableRef, adding stronger
 conditions for mutations. @GrowOnly is incompatible with @Shrinkable, representing distinct
 mutation permissions. The @UncheckedShrinkable qualifier is a special case of @Shrinkable that
@@ -1199,6 +1195,16 @@ lack of them) that you have correctly handled index-safety even as your collecti
     post-conditions for shrunk sequences. These "simple effect checks" could provide guidance in
     code that hasn't been fully annotated for index mutability.
 \end{itemize}
+
+
+\sectionAndLabel{Technical papers}{index-papers}
+
+The paper ``Lightweight Verification of Array Indexing'' (ISSTA 2018,
+\myurl{https://homes.cs.washington.edu/~mernst/pubs/array-indexing-issta2018-abstract.html})
+gives more details about the Index Checker.
+``Enforcing correct array indexes with a type system''~\cite{Santino2016} (FSE 2016) describes
+an earlier version.
+
 
 %%  LocalWords:  NegativeArraySizeException pre myArray IndexFor someArray
 %%  LocalWords:  MyJavaFile LTLengthOf LTEqLengthOf GTENegativeOne GTE str
