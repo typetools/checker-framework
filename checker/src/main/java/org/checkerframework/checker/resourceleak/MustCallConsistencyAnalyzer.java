@@ -780,10 +780,12 @@ public class MustCallConsistencyAnalyzer {
               "List of MustCall values of component type is null for OwningCollection return value: "
                   + node);
         }
-        for (String mustCallMethod : mustCallValues) {
-          obligations.add(
-              new CollectionObligation(
-                  mustCallMethod, ImmutableSet.of(tmpVarAsResourceAlias), MethodExitKind.ALL));
+        if (!ResourceLeakUtils.isIterator(returnCfVal.getUnderlyingType())) {
+          for (String mustCallMethod : mustCallValues) {
+            obligations.add(
+                new CollectionObligation(
+                    mustCallMethod, ImmutableSet.of(tmpVarAsResourceAlias), MethodExitKind.ALL));
+          }
         }
       }
     }
@@ -2577,17 +2579,19 @@ public class MustCallConsistencyAnalyzer {
         if (cotype == CollectionOwnershipType.OwningCollection) {
           List<String> mustCallValues = coAtf.getMustCallValuesOfResourceCollectionComponent(param);
           if (mustCallValues != null) {
-            for (String mustCallMethod : mustCallValues) {
-              result.add(
-                  new CollectionObligation(
-                      mustCallMethod,
-                      ImmutableSet.of(
-                          new ResourceAlias(
-                              new LocalVariable(paramElement),
-                              paramElement,
-                              param,
-                              hasMustCallAlias)),
-                      Collections.singleton(MethodExitKind.NORMAL_RETURN)));
+            if (!ResourceLeakUtils.isIterator(paramCfVal.getUnderlyingType())) {
+              for (String mustCallMethod : mustCallValues) {
+                result.add(
+                    new CollectionObligation(
+                        mustCallMethod,
+                        ImmutableSet.of(
+                            new ResourceAlias(
+                                new LocalVariable(paramElement),
+                                paramElement,
+                                param,
+                                hasMustCallAlias)),
+                        Collections.singleton(MethodExitKind.NORMAL_RETURN)));
+              }
             }
           }
         }
