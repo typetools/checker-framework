@@ -433,8 +433,12 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
       if (isResourceCollection(returnType.getUnderlyingType())) {
         AnnotationMirror manualAnno = returnType.getEffectiveAnnotationInHierarchy(TOP);
         if (manualAnno == null || AnnotationUtils.areSameByName(BOTTOM, manualAnno)) {
-          returnType.replaceAnnotation(
-              CollectionOwnershipAnnotatedTypeFactory.this.OWNINGCOLLECTION);
+          boolean isConstructor = t.getElement().getKind() == ElementKind.CONSTRUCTOR;
+          if (isConstructor) {
+            returnType.replaceAnnotation(OWNINGCOLLECTIONWITHOUTOBLIGATION);
+          } else {
+            returnType.replaceAnnotation(OWNINGCOLLECTION);
+          }
         }
       }
 
@@ -442,8 +446,7 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
         if (isResourceCollection(paramType.getUnderlyingType())) {
           AnnotationMirror manualAnno = paramType.getEffectiveAnnotationInHierarchy(TOP);
           if (manualAnno == null || AnnotationUtils.areSameByName(BOTTOM, manualAnno)) {
-            paramType.replaceAnnotation(
-                CollectionOwnershipAnnotatedTypeFactory.this.NOTOWNINGCOLLECTION);
+            paramType.replaceAnnotation(NOTOWNINGCOLLECTION);
           }
         }
       }
@@ -505,7 +508,7 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
     @Override
     public Void visitNewArray(NewArrayTree tree, AnnotatedTypeMirror type) {
       if (isResourceCollection(type.getUnderlyingType())) {
-        type.replaceAnnotation(OWNINGCOLLECTION);
+        type.replaceAnnotation(OWNINGCOLLECTIONWITHOUTOBLIGATION);
       }
       return super.visitNewArray(tree, type);
     }

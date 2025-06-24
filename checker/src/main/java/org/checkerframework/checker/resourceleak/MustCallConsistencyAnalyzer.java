@@ -41,6 +41,7 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.calledmethods.qual.CalledMethods;
 import org.checkerframework.checker.collectionownership.CollectionOwnershipAnnotatedTypeFactory;
 import org.checkerframework.checker.collectionownership.CollectionOwnershipAnnotatedTypeFactory.CollectionOwnershipType;
+import org.checkerframework.checker.collectionownership.qual.CreatesCollectionObligation;
 import org.checkerframework.checker.mustcall.CreatesMustCallForToJavaExpression;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.MustCallChecker;
@@ -533,9 +534,11 @@ public class MustCallConsistencyAnalyzer {
      * Create a CollectionObligation from an Obligation
      *
      * @param obligation the obligation to create a CollectionObligation from
+     * @param mustCallMethod the method that must be called on the elements of the collection
      */
-    private CollectionObligation(Obligation obligation) {
+    private CollectionObligation(Obligation obligation, String mustCallMethod) {
       super(obligation.resourceAliases, obligation.whenToEnforce);
+      this.mustCallMethod = mustCallMethod;
     }
 
     /**
@@ -544,10 +547,11 @@ public class MustCallConsistencyAnalyzer {
      *
      * @param tree the tree from which the CollectionObligation is to be created. Must be
      *     ExpressionTree or VariableTree.
+     * @param mustCallMethod the method that must be called on the elements of the collection
      * @return a CollectionObligation derived from the given tree
      */
-    public static CollectionObligation fromTree(Tree tree) {
-      return new CollectionObligation(Obligation.fromTree(tree));
+    public static CollectionObligation fromTree(Tree tree, String mustCallMethod) {
+      return new CollectionObligation(Obligation.fromTree(tree), mustCallMethod);
     }
 
     /**
@@ -792,6 +796,40 @@ public class MustCallConsistencyAnalyzer {
   }
 
   /**
+   * Adds {@code CollectionObligation}s if the method is annotated
+   * {@code @CreatesCollectionObligation} and the receiver is currently
+   * {@code @OwningCollectionWithoutObligation}.
+   *
+   * @param obligations the set of tracked obligations
+   * @param node the method invocation node
+   */
+  private void addObligationsForCreatesCollectionObligationAnno(
+      Set<Obligation> obligations, MethodInvocationNode node) {
+    ExecutableElement methodElement = TreeUtils.elementFromUse(node.getTree());
+    boolean hasCreatesCollectionObligation =
+        coAtf.getDeclAnnotation(methodElement, CreatesCollectionObligation.class) != null;
+    if (hasCreatesCollectionObligation) {
+      CFStore coStore = coAtf.getStoreBefore(node);
+      Node receiverNode = node.getTarget().getReceiver();
+      JavaExpression receiverJx = JavaExpression.fromNode(receiverNode);
+      CFValue receiverCoType = null;
+      try {
+        receiverCoType = coStore.getValue(receiverJx);
+      } catch (Exception e) {
+        return;
+      }
+      if (coAtf.getCoType(receiverCoType)
+          == CollectionOwnershipType.OwningCollectionWithoutObligation) {
+        List<String> mustCallValues =
+            coAtf.getMustCallValuesOfResourceCollectionComponent(receiverNode.getTree());
+        for (String mustCallMethod : mustCallValues) {
+          obligations.add(CollectionObligation.fromTree(receiverNode.getTree(), mustCallMethod));
+        }
+      }
+    }
+  }
+
+  /**
    * Update a set of Obligations to account for a method or constructor invocation.
    *
    * @param obligations the Obligations to update
@@ -814,6 +852,10 @@ public class MustCallConsistencyAnalyzer {
     }
 
     addObligationsForOwningCollectionReturn(obligations, node);
+
+    if (node instanceof MethodInvocationNode) {
+      addObligationsForCreatesCollectionObligationAnno(obligations, (MethodInvocationNode) node);
+    }
 
     if (!shouldTrackInvocationResult(obligations, node, false)) {
       return;

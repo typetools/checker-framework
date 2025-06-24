@@ -7,6 +7,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.collectionownership.CollectionOwnershipAnnotatedTypeFactory.CollectionOwnershipType;
+import org.checkerframework.checker.collectionownership.qual.CreatesCollectionObligation;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.resourceleak.ResourceLeakUtils;
 import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsAnnotatedTypeFactory.PotentiallyFulfillingLoop;
@@ -167,31 +168,29 @@ public class CollectionOwnershipTransfer extends CFTransfer {
     ExecutableElement method = node.getTarget().getMethod();
     List<Node> args = node.getArguments();
     res = transferOwnershipForMethodInvocation(method, args, res);
-
     res = transformPotentiallyFulfillingLoop(res, node.getTree());
 
-    // if (!noCreatesMustCallFor) {
-    //   List<JavaExpression> targetExprs =
-    //       CreatesMustCallForToJavaExpression.getCreatesMustCallForExpressionsAtInvocation(
-    //           n, atypeFactory, atypeFactory);
-    //   for (JavaExpression targetExpr : targetExprs) {
-    //     AnnotationMirror defaultType =
-    //         atypeFactory
-    //             .getAnnotatedType(TypesUtils.getTypeElement(targetExpr.getType()))
-    //             .getPrimaryAnnotationInHierarchy(atypeFactory.TOP);
+    // check whether the method is annotated @CreatesCollectionObligation
+    ExecutableElement methodElement = TreeUtils.elementFromUse(node.getTree());
+    boolean hasCreatesCollectionObligation =
+        atypeFactory.getDeclAnnotation(methodElement, CreatesCollectionObligation.class) != null;
+    if (hasCreatesCollectionObligation) {
+      CFStore coStore = res.getRegularStore();
+      Node receiverNode = node.getTarget().getReceiver();
+      JavaExpression receiverJx = JavaExpression.fromNode(receiverNode);
+      CFValue receiverCoType = null;
+      try {
+        receiverCoType = coStore.getValue(receiverJx);
+      } catch (Exception e) {
+        return res;
+      }
+      if (atypeFactory.getCoType(receiverCoType)
+          == CollectionOwnershipType.OwningCollectionWithoutObligation) {
+        coStore.clearValue(receiverJx);
+        coStore.insertValue(receiverJx, atypeFactory.OWNINGCOLLECTION);
+      }
+    }
 
-    //     if (result.containsTwoStores()) {
-    //       CFStore thenStore = result.getThenStore();
-    //       lubWithStoreValue(thenStore, targetExpr, defaultType);
-
-    //       CFStore elseStore = result.getElseStore();
-    //       lubWithStoreValue(elseStore, targetExpr, defaultType);
-    //     } else {
-    //       CFStore store = result.getRegularStore();
-    //       lubWithStoreValue(store, targetExpr, defaultType);
-    //     }
-    //   }
-    // }
     return res;
   }
 
@@ -291,9 +290,10 @@ public class CollectionOwnershipTransfer extends CFTransfer {
       boolean isDiamond = node.getTree().getTypeArguments().size() == 0;
       if (isDiamond && resolvedType == CollectionOwnershipType.OwningCollectionBottom) {
         store.clearValue(tempVarJx);
-        store.insertValue(tempVarJx, atypeFactory.OWNINGCOLLECTION);
+        store.insertValue(tempVarJx, atypeFactory.OWNINGCOLLECTIONWITHOUTOBLIGATION);
         resultValue =
-            analysis.createSingleAnnotationValue(atypeFactory.OWNINGCOLLECTION, node.getType());
+            analysis.createSingleAnnotationValue(
+                atypeFactory.OWNINGCOLLECTIONWITHOUTOBLIGATION, node.getType());
       }
     }
 
