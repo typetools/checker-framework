@@ -72,8 +72,8 @@ class LoopBodyAnalysisTests {
   }
 
   void multipleMustCallPartial() {
-    // :: error: unfulfilled.collection.obligations
     List<Resource> l = new ArrayList<>();
+    // :: error: unfulfilled.collection.obligations
     l.add(new Resource());
     for (Resource r : l) {
       r.close();

@@ -80,7 +80,6 @@ class CollectionOwnershipDefaults {
   void overrideReturnTypeClient() {
     // the arraylist passed to the method is never closed. The ownership is not passed
     // to overrideReturnType(), since parameters are @NotOwningCollection by default
-    // :: error: unfulfilled.collection.obligations
     List<Socket> notOwninglist = overrideReturnType(new ArrayList<Socket>());
     List<Socket> owninglist = identity(new ArrayList<Socket>());
 
