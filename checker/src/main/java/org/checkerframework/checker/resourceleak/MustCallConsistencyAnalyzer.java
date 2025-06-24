@@ -1346,6 +1346,12 @@ public class MustCallConsistencyAnalyzer {
       //  not be transferred.
       MethodTree method = ((UnderlyingAST.CFGMethod) underlyingAST).getMethod();
       ExecutableElement executableElement = TreeUtils.elementFromDeclaration(method);
+      boolean returnTypeHasManualNocAnno =
+          coAtf.getCoType(new HashSet<>(executableElement.getReturnType().getAnnotationMirrors()))
+              == CollectionOwnershipType.NotOwningCollection;
+      if (returnTypeHasManualNocAnno) {
+        return false;
+      }
       return !cmAtf.hasNotOwning(executableElement);
     }
     return false;
@@ -2251,7 +2257,6 @@ public class MustCallConsistencyAnalyzer {
 
       try {
         propagateObligationsToSuccessorBlock(
-            cfg,
             obligations,
             currentBlock,
             successorAndExceptionType.first,
@@ -2268,7 +2273,6 @@ public class MustCallConsistencyAnalyzer {
    * Helper for {@link #propagateObligationsToSuccessorBlocks(ControlFlowGraph, Set, Block, Set,
    * Deque)} that propagates obligations along a single edge.
    *
-   * @param cfg the control flow graph
    * @param obligations the Obligations for the current block
    * @param currentBlock the current block
    * @param successor a successor of the current block
@@ -2281,7 +2285,6 @@ public class MustCallConsistencyAnalyzer {
    *     analysis and a state without input (unreachable in conventional analysis) is reached
    */
   private void propagateObligationsToSuccessorBlock(
-      ControlFlowGraph cfg,
       Set<Obligation> obligations,
       Block currentBlock,
       Block successor,
@@ -2349,6 +2352,7 @@ public class MustCallConsistencyAnalyzer {
     AccumulationStore regularStoreOfSuccessor = input.getRegularStore();
 
     for (Obligation obligation : obligations) {
+
       if (isElseEdgeOfFulfillingLoop) {
         if (obligation instanceof CollectionObligation) {
           String mustCallMethodOfCo = ((CollectionObligation) obligation).mustCallMethod;
@@ -2495,20 +2499,6 @@ public class MustCallConsistencyAnalyzer {
             exceptionType == null ? MethodExitKind.NORMAL_RETURN : MethodExitKind.EXCEPTIONAL_EXIT;
         if (obligation.whenToEnforce.contains(exitKind)) {
           checkMustCall(obligation, cmStore, mcStore, exitReasonForErrorMessage);
-        } else if (exitKind == MethodExitKind.NORMAL_RETURN) {
-          // check normal returns where return type is @NotOwningCollection.
-          UnderlyingAST underlyingAST = cfg.getUnderlyingAST();
-          if (underlyingAST instanceof UnderlyingAST.CFGMethod) {
-            MethodTree method = ((UnderlyingAST.CFGMethod) underlyingAST).getMethod();
-            ExecutableElement executableElement = TreeUtils.elementFromDeclaration(method);
-            boolean returnTypeHasManualNocAnno =
-                coAtf.getCoType(
-                        new HashSet<>(executableElement.getReturnType().getAnnotationMirrors()))
-                    == CollectionOwnershipType.NotOwningCollection;
-            if (returnTypeHasManualNocAnno) {
-              checkMustCall(obligation, cmStore, mcStore, exitReasonForErrorMessage);
-            }
-          }
         }
       } else {
         // In this case, there is info in the successor store about some alias in the
@@ -3379,7 +3369,6 @@ public class MustCallConsistencyAnalyzer {
         } else {
           try {
             propagateObligationsToSuccessorBlock(
-                cfg,
                 obligations,
                 currentBlock,
                 successorAndExceptionType.first,
