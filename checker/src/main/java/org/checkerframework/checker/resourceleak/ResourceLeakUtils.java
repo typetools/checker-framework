@@ -373,6 +373,27 @@ public class ResourceLeakUtils {
   }
 
   /**
+   * Returns the list of mustcall obligations for the given {@code AnnotatedTypeMirror} upper bound
+   * (either the type variable itself if it is concrete or the upper bound if its a wildcard or
+   * generic).
+   *
+   * @param type the {@code AnnotatedTypeMirror}
+   * @param mcAtf the {@code MustCallAnnotatedTypeFactory} to get the {@code MustCall} type
+   * @return the list of mustcall obligations for the upper bound of {@code type}.
+   */
+  public static List<String> getMcValues(
+      AnnotatedTypeMirror type, MustCallAnnotatedTypeFactory mcAtf) {
+    AnnotationMirror anno = type.getEffectiveAnnotationInHierarchy(mcAtf.TOP);
+    if (anno == null) {
+      return Collections.emptyList();
+    }
+    if (AnnotationUtils.areSameByName(anno, mcAtf.TOP)) {
+      return Collections.singletonList(CollectionOwnershipAnnotatedTypeFactory.UNKNOWN_METHOD_NAME);
+    }
+    return getValuesInAnno(anno, mcAtf.getMustCallValueElement());
+  }
+
+  /**
    * Return true if the passed {@code TypeMirror} has a manual {@code MustCallUnknown} annotation.
    *
    * @param typeMirror the {@code TypeMirror}

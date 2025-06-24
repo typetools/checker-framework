@@ -774,7 +774,7 @@ public class MustCallConsistencyAnalyzer {
         ResourceAlias tmpVarAsResourceAlias =
             new ResourceAlias(new LocalVariable(tmpVar), node.getTree());
         List<String> mustCallValues =
-            coAtf.getMustCallValuesOfResourceCollectionComponent(returnCfVal.getUnderlyingType());
+            coAtf.getMustCallValuesOfResourceCollectionComponent(node.getTree());
         if (mustCallValues == null) {
           throw new BugInCF(
               "List of MustCall values of component type is null for OwningCollection return value: "
@@ -2575,24 +2575,20 @@ public class MustCallConsistencyAnalyzer {
         CFValue paramCfVal = coStore.getValue(JavaExpression.fromVariableTree(param));
         CollectionOwnershipType cotype = coAtf.getCoType(paramCfVal);
         if (cotype == CollectionOwnershipType.OwningCollection) {
-          List<String> mustCallValues =
-              coAtf.getMustCallValuesOfResourceCollectionComponent(paramCfVal.getUnderlyingType());
-          if (mustCallValues == null) {
-            throw new BugInCF(
-                "List of MustCall values of component type is null for OwningCollection parameter: "
-                    + param);
-          }
-          for (String mustCallMethod : mustCallValues) {
-            result.add(
-                new CollectionObligation(
-                    mustCallMethod,
-                    ImmutableSet.of(
-                        new ResourceAlias(
-                            new LocalVariable(paramElement),
-                            paramElement,
-                            param,
-                            hasMustCallAlias)),
-                    Collections.singleton(MethodExitKind.NORMAL_RETURN)));
+          List<String> mustCallValues = coAtf.getMustCallValuesOfResourceCollectionComponent(param);
+          if (mustCallValues != null) {
+            for (String mustCallMethod : mustCallValues) {
+              result.add(
+                  new CollectionObligation(
+                      mustCallMethod,
+                      ImmutableSet.of(
+                          new ResourceAlias(
+                              new LocalVariable(paramElement),
+                              paramElement,
+                              param,
+                              hasMustCallAlias)),
+                      Collections.singleton(MethodExitKind.NORMAL_RETURN)));
+            }
           }
         }
       }

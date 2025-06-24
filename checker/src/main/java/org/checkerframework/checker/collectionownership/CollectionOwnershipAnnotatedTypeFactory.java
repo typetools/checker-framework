@@ -40,6 +40,8 @@ import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
@@ -207,7 +209,9 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
   }
 
   /**
-   * Returns whether the given type is a resource collection.
+   * Returns whether the given type is a resource collection. This overload should be used before
+   * computation of AnnotatedTypeMirrors is completed, in particular in
+   * addComputedTypeAnnotations(AnnotatedTypeMirror).
    *
    * <p>That is, whether the given type is:
    *
@@ -226,6 +230,27 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
   }
 
   /**
+   * Returns whether the given AST tree is a resource collection.
+   *
+   * <p>That is, whether the given tree is of:
+   *
+   * <ol>
+   *   <li>An array type, whose component has non-empty MustCall type.
+   *   <li>A type assignable from java.util.Collection, whose only type var has non-empty MustCall
+   *       type.
+   * </ol>
+   *
+   * @param tree the tree
+   * @return whether the tree is a resource collection
+   */
+  public boolean isResourceCollection(Tree tree) {
+    MustCallAnnotatedTypeFactory mcAtf = ResourceLeakUtils.getMustCallAnnotatedTypeFactory(this);
+    AnnotatedTypeMirror treeMcType = mcAtf.getAnnotatedType(tree);
+    List<String> list = getMustCallValuesOfResourceCollectionComponent(treeMcType);
+    return list != null && list.size() > 0;
+  }
+
+  /**
    * If the given type is a collection, this method returns the MustCall values of its elements or
    * null if there are none or if the given type is not a collection.
    *
@@ -238,11 +263,80 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
    *       MustCall values of its type variable upper bound if there are any or else null.
    * </ol>
    *
-   * @param t the AnnotatedTypeMirror
+   * @param atm the AnnotatedTypeMirror
+   * @return if the given type is a collection, returns the MustCall values of its elements or null
+   *     if there are none or if the given type is not a collection.
+   */
+  public List<String> getMustCallValuesOfResourceCollectionComponent(AnnotatedTypeMirror atm) {
+    if (atm == null) {
+      return null;
+    }
+    boolean isCollectionType = ResourceLeakUtils.isCollection(atm.getUnderlyingType());
+    boolean isArrayType = atm.getKind() == TypeKind.ARRAY;
+
+    AnnotatedTypeMirror componentType = null;
+    if (isArrayType) {
+      componentType = ((AnnotatedArrayType) atm).getComponentType();
+    } else if (isCollectionType) {
+      List<? extends AnnotatedTypeMirror> typeArgs =
+          ((AnnotatedDeclaredType) atm).getTypeArguments();
+      if (typeArgs.size() != 0) {
+        componentType = typeArgs.get(0);
+      }
+    }
+
+    if (componentType != null) {
+      MustCallAnnotatedTypeFactory mcAtf = ResourceLeakUtils.getMustCallAnnotatedTypeFactory(this);
+      List<String> list = ResourceLeakUtils.getMcValues(componentType, mcAtf);
+      return list;
+    } else {
+      return null;
+    }
+  }
+
+  /**
+   * If the given tree represents a collection, this method returns the MustCall values of its
+   * elements or null if there are none or if the given type is not a collection.
+   *
+   * <p>That is:
+   *
+   * <ol>
+   *   <li>if the given tree is of an array type, this method returns the MustCall values of its
+   *       component type if there are any or else null.
+   *   <li>if the given tree is of a Java.util.Collection implementation, this method returns the
+   *       MustCall values of its type variable upper bound if there are any or else null.
+   * </ol>
+   *
+   * @param tree the AST tree
+   * @return if the given tree represents a collection, returns the MustCall values of its elements
+   *     or null if there are none or if the given type is not a collection.
+   */
+  public List<String> getMustCallValuesOfResourceCollectionComponent(Tree tree) {
+    MustCallAnnotatedTypeFactory mcAtf = ResourceLeakUtils.getMustCallAnnotatedTypeFactory(this);
+    return getMustCallValuesOfResourceCollectionComponent(mcAtf.getAnnotatedType(tree));
+  }
+
+  /**
+   * If the given type is a collection, this method returns the MustCall values of its elements or
+   * null if there are none or if the given type is not a collection.
+   *
+   * <p>That is:
+   *
+   * <ol>
+   *   <li>if the given type is an array type, this method returns the MustCall values of its
+   *       component type if there are any or else null.
+   *   <li>if the given type is a Java.util.Collection implementation, this method returns the
+   *       MustCall values of its type variable upper bound if there are any or else null.
+   * </ol>
+   *
+   * @param t the TypeMirror
    * @return if the given type is a collection, returns the MustCall values of its elements or null
    *     if there are none or if the given type is not a collection.
    */
   public List<String> getMustCallValuesOfResourceCollectionComponent(TypeMirror t) {
+    if (t == null) {
+      return null;
+    }
     boolean isCollectionType = ResourceLeakUtils.isCollection(t);
     boolean isArrayType = t.getKind() == TypeKind.ARRAY;
 
@@ -256,9 +350,8 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
       }
     }
 
-    MustCallAnnotatedTypeFactory mcAtf = ResourceLeakUtils.getMustCallAnnotatedTypeFactory(this);
-
     if (componentType != null) {
+      MustCallAnnotatedTypeFactory mcAtf = ResourceLeakUtils.getMustCallAnnotatedTypeFactory(this);
       List<String> list = ResourceLeakUtils.getMcValues(componentType, mcAtf);
       return list;
     } else {

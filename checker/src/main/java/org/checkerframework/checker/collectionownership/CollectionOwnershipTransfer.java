@@ -6,7 +6,6 @@ import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.collectionownership.CollectionOwnershipAnnotatedTypeFactory.CollectionOwnershipType;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.resourceleak.ResourceLeakUtils;
@@ -139,8 +138,7 @@ public class CollectionOwnershipTransfer extends CFTransfer {
       CollectionOwnershipType collectionCoType = atypeFactory.getCoType(collectionValue);
       if (collectionCoType == CollectionOwnershipType.OwningCollection) {
         List<String> mustCallValuesOfElements =
-            atypeFactory.getMustCallValuesOfResourceCollectionComponent(
-                collectionValue.getUnderlyingType());
+            atypeFactory.getMustCallValuesOfResourceCollectionComponent(loop.collectionTree);
         if (loop.getMethods().containsAll(mustCallValuesOfElements)) {
           elseStore.clearValue(collectionJx);
           elseStore.insertValue(collectionJx, atypeFactory.OWNINGCOLLECTIONWITHOUTOBLIGATION);
@@ -289,8 +287,7 @@ public class CollectionOwnershipTransfer extends CFTransfer {
     }
 
     CollectionOwnershipType resolvedType = atypeFactory.getCoType(tempVarVal);
-    TypeMirror javaTypeOfExpr = TreeUtils.elementFromTree(tempVarNode.getTree()).asType();
-    if (atypeFactory.isResourceCollection(javaTypeOfExpr)) {
+    if (atypeFactory.isResourceCollection(node.getTree())) {
       boolean isDiamond = node.getTree().getTypeArguments().size() == 0;
       if (isDiamond && resolvedType == CollectionOwnershipType.OwningCollectionBottom) {
         store.clearValue(tempVarJx);
