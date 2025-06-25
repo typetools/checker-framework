@@ -111,7 +111,11 @@ public class FormatterTreeUtil {
     NULLARRAY;
   }
 
-  /** A wrapper around a value of type E, plus an ExpressionTree location. */
+  /**
+   * A wrapper around a value of type E, plus an ExpressionTree location.
+   *
+   * @param <E> the type of the wrapped value
+   */
   public static class Result<E> {
     private final E value;
     public final ExpressionTree location;
