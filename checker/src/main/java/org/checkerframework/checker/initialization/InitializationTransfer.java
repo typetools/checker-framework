@@ -53,7 +53,7 @@ import org.checkerframework.javacutil.TreeUtils;
  * @see InitializationStore
  * @param <V> the type of the abstract value
  * @param <T> the type of the transfer function
- * @param <V> the type of the store
+ * @param <S> the type of the store
  */
 public class InitializationTransfer<
         V extends CFAbstractValue<V>,

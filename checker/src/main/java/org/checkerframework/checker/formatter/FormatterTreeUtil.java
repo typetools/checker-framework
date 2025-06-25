@@ -117,7 +117,10 @@ public class FormatterTreeUtil {
    * @param <E> the type of the wrapped value
    */
   public static class Result<E> {
+    /** The wrapped value. */
     private final E value;
+
+    /** The location of the value. */
     public final ExpressionTree location;
 
     public Result(E value, ExpressionTree location) {
