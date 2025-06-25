@@ -772,9 +772,7 @@ public class MustCallConsistencyAnalyzer {
   private void addObligationsForOwningCollectionReturn(Set<Obligation> obligations, Node node) {
     LocalVariableNode tmpVar = cmAtf.getTempVarForNode(node);
     if (tmpVar != null) {
-      CollectionOwnershipStore coStore = coAtf.getStoreAfter(node);
-      CFValue returnCfVal = coStore.getValue(JavaExpression.fromNode(tmpVar));
-      CollectionOwnershipType cotype = coAtf.getCoType(returnCfVal);
+      CollectionOwnershipType cotype = coAtf.getCoType(node);
       if (cotype == CollectionOwnershipType.OwningCollection) {
         ResourceAlias tmpVarAsResourceAlias =
             new ResourceAlias(new LocalVariable(tmpVar), node.getTree());
@@ -785,7 +783,7 @@ public class MustCallConsistencyAnalyzer {
               "List of MustCall values of component type is null for OwningCollection return value: "
                   + node);
         }
-        if (!ResourceLeakUtils.isIterator(returnCfVal.getUnderlyingType())) {
+        if (!ResourceLeakUtils.isIterator(node.getType())) {
           for (String mustCallMethod : mustCallValues) {
             obligations.add(
                 new CollectionObligation(
@@ -810,22 +808,31 @@ public class MustCallConsistencyAnalyzer {
     boolean hasCreatesCollectionObligation =
         coAtf.getDeclAnnotation(methodElement, CreatesCollectionObligation.class) != null;
     if (hasCreatesCollectionObligation) {
-      CollectionOwnershipStore coStore = coAtf.getStoreBefore(node);
       Node receiverNode = node.getTarget().getReceiver();
-      JavaExpression receiverJx = JavaExpression.fromNode(receiverNode);
-      CFValue receiverCoType = null;
-      try {
-        receiverCoType = coStore.getValue(receiverJx);
-      } catch (Exception e) {
-        return;
-      }
-      if (coAtf.getCoType(receiverCoType)
-          == CollectionOwnershipType.OwningCollectionWithoutObligation) {
-        List<String> mustCallValues =
-            coAtf.getMustCallValuesOfResourceCollectionComponent(receiverNode.getTree());
-        for (String mustCallMethod : mustCallValues) {
-          obligations.add(CollectionObligation.fromTree(receiverNode.getTree(), mustCallMethod));
-        }
+      Element receiverElt = TreeUtils.elementFromTree(receiverNode.getTree());
+      boolean receiverIsField = receiverElt.getKind().isField();
+
+      switch (coAtf.getCoType(receiverNode)) {
+        case OwningCollectionWithoutObligation:
+          if (!receiverIsField) {
+            List<String> mustCallValues =
+                coAtf.getMustCallValuesOfResourceCollectionComponent(receiverNode.getTree());
+            for (String mustCallMethod : mustCallValues) {
+              obligations.add(
+                  CollectionObligation.fromTree(receiverNode.getTree(), mustCallMethod));
+            }
+          }
+        // fall through
+        case OwningCollection:
+          if (receiverIsField) {
+            TreePath currentPath = cmAtf.getPath(node.getTree());
+            MethodTree enclosingMethodTree = TreePathUtil.enclosingMethod(currentPath);
+            if (enclosingMethodTree != null) {
+              checkEnclosingMethodIsCreatesMustCallFor(receiverNode, enclosingMethodTree);
+            }
+          }
+          break;
+        default:
       }
     }
   }
@@ -1826,7 +1833,7 @@ public class MustCallConsistencyAnalyzer {
     if (!(receiver instanceof LocalVariableNode
             && varTrackedInObligations(obligations, (LocalVariableNode) receiver))
         && !(node.getExpression() instanceof NullLiteralNode)) {
-      checkEnclosingMethodIsCreatesMustCallFor(node, enclosingMethodTree);
+      checkEnclosingMethodIsCreatesMustCallFor(node.getTarget(), enclosingMethodTree);
     }
 
     // The following code handles a special case where the field being assigned is itself
@@ -1936,23 +1943,24 @@ public class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Checks that the method that encloses an assignment is marked with @CreatesMustCallFor
-   * annotation whose target is the object whose field is being re-assigned.
+   * Checks that the method that encloses an obligation creation for an owning field (e.g. a
+   * reassignment to an {@code @Owning} field or an invocation of a method annotated
+   * {@code @CreatesCollectionObligation} on an {@code @OwningCollection} field) is marked
+   * with @CreatesMustCallFor annotation whose target is the object for whose field an obligation is
+   * created.
    *
-   * @param node an assignment node whose lhs is a non-final, owning field
-   * @param enclosingMethod the MethodTree in which the re-assignment takes place
+   * @param node the owning field node
+   * @param enclosingMethod the MethodTree in which the obligation creation takes place
    */
-  private void checkEnclosingMethodIsCreatesMustCallFor(
-      AssignmentNode node, MethodTree enclosingMethod) {
-    Node lhs = node.getTarget();
-    if (!(lhs instanceof FieldAccessNode)) {
+  private void checkEnclosingMethodIsCreatesMustCallFor(Node node, MethodTree enclosingMethod) {
+    if (!(node instanceof FieldAccessNode)) {
       return;
     }
-    if (permitStaticOwning && ((FieldAccessNode) lhs).getReceiver() instanceof ClassNameNode) {
+    if (permitStaticOwning && ((FieldAccessNode) node).getReceiver() instanceof ClassNameNode) {
       return;
     }
 
-    String receiverString = receiverAsString((FieldAccessNode) lhs);
+    String receiverString = receiverAsString((FieldAccessNode) node);
     if ("this".equals(receiverString) && TreeUtils.isConstructor(enclosingMethod)) {
       // Constructors always create must-call obligations, so there is no need for them to
       // be annotated.
@@ -1970,7 +1978,7 @@ public class MustCallConsistencyAnalyzer {
           "missing.creates.mustcall.for",
           enclosingMethodElt.getSimpleName().toString(),
           receiverString,
-          ((FieldAccessNode) lhs).getFieldName());
+          ((FieldAccessNode) node).getFieldName());
       return;
     }
 
@@ -1996,7 +2004,7 @@ public class MustCallConsistencyAnalyzer {
         "incompatible.creates.mustcall.for",
         enclosingMethodElt.getSimpleName().toString(),
         receiverString,
-        ((FieldAccessNode) lhs).getFieldName(),
+        ((FieldAccessNode) node).getFieldName(),
         String.join(", ", checked));
   }
 
@@ -2607,12 +2615,11 @@ public class MustCallConsistencyAnalyzer {
           // method.
           incrementNumMustCall(paramElement);
         }
-        CFValue paramCfVal = coStore.getValue(JavaExpression.fromVariableTree(param));
-        CollectionOwnershipType cotype = coAtf.getCoType(paramCfVal);
+        CollectionOwnershipType cotype = coAtf.getCoType(param);
         if (cotype == CollectionOwnershipType.OwningCollection) {
           List<String> mustCallValues = coAtf.getMustCallValuesOfResourceCollectionComponent(param);
           if (mustCallValues != null) {
-            if (!ResourceLeakUtils.isIterator(paramCfVal.getUnderlyingType())) {
+            if (!ResourceLeakUtils.isIterator(paramElement.asType())) {
               for (String mustCallMethod : mustCallValues) {
                 result.add(
                     new CollectionObligation(

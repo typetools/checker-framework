@@ -68,28 +68,23 @@ public class CollectionOwnershipTransfer
     Node rhs = node.getExpression();
     rhs = getNodeOrTempVar(rhs);
     JavaExpression rhsJx = JavaExpression.fromNode(rhs);
-
-    CFValue rhsValue = null;
-    try {
-      rhsValue = store.getValue(rhsJx);
-    } catch (Exception e) {
-      return res;
-    }
-    CollectionOwnershipType rhsType = atypeFactory.getCoType(rhsValue);
+    CollectionOwnershipType rhsType = atypeFactory.getCoType(rhs);
 
     // ownership transfer from rhs into lhs usually.
     // special case desugared assignments of a temporary array variable.
-    if (rhsType == CollectionOwnershipType.OwningCollection
-        || rhsType == CollectionOwnershipType.OwningCollectionWithoutObligation) {
-      if (node.isDesugaredFromEnhancedArrayForLoop()) {
-        store.clearValue(lhsJx);
-        store.insertValue(lhsJx, atypeFactory.NOTOWNINGCOLLECTION);
-      } else {
-        store.clearValue(rhsJx);
-        store.insertValue(rhsJx, atypeFactory.NOTOWNINGCOLLECTION);
-      }
+    switch (rhsType) {
+      case OwningCollection:
+      case OwningCollectionWithoutObligation:
+        if (node.isDesugaredFromEnhancedArrayForLoop()) {
+          store.clearValue(lhsJx);
+          store.insertValue(lhsJx, atypeFactory.NOTOWNINGCOLLECTION);
+        } else {
+          store.clearValue(rhsJx);
+          store.insertValue(rhsJx, atypeFactory.NOTOWNINGCOLLECTION);
+        }
+        break;
+      default:
     }
-
     // boolean assignmentOfOwningCollectionArrayElement =
     //     lhsIsOwningCollection && lhs.getTree().getKind() == Tree.Kind.ARRAY_ACCESS;
 
@@ -130,14 +125,8 @@ public class CollectionOwnershipTransfer
     if (loop != null) {
       CollectionOwnershipStore elseStore = res.getElseStore();
       JavaExpression collectionJx = JavaExpression.fromTree(loop.collectionTree);
-      CFValue collectionValue = null;
-      try {
-        collectionValue = elseStore.getValue(collectionJx);
-      } catch (Exception e) {
-        return res;
-      }
 
-      CollectionOwnershipType collectionCoType = atypeFactory.getCoType(collectionValue);
+      CollectionOwnershipType collectionCoType = atypeFactory.getCoType(loop.collectionTree);
       if (collectionCoType == CollectionOwnershipType.OwningCollection) {
         List<String> mustCallValuesOfElements =
             atypeFactory.getMustCallValuesOfResourceCollectionComponent(loop.collectionTree);
@@ -179,13 +168,7 @@ public class CollectionOwnershipTransfer
       CollectionOwnershipStore coStore = res.getRegularStore();
       Node receiverNode = node.getTarget().getReceiver();
       JavaExpression receiverJx = JavaExpression.fromNode(receiverNode);
-      CFValue receiverCoType = null;
-      try {
-        receiverCoType = coStore.getValue(receiverJx);
-      } catch (Exception e) {
-        return res;
-      }
-      if (atypeFactory.getCoType(receiverCoType)
+      if (atypeFactory.getCoType(receiverNode)
           == CollectionOwnershipType.OwningCollectionWithoutObligation) {
         coStore.clearValue(receiverJx);
         coStore.insertValue(receiverJx, atypeFactory.OWNINGCOLLECTION);
@@ -216,27 +199,31 @@ public class CollectionOwnershipTransfer
       Node arg = args.get(i);
       arg = getNodeOrTempVar(arg);
       JavaExpression argJx = JavaExpression.fromNode(arg);
-      CFValue argValue = null;
-      try {
-        argValue = store.getValue(argJx);
-      } catch (Exception e) {
-        continue;
-      }
-      CollectionOwnershipType argType = atypeFactory.getCoType(argValue);
+      CollectionOwnershipType argType = atypeFactory.getCoType(arg);
       CollectionOwnershipType paramType =
           atypeFactory.getCoType(new HashSet<>(param.asType().getAnnotationMirrors()));
 
-      if (paramType == CollectionOwnershipType.OwningCollection) {
-        if (argType == CollectionOwnershipType.OwningCollectionWithoutObligation
-            || argType == CollectionOwnershipType.OwningCollection) {
-          store.clearValue(argJx);
-          store.insertValue(argJx, atypeFactory.NOTOWNINGCOLLECTION);
-        }
-      } else if (paramType == CollectionOwnershipType.OwningCollectionWithoutObligation) {
-        if (argType == CollectionOwnershipType.OwningCollectionWithoutObligation) {
-          store.clearValue(argJx);
-          store.insertValue(argJx, atypeFactory.NOTOWNINGCOLLECTION);
-        }
+      switch (paramType) {
+        case OwningCollection:
+          switch (argType) {
+            case OwningCollection:
+            case OwningCollectionWithoutObligation:
+              store.clearValue(argJx);
+              store.insertValue(argJx, atypeFactory.NOTOWNINGCOLLECTION);
+              break;
+            default:
+          }
+          break;
+        case OwningCollectionWithoutObligation:
+          switch (argType) {
+            case OwningCollectionWithoutObligation:
+              store.clearValue(argJx);
+              store.insertValue(argJx, atypeFactory.NOTOWNINGCOLLECTION);
+              break;
+            default:
+          }
+          break;
+        default:
       }
     }
     return new RegularTransferResult<CFValue, CollectionOwnershipStore>(
@@ -266,14 +253,7 @@ public class CollectionOwnershipTransfer
     Node tempVarNode = getNodeOrTempVar(node);
     JavaExpression tempVarJx = JavaExpression.fromNode(tempVarNode);
 
-    CFValue tempVarVal = null;
-    try {
-      tempVarVal = store.getValue(tempVarJx);
-    } catch (Exception e) {
-      return result;
-    }
-
-    CollectionOwnershipType resolvedType = atypeFactory.getCoType(tempVarVal);
+    CollectionOwnershipType resolvedType = atypeFactory.getCoType(node);
     if (atypeFactory.isResourceCollection(node.getTree())) {
       boolean isDiamond = node.getTree().getTypeArguments().size() == 0;
       if (isDiamond && resolvedType == CollectionOwnershipType.OwningCollectionBottom) {

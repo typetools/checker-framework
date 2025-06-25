@@ -1,8 +1,10 @@
 package org.checkerframework.checker.collectionownership;
 
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collection;
@@ -39,6 +41,8 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.block.Block;
+import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -375,27 +379,61 @@ public class CollectionOwnershipAnnotatedTypeFactory
   }
 
   /**
-   * Utility method to get the {@code CollectionOwnershipType} that the given value extracted from a
-   * store has.
+   * Utility method to get the flow-sensitive {@code CollectionOwnershipType} that the given node
+   * has.
    *
-   * @param val the store value type
-   * @return the {@code CollectionOwnershipType} that the given value extracted from a store has
+   * @param node the node
+   * @return the {@code CollectionOwnershipType} that the given node has.
    */
-  public CollectionOwnershipType getCoType(CFValue val) {
-    return val == null ? CollectionOwnershipType.None : getCoType(val.getAnnotations());
+  public CollectionOwnershipType getCoType(Node node) {
+    CollectionOwnershipType res = null;
+    if (node.getBlock() != null) {
+      CollectionOwnershipStore coStore = getStoreBefore(node);
+      try {
+        JavaExpression jx = JavaExpression.fromNode(node);
+        CFValue storeVal = coStore.getValue(jx);
+        res = getCoType(storeVal.getAnnotations());
+      } catch (Exception e) {
+        res = null;
+      }
+    }
+
+    if (res == null) {
+      // not in store
+      AnnotatedTypeMirror atm = getAnnotatedType(node.getTree());
+      return atm == null
+          ? CollectionOwnershipType.None
+          : getCoType(Collections.singletonList(atm.getEffectiveAnnotationInHierarchy(TOP)));
+    }
+
+    return res;
   }
 
   /**
-   * Utility method to get the {@code CollectionOwnershipType} that the given tree has.
+   * Utility method to get the flow-sensitive {@code CollectionOwnershipType} that the given tree
+   * has.
    *
    * @param tree the tree
    * @return the {@code CollectionOwnershipType} that the given tree has.
    */
   public CollectionOwnershipType getCoType(Tree tree) {
-    AnnotatedTypeMirror atm = getAnnotatedType(tree);
-    return atm == null
-        ? CollectionOwnershipType.None
-        : getCoType(Collections.singletonList(atm.getEffectiveAnnotationInHierarchy(TOP)));
+    JavaExpression jx = null;
+    if (tree instanceof ExpressionTree) {
+      jx = JavaExpression.fromTree((ExpressionTree) tree);
+    } else if (tree instanceof VariableTree) {
+      jx = JavaExpression.fromVariableTree((VariableTree) tree);
+    }
+    try {
+      CollectionOwnershipStore coStore = getStoreBefore(tree);
+      CFValue storeVal = coStore.getValue(jx);
+      return getCoType(storeVal.getAnnotations());
+    } catch (Exception e) {
+      // No flow-sensitive access. Fall back to annotated type.
+      AnnotatedTypeMirror atm = getAnnotatedType(tree);
+      return atm == null
+          ? CollectionOwnershipType.None
+          : getCoType(Collections.singletonList(atm.getEffectiveAnnotationInHierarchy(TOP)));
+    }
   }
 
   /**
@@ -410,6 +448,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
       return CollectionOwnershipType.None;
     }
     for (AnnotationMirror anm : annos) {
+      if (anm == null) continue;
       if (AnnotationUtils.areSame(anm, NOTOWNINGCOLLECTION)) {
         return CollectionOwnershipType.NotOwningCollection;
       } else if (AnnotationUtils.areSame(anm, OWNINGCOLLECTION)) {
