@@ -7,14 +7,14 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * A meta-annotation that specifies if a declaration annotation should be inherited. This should not
- * be written on type annotations. Unlike {@link java.lang.annotation.Inherited}, this
+ * A meta-annotation that specifies that a declaration annotation should be inherited. This should
+ * not be written on type annotations. Unlike {@link java.lang.annotation.Inherited}, this
  * meta-annotation causes the declaration annotation to be inherited even if it is used to annotate
  * something other than a class.
  *
  * <p>The Checker Framework does respect {@link java.lang.annotation.Inherited} and will only
- * inherit declaration annotations on a class if the class is annotated with an annotated type with
- * this meta-annotation.
+ * inherit declaration annotations on a class if the declaration annotation class is meta-annotated
+ * with {@code InheritedAnnotation}.
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
