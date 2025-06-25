@@ -453,7 +453,7 @@ public class DependentTypesHelper {
         }
         Tree enclTree = pathTillEnclTree.getLeaf();
 
-        if (enclTree.getKind() == Tree.Kind.METHOD) {
+        if (enclTree instanceof MethodTree) {
           MethodTree methodDeclTree = (MethodTree) enclTree;
           StringToJavaExpression stringToJavaExpr =
               stringExpr ->
@@ -1015,7 +1015,7 @@ public class DependentTypesHelper {
     }
 
     // Report the error at the type rather than at the variable.
-    if (errorTree.getKind() == Tree.Kind.VARIABLE) {
+    if (errorTree instanceof VariableTree) {
       Tree typeTree = ((VariableTree) errorTree).getType();
       // Don't report the error at the type if the type is not present in source code.
       if (((JCTree) typeTree).getPreferredPosition() != -1) {

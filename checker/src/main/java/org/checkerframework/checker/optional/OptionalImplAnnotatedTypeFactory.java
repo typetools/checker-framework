@@ -4,7 +4,6 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import java.util.Collection;
 import java.util.function.Function;
 import javax.lang.model.element.AnnotationMirror;
@@ -68,7 +67,7 @@ public class OptionalImplAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
     MethodInvocationTree mapTree = (MethodInvocationTree) tree;
     ExpressionTree argTree = mapTree.getArguments().get(0);
-    if (argTree.getKind() != Kind.MEMBER_REFERENCE) {
+    if (!(argTree instanceof MemberReferenceTree)) {
       return;
     }
     AnnotatedTypeMirror mapReceiver = getReceiverType(mapTree);

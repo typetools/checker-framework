@@ -4,6 +4,7 @@ import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ReturnTree;
@@ -99,7 +100,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
       //   @CreatesMustCallFor annotation except in the constructor of the object containing
       //   the field.
       boolean lhsIsOwningField =
-          lhs.getKind() == Tree.Kind.MEMBER_SELECT
+          lhs instanceof MemberSelectTree
               && atypeFactory.getDeclAnnotation(lhsElt, Owning.class) != null;
       boolean rhsIsMCA =
           atypeFactory.containsSameByClass(rhsElt.getAnnotationMirrors(), MustCallAlias.class);

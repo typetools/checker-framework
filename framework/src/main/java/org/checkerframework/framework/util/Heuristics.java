@@ -51,7 +51,7 @@ public class Heuristics {
         break;
       }
 
-      if (tree.getKind() == Tree.Kind.BLOCK || tree.getKind() == Tree.Kind.PARENTHESIZED) {
+      if (tree instanceof BlockTree || tree instanceof ParenthesizedTree) {
         parentPath = parentPath.getParentPath();
         continue;
       }
@@ -181,7 +181,7 @@ public class Heuristics {
     public boolean match(TreePath path) {
       TreePath prev = path, p = path.getParentPath();
       while (p != null) {
-        if (p.getLeaf().getKind() == Tree.Kind.IF) {
+        if (p.getLeaf() instanceof IfTree) {
           IfTree ifTree = (IfTree) p.getLeaf();
           ExpressionTree cond = TreeUtils.withoutParens(ifTree.getCondition());
           if (ifTree.getThenStatement() == prev.getLeaf() && matcher.match(new TreePath(p, cond))) {

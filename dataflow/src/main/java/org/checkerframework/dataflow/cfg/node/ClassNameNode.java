@@ -33,7 +33,6 @@ public class ClassNameNode extends Node {
 
   public ClassNameNode(IdentifierTree tree) {
     super(TreeUtils.typeOf(tree));
-    assert tree.getKind() == Tree.Kind.IDENTIFIER;
     this.tree = tree;
     assert TreeUtils.isUseOfElement(tree) : "@AssumeAssertion(nullness): tree kind";
     Element element = TreeUtils.elementFromUse(tree);
