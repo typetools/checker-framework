@@ -32,26 +32,31 @@ import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
 import org.checkerframework.checker.resourceleak.ResourceLeakUtils;
 import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsAnnotatedTypeFactory;
 import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsAnnotatedTypeFactory.PotentiallyFulfillingLoop;
-import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.block.Block;
-import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.TreeUtils;
 
 /** The annotated type factory for the Collection Ownership Checker. */
-public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
+public class CollectionOwnershipAnnotatedTypeFactory
+    extends GenericAnnotatedTypeFactory<
+        CFValue,
+        CollectionOwnershipStore,
+        CollectionOwnershipTransfer,
+        CollectionOwnershipAnalysis> {
 
   /** The {@code @}{@link NotOwningCollection} annotation. */
   public final AnnotationMirror TOP;
@@ -182,10 +187,11 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
    *     successor, succ
    * @param first a block
    * @param succ first's successor
-   * @return the appropriate CFStore, populated with MustCall annotations, from the results of
-   *     running dataflow
+   * @return the appropriate CollectionOwnershipStore, populated with MustCall annotations, from the
+   *     results of running dataflow
    */
-  public CFStore getStoreForBlock(boolean afterFirstStore, Block first, Block succ) {
+  public CollectionOwnershipStore getStoreForBlock(
+      boolean afterFirstStore, Block first, Block succ) {
     return afterFirstStore ? flowResult.getStoreAfter(first) : flowResult.getStoreBefore(succ);
   }
 
@@ -456,6 +462,27 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
   }
 
   /*
+   * Defaults resource collection fields within methods of the class to @OwningCollection.
+   */
+  @Override
+  protected void addComputedTypeAnnotations(Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {
+    super.addComputedTypeAnnotations(tree, type, iUseFlow);
+
+    if (type.getKind() == TypeKind.DECLARED) {
+      Element elt = TreeUtils.elementFromTree(tree);
+      if (elt != null) {
+        boolean isField = elt.getKind() == ElementKind.FIELD;
+        if (isField && isResourceCollection(type.getUnderlyingType())) {
+          AnnotationMirror fieldAnno = type.getEffectiveAnnotationInHierarchy(TOP);
+          if (fieldAnno == null || AnnotationUtils.areSameByName(BOTTOM, fieldAnno)) {
+            type.replaceAnnotation(OWNINGCOLLECTION);
+          }
+        }
+      }
+    }
+  }
+
+  /*
    * Default resource collection fields to @OwningCollection and resource collection parameters to
    * @NotOwningCollection (inside the method).
    *
@@ -514,8 +541,3 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
     }
   }
 }
-
-  // @Override
-  // protected QualifierPolymorphism createQualifierPolymorphism() {
-  //   return new MustCallQualifierPolymorphism(processingEnv, this);
-  // }

@@ -41,6 +41,7 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.calledmethods.qual.CalledMethods;
 import org.checkerframework.checker.collectionownership.CollectionOwnershipAnnotatedTypeFactory;
 import org.checkerframework.checker.collectionownership.CollectionOwnershipAnnotatedTypeFactory.CollectionOwnershipType;
+import org.checkerframework.checker.collectionownership.CollectionOwnershipStore;
 import org.checkerframework.checker.collectionownership.qual.CreatesCollectionObligation;
 import org.checkerframework.checker.mustcall.CreatesMustCallForToJavaExpression;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
@@ -771,7 +772,7 @@ public class MustCallConsistencyAnalyzer {
   private void addObligationsForOwningCollectionReturn(Set<Obligation> obligations, Node node) {
     LocalVariableNode tmpVar = cmAtf.getTempVarForNode(node);
     if (tmpVar != null) {
-      CFStore coStore = coAtf.getStoreAfter(node);
+      CollectionOwnershipStore coStore = coAtf.getStoreAfter(node);
       CFValue returnCfVal = coStore.getValue(JavaExpression.fromNode(tmpVar));
       CollectionOwnershipType cotype = coAtf.getCoType(returnCfVal);
       if (cotype == CollectionOwnershipType.OwningCollection) {
@@ -809,7 +810,7 @@ public class MustCallConsistencyAnalyzer {
     boolean hasCreatesCollectionObligation =
         coAtf.getDeclAnnotation(methodElement, CreatesCollectionObligation.class) != null;
     if (hasCreatesCollectionObligation) {
-      CFStore coStore = coAtf.getStoreBefore(node);
+      CollectionOwnershipStore coStore = coAtf.getStoreBefore(node);
       Node receiverNode = node.getTarget().getReceiver();
       JavaExpression receiverJx = JavaExpression.fromNode(receiverNode);
       CFValue receiverCoType = null;
@@ -2584,7 +2585,7 @@ public class MustCallConsistencyAnalyzer {
     if (cfg.getUnderlyingAST().getKind() == Kind.METHOD) {
       MethodTree method = ((UnderlyingAST.CFGMethod) cfg.getUnderlyingAST()).getMethod();
       Set<Obligation> result = new LinkedHashSet<>(1);
-      CFStore coStore = coAtf.getRegularStore(cfg.getEntryBlock());
+      CollectionOwnershipStore coStore = coAtf.getRegularStore(cfg.getEntryBlock());
       if (coStore == null) {
         throw new BugInCF("Cannot get initial store for " + cfg);
       }

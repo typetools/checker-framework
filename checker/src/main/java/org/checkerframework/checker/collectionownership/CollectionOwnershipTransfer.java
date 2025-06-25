@@ -23,9 +23,7 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.util.NodeUtils;
-import org.checkerframework.framework.flow.CFAnalysis;
-import org.checkerframework.framework.flow.CFStore;
-import org.checkerframework.framework.flow.CFTransfer;
+import org.checkerframework.framework.flow.CFAbstractTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -35,7 +33,8 @@ import org.checkerframework.javacutil.TypesUtils;
  * temporary variables for expressions (which allow those expressions to have refined information in
  * the store, which the consistency checker can use).
  */
-public class CollectionOwnershipTransfer extends CFTransfer {
+public class CollectionOwnershipTransfer
+    extends CFAbstractTransfer<CFValue, CollectionOwnershipStore, CollectionOwnershipTransfer> {
 
   /** The type factory. */
   private final CollectionOwnershipAnnotatedTypeFactory atypeFactory;
@@ -48,18 +47,19 @@ public class CollectionOwnershipTransfer extends CFTransfer {
    *
    * @param analysis the analysis
    */
-  public CollectionOwnershipTransfer(CFAnalysis analysis) {
+  public CollectionOwnershipTransfer(
+      CollectionOwnershipAnalysis analysis, CollectionOwnershipChecker checker) {
     super(analysis);
     atypeFactory = (CollectionOwnershipAnnotatedTypeFactory) analysis.getTypeFactory();
-    mcAtf = ResourceLeakUtils.getMustCallAnnotatedTypeFactory(atypeFactory);
+    mcAtf = ResourceLeakUtils.getMustCallAnnotatedTypeFactory(checker);
   }
 
   @Override
-  public TransferResult<CFValue, CFStore> visitAssignment(
-      AssignmentNode node, TransferInput<CFValue, CFStore> in) {
-    TransferResult<CFValue, CFStore> res = super.visitAssignment(node, in);
+  public TransferResult<CFValue, CollectionOwnershipStore> visitAssignment(
+      AssignmentNode node, TransferInput<CFValue, CollectionOwnershipStore> in) {
+    TransferResult<CFValue, CollectionOwnershipStore> res = super.visitAssignment(node, in);
 
-    CFStore store = res.getRegularStore();
+    CollectionOwnershipStore store = res.getRegularStore();
 
     Node lhs = node.getTarget();
     lhs = getNodeOrTempVar(lhs);
@@ -108,7 +108,8 @@ public class CollectionOwnershipTransfer extends CFTransfer {
     //         transformWriteToOwningCollection(arrayJx, arrayExpression, node.getExpression(),
     // store);
     //   }
-    return new RegularTransferResult<CFValue, CFStore>(res.getResultValue(), store);
+    return new RegularTransferResult<CFValue, CollectionOwnershipStore>(
+        res.getResultValue(), store);
   }
 
   /**
@@ -122,12 +123,12 @@ public class CollectionOwnershipTransfer extends CFTransfer {
    *     collection-obligation-fulfilling loop
    * @return the resulting transfer result
    */
-  private TransferResult<CFValue, CFStore> transformPotentiallyFulfillingLoop(
-      TransferResult<CFValue, CFStore> res, Tree tree) {
+  private TransferResult<CFValue, CollectionOwnershipStore> transformPotentiallyFulfillingLoop(
+      TransferResult<CFValue, CollectionOwnershipStore> res, Tree tree) {
     PotentiallyFulfillingLoop loop =
         CollectionOwnershipAnnotatedTypeFactory.getFulfillingLoopForCondition(tree);
     if (loop != null) {
-      CFStore elseStore = res.getElseStore();
+      CollectionOwnershipStore elseStore = res.getElseStore();
       JavaExpression collectionJx = JavaExpression.fromTree(loop.collectionTree);
       CFValue collectionValue = null;
       try {
@@ -152,16 +153,16 @@ public class CollectionOwnershipTransfer extends CFTransfer {
   }
 
   @Override
-  public TransferResult<CFValue, CFStore> visitLessThan(
-      LessThanNode node, TransferInput<CFValue, CFStore> in) {
-    TransferResult<CFValue, CFStore> res = super.visitLessThan(node, in);
+  public TransferResult<CFValue, CollectionOwnershipStore> visitLessThan(
+      LessThanNode node, TransferInput<CFValue, CollectionOwnershipStore> in) {
+    TransferResult<CFValue, CollectionOwnershipStore> res = super.visitLessThan(node, in);
     return transformPotentiallyFulfillingLoop(res, node.getTree());
   }
 
   @Override
-  public TransferResult<CFValue, CFStore> visitMethodInvocation(
-      MethodInvocationNode node, TransferInput<CFValue, CFStore> in) {
-    TransferResult<CFValue, CFStore> res = super.visitMethodInvocation(node, in);
+  public TransferResult<CFValue, CollectionOwnershipStore> visitMethodInvocation(
+      MethodInvocationNode node, TransferInput<CFValue, CollectionOwnershipStore> in) {
+    TransferResult<CFValue, CollectionOwnershipStore> res = super.visitMethodInvocation(node, in);
 
     updateStoreWithTempVar(res, node);
 
@@ -175,7 +176,7 @@ public class CollectionOwnershipTransfer extends CFTransfer {
     boolean hasCreatesCollectionObligation =
         atypeFactory.getDeclAnnotation(methodElement, CreatesCollectionObligation.class) != null;
     if (hasCreatesCollectionObligation) {
-      CFStore coStore = res.getRegularStore();
+      CollectionOwnershipStore coStore = res.getRegularStore();
       Node receiverNode = node.getTarget().getReceiver();
       JavaExpression receiverJx = JavaExpression.fromNode(receiverNode);
       CFValue receiverCoType = null;
@@ -203,11 +204,13 @@ public class CollectionOwnershipTransfer extends CFTransfer {
    * @param res the transfer result so far
    * @return the updated transfer result
    */
-  private TransferResult<CFValue, CFStore> transferOwnershipForMethodInvocation(
-      ExecutableElement method, List<Node> args, TransferResult<CFValue, CFStore> res) {
+  private TransferResult<CFValue, CollectionOwnershipStore> transferOwnershipForMethodInvocation(
+      ExecutableElement method,
+      List<Node> args,
+      TransferResult<CFValue, CollectionOwnershipStore> res) {
     List<? extends VariableElement> params = method.getParameters();
 
-    CFStore store = res.getRegularStore();
+    CollectionOwnershipStore store = res.getRegularStore();
     for (int i = 0; i < Math.min(args.size(), params.size()); i++) {
       VariableElement param = params.get(i);
       Node arg = args.get(i);
@@ -236,30 +239,15 @@ public class CollectionOwnershipTransfer extends CFTransfer {
         }
       }
     }
-    return new RegularTransferResult<CFValue, CFStore>(res.getResultValue(), store);
+    return new RegularTransferResult<CFValue, CollectionOwnershipStore>(
+        res.getResultValue(), store);
   }
 
-  // /**
-  //  * Computes the LUB of the current value in the store for expr, if it exists, and defaultType.
-  //  * Inserts that LUB into the store as the new value for expr.
-  //  *
-  //  * @param store a CFStore
-  //  * @param expr an expression that might be in the store
-  //  * @param defaultType the default type of the expression's static type
-  //  */
-  // private void lubWithStoreValue(CFStore store, JavaExpression expr, AnnotationMirror
-  // defaultType) {
-  //   CFValue value = store.getValue(expr);
-  //   CFValue defaultTypeAsCFValue =
-  //       analysis.createSingleAnnotationValue(defaultType, expr.getType());
-  //   CFValue newValue = defaultTypeAsCFValue.leastUpperBound(value);
-  //   store.replaceValue(expr, newValue);
-  // }
-
   @Override
-  public TransferResult<CFValue, CFStore> visitObjectCreation(
-      ObjectCreationNode node, TransferInput<CFValue, CFStore> input) {
-    TransferResult<CFValue, CFStore> result = super.visitObjectCreation(node, input);
+  public TransferResult<CFValue, CollectionOwnershipStore> visitObjectCreation(
+      ObjectCreationNode node, TransferInput<CFValue, CollectionOwnershipStore> input) {
+    TransferResult<CFValue, CollectionOwnershipStore> result =
+        super.visitObjectCreation(node, input);
     updateStoreWithTempVar(result, node);
 
     ExecutableElement constructor = TreeUtils.elementFromUse(node.getTree());
@@ -273,7 +261,7 @@ public class CollectionOwnershipTransfer extends CFTransfer {
     // resource collections with no type variables, and if they are @Bottom, they are
     // unrefined to @OwningCollection. Change the type of both the type var and the computed
     // expression itself.
-    CFStore store = result.getRegularStore();
+    CollectionOwnershipStore store = result.getRegularStore();
     CFValue resultValue = result.getResultValue();
     Node tempVarNode = getNodeOrTempVar(node);
     JavaExpression tempVarJx = JavaExpression.fromNode(tempVarNode);
@@ -297,22 +285,8 @@ public class CollectionOwnershipTransfer extends CFTransfer {
       }
     }
 
-    return new RegularTransferResult<CFValue, CFStore>(resultValue, store);
+    return new RegularTransferResult<CFValue, CollectionOwnershipStore>(resultValue, store);
   }
-
-  // TODO sck: I think that I can use the temp var management from MC checker and don't
-  // need to replicate that in the COatf. If that turns out to not work, uncomment this
-  // @Override
-  // public TransferResult<CFValue, CFStore> visitSwitchExpressionNode(
-  //     SwitchExpressionNode node, TransferInput<CFValue, CFStore> input) {
-  //   TransferResult<CFValue, CFStore> result = super.visitSwitchExpressionNode(node, input);
-  //   if (!TypesUtils.isPrimitiveOrBoxed(node.getType())) {
-  //     // Add the synthetic variable created during CFG construction to the temporary
-  //     // variable map (rather than creating a redundant temp var)
-  //     atypeFactory.tempVars.put(node.getTree(), node.getSwitchExpressionVar());
-  //   }
-  //   return result;
-  // }
 
   /**
    * This method either creates or looks up the temp var t for node, and then updates the store to
@@ -321,28 +295,38 @@ public class CollectionOwnershipTransfer extends CFTransfer {
    * @param node the node to be assigned to a temporary variable
    * @param result the transfer result containing the store to be modified
    */
-  public void updateStoreWithTempVar(TransferResult<CFValue, CFStore> result, Node node) {
+  public void updateStoreWithTempVar(
+      TransferResult<CFValue, CollectionOwnershipStore> result, Node node) {
     // Must-call obligations on primitives are not supported.
     if (!TypesUtils.isPrimitiveOrBoxed(node.getType())) {
       LocalVariableNode temp = mcAtf.getTempVar(node);
       if (temp != null) {
-        // atypeFactory.addTempVar(temp, node.getTree());
         JavaExpression localExp = JavaExpression.fromNode(temp);
         AnnotationMirror anm =
             atypeFactory
                 .getAnnotatedType(node.getTree())
                 .getPrimaryAnnotationInHierarchy(atypeFactory.TOP);
-        insertIntoStores(result, localExp, anm == null ? atypeFactory.TOP : anm);
-        // if (anm == null) {
-        //   anm = atypeFactory.TOP;
-        // }
-        // if (result.containsTwoStores()) {
-        //   result.getThenStore().insertValue(localExp, anm);
-        //   result.getElseStore().insertValue(localExp, anm);
-        // } else {
-        //   result.getRegularStore().insertValue(localExp, anm);
-        // }
+        insertInStores(result, localExp, anm == null ? atypeFactory.TOP : anm);
       }
+    }
+  }
+
+  /**
+   * Inserts newAnno as the value into all stores (conditional or not) in the result for node.
+   *
+   * @param result the TransferResult holding the stores to modify
+   * @param target the receiver whose value should be modified
+   * @param newAnno the new value
+   */
+  protected static void insertInStores(
+      TransferResult<CFValue, CollectionOwnershipStore> result,
+      JavaExpression target,
+      AnnotationMirror newAnno) {
+    if (result.containsTwoStores()) {
+      result.getThenStore().insertValue(target, newAnno);
+      result.getElseStore().insertValue(target, newAnno);
+    } else {
+      result.getRegularStore().insertValue(target, newAnno);
     }
   }
 
