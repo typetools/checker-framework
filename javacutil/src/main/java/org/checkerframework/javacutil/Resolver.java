@@ -166,11 +166,11 @@ public class Resolver {
       FIND_TYPE = Resolve.class.getDeclaredMethod("findType", Env.class, Name.class);
       FIND_TYPE.setAccessible(true);
 
-      // Pre JDK 25 :
-      //  new Log.DiscardDiagnosticHandler(log)
+      // Pre JDK 25:
+      //   new Log.DiscardDiagnosticHandler(log)
       // JDK 25:
       //   log.new DiscardDiagnosticHandler()
-      // But both of those are reflective accessed the same way.
+      // But both of those are reflectively accessed the same way.
       NEW_DIAGNOSTIC_HANDLER = Log.DiscardDiagnosticHandler.class.getConstructor(Log.class);
       NEW_DIAGNOSTIC_HANDLER.setAccessible(true);
     } catch (Exception e) {
