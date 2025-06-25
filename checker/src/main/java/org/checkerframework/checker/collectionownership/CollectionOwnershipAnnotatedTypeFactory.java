@@ -6,6 +6,7 @@ import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -14,11 +15,13 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.collectionownership.qual.CollectionFieldDestructor;
 import org.checkerframework.checker.collectionownership.qual.NotOwningCollection;
 import org.checkerframework.checker.collectionownership.qual.OwningCollection;
 import org.checkerframework.checker.collectionownership.qual.OwningCollectionBottom;
@@ -75,6 +78,10 @@ public class CollectionOwnershipAnnotatedTypeFactory
    * unannotated code.
    */
   public final AnnotationMirror BOTTOM;
+
+  /** The value element of the {@code @}{@link CollectionFieldDestructor} annotation. */
+  public final ExecutableElement collectionFieldDestructorValueElement =
+      TreeUtils.getMethod(CollectionFieldDestructor.class, "value", 0, processingEnv);
 
   /**
    * Enum for the types in the hierarchy. Combined with a few utility methods to get the right enum
@@ -376,6 +383,19 @@ public class CollectionOwnershipAnnotatedTypeFactory
    */
   public CollectionOwnershipType getCoType(CFValue val) {
     return val == null ? CollectionOwnershipType.None : getCoType(val.getAnnotations());
+  }
+
+  /**
+   * Utility method to get the {@code CollectionOwnershipType} that the given tree has.
+   *
+   * @param tree the tree
+   * @return the {@code CollectionOwnershipType} that the given tree has.
+   */
+  public CollectionOwnershipType getCoType(Tree tree) {
+    AnnotatedTypeMirror atm = getAnnotatedType(tree);
+    return atm == null
+        ? CollectionOwnershipType.None
+        : getCoType(Collections.singletonList(atm.getEffectiveAnnotationInHierarchy(TOP)));
   }
 
   /**

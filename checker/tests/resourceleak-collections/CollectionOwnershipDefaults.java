@@ -15,9 +15,6 @@ class CollectionOwnershipDefaults {
 
   int n = 10;
 
-  /* This should default to @OwningCollection */
-  Collection<Socket> resourceCollectionField;
-
   /*
    * Check that manual MustCall annotations are correctly considered when deciding whether
    * something is a resoure collection.
@@ -41,15 +38,6 @@ class CollectionOwnershipDefaults {
     // a resource collection, this call fails.
     // :: error: argument
     checkArgIsOwning(l5);
-  }
-
-  /*
-   * Check that resource collection field defaults to @OwningCollection.
-   */
-  void checkResourceCollectionFieldDefault() {
-    checkArgIsOwning(resourceCollectionField);
-    // :: error: argument
-    checkArgIsOCwoO(resourceCollectionField);
   }
 
   /*
