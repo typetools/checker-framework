@@ -1427,22 +1427,25 @@ public final class TreeUtils {
   }
 
   /**
-   * Determine whether the given expression is either "this" or an outer "C.this".
+   * Returns true if the given expression is either "this" or an outer "C.this".
    *
    * <p>TODO: Should this also handle "super"?
+   *
+   * @param expr an expression tree
+   * @return true if the given expression is either "this" or an outer "C.this"
    */
-  public static boolean isExplicitThisDereference(ExpressionTree tree) {
-    if (tree.getKind() == Tree.Kind.IDENTIFIER
-        && ((IdentifierTree) tree).getName().contentEquals("this")) {
+  public static boolean isExplicitThisDereference(ExpressionTree expr) {
+    if (expr.getKind() == Tree.Kind.IDENTIFIER
+        && ((IdentifierTree) expr).getName().contentEquals("this")) {
       // Explicit this reference "this"
       return true;
     }
 
-    if (tree.getKind() != Tree.Kind.MEMBER_SELECT) {
+    if (expr.getKind() != Tree.Kind.MEMBER_SELECT) {
       return false;
     }
 
-    MemberSelectTree memSelTree = (MemberSelectTree) tree;
+    MemberSelectTree memSelTree = (MemberSelectTree) expr;
     if (memSelTree.getIdentifier().contentEquals("this")) {
       // Outer this reference "C.this"
       return true;
@@ -1457,7 +1460,8 @@ public final class TreeUtils {
    *   <em>Object</em> . <em>class</em>
    * </pre>
    *
-   * @return true iff if tree is a class literal
+   * @param tree a tree
+   * @return true iff the tree is a class literal
    */
   public static boolean isClassLiteral(Tree tree) {
     if (tree.getKind() != Tree.Kind.MEMBER_SELECT) {
@@ -1564,7 +1568,8 @@ public final class TreeUtils {
    *   <em>obj</em> . <em>m</em>(...)
    * </pre>
    *
-   * @return true iff if tree is a method access expression (implicit or explicit)
+   * @param tree a tree
+   * @return true iff the tree is a method access expression (implicit or explicit)
    */
   public static boolean isMethodAccess(Tree tree) {
     if (tree.getKind() == Tree.Kind.MEMBER_SELECT) {
