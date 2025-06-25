@@ -424,12 +424,11 @@ allprojects { currentProj ->
       // or
       // ./gradlew sometask -PjdkTestVersion=24
       //
-      // 3. Compile the Checker Framework using JDK 21: (Overrides the version specified in `jdkTestVersion` for  compiling only.)
+      // 3. Compile the Checker Framework using JDK 21: (Overrides the version specified in `jdkTestVersion` for compiling only.)
       // export ORG_GRADLE_PROJECT_useJdk21Compiler=true
       // or
       //./gradlew sometask -PuseJdk21Compiler=true
 
-      // Use ./gradlew test -PjdkTestVersion=25 to test a specific version of Java.
       int jdkTestVersion = Integer.valueOf(JavaVersion.current().getMajorVersion())
       if(project.getProperties().containsKey('jdkTestVersion')) {
         jdkTestVersion = Integer.valueOf(project.getProperties().get('jdkTestVersion'))
