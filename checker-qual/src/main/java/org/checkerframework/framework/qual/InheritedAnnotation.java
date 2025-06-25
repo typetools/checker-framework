@@ -8,9 +8,9 @@ import java.lang.annotation.Target;
 
 /**
  * A meta-annotation that specifies if a declaration annotation should be inherited. This should not
- * be written on type annotations. Unlike, {@link java.lang.annotation.Inherited}, this
- * meta-annotation type will have cause the annotated type to be inherited even if it is used to
- * annotate something other than a class.
+ * be written on type annotations. Unlike {@link java.lang.annotation.Inherited}, this
+ * meta-annotation causes the declaration annotation to be inherited even if it is used to annotate
+ * something other than a class.
  *
  * <p>The Checker Framework does respect {@link java.lang.annotation.Inherited} and will only
  * inherit declaration annotations on a class if the class is annotated with an annotated type with
