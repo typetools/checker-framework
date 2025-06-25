@@ -31,6 +31,11 @@ public class ClassNameNode extends Node {
   /** The parent name, if any. */
   protected final @Nullable Node parent;
 
+  /**
+   * Creates a new ClassNameNode.
+   *
+   * @param tree the tree for the new node
+   */
   public ClassNameNode(IdentifierTree tree) {
     super(TreeUtils.typeOf(tree));
     this.tree = tree;

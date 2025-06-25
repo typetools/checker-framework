@@ -1527,6 +1527,15 @@ public class ValueTransfer extends CFTransfer {
   /** An array containing all the boolean values: true and false. */
   private static final List<Boolean> ALL_BOOLEANS = Arrays.asList(new Boolean[] {true, false});
 
+  /**
+   * Returns the possible values that the expression might evaluate to.
+   *
+   * @param leftNode the first argument
+   * @param rightNode the second argument
+   * @param op the boolean operator
+   * @param p the transfer input
+   * @return the possible values that the expression might evaluate to
+   */
   private List<Boolean> calculateConditionalOperator(
       Node leftNode, Node rightNode, ConditionalOperators op, TransferInput<CFValue, CFStore> p) {
     List<Boolean> lefts = getBooleanValues(leftNode, p);

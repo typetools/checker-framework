@@ -215,6 +215,7 @@ public class CollectionToArrayHeuristics {
    * The name of the receiver object of the tree.
    *
    * @param tree either an identifier tree or a member select tree
+   * @return the name of the receiver object of the tree
    */
   // This method is quite sloppy, but works most of the time
   private String receiverName(Tree tree) {
