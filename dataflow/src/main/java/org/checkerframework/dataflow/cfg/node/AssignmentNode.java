@@ -31,6 +31,9 @@ import org.checkerframework.javacutil.TreeUtils;
  * <p>String concatenation compound assignments are desugared to an assignment and a string
  * concatenation.
  *
+ * <p>Assignments desugared from an enhanced-for-loop over an array are marked as such for special
+ * casing.
+ *
  * <p>Numeric compound assignments are desugared to an assignment and a numeric operation.
  */
 public class AssignmentNode extends Node {
@@ -46,6 +49,9 @@ public class AssignmentNode extends Node {
 
   /** Whether the assignment node is synthetic */
   protected final boolean synthetic;
+
+  /** Whether the assignment node is desugared from an enhanced-for-loop over an array. */
+  protected boolean desugaredFromEnhancedArrayForLoop;
 
   /**
    * Create a (non-synthetic) AssignmentNode.
@@ -79,6 +85,7 @@ public class AssignmentNode extends Node {
     this.lhs = target;
     this.rhs = expression;
     this.synthetic = synthetic;
+    this.desugaredFromEnhancedArrayForLoop = false;
   }
 
   /**
@@ -115,6 +122,20 @@ public class AssignmentNode extends Node {
    */
   public boolean isSynthetic() {
     return synthetic;
+  }
+
+  /**
+   * Check if the assignment node is desugared from an enhanced-for-loop over an array.
+   *
+   * @return true if the assignment node is desugared
+   */
+  public boolean isDesugaredFromEnhancedArrayForLoop() {
+    return desugaredFromEnhancedArrayForLoop;
+  }
+
+  /** set the assignment node as desugared from an enhanced-for-loop over an array */
+  public void setDesugaredFromEnhancedArrayForLoop() {
+    desugaredFromEnhancedArrayForLoop = true;
   }
 
   @Override

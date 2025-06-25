@@ -42,19 +42,41 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 // running the Checker Framework.  If this class is re-written, then that --add-opens should be
 // removed.
 public class Resolver {
+
+  /** Instance of {@link Resolve} for name resolution. */
   private final Resolve resolve;
+
+  /** Instance of {@link Names} for access to the compiler's name table. */
   private final Names names;
+
+  /** Instance of {@link Trees}. */
   private final Trees trees;
+
+  /** Instance of {@link Log} for error logs */
   private final Log log;
 
+  /** {@code Resolve#findMethod} method */
   private static final Method FIND_METHOD;
+
+  /** {@code Resolve#findVar} method */
   private static final Method FIND_VAR;
+
+  /** {@code Resolve#findIdent} method */
   private static final Method FIND_IDENT;
+
+  /** {@code Resolve#findIdentInType} method */
   private static final Method FIND_IDENT_IN_TYPE;
+
+  /** {@code Resolve#findIdentInPackage} method */
   private static final Method FIND_IDENT_IN_PACKAGE;
+
+  /** {@code Resolve#findType} method */
   private static final Method FIND_TYPE;
 
+  /** {@code com.sun.tools.javac.comp.Resolve$AccessError} class. */
   private static final Class<?> ACCESSERROR;
+
+  /** {@code com.sun.tools.javac.comp.Resolve$AccessError#access} method. */
   // Note that currently access(...) is defined in InvalidSymbolError, a superclass of AccessError
   private static final Method ACCESSERROR_ACCESS;
 
