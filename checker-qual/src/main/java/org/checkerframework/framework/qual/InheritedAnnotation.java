@@ -12,9 +12,9 @@ import java.lang.annotation.Target;
  * meta-annotation type will have cause the annotated type to be inherited even if it is used to
  * annotate something other than a class.
  *
- * <p>The Checker Framework does respect {@link java.lang.annotation.Inherited} and will only
- * inherit declaration annotations on a class if the class is annotated with an annotated type with
- * this meta-annotation.
+ * <p>If an annotated type is meta-annotation with {@link java.lang.annotation.Inherited}, that
+ * annotation will only be inherited on declaration annotations on a class as this respects the Java
+ * semantics.
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
