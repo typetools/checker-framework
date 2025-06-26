@@ -125,7 +125,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
       //   @CreatesMustCallFor annotation except in the constructor of the object containing
       //   the field.
       boolean lhsIsOwningField =
-          lhs.getKind() == Tree.Kind.MEMBER_SELECT
+          lhs instanceof MemberSelectTree
               && atypeFactory.getDeclAnnotation(lhsElt, Owning.class) != null;
       boolean rhsIsMCA =
           atypeFactory.containsSameByClass(rhsElt.getAnnotationMirrors(), MustCallAlias.class);
