@@ -149,7 +149,7 @@ public class InvocationTypeInference {
     InvocationType invocationType = new InvocationType(methodType, e, invocation, context);
     ProperType target = context.inferenceTypeFactory.getTargetType();
     List<? extends ExpressionTree> args;
-    if (invocation.getKind() == Tree.Kind.METHOD_INVOCATION) {
+    if (invocation instanceof MethodInvocationTree) {
       args = ((MethodInvocationTree) invocation).getArguments();
     } else {
       args = ((NewClassTree) invocation).getArguments();
@@ -354,7 +354,8 @@ public class InvocationTypeInference {
       // constraint set reduction in 18.5.1, the constraint formula <|R| -> T> is reduced and
       // incorporated with B2.
       String source =
-          "Constraint between method call type and target type for method call (unchecked conversion): "
+          "Constraint between method call type and target type for method call (unchecked"
+              + " conversion): "
               + invocation;
       BoundSet b =
           new ConstraintSet(new Typing(source, r.getErased(), target, Kind.TYPE_COMPATIBILITY))
@@ -401,7 +402,8 @@ public class InvocationTypeInference {
         BoundSet resolve = Resolution.resolve(alpha, b2, context);
         ProperType u = (ProperType) alpha.getBounds().getInstantiation().capture(context);
         String source =
-            "Constraint between method call type and target type for method call (compatibility constraint): "
+            "Constraint between method call type and target type for method call (compatibility"
+                + " constraint): "
                 + invocation;
 
         ConstraintSet constraintSet =
@@ -456,7 +458,7 @@ public class InvocationTypeInference {
       if (notPertinentToApplicability(ei, fi)) {
         c.add(new Expression("Argument constraint", ei, fi));
       }
-      if (ei.getKind() == Tree.Kind.METHOD_INVOCATION || ei.getKind() == Tree.Kind.NEW_CLASS) {
+      if (ei instanceof MethodInvocationTree || ei instanceof NewClassTree) {
         if (TreeUtils.isPolyExpression(ei)) {
           AdditionalArgument aa = new AdditionalArgument(ei);
           c.addAll(aa.reduce(context));

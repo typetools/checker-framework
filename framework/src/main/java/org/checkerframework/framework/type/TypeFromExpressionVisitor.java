@@ -22,7 +22,6 @@ import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.PrimitiveTypeTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.WildcardTree;
@@ -282,7 +281,7 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
       TreePath path = f.getPath(tree);
 
       // Only capture the type if this is not the left hand side of an assignment.
-      if (path != null && path.getParentPath().getLeaf().getKind() == Kind.ASSIGNMENT) {
+      if (path != null && path.getParentPath().getLeaf() instanceof AssignmentTree) {
         AssignmentTree assignmentTree = (AssignmentTree) path.getParentPath().getLeaf();
         @SuppressWarnings("interning:not.interned") // Looking for exact object.
         boolean leftHandSide = assignmentTree.getExpression() != tree;
