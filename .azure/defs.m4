@@ -35,7 +35,7 @@ ifelse($1,canary_version,,[  dependsOn:
   steps:
   - checkout: self
     fetchDepth: 25
-  - bash: ./checker/bin-devel/test-cftests-nonjunit.sh
+  - bash: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-cftests-nonjunit.sh
     displayName: test-cftests-nonjunit.sh])dnl
 dnl
 define([inference_job_split], [dnl
@@ -48,7 +48,7 @@ define([inference_job_split], [dnl
   steps:
   - checkout: self
     fetchDepth: 25
-  - bash: ./checker/bin-devel/test-cftests-inference-part1.sh
+  - bash: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-cftests-inference-part1.sh
     displayName: test-cftests-inference-part1.sh
 - job: inference_part2_jdk$1
   pool:
@@ -58,7 +58,7 @@ define([inference_job_split], [dnl
   steps:
   - checkout: self
     fetchDepth: 25
-  - bash: ./checker/bin-devel/test-cftests-inference-part2.sh
+  - bash: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-cftests-inference-part2.sh
     displayName: test-cftests-inference-part2.sh
 ])dnl
 dnl
@@ -76,7 +76,7 @@ ifelse($1,canary_version,,[  dependsOn:
   steps:
   - checkout: self
     fetchDepth: 25
-  - bash: ./checker/bin-devel/test-cftests-inference.sh
+  - bash: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-cftests-inference.sh
     displayName: test-cftests-inference.sh
 ])dnl
 dnl
@@ -92,7 +92,7 @@ ifelse($1,canary_version,,$1,latest_version,,[  dependsOn:
   steps:
   - checkout: self
     fetchDepth: 0
-  - bash: ./checker/bin-devel/test-misc.sh
+  - bash: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-misc.sh
     displayName: test-misc.sh])dnl
 dnl
 define([typecheck_job_split], [dnl
@@ -103,7 +103,7 @@ define([typecheck_job_split], [dnl
   steps:
   - checkout: self
     fetchDepth: 1000
-  - bash: ./checker/bin-devel/test-typecheck-part1.sh
+  - bash: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-typecheck-part1.sh
     displayName: test-typecheck-part1.sh
 - job: typecheck_part2_jdk$1
   pool:
@@ -127,7 +127,7 @@ define([typecheck_job], [dnl
   steps:
   - checkout: self
     fetchDepth: 1000
-  - bash: ./checker/bin-devel/test-typecheck.sh
+  - bash: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-typecheck.sh
     displayName: test-typecheck.sh])dnl
 dnl
 define([daikon_job_split], [dnl
@@ -141,7 +141,7 @@ define([daikon_job_split], [dnl
   steps:
   - checkout: self
     fetchDepth: 25
-  - bash: ./checker/bin-devel/test-daikon-part1.sh
+  - bash: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-daikon-part1.sh
     displayName: test-daikon.sh
 - job: daikon_part2_jdk$1
   dependsOn:
@@ -153,7 +153,7 @@ define([daikon_job_split], [dnl
   steps:
   - checkout: self
     fetchDepth: 25
-  - bash: ./checker/bin-devel/test-daikon.sh
+  - bash: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-daikon.sh
     displayName: test-daikon-part2.sh])dnl
 dnl
 define([daikon_job], [dnl
@@ -169,7 +169,7 @@ define([daikon_job], [dnl
   steps:
   - checkout: self
     fetchDepth: 25
-  - bash: ./checker/bin-devel/test-daikon.sh
+  - bash: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-daikon.sh
     displayName: test-daikon.sh])dnl
 dnl
 define([guava_job], [dnl
@@ -186,7 +186,7 @@ ifelse($1,canary_version,,[dnl
   steps:
   - checkout: self
     fetchDepth: 25
-  - bash: ./checker/bin-devel/test-guava.sh
+  - bash: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-guava.sh
     displayName: test-guava.sh])dnl
 dnl
 define([plume_lib_job], [dnl
@@ -202,7 +202,7 @@ ifelse($1,canary_version,,[dnl
   steps:
   - checkout: self
     fetchDepth: 25
-  - bash: ./checker/bin-devel/test-plume-lib.sh
+  - bash: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-plume-lib.sh
     displayName: test-plume-lib.sh])dnl
 ifelse([
 Local Variables:
