@@ -322,7 +322,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     infer = checker.hasOption("infer");
     suggestPureMethods = checker.hasOption("suggestPureMethods") || infer;
     checkPurityAnnotations = checker.hasOption("checkPurityAnnotations") || suggestPureMethods;
-    ajavaChecks = checker.hasOption("ajavaChecks");
+    boolean ajavaChecksOptions = checker.hasOption("ajavaChecks");
+    if (ajavaChecksOptions) {
+      // TODO: Make annotation insertion work for Java 21.
+      String release = SystemUtil.getReleaseValue(env);
+      release = release != null ? release : String.valueOf(SystemUtil.jreVersion);
+      ajavaChecks = Integer.valueOf(release) < 21;
+    } else {
+      ajavaChecks = false;
+    }
     assumeSideEffectFree =
         checker.hasOption("assumeSideEffectFree") || checker.hasOption("assumePure");
     assumeDeterministic =
@@ -441,11 +449,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * <p>Subclasses may override this method to disable the test if even the option is provided.
    */
   protected void testJointJavacJavaParserVisitor() {
-    if (root == null
-        || !ajavaChecks
-        // TODO: Make annotation insertion work for Java 21.
-        || root.getSourceFile().toUri().toString().contains("java21")
-        || root.getSourceFile().toUri().toString().contains("java22")) {
+    if (root == null || !ajavaChecks) {
       return;
     }
 
@@ -491,11 +495,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * <p>Subclasses may override this method to disable the test even if the option is provided.
    */
   protected void testAnnotationInsertion() {
-    if (root == null
-        || !ajavaChecks
-        // TODO: Make annotation insertion work for Java 21.
-        || root.getSourceFile().toUri().toString().contains("java21")
-        || root.getSourceFile().toUri().toString().contains("java22")) {
+    if (root == null || !ajavaChecks) {
       return;
     }
 
