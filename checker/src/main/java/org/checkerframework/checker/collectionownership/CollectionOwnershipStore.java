@@ -8,19 +8,31 @@ import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 /**
  * The CollectionOwnership Store behaves like CFAbstractStore but keeps @OwningCollection fields in
  * the store. This is justified by the strict access rules of such fields. Keeping the field in the
- * store is required for verifying the postcondition annotation {@link CollectionFieldDestructor}.
+ * store is required for verifying the postcondition annotation {@code @CollectionFieldDestructor}.
  */
 public class CollectionOwnershipStore extends CFAbstractStore<CFValue, CollectionOwnershipStore> {
 
+  /** the annotated type factory */
   private final CollectionOwnershipAnnotatedTypeFactory atypeFactory;
 
+  /**
+   * Constructs a collection ownership store.
+   *
+   * @param analysis the collection ownership analysis
+   * @param sequentialSemantics whether to use sequential semantics
+   */
   public CollectionOwnershipStore(
       CollectionOwnershipAnalysis analysis, boolean sequentialSemantics) {
     super(analysis, sequentialSemantics);
     this.atypeFactory = (CollectionOwnershipAnnotatedTypeFactory) analysis.getTypeFactory();
   }
 
-  /** Copy constructor. */
+  /**
+   * Copy constructor.
+   *
+   * @param analysis the collection ownership analysis
+   * @param other the store to construct from
+   */
   public CollectionOwnershipStore(
       CollectionOwnershipAnalysis analysis,
       CFAbstractStore<CFValue, CollectionOwnershipStore> other) {

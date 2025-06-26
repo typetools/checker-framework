@@ -1362,6 +1362,7 @@ public class MustCallConsistencyAnalyzer {
    * Returns true when there is no {@link NotOwning} annotation on the return type.
    *
    * @param cfg the CFG of the method
+   * @param node the return node
    * @return true iff ownership should be transferred to the return type of the method corresponding
    *     to a CFG
    */
