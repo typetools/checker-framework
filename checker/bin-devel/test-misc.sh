@@ -7,10 +7,10 @@ export SHELLOPTS
 echo "SHELLOPTS=${SHELLOPTS}"
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
-# Test that the CF builds on what the installed JDK is, so don't add the following.
+# This script tests that the CF builds using the installed JDK, so don't add the following:
 # export ORG_GRADLE_PROJECT_useJdk21Compiler=true
 
-# This lines makes it so that Gradle is run using Java 21.
+# Run Gradle using Java 21.
 mkdir ~/.gradle && echo "org.gradle.java.home=/usr/lib/jvm/java-21-openjdk-amd64" >> ~/.gradle/gradle.properties
 
 source "$SCRIPT_DIR"/clone-related.sh

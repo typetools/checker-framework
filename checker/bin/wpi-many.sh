@@ -39,14 +39,14 @@ done
 shift $((OPTIND - 1))
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
-SCRIPT_PATH="${SCRIPT_DIR}/wpi-many.sh"
+SCRIPT_NAME="$(basename "$0")"
 
 # Report line numbers when the script fails, from
 # https://unix.stackexchange.com/a/522815 .
-trap 'echo >&2 "Error - exited with status $? at line $LINENO of wpi-many.sh:";
-         pr -tn ${SCRIPT_PATH} | tail -n+$((LINENO - 3)) | head -n7' ERR
+trap 'echo >&2 "Error - exited with status $? at line $LINENO of ${SCRIPT_NAME}:";
+         pr -tn "${SCRIPT_DIR}/${SCRIPT_NAME}" | tail -n+$((LINENO - 3)) | head -n7' ERR
 
-echo "Starting wpi-many.sh."
+echo "Starting $SCRIPT_NAME"
 
 # check required arguments and environment variables:
 
@@ -56,40 +56,41 @@ if [ "${JAVA_HOME}" = "" ]; then
 else
   has_java_home="yes"
 fi
-
 # shellcheck disable=SC2153 # testing for JAVA8_HOME, not a typo of JAVA_HOME
 if [ "${JAVA8_HOME}" = "" ]; then
   has_java8="no"
 else
   has_java8="yes"
 fi
-
 # shellcheck disable=SC2153 # testing for JAVA11_HOME, not a typo of JAVA_HOME
 if [ "${JAVA11_HOME}" = "" ]; then
   has_java11="no"
 else
   has_java11="yes"
 fi
-
 # shellcheck disable=SC2153 # testing for JAVA17_HOME, not a typo of JAVA_HOME
 if [ "${JAVA17_HOME}" = "" ]; then
   has_java17="no"
 else
   has_java17="yes"
 fi
-
 # shellcheck disable=SC2153 # testing for JAVA21_HOME, not a typo of JAVA_HOME
 if [ "${JAVA21_HOME}" = "" ]; then
   has_java21="no"
 else
   has_java21="yes"
 fi
-
 # shellcheck disable=SC2153 # testing for JAVA24_HOME, not a typo of JAVA_HOME
 if [ "${JAVA24_HOME}" = "" ]; then
   has_java24="no"
 else
   has_java24="yes"
+fi
+# shellcheck disable=SC2153 # testing for JAVA25_HOME, not a typo of JAVA_HOME
+if [ "${JAVA25_HOME}" = "" ]; then
+  has_java25="no"
+else
+  has_java25="yes"
 fi
 
 if [ "${has_java_home}" = "yes" ] && [ ! -d "${JAVA_HOME}" ]; then
@@ -119,38 +120,42 @@ if [ "${has_java_home}" = "yes" ]; then
     export JAVA24_HOME="${JAVA_HOME}"
     has_java24="yes"
   fi
+  if [ "${has_java25}" = "no" ] && [ "${java_version}" = 25 ]; then
+    export JAVA25_HOME="${JAVA_HOME}"
+    has_java25="yes"
+  fi
 fi
 
 if [ "${has_java8}" = "yes" ] && [ ! -d "${JAVA8_HOME}" ]; then
   echo "JAVA8_HOME is set to a non-existent directory ${JAVA8_HOME}"
   exit 1
 fi
-
 if [ "${has_java11}" = "yes" ] && [ ! -d "${JAVA11_HOME}" ]; then
   echo "JAVA11_HOME is set to a non-existent directory ${JAVA11_HOME}"
   exit 1
 fi
-
 if [ "${has_java17}" = "yes" ] && [ ! -d "${JAVA17_HOME}" ]; then
   echo "JAVA17_HOME is set to a non-existent directory ${JAVA17_HOME}"
   exit 1
 fi
-
 if [ "${has_java21}" = "yes" ] && [ ! -d "${JAVA21_HOME}" ]; then
   echo "JAVA21_HOME is set to a non-existent directory ${JAVA21_HOME}"
   exit 1
 fi
-
 if [ "${has_java24}" = "yes" ] && [ ! -d "${JAVA24_HOME}" ]; then
   echo "JAVA24_HOME is set to a non-existent directory ${JAVA24_HOME}"
   exit 1
 fi
+if [ "${has_java25}" = "yes" ] && [ ! -d "${JAVA25_HOME}" ]; then
+  echo "JAVA25_HOME is set to a non-existent directory ${JAVA25_HOME}"
+  exit 1
+fi
 
-if [ "${has_java8}" = "no" ] && [ "${has_java11}" = "no" ] && [ "${has_java17}" = "no" ] && [ "${has_java21}" = "no" ] && [ "${has_java24}" = "no" ]; then
+if [ "${has_java8}" = "no" ] && [ "${has_java11}" = "no" ] && [ "${has_java17}" = "no" ] && [ "${has_java21}" = "no" ] && [ "${has_java24}" = "no" ] && [ "${has_java25}" = "no" ]; then
   if [ "${has_java_home}" = "yes" ]; then
     echo "Cannot determine Java version from JAVA_HOME"
   else
-    echo "No Java 8, 11, 17, 21, or 24 JDKs found. At least one of JAVA_HOME, JAVA8_HOME, JAVA11_HOME, JAVA17_HOME, JAVA21_HOME, or JAVA24_HOME must be set."
+    echo "No Java 8, 11, 17, 21, 24, or 25 JDKs found. At least one of JAVA_HOME, JAVA8_HOME, JAVA11_HOME, JAVA17_HOME, JAVA21_HOME, JAVA24_HOME, or JAVA25_HOME must be set."
   fi
   echo "JAVA_HOME = ${JAVA_HOME}"
   echo "JAVA8_HOME = ${JAVA8_HOME}"
@@ -158,29 +163,30 @@ if [ "${has_java8}" = "no" ] && [ "${has_java11}" = "no" ] && [ "${has_java17}" 
   echo "JAVA17_HOME = ${JAVA17_HOME}"
   echo "JAVA21_HOME = ${JAVA21_HOME}"
   echo "JAVA24_HOME = ${JAVA24_HOME}"
+  echo "JAVA25_HOME = ${JAVA25_HOME}"
   command -v java
   java -version
   exit 1
 fi
 
-if [ "${CHECKERFRAMEWORK}" = "" ]; then
+if [ -z "${CHECKERFRAMEWORK}" ]; then
   echo "CHECKERFRAMEWORK is not set; it must be set to a locally-built Checker Framework. Please clone and build https://github.com/typetools/checker-framework"
-  exit 2
+  exit 1
 fi
 
 if [ ! -d "${CHECKERFRAMEWORK}" ]; then
   echo "CHECKERFRAMEWORK is set to a non-existent directory ${CHECKERFRAMEWORK}"
-  exit 2
+  exit 1
 fi
 
 if [ "${OUTDIR}" = "" ]; then
   echo "You must specify an output directory using the -o argument."
-  exit 3
+  exit 1
 fi
 
 if [ "${INLIST}" = "" ]; then
   echo "You must specify an input file using the -i argument."
-  exit 4
+  exit 1
 fi
 
 if [ "${GRADLECACHEDIR}" = "" ]; then
@@ -193,9 +199,9 @@ if [ "${SKIP_OR_DELETE_UNUSABLE}" = "" ]; then
   SKIP_OR_DELETE_UNUSABLE="delete"
 fi
 
-### Script
+### Main script
 
-echo "Finished configuring wpi-many.sh. Results will be placed in ${OUTDIR}-results/."
+echo "Finished configuring ${SCRIPT_NAME}. Results will be placed in ${OUTDIR}-results/."
 
 export PATH="${JAVA_HOME}/bin:${PATH}"
 
@@ -306,7 +312,7 @@ while IFS='' read -r line || [ "$line" ]; do
     # the repo will be deleted later if SKIP_OR_DELETE_UNUSABLE is "delete"
   else
     # it's important that </dev/null is on this line, or wpi.sh might consume stdin, which would stop the larger wpi-many loop early
-    echo "wpi-many.sh about to call wpi.sh in $(pwd) at $(date)"
+    echo "${SCRIPT_NAME} about to call wpi.sh in $(pwd) at $(date)"
     /bin/bash -x "${SCRIPT_DIR}/wpi.sh" -d "${REPO_FULLPATH}" -t "${TIMEOUT}" -g "${GRADLECACHEDIR}" -- "$@" &> "${OUTDIR}-results/wpi-out" < /dev/null
     wpi_status=$?
     if [[ $wpi_status -eq 0 ]]; then
@@ -314,7 +320,7 @@ while IFS='' read -r line || [ "$line" ]; do
     else
       wpi_status_string="failure"
     fi
-    echo "wpi-many.sh finished call to wpi.sh with status ${wpi_status} (${wpi_status_string}) in $(pwd) at $(date)"
+    echo "${SCRIPT_NAME} finished call to wpi.sh with status ${wpi_status} (${wpi_status_string}) in $(pwd) at $(date)"
     # The test of $wpi_status below may halt wpi-many.sh.
     if [ "$DEBUG" -eq "1" ]; then
       echo "Listing of $(pwd):"
@@ -495,7 +501,7 @@ else
 
     # shellcheck disable=SC2046
     if ! "${SCRIPT_DIR}/.scc/scc" --output "${OUTDIR}-results/loc.txt" $(< "${listpath}"); then
-      echo "Problem in wpi-many.sh while running scc."
+      echo "Problem in ${SCRIPT_NAME} while running scc."
       echo "  listpath = ${listpath}"
       echo "  generated from ${OUTDIR}-results/results_available.txt"
       echo "---------------- start of listpath = ${listpath} ----------------"
@@ -519,4 +525,4 @@ else
   fi
 fi
 
-echo "Exiting wpi-many.sh successfully. Results were placed in ${OUTDIR}-results/."
+echo "Exiting ${SCRIPT_NAME} successfully. Results were placed in ${OUTDIR}-results/."
