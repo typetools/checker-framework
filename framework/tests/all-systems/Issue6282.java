@@ -9,6 +9,7 @@ public class Issue6282 {
     throw new RuntimeException();
   }
 
+  @SuppressWarnings("confidential") // true positive: thrown exception might be @UnknownConfidential
   public static void setAccessible(final AccessibleObject accessibleObject) {
 
     try {
