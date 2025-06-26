@@ -107,9 +107,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
     /** the @OwningCollectionWithoutObligation type */
     OwningCollectionWithoutObligation,
     /** the @OwningCollectionBottom type */
-    OwningCollectionBottom,
-    /** if no type in the hierarchy can be determined with certainty */
-    None
+    OwningCollectionBottom
   };
 
   /**
@@ -256,7 +254,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
   }
 
   /**
-   * Whether the given tree a resource collection field that is {@code @OwningCollection} by
+   * Whether the given tree is a resource collection field that is {@code @OwningCollection} by
    * declaration, which is the default behavior, i.e. with no different collection ownership
    * annotation.
    *
@@ -272,9 +270,42 @@ public class CollectionOwnershipAnnotatedTypeFactory
         AnnotatedTypeMirror atm = getAnnotatedType(elt);
         CollectionOwnershipType fieldType =
             getCoType(Collections.singletonList(atm.getEffectiveAnnotationInHierarchy(TOP)));
+        if (fieldType == null) {
+          return false;
+        }
         switch (fieldType) {
           case OwningCollection:
           case OwningCollectionWithoutObligation:
+            return true;
+          default:
+            return false;
+        }
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Whether the given element is a resource collection parameter that is {@code @OwningCollection}
+   * by declaration, which is the default behavior, i.e. with no different collection ownership
+   * annotation.
+   *
+   * @param elt the element
+   * @return true if the element is a resource collection parameter that is
+   *     {@code @OwningCollection} by declaration
+   */
+  public boolean isOwningCollectionParameter(Element elt) {
+    if (elt == null) return false;
+    if (isResourceCollection(elt.asType())) {
+      if (elt.getKind() == ElementKind.PARAMETER) {
+        AnnotatedTypeMirror atm = getAnnotatedType(elt);
+        CollectionOwnershipType paramType =
+            getCoType(Collections.singletonList(atm.getEffectiveAnnotationInHierarchy(TOP)));
+        if (paramType == null) {
+          return false;
+        }
+        switch (paramType) {
+          case OwningCollection:
             return true;
           default:
             return false;
@@ -416,38 +447,20 @@ public class CollectionOwnershipAnnotatedTypeFactory
 
   /**
    * Utility method to get the flow-sensitive {@code CollectionOwnershipType} that the given node
-   * has.
+   * has in the given store
    *
    * @param node the node
-   * @return the {@code CollectionOwnershipType} that the given node has.
+   * @param coStore the store
+   * @return the {@code CollectionOwnershipType} that the given node has in the given store.
    */
-  public CollectionOwnershipType getCoType(Node node) {
-    CollectionOwnershipType res = CollectionOwnershipType.None;
-    if (node.getBlock() != null) {
-      CollectionOwnershipStore coStore = getStoreBefore(node);
-      try {
-        JavaExpression jx = JavaExpression.fromNode(node);
-        CFValue storeVal = coStore.getValue(jx);
-        return getCoType(storeVal.getAnnotations());
-      } catch (Exception e) {
-        res = CollectionOwnershipType.None;
-      }
+  public CollectionOwnershipType getCoType(Node node, CollectionOwnershipStore coStore) {
+    try {
+      JavaExpression jx = JavaExpression.fromNode(node);
+      CFValue storeVal = coStore.getValue(jx);
+      return getCoType(storeVal.getAnnotations());
+    } catch (Exception e) {
+      return null;
     }
-
-    if (res == CollectionOwnershipType.None) {
-      // not in store
-      if (node.getTree() != null) {
-        AnnotatedTypeMirror atm = getAnnotatedType(node.getTree());
-        if (atm == null) {
-          Element elt = TreeUtils.elementFromTree(node.getTree());
-          atm = getAnnotatedType(elt);
-        }
-        if (atm != null) {
-          return getCoType(Collections.singletonList(atm.getEffectiveAnnotationInHierarchy(TOP)));
-        }
-      }
-    }
-    return res;
   }
 
   /**
@@ -469,11 +482,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
       CFValue storeVal = coStore.getValue(jx);
       return getCoType(storeVal.getAnnotations());
     } catch (Exception e) {
-      // No flow-sensitive access. Fall back to annotated type.
-      AnnotatedTypeMirror atm = getAnnotatedType(tree);
-      return atm == null
-          ? CollectionOwnershipType.None
-          : getCoType(Collections.singletonList(atm.getEffectiveAnnotationInHierarchy(TOP)));
+      return null;
     }
   }
 
@@ -486,7 +495,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
    */
   public CollectionOwnershipType getCoType(Collection<AnnotationMirror> annos) {
     if (annos == null) {
-      return CollectionOwnershipType.None;
+      return null;
     }
     for (AnnotationMirror anm : annos) {
       if (anm == null) continue;

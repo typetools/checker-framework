@@ -772,7 +772,8 @@ public class MustCallConsistencyAnalyzer {
   private void addObligationsForOwningCollectionReturn(Set<Obligation> obligations, Node node) {
     LocalVariableNode tmpVar = cmAtf.getTempVarForNode(node);
     if (tmpVar != null) {
-      CollectionOwnershipType cotype = coAtf.getCoType(node);
+      CollectionOwnershipStore coStore = coAtf.getStoreBefore(node);
+      CollectionOwnershipType cotype = coAtf.getCoType(node, coStore);
       if (cotype == CollectionOwnershipType.OwningCollection) {
         ResourceAlias tmpVarAsResourceAlias =
             new ResourceAlias(new LocalVariable(tmpVar), node.getTree());
@@ -809,12 +810,16 @@ public class MustCallConsistencyAnalyzer {
         coAtf.getDeclAnnotation(methodElement, CreatesCollectionObligation.class) != null;
     if (hasCreatesCollectionObligation) {
       Node receiverNode = node.getTarget().getReceiver();
-      Element receiverElt = TreeUtils.elementFromTree(receiverNode.getTree());
-      boolean receiverIsField = receiverElt.getKind().isField();
+      boolean receiverIsOwningField = coAtf.isOwningCollectionField(receiverNode.getTree());
 
-      switch (coAtf.getCoType(receiverNode)) {
+      CollectionOwnershipStore coStore = coAtf.getStoreBefore(node);
+      CollectionOwnershipType receiverType = coAtf.getCoType(receiverNode, coStore);
+      if (receiverType == null) {
+        throw new BugInCF("Method receiver not in collection ownership store: " + receiverNode);
+      }
+      switch (receiverType) {
         case OwningCollectionWithoutObligation:
-          if (!receiverIsField) {
+          if (!receiverIsOwningField) {
             List<String> mustCallValues =
                 coAtf.getMustCallValuesOfResourceCollectionComponent(receiverNode.getTree());
             for (String mustCallMethod : mustCallValues) {
@@ -824,7 +829,7 @@ public class MustCallConsistencyAnalyzer {
           }
         // fall through
         case OwningCollection:
-          if (receiverIsField) {
+          if (receiverIsOwningField) {
             TreePath currentPath = cmAtf.getPath(node.getTree());
             MethodTree enclosingMethodTree = TreePathUtil.enclosingMethod(currentPath);
             if (enclosingMethodTree != null) {
@@ -1280,10 +1285,8 @@ public class MustCallConsistencyAnalyzer {
               obligations.remove(localObligation);
             }
           }
-          boolean paramHasManualOcAnno =
-              coAtf.getCoType(new HashSet<>(parameter.asType().getAnnotationMirrors()))
-                  == CollectionOwnershipType.OwningCollection;
-          if (paramHasManualOcAnno) {
+
+          if (coAtf.isOwningCollectionParameter(parameter)) {
             Set<Obligation> obligationsForVar = getObligationsForVar(obligations, local);
             for (Obligation obligation : obligationsForVar) {
               obligations.remove(obligation);
@@ -1766,14 +1769,7 @@ public class MustCallConsistencyAnalyzer {
     Node lhs = node.getTarget();
     Node rhs = node.getExpression();
 
-    CollectionOwnershipType lhsCoType = coAtf.getCoType(lhs);
-    CollectionOwnershipType rhsCoType = coAtf.getCoType(rhs);
-    if (lhsCoType == CollectionOwnershipType.OwningCollectionBottom
-        || rhsCoType == CollectionOwnershipType.OwningCollectionBottom) {
-      // not resource collections
-      return;
-    }
-    if (lhsCoType == CollectionOwnershipType.None || rhsCoType == CollectionOwnershipType.None) {
+    if (!coAtf.isResourceCollection(lhs.getType()) && !coAtf.isResourceCollection(rhs.getType())) {
       return;
     }
 
@@ -1785,14 +1781,14 @@ public class MustCallConsistencyAnalyzer {
       // initializer or in an initializer block.
       if (node.getTree().getKind() == Tree.Kind.VARIABLE) {
         // assignment is a field initializer. Is always permitted.
-        switch (rhsCoType) {
-          case OwningCollectionWithoutObligation:
-            break;
-          case OwningCollection:
-          case NotOwningCollection:
-            throw new BugInCF("rhs of field initializer is " + rhsCoType + ": " + rhs);
-          default:
-        }
+        // switch (rhsCoType) {
+        //   case OwningCollectionWithoutObligation:
+        //     break;
+        //   case OwningCollection:
+        //   case NotOwningCollection:
+        //     throw new BugInCF("rhs of field initializer is " + rhsCoType + ": " + rhs);
+        //   default:
+        // }
         return;
       } else {
         // is an initialization block. Not supported.
@@ -1805,6 +1801,25 @@ public class MustCallConsistencyAnalyzer {
       }
     } else {
       // The assignment is taking place in a (possibly constructor) method.
+      CollectionOwnershipStore coStore = coAtf.getStoreBefore(node);
+      CollectionOwnershipType lhsCoType = coAtf.getCoType(getTempVarOrNode(lhs), coStore);
+      if (lhsCoType == null) {
+        throw new BugInCF(
+            "Expression " + lhs + " cannot be found in CollectionOwnership store " + coStore);
+      }
+      CollectionOwnershipType rhsCoType = coAtf.getCoType(getTempVarOrNode(rhs), coStore);
+      if (rhsCoType == null) {
+        throw new BugInCF(
+            "Expression " + rhs + " cannot be found in CollectionOwnership store " + coStore);
+      }
+      if (lhsCoType == CollectionOwnershipType.OwningCollectionBottom
+          || rhsCoType == CollectionOwnershipType.OwningCollectionBottom) {
+        throw new BugInCF(
+            "Expression "
+                + node
+                + " has resource collection operand, but @OwningCollectionBottom type.");
+      }
+
       switch (lhsCoType) {
         case NotOwningCollection:
           // doesn't own elements. safe to overwrite.
@@ -1813,13 +1828,11 @@ public class MustCallConsistencyAnalyzer {
           // no obligation. assignment allowed.
           // but if rhs is owning, demand CreatesMustCallFor("this")
           if (rhsCoType == CollectionOwnershipType.OwningCollection) {
-            if (checkEnclosingMethodIsCreatesMustCallFor(lhs, enclosingMethodTree)) {
-              if (coAtf.isOwningCollectionField(lhs.getTree())) {
-                Set<Obligation> obligationsForVar =
-                    getObligationsForVar(obligations, rhs.getTree());
-                for (Obligation obligation : obligationsForVar) {
-                  obligations.remove(obligation);
-                }
+            checkEnclosingMethodIsCreatesMustCallFor(lhs, enclosingMethodTree);
+            if (coAtf.isOwningCollectionField(lhs.getTree())) {
+              Set<Obligation> obligationsForVar = getObligationsForVar(obligations, rhs.getTree());
+              for (Obligation obligation : obligationsForVar) {
+                obligations.remove(obligation);
               }
             }
           }
@@ -1827,7 +1840,7 @@ public class MustCallConsistencyAnalyzer {
         case OwningCollection:
           // assignment not allowed
           checker.reportError(
-              node,
+              node.getTree(),
               "unfulfilled.collection.obligations",
               coAtf.getMustCallValuesOfResourceCollectionComponent(lhs.getTree()).get(0),
               lhs.getTree(),
@@ -2713,9 +2726,10 @@ public class MustCallConsistencyAnalyzer {
           // method.
           incrementNumMustCall(paramElement);
         }
-        CollectionOwnershipType cotype = coAtf.getCoType(param);
-        if (cotype == CollectionOwnershipType.OwningCollection) {
+        if (coAtf.isOwningCollectionParameter(paramElement)) {
           List<String> mustCallValues = coAtf.getMustCallValuesOfResourceCollectionComponent(param);
+          {
+          }
           if (mustCallValues != null) {
             if (!ResourceLeakUtils.isIterator(paramElement.asType())) {
               for (String mustCallMethod : mustCallValues) {
