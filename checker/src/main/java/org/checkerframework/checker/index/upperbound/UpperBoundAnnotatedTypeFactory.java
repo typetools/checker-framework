@@ -863,7 +863,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
 
       ExpressionTree seqTree = getLengthSequenceTree(seqLenTree);
 
-      if (randTree.getKind() == Tree.Kind.METHOD_INVOCATION && seqTree != null) {
+      if (randTree instanceof MethodInvocationTree && seqTree != null) {
 
         MethodInvocationTree mitree = (MethodInvocationTree) randTree;
 
