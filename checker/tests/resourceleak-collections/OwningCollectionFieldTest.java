@@ -18,6 +18,12 @@ class Aggregator implements Closeable {
   // 1. infer this field as @OwningCollection
   List<Resource> resList = new ArrayList<>();
 
+  public Aggregator() {}
+
+  public Aggregator(@OwningCollection List<Resource> list) {
+    resList = list;
+  }
+
   // 5. demand methods adding elements to have @CreatesMustCallFor("this")
   @CreatesMustCallFor("this")
   void add(@Owning Resource r) {
