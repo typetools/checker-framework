@@ -3,6 +3,7 @@ package org.checkerframework.checker.resourceleak;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
@@ -260,13 +261,13 @@ public class ResourceLeakUtils {
   }
 
   /**
-   * Returns whether the given Element is a java.util.Collection type by checking whether the raw
-   * type of the element is assignable from java.util.Collection. Returns false if element is null,
-   * or has no valid type.
+   * Returns whether the given Element is a java.lang.Iterable or java.util.Iterator type by
+   * checking whether the raw type of the element is assignable from either. Returns false if
+   * element is null, or has no valid type.
    *
    * @param element the element
    * @param atf an AnnotatedTypeFactory to get the annotated type of the element
-   * @return whether the given element is a Java.util.Collection type
+   * @return whether the given element is a Java.lang.Iterable or Java.util.Iterator type
    */
   public static boolean isCollection(Element element, AnnotatedTypeFactory atf) {
     if (element == null) return false;
@@ -276,18 +277,34 @@ public class ResourceLeakUtils {
   }
 
   /**
-   * Returns whether the given {@link TypeMirror} is a java.util.Collection subclass. This is
-   * determined by getting the class of the TypeMirror and checking whether it is assignable from
-   * java.util.Collection.
+   * Returns whether the given {@link TypeMirror} is a java.lang.Iterable or java.util.Iterator
+   * subclass. This is determined by getting the class of the TypeMirror and checking whether it is
+   * assignable from either.
    *
    * @param type the TypeMirror
-   * @return whether type is a java.util.Collection
+   * @return whether type is a java.lang.Iterable or java.util.Iterator
    */
   public static boolean isCollection(TypeMirror type) {
     if (type == null) return false;
     Class<?> elementRawType = TypesUtils.getClassFromType(type);
     if (elementRawType == null) return false;
-    return Iterable.class.isAssignableFrom(elementRawType);
+    return Iterable.class.isAssignableFrom(elementRawType)
+        || Iterator.class.isAssignableFrom(elementRawType);
+  }
+
+  /**
+   * Returns whether the given {@link TypeMirror} is a java.util.Iterator subclass. This is
+   * determined by getting the class of the TypeMirror and checking whether it is assignable from
+   * java.util.Iterator.
+   *
+   * @param type the TypeMirror
+   * @return whether type is a java.util.Iterator
+   */
+  public static boolean isIterator(TypeMirror type) {
+    if (type == null) return false;
+    Class<?> elementRawType = TypesUtils.getClassFromType(type);
+    if (elementRawType == null) return false;
+    return Iterator.class.isAssignableFrom(elementRawType);
   }
 
   /**
@@ -370,6 +387,27 @@ public class ResourceLeakUtils {
       return Collections.singletonList(CollectionOwnershipAnnotatedTypeFactory.UNKNOWN_METHOD_NAME);
     }
     return new ArrayList<>();
+  }
+
+  /**
+   * Returns the list of mustcall obligations for the given {@code AnnotatedTypeMirror} upper bound
+   * (either the type variable itself if it is concrete or the upper bound if its a wildcard or
+   * generic).
+   *
+   * @param type the {@code AnnotatedTypeMirror}
+   * @param mcAtf the {@code MustCallAnnotatedTypeFactory} to get the {@code MustCall} type
+   * @return the list of mustcall obligations for the upper bound of {@code type}.
+   */
+  public static List<String> getMcValues(
+      AnnotatedTypeMirror type, MustCallAnnotatedTypeFactory mcAtf) {
+    AnnotationMirror anno = type.getEffectiveAnnotationInHierarchy(mcAtf.TOP);
+    if (anno == null) {
+      return Collections.emptyList();
+    }
+    if (AnnotationUtils.areSameByName(anno, mcAtf.TOP)) {
+      return Collections.singletonList(CollectionOwnershipAnnotatedTypeFactory.UNKNOWN_METHOD_NAME);
+    }
+    return getValuesInAnno(anno, mcAtf.getMustCallValueElement());
   }
 
   /**

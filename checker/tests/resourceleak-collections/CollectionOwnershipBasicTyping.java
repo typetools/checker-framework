@@ -40,8 +40,10 @@ class CollectionOwnershipBasicTyping {
   // do in this case.
   @NotOwningCollection
   Collection<Socket> checkIllegalNotOwningReturn() {
+    List<Socket> l = new ArrayList<>();
     // :: error: unfulfilled.collection.obligations
-    return new ArrayList<>();
+    l.add(new Socket());
+    return l;
   }
 
   // this is the correct version of above. It passes ownership to another method first,
@@ -65,8 +67,9 @@ class CollectionOwnershipBasicTyping {
 
   void testAssignmentTransfersOwnership() {
     // col is overwritten and its obligation never fulfilled or passed on
-    // :: error: unfulfilled.collection.obligations
     Collection<Socket> col = new ArrayList<>();
+    // :: error: unfulfilled.collection.obligations
+    col.add(new Socket());
     Collection<Socket> col2 = new ArrayList<>();
     // col : @OwningCollection, col2 : @OwningCollection
     col = col2;
@@ -84,9 +87,29 @@ class CollectionOwnershipBasicTyping {
    */
   void testDiamond() {
     Collection<Socket> col = new ArrayList<>();
+    col.add(new Socket());
     // :: error: argument
     checkArgIsOCwoO(col);
     closeElements(col);
+  }
+
+  void checkAdvancedDiamond() {
+    // check that this doesn't create an obligation and defaults to @OwningCollectionBottom
+    Collection<@MustCall Socket> c = new ArrayList<>();
+    checkArgIsBottom(c);
+
+    // these all create obligations
+
+    Collection<Socket> c1 = new ArrayList<>();
+    Collection<@MustCall("close") Object> c2 = new ArrayList<>();
+    Collection<@MustCallUnknown Object> c3 = new ArrayList<>();
+    c.add(new Socket());
+    // :: error: unfulfilled.collection.obligations
+    c1.add(new Socket());
+    // :: error: unfulfilled.collection.obligations
+    c2.add(new Socket());
+    // :: error: unfulfilled.collection.obligations
+    c3.add(new Socket());
   }
 
   void closeElements(@OwningCollection Collection<Socket> socketCollection) {
@@ -97,6 +120,8 @@ class CollectionOwnershipBasicTyping {
       }
     }
   }
+
+  void checkArgIsBottom(Collection<? extends Object> collection) {}
 
   // these two methods take on unfulfillable obligations and thus throw an error
 

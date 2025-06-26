@@ -507,13 +507,12 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
           && TreeUtils.isSizeAccess(condition.getRightOperand())) {
         ExpressionTree methodSelect =
             ((MethodInvocationTree) condition.getRightOperand()).getMethodSelect();
-        assert methodSelect.getKind() == Tree.Kind.MEMBER_SELECT
-            : "method selection of object.size() expected to be memberSelectTree, but is "
-                + methodSelect.getKind();
-        MemberSelectTree mst = (MemberSelectTree) methodSelect;
-        Element elt = TreeUtils.elementFromTree(mst.getExpression());
-        if (ResourceLeakUtils.isCollection(elt, atypeFactory)) {
-          return getNameFromExpressionTree(mst.getExpression());
+        if (methodSelect.getKind() == Tree.Kind.MEMBER_SELECT) {
+          MemberSelectTree mst = (MemberSelectTree) methodSelect;
+          Element elt = TreeUtils.elementFromTree(mst.getExpression());
+          if (ResourceLeakUtils.isCollection(elt, atypeFactory)) {
+            return getNameFromExpressionTree(mst.getExpression());
+          }
         }
       } else if (condition.getRightOperand().getKind() == Tree.Kind.IDENTIFIER) {
         return getNameFromExpressionTree(condition.getRightOperand());

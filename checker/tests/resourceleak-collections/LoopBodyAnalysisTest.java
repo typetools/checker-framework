@@ -5,14 +5,6 @@ import org.checkerframework.checker.calledmethods.qual.*;
 import org.checkerframework.checker.collectionownership.qual.*;
 import org.checkerframework.checker.mustcall.qual.*;
 
-@InheritableMustCall({"flush"})
-class Resource implements AutoCloseable {
-  @Override
-  public void close() {}
-
-  void flush() {}
-}
-
 class LoopBodyAnalysisTests {
 
   void fullSatisfyCollection(@OwningCollection Collection<Resource> resources) {
@@ -72,8 +64,8 @@ class LoopBodyAnalysisTests {
   }
 
   void multipleMustCallPartial() {
-    // :: error: unfulfilled.collection.obligations
     List<Resource> l = new ArrayList<>();
+    // :: error: unfulfilled.collection.obligations
     l.add(new Resource());
     for (Resource r : l) {
       r.close();

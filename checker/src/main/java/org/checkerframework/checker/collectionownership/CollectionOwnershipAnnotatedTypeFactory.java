@@ -1,11 +1,16 @@
 package org.checkerframework.checker.collectionownership;
 
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
+import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -14,15 +19,18 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.collectionownership.qual.CollectionFieldDestructor;
 import org.checkerframework.checker.collectionownership.qual.NotOwningCollection;
 import org.checkerframework.checker.collectionownership.qual.OwningCollection;
 import org.checkerframework.checker.collectionownership.qual.OwningCollectionBottom;
 import org.checkerframework.checker.collectionownership.qual.OwningCollectionWithoutObligation;
+import org.checkerframework.checker.collectionownership.qual.PolyOwningCollection;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer;
@@ -31,24 +39,34 @@ import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
 import org.checkerframework.checker.resourceleak.ResourceLeakUtils;
 import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsAnnotatedTypeFactory;
 import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsAnnotatedTypeFactory.PotentiallyFulfillingLoop;
-import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.block.Block;
-import org.checkerframework.framework.flow.CFStore;
+import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.TreePathUtil;
+import org.checkerframework.javacutil.TreeUtils;
 
 /** The annotated type factory for the Collection Ownership Checker. */
-public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
+public class CollectionOwnershipAnnotatedTypeFactory
+    extends GenericAnnotatedTypeFactory<
+        CFValue,
+        CollectionOwnershipStore,
+        CollectionOwnershipTransfer,
+        CollectionOwnershipAnalysis> {
 
   /** The {@code @}{@link NotOwningCollection} annotation. */
   public final AnnotationMirror TOP;
@@ -67,6 +85,10 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
    * unannotated code.
    */
   public final AnnotationMirror BOTTOM;
+
+  /** The value element of the {@code @}{@link CollectionFieldDestructor} annotation. */
+  public final ExecutableElement collectionFieldDestructorValueElement =
+      TreeUtils.getMethod(CollectionFieldDestructor.class, "value", 0, processingEnv);
 
   /**
    * Enum for the types in the hierarchy. Combined with a few utility methods to get the right enum
@@ -163,6 +185,7 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
   protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
     return new LinkedHashSet<>(
         Arrays.asList(
+            PolyOwningCollection.class,
             NotOwningCollection.class,
             OwningCollection.class,
             OwningCollectionWithoutObligation.class,
@@ -178,10 +201,11 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
    *     successor, succ
    * @param first a block
    * @param succ first's successor
-   * @return the appropriate CFStore, populated with MustCall annotations, from the results of
-   *     running dataflow
+   * @return the appropriate CollectionOwnershipStore, populated with MustCall annotations, from the
+   *     results of running dataflow
    */
-  public CFStore getStoreForBlock(boolean afterFirstStore, Block first, Block succ) {
+  public CollectionOwnershipStore getStoreForBlock(
+      boolean afterFirstStore, Block first, Block succ) {
     return afterFirstStore ? flowResult.getStoreAfter(first) : flowResult.getStoreBefore(succ);
   }
 
@@ -207,7 +231,9 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
   }
 
   /**
-   * Returns whether the given type is a resource collection.
+   * Returns whether the given type is a resource collection. This overload should be used before
+   * computation of AnnotatedTypeMirrors is completed, in particular in
+   * addComputedTypeAnnotations(AnnotatedTypeMirror).
    *
    * <p>That is, whether the given type is:
    *
@@ -226,6 +252,56 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
   }
 
   /**
+   * Whether the given tree a resource collection field that is {@code @OwningCollection} by
+   * declaration, which is the default behavior, i.e. with no different collection ownership
+   * annotation.
+   *
+   * @param tree the tree
+   * @return true if the tree is a resource collection field that is {@code @OwningCollection} by
+   *     declaration
+   */
+  public boolean isOwningCollectionField(Tree tree) {
+    if (tree == null) return false;
+    if (isResourceCollection(tree)) {
+      Element elt = TreeUtils.elementFromTree(tree);
+      if (elt != null && elt.getKind().isField()) {
+        AnnotatedTypeMirror atm = getAnnotatedType(elt);
+        CollectionOwnershipType fieldType =
+            getCoType(Collections.singletonList(atm.getEffectiveAnnotationInHierarchy(TOP)));
+        switch (fieldType) {
+          case OwningCollection:
+          case OwningCollectionWithoutObligation:
+            return true;
+          default:
+            return false;
+        }
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Returns whether the given AST tree is a resource collection.
+   *
+   * <p>That is, whether the given tree is of:
+   *
+   * <ol>
+   *   <li>An array type, whose component has non-empty MustCall type.
+   *   <li>A type assignable from java.util.Collection, whose only type var has non-empty MustCall
+   *       type.
+   * </ol>
+   *
+   * @param tree the tree
+   * @return whether the tree is a resource collection
+   */
+  public boolean isResourceCollection(Tree tree) {
+    MustCallAnnotatedTypeFactory mcAtf = ResourceLeakUtils.getMustCallAnnotatedTypeFactory(this);
+    AnnotatedTypeMirror treeMcType = mcAtf.getAnnotatedType(tree);
+    List<String> list = getMustCallValuesOfResourceCollectionComponent(treeMcType);
+    return list != null && list.size() > 0;
+  }
+
+  /**
    * If the given type is a collection, this method returns the MustCall values of its elements or
    * null if there are none or if the given type is not a collection.
    *
@@ -238,11 +314,80 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
    *       MustCall values of its type variable upper bound if there are any or else null.
    * </ol>
    *
-   * @param t the AnnotatedTypeMirror
+   * @param atm the AnnotatedTypeMirror
+   * @return if the given type is a collection, returns the MustCall values of its elements or null
+   *     if there are none or if the given type is not a collection.
+   */
+  public List<String> getMustCallValuesOfResourceCollectionComponent(AnnotatedTypeMirror atm) {
+    if (atm == null) {
+      return null;
+    }
+    boolean isCollectionType = ResourceLeakUtils.isCollection(atm.getUnderlyingType());
+    boolean isArrayType = atm.getKind() == TypeKind.ARRAY;
+
+    AnnotatedTypeMirror componentType = null;
+    if (isArrayType) {
+      componentType = ((AnnotatedArrayType) atm).getComponentType();
+    } else if (isCollectionType) {
+      List<? extends AnnotatedTypeMirror> typeArgs =
+          ((AnnotatedDeclaredType) atm).getTypeArguments();
+      if (typeArgs.size() != 0) {
+        componentType = typeArgs.get(0);
+      }
+    }
+
+    if (componentType != null) {
+      MustCallAnnotatedTypeFactory mcAtf = ResourceLeakUtils.getMustCallAnnotatedTypeFactory(this);
+      List<String> list = ResourceLeakUtils.getMcValues(componentType, mcAtf);
+      return list;
+    } else {
+      return null;
+    }
+  }
+
+  /**
+   * If the given tree represents a collection, this method returns the MustCall values of its
+   * elements or null if there are none or if the given type is not a collection.
+   *
+   * <p>That is:
+   *
+   * <ol>
+   *   <li>if the given tree is of an array type, this method returns the MustCall values of its
+   *       component type if there are any or else null.
+   *   <li>if the given tree is of a Java.util.Collection implementation, this method returns the
+   *       MustCall values of its type variable upper bound if there are any or else null.
+   * </ol>
+   *
+   * @param tree the AST tree
+   * @return if the given tree represents a collection, returns the MustCall values of its elements
+   *     or null if there are none or if the given type is not a collection.
+   */
+  public List<String> getMustCallValuesOfResourceCollectionComponent(Tree tree) {
+    MustCallAnnotatedTypeFactory mcAtf = ResourceLeakUtils.getMustCallAnnotatedTypeFactory(this);
+    return getMustCallValuesOfResourceCollectionComponent(mcAtf.getAnnotatedType(tree));
+  }
+
+  /**
+   * If the given type is a collection, this method returns the MustCall values of its elements or
+   * null if there are none or if the given type is not a collection.
+   *
+   * <p>That is:
+   *
+   * <ol>
+   *   <li>if the given type is an array type, this method returns the MustCall values of its
+   *       component type if there are any or else null.
+   *   <li>if the given type is a Java.util.Collection implementation, this method returns the
+   *       MustCall values of its type variable upper bound if there are any or else null.
+   * </ol>
+   *
+   * @param t the TypeMirror
    * @return if the given type is a collection, returns the MustCall values of its elements or null
    *     if there are none or if the given type is not a collection.
    */
   public List<String> getMustCallValuesOfResourceCollectionComponent(TypeMirror t) {
+    if (t == null) {
+      return null;
+    }
     boolean isCollectionType = ResourceLeakUtils.isCollection(t);
     boolean isArrayType = t.getKind() == TypeKind.ARRAY;
 
@@ -256,9 +401,8 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
       }
     }
 
-    MustCallAnnotatedTypeFactory mcAtf = ResourceLeakUtils.getMustCallAnnotatedTypeFactory(this);
-
     if (componentType != null) {
+      MustCallAnnotatedTypeFactory mcAtf = ResourceLeakUtils.getMustCallAnnotatedTypeFactory(this);
       List<String> list = ResourceLeakUtils.getMcValues(componentType, mcAtf);
       return list;
     } else {
@@ -267,14 +411,66 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
   }
 
   /**
-   * Utility method to get the {@code CollectionOwnershipType} that the given value extracted from a
-   * store has.
+   * Utility method to get the flow-sensitive {@code CollectionOwnershipType} that the given node
+   * has.
    *
-   * @param val the store value type
-   * @return the {@code CollectionOwnershipType} that the given value extracted from a store has
+   * @param node the node
+   * @return the {@code CollectionOwnershipType} that the given node has.
    */
-  public CollectionOwnershipType getCoType(CFValue val) {
-    return val == null ? CollectionOwnershipType.None : getCoType(val.getAnnotations());
+  public CollectionOwnershipType getCoType(Node node) {
+    CollectionOwnershipType res = CollectionOwnershipType.None;
+    if (node.getBlock() != null) {
+      CollectionOwnershipStore coStore = getStoreBefore(node);
+      try {
+        JavaExpression jx = JavaExpression.fromNode(node);
+        CFValue storeVal = coStore.getValue(jx);
+        return getCoType(storeVal.getAnnotations());
+      } catch (Exception e) {
+        res = CollectionOwnershipType.None;
+      }
+    }
+
+    if (res == CollectionOwnershipType.None) {
+      // not in store
+      if (node.getTree() != null) {
+        AnnotatedTypeMirror atm = getAnnotatedType(node.getTree());
+        if (atm == null) {
+          Element elt = TreeUtils.elementFromTree(node.getTree());
+          atm = getAnnotatedType(elt);
+        }
+        if (atm != null) {
+          return getCoType(Collections.singletonList(atm.getEffectiveAnnotationInHierarchy(TOP)));
+        }
+      }
+    }
+    return res;
+  }
+
+  /**
+   * Utility method to get the flow-sensitive {@code CollectionOwnershipType} that the given tree
+   * has.
+   *
+   * @param tree the tree
+   * @return the {@code CollectionOwnershipType} that the given tree has.
+   */
+  public CollectionOwnershipType getCoType(Tree tree) {
+    JavaExpression jx = null;
+    if (tree instanceof ExpressionTree) {
+      jx = JavaExpression.fromTree((ExpressionTree) tree);
+    } else if (tree instanceof VariableTree) {
+      jx = JavaExpression.fromVariableTree((VariableTree) tree);
+    }
+    try {
+      CollectionOwnershipStore coStore = getStoreBefore(tree);
+      CFValue storeVal = coStore.getValue(jx);
+      return getCoType(storeVal.getAnnotations());
+    } catch (Exception e) {
+      // No flow-sensitive access. Fall back to annotated type.
+      AnnotatedTypeMirror atm = getAnnotatedType(tree);
+      return atm == null
+          ? CollectionOwnershipType.None
+          : getCoType(Collections.singletonList(atm.getEffectiveAnnotationInHierarchy(TOP)));
+    }
   }
 
   /**
@@ -289,6 +485,7 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
       return CollectionOwnershipType.None;
     }
     for (AnnotationMirror anm : annos) {
+      if (anm == null) continue;
       if (AnnotationUtils.areSame(anm, NOTOWNINGCOLLECTION)) {
         return CollectionOwnershipType.NotOwningCollection;
       } else if (AnnotationUtils.areSame(anm, OWNINGCOLLECTION)) {
@@ -338,8 +535,12 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
       if (isResourceCollection(returnType.getUnderlyingType())) {
         AnnotationMirror manualAnno = returnType.getEffectiveAnnotationInHierarchy(TOP);
         if (manualAnno == null || AnnotationUtils.areSameByName(BOTTOM, manualAnno)) {
-          returnType.replaceAnnotation(
-              CollectionOwnershipAnnotatedTypeFactory.this.OWNINGCOLLECTION);
+          boolean isConstructor = t.getElement().getKind() == ElementKind.CONSTRUCTOR;
+          if (isConstructor) {
+            returnType.replaceAnnotation(OWNINGCOLLECTIONWITHOUTOBLIGATION);
+          } else {
+            returnType.replaceAnnotation(OWNINGCOLLECTION);
+          }
         }
       }
 
@@ -347,13 +548,39 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
         if (isResourceCollection(paramType.getUnderlyingType())) {
           AnnotationMirror manualAnno = paramType.getEffectiveAnnotationInHierarchy(TOP);
           if (manualAnno == null || AnnotationUtils.areSameByName(BOTTOM, manualAnno)) {
-            paramType.replaceAnnotation(
-                CollectionOwnershipAnnotatedTypeFactory.this.NOTOWNINGCOLLECTION);
+            paramType.replaceAnnotation(NOTOWNINGCOLLECTION);
           }
         }
       }
 
       return super.visitExecutable(t, p);
+    }
+  }
+
+  /*
+   * Defaults resource collection fields within methods of the class to @OwningCollection.
+   */
+  @Override
+  protected void addComputedTypeAnnotations(Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {
+    super.addComputedTypeAnnotations(tree, type, iUseFlow);
+
+    if (type.getKind() == TypeKind.DECLARED) {
+      Element elt = TreeUtils.elementFromTree(tree);
+      if (elt != null) {
+        boolean isField = elt.getKind() == ElementKind.FIELD;
+        if (isField && isResourceCollection(type.getUnderlyingType())) {
+          AnnotationMirror fieldAnno = type.getEffectiveAnnotationInHierarchy(TOP);
+          if (fieldAnno == null || AnnotationUtils.areSameByName(BOTTOM, fieldAnno)) {
+            TreePath currentPath = getPath(tree);
+            MethodTree enclosingMethodTree = TreePathUtil.enclosingMethod(currentPath);
+            if (enclosingMethodTree != null && TreeUtils.isConstructor(enclosingMethodTree)) {
+              type.replaceAnnotation(OWNINGCOLLECTIONWITHOUTOBLIGATION);
+            } else {
+              type.replaceAnnotation(OWNINGCOLLECTION);
+            }
+          }
+        }
+      }
     }
   }
 
@@ -410,14 +637,9 @@ public class CollectionOwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFa
     @Override
     public Void visitNewArray(NewArrayTree tree, AnnotatedTypeMirror type) {
       if (isResourceCollection(type.getUnderlyingType())) {
-        type.replaceAnnotation(OWNINGCOLLECTION);
+        type.replaceAnnotation(OWNINGCOLLECTIONWITHOUTOBLIGATION);
       }
       return super.visitNewArray(tree, type);
     }
   }
 }
-
-  // @Override
-  // protected QualifierPolymorphism createQualifierPolymorphism() {
-  //   return new MustCallQualifierPolymorphism(processingEnv, this);
-  // }
