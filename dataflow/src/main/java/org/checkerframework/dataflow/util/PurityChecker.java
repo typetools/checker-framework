@@ -9,6 +9,7 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.util.TreePath;
@@ -301,7 +302,7 @@ public class PurityChecker {
       // to check the latter condition, because the Purity Checker forbids all catch
       // statements.)
       Tree parent = getCurrentPath().getParentPath().getLeaf();
-      boolean okThrowDeterministic = parent.getKind() == Tree.Kind.THROW;
+      boolean okThrowDeterministic = parent instanceof ThrowTree;
 
       ExecutableElement ctorElement = TreeUtils.elementFromUse(tree);
       boolean deterministic =
