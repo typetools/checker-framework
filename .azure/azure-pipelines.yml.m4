@@ -37,7 +37,11 @@ jobs:
   - bash: true
     displayName: canary_jobs
 
-junit_job(canary_version)
+junit_job(11)
+junit_job(17)
+junit_job(21)
+junit_job(24)
+junit_job(25)
 
 nonjunit_job(canary_version)
 
