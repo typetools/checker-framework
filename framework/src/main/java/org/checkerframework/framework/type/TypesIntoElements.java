@@ -387,8 +387,13 @@ public final class TypesIntoElements {
       return res;
     }
 
-    /* Modeled after
-     * {@link com.sun.tools.javac.code.TypeAnnotations.TypeAnnotationPositions#locateNestedTypes(Type, TypeAnnotationPosition)}
+    /**
+     * Modeled after {@code
+     * com.sun.tools.javac.code.TypeAnnotations.TypeAnnotationPositions#locateNestedTypes(Type,
+     * TypeAnnotationPosition)}.
+     *
+     * @param type the type
+     * @param p the type's position
      */
     private void locateNestedTypes(AnnotatedDeclaredType type, TypeAnnotationPosition p) {
       // The number of "steps" to get from the full type to the
