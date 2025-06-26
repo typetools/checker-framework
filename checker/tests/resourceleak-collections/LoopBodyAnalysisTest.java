@@ -111,8 +111,11 @@ class LoopBodyAnalysisTests {
 
   void tryWithResources(Resource @OwningCollection [] resources) {
     for (Resource r : resources) {
-      try (Resource auto = r) {
-        auto.flush();
+      try {
+        try (Resource auto = r) {
+          auto.flush();
+        }
+      } catch (Exception e) {
       }
     }
   }

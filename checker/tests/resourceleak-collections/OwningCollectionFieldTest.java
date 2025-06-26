@@ -85,6 +85,29 @@ public class OwningCollectionFieldTest {
     }
   }
 
+  // Mainly test that accessing the owning resource collection field of another class is
+  // forbidden.
+  // since an obligaton for the field agg.resList is created, a @CreatesMustCallFor("agg")
+  // annotation is expected, which is nonsensical (why the assignment of this field itself
+  // is forbidden).
+  // :: error: missing.creates.mustcall.for
+  void accessOwningFieldAfterClosing(Resource @OwningCollection [] resources) {
+    Aggregator agg = new Aggregator();
+    for (Resource r : resources) {
+      agg.add(r);
+    }
+    agg.close();
+    // :: error: foreign.owningcollection.field.access
+    agg.resList.add(new Resource());
+
+    // this is not necessary, but the checker would issue a false positive
+    // without this closing loop.
+    for (Resource r : resources) {
+      r.close();
+      r.flush();
+    }
+  }
+
   void failToDestructAggregator(Resource @OwningCollection [] resources) {
     // :: error: required.method.not.called
     Aggregator agg = new Aggregator();
