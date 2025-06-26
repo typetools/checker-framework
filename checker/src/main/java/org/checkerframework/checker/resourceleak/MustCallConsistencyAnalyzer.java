@@ -843,6 +843,26 @@ public class MustCallConsistencyAnalyzer {
   }
 
   /**
+   * Prevents leaking of resource collection fields owned by the enclosing class by simply
+   * forbidding any access to it from anyone outside the immediate class.
+   *
+   * @param node the field access to check
+   */
+  private void checkOwningResourceCollectionFieldAccess(FieldAccessNode node) {
+    if (coAtf.isOwningCollectionField(node.getTree())) {
+      String receiverString = receiverAsString(node);
+      boolean isSelfAccess = "this".equals(receiverString);
+      boolean isSuperAccess = "super".equals(receiverString);
+      if (!isSelfAccess && !isSuperAccess) {
+        checker.reportError(
+            node.getTree(),
+            "foreign.owningcollection.field.access",
+            node.getFieldName().toString());
+      }
+    }
+  }
+
+  /**
    * Update a set of Obligations to account for a method or constructor invocation.
    *
    * @param obligations the Obligations to update
@@ -2139,6 +2159,11 @@ public class MustCallConsistencyAnalyzer {
     if (receiver instanceof SuperNode) {
       return "super";
     }
+    if (receiver instanceof FieldAccessNode) {
+      return receiverAsString((FieldAccessNode) receiver)
+          + "."
+          + ((FieldAccessNode) receiver).getFieldName();
+    }
     throw new TypeSystemError(
         "unexpected receiver of field assignment: " + receiver + " of type " + receiver.getClass());
   }
@@ -2369,6 +2394,8 @@ public class MustCallConsistencyAnalyzer {
           updateObligationsForOwningReturn(obligations, cfg, (ReturnNode) node);
         } else if (node instanceof MethodInvocationNode || node instanceof ObjectCreationNode) {
           updateObligationsForInvocation(obligations, node, successorAndExceptionType.second);
+        } else if (node instanceof FieldAccessNode) {
+          checkOwningResourceCollectionFieldAccess((FieldAccessNode) node);
         }
         // All other types of nodes are ignored. This is safe, because other kinds of
         // nodes cannot create or modify the resource-alias sets that the algorithm is
@@ -2742,7 +2769,7 @@ public class MustCallConsistencyAnalyzer {
                                 paramElement,
                                 param,
                                 hasMustCallAlias)),
-                        Collections.singleton(MethodExitKind.NORMAL_RETURN)));
+                        MethodExitKind.ALL));
               }
             }
           }
