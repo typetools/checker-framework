@@ -80,18 +80,9 @@ public class CollectionOwnershipVisitor
 
   @Override
   public Void visitVariable(VariableTree tree, Void p) {
-    VariableElement varElement = TreeUtils.elementFromDeclaration(tree);
-
-    if (varElement.getKind().isField() && atypeFactory.isResourceCollection(varElement.asType())) {
-      switch (atypeFactory.getCoType(tree)) {
-        case OwningCollection:
-        case OwningCollectionWithoutObligation:
-          checkOwningCollectionField(tree);
-        // fall through
-        default:
-      }
+    if (atypeFactory.isOwningCollectionField(tree)) {
+      checkOwningCollectionField(tree);
     }
-
     return super.visitVariable(tree, p);
   }
 
