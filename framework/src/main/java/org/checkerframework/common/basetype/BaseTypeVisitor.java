@@ -278,7 +278,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
   /**
    * The number of seconds that typechecking must take for a single tree, to issue a "slow
-   * typechecking" warning; default 30.
+   * typechecking" warning; default 45.
    */
   protected final long slowTypecheckingSeconds;
 
@@ -342,9 +342,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     long slowTypecheckingSecondsOption;
     try {
       slowTypecheckingSecondsOption =
-          Integer.parseInt(checker.getOption("slowTypecheckingSeconds", "30"));
+          Integer.parseInt(checker.getOption("slowTypecheckingSeconds", "45"));
     } catch (NumberFormatException e) {
-      slowTypecheckingSecondsOption = 30;
+      slowTypecheckingSecondsOption = 45;
     }
     slowTypecheckingSeconds = slowTypecheckingSecondsOption;
   }
