@@ -21,24 +21,39 @@ public class Default implements Comparable<Default> {
   /** The type use location. */
   public final TypeUseLocation location;
 
+  /** Whether the default should be inherited by subpackages. */
+  public final boolean applyToSubpackages;
+
   /**
    * Construct a Default object.
    *
    * @param anno the default annotation mirror
    * @param location the type use location
+   * @param applyToSubpackages whether the default should be inherited by subpackages
    */
-  public Default(AnnotationMirror anno, TypeUseLocation location) {
+  public Default(
+      final AnnotationMirror anno,
+      final TypeUseLocation location,
+      final boolean applyToSubpackages) {
     this.anno = anno;
     this.location = location;
+    this.applyToSubpackages = applyToSubpackages;
   }
 
   @Override
   public int compareTo(Default other) {
     int locationOrder = location.compareTo(other.location);
-    if (locationOrder == 0) {
-      return AnnotationUtils.compareAnnotationMirrors(anno, other.anno);
-    } else {
+    if (locationOrder != 0) {
       return locationOrder;
+    }
+    int annoOrder = AnnotationUtils.compareAnnotationMirrors(anno, other.anno);
+    if (annoOrder != 0) {
+      return annoOrder;
+    }
+    if (applyToSubpackages == other.applyToSubpackages) {
+      return 0;
+    } else {
+      return applyToSubpackages ? 1 : -1;
     }
   }
 
@@ -57,11 +72,16 @@ public class Default implements Comparable<Default> {
 
   @Override
   public int hashCode() {
-    return Objects.hash(anno, location);
+    return Objects.hash(anno, location, applyToSubpackages);
   }
 
   @Override
   public String toString() {
-    return "( " + location.name() + " => " + anno + " )";
+    return "( "
+        + location.name()
+        + " => "
+        + anno
+        + (applyToSubpackages ? "applies to subpackages" : "")
+        + " )";
   }
 }
