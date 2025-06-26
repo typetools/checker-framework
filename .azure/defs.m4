@@ -20,7 +20,7 @@ ifelse($1,canary_version,,[  dependsOn:
   steps:
   - checkout: self
     fetchDepth: 25
-  - bash: ./checker/bin-devel/test-cftests-junit.sh
+  - bash: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-cftests-junit.sh
     displayName: test-cftests-junit.sh])dnl
 dnl
 define([nonjunit_job], [dnl
