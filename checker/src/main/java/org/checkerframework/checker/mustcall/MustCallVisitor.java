@@ -476,7 +476,8 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
    * @param condition the loop condition
    * @param update the loop update
    * @return null if any rule is violated, or the name of the array if the loop condition is of the
-   *     form (i &lt; arr.length) or n if it is of the form (i &lt; n), where n is an identifier.
+   *     form {@code i < arr.length} or n if it is of the form {@code i < n}), where n is an
+   *     identifier.
    */
   protected Name verifyAllElementsAreCalledOn(
       StatementTree init, BinaryTree condition, ExpressionStatementTree update) {
