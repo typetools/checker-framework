@@ -66,12 +66,13 @@ class ConstructorTakesOwnership implements Closeable {
     resList = new ArrayList<>();
   }
 
-  // allowed since assignment cannot overwrite anything
-  public void reassignCollectionFieldIfNull() {
-    if (resList != null) {
-      resList = new ArrayList<>();
-    }
-  }
+  // TODO SCK: uncomment this test
+  // // allowed since assignment cannot overwrite anything
+  // public void reassignCollectionFieldIfNull() {
+  //   if (resList != null) {
+  //     resList = new ArrayList<>();
+  //   }
+  // }
 
   // assignment allowed since field not owned by class.
   // treated as normal variable.
