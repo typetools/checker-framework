@@ -7,19 +7,13 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
-import org.checkerframework.checker.collectionownership.qual.CollectionFieldDestructor;
 import org.checkerframework.checker.resourceleak.ResourceLeakUtils;
 import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
-import org.checkerframework.dataflow.expression.FieldAccess;
-import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
-import org.checkerframework.framework.util.JavaExpressionParseUtil;
-import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
-import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -128,18 +122,11 @@ public class CollectionOwnershipVisitor
 
           ExecutableElement siblingMethod = (ExecutableElement) siblingElement;
 
-          AnnotationMirror collectionFieldDestructorAnno =
-              atypeFactory.getDeclAnnotation(siblingMethod, CollectionFieldDestructor.class);
-          if (collectionFieldDestructorAnno != null) {
-            List<String> destructedFields =
-                AnnotationUtils.getElementValueArray(
-                    collectionFieldDestructorAnno,
-                    atypeFactory.collectionFieldDestructorValueElement,
-                    String.class);
-            for (String destructedFieldName : destructedFields) {
-              if (expressionEqualsField(destructedFieldName, fieldElement)) {
-                return;
-              }
+          List<String> destructedFields =
+              atypeFactory.getCollectionFieldDestructorAnnoFields(siblingMethod);
+          for (String destructedFieldName : destructedFields) {
+            if (atypeFactory.expressionEqualsField(destructedFieldName, fieldElement)) {
+              return;
             }
           }
         }
@@ -157,23 +144,5 @@ public class CollectionOwnershipVisitor
             : mustCallValues.get(0),
         "field " + fieldTree.getName().toString(),
         error);
-  }
-
-  /**
-   * Determine if the given expression <code>e</code> refers to <code>this.field</code>.
-   *
-   * @param e the expression
-   * @param field the field
-   * @return true if <code>e</code> refers to <code>this.field</code>
-   */
-  private boolean expressionEqualsField(String e, VariableElement field) {
-    try {
-      JavaExpression je = StringToJavaExpression.atFieldDecl(e, field, this.checker);
-      return je instanceof FieldAccess && ((FieldAccess) je).getField().equals(field);
-    } catch (JavaExpressionParseUtil.JavaExpressionParseException ex) {
-      // The parsing error will be reported elsewhere, assuming e was derived from an
-      // annotation.
-      return false;
-    }
   }
 }

@@ -8,6 +8,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -44,6 +45,7 @@ import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -55,6 +57,8 @@ import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
+import org.checkerframework.framework.util.JavaExpressionParseUtil;
+import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreePathUtil;
@@ -87,7 +91,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
   public final AnnotationMirror BOTTOM;
 
   /** The value element of the {@code @}{@link CollectionFieldDestructor} annotation. */
-  public final ExecutableElement collectionFieldDestructorValueElement =
+  private final ExecutableElement collectionFieldDestructorValueElement =
       TreeUtils.getMethod(CollectionFieldDestructor.class, "value", 0, processingEnv);
 
   /**
@@ -496,7 +500,63 @@ public class CollectionOwnershipAnnotatedTypeFactory
         return CollectionOwnershipType.OwningCollectionBottom;
       }
     }
-    return CollectionOwnershipType.None;
+    return null;
+  }
+
+  /**
+   * Returns the field names in the {@code @CollectionFieldDestructor} annotation that the given
+   * method has or an empty list if there is no such annotation.
+   *
+   * @param method the method
+   * @return the field names in the {@code @CollectionFieldDestructor} annotation that the given
+   *     method has or an empty list if there is no such annotation.
+   */
+  public List<String> getCollectionFieldDestructorAnnoFields(ExecutableElement method) {
+    AnnotationMirror collectionFieldDestructorAnno =
+        getDeclAnnotation(method, CollectionFieldDestructor.class);
+    if (collectionFieldDestructorAnno != null) {
+      return AnnotationUtils.getElementValueArray(
+          collectionFieldDestructorAnno, collectionFieldDestructorValueElement, String.class);
+    } else {
+      return new ArrayList<String>();
+    }
+  }
+
+  /**
+   * Determine if the given expression <code>e</code> refers to <code>this.field</code>.
+   *
+   * @param e the expression
+   * @param field the field
+   * @return true if <code>e</code> refers to <code>this.field</code>
+   */
+  public boolean expressionEqualsField(String e, VariableElement field) {
+    try {
+      JavaExpression je = StringToJavaExpression.atFieldDecl(e, field, this.checker);
+      return je instanceof FieldAccess && ((FieldAccess) je).getField().equals(field);
+    } catch (JavaExpressionParseUtil.JavaExpressionParseException ex) {
+      // The parsing error will be reported elsewhere, assuming e was derived from an
+      // annotation.
+      return false;
+    }
+  }
+
+  /**
+   * Return a JavaExpression for the given String or null if the conversion fails.
+   *
+   * @param s the string
+   * @param method the method with the annotation
+   * @return a JavaExpression for the given String or null if the conversion fails
+   */
+  public JavaExpression stringToJavaExpression(String s, ExecutableElement method) {
+    Tree methodTree = declarationFromElement(method);
+    if (methodTree != null && (methodTree instanceof MethodTree)) {
+      try {
+        return StringToJavaExpression.atMethodBody(s, (MethodTree) methodTree, checker);
+      } catch (JavaExpressionParseUtil.JavaExpressionParseException ex) {
+        return null;
+      }
+    }
+    return null;
   }
 
   @Override
