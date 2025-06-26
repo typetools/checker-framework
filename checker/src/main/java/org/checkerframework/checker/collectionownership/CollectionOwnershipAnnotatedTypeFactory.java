@@ -2,9 +2,11 @@ package org.checkerframework.checker.collectionownership;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collection;
@@ -55,6 +57,7 @@ import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 
 /** The annotated type factory for the Collection Ownership Checker. */
@@ -249,6 +252,35 @@ public class CollectionOwnershipAnnotatedTypeFactory
   }
 
   /**
+   * Whether the given tree a resource collection field that is {@code @OwningCollection} by
+   * declaration, which is the default behavior, i.e. with no different collection ownership
+   * annotation.
+   *
+   * @param tree the tree
+   * @return true if the tree is a resource collection field that is {@code @OwningCollection} by
+   *     declaration
+   */
+  public boolean isOwningCollectionField(Tree tree) {
+    if (tree == null) return false;
+    if (isResourceCollection(tree)) {
+      Element elt = TreeUtils.elementFromTree(tree);
+      if (elt != null && elt.getKind().isField()) {
+        AnnotatedTypeMirror atm = getAnnotatedType(elt);
+        CollectionOwnershipType fieldType =
+            getCoType(Collections.singletonList(atm.getEffectiveAnnotationInHierarchy(TOP)));
+        switch (fieldType) {
+          case OwningCollection:
+          case OwningCollectionWithoutObligation:
+            return true;
+          default:
+            return false;
+        }
+      }
+    }
+    return false;
+  }
+
+  /**
    * Returns whether the given AST tree is a resource collection.
    *
    * <p>That is, whether the given tree is of:
@@ -386,26 +418,31 @@ public class CollectionOwnershipAnnotatedTypeFactory
    * @return the {@code CollectionOwnershipType} that the given node has.
    */
   public CollectionOwnershipType getCoType(Node node) {
-    CollectionOwnershipType res = null;
+    CollectionOwnershipType res = CollectionOwnershipType.None;
     if (node.getBlock() != null) {
       CollectionOwnershipStore coStore = getStoreBefore(node);
       try {
         JavaExpression jx = JavaExpression.fromNode(node);
         CFValue storeVal = coStore.getValue(jx);
-        res = getCoType(storeVal.getAnnotations());
+        return getCoType(storeVal.getAnnotations());
       } catch (Exception e) {
-        res = null;
+        res = CollectionOwnershipType.None;
       }
     }
 
-    if (res == null) {
+    if (res == CollectionOwnershipType.None) {
       // not in store
-      AnnotatedTypeMirror atm = getAnnotatedType(node.getTree());
-      return atm == null
-          ? CollectionOwnershipType.None
-          : getCoType(Collections.singletonList(atm.getEffectiveAnnotationInHierarchy(TOP)));
+      if (node.getTree() != null) {
+        AnnotatedTypeMirror atm = getAnnotatedType(node.getTree());
+        if (atm == null) {
+          Element elt = TreeUtils.elementFromTree(node.getTree());
+          atm = getAnnotatedType(elt);
+        }
+        if (atm != null) {
+          return getCoType(Collections.singletonList(atm.getEffectiveAnnotationInHierarchy(TOP)));
+        }
+      }
     }
-
     return res;
   }
 
