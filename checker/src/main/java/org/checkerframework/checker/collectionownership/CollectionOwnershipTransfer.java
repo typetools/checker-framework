@@ -4,6 +4,7 @@ import com.sun.source.tree.Tree;
 import java.util.HashSet;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.collectionownership.CollectionOwnershipAnnotatedTypeFactory.CollectionOwnershipType;
@@ -39,6 +40,9 @@ public class CollectionOwnershipTransfer
   /** The type factory. */
   private final CollectionOwnershipAnnotatedTypeFactory atypeFactory;
 
+  /** The checker. */
+  private final CollectionOwnershipChecker checker;
+
   /** The MustCall type factory to manage temp vars. */
   private final MustCallAnnotatedTypeFactory mcAtf;
 
@@ -52,6 +56,7 @@ public class CollectionOwnershipTransfer
     super(analysis);
     atypeFactory = (CollectionOwnershipAnnotatedTypeFactory) analysis.getTypeFactory();
     mcAtf = ResourceLeakUtils.getMustCallAnnotatedTypeFactory(checker);
+    this.checker = checker;
   }
 
   @Override
@@ -71,11 +76,13 @@ public class CollectionOwnershipTransfer
     CollectionOwnershipType rhsType = atypeFactory.getCoType(rhs);
 
     // ownership transfer from rhs into lhs usually.
-    // special case desugared assignments of a temporary array variable.
+    // special case desugared assignments of a temporary array variable
+    // and rhs being owning resource collection field
     switch (rhsType) {
       case OwningCollection:
       case OwningCollectionWithoutObligation:
-        if (node.isDesugaredFromEnhancedArrayForLoop()) {
+        if (node.isDesugaredFromEnhancedArrayForLoop()
+            || atypeFactory.isOwningCollectionField(node.getExpression().getTree())) {
           store.clearValue(lhsJx);
           store.insertValue(lhsJx, atypeFactory.NOTOWNINGCOLLECTION);
         } else {
@@ -203,13 +210,14 @@ public class CollectionOwnershipTransfer
       CollectionOwnershipType paramType =
           atypeFactory.getCoType(new HashSet<>(param.asType().getAnnotationMirrors()));
 
+      Element argElem = TreeUtils.elementFromTree(arg.getTree());
+      boolean transferOwnership = false;
       switch (paramType) {
         case OwningCollection:
           switch (argType) {
             case OwningCollection:
             case OwningCollectionWithoutObligation:
-              store.clearValue(argJx);
-              store.insertValue(argJx, atypeFactory.NOTOWNINGCOLLECTION);
+              transferOwnership = true;
               break;
             default:
           }
@@ -217,13 +225,21 @@ public class CollectionOwnershipTransfer
         case OwningCollectionWithoutObligation:
           switch (argType) {
             case OwningCollectionWithoutObligation:
-              store.clearValue(argJx);
-              store.insertValue(argJx, atypeFactory.NOTOWNINGCOLLECTION);
+              transferOwnership = true;
               break;
             default:
           }
           break;
         default:
+      }
+      if (transferOwnership) {
+        if (argElem.getKind().isField()) {
+          checker.reportError(
+              arg.getTree(), "transfer.owningcollection.field.ownership", arg.getTree().toString());
+        } else {
+          store.clearValue(argJx);
+          store.insertValue(argJx, atypeFactory.NOTOWNINGCOLLECTION);
+        }
       }
     }
     return new RegularTransferResult<CFValue, CollectionOwnershipStore>(
