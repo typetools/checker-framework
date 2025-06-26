@@ -571,7 +571,13 @@ public class CollectionOwnershipAnnotatedTypeFactory
         if (isField && isResourceCollection(type.getUnderlyingType())) {
           AnnotationMirror fieldAnno = type.getEffectiveAnnotationInHierarchy(TOP);
           if (fieldAnno == null || AnnotationUtils.areSameByName(BOTTOM, fieldAnno)) {
-            type.replaceAnnotation(OWNINGCOLLECTION);
+            TreePath currentPath = getPath(tree);
+            MethodTree enclosingMethodTree = TreePathUtil.enclosingMethod(currentPath);
+            if (enclosingMethodTree != null && TreeUtils.isConstructor(enclosingMethodTree)) {
+              type.replaceAnnotation(OWNINGCOLLECTIONWITHOUTOBLIGATION);
+            } else {
+              type.replaceAnnotation(OWNINGCOLLECTION);
+            }
           }
         }
       }
