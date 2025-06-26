@@ -84,9 +84,9 @@ public final class TypesIntoElements {
     */
 
     for (Tree mem : tree.getMembers()) {
-      if (mem.getKind() == Tree.Kind.METHOD) {
+      if (mem instanceof MethodTree) {
         storeMethod(processingEnv, types, atypeFactory, (MethodTree) mem);
-      } else if (mem.getKind() == Tree.Kind.VARIABLE) {
+      } else if (mem instanceof VariableTree) {
         storeVariable(processingEnv, types, atypeFactory, (VariableTree) mem);
       } else {
         // System.out.println("Unhandled member tree: " + mem);
@@ -392,7 +392,7 @@ public final class TypesIntoElements {
      * com.sun.tools.javac.code.TypeAnnotations.TypeAnnotationPositions#locateNestedTypes(Type,
      * TypeAnnotationPosition)}.
      *
-     * @param type the type
+     * @param type a type
      * @param p the type's position
      */
     private void locateNestedTypes(AnnotatedDeclaredType type, TypeAnnotationPosition p) {
