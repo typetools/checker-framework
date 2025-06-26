@@ -1,7 +1,8 @@
 changequote
 changequote(`[',`]')dnl
 ifelse([The "dnl" m4 macro means "discard to end of line",])dnl
-define([canary_version], [24])dnl
+# TODO: revert the canary version back to 24.
+define([canary_version], [25])dnl
 define([latest_version], [25])dnl
 define([docker_testing], [])dnl
 # define([docker_testing], [-testing])dnl
