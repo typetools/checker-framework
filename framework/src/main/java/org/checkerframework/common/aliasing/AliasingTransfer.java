@@ -1,5 +1,6 @@
 package org.checkerframework.common.aliasing;
 
+import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
@@ -138,7 +139,7 @@ public class AliasingTransfer extends CFTransfer {
   public TransferResult<CFValue, CFStore> visitMethodInvocation(
       MethodInvocationNode n, TransferInput<CFValue, CFStore> in) {
     Tree parent = n.getTreePath().getParentPath().getLeaf();
-    boolean parentIsStatement = parent.getKind() == Tree.Kind.EXPRESSION_STATEMENT;
+    boolean parentIsStatement = parent instanceof ExpressionStatementTree;
 
     if (!parentIsStatement) {
 

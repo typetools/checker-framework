@@ -3,6 +3,7 @@ package org.checkerframework.javacutil;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreeScanner;
 import java.util.List;
@@ -82,10 +83,10 @@ public abstract class SwitchExpressionScanner<R, P> extends TreeScanner<R, P> {
         @NonNull Tree body = CaseUtils.getBody(caseTree);
         // This case is a switch rule, so its body is either an expression, block, or throw.
         // See https://docs.oracle.com/javase/specs/jls/se17/html/jls-15.html#jls-15.28.2.
-        if (body.getKind() == Tree.Kind.BLOCK) {
+        if (body instanceof BlockTree) {
           // Scan for yield statements.
           result = combineResults(result, yieldVisitor.scan(((BlockTree) body).getStatements(), p));
-        } else if (body.getKind() != Tree.Kind.THROW) {
+        } else if (!(body instanceof ThrowTree)) {
           // The expression is the result expression.
           ExpressionTree expressionTree = (ExpressionTree) body;
           result = combineResults(result, visitSwitchResultExpression(expressionTree, p));
