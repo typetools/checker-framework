@@ -25,19 +25,32 @@ repositories {
 }
 
 ext {
-  // This call to `isCompatibleWith` causes a Gradle run-time failure: "No signature of method".
-  // isJava17compatible = JavaVersion.isCompatibleWith(JavaVersion.VERSION_17)
-  // These list the version of Java Gradle is running with, which is different from the JDK use
-  // to compile the Checker Framework or run the tests.
-  // To find the version for compiling use: javaCompiler.get().getMetadata().getLanguageVersion().asInt() >= 17
-  // To find the version of running tests use: the jdkTestVersion property or if not set, it is the JavaVersion.current()
-
-  isJava17orHigher = JavaVersion.current() >= JavaVersion.VERSION_17
-  isJava21orHigher = JavaVersion.current() >= JavaVersion.VERSION_21
-  isJava22orHigher = JavaVersion.current() >= JavaVersion.VERSION_22
+  // Different JDKs may be used to run Gradle, compile the Checker Framework, and run the CF tests.
+  // Also see "Ways to specifiy the JDK used by different tasks/Gradle", below.
+  gradleRunsOnJava17orHigher = JavaVersion.current() >= JavaVersion.VERSION_17
+  gradleRunsOnJava21orHigher = JavaVersion.current() >= JavaVersion.VERSION_21
+  gradleRunsOnJava22orHigher = JavaVersion.current() >= JavaVersion.VERSION_22
+  gradleRunsOnJava24orHigher = JavaVersion.current() >= JavaVersion.VERSION_24
+  // The JDK for running tests: the jdkTestVersion property or if not set, JavaVersion.current()
+  if (project.getProperties().containsKey('jdkTestVersion')) {
+    jdkTestVersion = Integer.valueOf(project.getProperties().get('jdkTestVersion'))
+  } else {
+    jdkTestVersion = Integer.valueOf(JavaVersion.current().getMajorVersion())
+  }
+  // With 'useJdk21Compiler' property, use JDK 21 because the release uses it.
+  // If you update this line, also update JAVA_HOME in docs/developer/release/release_vars.py.
+  boolean jdk21Compiler = project.getProperties().getOrDefault('useJdk21Compiler', false)
+  if (jdk21Compiler) {
+    // This uses the Java 21 compiler to compile all code.
+    //  https://docs.gradle.org/current/userguide/toolchains.html
+    compilerJdkVersion =  21
+  } else {
+    compilerJdkVersion = jdkTestVersion
+  }
+  compilerRunsOnJava17orHigher = compilerJdkVersion >= 17
 
   // As of 2025-04-28 (Lombok 1.18.38), delombok supports JDK 24-ea but not JDK 24 proper; see https://projectlombok.org/changelog .
-  skipDelombok = JavaVersion.current() >= JavaVersion.VERSION_24
+  skipDelombok = gradleRunsOnJava24orHigher
 
   parentDir = file("${rootDir}/../").absolutePath
 
@@ -248,17 +261,17 @@ allprojects { currentProj ->
         doNotFormat += perProjectDoNotFormat[currentProj.name]
       }
 
-      if (!isJava17orHigher) {
+      if (!gradleRunsOnJava17orHigher) {
         doNotFormat += [
           'tests/**/java17/',
           'tests/*record*/'
         ]
       }
 
-      if (!isJava21orHigher) {
+      if (!gradleRunsOnJava21orHigher) {
         doNotFormat += ['tests/**/java21/']
       }
-      if (!isJava22orHigher) {
+      if (!gradleRunsOnJava22orHigher) {
         doNotFormat += ['tests/**/java22/']
       }
     }
@@ -434,23 +447,19 @@ allprojects { currentProj ->
       // or
       //./gradlew sometask -PuseJdk21Compiler=true
 
-      int jdkTestVersion = Integer.valueOf(JavaVersion.current().getMajorVersion())
-      if(project.getProperties().containsKey('jdkTestVersion')) {
-        jdkTestVersion = Integer.valueOf(project.getProperties().get('jdkTestVersion'))
-        java {
-          toolchain {
-            languageVersion = JavaLanguageVersion.of(jdkTestVersion)
-          }
-        }
-
-        javaCompiler = javaToolchains.compilerFor {
+      java {
+        toolchain {
           languageVersion = JavaLanguageVersion.of(jdkTestVersion)
         }
+      }
 
-        tasks.withType(JavaExec).configureEach {
-          javaLauncher = javaToolchains.launcherFor {
-            languageVersion = JavaLanguageVersion.of(jdkTestVersion)
-          }
+      javaCompiler = javaToolchains.compilerFor {
+        languageVersion = JavaLanguageVersion.of(compilerJdkVersion)
+      }
+
+      tasks.withType(JavaExec).configureEach {
+        javaLauncher = javaToolchains.launcherFor {
+          languageVersion = JavaLanguageVersion.of(jdkTestVersion)
         }
       }
 
@@ -540,7 +549,7 @@ allprojects { currentProj ->
         // Error Prone must be available in the annotation processor path
         options.annotationProcessorPath = configurations.errorProneAnnotationProcessor
         // Enable Error Prone
-        options.errorprone.enabled = javaCompiler.get().getMetadata().getLanguageVersion().asInt() >= 17
+        options.errorprone.enabled = compilerRunsOnJava17orHigher
         options.errorprone.disableWarningsInGeneratedCode = true
         options.errorprone.errorproneArgs = [
           // Many compiler classes are interned.
