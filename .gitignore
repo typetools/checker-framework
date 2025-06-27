@@ -36,7 +36,6 @@ local.properties
 # build files
 api
 build
-buildSrc/
 dist
 docs/tmpapi/
 stubparser/docs/api
