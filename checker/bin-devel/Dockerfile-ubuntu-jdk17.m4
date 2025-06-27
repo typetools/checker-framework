@@ -11,6 +11,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 && apt -y install \
   openjdk-17-jdk \
 && update-java-alternatives -s java-1.17.0-openjdk-amd64
+ENV JAVA17_HOME=/usr/lib/jvm/java-17-openjdk-amd64
 
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt autoremove \
