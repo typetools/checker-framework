@@ -800,83 +800,30 @@ warnings:
 
 \sectionAndLabel{Support for mutable-length data structures}{index-mutable-length}
 
-The Index Checker, initially designed for \emph{fixed-size} sequences, has been
-expanded to handle mutable-length data structures like collections like {\tt List}.
-This includes addressing mutation and aliasing challenges, allowing safe mutations
-like collection growth while restricting or checking mutations that shrink the
-collection's length to maintain index safety. Challenges of mutation and aliasing:
-\begin{itemize}
-\item
-  The Index Checker assumes no aliasing or length changes, which can lead to incorrect
-  treatment of previously-validated indexes even after the collection has \textbf{shrunk}.
-  This is because a collection's length can change, and an element removed from a list
-  can invalidate an index. This issue is exacerbated by aliasing, where mutations via
-  one reference can affect others. Therefore, it is crucial to address this issue.
-\item
-  The extended Index Checker must consider certain operations as potential invalidations
-  of index information to maintain soundness. \textbf{Growing} a collection doesn't
-  invalidate existing indices, while \textbf{shrinking} a collection can make previously
-  valid indices too high. The type system distinguishes between possible length decreases
-  and those not, and invalidates index facts upon operations that could reduce a collection's
-  length or disrupt earlier assumptions.
-\end{itemize}
-
-\subsectionAndLabel{Permitting growth and restricting shrinking}{index-mutable-approach}
-
-The extended Index Checker allows mutations that increase length with minimal overhead while
-restricting operations that might decrease it. This allows programmers to append to a
-collection without breaking index safety, but removals must be tracked and often require
-revalidation of indices. A set of type qualifiers on collection references encodes permitted
-mutations, allowing programmers to communicate to the type checker which references will
-be used to modify lengths and how:
-\begin{itemize}
-\item
-  A reference that is used only for reading or growing the collection
-  (never to remove elements) can be treated almost like a fixed-size collection,
-  since it will never witness a length-decreasing mutation.
-\item
-  A reference through which elements may be removed (shrinking the collection)
-  is considered more volatile – the checker must enforce additional checks and
-  may invalidate some facts after mutations.
-\item
-  In special cases, a programmer can declare that a reference’s mutations are not
-  being checked for index safety (opting out for difficult scenarios or incremental
-  adoption).
-\end{itemize}
-
-The type system prevents unsafe scenarios like using an index after an element removal
-by allowing references to grow or not mutate and requiring explicit annotation for those
-that can shrink, and defines a qualifier hierarchy to implement these ideas.
-
-\subsectionAndLabel{Qualifier hierarchy for mutable-length collections}{index-mutable-qualifiers}
-
-The type system contains the following type qualifiers
-(Figure~\ref{index-mutability-lattice} shows their hierarchy).
+Improved feature to support mutable-length data structures like {\tt List}, addressing mutation
+and aliasing challenges. It allows safe mutations like collection growth while restricting
+operations that might decrease it to maintain index safety. A set of type qualifiers on
+collection references encodes permitted mutations, allowing programmers to communicate with the
+type checker which references will modify lengths. The type system prevents unsafe scenarios by
+allowing references to grow or not mutate, requiring explicit annotation for shrinking references,
+and defining a qualifier hierarchy.
 
 \begin{description}
 \item[\refqualclass{checker/index/qual}{UnShrinkableRef}]
-  Ensures that the collection's size does not decrease as long as it is used exclusively.
-  This is the \textbf{default qualifier} for mutable-length structures, and if no annotation is
-  written, a reference is assumed to be @UnShrinkableRef. It restricts the \emph{current reference’s}
-  usage, preventing removal (such as \code{remove()} or \code{clear()}), but does \emph{not} guarantee
-  that the collection's size cannot change via other references. The Index Checker allows index-safe
-  operations under the assumption that this reference doesn't shrink the sequence, but remains cautious
-  about possible external mutations.
+  The default qualifier for mutable-length structures prevents collection size decrease when used
+  exclusively, restricting the current reference's usage but not guaranteeing it cannot change
+  via other references.
 
 \item[\refqualclass{checker/index/qual}{GrowOnly}]
-  Used to \emph{grow} the collection, preventing shrinking methods and ensuring no other alias
-  can shrink it. It prevents coexistence with references that permit shrinking, ensuring valid
-  indexes remain valid unless reassigned. This type system ensures safe appending without
-  invalidating existing relationships and prevents the checker from unnecessarily
-  invalidating index information after additions. Any attempt to call a removal method on a
-  @GrowOnly reference is a type error.
+  Ensures safe appending on collections using methods like \emph{add()}. Any attempt to
+  call a removal method is forbidden.
 
 \item[\refqualclass{checker/index/qual}{Shrinkable}]
-  The Index Checker allows calls to element-removing methods through a reference that is @Shrinkable.
+  Allows calls to element-removing methods.
   However, this can reduce the length of the collection, so the checker takes extra precautions.
   It typically requires code to re-establish index bounds after a mutation and
   \emph{invalidates any previously inferred index facts} for the collection when a shrink operation occurs.
-  A @Shrinkable reference also signifies that other aliases might shrink the collection.
+  Signifies that other aliases might shrink the collection.
   It is used only when needed and should be annotated as @Shrinkable if you intend to call methods that
   remove elements through it.
 
@@ -889,28 +836,7 @@ The type system contains the following type qualifiers
   index operations (making it the programmer’s responsibility to ensure safety). It can be cast to
   @Shrinkable or vice versa, but it means relinquishing or reinstating compile-time guarantees.
   Using @UncheckedShrinkable trades soundness for expedience.
-
-\item[\refqualclass{checker/index/qual}{BottomGrowShrink}]
-  Used internally by the type system to represent the most restrictive reference — one that
-  permits neither growth nor shrinking of a collection. This qualifier is not intended
-  to be written in source code and will typically only appear in diagnostics or in
-  subtyping relationships as part of type inference. As with other bottom types such as
-  \refqualclass{checker/index/qual}{LowerBoundBottom} or
-  \refqualclass{checker/index/qual}{UpperBoundBottom}, its main role is to serve as
-  the subtype of all other mutability qualifiers. The type system ensures that no
-  reference in a user program will be assigned this type, and it should never be used
-  explicitly in annotations.
 \end{description}
-
-The top type is @UnShrinkableRef, which promises not to shrink the
-collection. Both @Shrinkable and @GrowOnly are sub-types of @UnShrinkableRef, adding stronger
-conditions for mutations. @GrowOnly is incompatible with @Shrinkable, representing distinct
-mutation permissions. The @UncheckedShrinkable qualifier is a special case of @Shrinkable that
-bypasses checking. An implicit "bottom" qualifier represents a reference that can neither grow nor
-shrink. Assignments and method calls must respect this hierarchy. For example, a @Shrinkable collection
-can be used in any context that expects an @UnShrinkableRef, but an @UnShrinkableRef cannot be passed
-where a @Shrinkable is required. The type system prevents @GrowOnly references from being aliased by or
-assigned to @Shrinkable references, as this would violate the guarantee that no shrink will occur.
 
 \begin{figure}
 \begin{center}
