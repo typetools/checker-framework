@@ -138,6 +138,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
    *
    * @param checker the checker associated with this type factory
    */
+  @SuppressWarnings("this-escape")
   public MustCallAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     TOP = AnnotationBuilder.fromClass(elements, MustCallUnknown.class);

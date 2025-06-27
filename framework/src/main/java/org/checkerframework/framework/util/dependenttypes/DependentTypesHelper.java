@@ -1334,6 +1334,7 @@ public class DependentTypesHelper {
   }
 
   /** Returns true if the passed AnnotatedTypeMirror has any dependent type annotations. */
+  @SuppressWarnings("this-escape")
   private final AnnotatedTypeScanner<Boolean, Void> hasDependentTypeScanner =
       new SimpleAnnotatedTypeScanner<>(
           (type, __) -> {

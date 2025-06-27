@@ -27,6 +27,11 @@ repositories {
 ext {
   // This call to `isCompatibleWith` causes a Gradle run-time failure: "No signature of method".
   // isJava17compatible = JavaVersion.isCompatibleWith(JavaVersion.VERSION_17)
+  // These list the version of Java Gradle is running with, which is different from the JDK use
+  // to compile the Checker Framework or run the tests.
+  // To find the version for compiling use: javaCompiler.get().getMetadata().getLanguageVersion().asInt() >= 17
+  // To find the version of running tests use: the jdkTestVersion property or if not set, it is the JavaVersion.current()
+
   isJava17orHigher = JavaVersion.current() >= JavaVersion.VERSION_17
   isJava21orHigher = JavaVersion.current() >= JavaVersion.VERSION_21
   isJava22orHigher = JavaVersion.current() >= JavaVersion.VERSION_22
@@ -518,15 +523,10 @@ allprojects { currentProj ->
       // -options: To not get a warning about missing bootstrap classpath (when using Java 9 and `-source 8`).
       // -fallthrough: Don't check fallthroughs.  Instead, use Error Prone.  Its
       //   warnings are suppressible with a "// fall through" comment.
-      String lint = '-Xlint:-options,-fallthrough'
-      if (isJava21orHigher || jdk21Compiler || jdkTestVersion > 20) {
-        // TODO: Ignore this-escape warnings for now; perhaps review and suppress each one later.
-        lint +=',-this-escape'
-      }
       options.compilerArgs += [
         '-g',
         '-Werror',
-        lint,
+        '-Xlint:-options,-fallthrough',
         '-Xlint',
       ]
 
@@ -540,7 +540,7 @@ allprojects { currentProj ->
         // Error Prone must be available in the annotation processor path
         options.annotationProcessorPath = configurations.errorProneAnnotationProcessor
         // Enable Error Prone
-        options.errorprone.enabled = isJava17orHigher
+        options.errorprone.enabled = javaCompiler.get().getMetadata().getLanguageVersion().asInt() >= 17
         options.errorprone.disableWarningsInGeneratedCode = true
         options.errorprone.errorproneArgs = [
           // Many compiler classes are interned.

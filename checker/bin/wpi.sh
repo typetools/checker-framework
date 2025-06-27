@@ -81,6 +81,12 @@ if [ "${JAVA24_HOME}" = "" ]; then
 else
   has_java24="yes"
 fi
+# shellcheck disable=SC2153 # testing for JAVA25_HOME, not a typo of JAVA_HOME
+if [ "${JAVA25_HOME}" = "" ]; then
+  has_java25="no"
+else
+  has_java25="yes"
+fi
 
 if [ "${has_java_home}" = "yes" ] && [ ! -d "${JAVA_HOME}" ]; then
   echo "JAVA_HOME is set to a non-existent directory ${JAVA_HOME}"
@@ -109,6 +115,10 @@ if [ "${has_java_home}" = "yes" ]; then
     export JAVA24_HOME="${JAVA_HOME}"
     has_java24="yes"
   fi
+  if [ "${has_java25}" = "no" ] && [ "${java_version}" = 25 ]; then
+    export JAVA25_HOME="${JAVA_HOME}"
+    has_java25="yes"
+  fi
 fi
 
 if [ "${has_java8}" = "yes" ] && [ ! -d "${JAVA8_HOME}" ]; then
@@ -131,12 +141,16 @@ if [ "${has_java24}" = "yes" ] && [ ! -d "${JAVA24_HOME}" ]; then
   echo "JAVA24_HOME is set to a non-existent directory ${JAVA24_HOME}"
   exit 1
 fi
+if [ "${has_java25}" = "yes" ] && [ ! -d "${JAVA25_HOME}" ]; then
+  echo "JAVA25_HOME is set to a non-existent directory ${JAVA25_HOME}"
+  exit 1
+fi
 
-if [ "${has_java8}" = "no" ] && [ "${has_java11}" = "no" ] && [ "${has_java17}" = "no" ] && [ "${has_java21}" = "no" ] && [ "${has_java24}" = "no" ]; then
+if [ "${has_java8}" = "no" ] && [ "${has_java11}" = "no" ] && [ "${has_java17}" = "no" ] && [ "${has_java21}" = "no" ] && [ "${has_java24}" = "no" ] && [ "${has_java25}" = "no" ]; then
   if [ "${has_java_home}" = "yes" ]; then
     echo "Cannot determine Java version from JAVA_HOME"
   else
-    echo "No Java 8, 11, 17, 21, or 24 JDKs found. At least one of JAVA_HOME, JAVA8_HOME, JAVA11_HOME, JAVA17_HOME, JAVA21_HOME, or JAVA24_HOME must be set."
+    echo "No Java 8, 11, 17, 21, 24, or 25 JDKs found. At least one of JAVA_HOME, JAVA8_HOME, JAVA11_HOME, JAVA17_HOME, JAVA21_HOME, JAVA24_HOME, or JAVA25_HOME must be set."
   fi
   echo "JAVA_HOME = ${JAVA_HOME}"
   echo "JAVA8_HOME = ${JAVA8_HOME}"
@@ -144,6 +158,7 @@ if [ "${has_java8}" = "no" ] && [ "${has_java11}" = "no" ] && [ "${has_java17}" 
   echo "JAVA17_HOME = ${JAVA17_HOME}"
   echo "JAVA21_HOME = ${JAVA21_HOME}"
   echo "JAVA24_HOME = ${JAVA24_HOME}"
+  echo "JAVA25_HOME = ${JAVA25_HOME}"
   command -v java
   java -version
   exit 1
@@ -194,8 +209,8 @@ function configure_and_exec_dljc {
     if [ ! -d "${GRADLECACHEDIR}" ]; then
       mkdir "${GRADLECACHEDIR}"
     fi
-    CLEAN_CMD="${GRADLE_EXEC} clean -g ${GRADLECACHEDIR} -Dorg.gradle.java.home=${JAVA_HOME} ${EXTRA_BUILD_ARGS}"
-    BUILD_CMD="${GRADLE_EXEC} clean ${BUILD_TARGET} -g ${GRADLECACHEDIR} -Dorg.gradle.java.home=${JAVA_HOME} ${EXTRA_BUILD_ARGS}"
+    CLEAN_CMD="${GRADLE_EXEC} clean -g ${GRADLECACHEDIR} -Dorg.gradle.java.home=${JAVA21_HOME} ${EXTRA_BUILD_ARGS}"
+    BUILD_CMD="${GRADLE_EXEC} clean ${BUILD_TARGET} -g ${GRADLECACHEDIR} -Dorg.gradle.java.home=${JAVA21_HOME} ${EXTRA_BUILD_ARGS}"
   elif [ -f pom.xml ]; then
     if [ "${BUILD_TARGET}" = "" ]; then
       BUILD_TARGET="compile"
