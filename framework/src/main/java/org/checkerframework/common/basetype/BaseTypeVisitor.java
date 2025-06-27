@@ -2502,7 +2502,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
     super.scan(switchExpressionTree, null);
 
-    checkSlowTypechecking(tree, startSlowTypeCheckingTree, startMillis);
+    checkSlowTypechecking(switchExpressionTree, startSlowTypeCheckingTree, startMillis);
   }
 
   // **********************************************************************
