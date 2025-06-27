@@ -52,8 +52,7 @@ nonjunit_job(canary_version)
 inference_job_split(canary_version)
 
 # Unlimited fetchDepth (0) for misc_jobs, because of need to make contributors.tex .
-# The misc_jdk11 job is failing due to Error Prone.
-# misc_job(11)
+misc_job(11)
 misc_job(17)
 misc_job(21)
 misc_job(24)
