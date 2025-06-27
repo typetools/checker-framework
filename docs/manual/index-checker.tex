@@ -800,30 +800,30 @@ warnings:
 
 \sectionAndLabel{Support for mutable-length data structures}{index-mutable-length}
 
-The Index Checker has been extended to support mutable-length data structures 
-like {\tt List}, addressing challenges related to mutation and aliasing. It permits 
-safe operations such as growing a collection while restricting operations that may 
+The Index Checker has been extended to support mutable-length data structures
+like {\tt List}, addressing challenges related to mutation and aliasing. It permits
+safe operations such as growing a collection while restricting operations that may
 reduce its length, in order to maintain index safety.
 
-A set of type qualifiers (Figure~\ref{index-mutability-lattice}) on collection references 
-encodes the allowed mutation behavior. These qualifiers prevent unsafe index usage by 
+A set of type qualifiers (Figure~\ref{index-mutability-lattice}) on collection references
+encodes the allowed mutation behavior. These qualifiers prevent unsafe index usage by
 distinguishing references that may grow, shrink, or remain unchanged.
 
 \begin{description}
 \item[\refqualclass{checker/index/qual}{UnShrinkableRef}]
-  The default qualifier for mutable-length structures. It prohibits shrinking the 
+  The default qualifier for mutable-length structures. It prohibits shrinking the
   collection through this reference, though mutations via other aliases may still occur.
 
 \item[\refqualclass{checker/index/qual}{GrowOnly}]
-  Allows safe append operations (e.g., \emph{add()}) on collections, 
+  Allows safe append operations (e.g., \emph{add()}) on collections,
   but disallows element removals.
 
 \item[\refqualclass{checker/index/qual}{Shrinkable}]
-  Permits element-removing methods such as \emph{remove()} and \emph{clear()}, and 
+  Permits element-removing methods such as \emph{remove()} and \emph{clear()}, and
   indicates that other aliases might also shrink the collection.
 
 \item[\refqualclass{checker/index/qual}{UncheckedShrinkable}]
-  Permits shrinking but disables index safety guarantees. It is intended for complex 
+  Permits shrinking but disables index safety guarantees. It is intended for complex
   aliasing cases or during incremental type adoption.
 \end{description}
 
