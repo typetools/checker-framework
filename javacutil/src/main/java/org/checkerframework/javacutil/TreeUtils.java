@@ -1732,7 +1732,7 @@ public final class TreeUtils {
    * @return ExpressionTree of {@code idx} if tree is {@code Collection.get(idx)} and null else
    */
   public static @Nullable ExpressionTree getIdxForGetCall(Tree tree) {
-    if (tree.getKind() == Tree.Kind.METHOD_INVOCATION
+    if ((tree instanceof MethodInvocationTree)
         && isNamedMethodCall("get", (MethodInvocationTree) tree)) {
       return ((MethodInvocationTree) tree).getArguments().get(0);
     }
@@ -1746,7 +1746,7 @@ public final class TreeUtils {
    * @return whether the given tree is of the form object.size()
    */
   public static boolean isSizeAccess(Tree tree) {
-    return tree.getKind() == Tree.Kind.METHOD_INVOCATION
+    return (tree instanceof MethodInvocationTree)
         && isNamedMethodCall("size", (MethodInvocationTree) tree);
   }
 

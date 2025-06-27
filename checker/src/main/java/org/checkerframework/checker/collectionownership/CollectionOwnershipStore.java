@@ -41,7 +41,7 @@ public class CollectionOwnershipStore extends CFAbstractStore<CFValue, Collectio
   }
 
   /*
-   * Keep {@code OwningCollection} fields in the store.
+   * Keep OwningCollection fields in the store.
    */
   @Override
   protected CFValue newFieldValueAfterMethodCall(

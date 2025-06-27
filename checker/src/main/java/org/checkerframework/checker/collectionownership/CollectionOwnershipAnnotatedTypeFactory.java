@@ -254,19 +254,18 @@ public class CollectionOwnershipAnnotatedTypeFactory
   }
 
   /**
-   * Whether the given tree is a resource collection field that is {@code @OwningCollection} by
+   * Whether the given element is a resource collection field that is {@code @OwningCollection} by
    * declaration, which is the default behavior, i.e. with no different collection ownership
    * annotation.
    *
-   * @param tree the tree
-   * @return true if the tree is a resource collection field that is {@code @OwningCollection} by
+   * @param elt the element
+   * @return true if the element is a resource collection field that is {@code @OwningCollection} by
    *     declaration
    */
-  public boolean isOwningCollectionField(Tree tree) {
-    if (tree == null) return false;
-    if (isResourceCollection(tree)) {
-      Element elt = TreeUtils.elementFromTree(tree);
-      if (elt != null && elt.getKind().isField()) {
+  public boolean isOwningCollectionField(Element elt) {
+    if (elt == null) return false;
+    if (isResourceCollection(elt.asType())) {
+      if (elt.getKind().isField()) {
         AnnotatedTypeMirror atm = getAnnotatedType(elt);
         CollectionOwnershipType fieldType =
             getCoType(Collections.singletonList(atm.getEffectiveAnnotationInHierarchy(TOP)));

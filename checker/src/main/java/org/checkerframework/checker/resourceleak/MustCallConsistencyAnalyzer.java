@@ -1800,7 +1800,7 @@ public class MustCallConsistencyAnalyzer {
     if (enclosingMethodTree == null) {
       // The assignment is taking place in a variable declaration's
       // initializer or in an initializer block.
-      if (node.getTree().getKind() == Tree.Kind.VARIABLE) {
+      if (node.getTree() instanceof VariableTree) {
         // assignment is a field initializer. Is always permitted.
         // switch (rhsCoType) {
         //   case OwningCollectionWithoutObligation:
@@ -3279,7 +3279,7 @@ public class MustCallConsistencyAnalyzer {
         }
         node = nodeIterator.next();
         isAssignmentOfIterVar = false;
-        if ((node instanceof AssignmentNode) && node.getTree().getKind() == Tree.Kind.VARIABLE) {
+        if ((node instanceof AssignmentNode) && (node.getTree() instanceof VariableTree)) {
           loopVarNode = ((AssignmentNode) node).getTarget();
           VariableTree iterVarDecl = (VariableTree) node.getTree();
           isAssignmentOfIterVar = iterVarDecl.getName() == loopVariable.getName();
@@ -3488,7 +3488,7 @@ public class MustCallConsistencyAnalyzer {
     // Add an obligation for the element of the collection iterated over
 
     Obligation collectionElementObligation = Obligation.fromTree(collectionElement);
-    if (collectionElement.getKind() == Tree.Kind.VARIABLE) {
+    if (collectionElement instanceof VariableTree) {
       VariableElement varElt = TreeUtils.elementFromDeclaration((VariableTree) collectionElement);
       boolean hasMustCallAlias = cmAtf.hasMustCallAlias(varElt);
       collectionElementObligation =

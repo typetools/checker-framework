@@ -507,14 +507,14 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
           && TreeUtils.isSizeAccess(condition.getRightOperand())) {
         ExpressionTree methodSelect =
             ((MethodInvocationTree) condition.getRightOperand()).getMethodSelect();
-        if (methodSelect.getKind() == Tree.Kind.MEMBER_SELECT) {
+        if (methodSelect instanceof MemberSelectTree) {
           MemberSelectTree mst = (MemberSelectTree) methodSelect;
           Element elt = TreeUtils.elementFromTree(mst.getExpression());
           if (ResourceLeakUtils.isCollection(elt, atypeFactory)) {
             return getNameFromExpressionTree(mst.getExpression());
           }
         }
-      } else if (condition.getRightOperand().getKind() == Tree.Kind.IDENTIFIER) {
+      } else if (condition.getRightOperand() instanceof IdentifierTree) {
         return getNameFromExpressionTree(condition.getRightOperand());
       }
     }
@@ -725,16 +725,15 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
    */
   private boolean isIthCollectionElement(Tree tree, Name index) {
     if (tree == null || index == null) return false;
-    if (tree.getKind() == Tree.Kind.METHOD_INVOCATION
+    if (tree instanceof MethodInvocationTree
         && index == getNameFromExpressionTree(TreeUtils.getIdxForGetCall(tree))) {
       MethodInvocationTree mit = (MethodInvocationTree) tree;
       ExpressionTree methodSelect = mit.getMethodSelect();
-      assert methodSelect.getKind() == Tree.Kind.MEMBER_SELECT
-          : "method selection of object.get() expected to be memberSelectTree, but is "
-              + methodSelect.getKind();
-      MemberSelectTree mst = (MemberSelectTree) methodSelect;
-      Element receiverElt = TreeUtils.elementFromTree(mst.getExpression());
-      return ResourceLeakUtils.isCollection(receiverElt, atypeFactory);
+      if (methodSelect instanceof MemberSelectTree) {
+        MemberSelectTree mst = (MemberSelectTree) methodSelect;
+        Element receiverElt = TreeUtils.elementFromTree(mst.getExpression());
+        return ResourceLeakUtils.isCollection(receiverElt, atypeFactory);
+      }
     }
     return false;
   }

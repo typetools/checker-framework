@@ -222,24 +222,24 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     }
   }
 
-  /*
-   * Changes the type parameter annotations of collections and iterators to @MustCall if they are currently
-   * @MustCallUnknown.
+  /**
+   * Changes the type parameter annotations of collections and iterators to {@code @MustCall} if
+   * they are currently {@code @MustCallUnknown}.
    *
    * <p>This is necessary, as the type variable upper bounds for collections is
    * {@code @MustCallUnknown}. When the type variable is a generic or wildcard with no upper bound,
    * the type parameter does default to {@code @MustCallUnknown}, which is both unsound and
    * imprecise.
    *
-   * <p>This method changes the type parameter annotations for declared types directly. The other overload
-   * with access to {@code Element}s handles type parameter annotations for method return types and parameters,
-   * such that the changes are 'visible' at call-site as well as within the method. Changing this on the
-   * {@code Tree} is not sufficient.
-   * The reason that declared types are handled here is that for object initializations where the type
-   * parameter is left for inference, we don't want to change the type parameter annotation here, but wait
-   * for the inference instead, which instantiates it with the inferred type and corresponding annotation.
-   * {@code new Object<>()}
-   * Access to the {@code Tree} allows us to detect whether we have a new class tree without type parameters.
+   * <p>This method changes the type parameter annotations for declared types directly. The other
+   * overload with access to {@code Element}s handles type parameter annotations for method return
+   * types and parameters, such that the changes are 'visible' at call-site as well as within the
+   * method. Changing this on the {@code Tree} is not sufficient. The reason that declared types are
+   * handled here is that for object initializations where the type parameter is left for inference,
+   * we don't want to change the type parameter annotation here, but wait for the inference instead,
+   * which instantiates it with the inferred type and corresponding annotation. {@code new
+   * Object<>()} Access to the {@code Tree} allows us to detect whether we have a new class tree
+   * without type parameters.
    */
   @Override
   public void addComputedTypeAnnotations(Tree tree, AnnotatedTypeMirror type, boolean useFlow) {
@@ -252,22 +252,22 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     }
   }
 
-  /*
-   * Changes the type parameter annotations of collections and iterators to @MustCall if they are currently
-   * @MustCallUnknown.
+  /**
+   * Changes the type parameter annotations of collections and iterators to {@code @MustCall} if
+   * they are currently {@code @MustCallUnknown}.
    *
    * <p>This is necessary, as the type variable upper bounds for collections is
    * {@code @MustCallUnknown}. When the type variable is a generic or wildcard with no upper bound,
    * the type parameter does default to {@code @MustCallUnknown}, which is both unsound and
    * imprecise.
    *
-   * <p>This method changes the type parameter annotations of {@code Element}s, which is the preferred
-   * way for method return types and parameters, such that the changes are 'visible' at call-site as well
-   * as within the method. The type parameter annotations at other places is handled in the overload of this
-   * method with access to the {@code Tree}. The reason is that for object initializations where the type
-   * parameter is left for inference, we don't want to change the type parameter annotation here, but wait
-   * for the inference instead, which instantiates it with the inferred type and corresponding annotation.
-   * {@code new Object<>()}
+   * <p>This method changes the type parameter annotations of {@code Element}s, which is the
+   * preferred way for method return types and parameters, such that the changes are 'visible' at
+   * call-site as well as within the method. The type parameter annotations at other places is
+   * handled in the overload of this method with access to the {@code Tree}. The reason is that for
+   * object initializations where the type parameter is left for inference, we don't want to change
+   * the type parameter annotation here, but wait for the inference instead, which instantiates it
+   * with the inferred type and corresponding annotation. {@code new Object<>()}
    */
   @Override
   public void addComputedTypeAnnotations(Element elt, AnnotatedTypeMirror type) {
