@@ -7,7 +7,7 @@ plugins {
   id 'de.undercouch.download' version '5.6.0'
   id 'java'
   // https://github.com/tbroyer/gradle-errorprone-plugin
-  id 'net.ltgt.errorprone' version '4.2.0'
+  id 'net.ltgt.errorprone' version '4.3.0'
   // https://docs.gradle.org/current/userguide/eclipse_plugin.html
   id 'eclipse'
 
@@ -57,7 +57,7 @@ ext {
     lombok          : '1.18.38',
     hashmapUtil : '0.0.1',
     reflectionUtil : '1.1.5',
-    plumeUtil : '1.10.1',
+    plumeUtil : '1.11.0',
 
     // https://mvnrepository.com/artifact/com.google.errorprone/error_prone_core
     // If you update this:
@@ -449,8 +449,8 @@ allprojects { currentProj ->
         }
       }
 
-      // Use JDK 21 because that is what used in the release.  If you update this line, also update,
-      // JAVA_HOME in docs/developer/release/release_vars.py.
+      // With 'useJdk21Compiler' property, use JDK 21 because the release uses it.
+      // If you update this line, also update JAVA_HOME in docs/developer/release/release_vars.py.
       boolean jdk21Compiler = project.getProperties().getOrDefault('useJdk21Compiler', false)
       if (jdk21Compiler) {
         // This uses the Java 21 compiler to compile all code.

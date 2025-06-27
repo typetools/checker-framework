@@ -7,5 +7,5 @@ all default: \
  Dockerfile-ubuntu-jdk24 Dockerfile-ubuntu-jdk24-plus \
  Dockerfile-ubuntu-jdk25 Dockerfile-ubuntu-jdk25-plus
 
-%: %.m4 Dockerfile-contents-ubuntu-base.txt
+%: %.m4 Dockerfile-contents-ubuntu-base.txt Dockerfile-contents-ubuntu-base.txt Dockerfile-contents-ubuntu-plus.txt
 	m4 $< > $@
