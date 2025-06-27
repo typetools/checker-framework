@@ -449,7 +449,7 @@ allprojects { currentProj ->
         }
       }
 
-      // Use JDK 21 because that is what used in the release.  If you update this line, also update,
+      // Use JDK 21 because that is what used in the release.  If you update this line, also update
       // JAVA_HOME in docs/developer/release/release_vars.py.
       boolean jdk21Compiler = project.getProperties().getOrDefault('useJdk21Compiler', false)
       if (jdk21Compiler) {
