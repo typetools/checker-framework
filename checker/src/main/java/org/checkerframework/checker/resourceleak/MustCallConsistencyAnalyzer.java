@@ -811,6 +811,10 @@ public class MustCallConsistencyAnalyzer {
     if (hasCreatesCollectionObligation) {
       Node receiverNode = node.getTarget().getReceiver();
       receiverNode = removeCastsAndGetTmpVarIfPresent(receiverNode);
+      boolean receiverIsResourceCollection = coAtf.isResourceCollection(receiverNode.getTree());
+      if (!receiverIsResourceCollection) {
+        return;
+      }
       boolean receiverIsOwningField =
           coAtf.isOwningCollectionField(TreeUtils.elementFromTree(receiverNode.getTree()));
 
