@@ -121,18 +121,21 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
   public final AnnotationMirror POLY = AnnotationBuilder.fromClass(elements, PolyUpperBound.class);
 
   /** The @{@link UpperBoundLiteral}(-1) annotation. */
+  @SuppressWarnings("this-escape")
   public final AnnotationMirror NEGATIVEONE =
       new AnnotationBuilder(getProcessingEnv(), UpperBoundLiteral.class)
           .setValue("value", -1)
           .build();
 
   /** The @{@link UpperBoundLiteral}(0) annotation. */
+  @SuppressWarnings("this-escape")
   public final AnnotationMirror ZERO =
       new AnnotationBuilder(getProcessingEnv(), UpperBoundLiteral.class)
           .setValue("value", 0)
           .build();
 
   /** The @{@link UpperBoundLiteral}(1) annotation. */
+  @SuppressWarnings("this-escape")
   public final AnnotationMirror ONE =
       new AnnotationBuilder(getProcessingEnv(), UpperBoundLiteral.class)
           .setValue("value", 1)
@@ -158,6 +161,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
   private final IndexMethodIdentifier imf;
 
   /** Create a new UpperBoundAnnotatedTypeFactory. */
+  @SuppressWarnings("this-escape")
   public UpperBoundAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
 

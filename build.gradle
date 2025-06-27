@@ -7,7 +7,7 @@ plugins {
   id 'de.undercouch.download' version '5.6.0'
   id 'java'
   // https://github.com/tbroyer/gradle-errorprone-plugin
-  id 'net.ltgt.errorprone' version '4.2.0'
+  id 'net.ltgt.errorprone' version '4.3.0'
   // https://docs.gradle.org/current/userguide/eclipse_plugin.html
   id 'eclipse'
 
@@ -57,7 +57,7 @@ ext {
     lombok          : '1.18.38',
     hashmapUtil : '0.0.1',
     reflectionUtil : '1.1.5',
-    plumeUtil : '1.10.1',
+    plumeUtil : '1.11.0',
 
     // https://mvnrepository.com/artifact/com.google.errorprone/error_prone_core
     // If you update this:
@@ -518,15 +518,10 @@ allprojects { currentProj ->
       // -options: To not get a warning about missing bootstrap classpath (when using Java 9 and `-source 8`).
       // -fallthrough: Don't check fallthroughs.  Instead, use Error Prone.  Its
       //   warnings are suppressible with a "// fall through" comment.
-      String lint = '-Xlint:-options,-fallthrough'
-      if (isJava21orHigher || jdk21Compiler || jdkTestVersion > 20) {
-        // TODO: Ignore this-escape warnings for now; perhaps review and suppress each one later.
-        lint +=',-this-escape'
-      }
       options.compilerArgs += [
         '-g',
         '-Werror',
-        lint,
+        '-Xlint:-options,-fallthrough',
         '-Xlint',
       ]
 

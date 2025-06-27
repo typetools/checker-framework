@@ -113,6 +113,7 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    *
    * @param checker the type-checker associated with this type factory
    */
+  @SuppressWarnings("this-escape")
   public SignatureAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
 

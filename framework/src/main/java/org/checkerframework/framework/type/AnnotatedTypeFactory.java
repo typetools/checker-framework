@@ -568,6 +568,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *
    * @param checker the {@link SourceChecker} to which this factory belongs
    */
+  @SuppressWarnings("this-escape")
   public AnnotatedTypeFactory(BaseTypeChecker checker) {
     uid = ++uidCounter;
     this.processingEnv = checker.getProcessingEnvironment();

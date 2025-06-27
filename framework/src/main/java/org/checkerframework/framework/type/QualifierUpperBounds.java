@@ -35,6 +35,7 @@ public class QualifierUpperBounds {
    * Creates a {@link QualifierUpperBounds} from the given checker, using that checker to determine
    * the annotations that are in the type hierarchy.
    */
+  @SuppressWarnings("this-escape")
   public QualifierUpperBounds(AnnotatedTypeFactory typeFactory) {
     this.atypeFactory = typeFactory;
     this.typeKinds = new EnumMap<>(TypeKind.class);
