@@ -240,7 +240,7 @@ public final class CFGVisualizeLauncher {
         "builder:required.method.not.called",
         "mustcall:assignment"
       }) // Won't be needed in JDK 11+ with use of "OutputStream.nullOutputStream()".
-      @MustCall() OutputStream nullOS =
+      @MustCall OutputStream nullOS =
           // In JDK 11+, this can be just "OutputStream.nullOutputStream()".
           new OutputStream() {
             @Override

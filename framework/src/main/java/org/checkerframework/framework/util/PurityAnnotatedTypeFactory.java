@@ -11,6 +11,7 @@ import org.checkerframework.framework.qual.PurityUnqualified;
 /** AnnotatedTypeFactory for the {@link PurityChecker}. */
 public class PurityAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
+  @SuppressWarnings("this-escape")
   public PurityAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     this.postInit();

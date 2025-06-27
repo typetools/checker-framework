@@ -207,6 +207,7 @@ public class TestConfigurationBuilder {
    *
    * @param initialConfig initial configuration for the newly-created builder
    */
+  @SuppressWarnings("this-escape")
   public TestConfigurationBuilder(TestConfiguration initialConfig) {
     this.diagnosticFiles = new ArrayList<>(initialConfig.getDiagnosticFiles());
     this.testSourceFiles = new ArrayList<>(initialConfig.getTestSourceFiles());

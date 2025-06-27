@@ -28,6 +28,7 @@ public abstract class AccumulationChecker extends BaseTypeChecker {
   private final EnumSet<AliasAnalysis> aliasAnalyses;
 
   /** Constructs a new AccumulationChecker. */
+  @SuppressWarnings("this-escape")
   protected AccumulationChecker() {
     super();
     this.aliasAnalyses = createAliasAnalyses();

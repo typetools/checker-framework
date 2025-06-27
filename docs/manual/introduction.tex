@@ -813,7 +813,10 @@ Miscellaneous debugging options; see Section~\ref{creating-debugging-options-mis
 \item
  \<-AslowTypecheckingSeconds=N>
 Print a warning for any program construct, such as a method or class, whose
-type-checking takes more than N seconds (default 30).
+type-checking takes more than N seconds (default 45).
+Often, generic type inference is the slowest part of type-checking, and you
+can significantly speed up type-checking by explicitly writing a few
+generic type arguments.
 
 \item
  \<-Aversion>

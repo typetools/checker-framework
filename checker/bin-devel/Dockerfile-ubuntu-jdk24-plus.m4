@@ -13,6 +13,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 && apt -y install \
   openjdk-24-jdk \
 && update-java-alternatives -s java-1.24.0-openjdk-amd64
+ENV JAVA24_HOME=/usr/lib/jvm/java-24-openjdk-amd64
 
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt autoremove \

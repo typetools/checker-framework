@@ -374,6 +374,7 @@ public class NullnessAnnotatedTypeFactory
    *
    * @param checker the associated {@link NullnessChecker}
    */
+  @SuppressWarnings("this-escape")
   public NullnessAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
 

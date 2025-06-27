@@ -16,6 +16,7 @@ public class DisbarUseTypeFactory extends BaseAnnotatedTypeFactory {
    *
    * @param checker the checker
    */
+  @SuppressWarnings("this-escape")
   public DisbarUseTypeFactory(BaseTypeChecker checker) {
     super(checker);
     postInit();
