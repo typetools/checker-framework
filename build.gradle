@@ -50,14 +50,14 @@ ext {
   gradleRunsOnJava24orHigher = JavaVersion.current() >= JavaVersion.VERSION_24
   // The JDK for running tests: the jdkTestVersion property or if not set, JavaVersion.current()
   if (project.getProperties().containsKey('jdkTestVersion')) {
-    jdkTestVersion = Integer.valueOf(project.getProperties().get('jdkTestVersion'))
+    testJdkVersion = Integer.valueOf(project.getProperties().get('jdkTestVersion'))
   } else {
-    jdkTestVersion = Integer.valueOf(JavaVersion.current().getMajorVersion())
+    testJdkVersion = Integer.valueOf(JavaVersion.current().getMajorVersion())
   }
   // With 'useJdk21Compiler' property, use JDK 21 to compile all code because the release does.
   // If you update this line, also update JAVA_HOME in docs/developer/release/release_vars.py.
   boolean jdk21Compiler = project.getProperties().getOrDefault('useJdk21Compiler', false)
-  compilerJdkVersion = jdk21Compiler ? 21 : jdkTestVersion
+  compilerJdkVersion = jdk21Compiler ? 21 : testJdkVersion
   compilerRunsOnJava17orHigher = compilerJdkVersion >= 17
 
   // As of 2025-04-28 (Lombok 1.18.38), delombok supports JDK 24-ea but not JDK 24 proper; see https://projectlombok.org/changelog .
@@ -444,7 +444,7 @@ allprojects { currentProj ->
 
       java {
         toolchain {
-          languageVersion = JavaLanguageVersion.of(jdkTestVersion)
+          languageVersion = JavaLanguageVersion.of(testJdkVersion)
         }
       }
 
@@ -454,7 +454,7 @@ allprojects { currentProj ->
 
       tasks.withType(JavaExec).configureEach {
         javaLauncher = javaToolchains.launcherFor {
-          languageVersion = JavaLanguageVersion.of(jdkTestVersion)
+          languageVersion = JavaLanguageVersion.of(testJdkVersion)
         }
       }
 
