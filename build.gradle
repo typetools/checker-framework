@@ -14,7 +14,9 @@ plugins {
   id 'groovy' // needed for formatting Gradle files
   // Code formatting; defines targets "spotlessApply" and "spotlessCheck".
   // https://github.com/diffplug/spotless/tags ; see tags starting "gradle/"
-  // Only works on JDK 11+ (even including the plugin crashes Gradle on JDK 8).
+  // Only works on JDK 11+ (even including the plugin crashes Gradle on JDK 8);
+  // shell scripts in checker/bin-devel/ ensure spotless isn't called unless
+  // the JDK is 17 or later.
   id 'com.diffplug.spotless' version '7.0.4'
 }
 
@@ -26,7 +28,22 @@ repositories {
 
 ext {
   // Different JDKs may be used to run Gradle, compile the Checker Framework, and run the CF tests.
-  // Also see "Ways to specifiy the JDK used by different tasks/Gradle", below.
+
+  // Ways to specifiy the JDK used by different tasks/Gradle:
+  //
+  // 1. Run Gradle using JDK 21:
+  // mkdir ~/.gradle && echo "org.gradle.java.home=/usr/lib/jvm/java-21-openjdk-amd64" >> ~/.gradle/gradle.properties
+  //
+  // 2. Use JDK 24 for all Java tasks: (24 could be replaced with any version.)
+  // export ORG_GRADLE_PROJECT_jdkTestVersion=24
+  // or
+  // ./gradlew sometask -PjdkTestVersion=24
+  //
+  // 3. Compile the Checker Framework using JDK 21: (Overrides the version specified in `jdkTestVersion` for compiling only.)
+  // export ORG_GRADLE_PROJECT_useJdk21Compiler=true
+  // or
+  // ./gradlew sometask -PuseJdk21Compiler=true
+
   gradleRunsOnJava17orHigher = JavaVersion.current() >= JavaVersion.VERSION_17
   gradleRunsOnJava21orHigher = JavaVersion.current() >= JavaVersion.VERSION_21
   gradleRunsOnJava22orHigher = JavaVersion.current() >= JavaVersion.VERSION_22
@@ -37,16 +54,10 @@ ext {
   } else {
     jdkTestVersion = Integer.valueOf(JavaVersion.current().getMajorVersion())
   }
-  // With 'useJdk21Compiler' property, use JDK 21 because the release uses it.
+  // With 'useJdk21Compiler' property, use JDK 21 to compile all code because the release does.
   // If you update this line, also update JAVA_HOME in docs/developer/release/release_vars.py.
   boolean jdk21Compiler = project.getProperties().getOrDefault('useJdk21Compiler', false)
-  if (jdk21Compiler) {
-    // This uses the Java 21 compiler to compile all code.
-    //  https://docs.gradle.org/current/userguide/toolchains.html
-    compilerJdkVersion =  21
-  } else {
-    compilerJdkVersion = jdkTestVersion
-  }
+  compilerJdkVersion = jdk21Compiler ? 21 : jdkTestVersion
   compilerRunsOnJava17orHigher = compilerJdkVersion >= 17
 
   // As of 2025-04-28 (Lombok 1.18.38), delombok supports JDK 24-ea but not JDK 24 proper; see https://projectlombok.org/changelog .
@@ -267,7 +278,6 @@ allprojects { currentProj ->
           'tests/*record*/'
         ]
       }
-
       if (!gradleRunsOnJava21orHigher) {
         doNotFormat += ['tests/**/java21/']
       }
@@ -432,21 +442,6 @@ allprojects { currentProj ->
     tasks.withType(JavaCompile) { compilationTask ->
       dependsOn(':installGitHooks')
 
-      // Ways to specifiy the JDK used by different tasks/Gradle:
-      //
-      // 1. Run Gradle using JDK 21:
-      // mkdir ~/.gradle && echo "org.gradle.java.home=/usr/lib/jvm/java-21-openjdk-amd64" >> ~/.gradle/gradle.properties
-      //
-      // 2. Use JDK 24 for all Java tasks: (24 could be replaced with any version.)
-      // export ORG_GRADLE_PROJECT_jdkTestVersion=24
-      // or
-      // ./gradlew sometask -PjdkTestVersion=24
-      //
-      // 3. Compile the Checker Framework using JDK 21: (Overrides the version specified in `jdkTestVersion` for compiling only.)
-      // export ORG_GRADLE_PROJECT_useJdk21Compiler=true
-      // or
-      //./gradlew sometask -PuseJdk21Compiler=true
-
       java {
         toolchain {
           languageVersion = JavaLanguageVersion.of(jdkTestVersion)
@@ -460,17 +455,6 @@ allprojects { currentProj ->
       tasks.withType(JavaExec).configureEach {
         javaLauncher = javaToolchains.launcherFor {
           languageVersion = JavaLanguageVersion.of(jdkTestVersion)
-        }
-      }
-
-      // With 'useJdk21Compiler' property, use JDK 21 because the release uses it.
-      // If you update this line, also update JAVA_HOME in docs/developer/release/release_vars.py.
-      boolean jdk21Compiler = project.getProperties().getOrDefault('useJdk21Compiler', false)
-      if (jdk21Compiler) {
-        // This uses the Java 21 compiler to compile all code.
-        //  https://docs.gradle.org/current/userguide/toolchains.html
-        javaCompiler = javaToolchains.compilerFor {
-          languageVersion = JavaLanguageVersion.of(21)
         }
       }
 

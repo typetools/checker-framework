@@ -120,7 +120,7 @@ def testDataflowAnalysis(taskName, dirName, className, diff) {
     workingDir = "tests/${dirName}"
     if (!JavaVersion.current().java9Compatible) {
       jvmArgs += "-Xbootclasspath/p:${configurations.javacJar.asPath}".toString()
-    } else if (JavaVersion.current() > JavaVersion.VERSION_11) {
+    } else if (jdkTestVersion > 11) {
       jvmArgs += [
         '--add-opens',
         'jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED',
@@ -156,7 +156,7 @@ testDataflowAnalysis("constantPropagationTest", "constant-propagation", "constan
 testDataflowAnalysis("issue3447Test", "issue3447", "livevar.LiveVariable", false)
 testDataflowAnalysis("liveVariableTest", "live-variable", "livevar.LiveVariable", true)
 testDataflowAnalysis("reachingDefinitionTest", "reachingdef", "reachingdef.ReachingDefinition", true)
-if (JavaVersion.current() >= JavaVersion.VERSION_22) {
+if (jdkTestVersion >= 22) {
   testDataflowAnalysis("unnamedPatternTest", "java22/unnamed-pattern", "reachingdef.ReachingDefinition", true)
 }
 
