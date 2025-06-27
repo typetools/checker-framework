@@ -392,6 +392,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @param assumeAssertionsEnabled can assertions be assumed to be enabled?
    * @param env annotation processing environment containing type utilities
    */
+  @SuppressWarnings("this-escape")
   public CFGTranslationPhaseOne(
       TreeBuilder treeBuilder,
       AnnotationProvider annotationProvider,

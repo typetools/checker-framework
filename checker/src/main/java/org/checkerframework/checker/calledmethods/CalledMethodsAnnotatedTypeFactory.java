@@ -67,6 +67,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
    * The {@link java.util.Collections#singletonList} method. It is treated specially by {@link
    * #adjustMethodNameUsingValueChecker}.
    */
+  @SuppressWarnings("this-escape")
   private final ExecutableElement collectionsSingletonList =
       TreeUtils.getMethod("java.util.Collections", "singletonList", 1, getProcessingEnv());
 
@@ -95,6 +96,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
    *
    * @param checker the checker
    */
+  @SuppressWarnings("this-escape")
   public CalledMethodsAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker, CalledMethods.class, CalledMethodsBottom.class, CalledMethodsPredicate.class);
 

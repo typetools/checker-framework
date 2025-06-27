@@ -116,6 +116,7 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
    *
    * @param checker the checker associated with this type factory
    */
+  @SuppressWarnings("this-escape")
   public RLCCalledMethodsAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     this.rlc = ResourceLeakUtils.getResourceLeakChecker(checker);

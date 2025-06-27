@@ -30,6 +30,7 @@ public class ReturnsReceiverAnnotatedTypeFactory extends BaseAnnotatedTypeFactor
    *
    * @param checker the type-checker associated with this factory
    */
+  @SuppressWarnings("this-escape")
   public ReturnsReceiverAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     THIS_ANNOTATION = AnnotationBuilder.fromClass(elements, This.class);
