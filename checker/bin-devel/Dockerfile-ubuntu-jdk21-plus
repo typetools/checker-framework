@@ -24,8 +24,8 @@ ENV LANG=en_US.UTF-8 \
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt -qqy update \
 && apt -y install \
-  openjdk-21-jdk \
-&& export JAVA21_HOME=/usr/lib/jvm/java-21-openjdk-amd64
+  openjdk-21-jdk
+ENV JAVA21_HOME=/usr/lib/jvm/java-21-openjdk-amd64
 
 # Known good combinations of JTReg and the JDK appear at https://builds.shipilev.net/jtreg/ .
 
@@ -89,6 +89,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 && apt -y install \
   openjdk-21-jdk \
 && update-java-alternatives -s java-1.21.0-openjdk-amd64
+ENV JAVA21_HOME=/usr/lib/jvm/java-21-openjdk-amd64
 
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt autoremove \
