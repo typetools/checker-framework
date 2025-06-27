@@ -50,14 +50,8 @@ public class CollectionOwnershipStore extends CFAbstractStore<CFValue, Collectio
       CFValue value) {
     CFValue superResult = super.newFieldValueAfterMethodCall(fieldAccess, atf, value);
     if (superResult == null) {
-      if (atypeFactory.isResourceCollection(fieldAccess.getField().asType())) {
-        switch (atypeFactory.getCoType(value.getAnnotations())) {
-          case OwningCollection:
-          case OwningCollectionWithoutObligation:
-            return value;
-          default:
-            return superResult;
-        }
+      if (atypeFactory.isOwningCollectionField(fieldAccess.getField())) {
+        return value;
       }
     }
     return superResult;
