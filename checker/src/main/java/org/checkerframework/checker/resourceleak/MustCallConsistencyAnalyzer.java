@@ -810,7 +810,9 @@ public class MustCallConsistencyAnalyzer {
         coAtf.getDeclAnnotation(methodElement, CreatesCollectionObligation.class) != null;
     if (hasCreatesCollectionObligation) {
       Node receiverNode = node.getTarget().getReceiver();
-      boolean receiverIsOwningField = coAtf.isOwningCollectionField(receiverNode.getTree());
+      receiverNode = removeCastsAndGetTmpVarIfPresent(receiverNode);
+      boolean receiverIsOwningField =
+          coAtf.isOwningCollectionField(TreeUtils.elementFromTree(receiverNode.getTree()));
 
       CollectionOwnershipStore coStore = coAtf.getStoreBefore(node);
       CollectionOwnershipType receiverType = coAtf.getCoType(receiverNode, coStore);
@@ -849,7 +851,7 @@ public class MustCallConsistencyAnalyzer {
    * @param node the field access to check
    */
   private void checkOwningResourceCollectionFieldAccess(FieldAccessNode node) {
-    if (coAtf.isOwningCollectionField(node.getTree())) {
+    if (coAtf.isOwningCollectionField(node.getElement())) {
       String receiverString = receiverAsString(node);
       boolean isSelfAccess = "this".equals(receiverString);
       boolean isSuperAccess = "super".equals(receiverString);
@@ -1386,7 +1388,7 @@ public class MustCallConsistencyAnalyzer {
         return false;
       } else {
         // return is @OwningCollection. Report error if @OwningCollection field.
-        if (coAtf.isOwningCollectionField(node.getResult().getTree())) {
+        if (coAtf.isOwningCollectionField(TreeUtils.elementFromTree(node.getResult().getTree()))) {
           checker.reportError(
               node.getTree(),
               "transfer.owningcollection.field.ownership",
@@ -1850,7 +1852,7 @@ public class MustCallConsistencyAnalyzer {
           // but if rhs is owning, demand CreatesMustCallFor("this")
           if (rhsCoType == CollectionOwnershipType.OwningCollection) {
             checkEnclosingMethodIsCreatesMustCallFor(lhs, enclosingMethodTree);
-            if (coAtf.isOwningCollectionField(lhs.getTree())) {
+            if (coAtf.isOwningCollectionField(TreeUtils.elementFromTree(lhs.getTree()))) {
               Set<Obligation> obligationsForVar = getObligationsForVar(obligations, rhs.getTree());
               for (Obligation obligation : obligationsForVar) {
                 obligations.remove(obligation);

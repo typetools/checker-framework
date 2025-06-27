@@ -83,7 +83,8 @@ public class CollectionOwnershipTransfer
         case OwningCollectionWithoutObligation:
           JavaExpression rhsJx = JavaExpression.fromNode(rhs);
           if (node.isDesugaredFromEnhancedArrayForLoop()
-              || atypeFactory.isOwningCollectionField(node.getExpression().getTree())) {
+              || atypeFactory.isOwningCollectionField(
+                  TreeUtils.elementFromTree(node.getExpression().getTree()))) {
             replaceInStores(res, lhsJx, atypeFactory.NOTOWNINGCOLLECTION);
           } else {
             replaceInStores(res, rhsJx, atypeFactory.NOTOWNINGCOLLECTION);

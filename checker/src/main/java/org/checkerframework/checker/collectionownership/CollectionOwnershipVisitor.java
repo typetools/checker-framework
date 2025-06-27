@@ -74,7 +74,7 @@ public class CollectionOwnershipVisitor
 
   @Override
   public Void visitVariable(VariableTree tree, Void p) {
-    if (atypeFactory.isOwningCollectionField(tree)) {
+    if (atypeFactory.isOwningCollectionField(TreeUtils.elementFromDeclaration(tree))) {
       checkOwningCollectionField(tree);
     }
     return super.visitVariable(tree, p);
