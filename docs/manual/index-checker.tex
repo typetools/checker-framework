@@ -819,23 +819,17 @@ and defining a qualifier hierarchy.
   call a removal method is forbidden.
 
 \item[\refqualclass{checker/index/qual}{Shrinkable}]
-  Allows calls to element-removing methods.
+  Allows calls to element-removing methods such as remove() and clear() on collections.
   However, this can reduce the length of the collection, so the checker takes extra precautions.
-  It typically requires code to re-establish index bounds after a mutation and
-  \emph{invalidates any previously inferred index facts} for the collection when a shrink operation occurs.
   Signifies that other aliases might shrink the collection.
-  It is used only when needed and should be annotated as @Shrinkable if you intend to call methods that
-  remove elements through it.
 
 \item[\refqualclass{checker/index/qual}{UncheckedShrinkable}]
-  @UncheckedShrinkable is a type checker that allows shrinking but \emph{doesn't guarantee} index safety.
+  Allows shrinking but \emph{doesn't guarantee} index safety.
   It assumes all indices are valid, even across mutations, and is used for cases where aliasing or
   mutation patterns are too complex for the current type system or during incremental adoption.
   This qualifier is rarely used in application code, as full checking is impractical. A reference
   annotated @UncheckedShrinkable is treated as potentially shrinkable but doesn't issue warnings for
-  index operations (making it the programmer’s responsibility to ensure safety). It can be cast to
-  @Shrinkable or vice versa, but it means relinquishing or reinstating compile-time guarantees.
-  Using @UncheckedShrinkable trades soundness for expedience.
+  index operations (making it the programmer’s responsibility to ensure safety).
 \end{description}
 
 \begin{figure}
