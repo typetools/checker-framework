@@ -209,8 +209,8 @@ function configure_and_exec_dljc {
     if [ ! -d "${GRADLECACHEDIR}" ]; then
       mkdir "${GRADLECACHEDIR}"
     fi
-    CLEAN_CMD="${GRADLE_EXEC} clean -g ${GRADLECACHEDIR} -Dorg.gradle.java.home=${JAVA_HOME} ${EXTRA_BUILD_ARGS}"
-    BUILD_CMD="${GRADLE_EXEC} clean ${BUILD_TARGET} -g ${GRADLECACHEDIR} -Dorg.gradle.java.home=${JAVA_HOME} ${EXTRA_BUILD_ARGS}"
+    CLEAN_CMD="${GRADLE_EXEC} clean -g ${GRADLECACHEDIR} -Dorg.gradle.java.home=${JAVA21_HOME} ${EXTRA_BUILD_ARGS}"
+    BUILD_CMD="${GRADLE_EXEC} clean ${BUILD_TARGET} -g ${GRADLECACHEDIR} -Dorg.gradle.java.home=${JAVA21_HOME} ${EXTRA_BUILD_ARGS}"
   elif [ -f pom.xml ]; then
     if [ "${BUILD_TARGET}" = "" ]; then
       BUILD_TARGET="compile"
@@ -277,9 +277,9 @@ function configure_and_exec_dljc {
   if [[ $DLJC_CLEAN_STATUS -ne 0 ]]; then
     WPI_RESULTS_AVAILABLE="dljc failed to clean with ${JDK_VERSION_ARG}"
     echo "${WPI_RESULTS_AVAILABLE}; see ${CLEAN_OUTPUT_FILE}"
-    echo "Contents of ${DIR}/dljc-out:"
+    echo "---------------- Contents of ${DIR}/dljc-out: ----------------"
     ls -al "${DIR}/dljc-out"
-    echo "End of contents of ${DIR}/dljc-out:"
+    echo "---------------- End of contents of ${DIR}/dljc-out: ----------------"
     WPI_RESULTS_AVAILABLE="${WPI_RESULTS_AVAILABLE}"$'\n'"${CLEAN_CMD}"$'\n'"$(cat "${CLEAN_OUTPUT_FILE}")"
     return
   fi
@@ -300,9 +300,9 @@ function configure_and_exec_dljc {
 
   export PATH="${PATH_BACKUP}"
 
-  echo "=== Start of DLJC standard out/err (${dljc_stdout}) ==="
+  echo "==== Start of DLJC standard out/err (${dljc_stdout}) ===="
   cat "${dljc_stdout}"
-  echo "=== End of DLJC standard out/err (${dljc_stdout}) ==="
+  echo "==== End of DLJC standard out/err (${dljc_stdout}) ===="
 
   # The wpi.py script in do-like-javac outputs the following text if no build/whole-program-inference directory
   # exists, which means that WPI produced no output. When that happens, the reason is usually that the Checker
