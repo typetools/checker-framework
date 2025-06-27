@@ -22,6 +22,7 @@ import org.plumelib.reflection.Signatures;
 /** Defines {@link #createSupportedTypeQualifiers}. */
 public class SubtypingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
+  @SuppressWarnings("this-escape")
   public SubtypingAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     postInit();

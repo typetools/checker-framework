@@ -35,6 +35,7 @@ public class OptionalImplAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * @param checker the {@link org.checkerframework.checker.optional.OptionalImplChecker} associated
    *     with this type factory
    */
+  @SuppressWarnings("this-escape")
   public OptionalImplAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     postInit();

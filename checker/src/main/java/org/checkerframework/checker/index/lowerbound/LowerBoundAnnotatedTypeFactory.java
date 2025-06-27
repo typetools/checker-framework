@@ -118,6 +118,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
    *
    * @param checker the type-checker
    */
+  @SuppressWarnings("this-escape")
   public LowerBoundAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     // Any annotations that are aliased to @NonNegative, @Positive, or @GTENegativeOne must also

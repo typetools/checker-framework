@@ -83,6 +83,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
   /** The @{@link UI} annotation. */
   protected final AnnotationMirror UI = AnnotationBuilder.fromClass(elements, UI.class);
 
+  @SuppressWarnings("this-escape")
   public GuiEffectTypeFactory(BaseTypeChecker checker, boolean spew) {
     // use true to enable flow inference, false to disable it
     super(checker, false);

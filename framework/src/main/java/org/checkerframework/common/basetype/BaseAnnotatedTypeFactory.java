@@ -13,6 +13,7 @@ import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 public class BaseAnnotatedTypeFactory
     extends GenericAnnotatedTypeFactory<CFValue, CFStore, CFTransfer, CFAnalysis> {
 
+  @SuppressWarnings("this-escape")
   public BaseAnnotatedTypeFactory(BaseTypeChecker checker, boolean useFlow) {
     super(checker, useFlow);
 
