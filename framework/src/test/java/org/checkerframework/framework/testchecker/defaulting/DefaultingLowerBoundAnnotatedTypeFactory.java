@@ -13,6 +13,7 @@ import org.checkerframework.framework.testchecker.defaulting.LowerBoundQual.LbTo
 
 public class DefaultingLowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
+  @SuppressWarnings("this-escape")
   public DefaultingLowerBoundAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     this.postInit();
