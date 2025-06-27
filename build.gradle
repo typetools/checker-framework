@@ -57,7 +57,7 @@ ext {
     lombok          : '1.18.38',
     hashmapUtil : '0.0.1',
     reflectionUtil : '1.1.5',
-    plumeUtil : '1.10.1',
+    plumeUtil : '1.11.0',
 
     // https://mvnrepository.com/artifact/com.google.errorprone/error_prone_core
     // If you update this:
