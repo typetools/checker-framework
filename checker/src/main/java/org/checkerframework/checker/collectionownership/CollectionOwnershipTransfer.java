@@ -51,6 +51,7 @@ public class CollectionOwnershipTransfer
    * Create a CollectionOwnershipTransfer.
    *
    * @param analysis the analysis
+   * @param checker the checker
    */
   public CollectionOwnershipTransfer(
       CollectionOwnershipAnalysis analysis, CollectionOwnershipChecker checker) {
