@@ -51,6 +51,8 @@ Section~\ref{index-annotating-fixed-size}).
 (2) Sequences that grow but do not shrink.  A program might use their
 \<add> operation, but not their \<remove> operation.  An example is a
 \<List> into which the program adds elements without removing any.
+Section~\ref{index-mutable-length} discusses checking of
+mutable-length sequences that do not shrink.
 
 To run the Index Checker, run either of these commands:
 
@@ -798,43 +800,51 @@ warnings:
 \end{Verbatim}
 
 
-\sectionAndLabel{Support for mutable-length data structures}{index-mutable-length}
+\sectionAndLabel{Support for mutable-length sequences}{index-mutable-length}
 
-The Index Checker has been extended to support mutable-length data structures
-like {\tt List}, addressing challenges related to mutation and aliasing. It permits
-safe operations such as growing a collection while restricting operations that may
-reduce its length, in order to maintain index safety.
+This section discusses sequences whose length can change, such as \<List>.
+If an index is valid and then a sequence is made longer, the index remains
+valid.  You must indicate which sequences only grow in size, using the type
+qualifiers listed below.  The Index Checker verifies the correctness of
+your annotations (that is, the Index Checker verifies that any
+\refqualclass{checker/index/qual}{GrowOnly}-annotated sequence never
+shrinks), and then the Index Checker takes advantage of that fact to
+validate indices into the sequence.
 
-A set of type qualifiers (Figure~\ref{index-mutability-lattice}) on collection references
-encodes the allowed mutation behavior. These qualifiers prevent unsafe index usage by
-distinguishing references that may grow, shrink, or remain unchanged.
+The type qualifiers of Figure~\ref{index-mutability-lattice} indicate
+whether a sequence might shrink.
 
 \begin{description}
 \item[\refqualclass{checker/index/qual}{UnShrinkableRef}]
-  The default qualifier for mutable-length structures. It prohibits shrinking the
-  collection through this reference, though mutations via other aliases may still occur.
+  The sequence cannot be shrunk through this reference, but
+  the sequence might shrink due to operations via other aliases.
+  This is the default qualifier for mutable-length structures.
 
 \item[\refqualclass{checker/index/qual}{GrowOnly}]
-  Allows safe append operations (e.g., \emph{add()}) on collections,
-  but disallows element removals.
+  The annotated expression can be used to grow the sequence (e.g., via
+  \<Collection.add()>), but cannot be shrunk.  Furthermore, every alias is
+  also \<@GrowOnly>, so no other alias can shrink the sequence.
 
 \item[\refqualclass{checker/index/qual}{Shrinkable}]
-  Permits element-removing methods such as \emph{remove()} and \emph{clear()}, and
-  indicates that other aliases might also shrink the collection.
+  The length of the sequence may be increased \emph{or} decreased, via
+  methods such as \<add()>, \<remove()>, and \<clear()>.  The sequence may
+  also change size due to operations through an alias.  Using indexes into
+  a \<@Shrinkable> sequence can lead to many warnings.
 
 \item[\refqualclass{checker/index/qual}{UncheckedShrinkable}]
-  Permits shrinking but disables index safety guarantees. It is intended for complex
-  aliasing cases or during incremental type adoption.
+  Like \<@Shrinkable>, but suppresses Index Checker warnings.  That is, the
+  Index Checker never warns about the index to a \<get(int)> operation on
+  the collection.  Using this type is like suppressing warnings
+  (Chapter~\ref{suppressing-warnings}), with the same benefits and
+  drawbacks.
 \end{description}
 
 \begin{figure}
 \begin{center}
-  \hfill
-  \includeimage{index-mutability-lattice}{5cm}
-  \hfill
+\includeimage{index-mutability}{5cm}
 \end{center}
-  \caption{Qualifier hierarchy for Index Checker with mutable-length support.}
-  \label{index-mutability-lattice}
+\caption{Qualifier hierarchy for indicating how a sequence's length may change.}
+\label{index-mutability-lattice}
 \end{figure}
 
 \sectionAndLabel{Technical papers}{index-papers}
@@ -860,5 +870,5 @@ an earlier version.
 %%  LocalWords:  SearchIndex bitwise SearchIndexBottom SearchIndexUnknown
 %%  LocalWords:  Substring substringindex substring SubstringIndexFor
 %%  LocalWords:  SubstringIndexBottom SubstringIndexUnknown LessThanBottom
-%%  LocalWords:  LessThanUnknown typecheck typechecks system''
-% LocalWords:  UpperBoundLiteral
+%%  LocalWords:  LessThanUnknown typecheck typechecks system'' GrowOnly
+%%  LocalWords:  UpperBoundLiteral UnShrinkableRef UncheckedShrinkable
