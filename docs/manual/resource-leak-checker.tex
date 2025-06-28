@@ -140,10 +140,10 @@ fields or re-opening resources:
 
 \end{description}
 
-\begin{description}
 
 The Resource Leak Checker also supports collections of resources. The following annotations express ownership over resource collections.
 
+\begin{description}
 \item[\refqualclass{checker/collectionownership/qual}{OwningCollection}]
 \item[\refqualclass{checker/collectionownership/qual}{NotOwningCollection}]
   expresses ownership over resource collections. Resource collection formal parameters default to \texttt{@NotOwningCollection}, while resource collection fields and return types default to \texttt{@OwningCollection}.
@@ -151,10 +151,9 @@ The Resource Leak Checker also supports collections of resources. The following 
 
 \end{description}
 
-\begin{description}
-
 This annotation is for dedicated destructor methods of resource collection fields.
 
+\begin{description}
 \item[\refqualclasswithparams{checker/collectionownership/qual}{CollectionFieldDestructor}{String[] value}]
   expresses that the annotated method fulfills the obligations of the given resource collection fields.
   For more details, see Section~\ref{resource-leak-collections-fields}.
@@ -668,7 +667,7 @@ For the purposes of this checker, \textit{resource collections} are precisely de
 
 For example, expressions of type \texttt{Socket[]} or \texttt{Iterable<? extends @MustCallUnknown Object>} are both resource collection, but one of type \texttt{Set<File>} is not.
 
-\subsectionAndLabel{Ownership Type System for Resource Collections}{resource-leak-collections-ownership-types}
+\subsectionAndLabel{Ownership type system for resource collections}{resource-leak-collections-ownership-types}
 Of the two tracking mechanisms described above, the ownership type system is more visible from the user perspective. The type hierarchy is the following:
 
 \begin{verbatim}
@@ -690,7 +689,7 @@ Of the two tracking mechanisms described above, the ownership type system is mor
 
 Only \texttt{@OwningCollection} and \texttt{@NotOwningCollection} are permitted as user-written annotations. The other types are only used internally.
 
-\subsectionAndLabel{Ownership Types in Action: Defaults and Ownership Transfer}{resource-leak-collections-types-in-action}
+\subsectionAndLabel{Ownership types in action: defaults and ownership transfer}{resource-leak-collections-types-in-action}
 
 A freshly allocated resource collection always defaults to \texttt{@OwningCollectionWithoutObligation}.
 
@@ -767,7 +766,7 @@ l = r;
 
 Just like the ownership, the obligation is also transferred to the left-hand side.
 
-\subsectionAndLabel{Fulfilling Collection Obligations}{resource-leak-collections-fulfillment}
+\subsectionAndLabel{Fulfilling collection obligations}{resource-leak-collections-fulfillment}
 
 To fulfill the obligation of a resource collection, the obligation can be passed on, but at some point it has to be fulfilled by calling the required methods on its elements. Recommended are enhanced \texttt{for} loops, but indexed \texttt{for} loops are also supported with some syntactic restrictions.
 
@@ -818,7 +817,7 @@ for (int i = 0; i < socketList.size(); i++) {
 }
 \end{verbatim}
 
-\subsectionAndLabel{Resource Collection Fields}{resource-leak-collections-fields}
+\subsectionAndLabel{Resource collection fields}{resource-leak-collections-fields}
 By default, resource collection fields are owned by the enclosing class. Static fields are not supported and an error is reported for a declaration of a static resource collection field.
 
 To verify a resource collection field \textit{field}, the checker looks for the following:
@@ -890,7 +889,7 @@ If the enclosing class is not intended to take responsibility for the resource c
   \item The enclosing class does not have to fulfill any obligations on the field.
 \end{itemize}
 
-\subsectionAndLabel{Iterators over Resource Collections}{resource-leak-collections-iterators}
+\subsectionAndLabel{Iterators over resource collections}{resource-leak-collections-iterators}
 Iterators are frequently used to traverse collections. It is always safe to create an iterator for any non-resource collection. Since an iterator takes a snapshot of the collection at the time it is created, it does not matter what happens with the collection after the iterator is created (else, a \<ConcurrentModificationException> is thrown for the next usage of the iterator).
 An iterator created for a resource collection has the same collection ownership type as the resource collection.
 
