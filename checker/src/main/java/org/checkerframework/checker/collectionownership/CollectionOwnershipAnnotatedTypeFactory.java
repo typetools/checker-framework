@@ -250,6 +250,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
    * @return whether t is a resource collection
    */
   public boolean isResourceCollection(TypeMirror t) {
+    if (t == null) return false;
     List<String> list = getMustCallValuesOfResourceCollectionComponent(t);
     return list != null && list.size() > 0;
   }
@@ -330,6 +331,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
    * @return whether the tree is a resource collection
    */
   public boolean isResourceCollection(Tree tree) {
+    if (tree == null) return false;
     MustCallAnnotatedTypeFactory mcAtf = ResourceLeakUtils.getMustCallAnnotatedTypeFactory(this);
     AnnotatedTypeMirror treeMcType = mcAtf.getAnnotatedType(tree);
     List<String> list = getMustCallValuesOfResourceCollectionComponent(treeMcType);
