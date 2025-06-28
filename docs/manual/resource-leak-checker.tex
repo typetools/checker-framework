@@ -704,7 +704,7 @@ When you now add elements into this collection, its type unrefines to \texttt{@O
 List<Socket> sockets = new ArrayList<>();
 // `sockets` is @OwningCollectionWithoutObligation
 for (int i = 0; i < n; i++) {
-  sockets.add(new Socket(``myHost'', myPort + i));
+  sockets.add(new Socket(myHost, myPort + i));
   // `sockets` is @OwningCollection
 }
 // `sockets` is @OwningCollection
@@ -845,15 +845,15 @@ class Aggregator extends Closeable {
     // the obligation of `l` has been resolved
   }
 
-  @CreatesMustCallFor(''this'')
+  @CreatesMustCallFor("this")
   public void add(@Owning Socket s) {
     // this call creates an obligation for the field.
-    // thus, the enclosing method must have a @CreatesMustCallFor(''this'') annotation.
+    // thus, the enclosing method must have a @CreatesMustCallFor("this") annotation.
     socketList.add(s);
   }
 
   @Override
-  @CollectionFieldDestructor(''socketList'')
+  @CollectionFieldDestructor("socketList")
   public void close() {
     for (Socket s : socketList) {
       try {
