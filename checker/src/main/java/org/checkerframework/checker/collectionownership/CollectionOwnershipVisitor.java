@@ -1,5 +1,6 @@
 package org.checkerframework.checker.collectionownership;
 
+import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.VariableTree;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
@@ -14,6 +15,7 @@ import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -32,6 +34,16 @@ public class CollectionOwnershipVisitor
    */
   public CollectionOwnershipVisitor(BaseTypeChecker checker) {
     super(checker);
+  }
+
+  @Override
+  public Void visitAnnotation(AnnotationTree tree, Void p) {
+    AnnotationMirror am = TreeUtils.annotationFromAnnotationTree(tree);
+    if (AnnotationUtils.areSame(am, atypeFactory.BOTTOM)
+        || AnnotationUtils.areSame(am, atypeFactory.OWNINGCOLLECTIONWITHOUTOBLIGATION)) {
+      checker.reportError(tree, "illegal.type.annotation", tree);
+    }
+    return super.visitAnnotation(tree, p);
   }
 
   /**

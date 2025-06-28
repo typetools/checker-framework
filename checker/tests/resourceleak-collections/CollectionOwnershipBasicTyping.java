@@ -130,6 +130,7 @@ class CollectionOwnershipBasicTyping {
       @OwningCollection Collection<? extends @MustCallUnknown Object> collection) {}
 
   void checkArgIsOCwoO(
+      // :: error: illegal.type.annotation
       @OwningCollectionWithoutObligation
           Collection<? extends @MustCallUnknown Object> collection) {}
 }

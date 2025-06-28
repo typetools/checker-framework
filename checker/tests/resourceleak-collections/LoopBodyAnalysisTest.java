@@ -168,7 +168,9 @@ class LoopBodyAnalysisTests {
     }
   }
 
+  // :: error: illegal.type.annotation
   void checkArgIsOCWO(@OwningCollectionWithoutObligation Iterable<Resource> arg) {}
 
+  // :: error: illegal.type.annotation
   void checkArgIsOCWO(Resource @OwningCollectionWithoutObligation [] arg) {}
 }

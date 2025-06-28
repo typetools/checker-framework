@@ -138,8 +138,10 @@ class CollectionOwnershipDefaults {
   void checkArgIsOwning(Socket @OwningCollection [] collection) {}
 
   void checkArgIsOCwoO(
+      // :: error: illegal.type.annotation
       @OwningCollectionWithoutObligation
           Collection<? extends @MustCallUnknown Object> collection) {}
 
+  // :: error: illegal.type.annotation
   void checkArgIsOCwoO(Socket @OwningCollectionWithoutObligation [] collection) {}
 }
