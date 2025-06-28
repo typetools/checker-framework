@@ -167,6 +167,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
    *
    * @param checker the checker associated with this type factory
    */
+  @SuppressWarnings("this-escape")
   public CollectionOwnershipAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     NOTOWNINGCOLLECTION = AnnotationBuilder.fromClass(elements, NotOwningCollection.class);
