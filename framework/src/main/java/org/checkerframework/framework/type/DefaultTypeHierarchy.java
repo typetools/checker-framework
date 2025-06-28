@@ -92,6 +92,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
    * @param invariantArrayComponents whether to make array subtyping invariant with respect to array
    *     component types
    */
+  @SuppressWarnings("this-escape")
   public DefaultTypeHierarchy(
       BaseTypeChecker checker,
       QualifierHierarchy qualHierarchy,
