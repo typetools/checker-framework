@@ -52,7 +52,8 @@ nonjunit_job(25)
 # takes much longer to complete than normal, and this Azure job times out.
 # When there is a timeout, one cannot examine wpi or wpi-many logs.
 # So use a timeout of 90 minutes, and hope that is enough.
-inference_job(11)
+# Inference on JDK 11 seems to be broken because do-like-javac doesn't pass --release.
+# inference_job(11)
 inference_job(17)
 inference_job(21)
 inference_job_split(24)
