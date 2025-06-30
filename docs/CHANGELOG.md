@@ -1,3 +1,13 @@
+Version 3.49.6 (August 1, 2025)
+-----------------------------
+
+**User-visible changes:**
+
+**Implementation details:**
+
+**Closed issues:**
+
+
 Version 3.49.5 (June 30, 2025)
 -----------------------------
 
