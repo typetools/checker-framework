@@ -21,5 +21,4 @@ public class TestClassNonEmpty {
     s = s + s;
     return s;
   }
-
 }

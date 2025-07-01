@@ -774,7 +774,7 @@ public class ClassAnnotationSceneReader extends CodeOffsetAdapter {
             break;
           case TypeReference.EXCEPTION_PARAMETER: // TODO: Change if this error is ever thrown.
             throw new Error("EXCEPTION_PARAMETER TypeReference case.");
-            // TODO: ensure all cases covered.
+          // TODO: ensure all cases covered.
           default:
             throw new RuntimeException("Unknown TypeReference: " + typeReference.getSort());
         }

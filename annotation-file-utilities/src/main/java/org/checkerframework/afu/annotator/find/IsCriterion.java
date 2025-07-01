@@ -49,8 +49,8 @@ final class IsCriterion implements Criterion {
       case METHOD:
         String methodName = ((MethodTree) tree).getName().toString();
         return methodName.equals(name);
-        // case CLASS:
-        //  return InClassCriterion.isSatisfiedBy(path, name, /*exactMatch=*/ true);
+      // case CLASS:
+      //  return InClassCriterion.isSatisfiedBy(path, name, /*exactMatch=*/ true);
       default:
         throw new Error("unknown tree kind " + kind);
     }

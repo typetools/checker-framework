@@ -775,8 +775,8 @@ public class ASTPathCriterion implements Criterion {
     Tree.Kind kind = entry.getTreeKind();
 
     switch (kind) {
-        // case ANNOTATION:
-        // case INTERFACE:
+      // case ANNOTATION:
+      // case INTERFACE:
       case CLASS: // "extends" clause?
         return ASTPath.isClassEquiv(kind)
             && ix == last

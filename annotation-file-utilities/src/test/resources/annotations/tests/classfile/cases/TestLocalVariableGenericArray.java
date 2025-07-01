@@ -18,7 +18,7 @@ public class TestLocalVariableGenericArray {
     int k = 1;
     for (Map<String, String> e : map2.get("4gf")) {
       if (k < 5) {
-        k = map2.get("").indexOf(new ArrayList<Map<String,String>>());
+        k = map2.get("").indexOf(new ArrayList<Map<String, String>>());
       } else {
         k = this.i.intValue() + 5;
       }
@@ -62,5 +62,4 @@ public class TestLocalVariableGenericArray {
       System.out.println(i);
     }
   }
-
 }

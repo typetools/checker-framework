@@ -11,7 +11,7 @@ public class TestTypecastGenericArray {
   public Boolean b;
   public Set<String> set;
   public HashSet<Set<String>> hset;
-  public Map<Set<String>,Set<Map<String,Set<String>>>> map;
+  public Map<Set<String>, Set<Map<String, Set<String>>>> map;
 
   public void test() {
     o = (Object) o;

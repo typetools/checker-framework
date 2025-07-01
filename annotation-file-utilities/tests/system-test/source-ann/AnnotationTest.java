@@ -182,8 +182,8 @@ public @AClass @CClass class AnnotationTest<
   Map.@A2C @C2C Entry<@A2D @C2D Integer, @A2E @C2E ? extends @A2F @C2F CharSequence> entry;
 
   // TODO: crash when A12, C12, A13, or C13 are annotations!
-  <Bar extends /*A12*/ /*C12*/ Comparable</*A13*//*C13*/ Integer>> @A0A @C0A @A0AT @C0AT
-      HashSet<@A0B @C0B Integer> doSomething(
+  <Bar extends /*A12*/ /*C12*/ Comparable</*A13*//*C13*/ Integer>>
+      @A0A @C0A @A0AT @C0AT HashSet<@A0B @C0B Integer> doSomething(
           @A06 @C06 AnnotationTest<Foo> this, @A0C @C0C Set<@A0D @C0D Integer> param) {
     @A08
     @C08

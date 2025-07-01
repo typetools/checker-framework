@@ -1274,7 +1274,7 @@ public class Insertions implements Iterable<Insertion> {
         case UNION:
           // TODO
           throw new Error("UNION case not yet implemented");
-          // TODO: reinstate after replacing "throw new Error()": break;
+        // TODO: reinstate after replacing "throw new Error()": break;
         case BOOLEAN:
         case BYTE:
         case CHAR:
@@ -1288,12 +1288,12 @@ public class Insertions implements Iterable<Insertion> {
           // Return a fake declared type that corresponds to the error.
           // This ignores setup problems where some classes can't be found.
           return new DeclaredType(jtype.toString());
-          // case EXECUTABLE:
-          // case NONE:
-          // case NULL:
-          // case OTHER:
-          // case PACKAGE:
-          // case VOID:
+        // case EXECUTABLE:
+        // case NONE:
+        // case NULL:
+        // case OTHER:
+        // case PACKAGE:
+        // case VOID:
         default:
           throw new Error(
               "Found unknown type: " + jtype + " (" + jtype.getKind() + "). Check your setup.");
@@ -1467,8 +1467,8 @@ public class Insertions implements Iterable<Insertion> {
             return "long";
           case SHORT:
             return "short";
-            // case VOID: return "void";
-            // case WILDCARD: return "?";
+          // case VOID: return "void";
+          // case WILDCARD: return "?";
           default:
             throw new IllegalArgumentException("unexpected type kind " + typeKind);
         }

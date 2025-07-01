@@ -1303,7 +1303,7 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
       case ARRAY_TYPE:
       case IDENTIFIER:
       case INTERSECTION_TYPE:
-        // case MEMBER_SELECT:
+      // case MEMBER_SELECT:
       case PARAMETERIZED_TYPE:
       case PRIMITIVE_TYPE:
       case UNION_TYPE:
