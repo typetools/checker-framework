@@ -1,0 +1,795 @@
+buildscript {
+  if (JavaVersion.current() == JavaVersion.VERSION_1_8) {
+    throw new Error("Annotation tools can't be built with Java 8.")
+  }
+}
+
+import org.gradle.internal.jvm.Jvm
+import java.nio.file.Files
+
+plugins {
+  id 'java'
+
+  id 'com.gradleup.shadow' version '8.3.7'
+  id 'net.ltgt.errorprone' version '4.3.0'
+
+  // To show task list as a tree, run: ./gradlew <taskname> taskTree
+  id 'com.dorongold.task-tree' version '4.0.1'
+
+  // Code formatting; defines targets "spotlessApply" and "spotlessCheck".
+  // Requires Java 11.
+  id "com.diffplug.spotless" version "6.25.0"
+}
+apply plugin: 'java'
+apply plugin: 'com.gradleup.shadow'
+
+group = 'org.checkerframework'
+version = '3.49.5'
+
+java {
+  // This test is for whether the Checker Framework supports (runs under) Java 8.
+  // Currently, the Checker Framework does support Java 8.
+  if (true /* supports Java 8 */) {
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+  } else {
+    sourceCompatibility = 11
+    targetCompatibility = 11
+  }
+}
+
+repositories {
+  mavenCentral()
+}
+
+ext {
+  isJava17orHigher = JavaVersion.current() >= JavaVersion.VERSION_17
+}
+
+ext {
+  // The local git repository, typically in the .git directory, but not for worktrees.
+  // This value is always overwritten, but Gradle needs the variable to be initialized.
+  localRepo = ".git"
+}
+
+configurations {
+  javacJar
+}
+
+dependencies {
+  // Annotations in checker-qual.jar are used, but no checkers are (currently) run on the code.
+  compileOnly 'org.checkerframework:checker-qual:3.49.5'
+
+  implementation 'org.plumelib:options:2.0.3'
+  implementation 'org.plumelib:plume-util:1.11.0'
+  implementation 'org.plumelib:reflection-util:1.1.5'
+  implementation ('org.checkerframework.annotatedlib:guava:33.1.0.2-jre') {
+    // So long as Guava only uses annotations from checker-qual, excluding it should not cause problems.
+    exclude group: 'org.checkerframework'
+  }
+  implementation 'org.ow2.asm:asm:9.8'
+  ext.errorproneVersion = '2.39.0'
+  implementation "com.google.errorprone:error_prone_annotations:${errorproneVersion}"
+  errorprone("com.google.errorprone:error_prone_core:${errorproneVersion}")
+
+  testImplementation group: 'junit', name: 'junit', version: '4.13.2'
+  testImplementation 'org.checkerframework:checker-qual:3.49.5'
+}
+
+compileJava {
+  if (true /* supports Java 8 */) {
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+  } else {
+    sourceCompatibility = 11
+    targetCompatibility = 11
+    options.compilerArgs += [
+      '--add-exports',
+      'jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED',
+      '--add-exports',
+      'jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED',
+      '--add-exports',
+      'jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED',
+      '--add-exports',
+      'jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED',
+      '--add-exports',
+      'jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED',
+      '--add-exports',
+      'jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED',
+      '--add-exports',
+      'jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED',
+      '--add-exports',
+      'jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED',
+      '--add-exports',
+      'jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED',
+    ]
+  }
+  options.failOnError = true
+  options.deprecation = true
+  if (JavaVersion.current().compareTo(org.gradle.api.JavaVersion.VERSION_20) >= 0) {
+    // JDK 20 and later deprecate --target 8
+    options.compilerArgs += [
+      '-g',
+      '-Werror',
+      '-Xlint:all,-options',
+    ]
+  } else {
+    options.compilerArgs += [
+      '-g',
+      '-Werror',
+      '-Xlint',
+    ]
+  }
+  options.encoding = 'UTF-8'
+
+  options.errorprone.enabled = isJava17orHigher
+  options.errorprone.disable(
+      // Suggestion assumes there is no overriding equals() method.
+      "NonOverridingEquals",
+      // Suggestion is incorrect when using the Checker Framework.
+      "ExtendsObject",
+      // Suggests using a class that's in Error Prone itself, not in any library for clients.
+      // It requires "import com.google.errorprone.util.ASTHelpers;", and (in build.gradle)
+      //   implementation "com.google.errorprone:error_prone_core:${errorproneVersion}"
+      // Adding that line in build.gradle causes a javac crash when running the Checker Framework.
+      "ASTHelpersSuggestions",
+      // Suggestion uses a Guava-only annotation.
+      "AnnotateFormatMethod",
+      // Text blocks were introduced in Java 15.
+      "StringConcatToTextBlock",
+      )
+}
+
+compileTestJava {
+  options.errorprone.enabled = isJava17orHigher
+  options.errorprone.disable(
+      // Suggestion assumes there is no overriding equals() method.
+      "NonOverridingEquals",
+      // Suggestion is incorrect when using the Checker Framework.
+      "ExtendsObject",
+      // Suggests using a class that's in Error Prone itself, not in any library for clients.
+      // It requires "import com.google.errorprone.util.ASTHelpers;", and (in build.gradle)
+      //   implementation "com.google.errorprone:error_prone_core:${errorproneVersion}"
+      // Adding that line in build.gradle causes a javac crash when running the Checker Framework.
+      "ASTHelpersSuggestions",
+      )
+}
+
+
+shadowJar {
+  destinationDirectory = projectDir
+  includeEmptyDirs = false
+  archiveFileName = 'annotation-file-utilities-all.jar'
+  // Don't include any class from the Checker Framework.
+  // This should just be checker-qual.
+  exclude 'org/checkerframework/checker/**'
+  exclude 'org/checkerframework/framework/**'
+  exclude 'org/checkerframework/dataflow/**'
+
+  doFirst {
+    // TODO: The release fails because of this, so skip it for now.
+    if (project.hasProperty('release') && false) {
+      println 'Relocating packages.'
+      relocate 'org.apache', 'org.checkerframework.org.apache'
+      relocate 'org.relaxng', 'org.checkerframework.org.relaxng'
+      relocate 'org.plumelib', 'org.checkerframework.org.plumelib'
+      relocate 'org.objectweb.asm', 'org.checkerframework.org.objectweb.asm'
+      relocate 'com.google', 'org.checkerframework.com.google'
+    }
+  }
+}
+
+// Shadowing Test Sources and Dependencies
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
+task allButJavacJar(type: ShadowJar, dependsOn: compileJava) {
+  description = 'Builds annotation-file-utilities-all-but-javac.jar with all dependencies except javac.jar.'
+  destinationDirectory = projectDir
+  includeEmptyDirs = false
+  archiveFileName = 'annotation-file-utilities-all-but-javac.jar'
+
+  from shadowJar.source
+  configurations  = shadowJar.configurations
+
+  dependencies {
+    exclude(dependency('com.google.errorprone:javac:.*'))
+  }
+  // Don't include any class from the Checker Framework.
+  // This should just be checker-qual.
+  exclude 'org/checkerframework/**'
+  exclude 'javax/**'
+  doFirst {
+    // TODO: The release fails because of this, so skip it for now.
+    if (project.hasProperty('release') && false) {
+      println 'Relocating packages.'
+      relocate 'org.apache', 'org.checkerframework.org.apache'
+      relocate 'org.relaxng', 'org.checkerframework.org.relaxng'
+      relocate 'org.plumelib', 'org.checkerframework.org.plumelib'
+      relocate 'org.objectweb.asm', 'org.checkerframework.org.objectweb.asm'
+      relocate 'com.google', 'org.checkerframework.com.google'
+    }
+  }
+}
+
+task skinnyJar(type: ShadowJar, dependsOn: compileJava) {
+  description = 'Builds annotation-file-utilities.jar with only scene-lib and annotation-file-utilities classes.'
+  includeEmptyDirs = false
+  destinationDirectory = projectDir
+  archiveFileName = 'annotation-file-utilities.jar'
+  include 'org/checkerframework/afu/scenelib/**/*.class'
+  include 'org/checkerframework/afu/annotator/**/*.class'
+}
+
+test {
+  testLogging {
+    showStandardStreams = true
+    // Always run the tests
+    outputs.upToDateWhen { false }
+
+    // Show the found unexpected diagnostics and expected diagnostics not found.
+    exceptionFormat = "full"
+    events "failed"
+  }
+
+  // After each test, print a summary.
+  afterSuite { desc, result ->
+    if (desc.getClassName() != null) {
+      long mils = result.getEndTime() - result.getStartTime()
+      double seconds = mils / 1000.0
+
+      println "Testsuite: ${desc.getClassName()}\n" +
+          "Tests run: ${result.testCount}, " +
+          "Failures: ${result.failedTestCount}, " +
+          "Skipped: ${result.skippedTestCount}, " +
+          "Time elapsed: ${seconds} sec\n"
+    }
+  }
+}
+task testExample(type: JavaExec, dependsOn: compileTestJava, group: 'Verification') {
+  description = 'Run the scene-lib example test.'
+  String resourceDir = "${projectDir}/src/test/resources/annotations/tests/executable/"
+  String outputDir = "${layout.buildDirectory.get()}/example-test/"
+
+  classpath = files(sourceSets.test.java.classesDirectory)
+  classpath += sourceSets.test.compileClasspath
+  mainClass = 'org.checkerframework.afu.scenelib.test.executable.Example'
+  doFirst {
+    file(outputDir).mkdir()
+    new File("${outputDir}/example-stdout.jaif").createNewFile()
+
+    standardOutput = new FileOutputStream("${outputDir}/example-stdout.jaif")
+  }
+  args = [
+    "${resourceDir}/example-input.jaif",
+    "foo.Bar",
+    "${outputDir}/example-output.jaif"
+  ]
+
+  doLast {
+
+    byte[] goalJaif = Files.readAllBytes(new File(resourceDir, "example-output.jaif.goal").toPath());
+    byte[] outputJaif = Files.readAllBytes(new File(outputDir, "example-output.jaif").toPath());
+    if (!Arrays.equals(goalJaif, outputJaif)) {
+      throw new GradleException("In ${outputDir}, file example-output.jaif does not match goal.")
+    }
+
+    byte[] goalStdOut = Files.readAllBytes(new File(resourceDir, "example-stdout.jaif.goal").toPath());
+    byte[] stdOut = Files.readAllBytes(new File(outputDir, "example-stdout.jaif").toPath());
+    if (!Arrays.equals(goalStdOut, stdOut)) {
+      throw new GradleException("In ${outputDir}, file example-stdout.jaif does not match goal.")
+    }
+  }
+}
+
+task testAnnotator(type: Exec, dependsOn: assemble, group: 'Verification') {
+  description = 'Run the annotator test.'
+  workingDir "${projectDir}/tests/"
+  executable 'make'
+}
+
+task cleanTestAnnotator(type: Exec) {
+  description = "Clean the annotator test."
+  workingDir 'tests/'
+  executable 'make'
+  args("clean")
+}
+
+ext.plumeBibHome = "${projectDir}/plume-bib"
+
+task getPlumeBib(type: Exec) {
+  description = 'Obtain or update the plume-bib bibliography.'
+  doFirst {
+    if (file(plumeBibHome).exists()) {
+      workingDir plumeBibHome
+      executable 'git'
+      args = ['pull', '-q']
+      ignoreExitValue = true
+    } else {
+      workingDir "${plumeBibHome}/../"
+      executable 'git'
+      args = [
+        'clone',
+        '-q',
+        'https://github.com/mernst/plume-bib.git'
+      ]
+    }
+  }
+}
+
+interface InjectedExecOps {
+  @javax.inject.Inject
+  ExecOperations getExecOps()
+}
+
+task makeAnnotationFileFormat(dependsOn: getPlumeBib) {
+  description = 'Make documentation: annotation-file-format.{html,pdf}.'
+  def injected = project.objects.newInstance(InjectedExecOps)
+
+  doLast {
+    injected.execOps.exec {
+      executable 'make'
+      args = [
+        '-C',
+        'figures'
+      ]
+    }
+    injected.execOps.exec {
+      executable 'latex'
+      args 'annotation-file-format.tex'
+    }
+
+    injected.execOps.exec {
+      executable 'bibtex'
+      args 'annotation-file-format'
+      environment BIBINPUTS: ".:${plumeBibHome}"
+    }
+
+    injected.execOps.exec {
+      executable 'latex'
+      args 'annotation-file-format.tex'
+    }
+
+    injected.execOps.exec {
+      executable 'latex'
+      args 'annotation-file-format.tex'
+    }
+
+    injected.execOps.exec {
+      executable 'pdflatex'
+      args 'annotation-file-format.tex'
+    }
+
+    injected.execOps.exec {
+      executable 'hevea'
+      args = [
+        "-fix",
+        "-exec",
+        "xxdate.exe",
+        "urlhref.hva",
+        "annotation-file-format.tex"
+      ]
+    }
+  }
+}
+
+task cleanManual(type: Exec) {
+  executable 'make'
+  args = [
+    '-C',
+    'figures',
+    'clean'
+  ]
+}
+
+task cleanAnnotationFileFormat {
+  description = "Removes generated documentation files."
+  dependsOn(cleanManual)
+  doLast {
+    delete "annotation-file-format.aux"
+    delete "annotation-file-format.dvi"
+    delete "annotation-file-format.haux"
+    delete "annotation-file-format.html"
+    delete "annotation-file-format.htoc"
+    delete "annotation-file-format.log"
+    delete "annotation-file-format.pdf"
+    delete "annotation-file-format.toc"
+    delete "scene-lib-type-hierarchy.png"
+  }
+}
+
+/**
+ * Creates a task that runs the checker on the main source set. The task is named
+ * "check${shortName}", for example "checkPurity" or "checkNullness".
+ * @param checker fully-qualified name of the checker to run
+ * @param shortName short name of the checker, to use to name the task.
+ */
+def createCheckTypeTask(checker, shortName) {
+  tasks.create(name: "check${shortName}", type: JavaCompile) {
+    description = "Run the ${shortName} Checker on the main sources."
+    group = 'Verification'
+    String checkerDist;
+    if (System.getenv('CHECKERFRAMEWORK') == null) {
+      checkerDist = "${projectDir}/../../checker-framework/checker/dist"
+    } else {
+      checkerDist = "${System.getenv('CHECKERFRAMEWORK')}/checker/dist"
+    }
+    // Always run the task.
+    outputs.upToDateWhen { false }
+    source = sourceSets.main.java
+    classpath = files("${checkerDist}/checker-qual.jar")
+    classpath += sourceSets.main.compileClasspath
+    destinationDirectory = file("${buildDir}/typecheck/${shortName}")
+
+    options.annotationProcessorPath = files("${checkerDist}/checker.jar")
+    options.compilerArgs += [
+      '-processor',
+      "${checker}",
+      '-proc:only',
+      '-Xlint:-processing',
+      '-AwarnUnneededSuppressions',
+      '-AwarnRedundantAnnotations',
+    ]
+    options.fork = true
+
+    options.forkOptions.jvmArgs += [
+      "--add-exports",
+      "jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
+      "--add-exports",
+      "jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
+      "--add-exports",
+      "jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
+      "--add-exports",
+      "jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED",
+      "--add-exports",
+      "jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED",
+      "--add-exports",
+      "jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED",
+      "--add-exports",
+      "jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
+      "--add-exports",
+      "jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
+      "--add-opens",
+      "jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
+    ]
+
+    if (true /* supports Java 8 */) {
+      sourceCompatibility = 1.8
+      targetCompatibility = 1.8
+    } else {
+      sourceCompatibility = 11
+      targetCompatibility = 11
+      options.compilerArgs += [
+        '--add-exports',
+        'jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED',
+        '--add-exports',
+        'jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED',
+        '--add-exports',
+        'jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED',
+        '--add-exports',
+        'jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED',
+        '--add-exports',
+        'jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED',
+        '--add-exports',
+        'jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED',
+        '--add-exports',
+        'jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED',
+        '--add-exports',
+        'jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED',
+        '--add-exports',
+        'jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED',
+      ]
+    }
+  }
+}
+
+// Create tasks checkSignature and checkResourceLeak.
+createCheckTypeTask('org.checkerframework.checker.signature.SignatureChecker', 'Signature')
+createCheckTypeTask('org.checkerframework.checker.resourceleak.ResourceLeakChecker', 'ResourceLeak')
+
+task htmlValidate(type: Exec) {
+  description = 'Validate that HTML files are well-formed.'
+  workingDir '../'
+  executable 'html5validator'
+  args = [
+    // The --ignore command-line argument applies to everything until the next
+    // command-line argument; that is, everything listed here is ignored.
+    "--ignore",
+    "/annotation-file-utilities/annotation-file-format.html",
+    "/api/",
+    "/build/",
+    "/javadoc/",
+    "/plume-bib/",
+    "/scene-lib/javadoc/"
+  ]
+}
+
+test.dependsOn testExample
+test.dependsOn testAnnotator
+
+javadoc {
+  options.memberLevel = JavadocMemberLevel.PUBLIC
+  if (true /* supports Java 8 */) {
+    options.addStringOption('source', '8')
+  } else {
+    options.addStringOption('source', '11')
+  }
+
+  options.addStringOption('Xdoclint:all', '-quiet')
+  options.addStringOption('Xmaxwarns', '10000')
+  options.JFlags = [
+    "--add-exports",
+    "jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
+    "--add-exports",
+    "jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
+    "--add-exports",
+    "jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED",
+    "--add-exports",
+    "jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
+    "--add-exports",
+    "jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED"
+  ]
+}
+
+task javadocPrivate(type: Javadoc) {
+  description = 'Run Javadoc in strict mode.'
+  source = sourceSets.main.allJava
+  classpath = sourceSets.main.compileClasspath + sourceSets.main.runtimeClasspath
+  options.addStringOption('-Xdoclint:all', '-quiet')
+  options.memberLevel = JavadocMemberLevel.PRIVATE
+  options.addStringOption('Xmaxwarns', '10000')
+}
+
+configurations {
+  requireJavadoc
+}
+dependencies {
+  requireJavadoc "org.plumelib:require-javadoc:2.0.0"
+}
+task requireJavadoc(type: JavaExec) {
+  description = 'Ensures that Javadoc documentation exists.'
+  mainClass = "org.plumelib.javadoc.RequireJavadoc"
+  classpath = configurations.requireJavadoc
+  args "annotation-file-utilities/src"
+  workingDir = "${projectDir}/.."
+  jvmArgs += [
+    '--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED',
+    '--add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED',
+    '--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED',
+    '--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED',
+    '--add-opens=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED',
+    '--add-opens=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED',
+    '--add-opens=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED',
+    '--add-opens=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED',
+  ]
+}
+// check.dependsOn requireJavadoc
+
+task updateUserOptions(dependsOn: [
+  'updateUserOptionsJavadoc',
+  'updateUserOptionsHtml'
+]) {}
+
+task updateUserOptionsJavadoc(type: Javadoc, dependsOn: 'assemble') {
+  description = "Updates documentation of command-line arguments in Javadoc."
+
+  // Include only sources from annotation-file-utilities, not from scene-lib.
+  source = fileTree(dir: 'src', include: '**/*.java')
+  exclude 'org.checkerframework.afu.scenelib.io.classfile/**'
+  classpath = project.sourceSets.main.compileClasspath + project.sourceSets.main.runtimeClasspath
+  options.memberLevel = JavadocMemberLevel.PRIVATE
+  options.docletpath = project.sourceSets.main.runtimeClasspath as List
+  options.doclet = "org.plumelib.options.OptionsDoclet"
+  options.addStringOption("docfile", "${projectDir}/src/annotator/Main.java")
+  options.addStringOption("format", "javadoc")
+  options.addStringOption("i", "-quiet")
+  options.addStringOption('source', '8')
+  options.noTimestamp(false)
+  title = ""
+}
+
+task updateUserOptionsHtml(type: Javadoc, dependsOn: 'assemble') {
+  description = "Updates documentation of command-line arguments in the manual."
+
+  // Include only sources from annotation-file-utilities, not from scene-lib.
+  source = fileTree(dir: 'src', include: '**/*.java')
+  exclude 'org.checkerframework.afu.scenelib.io.classfile/**'
+  classpath = project.sourceSets.main.compileClasspath + project.sourceSets.main.runtimeClasspath
+  options.memberLevel = JavadocMemberLevel.PRIVATE
+  options.docletpath = project.sourceSets.main.runtimeClasspath as List
+  options.doclet = "org.plumelib.options.OptionsDoclet"
+  options.addStringOption("docfile", "${projectDir}/annotation-file-utilities.html")
+  options.addStringOption("format", "html")
+  options.addStringOption("i", "-quiet")
+  options.addStringOption('source', '8')
+  options.noTimestamp(false)
+  title = ""
+}
+
+artifacts {
+  archives shadowJar
+  archives skinnyJar
+  archives allButJavacJar
+}
+
+clean {
+  dependsOn(cleanTestAnnotator, cleanAnnotationFileFormat, cleanTestExample)
+  delete('annotation-file-utilities.jar','annotation-file-utilities-all.jar', 'annotation-tools.zip')
+}
+
+ext.tmpAnnotationTools = "${layout.buildDirectory.get()}/tmp-annotation-tools"
+task cloneAndPrepDirectoryForZipfile(type: Exec) {
+  dependsOn(assemble, makeAnnotationFileFormat)
+  description = 'Copy files from repository to temporary directory from which they will be packaged up.'
+  doFirst {
+    delete tmpAnnotationTools
+  }
+  executable 'git'
+  args = [
+    'clone',
+    '../',
+    "${tmpAnnotationTools}"
+  ]
+  doLast {
+    delete "${tmpAnnotationTools}/scene-lib.orig-hand-annos"
+    delete "${tmpAnnotationTools}/.git"
+    delete "${tmpAnnotationTools}/.gitignore"
+    delete "${tmpAnnotationTools}/.hg_archival.txt"
+    delete "${tmpAnnotationTools}/.hgignore"
+    copy {
+      from projectDir
+      into "${tmpAnnotationTools}/annotation-file-utilities"
+      include "annotation-file-format.dvi"
+      include "annotation-file-format.html"
+      include "annotation-file-format.pdf"
+      include "annotation-file-utilities.jar"
+      include "annotation-file-utilities-all.jar"
+    }
+  }
+}
+
+task zipfile(type: Zip) {
+  description = "create the distribution: annotation-tools.zip"
+  dependsOn(cloneAndPrepDirectoryForZipfile)
+  archiveFileName = 'annotation-tools.zip'
+  destinationDirectory = projectDir
+  from files(tmpAnnotationTools)
+}
+
+task copyToDeployDir {
+  description = 'copy release to deployDir.'
+  doLast {
+    String deployDir = project.getProperties().get("deploy-dir")
+    String afuVersion = project.getProperties().get("afu.version")
+    println("Export location: ${deployDir}")
+    println("Copying annotation-tools.zip")
+    copy {
+      from projectDir
+      into deployDir
+      include 'annotation-tools.zip'
+      include 'annotation-file-utilities.html'
+      include 'annotation-file-format.html'
+      include 'annotation-file-format.pdf'
+      include 'figures/*.svg'
+      include 'figures/*.png'
+      include 'figures/*.gif'
+      include 'changelog.html'
+      rename('annotation-tools.zip', "annotation-tools-${afuVersion}.zip")
+    }
+    delete "${deployDir}/index.html"
+    Files.createSymbolicLink(file("${deployDir}/index.html").toPath(), file("${deployDir}/annotation-file-utilities.html").toPath())
+  }
+}
+
+task releaseBuild(type: GradleBuild) {
+  description = 'Build everything required for a release, after cleanning.'
+  doFirst {
+    if (!project.hasProperty('deploy-dir')) {
+      println project.properties.entrySet()*.toString().sort().toString().replaceAll(", ","\n")
+      throw new RuntimeException("You must specify a deploy-dir. The live site deploy-dir=/cse/www2/types/annotation-file-utilities/releases/VERSIONNUMBER")
+    }
+    if (!project.hasProperty('afu.version')) {
+      println project.properties.entrySet()*.toString().sort().toString().replaceAll(", ","\n")
+      throw new RuntimeException("You must specify an afu.version, such as 3.6.22")
+    }
+  }
+
+  startParameter.projectProperties += gradle.startParameter.projectProperties
+  startParameter.projectProperties += [release: true.toString()]
+
+  tasks = [
+    'clean',
+    'zipfile',
+    'testAnnotator',
+    'copyToDeployDir'
+  ]
+}
+
+task releaseBuildWithoutTest(type: GradleBuild) {
+  description = 'Build everything required for a release, without cleaning first.'
+  doFirst {
+    if (!project.hasProperty('deploy-dir')) {
+      println project.properties.entrySet()*.toString().sort().toString().replaceAll(", ","\n")
+      throw new RuntimeException("You must specify a deploy-dir. The live site deploy-dir=/cse/www2/types/annotation-file-utilities/releases/VERSIONNUMBER")
+    }
+    if (!project.hasProperty('afu.version')) {
+      println project.properties.entrySet()*.toString().sort().toString().replaceAll(", ","\n")
+      throw new RuntimeException("You must specify an afu.version, such as 3.6.22")
+    }
+  }
+
+  startParameter.projectProperties += gradle.startParameter.projectProperties
+  startParameter.projectProperties += [release: true.toString()]
+
+  tasks = [
+    'clean',
+    'zipfile',
+    'copyToDeployDir'
+  ]
+}
+
+
+task pythonIsInstalled(type: Exec) {
+  description = "Check that the python3 executable is installed."
+  executable = "python3"
+  args "--version"
+}
+
+
+task setLocalRepo(type:Exec) {
+  commandLine 'git', 'worktree', 'list'
+  standardOutput = new ByteArrayOutputStream()
+  doLast {
+    String worktreeList = standardOutput.toString()
+    localRepo = worktreeList.substring(0, worktreeList.indexOf(" ")) + "/.git"
+  }
+}
+
+task installGitHooks(type: Copy, dependsOn: 'setLocalRepo') {
+  description = 'Copies git hooks to .git directory'
+  from files("../.git.pre-commit")
+  rename('.git\\.(.*)', '$1')
+  into "${localRepo}/hooks"
+  doFirst{
+    // setLocalRepo changed the value of `localRepo`, so reset into.
+    into "${localRepo}/hooks"
+  }
+}
+compileJava.dependsOn installGitHooks
+
+
+// Code formatting
+
+spotless {
+
+  def doNotFormat = [
+    // TODO: adjust this
+    'dataflow/manual/examples/',
+    '**/nullness-javac-errors/*',
+    '**/calledmethods-delomboked/*',
+    '**/returnsreceiverdelomboked/*',
+    '**/build/**',
+    '*/dist/**',
+  ]
+
+  format 'misc', {
+    // define the files to apply `misc` to
+    target '*.md', '*.tex', '.gitignore', 'Makefile'
+    targetExclude doNotFormat
+
+    // define the steps to apply to those files
+    trimTrailingWhitespace()
+    indentWithSpaces(2) // in Spotless version 7, change to: leadingTabsToSpaces(2)
+    endWithNewline()
+  }
+  java {
+    googleJavaFormat()
+    formatAnnotations()
+  }
+  groovyGradle {
+    target '**/*.gradle'
+    greclipse()  // which formatter Spotless should use to format .gradle files.
+    indentWithSpaces(2) // in Spotless version 7, change to: leadingTabsToSpaces(2)
+    trimTrailingWhitespace()
+    // endWithNewline() // Don't want to end empty files with a newline
+  }
+}

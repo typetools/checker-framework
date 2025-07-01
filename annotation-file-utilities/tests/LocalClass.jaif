@@ -1,0 +1,59 @@
+package:
+    annotation @A: @java.lang.annotation.Target(value={TYPE_USE})
+        int value
+
+    class LocalClass:
+        field f:
+            type: @A(1)
+
+    class LocalClass$1InnerLocalClass:
+        field f:
+            type: @A(2)
+
+    class LocalClass$1:
+        field f:
+            type: @A(3)
+
+    class LocalClass$2:
+        field f:
+            type: @A(31)
+
+    class LocalClass$1$Test:
+        field f:
+            type: @A(4)
+
+    class LocalClass$1$Test$1:
+        field f:
+            type: @A(41)
+
+    class LocalClass$1$Test$2:
+        field f:
+            type: @A(42)
+
+    class LocalClass$2InnerLocalClass:
+        field f:
+            type: @A(5)
+
+    class LocalClass$2InnerLocalClass$Inner:
+        field f:
+            type: @A(6)
+
+    class LocalClass$2InnerLocalClass$Inner$1:
+        field f:
+            type: @A(7)
+
+    class LocalClass$2InnerLocalClass$Inner$2:
+        field f:
+            type: @A(71)
+
+    class LocalClass$2InnerLocalClass$1OuterLocalClass:
+        field f:
+            type: @A(10)
+
+    class LocalClass$1OuterLocalClass:
+        field f:
+            type: @A(8)
+
+    class LocalClass$1OuterLocalClass$1InnerLocalClass:
+        field f:
+            type: @A(9)

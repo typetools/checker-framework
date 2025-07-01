@@ -1,0 +1,9 @@
+package :
+annotation @A: @java.lang.annotation.Target(value={TYPE_USE})
+
+package pkg.name.here:
+class Package:
+
+    field o:
+        insert-annotation Variable.type: @A
+

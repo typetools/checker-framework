@@ -1,0 +1,34 @@
+package :
+annotation @X:
+
+package :
+annotation @Y:
+
+package :
+class GenericCellDoubled:
+
+    field f:
+        insert-annotation Variable.type, ParameterizedType.typeArgument 0: @X
+
+    field g:
+        insert-annotation Variable.type, ParameterizedType.typeArgument 0: @X
+
+    field h:
+        insert-annotation Variable.type, ParameterizedType.typeArgument 0, ParameterizedType.typeArgument 0: @X
+
+    field i:
+        insert-annotation Variable.type, ParameterizedType.typeArgument 0: @X
+
+    field j1:
+        insert-annotation Variable.type, ParameterizedType.typeArgument 1, ParameterizedType.typeArgument 0: @X
+
+    field j2:
+        insert-annotation Variable.type, ParameterizedType.typeArgument 1, ParameterizedType.typeArgument 0: @X
+
+    field j3:
+        insert-annotation Variable.type, ParameterizedType.typeArgument 1, ParameterizedType.typeArgument 0: @X
+        insert-annotation Variable.type, ParameterizedType.typeArgument 1: @Y @X
+
+    field k:
+        insert-annotation Variable.type: @Y
+

@@ -1,0 +1,10 @@
+package :
+annotation @X:
+
+package :
+class NewPackage:
+
+    method <init>()V:
+        return:
+        insert-annotation Method.body, Block.statement 1, Variable.initializer, NewClass.identifier: @X
+

@@ -1,0 +1,16 @@
+package java.lang:
+annotation @Tainted: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package java.lang:
+annotation @UnderInitialization: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package org.checkerframework.afu.annotator.tests:
+class NewGeneric:
+
+    method <init>()V:
+
+    method foo(Ljava/lang/Object;)V:
+        typecast #1: @java.lang.Tainted
+            inner-type 3, 0: @java.lang.UnderInitialization
+        typecast #6: @java.lang.UnderInitialization
+
