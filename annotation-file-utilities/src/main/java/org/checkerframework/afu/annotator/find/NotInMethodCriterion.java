@@ -1,6 +1,6 @@
 package org.checkerframework.afu.annotator.find;
 
-import com.sun.source.tree.*;
+import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import org.checkerframework.afu.scenelib.io.ASTPath;
 

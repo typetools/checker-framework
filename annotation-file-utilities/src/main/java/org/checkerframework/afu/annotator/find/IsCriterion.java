@@ -1,6 +1,8 @@
 package org.checkerframework.afu.annotator.find;
 
-import com.sun.source.tree.*;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.util.Locale;
 import org.checkerframework.afu.annotator.scanner.TreePathUtil;

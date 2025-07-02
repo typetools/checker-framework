@@ -1,6 +1,10 @@
 package org.checkerframework.afu.scenelib.util.coll;
 
-import java.util.*;
+import java.util.AbstractSet;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * A simple implementation of {@link KeyedSet} backed by an insertion-order {@link

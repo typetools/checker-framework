@@ -1,6 +1,10 @@
 package org.checkerframework.afu.scenelib.io.classfile;
 
-import java.io.*;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import org.checkerframework.afu.scenelib.el.AScene;
 import org.checkerframework.afu.scenelib.io.IndexFileParser;
 import org.checkerframework.afu.scenelib.util.CommandLineUtils;

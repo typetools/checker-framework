@@ -1,6 +1,6 @@
 package org.checkerframework.afu.scenelib.toys;
 
-import java.util.*;
+import java.util.HashMap;
 
 public @interface SimplerAnnotation {
   BalanceEnum be();
