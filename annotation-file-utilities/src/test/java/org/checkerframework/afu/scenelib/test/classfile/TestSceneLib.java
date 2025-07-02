@@ -54,7 +54,7 @@ public class TestSceneLib {
       throw new RuntimeException("Can't find resource " + name);
     }
     return new LineNumberReader(
-        new InputStreamReader((InputStream) TestSceneLib.class.getResourceAsStream(name), UTF_8));
+        new InputStreamReader(TestSceneLib.class.getResourceAsStream(name), UTF_8));
   }
 
   static final String fooIndexContents =
@@ -189,17 +189,16 @@ public class TestSceneLib {
   }
 
   private void checkConstructor(AMethod constructor) {
-    Annotation ann = ((Annotation) constructor.receiver.type.lookup("p2.D"));
+    Annotation ann = constructor.receiver.type.lookup("p2.D");
     Assert.assertEquals(Collections.singletonMap("value", "spam"), ann.fieldValues);
     Set<Entry<LocalLocation, AField>> set = constructor.body.locals.entrySet();
     Entry<LocalLocation, AField> entry = set.iterator().next();
     Assert.assertEquals(1, entry.getKey().index[0]);
     Assert.assertEquals(3, entry.getKey().getScopeStart());
     Assert.assertEquals(5, entry.getKey().getScopeLength());
-    ATypeElement l = (ATypeElement) entry.getValue().type;
+    ATypeElement l = entry.getValue().type;
     AElement i =
-        (AElement)
-            l.innerTypes.get(TypePathEntry.getTypePathEntryListFromBinary(Arrays.asList(0, 0)));
+        l.innerTypes.get(TypePathEntry.getTypePathEntryListFromBinary(Arrays.asList(0, 0)));
     Assert.assertNotNull(i.lookup("p2.C"));
     AField l2 = constructor.body.locals.get(new LocalLocation(3, 6, 1));
     Assert.assertNull(l2);
@@ -211,16 +210,15 @@ public class TestSceneLib {
     AScene s1 = newScene();
     IndexFileParser.parse(fr, "test1.jaif", s1);
 
-    AClass foo1 = s1.classes.get("p1.Foo");
-    Assert.assertNotNull("Didn't find foo1", foo1);
-    AClass foo = (AClass) foo1;
+    AClass foo = s1.classes.get("p1.Foo");
+    Assert.assertNotNull("Didn't find foo1", foo);
     boolean sawConstructor = false;
     for (Map.Entry<String, AMethod> me : foo.methods.entrySet()) {
       if (me.getKey().equals("<init>(Ljava/util/Set;)V")) {
         Assert.assertFalse(sawConstructor);
         AMethod constructor = me.getValue();
         Assert.assertNotNull(constructor);
-        checkConstructor((AMethod) constructor);
+        checkConstructor(constructor);
         sawConstructor = true;
       }
     }
@@ -278,7 +276,7 @@ public class TestSceneLib {
     Assert.assertNotNull(tdc.f);
 
     // now look at p2.E because it has some rather complex types
-    AnnotationDef tle = (AnnotationDef) tdc.e;
+    AnnotationDef tle = tdc.e;
     Assert.assertEquals(RetentionPolicy.CLASS, tle.retention());
     AnnotationDef e = tle;
     Assert.assertEquals(new ArrayAFT(new AnnotationAFT(tdc.a)), e.fieldTypes.get("first"));
@@ -287,7 +285,7 @@ public class TestSceneLib {
     Assert.assertEquals(ClassTokenAFT.ctaft, e.fieldTypes.get("fourth"));
     Assert.assertEquals(ClassTokenAFT.ctaft, e.fieldTypes.get("fifth"));
 
-    AnnotationDef tla = (AnnotationDef) tdc.a;
+    AnnotationDef tla = tdc.a;
     Assert.assertEquals(RetentionPolicy.RUNTIME, tla.retention());
     AnnotationDef a = tla;
     Assert.assertEquals(BasicAFT.forType(int.class), a.fieldTypes.get("value"));

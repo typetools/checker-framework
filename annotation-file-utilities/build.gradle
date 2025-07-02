@@ -112,7 +112,7 @@ task testExample(type: JavaExec, dependsOn: compileTestJava, group: 'Verificatio
   }
 }
 
-task testAnnotator(type: Exec, dependsOn: assemble, group: 'Verification') {
+task testAnnotator(type: Exec, dependsOn: shadowJar, group: 'Verification') {
   description = 'Run the annotator test.'
   workingDir "${projectDir}/tests/"
   executable 'make'

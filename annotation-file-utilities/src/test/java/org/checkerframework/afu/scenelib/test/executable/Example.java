@@ -49,12 +49,11 @@ public class Example {
 
     System.out.println("Processing class " + args[1]);
     // Get a handle on the class
-    AClass clazz1 = scene.classes.get(args[1]);
-    if (clazz1 == null) {
+    AClass clazz = scene.classes.get(args[1]);
+    if (clazz == null) {
       System.out.println("Class " + args[1] + " is not mentioned in annotation file " + args[0]);
       return;
     }
-    AClass clazz = (AClass) clazz1;
 
     for (Map.Entry<String, AMethod> me : clazz.methods.entrySet()) {
       AMethod method = me.getValue();
