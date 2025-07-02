@@ -912,7 +912,7 @@ subprojects {
     // The checkNullness task runs on all code, but it only *checks* the following code:
     //  * All files outside the 'framework' and 'checker' subprojects.
     //  * In the 'framework' and 'checker' subprojects, files with `@AnnotatedFor("nullness")`.
-    if (project.name.is('framework') || project.name.is('checker')) {
+    if (project.name.is('framework') || project.name.is('checker') || project.name.is('annotation-file-utilities')) {
       createCheckTypeTask(project.name, 'Nullness',
           'org.checkerframework.checker.nullness.NullnessChecker',
           [
