@@ -1,12 +1,11 @@
 package org.checkerframework.afu.scenelib.io;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collection;
@@ -595,7 +594,7 @@ public final class IndexFileWriter {
    * </code> in index file format; see {@link #write(AScene, Writer)}.
    */
   public static void write(AScene scene, String filename) throws IOException, DefException {
-    try (Writer w = Files.newBufferedWriter(Paths.get(filename), UTF_8)) {
+    try (Writer w = Files.newBufferedWriter(Paths.get(filename), StandardCharsets.UTF_8)) {
       write(scene, w);
     }
   }

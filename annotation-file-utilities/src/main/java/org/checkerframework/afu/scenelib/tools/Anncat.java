@@ -1,12 +1,11 @@
 package org.checkerframework.afu.scenelib.tools;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import org.checkerframework.afu.scenelib.el.AScene;
@@ -94,7 +93,7 @@ public class Anncat {
       // Write the scene
       if (idx == args.length) {
         System.err.println("Writing index file to standard output...");
-        IndexFileWriter.write(theScene, new OutputStreamWriter(System.out, UTF_8));
+        IndexFileWriter.write(theScene, new OutputStreamWriter(System.out, StandardCharsets.UTF_8));
         System.err.println("Finished.");
       } else {
         idx++;
@@ -107,7 +106,7 @@ public class Anncat {
           usageAssert(idx == args.length);
           System.err.println("Writing index file to " + outfile + "...");
           // In Java 11, use: new FileWriter(outfile, UTF_8)
-          try (Writer w = Files.newBufferedWriter(Paths.get(outfile), UTF_8)) {
+          try (Writer w = Files.newBufferedWriter(Paths.get(outfile), StandardCharsets.UTF_8)) {
             IndexFileWriter.write(theScene, w);
           }
           System.err.println("Finished.");

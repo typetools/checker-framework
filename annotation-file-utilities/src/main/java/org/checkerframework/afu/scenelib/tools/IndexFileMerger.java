@@ -1,7 +1,5 @@
 package org.checkerframework.afu.scenelib.tools;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
 import java.io.BufferedWriter;
@@ -10,6 +8,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
@@ -273,7 +272,9 @@ public class IndexFileMerger {
       try {
         IndexFileWriter.write(
             scene,
-            new PrintWriter(new BufferedWriter(new OutputStreamWriter(System.out, UTF_8)), true));
+            new PrintWriter(
+                new BufferedWriter(new OutputStreamWriter(System.out, StandardCharsets.UTF_8)),
+                true));
       } catch (SecurityException e) {
         e.printStackTrace();
         System.exit(1);

@@ -1,16 +1,12 @@
 package org.checkerframework.afu.scenelib.io;
 
-import static java.io.StreamTokenizer.TT_EOF;
-import static java.io.StreamTokenizer.TT_NUMBER;
-import static java.io.StreamTokenizer.TT_WORD;
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import com.sun.source.tree.Tree.Kind;
 import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.Reader;
 import java.io.StreamTokenizer;
 import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.Collator;
@@ -125,7 +121,7 @@ public final class IndexFileParser {
 
   /** True if the next thing from st is the given string token. */
   private boolean checkKeyword(String s) {
-    return st.ttype == TT_WORD && st.sval.equals(s);
+    return st.ttype == StreamTokenizer.TT_WORD && st.sval.equals(s);
   }
 
   /**
@@ -279,7 +275,7 @@ public final class IndexFileParser {
       return null;
     } else {
       String val = st.sval;
-      if (st.ttype == TT_WORD && isValidIdentifier(val)) {
+      if (st.ttype == StreamTokenizer.TT_WORD && isValidIdentifier(val)) {
         return val;
       } else {
         return null;
@@ -323,7 +319,7 @@ public final class IndexFileParser {
       return null;
     } else {
       String val = st.sval;
-      if (st.ttype == TT_WORD && primitiveTypes.containsKey(val)) {
+      if (st.ttype == StreamTokenizer.TT_WORD && primitiveTypes.containsKey(val)) {
         return st.sval;
       } else {
         return null;
@@ -351,7 +347,7 @@ public final class IndexFileParser {
   }
 
   private int checkNNInteger() {
-    if (st.ttype == TT_NUMBER) {
+    if (st.ttype == StreamTokenizer.TT_NUMBER) {
       int x = (int) st.nval;
       if (x == st.nval && x >= -1) // shouldn't give us a huge number
       return x;
@@ -410,7 +406,7 @@ public final class IndexFileParser {
     while (!matchKeyword("class")) {
       if (st.ttype >= 0) {
         type.append((char) st.ttype);
-      } else if (st.ttype == TT_WORD) {
+      } else if (st.ttype == StreamTokenizer.TT_WORD) {
         type.append(st.sval);
       } else {
         throw new ParseException("Found something that doesn't belong in a signature");
@@ -462,7 +458,7 @@ public final class IndexFileParser {
         }
         st.nextToken();
       } else {
-        if (st.ttype == TT_NUMBER) {
+        if (st.ttype == StreamTokenizer.TT_NUMBER) {
           double n = st.nval;
           st.nextToken();
           if (type == byte.class) {
@@ -765,7 +761,7 @@ public final class IndexFileParser {
     Map<String, AnnotationFieldType> fields = new LinkedHashMap<>();
 
     // yuck; it would be nicer to do a positive match
-    while (st.ttype != TT_EOF
+    while (st.ttype != StreamTokenizer.TT_EOF
         && !checkKeyword("annotation")
         && !checkKeyword("class")
         && !checkKeyword("package")) {
@@ -950,7 +946,7 @@ public final class IndexFileParser {
     while (!matchChar(':')) {
       if (st.ttype >= 0) {
         key += st.ttype == 46 ? '/' : (char) st.ttype;
-      } else if (st.ttype == TT_WORD) {
+      } else if (st.ttype == StreamTokenizer.TT_WORD) {
         key += st.sval;
       } else {
         throw new ParseException("Found something that doesn't belong in a signature");
@@ -1689,7 +1685,7 @@ public final class IndexFileParser {
   private void parse() throws ParseException, IOException {
     st.nextToken();
 
-    while (st.ttype != TT_EOF) {
+    while (st.ttype != StreamTokenizer.TT_EOF) {
       expectKeyword("package");
 
       String pkg;
@@ -1715,7 +1711,7 @@ public final class IndexFileParser {
           parseAnnotationDef();
         } else if (checkKeyword("class")) {
           parseClass();
-        } else if (checkKeyword("package") || st.ttype == TT_EOF) {
+        } else if (checkKeyword("package") || st.ttype == StreamTokenizer.TT_EOF) {
           break;
         } else {
           throw new ParseException(
@@ -1844,7 +1840,8 @@ public final class IndexFileParser {
   public static Map<String, AnnotationDef> parseFile(String filename, AScene scene)
       throws IOException {
     try (LineNumberReader in =
-        new LineNumberReader(Files.newBufferedReader(Paths.get(filename), UTF_8))) {
+        new LineNumberReader(
+            Files.newBufferedReader(Paths.get(filename), StandardCharsets.UTF_8))) {
       IndexFileParser parser = new IndexFileParser(in, filename, scene);
       return parseAndReturnAnnotationDefs(filename, in, parser);
     }

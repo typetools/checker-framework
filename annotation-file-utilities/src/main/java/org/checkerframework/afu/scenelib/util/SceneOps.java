@@ -1,7 +1,5 @@
 package org.checkerframework.afu.scenelib.util;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import com.sun.tools.javac.util.Pair;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -9,6 +7,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Set;
 import org.checkerframework.afu.scenelib.el.ABlock;
@@ -59,7 +58,9 @@ public class SceneOps {
       IndexFileParser.parseFile(args[2], s2);
       AScene diff = diff(s1, s2);
 
-      Writer w = new PrintWriter(new BufferedWriter(new OutputStreamWriter(System.out, UTF_8)));
+      Writer w =
+          new PrintWriter(
+              new BufferedWriter(new OutputStreamWriter(System.out, StandardCharsets.UTF_8)));
       try {
         IndexFileWriter.write(diff, w);
       } catch (DefException e) {

@@ -1,7 +1,5 @@
 package org.checkerframework.afu.annotator;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.util.JavacTask;
 import com.sun.tools.javac.api.JavacTaskImpl;
@@ -10,6 +8,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -197,7 +196,7 @@ public final class Source {
    * @throws IOException if the source file couldn't be written
    */
   public void write(@Owning OutputStream out) throws IOException {
-    out.write(source.toString().getBytes(UTF_8));
+    out.write(source.toString().getBytes(StandardCharsets.UTF_8));
     out.flush();
     out.close();
   }

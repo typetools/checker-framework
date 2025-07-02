@@ -1,14 +1,12 @@
 package org.checkerframework.afu.scenelib.io;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.checkerframework.afu.scenelib.el.TypePathEntry.getTypePathEntryListFromBinary;
-
 import com.sun.tools.javac.code.TargetType;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.Reader;
 import java.lang.annotation.RetentionPolicy;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -271,7 +269,7 @@ public final class JavapParser {
         // TODO: update location representation
         // if (targetType.) {
         List<Integer> location = parseInnerTypeLocationNums();
-        List<TypePathEntry> typePath = getTypePathEntryListFromBinary(location);
+        List<TypePathEntry> typePath = TypePathEntry.getTypePathEntryListFromBinary(location);
         subElement = subOuterType.innerTypes.getVivify(typePath);
         // } else
         //    subElement = subOuterType;
@@ -419,7 +417,8 @@ public final class JavapParser {
 
   public static void parse(String filename, AScene scene) throws IOException, FileIOException {
     try (LineNumberReader lnr =
-        new LineNumberReader(Files.newBufferedReader(Paths.get(filename), UTF_8))) {
+        new LineNumberReader(
+            Files.newBufferedReader(Paths.get(filename), StandardCharsets.UTF_8))) {
       try {
         parse(lnr, scene);
       } catch (ParseException e) {
