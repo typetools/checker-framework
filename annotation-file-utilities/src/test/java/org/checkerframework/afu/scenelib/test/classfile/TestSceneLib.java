@@ -1,13 +1,12 @@
 package org.checkerframework.afu.scenelib.test.classfile;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.LineNumberReader;
 import java.io.StringWriter;
 import java.lang.annotation.RetentionPolicy;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -54,7 +53,8 @@ public class TestSceneLib {
       throw new RuntimeException("Can't find resource " + name);
     }
     return new LineNumberReader(
-        new InputStreamReader(TestSceneLib.class.getResourceAsStream(name), UTF_8));
+        new InputStreamReader(
+            TestSceneLib.class.getResourceAsStream(name), StandardCharsets.UTF_8));
   }
 
   static final String fooIndexContents =

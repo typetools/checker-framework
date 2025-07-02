@@ -1,9 +1,8 @@
 package org.checkerframework.afu.scenelib.test.executable;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Map;
@@ -77,7 +76,8 @@ public class Example {
 
     // System.out.println("Writing out " + args[2]);
     try {
-      IndexFileWriter.write(scene, Files.newBufferedWriter(Paths.get(args[2]), UTF_8));
+      IndexFileWriter.write(
+          scene, Files.newBufferedWriter(Paths.get(args[2]), StandardCharsets.UTF_8));
     } catch (IOException e) {
       e.printStackTrace(System.err);
       return;
