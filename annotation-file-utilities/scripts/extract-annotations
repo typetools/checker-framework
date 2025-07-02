@@ -4,7 +4,6 @@
 # For usage information, run: extract-annotations --help
 # See the Annotation File Utilities documentation for more information.
 
-
 # A few options are consumed by this script rather than being passed to the
 # underlying Java program.  They must be the first command-line arguments
 # provided.
@@ -17,7 +16,7 @@ while [ "$#" -gt 0 ]; do
       DEBUG=1
       shift
       ;;
-    -cp|-classpath)
+    -cp | -classpath)
       # Set the classpath
       CLASSPATH=$2
       shift 2
@@ -33,7 +32,7 @@ ANNOTATION_FILE_UTILS=${AFU}/annotation-file-utilities-all.jar
 
 JAVAC_JAR=${JAVAC_JAR:-${AFU}/lib/javac-9+181-r4173-1.jar}
 
-if java -version 2>&1 | grep version | grep 1.8 > /dev/null ; then
+if java -version 2>&1 | grep version | grep 1.8 > /dev/null; then
   # Using JDK 8. -Xbootclasspth isn't supported in 9+ and isn't required.
   BOOTCLASSPATH=-Xbootclasspath/p:${JAVAC_JAR}
   JDK_OPENS=
