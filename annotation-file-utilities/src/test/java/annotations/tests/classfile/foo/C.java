@@ -1,6 +1,7 @@
 package annotations.tests.classfile.foo;
 
-import java.lang.annotation.*;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 // @Retention(RetentionPolicy.CLASS)
 @Retention(RetentionPolicy.RUNTIME)
