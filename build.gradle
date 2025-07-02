@@ -1091,7 +1091,11 @@ subprojects {
     }
     tasks.create(name: 'typecheck-part1', group: 'Verification') {
       description = 'Run the Checker Framework on itself (part 1)'
-      dependsOn('checkFormatter', 'checkInterning', 'checkOptional', 'checkPurity')
+      dependsOn('checkFormatter', 'checkOptional', 'checkPurity')
+      if (!project.name.is('annotation-file-utilities')) {
+        // AFU hasn't been annotated for Interning Checker.
+        dependsOn('checkInterning')
+      }
     }
     tasks.create(name: 'typecheck-part2', group: 'Verification') {
       description = 'Run the Checker Framework on itself (part 2)'
