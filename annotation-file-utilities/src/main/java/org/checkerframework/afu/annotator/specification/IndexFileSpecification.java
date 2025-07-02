@@ -44,6 +44,7 @@ import org.checkerframework.afu.scenelib.io.IndexFileParser;
 import org.checkerframework.afu.scenelib.type.DeclaredType;
 import org.checkerframework.afu.scenelib.type.Type;
 import org.checkerframework.afu.scenelib.util.coll.VivifyingMap;
+import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -142,6 +143,7 @@ public class IndexFileSpecification {
    * @param format a format string
    * @param args the format string arguments
    */
+  @FormatMethod
   private static void debug(String format, Object... args) {
     if (debug) {
       System.out.printf(format, args);

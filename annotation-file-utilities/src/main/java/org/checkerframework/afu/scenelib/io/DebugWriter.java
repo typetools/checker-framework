@@ -5,6 +5,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import java.io.BufferedWriter;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import org.checkerframework.checker.formatter.qual.FormatMethod;
 
 /**
  * Performs output to System.out. Has a flag {@code enabled} that controls whether output is
@@ -51,7 +52,7 @@ public class DebugWriter {
    * @param format a format string
    * @param args the format string arguments
    */
-  @com.google.errorprone.annotations.FormatMethod
+  @FormatMethod
   public void debug(String format, Object... args) {
     if (isEnabled()) {
       out.print(String.format(format, args));
