@@ -596,7 +596,7 @@ task ainferTestCheckerGenerateJaifs(type: Test) {
 tasks.register('ainferTestCheckerGenerateJaifsInsertAnnotations', InsertAnnotationsToSource) {
   dependsOn ainferTestCheckerGenerateJaifs
 
-  afuDir = afu
+  afuDir = '../annotation-file-utilities'
   testDir = 'tests/ainfer-testchecker'
   def checkerQualJarFile = file(project(':checker-qual').tasks.getByName('jar').archiveFile)
   classpath = "${sourceSets.test.output.asPath}:${checkerQualJarFile}:"
