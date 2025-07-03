@@ -792,7 +792,7 @@ task ainferNullnessGenerateJaifs(type: Test) {
 tasks.register('ainferNullnessGenerateJaifsInsertAnnotations', InsertAnnotationsToSource) {
   dependsOn ainferNullnessGenerateJaifs
 
-  afuDir = afu
+  afuDir = '../annotation-file-utilities'
   testDir = 'tests/ainfer-nullness/'
   def checkerQualJarFile = file(project(':checker-qual').tasks.getByName('jar').archiveFile)
   classpath = "${sourceSets.test.output.asPath}:${checkerQualJarFile}:"
