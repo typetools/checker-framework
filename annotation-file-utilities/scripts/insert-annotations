@@ -27,7 +27,7 @@ while [ "$#" -gt 0 ]; do
   esac
 done
 
-AFU="${AFU:-$(dirname $0)/..}"
+AFU=${AFU:-$(dirname "$0")/..}
 ANNOTATION_FILE_UTILS="${AFU}/annotation-file-utilities-all.jar"
 JAVAC_JAR="${JAVAC_JAR:-${AFU}/lib/javac-9+181-r4173-1.jar}"
 
@@ -47,4 +47,4 @@ if [ "$DEBUG" = "1" ]; then
 fi
 
 # Needs CLASSPATH to find user files
-java -ea "${BOOTCLASSPATH}" -cp "${ANNOTATION_FILE_UTILS}:${CLASSPATH}" org.checkerframework.afu.scenelib.io.classfile.ClassFileWriter "$@"
+java -ea "${BOOTCLASSPATH}" -cp "${ANNOTATION_FILE_UTILS}":"${CLASSPATH}" org.checkerframework.afu.scenelib.io.classfile.ClassFileWriter "$@"
