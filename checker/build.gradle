@@ -595,6 +595,8 @@ task ainferTestCheckerGenerateJaifs(type: Test) {
 
 tasks.register('ainferTestCheckerGenerateJaifsInsertAnnotations', InsertAnnotationsToSource) {
   dependsOn ainferTestCheckerGenerateJaifs
+  dependsOn(':annotation-file-utilities:shadowJar')
+
 
   afuDir = '../annotation-file-utilities'
   testDir = 'tests/ainfer-testchecker'
@@ -791,6 +793,8 @@ task ainferNullnessGenerateJaifs(type: Test) {
 }
 tasks.register('ainferNullnessGenerateJaifsInsertAnnotations', InsertAnnotationsToSource) {
   dependsOn ainferNullnessGenerateJaifs
+  dependsOn(':annotation-file-utilities:shadowJar')
+
 
   afuDir = '../annotation-file-utilities'
   testDir = 'tests/ainfer-nullness/'
