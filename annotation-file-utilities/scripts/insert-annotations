@@ -42,7 +42,7 @@ if [ "$DEBUG" = "1" ]; then
   echo "ANNOTATION_FILE_UTILS=${ANNOTATION_FILE_UTILS}"
   echo "JAVAC_JAR=${JAVAC_JAR}"
   # Keep this in sync with the actual command below.
-  echo "java -ea ${BOOTCLASSPATH} -cp ${JAVAC_JAR}:${AFU}/lib/plume-lib.jar:${ANNOTATION_FILE_UTILS}:${CLASSPATH} org.checkerframework.afu.scenelib.io.classfile.ClassFileWriter $@"
+  echo "java -ea ${BOOTCLASSPATH} -cp ${JAVAC_JAR}:${AFU}/lib/plume-lib.jar:${ANNOTATION_FILE_UTILS}:${CLASSPATH} org.checkerframework.afu.scenelib.io.classfile.ClassFileWriter ""$@"
   echo "--- end of insert-annotations debugging output"
 fi
 
