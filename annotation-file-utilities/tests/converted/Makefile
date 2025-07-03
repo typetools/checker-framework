@@ -82,7 +82,7 @@ bin/annotator/tests/%.class: %.java
 # be better to fail earlier.
 %.output: %.jaif %.java bin/annotator/tests/%.class ../../build/classes/java/main ../../annotation-file-utilities-all.jar
 	-$(JAVA) \
-	    -cp ../../build/classes/java/main:../../annotation-file-utilities-all.jar:bin \
+	    -cp ../../annotation-file-utilities-all.jar:bin \
 	    org.checkerframework.afu.annotator.Main \
 	    ${DEBUG} \
 	    --abbreviate=false \

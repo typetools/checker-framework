@@ -57,7 +57,7 @@ results: ../bin/VerifyDiffs.class
 .PRECIOUS: %.output
 %.output: %.jaif %.java ../../build/classes/java/main ../../annotation-file-utilities-all.jar
 	$(JAVA) \
-	-cp ../../build/classes/java/main:../bin:../../annotation-file-utilities-all.jar:bin \
+	-cp ../bin:../../annotation-file-utilities-all.jar:bin \
 	org.checkerframework.afu.annotator.Main \
 	${DEBUG} \
 	--abbreviate=true \

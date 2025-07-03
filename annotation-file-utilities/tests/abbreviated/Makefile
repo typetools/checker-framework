@@ -62,7 +62,7 @@ compile : $(SRC)
 # Actually runs the annotator to create the annotated java file.
 output: compile $(JAIF) ../../build/classes/java/main $(AFU_JARS)
 	$(JAVA) \
-	-cp ../../build/classes/java/main:../../annotation-file-utilities-all.jar:bin \
+	-cp ../../annotation-file-utilities-all.jar:bin \
 	org.checkerframework.afu.annotator.Main \
 	${DEBUG} \
 	--abbreviate=true \
