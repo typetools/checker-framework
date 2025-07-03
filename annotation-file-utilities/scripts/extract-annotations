@@ -8,7 +8,7 @@
 # underlying Java program.  They must be the first command-line arguments
 # provided.
 DEBUG=0
-CLASSPATH=${CLASSPATH}
+# CLASSPATH=${CLASSPATH}
 while [ "$#" -gt 0 ]; do
   case "$1" in
     --debug-script)
