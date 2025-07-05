@@ -287,6 +287,22 @@ public class CollectionOwnershipAnnotatedTypeFactory
   }
 
   /**
+   * Whether the given element is a resource collection field.
+   *
+   * @param elt the element
+   * @return true if the element is a resource collection field.
+   */
+  public boolean isResourceCollectionField(Element elt) {
+    if (elt == null) return false;
+    if (isResourceCollection(elt.asType())) {
+      if (elt.getKind().isField()) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
    * Whether the given element is a resource collection parameter that is {@code @OwningCollection}
    * by declaration, which is the default behavior, i.e. with no different collection ownership
    * annotation.
