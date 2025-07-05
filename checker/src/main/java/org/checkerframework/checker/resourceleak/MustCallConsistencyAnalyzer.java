@@ -772,8 +772,8 @@ public class MustCallConsistencyAnalyzer {
   private void addObligationsForOwningCollectionReturn(Set<Obligation> obligations, Node node) {
     LocalVariableNode tmpVar = cmAtf.getTempVarForNode(node);
     if (tmpVar != null) {
-      CollectionOwnershipStore coStore = coAtf.getStoreBefore(node);
-      CollectionOwnershipType cotype = coAtf.getCoType(node, coStore);
+      CollectionOwnershipStore coStore = coAtf.getStoreAfter(node);
+      CollectionOwnershipType cotype = coAtf.getCoType(tmpVar, coStore);
       if (cotype == CollectionOwnershipType.OwningCollection) {
         ResourceAlias tmpVarAsResourceAlias =
             new ResourceAlias(new LocalVariable(tmpVar), node.getTree());
