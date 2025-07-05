@@ -1807,15 +1807,30 @@ public class MustCallConsistencyAnalyzer {
       // The assignment is taking place in a variable declaration's
       // initializer or in an initializer block.
       if (node.getTree() instanceof VariableTree) {
-        // assignment is a field initializer. Is always permitted.
-        // switch (rhsCoType) {
-        //   case OwningCollectionWithoutObligation:
-        //     break;
-        //   case OwningCollection:
-        //   case NotOwningCollection:
-        //     throw new BugInCF("rhs of field initializer is " + rhsCoType + ": " + rhs);
-        //   default:
-        // }
+        // assignment is a field initializer. Permitted only if RHS is @OwningCollectionWithoutObligation.
+        CollectionOwnershipStore coStore = coAtf.getStoreBefore(node);
+        CollectionOwnershipType rhsCoType = coAtf.getCoType(removeCastsAndGetTmpVarIfPresent(rhs), coStore);
+        if (rhsCoType == null) {
+          throw new BugInCF(
+              "Expression " + rhs + " cannot be found in CollectionOwnership store " + coStore);
+        }
+        switch (rhsCoType) {
+          case OwningCollectionWithoutObligation:
+            break;
+          case OwningCollection:
+          case NotOwningCollection:
+            checker.reportError(
+              node.getTree(),
+              "illegal.owningcollection.field.assignment",
+              rhsCoType.toString()
+            );
+            break;
+          case OwningCollectionBottom:
+            throw new BugInCF(
+                "Expression "
+                    + node
+                    + " has resource collection operand, but @OwningCollectionBottom type.");
+        }
         return;
       } else {
         // is an initialization block. Not supported.
@@ -1829,12 +1844,12 @@ public class MustCallConsistencyAnalyzer {
     } else {
       // The assignment is taking place in a (possibly constructor) method.
       CollectionOwnershipStore coStore = coAtf.getStoreBefore(node);
-      CollectionOwnershipType lhsCoType = coAtf.getCoType(getTempVarOrNode(lhs), coStore);
+      CollectionOwnershipType lhsCoType = coAtf.getCoType(removeCastsAndGetTmpVarIfPresent(lhs), coStore);
       if (lhsCoType == null) {
         throw new BugInCF(
             "Expression " + lhs + " cannot be found in CollectionOwnership store " + coStore);
       }
-      CollectionOwnershipType rhsCoType = coAtf.getCoType(getTempVarOrNode(rhs), coStore);
+      CollectionOwnershipType rhsCoType = coAtf.getCoType(removeCastsAndGetTmpVarIfPresent(rhs), coStore);
       if (rhsCoType == null) {
         throw new BugInCF(
             "Expression " + rhs + " cannot be found in CollectionOwnership store " + coStore);
