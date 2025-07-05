@@ -34,6 +34,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
@@ -1796,6 +1797,16 @@ public class MustCallConsistencyAnalyzer {
     Node lhs = node.getTarget();
     Node rhs = node.getExpression();
 
+    // assignment to final field allowed
+    if (lhs != null && lhs.getTree() != null) {
+      Element lhsElt = TreeUtils.elementFromTree(lhs.getTree());
+      if (lhsElt != null) {
+        if (lhsElt.getModifiers().contains(Modifier.FINAL)) {
+          return;
+        }
+      }
+    }
+
     if (!coAtf.isResourceCollection(lhs.getType()) && !coAtf.isResourceCollection(rhs.getType())) {
       return;
     }
@@ -1807,10 +1818,16 @@ public class MustCallConsistencyAnalyzer {
       // The assignment is taking place in a variable declaration's
       // initializer or in an initializer block.
       if (node.getTree() instanceof VariableTree) {
-        // assignment is a field initializer. Permitted only if RHS is @OwningCollectionWithoutObligation.
+        // assignment is a field initializer. Permitted only if RHS is
+        // @OwningCollectionWithoutObligation
+        // or null.
         CollectionOwnershipStore coStore = coAtf.getStoreBefore(node);
-        CollectionOwnershipType rhsCoType = coAtf.getCoType(removeCastsAndGetTmpVarIfPresent(rhs), coStore);
+        CollectionOwnershipType rhsCoType =
+            coAtf.getCoType(removeCastsAndGetTmpVarIfPresent(rhs), coStore);
         if (rhsCoType == null) {
+          if (TreeUtils.isNullExpression(rhs.getTree())) {
+            return;
+          }
           throw new BugInCF(
               "Expression " + rhs + " cannot be found in CollectionOwnership store " + coStore);
         }
@@ -1820,16 +1837,9 @@ public class MustCallConsistencyAnalyzer {
           case OwningCollection:
           case NotOwningCollection:
             checker.reportError(
-              node.getTree(),
-              "illegal.owningcollection.field.assignment",
-              rhsCoType.toString()
-            );
+                node.getTree(), "illegal.owningcollection.field.assignment", rhsCoType.toString());
             break;
           case OwningCollectionBottom:
-            throw new BugInCF(
-                "Expression "
-                    + node
-                    + " has resource collection operand, but @OwningCollectionBottom type.");
         }
         return;
       } else {
@@ -1844,12 +1854,14 @@ public class MustCallConsistencyAnalyzer {
     } else {
       // The assignment is taking place in a (possibly constructor) method.
       CollectionOwnershipStore coStore = coAtf.getStoreBefore(node);
-      CollectionOwnershipType lhsCoType = coAtf.getCoType(removeCastsAndGetTmpVarIfPresent(lhs), coStore);
+      CollectionOwnershipType lhsCoType =
+          coAtf.getCoType(removeCastsAndGetTmpVarIfPresent(lhs), coStore);
       if (lhsCoType == null) {
         throw new BugInCF(
             "Expression " + lhs + " cannot be found in CollectionOwnership store " + coStore);
       }
-      CollectionOwnershipType rhsCoType = coAtf.getCoType(removeCastsAndGetTmpVarIfPresent(rhs), coStore);
+      CollectionOwnershipType rhsCoType =
+          coAtf.getCoType(removeCastsAndGetTmpVarIfPresent(rhs), coStore);
       if (rhsCoType == null) {
         throw new BugInCF(
             "Expression " + rhs + " cannot be found in CollectionOwnership store " + coStore);
