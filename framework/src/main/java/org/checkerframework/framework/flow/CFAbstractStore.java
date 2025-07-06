@@ -301,6 +301,11 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     replaceValue(methodCall, val);
   }
 
+  /** Update information about method calls. */
+  private void updateMethodCallValues() {
+    methodCallExpressions.keySet().removeIf(MethodCall::isModifiableByOtherCode);
+  }
+
   /**
    * Update information about method calls given the list of side-effected expressions.
    *
@@ -440,7 +445,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
       if (!sideEffectsOnlyExpressions.isEmpty()
           && !sideEffectsOnlyExpressions.contains(fieldAccess)) {
-        // If the field hasn't been side-effected, there is no need to compute a new value for it
+        // If the field hasn't been side-effected, there is no need to compute a new value for it.
         newFieldValues.put(fieldAccess, previousValue);
       } else {
         V newValue = newFieldValueAfterMethodCall(fieldAccess, atypeFactory, previousValue);
