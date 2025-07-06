@@ -37,8 +37,11 @@ public class SocketIntoList {
 
   // This input list might have been produced by e.g., test1()
   public void test4(List<@MustCall({}) Socket> l) throws Exception {
-    // :: error: required.method.not.called
+    // l.get(0) is not an error as List#get returns @NotOwning.
+    // However, s.bind tries to reset the mustcall obligations of s,
+    // which is only permitted if s is owning.
     Socket s = l.get(0);
+    // :: error: reset.not.owning
     s.bind(new InetSocketAddress("192.168.0.1", 0));
   }
 
