@@ -1041,10 +1041,10 @@ public final class TreeUtils {
         // Trying to handle receiver calls to trees of the form
         //     ((m).getArray())
         // returns the type of 'm' in this case
-        ExpressionTree methodSelect = ((MethodInvocationTree) expression).getMethodSelect();
+        receiver = ((MethodInvocationTree) expression).getMethodSelect();
 
-        if (methodSelect instanceof MemberSelectTree) {
-          receiver = ((MemberSelectTree) methodSelect).getExpression();
+        if (receiver instanceof MemberSelectTree) {
+          receiver = ((MemberSelectTree) receiver).getExpression();
         } else {
           // It's a method call "m(foo)" without an explicit receiver
           return null;

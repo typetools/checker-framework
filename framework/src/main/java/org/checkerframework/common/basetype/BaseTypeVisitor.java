@@ -1176,6 +1176,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     boolean bodyAssigned = false;
 
     if (suggestPureMethods || PurityUtils.hasPurityAnnotation(atypeFactory, tree)) {
+
       // check "no" purity
       EnumSet<Pure.Kind> kinds = PurityUtils.getPurityKinds(atypeFactory, tree);
       // @Deterministic makes no sense for a void method or constructor
