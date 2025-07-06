@@ -7,6 +7,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.resourceleak.ResourceLeakUtils;
 import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsAnnotatedTypeFactory;
@@ -86,8 +87,15 @@ public class CollectionOwnershipVisitor
 
   @Override
   public Void visitVariable(VariableTree tree, Void p) {
-    if (atypeFactory.isOwningCollectionField(TreeUtils.elementFromDeclaration(tree))) {
-      checkOwningCollectionField(tree);
+    Element elt = TreeUtils.elementFromDeclaration(tree);
+    if (elt != null && atypeFactory.isResourceCollectionField(elt)) {
+      if (elt.getModifiers().contains(Modifier.STATIC)) {
+        // error: static resource collection fields not supported
+        checker.reportError(tree, "static.resource.collection.field", tree);
+      }
+      if (atypeFactory.isOwningCollectionField(elt)) {
+        checkOwningCollectionField(tree);
+      }
     }
     return super.visitVariable(tree, p);
   }
