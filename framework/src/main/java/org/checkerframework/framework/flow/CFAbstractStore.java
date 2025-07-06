@@ -289,14 +289,14 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
       updateFieldValuesForMethodCall(gatypeFactory, sideEffectsOnlyExpressions);
 
-      // Update array values
+      // Update array values.
       arrayValues.clear();
 
-      // Update information about method calls
+      // Update information about method calls.
       updateMethodCallValues(sideEffectsOnlyExpressions);
     }
 
-    // store information about method calls if possible
+    // Store information about method calls if possible.
     JavaExpression methodCall = JavaExpression.fromNode(methodInvocationNode);
     replaceValue(methodCall, val);
   }
@@ -308,9 +308,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    */
   private void updateMethodCallValues(List<JavaExpression> sideEffectsOnlyExpressions) {
     if (sideEffectsOnlyExpressions.isEmpty()) {
-      methodCallExpressions
-          .keySet()
-          .removeIf(methodCallValue -> methodCallValue.isModifiableByOtherCode());
+      methodCallExpressions.keySet().removeIf(MethodCall::isModifiableByOtherCode);
     } else {
       methodCallExpressions
           .keySet()
@@ -425,8 +423,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * <p>More specifically, remove all information about fields except for unassignable fields and
    * fields that have a monotonic annotation.
    *
-   * <p>A non-empty {@code sideEffectsOnlyExpressions} is indicative that the invoked method has
-   * side effects. In this case, remove information for fields that actually appear in the list of
+   * <p>A non-empty {@code sideEffectsOnlyExpressions} indicates that the invoked method has side
+   * effects. In this case, remove information for fields that actually appear in the list of
    * side-effected expressions.
    *
    * @param atypeFactory AnnotatedTypeFactory of the associated checker
