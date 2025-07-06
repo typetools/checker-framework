@@ -331,6 +331,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * @param checker the checker to which this type factory belongs
    * @param useFlow whether flow analysis should be performed
    */
+  @SuppressWarnings("this-escape")
   protected GenericAnnotatedTypeFactory(BaseTypeChecker checker, boolean useFlow) {
     super(checker);
 
@@ -1141,7 +1142,7 @@ public abstract class GenericAnnotatedTypeFactory<
    */
   public @Nullable Store getRegularExitStore(Tree tree) {
     if (regularExitStores == null) {
-      if (tree.getKind() == Tree.Kind.METHOD) {
+      if (tree instanceof MethodTree) {
         if (((MethodTree) tree).getBody() == null) {
           // No body: the method is abstract or in an interface
           return null;
@@ -1526,8 +1527,8 @@ public abstract class GenericAnnotatedTypeFactory<
   /** Sorts a list of trees with the variables first. */
   private final Comparator<Tree> sortVariablesFirst =
       (t1, t2) -> {
-        boolean variable1 = t1.getKind() == Tree.Kind.VARIABLE;
-        boolean variable2 = t2.getKind() == Tree.Kind.VARIABLE;
+        boolean variable1 = t1 instanceof VariableTree;
+        boolean variable2 = t2 instanceof VariableTree;
         if (variable1 && !variable2) {
           return -1;
         } else if (!variable1 && variable2) {
@@ -2121,7 +2122,7 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     Tree declTree = declarationFromElement(elt);
-    if (declTree == null || declTree.getKind() != Tree.Kind.VARIABLE) {
+    if (declTree == null || !(declTree instanceof VariableTree)) {
       return;
     }
 

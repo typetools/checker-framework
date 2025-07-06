@@ -83,6 +83,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    *
    * @param checker the type-checker associated with this factory
    */
+  @SuppressWarnings("this-escape")
   public MethodValAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     if (this.getClass() == MethodValAnnotatedTypeFactory.class) {

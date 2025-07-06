@@ -21,7 +21,7 @@ set +e
 export SHELLOPTS
 # echo "SHELLOPTS=${SHELLOPTS}"
 
-SCRIPTDIR="$(cd "$(dirname "$0")" && pwd)"
+SCRIPT_DIR="$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd -P)"
 CHECKERFRAMEWORK="$(cd "$(dirname "$0")"/../../.. && pwd)"
 
 # Do not use a subdirectory of $CHECKERFRAMEWORK because if a project has no
@@ -79,7 +79,7 @@ test_wpi_plume_lib() {
   "$CHECKERFRAMEWORK/checker/bin/wpi.sh" -b "-PskipCheckerFramework" -- --checker "$checkers"
   echo "test-wpi-plumelib.sh for ${project} returned from wpi.sh at $(date)."
 
-  EXPECTED_FILE="$SCRIPTDIR/$project.expected"
+  EXPECTED_FILE="$SCRIPT_DIR/$project.expected"
   DLJC_OUT_DIR="$TESTDIR/$project/dljc-out"
   ACTUAL_FILE="$DLJC_OUT_DIR"/typecheck.out
   mkdir -p "$DLJC_OUT_DIR"
