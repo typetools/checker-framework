@@ -30,6 +30,17 @@ class ConstructorTakesOwnership implements Closeable {
     }
   }
 
+  // assignment to @NotOwningCollection field is legal, but
+  // here the obligation is not fulfilled after reassigning.
+  public void reassignNotOwningCollectionFieldLegal() {
+    // :: error: unfulfilled.collection.obligations
+    notOwningField = getList();
+  }
+
+  List<Resource> getList() {
+    return new ArrayList<Resource>();
+  }
+
   // no justification for reassignment. Not allowed.
   public void reassignCollectionFieldIllegal() {
     // :: error: unfulfilled.collection.obligations
@@ -120,5 +131,67 @@ class OwningCollectionFieldTyping {
   List<Resource> tryTransferringFieldOwnershipReturn() {
     // :: error: transfer.owningcollection.field.ownership
     return ocField;
+  }
+}
+
+class OwningFieldWithIllegalInitializer implements Closeable {
+  // :: error: illegal.owningcollection.field.assignment
+  List<Resource> fieldList = getList();
+
+  List<Resource> getList() {
+    return new ArrayList<Resource>();
+  }
+
+  @CollectionFieldDestructor("fieldList")
+  public void close() {
+    for (Resource r : fieldList) {
+      r.close();
+      r.flush();
+    }
+  }
+}
+
+// here, the assignment to an @OwningCollection rhs is allowed
+class OwningFinalFieldWithOwningRHSInitializer implements Closeable {
+  final List<Resource> fieldList = getList();
+
+  List<Resource> getList() {
+    return new ArrayList<Resource>();
+  }
+
+  @CollectionFieldDestructor("fieldList")
+  public void close() {
+    for (Resource r : fieldList) {
+      r.close();
+      r.flush();
+    }
+  }
+}
+
+class OwningFieldWithNullInitializer implements Closeable {
+  List<Resource> fieldList = null;
+
+  @CollectionFieldDestructor("fieldList")
+  public void close() {
+    for (Resource r : fieldList) {
+      r.close();
+      r.flush();
+    }
+  }
+}
+
+class OwningFinalField implements Closeable {
+  final List<Resource> fieldList;
+
+  public OwningFinalField(@OwningCollection List<Resource> list) {
+    this.fieldList = list;
+  }
+
+  @CollectionFieldDestructor("fieldList")
+  public void close() {
+    for (Resource r : fieldList) {
+      r.close();
+      r.flush();
+    }
   }
 }
