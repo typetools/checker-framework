@@ -1,5 +1,7 @@
 package org.checkerframework.framework.util;
 
+import static org.checkerframework.dataflow.expression.JavaExpression.fromTree;
+
 import com.github.javaparser.ParseProblemException;
 import com.github.javaparser.ParserConfiguration.LanguageLevel;
 import com.github.javaparser.ast.ArrayCreationLevel;
@@ -24,8 +26,21 @@ import com.github.javaparser.ast.expr.ThisExpr;
 import com.github.javaparser.ast.expr.UnaryExpr;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.visitor.GenericVisitorWithDefaults;
+import com.sun.source.tree.ArrayAccessTree;
+import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.ParenthesizedTree;
+import com.sun.source.tree.PrimitiveTypeTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.TypeCastTree;
+import com.sun.source.tree.UnaryTree;
+import com.sun.source.util.SimpleTreeVisitor;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
@@ -33,6 +48,7 @@ import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.PackageSymbol;
 import com.sun.tools.javac.code.Type.ArrayType;
 import com.sun.tools.javac.code.Type.ClassType;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -75,6 +91,7 @@ import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Resolver;
+import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.trees.TreeBuilder;
 import org.plumelib.util.CollectionsPlume;
@@ -166,10 +183,13 @@ public class JavaExpressionParseUtil {
     String expressionWithParameterNames =
         StringsPlume.replaceAll(expression, FORMAL_PARAMETER, PARAMETER_REPLACEMENT);
     Expression expr;
+    ExpressionTree expTree;
     try {
-      ExpressionTree expTree = JavacParseUtil.parseExpression(expressionWithParameterNames);
+      expTree = JavacParseUtil.parseExpression(expressionWithParameterNames);
+      // expTree =
+      // JavacParseUtil.parseExpressionFromSullSource(expressionWithParameterNames,pathToCompilationUnit.getCompilationUnit().toString());
       // System.out.println(expTree);
-      // expr = JavaParserUtil.parseExpression(expressionWithParameterNames,
+      // expr = JavaParserUtil.parseExpression(expressionWithParameterNames);
       // currentSourceVersion);//change to javac parser
       expr = JavaParserUtil.parseExpression(expTree.toString(), currentSourceVersion);
     } catch (ParseProblemException e) {
@@ -185,7 +205,8 @@ public class JavaExpressionParseUtil {
       throw constructJavaExpressionParseError(expression, "the expression did not parse" + extra);
     }
 
-    JavaExpression result =
+    @SuppressWarnings("unused")
+    JavaExpression result1 =
         ExpressionToJavaExpressionVisitor.convert(
             expr,
             enclosingType,
@@ -195,6 +216,15 @@ public class JavaExpressionParseUtil {
             pathToCompilationUnit,
             env);
 
+    JavaExpression result =
+        ExpressionTreeToJavaExpressionVisitor.convert(
+            expTree,
+            env,
+            parameters,
+            localVarPath,
+            thisReference,
+            enclosingType,
+            pathToCompilationUnit);
     if (result instanceof ClassName && !expression.endsWith(".class")) {
       throw constructJavaExpressionParseError(
           expression,
@@ -1100,6 +1130,398 @@ public class JavaExpressionParseUtil {
         }
         return types.getArrayType(componentType);
       }
+      return null;
+    }
+  }
+
+  /** A visitor class that converts a Javac JavaExpressionTree */
+  @SuppressWarnings("unused")
+  public static class ExpressionTreeToJavaExpressionVisitor
+      extends SimpleTreeVisitor<JavaExpression, Void> {
+    @SuppressWarnings({"FieldCanBeLocal", "unused"})
+    private final ProcessingEnvironment env;
+
+    @SuppressWarnings({"FieldCanBeLocal", "unused"})
+    private final Types types;
+
+    @SuppressWarnings({"FieldCanBeLocal", "unused"})
+    private final Resolver resolver;
+
+    private static final String PARAMETER_PREFIX = "_param_";
+    private final @Nullable List<FormalParameter> parameters;
+    private static final int PARAMETER_PREFIX_LENGTH = PARAMETER_PREFIX.length();
+    private final @Nullable TreePath localVarPath;
+    @Nullable ThisReference thisReference;
+    TypeMirror enclosingType;
+    TreePath pathToCompilationUnit;
+
+    public ExpressionTreeToJavaExpressionVisitor(
+        ProcessingEnvironment env,
+        @Nullable List<FormalParameter> parameters,
+        @Nullable TreePath localVarPath,
+        @Nullable ThisReference thisReference,
+        TypeMirror enclosingType,
+        TreePath pathToCompilationUnit) {
+      this.env = env;
+      this.types = env.getTypeUtils();
+      this.resolver = new Resolver(env);
+      this.parameters = parameters;
+      this.localVarPath = localVarPath;
+      this.thisReference = thisReference;
+      this.enclosingType = enclosingType;
+      this.pathToCompilationUnit = pathToCompilationUnit;
+    }
+
+    public static JavaExpression convert(
+        ExpressionTree tree,
+        ProcessingEnvironment env,
+        @Nullable List<FormalParameter> parameters,
+        @Nullable TreePath localVarPath,
+        @Nullable ThisReference thisReference,
+        TypeMirror enclosingType,
+        TreePath pathToCompilationUnit) {
+      return tree.accept(
+          new JavacTreeToJavaExpressionVisitor(
+              env, parameters, localVarPath, thisReference, enclosingType, pathToCompilationUnit),
+          null);
+    }
+
+    @Override
+    public JavaExpression visitNewArray(NewArrayTree node, Void unused) {
+      List<JavaExpression> dimensions = new ArrayList<>();
+      for (ExpressionTree dim : node.getDimensions()) {
+        dimensions.add(dim == null ? null : dim.accept(this, null));
+      }
+
+      List<JavaExpression> initializers = new ArrayList<>();
+      if (node.getInitializers() != null) {
+        for (ExpressionTree init : node.getInitializers()) {
+          initializers.add(init.accept(this, null));
+        }
+      }
+      com.sun.tools.javac.code.Type arrayType = (com.sun.tools.javac.code.Type) node.getType();
+      return new ArrayCreation(arrayType, dimensions, initializers);
+    }
+
+    @Override
+    public JavaExpression visitLiteral(LiteralTree node, Void unused) {
+      Object value = node.getValue();
+      TypeMirror type;
+
+      if (value == null) {
+        type = types.getNullType();
+      } else if (value instanceof Integer) {
+        type = types.getPrimitiveType(TypeKind.INT);
+      } else if (value instanceof Boolean) {
+        type = types.getPrimitiveType(TypeKind.BOOLEAN);
+      } else if (value instanceof Long) {
+        type = types.getPrimitiveType(TypeKind.LONG);
+      } else if (value instanceof Double) {
+        type = types.getPrimitiveType(TypeKind.DOUBLE);
+      } else if (value instanceof Float) {
+        type = types.getPrimitiveType(TypeKind.FLOAT);
+      } else if (value instanceof Character) {
+        type = types.getPrimitiveType(TypeKind.CHAR);
+      } else if (value instanceof String) {
+        type = ElementUtils.getTypeElement(env, String.class).asType();
+      } else {
+        throw new ParseRuntimeException(
+            constructJavaExpressionParseError(
+                value.toString(), "Unsupported literal type: " + value.getClass()));
+      }
+
+      return new ValueLiteral(type, value);
+    }
+
+    @Override
+    public JavaExpression visitIdentifier(IdentifierTree node, Void unused) {
+      String s = node.getName().toString();
+      // setResolverField();
+
+      // Formal parameter, using "#2" syntax.
+      JavaExpression parameter = getParameterJavaExpression(s);
+      if (parameter != null) {
+        // A parameter is a local variable, but it can be referenced outside of local scope
+        // (at the method scope) using the special #NN syntax.
+        return parameter;
+      }
+
+      // Local variable or parameter.
+      if (localVarPath != null) {
+        // Attempt to match a local variable within the scope of the
+        // given path before attempting to match a field.
+        VariableElement varElem = resolver.findLocalVariableOrParameter(s, localVarPath);
+        if (varElem != null) {
+          return new LocalVariable(varElem);
+        }
+      }
+
+      // Field access
+      JavaExpression fieldAccessReceiver;
+      if (thisReference != null) {
+        fieldAccessReceiver = thisReference;
+      } else {
+        fieldAccessReceiver = new ClassName(enclosingType);
+      }
+      FieldAccess fieldAccess = getIdentifierAsFieldAccess(fieldAccessReceiver, s);
+      if (fieldAccess != null) {
+        return fieldAccess;
+      }
+
+      // Class name
+      if (localVarPath != null) {
+        Element classElem = resolver.findClass(s, localVarPath);
+        TypeMirror classType = ElementUtils.getType(classElem);
+        if (classType != null) {
+          return new ClassName(classType);
+        }
+      }
+      ClassName classType = getIdentifierAsUnqualifiedClassName(s);
+      if (classType != null) {
+        return classType;
+      }
+
+      // Err if a formal parameter name is used, instead of the "#2" syntax.
+      if (parameters != null) {
+        for (int i = 0; i < parameters.size(); i++) {
+          Element varElt = parameters.get(i).getElement();
+          if (varElt.getSimpleName().contentEquals(s)) {
+            throw new ParseRuntimeException(
+                constructJavaExpressionParseError(
+                    s, String.format(DependentTypesError.FORMAL_PARAM_NAME_STRING, i + 1, s)));
+          }
+        }
+      }
+
+      throw new ParseRuntimeException(constructJavaExpressionParseError(s, "identifier not found"));
+    }
+
+    private FieldAccess getIdentifierAsFieldAccess(JavaExpression receiver, String name) {
+      TypeMirror current = receiver.getType();
+      while (current.getKind() == TypeKind.DECLARED) {
+        VariableElement fieldElem = resolver.findField(name, current, localVarPath);
+        if (fieldElem != null) {
+          if (ElementUtils.isStatic(fieldElem)) {
+            return new FieldAccess(
+                new ClassName(fieldElem.getEnclosingElement().asType()), fieldElem);
+          } else {
+            return new FieldAccess(receiver, fieldElem);
+          }
+        }
+        current = ((DeclaredType) current).asElement().getEnclosingElement().asType();
+      }
+      return null;
+    }
+
+    @Override
+    public JavaExpression visitMethodInvocation(MethodInvocationTree node, Void unused) {
+      ExecutableElement method = TreeUtils.elementFromUse(node);
+      TypeMirror returnType = TreeUtils.typeOf(node);
+
+      List<JavaExpression> args = new ArrayList<>();
+      for (ExpressionTree arg : node.getArguments()) {
+        args.add(arg.accept(this, null));
+      }
+
+      JavaExpression receiver;
+      ExpressionTree select = node.getMethodSelect();
+      if (select instanceof MemberSelectTree) {
+        receiver = ((MemberSelectTree) select).getExpression().accept(this, null);
+      } else {
+        receiver =
+            ElementUtils.isStatic(method)
+                ? new ClassName(method.getEnclosingElement().asType())
+                : new ThisReference(method.getEnclosingElement().asType());
+      }
+
+      return new MethodCall(returnType, method, receiver, args);
+    }
+
+    @Override
+    public JavaExpression visitMemberSelect(MemberSelectTree node, Void unused) {
+      // Handles field and class access (like FieldAccessExpr in JavaParser)
+      // TODO: implement resolution for fields and class names
+      // throw new UnsupportedOperationException("visitMemberSelect not yet implemented");
+      // Special case: class literal like SomeClass.class
+      if (node.getIdentifier().contentEquals("class")) {
+        Tree selected = node.getExpression();
+        TypeMirror result = TreeUtils.typeOf(selected);
+        if (result == null) {
+          throw new ParseRuntimeException(
+              constructJavaExpressionParseError(
+                  node.toString(), "it is an unparsable class literal"));
+        }
+        return new ClassName(result);
+      }
+
+      // Otherwise, treat as a field or inner class access
+      JavaExpression receiver = node.getExpression().accept(this, null);
+      String name = node.getIdentifier().toString();
+
+      // Try as a field
+      FieldAccess fieldAccess = getIdentifierAsFieldAccess(receiver, name);
+      if (fieldAccess != null) {
+        return fieldAccess;
+      }
+
+      // Try as an inner class
+      ClassName classType = getIdentifierAsInnerClassName(receiver.getType(), name);
+      if (classType != null) {
+        return classType;
+      }
+
+      throw new ParseRuntimeException(
+          constructJavaExpressionParseError(
+              name, String.format("field or class %s not found in %s", name, receiver)));
+    }
+
+    @Override
+    public JavaExpression visitArrayAccess(ArrayAccessTree node, Void unused) {
+      // Handles array[index] expressions
+      // TODO: convert array and index expressions
+      throw new UnsupportedOperationException("visitArrayAccess not yet implemented");
+    }
+
+    @Override
+    public JavaExpression visitParenthesized(ParenthesizedTree node, Void unused) {
+      // Handles expressions in parentheses
+      // TODO: delegate to inner expression
+      throw new UnsupportedOperationException("visitParenthesized not yet implemented");
+    }
+
+    @Override
+    public JavaExpression visitUnary(UnaryTree node, Void unused) {
+      // Handles unary operators like -a, !a
+      // TODO: map to Tree.Kind and handle constant folding if possible
+      throw new UnsupportedOperationException("visitUnary not yet implemented");
+    }
+
+    @Override
+    public JavaExpression visitBinary(BinaryTree node, Void unused) {
+      // Handles binary expressions like a + b, a < b, etc.
+      // TODO: handle type resolution and Tree.Kind mapping
+      throw new UnsupportedOperationException("visitBinary not yet implemented");
+    }
+
+    @Override
+    public JavaExpression visitTypeCast(TypeCastTree node, Void unused) {
+      // Handles (Type)expr casts
+      // TODO: likely not supported in original visitor; can throw parse exception
+      throw new UnsupportedOperationException("visitTypeCast not yet implemented");
+    }
+
+    @Override
+    public JavaExpression visitNewClass(NewClassTree node, Void unused) {
+      // Optional: if object creation is supported
+      // TODO: not present in original visitor, can throw parse error
+      throw new UnsupportedOperationException("visitNewClass not yet implemented");
+    }
+
+    @Override
+    public JavaExpression visitPrimitiveType(PrimitiveTypeTree node, Void unused) {
+      // Only needed if you support primitives as standalone expressions
+      // Might not be necessary
+      throw new UnsupportedOperationException("visitPrimitiveType not yet implemented");
+    }
+
+    @Override
+    protected JavaExpression defaultAction(Tree node, Void unused) {
+      return fromTree((ExpressionTree) node);
+    }
+
+    protected @Nullable ClassName getIdentifierAsInnerClassName(
+        TypeMirror type, String identifier) {
+      if (type.getKind() != TypeKind.DECLARED) {
+        return null;
+      }
+
+      Element outerClass = ((DeclaredType) type).asElement();
+      for (Element memberElement : outerClass.getEnclosedElements()) {
+        if (!(memberElement.getKind().isClass() || memberElement.getKind().isInterface())) {
+          continue;
+        }
+        if (memberElement.getSimpleName().contentEquals(identifier)) {
+          return new ClassName(ElementUtils.getType(memberElement));
+        }
+      }
+      return null;
+    }
+
+    private @Nullable JavaExpression getParameterJavaExpression(String s) {
+      if (!s.startsWith(PARAMETER_PREFIX)) {
+        return null;
+      }
+      if (parameters == null) {
+        throw new ParseRuntimeException(
+            constructJavaExpressionParseError(s, "no parameters found"));
+      }
+      int idx = Integer.parseInt(s.substring(PARAMETER_PREFIX_LENGTH));
+
+      if (idx == 0) {
+        throw new ParseRuntimeException(
+            constructJavaExpressionParseError(
+                "#0", "Use \"this\" for the receiver or \"#1\" for the first formal parameter"));
+      }
+      if (idx > parameters.size()) {
+        throw new ParseRuntimeException(
+            new JavaExpressionParseUtil.JavaExpressionParseException(
+                "flowexpr.parse.index.too.big", Integer.toString(idx)));
+      }
+      return parameters.get(idx - 1);
+    }
+
+    protected @Nullable ClassName getIdentifierAsUnqualifiedClassName(String identifier) {
+      // Is identifier an inner class of enclosingType or of any enclosing class of
+      // enclosingType?
+      TypeMirror searchType = enclosingType;
+      while (searchType.getKind() == TypeKind.DECLARED) {
+        DeclaredType searchDeclaredType = (DeclaredType) searchType;
+        if (searchDeclaredType.asElement().getSimpleName().contentEquals(identifier)) {
+          return new ClassName(searchType);
+        }
+        ClassName className = getIdentifierAsInnerClassName(searchType, identifier);
+        if (className != null) {
+          return className;
+        }
+        searchType = getTypeOfEnclosingClass(searchDeclaredType);
+      }
+
+      // setResolverField();
+
+      if (enclosingType.getKind() == TypeKind.DECLARED) {
+        // Is identifier in the same package as this?
+        Symbol.PackageSymbol packageSymbol =
+            (Symbol.PackageSymbol)
+                ElementUtils.enclosingPackage(((DeclaredType) enclosingType).asElement());
+        Symbol.ClassSymbol classSymbol =
+            resolver.findClassInPackage(identifier, packageSymbol, pathToCompilationUnit);
+        if (classSymbol != null) {
+          return new ClassName(classSymbol.asType());
+        }
+      }
+      // Is identifier a simple name for a class in java.lang?
+      Symbol.PackageSymbol packageSymbol = resolver.findPackage("java.lang", pathToCompilationUnit);
+      if (packageSymbol == null) {
+        throw new BugInCF("Can't find java.lang package.");
+      }
+      Symbol.ClassSymbol classSymbol =
+          resolver.findClassInPackage(identifier, packageSymbol, pathToCompilationUnit);
+      if (classSymbol != null) {
+        return new ClassName(classSymbol.asType());
+      }
+
+      // Is identifier a class in the unnamed package?
+      Element classElem = resolver.findClass(identifier, pathToCompilationUnit);
+      if (classElem != null) {
+        PackageElement pkg = ElementUtils.enclosingPackage(classElem);
+        if (pkg != null && pkg.isUnnamed()) {
+          TypeMirror classType = ElementUtils.getType(classElem);
+          if (classType != null) {
+            return new ClassName(classType);
+          }
+        }
+      }
+
       return null;
     }
   }
