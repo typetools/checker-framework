@@ -2,7 +2,6 @@ package org.checkerframework.checker.rlccalledmethods;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
@@ -611,13 +610,8 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
 
   /** Wrapper class for a loop that might have an effect on the obligation of a collection/array. */
   public abstract static class CollectionObligationAlteringLoop {
-    /** Loop is either assigning or fulfilling. */
+    /** Loop is fulfilling. */
     public static enum LoopKind {
-      /**
-       * Loop potentially assigns elements with non-empty {@code @MustCall} type to a collection.
-       */
-      ASSIGNING,
-
       /** Loop potentially calls methods on all elements of a collection. */
       FULFILLING
     }
@@ -692,40 +686,6 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
      */
     public Set<String> getMethods() {
       return associatedMethods;
-    }
-  }
-
-  /**
-   * Wrapper for a loop that potentially assigns elements with non-empty {@code MustCall}
-   * obligations to an array, thus creating {@code MustCallOnElements} obligations for the array.
-   */
-  public static class PotentiallyAssigningLoop extends CollectionObligationAlteringLoop {
-    /** The AST tree for the assignment of the resource into the array in the loop. */
-    public final AssignmentTree assignment;
-
-    /**
-     * Constructs a new {@code PotentiallyAssigningLoop}
-     *
-     * @param collectionTree AST {@code Tree} for collection iterated over
-     * @param collectionElementTree AST {@code Tree} for collection element iterated over
-     * @param condition AST {@code Tree} for loop condition
-     * @param assignment AST tree for the assignment of the resource into the array in the loop
-     * @param methodsToCall set of methods that are to be added to the {@code MustCallOnElements}
-     *     type of the array iterated over.
-     */
-    public PotentiallyAssigningLoop(
-        ExpressionTree collectionTree,
-        ExpressionTree collectionElementTree,
-        Tree condition,
-        AssignmentTree assignment,
-        Set<String> methodsToCall) {
-      super(
-          collectionTree,
-          collectionElementTree,
-          condition,
-          Set.copyOf(methodsToCall),
-          CollectionObligationAlteringLoop.LoopKind.ASSIGNING);
-      this.assignment = assignment;
     }
   }
 

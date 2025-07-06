@@ -3,7 +3,6 @@ package org.checkerframework.checker.collectionownership;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
@@ -22,7 +21,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -50,11 +48,8 @@ import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
-import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
-import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.JavaExpressionParseUtil;
@@ -238,13 +233,8 @@ public class CollectionOwnershipAnnotatedTypeFactory
    * computation of AnnotatedTypeMirrors is completed, in particular in
    * addComputedTypeAnnotations(AnnotatedTypeMirror).
    *
-   * <p>That is, whether the given type is:
-   *
-   * <ol>
-   *   <li>An array type, whose component has non-empty MustCall type.
-   *   <li>A type assignable from java.util.Collection, whose only type var has non-empty MustCall
-   *       type.
-   * </ol>
+   * <p>That is, whether the given type is a type assignable from java.util.Collection, whose only
+   * type var has non-empty MustCall type.
    *
    * @param t the AnnotatedTypeMirror
    * @return whether t is a resource collection
@@ -335,13 +325,8 @@ public class CollectionOwnershipAnnotatedTypeFactory
   /**
    * Returns whether the given AST tree is a resource collection.
    *
-   * <p>That is, whether the given tree is of:
-   *
-   * <ol>
-   *   <li>An array type, whose component has non-empty MustCall type.
-   *   <li>A type assignable from java.util.Collection, whose only type var has non-empty MustCall
-   *       type.
-   * </ol>
+   * <p>That is, whether the given tree is of a type assignable from java.util.Collection, whose
+   * only type var has non-empty MustCall type.
    *
    * @param tree the tree
    * @return whether the tree is a resource collection
@@ -358,14 +343,8 @@ public class CollectionOwnershipAnnotatedTypeFactory
    * If the given type is a collection, this method returns the MustCall values of its elements or
    * null if there are none or if the given type is not a collection.
    *
-   * <p>That is:
-   *
-   * <ol>
-   *   <li>if the given type is an array type, this method returns the MustCall values of its
-   *       component type if there are any or else null.
-   *   <li>if the given type is a Java.util.Collection implementation, this method returns the
-   *       MustCall values of its type variable upper bound if there are any or else null.
-   * </ol>
+   * <p>That is, if the given type is a Java.util.Collection implementation, this method returns the
+   * MustCall values of its type variable upper bound if there are any or else null.
    *
    * @param atm the AnnotatedTypeMirror
    * @return if the given type is a collection, returns the MustCall values of its elements or null
@@ -376,12 +355,9 @@ public class CollectionOwnershipAnnotatedTypeFactory
       return null;
     }
     boolean isCollectionType = ResourceLeakUtils.isCollection(atm.getUnderlyingType());
-    boolean isArrayType = atm.getKind() == TypeKind.ARRAY;
 
     AnnotatedTypeMirror componentType = null;
-    if (isArrayType) {
-      componentType = ((AnnotatedArrayType) atm).getComponentType();
-    } else if (isCollectionType) {
+    if (isCollectionType) {
       List<? extends AnnotatedTypeMirror> typeArgs =
           ((AnnotatedDeclaredType) atm).getTypeArguments();
       if (typeArgs.size() != 0) {
@@ -402,14 +378,8 @@ public class CollectionOwnershipAnnotatedTypeFactory
    * If the given tree represents a collection, this method returns the MustCall values of its
    * elements or null if there are none or if the given type is not a collection.
    *
-   * <p>That is:
-   *
-   * <ol>
-   *   <li>if the given tree is of an array type, this method returns the MustCall values of its
-   *       component type if there are any or else null.
-   *   <li>if the given tree is of a Java.util.Collection implementation, this method returns the
-   *       MustCall values of its type variable upper bound if there are any or else null.
-   * </ol>
+   * <p>That is, if the given tree is of a Java.util.Collection implementation, this method returns
+   * the MustCall values of its type variable upper bound if there are any or else null.
    *
    * @param tree the AST tree
    * @return if the given tree represents a collection, returns the MustCall values of its elements
@@ -424,14 +394,8 @@ public class CollectionOwnershipAnnotatedTypeFactory
    * If the given type is a collection, this method returns the MustCall values of its elements or
    * null if there are none or if the given type is not a collection.
    *
-   * <p>That is:
-   *
-   * <ol>
-   *   <li>if the given type is an array type, this method returns the MustCall values of its
-   *       component type if there are any or else null.
-   *   <li>if the given type is a Java.util.Collection implementation, this method returns the
-   *       MustCall values of its type variable upper bound if there are any or else null.
-   * </ol>
+   * <p>That is, if the given type is a Java.util.Collection implementation, this method returns the
+   * MustCall values of its type variable upper bound if there are any or else null.
    *
    * @param t the TypeMirror
    * @return if the given type is a collection, returns the MustCall values of its elements or null
@@ -442,12 +406,9 @@ public class CollectionOwnershipAnnotatedTypeFactory
       return null;
     }
     boolean isCollectionType = ResourceLeakUtils.isCollection(t);
-    boolean isArrayType = t.getKind() == TypeKind.ARRAY;
 
     TypeMirror componentType = null;
-    if (isArrayType) {
-      componentType = ((ArrayType) t).getComponentType();
-    } else if (isCollectionType) {
+    if (isCollectionType) {
       List<? extends TypeMirror> typeArgs = ((DeclaredType) t).getTypeArguments();
       if (typeArgs.size() != 0) {
         componentType = typeArgs.get(0);
@@ -592,12 +553,6 @@ public class CollectionOwnershipAnnotatedTypeFactory
         super.createTypeAnnotator(), new CollectionOwnershipTypeAnnotator(this));
   }
 
-  @Override
-  public TreeAnnotator createTreeAnnotator() {
-    return new ListTreeAnnotator(
-        super.createTreeAnnotator(), new CollectionOwnershipTreeAnnotator(this));
-  }
-
   /**
    * The TypeAnnotator for the Collection Ownership type system.
    *
@@ -675,7 +630,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
    * Default resource collection fields to @OwningCollection and resource collection parameters to
    * @NotOwningCollection (inside the method).
    *
-   * Resource collections are either java.util.Collection's or arrays, whose component has
+   * Resource collections are either java.lang.Iterable's and java.util.Iterator's, whose component has
    * non-empty @MustCall type, as defined by the predicate isResourceCollection(AnnotatedTypeMirror).
    */
   @Override
@@ -700,33 +655,6 @@ public class CollectionOwnershipAnnotatedTypeFactory
           }
         }
       }
-    }
-  }
-
-  /**
-   * The TreeAnnotator for the Collection Ownership type system.
-   *
-   * <p>This tree annotator treats newly allocated resource arrays (arrays, whose component type has
-   * non-empty MustCall value) as @OwningCollection.
-   */
-  private class CollectionOwnershipTreeAnnotator extends TreeAnnotator {
-
-    /**
-     * Create a CollectionOwnershipTreeAnnotator.
-     *
-     * @param collectionOwnershipAtf the type factory
-     */
-    public CollectionOwnershipTreeAnnotator(
-        CollectionOwnershipAnnotatedTypeFactory collectionOwnershipAtf) {
-      super(collectionOwnershipAtf);
-    }
-
-    @Override
-    public Void visitNewArray(NewArrayTree tree, AnnotatedTypeMirror type) {
-      if (isResourceCollection(type.getUnderlyingType())) {
-        type.replaceAnnotation(OWNINGCOLLECTIONWITHOUTOBLIGATION);
-      }
-      return super.visitNewArray(tree, type);
     }
   }
 }

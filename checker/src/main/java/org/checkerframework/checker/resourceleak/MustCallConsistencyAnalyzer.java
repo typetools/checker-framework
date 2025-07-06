@@ -67,11 +67,9 @@ import org.checkerframework.dataflow.cfg.block.Block.BlockType;
 import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
 import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlock;
-import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.ClassNameNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
-import org.checkerframework.dataflow.cfg.node.LessThanNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
@@ -80,7 +78,6 @@ import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.cfg.node.SuperNode;
 import org.checkerframework.dataflow.cfg.node.ThisNode;
-import org.checkerframework.dataflow.cfg.node.VariableDeclarationNode;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.IteratedCollectionElement;
 import org.checkerframework.dataflow.expression.JavaExpression;
@@ -3284,8 +3281,6 @@ public class MustCallConsistencyAnalyzer {
         for (Node node : currentBlock.getNodes()) {
           if (node instanceof MethodInvocationNode) {
             patternMatchEnhancedCollectionForLoop((MethodInvocationNode) node, cfg);
-          } else if (node instanceof ArrayAccessNode) {
-            patternMatchEnhancedArrayForLoop((ArrayAccessNode) node, cfg);
           }
         }
         propagate(
@@ -3382,99 +3377,6 @@ public class MustCallConsistencyAnalyzer {
           isLoopCondition = TreeUtils.isHasNextCall(mit);
         }
       } while (!isLoopCondition);
-
-      Block blockContainingLoopCondition = node.getBlock();
-      if (blockContainingLoopCondition.getSuccessors().size() != 1) {
-        throw new BugInCF(
-            "loop condition has: "
-                + blockContainingLoopCondition.getSuccessors().size()
-                + " successors instead of 1.");
-      }
-      Block conditionalBlock = blockContainingLoopCondition.getSuccessors().iterator().next();
-      if (!(conditionalBlock instanceof ConditionalBlock)) {
-        throw new BugInCF(
-            "loop condition successor is not ConditionalBlock, but: "
-                + conditionalBlock.getClass());
-      }
-
-      // add the blocks into a static datastructure in the calledmethodsatf, such that it can
-      // analyze
-      // them (call MustCallConsistencyAnalyzer.analyzeFulfillingLoops, which in turn adds the trees
-      // to the static datastructure in McoeAtf)
-      PotentiallyFulfillingLoop pfLoop =
-          new PotentiallyFulfillingLoop(
-              loop.getExpression(),
-              loopVarNode.getTree(),
-              node.getTree(),
-              loopBodyEntryBlock,
-              block,
-              (ConditionalBlock) conditionalBlock,
-              loopVarNode);
-      this.analyzeObligationFulfillingLoop(cfg, pfLoop);
-    }
-  }
-
-  /**
-   * Checks whether the given {@code ArrayAccessNode} is desugared from an enhanced for loop and
-   * calls a loop-body-analysis on the detected loop if it is.
-   *
-   * <p>If an {@code ArrayAccessNode} is desugared from an enhanced for loop over an array, it
-   * corresponds to the node in the synthetic {@code s = array#numX[index#numY]} assignment, where
-   * the loop iterator variable is assigned. The AST node corresponding to the loop itself is in
-   * this case contained as a field in the {@code ArrayAccessNode}, which is set in the CFG
-   * translation phase one.
-   *
-   * <p>This method now traverses the CFG upwards to find the loop condition and downwards to find
-   * the first block of the loop body. With these two blocks, it can then call a loop-body-analysis
-   * to find the methods the loop calls on the elements of the iterated collection, as part of the
-   * MustCallOnElements checker.
-   *
-   * @param arrayAccessNode the {@code ArrayAccessNode}, for which it is checked, whether it is
-   *     desugared from an enhanced for loop.
-   * @param cfg the enclosing cfg of the {@code ArrayAccessNode}
-   */
-  private void patternMatchEnhancedArrayForLoop(
-      ArrayAccessNode arrayAccessNode, ControlFlowGraph cfg) {
-    boolean nodeIsDesugaredFromEnhancedForLoop = arrayAccessNode.getArrayExpression() != null;
-    if (nodeIsDesugaredFromEnhancedForLoop && cfg != null) {
-      // this is the arr[i] access desugared from an enhanced-for-loop (in iter = arr[i];)
-      EnhancedForLoopTree loop = arrayAccessNode.getEnhancedForLoop();
-      if (loop == null) {
-        throw new BugInCF(
-            "MethodInvocationNode.iterableExpression should be non-null iff"
-                + " MethodInvocationNode.enhancedForLoop is non-null");
-      }
-
-      // Find the first block of the loop body.
-      SingleSuccessorBlock ssblock = (SingleSuccessorBlock) arrayAccessNode.getBlock();
-      Block loopBodyEntryBlock = ssblock.getSuccessor();
-
-      // Find the loop condition
-      // Start from the synthetic (desugared) arr[i] node and traverse the cfg
-      // backwards until the LessThan node is found.
-      // It corresponds to the desugared loop condition (index#numX < array#numX.length).
-      Block block = arrayAccessNode.getBlock();
-      Iterator<Node> nodeIterator = block.getNodes().iterator();
-      Node loopVarNode = null;
-      Node node;
-      do {
-        while (!nodeIterator.hasNext()) {
-          Set<Block> predBlocks = block.getPredecessors();
-          if (predBlocks.size() == 1) {
-            block = predBlocks.iterator().next();
-            nodeIterator = block.getNodes().iterator();
-          } else {
-            throw new BugInCF(
-                "Encountered more than one CFG Block predeccessor trying to find the"
-                    + " enhanced-for-loop update block.");
-          }
-        }
-        node = nodeIterator.next();
-        if (node instanceof VariableDeclarationNode) {
-          // variable declaration of public iterator
-          loopVarNode = node;
-        }
-      } while (!(node instanceof LessThanNode));
 
       Block blockContainingLoopCondition = node.getBlock();
       if (blockContainingLoopCondition.getSuccessors().size() != 1) {

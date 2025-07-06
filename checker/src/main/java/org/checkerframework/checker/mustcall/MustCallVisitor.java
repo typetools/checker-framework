@@ -1,7 +1,6 @@
 package org.checkerframework.checker.mustcall;
 
 import com.sun.source.tree.AnnotationTree;
-import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.BlockTree;
@@ -24,9 +23,7 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreeScanner;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.AnnotationMirror;
@@ -360,19 +357,12 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
    * the AST
    */
 
-  /** Stores the size variable of the most recent array allocation per array name. */
-  private final Map<Name, Name> arrayInitializationSize = new HashMap<>();
-
   /**
-   * Checks through pattern-matching whether the loop either:
+   * Checks through pattern-matching whether the loop calls a method on entries of an
+   * {@code @OwningCollection}.
    *
-   * <ul>
-   *   <li>initializes entries of an {@code @OwningCollection}
-   *   <li>calls a method on entries of an {@code @OwningCollection} array
-   * </ul>
-   *
-   * If yes, this is marked in some static datastructures in the
-   * {@code @MustCallOnElementsAnnotatedTypeFactory}
+   * <p>If yes, this is marked in some static datastructures in the
+   * {@code @CollectionOwnershipAnnotatedTypeFactory}
    */
   @Override
   public Void visitForLoop(ForLoopTree tree, Void p) {
@@ -384,8 +374,8 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
   }
 
   /**
-   * Checks whether a for-loop potentially fulfills collection obligations of a collection/array and
-   * marks the loop in case the check is successful.
+   * Checks whether a for-loop potentially fulfills collection obligations of a collection and marks
+   * the loop in case the check is successful.
    *
    * @param tree forlooptree
    */
@@ -453,14 +443,13 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
   }
 
   /**
-   * Decides for a for-loop header whether the loop iterates over all elements of some array based
-   * on a pattern-match with one-sided error with the following rules:
+   * Decides for a for-loop header whether the loop iterates over all elements of some collection
+   * based on a pattern-match with one-sided error with the following rules:
    *
    * <ul>
    *   <li>only one loop variable
    *   <li>initialization must be of the form i = 0
-   *   <li>condition must be of the form (i &lt; arr.length) or (i &lt; n), where n and arr are
-   *       identifiers and n is effectively final
+   *   <li>condition must be of the form (i &lt; col.size())
    *   <li>update must be prefix or postfix
    * </ul>
    *
@@ -468,16 +457,14 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
    *
    * <ul>
    *   <li>null if any rule is violated
-   *   <li>the name of the array if the loop condition is of the form (i &lt; arr.length)
-   *   <li>n if it is of the form (i &lt; n), where n is an identifier.
+   *   <li>the name of the collection if the loop condition is of the form (i &lt; col.size())
    * </ul>
    *
    * @param init the initializer of the loop
    * @param condition the loop condition
    * @param update the loop update
-   * @return null if any rule is violated, or the name of the array if the loop condition is of the
-   *     form {@code i < arr.length} or n if it is of the form {@code i < n}), where n is an
-   *     identifier.
+   * @return null if any rule is violated, or the name of the collection if the loop condition is of
+   *     the form (i &lt; col.size())
    */
   protected Name verifyAllElementsAreCalledOn(
       StatementTree init, BinaryTree condition, ExpressionStatementTree update) {
@@ -501,9 +488,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
               != ((IdentifierTree) inc.getExpression()).getName()) { // i=0 and i++ are same "i"
         return null;
       }
-      if (TreeUtils.isArrayLengthAccess(condition.getRightOperand())) {
-        return getNameFromExpressionTree(condition.getRightOperand());
-      } else if ((condition.getRightOperand() instanceof MethodInvocationTree)
+      if ((condition.getRightOperand() instanceof MethodInvocationTree)
           && TreeUtils.isSizeAccess(condition.getRightOperand())) {
         ExpressionTree methodSelect =
             ((MethodInvocationTree) condition.getRightOperand()).getMethodSelect();
@@ -514,8 +499,6 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
             return getNameFromExpressionTree(mst.getExpression());
           }
         }
-      } else if (condition.getRightOperand() instanceof IdentifierTree) {
-        return getNameFromExpressionTree(condition.getRightOperand());
       }
     }
     return null;
@@ -599,18 +582,6 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
             }
             return super.visitMethodInvocation(mit, p);
           }
-
-          // check whether corresponds to arr[i]
-          @Override
-          public Void visitArrayAccess(ArrayAccessTree aat, Void p) {
-            boolean isIthArrayElement = getNameFromExpressionTree(aat.getIndex()) == iterator;
-            if (isIthArrayElement
-                && loopHeaderConsistentWithCollection(
-                    identifierInHeader, getNameFromExpressionTree(aat))) {
-              collectionElementTree[0] = aat;
-            }
-            return super.visitArrayAccess(aat, p);
-          }
         };
 
     for (StatementTree stmt : statements) {
@@ -633,8 +604,6 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
     switch (expr.getKind()) {
       case IDENTIFIER:
         return ((IdentifierTree) expr).getName();
-      case ARRAY_ACCESS:
-        return getNameFromExpressionTree(((ArrayAccessTree) expr).getExpression());
       case MEMBER_SELECT:
         Element elt = TreeUtils.elementFromUse((MemberSelectTree) expr);
         if (elt.getKind() == ElementKind.METHOD || elt.getKind() == ElementKind.FIELD) {
@@ -668,7 +637,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
   }
 
   /**
-   * Returns the ExpressionTree of the collection/array in the given expression
+   * Returns the ExpressionTree of the collection in the given expression
    *
    * @param expr ExpressionTree
    * @return the expression evaluates to or null if it doesn't
@@ -677,8 +646,6 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
     switch (expr.getKind()) {
       case IDENTIFIER:
         return expr;
-      case ARRAY_ACCESS:
-        return ((ArrayAccessTree) expr).getExpression();
       case MEMBER_SELECT:
         Element elt = TreeUtils.elementFromUse((MemberSelectTree) expr);
         if (elt.getKind() == ElementKind.METHOD) {
@@ -697,8 +664,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
    * Returns whether the given collection name is consistent with the identifier from the loop
    * header.
    *
-   * <p>That is, either the names are equal, or the identifier from the header is the same variable
-   * used to initialize the given collection.
+   * <p>That is, the names are equal.
    *
    * <p>Returns false if any argument is null.
    *
@@ -710,9 +676,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
   private boolean loopHeaderConsistentWithCollection(Name idInHeader, Name collectionName) {
     if (idInHeader == null || collectionName == null) return false;
     boolean namesAreEqual = collectionName == idInHeader;
-    Name initSize = arrayInitializationSize.get(collectionName);
-    boolean idInHeaderIsSizeOfCollection = initSize != null && initSize == idInHeader;
-    return namesAreEqual || idInHeaderIsSizeOfCollection;
+    return namesAreEqual;
   }
 
   /**
