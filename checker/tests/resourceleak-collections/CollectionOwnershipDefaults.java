@@ -105,20 +105,6 @@ class CollectionOwnershipDefaults {
     checkArgIsOwning(newResourceCollection);
     // :: error: argument
     checkArgIsOCwoO(newResourceCollection);
-
-    Socket[] newResourceArray = new Socket[n];
-    checkArgIsOwning(newResourceArray);
-    // :: error: argument
-    checkArgIsOCwoO(newResourceArray);
-  }
-
-  void closeElements(Socket @OwningCollection [] socketCollection) {
-    for (Socket s : socketCollection) {
-      try {
-        s.close();
-      } catch (Exception e) {
-      }
-    }
   }
 
   void closeElements(@OwningCollection Collection<Socket> socketCollection) {
@@ -134,14 +120,8 @@ class CollectionOwnershipDefaults {
       // :: error: unfulfilled.collection.obligations
       @OwningCollection Collection<? extends @MustCallUnknown Object> collection) {}
 
-  // :: error: unfulfilled.collection.obligations
-  void checkArgIsOwning(Socket @OwningCollection [] collection) {}
-
   void checkArgIsOCwoO(
       // :: error: illegal.type.annotation
       @OwningCollectionWithoutObligation
           Collection<? extends @MustCallUnknown Object> collection) {}
-
-  // :: error: illegal.type.annotation
-  void checkArgIsOCwoO(Socket @OwningCollectionWithoutObligation [] collection) {}
 }

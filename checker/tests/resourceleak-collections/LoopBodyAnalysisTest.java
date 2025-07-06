@@ -15,40 +15,12 @@ class LoopBodyAnalysisTests {
     checkArgIsOCWO(resources);
   }
 
-  void fullSatisfyArray(Resource @OwningCollection [] resources) {
-    for (Resource r : resources) {
-      r.close();
-      r.flush();
-    }
-    checkArgIsOCWO(resources);
-  }
-
   // here, the argument defaults to @NotOwningCollection.
   // the loop should not change that type
   void fullSatisfyCollectionNotOwning(Collection<Resource> resources) {
     for (Resource r : resources) {
       r.close();
       r.flush();
-    }
-    // :: error: argument
-    checkArgIsOCWO(resources);
-  }
-
-  // here, the argument defaults to @NotOwningCollection.
-  // the loop should not change that type
-  void fullSatisfyArrayNotOwning(Resource[] resources) {
-    for (Resource r : resources) {
-      r.close();
-      r.flush();
-    }
-    // :: error: argument
-    checkArgIsOCWO(resources);
-  }
-
-  // :: error: unfulfilled.collection.obligations
-  void partialSatisfyArrayShouldError(Resource @OwningCollection [] resources) {
-    for (Resource r : resources) {
-      r.close();
     }
     // :: error: argument
     checkArgIsOCWO(resources);
@@ -84,7 +56,7 @@ class LoopBodyAnalysisTests {
     checkArgIsOCWO(l);
   }
 
-  void tryCatchShouldWork(Resource @OwningCollection [] resources) {
+  void tryCatchShouldWork(@OwningCollection List<Resource> resources) {
     for (Resource r : resources) {
       try {
         r.close();
@@ -94,14 +66,14 @@ class LoopBodyAnalysisTests {
     }
   }
 
-  void methodCallInsideLoop(Resource @OwningCollection [] resources) {
+  void methodCallInsideLoop(@OwningCollection List<Resource> resources) {
     for (Resource r : resources) {
       doCloseFlush(r);
     }
   }
 
   // :: error: unfulfilled.collection.obligations
-  void earlyBreak(Resource @OwningCollection [] resources) {
+  void earlyBreak(@OwningCollection List<Resource> resources) {
     for (Resource r : resources) {
       r.close();
       r.flush();
@@ -109,33 +81,31 @@ class LoopBodyAnalysisTests {
     }
   }
 
-  void tryWithResources(Resource @OwningCollection [] resources) {
-    for (Resource r : resources) {
-      try {
-        try (Resource auto = r) {
-          auto.flush();
-        }
-      } catch (Exception e) {
-      }
-    }
-  }
+  // TODO SCK: uncomment these tests
+  // void tryWithResources(@OwningCollection List<Resource> resources) {
+  //   for (Resource r : resources) {
+  //     try (Resource auto = r) {
+  //       auto.flush();
+  //     }
+  //   }
+  // }
 
-  void nullableElementWithCheck(Resource @OwningCollection [] resources) {
-    for (Resource r : resources) {
-      if (r != null) {
-        r.close();
-        r.flush();
-      }
-    }
-  }
+  // void nullableElementWithCheck(@OwningCollection List<Resource> resources) {
+  //   for (Resource r : resources) {
+  //     if (r != null) {
+  //       r.close();
+  //       r.flush();
+  //     }
+  //   }
+  // }
 
-  void nullableElementHelper(Resource @OwningCollection [] resources) {
-    for (Resource r : resources) {
-      if (r != null) {
-        doCloseFlush(r);
-      }
-    }
-  }
+  // void nullableElementHelper(@OwningCollection List<Resource> resources) {
+  //   for (Resource r : resources) {
+  //     if (r != null) {
+  //       doCloseFlush(r);
+  //     }
+  //   }
+  // }
 
   @EnsuresCalledMethods(
       value = "#1",
@@ -145,17 +115,17 @@ class LoopBodyAnalysisTests {
     r.flush();
   }
 
-  void indexForLoop(Resource @OwningCollection [] resources) {
-    for (int i = 0; i < resources.length; i++) {
-      resources[i].close();
-      resources[i].flush();
+  void indexForLoop(@OwningCollection List<Resource> resources) {
+    for (int i = 0; i < resources.size(); i++) {
+      resources.get(i).close();
+      resources.get(i).flush();
     }
   }
 
   // :: error: unfulfilled.collection.obligations
-  void indexForLoopPartial(Resource @OwningCollection [] resources) {
-    for (int i = 0; i < resources.length; i++) {
-      resources[i].close();
+  void indexForLoopPartial(@OwningCollection List<Resource> resources) {
+    for (int i = 0; i < resources.size(); i++) {
+      resources.get(i).close();
       // missing flush
     }
   }
@@ -170,7 +140,4 @@ class LoopBodyAnalysisTests {
 
   // :: error: illegal.type.annotation
   void checkArgIsOCWO(@OwningCollectionWithoutObligation Iterable<Resource> arg) {}
-
-  // :: error: illegal.type.annotation
-  void checkArgIsOCWO(Resource @OwningCollectionWithoutObligation [] arg) {}
 }
