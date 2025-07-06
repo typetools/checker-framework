@@ -1797,18 +1797,21 @@ public class MustCallConsistencyAnalyzer {
     Node lhs = node.getTarget();
     Node rhs = node.getExpression();
 
-    // assignment to final field allowed
+    if (!coAtf.isResourceCollection(lhs.getType()) && !coAtf.isResourceCollection(rhs.getType())) {
+      return;
+    }
+
+    boolean isOwningCollectionField =
+        coAtf.isOwningCollectionField(TreeUtils.elementFromTree(lhs.getTree()));
+    boolean isFinalField = false;
+
     if (lhs != null && lhs.getTree() != null) {
       Element lhsElt = TreeUtils.elementFromTree(lhs.getTree());
       if (lhsElt != null) {
         if (lhsElt.getModifiers().contains(Modifier.FINAL)) {
-          return;
+          isFinalField = true;
         }
       }
-    }
-
-    if (!coAtf.isResourceCollection(lhs.getType()) && !coAtf.isResourceCollection(rhs.getType())) {
-      return;
     }
 
     TreePath currentPath = cmAtf.getPath(node.getTree());
@@ -1826,6 +1829,7 @@ public class MustCallConsistencyAnalyzer {
             coAtf.getCoType(removeCastsAndGetTmpVarIfPresent(rhs), coStore);
         if (rhsCoType == null) {
           if (TreeUtils.isNullExpression(rhs.getTree())) {
+            // assignment to null allowed
             return;
           }
           throw new BugInCF(
@@ -1833,15 +1837,27 @@ public class MustCallConsistencyAnalyzer {
         }
         switch (rhsCoType) {
           case OwningCollectionWithoutObligation:
-            break;
+            return;
           case OwningCollection:
+            // remove obligations of rhs if lhs is @OC field.
+            // Although only safe if lhs is also final, remove
+            // obligations to prevent a second error. The illegal
+            // assignment error below is issued if lhs not final.
+            if (isOwningCollectionField) {
+              Set<Obligation> obligationsForVar = getObligationsForVar(obligations, rhs.getTree());
+              for (Obligation obligation : obligationsForVar) {
+                obligations.remove(obligation);
+              }
+              if (isFinalField) return;
+            }
+          // fall through
           case NotOwningCollection:
             checker.reportError(
                 node.getTree(), "illegal.owningcollection.field.assignment", rhsCoType.toString());
-            break;
+            return;
           case OwningCollectionBottom:
+            return;
         }
-        return;
       } else {
         // is an initialization block. Not supported.
         checker.reportError(
@@ -1854,19 +1870,35 @@ public class MustCallConsistencyAnalyzer {
     } else {
       // The assignment is taking place in a (possibly constructor) method.
       CollectionOwnershipStore coStore = coAtf.getStoreBefore(node);
+      CollectionOwnershipType rhsCoType =
+          coAtf.getCoType(removeCastsAndGetTmpVarIfPresent(rhs), coStore);
+      if (rhsCoType == null) {
+        if (TreeUtils.isNullExpression(rhs.getTree())) {
+          rhsCoType = CollectionOwnershipType.OwningCollectionBottom;
+        } else {
+          throw new BugInCF(
+              "Expression " + rhs + " cannot be found in CollectionOwnership store " + coStore);
+        }
+      }
+
+      if (isFinalField) {
+        // special case because final field is not in store before initial assignment.
+        // final assignment is always allowed. Remove obligations of RHS if field is owning.
+        if (isOwningCollectionField) {
+          Set<Obligation> obligationsForVar = getObligationsForVar(obligations, rhs.getTree());
+          for (Obligation obligation : obligationsForVar) {
+            obligations.remove(obligation);
+          }
+        }
+        return;
+      }
+
       CollectionOwnershipType lhsCoType =
           coAtf.getCoType(removeCastsAndGetTmpVarIfPresent(lhs), coStore);
       if (lhsCoType == null) {
         throw new BugInCF(
             "Expression " + lhs + " cannot be found in CollectionOwnership store " + coStore);
-      }
-      CollectionOwnershipType rhsCoType =
-          coAtf.getCoType(removeCastsAndGetTmpVarIfPresent(rhs), coStore);
-      if (rhsCoType == null) {
-        throw new BugInCF(
-            "Expression " + rhs + " cannot be found in CollectionOwnership store " + coStore);
-      }
-      if (lhsCoType == CollectionOwnershipType.OwningCollectionBottom
+      } else if (lhsCoType == CollectionOwnershipType.OwningCollectionBottom
           || rhsCoType == CollectionOwnershipType.OwningCollectionBottom) {
         throw new BugInCF(
             "Expression "
@@ -1877,20 +1909,20 @@ public class MustCallConsistencyAnalyzer {
       switch (lhsCoType) {
         case NotOwningCollection:
           // doesn't own elements. safe to overwrite.
-          break;
+          return;
         case OwningCollectionWithoutObligation:
           // no obligation. assignment allowed.
           // but if rhs is owning, demand CreatesMustCallFor("this")
           if (rhsCoType == CollectionOwnershipType.OwningCollection) {
             checkEnclosingMethodIsCreatesMustCallFor(lhs, enclosingMethodTree);
-            if (coAtf.isOwningCollectionField(TreeUtils.elementFromTree(lhs.getTree()))) {
+            if (isOwningCollectionField) {
               Set<Obligation> obligationsForVar = getObligationsForVar(obligations, rhs.getTree());
               for (Obligation obligation : obligationsForVar) {
                 obligations.remove(obligation);
               }
             }
           }
-          break;
+          return;
         case OwningCollection:
           // assignment not allowed
           checker.reportError(
@@ -1899,8 +1931,9 @@ public class MustCallConsistencyAnalyzer {
               coAtf.getMustCallValuesOfResourceCollectionComponent(lhs.getTree()).get(0),
               lhs.getTree(),
               "Field assignment might overwrite field's current value");
-          break;
+          return;
         default:
+          return;
       }
     }
   }
