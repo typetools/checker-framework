@@ -3,7 +3,6 @@ package org.checkerframework.framework.util.typeinference8.constraint;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
-import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import org.checkerframework.framework.util.typeinference8.types.InvocationType;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
@@ -39,7 +38,7 @@ public class AdditionalArgument implements Constraint {
 
   @Override
   public ConstraintSet reduce(Java8InferenceContext context) {
-    if (methodOrConstructorInvocation.getKind() == Tree.Kind.METHOD_INVOCATION) {
+    if (methodOrConstructorInvocation instanceof MethodInvocationTree) {
       MethodInvocationTree methodInvocation = (MethodInvocationTree) methodOrConstructorInvocation;
       InvocationType methodType =
           context.inferenceTypeFactory.getTypeOfMethodAdaptedToUse(methodInvocation);

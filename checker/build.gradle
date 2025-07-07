@@ -62,7 +62,7 @@ dependencies {
   testImplementation 'com.amazonaws:aws-java-sdk-ec2'
   testImplementation 'com.amazonaws:aws-java-sdk-kms'
   // The AWS SDK is used for testing the Called Methods Checker.
-  testImplementation platform('com.amazonaws:aws-java-sdk-bom:1.12.783')
+  testImplementation platform('com.amazonaws:aws-java-sdk-bom:1.12.787')
   // For the Resource Leak Checker's support for JavaEE.
   testImplementation 'javax.servlet:javax.servlet-api:4.0.1'
   // For the Resource Leak Checker's support for IOUtils.
@@ -948,6 +948,8 @@ task wpiManyTest(type: Exec, group: 'Verification') {
             || line.startsWith('warning: [options] bootstrap')
             // Ignore the warnings about --add-opens arguments to the JVM
             || line.contains('warning: [options] --add-opens has no effect at compile time')
+            // Ignore warning about using -source; should use --release instead.
+            || line.equals("warning: [options] system modules path not set in conjunction with -source 11")
             // Ignore the summary line that reports the total number of warnings (which can be single or plural).
             || line.endsWith(' warning')
             || line.endsWith(' warnings')

@@ -2,7 +2,11 @@ package org.checkerframework.checker.rlccalledmethods;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collections;
@@ -112,6 +116,7 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
    *
    * @param checker the checker associated with this type factory
    */
+  @SuppressWarnings("this-escape")
   public RLCCalledMethodsAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     this.rlc = ResourceLeakUtils.getResourceLeakChecker(checker);
@@ -329,10 +334,10 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
    * @return whether the tree has declared must-call obligations
    */
   public boolean declaredTypeHasMustCall(Tree tree) {
-    assert tree.getKind() == Tree.Kind.METHOD
-            || tree.getKind() == Tree.Kind.VARIABLE
-            || tree.getKind() == Tree.Kind.NEW_CLASS
-            || tree.getKind() == Tree.Kind.METHOD_INVOCATION
+    assert tree instanceof MethodTree
+            || tree instanceof VariableTree
+            || tree instanceof NewClassTree
+            || tree instanceof MethodInvocationTree
         : "unexpected declaration tree kind: " + tree.getKind();
     return !hasEmptyMustCallValue(tree);
   }

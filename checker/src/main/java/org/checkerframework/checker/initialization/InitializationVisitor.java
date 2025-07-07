@@ -226,7 +226,7 @@ public class InitializationVisitor<
     // save all fields that are initialized and do not report errors about
     // them later when checking constructors.
     for (Tree member : tree.getMembers()) {
-      if (member.getKind() == Tree.Kind.BLOCK && !((BlockTree) member).isStatic()) {
+      if (member instanceof BlockTree && !((BlockTree) member).isStatic()) {
         BlockTree block = (BlockTree) member;
         Store store = atypeFactory.getRegularExitStore(block);
 
@@ -343,7 +343,7 @@ public class InitializationVisitor<
     // Compact canonical record constructors do not generate visible assignments in the source,
     // but by definition they assign to all the record's fields so we don't need to
     // check for uninitialized fields in them:
-    if (tree.getKind() == Tree.Kind.METHOD
+    if (tree instanceof MethodTree
         && TreeUtils.isCompactCanonicalRecordConstructor((MethodTree) tree)) {
       return;
     }
