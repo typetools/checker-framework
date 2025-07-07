@@ -646,17 +646,16 @@ feature that it is unable to reason about.
 \sectionAndLabel{Collections of resources}{resource-leak-collections}
 
 The Resource Leak Checker handles homogeneous collections of resources. In a homogeneous collection, every element
-has exactly the same must-call and called-methods properties. \texttt{java.util.Iterable} and all its implementations, and \texttt{java.util.Iterator}s are supported; this section
-calls those ``collections''.
+has exactly the same must-call and called-methods properties. Instances of \texttt{java.util.Iterable} are supported this section calls those ``collections''. Usage of \texttt{java.util.Iterator}s over \texttt{java.util.Iterable}s are also supported, but they are not considered collections.
 
-The Resource Leak Checker tracks every allocated resource collection in two ways:
+What the checker effectively verifies is that any resource collection is properly disposed of. That is, there is some loop that definitely calls the required methods on all elements of the collection.
+
+Towards that end, the Resource Leak Checker tracks every allocated resource collection in two ways:
 
 \begin{itemize}
   \item at most one owning reference for each underlying resource collection is tracked via an ownership type system. This owning reference may arbitrarily mutate the collection. All other references are considered not owning and are restricted - they can't be used to add or remove elements to and from the collection respectively for example.
-  \item a complementary dataflow analysis tracks an obligation for each allocated resource collection. The obligation can be passed on to method parameters, fields, or return values for example, just like the ownership. The difference is the imprecision - the type system tracks at most one owner per resource collection, while the dataflow analysis tracks at least one obligation per resource collection to ensure it is definitely fulfilled.
+  \item a complementary dataflow analysis tracks an obligation for each allocated resource collection. The obligation can be passed on to method parameters, fields, or return values for example, just like the ownership. The difference is that while the type system tracks at most one owner per resource collection allowed to mutate it without restriction, the dataflow analysis tracks at least one obligation per resource collection to ensure it is definitely fulfilled.
 \end{itemize}
-
-What the checker effectively verifies is that any resource collection is properly disposed of. That is, there is some loop that definitely calls the required methods on all elements of the collection.
 
 For the purposes of this checker, \textit{resource collections} are precisely defined, as the objects of interest for both the type system and obligation tracking. A Java expression is a \textit{resource collection} if it is:
 
@@ -665,7 +664,7 @@ For the purposes of this checker, \textit{resource collections} are precisely de
   \item Its type parameter upper bound has non-empty \texttt{MustCall} type.
 \end{enumerate}
 
-For example, expressions of type \texttt{Socket[]} or \texttt{Iterable<? extends @MustCallUnknown Object>} are both resource collection, but one of type \texttt{Set<File>} is not.
+For example, expressions of type \texttt{Socket[]} or \texttt{Iterable<? extends @MustCallUnknown Object>} are both resource collection, but one of type \texttt{Set<String>} is not.
 
 \subsectionAndLabel{Ownership type system for resource collections}{resource-leak-collections-ownership-types}
 Of the two tracking mechanisms described above, the ownership type system is more visible from the user perspective. The type hierarchy is the following:
