@@ -22,7 +22,6 @@ from release_vars import CHECKER_LIVE_API_DIR
 from release_vars import CHECKLINK
 from release_vars import DEV_SITE_DIR
 from release_vars import DEV_SITE_URL
-from release_vars import INTERM_ANNO_REPO
 from release_vars import INTERM_CHECKER_REPO
 from release_vars import LIVE_SITE_DIR
 from release_vars import LIVE_SITE_URL
@@ -259,7 +258,6 @@ def push_interm_to_release_repos():
     """Push the release to the GitHub repositories for
     the AFU and the Checker Framework. This is an
     irreversible step."""
-    push_changes_prompt_if_fail(INTERM_ANNO_REPO)
     push_changes_prompt_if_fail(INTERM_CHECKER_REPO)
 
 
