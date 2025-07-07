@@ -18,6 +18,8 @@ the parts that you might want to include with your own program.
    framework/src/main/java/org/jmlspecs/, and
    framework/src/main/java/com/google/).
 
+ * Annotation Tools (annotation-file-utilities) uses the MIT license.
+
 The Checker Framework includes annotations for some libraries.  Those in
 .astub files use the MIT License.  Those in https://github.com/typetools/jdk
 (which appears in the annotated-jdk directory of file checker.jar) use the
@@ -31,9 +33,6 @@ distribution have different licenses.  Here are some examples.
    contains a file with the text of the GPL, but it is not clear why, since
    JavaParser does not use the GPL.)  See
    https://github.com/typetools/stubparser .
-
- * Annotation Tools (https://github.com/typetools/annotation-tools) uses
-   the MIT license.
 
  * Libraries in plume-lib (https://github.com/plume-lib/) are licensed
    under the MIT License.

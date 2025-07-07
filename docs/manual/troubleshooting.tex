@@ -953,25 +953,6 @@ checker/bin-devel/test-cftests-junit.sh
 \end{Verbatim}
 
 
-\subsectionAndLabel{Related repositories}{building-related-repositories}
-
-Building the Checker Framework depends on other repositories, such as
-\href{https://github.com/typetools/annotation-tools/}{Annotation Tools} and
-\href{https://github.com/typetools/stubparser/}{Stub Parser}.
-You need to have compatible versions of each.
-
-After you \<git pull> in one of the repositories, you should do so in the
-others as well.  The script \<checker/bin-devel/clone-related.sh> pulls all the
-related repositories, so to build the latest development version of the
-Checker Framework you can do
-
-\begin{Verbatim}
-cd $CHECKERFRAMEWORK
-git pull
-checker/bin-devel/clone-related.sh
-\end{Verbatim}
-
-
 \sectionAndLabel{Contributing}{contributing}
 
 We welcome contributions and pull requests.  Section~\ref{build-source}
