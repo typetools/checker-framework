@@ -1910,7 +1910,8 @@ public class MustCallConsistencyAnalyzer {
         case OwningCollectionWithoutObligation:
           // no obligation. assignment allowed.
           // but if rhs is owning, demand CreatesMustCallFor("this")
-          if (rhsCoType == CollectionOwnershipType.OwningCollection) {
+          if (rhsCoType == CollectionOwnershipType.OwningCollection
+              || rhsCoType == CollectionOwnershipType.NotOwningCollection) {
             checkEnclosingMethodIsCreatesMustCallFor(lhs, enclosingMethodTree);
             if (isOwningCollectionField) {
               Set<Obligation> obligationsForVar = getObligationsForVar(obligations, rhs.getTree());
