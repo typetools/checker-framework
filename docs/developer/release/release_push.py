@@ -566,19 +566,7 @@ def main(argv):
             + "* For the description, insert the latest Checker Framework changelog entry (available at https://checkerframework.org/CHANGELOG.md). Please include the first line with the release version and date.\n"
             + '* Find the link below "Attach binaries by dropping them here or selecting them." Click on "selecting them" and upload checker-framework-'
             + new_cf_version
-            + ".zip from your machine.\n"
-            + '* Click on the green "Publish release" button.\n'
-            + "\n"
-            + "To post the Annotation File Utilities release on GitHub:\n"
-            + "\n"
-            + "* Browse to https://github.com/typetools/annotation-tools/releases/new?tag="
-            + new_cf_version
-            + "\n"
-            + "* For the release title, enter: Annotation File Utilities "
-            + new_cf_version
-            + "\n"
-            + "* For the description, insert the latest Annotation File Utilities changelog entry (available at https://checkerframework.org/annotation-file-utilities/changelog.html). Please include the first line with the release version and date. For bullet points, use the * Markdown character.\n"
-            + '* Find the link below "Attach binaries by dropping them here or selecting them." Click on "selecting them" and upload annotation-tools-'
+            +".zip and upload annotation-tools-"
             + new_cf_version
             + ".zip from your machine.\n"
             + '* Click on the green "Publish release" button.\n'
