@@ -11,7 +11,6 @@ Copyright (c) 2015 University of Washington. All rights reserved.
 # See README-release-process.html for more information
 
 from release_vars import ANNO_FILE_UTILITIES
-from release_vars import ANNO_TOOLS
 from release_vars import BUILD_REPOS
 from release_vars import CF_VERSION
 from release_vars import CHECKER_FRAMEWORK
@@ -112,7 +111,6 @@ The following repositories will be cloned or updated from their origins:
     )
     clone_from_scratch_or_update(CHECKLINK_REPO, CHECKLINK, clone_from_scratch, False)
     clone_from_scratch_or_update(PLUME_BIB_REPO, PLUME_BIB, clone_from_scratch, False)
-    # clone_from_scratch_or_update(LIVE_ANNO_REPO, ANNO_TOOLS, clone_from_scratch, False)
 
 
 def get_afu_date():
@@ -218,7 +216,7 @@ def build_annotation_tools_release(version, afu_interm_dir):
 
     # Deploy to intermediate site
     gradle_cmd = (
-        "./gradlew releaseBuildWithoutTest -Pafu.version=%s -Pdeploy-dir=%s"
+        "../gradlew releaseBuildWithoutTest -Pafu.version=%s -Pdeploy-dir=%s"
         % (
             version,
             afu_interm_dir,
@@ -351,8 +349,6 @@ def commit_to_interm_projects(cf_version):
     corresponding intermediate repo in preparation for running the release_push
     script, which does not read the build repos."""
     # Use project definition instead, see find project location find_project_locations
-
-    commit_tag_and_push(cf_version, ANNO_TOOLS, "")
 
     commit_tag_and_push(cf_version, CHECKER_FRAMEWORK, "checker-framework-")
 

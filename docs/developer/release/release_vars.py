@@ -91,10 +91,8 @@ RELEASE_BUILD_COMPLETED_FLAG_FILE = TMP_DIR + "/release-build-completed"
 # Every time a release is built the changes/tags are pushed here
 INTERM_REPO_ROOT = TMP_DIR + "/interm"
 INTERM_CHECKER_REPO = os.path.join(INTERM_REPO_ROOT, "checker-framework")
-INTERM_ANNO_REPO = os.path.join(INTERM_REPO_ROOT, "annotation-tools")
 
 # The central repositories for Checker Framework related projects
-LIVE_ANNO_REPO = "git@github.com:typetools/annotation-tools.git"
 LIVE_CHECKER_REPO = "git@github.com:typetools/checker-framework.git"
 GIT_SCRIPTS_REPO = "https://github.com/plume-lib/git-scripts"
 PLUME_SCRIPTS_REPO = "https://github.com/plume-lib/plume-scripts"
@@ -117,25 +115,22 @@ CF_VERSION = (
     .decode("utf-8")
 )
 
-ANNO_TOOLS = os.path.join(BUILD_DIR, "annotation-tools")
-ANNO_FILE_UTILITIES = os.path.join(ANNO_TOOLS, "annotation-file-utilities")
+ANNO_FILE_UTILITIES = os.path.join(CHECKER_FRAMEWORK, "annotation-file-utilities")
 
 GIT_SCRIPTS = os.path.join(BUILD_DIR, "git-scripts")
 PLUME_SCRIPTS = os.path.join(BUILD_DIR, "plume-scripts")
 CHECKLINK = os.path.join(BUILD_DIR, "checklink")
 PLUME_BIB = os.path.join(BUILD_DIR, "plume-bib")
 
-BUILD_REPOS = (CHECKER_FRAMEWORK, ANNO_TOOLS)
-INTERM_REPOS = (INTERM_CHECKER_REPO, INTERM_ANNO_REPO)
+BUILD_REPOS = (CHECKER_FRAMEWORK)
+INTERM_REPOS = (INTERM_CHECKER_REPO)
 
 INTERM_TO_BUILD_REPOS = (
     (INTERM_CHECKER_REPO, CHECKER_FRAMEWORK),
-    (INTERM_ANNO_REPO, ANNO_TOOLS),
 )
 
 LIVE_TO_INTERM_REPOS = (
     (LIVE_CHECKER_REPO, INTERM_CHECKER_REPO),
-    (LIVE_ANNO_REPO, INTERM_ANNO_REPO),
 )
 
 AFU_LIVE_SITE = os.path.join(LIVE_SITE_DIR, "annotation-file-utilities")
