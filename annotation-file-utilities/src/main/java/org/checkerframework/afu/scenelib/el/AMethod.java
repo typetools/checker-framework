@@ -235,7 +235,8 @@ public class AMethod extends ADeclaration {
   }
 
   /**
-   * Set the return type. Does nothing if the argument is null.
+   * Set the return type. Does nothing if the argument is null. Errs if called twice with different
+   * non-null arguments.
    *
    * @param returnTypeMirror the return type
    */
