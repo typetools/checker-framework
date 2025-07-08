@@ -1,0 +1,21 @@
+package java.lang.annotation:
+annotation @Deprecated:
+annotation @Tainted:
+
+package org.checkerframework.afu.annotator.tests:
+class InnerTypeResolution:
+
+    method <init>()V:
+        return:
+
+    method method01(Ljava/util/Map;)Ljava/util/Map$Entry;: @Deprecated
+        return:
+        parameter #0:
+            type: @Tainted
+
+    method method02(Ljava/util/Map;)Ljava/util/Map$Entry;: @Deprecated
+        return:
+        parameter #0:
+            type:
+                inner-type 3, 0: @Tainted
+

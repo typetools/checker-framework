@@ -65,9 +65,6 @@ ext {
 
   parentDir = file("${rootDir}/../").absolutePath
 
-  annotationTools = "${parentDir}/annotation-tools"
-  afu = "${annotationTools}/annotation-file-utilities"
-
   gitScriptsHome = "${project(':checker').projectDir}/bin-devel/.git-scripts"
   plumeScriptsHome = "${project(':checker').projectDir}/bin-devel/.plume-scripts"
   htmlToolsHome = "${project(':checker').projectDir}/bin-devel/.html-tools"
@@ -559,6 +556,13 @@ allprojects { currentProj ->
           '-Xep:NullableWildcard:OFF',
           // In the visitor pattern, it is natural to forward a Void reference.
           '-Xep:VoidUsed:OFF',
+          // Suggestion assumes there is no overriding equals() method.
+          "-Xep:NonOverridingEquals:OFF",
+          // Suggests using a class that's in Error Prone itself, not in any library for clients.
+          // It requires "import com.google.errorprone.util.ASTHelpers;", and (in build.gradle)
+          //   implementation "com.google.errorprone:error_prone_core:${errorproneVersion}"
+          // Adding that line in build.gradle causes a javac crash when running the Checker Framework.
+          "-Xep:ASTHelpersSuggestions:OFF",
           // -Werror halts the build if Error Prone issues a warning, which ensures that
           // the errors get fixed.  On the downside, Error Prone (or maybe the compiler?)
           // stops as soon as it issues one warning, rather than outputting them all.
@@ -669,6 +673,7 @@ task allJavadoc(type: Javadoc, group: 'Documentation') {
       project(':dataflow').sourceSets.main.allJava,
       project(':javacutil').sourceSets.main.allJava,
       project(':framework-test').sourceSets.main.allJava,
+      project(':annotation-file-utilities').sourceSets.main.allJava,
       )
 
   doFirst {
@@ -905,9 +910,9 @@ subprojects {
         'org.checkerframework.checker.signature.SignatureChecker')
 
     // The checkNullness task runs on all code, but it only *checks* the following code:
-    //  * All files outside the 'framework' and 'checker' subprojects.
-    //  * In the 'framework' and 'checker' subprojects, files with `@AnnotatedFor("nullness")`.
-    if (project.name.is('framework') || project.name.is('checker')) {
+    //  * All files outside the 'framework', 'checker', and 'annotation-file-utilities' subprojects.
+    //  * In the 'framework', 'checker', and 'annotation-file-utilities' subprojects, files with `@AnnotatedFor("nullness")`.
+    if (project.name.is('framework') || project.name.is('checker') || project.name.is('annotation-file-utilities')) {
       createCheckTypeTask(project.name, 'Nullness',
           'org.checkerframework.checker.nullness.NullnessChecker',
           [
@@ -1086,14 +1091,16 @@ subprojects {
     }
     tasks.create(name: 'typecheck-part1', group: 'Verification') {
       description = 'Run the Checker Framework on itself (part 1)'
-      dependsOn('checkFormatter', 'checkInterning', 'checkOptional', 'checkPurity')
+      dependsOn('checkFormatter', 'checkOptional', 'checkPurity')
+      if (!project.name.is('annotation-file-utilities')) {
+        // TODO: Annotate AFU for Interning Checker.
+        dependsOn('checkInterning')
+      }
     }
     tasks.create(name: 'typecheck-part2', group: 'Verification') {
       description = 'Run the Checker Framework on itself (part 2)'
-      dependsOn('checkResourceLeak', 'checkSignature')
-      if (project.name.is('framework') || project.name.is('checker')) {
-        dependsOn('checkCompilerMessages')
-      } else {
+      dependsOn('checkCompilerMessages', 'checkResourceLeak', 'checkSignature')
+      if (! (project.name.is('framework') || project.name.is('checker'))) {
         dependsOn('checkNullness')
       }
     }

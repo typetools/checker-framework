@@ -1,0 +1,36 @@
+package annotations.tests.classfile.foo:
+annotation @A: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+annotation @B: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+	String value
+
+// annotation @C: @Retention(value=CLASS) @java.lang.annotation.Target(value={TYPE_USE})
+annotation @C: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+	int fieldA
+	String fieldB
+
+package annotations.tests.classfile.cases:
+class TestLocalVariable: @annotations.tests.classfile.foo.A
+	field i:
+
+	field s:
+
+	method <init>()V:
+  	local 1 # 6 + 6 : @annotations.tests.classfile.foo.C(fieldA=166, fieldB="good")
+
+	method <init>(I)V:
+  	local 1 # 0 + 10 : @annotations.tests.classfile.foo.A
+
+	method <init>(Ljava/lang/Integer;)V:
+
+	method i()I:
+
+	method j()I :
+		return : @annotations.tests.classfile.foo.A
+		local 1 # 2 + 5 : @annotations.tests.classfile.foo.B(value="hello")
+
+  method someMethod()V:
+
+  method main([Ljava/lang/String;)V:
+
+

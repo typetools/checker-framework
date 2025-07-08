@@ -1,0 +1,20 @@
+package:
+annotation @X:
+
+class GenericArg:
+method mp(Ljava/lang/Object;)V:
+local l: @X
+
+method mr()Ljava/lang/Object;:
+local r: @X
+
+method foo(Ljava/lang/Number;)V:
+local k: @X
+
+method bar()Ljava/lang/Integer;:
+local j: @X
+
+class GenericArg$Tricky:
+method argh(Ljava/lang/Object;)V:
+local a: @X
+

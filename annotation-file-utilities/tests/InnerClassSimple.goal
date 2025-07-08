@@ -1,0 +1,12 @@
+package org.checkerframework.afu.annotator.tests;
+
+import java.util.Date;
+
+@skip-test
+public class InnerClassSimple {
+  public Integer field;
+
+  @java.lang.Tainted @java.lang.DoesNotExist public class ActualInnerClass {
+    @java.lang.Tainted Date d;
+  }
+}
