@@ -1093,7 +1093,7 @@ subprojects {
       description = 'Run the Checker Framework on itself (part 1)'
       dependsOn('checkFormatter', 'checkOptional', 'checkPurity')
       if (!project.name.is('annotation-file-utilities')) {
-        // AFU hasn't been annotated for Interning Checker.
+        // TODO: Annotate AFU for Interning Checker.
         dependsOn('checkInterning')
       }
     }

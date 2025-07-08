@@ -13,9 +13,9 @@ plugins {
 apply plugin: 'java'
 
 java {
-  // This test is for whether the Checker Framework supports (runs under) Java 8.
-  // Currently, the Checker Framework does support Java 8.
-  if (true /* supports Java 8 */) {
+  // This test is for whether the Checker Framework runs under Java 8.
+  // Currently, the Checker Framework does run under Java 8.
+  if (true /* runs under Java 8 */) {
     sourceCompatibility = 1.8
     targetCompatibility = 1.8
   } else {
