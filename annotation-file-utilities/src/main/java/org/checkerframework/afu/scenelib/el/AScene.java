@@ -293,7 +293,8 @@ public class AScene implements Cloneable {
           ADeclaration d = (ADeclaration) arg;
           checkCloneMap(el.insertAnnotations, d.insertAnnotations);
           checkCloneMap(el.insertTypecasts, d.insertTypecasts);
-          return visitElement(el, arg);
+          visitElement(el, arg);
+          return null;
         }
 
         @Override
@@ -306,14 +307,16 @@ public class AScene implements Cloneable {
           checkCloneMap(el.news, e.news);
           checkCloneMap(el.refs, e.refs);
           checkCloneMap(el.typecasts, e.typecasts);
-          return visitElement(el, arg);
+          visitElement(el, arg);
+          return null;
         }
 
         @Override
         public Void visitField(AField el, AElement arg) {
           AField f = (AField) arg;
           checkCloneAElement(el.init, f.init);
-          return visitDeclaration(el, arg);
+          visitDeclaration(el, arg);
+          return null;
         }
 
         @Override
