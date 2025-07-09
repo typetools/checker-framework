@@ -197,7 +197,8 @@ public class AScene implements Cloneable {
       throw new RuntimeException("clone check failed, null value: " + o0 + ", " + o1);
     }
     if (o0 == o1) {
-      throw new RuntimeException("clone check failed, reference equality: " + o0);
+      throw new RuntimeException(
+          "clone check failed, reference equality: " + o0 + " [" + o0.getClass() + "]");
     }
   }
 
@@ -237,6 +238,7 @@ public class AScene implements Cloneable {
   /**
    * Throws an exception if the two sets are not equal.
    *
+   * @param <T> the type of elements of the sets
    * @param s0 a set
    * @param s1 a set
    */
@@ -355,7 +357,11 @@ public class AScene implements Cloneable {
         }
       };
 
-  // temporary main for easy testing on JAIFs
+  /**
+   * Temporary main for easy testing on JAIFs.
+   *
+   * @param args command-line arguments
+   */
   public static void main(String[] args) {
     int status = 0;
     checkClones = true;
