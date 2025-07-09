@@ -289,6 +289,9 @@ public class AScene implements Cloneable {
 
         @Override
         public Void visitExpression(AExpression el, AElement arg) {
+          if (el == null && arg == null) {
+            return null;
+          }
           AExpression e = (AExpression) arg;
           checkCloneNotReferenceEqual(el.id, e.id);
           checkCloneMap(el.calls, e.calls);
