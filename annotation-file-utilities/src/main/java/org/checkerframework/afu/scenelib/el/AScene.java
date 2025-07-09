@@ -202,8 +202,7 @@ public class AScene implements Cloneable {
   }
 
   /**
-   * Throws an exception if !el.equals(arg) or !arg.equals(el). (See {@link #checkClone(AScene,
-   * AScene)} for explanation.)
+   * Throws an exception if !el.equals(arg) or !arg.equals(el).
    *
    * @param o0 the first object to compare
    * @param o1 the second object to compare
