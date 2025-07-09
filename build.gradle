@@ -885,7 +885,7 @@ subprojects {
       }
     }
 
-    // Tasks such as `checkResourceLeak` to run various checkers on all the main source sets.
+    // Tasks such as `checkInterning` and `checkResourceLeak` run various checkers on all the main source sets.
     // These pass and are run by the `typecheck` task.
     // When you add one here, also update a dependsOn item for the 'typecheck' task.
     createCheckTypeTask(project.name, 'Formatter',
@@ -924,6 +924,20 @@ subprojects {
       createCheckTypeTask(project.name, 'Nullness',
           'org.checkerframework.checker.nullness.NullnessChecker',
           ['-AskipUses=com\\.sun\\.*'])
+    }
+
+
+    createCheckTypeTask(project.name, 'CompilerMessages',
+        'org.checkerframework.checker.compilermsgs.CompilerMessagesChecker')
+    checkCompilerMessages {
+      doFirst {
+        String propfiles = sourceSets.main.resources.filter { file -> file.name.equals('messages.properties') }.asPath
+        if (project.name.is('checker')) {
+          String frameworkPropFiles = project(':framework').sourceSets.main.resources.filter { file -> file.name.equals('messages.properties') }.asPath
+          propfiles = propfiles + File.pathSeparator + frameworkPropFiles
+        }
+        options.compilerArgs += ["-Apropfiles=${propfiles}"]
+      }
     }
 
 
@@ -1099,10 +1113,8 @@ subprojects {
     }
     tasks.create(name: 'typecheck-part2', group: 'Verification') {
       description = 'Run the Checker Framework on itself (part 2)'
-      dependsOn('checkResourceLeak', 'checkSignature')
-      if (project.name.is('framework') || project.name.is('checker')) {
-        dependsOn('checkCompilerMessages')
-      } else {
+      dependsOn('checkCompilerMessages', 'checkResourceLeak', 'checkSignature')
+      if (!(project.name.is('framework') || project.name.is('checker'))) {
         dependsOn('checkNullness')
       }
     }
