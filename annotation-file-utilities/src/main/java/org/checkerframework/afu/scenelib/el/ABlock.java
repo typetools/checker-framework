@@ -14,7 +14,7 @@ public class ABlock extends AExpression {
   public final VivifyingMap<LocalLocation, AField> locals =
       AField.<LocalLocation>newVivifyingLHMap_AF();
 
-  ABlock(Object id) {
+  ABlock(String id) {
     super(id);
   }
 

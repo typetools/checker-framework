@@ -54,9 +54,9 @@ public class AExpression extends AElement {
         }
       };
 
-  protected Object id;
+  protected String id;
 
-  AExpression(Object id) {
+  AExpression(String id) {
     super(id);
 
     this.id = id;
@@ -75,6 +75,7 @@ public class AExpression extends AElement {
 
   @Override
   public AExpression clone() {
+    // TODO: This does not populate the result!
     return new AExpression(id);
   }
 
