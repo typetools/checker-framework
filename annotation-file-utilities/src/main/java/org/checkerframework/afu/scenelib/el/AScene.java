@@ -198,7 +198,42 @@ public class AScene implements Cloneable {
       throw new RuntimeException("clone check failed, null value: " + o0 + ", " + o1);
     }
     if (o0 == o1) {
-      throw new RuntimeException("clone check failed, reference equality: " + o0);
+      throw new RuntimeException(
+          "clone check failed, reference equality: " + o0 + " [" + o0.getClass() + "]");
+    }
+  }
+
+  /**
+   * Throws an exception if the two strings are not equal.
+   *
+   * @param s0 the first string to compare
+   * @param s1 the second string to compare
+   */
+  private static void checkStringsEqual(String s0, String s1) {
+    if (s0 == s1) {
+      return;
+    }
+    if (s0 == null || s1 == null || !s0.equals(s1)) {
+      throw new RuntimeException("Nonequal strings: " + s0 + ", " + s1);
+    }
+  }
+
+  /**
+   * Throws an exception if the two descriptions are not equal. Each description is a String or an
+   * ASTPath.
+   *
+   * @param o0 the first description to compare
+   * @param o1 the second description to compare
+   */
+  private static void checkDescriptionsEqual(Object o0, Object o1) {
+    if (o0 == o1) {
+      return;
+    }
+    if (o0 == null || o1 == null) {
+      throw new RuntimeException("Nonequal descriptions: " + o0 + ", " + o1);
+    }
+    if (!o0.equals(o1)) {
+      throw new RuntimeException("Nonequal descriptions: " + o0 + ", " + o1);
     }
   }
 
@@ -238,6 +273,7 @@ public class AScene implements Cloneable {
   /**
    * Throws an exception if the two sets are not equal.
    *
+   * @param <T> the type of elements of the sets
    * @param s0 a set
    * @param s1 a set
    */
@@ -316,7 +352,7 @@ public class AScene implements Cloneable {
         @Override
         public Void visitMethod(AMethod el, AElement arg) {
           AMethod m = (AMethod) arg;
-          checkCloneNotReferenceEqual(el.methodSignature, m.methodSignature);
+          checkStringsEqual(el.methodSignature, m.methodSignature);
           checkCloneMap(el.bounds, m.bounds);
           visitTypeElement(el.returnType, m.returnType);
           visitField(el.receiver, m.receiver);
@@ -334,7 +370,7 @@ public class AScene implements Cloneable {
             return null;
           }
           ATypeElement t = (ATypeElement) arg;
-          checkCloneNotReferenceEqual(el.description, t.description);
+          checkDescriptionsEqual(el.description, t.description);
           checkCloneMap(el.innerTypes, t.innerTypes);
           return null;
         }
@@ -349,14 +385,18 @@ public class AScene implements Cloneable {
 
         @Override
         public Void visitElement(AElement el, AElement arg) {
-          checkCloneNotReferenceEqual(el.description, arg.description);
+          checkDescriptionsEqual(el.description, arg.description);
           checkCloneSet(el.tlAnnotationsHere, arg.tlAnnotationsHere);
           visitTypeElement(el.type, arg.type);
           return null;
         }
       };
 
-  // temporary main for easy testing on JAIFs
+  /**
+   * Temporary main for easy testing on JAIFs.
+   *
+   * @param args command-line arguments
+   */
   public static void main(String[] args) {
     int status = 0;
     checkClones = true;
