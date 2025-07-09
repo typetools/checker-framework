@@ -3,6 +3,8 @@ package org.checkerframework.afu.annotator.find;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import org.checkerframework.afu.scenelib.io.ASTPath;
+import org.checkerframework.checker.interning.qual.FindDistinct;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * Represents the criterion that a program element is not enclosed by any method (i.e. it's a field,
@@ -16,7 +18,7 @@ final class NotInMethodCriterion implements Criterion {
   }
 
   @Override
-  public boolean isSatisfiedBy(TreePath path, Tree leaf) {
+  public boolean isSatisfiedBy(@Nullable TreePath path, @FindDistinct Tree leaf) {
     if (path == null) {
       return false;
     }
@@ -25,7 +27,7 @@ final class NotInMethodCriterion implements Criterion {
   }
 
   @Override
-  public boolean isSatisfiedBy(TreePath path) {
+  public boolean isSatisfiedBy(@Nullable TreePath path) {
     do {
       Tree.Kind kind = path.getLeaf().getKind();
       if (kind == Tree.Kind.METHOD) {

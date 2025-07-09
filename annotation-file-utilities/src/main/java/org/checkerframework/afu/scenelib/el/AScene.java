@@ -192,6 +192,7 @@ public class AScene implements Cloneable {
    * @param o0 the first object to compare
    * @param o1 the second object to compare
    */
+  @SuppressWarnings("interning:not.interned") // reference equality check
   private static void checkCloneNotReferenceEqual(Object o0, Object o1) {
     if (o0 == null || o1 == null) {
       throw new RuntimeException("clone check failed, null value: " + o0 + ", " + o1);

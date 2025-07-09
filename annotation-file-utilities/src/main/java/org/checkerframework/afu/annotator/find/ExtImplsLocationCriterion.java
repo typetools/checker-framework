@@ -7,6 +7,8 @@ import com.sun.tools.javac.tree.JCTree;
 import java.util.List;
 import org.checkerframework.afu.annotator.scanner.TreePathUtil;
 import org.checkerframework.afu.scenelib.el.TypeIndexLocation;
+import org.checkerframework.checker.interning.qual.FindDistinct;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /** A criterion to find a given extends or implements clause. */
 public class ExtImplsLocationCriterion implements Criterion {
@@ -24,7 +26,7 @@ public class ExtImplsLocationCriterion implements Criterion {
   }
 
   @Override
-  public boolean isSatisfiedBy(TreePath path, Tree leaf) {
+  public boolean isSatisfiedBy(@Nullable TreePath path, @FindDistinct Tree leaf) {
     if (path == null) {
       return false;
     }
@@ -33,7 +35,7 @@ public class ExtImplsLocationCriterion implements Criterion {
   }
 
   @Override
-  public boolean isSatisfiedBy(TreePath path) {
+  public boolean isSatisfiedBy(@Nullable TreePath path) {
     if (path == null) {
       return false;
     }

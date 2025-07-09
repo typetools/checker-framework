@@ -33,6 +33,8 @@ import org.checkerframework.afu.scenelib.field.BasicAFT;
 import org.checkerframework.afu.scenelib.field.ClassTokenAFT;
 import org.checkerframework.afu.scenelib.field.EnumAFT;
 import org.checkerframework.afu.scenelib.field.ScalarAFT;
+import org.checkerframework.checker.interning.qual.FindDistinct;
+import org.checkerframework.checker.interning.qual.Interned;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.ClassGetName;
@@ -222,7 +224,7 @@ public class ClassAnnotationSceneReader extends CodeOffsetAdapter {
   //
 
   // Hackish workaround for odd subclassing.
-  String dummyDesc = "dummy";
+  @Interned String dummyDesc = "dummy";
 
   /**
    * AnnotationSceneReader contains most of the complexity behind reading annotations from a class
@@ -305,7 +307,7 @@ public class ClassAnnotationSceneReader extends CodeOffsetAdapter {
     @SuppressWarnings("ReferenceEquality") // interned comparison
     AnnotationSceneReader(
         int api,
-        String descriptor,
+        @FindDistinct String descriptor,
         boolean visible,
         AElement aElement,
         AnnotationVisitor annotationWriter) {
