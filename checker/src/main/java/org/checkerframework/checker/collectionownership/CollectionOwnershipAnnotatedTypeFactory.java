@@ -360,7 +360,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
     if (isCollectionType) {
       List<? extends AnnotatedTypeMirror> typeArgs =
           ((AnnotatedDeclaredType) atm).getTypeArguments();
-      if (typeArgs.size() != 0) {
+      if (typeArgs.size() == 1) {
         componentType = typeArgs.get(0);
       }
     }
@@ -410,8 +410,8 @@ public class CollectionOwnershipAnnotatedTypeFactory
     TypeMirror componentType = null;
     if (isCollectionType) {
       List<? extends TypeMirror> typeArgs = ((DeclaredType) t).getTypeArguments();
-      if (typeArgs.size() != 0) {
-        componentType = typeArgs.get(typeArgs.size() - 1);
+      if (typeArgs.size() == 1) {
+        componentType = typeArgs.get(0);
       }
     }
 
