@@ -214,7 +214,7 @@ public class AScene implements Cloneable {
       VivifyingMap<K, V> m0, VivifyingMap<K, V> m1) {
     checkCloneNotReferenceEqual(m0, m1);
     // This does not require that the key sets are identical, because m0 and m1 are vivifying maps.
-    Set<K> keys = new HashSet<>();
+    Set<K> keys = new LinkedHashSet<>();
     keys.addAll(m0.keySet());
     keys.addAll(m1.keySet());
     for (K k : keys) {
@@ -237,12 +237,12 @@ public class AScene implements Cloneable {
   /**
    * Throws an exception if the two sets are not equal.
    *
-   * @param o1 a reference to an object
-   * @param o2 a reference to an object
+   * @param s0 a set
+   * @param s1 a set
    */
-  private static <T> void checkCloneSet(Set<T> s1, Set<T> s2) {
-    checkCloneNotReferenceEqual(s1, s2);
-    if (!s1.equals(s2)) {
+  private static <T> void checkCloneSet(Set<T> s0, Set<T> s1) {
+    checkCloneNotReferenceEqual(s0, s1);
+    if (!s0.equals(s1)) {
       throw new RuntimeException("clone check failed, different sets: " + s0 + ", " + s1);
     }
   }
@@ -348,10 +348,6 @@ public class AScene implements Cloneable {
           return null;
         }
       };
-
-  private static void cloneCheckFail() {
-    throw new RuntimeException("clone check failed");
-  }
 
   // temporary main for easy testing on JAIFs
   public static void main(String[] args) {
