@@ -4,6 +4,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import org.checkerframework.framework.qual.InheritedAnnotation;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
@@ -15,6 +16,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * <p>This annotation can be enforced by running the Resource Leak Checker. It enforces that the
  * expression is not used to add to or remove elements from the underlying collection/array.
  */
+@InheritedAnnotation
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf({})

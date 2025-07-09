@@ -5,6 +5,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.SubtypeOf;
+import org.checkerframework.framework.qual.InheritedAnnotation;
 
 /**
  * An expression of type {@code @OwningCollection} is a resource collection/array, which definitely
@@ -18,6 +19,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * scope, or it passes on the obligation (by writing to an {@code @OwningCollection}, passing to an
  * {@code @OwningCollection} parameter, or returning as an {@code @OwningCollection} return type).
  */
+@InheritedAnnotation
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf({NotOwningCollection.class})
