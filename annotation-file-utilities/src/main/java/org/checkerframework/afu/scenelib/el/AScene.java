@@ -171,7 +171,7 @@ public class AScene implements Cloneable {
   /**
    * Checks that the arguments are clones of one another.
    *
-   * <p>Throws exception if the arguments 1) are the same reference; 2) are not equal() in both
+   * <p>Throws an exception if the arguments 1) are the same reference; 2) are not equal() in both
    * directions; or 3) contain corresponding elements that meet either of the preceding two
    * conditions.
    *

@@ -240,7 +240,7 @@ public class AMethod extends ADeclaration {
    *
    * @param returnTypeMirror the return type
    */
-  public void setReturnTypeMirror(/*@Nullable*/ TypeMirror returnTypeMirror) {
+  public void setReturnTypeMirror(@Nullable @FindDistinct TypeMirror returnTypeMirror) {
     if (returnTypeMirror == null) {
       return;
     }

@@ -1260,7 +1260,7 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
   }
 
   public static boolean isClassEquiv(Tree.Kind kind) {
-    return kind.asInterface().equals(ClassTree.class);
+    return kind.asInterface() == ClassTree.class;
   }
 
   /**
@@ -1270,7 +1270,7 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
    * @return true if the given kind is a compound assignment
    */
   public static boolean isCompoundAssignment(Tree.Kind kind) {
-    return kind.asInterface().equals(CompoundAssignmentTree.class);
+    return kind.asInterface() == CompoundAssignmentTree.class;
   }
 
   /**
@@ -1280,7 +1280,7 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
    * @return true if the given kind is a unary operator
    */
   public static boolean isUnaryOperator(Tree.Kind kind) {
-    return kind.asInterface().equals(UnaryTree.class);
+    return kind.asInterface() == UnaryTree.class;
   }
 
   /**
@@ -1290,11 +1290,11 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
    * @return true if the given kind is a binary operator
    */
   public static boolean isBinaryOperator(Tree.Kind kind) {
-    return kind.asInterface().equals(BinaryTree.class);
+    return kind.asInterface() == BinaryTree.class;
   }
 
   public static boolean isLiteral(Tree.Kind kind) {
-    return kind.asInterface().equals(LiteralTree.class);
+    return kind.asInterface() == LiteralTree.class;
   }
 
   public static boolean isTypeKind(Tree.Kind kind) {
@@ -1320,7 +1320,7 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
    * @return true if the given kind is a wildcard
    */
   public static boolean isWildcard(Tree.Kind kind) {
-    return kind.asInterface().equals(WildcardTree.class);
+    return kind.asInterface() == WildcardTree.class;
   }
 
   /**

@@ -76,7 +76,7 @@ public class LocalClassScanner extends TreePathScanner<Void, Integer> {
           ClassTree c = (ClassTree) statement;
           if (localClass == statement) {
             found = true;
-          } else if (c.getSimpleName().equals(localClass.getSimpleName())) {
+          } else if (c.getSimpleName() == localClass.getSimpleName()) {
             index++;
           }
         }
