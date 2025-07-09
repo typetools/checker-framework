@@ -203,17 +203,21 @@ public class AScene implements Cloneable {
   }
 
   /**
-   * Throws an exception if the two strings are not equal.
+   * Throws an exception if the two descriptions are not equal. Each description is a String or an
+   * ASTPath.
    *
-   * @param s0 the first string to compare
-   * @param s1 the second string to compare
+   * @param o0 the first description to compare
+   * @param o1 the second description to compare
    */
-  private static void checkStringsEqual(String s0, String s1) {
-    if (s0 == s1) {
+  private static void checkDescriptionsEqual(Object o0, Object o1) {
+    if (o0 == o1) {
       return;
     }
-    if (s0 == null || s1 == null || !s0.equals(s1)) {
-      throw new RuntimeException("Nonequal strings: " + s0 + ", " + s1);
+    if (o0 == null || o1 == null) {
+      throw new RuntimeException("Nonequal descriptions: " + o0 + ", " + o1);
+    }
+    if (!o0.equals(o1)) {
+      throw new RuntimeException("Nonequal descriptions: " + o0 + ", " + o1);
     }
   }
 
@@ -350,7 +354,7 @@ public class AScene implements Cloneable {
             return null;
           }
           ATypeElement t = (ATypeElement) arg;
-          checkStringsEqual(el.description, t.description);
+          checkDescriptionsEqual(el.description, t.description);
           checkCloneMap(el.innerTypes, t.innerTypes);
           return null;
         }
@@ -365,7 +369,7 @@ public class AScene implements Cloneable {
 
         @Override
         public Void visitElement(AElement el, AElement arg) {
-          checkStringsEqual(el.description, arg.description);
+          checkDescriptionsEqual(el.description, arg.description);
           checkCloneSet(el.tlAnnotationsHere, arg.tlAnnotationsHere);
           visitTypeElement(el.type, arg.type);
           return null;
