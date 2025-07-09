@@ -203,6 +203,21 @@ public class AScene implements Cloneable {
   }
 
   /**
+   * Throws an exception if the two strings are not equal.
+   *
+   * @param s0 the first string to compare
+   * @param s1 the second string to compare
+   */
+  private static void checkStringsEqual(String s0, String s1) {
+    if (s0 == s1) {
+      return;
+    }
+    if (s0 == null || s1 == null || !s0.equals(s1)) {
+      throw new RuntimeException("Nonequal strings: " + s0 + ", " + s1);
+    }
+  }
+
+  /**
    * Throws an exception if the two descriptions are not equal. Each description is a String or an
    * ASTPath.
    *
@@ -336,7 +351,7 @@ public class AScene implements Cloneable {
         @Override
         public Void visitMethod(AMethod el, AElement arg) {
           AMethod m = (AMethod) arg;
-          checkCloneNotReferenceEqual(el.methodSignature, m.methodSignature);
+          checkStringsEqual(el.methodSignature, m.methodSignature);
           checkCloneMap(el.bounds, m.bounds);
           visitTypeElement(el.returnType, m.returnType);
           visitField(el.receiver, m.receiver);

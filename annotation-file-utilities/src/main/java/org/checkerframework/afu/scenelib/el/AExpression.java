@@ -75,7 +75,7 @@ public class AExpression extends AElement {
 
   @Override
   public AExpression clone() {
-    return new AExpression(this);
+    return new AExpression(id);
   }
 
   @Override
