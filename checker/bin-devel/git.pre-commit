@@ -2,7 +2,7 @@
 
 # This file will be used as ../../.git/hooks/pre-commit.
 # However, it should be edited as checker/bin-devel/git.pre-commit.
-# You can install it by running: (cd .. && ./gradlew installGitHooks)
+# You can install it by running: (cd ../.. && ./gradlew installGitHooks)
 
 # Fail if any command fails
 set -e

@@ -1,0 +1,10 @@
+// @skip-test
+
+package java.lang:
+annotation @Tainted: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package org.checkerframework.afu.annotator.tests:
+class FieldMultiple:
+
+    field d: @java.lang.Tainted
+

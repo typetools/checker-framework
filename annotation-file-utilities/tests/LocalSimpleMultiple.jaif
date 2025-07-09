@@ -1,0 +1,21 @@
+package java.lang:
+annotation @UnderInitialization: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package java.lang:
+annotation @Tainted: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package org.checkerframework.afu.annotator.tests:
+class LocalSimpleMultiple:
+
+    method <init>()V:
+
+    method foo()V:
+        local 1 #2+20:
+            type: @java.lang.UnderInitialization
+        local 2 #11+11:
+            type: @java.lang.Tainted
+
+    method bar(Ljava/lang/Object;)V:
+        local 2 #2+6:
+            type: @java.lang.Tainted
+

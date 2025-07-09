@@ -280,16 +280,21 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         updateFieldValuesForMethodCall(gatypeFactory);
       }
 
-      // update array values
+      // Update array values.
       arrayValues.clear();
 
-      // update method values
-      methodCallExpressions.keySet().removeIf(MethodCall::isModifiableByOtherCode);
+      // Update information about method calls.
+      updateMethodCallValues();
     }
 
-    // store information about method call if possible
+    // Store information about method calls if possible.
     JavaExpression methodCall = JavaExpression.fromNode(methodInvocationNode);
     replaceValue(methodCall, val);
+  }
+
+  /** Update information about method calls. */
+  private void updateMethodCallValues() {
+    methodCallExpressions.keySet().removeIf(MethodCall::isModifiableByOtherCode);
   }
 
   /**
@@ -381,9 +386,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     Map<FieldAccess, V> newFieldValues = new HashMap<>(CollectionsPlume.mapCapacity(fieldValues));
     for (Map.Entry<FieldAccess, V> e : fieldValues.entrySet()) {
       FieldAccess fieldAccess = e.getKey();
-      V value = e.getValue();
+      V previousValue = e.getValue();
 
-      V newValue = newFieldValueAfterMethodCall(fieldAccess, atypeFactory, value);
+      V newValue = newFieldValueAfterMethodCall(fieldAccess, atypeFactory, previousValue);
       if (newValue != null) {
         // Keep information for all hierarchies where we had a monotonic annotation.
         newFieldValues.put(fieldAccess, newValue);
@@ -1132,14 +1137,14 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       }
     }
 
-    Iterator<Map.Entry<MethodCall, V>> methodCallValuesIterator =
+    Iterator<Map.Entry<MethodCall, V>> methodCallExpressionsIterator =
         methodCallExpressions.entrySet().iterator();
-    while (methodCallValuesIterator.hasNext()) {
-      Map.Entry<MethodCall, V> entry = methodCallValuesIterator.next();
+    while (methodCallExpressionsIterator.hasNext()) {
+      Map.Entry<MethodCall, V> entry = methodCallExpressionsIterator.next();
       MethodCall otherMethodAccess = entry.getKey();
       // case 3:
       if (otherMethodAccess.containsSyntacticEqualJavaExpression(var)) {
-        methodCallValuesIterator.remove();
+        methodCallExpressionsIterator.remove();
       }
     }
   }

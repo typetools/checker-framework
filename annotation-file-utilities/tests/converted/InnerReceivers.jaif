@@ -1,0 +1,170 @@
+package :
+annotation @A: @java.lang.annotation.Target(value={TYPE_USE})
+
+package :
+annotation @B: @java.lang.annotation.Target(value={TYPE_USE})
+
+package :
+annotation @C: @java.lang.annotation.Target(value={TYPE_USE})
+
+package :
+annotation @D: @java.lang.annotation.Target(value={TYPE_USE})
+
+package :
+annotation @D1: @java.lang.annotation.Target(value={TYPE_USE})
+
+package :
+annotation @E: @java.lang.annotation.Target(value={TYPE_USE})
+    int value
+
+package :
+annotation @F: @java.lang.annotation.Target(value={TYPE_USE})
+
+package :
+annotation @F1: @java.lang.annotation.Target(value={TYPE_USE})
+
+package :
+annotation @G: @java.lang.annotation.Target(value={TYPE_USE})
+    int value
+
+package :
+annotation @H: @java.lang.annotation.Target(value={TYPE_USE})
+
+package :
+annotation @I: @java.lang.annotation.Target(value={TYPE_USE})
+
+package :
+annotation @J: @java.lang.annotation.Target(value={TYPE_USE})
+
+package :
+annotation @K: @java.lang.annotation.Target(value={TYPE_USE})
+
+package :
+annotation @I1: @java.lang.annotation.Target(value={TYPE_USE})
+    int value
+
+package :
+annotation @L: @java.lang.annotation.Target(value={TYPE_USE})
+
+package :
+annotation @M: @java.lang.annotation.Target(value={TYPE_USE})
+
+package :
+annotation @N: @java.lang.annotation.Target(value={TYPE_USE})
+
+package :
+annotation @O: @java.lang.annotation.Target(value={TYPE_USE})
+
+package org.checkerframework.afu.annotator.tests:
+class InnerReceivers$1$Inner:
+
+    method m()V:
+        return:
+        insert-annotation Method.parameter -1: @A
+
+    method m1()V:
+        return:
+        insert-annotation Method.parameter -1, Variable.type: @B
+
+package org.checkerframework.afu.annotator.tests:
+class InnerReceivers:
+
+    method m()V:
+        return:
+        insert-annotation Method.parameter -1: @C
+
+    method m1()V:
+        return:
+        insert-annotation Method.parameter -1, Variable.type: @D
+
+    method m2()V:
+        return:
+        insert-annotation Method.parameter -1, Variable.type: @D1
+
+package org.checkerframework.afu.annotator.tests:
+class InnerReceivers$Inner1:
+
+    method m()V:
+        return:
+        insert-annotation Method.parameter -1, ParameterizedType.typeArgument 0: @E(value=2)
+        insert-annotation Method.parameter -1, ParameterizedType.typeArgument 1: @E(value=3)
+        insert-annotation Method.parameter -1, ParameterizedType.type, MemberSelect.expression: @E(value=1)
+        insert-annotation Method.parameter -1: @E(value=0)
+
+    method m1()V:
+        return:
+        insert-annotation Method.parameter -1, Variable.type, ParameterizedType.type, MemberSelect.expression: @F
+
+    method m2()V:
+        return:
+        insert-annotation Method.parameter -1, Variable.type, ParameterizedType.type, MemberSelect.expression: @F1
+
+package org.checkerframework.afu.annotator.tests:
+class InnerReceivers$Inner1$Inner2:
+
+    method m()V:
+        return:
+        insert-annotation Method.parameter -1, Variable.type, MemberSelect.expression, ParameterizedType.type, MemberSelect.expression: @G(value=4)
+        insert-annotation Method.parameter -1, Variable.type, MemberSelect.expression, ParameterizedType.typeArgument 0: @G(value=2)
+        insert-annotation Method.parameter -1, Variable.type, MemberSelect.expression, ParameterizedType.typeArgument 1: @G(value=3)
+        insert-annotation Method.parameter -1, Variable.type, MemberSelect.expression: @G(value=1)
+        insert-annotation Method.parameter -1: @G(value=0)
+
+    method m1()V:
+        return:
+        insert-annotation Method.parameter -1, Variable.type, MemberSelect.expression, ParameterizedType.type, MemberSelect.expression: @H
+
+package org.checkerframework.afu.annotator.tests:
+class InnerReceivers$StaticInner1:
+
+    method m()V:
+        return:
+        insert-annotation Method.parameter -1: @I
+
+    method m1()V:
+        return:
+        insert-annotation Method.parameter -1, Variable.type: @J
+
+    method m2()V:
+        return:
+        insert-annotation Method.parameter -1, Variable.type: @K
+
+package org.checkerframework.afu.annotator.tests:
+class InnerReceivers$StaticInner3:
+
+    method m()V:
+        return:
+        insert-annotation Method.parameter -1, ParameterizedType.typeArgument 0: @I1(value=1)
+        insert-annotation Method.parameter -1, ParameterizedType.typeArgument 1: @I1(value=2)
+        insert-annotation Method.parameter -1: @I1(value=0)
+
+    method m1()V:
+        return:
+        insert-annotation Method.parameter -1, Variable.type, ParameterizedType.type: @J
+
+    method m2()V:
+        return:
+        insert-annotation Method.parameter -1, Variable.type, ParameterizedType.type: @K
+
+package org.checkerframework.afu.annotator.tests:
+class Outer$StaticInner2:
+
+    method m()V:
+        return:
+        insert-annotation Method.parameter -1: @L
+
+    method m1()V:
+        return:
+        insert-annotation Method.parameter -1, Variable.type: @M
+
+    method m2()V:
+        return:
+        insert-annotation Method.parameter -1, Variable.type: @N
+
+package org.checkerframework.afu.annotator.tests:
+class Outer$StaticInner2$StaticInner3:
+
+    method m()V:
+        return:
+        insert-annotation Method.parameter -1: @O
+
