@@ -294,7 +294,8 @@ public class AScene implements Cloneable {
           ADeclaration d = (ADeclaration) arg;
           checkCloneMap(el.insertAnnotations, d.insertAnnotations);
           checkCloneMap(el.insertTypecasts, d.insertTypecasts);
-          return visitElement(el, arg);
+          visitElement(el, arg);
+          return null;
         }
 
         @Override
@@ -307,14 +308,16 @@ public class AScene implements Cloneable {
           checkCloneMap(el.news, e.news);
           checkCloneMap(el.refs, e.refs);
           checkCloneMap(el.typecasts, e.typecasts);
-          return visitElement(el, arg);
+          visitElement(el, arg);
+          return null;
         }
 
         @Override
         public Void visitField(AField el, AElement arg) {
           AField f = (AField) arg;
-          visitElement(el.init, f.init);
-          return visitDeclaration(el, arg);
+          visitExpression(el.init, f.init);
+          visitDeclaration(el, arg);
+          return null;
         }
 
         @Override
@@ -322,13 +325,13 @@ public class AScene implements Cloneable {
           AMethod m = (AMethod) arg;
           checkCloneNotReferenceEqual(el.methodSignature, m.methodSignature);
           checkCloneMap(el.bounds, m.bounds);
-          visitElement(el.returnType, m.returnType);
-          visitElement(el.receiver, m.receiver);
+          visitTypeElement(el.returnType, m.returnType);
+          visitField(el.receiver, m.receiver);
           checkCloneMap(el.parameters, m.parameters);
           checkCloneMap(el.throwsException, m.throwsException);
           checkCloneMap(el.preconditions, m.preconditions);
           checkCloneMap(el.postconditions, m.postconditions);
-          visitElement(el.body, m.body);
+          visitBlock(el.body, m.body);
           return null;
         }
 
@@ -358,7 +361,7 @@ public class AScene implements Cloneable {
               cloneCheckFail();
             }
           }
-          visitElement(el.type, arg.type);
+          visitTypeElement(el.type, arg.type);
           return null;
         }
       };
