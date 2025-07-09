@@ -175,7 +175,6 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
    */
   private void replaceCollectionTypeVarsWithBottomIfTop(Tree tree, AnnotatedDeclaredType adt) {
     if (ResourceLeakUtils.isCollection(adt.getUnderlyingType())) {
-      // || ResourceLeakUtils.isIterator(adt.getUnderlyingType())) {
       for (AnnotatedTypeMirror typeArg : adt.getTypeArguments()) {
         if (typeArg == null) continue;
         if (typeArg.getKind() == TypeKind.WILDCARD || typeArg.getKind() == TypeKind.TYPEVAR) {
