@@ -187,6 +187,21 @@ public class AScene implements Cloneable {
   }
 
   /**
+   * Throws an exception if the two arguments are references to the same object.
+   *
+   * @param o0 the first object to compare
+   * @param o1 the second object to compare
+   */
+  private static void checkCloneNotReferenceEqual(Object o0, Object o1) {
+    if (o0 == null || o1 == null) {
+      throw new RuntimeException("clone check failed, null value: " + o0 + ", " + o1);
+    }
+    if (o0 == o1) {
+      throw new RuntimeException("clone check failed, reference equality: " + o0);
+    }
+  }
+
+  /**
    * Throw exception if m0 == m1 or !m0.equals(m1). (See {@link #checkClone(AScene, AScene)} for
    * explanation.)
    *
@@ -217,6 +232,19 @@ public class AScene implements Cloneable {
   private static void checkCloneAElement(AElement e0, AElement e1) {
     checkCloneNotReferenceEqual(e0, e1);
     e0.accept(checkVisitor, e1);
+  }
+
+  /**
+   * Throws an exception if the two sets are not equal.
+   *
+   * @param o1 a reference to an object
+   * @param o2 a reference to an object
+   */
+  private static <T> void checkCloneSet(Set<T> s1, Set<T> s2) {
+    checkCloneNotReferenceEqual(s1, s2);
+    if (!s1.equals(s2)) {
+      throw new RuntimeException("clone check failed, different sets: " + s0 + ", " + s1);
+    }
   }
 
   /**
@@ -322,34 +350,6 @@ public class AScene implements Cloneable {
 
   private static void cloneCheckFail() {
     throw new RuntimeException("clone check failed");
-  }
-
-  /**
-   * Throws an exception if the two arguments are references to the same object.
-   *
-   * @param o1 a reference to an object
-   * @param o2 a reference to an object
-   */
-  private static void checkCloneNotReferenceEqual(Object o1, Object o2) {
-    if (o1 == null || o2 == null) {
-      throw new RuntimeException("clone check failed, null value: " + o1 + ", " + o2);
-    }
-    if (o1 == o2) {
-      throw new RuntimeException("clone check failed, reference equality: " + o1);
-    }
-  }
-
-  /**
-   * Throws an exception if the two arguments are references to the same object.
-   *
-   * @param o1 a reference to an object
-   * @param o2 a reference to an object
-   */
-  private static <T> void checkCloneSet(Set<T> s1, Set<T> s2) {
-    checkCloneNotReferenceEqual(s1, s2);
-    if (!s1.equals(s2)) {
-      throw new RuntimeException("clone check failed, different sets: " + s0 + ", " + s1);
-    }
   }
 
   // temporary main for easy testing on JAIFs
