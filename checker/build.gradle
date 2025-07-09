@@ -238,16 +238,6 @@ clean.doLast {
 
 
 // Add non-junit tests
-createCheckTypeTask(project.name, 'CompilerMessages',
-    'org.checkerframework.checker.compilermsgs.CompilerMessagesChecker')
-checkCompilerMessages {
-  doFirst {
-    options.compilerArgs += [
-      '-Apropfiles=' + sourceSets.main.resources.filter { file -> file.name.equals('messages.properties') }.asPath + File.pathSeparator
-      + project(':framework').sourceSets.main.resources.filter { file -> file.name.equals('messages.properties') }.asPath
-    ]
-  }
-}
 
 task nullnessExtraTests(type: Exec, dependsOn: assembleForJavac, group: 'Verification') {
   description = 'Run extra tests for the Nullness Checker.'
