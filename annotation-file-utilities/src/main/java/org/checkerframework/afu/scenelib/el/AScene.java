@@ -329,6 +329,9 @@ public class AScene implements Cloneable {
 
         @Override
         public Void visitTypeElement(ATypeElement el, AElement arg) {
+          if (el == null && arg == null) {
+            return null;
+          }
           ATypeElement t = (ATypeElement) arg;
           checkCloneNotReferenceEqual(el.description, t.description);
           checkCloneMap(el.innerTypes, t.innerTypes);
