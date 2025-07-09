@@ -1,6 +1,5 @@
 package org.checkerframework.checker.index.mutable;
 
-import java.util.ArrayList;
 import java.util.List;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.RelevantJavaTypes;
@@ -16,9 +15,7 @@ import org.checkerframework.framework.source.SuppressWarningsPrefix;
  *
  * @checker_framework.manual #index-checker-mutable-length Support for mutable-length sequences
  */
-@RelevantJavaTypes({List.class, ArrayList.class
-  /** LinkedList.class, Vector.class, Stack.class, AbstractList.class, CopyOnWriteArrayList.class */
-})
+@RelevantJavaTypes({List.class})
 @SuppressWarningsPrefix({"index", "mutable"})
 public class MutableIndexChecker extends BaseTypeChecker {
   /* Creates a new MutableIndexChecker. */
