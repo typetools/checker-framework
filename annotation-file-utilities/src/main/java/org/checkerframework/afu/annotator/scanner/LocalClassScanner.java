@@ -6,6 +6,7 @@ import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
+import org.checkerframework.checker.interning.qual.FindDistinct;
 
 /**
  * LocalClassScanner determines the index of a tree for a local class. If the index is i, it is the
@@ -22,7 +23,7 @@ public class LocalClassScanner extends TreePathScanner<Void, Integer> {
    * @param localClass the local class to search for
    * @return the index of the local class in the source code
    */
-  public static int indexOfClassTree(TreePath path, ClassTree localClass) {
+  public static int indexOfClassTree(TreePath path, @FindDistinct ClassTree localClass) {
     // Move up to the CLASS tree enclosing this CLASS tree and start the tree
     // traversal from there. This prevents us from counting local classes that
     // are in a different part of the tree and therefore aren't included in the

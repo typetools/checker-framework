@@ -64,7 +64,8 @@ public class ReceiverCriterion implements Criterion {
       }
       if (parent != null && param != null) {
         MethodTree method = (MethodTree) parent.getLeaf();
-        if (param == method.getReceiverParameter()) {
+        boolean foundParam = param == method.getReceiverParameter();
+        if (foundParam) {
           return isSigMethodCriterion.isSatisfiedBy(parent);
         }
       }

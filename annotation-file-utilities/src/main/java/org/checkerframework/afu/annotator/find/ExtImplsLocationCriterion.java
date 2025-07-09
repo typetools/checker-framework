@@ -58,8 +58,6 @@ public class ExtImplsLocationCriterion implements Criterion {
     // System.out.printf("ExtImplsLocationCriterion.isSatisfiedBy(%s):%n  leaf=%s (%s)%n  parent=%s
     // (%s)%n", path, leaf, leaf.getClass(), parent, parent.getClass());
 
-    boolean returnValue = false;
-
     if (index == -1 && leaf.getKind() == Tree.Kind.CLASS) {
       return ((JCTree.JCClassDecl) leaf).getExtendsClause() == null;
     }
@@ -69,21 +67,17 @@ public class ExtImplsLocationCriterion implements Criterion {
       if (index == -1) {
         Tree ext = ct.getExtendsClause();
         if (ext == leaf) {
-          returnValue = true;
+          return true;
         }
       } else {
         List<? extends Tree> impls = ct.getImplementsClause();
         if (index < impls.size() && impls.get(index) == leaf) {
-          returnValue = true;
+          return true;
         }
       }
     }
 
-    if (!returnValue) {
-      return this.isSatisfiedBy(parentPath);
-    } else {
-      return true;
-    }
+    return this.isSatisfiedBy(parentPath);
   }
 
   @Override

@@ -1828,6 +1828,7 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
         neu.getInnerTypeInsertions(), neu.getType(), neu.getCriteria().getASTPath());
   }
 
+  @SuppressWarnings("interning:not.interned")
   private void addConstructor(TreePath path, ConstructorInsertion cons, MethodTree method) {
     ReceiverInsertion recv = cons.getReceiverInsertion();
     assert method == (MethodTree) path.getLeaf();
