@@ -885,7 +885,7 @@ subprojects {
       }
     }
 
-    // Tasks such as `checkResourceLeak` to run various checkers on all the main source sets.
+    // Tasks such as `checkInterning` and `checkResourceLeak` run various checkers on all the main source sets.
     // These pass and are run by the `typecheck` task.
     // When you add one here, also update a dependsOn item for the 'typecheck' task.
     createCheckTypeTask(project.name, 'Formatter',
@@ -1091,16 +1091,14 @@ subprojects {
     }
     tasks.create(name: 'typecheck-part1', group: 'Verification') {
       description = 'Run the Checker Framework on itself (part 1)'
-      dependsOn('checkFormatter', 'checkOptional', 'checkPurity')
-      if (!project.name.is('annotation-file-utilities')) {
-        // TODO: Annotate AFU for Interning Checker.
-        dependsOn('checkInterning')
-      }
+      dependsOn('checkFormatter', 'checkInterning', 'checkOptional', 'checkPurity')
     }
     tasks.create(name: 'typecheck-part2', group: 'Verification') {
       description = 'Run the Checker Framework on itself (part 2)'
-      dependsOn('checkCompilerMessages', 'checkResourceLeak', 'checkSignature')
-      if (! (project.name.is('framework') || project.name.is('checker'))) {
+      dependsOn('checkResourceLeak', 'checkSignature')
+      if (project.name.is('framework') || project.name.is('checker')) {
+        dependsOn('checkCompilerMessages')
+      } else {
         dependsOn('checkNullness')
       }
     }
