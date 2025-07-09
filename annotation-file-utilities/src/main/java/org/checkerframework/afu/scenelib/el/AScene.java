@@ -313,7 +313,7 @@ public class AScene implements Cloneable {
         @Override
         public Void visitField(AField el, AElement arg) {
           AField f = (AField) arg;
-          checkCloneAElement(el.init, f.init);
+          visitElement(el.init, f.init);
           return visitDeclaration(el, arg);
         }
 
@@ -322,13 +322,13 @@ public class AScene implements Cloneable {
           AMethod m = (AMethod) arg;
           checkCloneNotReferenceEqual(el.methodSignature, m.methodSignature);
           checkCloneMap(el.bounds, m.bounds);
-          checkCloneAElement(el.returnType, m.returnType);
-          checkCloneAElement(el.receiver, m.receiver);
+          visitElement(el.returnType, m.returnType);
+          visitElement(el.receiver, m.receiver);
           checkCloneMap(el.parameters, m.parameters);
           checkCloneMap(el.throwsException, m.throwsException);
           checkCloneMap(el.preconditions, m.preconditions);
           checkCloneMap(el.postconditions, m.postconditions);
-          checkCloneAElement(el.body, m.body);
+          visitElement(el.body, m.body);
           return null;
         }
 
@@ -358,7 +358,7 @@ public class AScene implements Cloneable {
               cloneCheckFail();
             }
           }
-          checkCloneAElement(el.type, arg.type);
+          visitElement(el.type, arg.type);
           return null;
         }
       };
