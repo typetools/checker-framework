@@ -76,6 +76,14 @@ task skinnyJar(type: ShadowJar, dependsOn: compileJava) {
   include 'org/checkerframework/afu/annotator/**/*.class'
 }
 
+createCheckTypeTask(project.name, 'CompilerMessages',
+    'org.checkerframework.checker.compilermsgs.CompilerMessagesChecker')
+checkCompilerMessages {
+  options.compilerArgs += [
+    '-Apropfiles=' + sourceSets.main.resources.filter { file -> file.name.equals('messages.properties') }.asPath
+  ]
+}
+
 task testExample(type: JavaExec, dependsOn: compileTestJava, group: 'Verification') {
   description = 'Run the scene-lib example test.'
   String resourceDir = "${projectDir}/src/test/resources/annotations/tests/executable/"
