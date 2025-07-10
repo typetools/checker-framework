@@ -48,6 +48,7 @@ import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.PackageSymbol;
 import com.sun.tools.javac.code.Type.ArrayType;
 import com.sun.tools.javac.code.Type.ClassType;
+import com.sun.tools.javac.tree.JCTree;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -1181,7 +1182,7 @@ public class JavaExpressionParseUtil {
         TypeMirror enclosingType,
         TreePath pathToCompilationUnit) {
       return tree.accept(
-          new JavacTreeToJavaExpressionVisitor(
+          new ExpressionTreeToJavaExpressionVisitor(
               env, parameters, localVarPath, thisReference, enclosingType, pathToCompilationUnit),
           null);
     }
@@ -1192,14 +1193,23 @@ public class JavaExpressionParseUtil {
       for (ExpressionTree dim : node.getDimensions()) {
         dimensions.add(dim == null ? null : dim.accept(this, null));
       }
-
+      if (dimensions.isEmpty()) {
+        dimensions.add(null);
+      }
       List<JavaExpression> initializers = new ArrayList<>();
       if (node.getInitializers() != null) {
         for (ExpressionTree init : node.getInitializers()) {
           initializers.add(init.accept(this, null));
         }
       }
-      com.sun.tools.javac.code.Type arrayType = (com.sun.tools.javac.code.Type) node.getType();
+      TypeMirror arrayType = convertTreeToTypeMirror((JCTree) node.getType());
+      if (arrayType == null) {
+        throw new ParseRuntimeException(
+            constructJavaExpressionParseError(node.getType().toString(), "type not parsable"));
+      }
+      for (int i = 0; i < dimensions.size(); i++) {
+        arrayType = TypesUtils.createArrayType(arrayType, env.getTypeUtils());
+      }
       return new ArrayCreation(arrayType, dimensions, initializers);
     }
 
@@ -1296,21 +1306,84 @@ public class JavaExpressionParseUtil {
       throw new ParseRuntimeException(constructJavaExpressionParseError(s, "identifier not found"));
     }
 
-    private FieldAccess getIdentifierAsFieldAccess(JavaExpression receiver, String name) {
-      TypeMirror current = receiver.getType();
-      while (current.getKind() == TypeKind.DECLARED) {
-        VariableElement fieldElem = resolver.findField(name, current, localVarPath);
-        if (fieldElem != null) {
-          if (ElementUtils.isStatic(fieldElem)) {
-            return new FieldAccess(
-                new ClassName(fieldElem.getEnclosingElement().asType()), fieldElem);
-          } else {
-            return new FieldAccess(receiver, fieldElem);
+    protected @Nullable FieldAccess getIdentifierAsFieldAccess(
+        JavaExpression receiverExpr, String identifier) {
+      // setResolverField();
+      // Find the field element.
+      TypeMirror enclosingTypeOfField = receiverExpr.getType();
+      VariableElement fieldElem;
+      if (identifier.equals("length") && enclosingTypeOfField.getKind() == TypeKind.ARRAY) {
+        fieldElem = resolver.findField(identifier, enclosingTypeOfField, pathToCompilationUnit);
+        if (fieldElem == null) {
+          throw new BugInCF("length field not found for type %s", enclosingTypeOfField);
+        }
+      } else {
+        fieldElem = null;
+        // Search for field in each enclosing class.
+        while (enclosingTypeOfField.getKind() == TypeKind.DECLARED) {
+          fieldElem = resolver.findField(identifier, enclosingTypeOfField, pathToCompilationUnit);
+          if (fieldElem != null) {
+            break;
+          }
+          enclosingTypeOfField = getTypeOfEnclosingClass((DeclaredType) enclosingTypeOfField);
+        }
+        if (fieldElem == null) {
+          // field not found.
+          return null;
+        }
+        if (receiverExpr instanceof SuperReference
+            && thisReference.getType().getKind() == TypeKind.DECLARED) {
+          Element thisFieldElem =
+              resolver.findField(identifier, thisReference.getType(), pathToCompilationUnit);
+          if (thisFieldElem == null) {
+            receiverExpr = thisReference;
           }
         }
-        current = ((DeclaredType) current).asElement().getEnclosingElement().asType();
       }
-      return null;
+
+      // `fieldElem` is now set.  Construct a FieldAccess expression.
+
+      if (ElementUtils.isStatic(fieldElem)) {
+        Element classElem = fieldElem.getEnclosingElement();
+        JavaExpression staticClassReceiver = new ClassName(ElementUtils.getType(classElem));
+        return new FieldAccess(staticClassReceiver, fieldElem);
+      }
+
+      // fieldElem is an instance field.
+
+      if (receiverExpr instanceof ClassName) {
+        throw new ParseRuntimeException(
+            constructJavaExpressionParseError(
+                fieldElem.getSimpleName().toString(),
+                "a non-static field cannot have a class name as a receiver."));
+      }
+
+      // There are two possibilities, captured by local variable fieldDeclaredInReceiverType:
+      //  * true: it's an instance field declared in the type (or supertype) of receiverExpr.
+      //  * false: it's an instance field declared in an enclosing type of receiverExpr.
+
+      @SuppressWarnings("interning:not.interned") // Checking for exact object
+      boolean fieldDeclaredInReceiverType = enclosingTypeOfField == receiverExpr.getType();
+      if (fieldDeclaredInReceiverType) {
+        TypeMirror fieldType = ElementUtils.getType(fieldElem);
+        return new FieldAccess(receiverExpr, fieldType, fieldElem);
+      } else {
+        if (!(receiverExpr instanceof ThisReference)) {
+          String msg =
+              String.format(
+                  "%s is declared in an outer type of the type of the receiver expression, %s.",
+                  identifier, receiverExpr);
+          throw new ParseRuntimeException(constructJavaExpressionParseError(identifier, msg));
+        }
+        TypeElement receiverTypeElement = TypesUtils.getTypeElement(receiverExpr.getType());
+        if (receiverTypeElement == null || ElementUtils.isStatic(receiverTypeElement)) {
+          String msg =
+              String.format("%s is a non-static field declared in an outer type this.", identifier);
+          throw new ParseRuntimeException(constructJavaExpressionParseError(identifier, msg));
+        }
+        JavaExpression locationOfField = new ThisReference(enclosingTypeOfField);
+        return new FieldAccess(locationOfField, fieldElem);
+      }
     }
 
     @Override
@@ -1522,6 +1595,49 @@ public class JavaExpressionParseUtil {
         }
       }
 
+      return null;
+    }
+
+    private @Nullable TypeMirror convertTreeToTypeMirror(JCTree tree) {
+      if (tree instanceof IdentifierTree) {
+        LanguageLevel currentSourceVersion = JavaParserUtil.getCurrentSourceVersion(env);
+        try {
+          return JavacParseUtil.parseExpression(tree.toString()).accept(this, null).getType();
+        } catch (ParseProblemException e) {
+          return null;
+        }
+      } else if (tree instanceof JCTree.JCPrimitiveTypeTree) {
+        switch (((JCTree.JCPrimitiveTypeTree) tree).getPrimitiveTypeKind()) {
+          case BOOLEAN:
+            return types.getPrimitiveType(TypeKind.BOOLEAN);
+          case BYTE:
+            return types.getPrimitiveType(TypeKind.BYTE);
+          case SHORT:
+            return types.getPrimitiveType(TypeKind.SHORT);
+          case INT:
+            return types.getPrimitiveType(TypeKind.INT);
+          case CHAR:
+            return types.getPrimitiveType(TypeKind.CHAR);
+          case FLOAT:
+            return types.getPrimitiveType(TypeKind.FLOAT);
+          case LONG:
+            return types.getPrimitiveType(TypeKind.LONG);
+          case DOUBLE:
+            return types.getPrimitiveType(TypeKind.DOUBLE);
+          case VOID:
+            return types.getNoType(TypeKind.VOID);
+          default:
+            return null;
+        }
+      } else if (tree instanceof JCTree.JCArrayTypeTree) {
+        // TypeMirror componentType =
+        // convertTreeToTypeMirror(type.asArrayType().getComponentType());
+        // if (componentType == null) {
+        //  return null;
+        // }
+        // return types.getArrayType(componentType);
+        return null;
+      }
       return null;
     }
   }
