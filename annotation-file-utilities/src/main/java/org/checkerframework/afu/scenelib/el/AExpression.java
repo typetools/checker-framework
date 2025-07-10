@@ -54,8 +54,14 @@ public class AExpression extends AElement {
         }
       };
 
+  /** A unique identifier. */
   protected String id;
 
+  /**
+   * Creates a new AExpression.
+   *
+   * @param id the identifier
+   */
   AExpression(String id) {
     super(id);
 
