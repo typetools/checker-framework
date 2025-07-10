@@ -299,6 +299,9 @@ public class AScene implements Cloneable {
 
         @Override
         public Void visitExpression(AExpression el, AElement arg) {
+          if (el == null && arg == null) {
+            return null;
+          }
           AExpression e = (AExpression) arg;
           checkCloneNotReferenceEqual(el.id, e.id);
           checkCloneMap(el.calls, e.calls);
@@ -314,7 +317,7 @@ public class AScene implements Cloneable {
         @Override
         public Void visitField(AField el, AElement arg) {
           AField f = (AField) arg;
-          checkCloneAElement(el.init, f.init);
+          visitExpression(el.init, f.init);
           visitDeclaration(el, arg);
           return null;
         }
@@ -324,18 +327,21 @@ public class AScene implements Cloneable {
           AMethod m = (AMethod) arg;
           checkCloneNotReferenceEqual(el.methodSignature, m.methodSignature);
           checkCloneMap(el.bounds, m.bounds);
-          checkCloneAElement(el.returnType, m.returnType);
-          checkCloneAElement(el.receiver, m.receiver);
+          visitTypeElement(el.returnType, m.returnType);
+          visitField(el.receiver, m.receiver);
           checkCloneMap(el.parameters, m.parameters);
           checkCloneMap(el.throwsException, m.throwsException);
           checkCloneMap(el.preconditions, m.preconditions);
           checkCloneMap(el.postconditions, m.postconditions);
-          checkCloneAElement(el.body, m.body);
+          visitBlock(el.body, m.body);
           return null;
         }
 
         @Override
         public Void visitTypeElement(ATypeElement el, AElement arg) {
+          if (el == null && arg == null) {
+            return null;
+          }
           ATypeElement t = (ATypeElement) arg;
           checkCloneNotReferenceEqual(el.description, t.description);
           checkCloneMap(el.innerTypes, t.innerTypes);
@@ -360,7 +366,7 @@ public class AScene implements Cloneable {
               cloneCheckFail();
             }
           }
-          checkCloneAElement(el.type, arg.type);
+          visitTypeElement(el.type, arg.type);
           return null;
         }
       };
@@ -369,7 +375,11 @@ public class AScene implements Cloneable {
     throw new RuntimeException("clone check failed");
   }
 
-  // temporary main for easy testing on JAIFs
+  /**
+   * Temporary main for easy testing on JAIFs.
+   *
+   * @param args command-line arguments
+   */
   public static void main(String[] args) {
     int status = 0;
     checkClones = true;

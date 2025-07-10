@@ -26,15 +26,14 @@ public class AnonymousClassScanner extends TreePathScanner<Void, Integer> {
     // traversal from there. This prevents us from counting anonymous classes
     // that are in a different part of the tree and therefore aren't included
     // in the index number.
-    int classesFound = 0;
     boolean anonclassFound = false;
-    while (path.getParentPath() != null && classesFound < 1) {
+    while (path.getParentPath() != null) {
       if (path.getLeaf() == anonclass) {
         anonclassFound = true;
       }
       path = path.getParentPath();
       if (anonclassFound && TreePathUtil.hasClassKind(path.getLeaf())) {
-        classesFound++;
+        break;
       }
     }
     AnonymousClassScanner lvts = new AnonymousClassScanner(anonclass);
