@@ -1,0 +1,18 @@
+package org.checkerframework.afu.annotator.tests;
+
+import java.util.List;
+
+public class LocalSimpleMultiple {
+  public void foo() {
+    @java.lang.UnderInitialization Object o = null;
+    System.out.println(o);
+    @java.lang.Tainted List list = null;
+    bar(list);
+    bar(o);
+  }
+
+  public void bar(Object o) {
+    @java.lang.Tainted LocalSimpleMultiple second = null;
+    bar(second);
+  }
+}

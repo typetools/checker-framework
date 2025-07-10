@@ -1,0 +1,3 @@
+/** A package without any annotations. */
+@java.lang.OnThePackage
+package org.checkerframework.afu.annotator.tests;

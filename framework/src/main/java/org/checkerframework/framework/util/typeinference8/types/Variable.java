@@ -75,7 +75,10 @@ import org.checkerframework.javacutil.TypesUtils;
    * @param map a mapping from type variable to inference variable
    * @param id a unique number for this variable
    */
-  @SuppressWarnings("interning:argument") // "this" is interned
+  @SuppressWarnings({
+    "interning:argument", // "this" is interned
+    "this-escape"
+  })
   protected Variable(
       AnnotatedTypeVariable typeVariable,
       TypeVariable typeVariableJava,

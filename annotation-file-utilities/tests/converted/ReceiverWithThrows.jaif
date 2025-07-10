@@ -1,0 +1,17 @@
+package java.lang:
+annotation @UnderInitialization: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package java.lang:
+annotation @Tainted: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package org.checkerframework.afu.annotator.tests:
+class ReceiverWithThrows:
+
+    method foo()V:
+        return:
+        insert-annotation Method.parameter -1: @java.lang.UnderInitialization
+
+    method bar()V:
+        return:
+        insert-annotation Method.parameter -1: @java.lang.Tainted
+

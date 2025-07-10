@@ -91,7 +91,7 @@ public class LessThanVisitor extends BaseTypeVisitor<LessThanAnnotatedTypeFactor
         String expression = expressions.get(0);
         if (expression.endsWith(" + 1")) {
           String value = expression.substring(0, expression.length() - 4);
-          if (valueTree.getKind() == Tree.Kind.IDENTIFIER) {
+          if (valueTree instanceof IdentifierTree) {
             String id = ((IdentifierTree) valueTree).getName().toString();
             if (id.equals(value)) {
               isLessThan = true;

@@ -9,6 +9,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 
 public class DefaultingUpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
+  @SuppressWarnings("this-escape")
   public DefaultingUpperBoundAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     this.postInit();

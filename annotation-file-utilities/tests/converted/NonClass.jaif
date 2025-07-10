@@ -1,0 +1,55 @@
+// @skip-test
+
+package :
+annotation @X:
+
+package :
+annotation @V:
+    int value
+
+package :
+class NonClass$A:
+
+    method m(Ljava/lang/Object;)V:
+        return:
+        insert-annotation Method.parameter 0, Variable.type: @X
+
+package :
+class NonClass$B:
+
+    method m()V:
+        return:
+        insert-annotation Method.body, Block.statement 0, Variable.type: @X
+
+package :
+class NonClass$C:
+
+    method value()Ljava/lang/String;:
+        return:
+        insert-annotation Method.type: @X
+
+package :
+class NonClass$E:
+
+    field D:
+        insert-annotation Variable.initializer, NewClass.argument 0, TypeCast.type: @V(value=1)
+        insert-annotation Variable.initializer, NewClass.identifier: @V(value=2)
+        insert-annotation Variable.type: @V(value=3)
+
+package :
+class NonClass$E:
+
+    field a:
+        insert-annotation Variable.type: @X
+
+package :
+class NonClass$E:
+
+    method <init>(Ljava/lang/String;)V:
+        insert-annotation Method.body, Block.statement 1, ExpressionStatement.expression, Assignment.expression, NewClass.identifier: @V(value=0)
+
+package :
+class NonClass$I:
+    insert-annotation Class.bound 0: @X
+    insert-annotation Class.bound 0, ParameterizedType.typeArgument 0: @X
+
