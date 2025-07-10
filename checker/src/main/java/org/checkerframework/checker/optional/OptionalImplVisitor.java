@@ -7,6 +7,7 @@ import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IfTree;
+import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
@@ -275,7 +276,7 @@ public class OptionalImplVisitor
       falseExpr = tmp;
     }
 
-    if (trueExpr.getKind() != Tree.Kind.METHOD_INVOCATION) {
+    if (!(trueExpr instanceof MethodInvocationTree)) {
       return;
     }
     ExpressionTree trueReceiver = TreeUtils.getReceiverTree(trueExpr);
@@ -392,26 +393,25 @@ public class OptionalImplVisitor
     }
 
     if (!(elseStmt == null
-        || (elseStmt.getKind() == Tree.Kind.BLOCK
-            && ((BlockTree) elseStmt).getStatements().isEmpty()))) {
+        || (elseStmt instanceof BlockTree && ((BlockTree) elseStmt).getStatements().isEmpty()))) {
       // else block is missing or is an empty block: "{}"
       return;
     }
 
-    if (thenStmt != null && thenStmt.getKind() == Tree.Kind.VARIABLE) {
+    if (thenStmt != null && thenStmt instanceof VariableTree) {
       ExpressionTree initializer = ((VariableTree) thenStmt).getInitializer();
-      if (initializer.getKind() == Tree.Kind.METHOD_INVOCATION) {
+      if (initializer instanceof MethodInvocationTree) {
         checkConditionalStatementIsPresentGetCall(
             tree, (MethodInvocationTree) initializer, isPresentCall, "prefer.map.and.orelse");
         return;
       }
     }
 
-    if (thenStmt == null || thenStmt.getKind() != Tree.Kind.EXPRESSION_STATEMENT) {
+    if (thenStmt == null || !(thenStmt instanceof ExpressionStatementTree)) {
       return;
     }
     ExpressionTree thenExpr = ((ExpressionStatementTree) thenStmt).getExpression();
-    if (thenExpr.getKind() != Tree.Kind.METHOD_INVOCATION) {
+    if (!(thenExpr instanceof MethodInvocationTree)) {
       return;
     }
     checkConditionalStatementIsPresentGetCall(
@@ -449,7 +449,7 @@ public class OptionalImplVisitor
     }
 
     if (sameExpression(trueAssignment.getVariable(), falseAssignment.getVariable())) {
-      if (trueAssignment.getExpression().getKind() == Kind.METHOD_INVOCATION) {
+      if (trueAssignment.getExpression() instanceof MethodInvocationTree) {
         ExecutableElement ele =
             TreeUtils.elementFromUse((MethodInvocationTree) trueAssignment.getExpression());
         checker.reportWarning(
@@ -707,7 +707,7 @@ public class OptionalImplVisitor
         // The receiver can be null if the receiver is the implicit "this.".
         return;
       }
-      if (receiver.getKind() != Tree.Kind.METHOD_INVOCATION) {
+      if (!(receiver instanceof MethodInvocationTree)) {
         return;
       }
       MethodInvocationTree methodCall = (MethodInvocationTree) receiver;
@@ -782,7 +782,7 @@ public class OptionalImplVisitor
       } else if (ekind == ElementKind.PARAMETER) {
         TreePath paramPath = getCurrentPath();
         Tree parent = paramPath.getParentPath().getLeaf();
-        if (parent.getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
+        if (parent instanceof LambdaExpressionTree) {
           // Exception to rule: lambda parameters can have type Optional.
         } else {
           checker.reportWarning(tree, "optional.parameter");
@@ -920,7 +920,7 @@ public class OptionalImplVisitor
       return tree;
     }
     StatementTree s = tree;
-    while (s.getKind() == Tree.Kind.BLOCK) {
+    while (s instanceof BlockTree) {
       List<? extends StatementTree> stmts = ((BlockTree) s).getStatements();
       if (stmts.size() == 1) {
         s = stmts.get(0);
@@ -960,7 +960,7 @@ public class OptionalImplVisitor
     TreePath getParentPath = getPath.getParentPath();
     // "getParent" means "the parent of the node `Optional::get`".
     Tree getParent = getParentPath.getLeaf();
-    if (getParent.getKind() == Tree.Kind.METHOD_INVOCATION) {
+    if (getParent instanceof MethodInvocationTree) {
       MethodInvocationTree hasGetAsArgumentTree = (MethodInvocationTree) getParent;
       ExecutableElement hasGetAsArgumentElement = TreeUtils.elementFromUse(hasGetAsArgumentTree);
       if (!hasGetAsArgumentElement.equals(streamMap)) {
@@ -970,7 +970,7 @@ public class OptionalImplVisitor
       // hasGetAsArgumentTree is an invocation of Stream#map(...).
       Tree mapReceiverTree = TreeUtils.getReceiverTree(hasGetAsArgumentTree);
       // Will check whether mapParent is the call `Stream.filter(Optional::isPresent)`.
-      if (mapReceiverTree != null && mapReceiverTree.getKind() == Tree.Kind.METHOD_INVOCATION) {
+      if (mapReceiverTree != null && mapReceiverTree instanceof MethodInvocationTree) {
         MethodInvocationTree fluentToMapTree = (MethodInvocationTree) mapReceiverTree;
         ExecutableElement fluentToMapElement = TreeUtils.elementFromUse(fluentToMapTree);
         if (!fluentToMapElement.equals(streamFilter)) {
@@ -979,7 +979,7 @@ public class OptionalImplVisitor
         }
         MethodInvocationTree filterInvocationTree = fluentToMapTree;
         ExpressionTree filterArgTree = filterInvocationTree.getArguments().get(0);
-        if (filterArgTree.getKind() == Tree.Kind.MEMBER_REFERENCE) {
+        if (filterArgTree instanceof MemberReferenceTree) {
           ExecutableElement filterArgElement =
               TreeUtils.elementFromUse((MemberReferenceTree) filterArgTree);
           return filterArgElement.equals(optionalIsPresent);

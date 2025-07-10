@@ -19,6 +19,7 @@ import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Log;
+import com.sun.tools.javac.util.Log.DiscardDiagnosticHandler;
 import com.sun.tools.javac.util.Name;
 import com.sun.tools.javac.util.Names;
 import java.lang.reflect.Constructor;
@@ -42,21 +43,50 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 // running the Checker Framework.  If this class is re-written, then that --add-opens should be
 // removed.
 public class Resolver {
+
+  /** Instance of {@link Resolve} for name resolution. */
   private final Resolve resolve;
+
+  /** Instance of {@link Names} for access to the compiler's name table. */
   private final Names names;
+
+  /** Instance of {@link Trees}. */
   private final Trees trees;
+
+  /** Instance of {@link Log} for error logs */
   private final Log log;
 
+  /** {@code Resolve#findMethod} method */
   private static final Method FIND_METHOD;
+
+  /** {@code Resolve#findVar} method */
   private static final Method FIND_VAR;
+
+  /** {@code Resolve#findIdent} method */
   private static final Method FIND_IDENT;
+
+  /** {@code Resolve#findIdentInType} method */
   private static final Method FIND_IDENT_IN_TYPE;
+
+  /** {@code Resolve#findIdentInPackage} method */
   private static final Method FIND_IDENT_IN_PACKAGE;
+
+  /** {@code Resolve#findType} method */
   private static final Method FIND_TYPE;
 
+  /** {@code com.sun.tools.javac.comp.Resolve$AccessError} class. */
   private static final Class<?> ACCESSERROR;
+
+  /** {@code com.sun.tools.javac.comp.Resolve$AccessError#access} method. */
   // Note that currently access(...) is defined in InvalidSymbolError, a superclass of AccessError
   private static final Method ACCESSERROR_ACCESS;
+
+  /**
+   * Method for new Log.DiscardDiagnosticHandler. Before JDK 25, DiscardDiagnosticHandler was a
+   * static inner class of Log and an instance of log was passed as the first argument. Starting
+   * with JDK 25, DiscardDiagnosticHandler is an inner class of log.
+   */
+  private static final Constructor<DiscardDiagnosticHandler> NEW_DIAGNOSTIC_HANDLER;
 
   /** The latest source version supported by this compiler. */
   private static final int sourceVersionNumber =
@@ -135,6 +165,14 @@ public class Resolver {
 
       FIND_TYPE = Resolve.class.getDeclaredMethod("findType", Env.class, Name.class);
       FIND_TYPE.setAccessible(true);
+
+      // Pre JDK 25:
+      //   new Log.DiscardDiagnosticHandler(log)
+      // JDK 25:
+      //   log.new DiscardDiagnosticHandler()
+      // But both of those are reflectively accessed the same way.
+      NEW_DIAGNOSTIC_HANDLER = Log.DiscardDiagnosticHandler.class.getConstructor(Log.class);
+      NEW_DIAGNOSTIC_HANDLER.setAccessible(true);
     } catch (Exception e) {
       Error err =
           new AssertionError("Compiler 'Resolve' class doesn't contain required 'find*' method");
@@ -197,7 +235,8 @@ public class Resolver {
    * @return the {@code PackageSymbol} for the package if it is found, {@code null} otherwise
    */
   public @Nullable PackageSymbol findPackage(String name, TreePath path) {
-    Log.DiagnosticHandler discardDiagnosticHandler = new Log.DiscardDiagnosticHandler(log);
+    Log.DiagnosticHandler discardDiagnosticHandler = newDiagnosticHandler();
+
     try {
       Env<AttrContext> env = getEnvForPath(path);
       final Element res;
@@ -234,7 +273,7 @@ public class Resolver {
    * @return the element for the field, {@code null} otherwise
    */
   public @Nullable VariableElement findField(String name, TypeMirror type, TreePath path) {
-    Log.DiagnosticHandler discardDiagnosticHandler = new Log.DiscardDiagnosticHandler(log);
+    Log.DiagnosticHandler discardDiagnosticHandler = newDiagnosticHandler();
     try {
       Env<AttrContext> env = getEnvForPath(path);
       final Element res;
@@ -275,7 +314,7 @@ public class Resolver {
    * @return the element for the local variable, {@code null} otherwise
    */
   public @Nullable VariableElement findLocalVariableOrParameter(String name, TreePath path) {
-    Log.DiagnosticHandler discardDiagnosticHandler = new Log.DiscardDiagnosticHandler(log);
+    Log.DiagnosticHandler discardDiagnosticHandler = newDiagnosticHandler();
     try {
       Env<AttrContext> env = getEnvForPath(path);
       // Either a VariableElement or a SymbolNotFoundError.
@@ -322,7 +361,7 @@ public class Resolver {
    * @return the element for the class
    */
   public Element findClass(String name, TreePath path) {
-    Log.DiagnosticHandler discardDiagnosticHandler = new Log.DiscardDiagnosticHandler(log);
+    Log.DiagnosticHandler discardDiagnosticHandler = newDiagnosticHandler();
     try {
       Env<AttrContext> env = getEnvForPath(path);
       return resolve(FIND_TYPE, env, names.fromString(name));
@@ -340,7 +379,7 @@ public class Resolver {
    * @return the {@code ClassSymbol} for the class if it is found, {@code null} otherwise
    */
   public @Nullable ClassSymbol findClassInPackage(String name, PackageSymbol pck, TreePath path) {
-    Log.DiagnosticHandler discardDiagnosticHandler = new Log.DiscardDiagnosticHandler(log);
+    Log.DiagnosticHandler discardDiagnosticHandler = newDiagnosticHandler();
     try {
       Env<AttrContext> env = getEnvForPath(path);
       final Element res;
@@ -390,7 +429,7 @@ public class Resolver {
       TypeMirror receiverType,
       TreePath path,
       java.util.List<TypeMirror> argumentTypes) {
-    Log.DiagnosticHandler discardDiagnosticHandler = new Log.DiscardDiagnosticHandler(log);
+    Log.DiagnosticHandler discardDiagnosticHandler = newDiagnosticHandler();
     try {
       Env<AttrContext> env = getEnvForPath(path);
 
@@ -500,6 +539,19 @@ public class Resolver {
     Field f = receiver.getClass().getDeclaredField(fieldName);
     f.setAccessible(true);
     return f.get(receiver);
+  }
+
+  /**
+   * Creates a new {@code DiscardDiagnosticHandler} with the current {@code log}.
+   *
+   * @return a new {@code DiscardDiagnosticHandler} with the current {@code log}
+   */
+  private Log.DiscardDiagnosticHandler newDiagnosticHandler() {
+    try {
+      return NEW_DIAGNOSTIC_HANDLER.newInstance(log);
+    } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+      throw new BugInCF(e);
+    }
   }
 
   /**

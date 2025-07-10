@@ -62,6 +62,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    *
    * @param checker the type-checker associated with this factory
    */
+  @SuppressWarnings("this-escape")
   public ClassValAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
 

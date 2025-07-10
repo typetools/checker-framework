@@ -402,8 +402,8 @@ and less ambiguous.
 \subsectionAndLabel{Will using the Checker Framework slow down my program?  Will it slow down the compiler?}{faq-slowdown}
 
 Using the Checker Framework has no impact on the execution of your program:
-the compiler emits the identical bytecodes as the javac
-compiler and so there is no run-time effect.  Because there is no run-time
+the javac compiler emits identical bytecodes whether or not the Checker
+Framework is used, so there is no run-time effect.  Because there is no run-time
 representation of type qualifiers, there is no way to use reflection to
 query the qualifier on a given object, though you can use reflection to
 examine a class/method/field declaration.
@@ -1816,11 +1816,11 @@ To improve performance:
   limit is so small that the Checker Framework might spend most of its time
   in garbage collection.  (If this is the case, the Checker Framework will
   issue a warning ``Garbage collection consumed over 25\% of CPU during the
-  past minute.")  For example, you might pass an argument like
-  \<-Xmx3g>, or set an environment variable like \<export
-  \_JAVA\_OPTIONS=-Xmx3g>, to permit the Checker Framework to use up to 3GB
-  of memory.  If you use Java 8, consider upgrading to Java 11 or Java 17, which have
-  better memory management.
+  past minute.")  To permit the Checker Framework to use up to 3GB of
+  memory, pass an argument like \<-Xmx3g> or set an environment variable
+  like \<export \_JAVA\_OPTIONS=-Xmx3g>.  Also consider upgrading to a more
+  recent release of Java, because older versions of Java (especially 8 and
+  11, but also 17) have worse memory management.
 \item
   Set your build system to perform \emph{incremental compilation}.  When
   compiling just a few source files (the size of a typical edit or commit),
@@ -1832,6 +1832,13 @@ To improve performance:
   uses Maven, consider switching to a more capable build system such as Gradle.)
   % (Note that some build systems have a bug, in that they unnecessarily always
   % re-run compilation that uses annotation processors.)
+\item
+  Write generic type arguments.  Often, generic type inference is the
+  slowest part of type-checking.  You can significantly speed up
+  type-checking by explicitly writing a few generic type arguments.  To
+  determine where to write them, temporarily set
+  \<-AslowTypecheckingSeconds> to a small value, such as 1.  Write type
+  arguments where \<slow.typechecking> warnings are issued.
 \end{itemize}
 
 If the Checker Framework is still too slow for you to run on every compilation,
