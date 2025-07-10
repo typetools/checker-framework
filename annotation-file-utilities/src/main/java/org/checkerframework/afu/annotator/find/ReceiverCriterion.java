@@ -64,6 +64,7 @@ public class ReceiverCriterion implements Criterion {
       }
       if (parent != null && param != null) {
         MethodTree method = (MethodTree) parent.getLeaf();
+        @SuppressWarnings("interning:not.interned") // reference equality check
         boolean foundParam = param == method.getReceiverParameter();
         if (foundParam) {
           return isSigMethodCriterion.isSatisfiedBy(parent);

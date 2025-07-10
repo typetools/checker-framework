@@ -73,6 +73,7 @@ public class LocalVariableScanner extends CommonScanner {
   }
 
   @Override
+  @SuppressWarnings("interning:not.interned") // reference equality check
   public Void visitVariable(VariableTree node, Void p) {
     // increment index only if you have not already reached the right node, and
     // if this node declares the same local variable you are searching for

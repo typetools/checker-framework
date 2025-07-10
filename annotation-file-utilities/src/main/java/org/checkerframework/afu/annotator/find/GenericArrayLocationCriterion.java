@@ -372,7 +372,9 @@ public class GenericArrayLocationCriterion implements Criterion {
           if (childi instanceof AnnotatedTypeTree) {
             childi = ((AnnotatedTypeTree) childi).getUnderlyingType();
           }
-          if (childi == leaf) {
+          @SuppressWarnings("interning:not.interned") // reference equality check
+          boolean foundLeaf = childi == leaf;
+          if (foundLeaf) {
             for (TreePath outerPath = parentPath.getParentPath();
                 outerPath.getLeaf() instanceof MemberSelectTree
                     && !isStatic((JCFieldAccess) outerPath.getLeaf());

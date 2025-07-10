@@ -77,7 +77,9 @@ public class BoundLocationCriterion implements Criterion {
         if (!bounds.isEmpty() && isInterface((JCExpression) bounds.get(0))) {
           --ix;
         }
-        if (ix < 0 || (ix < bounds.size() && bounds.get(ix) == leaf)) {
+        @SuppressWarnings("interning:not.interned") // reference equality check
+        boolean foundLeaf = ix < 0 || (ix < bounds.size() && bounds.get(ix) == leaf);
+        if (foundLeaf) {
           returnValue = parentCriterion.isSatisfiedBy(parentPath);
         }
       } else if (boundIndex == 0 && leaf instanceof TypeParameterTree) {
@@ -106,7 +108,9 @@ public class BoundLocationCriterion implements Criterion {
         }
 
         if (paramIndex < params.size()) {
-          if (params.get(paramIndex) == leaf) {
+          @SuppressWarnings("interning:not.interned") // reference equality check
+          boolean foundLeaf = params.get(paramIndex) == leaf;
+          if (foundLeaf) {
             returnValue = true;
           }
         }

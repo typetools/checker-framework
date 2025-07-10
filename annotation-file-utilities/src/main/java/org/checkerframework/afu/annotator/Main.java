@@ -532,7 +532,9 @@ public class Main {
       System.exit(0);
     }
 
-    if (in_place && outdir != "annotated/") { // interned initial value
+    @SuppressWarnings("interning:not.interned") // reference equality check
+    boolean outdir_and_in_place = in_place && outdir != "annotated/"; // interned initial value
+    if (outdir_and_in_place) {
       System.out.println("The --outdir and --in-place options are mutually exclusive.");
       options.printUsage();
       System.exit(1);

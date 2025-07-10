@@ -35,7 +35,9 @@ public class IntersectionTypeLocationCriterion implements Criterion {
         IntersectionTypeTree itt = (IntersectionTypeTree) parent;
         List<? extends Tree> bounds = itt.getBounds();
         Tree leaf = path.getLeaf();
-        if (typeIndex < bounds.size() && leaf == bounds.get(typeIndex)) {
+        @SuppressWarnings("interning:not.interned") // reference equality check
+        boolean foundLeaf = typeIndex < bounds.size() && leaf == bounds.get(typeIndex);
+        if (foundLeaf) {
           return true;
         }
       }

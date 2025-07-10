@@ -65,7 +65,9 @@ final class InMethodCriterion implements Criterion {
       }
       if (leaf instanceof VariableTree) { // variable declaration
         VariableTree varDecl = (VariableTree) leaf;
-        if (childPath != null && childPath.getLeaf() == varDecl.getInitializer()) {
+        @SuppressWarnings("interning:not.interned") // reference equality check
+        boolean found = childPath != null && childPath.getLeaf() == varDecl.getInitializer();
+        if (found) {
           inDecl = true;
           ModifiersTree mods = varDecl.getModifiers();
           staticDecl = mods.getFlags().contains(Modifier.STATIC);

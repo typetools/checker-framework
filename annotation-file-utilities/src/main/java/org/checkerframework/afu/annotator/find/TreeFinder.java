@@ -990,6 +990,7 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
    * @param p list of insertions not yet placed
    */
   @Override
+  @SuppressWarnings("interning:not.interned") // reference equality check in assertion
   public Void scan(Tree node, List<Insertion> p) {
     if (node == null || p.isEmpty()) {
       return null;
@@ -1614,7 +1615,9 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
           break;
         } else if (n instanceof VariableTree) {
           VariableTree vt = (VariableTree) n;
-          if (childExpression != null && vt.getInitializer() == childExpression) {
+          @SuppressWarnings("interning:not.interned") // reference equality check
+          boolean foundChild = childExpression != null && vt.getInitializer() == childExpression;
+          if (foundChild) {
             break;
           }
           alreadyPresent = vt.getModifiers().getAnnotations();

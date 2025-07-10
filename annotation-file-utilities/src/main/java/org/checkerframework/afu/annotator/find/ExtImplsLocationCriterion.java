@@ -66,12 +66,16 @@ public class ExtImplsLocationCriterion implements Criterion {
 
       if (index == -1) {
         Tree ext = ct.getExtendsClause();
-        if (ext == leaf) {
+        @SuppressWarnings("interning:not.interned") // reference equality check
+        boolean foundLeaf = ext == leaf;
+        if (foundLeaf) {
           return true;
         }
       } else {
         List<? extends Tree> impls = ct.getImplementsClause();
-        if (index < impls.size() && impls.get(index) == leaf) {
+        @SuppressWarnings("interning:not.interned") // reference equality check
+        boolean foundLeaf = index < impls.size() && impls.get(index) == leaf;
+        if (foundLeaf) {
           return true;
         }
       }

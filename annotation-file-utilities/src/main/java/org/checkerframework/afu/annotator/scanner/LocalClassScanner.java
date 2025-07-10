@@ -68,6 +68,7 @@ public class LocalClassScanner extends TreePathScanner<Void, Integer> {
   // counting classes that aren't included in the index number.
 
   @Override
+  @SuppressWarnings("interning:not.interned") // reference equality check
   public Void visitBlock(BlockTree node, Integer level) {
     if (level < 1) {
       // Visit blocks since a local class can only be in a block. Then visit each

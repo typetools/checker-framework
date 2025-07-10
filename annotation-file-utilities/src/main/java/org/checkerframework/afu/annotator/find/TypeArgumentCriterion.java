@@ -47,10 +47,13 @@ public class TypeArgumentCriterion implements Criterion {
         return isSatisfiedBy(parentPath);
     }
 
-    return typeArgs != null
-        && loc.index >= 0
-        && loc.index < typeArgs.size()
-        && typeArgs.get(loc.index) == path.getLeaf();
+    @SuppressWarnings("interning:not.interned") // reference equality check
+    boolean result =
+        typeArgs != null
+            && loc.index >= 0
+            && loc.index < typeArgs.size()
+            && typeArgs.get(loc.index) == path.getLeaf();
+    return result;
   }
 
   @Override

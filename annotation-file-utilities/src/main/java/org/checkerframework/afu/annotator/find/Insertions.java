@@ -1482,6 +1482,7 @@ public class Insertions implements Iterable<Insertion> {
       private final String dname;
       private final Name name;
 
+      @SuppressWarnings("interning:interned.object.creation")
       IdentifierTT(String dname) {
         this.dname = dname;
         this.name = new @Interned TypeName(dname);
@@ -1553,6 +1554,7 @@ public class Insertions implements Iterable<Insertion> {
       private final BoundedType.BoundKind bk;
       private final Tree bound;
 
+      @SuppressWarnings("interning:interned.object.creation")
       TypeParameterTT(String bname, BoundedType.BoundKind bk, TypeTree bound) {
         this.bname = bname;
         this.name = new @Interned TypeName(bname);
