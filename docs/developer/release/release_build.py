@@ -17,6 +17,7 @@ from release_vars import CHECKER_FRAMEWORK_RELEASE
 from release_vars import CHECKLINK
 from release_vars import CHECKLINK_REPO
 from release_vars import DEV_SITE_DIR
+from release_vars import INTERM_CHECKER_REPO
 from release_vars import INTERM_TO_BUILD_REPOS
 from release_vars import LIVE_SITE_URL
 from release_vars import LIVE_TO_INTERM_REPOS
