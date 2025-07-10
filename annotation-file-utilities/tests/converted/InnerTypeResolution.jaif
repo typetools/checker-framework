@@ -1,0 +1,15 @@
+// @skip-test
+
+package java.lang:
+annotation @Deprecated:
+
+package java.lang:
+annotation @Tainted:
+
+package org.checkerframework.afu.annotator.tests:
+class InnerTypeResolution:
+
+    method method01(Ljava/util/Map;)Ljava/util/Map$Entry;: @java.lang.Deprecated
+        return:
+        insert-annotation Method.parameter 0, Variable.type: @java.lang.Tainted
+

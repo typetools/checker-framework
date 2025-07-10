@@ -1,0 +1,28 @@
+strict digraph {
+JAIF [shape=box]
+Java [shape=box]
+"Annotated Java" [shape=box]
+"Augmented AST" [style=bold]
+Source [constraint=false]
+JAIF -> Scene
+Scene -> "Annotations\nw/ AST Paths" [style=bold]
+Java -> Source
+Source -> AST
+AST -> "Augmented AST" [style=bold]
+Source -> "Augmented AST" [style=bold]
+"Augmented AST" -> "Annotated AAST" [style=bold]
+"Augmented AST" -> "Annotations\nw/ AST Paths" [style=bold]
+"Annotation\nSpecifications" -> "Annotations\nw/ AST Paths" [style=dashed]
+"Annotation\nSpecifications" -> "Annotations w/\nCode Locations" [style=dashed]
+"Annotations\nw/ AST Paths" -> "Annotated AAST"
+"Annotated AAST" -> "Annotated Java"
+Source -> Bytecode
+Bytecode -> "Annotated AAST"
+Source -> "Annotated AAST" [style=dashed]
+Source -> "Annotated Java" [style=dashed]
+AST -> "Annotated AAST" [style=dashed]
+AST -> "Annotations\nw/ AST Paths" [style=dashed]
+"Annotations w/\nCode Locations" -> "Annotated AAST" [style=dashed]
+Scene -> "Annotation\nSpecifications" [style=dashed]
+}
+

@@ -11,7 +11,7 @@ schedules:
   displayName: Daily midnight build
   branches:
     include:
-    - '*'
+    - master
 
 variables:
   system.debug: true

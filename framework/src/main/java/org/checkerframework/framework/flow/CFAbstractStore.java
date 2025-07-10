@@ -301,11 +301,6 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     replaceValue(methodCall, val);
   }
 
-  /** Update information about method calls. */
-  private void updateMethodCallValues() {
-    methodCallExpressions.keySet().removeIf(MethodCall::isModifiableByOtherCode);
-  }
-
   /**
    * Update information about method calls given the list of side-effected expressions.
    *
