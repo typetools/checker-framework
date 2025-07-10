@@ -11,14 +11,12 @@ Copyright (c) 2015 University of Washington. All rights reserved.
 # See README-release-process.html for more information
 
 from release_vars import ANNO_FILE_UTILITIES
-from release_vars import BUILD_REPOS
 from release_vars import CF_VERSION
 from release_vars import CHECKER_FRAMEWORK
 from release_vars import CHECKER_FRAMEWORK_RELEASE
 from release_vars import CHECKLINK
 from release_vars import CHECKLINK_REPO
 from release_vars import DEV_SITE_DIR
-from release_vars import INTERM_REPOS
 from release_vars import INTERM_TO_BUILD_REPOS
 from release_vars import LIVE_SITE_URL
 from release_vars import LIVE_TO_INTERM_REPOS
@@ -31,7 +29,7 @@ from release_vars import TOOLS
 
 from release_vars import execute
 
-from release_utils import check_repos
+from release_utils import check_repo
 from release_utils import check_tools
 from release_utils import clone_from_scratch_or_update
 from release_utils import commit_tag_and_push
@@ -401,8 +399,8 @@ def main(argv):
     # or outgoing changesets. If so, it fails.
 
     print_step("Step 1b: Verify repositories.")  # MANUAL
-    check_repos(INTERM_REPOS, True, True)
-    check_repos(BUILD_REPOS, True, False)
+    check_repo(CHECKER_FRAMEWORK, True, True)
+    check_repo(INTERM_CHECKER_REPO, True, False)
 
     # The release script requires a number of common tools (Ant, Maven, make, etc...). This step checks
     # to make sure all tools are available on the command line in order to avoid wasting time in the
@@ -481,11 +479,8 @@ def main(argv):
     # permissions in order for them to be served.
 
     print_step("\n\nBuild Step 8: Add group permissions to repos.")
-    for build in BUILD_REPOS:
-        ensure_group_access(build)
-
-    for interm in INTERM_REPOS:
-        ensure_group_access(interm)
+    ensure_group_access(CHECKER_FRAMEWORK)
+    ensure_group_access(INTERM_CHECKER_REPO)
 
     # At the moment, this will lead to output error messages because some metadata in some of the
     # dirs I think is owned by Mike or Werner.  We should identify these and have them fix it.
