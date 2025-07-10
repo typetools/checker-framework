@@ -33,11 +33,7 @@ dependencies {
   implementation project(':javacutil')
   implementation project(':dataflow')
   implementation project(':framework')
-  // AFU is an "includedBuild" imported in checker-framework/settings.gradle, so the version number doesn't matter.
-  // https://docs.gradle.org/current/userguide/composite_builds.html#settings_defined_composite
-  implementation('org.checkerframework:annotation-file-utilities:*') {
-    exclude group: 'com.google.errorprone', module: 'javac'
-  }
+  implementation project(':annotation-file-utilities')
   implementation project(':checker-qual')
   implementation project(':checker-util')
 
@@ -242,16 +238,6 @@ clean.doLast {
 
 
 // Add non-junit tests
-createCheckTypeTask(project.name, 'CompilerMessages',
-    'org.checkerframework.checker.compilermsgs.CompilerMessagesChecker')
-checkCompilerMessages {
-  doFirst {
-    options.compilerArgs += [
-      '-Apropfiles=' + sourceSets.main.resources.filter { file -> file.name.equals('messages.properties') }.asPath + File.pathSeparator
-      + project(':framework').sourceSets.main.resources.filter { file -> file.name.equals('messages.properties') }.asPath
-    ]
-  }
-}
 
 task nullnessExtraTests(type: Exec, dependsOn: assembleForJavac, group: 'Verification') {
   description = 'Run extra tests for the Nullness Checker.'
@@ -599,8 +585,9 @@ task ainferTestCheckerGenerateJaifs(type: Test) {
 
 tasks.register('ainferTestCheckerGenerateJaifsInsertAnnotations', InsertAnnotationsToSource) {
   dependsOn ainferTestCheckerGenerateJaifs
+  dependsOn(':annotation-file-utilities:shadowJar')
 
-  afuDir = afu
+  afuDir = '../annotation-file-utilities'
   testDir = 'tests/ainfer-testchecker'
   def checkerQualJarFile = file(project(':checker-qual').tasks.getByName('jar').archiveFile)
   classpath = "${sourceSets.test.output.asPath}:${checkerQualJarFile}:"
@@ -795,8 +782,9 @@ task ainferNullnessGenerateJaifs(type: Test) {
 }
 tasks.register('ainferNullnessGenerateJaifsInsertAnnotations', InsertAnnotationsToSource) {
   dependsOn ainferNullnessGenerateJaifs
+  dependsOn(':annotation-file-utilities:shadowJar')
 
-  afuDir = afu
+  afuDir = '../annotation-file-utilities'
   testDir = 'tests/ainfer-nullness/'
   def checkerQualJarFile = file(project(':checker-qual').tasks.getByName('jar').archiveFile)
   classpath = "${sourceSets.test.output.asPath}:${checkerQualJarFile}:"

@@ -1,0 +1,16 @@
+package qual:
+  annotation @Q1:
+  annotation @Q2:
+  annotation @Q3:
+  annotation @Q4:
+
+package test:
+class B:
+
+package test:
+class Issue155:
+method foo()V:
+insert-annotation Method.body, Block.statement 0, Variable.type: @qual.Q1
+insert-annotation Method.body, Block.statement 0, Variable.type, ArrayType.type: @qual.Q2
+insert-annotation Method.body, Block.statement 0, Variable.initializer, NewArray.type 0: @qual.Q3
+insert-annotation Method.body, Block.statement 0, Variable.initializer, NewArray.type 1: @qual.Q4

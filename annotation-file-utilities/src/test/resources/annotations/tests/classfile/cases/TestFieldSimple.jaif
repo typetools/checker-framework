@@ -1,0 +1,12 @@
+package annotations.tests.classfile.foo:
+annotation @A: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+annotation @B: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+	String value
+
+package annotations.tests.classfile.cases:
+class TestFieldSimple: @annotations.tests.classfile.foo.A
+	field i: @annotations.tests.classfile.foo.A
+	field j: @annotations.tests.classfile.foo.B(value="Hello")
+	field o: @annotations.tests.classfile.foo.A @annotations.tests.classfile.foo.B(value="H")
+	field s: @annotations.tests.classfile.foo.B(value="E")
+

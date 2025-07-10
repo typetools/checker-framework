@@ -1,0 +1,12 @@
+package org.checkerframework.afu.annotator.tests;
+
+public class Varargs {
+
+  public void m1(@java.lang.Nullable String... params) {}
+
+  public void m2(String @java.lang.Nullable ... params) {}
+
+  public void m3(@java.lang.Nullable String @java.lang.Nullable ... params) {}
+
+  public void m4(@java.lang.Nullable Comparable<@java.lang.Nullable String> @java.lang.Nullable ... params) {}
+}

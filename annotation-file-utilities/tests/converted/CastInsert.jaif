@@ -1,0 +1,84 @@
+package checkers.nullness.quals:
+annotation @Nullable: @java.lang.annotation.Target(value={TYPE_USE,TYPE_PARAMETER}) @java.lang.annotation.Retention(value=RUNTIME)
+
+package annotation:
+annotation @A:
+
+package annotation:
+annotation @B:
+
+package annotation:
+annotation @C:
+
+package :
+class CastInsert:
+
+    field c:
+        insert-typecast Variable.initializer, Binary.leftOperand: @checkers.nullness.quals.Nullable Integer
+        insert-typecast Variable.initializer, Binary.rightOperand: @checkers.nullness.quals.Nullable Integer
+        insert-typecast Variable.initializer: @checkers.nullness.quals.Nullable Integer
+
+    field str:
+        insert-typecast Variable.initializer, Binary.rightOperand, MethodInvocation.methodSelect, MemberSelect.expression: @checkers.nullness.quals.Nullable String
+        insert-typecast Variable.initializer, Binary.rightOperand, MethodInvocation.argument 0: @checkers.nullness.quals.Nullable String
+
+    method m(Ljava/lang/String;[Ljava/lang/String;I)I:
+        return:
+        insert-typecast Block.statement 24, Try.catch 1, Catch.block, Block.statement 0, ExpressionStatement.expression, Assignment.expression: @checkers.nullness.quals.Nullable Integer
+        insert-typecast Block.statement 24, Try.finallyBlock, Block.statement 0, ExpressionStatement.expression, Assignment.expression, Binary.rightOperand: @checkers.nullness.quals.Nullable Integer
+        insert-typecast Block.statement 7, Switch.case 0, Case.statement 0, ExpressionStatement.expression, Assignment.expression, Binary.rightOperand: @checkers.nullness.quals.Nullable Integer
+        insert-typecast Block.statement 25, ExpressionStatement.expression, Assignment.expression, TypeCast.expression, Parenthesized.expression, Binary.rightOperand: @checkers.nullness.quals.Nullable Integer
+        insert-typecast Block.statement 11, EnhancedForLoop.statement, Block.statement 0, ExpressionStatement.expression, Assignment.expression: @checkers.nullness.quals.Nullable Integer
+        insert-typecast Block.statement 22, Synchronized.block, Block.statement 0, ExpressionStatement.expression, Assignment.expression: @checkers.nullness.quals.Nullable Integer
+        insert-typecast Block.statement 28, ExpressionStatement.expression, MethodInvocation.methodSelect, MemberSelect.expression, MemberSelect.expression: @checkers.nullness.quals.Nullable CastInsert
+        insert-typecast Block.statement 7, Switch.case 1, Case.statement 1, ExpressionStatement.expression, MethodInvocation.argument 0: @checkers.nullness.quals.Nullable Integer
+        insert-typecast Block.statement 27, WhileLoop.statement, ExpressionStatement.expression, Assignment.expression, Binary.leftOperand: @checkers.nullness.quals.Nullable Integer
+        insert-typecast Block.statement 10, DoWhileLoop.statement, Block.statement 0, Variable.initializer, Binary.leftOperand: @checkers.nullness.quals.Nullable Integer
+        insert-typecast Block.statement 4, ExpressionStatement.expression, Assignment.expression, ArrayAccess.index: @checkers.nullness.quals.Nullable Integer
+        insert-typecast Block.statement 12, ForLoop.statement, ExpressionStatement.expression, Assignment.expression: @checkers.nullness.quals.Nullable Integer
+        insert-typecast Block.statement 12, ForLoop.update 0, ExpressionStatement.expression, Assignment.expression: @checkers.nullness.quals.Nullable Integer
+        insert-typecast Block.statement 13, If.elseStatement, ExpressionStatement.expression, Assignment.expression: @checkers.nullness.quals.Nullable Integer
+        insert-typecast Block.statement 15, LabeledStatement.statement, ExpressionStatement.expression, Assignment.expression: @checkers.nullness.quals.Nullable Boolean
+        insert-typecast Block.statement 9, ExpressionStatement.expression, Assignment.expression, ConditionalExpression.trueExpression: @checkers.nullness.quals.Nullable Integer
+        insert-typecast Block.statement 29, ExpressionStatement.expression, MethodInvocation.methodSelect, MemberSelect.expression: @checkers.nullness.quals.Nullable PrintStream
+        insert-typecast Block.statement 19, Variable.initializer, NewArray.initializer 1, NewArray.initializer 2: @checkers.nullness.quals.Nullable Integer
+        insert-typecast Block.statement 24, Try.block, Block.statement 0, Variable.initializer: @checkers.nullness.quals.Nullable Integer
+        insert-typecast Block.statement 26, ExpressionStatement.expression, Assignment.expression, Unary.expression: @checkers.nullness.quals.Nullable Integer
+        insert-typecast Block.statement 2, ExpressionStatement.expression, Assignment.expression, Binary.leftOperand: @checkers.nullness.quals.Nullable String
+        insert-typecast Block.statement 13, If.condition, Parenthesized.expression, Binary.leftOperand: @checkers.nullness.quals.Nullable Integer
+        insert-typecast Block.statement 2, ExpressionStatement.expression, Assignment.expression, Binary.rightOperand: @checkers.nullness.quals.Nullable String
+        insert-typecast Block.statement 27, WhileLoop.condition, Parenthesized.expression, Binary.rightOperand: @checkers.nullness.quals.Nullable Integer
+        insert-typecast Block.statement 2, ExpressionStatement.expression, Assignment.expression: @checkers.nullness.quals.Nullable String
+        insert-typecast Block.statement 16, Variable.initializer, MemberSelect.expression: @checkers.nullness.quals.Nullable CastInsert
+        insert-typecast Block.statement 14, Variable.initializer, InstanceOf.expression: @checkers.nullness.quals.Nullable String
+        insert-typecast Block.statement 17, ExpressionStatement.expression, MethodInvocation.argument 2: @checkers.nullness.quals.Nullable Integer
+        insert-typecast Block.statement 18, Variable.initializer, NewArray.dimension 1: @checkers.nullness.quals.Nullable Integer
+        insert-typecast Block.statement 20, ExpressionStatement.expression, NewClass.argument 0: @checkers.nullness.quals.Nullable String
+        insert-typecast Block.statement 7, Switch.expression, Parenthesized.expression: @checkers.nullness.quals.Nullable Integer
+        insert-typecast Block.statement 21, If.thenStatement, Return.expression: @checkers.nullness.quals.Nullable Integer
+        insert-typecast Block.statement 23, If.thenStatement, Throw.expression: @checkers.nullness.quals.Nullable RuntimeException
+        insert-typecast Block.statement 12, ForLoop.initializer 1, Variable.initializer: @checkers.nullness.quals.Nullable Integer
+        insert-typecast Block.statement 12, ForLoop.condition, Binary.rightOperand: @checkers.nullness.quals.Nullable Integer
+        insert-typecast Block.statement 8, ExpressionStatement.expression, CompoundAssignment.expression: @checkers.nullness.quals.Nullable Integer
+        insert-typecast Block.statement 0, Variable.initializer: @checkers.nullness.quals.Nullable String
+        insert-typecast Block.statement 30, Variable.initializer: @checkers.nullness.quals.Nullable @annotation.A @annotation.B @annotation.C String
+
+    method m2(Ljava/lang/Object;)V:
+        return:
+        insert-typecast Block.statement 0, ExpressionStatement.expression, Assignment.expression: @checkers.nullness.quals.Nullable Map<String, Integer>
+    inner-type 3, 0: @annotation.A
+    inner-type 3, 1: @annotation.B
+        insert-typecast Block.statement 1, ExpressionStatement.expression, Assignment.expression: @checkers.nullness.quals.Nullable Object[][]
+    inner-type 0, 0: @annotation.A
+    inner-type 0, 0,0, 0: @annotation.B
+        insert-typecast Block.statement 2, ExpressionStatement.expression, Assignment.expression: @checkers.nullness.quals.Nullable int[][]
+    inner-type 0, 0: @annotation.A
+    inner-type 0, 0,0, 0: @annotation.B
+        insert-typecast Block.statement 3, ExpressionStatement.expression, Assignment.expression: @checkers.nullness.quals.Nullable List<? extends Object>
+    inner-type 3, 0: @annotation.A
+    inner-type 3, 0,2, 0: @annotation.B
+        insert-typecast Block.statement 4, ExpressionStatement.expression, Assignment.expression: int
+        insert-typecast Block.statement 5, ExpressionStatement.expression, Assignment.expression: Map<String, Integer>
+    inner-type 3, 0: @annotation.A
+    inner-type 3, 1: @annotation.B
+

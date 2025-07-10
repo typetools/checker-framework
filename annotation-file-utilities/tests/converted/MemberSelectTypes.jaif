@@ -1,0 +1,136 @@
+package :
+annotation @Anno: @java.lang.annotation.Target(value={TYPE_USE})
+    int value
+
+package :
+annotation @S: @java.lang.annotation.Target(value={TYPE_USE})
+
+package :
+annotation @P: @java.lang.annotation.Target(value={TYPE_USE})
+
+package :
+annotation @Q: @java.lang.annotation.Target(value={TYPE_USE})
+
+package :
+annotation @R: @java.lang.annotation.Target(value={TYPE_USE})
+
+package :
+annotation @O: @java.lang.annotation.Target(value={TYPE_USE})
+
+package :
+annotation @N: @java.lang.annotation.Target(value={TYPE_USE})
+
+package :
+annotation @M: @java.lang.annotation.Target(value={TYPE_USE})
+
+package :
+annotation @L: @java.lang.annotation.Target(value={TYPE_USE})
+
+package :
+annotation @C: @java.lang.annotation.Target(value={TYPE_USE})
+
+package :
+annotation @F: @java.lang.annotation.Target(value={TYPE_USE})
+
+package :
+annotation @D: @java.lang.annotation.Target(value={TYPE_USE})
+
+package :
+annotation @E: @java.lang.annotation.Target(value={TYPE_USE})
+
+package :
+annotation @I: @java.lang.annotation.Target(value={TYPE_USE})
+
+package :
+annotation @G: @java.lang.annotation.Target(value={TYPE_USE})
+
+package :
+annotation @H: @java.lang.annotation.Target(value={TYPE_USE})
+
+package :
+annotation @K: @java.lang.annotation.Target(value={TYPE_USE})
+
+package :
+annotation @J: @java.lang.annotation.Target(value={TYPE_USE})
+
+package :
+annotation @A: @java.lang.annotation.Target(value={TYPE_USE})
+
+package :
+annotation @B: @java.lang.annotation.Target(value={TYPE_USE})
+
+package :
+class MemberSelectTypes:
+    insert-annotation Class.typeParameter 0, TypeParameter.bound 0: @Anno(value=0)
+    insert-annotation Class.typeParameter 0, TypeParameter.bound 1: @Anno(value=1)
+    insert-annotation Class.bound -1: @Anno(value=2)
+    insert-annotation Class.bound 0: @Anno(value=3)
+
+    field o:
+        insert-annotation Variable.type: @C
+
+    field m1:
+        insert-annotation Variable.type, ParameterizedType.typeArgument 1, ParameterizedType.type: @F
+        insert-annotation Variable.type, ParameterizedType.type: @D
+        insert-annotation Variable.type, ParameterizedType.typeArgument 0: @E
+
+    field m2:
+        insert-annotation Variable.type, ParameterizedType.typeArgument 1, ParameterizedType.type: @I
+        insert-annotation Variable.type, ParameterizedType.type: @G
+        insert-annotation Variable.type, ParameterizedType.typeArgument 0: @H
+
+    field m3:
+        insert-annotation Variable.type, ParameterizedType.typeArgument 0, MemberSelect.expression: @H
+        insert-annotation Variable.type, ParameterizedType.typeArgument 1: @I
+
+    field m4:
+        insert-annotation Variable.type, ParameterizedType.typeArgument 0, ParameterizedType.typeArgument 0, ParameterizedType.typeArgument 0, ParameterizedType.type: @K
+        insert-annotation Variable.type, ParameterizedType.typeArgument 0, ParameterizedType.typeArgument 0, ParameterizedType.type: @I
+        insert-annotation Variable.type, ParameterizedType.typeArgument 0, ParameterizedType.type: @H
+        insert-annotation Variable.type, ParameterizedType.type: @G
+
+    field i:
+        insert-annotation Variable.type, MemberSelect.expression: @J
+
+    field s:
+        insert-annotation Variable.type: @K
+
+    method m(Ljava/lang/Object;LMemberSelectTypes$Inner;LMemberSelectTypes$StaticInner;)Ljava/lang/Object;:
+        return:
+        insert-annotation Method.body, Block.statement 10, ExpressionStatement.expression, Assignment.expression, InstanceOf.type, MemberSelect.expression: @S
+        insert-annotation Method.body, Block.statement 4, ExpressionStatement.expression, Assignment.expression, NewClass.identifier, MemberSelect.expression: @P
+        insert-annotation Method.body, Block.statement 7, Variable.type, ArrayType.type, MemberSelect.expression: @Q
+        insert-annotation Method.body, Block.statement 7, Variable.initializer, NewArray.type 1: @R
+        insert-annotation Method.body, Block.statement 1, Variable.initializer, TypeCast.type, MemberSelect.expression: @O
+        insert-annotation Method.body, Block.statement 11, ExpressionStatement.expression, Assignment.expression, InstanceOf.type: @S
+        insert-annotation Method.body, Block.statement 3, ExpressionStatement.expression, Assignment.expression, NewClass.identifier: @P
+        insert-annotation Method.body, Block.statement 5, ExpressionStatement.expression, Assignment.expression, NewClass.identifier: @P
+        insert-annotation Method.body, Block.statement 6, Variable.type, ArrayType.type: @Q
+        insert-annotation Method.body, Block.statement 8, Variable.type, ArrayType.type: @Q
+        insert-annotation Method.body, Block.statement 1, Variable.type, MemberSelect.expression: @N
+        insert-annotation Method.parameter 1, Variable.type, MemberSelect.expression: @M
+        insert-annotation Method.body, Block.statement 9, Variable.initializer, InstanceOf.type: @S
+        insert-annotation Method.body, Block.statement 6, Variable.initializer, NewArray.type 1: @R
+        insert-annotation Method.body, Block.statement 8, Variable.initializer, NewArray.type 1: @R
+        insert-annotation Method.body, Block.statement 0, Variable.initializer, TypeCast.type: @O
+        insert-annotation Method.body, Block.statement 2, Variable.initializer, TypeCast.type: @O
+        insert-annotation Method.body, Block.statement 0, Variable.type: @N
+        insert-annotation Method.body, Block.statement 2, Variable.type: @N
+        insert-annotation Method.parameter 0, Variable.type: @M
+        insert-annotation Method.parameter 2, Variable.type: @M
+        insert-annotation Method.type: @L
+
+package :
+class MemberSelectTypes$Inner:
+
+    method m()V:
+        return:
+        insert-annotation Method.parameter -1, Variable.type, MemberSelect.expression: @A
+
+package :
+class MemberSelectTypes$StaticInner:
+
+    method m()V:
+        return:
+        insert-annotation Method.parameter -1, Variable.type: @B
+

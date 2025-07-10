@@ -1,0 +1,57 @@
+strict digraph {
+graph [ordering=out]
+
+TypeCast [shape=box,width=1.25]
+AnnotatedType [shape=box]
+Annotation [shape=box]
+Ident [shape=box]
+PrimitiveTypeTree [shape=box]
+e1 [shape=plaintext,label="",width=0.0]
+e2 [shape=plaintext,label="",width=0.0]
+e3 [shape=plaintext,label="",width=0.0]
+b1 [shape=plaintext,label="_",width=0.0]
+b2 [shape=plaintext,label="_",width=0.0]
+b3 [shape=plaintext,label="_",width=0.0]
+b4 [shape=plaintext,label="_",width=0.0]
+b5 [shape=plaintext,label="_",width=0.0]
+b6 [shape=plaintext,label="_",width=0.0]
+d [shape=box,label=LocalVariableDeclaration]
+m [shape=box,label=Modifiers]
+t [shape=box,label=PrimitiveTypeTree]
+l [shape=box,label=Literal]
+i [shape=plaintext,width=0.0]
+i1 [shape=plaintext,label=int,width=0.0]
+i2 [shape=plaintext,label=int,width=0.0]
+p1 [shape=plaintext,label="(",width=0.0]
+p2 [shape=plaintext,label=")",width=0.0]
+a [shape=plaintext,label="A",width=0.0]
+z [shape=plaintext,label="0",width=0.0]
+q [shape=plaintext,label="=",width=0.0]
+y [shape=plaintext,label="[...]",width=0.0]
+
+subgraph {rank=same;e1;e2;i1;b1;i;b2;q;b3;TypeCast}
+subgraph {rank=sink;e3;b4;b5;b6;i2;p1;p2;a;z;y}
+
+d -> {m, t}
+m -> e1
+m -> e2 [style=dashed]
+t -> i1
+t -> b1
+d -> i
+d -> b2 [style=dashed]
+d -> q
+d -> b3 [style=dashed]
+d -> TypeCast -> p1
+TypeCast -> e3 [style=dashed]
+TypeCast -> AnnotatedType
+AnnotatedType -> {Annotation, PrimitiveTypeTree}
+Annotation -> Ident -> a
+Ident -> b4
+PrimitiveTypeTree -> i2
+PrimitiveTypeTree -> b5 [style = dashed]
+l -> z
+l -> y [style=dashed]
+TypeCast -> p2
+TypeCast -> b6 [style=dashed]
+TypeCast -> l
+}
