@@ -229,7 +229,7 @@ public class AClass extends ADeclaration {
     return new VivifyingMap<Integer, ABlock>(new LinkedHashMap<>()) {
       @Override
       public ABlock createValueFor(Integer k) {
-        return new ABlock(k);
+        return new ABlock("" + k);
       }
 
       @Override
