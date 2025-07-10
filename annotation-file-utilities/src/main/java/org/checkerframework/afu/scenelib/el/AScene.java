@@ -375,7 +375,11 @@ public class AScene implements Cloneable {
     throw new RuntimeException("clone check failed");
   }
 
-  // temporary main for easy testing on JAIFs
+  /**
+   * Temporary main for easy testing on JAIFs.
+   *
+   * @param args command-line arguments
+   */
   public static void main(String[] args) {
     int status = 0;
     checkClones = true;
