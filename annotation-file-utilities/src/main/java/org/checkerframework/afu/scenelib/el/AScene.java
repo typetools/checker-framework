@@ -330,7 +330,7 @@ public class AScene implements Cloneable {
             return null;
           }
           AExpression e = (AExpression) arg;
-          checkCloneNotReferenceEqual(el.id, e.id);
+          checkStringsEqual(el.id, e.id);
           checkCloneMap(el.calls, e.calls);
           checkCloneMap(el.funs, e.funs);
           checkCloneMap(el.instanceofs, e.instanceofs);
