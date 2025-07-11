@@ -1248,6 +1248,15 @@ public class JavaExpressionParseUtil {
       String s = node.getName().toString();
       // setResolverField();
 
+      // This Reference
+      if (s.equalsIgnoreCase("this")) {
+        if (thisReference == null) {
+          throw new ParseRuntimeException(
+              constructJavaExpressionParseError("this", "\"this\" isn't allowed here"));
+        }
+        return thisReference;
+      }
+
       // Formal parameter, using "#2" syntax.
       JavaExpression parameter = getParameterJavaExpression(s);
       if (parameter != null) {
@@ -1412,10 +1421,7 @@ public class JavaExpressionParseUtil {
 
     @Override
     public JavaExpression visitMemberSelect(MemberSelectTree node, Void unused) {
-      // Handles field and class access (like FieldAccessExpr in JavaParser)
-      // TODO: implement resolution for fields and class names
-      // throw new UnsupportedOperationException("visitMemberSelect not yet implemented");
-      // Special case: class literal like SomeClass.class
+      // Handle class literal (e.g., SomeClass.class)
       if (node.getIdentifier().contentEquals("class")) {
         Tree selected = node.getExpression();
         TypeMirror result = TreeUtils.typeOf(selected);
@@ -1427,20 +1433,21 @@ public class JavaExpressionParseUtil {
         return new ClassName(result);
       }
 
-      // Otherwise, treat as a field or inner class access
+      // Get receiver (e.g., `someObject` in `someObject.field`)
       JavaExpression receiver = node.getExpression().accept(this, null);
       String name = node.getIdentifier().toString();
 
-      // Try as a field
+      // First, try as a field access (instance or static field)
       FieldAccess fieldAccess = getIdentifierAsFieldAccess(receiver, name);
       if (fieldAccess != null) {
         return fieldAccess;
       }
 
-      // Try as an inner class
-      ClassName classType = getIdentifierAsInnerClassName(receiver.getType(), name);
-      if (classType != null) {
-        return classType;
+      // Then, try as inner class (e.g., Outer.Inner)
+      TypeMirror receiverType = receiver.getType();
+      ClassName innerClass = getIdentifierAsInnerClassName(receiverType, name);
+      if (innerClass != null) {
+        return innerClass;
       }
 
       throw new ParseRuntimeException(
