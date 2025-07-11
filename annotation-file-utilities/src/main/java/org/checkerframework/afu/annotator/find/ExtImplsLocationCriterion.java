@@ -7,6 +7,8 @@ import com.sun.tools.javac.tree.JCTree;
 import java.util.List;
 import org.checkerframework.afu.annotator.scanner.TreePathUtil;
 import org.checkerframework.afu.scenelib.el.TypeIndexLocation;
+import org.checkerframework.checker.interning.qual.FindDistinct;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /** A criterion to find a given extends or implements clause. */
 public class ExtImplsLocationCriterion implements Criterion {
@@ -24,7 +26,7 @@ public class ExtImplsLocationCriterion implements Criterion {
   }
 
   @Override
-  public boolean isSatisfiedBy(TreePath path, Tree leaf) {
+  public boolean isSatisfiedBy(@Nullable TreePath path, @FindDistinct Tree leaf) {
     if (path == null) {
       return false;
     }
@@ -33,7 +35,7 @@ public class ExtImplsLocationCriterion implements Criterion {
   }
 
   @Override
-  public boolean isSatisfiedBy(TreePath path) {
+  public boolean isSatisfiedBy(@Nullable TreePath path) {
     if (path == null) {
       return false;
     }
@@ -56,8 +58,6 @@ public class ExtImplsLocationCriterion implements Criterion {
     // System.out.printf("ExtImplsLocationCriterion.isSatisfiedBy(%s):%n  leaf=%s (%s)%n  parent=%s
     // (%s)%n", path, leaf, leaf.getClass(), parent, parent.getClass());
 
-    boolean returnValue = false;
-
     if (index == -1 && leaf.getKind() == Tree.Kind.CLASS) {
       return ((JCTree.JCClassDecl) leaf).getExtendsClause() == null;
     }
@@ -66,22 +66,22 @@ public class ExtImplsLocationCriterion implements Criterion {
 
       if (index == -1) {
         Tree ext = ct.getExtendsClause();
-        if (ext == leaf) {
-          returnValue = true;
+        @SuppressWarnings("interning:not.interned") // reference equality check
+        boolean foundLeaf = ext == leaf;
+        if (foundLeaf) {
+          return true;
         }
       } else {
         List<? extends Tree> impls = ct.getImplementsClause();
-        if (index < impls.size() && impls.get(index) == leaf) {
-          returnValue = true;
+        @SuppressWarnings("interning:not.interned") // reference equality check
+        boolean foundLeaf = index < impls.size() && impls.get(index) == leaf;
+        if (foundLeaf) {
+          return true;
         }
       }
     }
 
-    if (!returnValue) {
-      return this.isSatisfiedBy(parentPath);
-    } else {
-      return true;
-    }
+    return this.isSatisfiedBy(parentPath);
   }
 
   @Override

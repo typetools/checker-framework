@@ -7,6 +7,8 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import javax.lang.model.element.Modifier;
 import org.checkerframework.afu.annotator.Main;
+import org.checkerframework.checker.interning.qual.FindDistinct;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 // TODO: the name is sometimes used as a signature and sometimes as a method!
 /** Represents the criterion that a program element is in a method with a certain name. */
@@ -35,7 +37,7 @@ final class InMethodCriterion implements Criterion {
   }
 
   @Override
-  public boolean isSatisfiedBy(TreePath path, Tree leaf) {
+  public boolean isSatisfiedBy(@Nullable TreePath path, @FindDistinct Tree leaf) {
     if (path == null) {
       return false;
     }
@@ -44,7 +46,7 @@ final class InMethodCriterion implements Criterion {
   }
 
   @Override
-  public boolean isSatisfiedBy(TreePath path) {
+  public boolean isSatisfiedBy(@Nullable TreePath path) {
     Criteria.dbug.debug(
         "InMethodCriterion.isSatisfiedBy(%s); this=%s%n", Main.leafString(path), this.toString());
 
@@ -63,7 +65,9 @@ final class InMethodCriterion implements Criterion {
       }
       if (leaf instanceof VariableTree) { // variable declaration
         VariableTree varDecl = (VariableTree) leaf;
-        if (childPath != null && childPath.getLeaf() == varDecl.getInitializer()) {
+        @SuppressWarnings("interning:not.interned") // reference equality check
+        boolean found = childPath != null && childPath.getLeaf() == varDecl.getInitializer();
+        if (found) {
           inDecl = true;
           ModifiersTree mods = varDecl.getModifiers();
           staticDecl = mods.getFlags().contains(Modifier.STATIC);

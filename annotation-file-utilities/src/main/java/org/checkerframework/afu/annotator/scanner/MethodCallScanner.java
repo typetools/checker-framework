@@ -46,6 +46,7 @@ public class MethodCallScanner extends CommonScanner {
   }
 
   @Override
+  @SuppressWarnings("interning:not.interned") // reference equality check
   public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
     if (!done) {
       index++;

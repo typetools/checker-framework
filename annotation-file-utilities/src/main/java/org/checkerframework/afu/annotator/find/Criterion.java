@@ -2,6 +2,8 @@ package org.checkerframework.afu.annotator.find;
 
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
+import org.checkerframework.checker.interning.qual.FindDistinct;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * A criterion for locating a program element in an AST. A Criterion does not actually give a
@@ -63,7 +65,8 @@ public interface Criterion {
    *     for example in a call such as {@code this.isSatisfiedBy(path.getParentPath())}.
    * @return true if this criterion is satisfied by the given path, false otherwise
    */
-  public boolean isSatisfiedBy(TreePath path, Tree tree);
+  // @FindDistinct is for the benefit of an assertion
+  public boolean isSatisfiedBy(@Nullable TreePath path, @FindDistinct Tree leaf);
 
   /**
    * Determines if the given tree path is satisfied by this criterion.
@@ -72,7 +75,7 @@ public interface Criterion {
    *     for example in a call such as {@code this.isSatisfiedBy(path.getParentPath())}.
    * @return true if this criterion is satisfied by the given path, false otherwise
    */
-  public boolean isSatisfiedBy(TreePath path);
+  public boolean isSatisfiedBy(@Nullable TreePath path);
 
   // Maybe a better name would be "canBeDeclarationAnnotation", with the opposite sense.
   /**
