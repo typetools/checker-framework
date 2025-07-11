@@ -1,0 +1,9 @@
+package java.lang:
+annotation @UnderInitialization: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package org.checkerframework.afu.annotator.tests:
+class FieldSimple:
+
+    field field:
+        insert-annotation Variable.type: @java.lang.UnderInitialization
+

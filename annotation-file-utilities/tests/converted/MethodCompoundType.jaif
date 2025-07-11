@@ -1,0 +1,10 @@
+package :
+annotation @A: @java.lang.annotation.Target(value={TYPE_USE})
+
+package :
+class MethodCompoundType:
+
+    method m()[Ljava/util/Map;:
+        return:
+        insert-annotation Method.type: @A
+

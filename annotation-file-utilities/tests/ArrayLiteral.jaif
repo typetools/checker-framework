@@ -1,0 +1,27 @@
+package checkers.inference.quals:
+  annotation @VarAnnot:
+    int value
+
+package :
+class ArrayLiteral:
+
+field s0:
+insert-annotation Variable.initializer: @checkers.inference.quals.VarAnnot(1)
+insert-annotation Variable.type, ArrayType.type: @checkers.inference.quals.VarAnnot(2)
+insert-annotation Variable.type: @checkers.inference.quals.VarAnnot(3)
+
+field s1:
+insert-annotation Variable.initializer: @checkers.inference.quals.VarAnnot(4)
+insert-annotation Variable.type, ArrayType.type: @checkers.inference.quals.VarAnnot(5)
+insert-annotation Variable.type: @checkers.inference.quals.VarAnnot(6)
+
+field s2:
+insert-annotation Variable.initializer: @checkers.inference.quals.VarAnnot(7)
+insert-annotation Variable.type, ArrayType.type: @checkers.inference.quals.VarAnnot(8)
+insert-annotation Variable.type: @checkers.inference.quals.VarAnnot(9)
+
+field s3:
+insert-annotation Variable.initializer: @checkers.inference.quals.VarAnnot(10)
+insert-annotation Variable.type, ArrayType.type: @checkers.inference.quals.VarAnnot(11)
+insert-annotation Variable.type: @checkers.inference.quals.VarAnnot(12)
+

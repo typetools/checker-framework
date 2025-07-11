@@ -1,0 +1,6 @@
+Processing class foo.Bar
+Method getSomething(Ljava/lang/StringBuffer;)V must not modify the receiver
+Annotating type of first parameter of getSomething(Ljava/lang/StringBuffer;)V nonnull
+Method setSomething(Ljava/lang/String;)V might modify the receiver
+Annotating type of first parameter of setSomething(Ljava/lang/String;)V nonnull
+Success.
