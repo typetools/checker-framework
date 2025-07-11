@@ -209,6 +209,7 @@ public class AScene implements Cloneable {
    * @param s0 the first string to compare
    * @param s1 the second string to compare
    */
+  @SuppressWarnings("interning:not.interned") // equality-checking method
   private static void checkStringsEqual(String s0, String s1) {
     if (s0 == s1) {
       return;
