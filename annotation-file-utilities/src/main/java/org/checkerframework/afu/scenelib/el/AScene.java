@@ -226,6 +226,7 @@ public class AScene implements Cloneable {
    * @param o0 the first description to compare
    * @param o1 the second description to compare
    */
+  @SuppressWarnings("interning:not.interned") // equality-checking method
   private static void checkDescriptionsEqual(Object o0, Object o1) {
     if (o0 == o1) {
       return;
