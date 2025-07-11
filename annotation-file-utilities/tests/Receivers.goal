@@ -1,0 +1,126 @@
+package org.checkerframework.afu.annotator.tests;
+
+import java.io.Closeable;
+import java.io.IOException;
+
+public class Receivers {
+  public void m(@checkers.tainting.quals.Tainted Receivers this) {}
+
+  public void spaces(@checkers.tainting.quals.Tainted Receivers this) {}
+
+  public void m(@checkers.tainting.quals.Tainted Receivers this, int i) {}
+
+  public void spaces(@checkers.tainting.quals.Tainted Receivers this, int i) {}
+
+  public void m(@checkers.tainting.quals.Tainted Receivers this, @Anno() String s) {}
+}
+
+class Receivers2 {
+  public void m(@checkers.tainting.quals.Tainted Receivers2 this) {}
+
+  public void spaces(@checkers.tainting.quals.Tainted Receivers2 this) {}
+
+  public void m(@checkers.tainting.quals.Tainted Receivers2 this, int i) {}
+
+  public void spaces(@checkers.tainting.quals.Tainted Receivers2 this, int i) {}
+}
+
+class Receivers3<K, V> {
+  public void m(@checkers.tainting.quals.Tainted Receivers3<@annotation.Inner(0) K, @annotation.Inner(1) V> this) {}
+
+  public void m(@checkers.tainting.quals.Tainted Receivers3<@annotation.Inner(0) K, @annotation.Inner(1) V> this, int i) {}
+}
+
+class Receivers4<K, V> {
+  public void m(@checkers.tainting.quals.Tainted Receivers4<K, V> this) {}
+
+  public void m(@checkers.tainting.quals.Tainted Receivers4<K, V> this, int i) {}
+}
+
+interface Receivers5 {
+  public void m(@checkers.tainting.quals.Tainted Receivers5 this);
+}
+
+enum Receivers6 {
+  TEST;
+
+  public void m(@checkers.tainting.quals.Tainted Receivers6 this) {}
+}
+
+class Receivers7<K extends Object, V> {
+  public void m(@checkers.tainting.quals.Tainted Receivers7<@annotation.Inner(0) K, @annotation.Inner(1) V> this) {}
+}
+
+class Receivers8<K extends Object> {
+  public void m(@checkers.tainting.quals.Tainted Receivers8<K> this) {}
+}
+
+class Receivers9 {
+  public void m(@checkers.tainting.quals.Tainted @annotation.A @annotation.B @annotation.C Receivers9 this) {}
+}
+
+class Receivers10<K, V> {
+  public void m(@checkers.tainting.quals.Tainted Receivers10<@annotation.A K, @annotation.B V> this) {}
+
+  public void m(@checkers.tainting.quals.Tainted Receivers10<@annotation.A K, @annotation.B V> this, Receivers10<K, V> other) {}
+}
+
+@interface Anno {}
+
+// Test receiver insertion on inner class's default constructor.
+final class ScriptBasedMapping {
+  private final class RawScriptBasedMapping {public RawScriptBasedMapping(@checkers.inference.quals.VarAnnot(0) ScriptBasedMapping ScriptBasedMapping.this) { super(); }}
+}
+
+// Test receiver insertion before first parameter annotation.
+interface GenericInterface<T extends Object> {
+  public T map(T toMap);
+}
+
+class GenericArray<Z extends Object> implements GenericInterface<String[]> {
+  private Z z;
+
+  public void setZ(Z z) {
+    this.z = z;
+  }
+
+  public String[] map(@trusted.quals.Untrusted GenericArray<Z> this, @trusted.quals.Untrusted String @trusted.quals.Untrusted [] toMap) {
+    return toMap;
+  }
+}
+
+class GenericFields {
+  private GenericArray<String> genArray;
+}
+
+// Test inner receiver insertion before first parameter annotation.
+class Outer<T, S> {
+  class Inner<T2 extends T> {
+    private S s;
+    private T t;
+
+    protected void initialize(@checkers.inference.quals.VarAnnot(21) Outer<T, S>.Inner<@checkers.inference.quals.VarAnnot(20) T2> this, S s, T t) {
+      this.s = s;
+      this.t = t;
+    }
+
+    public Inner(S s, T t) {
+      initialize(s, t);
+    }
+  }
+}
+
+// Test that parameters inside an anonymous class get annotated.
+interface Interface {
+  String get(@trusted.quals.Untrusted Interface this, @trusted.quals.Untrusted String param);
+}
+
+// Test for infinite loop bug.
+class Closer<T> implements Closeable {
+  private final Closeable proxyProvider = System.out;
+
+  @Override
+  public void close(@checkers.inference.quals.VarAnnot(5) Closer<@checkers.inference.quals.VarAnnot(6) T> this) throws IOException {
+    proxyProvider.close();
+  }
+}

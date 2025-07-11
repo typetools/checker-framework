@@ -1,0 +1,62 @@
+package annotations.tests.classfile.foo:
+annotation @A: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+annotation @B: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+	String value
+
+// annotation @C: @Retention(value=CLASS) @java.lang.annotation.Target(value={TYPE_USE})
+annotation @C: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+	int fieldA
+	String fieldB
+
+package annotations.tests.classfile.cases:
+class TestLocalVariableGenericArray:
+
+	method <init>()V:
+		local 2 # 37 + 55 : @B(value="good")
+		    type:
+			inner-type 3, 0 : @B(value="first param")
+			inner-type 3, 1 : @B(value="second param")
+
+	method someMethod()V:
+		local 1 # 8 + 26 : @B(value="bad")
+		    type:
+			inner-type 3, 0 : @C(fieldA=0,fieldB="String")
+
+	method someMethod2(I)I:
+		local 2 # 8 + 66 : @C(fieldA=0, fieldB="Boolean")
+		    type:
+			inner-type 3, 0 : @A
+		local 3 # 16 + 58 : @A
+		    type:
+			inner-type 3, 0 : @B(value="inner-type")
+
+	method someMethod3()Z:
+		local 1 # 8 + 70 : @B(value="t")
+		    type:
+			inner-type 3, 0 : @B(value="map key string")
+			inner-type 3, 1 : @B(value="map value set")
+			inner-type 3, 1, 3, 0 : @A
+		local 2 # 10 + 68 :
+		    type:
+			inner-type 3, 0 : @A
+			inner-type 3, 1 : @C(fieldA=1, fieldB="set of maps")
+			inner-type 3, 1, 3, 0 : @B(value="maps")
+			inner-type 3, 1, 3, 0, 3, 0 : @B(value="map key is integer")
+			inner-type 3, 1, 3, 0, 3, 1 : @B(value="map value is 2-d array")
+			inner-type 3, 1, 3, 0, 3, 1, 0, 0 : @B(value="first dimension")
+			inner-type 3, 1, 3, 0, 3, 1, 0, 0, 0, 0 : @B(value ="second dimension")
+
+	method someMethod4()V:
+		local 1 # 8 + 10 :
+		    type:
+			inner-type 3, 0 : @A
+
+
+
+
+
+
+
+
+

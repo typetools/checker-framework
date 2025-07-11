@@ -1,0 +1,19 @@
+package java.lang:
+annotation @SuppressWarnings:
+    String value
+annotation @Deprecated:
+
+package org.checkerframework.afu.annotator.tests:
+annotation @TA: @java.lang.annotation.Target({java.lang.annotation.ElementType.TYPE_USE})
+
+class DuplicateAnnotation:
+    field i:
+        type: @TA
+
+    method m1()V: @java.lang.SuppressWarnings("A")
+    method m2()V: @java.lang.SuppressWarnings("B")
+    method m3()V: @java.lang.SuppressWarnings("C")
+    method m4()V: @java.lang.SuppressWarnings("D")
+    method m5()V: @java.lang.SuppressWarnings("E")
+    method m6()V:
+        local o: @java.lang.SuppressWarnings("F") @java.lang.Deprecated
