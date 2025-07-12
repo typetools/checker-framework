@@ -1397,26 +1397,85 @@ public class JavaExpressionParseUtil {
 
     @Override
     public JavaExpression visitMethodInvocation(MethodInvocationTree node, Void unused) {
-      ExecutableElement method = TreeUtils.elementFromUse(node);
-      TypeMirror returnType = TreeUtils.typeOf(node);
+      // setResolverField();
+      ExpressionTree methodSelect = node.getMethodSelect();
+      List<? extends ExpressionTree> args = node.getArguments();
 
-      List<JavaExpression> args = new ArrayList<>();
-      for (ExpressionTree arg : node.getArguments()) {
-        args.add(arg.accept(this, null));
-      }
+      JavaExpression receiverExpr;
+      String methodName;
 
-      JavaExpression receiver;
-      ExpressionTree select = node.getMethodSelect();
-      if (select instanceof MemberSelectTree) {
-        receiver = ((MemberSelectTree) select).getExpression().accept(this, null);
+      // Step 1: Resolve receiver and method name
+      if (methodSelect instanceof MemberSelectTree) {
+        // method call like `obj.method()` or `Class.staticMethod()`
+        MemberSelectTree memberSelect = (MemberSelectTree) methodSelect;
+        receiverExpr = memberSelect.getExpression().accept(this, null);
+        methodName = memberSelect.getIdentifier().toString();
+      } else if (methodSelect instanceof IdentifierTree) {
+        // method call like `method()` (implicit this)
+        methodName = ((IdentifierTree) methodSelect).getName().toString();
+        if (thisReference != null) {
+          receiverExpr = thisReference;
+        } else {
+          receiverExpr = new ClassName(enclosingType);
+        }
       } else {
-        receiver =
-            ElementUtils.isStatic(method)
-                ? new ClassName(method.getEnclosingElement().asType())
-                : new ThisReference(method.getEnclosingElement().asType());
+        throw new ParseRuntimeException(
+            constructJavaExpressionParseError(
+                node.toString(), "unsupported method invocation syntax"));
       }
 
-      return new MethodCall(returnType, method, receiver, args);
+      // Step 2: Convert argument expressions
+      List<JavaExpression> arguments = new ArrayList<>();
+      for (ExpressionTree arg : args) {
+        arguments.add(arg.accept(this, null));
+      }
+
+      // Step 3: Resolve method
+      ExecutableElement methodElement;
+      try {
+        methodElement =
+            getMethodElement(
+                methodName, receiverExpr.getType(), pathToCompilationUnit, arguments, resolver);
+      } catch (JavaExpressionParseException e) {
+        throw new ParseRuntimeException(e);
+      }
+
+      // Step 4: Box arguments if needed
+      for (int i = 0; i < arguments.size(); i++) {
+        VariableElement parameter = methodElement.getParameters().get(i);
+        TypeMirror parameterType = parameter.asType();
+        JavaExpression argument = arguments.get(i);
+        TypeMirror argumentType = argument.getType();
+
+        if (TypesUtils.isBoxedPrimitive(parameterType) && TypesUtils.isPrimitive(argumentType)) {
+          MethodSymbol valueOfMethod = TreeBuilder.getValueOfMethod(env, parameterType);
+          JavaExpression boxed =
+              new MethodCall(
+                  parameterType,
+                  valueOfMethod,
+                  new ClassName(parameterType),
+                  Collections.singletonList(argument));
+          arguments.set(i, boxed);
+        }
+      }
+
+      // Step 5: Construct MethodCall expression
+      if (ElementUtils.isStatic(methodElement)) {
+        Element classElem = methodElement.getEnclosingElement();
+        JavaExpression staticClassReceiver = new ClassName(ElementUtils.getType(classElem));
+        return new MethodCall(
+            ElementUtils.getType(methodElement), methodElement, staticClassReceiver, arguments);
+      } else {
+        if (receiverExpr instanceof ClassName) {
+          throw new ParseRuntimeException(
+              constructJavaExpressionParseError(
+                  node.toString(),
+                  "a non-static method call cannot have a class name as a receiver"));
+        }
+        TypeMirror methodType =
+            TypesUtils.substituteMethodReturnType(methodElement, receiverExpr.getType(), env);
+        return new MethodCall(methodType, methodElement, receiverExpr, arguments);
+      }
     }
 
     @Override
@@ -1606,6 +1665,16 @@ public class JavaExpressionParseUtil {
     }
 
     private @Nullable TypeMirror convertTreeToTypeMirror(JCTree tree) {
+
+      if (tree instanceof MemberSelectTree) {
+        MemberSelectTree memberSelectTree = (MemberSelectTree) tree;
+        String name = memberSelectTree.getIdentifier().toString();
+        ExpressionTree parsed = JavacParseUtil.parseExpression(name);
+        if (parsed instanceof IdentifierTree) {
+          return convertTreeToTypeMirror((JCTree) parsed);
+        }
+      }
+
       if (tree instanceof IdentifierTree) {
         LanguageLevel currentSourceVersion = JavaParserUtil.getCurrentSourceVersion(env);
         try {
@@ -1646,6 +1715,39 @@ public class JavaExpressionParseUtil {
         return null;
       }
       return null;
+    }
+
+    private ExecutableElement getMethodElement(
+        String methodName,
+        TypeMirror receiverType,
+        TreePath pathToCompilationUnit,
+        List<JavaExpression> arguments,
+        Resolver resolver)
+        throws JavaExpressionParseException {
+
+      List<TypeMirror> argumentTypes = CollectionsPlume.mapList(JavaExpression::getType, arguments);
+
+      if (receiverType.getKind() == TypeKind.ARRAY) {
+        ExecutableElement element =
+            resolver.findMethod(methodName, receiverType, pathToCompilationUnit, argumentTypes);
+        if (element == null) {
+          throw constructJavaExpressionParseError(methodName, "no such method");
+        }
+        return element;
+      }
+
+      // Search for method in each enclosing class.
+      while (receiverType.getKind() == TypeKind.DECLARED) {
+        ExecutableElement element =
+            resolver.findMethod(methodName, receiverType, pathToCompilationUnit, argumentTypes);
+        if (element != null) {
+          return element;
+        }
+        receiverType = getTypeOfEnclosingClass((DeclaredType) receiverType);
+      }
+
+      // Method not found.
+      throw constructJavaExpressionParseError(methodName, "no such method");
     }
   }
 
