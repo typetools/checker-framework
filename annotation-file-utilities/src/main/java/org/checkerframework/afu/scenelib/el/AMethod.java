@@ -13,6 +13,8 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.afu.scenelib.Annotation;
 import org.checkerframework.afu.scenelib.util.coll.VivifyingMap;
+import org.checkerframework.checker.interning.qual.FindDistinct;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /** An annotated method; contains bounds, return, parameters, receiver, and throws. */
 public class AMethod extends ADeclaration {
@@ -235,11 +237,12 @@ public class AMethod extends ADeclaration {
   }
 
   /**
-   * Set the return type. Does nothing if the argument is null.
+   * Set the return type. Does nothing if the argument is null. Errs if called twice with different
+   * non-null arguments.
    *
    * @param returnTypeMirror the return type
    */
-  public void setReturnTypeMirror(/*@Nullable*/ TypeMirror returnTypeMirror) {
+  public void setReturnTypeMirror(@FindDistinct @Nullable TypeMirror returnTypeMirror) {
     if (returnTypeMirror == null) {
       return;
     }

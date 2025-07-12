@@ -6,6 +6,8 @@ import com.sun.source.util.TreePath;
 import java.util.List;
 import org.checkerframework.afu.scenelib.el.RelativeLocation;
 import org.checkerframework.afu.scenelib.io.ASTPath;
+import org.checkerframework.checker.interning.qual.FindDistinct;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 @SuppressWarnings("MissingSummary") // TODO
 public class IntersectionTypeLocationCriterion implements Criterion {
@@ -16,7 +18,7 @@ public class IntersectionTypeLocationCriterion implements Criterion {
   }
 
   @Override
-  public boolean isSatisfiedBy(TreePath path, Tree leaf) {
+  public boolean isSatisfiedBy(@Nullable TreePath path, @FindDistinct Tree leaf) {
     if (path == null) {
       return false;
     }
@@ -25,7 +27,7 @@ public class IntersectionTypeLocationCriterion implements Criterion {
   }
 
   @Override
-  public boolean isSatisfiedBy(TreePath path) {
+  public boolean isSatisfiedBy(@Nullable TreePath path) {
     TreePath parentPath = path.getParentPath();
     if (parentPath != null) {
       Tree parent = parentPath.getLeaf();
@@ -33,7 +35,9 @@ public class IntersectionTypeLocationCriterion implements Criterion {
         IntersectionTypeTree itt = (IntersectionTypeTree) parent;
         List<? extends Tree> bounds = itt.getBounds();
         Tree leaf = path.getLeaf();
-        if (typeIndex < bounds.size() && leaf == bounds.get(typeIndex)) {
+        @SuppressWarnings("interning:not.interned") // reference equality check
+        boolean foundLeaf = typeIndex < bounds.size() && leaf == bounds.get(typeIndex);
+        if (foundLeaf) {
           return true;
         }
       }

@@ -40,6 +40,7 @@ public class InitBlockScanner extends TreePathScanner<Void, Boolean> {
   }
 
   @Override
+  @SuppressWarnings("interning:not.interned") // reference equality check
   public Void visitBlock(BlockTree node, Boolean isStatic) {
     // TODO: is isStatic only used for static initializer blocks?
     if (!done && isStatic == node.isStatic() && getBlockEndPos((JCBlock) node) >= 0) {

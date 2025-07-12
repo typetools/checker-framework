@@ -48,6 +48,7 @@ public class CastScanner extends CommonScanner {
   }
 
   @Override
+  @SuppressWarnings("interning:not.interned") // reference equality check
   public Void visitTypeCast(TypeCastTree node, Void p) {
     if (!done) {
       index++;
