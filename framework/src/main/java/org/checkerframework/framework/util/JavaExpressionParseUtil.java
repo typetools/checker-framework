@@ -92,7 +92,6 @@ import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Resolver;
-import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.trees.TreeBuilder;
 import org.plumelib.util.CollectionsPlume;
@@ -187,11 +186,6 @@ public class JavaExpressionParseUtil {
     ExpressionTree expTree;
     try {
       expTree = JavacParseUtil.parseExpression(expressionWithParameterNames);
-      // expTree =
-      // JavacParseUtil.parseExpressionFromSullSource(expressionWithParameterNames,pathToCompilationUnit.getCompilationUnit().toString());
-      // System.out.println(expTree);
-      // expr = JavaParserUtil.parseExpression(expressionWithParameterNames);
-      // currentSourceVersion);//change to javac parser
       expr = JavaParserUtil.parseExpression(expTree.toString(), currentSourceVersion);
     } catch (ParseProblemException e) {
       String extra = ".";
@@ -1500,7 +1494,7 @@ public class JavaExpressionParseUtil {
       // Handle class literal (e.g., SomeClass.class)
       if (node.getIdentifier().contentEquals("class")) {
         Tree selected = node.getExpression();
-        TypeMirror result = TreeUtils.typeOf(selected);
+        TypeMirror result = convertTreeToTypeMirror((JCTree) selected);
         if (result == null) {
           throw new ParseRuntimeException(
               constructJavaExpressionParseError(
@@ -1753,13 +1747,12 @@ public class JavaExpressionParseUtil {
             return null;
         }
       } else if (tree instanceof JCTree.JCArrayTypeTree) {
-        // TypeMirror componentType =
-        // convertTreeToTypeMirror(type.asArrayType().getComponentType());
-        // if (componentType == null) {
-        //  return null;
-        // }
-        // return types.getArrayType(componentType);
-        return null;
+        TypeMirror componentType =
+            convertTreeToTypeMirror(((JCTree.JCArrayTypeTree) tree).getType());
+        if (componentType == null) {
+          return null;
+        }
+        return types.getArrayType(componentType);
       }
       return null;
     }
