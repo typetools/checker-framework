@@ -1156,6 +1156,21 @@ public class JavaExpressionParseUtil {
     TypeMirror enclosingType;
     TreePath pathToCompilationUnit;
 
+    /** The java.lang.String type. */
+    private final TypeMirror stringTypeMirror;
+
+    /** The primitive boolean type. */
+    private final TypeMirror booleanTypeMirror;
+
+    private static final Set<Tree.Kind> COMPARISON_OPERATORS =
+        EnumSet.of(
+            Tree.Kind.EQUAL_TO,
+            Tree.Kind.NOT_EQUAL_TO,
+            Tree.Kind.LESS_THAN,
+            Tree.Kind.LESS_THAN_EQUAL,
+            Tree.Kind.GREATER_THAN,
+            Tree.Kind.GREATER_THAN_EQUAL);
+
     public ExpressionTreeToJavaExpressionVisitor(
         ProcessingEnvironment env,
         @Nullable List<FormalParameter> parameters,
@@ -1171,6 +1186,8 @@ public class JavaExpressionParseUtil {
       this.thisReference = thisReference;
       this.enclosingType = enclosingType;
       this.pathToCompilationUnit = pathToCompilationUnit;
+      this.stringTypeMirror = ElementUtils.getTypeElement(env, String.class).asType();
+      this.booleanTypeMirror = types.getPrimitiveType(TypeKind.BOOLEAN);
     }
 
     public static JavaExpression convert(
@@ -1233,7 +1250,7 @@ public class JavaExpressionParseUtil {
       } else if (value instanceof Character) {
         type = types.getPrimitiveType(TypeKind.CHAR);
       } else if (value instanceof String) {
-        type = ElementUtils.getTypeElement(env, String.class).asType();
+        type = this.stringTypeMirror;
       } else {
         throw new ParseRuntimeException(
             constructJavaExpressionParseError(
@@ -1537,9 +1554,39 @@ public class JavaExpressionParseUtil {
 
     @Override
     public JavaExpression visitBinary(BinaryTree node, Void unused) {
-      // Handles binary expressions like a + b, a < b, etc.
-      // TODO: handle type resolution and Tree.Kind mapping
-      throw new UnsupportedOperationException("visitBinary not yet implemented");
+      Tree.Kind operator = node.getKind();
+      JavaExpression leftJe = node.getLeftOperand().accept(this, null);
+      JavaExpression rightJe = node.getRightOperand().accept(this, null);
+      TypeMirror leftType = leftJe.getType();
+      TypeMirror rightType = rightJe.getType();
+      TypeMirror type;
+      // isSubtype() first does the cheaper test isSameType(), so no need to do it here.
+      if (operator == Tree.Kind.PLUS
+          && (TypesUtils.isString(leftType) || TypesUtils.isString(rightType))) {
+        // JLS 15.18.1 says, "If only one operand expression is of type String, then string
+        // conversion is performed on the other operand to produce a string at run time."
+        type = stringTypeMirror;
+      } else if (COMPARISON_OPERATORS.contains(operator)) {
+        if (types.isSubtype(leftType, rightType) || types.isSubtype(rightType, leftType)) {
+          type = booleanTypeMirror;
+        } else {
+          // Don't fall through, issue an error immediately instead.
+          throw new ParseRuntimeException(
+              constructJavaExpressionParseError(
+                  node.toString(),
+                  String.format("inconsistent types %s %s for %s", leftType, rightType, node)));
+        }
+      } else if (types.isSubtype(leftType, rightType)) {
+        type = rightType;
+      } else if (types.isSubtype(rightType, leftType)) {
+        type = leftType;
+      } else {
+        throw new ParseRuntimeException(
+            constructJavaExpressionParseError(
+                node.toString(),
+                String.format("inconsistent types %s %s for %s", leftType, rightType, node)));
+      }
+      return new BinaryOperation(type, operator, leftJe, rightJe);
     }
 
     @Override
