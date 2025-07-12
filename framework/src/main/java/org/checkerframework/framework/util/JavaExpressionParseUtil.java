@@ -1528,8 +1528,21 @@ public class JavaExpressionParseUtil {
     @Override
     public JavaExpression visitArrayAccess(ArrayAccessTree node, Void unused) {
       // Handles array[index] expressions
-      // TODO: convert array and index expressions
-      throw new UnsupportedOperationException("visitArrayAccess not yet implemented");
+      JavaExpression array = node.getExpression().accept(this, null);
+      TypeMirror arrayType = array.getType();
+      if (arrayType.getKind() != TypeKind.ARRAY) {
+        throw new ParseRuntimeException(
+            constructJavaExpressionParseError(
+                node.toString(),
+                String.format(
+                    "expected an array, found %s of type %s [%s]",
+                    array, arrayType, arrayType.getKind())));
+      }
+      TypeMirror componentType = ((ArrayType) arrayType).getComponentType();
+
+      JavaExpression index = node.getIndex().accept(this, null);
+
+      return new ArrayAccess(componentType, array, index);
     }
 
     @Override
