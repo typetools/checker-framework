@@ -224,6 +224,7 @@ annotation-file-utilities/javadoc
 annotation-file-utilities/tests/*.diff
 annotation-file-utilities/tests/*.log
 annotation-file-utilities/tests/*.output
+annotation-file-utilities/tests/**/*.class
 annotation-file-utilities/tests/Makefile.user
 annotation-file-utilities/tests/abbreviated/*.diff
 annotation-file-utilities/tests/abbreviated/*.log
