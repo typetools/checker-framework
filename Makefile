@@ -10,7 +10,7 @@ ASCIIDOC_FILES:=$(shell find . -name "*.adoc")
 asciidoc-style-check:
 	asciidoctor -o /dev/null ${ASCIIDOC_FILES}
 
-PYTHON_FILES:=$(wildcard *.py) $(wildcard **/*.py) $(shell grep -r -l --exclude='*.py' --exclude='*~' --exclude='*.tar' --exclude=gradlew --exclude-dir=.git --exclude-dir=.do-like-javac '^\#! \?\(/bin/\|/usr/bin/env \)python')
+PYTHON_FILES:=$(wildcard *.py) $(wildcard **/*.py) $(shell grep -r -l --exclude='*.py' --exclude='*~' --exclude='*.tar' --exclude=gradlew --exclude-dir=.git --exclude-dir=.do-like-javac --exclude-dir=.html-tools --exclude-dir=.plume-scripts '^\#! \?\(/bin/\|/usr/bin/env \)python')
 PYTHON_FILES_TO_CHECK:=$(filter-out ${lcb_runner},${PYTHON_FILES})
 install-mypy:
 	@if ! command -v mypy ; then pip install mypy ; fi
