@@ -3,8 +3,7 @@ all default: style-check
 	$(MAKE) -C checker/bin-devel
 
 style-fix: python-style-fix shell-style-fix
-# TODO: add python-typecheck
-style-check: asciidoc-style-check python-style-check shell-style-check
+style-check: asciidoc-style-check python-style-check python-typecheck shell-style-check
 
 
 ASCIIDOC_FILES:=$(shell find . -name "*.adoc")
