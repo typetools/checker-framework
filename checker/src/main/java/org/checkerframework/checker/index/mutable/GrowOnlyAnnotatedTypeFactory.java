@@ -14,7 +14,7 @@ import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.javacutil.AnnotationBuilder;
 
-public class MutableIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
+public class GrowOnlyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   /** The canonical @{@link GrowOnly} annotation. */
   public final AnnotationMirror GROW_ONLY;
@@ -22,7 +22,7 @@ public class MutableIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /**
    * @param checker the type-checker
    */
-  public MutableIndexAnnotatedTypeFactory(BaseTypeChecker checker) {
+  public GrowOnlyAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
 
     GROW_ONLY = AnnotationBuilder.fromClass(elements, GrowOnly.class);

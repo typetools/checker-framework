@@ -20,7 +20,7 @@ import org.checkerframework.javacutil.TreeUtils;
  * <p>It also handles the subtyping checks for assignments and overrides automatically, thanks to
  * inheriting from {@link BaseTypeVisitor}.
  */
-public class MutableIndexVisitor extends BaseTypeVisitor<MutableIndexAnnotatedTypeFactory> {
+public class GrowOnlyVisitor extends BaseTypeVisitor<GrowOnlyAnnotatedTypeFactory> {
 
   /** A set of method names that are disallowed on @GrowOnly collections. */
   private static final Set<String> SHRINKING_METHODS =
@@ -28,11 +28,11 @@ public class MutableIndexVisitor extends BaseTypeVisitor<MutableIndexAnnotatedTy
           new HashSet<>(Arrays.asList("remove", "removeAll", "removeIf", "retainAll", "clear")));
 
   /**
-   * Creates a new MutableIndexVisitor.
+   * Creates a new GrowOnlyVisitor.
    *
    * @param checker the checker that created this visitor
    */
-  public MutableIndexVisitor(BaseTypeChecker checker) {
+  public GrowOnlyVisitor(BaseTypeChecker checker) {
     super(checker);
   }
 

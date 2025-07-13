@@ -17,7 +17,7 @@ import org.checkerframework.framework.source.SuppressWarningsPrefix;
  */
 @RelevantJavaTypes({List.class})
 @SuppressWarningsPrefix({"index", "mutable"})
-public class MutableIndexChecker extends BaseTypeChecker {
-  /* Creates a new MutableIndexChecker. */
-  public MutableIndexChecker() {}
+public class GrowOnlyChecker extends BaseTypeChecker {
+  /* Creates a new GrowOnlyChecker. */
+  public GrowOnlyChecker() {}
 }
