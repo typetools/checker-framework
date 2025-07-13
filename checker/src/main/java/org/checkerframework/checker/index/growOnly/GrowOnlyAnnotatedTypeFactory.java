@@ -1,4 +1,4 @@
-package org.checkerframework.checker.index.mutable;
+package org.checkerframework.checker.index.growOnly;
 
 import java.lang.annotation.Annotation;
 import java.util.Arrays;

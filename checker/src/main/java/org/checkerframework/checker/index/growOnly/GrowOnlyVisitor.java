@@ -1,4 +1,4 @@
-package org.checkerframework.checker.index.mutable;
+package org.checkerframework.checker.index.growOnly;
 
 import com.sun.source.tree.MethodInvocationTree;
 import java.util.Arrays;
