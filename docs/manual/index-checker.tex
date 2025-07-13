@@ -800,51 +800,37 @@ warnings:
 \end{Verbatim}
 
 
-\sectionAndLabel{Support for mutable-length sequences}{index-mutable-length}
+\sectionAndLabel{The GrowOnly Checker: Verifying Non-Shrinking Lists}{growonly-checker}
 
-This section discusses sequences whose length can change, such as \<List>.
-If an index is valid and then a sequence is made longer, the index remains
-valid.  You must indicate which sequences only grow in size, using the type
-qualifiers listed below.  The Index Checker verifies the correctness of
-your annotations (that is, the Index Checker verifies that any
-\refqualclass{checker/index/qual}{GrowOnly}-annotated sequence never
-shrinks), and then the Index Checker takes advantage of that fact to
-validate indices into the sequence.
+This section discusses the GrowOnly Checker, a tool for verifying that certain collections, like \texttt{List}, do not shrink in size.
 
-The type qualifiers of Figure~\ref{index-mutability-lattice} indicate
-whether a sequence might shrink.
+The fundamental problem with checking indices in mutable collections is that an operation could shrink the collection, invalidating an otherwise valid index. To solve this, the Checker Framework needs to know which collections are guaranteed never to shrink.
 
+The GrowOnly Checker's sole purpose is to provide this guarantee. It introduces a type hierarchy (see Figure~\ref{growonly-mutability-lattice}) that lets a programmer declare that a collection is \texttt{@GrowOnly}. The checker then verifies that no "shrinking" methods (like \texttt{remove()} or \texttt{clear()}) are ever called on a reference with this annotation.
+
+By providing this guarantee, the GrowOnly Checker \emph{enables} other checkers (like the Index Checker) to perform more precise and sound analysis in the future. However, the GrowOnly Checker itself does not perform any index checking; it only verifies the non-shrinking property.
+
+The type qualifiers of Figure~\ref{growonly-mutability-lattice} indicate whether a sequence might shrink.
 \begin{description}
-\item[\refqualclass{checker/index/qual}{UnShrinkableRef}]
-  The sequence cannot be shrunk through this reference, but
-  the sequence might shrink due to operations via other aliases.
-  This is the default qualifier for mutable-length structures.
+\item[\refqualclass{checker/index/qual}{UnshrinkableRef}]
+  The sequence cannot be shrunk through this reference. However, the sequence might still shrink if another alias to it is used to perform a shrinking operation. This is the default qualifier.
 
 \item[\refqualclass{checker/index/qual}{GrowOnly}]
-  The annotated expression can be used to grow the sequence (e.g., via
-  \<Collection.add()>), but cannot be shrunk.  Furthermore, every alias is
-  also \<@GrowOnly>, so no other alias can shrink the sequence.
+  A strong guarantee that the annotated collection will never shrink as long as this reference exists. The checker ensures that no shrinking methods can be called through this reference, and the type system guarantees that no other alias can be used to shrink the collection either.
 
 \item[\refqualclass{checker/index/qual}{Shrinkable}]
-  The length of the sequence may be increased \emph{or} decreased, via
-  methods such as \<add()>, \<remove()>, and \<clear()>.  The sequence may
-  also change size due to operations through an alias.  Using indexes into
-  a \<@Shrinkable> sequence can lead to many warnings.
+  The length of the sequence may be increased or decreased, via methods such as \texttt{add()}, \texttt{remove()}, and \texttt{clear()}.
 
 \item[\refqualclass{checker/index/qual}{UncheckedShrinkable}]
-  Like \<@Shrinkable>, but suppresses Index Checker warnings.  That is, the
-  Index Checker never warns about the index to a \<get(int)> operation on
-  the collection.  Using this type is like suppressing warnings
-  (Chapter~\ref{suppressing-warnings}), with the same benefits and
-  drawbacks.
+  A subtype of \texttt{@Shrinkable}. For the purposes of the GrowOnly Checker, this is treated exactly like \texttt{@Shrinkable}. It indicates that the collection can shrink. (Its special properties related to opting out of index checking are not relevant to the GrowOnly Checker).
 \end{description}
 
 \begin{figure}
 \begin{center}
 \includeimage{index-mutability}{5cm}
 \end{center}
-\caption{Qualifier hierarchy for indicating how a sequence's length may change.}
-\label{index-mutability-lattice}
+\caption{Qualifier hierarchy for the GrowOnly Checker.}
+\label{growonly-mutability-lattice}
 \end{figure}
 
 \sectionAndLabel{Technical papers}{index-papers}
