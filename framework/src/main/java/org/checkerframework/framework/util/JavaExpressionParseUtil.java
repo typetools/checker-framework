@@ -1259,13 +1259,23 @@ public class JavaExpressionParseUtil {
       String s = node.getName().toString();
       // setResolverField();
 
-      // This Reference
-      if (s.equalsIgnoreCase("this")) {
+      // this and super logic
+      if (s.equals("this") || s.equals("super")) {
         if (thisReference == null) {
           throw new ParseRuntimeException(
-              constructJavaExpressionParseError("this", "\"this\" isn't allowed here"));
+              constructJavaExpressionParseError(s, "\"" + s + "\" isn't allowed here"));
         }
-        return thisReference;
+        if (s.equals("this")) {
+          return thisReference;
+        } else {
+          // super literal
+          TypeMirror superclass = TypesUtils.getSuperclass(enclosingType, types);
+          if (superclass == null) {
+            throw new ParseRuntimeException(
+                constructJavaExpressionParseError("super", enclosingType + " has no superclass"));
+          }
+          return new SuperReference(superclass);
+        }
       }
 
       // Formal parameter, using "#2" syntax.
@@ -1573,9 +1583,23 @@ public class JavaExpressionParseUtil {
 
     @Override
     public JavaExpression visitUnary(UnaryTree node, Void unused) {
-      // Handles unary operators like -a, !a
-      // TODO: map to Tree.Kind and handle constant folding if possible
-      throw new UnsupportedOperationException("visitUnary not yet implemented");
+      Tree.Kind treeKind = node.getKind();
+      JavaExpression operand = node.getExpression().accept(this, null);
+      // This eliminates + and performs constant-folding for -; it could also do so for other
+      // operations.
+      switch (treeKind) {
+        case UNARY_PLUS:
+          return operand;
+        case UNARY_MINUS:
+          if (operand instanceof ValueLiteral) {
+            return ((ValueLiteral) operand).negate();
+          }
+          break;
+        default:
+          // Not optimization for this operand
+          break;
+      }
+      return new UnaryOperation(operand.getType(), treeKind, operand);
     }
 
     @Override
