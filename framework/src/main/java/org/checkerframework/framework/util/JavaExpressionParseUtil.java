@@ -1491,6 +1491,8 @@ public class JavaExpressionParseUtil {
 
     @Override
     public JavaExpression visitMemberSelect(MemberSelectTree node, Void unused) {
+      // setResolverField();
+
       // Handle class literal (e.g., SomeClass.class)
       if (node.getIdentifier().contentEquals("class")) {
         Tree selected = node.getExpression();
@@ -1503,23 +1505,40 @@ public class JavaExpressionParseUtil {
         return new ClassName(result);
       }
 
-      // Get receiver (e.g., `someObject` in `someObject.field`)
-      JavaExpression receiver = node.getExpression().accept(this, null);
+      Tree expr = node.getExpression();
       String name = node.getIdentifier().toString();
 
-      // First, try as a field access (instance or static field)
+      // Check if the expression refers to a fully-qualified class name
+      Symbol.PackageSymbol packageSymbol =
+          resolver.findPackage(expr.toString(), pathToCompilationUnit);
+      if (packageSymbol != null) {
+        ClassSymbol classSymbol =
+            resolver.findClassInPackage(name, packageSymbol, pathToCompilationUnit);
+        if (classSymbol != null) {
+          return new ClassName(classSymbol.asType());
+        }
+        throw new ParseRuntimeException(
+            constructJavaExpressionParseError(
+                node.toString(),
+                "could not find class " + name + " in package " + expr.toString()));
+      }
+
+      // Otherwise treat as field access or inner class
+      JavaExpression receiver = expr.accept(this, null);
+
+      // Try as a field
       FieldAccess fieldAccess = getIdentifierAsFieldAccess(receiver, name);
       if (fieldAccess != null) {
         return fieldAccess;
       }
 
-      // Then, try as inner class (e.g., Outer.Inner)
-      TypeMirror receiverType = receiver.getType();
-      ClassName innerClass = getIdentifierAsInnerClassName(receiverType, name);
+      // Try as an inner class
+      ClassName innerClass = getIdentifierAsInnerClassName(receiver.getType(), name);
       if (innerClass != null) {
         return innerClass;
       }
 
+      // Nothing matched
       throw new ParseRuntimeException(
           constructJavaExpressionParseError(
               name, String.format("field or class %s not found in %s", name, receiver)));
