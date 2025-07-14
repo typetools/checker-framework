@@ -1763,19 +1763,20 @@ public class MustCallConsistencyAnalyzer {
    * Returns true if the given constructor delegates to another constructor in the same class using
    * a {@code this(...)} call as its first statement.
    *
-   * @param constructor the constructor method to check
+   * @param constructor a constructor method
    * @return {@code true} if the constructor starts with a {@code this(...)} call, {@code false}
    *     otherwise
    */
   private boolean callsThisConstructor(MethodTree constructor) {
     List<? extends StatementTree> statements = constructor.getBody().getStatements();
-    if (!statements.isEmpty()) {
-      StatementTree firstStmt = statements.get(0);
-      if (firstStmt instanceof ExpressionStatementTree) {
-        ExpressionTree expr = ((ExpressionStatementTree) firstStmt).getExpression();
-        if (expr instanceof MethodInvocationTree) {
-          return TreeUtils.isThisConstructorCall((MethodInvocationTree) expr);
-        }
+    if (statements.isEmpty()) {
+      return false;
+    }
+    StatementTree firstStmt = statements.get(0);
+    if (firstStmt instanceof ExpressionStatementTree) {
+      ExpressionTree expr = ((ExpressionStatementTree) firstStmt).getExpression();
+      if (expr instanceof MethodInvocationTree) {
+        return TreeUtils.isThisConstructorCall((MethodInvocationTree) expr);
       }
     }
     return false;
