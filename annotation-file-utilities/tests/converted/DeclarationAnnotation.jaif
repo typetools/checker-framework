@@ -1,0 +1,10 @@
+package java.lang:
+annotation @SuppressWarnings:
+    String value
+
+package org.checkerframework.afu.annotator.tests:
+class DeclarationAnnotation:
+
+    method foo()V: @java.lang.SuppressWarnings(value="string argument")
+        return:
+

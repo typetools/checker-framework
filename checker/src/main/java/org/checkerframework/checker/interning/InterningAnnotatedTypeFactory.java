@@ -82,6 +82,7 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    *
    * @param checker the checker to use
    */
+  @SuppressWarnings("this-escape")
   public InterningAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
 

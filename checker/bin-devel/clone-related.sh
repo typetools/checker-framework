@@ -44,20 +44,6 @@ fi
 # Clone the annotated JDK into ../jdk .
 "$GIT_SCRIPTS/git-clone-related" ${DEBUG_FLAG} typetools jdk
 
-AFU="${AFU:-../annotation-tools/annotation-file-utilities}"
-# Don't use `AT=${AFU}/..` which causes a git failure.
-AT=$(dirname "${AFU}")
-
-## Build annotation-tools (Annotation File Utilities)
-"$GIT_SCRIPTS/git-clone-related" ${DEBUG_FLAG} typetools annotation-tools "${AT}"
-if [ ! -d ../annotation-tools ]; then
-  ln -s "${AT}" ../annotation-tools
-fi
-
-echo "Running:  (cd ${AT} && ./.build-without-test.sh)"
-(cd "${AT}" && ./.build-without-test.sh)
-echo "... done: (cd ${AT} && ./.build-without-test.sh)"
-
 ### Commented temporarily because JSpecify build is failing under JDK 17.
 ### (I guess they don't use continuous integration.)
 # ## Build JSpecify, only for the purpose of using its tests.

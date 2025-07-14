@@ -1,0 +1,34 @@
+strict digraph {
+graph [ordering=out]
+
+d [shape=box,label=LocalVariableDeclaration]
+m [shape=box,label=Modifiers]
+t [shape=box,label=PrimitiveTypeTree]
+l [shape=box,label=Literal]
+e1 [shape=plaintext,label="",width=0.125]
+e2 [shape=plaintext,label="",width=0.125]
+int [shape=plaintext,width=0.125]
+i [shape=plaintext,constraint=false,width=0.125]
+b1 [shape=plaintext,label="_",width=0.125]
+b2 [shape=plaintext,label="_",constraint=false,width=0.125]
+b3 [shape=plaintext,label="_",constraint=false,width=0.125]
+q [shape=plaintext,label="=",constraint=false,width=0.125]
+z [shape=plaintext,label="0",width=0.125]
+y [shape=plaintext,label="[...]",width=0.125]
+
+subgraph {rank=same;int;b1;i;b2;q;b3;z;y}
+
+d -> m
+m -> e1
+m -> e2 [style=dashed]
+d -> t
+t -> int
+t -> b1 [style=dashed]
+d -> i
+d -> b2 [style=dashed]
+d -> q
+d -> b3 [style=dashed]
+d -> l
+l -> z
+l -> y [style=dashed]
+}

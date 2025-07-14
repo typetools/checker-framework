@@ -2,7 +2,7 @@
 
 # This file will be used as ../../.git/hooks/pre-commit.
 # However, it should be edited as checker/bin-devel/git.pre-commit.
-# You can install it by running: (cd .. && ./gradlew installGitHooks)
+# You can install it by running: (cd ../.. && ./gradlew installGitHooks)
 
 # Fail if any command fails
 set -e
@@ -10,7 +10,7 @@ set -e
 # Check formatting.  This is slow (3+ seconds).
 # Could instead do "spotlessApply", but then the changes don't appear in this commit.
 JAVA_VER=$(java -version 2>&1 | head -1 | cut -d'"' -f2 | sed '/^1\./s///' | cut -d'.' -f1 | sed 's/-ea//')
-[ "$JAVA_VER" = "8" ] || ./gradlew spotlessCheck -q
+[ "$JAVA_VER" = "8" ] || [ "$JAVA_VER" = "11" ] || ./gradlew spotlessCheck -q
 
 CHANGED_JAVA_FILES=$(git diff --staged --name-only --diff-filter=ACM | grep '\.java$' | grep -v '/jdk/' | grep -v 'stubparser/' | grep -v '/nullness-javac-errors/' | grep -v 'dataflow/manual/examples/' | grep -v '/java17/' | grep -v 'records/') || true
 # echo "CHANGED_JAVA_FILES=${CHANGED_JAVA_FILES}"

@@ -1,0 +1,17 @@
+package javax.annotation:
+annotation @Resource: @Target(value={TYPE,FIELD,METHOD})
+
+package org.checkerframework.checker.nullness.qual:
+annotation @Nullable:
+
+package :
+class C1:
+
+    field values:
+        type: @javax.annotation.Resource
+
+    method foo(Ljava/lang/Object;)Lplume/C1;:
+        return:
+        parameter #0:
+            type: @org.checkerframework.checker.nullness.qual.Nullable
+

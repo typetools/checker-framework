@@ -1,9 +1,13 @@
 package org.checkerframework.common.aliasing;
 
+import com.sun.source.tree.ArrayTypeTree;
+import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
@@ -82,7 +86,7 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
         // implemented correctly we could remove that code below, since the type of "this"
         // in a @Unique constructor will be @Unique.
         Tree parent = getCurrentPath().getParentPath().getLeaf();
-        boolean parentIsStatement = parent.getKind() == Tree.Kind.EXPRESSION_STATEMENT;
+        boolean parentIsStatement = parent instanceof ExpressionStatementTree;
         ExecutableElement methodElement = TreeUtils.elementFromUse(tree);
         List<? extends VariableElement> params = methodElement.getParameters();
         List<? extends ExpressionTree> args = tree.getArguments();
@@ -227,12 +231,12 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
     } else if (tree.getType() != null) {
       // VariableTree#getType returns null for binding variables from a
       // DeconstructionPatternTree.
-      if (tree.getType().getKind() == Tree.Kind.ARRAY_TYPE) {
+      if (tree.getType() instanceof ArrayTypeTree) {
         AnnotatedArrayType arrayType = (AnnotatedArrayType) varType;
         if (arrayType.getComponentType().hasPrimaryAnnotation(Unique.class)) {
           checker.reportError(tree, "unique.location.forbidden");
         }
-      } else if (tree.getType().getKind() == Tree.Kind.PARAMETERIZED_TYPE) {
+      } else if (tree.getType() instanceof ParameterizedTypeTree) {
         AnnotatedDeclaredType declaredType = (AnnotatedDeclaredType) varType;
         for (AnnotatedTypeMirror atm : declaredType.getTypeArguments()) {
           if (atm.hasPrimaryAnnotation(Unique.class)) {
@@ -303,8 +307,8 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
    */
   private boolean canBeLeaked(Tree exp) {
     AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(exp);
-    boolean isMethodInvocation = exp.getKind() == Tree.Kind.METHOD_INVOCATION;
-    boolean isNewClass = exp.getKind() == Tree.Kind.NEW_CLASS;
+    boolean isMethodInvocation = exp instanceof MethodInvocationTree;
+    boolean isNewClass = exp instanceof NewClassTree;
     boolean isUniqueType = isUniqueClass(type) || type.hasExplicitAnnotation(Unique.class);
     return isUniqueType && !isMethodInvocation && !isNewClass;
   }

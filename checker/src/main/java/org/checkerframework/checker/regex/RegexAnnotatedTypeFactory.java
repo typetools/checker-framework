@@ -133,6 +133,7 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    *
    * @param checker the checker
    */
+  @SuppressWarnings("this-escape")
   public RegexAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
 
