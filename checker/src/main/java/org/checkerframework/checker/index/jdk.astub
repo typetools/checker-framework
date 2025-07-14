@@ -1,9 +1,5 @@
 import org.checkerframework.checker.index.qual.Shrinkable;
 
-// Annotations on methods in a stub file apply to the receiver (`this`).
-// So, annotating the return type with @Shrinkable is how you annotate
-// the `this` parameter for the List on which the method is called.
-
 package java.util;
 
 interface List<E> {
