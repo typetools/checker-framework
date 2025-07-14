@@ -1654,31 +1654,26 @@ public class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Determines whether the given assignment is the first write to a private field during object
-   * construction, in order to suppress potential false positive resource leak warnings.
+   * Returns true if the given assignment is definitely the first and only write to {@code field}
+   * during object construction. Conservatively returns {@code false} if ther is any uncertainty
+   * (e.g., earlier method calls or ambiguous writes).
    *
-   * <p>This method takes a conservative approach: it returns {@code true} only if it can
-   * definitively prove that this is the first and only assignment to the field during construction.
-   * If there is any uncertainty (e.g., earlier method calls or ambiguous writes), it returns {@code
-   * false}.
-   *
-   * <p>The result is {@code true} if all the following hold:
+   * <p>This helps suppress false positive resource leak warnings.
    *
    * <ul>
-   *   <li>The field is private
-   *   <li>It has no non-null inline initializer
-   *   <li>It is not assigned in any instance initializer block
-   *   <li>The constructor does not use constructor chaining via {@code this(...)}
-   *   <li>There are no earlier assignments to the same field before this one in the constructor
-   *   <li>There are no method calls before this assignment that might modify the field
+   *   <li>The field is private.
+   *   <li>It has no non-null inline initializer.
+   *   <li>It is not assigned in any instance initializer block.
+   *   <li>The constructor does not use constructor chaining via {@code this(...)}.
+   *   <li>There are no earlier assignments to the same field before this one in the constructor.
+   *   <li>There are no method calls before this assignment that might modify the field.
    * </ul>
    *
    * @param field the field being assigned
-   * @param constructor the constructor where the assignment appears
+   * @param constructor the constructor in which the assignment appears
    * @param currentAssignment the actual assignment tree being analyzed, which is a statement in
    *     {@code constructor}
-   * @return true if this assignment can be safely considered the first and only one during
-   *     construction
+   * @return true if this assignment is the first and only one during construction
    */
   private boolean isFirstAndOnlyAssignmentToField(
       VariableElement field, MethodTree constructor, @FindDistinct Tree currentAssignment) {
