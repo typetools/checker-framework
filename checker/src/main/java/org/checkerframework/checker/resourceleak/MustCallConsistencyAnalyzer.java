@@ -1521,7 +1521,7 @@ public class MustCallConsistencyAnalyzer {
       }
     } else if (TreeUtils.isConstructor(enclosingMethodTree)) {
       // Suppress if this is the first write to a private field in the constructor if we can
-      // conservatively guarantee no earlier field write or method call overwrites the field
+      // conservatively guarantee no earlier field write or method call overwrites the field.
       Element enclosingClassElement =
           TreeUtils.elementFromDeclaration(enclosingMethodTree).getEnclosingElement();
       if (ElementUtils.isTypeElement(enclosingClassElement)) {
