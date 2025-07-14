@@ -19,9 +19,9 @@ with tempfile.NamedTemporaryFile(mode="w+", delete=False) as tmp:
     tmp.write("digraph TypeHierarchy {\n")
     tmp.write("rankdir=BT\n")
 
-    for filename in Path.glob("*.java"):
-        with Path.open(Path(Path.cwd()) / filename) as file:
-            filename = filename[0:-5]
+    for filename in Path.cwd().glob("*.java"):
+        with Path.open(filename) as file:
+            typename = Path(Path(filename).stem).name
             # print(filename)
             data = file.read()
             # print(data)
@@ -36,7 +36,7 @@ with tempfile.NamedTemporaryFile(mode="w+", delete=False) as tmp:
                         # print(f"supertype: {supertype}")
                         assert supertype.endswith(".class")
                         supertype = supertype[0:-6]
-                        tmp.write(f"{filename} -> {supertype}\n")
+                        tmp.write(f"{typename} -> {supertype}\n")
 
     tmp.write("}\n")
 
@@ -51,4 +51,4 @@ with tempfile.NamedTemporaryFile(mode="w+", delete=False) as tmp:
         text=True,  # Python >= 3.7 only
     )
 
-    Path.unlink(tmp.name)
+    Path.unlink(Path(tmp.name))

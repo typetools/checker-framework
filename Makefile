@@ -3,8 +3,7 @@ all default: style-check
 	$(MAKE) -C checker/bin-devel
 
 style-fix: python-style-fix shell-style-fix
-# TODO: add python-typecheck
-style-check: asciidoc-style-check python-style-check shell-style-check
+style-check: asciidoc-style-check python-style-check python-typecheck shell-style-check
 
 
 ASCIIDOC_FILES:=$(shell find . -name "*.adoc")
@@ -14,9 +13,9 @@ asciidoc-style-check:
 PYTHON_FILES:=$(wildcard *.py) $(wildcard **/*.py) $(shell grep -r -l --exclude='*.py' --exclude='*~' --exclude='*.tar' --exclude=gradlew --exclude-dir=.git --exclude-dir=.do-like-javac --exclude-dir=.html-tools --exclude-dir=.plume-scripts '^\#! \?\(/bin/\|/usr/bin/env \)python')
 PYTHON_FILES_TO_CHECK:=$(filter-out ${lcb_runner},${PYTHON_FILES})
 install-mypy:
-	@if ! command -v mypy ; then pip install mypy ; fi
+	@if ! command -v mypy ; then pipx install mypy && pipx ensurepath ; fi
 install-ruff:
-	@if ! command -v ruff ; then pipx install ruff ; fi
+	@if ! command -v ruff ; then pipx install ruff && pipx ensurepath ; fi
 python-style-fix: install-ruff
 ifneq (${PYTHON_FILES},)
 	@ruff --version
