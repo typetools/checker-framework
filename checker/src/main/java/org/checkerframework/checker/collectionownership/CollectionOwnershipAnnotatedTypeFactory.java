@@ -56,6 +56,7 @@ import org.checkerframework.framework.util.JavaExpressionParseUtil;
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -334,7 +335,12 @@ public class CollectionOwnershipAnnotatedTypeFactory
   public boolean isResourceCollection(Tree tree) {
     if (tree == null) return false;
     MustCallAnnotatedTypeFactory mcAtf = ResourceLeakUtils.getMustCallAnnotatedTypeFactory(this);
-    AnnotatedTypeMirror treeMcType = mcAtf.getAnnotatedType(tree);
+    AnnotatedTypeMirror treeMcType = null;
+    try {
+      treeMcType = mcAtf.getAnnotatedType(tree);
+    } catch (BugInCF e) {
+      return false; 
+    }
     List<String> list = getMustCallValuesOfResourceCollectionComponent(treeMcType);
     return list != null && list.size() > 0;
   }
