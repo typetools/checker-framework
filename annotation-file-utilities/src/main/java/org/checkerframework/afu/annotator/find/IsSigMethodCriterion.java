@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.checkerframework.afu.annotator.Main;
+import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.FieldDescriptor;
@@ -270,7 +271,7 @@ public class IsSigMethodCriterion implements Criterion {
   }
 
   @Override
-  public boolean isSatisfiedBy(TreePath path, Tree leaf) {
+  public boolean isSatisfiedBy(@Nullable TreePath path, @FindDistinct Tree leaf) {
     if (path == null) {
       return false;
     }
@@ -279,7 +280,7 @@ public class IsSigMethodCriterion implements Criterion {
   }
 
   @Override
-  public boolean isSatisfiedBy(TreePath path) {
+  public boolean isSatisfiedBy(@Nullable TreePath path) {
     if (path == null) {
       return false;
     }

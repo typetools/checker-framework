@@ -5,7 +5,6 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
-import org.checkerframework.afu.scenelib.Annotation;
 import org.checkerframework.afu.scenelib.io.IndexFileParser;
 import org.checkerframework.afu.scenelib.util.coll.VivifyingMap;
 
@@ -171,47 +170,72 @@ public class AScene implements Cloneable {
   /**
    * Checks that the arguments are clones of one another.
    *
-   * <p>Throws exception if the arguments 1) are the same reference; 2) are not equal() in both
+   * <p>Throws an exception if the arguments 1) are the same reference; 2) are not equal() in both
    * directions; or 3) contain corresponding elements that meet either of the preceding two
    * conditions.
    *
    * @param s0 the first AScene to compare
    * @param s1 the second Ascene to compare
    */
-  @SuppressWarnings({
-    "ReferenceEquality", // testing that cloned value is different
-    "this-escape"
-  })
+  @SuppressWarnings({"this-escape"})
   public static void checkClone(AScene s0, AScene s1) {
-    if (s0 == null) {
-      if (s1 != null) {
-        cloneCheckFail();
-      }
-    } else {
-      if (s1 == null) {
-        cloneCheckFail();
-      }
-      s0.prune();
-      s1.prune();
-      if (s0 == s1) {
-        cloneCheckFail();
-      }
-      checkCloneMap(s0.packages, s1.packages);
-      checkCloneMap(s0.classes, s1.classes);
-    }
+    checkCloneNotReferenceEqual(s0, s1);
+    s0.prune();
+    s1.prune();
+    checkCloneMap(s0.packages, s1.packages);
+    checkCloneMap(s0.classes, s1.classes);
   }
 
   /**
-   * Throws an exception if !el.equals(arg) or !arg.equals(el).
+   * Throws an exception if the two arguments are references to the same object.
    *
    * @param o0 the first object to compare
    * @param o1 the second object to compare
    */
+  @SuppressWarnings("interning:not.interned") // reference equality check
   private static void checkCloneNotReferenceEqual(Object o0, Object o1) {
-    if (o0 == null ? o1 != null : !(o0.equals(o1) && o1.equals(o0))) { // ok if ==
+    if (o0 == null || o1 == null) {
+      throw new RuntimeException("clone check failed, null value: " + o0 + ", " + o1);
+    }
+    if (o0 == o1) {
       throw new RuntimeException(
-          String.format(
-              "clone check failed for %s [%s] %s [%s]", o0, o0.getClass(), o1, o1.getClass()));
+          "clone check failed, reference equality: " + o0 + " [" + o0.getClass() + "]");
+    }
+  }
+
+  /**
+   * Throws an exception if the two strings are not equal.
+   *
+   * @param s0 the first string to compare
+   * @param s1 the second string to compare
+   */
+  @SuppressWarnings("interning:not.interned") // equality-checking method
+  private static void checkStringsEqual(String s0, String s1) {
+    if (s0 == s1) {
+      return;
+    }
+    if (s0 == null || s1 == null || !s0.equals(s1)) {
+      throw new RuntimeException("Nonequal strings: " + s0 + ", " + s1);
+    }
+  }
+
+  /**
+   * Throws an exception if the two descriptions are not equal. Each description is a String or an
+   * ASTPath.
+   *
+   * @param o0 the first description to compare
+   * @param o1 the second description to compare
+   */
+  @SuppressWarnings("interning:not.interned") // equality-checking method
+  private static void checkDescriptionsEqual(Object o0, Object o1) {
+    if (o0 == o1) {
+      return;
+    }
+    if (o0 == null || o1 == null) {
+      throw new RuntimeException("Nonequal descriptions: " + o0 + ", " + o1);
+    }
+    if (!o0.equals(o1)) {
+      throw new RuntimeException("Nonequal descriptions: " + o0 + ", " + o1);
     }
   }
 
@@ -226,16 +250,13 @@ public class AScene implements Cloneable {
    */
   public static <K, V extends AElement> void checkCloneMap(
       VivifyingMap<K, V> m0, VivifyingMap<K, V> m1) {
-    if (m0 == null) {
-      if (m1 != null) {
-        cloneCheckFail();
-      }
-    } else if (m1 == null) {
-      cloneCheckFail();
-    } else {
-      for (K k : m0.keySet()) {
-        checkCloneAElement(m0.get(k), m1.get(k));
-      }
+    checkCloneNotReferenceEqual(m0, m1);
+    // This does not require that the key sets are identical, because m0 and m1 are vivifying maps.
+    Set<K> keys = new LinkedHashSet<>();
+    keys.addAll(m0.keySet());
+    keys.addAll(m1.keySet());
+    for (K k : keys) {
+      checkCloneAElement(m0.get(k), m1.get(k));
     }
   }
 
@@ -246,14 +267,22 @@ public class AScene implements Cloneable {
    * @param e0 the first element to compare
    * @param e1 the second element to compare
    */
-  @SuppressWarnings("ReferenceEquality") // testing that cloned value is different
   private static void checkCloneAElement(AElement e0, AElement e1) {
     checkCloneNotReferenceEqual(e0, e1);
-    if (e0 != null) {
-      if (e0 == e1) {
-        cloneCheckFail();
-      }
-      e0.accept(checkVisitor, e1);
+    e0.accept(checkVisitor, e1);
+  }
+
+  /**
+   * Throws an exception if the two sets are not equal.
+   *
+   * @param <T> the type of elements of the sets
+   * @param s0 a set
+   * @param s1 a set
+   */
+  private static <T> void checkCloneSet(Set<T> s0, Set<T> s1) {
+    checkCloneNotReferenceEqual(s0, s1);
+    if (!s0.equals(s1)) {
+      throw new RuntimeException("clone check failed, different sets: " + s0 + ", " + s1);
     }
   }
 
@@ -299,8 +328,11 @@ public class AScene implements Cloneable {
 
         @Override
         public Void visitExpression(AExpression el, AElement arg) {
+          if (el == null && arg == null) {
+            return null;
+          }
           AExpression e = (AExpression) arg;
-          checkCloneNotReferenceEqual(el.id, e.id);
+          checkStringsEqual(el.id, e.id);
           checkCloneMap(el.calls, e.calls);
           checkCloneMap(el.funs, e.funs);
           checkCloneMap(el.instanceofs, e.instanceofs);
@@ -314,7 +346,7 @@ public class AScene implements Cloneable {
         @Override
         public Void visitField(AField el, AElement arg) {
           AField f = (AField) arg;
-          checkCloneAElement(el.init, f.init);
+          visitExpression(el.init, f.init);
           visitDeclaration(el, arg);
           return null;
         }
@@ -322,22 +354,25 @@ public class AScene implements Cloneable {
         @Override
         public Void visitMethod(AMethod el, AElement arg) {
           AMethod m = (AMethod) arg;
-          checkCloneNotReferenceEqual(el.methodSignature, m.methodSignature);
+          checkStringsEqual(el.methodSignature, m.methodSignature);
           checkCloneMap(el.bounds, m.bounds);
-          checkCloneAElement(el.returnType, m.returnType);
-          checkCloneAElement(el.receiver, m.receiver);
+          visitTypeElement(el.returnType, m.returnType);
+          visitField(el.receiver, m.receiver);
           checkCloneMap(el.parameters, m.parameters);
           checkCloneMap(el.throwsException, m.throwsException);
           checkCloneMap(el.preconditions, m.preconditions);
           checkCloneMap(el.postconditions, m.postconditions);
-          checkCloneAElement(el.body, m.body);
+          visitBlock(el.body, m.body);
           return null;
         }
 
         @Override
         public Void visitTypeElement(ATypeElement el, AElement arg) {
+          if (el == null && arg == null) {
+            return null;
+          }
           ATypeElement t = (ATypeElement) arg;
-          checkCloneNotReferenceEqual(el.description, t.description);
+          checkDescriptionsEqual(el.description, t.description);
           checkCloneMap(el.innerTypes, t.innerTypes);
           return null;
         }
@@ -346,30 +381,24 @@ public class AScene implements Cloneable {
         public Void visitTypeElementWithType(ATypeElementWithType el, AElement arg) {
           ATypeElementWithType t = (ATypeElementWithType) arg;
           checkCloneNotReferenceEqual(el.getType(), t.getType());
-          return visitTypeElement(el, arg);
+          visitTypeElement(el, arg);
+          return null;
         }
 
         @Override
         public Void visitElement(AElement el, AElement arg) {
-          checkCloneNotReferenceEqual(el.description, arg.description);
-          if (el.tlAnnotationsHere.size() != arg.tlAnnotationsHere.size()) {
-            cloneCheckFail();
-          }
-          for (Annotation a : el.tlAnnotationsHere) {
-            if (!arg.tlAnnotationsHere.contains(a)) {
-              cloneCheckFail();
-            }
-          }
-          checkCloneAElement(el.type, arg.type);
+          checkDescriptionsEqual(el.description, arg.description);
+          checkCloneSet(el.tlAnnotationsHere, arg.tlAnnotationsHere);
+          visitTypeElement(el.type, arg.type);
           return null;
         }
       };
 
-  private static void cloneCheckFail() {
-    throw new RuntimeException("clone check failed");
-  }
-
-  // temporary main for easy testing on JAIFs
+  /**
+   * Temporary main for easy testing on JAIFs.
+   *
+   * @param args command-line arguments
+   */
   public static void main(String[] args) {
     int status = 0;
     checkClones = true;

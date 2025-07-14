@@ -3,6 +3,8 @@ package org.checkerframework.afu.annotator.find;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import org.checkerframework.afu.scenelib.el.BoundLocation;
+import org.checkerframework.checker.interning.qual.FindDistinct;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class MethodBoundCriterion implements Criterion {
 
@@ -19,7 +21,7 @@ public class MethodBoundCriterion implements Criterion {
   }
 
   @Override
-  public boolean isSatisfiedBy(TreePath path, Tree leaf) {
+  public boolean isSatisfiedBy(@Nullable TreePath path, @FindDistinct Tree leaf) {
     if (path == null) {
       return false;
     }
@@ -28,7 +30,7 @@ public class MethodBoundCriterion implements Criterion {
   }
 
   @Override
-  public boolean isSatisfiedBy(TreePath path) {
+  public boolean isSatisfiedBy(@Nullable TreePath path) {
     return sigMethodCriterion.isSatisfiedBy(path) && boundLocationCriterion.isSatisfiedBy(path);
   }
 
