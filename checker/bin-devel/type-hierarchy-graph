@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 
-# When run in a qual/ directory that contains type qualifier definitions (in
-# .java files), outputs a dot graph of the type hierarchy.
+"""Outputs a dot graph of the type hierarchy.
 
-import os
+Must be run in a qual/ directory that contains type qualifier definitions (in
+.java files).
+"""
+
 import re
-import glob
-import tempfile
-
 import subprocess
+import tempfile
+from pathlib import Path
 
 subtypeof_pattern = re.compile(r"@SubtypeOf\(\{?([^})]*)\}?\)", re.MULTILINE)
 
@@ -18,10 +19,8 @@ with tempfile.NamedTemporaryFile(mode="w+", delete=False) as tmp:
     tmp.write("digraph TypeHierarchy {\n")
     tmp.write("rankdir=BT\n")
 
-    for filename in glob.glob("*.java"):
-        with open(
-            os.path.join(os.getcwd(), filename), "r"
-        ) as file:  # open in readonly mode
+    for filename in Path.glob("*.java"):
+        with Path.open(Path(Path.cwd()) / filename) as file:
             filename = filename[0:-5]
             # print(filename)
             data = file.read()
@@ -52,4 +51,4 @@ with tempfile.NamedTemporaryFile(mode="w+", delete=False) as tmp:
         text=True,  # Python >= 3.7 only
     )
 
-    os.remove(tmp.name)
+    Path.unlink(tmp.name)
