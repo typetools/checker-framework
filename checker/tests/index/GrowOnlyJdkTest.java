@@ -5,7 +5,6 @@ import org.checkerframework.checker.index.qual.GrowOnly;
 public class GrowOnlyJdkTest {
 
   void testAllowedCalls(@GrowOnly List<String> list) {
-    // valid call, because add() does not have a @Shrinkable annotation.
     list.add("new element");
   }
 
