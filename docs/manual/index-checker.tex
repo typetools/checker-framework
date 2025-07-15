@@ -1,8 +1,12 @@
 \htmlhr
-\chapterAndLabel{Index Checker for sequence bounds (arrays, strings, lists)}{index-checker}
+% Reinstate when lists are supported:
+% \chapterAndLabel{Index Checker for sequence bounds (arrays, strings, lists)}{index-checker}
+\chapterAndLabel{Index Checker for sequence bounds (arrays and strings)}{index-checker}
 
 The Index Checker warns about potentially out-of-bounds accesses to sequence
-data structures, such as arrays, lists, and strings.
+data structures, such as arrays
+% , lists,
+and strings.
 
 The Index Checker prevents \<IndexOutOfBoundsException>s that result from
 an index expression that might be negative or might be equal to or larger
@@ -37,22 +41,16 @@ infers properties of indexes from
 the code around them. For example, it will infer that \<x> is positive
 within the \<then> block of an \code{if (x > 0)} statement.
 The programmer does need to write field types and method pre-conditions or post-conditions. For instance,
-if a formal parameter \<i> is used as an index for
-\<myArray>, the programmer might need to declare it as
-\refqualclasswithparams{checker/index/qual}{IndexFor}{"myArray"}~\<int~i>.
+if a method's formal parameter is used as an index for
+\<myArray>, the programmer might need to
+write an \refqualclasswithparams{checker/index/qual}{IndexFor}{"myArray"}
+annotation on the formal parameter's types.
 
-The Index Checker checks sequences that do not shrink; that is, their
-size never decreases after creation.  There are two types of such sequences.
-(1) Fixed-size sequences (with no \<add> or
-\<remove> operation), such as strings and arrays.
-You can add
+The Index Checker checks fixed-size data structures, whose size is never
+changed after creation.  A fixed-size data structure has no \<add> or
+\<remove> operation.  Examples are strings and arrays, and you can add
 support for other fixed-size data structures (see
 Section~\ref{index-annotating-fixed-size}).
-(2) Sequences that grow but do not shrink.  A program might use their
-\<add> operation, but not their \<remove> operation.  An example is a
-\<List> into which the program adds elements without removing any.
-Section~\ref{index-mutable-length} discusses checking of
-mutable-length sequences that do not shrink.
 
 To run the Index Checker, run either of these commands:
 
