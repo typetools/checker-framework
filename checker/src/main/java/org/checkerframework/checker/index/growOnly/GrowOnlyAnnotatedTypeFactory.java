@@ -22,6 +22,7 @@ public class GrowOnlyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /**
    * @param checker the type-checker
    */
+  @SuppressWarnings("this-escape")
   public GrowOnlyAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
 
