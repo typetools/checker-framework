@@ -9,6 +9,8 @@ import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import java.util.List;
 import org.checkerframework.afu.scenelib.el.BoundLocation;
+import org.checkerframework.checker.interning.qual.FindDistinct;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class BoundLocationCriterion implements Criterion {
 
@@ -32,7 +34,7 @@ public class BoundLocationCriterion implements Criterion {
   }
 
   @Override
-  public boolean isSatisfiedBy(TreePath path, Tree leaf) {
+  public boolean isSatisfiedBy(@Nullable TreePath path, @FindDistinct Tree leaf) {
     if (path == null) {
       return false;
     }
@@ -41,7 +43,7 @@ public class BoundLocationCriterion implements Criterion {
   }
 
   @Override
-  public boolean isSatisfiedBy(TreePath path) {
+  public boolean isSatisfiedBy(@Nullable TreePath path) {
     if (path == null) {
       return false;
     }
@@ -75,7 +77,9 @@ public class BoundLocationCriterion implements Criterion {
         if (!bounds.isEmpty() && isInterface((JCExpression) bounds.get(0))) {
           --ix;
         }
-        if (ix < 0 || (ix < bounds.size() && bounds.get(ix) == leaf)) {
+        @SuppressWarnings("interning:not.interned") // reference equality check
+        boolean foundLeaf = ix < 0 || (ix < bounds.size() && bounds.get(ix) == leaf);
+        if (foundLeaf) {
           returnValue = parentCriterion.isSatisfiedBy(parentPath);
         }
       } else if (boundIndex == 0 && leaf instanceof TypeParameterTree) {
@@ -104,7 +108,9 @@ public class BoundLocationCriterion implements Criterion {
         }
 
         if (paramIndex < params.size()) {
-          if (params.get(paramIndex) == leaf) {
+          @SuppressWarnings("interning:not.interned") // reference equality check
+          boolean foundLeaf = params.get(paramIndex) == leaf;
+          if (foundLeaf) {
             returnValue = true;
           }
         }

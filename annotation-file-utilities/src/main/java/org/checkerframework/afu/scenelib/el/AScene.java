@@ -170,7 +170,7 @@ public class AScene implements Cloneable {
   /**
    * Checks that the arguments are clones of one another.
    *
-   * <p>Throws exception if the arguments 1) are the same reference; 2) are not equal() in both
+   * <p>Throws an exception if the arguments 1) are the same reference; 2) are not equal() in both
    * directions; or 3) contain corresponding elements that meet either of the preceding two
    * conditions.
    *
@@ -192,6 +192,7 @@ public class AScene implements Cloneable {
    * @param o0 the first object to compare
    * @param o1 the second object to compare
    */
+  @SuppressWarnings("interning:not.interned") // reference equality check
   private static void checkCloneNotReferenceEqual(Object o0, Object o1) {
     if (o0 == null || o1 == null) {
       throw new RuntimeException("clone check failed, null value: " + o0 + ", " + o1);
@@ -208,6 +209,7 @@ public class AScene implements Cloneable {
    * @param s0 the first string to compare
    * @param s1 the second string to compare
    */
+  @SuppressWarnings("interning:not.interned") // equality-checking method
   private static void checkStringsEqual(String s0, String s1) {
     if (s0 == s1) {
       return;
@@ -224,6 +226,7 @@ public class AScene implements Cloneable {
    * @param o0 the first description to compare
    * @param o1 the second description to compare
    */
+  @SuppressWarnings("interning:not.interned") // equality-checking method
   private static void checkDescriptionsEqual(Object o0, Object o1) {
     if (o0 == o1) {
       return;

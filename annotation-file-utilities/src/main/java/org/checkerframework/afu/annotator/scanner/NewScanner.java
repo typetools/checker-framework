@@ -59,6 +59,7 @@ public class NewScanner extends CommonScanner {
   }
 
   @Override
+  @SuppressWarnings("interning:not.interned") // reference equality check
   public Void visitNewClass(NewClassTree node, Void p) {
     if (!done) {
       index++;
@@ -70,6 +71,7 @@ public class NewScanner extends CommonScanner {
   }
 
   @Override
+  @SuppressWarnings("interning:not.interned") // reference equality check
   public Void visitNewArray(NewArrayTree node, Void p) {
     if (!done) {
       index++;
