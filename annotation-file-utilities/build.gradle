@@ -1,16 +1,9 @@
-buildscript {
-  if (JavaVersion.current() == JavaVersion.VERSION_1_8) {
-    throw new Error("Annotation tools can't be built with Java 8.")
-  }
-}
-
-import org.gradle.internal.jvm.Jvm
-import java.nio.file.Files
 
 plugins {
-  id 'java'
+  id 'java-library'
+  id 'base'
 }
-apply plugin: 'java'
+
 
 java {
   // This test is for whether the Checker Framework runs under Java 8.
