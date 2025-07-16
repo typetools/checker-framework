@@ -1,0 +1,5 @@
+package annotations.tests.classfile.foo:
+annotation @OnPackage: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.annotation.Target(value={PACKAGE})
+
+package annotations.tests.classfile.cases: @OnPackage
+

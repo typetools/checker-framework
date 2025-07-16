@@ -1,0 +1,25 @@
+package java.lang:
+annotation @Nullable:
+
+package org.checkerframework.afu.annotator.tests:
+class Varargs:
+
+    method m1([Ljava/lang/String;)V:
+        return:
+        insert-annotation Method.parameter 0, Variable.type, ArrayType.type: @java.lang.Nullable
+
+    method m2([Ljava/lang/String;)V:
+        return:
+        insert-annotation Method.parameter 0, Variable.type: @java.lang.Nullable
+
+    method m3([Ljava/lang/String;)V:
+        return:
+        insert-annotation Method.parameter 0, Variable.type, ArrayType.type: @java.lang.Nullable
+        insert-annotation Method.parameter 0, Variable.type: @java.lang.Nullable
+
+    method m4([Ljava/lang/Comparable;)V:
+        return:
+        insert-annotation Method.parameter 0, Variable.type, ArrayType.type, ParameterizedType.typeArgument 0: @java.lang.Nullable
+        insert-annotation Method.parameter 0, Variable.type, ArrayType.type: @java.lang.Nullable
+        insert-annotation Method.parameter 0, Variable.type: @java.lang.Nullable
+

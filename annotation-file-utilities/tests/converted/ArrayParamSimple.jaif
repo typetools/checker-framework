@@ -1,0 +1,25 @@
+package java.lang:
+annotation @Tainted: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package java.lang:
+annotation @Nullable:
+
+package org.checkerframework.afu.annotator.tests:
+class ArrayParamSimple:
+
+    method m1([Ljava/lang/Integer;)V:
+        return:
+        insert-annotation Method.parameter 0, Variable.type, ArrayType.type: @java.lang.Tainted
+
+    method m2([Ljava/lang/Integer;)V:
+        return:
+        insert-annotation Method.parameter 0, Variable.type: @java.lang.Tainted
+
+    method m3([Ljava/lang/Integer;)V:
+        return:
+        insert-annotation Method.parameter 0, Variable.type, ArrayType.type: @java.lang.Nullable
+
+    method m4([Ljava/lang/Integer;)V:
+        return:
+        insert-annotation Method.parameter 0, Variable.type: @java.lang.Nullable
+

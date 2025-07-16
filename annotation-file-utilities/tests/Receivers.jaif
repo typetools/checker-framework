@@ -1,0 +1,140 @@
+package annotation:
+annotation @A:
+annotation @B:
+annotation @C:
+annotation @Inner: @java.lang.annotation.Target(value={TYPE_USE})
+    int value
+
+package checkers.tainting.quals:
+annotation @Tainted: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package checkers.inference.quals:
+  annotation @VarAnnot:
+    int value
+
+package trusted.quals:
+  annotation @Untrusted:
+  annotation @Trusted:
+  annotation @PolyTrusted:
+
+package org.checkerframework.afu.annotator.tests:
+class Receivers:
+
+    method m()V:
+        receiver: @Tainted
+
+    method spaces()V:
+        receiver: @Tainted
+
+    method m(I)V:
+        receiver: @Tainted
+
+    method spaces(I)V:
+        receiver: @Tainted
+
+    method m(Ljava/lang/String;)V:
+        receiver: @Tainted
+
+class Receivers2:
+
+    method m()V:
+        receiver: @Tainted
+
+    method spaces()V:
+        receiver: @Tainted
+
+    method m(I)V:
+        receiver: @Tainted
+
+    method spaces(I)V:
+        receiver: @Tainted
+
+class Receivers3:
+
+    method m()V:
+        receiver: @Tainted
+            inner-type 3, 0: @Inner(0)
+            inner-type 3, 1: @Inner(1)
+
+    method m(I)V:
+        receiver: @Tainted
+            inner-type 3, 0: @Inner(0)
+            inner-type 3, 1: @Inner(1)
+
+class Receivers4:
+
+    method m()V:
+        receiver: @Tainted
+
+    method m(I)V:
+        receiver: @Tainted
+
+class Receivers5:
+
+    method m()V:
+        receiver: @Tainted
+
+class Receivers6:
+
+    method m()V:
+        receiver: @Tainted
+
+class Receivers7:
+
+    method m()V:
+        receiver: @Tainted
+            inner-type 3, 0: @Inner(0)
+            inner-type 3, 1: @Inner(1)
+
+class Receivers8:
+
+    method m()V:
+        receiver: @Tainted
+
+class Receivers9:
+
+    method m()V:
+        receiver: @Tainted @A @B @C
+
+class Receivers10:
+
+    method m()V:
+        receiver: @Tainted
+            inner-type 3, 0: @annotation.A
+            inner-type 3, 1: @annotation.B
+
+    method m(Lannotator/tests/Receivers10;)V:
+        receiver: @Tainted
+            inner-type 3, 0: @annotation.A
+            inner-type 3, 1: @annotation.B
+
+class ScriptBasedMapping$RawScriptBasedMapping:
+
+method <init>()V:
+insert-annotation Method.parameter -1: @checkers.inference.quals.VarAnnot(0)
+
+class GenericArray:
+
+method map([Ljava/lang/String;)[Ljava/lang/String;:
+insert-annotation Method.parameter 0, Variable.type: @trusted.quals.Untrusted
+insert-annotation Method.parameter -1: @trusted.quals.Untrusted
+insert-annotation Method.parameter 0, Variable.type, ArrayType.type: @trusted.quals.Untrusted
+
+class Outer$Inner:
+
+method initialize(Ljava/lang/Object;Ljava/lang/Object;)V:
+insert-annotation Method.parameter -1, ParameterizedType.typeArgument 0: @checkers.inference.quals.VarAnnot(20)
+insert-annotation Method.parameter -1: @checkers.inference.quals.VarAnnot(21)
+
+class Interface:
+
+method get(Ljava/lang/String;)Ljava/lang/String;:
+insert-annotation Method.parameter -1: @trusted.quals.Untrusted
+insert-annotation Method.parameter 0, Variable.type: @trusted.quals.Untrusted
+
+class Closer:
+
+method close()V:
+insert-annotation Method.parameter -1: @checkers.inference.quals.VarAnnot(5)
+insert-annotation Method.parameter -1, ParameterizedType.typeArgument 0: @checkers.inference.quals.VarAnnot(6)
+

@@ -2,6 +2,7 @@ package org.checkerframework.checker.guieffect;
 
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -239,7 +240,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
       // Backtrack path to the lambda expression itself
       TreePath path = getCurrentPath();
       while (path.getLeaf() != tree) {
-        assert path.getLeaf().getKind() != Tree.Kind.COMPILATION_UNIT;
+        assert !(path.getLeaf() instanceof CompilationUnitTree);
         path = path.getParentPath();
       }
       scanUp(path);
@@ -291,7 +292,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
     Effect targetEffect = atypeFactory.getComputedEffectAtCallsite(tree, receiverType, methodElt);
 
     Effect callerEffect = null;
-    if (callerTree.getKind() == Tree.Kind.METHOD) {
+    if (callerTree instanceof MethodTree) {
       ExecutableElement callerElt = TreeUtils.elementFromDeclaration((MethodTree) callerTree);
       if (debugSpew) {
         System.err.println("callerElt found");
@@ -344,7 +345,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
       // Field initializers inside anonymous inner classes show up with a null current-method
       // --- the traversal goes straight from the class to the initializer.
       assert (currentMethods.peek() == null || callerEffect.equals(effStack.peek()));
-    } else if (callerTree.getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
+    } else if (callerTree instanceof LambdaExpressionTree) {
       callerEffect =
           atypeFactory.getInferedEffectForLambdaExpression((LambdaExpressionTree) callerTree);
       // Perform lambda polymorphic effect inference: @PolyUI lambda, calling @UIEffect => @UI
@@ -462,7 +463,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
       // Backtrack path to the new class expression itself
       TreePath path = getCurrentPath();
       while (path.getLeaf() != tree) {
-        assert path.getLeaf().getKind() != Tree.Kind.COMPILATION_UNIT;
+        assert !(path.getLeaf() instanceof CompilationUnitTree);
         path = path.getParentPath();
       }
       scanUp(getCurrentPath().getParentPath());
@@ -511,8 +512,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
             AnnotatedTypes.adaptParameters(
                 atypeFactory, invokedMethod, invocationTree.getArguments(), invocationTree);
         for (int i = 0; i < args.size(); ++i) {
-          if (args.get(i).getKind() == Tree.Kind.NEW_CLASS
-              || args.get(i).getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
+          if (args.get(i) instanceof NewClassTree || args.get(i) instanceof LambdaExpressionTree) {
             commonAssignmentCheck(
                 paramTypes.get(i),
                 atypeFactory.getAnnotatedType(args.get(i)),
@@ -525,11 +525,11 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
         break;
       case RETURN:
         ReturnTree returnTree = (ReturnTree) tree;
-        if (returnTree.getExpression().getKind() == Tree.Kind.NEW_CLASS
-            || returnTree.getExpression().getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
+        if (returnTree.getExpression() instanceof NewClassTree
+            || returnTree.getExpression() instanceof LambdaExpressionTree) {
           Tree enclosing = TreePathUtil.enclosingMethodOrLambda(path);
           AnnotatedTypeMirror ret = null;
-          if (enclosing.getKind() == Tree.Kind.METHOD) {
+          if (enclosing instanceof MethodTree) {
             MethodTree enclosingMethod = (MethodTree) enclosing;
             boolean valid = validateTypeOf(enclosing);
             if (valid) {

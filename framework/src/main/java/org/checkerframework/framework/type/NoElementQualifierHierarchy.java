@@ -56,6 +56,7 @@ public class NoElementQualifierHierarchy extends QualifierHierarchy {
    * @param elements element utils
    * @param atypeFactory the associated type factory
    */
+  @SuppressWarnings("this-escape")
   public NoElementQualifierHierarchy(
       Collection<Class<? extends Annotation>> qualifierClasses,
       Elements elements,

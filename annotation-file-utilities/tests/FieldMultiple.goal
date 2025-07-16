@@ -1,0 +1,12 @@
+package org.checkerframework.afu.annotator.tests;
+
+@skip-test
+
+public class FieldMultiple {
+  public @java.lang.Tainted Integer foo;
+  public @java.lang.Tainted Integer bar;
+  @java.lang.Tainted
+  public Integer i;
+  @java.lang.Tainted
+  public Integer d;
+}

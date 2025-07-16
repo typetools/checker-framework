@@ -9,7 +9,6 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Type;
@@ -389,7 +388,7 @@ public abstract class InitializationAnnotatedTypeFactory<
    */
   protected boolean areAllFieldsInitializedOnly(ClassTree classTree) {
     for (Tree member : classTree.getMembers()) {
-      if (member.getKind() != Tree.Kind.VARIABLE) {
+      if (!(member instanceof VariableTree)) {
         continue;
       }
       VariableTree var = (VariableTree) member;
@@ -451,7 +450,7 @@ public abstract class InitializationAnnotatedTypeFactory<
       TreePath topLevelMemberPath = findTopLevelClassMemberForTree(path);
       if (topLevelMemberPath != null && topLevelMemberPath.getLeaf() != null) {
         Tree topLevelMember = topLevelMemberPath.getLeaf();
-        if (topLevelMember.getKind() != Tree.Kind.METHOD
+        if (!(topLevelMember instanceof MethodTree)
             || TreeUtils.isConstructor((MethodTree) topLevelMember)) {
           setSelfTypeInInitializationCode(tree, enclosing, topLevelMemberPath);
         }
@@ -1014,7 +1013,7 @@ public abstract class InitializationAnnotatedTypeFactory<
       boolean inferTypeArgs) {
     ParameterizedExecutableType x =
         super.methodFromUse(tree, methodElt, receiverType, inferTypeArgs);
-    if (tree.getKind() == Kind.MEMBER_REFERENCE
+    if (tree instanceof MemberReferenceTree
         && ((MemberReferenceTree) tree).getMode() == ReferenceMode.NEW) {
       x.executableType.getReturnType().replaceAnnotation(INITIALIZED);
     }

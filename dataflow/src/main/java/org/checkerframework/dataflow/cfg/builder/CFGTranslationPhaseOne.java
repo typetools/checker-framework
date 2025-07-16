@@ -392,6 +392,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @param assumeAssertionsEnabled can assertions be assumed to be enabled?
    * @param env annotation processing environment containing type utilities
    */
+  @SuppressWarnings("this-escape")
   public CFGTranslationPhaseOne(
       TreeBuilder treeBuilder,
       AnnotationProvider annotationProvider,
@@ -1541,7 +1542,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   protected @Nullable Name getLabel(TreePath path) {
     if (path.getParentPath() != null) {
       Tree parent = path.getParentPath().getLeaf();
-      if (parent.getKind() == Tree.Kind.LABELED_STATEMENT) {
+      if (parent instanceof LabeledStatementTree) {
         return ((LabeledStatementTree) parent).getLabel();
       }
     }
@@ -1844,7 +1845,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    */
   private Node getReceiver(ExpressionTree tree) {
     assert TreeUtils.isFieldAccess(tree) || TreeUtils.isMethodAccess(tree);
-    if (tree.getKind() == Tree.Kind.MEMBER_SELECT) {
+    if (tree instanceof MemberSelectTree) {
       // `tree` has an explicit receiver.
       MemberSelectTree mtree = (MemberSelectTree) tree;
       return scan(mtree.getExpression(), null);
@@ -3087,7 +3088,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       extendWithNode(arrayVariableNode);
       Node expressionNode = scan(expression, p);
 
-      translateAssignment(arrayVariable, new LocalVariableNode(arrayVariable), expressionNode);
+      translateAssignment(arrayVariable, new LocalVariableNode(arrayVariable), expressionNode)
+          .setDesugaredFromEnhancedArrayForLoop();
 
       // Declare and initialize the loop index variable
       TypeMirror intType = types.getPrimitiveType(TypeKind.INT);

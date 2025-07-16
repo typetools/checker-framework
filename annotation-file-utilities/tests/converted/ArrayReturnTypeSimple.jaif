@@ -1,0 +1,10 @@
+package java.lang:
+annotation @UnderInitialization: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package org.checkerframework.afu.annotator.tests:
+class ArrayReturnTypeSimple:
+
+    method foo()[Ljava/lang/Object;:
+        return:
+        insert-annotation Method.type, ArrayType.type: @java.lang.UnderInitialization
+

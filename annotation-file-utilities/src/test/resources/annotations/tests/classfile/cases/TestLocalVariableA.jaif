@@ -1,0 +1,25 @@
+package annotations.tests.classfile.foo:
+annotation @A: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package annotations.tests.classfile.cases:
+class TestLocalVariableA: @annotations.tests.classfile.foo.A
+	field i:
+
+	field s:
+
+	method <init>()V:
+
+	method <init>(I)V:
+
+	method <init>(Ljava/lang/Integer;)V:
+
+	method i()I:
+
+	method j()I :
+		return : @annotations.tests.classfile.foo.A
+
+  method someMethod()V:
+
+  method main([Ljava/lang/String;)V:
+
+
