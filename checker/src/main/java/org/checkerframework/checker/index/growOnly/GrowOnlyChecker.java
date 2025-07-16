@@ -1,4 +1,4 @@
-package org.checkerframework.checker.index.growOnly;
+package org.checkerframework.checker.index.growonly;
 
 import java.util.List;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -13,7 +13,7 @@ import org.checkerframework.framework.source.SuppressWarningsPrefix;
  * checkers, like the Upper Bound Checker, to reason that indices for {@code @GrowOnly} collections
  * remain valid after mutations.
  *
- * @checker_framework.manual #index-checker-mutable-length Support for mutable-length sequences
+ * @checker_framework.manual #growonly-checker Index Checker
  */
 @RelevantJavaTypes({List.class})
 @SuppressWarningsPrefix({"index", "mutable"})

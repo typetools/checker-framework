@@ -1,4 +1,4 @@
-package org.checkerframework.checker.index.growOnly;
+package org.checkerframework.checker.index.growonly;
 
 import com.sun.source.tree.MethodInvocationTree;
 import javax.lang.model.element.ExecutableElement;
@@ -60,7 +60,7 @@ public class GrowOnlyVisitor extends BaseTypeVisitor<GrowOnlyAnnotatedTypeFactor
       // then it's an error because we already know our receiver is @GrowOnly.
       if (requiredReceiverType.hasPrimaryAnnotation(Shrinkable.class)) {
         String methodName = TreeUtils.getMethodName(node).toString();
-        checker.reportError(node, "mutable.collection.shrink", methodName);
+        checker.reportError(node, "growonly.collection.shrink", methodName);
       }
     }
 

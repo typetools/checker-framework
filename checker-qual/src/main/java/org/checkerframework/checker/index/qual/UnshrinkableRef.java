@@ -14,7 +14,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * clear), though other references might be able to do so. This is the most general qualifier in the
  * hierarchy.
  *
- * <p>This is the default qualifier in the GrowShrink index hierarchy.
+ * <p>This is the default qualifier in the hierarchy of the GrowOnly checker.
  *
  * @checker_framework.manual #index-checker Index Checker
  */

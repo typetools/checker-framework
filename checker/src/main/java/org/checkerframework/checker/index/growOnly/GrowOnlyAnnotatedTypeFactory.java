@@ -1,4 +1,4 @@
-package org.checkerframework.checker.index.growOnly;
+package org.checkerframework.checker.index.growonly;
 
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
@@ -27,6 +27,9 @@ public class GrowOnlyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /** The canonical @{@link UnshrinkableRef} (top) annotation. */
   public final AnnotationMirror UNSHRINKABLE_REF;
 
+  /** The canonical @{@link GrowOnly} (bottom) annotation. */
+  public final AnnotationMirror BOTTOM_GROW_SHRINK;
+
   /**
    * @param checker the type-checker
    */
@@ -36,7 +39,7 @@ public class GrowOnlyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     this.GROW_ONLY = AnnotationBuilder.fromClass(elements, GrowOnly.class);
     this.UNSHRINKABLE_REF = AnnotationBuilder.fromClass(elements, UnshrinkableRef.class);
-
+    this.BOTTOM_GROW_SHRINK = AnnotationBuilder.fromClass(elements, BottomGrowShrink.class);
     this.postInit();
   }
 
@@ -65,7 +68,7 @@ public class GrowOnlyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       if (listElement != null && types.isSubtype(type.getUnderlyingType(), listElement.asType())) {
         // If no other annotation from new type hierarchy is present, add @GrowOnly.
         if (!type.hasPrimaryAnnotationInHierarchy(this.UNSHRINKABLE_REF)) {
-          type.addAnnotation(this.GROW_ONLY);
+          type.addAnnotation(this.BOTTOM_GROW_SHRINK);
         }
       }
     }

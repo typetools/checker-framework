@@ -3,6 +3,7 @@ package org.checkerframework.checker.index.upperbound;
 import java.util.HashSet;
 import java.util.Set;
 import javax.lang.model.element.ExecutableElement;
+import org.checkerframework.checker.index.growonly.GrowOnlyChecker;
 import org.checkerframework.checker.index.inequality.LessThanChecker;
 import org.checkerframework.checker.index.lowerbound.LowerBoundChecker;
 import org.checkerframework.checker.index.qual.LTEqLengthOf;
@@ -112,6 +113,7 @@ public class UpperBoundChecker extends BaseTypeChecker {
     checkers.add(LowerBoundChecker.class);
     checkers.add(ValueChecker.class);
     checkers.add(LessThanChecker.class);
+    checkers.add(GrowOnlyChecker.class);
     return checkers;
   }
 }

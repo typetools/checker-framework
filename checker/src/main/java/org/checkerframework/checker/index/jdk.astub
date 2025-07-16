@@ -3,9 +3,7 @@ import org.checkerframework.checker.index.qual.Shrinkable;
 package java.util;
 
 interface List<E> {
-    // This annotation means that the `remove` method can only be called
-    // on a list that is at least @Shrinkable.
-    @Shrinkable List<E> remove(int index);
+    List<E> remove(@Shrinkable List<E> this, int index);
 
     @Shrinkable boolean remove(Object o);
     @Shrinkable void clear();

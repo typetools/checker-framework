@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 import java.util.List;
 import org.checkerframework.checker.index.qual.GrowOnly;
+import org.checkerframework.checker.index.qual.UncheckedShrinkable;
 
 public class GrowOnlyJdkTest {
 
@@ -9,14 +10,22 @@ public class GrowOnlyJdkTest {
   }
 
   void testForbiddenCalls(@GrowOnly List<String> list) {
-    // :: error: (mutable.collection.shrink)
+    // :: error: (growonly.collection.shrink)
     list.remove(0);
   }
 
   void testLocalVariable() {
     @GrowOnly List<String> localList = new ArrayList<>();
     localList.add("hello");
-    // :: error: (mutable.collection.shrink)
+    // :: error: (growonly.collection.shrink)
     localList.clear();
+  }
+
+  void testUncheckedShrinkable() {
+    // This assignment should be fine by default
+    @UncheckedShrinkable List<String> list = new ArrayList<>();
+    list.add("hello");
+    // This call should be allowed without error
+    list.remove(0);
   }
 }
