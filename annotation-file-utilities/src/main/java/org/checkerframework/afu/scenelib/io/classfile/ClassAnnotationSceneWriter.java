@@ -303,7 +303,7 @@ public class ClassAnnotationSceneWriter extends CodeOffsetAdapter {
     if (tla.def.retention() == null) {
       return false; // TODO: temporary
     }
-    return tla.def.retention().equals(RetentionPolicy.RUNTIME);
+    return tla.def.retention() == RetentionPolicy.RUNTIME;
   }
 
   /** Returns the name of the annotation in the top level. */

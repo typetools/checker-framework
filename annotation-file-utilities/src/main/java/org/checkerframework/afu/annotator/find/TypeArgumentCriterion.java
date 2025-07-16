@@ -5,6 +5,8 @@ import com.sun.source.util.TreePath;
 import com.sun.tools.javac.tree.JCTree;
 import java.util.List;
 import org.checkerframework.afu.scenelib.el.RelativeLocation;
+import org.checkerframework.checker.interning.qual.FindDistinct;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class TypeArgumentCriterion implements Criterion {
   private final String methodName;
@@ -16,7 +18,7 @@ public class TypeArgumentCriterion implements Criterion {
   }
 
   @Override
-  public boolean isSatisfiedBy(TreePath path, Tree leaf) {
+  public boolean isSatisfiedBy(@Nullable TreePath path, @FindDistinct Tree leaf) {
     if (path == null) {
       return false;
     }
@@ -25,7 +27,7 @@ public class TypeArgumentCriterion implements Criterion {
   }
 
   @Override
-  public boolean isSatisfiedBy(TreePath path) {
+  public boolean isSatisfiedBy(@Nullable TreePath path) {
     if (path == null || path.getParentPath() == null) {
       return false;
     }
@@ -45,10 +47,13 @@ public class TypeArgumentCriterion implements Criterion {
         return isSatisfiedBy(parentPath);
     }
 
-    return typeArgs != null
-        && loc.index >= 0
-        && loc.index < typeArgs.size()
-        && typeArgs.get(loc.index) == path.getLeaf();
+    @SuppressWarnings("interning:not.interned") // reference equality check
+    boolean result =
+        typeArgs != null
+            && loc.index >= 0
+            && loc.index < typeArgs.size()
+            && typeArgs.get(loc.index) == path.getLeaf();
+    return result;
   }
 
   @Override

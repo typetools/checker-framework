@@ -6,6 +6,8 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.util.List;
+import org.checkerframework.checker.interning.qual.FindDistinct;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class ParamCriterion implements Criterion {
 
@@ -18,7 +20,7 @@ public class ParamCriterion implements Criterion {
   }
 
   @Override
-  public boolean isSatisfiedBy(TreePath path, Tree leaf) {
+  public boolean isSatisfiedBy(@Nullable TreePath path, @FindDistinct Tree leaf) {
     if (path == null) {
       return false;
     }
@@ -27,7 +29,7 @@ public class ParamCriterion implements Criterion {
   }
 
   @Override
-  public boolean isSatisfiedBy(TreePath path) {
+  public boolean isSatisfiedBy(@Nullable TreePath path) {
 
     if (path == null) {
       return false;

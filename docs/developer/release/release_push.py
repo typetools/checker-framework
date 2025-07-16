@@ -388,14 +388,14 @@ def main(argv):
         ant_cmd = "./gradlew test"
         execute(ant_cmd, True, False, ANNO_FILE_UTILITIES)
 
-    # The Central repository is a repository of build artifacts for build programs like Maven and Ivy.
+    # The Central Repository is a repository of build artifacts for build programs like Maven and Ivy.
     # This step stages (but doesn't release) the Checker Framework's Maven artifacts in the Sonatypes
     # Central Repository.
 
-    # Once staging is complete, there are manual steps to log into Sonatypes Central and "close" the
+    # Once staging is complete, there are manual steps to log into Sonatype Central and "close" the
     # staging repository. Closing allows us to test the artifacts.
 
-    # This step deploys the artifacts to the Central repository and prompts the user to close the
+    # This step deploys the artifacts to the Central Repository and prompts the user to close the
     # artifacts. Later, you will be prompted to release the staged artifacts after we push the
     # release to our GitHub repositories.
 
@@ -404,13 +404,13 @@ def main(argv):
 
     print_step("Push Step 5: Stage Maven artifacts in Central")  # SEMIAUTO
 
-    print_step("Step 5a: Stage the artifacts at Maven central.")
+    print_step("Step 5a: Stage the artifacts at Maven Central.")
     if (not test_mode) or prompt_yes_no(
         "Stage Maven artifacts in Maven Central?", not test_mode
     ):
         stage_maven_artifacts_in_maven_central(new_cf_version)
 
-        print_step("Step 5b: Close staged artifacts at Maven central.")
+        print_step("Step 5b: Close staged artifacts at Maven Central.")
         continue_or_exit(
             "Maven artifacts have been staged!  Please 'close' (but don't release) the artifacts.\n"
             + " * Browse to https://oss.sonatype.org/#stagingRepositories\n"
@@ -427,8 +427,8 @@ def main(argv):
             "(You can also see the instructions at: http://central.sonatype.org/pages/releasing-the-deployment.html)\n"
         )
 
-        print_step("Step 5c: Run Maven sanity test on Maven central artifacts.")
-        if prompt_yes_no("Run Maven sanity test on Maven central artifacts?", True):
+        print_step("Step 5c: Run Maven sanity test on Maven Central artifacts.")
+        if prompt_yes_no("Run Maven sanity test on Maven Central artifacts?", True):
             repo_url = input("Please enter the repo URL of the closed artifacts:\n")
 
             maven_sanity_check("maven-staging", repo_url, new_cf_version)
@@ -503,13 +503,13 @@ def main(argv):
     else:
         print("Test mode: Skipping push to GitHub!")
 
-    # This is a manual step that releases the staged Maven artifacts to the actual Central repository.
+    # This is a manual step that releases the staged Maven artifacts to the actual Central Repository.
     # This is also an irreversible step. Once you have released these artifacts they will be forever
-    # available to the Java community through the Central repository. Follow the prompts. The Maven
+    # available to the Java community through the Central Repository. Follow the prompts. The Maven
     # artifacts (such as checker-qual.jar) are still needed, but the Maven plug-in is no longer maintained.
 
     print_step(
-        "Push Step 10. Release staged artifacts in Central repository."
+        "Push Step 10. Release staged artifacts in Central Repository."
     )  # MANUAL
     if test_mode:
         msg = (

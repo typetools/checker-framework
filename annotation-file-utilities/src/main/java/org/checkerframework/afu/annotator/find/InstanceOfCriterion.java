@@ -6,6 +6,8 @@ import com.sun.source.util.TreePath;
 import org.checkerframework.afu.annotator.Main;
 import org.checkerframework.afu.annotator.scanner.InstanceOfScanner;
 import org.checkerframework.afu.scenelib.el.RelativeLocation;
+import org.checkerframework.checker.interning.qual.FindDistinct;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class InstanceOfCriterion implements Criterion {
 
@@ -18,7 +20,7 @@ public class InstanceOfCriterion implements Criterion {
   }
 
   @Override
-  public boolean isSatisfiedBy(TreePath path, Tree leaf) {
+  public boolean isSatisfiedBy(@Nullable TreePath path, @FindDistinct Tree leaf) {
     if (path == null) {
       return false;
     }
@@ -27,7 +29,7 @@ public class InstanceOfCriterion implements Criterion {
   }
 
   @Override
-  public boolean isSatisfiedBy(TreePath path) {
+  public boolean isSatisfiedBy(@Nullable TreePath path) {
     if (path == null) {
       Criteria.dbug.debug("return null");
       return false;
@@ -57,7 +59,9 @@ public class InstanceOfCriterion implements Criterion {
 
     if (parent instanceof InstanceOfTree) {
       InstanceOfTree instanceOfTree = (InstanceOfTree) parent;
-      if (leaf != instanceOfTree.getType()) {
+      @SuppressWarnings("interning:not.interned") // reference equality check
+      boolean foundLeaf = leaf == instanceOfTree.getType();
+      if (!foundLeaf) {
         Criteria.dbug.debug("return: not type part of instanceof%n");
         return false;
       }

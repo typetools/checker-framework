@@ -21,6 +21,7 @@ public class AnonymousClassScanner extends TreePathScanner<Void, Integer> {
    * @param anonclass the anonymous class to search for
    * @return the index of the anonymous class in the source code
    */
+  @SuppressWarnings("interning:not.interned") // reference equality check
   public static int indexOfClassTree(TreePath path, Tree anonclass) {
     // Move up to the CLASS tree enclosing this CLASS tree and start the tree
     // traversal from there. This prevents us from counting anonymous classes
@@ -68,6 +69,7 @@ public class AnonymousClassScanner extends TreePathScanner<Void, Integer> {
   // counting classes that aren't included in the index number.
 
   @Override
+  @SuppressWarnings("interning:not.interned") // reference equality check
   public Void visitClass(ClassTree node, Integer level) {
     if (level < 2) {
       if (!found && TreePathUtil.hasClassKind(anonclass)) {
@@ -84,6 +86,7 @@ public class AnonymousClassScanner extends TreePathScanner<Void, Integer> {
   }
 
   @Override
+  @SuppressWarnings("interning:not.interned") // reference equality check
   public Void visitNewClass(NewClassTree node, Integer level) {
     // if (level < 2) {
     if (!found && anonclass instanceof NewClassTree) {

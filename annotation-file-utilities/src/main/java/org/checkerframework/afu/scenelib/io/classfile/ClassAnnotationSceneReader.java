@@ -33,6 +33,8 @@ import org.checkerframework.afu.scenelib.field.BasicAFT;
 import org.checkerframework.afu.scenelib.field.ClassTokenAFT;
 import org.checkerframework.afu.scenelib.field.EnumAFT;
 import org.checkerframework.afu.scenelib.field.ScalarAFT;
+import org.checkerframework.checker.interning.qual.FindDistinct;
+import org.checkerframework.checker.interning.qual.Interned;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.ClassGetName;
@@ -222,7 +224,7 @@ public class ClassAnnotationSceneReader extends CodeOffsetAdapter {
   //
 
   // Hackish workaround for odd subclassing.
-  String dummyDesc = "dummy";
+  @Interned String dummyDesc = "dummy";
 
   /**
    * AnnotationSceneReader contains most of the complexity behind reading annotations from a class
@@ -305,7 +307,7 @@ public class ClassAnnotationSceneReader extends CodeOffsetAdapter {
     @SuppressWarnings("ReferenceEquality") // interned comparison
     AnnotationSceneReader(
         int api,
-        String descriptor,
+        @FindDistinct String descriptor,
         boolean visible,
         AElement aElement,
         AnnotationVisitor annotationWriter) {
@@ -344,23 +346,23 @@ public class ClassAnnotationSceneReader extends CodeOffsetAdapter {
       // and so on for all primitives.  String.class is ok, since it has no
       // primitive type.
       Class<?> c = value.getClass();
-      if (c.equals(Boolean.class)) {
+      if (c == Boolean.class) {
         c = boolean.class;
-      } else if (c.equals(Byte.class)) {
+      } else if (c == Byte.class) {
         c = byte.class;
-      } else if (c.equals(Character.class)) {
+      } else if (c == Character.class) {
         c = char.class;
-      } else if (c.equals(Short.class)) {
+      } else if (c == Short.class) {
         c = short.class;
-      } else if (c.equals(Integer.class)) {
+      } else if (c == Integer.class) {
         c = int.class;
-      } else if (c.equals(Long.class)) {
+      } else if (c == Long.class) {
         c = long.class;
-      } else if (c.equals(Float.class)) {
+      } else if (c == Float.class) {
         c = float.class;
-      } else if (c.equals(Double.class)) {
+      } else if (c == Double.class) {
         c = double.class;
-      } else if (c.equals(Type.class)) {
+      } else if (c == Type.class) {
         try {
           annotationBuilder.addScalarField(
               name, ClassTokenAFT.ctaft, Class.forName(((Type) value).getClassName()));
@@ -370,7 +372,7 @@ public class ClassAnnotationSceneReader extends CodeOffsetAdapter {
         // Return here, otherwise the annotationBuilder would be called
         // twice for the same value.
         return;
-      } else if (!c.equals(String.class)) {
+      } else if (c != String.class) {
         // Only possible type for value is String, in which case c is already
         // String.class, or array of primitive
         c = c.getComponentType();
@@ -398,35 +400,35 @@ public class ClassAnnotationSceneReader extends CodeOffsetAdapter {
     private List<Object> asList(Object primitiveArray) {
       List<Object> objects = new ArrayList<>();
       Class<?> c = primitiveArray.getClass().getComponentType();
-      if (c.equals(boolean.class)) {
+      if (c == boolean.class) {
         for (boolean o : (boolean[]) primitiveArray) {
           objects.add(o);
         }
-      } else if (c.equals(byte.class)) {
+      } else if (c == byte.class) {
         for (byte o : (byte[]) primitiveArray) {
           objects.add(o);
         }
-      } else if (c.equals(char.class)) {
+      } else if (c == char.class) {
         for (char o : (char[]) primitiveArray) {
           objects.add(o);
         }
-      } else if (c.equals(short.class)) {
+      } else if (c == short.class) {
         for (short o : (short[]) primitiveArray) {
           objects.add(o);
         }
-      } else if (c.equals(int.class)) {
+      } else if (c == int.class) {
         for (int o : (int[]) primitiveArray) {
           objects.add(o);
         }
-      } else if (c.equals(long.class)) {
+      } else if (c == long.class) {
         for (long o : (long[]) primitiveArray) {
           objects.add(o);
         }
-      } else if (c.equals(float.class)) {
+      } else if (c == float.class) {
         for (float o : (float[]) primitiveArray) {
           objects.add(o);
         }
-      } else if (c.equals(double.class)) {
+      } else if (c == double.class) {
         for (double o : (double[]) primitiveArray) {
           objects.add(o);
         }
@@ -1326,7 +1328,7 @@ public class ClassAnnotationSceneReader extends CodeOffsetAdapter {
       }
       annotationWriter.visit(name, value);
       ScalarAFT aft;
-      if (value.getClass().equals(org.objectweb.asm.Type.class)) {
+      if (value.getClass() == org.objectweb.asm.Type.class) {
         // What if it's an annotation?
         aft = ClassTokenAFT.ctaft;
         try {

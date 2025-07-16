@@ -16,6 +16,8 @@ import javax.lang.model.element.Name;
 import org.checkerframework.afu.annotator.scanner.AnonymousClassScanner;
 import org.checkerframework.afu.annotator.scanner.LocalClassScanner;
 import org.checkerframework.checker.formatter.qual.FormatMethod;
+import org.checkerframework.checker.interning.qual.FindDistinct;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.ClassGetName;
 
 // If there are dollar signs in a name, then there are two
@@ -58,7 +60,7 @@ public final class InClassCriterion implements Criterion {
   }
 
   @Override
-  public boolean isSatisfiedBy(TreePath path, Tree leaf) {
+  public boolean isSatisfiedBy(@Nullable TreePath path, @FindDistinct Tree leaf) {
     if (path == null) {
       return false;
     }
@@ -67,7 +69,7 @@ public final class InClassCriterion implements Criterion {
   }
 
   @Override
-  public boolean isSatisfiedBy(TreePath path) {
+  public boolean isSatisfiedBy(@Nullable TreePath path) {
     return InClassCriterion.isSatisfiedBy(path, className, exactMatch);
   }
 
@@ -80,7 +82,8 @@ public final class InClassCriterion implements Criterion {
     localClassPattern = Pattern.compile("^([0-9]+)([^$]+)(\\$(.*))?$");
   }
 
-  public static boolean isSatisfiedBy(TreePath path, String className, boolean exactMatch) {
+  public static boolean isSatisfiedBy(
+      @Nullable TreePath path, String className, boolean exactMatch) {
     if (path == null) {
       return false;
     }
