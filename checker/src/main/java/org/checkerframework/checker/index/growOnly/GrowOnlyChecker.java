@@ -18,6 +18,6 @@ import org.checkerframework.framework.source.SuppressWarningsPrefix;
 @RelevantJavaTypes({List.class})
 @SuppressWarningsPrefix({"index", "mutable"})
 public class GrowOnlyChecker extends BaseTypeChecker {
-  /* Creates a new GrowOnlyChecker. */
+  /** Creates a new GrowOnlyChecker. */
   public GrowOnlyChecker() {}
 }
