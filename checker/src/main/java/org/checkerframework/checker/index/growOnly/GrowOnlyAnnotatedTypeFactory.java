@@ -19,6 +19,36 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationBuilder;
 
+/**
+ * Implements the type introduction rules for the GrowOnly Checker. The GrowOnly Checker is a
+ * sub-checker of the Index Checker designed to verify that certain collections never shrink in
+ * size. This factory provides the default types for expressions, enabling the checker to work
+ * correctly with unannotated code.
+ *
+ * <pre>
+ * The type hierarchy is:
+ *
+ *         {@literal @}UnshrinkableRef (top)
+ *              /             \
+ *   {@literal @}GrowOnly    {@literal @}Shrinkable
+ *                /               |
+ *               /          {@literal @}UncheckedShrinkable
+ *              /                  \
+ *       {@literal @}BottomGrowShrink (bottom)
+ * </pre>
+ *
+ * This class implements the following critical type introduction rule:
+ *
+ * <ul>
+ *   <li>1. An object creation expression (e.g., {@code new ArrayList<>()}) that instantiates a
+ *       subtype of {@code java.util.List} is given the {@code @BottomGrowShrink} annotation by
+ *       default. This is the bottom type in the hierarchy, making it the most specific. This allows
+ *       the new collection to be safely assigned to a variable of any type in the hierarchy (such
+ *       as {@code @GrowOnly} or {@code @Shrinkable}), which provides maximum flexibility for the
+ *       user. This default is only applied if the programmer has not written another annotation
+ *       from this hierarchy.
+ * </ul>
+ */
 public class GrowOnlyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   /** The canonical @{@link GrowOnly} annotation. */
@@ -31,7 +61,9 @@ public class GrowOnlyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   public final AnnotationMirror BOTTOM_GROW_SHRINK;
 
   /**
-   * @param checker the type-checker
+   * Creates a new GrowOnlyAnnotatedTypeFactory.
+   *
+   * @param checker the type-checker associated with this factory
    */
   @SuppressWarnings("this-escape")
   public GrowOnlyAnnotatedTypeFactory(BaseTypeChecker checker) {
