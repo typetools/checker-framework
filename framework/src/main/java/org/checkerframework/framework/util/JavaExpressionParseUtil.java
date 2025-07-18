@@ -1765,15 +1765,18 @@ public class JavaExpressionParseUtil {
 
       if (tree instanceof MemberSelectTree) {
         MemberSelectTree memberSelectTree = (MemberSelectTree) tree;
-        String name = memberSelectTree.getIdentifier().toString();
-        ExpressionTree parsed = JavacParseUtil.parseExpression(name);
+        ExpressionTree parsed =
+            JavacParseUtil.parseExpression(memberSelectTree.getIdentifier().toString());
         if (parsed instanceof IdentifierTree) {
-          return convertTreeToTypeMirror((JCTree) parsed);
+          try {
+            return JavacParseUtil.parseExpression(tree.toString()).accept(this, null).getType();
+          } catch (ParseProblemException e) {
+            return null;
+          }
         }
       }
 
       if (tree instanceof IdentifierTree) {
-        LanguageLevel currentSourceVersion = JavaParserUtil.getCurrentSourceVersion(env);
         try {
           return JavacParseUtil.parseExpression(tree.toString()).accept(this, null).getType();
         } catch (ParseProblemException e) {
