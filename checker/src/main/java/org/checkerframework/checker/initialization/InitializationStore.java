@@ -30,7 +30,7 @@ import org.plumelib.util.ToStringComparator;
  * reference have been initialized.
  *
  * @param <V> the type of values in the abstract store
- * @param <S> the type of teh abstract store
+ * @param <S> the type of the abstract store
  * @see InitializationTransfer
  */
 public class InitializationStore<
