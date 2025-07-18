@@ -84,6 +84,7 @@ public class KeyForAnnotatedTypeFactory
    *
    * @param checker the associated checker
    */
+  @SuppressWarnings("this-escape")
   public KeyForAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker, true);
 

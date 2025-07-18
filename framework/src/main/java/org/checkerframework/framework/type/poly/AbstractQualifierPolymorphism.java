@@ -103,6 +103,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
    * @param env the processing environment
    * @param factory the factory for the current checker
    */
+  @SuppressWarnings("this-escape")
   protected AbstractQualifierPolymorphism(ProcessingEnvironment env, AnnotatedTypeFactory factory) {
     this.atypeFactory = factory;
     this.qualHierarchy = factory.getQualifierHierarchy();

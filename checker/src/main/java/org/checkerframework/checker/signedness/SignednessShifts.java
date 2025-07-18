@@ -49,7 +49,7 @@ public class SignednessShifts {
    * @return type of a primitive cast, or null if not a cast to a primitive
    */
   private static @Nullable PrimitiveTypeTree primitiveTypeCast(Tree tree) {
-    if (tree.getKind() != Tree.Kind.TYPE_CAST) {
+    if (!(tree instanceof TypeCastTree)) {
       return null;
     }
 
@@ -57,13 +57,13 @@ public class SignednessShifts {
     Tree castType = cast.getType();
 
     Tree underlyingType;
-    if (castType.getKind() == Tree.Kind.ANNOTATED_TYPE) {
+    if (castType instanceof AnnotatedTypeTree) {
       underlyingType = ((AnnotatedTypeTree) castType).getUnderlyingType();
     } else {
       underlyingType = castType;
     }
 
-    if (underlyingType.getKind() != Tree.Kind.PRIMITIVE_TYPE) {
+    if (!(underlyingType instanceof PrimitiveTypeTree)) {
       return null;
     }
 

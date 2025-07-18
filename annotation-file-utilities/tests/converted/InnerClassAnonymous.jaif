@@ -1,0 +1,27 @@
+package java.lang:
+annotation @Tainted: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package :
+annotation @NonNegative: @java.lang.annotation.Target(value={TYPE_USE})
+
+package :
+annotation @InnerlyAnnotated: @java.lang.annotation.Target(value={TYPE_USE})
+
+package org.checkerframework.afu.annotator.tests:
+class InnerClassAnonymous$1:
+
+    field serialVersionUID:
+        insert-annotation Variable.type: @java.lang.Tainted
+
+package org.checkerframework.afu.annotator.tests:
+class InnerClassAnonymous$2:
+
+    field serialVersionUID:
+        insert-annotation Variable.type: @NonNegative
+
+package org.checkerframework.afu.annotator.tests:
+class InnerClassAnonymous$3:
+
+    field serialVersionUID:
+        insert-annotation Variable.type: @InnerlyAnnotated
+

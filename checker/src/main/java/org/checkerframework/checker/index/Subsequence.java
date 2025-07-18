@@ -1,6 +1,9 @@
 package org.checkerframework.checker.index;
 
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.VariableElement;
@@ -46,9 +49,9 @@ public class Subsequence {
   public static @Nullable Subsequence getSubsequenceFromTree(
       Tree varTree, BaseAnnotatedTypeFactoryForIndexChecker factory) {
 
-    if (!(varTree.getKind() == Tree.Kind.IDENTIFIER
-        || varTree.getKind() == Tree.Kind.MEMBER_SELECT
-        || varTree.getKind() == Tree.Kind.VARIABLE)) {
+    if (!(varTree instanceof IdentifierTree
+        || varTree instanceof MemberSelectTree
+        || varTree instanceof VariableTree)) {
       return null;
     }
 

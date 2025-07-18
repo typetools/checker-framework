@@ -14,6 +14,9 @@ tags
 *.orig
 .DS_Store
 dot_files
+*_Generated.class
+*_temp.class
+*~
 
 # Eclipse files
 .metadata
@@ -27,6 +30,7 @@ dot_files
 .idea
 .vscode
 
+# User customizations
 Makefile.user
 local.properties
 
@@ -51,7 +55,7 @@ checker/bin-devel/.git-scripts
 checker/bin-devel/.html-tools
 checker/bin-devel/.plume-scripts
 checker/bin-devel/.run-google-java-format
-checker/bin-devel/dockerdir
+checker/bin-devel/dockerdir*
 checker/src/main/resources/git.properties
 # These tests are generated from those in checker/tests/calledmethods-lombok during the build.
 # They must be in the tests/ directory rather than the build/ directory so that
@@ -182,3 +186,82 @@ checker/tests/ainfer-testchecker/inference-output/
 checker/tests/ainfer-resourceleak/annotated/
 checker/tests/ainfer-resourceleak/inference-output/
 framework/tests/returnsreceiverdelomboked/
+
+# Annotation tools
+
+annotation-file-utilities/annotation-file-format.aux
+annotation-file-utilities/annotation-file-format.blg
+annotation-file-utilities/annotation-file-format.dvi
+annotation-file-utilities/annotation-file-format.haux
+annotation-file-utilities/annotation-file-format.html
+annotation-file-utilities/annotation-file-format.htoc
+annotation-file-utilities/annotation-file-format.log
+annotation-file-utilities/annotation-file-format.out
+annotation-file-utilities/annotation-file-format.pdf
+annotation-file-utilities/annotation-file-format.ps
+annotation-file-utilities/annotation-file-format.toc
+annotation-file-utilities/annotation-file-utilities.jar
+annotation-file-utilities/annotation-file-utilities-all.jar
+annotation-file-utilities/annotation-file-utilities-all-but-javac.jar
+annotation-file-utilities/annotation-tools.zip
+annotation-file-utilities/plume-bib
+annotation-file-utilities/design.aux
+annotation-file-utilities/design.log
+annotation-file-utilities/design.pdf
+
+annotation-file-utilities/build
+annotation-file-utilities/.gradle
+annotation-file-utilities/gradle/verification-metadata.dryrun.xml
+
+annotation-file-utilities/javadoc
+
+annotation-file-utilities/tests/*.diff
+annotation-file-utilities/tests/*.log
+annotation-file-utilities/tests/*.output
+annotation-file-utilities/tests/Makefile.user
+annotation-file-utilities/tests/abbreviated/*.diff
+annotation-file-utilities/tests/abbreviated/*.log
+annotation-file-utilities/tests/abbreviated/*.output
+annotation-file-utilities/tests/ad-hoc/bridge/A.class
+annotation-file-utilities/tests/ad-hoc/bridge/C.class
+annotation-file-utilities/tests/ad-hoc/bridge/C.jaif
+annotation-file-utilities/tests/converted/*.diff
+annotation-file-utilities/tests/converted/*.log
+annotation-file-utilities/tests/converted/*.output
+# ignore link to parent
+annotation-file-utilities/tests/converted/*.java
+# ignore link to parent
+annotation-file-utilities/tests/converted/*.goal
+annotation-file-utilities/tests/enum-imports/*.diff
+annotation-file-utilities/tests/enum-imports/*.log
+annotation-file-utilities/tests/enum-imports/*.output
+annotation-file-utilities/tests/issue155/Issue155.diff
+annotation-file-utilities/tests/issue155/Issue155.log
+annotation-file-utilities/tests/issue155/Issue155.output
+annotation-file-utilities/tests/source-extension/*.diff
+annotation-file-utilities/tests/source-extension/*.log
+annotation-file-utilities/tests/source-extension/*.output
+annotation-file-utilities/tests/system-test/out1
+annotation-file-utilities/tests/system-test/out2.diff
+annotation-file-utilities/tests/system-test/out2.jaif
+annotation-file-utilities/tests/system-test/out3
+annotation-file-utilities/tests/system-test/out4.class
+annotation-file-utilities/tests/system-test/out5.diff
+annotation-file-utilities/tests/system-test/out5.jaif
+
+scene-lib/javadoc
+scene-lib/reports
+scene-lib/test/annotations/tests/executable/example-output.jaif
+scene-lib/test/annotations/tests/executable/example-stdout.jaif
+
+*.class-via-classfile-scene.txt
+*.class-correct-scene.txt
+*.class-from-indexfile.txt
+*.class-generated-scene.txt
+
+.metadata
+
+annotation-file-utilities/figures/*.eps
+annotation-file-utilities/figures/*.pdf
+annotation-file-utilities/figures/*.png
+annotation-file-utilities/*.png

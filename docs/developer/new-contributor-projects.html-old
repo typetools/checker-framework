@@ -781,3 +781,45 @@ differences from the real Nullness checker:
   type system later?
 </p>
 -->
+
+<!--
+<h2 id="compare-other-tools">Comparison to other tools</h2>
+
+<p>
+  Many other tools exist for prevention of programming errors, such as
+  Error Prone, NullAway, FindBugs, JLint, PMD, and IDEs such as Eclipse and
+  IntelliJ.  These tools
+  are not as powerful as the Checker Framework (some are bug finders rather
+  than verification tools, and some perform a shallower analysis), but they
+  may be easier to use.
+  Programmers who use these tools wonder, "Is it worth my time to switch to
+  using the Checker Framework?"
+</p>
+
+<p>
+  The goal of this project is to perform a head-to-head comparison of as
+  many different tools as possible.  You will quantify:
+</p>
+
+<ul>
+  <li>the number of annotations that need to be written</li>
+  <li>the number of bugs detected</li>
+  <li>the number of bugs missed</li>
+  <li>the number of false positive warnings</li>
+</ul>
+
+<p>
+  This project will help programmers to choose among the different tools
+  &mdash; it will show when a programmer should or should not use the
+  Checker Framework.
+  This project will also indicate how each tool should be improved.
+</p>
+
+<p>
+  One place to start would be with an old version of a program that is
+  known to contain bugs.  Or, start with the latest version of the program
+  and re-introduce fixed bugs.  (Either of these is more realistic than
+  introducing artificial bugs into the program.)  A possibility would be to
+  use the Lookup program that has been used in previous case studies.
+</p>
+-->

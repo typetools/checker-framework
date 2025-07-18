@@ -859,20 +859,19 @@ meta-annotated with:
 
 Furthermore, by convention the name of such a qualifier ends with ``\<Bottom>''.
 
-The hierarchy shown in Figure~\ref{fig-initialization-hierarchy} lacks
-a bottom qualifier, but the actual implementation does contain a (non-user-visible) bottom qualifier.
+It might seem that the hierarchy shown in Figure~\ref{fig-initialization-hierarchy} lacks
+a bottom qualifier.  The actual implementation does contain a bottom
+qualifier, \refqualclass{checker/initialization/qual}{FBCBottom}, that
+users rarely write.
 
 
 \paragraphAndLabel{Top qualifier}{creating-top-qualifier}
-Your qualifier hierarchy must have a top qualifier
+Your qualifier hierarchy must have a single top qualifier
 --- a qualifier that is a (direct or indirect) supertype of every other
 qualifier.
-Here is one reason.
-The default type for local variables is the top
-qualifier (that type is then flow-sensitively
-refined depending on what values are stored in the local variable).
-If there is no single top qualifier, then there is no
-unambiguous choice to make for local variables.
+There are many reasons this is essential.
+One reason is that the default type for local variables is the top
+qualifier, and there must be an unambiguous choice for the default type.
 
 
 \subsectionAndLabel{Annotations whose argument is a Java expression (dependent type annotations)\label{expression-annotations}}{dependent-types}
@@ -2032,7 +2031,8 @@ switch, which is used to pass options to an annotation processor.
 
 \begin{itemize}
 \item \code{-AprintAllQualifiers}: print all type qualifiers, including
-qualifiers meta-annotated with \code{@InvisibleQualifier}, which are
+qualifiers meta-annotated with
+\refqualclass{framework/qual}{InvisibleQualifier}, which are
 usually not shown.
 
 \item \code{-AprintVerboseGenerics}: print more information about type

@@ -20,11 +20,12 @@ ENV LANG=en_US.UTF-8 \
     LANGUAGE=en_US:en \
     LC_ALL=en_US.UTF-8
 
+# Always install JDK 21 to compile the code, even if tests run under a different JDK.
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt -qqy update \
 && apt -y install \
-  openjdk-17-jdk \
   openjdk-21-jdk
+ENV JAVA21_HOME=/usr/lib/jvm/java-21-openjdk-amd64
 
 # Known good combinations of JTReg and the JDK appear at https://builds.shipilev.net/jtreg/ .
 
@@ -44,12 +45,6 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   unzip \
   wget
 
-# Maven 3.6.3 (the default on Ubuntu 22.10) does not run under JDK 17.
-# (Don't try to use a variable here for the Maven version.)
-RUN export DEBIAN_FRONTEND=noninteractive \
-&& wget https://mirrors.sonic.net/apache/maven/maven-3/3.9.5/binaries/apache-maven-3.9.5-bin.tar.gz \
-&& tar xzvf apache-maven-3.9.5-bin.tar.gz
-ENV PATH="/apache-maven-3.9.5/bin:$PATH"
 
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt -qqy update \
@@ -86,7 +81,16 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 && PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install black \
 && PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install flake8 \
 && PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install html5validator \
+&& PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install mypy \
 && PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install ruff
+
+
+RUN export DEBIAN_FRONTEND=noninteractive \
+&& apt -qqy update \
+&& apt -y install \
+  openjdk-17-jdk \
+&& update-java-alternatives -s java-1.17.0-openjdk-amd64
+ENV JAVA17_HOME=/usr/lib/jvm/java-17-openjdk-amd64
 
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt autoremove \

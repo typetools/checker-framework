@@ -1,0 +1,25 @@
+package :
+annotation @A: @java.lang.annotation.Target(java.lang.annotation.ElementType.TYPE_USE)
+annotation @B: @java.lang.annotation.Target(java.lang.annotation.ElementType.TYPE_USE)
+annotation @C: @java.lang.annotation.Target(java.lang.annotation.ElementType.TYPE_USE)
+annotation @D: @java.lang.annotation.Target(java.lang.annotation.ElementType.TYPE_USE)
+
+package java.lang:
+annotation @UnderInitialization: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+annotation @Tainted: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package org.checkerframework.afu.annotator.tests:
+class TypeCastMultiple:
+
+    method <init>()V:
+
+    method foo(Ljava/lang/Object;)V:
+        typecast #1: @java.lang.UnderInitialization
+        typecast #6: @java.lang.Tainted
+        //typecast #11: @java.lang.Tainted  // inserts in wrong place!
+        typecast *3: @java.lang.Tainted
+        typecast *4, 0: @A
+        typecast *4, 1: @B
+            inner-type 3, 0: @C
+        typecast *4, 2: @D
+

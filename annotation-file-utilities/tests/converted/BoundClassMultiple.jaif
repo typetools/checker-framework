@@ -1,0 +1,25 @@
+// @skip-test
+
+package java.lang:
+annotation @A: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package java.lang:
+annotation @B: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package java.lang:
+annotation @D: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package java.lang:
+annotation @C: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package java.lang:
+annotation @E: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package org.checkerframework.afu.annotator.tests:
+class BoundClassMultiple:
+    insert-annotation Class.typeParameter 0, TypeParameter.bound 0: @java.lang.A
+    insert-annotation Class.typeParameter 1, TypeParameter.bound 0: @java.lang.B
+    insert-annotation Class.typeParameter 2, TypeParameter.bound 0: @java.lang.D
+    insert-annotation Class.typeParameter 1, TypeParameter.bound 1: @java.lang.C
+    insert-annotation Class.typeParameter 2, TypeParameter.bound 0, ParameterizedType.typeArgument 0: @java.lang.E
+

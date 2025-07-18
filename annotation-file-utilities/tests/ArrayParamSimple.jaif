@@ -1,0 +1,36 @@
+package java.lang:
+
+annotation @Tainted: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+// Note no @Target meta-annotation
+annotation @Nullable:
+
+package org.checkerframework.afu.annotator.tests:
+class ArrayParamSimple:
+
+    method <init>()V:
+
+    method m1([Ljava/lang/Integer;)V:
+        parameter #0:
+	    type:
+                inner-type 0, 0: @java.lang.Tainted
+
+    method m2([Ljava/lang/Integer;)V:
+        parameter #0:
+	    type: @java.lang.Tainted
+                inner-type 0, 0:
+
+    method m3([Ljava/lang/Integer;)V:
+        parameter #0:
+	    type:
+                inner-type 0, 0: @java.lang.Nullable
+
+    method m4([Ljava/lang/Integer;)V:
+        parameter #0:
+	    type: @java.lang.Nullable
+                inner-type 0, 0:
+
+// The tool properly issues a warning about inner-type on a declaration location.
+//     method m5([Ljava/lang/Integer;)V:
+//         parameter #0:
+//             inner-type 0, 0: @java.lang.Nullable

@@ -7,7 +7,12 @@ export SHELLOPTS
 echo "SHELLOPTS=${SHELLOPTS}"
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
-export ORG_GRADLE_PROJECT_useJdk21Compiler=true
+# This script tests that the CF builds using the installed JDK, so don't add the following:
+# export ORG_GRADLE_PROJECT_useJdk21Compiler=true
+
+# Run Gradle using Java 21.
+mkdir ~/.gradle && echo "org.gradle.java.home=/usr/lib/jvm/java-21-openjdk-amd64" >> ~/.gradle/gradle.properties
+
 source "$SCRIPT_DIR"/clone-related.sh
 
 PLUME_SCRIPTS="$SCRIPT_DIR/.plume-scripts"

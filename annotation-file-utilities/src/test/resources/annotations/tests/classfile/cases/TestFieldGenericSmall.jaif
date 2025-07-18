@@ -1,0 +1,9 @@
+package annotations.tests.classfile.foo:
+annotation @B: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+	String value
+
+package annotations.tests.classfile.cases:
+class TestFieldGenericSmall:
+  	field set:
+	    type:
+  				inner-type 3, 0 : @annotations.tests.classfile.foo.B(value="inner most T")
