@@ -69,6 +69,7 @@ task skinnyJar(type: ShadowJar, dependsOn: compileJava) {
   include 'org/checkerframework/afu/annotator/**/*.class'
 }
 
+import java.nio.file.Files
 task testExample(type: JavaExec, dependsOn: compileTestJava, group: 'Verification') {
   description = 'Run the scene-lib example test.'
   String resourceDir = "${projectDir}/src/test/resources/annotations/tests/executable/"
