@@ -339,30 +339,27 @@ def is_repo_cleaned_and_updated(repo):
         return is_clean and is_updated
 
 
-def check_repos(repos, fail_on_error, is_intermediate_repo_list):
+def check_repo(repo, fail_on_error, is_intermediate_repo_list):
     """Fail if the repository is not clean and up to date."""
-    for repo in repos:
-        if git_repo_exists_at_path(repo):
-            if not is_repo_cleaned_and_updated(repo):
-                if is_intermediate_repo_list:
-                    print(
-                        (
-                            "\nWARNING: Intermediate repository "
-                            + repo
-                            + " is not up to date with respect to the live repository.\n"
-                            + "A separate warning will not be issued for a build repository that is cloned off of the intermediate repository."
-                        )
+    if git_repo_exists_at_path(repo):
+        if not is_repo_cleaned_and_updated(repo):
+            if is_intermediate_repo_list:
+                print(
+                    (
+                        "\nWARNING: Intermediate repository "
+                        + repo
+                        + " is not up to date with respect to the live repository.\n"
+                        + "A separate warning will not be issued for a build repository that is cloned off of the intermediate repository."
                     )
-                if fail_on_error:
-                    raise Exception("repo %s is not cleaned and updated!" % repo)
-                else:
-                    if not prompt_yn(
-                        "%s is not clean and up to date! Continue (answering 'n' will exit the script)?"
-                        % repo
-                    ):
-                        raise Exception(
-                            "%s is not clean and up to date! Halting!" % repo
-                        )
+                )
+            if fail_on_error:
+                raise Exception("repo %s is not cleaned and updated!" % repo)
+            else:
+                if not prompt_yn(
+                    "%s is not clean and up to date! Continue (answering 'n' will exit the script)?"
+                    % repo
+                ):
+                    raise Exception("%s is not clean and up to date! Halting!" % repo)
 
 
 def get_tag_line(lines, revision, tag_prefixes):

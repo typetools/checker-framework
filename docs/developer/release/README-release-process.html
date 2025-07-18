@@ -605,26 +605,6 @@ git config --global user.email you@example.com</pre>
         </ul>
       </li>
 
-      <li>Annotation File Utilities:
-        <ul>
-          <li>List all issues (in issue trackers) resolved since the previous release:
-            <a href="https://checkerframework.org/annotation-file-utilities/changelog.html">previous release</a>,
-            <a href="https://github.com/typetools/annotation-tools/issues?q=is%3Aissue+is%3Aclosed+sort%3Aupdated-desc">issues query</a>,
-            <a href="https://github.com/typetools/annotation-tools/blob/master/annotation-file-utilities/changelog.html">current changelog</a>
-          </li>
-          <li>
-            Ensure the changelogs reflect version control commits since the last release, via the
-            command line:<br/>
-            <code>cd $CHECKERFRAMEWORK/../annotation-tools && git log --name-status `git describe --abbrev=0 --tags`..</code><br/>
-            or via <a href="https://github.com/typetools/annotation-tools/commits/master">GitHub Annotation File Utilities commit logs</a>.
-          </li>
-          <li>
-            Ensure the changelogs reflect changes to the manual since the last release, via the
-            command line:<br/>
-            <code>cd $CHECKERFRAMEWORK/../annotation-tools && git diff -w `git describe --abbrev=0 --tags` annotation-file-utilities/annotation-file-utilities.html</code>
-          </li>
-        </ul>
-      </li>
     </ul>
     <h3 id="style_guidelines">Style Guidelines</h3>
     <ul>
