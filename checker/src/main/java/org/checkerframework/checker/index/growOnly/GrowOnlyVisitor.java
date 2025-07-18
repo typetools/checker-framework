@@ -59,7 +59,7 @@ public class GrowOnlyVisitor extends BaseTypeVisitor<GrowOnlyAnnotatedTypeFactor
       // The core check: If the method requires a @Shrinkable receiver,
       // then it's an error because we already know our receiver is @GrowOnly.
       if (requiredReceiverType.hasPrimaryAnnotation(Shrinkable.class)) {
-        String methodName = TreeUtils.getMethodName(node).toString();
+        String methodName = TreeUtils.getMethodName(node.getMethodSelect()).toString();
         checker.reportError(node, "growonly.collection.shrink", methodName);
       }
     }
