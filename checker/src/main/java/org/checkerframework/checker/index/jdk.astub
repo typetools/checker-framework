@@ -3,7 +3,7 @@ import org.checkerframework.checker.index.qual.Shrinkable;
 package java.util;
 
 interface List<E> {
-    List<E> remove(@Shrinkable List<E> this, int index);
+    E remove(@Shrinkable List<E> this, int index);
 
     @Shrinkable boolean remove(Object o);
     @Shrinkable void clear();
