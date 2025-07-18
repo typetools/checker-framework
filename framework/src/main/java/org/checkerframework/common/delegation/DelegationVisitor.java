@@ -65,8 +65,8 @@ public class DelegationVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory>
   }
 
   @Override
-  public void processMethodTree(MethodTree tree) {
-    super.processMethodTree(tree);
+  public void processMethodTree(String className, MethodTree tree) {
+    super.processMethodTree(className, tree);
     if (delegate == null || !isMarkedWithOverride(tree)) {
       return;
     }
@@ -118,7 +118,7 @@ public class DelegationVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory>
    */
   private List<VariableTree> getDelegateFields(ClassTree tree) {
     List<VariableTree> delegateFields = new ArrayList<>();
-    for (VariableTree field : TreeUtils.fieldsFromTree(tree)) {
+    for (VariableTree field : TreeUtils.fieldsFromClassTree(tree)) {
       List<AnnotationMirror> annosOnField =
           TreeUtils.annotationsFromTypeAnnotationTrees(field.getModifiers().getAnnotations());
       if (annosOnField.stream()

@@ -1,8 +1,5 @@
 package org.checkerframework.common.delegation;
 
-import com.sun.source.tree.*;
-import java.util.*;
-import javax.lang.model.element.*;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.delegation.qual.Delegate;
 
