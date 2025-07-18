@@ -67,123 +67,117 @@ jaif_files=()
 # such as -processorpath and -source, which are followed by a value.
 read_input() {
 
-    # Collect command-line arguments that come before the preprocessor.
-    # Assumes that every command line argument starts with a hyphen.
-    for i in "$@"
-    do
-        case "$1" in
-            -*)
-                insert_to_source_args+=( "$1" )
-                shift
-            ;;
-            *)
-                break
-            ;;
-        esac
-    done
-
-    # First two arguments are processor and classpath.
-    processor=$1
-    classpath=$2
-    shift
-    shift
-
-    # shellcheck disable=SC2034
-    for i in "$@"
-    do
-        # This function makes the assumption that every extra argument
-        # starts with a hyphen. The rest are .java/.jaif files.
-        case "$1" in
-            -*)
-                extra_args+=( "$1" )
-            ;;
-            *.jaif)
-                jaif_files+=( "$1" )
-            ;;
-            *.java)
-                java_files+=( "$1" )
-            ;;
-        esac
+  # Collect command-line arguments that come before the preprocessor.
+  # Assumes that every command line argument starts with a hyphen.
+  for i in "$@"; do
+    case "$1" in
+      -*)
+        insert_to_source_args+=("$1")
         shift
-    done
+        ;;
+      *)
+        break
+        ;;
+    esac
+  done
+
+  # First two arguments are processor and classpath.
+  processor=$1
+  classpath=$2
+  shift
+  shift
+
+  # shellcheck disable=SC2034
+  for i in "$@"; do
+    # This function makes the assumption that every extra argument
+    # starts with a hyphen. The rest are .java/.jaif files.
+    case "$1" in
+      -*)
+        extra_args+=("$1")
+        ;;
+      *.jaif)
+        jaif_files+=("$1")
+        ;;
+      *.java)
+        java_files+=("$1")
+        ;;
+    esac
+    shift
+  done
 }
 
 # Iteratively runs the Checker
 infer_and_annotate() {
-    mkdir -p $TEMP_DIR
-    DIFF_JAIF=firstdiff
-    # Create/clean whole-program-inference directory.
-    rm -rf $WHOLE_PROGRAM_INFERENCE_DIR
+  mkdir -p $TEMP_DIR
+  DIFF_JAIF=firstdiff
+  # Create/clean whole-program-inference directory.
+  rm -rf $WHOLE_PROGRAM_INFERENCE_DIR
+  mkdir -p $WHOLE_PROGRAM_INFERENCE_DIR
+  # If there are .jaif files as input, copy them.
+  for file in "${jaif_files[@]}"; do
+    cp "$file" "$WHOLE_PROGRAM_INFERENCE_DIR/"
+  done
+
+  # Perform inference and add annotations from .jaif to .java files until
+  # $PREV_ITERATION_DIR has the same contents as $WHOLE_PROGRAM_INFERENCE_DIR.
+  while [ "$DIFF_JAIF" != "" ]; do
+    # Updates $PREV_ITERATION_DIR folder
+    rm -rf $PREV_ITERATION_DIR
+    mv $WHOLE_PROGRAM_INFERENCE_DIR $PREV_ITERATION_DIR
     mkdir -p $WHOLE_PROGRAM_INFERENCE_DIR
-    # If there are .jaif files as input, copy them.
-    for file in "${jaif_files[@]}";
-    do
-        cp "$file" "$WHOLE_PROGRAM_INFERENCE_DIR/"
-    done
 
-    # Perform inference and add annotations from .jaif to .java files until
-    # $PREV_ITERATION_DIR has the same contents as $WHOLE_PROGRAM_INFERENCE_DIR.
-    while [ "$DIFF_JAIF" != "" ]
-    do
-        # Updates $PREV_ITERATION_DIR folder
-        rm -rf $PREV_ITERATION_DIR
-        mv $WHOLE_PROGRAM_INFERENCE_DIR $PREV_ITERATION_DIR
-        mkdir -p $WHOLE_PROGRAM_INFERENCE_DIR
-
-        # Runs CF's javac
-        command="$CHECKERBIN/javac -d $TEMP_DIR/ -cp $classpath -processor $processor -Ainfer=jaifs -Awarns -Xmaxwarns 10000 ${extra_args[*]} ${java_files[*]}"
-        echo "About to run: ${command}"
-        if [ "$interactive" ]; then
-            echo "Press any key to run command... "
-            IFS="" read -r _
-        fi
-        "$CHECKERBIN"/javac -d "$TEMP_DIR/" -cp "$classpath" -processor "$processor" -Ainfer=jaifs -Awarns -Xmaxwarns 10000 "${extra_args[@]}" "${java_files[@]}" || true
-        # Deletes .unannotated backup files. This is necessary otherwise the
-        # insert-annotations-to-source tool will use this file instead of the
-        # updated .java one.
-        # See TODO about .unannotated file at the top of this file.
-        for file in "${java_files[@]}";
-        do
-            rm -f "${file}.unannotated"
-        done
-        if [ "$(find $WHOLE_PROGRAM_INFERENCE_DIR -prune -empty)" ] ; then
-            echo "No .jaif files found."
-        else
-            # There is at least one .jaif file, so insert annotations.
-            new_jaif_files="$(find $WHOLE_PROGRAM_INFERENCE_DIR -name "*.jaif")"
-            command="insert-annotations-to-source -cp $classpath ${insert_to_source_args[*]} -i $new_jaif_files ${java_files[*]}"
-            echo "About to run: ${command}"
-            # shellcheck disable=SC2086
-            insert-annotations-to-source -cp $classpath "${insert_to_source_args[@]}" -i $new_jaif_files "${java_files[@]}"
-        fi
-        # Updates DIFF_JAIF variable.
-        # diff returns exit-value 1 when there are differences between files.
-        # When this happens, this script halts due to the "set -e"
-        # in its header. To avoid this problem, we add the "|| true" below.
-        DIFF_JAIF="$(diff -qr $PREV_ITERATION_DIR $WHOLE_PROGRAM_INFERENCE_DIR || true)"
-    done
-    if [ ! "$debug" ]; then
-        clean
+    # Runs CF's javac
+    command="$CHECKERBIN/javac -d $TEMP_DIR/ -cp $classpath -processor $processor -Ainfer=jaifs -Awarns -Xmaxwarns 10000 ${extra_args[*]} ${java_files[*]}"
+    echo "About to run: ${command}"
+    if [ "$interactive" ]; then
+      echo "Press any key to run command... "
+      IFS="" read -r _
     fi
+    "$CHECKERBIN"/javac -d "$TEMP_DIR/" -cp "$classpath" -processor "$processor" -Ainfer=jaifs -Awarns -Xmaxwarns 10000 "${extra_args[@]}" "${java_files[@]}" || true
+    # Deletes .unannotated backup files. This is necessary otherwise the
+    # insert-annotations-to-source tool will use this file instead of the
+    # updated .java one.
+    # See TODO about .unannotated file at the top of this file.
+    for file in "${java_files[@]}"; do
+      rm -f "${file}.unannotated"
+    done
+    if [ "$(find $WHOLE_PROGRAM_INFERENCE_DIR -prune -empty)" ]; then
+      echo "No .jaif files found."
+    else
+      # There is at least one .jaif file, so insert annotations.
+      new_jaif_files="$(find $WHOLE_PROGRAM_INFERENCE_DIR -name "*.jaif")"
+      command="insert-annotations-to-source -cp $classpath ${insert_to_source_args[*]} -i $new_jaif_files ${java_files[*]}"
+      echo "About to run: ${command}"
+      # shellcheck disable=SC2086
+      insert-annotations-to-source -cp $classpath "${insert_to_source_args[@]}" -i $new_jaif_files "${java_files[@]}"
+    fi
+    # Updates DIFF_JAIF variable.
+    # diff returns exit-value 1 when there are differences between files.
+    # When this happens, this script halts due to the "set -e"
+    # in its header. To avoid this problem, we add the "|| true" below.
+    DIFF_JAIF="$(diff -qr $PREV_ITERATION_DIR $WHOLE_PROGRAM_INFERENCE_DIR || true)"
+  done
+  if [ ! "$debug" ]; then
+    clean
+  fi
 }
 
 clean() {
-    # It might be good to keep the final .jaif files.
-    # rm -rf $WHOLE_PROGRAM_INFERENCE_DIR
-    rm -rf $PREV_ITERATION_DIR
-    rm -rf $TEMP_DIR
-    # See TODO about .unannotated file at the top of this file.
-    for file in "${java_files[@]}";
-        do
-            rm -f "${file}.unannotated"
-    done
+  # It might be good to keep the final .jaif files.
+  # rm -rf $WHOLE_PROGRAM_INFERENCE_DIR
+  rm -rf $PREV_ITERATION_DIR
+  rm -rf $TEMP_DIR
+  # See TODO about .unannotated file at the top of this file.
+  for file in "${java_files[@]}"; do
+    rm -f "${file}.unannotated"
+  done
 }
 
 # Main
 if [ "$#" -lt 3 ]; then
-    echo "Aborting infer-and-annotate.sh: Expected at least 3 arguments, received $#."
-    echo "Received the following arguments: $*"
-    exit 1
+  echo "Aborting infer-and-annotate.sh: Expected at least 3 arguments, received $#."
+  echo "Received the following arguments: $*"
+  exit 1
 fi
 
 read_input "$@"

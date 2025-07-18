@@ -15,6 +15,7 @@ dependencies {
 
   // This is used by org.checkerframework.javacutil.TypesUtils.isImmutableTypeInJdk.
   // https://mvnrepository.com/artifact/org.plumelib/plume-util
+  implementation "org.plumelib:hashmap-util:${versions.hashmapUtil}"
   implementation "org.plumelib:plume-util:${versions.plumeUtil}"
   implementation "org.plumelib:reflection-util:${versions.reflectionUtil}"
 

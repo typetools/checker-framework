@@ -14,7 +14,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>8</maven.compiler.source>
     <maven.compiler.target>8</maven.compiler.target>
-    <checkerFrameworkVersion><!-- checker-framework-version -->3.44.0<!-- /checker-framework-version --></checkerFrameworkVersion>
+    <checkerFrameworkVersion><!-- checker-framework-version -->3.49.5<!-- /checker-framework-version --></checkerFrameworkVersion>
   </properties>
 
   <dependencies>
@@ -38,7 +38,7 @@
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
-      <version>3.12.0</version>
+      <version>3.18.0</version>
     </dependency>
     <dependency>
         <groupId>javax.servlet</groupId>
@@ -108,7 +108,7 @@
         <plugins>
           <plugin>
             <!-- This plugin execution will copy the com.google.errorprone:javac jar file to
-                 your project’s output directory without adding that jar as an explicit
+                 your project's output directory without adding that jar as an explicit
                  dependency. -->
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-dependency-plugin</artifactId>

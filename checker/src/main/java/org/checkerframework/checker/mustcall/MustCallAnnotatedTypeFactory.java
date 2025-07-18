@@ -133,6 +133,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
    *
    * @param checker the checker associated with this type factory
    */
+  @SuppressWarnings("this-escape")
   public MustCallAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     TOP = AnnotationBuilder.fromClass(elements, MustCallUnknown.class);
@@ -149,8 +150,8 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   }
 
   @Override
-  public void setRoot(@Nullable CompilationUnitTree root) {
-    super.setRoot(root);
+  public void setRoot(@Nullable CompilationUnitTree newRoot) {
+    super.setRoot(newRoot);
     // TODO: This should probably be guarded by isSafeToClearSharedCFG from
     // GenericAnnotatedTypeFactory, but this works here because we know the Must Call Checker is
     // always the first subchecker that's sharing tempvars.
@@ -344,6 +345,15 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
    */
   public ExecutableElement getMustCallValueElement() {
     return mustCallValueElement;
+  }
+
+  /**
+   * Returns the {@link InheritableMustCall#value} element.
+   *
+   * @return the {@link InheritableMustCall#value} element
+   */
+  public ExecutableElement getInheritableMustCallValueElement() {
+    return inheritableMustCallValueElement;
   }
 
   /** Support @InheritableMustCall meaning @MustCall on all subtype elements. */

@@ -17,6 +17,7 @@ index-checker.tex \
 called-methods-checker.tex \
 fenum-checker.tex \
 tainting-checker.tex \
+sql-quotes-checker.tex \
 regex-checker.tex \
 formatter-checker.tex \
 i18n-format-checker.tex \
@@ -101,7 +102,7 @@ check-labels:
 
 export BIBINPUTS = $BIBINPUTS:.:plume-bib
 plume-bib:
-	(git clone --filter=blob:none -q https://github.com/mernst/plume-bib.git || git clone --filter=blob:none -q https://github.com/mernst/plume-bib.git)
+	(git clone --depth=1 -q https://github.com/mernst/plume-bib.git || git clone --depth=1 -q https://github.com/mernst/plume-bib.git)
 .PHONY: plume-bib-update
 plume-bib-update: plume-bib
 # Even if this command fails, it does not terminate the make job.

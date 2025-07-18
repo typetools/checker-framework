@@ -103,6 +103,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
    * @param env the processing environment
    * @param factory the factory for the current checker
    */
+  @SuppressWarnings("this-escape")
   protected AbstractQualifierPolymorphism(ProcessingEnvironment env, AnnotatedTypeFactory factory) {
     this.atypeFactory = factory;
     this.qualHierarchy = factory.getQualifierHierarchy();
@@ -204,7 +205,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
     }
 
     if ((instantiationMapping != null && !instantiationMapping.isEmpty())
-        || TreeUtils.isCallToVarArgsMethodWithZeroVarargsActuals(tree)) {
+        || TreeUtils.isCallToVarargsMethodWithZeroVarargsActuals(tree)) {
       replacer.visit(type, instantiationMapping);
     } else {
       completer.visit(type);
@@ -301,8 +302,8 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
       }
     }
     // Deal with varargs
-    if (memberReference.isVarArgs() && !functionalInterface.isVarArgs()) {
-      parameters = AnnotatedTypes.expandVarArgsParametersFromTypes(memberReference, args);
+    if (memberReference.isVarargs() && !functionalInterface.isVarargs()) {
+      parameters = AnnotatedTypes.expandVarargsParametersFromTypes(memberReference, args);
     }
 
     instantiationMapping =

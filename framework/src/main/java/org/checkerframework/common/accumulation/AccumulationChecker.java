@@ -5,6 +5,7 @@ import java.util.Set;
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.returnsreceiver.ReturnsReceiverChecker;
+import org.checkerframework.framework.source.SourceChecker;
 
 /**
  * An accumulation checker is one that accumulates some property: method calls, map keys, etc.
@@ -27,14 +28,15 @@ public abstract class AccumulationChecker extends BaseTypeChecker {
   private final EnumSet<AliasAnalysis> aliasAnalyses;
 
   /** Constructs a new AccumulationChecker. */
+  @SuppressWarnings("this-escape")
   protected AccumulationChecker() {
     super();
     this.aliasAnalyses = createAliasAnalyses();
   }
 
   @Override
-  protected Set<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
-    Set<Class<? extends BaseTypeChecker>> checkers = super.getImmediateSubcheckerClasses();
+  protected Set<Class<? extends SourceChecker>> getImmediateSubcheckerClasses() {
+    Set<Class<? extends SourceChecker>> checkers = super.getImmediateSubcheckerClasses();
     if (isEnabled(AliasAnalysis.RETURNS_RECEIVER)) {
       checkers.add(ReturnsReceiverChecker.class);
     }

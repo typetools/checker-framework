@@ -1,0 +1,29 @@
+package java.lang:
+annotation @A: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package java.lang:
+annotation @B: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package java.lang:
+annotation @C: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package java.lang:
+annotation @D: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package java.lang:
+annotation @E: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package java.lang:
+annotation @F: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package org.checkerframework.afu.annotator.tests:
+class BoundClassMultiple:
+    bound 0 & 0: @java.lang.A
+    bound 1 & 0: @java.lang.B
+    bound 1 & 1: @java.lang.C
+    bound 1 & 2: @java.lang.D
+    bound 2 & 0: @java.lang.E
+    inner-type 3, 0: @java.lang.F
+
+    method <init>()V:
+

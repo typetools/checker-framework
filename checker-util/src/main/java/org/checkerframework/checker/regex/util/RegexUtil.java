@@ -426,9 +426,9 @@ public final class RegexUtil {
     return true;
   }
 
-  ///
-  /// Utilities
-  ///
+  //
+  // Utilities
+  //
 
   // This is from CollectionsPlume, but is here to make the file self-contained.
 

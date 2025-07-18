@@ -12,14 +12,14 @@ public class SwitchExpressionInvariant {
     List<@NonNull String> list =
         // :: error: (assignment)
         switch (fenum) {
-            // :: error: (switch.expression)
+          // :: error: (switch.expression)
           case 1 -> nonnullStrings;
           default -> nullableStrings;
         };
 
     List<@Nullable String> list2 =
         switch (fenum) {
-            // :: error: (switch.expression)
+          // :: error: (switch.expression)
           case 1 -> nonnullStrings;
           default -> nullableStrings;
         };

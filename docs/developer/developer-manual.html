@@ -42,12 +42,18 @@ including people who wish to edit its source code or make pull requests.
       <li><a href="#github-configuration">GitHub configuration</a></li>
       <li><a href="#ci">Continuous Integration</a>
         <ul>
-          <li><a href="#project-visibility">How to change project visibility settings</a></li>
+          <li><a href="#ci-azure-pipelines">Azure Pipelines</a>
+            <ul>
+              <li><a href="#ci-increasing-quota">Increasing quota</a></li>
+              <li><a href="#project-visibility">How to change project visibility settings</a></li>
+            </ul></li>
+          <li><a href="#ci-travis">Travis CI</a></li>
           <li><a href="#ci-failure">Reproducing Continuous Integration build failures</a></li>
         </ul></li>
       <li><a href="#Documenting_refactoring_ideas">Documenting refactoring ideas</a></li>
       <li><a href="#annotated-library-version-numbers">Version numbers for annotated libraries</a></li>
       <li><a href="#Making_a_Checker_Framework_release">Making a Checker Framework release</a></li>
+      <li><a href="#Supporting_a_new_version_of_Java">Supporting a new version of Java</a></li>
       <li><a href="#Case_studies">Describing a case study</a></li>
       <li><a href="#Counting_annotations">Counting annotations</a></li>
       <li><a href="#Build_historical">Building a historical version of the Checker Framework</a></li>
@@ -103,6 +109,14 @@ branch name</em> for each.  The continuous integration framework will find
 and use that branch when running tests.
 For example, when continuous integration runs for branch <em>B</em> of fork <em>F</em> of <code>checker-framework</code>, it will use branch <em>B</em> of fork <em>F</em> of the other repositories (if they exist).
 The same is true for the other projects.
+</p>
+
+<p>
+You do not need to explicitly build the <code>jdk</code> repository.  Building
+the Checker Framework (say, via <code>./gradlew assemble</code>) automatically
+makes the Checker Framework use the annotated JDK that exists
+at <code>../jdk/</code> &mdash; that is, as a sibling directory of the Checker
+Framework named <code>jdk</code>.
 </p>
 
 <p>
@@ -262,6 +276,12 @@ the IDE for the first time.
 This ensures generated files are not put in the standard <code>../bin/</code> directories.
 </p>
 
+<p>
+For VS Code and Eclipse, run <code>./gradlew eclipseClasspath</code> before running
+the IDE for the first time.
+This ensures generated files are not put in the standard <code>../bin/</code> directories.
+</p>
+
 
 <h2 id="pull-requests">Pull requests</h2>
 
@@ -397,6 +417,8 @@ Pipelines, CircleCI, and/or Travis CI on each push to GitHub.
 We recommend Azure Pipelines.
 </p>
 
+<h3 id="ci-azure-pipelines">Azure Pipelines</h3>
+
 <p>
   To enable Azure Pipelines continuous integration for your fork:
   (This is a summary of the <a href="https://learn.microsoft.com/en-us/azure/devops/pipelines/create-first-pipeline?view=azure-devops">Azure
@@ -411,6 +433,7 @@ We recommend Azure Pipelines.
       <li>If this option is not available, create the project and <a href="#project-visibility">modify its visibility</a> later.</li>
     </ul>
   </li>
+  <li>(You might have to wait a few days for your project to be created.)
   <li>Click "create project"</li>
   <li>At the left, click the blue rocket labeled "pipelines"</li>
   <li>Click "new pipeline"</li>
@@ -425,17 +448,38 @@ We recommend Azure Pipelines.
   <li>Click "run".</li>
 </ul>
 
-<p>
-  To enable Travis CI continuous integration for your fork:
-</p>
-<ul>
-  <li>Browse to <a href="https://www.travis-ci.com/">travis-ci.com</a></li>
-  <li>Click the downarrow for the dropdown, near your face in the upper right corner</li>
-  <li>Click settings</li>
-  <li>Find "checker-framework" in the list, and click the slider to enable it.</li>
-</ul>
+<h4 id="ci-increasing-quota">Increasing quota</h4>
 
-<h3 id="project-visibility">How to change project visibility settings</h3>
+<p>
+By default, your project has no parallelism and thus pipeline runs fail
+immediately. Azure DevOps provides
+a <a href="https://aka.ms/azpipelines-parallelism-request">Microsoft Forms</a>
+through which you can request increased public project concurrency for validated
+open-source projects.
+</p>
+
+<p>
+It may be the case that you obtain only 1800 minutes per month, only one
+parallel job at a time, and only for private projects.  In this case, you need
+to ask Azure to lift all three restrictions.  Send mail such as the following:
+</p>
+
+<p>
+  Thank you for granting me free tier access to Azure Pipelines.
+  I am working on the open-source <a href="https://github.com/typetools/checker-framework">Checker Framework</a>.
+  Therefore could you please make the following changes, per the policies at https://azure.microsoft.com/en-us/products/devops/pipelines/?
+</p>
+  <ul>
+    <li>Increase parallelism beyond 1 job.</li>
+    <li>Increase time limit beyond 1800 minutes per month.</li>
+    <li>Permit the project to be public, for collaboration.</li>
+  </ul>
+<p>
+  Thanks for your help.
+</p>
+
+
+<h4 id="project-visibility">How to change project visibility settings</h4>
 
 <p>
 To change your project's visibility settings (usually to "Public" to enable CI):
@@ -447,6 +491,20 @@ To change your project's visibility settings (usually to "Public" to enable CI):
   <li>Click the "Visibility" dropdown.</li>
   <li>Click "Public".</li>
 </ul>
+
+
+<h3 id="ci-travis">Travis CI</h3>
+
+<p>
+  To enable Travis CI continuous integration for your fork:
+</p>
+<ul>
+  <li>Browse to <a href="https://www.travis-ci.com/">travis-ci.com</a></li>
+  <li>Click the downarrow for the dropdown, near your face in the upper right corner</li>
+  <li>Click settings</li>
+  <li>Find "checker-framework" in the list, and click the slider to enable it.</li>
+</ul>
+
 
 <h3 id="ci-failure">Reproducing Continuous Integration build failures</h3>
 
@@ -518,10 +576,47 @@ for example to 6.2.0.2.
 
 <p>
 See a separate document about the Checker Framework release process:
+<a href="https://htmlpreview.github.io/?https://github.com/typetools/checker-framework/master/docs/developer/release/README-release-process.html">web version (from previous release)</a> or
 <!-- This relative URL works from a clone, but not from the web. -->
-<a href="release/README-release-process.html">local version (link works from a clone)</a> or
-<a href="https://htmlpreview.github.io/?https://github.com/typetools/checker-framework/master/docs/developer/release/README-release-process.html">web version (from previous release)</a>.
+<a href="release/README-release-process.html">local version (link works from a clone)</a>.
 </p>
+
+
+<h2 id="Supporting_a_new_version_of_Java">Supporting a new version of Java</h2>
+
+<p>
+To upgrade the Checker Framework to use a newer version of Java:
+</p>
+
+<pre>
+# Create a branch named "java-23".
+cd $t/checker-framework-fork-mernst-branch-master
+gnb java-23
+cd $t/checker-framework-fork-mernst-branch-java-23
+
+# Edit:
+checker/bin/wpi.sh
+checker/bin/wpi-many.sh (diff it against wpi.sh)
+# Rename and edit:
+checker/bin-devel/Dockerfile-ubuntu-jdkXX
+checker/bin-devel/Dockerfile-ubuntu-jdkXX-plus (diff it against Dockerfile-ubuntu-jdkXX)
+# Further search for: (java|jdk).?23\b
+# Don't push changes yet.
+
+# Use the latest version of Gradle, which supports the new JDK version
+# (see https://docs.gradle.org/current/userguide/compatibility.html):
+for wmtest in wpi-many-tests-bcel-util wpi-many-tests-bibtex-clean wpi-many-tests-ensures-called-methods wpi-many-tests-html-pretty-print wpi-many-tests-owning-field -wpi-many-tests-bibtex-clean ; do
+  cd $t/$wmtest && \
+  (./gradlew wrapper --gradle-version 8.10 && ./gradlew build --warning-mode=all) && \
+  git commit -m "Use Gradle 8.10" gradle/wrapper/gradle-wrapper.properties && \
+  git push
+done
+# Now update file checker/tests/wpi-many/testin.txt.
+
+# Build the Docker images for the newest JDK version (others need not be rebuilt).
+
+# Push changes.  Fix any build failures.
+</pre>
 
 
 <h2 id="Case_studies">Describing a case study</h2>
@@ -642,7 +737,7 @@ branch is deleted.
 </body>
 </html>
 
-<!--  LocalWords:  TODO javacutil gradle javadoc reformats subprojects pre NullAway CircleCI travis ci downarrow dropdown MYUSERID NNN doesn AnnotationStatistics JavaCodeStatistics stubparser
+<!--  LocalWords:  TODO javacutil gradle javadoc reformats subprojects pre NullAway CircleCI travis ci downarrow dropdown MYUSERID NNN doesn AnnotationStatistics JavaCodeStatistics stubparser wpi Dockerfile ubuntu jdkXX jdk wmtest bcel util bibtex html cd ReportChecker pids mernst gnb DevOps
  -->
 <!--  LocalWords:  subproject personalblog changelog config SOMEDOMAIN YAML isn
  -->

@@ -163,11 +163,11 @@ public class ReflectiveEvaluator {
     }
     Object[] newArgs = new Object[numberOfParameters];
     Object[] varArgsArray;
-    int numOfVarArgs = arguments.length - numberOfParameters + 1;
-    if (numOfVarArgs > 0) {
+    int numOfVarargs = arguments.length - numberOfParameters + 1;
+    if (numOfVarargs > 0) {
       System.arraycopy(arguments, 0, newArgs, 0, numberOfParameters - 1);
-      varArgsArray = new Object[numOfVarArgs];
-      System.arraycopy(arguments, numberOfParameters - 1, varArgsArray, 0, numOfVarArgs);
+      varArgsArray = new Object[numOfVarargs];
+      System.arraycopy(arguments, numberOfParameters - 1, varArgsArray, 0, numOfVarargs);
     } else {
       System.arraycopy(arguments, 0, newArgs, 0, numberOfParameters - 1);
       varArgsArray = emptyObjectArray;

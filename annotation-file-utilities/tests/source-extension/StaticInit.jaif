@@ -1,0 +1,37 @@
+package GUT.quals:
+annotation @Peer:
+annotation @Rep:
+
+
+package org.checkerframework.afu.annotator.tests:
+class StaticInit:
+staticinit *0:
+new *1: @GUT.quals.Peer
+
+package org.checkerframework.afu.annotator.tests:
+class StaticInit:
+staticinit *1:
+new *0: @GUT.quals.Rep
+
+package org.checkerframework.afu.annotator.tests:
+class StaticInit:
+staticinit *0:
+new *0: @GUT.quals.Peer
+
+package org.checkerframework.afu.annotator.tests:
+class StaticInit:
+staticinit *0:
+local o2:
+type: @GUT.quals.Peer
+
+package org.checkerframework.afu.annotator.tests:
+class StaticInit:
+staticinit *1:
+local si:
+type: @GUT.quals.Rep
+
+package org.checkerframework.afu.annotator.tests:
+class StaticInit:
+staticinit *0:
+local o:
+type: @GUT.quals.Peer

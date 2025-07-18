@@ -1,7 +1,173 @@
-Version 3.45.0 (July 2, 2024)
+Version 3.49.6 (August 1, 2025)
 -----------------------------
 
 **User-visible changes:**
+
+**Implementation details:**
+
+**Closed issues:**
+
+
+Version 3.49.5 (June 30, 2025)
+-----------------------------
+
+**User-visible changes:**
+
+The Checker Framework runs under JDK 25 -- that is, it runs on a version 25 JVM.
+
+**Closed issues:**
+
+#7093.
+
+
+Version 3.49.4 (June 2, 2025)
+-----------------------------
+
+**Closed issues:**
+
+#6740, #7013, #7038, #7070, #7082.
+
+
+Version 3.49.3 (May 2, 2025)
+-----------------------------
+
+**User-visible changes:**
+
+The Checker Framework runs under JDK 24 -- that is, it runs on a version 24 JVM.
+
+**Closed issues:**
+
+#6520, #6671, #6750, #6762, #6887, #7001, #7019, #7024, #7029, #7053.
+
+
+Version 3.49.2 (April 1, 2025)
+------------------------------
+
+**Closed issues:**
+
+#6747, #6755, #6789, #6891, #6963, #6996, #7001, #7008, #7014.
+
+
+Version 3.49.1 (March 3, 2025)
+------------------------------
+
+**Closed issues:**
+
+#6970, #6974.
+
+
+Version 3.49.0 (February 3, 2025)
+--------------------------------
+
+**User-visible changes:**
+
+The Optional Checker is more precise for `Optional` values resulting from
+operations on container types (e.g., `List`, `Map`, `Iterable`).  It supports
+two new annotations:
+  * `@NonEmpty`
+  * `@UnknownNonEmpty`
+
+The Signature Checker no longer supports `@BinaryNameWithoutPackage` because
+it is equivalent to `@Identifier`; use `@Identifier` instead.
+
+The JavaStubifier implementation now appears in package `org.checkerframework.framework.stubifier.JavaStubifier`.
+
+**Closed issues:**
+
+#6935, #6936, #6939.
+
+
+Version 3.48.4 (January 2, 2025)
+--------------------------------
+
+**Closed issues:**
+
+#6919, #6630.
+
+
+Version 3.48.3 (December 2, 2024)
+--------------------------------
+
+**Closed issues:**
+
+#6886.
+
+
+Version 3.48.2 (November 1, 2024)
+--------------------------------
+
+**Closed issues:**
+
+#6371, #6867.
+
+
+Version 3.48.1 (October 11, 2024)
+--------------------------------
+
+**User-visible changes:**
+
+The Returns Receiver sub-checker is now disabled by default when running the Resource Leak Checker,
+as usually it is not needed and it adds overhead. To enable it, use the new
+`-AenableReturnsReceiverForRlc` command-line argument.
+
+**Closed issues:**
+
+#6434, #6810, #6839, #6842, #6856.
+
+
+Version 3.48.0 (October 2, 2024)
+--------------------------------
+
+**User-visible changes:**
+
+The new SQL Quotes Checker prevents errors in quoting in SQL queries.  It
+prevents injection attacks that exploit quoting errors.
+
+Aggregate Checkers now interleave error messages so that all errors about a line
+of code appear together.
+
+**Closed issues:**
+
+#3568, #6725, #6753, #6769, #6770, #6780, #6785, #6795, #6804, #6811, #6825.
+
+
+Version 3.47.0 (September 3, 2024)
+----------------------------------
+
+**User-visible changes:**
+
+The Checker Framework runs under JDK 22 -- that is, it runs on a version 22 JVM.
+The Checker Framework runs under JDK 23 -- that is, it runs on a version 23 JVM.
+
+The Optional Checker no longer supports the `@OptionalBottom` annotation.
+
+**Implementation details:**
+
+Removed annotations:
+  * `@OptionalBottom`
+
+**Closed issues:**
+
+#6510, #6704, #6743, #6749, #6760, #6761.
+
+
+Version 3.46.0 (August 1, 2024)
+-----------------------------
+
+**User-visible changes:**
+
+The new SqlQuotesChecker prevents errors in quoting in SQL queries.  It prevents
+injection attacks that exploit quoting errors.
+
+Renamed `@EnsuresCalledMethodsVarArgs`to `@EnsuresCalledMethodsVarargs`.
+
+**Closed issues:**
+
+#4923, #6420, #6469, #6652, #6664.
+
+
+Version 3.45.0 (July 1, 2024)
+-----------------------------
 
 **Implementation details:**
 
@@ -12,6 +178,8 @@ Deprecated methods:
  * `TreeUtils.isVarArgMethodCall()` => `isVarargsCall()`
 
 **Closed issues:**
+
+#152, #5575, #6630, #6641, #6648, #6676.
 
 
 Version 3.44.0 (June 3, 2024)
@@ -150,7 +318,7 @@ crash when compiling them.
 **Implementation details:**
 
 Dataflow supports all the new Java 21 language features.
- * A new node,`DeconstructorPatternNode`, was added, so any implementation of
+ * A new node, `DeconstructorPatternNode`, was added, so any implementation of
    `NodeVisitor` must be updated.
  * Method `InstanceOfNode.getBindingVariable()` is deprecated; use
    `getPatternNode()` or `getBindingVariables()` instead.

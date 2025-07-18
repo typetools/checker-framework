@@ -75,12 +75,6 @@ Here is how to declare a length-2 array of length-4 arrays:
   String @ArrayLen(2) [] @ArrayLen(4) []
 \end{Verbatim}
 
-The paper ``Lightweight Verification of Array Indexing'' (ISSTA 2018,
-\myurl{https://homes.cs.washington.edu/~mernst/pubs/array-indexing-issta2018-abstract.html})
-gives more details about the Index Checker.
-``Enforcing correct array indexes with a type system''~\cite{Santino2016} (FSE 2016) describes
-an earlier version.
-
 
 \sectionAndLabel{Index Checker structure and annotations}{index-annotations}
 
@@ -124,7 +118,7 @@ annotations, each from a different type system:
 
   \begin{Verbatim}
   class String {
-    char charAt(@IndexFor("this") index) { ... }
+    char charAt(@IndexFor("this") int index) { ... }
   }
   \end{Verbatim}
 
@@ -329,7 +323,7 @@ or \code{@LTOMLengthOf("arr")}.
   offset=x+1)> for any x.
 
 \item[\refqualclass{checker/index/qual}{UpperBoundLiteral}]
-  repesents a constant value, typically a literal written in source code.
+  represents a constant value, typically a literal written in source code.
   Its subtyping relationship is:
   \<@UpperBoundLiteral(lit)> <: \<LTLengthOf(value="myArray", offset=off)>
   if \<lit>+\<offset> $\le$ -1.
@@ -803,6 +797,15 @@ warnings:
     }
 \end{Verbatim}
 
+\sectionAndLabel{Technical papers}{index-papers}
+
+The paper ``Lightweight Verification of Array Indexing'' (ISSTA 2018,
+\myurl{https://homes.cs.washington.edu/~mernst/pubs/array-indexing-issta2018-abstract.html})
+gives more details about the Index Checker.
+``Enforcing correct array indexes with a type system''~\cite{Santino2016} (FSE 2016) describes
+an earlier version.
+
+
 %%  LocalWords:  NegativeArraySizeException pre myArray IndexFor someArray
 %%  LocalWords:  MyJavaFile LTLengthOf LTEqLengthOf GTENegativeOne GTE str
 %%  LocalWords:  LowerBoundUnknown LTOMLengthOf LTEq LTOM UpperBoundBottom
@@ -817,4 +820,5 @@ warnings:
 %%  LocalWords:  SearchIndex bitwise SearchIndexBottom SearchIndexUnknown
 %%  LocalWords:  Substring substringindex substring SubstringIndexFor
 %%  LocalWords:  SubstringIndexBottom SubstringIndexUnknown LessThanBottom
-%%  LocalWords:  LessThanUnknown typecheck typechecks
+%%  LocalWords:  LessThanUnknown typecheck typechecks system''
+% LocalWords:  UpperBoundLiteral

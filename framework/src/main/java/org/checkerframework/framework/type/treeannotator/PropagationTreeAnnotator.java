@@ -7,6 +7,7 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.UnaryTree;
@@ -32,8 +33,11 @@ import org.plumelib.util.IPair;
 
 /**
  * {@link PropagationTreeAnnotator} adds qualifiers to types where the resulting type is a function
- * of an input type, e.g. the result of a binary operation is a LUB of the type of expressions in
- * the binary operation.
+ * of an input type.
+ *
+ * <p>By default, it applies LUBs, e.g., the result of a binary operation is a LUB of the type of
+ * expressions in the binary operation, and likewise for compound operations. It also handles unary
+ * expressions, array creation, and casts.
  *
  * <p>{@link PropagationTreeAnnotator} is generally run first by {@link ListTreeAnnotator} since the
  * trees it handles are not usually targets of {@code @DefaultFor}.
@@ -108,24 +112,24 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
     AnnotatedTypeMirror contextType = null;
     if (path != null && path.getParentPath() != null) {
       Tree parentTree = path.getParentPath().getLeaf();
-      if (parentTree.getKind() == Tree.Kind.ASSIGNMENT) {
+      if (parentTree instanceof AssignmentTree) {
         Tree var = ((AssignmentTree) parentTree).getVariable();
         contextType = atypeFactory.getAnnotatedType(var);
-      } else if (parentTree.getKind() == Tree.Kind.VARIABLE) {
+      } else if (parentTree instanceof VariableTree) {
         if (!TreeUtils.isVariableTreeDeclaredUsingVar((VariableTree) parentTree)) {
           contextType = atypeFactory.getAnnotatedType(parentTree);
         }
       } else if (parentTree instanceof CompoundAssignmentTree) {
         Tree var = ((CompoundAssignmentTree) parentTree).getVariable();
         contextType = atypeFactory.getAnnotatedType(var);
-      } else if (parentTree.getKind() == Tree.Kind.RETURN) {
+      } else if (parentTree instanceof ReturnTree) {
         Tree methodTree = TreePathUtil.enclosingMethodOrLambda(path.getParentPath());
-        if (methodTree.getKind() == Tree.Kind.METHOD) {
+        if (methodTree instanceof MethodTree) {
           AnnotatedExecutableType methodType =
               atypeFactory.getAnnotatedType((MethodTree) methodTree);
           contextType = methodType.getReturnType();
         }
-      } else if (parentTree.getKind() == Tree.Kind.METHOD_INVOCATION && useAssignmentContext) {
+      } else if (parentTree instanceof MethodInvocationTree && useAssignmentContext) {
         MethodInvocationTree methodInvocationTree = (MethodInvocationTree) parentTree;
         useAssignmentContext = false;
         AnnotatedExecutableType m;

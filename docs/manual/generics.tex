@@ -900,9 +900,9 @@ generic classes.)  In particular, \<@Untainted StringBuffer> is not a
 subtype of \<@Tainted StringBuffer>; an attempt to cast between them, in
 either direction, will yield an \<invariant.cast.unsafe> error.
 
-If a subclass extends a \<@HasQualifierParameter> class (or implements a
-\<@HasQualifierParameter> interface), then the subclass must also be marked
-\<@HasQualifierParameter>.
+\<@HasQualifierParameter> is inherited.  If type $T$ has a
+\<@HasQualifierParameter> annotation, then its subtypes are automatically
+treated as having the same annotation.
 
 %% TODO: Inheritance of classes with a qualifier parameter below.
 

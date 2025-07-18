@@ -13,10 +13,4 @@ include 'checker-qual'
 include 'checker-qual-android'
 include 'checker-util'
 include 'framework-test'
-includeBuild ('../annotation-tools/annotation-file-utilities') {
-  if (!file('../annotation-tools/annotation-file-utilities').exists()) {
-    exec {
-      executable 'checker/bin-devel/clone-related.sh'
-    }
-  }
-}
+include 'annotation-file-utilities'

@@ -57,7 +57,8 @@ The Called Methods Checker supports the following optional command-line argument
   the Returns Receiver Checker (\chapterpageref{returns-receiver-checker}),
   which ordinarily runs as a subchecker of the Called Methods Checker.  If
   the code being checked does not use fluent APIs, then you can supply this
-  option and the Called Methods Checker will run much faster.
+  option and the Called Methods Checker will run much faster. This option is the default
+  when the Called Methods Checker is run as part of the Resource Leak Checker (\chapterpageref{resource-leak-checker}).
 \item The \<-ACalledMethodsChecker\_useValueChecker> option improves precision when analyzing
  code that uses the AWS SDK's \<DescribeImageRequest> API\@.  See
  Section~\ref{called-methods-other}.
@@ -246,12 +247,12 @@ There are also method annotations:
   guarantees that \<p.x()> and \<p.y()> will always be called if \<m> returns \<true>.
   The body of \<m> must satisfy that property, and clients of \<m> can depend on the property.
 
-\item[\refqualclass{checker/calledmethods/qual}{EnsuresCalledMethodsVarArgs}]
+\item[\refqualclass{checker/calledmethods/qual}{EnsuresCalledMethodsVarargs}]
   This version of \<@EnsuresCalledMethods> always applies to the varargs parameter of the
   annotated method. It has only one argument, which is the list of methods that are guaranteed
   to be called on the varargs parameter's elements before the method returns. This annotation
   currently cannot be verified, and a \<ensuresvarargs.unverified> error is always issued
-  when it is used. When annotating a method as \<@EnsuresCalledMethodsVarArgs>, you should verify
+  when it is used. When annotating a method as \<@EnsuresCalledMethodsVarargs>, you should verify
   that the named methods are actually called on every element of the varargs parameter via some
   other method (such as manual inspection) and then suppress the warning.
 
@@ -259,7 +260,7 @@ There are also method annotations:
   This declaration annotation specifies a post-condition on a method, indicating the methods it
   guarantees to call when it throws an exception.  Like most post-condition annotations, the
   other Called Methods post-condition annotations (\<@EnsuresCalledMethods>,
-  \<@EnsuresCalledMethodsIf>, and \<@EnsuresCalledMethodsVarArgs>) only specify behavior for
+  \<@EnsuresCalledMethodsIf>, and \<@EnsuresCalledMethodsVarargs>) only specify behavior for
   normal returns.  The annotation \<@EnsuresCalledMethodsOnException> allows you to write
   stronger specifications indicating that a method \emph{always} calls the given methods:
 

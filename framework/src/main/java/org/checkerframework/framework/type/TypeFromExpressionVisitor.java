@@ -25,6 +25,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.WildcardTree;
+import com.sun.source.util.TreePath;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -271,11 +272,24 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
       return AnnotatedTypes.asSuper(
           f, thisType, AnnotatedTypeMirror.createType(superTypeMirror, f, false));
     } else {
-      // tree must be a field access, so get the type of the expression, and then call
-      // asMemberOf.
-      AnnotatedTypeMirror t = f.getAnnotatedType(tree.getExpression());
-      t = f.applyCaptureConversion(t);
-      return AnnotatedTypes.asMemberOf(f.types, f, t, elt).asUse();
+      // tree must be a field access or an enum constant, so get the type of the (receiver)
+      // expression, and then call asMemberOf.
+      AnnotatedTypeMirror typeOfReceiver = f.getAnnotatedType(tree.getExpression());
+      typeOfReceiver = f.applyCaptureConversion(typeOfReceiver);
+      AnnotatedTypeMirror typeOfFieldAccess =
+          AnnotatedTypes.asMemberOf(f.types, f, typeOfReceiver, elt);
+      TreePath path = f.getPath(tree);
+
+      // Only capture the type if this is not the left hand side of an assignment.
+      if (path != null && path.getParentPath().getLeaf() instanceof AssignmentTree) {
+        AssignmentTree assignmentTree = (AssignmentTree) path.getParentPath().getLeaf();
+        @SuppressWarnings("interning:not.interned") // Looking for exact object.
+        boolean leftHandSide = assignmentTree.getExpression() != tree;
+        if (leftHandSide) {
+          return typeOfFieldAccess;
+        }
+      }
+      return f.applyCaptureConversion(typeOfFieldAccess);
     }
   }
 

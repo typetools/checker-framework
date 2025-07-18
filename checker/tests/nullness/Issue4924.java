@@ -1,7 +1,5 @@
 // Test case for issue #4924: https://tinyurl.com/cfissue/4924
 
-// @skip-test until the issue is fixed
-
 class Issue4924 {}
 
 interface Callback4924<T> {}

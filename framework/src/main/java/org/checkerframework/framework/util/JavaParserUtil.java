@@ -37,14 +37,11 @@ public class JavaParserUtil {
    * The Language Level to use when parsing if a specific level isn't applied. This should be the
    * highest version of Java that the Checker Framework can process.
    */
-  // JavaParser's ParserConfiguration.LanguageLevel has no constant for JDK 18, as of version
-  // 3.25.1 (2023-02-28).  See
-  // https://www.javadoc.io/doc/com.github.javaparser/javaparser-core/latest/com/github/javaparser/ParserConfiguration.LanguageLevel.html .
-  public static final LanguageLevel DEFAULT_LANGUAGE_LEVEL = LanguageLevel.JAVA_17;
+  public static final LanguageLevel DEFAULT_LANGUAGE_LEVEL = LanguageLevel.JAVA_21;
 
-  ///
-  /// Replacements for StaticJavaParser
-  ///
+  //
+  // Replacements for StaticJavaParser
+  //
 
   /**
    * Parses the Java code contained in the {@code InputStream} and returns a {@code CompilationUnit}
@@ -201,9 +198,9 @@ public class JavaParserUtil {
     }
   }
 
-  ///
-  /// Other methods
-  ///
+  //
+  // Other methods
+  //
 
   /**
    * Given the compilation unit node for a source file, returns the top level type definition with
@@ -410,12 +407,12 @@ public class JavaParserUtil {
         case "RELEASE_17":
           currentSourceVersion = ParserConfiguration.LanguageLevel.JAVA_17;
           break;
-          // JavaParser's ParserConfiguration.LanguageLevel has no constant for JDK 18, as
-          // of version 3.25.1 (2023-02-28).  See
-          // https://www.javadoc.io/doc/com.github.javaparser/javaparser-core/latest/com/github/javaparser/ParserConfiguration.LanguageLevel.html .
-          // case "RELEASE_18":
-          //   currentSourceVersion = ParserConfiguration.LanguageLevel.JAVA_18;
-          //   break;
+        // JavaParser's ParserConfiguration.LanguageLevel has no constant for JDK 18, as
+        // of version 3.25.1 (2023-02-28).  See
+        // https://www.javadoc.io/doc/com.github.javaparser/javaparser-core/latest/com/github/javaparser/ParserConfiguration.LanguageLevel.html .
+        // case "RELEASE_18":
+        //   currentSourceVersion = ParserConfiguration.LanguageLevel.JAVA_18;
+        //   break;
         default:
           currentSourceVersion = DEFAULT_LANGUAGE_LEVEL;
       }

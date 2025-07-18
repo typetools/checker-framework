@@ -44,6 +44,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.framework.stubifier.JavaStubifier;
 import org.checkerframework.framework.util.JavaParserUtil;
 import org.checkerframework.javacutil.BugInCF;
 import org.plumelib.util.ArraysPlume;
@@ -102,9 +103,9 @@ public class RemoveAnnotationsForInference {
    * @param args command-line arguments: directories to process
    */
   public static void main(String[] args) {
-    // TODO: using plume-lib's "Options" project here would be better, but would add a dependency to
-    // the whole Checker Framework, which is undesirable. Move this program elsewhere (e.g., to a
-    // plume-lib project)?
+    // TODO: using plume-lib's "Options" project here would be better, but would add a
+    // dependency to the whole Checker Framework, which is undesirable. Move this program
+    // elsewhere (e.g., to a plume-lib project)?
     if (args[0].contentEquals("-keepFile")) {
       if (args.length < 2) {
         System.err.println(

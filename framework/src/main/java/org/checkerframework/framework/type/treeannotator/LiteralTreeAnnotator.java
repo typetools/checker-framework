@@ -80,6 +80,7 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
    *
    * @param atypeFactory the type factory to make an annotator for
    */
+  @SuppressWarnings("this-escape")
   public LiteralTreeAnnotator(AnnotatedTypeFactory atypeFactory) {
     super(atypeFactory);
     this.treeKinds = new EnumMap<>(Tree.Kind.class);
@@ -104,8 +105,8 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
         addLiteralKind(literalKind, theQual);
       }
 
-      for (String pattern : forLiterals.stringPatterns()) {
-        addStringPattern(pattern, theQual);
+      for (String regex : forLiterals.stringPatterns()) {
+        addStringPattern(regex, theQual);
       }
 
       if (forLiterals.value().length == 0 && forLiterals.stringPatterns().length == 0) {
@@ -184,12 +185,33 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
   /**
    * Added a rule for all String literals that match the given pattern.
    *
+   * @param regex regex to match Strings against
+   * @param theQual {@code AnnotationMirror} to apply to Strings that match the regex
+   * @see #addStringPattern(Pattern,AnnotationMirror)
+   */
+  public void addStringPattern(String regex, AnnotationMirror theQual) {
+    boolean res =
+        qualHierarchy.updateMappingToMutableSet(stringPatterns, Pattern.compile(regex), theQual);
+    if (!res) {
+      throw new BugInCF(
+          "LiteralTreeAnnotator: invalid update of stringPatterns "
+              + stringPatterns
+              + " at "
+              + regex
+              + " with "
+              + theQual);
+    }
+  }
+
+  /**
+   * Added a rule for all String literals that match the given pattern.
+   *
    * @param pattern pattern to match Strings against
    * @param theQual {@code AnnotationMirror} to apply to Strings that match the pattern
+   * @see #addStringPattern(String,AnnotationMirror)
    */
-  public void addStringPattern(String pattern, AnnotationMirror theQual) {
-    boolean res =
-        qualHierarchy.updateMappingToMutableSet(stringPatterns, Pattern.compile(pattern), theQual);
+  public void addStringPattern(Pattern pattern, AnnotationMirror theQual) {
+    boolean res = qualHierarchy.updateMappingToMutableSet(stringPatterns, pattern, theQual);
     if (!res) {
       throw new BugInCF(
           "LiteralTreeAnnotator: invalid update of stringPatterns "

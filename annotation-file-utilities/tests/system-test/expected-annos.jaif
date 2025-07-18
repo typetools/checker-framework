@@ -1,0 +1,189 @@
+package annotations.tests:
+annotation @AClass:
+
+package annotations.tests:
+annotation @CClass:
+
+package annotations.tests:
+annotation @A0A: @java.lang.annotation.Target(value={TYPE_USE,METHOD})
+
+package annotations.tests:
+annotation @C0A: @java.lang.annotation.Target(value={TYPE_USE,METHOD})
+
+package annotations.tests:
+annotation @A0AT: @java.lang.annotation.Target(value={TYPE_USE})
+
+package annotations.tests:
+annotation @C0AT: @java.lang.annotation.Target(value={TYPE_USE})
+
+package annotations.tests:
+annotation @A0B: @java.lang.annotation.Target(value={TYPE_USE})
+
+package annotations.tests:
+annotation @C0B: @java.lang.annotation.Target(value={TYPE_USE})
+
+package annotations.tests:
+annotation @A06: @java.lang.annotation.Target(value={TYPE_USE,PARAMETER})
+
+package annotations.tests:
+annotation @C06: @java.lang.annotation.Target(value={TYPE_USE,PARAMETER})
+
+package annotations.tests:
+annotation @A0C: @java.lang.annotation.Target(value={TYPE_USE,PARAMETER})
+
+package annotations.tests:
+annotation @C0C: @java.lang.annotation.Target(value={TYPE_USE,PARAMETER})
+
+package annotations.tests:
+annotation @A0D: @java.lang.annotation.Target(value={TYPE_USE})
+
+package annotations.tests:
+annotation @C0D: @java.lang.annotation.Target(value={TYPE_USE})
+
+package annotations.tests:
+annotation @A08: @java.lang.annotation.Target(value={TYPE_USE})
+
+package annotations.tests:
+annotation @C08: @java.lang.annotation.Target(value={TYPE_USE})
+
+package annotations.tests:
+annotation @A09: @java.lang.annotation.Target(value={TYPE_USE})
+
+package annotations.tests:
+annotation @C09: @java.lang.annotation.Target(value={TYPE_USE})
+
+package annotations.tests:
+annotation @A00: @java.lang.annotation.Target(value={TYPE_USE})
+
+package annotations.tests:
+annotation @C00: @java.lang.annotation.Target(value={TYPE_USE})
+
+package annotations.tests:
+annotation @A01: @java.lang.annotation.Target(value={TYPE_USE})
+
+package annotations.tests:
+annotation @C01: @java.lang.annotation.Target(value={TYPE_USE})
+
+package annotations.tests:
+annotation @A02: @java.lang.annotation.Target(value={TYPE_USE})
+
+package annotations.tests:
+annotation @C02: @java.lang.annotation.Target(value={TYPE_USE})
+
+package annotations.tests:
+annotation @A04: @java.lang.annotation.Target(value={TYPE_USE})
+
+package annotations.tests:
+annotation @C04: @java.lang.annotation.Target(value={TYPE_USE})
+
+package annotations.tests:
+annotation @A05: @java.lang.annotation.Target(value={TYPE_USE})
+
+package annotations.tests:
+annotation @C05: @java.lang.annotation.Target(value={TYPE_USE})
+
+package annotations.tests:
+annotation @A0E: @java.lang.annotation.Target(value={TYPE_USE,FIELD})
+
+package annotations.tests:
+annotation @C0E: @java.lang.annotation.Target(value={TYPE_USE,FIELD})
+
+package annotations.tests:
+annotation @A20: @java.lang.annotation.Target(value={TYPE_USE})
+
+package annotations.tests:
+annotation @C20: @java.lang.annotation.Target(value={TYPE_USE})
+
+package annotations.tests:
+annotation @A21: @java.lang.annotation.Target(value={TYPE_USE})
+
+package annotations.tests:
+annotation @C21: @java.lang.annotation.Target(value={TYPE_USE})
+
+package annotations.tests:
+annotation @A22: @java.lang.annotation.Target(value={TYPE_USE})
+
+package annotations.tests:
+annotation @C22: @java.lang.annotation.Target(value={TYPE_USE})
+
+package annotations.tests:
+annotation @A23: @java.lang.annotation.Target(value={TYPE_USE})
+
+package annotations.tests:
+annotation @C23: @java.lang.annotation.Target(value={TYPE_USE})
+
+package annotations.tests:
+annotation @A24: @java.lang.annotation.Target(value={TYPE_USE})
+
+package annotations.tests:
+annotation @C24: @java.lang.annotation.Target(value={TYPE_USE})
+
+package annotations.tests:
+annotation @A2B:
+
+package annotations.tests:
+annotation @C2B:
+
+package annotations.tests:
+annotation @A2C: @java.lang.annotation.Target(value={TYPE_USE})
+
+package annotations.tests:
+annotation @C2C: @java.lang.annotation.Target(value={TYPE_USE})
+
+package annotations.tests:
+annotation @A2D: @java.lang.annotation.Target(value={TYPE_USE})
+
+package annotations.tests:
+annotation @C2D: @java.lang.annotation.Target(value={TYPE_USE})
+
+package annotations.tests:
+annotation @A2E: @java.lang.annotation.Target(value={TYPE_USE})
+
+package annotations.tests:
+annotation @C2E: @java.lang.annotation.Target(value={TYPE_USE})
+
+package annotations.tests:
+annotation @A2F: @java.lang.annotation.Target(value={TYPE_USE})
+
+package annotations.tests:
+annotation @C2F: @java.lang.annotation.Target(value={TYPE_USE})
+
+package annotations.tests:
+class AnnotationTest: @annotations.tests.AClass @annotations.tests.CClass
+
+    field field: @annotations.tests.A0E @annotations.tests.C0E
+        type: @annotations.tests.A0E @annotations.tests.C0E
+            inner-type 3, 0: @annotations.tests.A20 @annotations.tests.C20
+            inner-type 3, 0,0, 0: @annotations.tests.A21 @annotations.tests.C21
+
+    field inner:
+        type:
+            inner-type 1, 0,1, 0: @annotations.tests.A22 @annotations.tests.C22
+            inner-type 1, 0,1, 0,3, 0: @annotations.tests.A23 @annotations.tests.C23
+            inner-type 1, 0: @annotations.tests.A24 @annotations.tests.C24
+
+    field entry: @annotations.tests.A2B @annotations.tests.C2B
+        type: @annotations.tests.A2C @annotations.tests.C2C
+            inner-type 3, 0: @annotations.tests.A2D @annotations.tests.C2D
+            inner-type 3, 1: @annotations.tests.A2E @annotations.tests.C2E
+            inner-type 3, 1,2, 0: @annotations.tests.A2F @annotations.tests.C2F
+
+    method <init>()V:
+        return:
+
+    method doSomething(Ljava/util/Set;)Ljava/util/HashSet;:
+        return: @annotations.tests.A0A @annotations.tests.C0A @annotations.tests.A0AT @annotations.tests.C0AT
+            inner-type 3, 0: @annotations.tests.A0B @annotations.tests.C0B
+        receiver: @annotations.tests.A06 @annotations.tests.C06
+        parameter #0: @annotations.tests.A0C @annotations.tests.C0C
+            type: @annotations.tests.A0C @annotations.tests.C0C
+                inner-type 3, 0: @annotations.tests.A0D @annotations.tests.C0D
+        local 2 #23+2:
+            type: @annotations.tests.A08 @annotations.tests.C08
+                inner-type 3, 0: @annotations.tests.A09 @annotations.tests.C09
+        typecast #7: @annotations.tests.A00 @annotations.tests.C00
+            inner-type 3, 0: @annotations.tests.A01 @annotations.tests.C01
+        instanceof #0: @annotations.tests.A02 @annotations.tests.C02
+        new #15: @annotations.tests.A04 @annotations.tests.C04
+            inner-type 3, 0: @annotations.tests.A05 @annotations.tests.C05
+

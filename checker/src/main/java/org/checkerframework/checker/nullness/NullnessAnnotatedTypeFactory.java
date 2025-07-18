@@ -126,7 +126,7 @@ public class NullnessAnnotatedTypeFactory
   /** Aliases for {@code @Nonnull}. */
   @SuppressWarnings({
     "signature:argument", // Class names intentionally obfuscated
-    "signature:assignment.type.incompatible" // Class names intentionally obfuscated
+    "signature:assignment" // Class names intentionally obfuscated
   })
   private static final List<@FullyQualifiedName String> NONNULL_ALIASES =
       Arrays.<@FullyQualifiedName String>asList(
@@ -170,6 +170,8 @@ public class NullnessAnnotatedTypeFactory
           "io.reactivex.rxjava3.annotations.NonNull",
           // https://github.com/jakartaee/common-annotations-api/blob/master/api/src/main/java/jakarta/annotation/Nonnull.java
           "jakarta.annotation.Nonnull",
+          // https://jakarta.ee/specifications/bean-validation/3.0/apidocs/jakarta/validation/constraints/notnull
+          "jakarta.validation.constraints.NotNull",
           // https://jcp.org/en/jsr/detail?id=305; no documentation at
           // https://www.javadoc.io/doc/com.google.code.findbugs/jsr305/3.0.1/javax/annotation/Nonnull.html
           "javax.annotation.Nonnull",
@@ -189,6 +191,8 @@ public class NullnessAnnotatedTypeFactory
           // https://search.maven.org/artifact/org.checkerframework/checker-compat-qual/2.5.5/jar
           "org.checkerframework.checker.nullness.compatqual.NonNullDecl",
           "org.checkerframework.checker.nullness.compatqual.NonNullType",
+          // https://source.chromium.org/chromium/chromium/src/+/main:build/android/java/src/org/chromium/build/annotations/OptimizeAsNonNull.java
+          "org.chromium.build.annotations.OptimizeAsNonNull",
           // https://janino-compiler.github.io/janino/apidocs/org/codehaus/commons/nullanalysis/NotNull.html
           "org.codehaus.commons.nullanalysis.NotNull",
           // https://help.eclipse.org/neon/index.jsp?topic=/org.eclipse.jdt.doc.isv/reference/api/org/eclipse/jdt/annotation/NonNull.html
@@ -221,7 +225,7 @@ public class NullnessAnnotatedTypeFactory
   /** Aliases for {@code @Nullable}. */
   @SuppressWarnings({
     "signature:argument", // Class names intentionally obfuscated
-    "signature:assignment.type.incompatible" // Class names intentionally obfuscated
+    "signature:assignment" // Class names intentionally obfuscated
   })
   private static final List<@FullyQualifiedName String> NULLABLE_ALIASES =
       Arrays.<@FullyQualifiedName String>asList(
@@ -319,6 +323,8 @@ public class NullnessAnnotatedTypeFactory
           // https://search.maven.org/search?q=a:checker-compat-qual
           "org.checkerframework.checker.nullness.compatqual.NullableDecl",
           "org.checkerframework.checker.nullness.compatqual.NullableType",
+          // https://source.chromium.org/chromium/chromium/src/+/main:build/android/java/src/org/chromium/build/annotations/Nullable.java
+          "org.chromium.build.annotations.Nullable",
           // https://janino-compiler.github.io/janino/apidocs/org/codehaus/commons/nullanalysis/Nullable.html
           "org.codehaus.commons.nullanalysis.Nullable",
           // https://help.eclipse.org/neon/index.jsp?topic=/org.eclipse.jdt.doc.isv/reference/api/org/eclipse/jdt/annotation/Nullable.html
@@ -356,7 +362,7 @@ public class NullnessAnnotatedTypeFactory
   /** Aliases for {@code @PolyNull}. */
   @SuppressWarnings({
     "signature:argument", // Class names intentionally obfuscated
-    "signature:assignment.type.incompatible" // Class names intentionally obfuscated
+    "signature:assignment" // Class names intentionally obfuscated
   })
   private static final List<@FullyQualifiedName String> POLYNULL_ALIASES =
       Arrays.<@FullyQualifiedName String>asList(
@@ -368,6 +374,7 @@ public class NullnessAnnotatedTypeFactory
    *
    * @param checker the associated {@link NullnessChecker}
    */
+  @SuppressWarnings("this-escape")
   public NullnessAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
 
@@ -583,9 +590,8 @@ public class NullnessAnnotatedTypeFactory
   /**
    * Nullness doesn't call propagation on binary and unary because the result is always @Initialized
    * (the default qualifier).
-   *
-   * <p>Would this be valid to move into CommitmentTreeAnnotator.
    */
+  // Would this be valid to move into CommitmentTreeAnnotator?
   protected static class NullnessPropagationTreeAnnotator extends PropagationTreeAnnotator {
 
     /** Create the NullnessPropagationTreeAnnotator. */

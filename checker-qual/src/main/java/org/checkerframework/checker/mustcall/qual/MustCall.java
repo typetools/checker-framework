@@ -13,9 +13,9 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  * An expression of type {@code @MustCall({"m1", "m2"})} may be obligated to call {@code m1()}
  * and/or {@code m2()} before it is deallocated, but it is not obligated to call any other methods.
  *
- * <p>This annotation is enforced by the Object Construction Checker's {@code -AcheckMustCall} mode.
- * It enforces that the methods {@code m1()} and {@code m2()} are called on the annotated expression
- * before it is deallocated.
+ * <p>This annotation can be enforced by running the Resource Leak Checker. It enforces that the
+ * methods {@code m1()} and {@code m2()} are called on the annotated expression before it is
+ * deallocated.
  *
  * <p>The subtyping relationship is:
  *

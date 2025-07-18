@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
+import org.checkerframework.framework.util.typeinference8.constraint.Constraint;
 import org.checkerframework.framework.util.typeinference8.constraint.Constraint.Kind;
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
 import org.checkerframework.framework.util.typeinference8.constraint.QualifierTyping;
@@ -145,11 +146,12 @@ public class VariableBounds {
   /**
    * Adds {@code otherType} as bound against this variable.
    *
+   * @param parent the constraint whose reduction created this bound
    * @param kind the kind of bound
    * @param otherType the bound type
    * @return if a new bound was added
    */
-  public boolean addBound(BoundKind kind, AbstractType otherType) {
+  public boolean addBound(Constraint parent, BoundKind kind, AbstractType otherType) {
     if (otherType.isUseOfVariable() && ((UseOfVariable) otherType).getVariable() == variable) {
       return false;
     }
@@ -157,9 +159,11 @@ public class VariableBounds {
       instantiation = ((ProperType) otherType).boxType();
     }
     if (bounds.get(kind).add(otherType)) {
-      addConstraintsFromComplementaryBounds(kind, otherType);
-      Set<AbstractQualifier> aQuals = otherType.getQualifiers();
-      addConstraintsFromComplementaryQualifierBounds(kind, aQuals);
+      addConstraintsFromComplementaryBounds(parent, kind, otherType);
+      if (!otherType.ignoreAnnotations) {
+        Set<AbstractQualifier> aQuals = otherType.getQualifiers();
+        addConstraintsFromComplementaryQualifierBounds(kind, aQuals);
+      }
       return true;
     }
     return false;
@@ -230,50 +234,55 @@ public class VariableBounds {
   /**
    * Add constraints created via incorporation of the bound. See JLS 18.3.1.
    *
+   * @param parent the constraint whose reduction created this bound
    * @param kind the kind of bound
    * @param boundType the type of the bound
    */
   @SuppressWarnings("interning:not.interned") // Checking for exact object.
-  public void addConstraintsFromComplementaryBounds(BoundKind kind, AbstractType boundType) {
+  public void addConstraintsFromComplementaryBounds(
+      Constraint parent, BoundKind kind, AbstractType boundType) {
+    if (parent instanceof TypeConstraint) {
+      ((TypeConstraint) parent).source = "From complementary bound.";
+    }
     switch (kind) {
       case EQUAL:
         for (AbstractType t : bounds.get(BoundKind.EQUAL)) {
           if (boundType != t) {
-            constraints.add(new Typing(boundType, t, Kind.TYPE_EQUALITY));
+            constraints.add(new Typing(parent, boundType, t, Kind.TYPE_EQUALITY));
           }
         }
         for (AbstractType t : bounds.get(BoundKind.LOWER)) {
           if (boundType != t) {
-            constraints.add(new Typing(t, boundType, Kind.SUBTYPE));
+            constraints.add(new Typing(parent, t, boundType, Kind.SUBTYPE));
           }
         }
         for (AbstractType t : bounds.get(BoundKind.UPPER)) {
           if (boundType != t) {
-            constraints.add(new Typing(boundType, t, Kind.SUBTYPE));
+            constraints.add(new Typing(parent, boundType, t, Kind.SUBTYPE));
           }
         }
         break;
       case LOWER:
         for (AbstractType t : bounds.get(BoundKind.EQUAL)) {
           if (boundType != t) {
-            constraints.add(new Typing(boundType, t, Kind.SUBTYPE));
+            constraints.add(new Typing(parent, boundType, t, Kind.SUBTYPE));
           }
         }
         for (AbstractType t : bounds.get(BoundKind.UPPER)) {
           if (boundType != t) {
-            constraints.add(new Typing(boundType, t, Kind.SUBTYPE));
+            constraints.add(new Typing(parent, boundType, t, Kind.SUBTYPE));
           }
         }
         break;
       case UPPER:
         for (AbstractType t : bounds.get(BoundKind.EQUAL)) {
           if (boundType != t) {
-            constraints.add(new Typing(t, boundType, Kind.SUBTYPE));
+            constraints.add(new Typing(parent, t, boundType, Kind.SUBTYPE));
           }
         }
         for (AbstractType t : bounds.get(BoundKind.LOWER)) {
           if (boundType != t) {
-            constraints.add(new Typing(t, boundType, Kind.SUBTYPE));
+            constraints.add(new Typing(parent, t, boundType, Kind.SUBTYPE));
           }
         }
         break;
@@ -293,7 +302,7 @@ public class VariableBounds {
         }
       }
     }
-    if (boundType.isUseOfVariable()) {
+    if (boundType.isUseOfVariable() && !boundType.ignoreAnnotations) {
       UseOfVariable boundVar = (UseOfVariable) boundType;
       switch (kind) {
         case EQUAL:
@@ -361,6 +370,8 @@ public class VariableBounds {
    * @return the constraints between the type arguments to {@code s} and {@code t}
    */
   private List<Typing> getConstraintsFromParameterized(AbstractType s, AbstractType t) {
+    String source = "Constraint from parameterized bound.";
+
     IPair<AbstractType, AbstractType> pair =
         context.inferenceTypeFactory.getParameterizedSupers(s, t);
 
@@ -377,7 +388,7 @@ public class VariableBounds {
       AbstractType si = ss.get(i);
       AbstractType ti = ts.get(i);
       if (si.getTypeKind() != TypeKind.WILDCARD && ti.getTypeKind() != TypeKind.WILDCARD) {
-        constraints.add(new Typing(si, ti, Kind.TYPE_EQUALITY));
+        constraints.add(new Typing(source, si, ti, Kind.TYPE_EQUALITY));
       }
     }
     return constraints;
@@ -386,7 +397,7 @@ public class VariableBounds {
   /**
    * Returns whether this variable only has bounds against proper types.
    *
-   * @return whether this variable only has bounds against proper types.
+   * @return whether this variable only has bounds against proper types
    */
   public boolean onlyProperBounds() {
     for (BoundKind k : BoundKind.values()) {
@@ -558,7 +569,7 @@ public class VariableBounds {
   public boolean hasLowerBoundDifferentParam() {
     List<AbstractType> parameteredTypes = new ArrayList<>();
     for (AbstractType type : bounds.get(BoundKind.LOWER)) {
-      if (!type.isUseOfVariable() && type.isParameterizedType()) {
+      if (type.isProper() && type.isParameterizedType()) {
         parameteredTypes.add(type);
       }
     }
@@ -626,6 +637,7 @@ public class VariableBounds {
    */
   public ConstraintSet getWildcardConstraints(AbstractType Ai, AbstractType Bi) {
     ConstraintSet constraintSet = new ConstraintSet();
+    String source = "Constraint from wildcard bound.";
 
     // Only concerned with bounds against proper types or inference types.
     List<AbstractType> upperBoundsNonVar = new ArrayList<>();
@@ -663,12 +675,12 @@ public class VariableBounds {
       if (Bi.isObject()) {
         // If Bi is Object, then var <: R implies the constraint formula <T <: R>
         for (AbstractType r : upperBoundsNonVar) {
-          constraintSet.add(new Typing(T, r, TypeConstraint.Kind.SUBTYPE));
+          constraintSet.add(new Typing(source, T, r, TypeConstraint.Kind.SUBTYPE));
         }
       } else if (T.isObject()) {
         // If T is Object, then var <: R implies the constraint formula <Bi theta <: R>
         for (AbstractType r : upperBoundsNonVar) {
-          constraintSet.add(new Typing(Bi, r, TypeConstraint.Kind.SUBTYPE));
+          constraintSet.add(new Typing(source, Bi, r, TypeConstraint.Kind.SUBTYPE));
         }
       }
       // else no constraint
@@ -676,13 +688,13 @@ public class VariableBounds {
       // Super bounded wildcard
       // var <: R implies the constraint formula <Bi theta <: R>
       for (AbstractType r : upperBoundsNonVar) {
-        constraintSet.add(new Typing(Bi, r, TypeConstraint.Kind.SUBTYPE));
+        constraintSet.add(new Typing(source, Bi, r, TypeConstraint.Kind.SUBTYPE));
       }
 
       // R <: var implies the constraint formula <R <: T>
       AbstractType T = Ai.getWildcardLowerBound();
       for (AbstractType r : lowerBoundsNonVar) {
-        constraintSet.add(new Typing(r, T, TypeConstraint.Kind.SUBTYPE));
+        constraintSet.add(new Typing(source, r, T, TypeConstraint.Kind.SUBTYPE));
       }
     }
     return constraintSet;

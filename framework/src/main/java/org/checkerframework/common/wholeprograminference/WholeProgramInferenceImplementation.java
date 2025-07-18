@@ -184,6 +184,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
 
   @Override
   public void updateFromObjectCreation(
+      String className,
       ObjectCreationNode objectCreationNode,
       ExecutableElement constructorElt,
       CFAbstractStore<?, ?> store) {
@@ -206,7 +207,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
     List<Node> arguments = objectCreationNode.getArguments();
     updateInferredExecutableParameterTypes(
         constructorElt, arguments, null, objectCreationNode.getTree());
-    updateContracts(Analysis.BeforeOrAfter.BEFORE, constructorElt, store);
+    updateContracts(className, Analysis.BeforeOrAfter.BEFORE, constructorElt, store);
   }
 
   @Override
@@ -248,7 +249,11 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       receiver = null;
     }
     updateInferredExecutableParameterTypes(methodElt, arguments, receiver, methodInvNode.getTree());
-    updateContracts(Analysis.BeforeOrAfter.BEFORE, methodElt, store);
+    updateContracts(
+        "<unknown from updateFromMethodInvocation>",
+        Analysis.BeforeOrAfter.BEFORE,
+        methodElt,
+        store);
   }
 
   /**
@@ -396,7 +401,10 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
 
   @Override
   public void updateContracts(
-      Analysis.BeforeOrAfter preOrPost, ExecutableElement methodElt, CFAbstractStore<?, ?> store) {
+      String className,
+      Analysis.BeforeOrAfter preOrPost,
+      ExecutableElement methodElt,
+      CFAbstractStore<?, ?> store) {
     // Don't infer types for code that isn't presented as source.
     if (!ElementUtils.isElementFromSourceCode(methodElt)) {
       return;
@@ -450,7 +458,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       }
       T preOrPostConditionAnnos =
           storage.getPreOrPostconditions(
-              preOrPost, methodElt, fa.toString(), fieldDeclType, atypeFactory);
+              className, preOrPost, methodElt, fa.toString(), fieldDeclType, atypeFactory);
       if (preOrPostConditionAnnos == null) {
         continue;
       }
@@ -483,7 +491,8 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         continue;
       }
       T preOrPostConditionAnnos =
-          storage.getPreOrPostconditions(preOrPost, methodElt, "#" + index, declType, atypeFactory);
+          storage.getPreOrPostconditions(
+              className, preOrPost, methodElt, "#" + index, declType, atypeFactory);
       if (preOrPostConditionAnnos != null) {
         String file = storage.getFileForElement(methodElt);
         updateAnnotationSet(
@@ -513,7 +522,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         atypeFactory.wpiAdjustForUpdateNonField(inferredType);
         T preOrPostConditionAnnos =
             storage.getPreOrPostconditions(
-                preOrPost, methodElt, "this", declaredType, atypeFactory);
+                className, preOrPost, methodElt, "this", declaredType, atypeFactory);
         if (preOrPostConditionAnnos != null) {
           String file = storage.getFileForElement(methodElt);
           updateAnnotationSet(
@@ -1079,19 +1088,19 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         break;
       case WILDCARD:
         break;
-        // throw new BugInCF("This can't happen");
-        // TODO: This comment is wrong: the wildcard case does get entered.
-        // Because inferring type arguments is not supported, wildcards won't be
-        // encountered.
-        // updateATMWithLUB(
-        //         atf,
-        //         ((AnnotatedWildcardType) sourceCodeATM).getExtendsBound(),
-        //         ((AnnotatedWildcardType) ajavaATM).getExtendsBound());
-        // updateATMWithLUB(
-        //         atf,
-        //         ((AnnotatedWildcardType) sourceCodeATM).getSuperBound(),
-        //         ((AnnotatedWildcardType) ajavaATM).getSuperBound());
-        // break;
+      // throw new BugInCF("This can't happen");
+      // TODO: This comment is wrong: the wildcard case does get entered.
+      // Because inferring type arguments is not supported, wildcards won't be
+      // encountered.
+      // updateATMWithLUB(
+      //         atf,
+      //         ((AnnotatedWildcardType) sourceCodeATM).getExtendsBound(),
+      //         ((AnnotatedWildcardType) ajavaATM).getExtendsBound());
+      // updateATMWithLUB(
+      //         atf,
+      //         ((AnnotatedWildcardType) sourceCodeATM).getSuperBound(),
+      //         ((AnnotatedWildcardType) ajavaATM).getSuperBound());
+      // break;
       case ARRAY:
         AnnotatedTypeMirror sourceCodeComponent =
             ((AnnotatedArrayType) sourceCodeATM).getComponentType();
@@ -1111,11 +1120,11 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
           }
         }
         break;
-        // case DECLARED:
-        // Inferring annotations on type arguments is not supported, so no need to recur on
-        // generic types. If this was ever implemented, this method would need a
-        // VisitHistory object to prevent infinite recursion on types such as T extends
-        // List<T>.
+      // case DECLARED:
+      // Inferring annotations on type arguments is not supported, so no need to recur on
+      // generic types. If this was ever implemented, this method would need a
+      // VisitHistory object to prevent infinite recursion on types such as T extends
+      // List<T>.
       default:
         // ATM only has primary annotations
         break;

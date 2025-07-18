@@ -92,6 +92,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
    * @param invariantArrayComponents whether to make array subtyping invariant with respect to array
    *     component types
    */
+  @SuppressWarnings("this-escape")
   public DefaultTypeHierarchy(
       BaseTypeChecker checker,
       QualifierHierarchy qualHierarchy,
@@ -388,8 +389,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
       areEqualVisitHistory.put(inside, outside, currentTop, result);
       return result;
     } else if (TypesUtils.isCapturedTypeVariable(outside.getUnderlyingType())) {
-      // Sometimes the wildcard has been captured too early, so treat the captured type variable
-      // as wildcard.
+      // Sometimes the wildcard has been captured too early, so treat the captured type
+      // variable as wildcard.
       // This is all cases except bullet 6, "T <= T".
       AnnotatedTypeVariable outsideTypeVar = (AnnotatedTypeVariable) outside;
 
@@ -412,7 +413,20 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     if (canBeCovariant) {
       return isSubtype(inside, outside, currentTop);
     }
-    return areEqualInHierarchy(inside, outside);
+
+    try {
+      return areEqualInHierarchy(inside, outside);
+    } catch (Exception e) {
+      // Ignore exception and try capturing.
+      // See https://github.com/typetools/checker-framework/issues/6867.
+      // https://bugs.openjdk.org/browse/JDK-8054309
+    }
+    AnnotatedTypeMirror capturedOutside = outside.atypeFactory.applyCaptureConversion(outside);
+    previousResult = areEqualVisitHistory.get(inside, capturedOutside, currentTop);
+    if (previousResult != null) {
+      return previousResult;
+    }
+    return areEqualInHierarchy(inside, capturedOutside);
   }
 
   /**

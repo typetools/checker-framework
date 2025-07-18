@@ -480,7 +480,7 @@ the CLIMB-to-top rule.
 When overriding a method, programmers must fully specify types in the overriding
 method, which duplicates information on the overridden method.
 By contrast, declaration annotations that are meta-annotated with
-\<@InheritedAnnotation> are inherited by overriding methods.
+\refqualclass{framework/qual}{InheritedAnnotation} are inherited by overriding methods.
 
 An example for type annotations is that when defining an \<equals()>
 method, programmers must write the type annotation \<@Nullable>:
@@ -901,6 +901,8 @@ represent kilometers or miles.
 
 % Keep these lists in sync with the list in introduction.tex .
 
+% Anything that has "@QualifierForLiterals(stringPatterns = "...")" belongs
+% in this section.
 Type systems that support a run-time test are:
 \begin{itemize}
 \item
@@ -919,9 +921,17 @@ Type systems that support a run-time test are:
 \item
   \ahrefloc{index-checker}{Index Checker} for array accesses
   (see \chapterpageref{index-checker})
+% Uncomment when the Non-Empty Checker is ready to be publicized.
+% \item
+%   \ahrefloc{non-empty-checker}{Non-Empty Checker} to determine whether a
+%   collection, iterator, iterable, or map is non-empty (see \chapterpageref{non-empty-checker})
 \item
   \ahrefloc{resource-leak-checker}{Resource Leak Checker} for ensuring that resources are disposed of properly
   (see \chapterpageref{resource-leak-checker})
+\item
+  \ahrefloc{sql-quotes-checker}{SQL Quotes Checker} to mitigate SQL injection
+  attacks
+  (see \chapterpageref{sql-quotes-checker})
 \item
   \ahrefloc{regex-checker}{Regex Checker} to prevent use of syntactically
   invalid regular expressions (see \chapterpageref{regex-checker})
@@ -1179,7 +1189,7 @@ of the \<if> statement.
 If your code contains an \<assert> statement, then your code could behave
 in two different ways at run time, depending on whether assertions are
 enabled or disabled via the \<-ea>, \<-enableassertions>, \<-da>, or
-<-disableassertions> command-line options to \<java>.
+\<-disableassertions> command-line options to \<java>.
 
 By default, the Checker Framework outputs warnings about any error that
 could happen at run time, whether assertions are enabled or disabled.

@@ -3,6 +3,7 @@ package org.checkerframework.checker.lock;
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
+import com.sun.source.tree.ArrayTypeTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
@@ -159,7 +160,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
    * @param tree the MethodTree of the method definition to visit
    */
   @Override
-  public void processMethodTree(MethodTree tree) {
+  public void processMethodTree(String className, MethodTree tree) {
     ExecutableElement methodElement = TreeUtils.elementFromDeclaration(tree);
 
     issueErrorIfMoreThanOneLockPreconditionMethodAnnotationPresent(methodElement, tree);
@@ -211,7 +212,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
       checker.reportError(tree, "lockingfree.synchronized.method", sea);
     }
 
-    super.processMethodTree(tree);
+    super.processMethodTree(className, tree);
   }
 
   /**
@@ -916,11 +917,9 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     List<AnnotationMirror> amList =
         TreeUtils.annotationsFromTypeAnnotationTrees(annotationTreeList);
 
-    if (amList != null) {
-      for (AnnotationMirror annotationMirror : amList) {
-        if (atypeFactory.areSameByClass(annotationMirror, checkerGuardSatisfiedClass)) {
-          issueErrorIfGuardSatisfiedAnnotationInUnsupportedLocation(tree);
-        }
+    for (AnnotationMirror annotationMirror : amList) {
+      if (atypeFactory.areSameByClass(annotationMirror, checkerGuardSatisfiedClass)) {
+        issueErrorIfGuardSatisfiedAnnotationInUnsupportedLocation(tree);
       }
     }
 
@@ -952,12 +951,12 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         Tree varTypeTree = varTree.getType();
         if (varTypeTree != null) {
           TreePath parentPath = path.getParentPath();
-          if (parentPath != null && parentPath.getLeaf().getKind() == Tree.Kind.METHOD) {
+          if (parentPath != null && parentPath.getLeaf() instanceof MethodTree) {
             Tree.Kind varTypeTreeKind = varTypeTree.getKind();
             if (varTypeTreeKind == Tree.Kind.ANNOTATED_TYPE) {
               AnnotatedTypeTree annotatedTypeTree = (AnnotatedTypeTree) varTypeTree;
 
-              if (annotatedTypeTree.getUnderlyingType().getKind() != Tree.Kind.ARRAY_TYPE
+              if (!(annotatedTypeTree.getUnderlyingType() instanceof ArrayTypeTree)
                   || annotatedTypeTree.getAnnotations().contains(annotationTree)) {
                 // Method parameter
                 return;
@@ -1065,7 +1064,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
       Tree parent = getCurrentPath().getParentPath().getLeaf();
       // If the parent is not a member select, or if it is and the field is the expression,
       // then the field is accessed via an implicit this.
-      if ((parent.getKind() != Tree.Kind.MEMBER_SELECT
+      if ((!(parent instanceof MemberSelectTree)
               || ((MemberSelectTree) parent).getExpression() == tree)
           && !ElementUtils.isStatic(TreeUtils.elementFromUse(tree))) {
         AnnotationMirror guardedBy =

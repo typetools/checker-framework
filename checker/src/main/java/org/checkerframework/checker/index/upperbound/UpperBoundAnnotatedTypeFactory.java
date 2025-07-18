@@ -121,18 +121,21 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
   public final AnnotationMirror POLY = AnnotationBuilder.fromClass(elements, PolyUpperBound.class);
 
   /** The @{@link UpperBoundLiteral}(-1) annotation. */
+  @SuppressWarnings("this-escape")
   public final AnnotationMirror NEGATIVEONE =
       new AnnotationBuilder(getProcessingEnv(), UpperBoundLiteral.class)
           .setValue("value", -1)
           .build();
 
   /** The @{@link UpperBoundLiteral}(0) annotation. */
+  @SuppressWarnings("this-escape")
   public final AnnotationMirror ZERO =
       new AnnotationBuilder(getProcessingEnv(), UpperBoundLiteral.class)
           .setValue("value", 0)
           .build();
 
   /** The @{@link UpperBoundLiteral}(1) annotation. */
+  @SuppressWarnings("this-escape")
   public final AnnotationMirror ONE =
       new AnnotationBuilder(getProcessingEnv(), UpperBoundLiteral.class)
           .setValue("value", 1)
@@ -158,6 +161,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
   private final IndexMethodIdentifier imf;
 
   /** Create a new UpperBoundAnnotatedTypeFactory. */
+  @SuppressWarnings("this-escape")
   public UpperBoundAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
 
@@ -641,6 +645,10 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
 
     @Override
     public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
+      // This implementation does NOT call getAnnotatedType on the left or right operands.
+      // Doing so would lead to re-examination of subexpressions many times (which is too
+      // slow).
+
       // A few small rules for addition/subtraction by 0/1, etc.
       if (TreeUtils.isStringConcatenation(tree)) {
         type.addAnnotation(UNKNOWN);
@@ -859,7 +867,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
 
       ExpressionTree seqTree = getLengthSequenceTree(seqLenTree);
 
-      if (randTree.getKind() == Tree.Kind.METHOD_INVOCATION && seqTree != null) {
+      if (randTree instanceof MethodInvocationTree && seqTree != null) {
 
         MethodInvocationTree mitree = (MethodInvocationTree) randTree;
 

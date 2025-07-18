@@ -21,6 +21,7 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 
 public class I18nAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
+  @SuppressWarnings("this-escape")
   public I18nAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     this.postInit();

@@ -1,11 +1,11 @@
 package org.checkerframework.framework.util.typeinference8;
 
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -77,17 +77,17 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
     }
     AnnotatedExecutableType outerMethodType;
     if (outerTree != expressionTree) {
-      if (outerTree.getKind() == Tree.Kind.METHOD_INVOCATION) {
+      if (outerTree instanceof MethodInvocationTree) {
         pathToExpression = typeFactory.getPath(outerTree);
         outerMethodType =
             typeFactory.methodFromUseWithoutTypeArgInference((MethodInvocationTree) outerTree)
                 .executableType;
-      } else if (outerTree.getKind() == Tree.Kind.NEW_CLASS) {
+      } else if (outerTree instanceof NewClassTree) {
         pathToExpression = typeFactory.getPath(outerTree);
         outerMethodType =
             typeFactory.constructorFromUseWithoutTypeArgInference((NewClassTree) outerTree)
                 .executableType;
-      } else if (outerTree.getKind() == Kind.MEMBER_REFERENCE) {
+      } else if (outerTree instanceof MemberReferenceTree) {
         pathToExpression = typeFactory.getPath(outerTree);
         outerMethodType = null;
       } else {
@@ -102,12 +102,12 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
     }
     try {
       java8Inference = new InvocationTypeInference(typeFactory, pathToExpression);
-      if (outerTree.getKind() == Kind.MEMBER_REFERENCE) {
+      if (outerTree instanceof MemberReferenceTree) {
         return java8Inference.infer((MemberReferenceTree) outerTree);
       } else {
         InferenceResult result = java8Inference.infer(outerTree, outerMethodType);
         if (!result.getResults().containsKey(expressionTree)
-            && expressionTree.getKind() == Kind.MEMBER_REFERENCE) {
+            && expressionTree instanceof MemberReferenceTree) {
           java8Inference.context.pathToExpression = typeFactory.getPath(expressionTree);
           return java8Inference.infer((MemberReferenceTree) expressionTree);
         }
@@ -118,11 +118,12 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
           .getChecker()
           .getBooleanOption("convertTypeArgInferenceCrashToWarning", true)) {
         // This should never happen, if javac infers type arguments so should the Checker
-        // Framework. However, given how buggy javac inference is, this probably will, so deal
-        // with it gracefully.
+        // Framework. However, given how buggy javac inference is, this probably will, so
+        // deal with it gracefully.
         return new InferenceResult(
             Collections.emptyList(),
             false,
+            true,
             true,
             "An exception occurred: " + ex.getLocalizedMessage());
       }
@@ -188,7 +189,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         return tree;
       case RETURN:
         TreePath parentParentPath = parentPath.getParentPath();
-        if (parentParentPath.getLeaf().getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
+        if (parentParentPath.getLeaf() instanceof LambdaExpressionTree) {
           return outerInference(
               (ExpressionTree) parentParentPath.getLeaf(), parentParentPath.getParentPath());
         }
@@ -238,7 +239,9 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
       }
     }
     if (index == -1) {
-      throw new BugInCF("Argument argTree not found in list of arguments.");
+      // This happens for an invocation of an inner constructor:
+      // var x = new Issue6839<>(1). new Inner<>(1);
+      return false;
     }
 
     ExecutableType executableType = (ExecutableType) executableElement.asType();

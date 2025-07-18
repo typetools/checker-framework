@@ -1,0 +1,53 @@
+package :
+annotation @A: @java.lang.annotation.Target(value={TYPE_USE})
+    int value
+
+package :
+annotation @D: @java.lang.annotation.Target(value={TYPE_USE})
+    int value
+
+package :
+annotation @B: @java.lang.annotation.Target(value={TYPE_USE})
+    int value
+
+package :
+annotation @C: @java.lang.annotation.Target(value={TYPE_USE})
+    int value
+
+package :
+class InnerClass:
+
+    method m()V:
+        return:
+        insert-annotation Method.body, Block.statement 1, If.thenStatement, Block.statement 0, Variable.initializer, TypeCast.type: @A(value=5)
+        insert-annotation Method.body, Block.statement 5, If.thenStatement, Block.statement 0, Variable.initializer, TypeCast.type: @D(value=5)
+        insert-annotation Method.body, Block.statement 1, If.condition, Parenthesized.expression, InstanceOf.type: @A(value=3)
+        insert-annotation Method.body, Block.statement 5, If.condition, Parenthesized.expression, InstanceOf.type: @D(value=3)
+        insert-annotation Method.body, Block.statement 4, ExpressionStatement.expression, Assignment.expression, NewClass.identifier: @D(value=2)
+        insert-annotation Method.body, Block.statement 1, If.thenStatement, Block.statement 0, Variable.type: @A(value=4)
+        insert-annotation Method.body, Block.statement 5, If.thenStatement, Block.statement 0, Variable.type: @D(value=4)
+        insert-annotation Method.body, Block.statement 0, Variable.initializer, NewClass.identifier: @A(value=2)
+        insert-annotation Method.body, Block.statement 0, Variable.type: @A(value=1)
+
+package :
+class InnerClass$1Inner:
+
+    method m()V:
+        return:
+        insert-annotation Method.body, Block.statement 1, If.thenStatement, Block.statement 0, Variable.initializer, TypeCast.type: @B(value=5)
+        insert-annotation Method.body, Block.statement 1, If.condition, Parenthesized.expression, InstanceOf.type: @B(value=3)
+        insert-annotation Method.body, Block.statement 1, If.thenStatement, Block.statement 0, Variable.type: @B(value=4)
+        insert-annotation Method.body, Block.statement 0, Variable.initializer, NewClass.identifier: @B(value=2)
+        insert-annotation Method.body, Block.statement 0, Variable.type: @B(value=1)
+
+package :
+class InnerClass$1:
+
+    method m()V:
+        return:
+        insert-annotation Method.body, Block.statement 1, If.thenStatement, Block.statement 0, Variable.initializer, TypeCast.type: @C(value=5)
+        insert-annotation Method.body, Block.statement 1, If.condition, Parenthesized.expression, InstanceOf.type: @C(value=3)
+        insert-annotation Method.body, Block.statement 1, If.thenStatement, Block.statement 0, Variable.type: @C(value=4)
+        insert-annotation Method.body, Block.statement 0, Variable.initializer, NewClass.identifier: @C(value=2)
+        insert-annotation Method.body, Block.statement 0, Variable.type: @C(value=1)
+

@@ -134,6 +134,7 @@ public class CheckerMain {
    * Construct all the relevant file locations and Java version given the path to this jar and a set
    * of directories in which to search for jars.
    */
+  @SuppressWarnings("this-escape")
   public CheckerMain(File checkerJar, List<String> args) {
 
     this.checkerJar = checkerJar;
@@ -782,9 +783,9 @@ public class CheckerMain {
     return str;
   }
 
-  ///////////////////////////////////////////////////////////////////////////
-  /// Shorthand checker names
-  ///
+  // ///////////////////////////////////////////////////////////////////////////
+  // Shorthand checker names
+  //
 
   /** Processor shorthand is enabled for processors in this directory in checker.jar. */
   protected static final String CHECKER_BASE_DIR_NAME = "org/checkerframework/checker/";

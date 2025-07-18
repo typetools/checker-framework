@@ -1,0 +1,13 @@
+package java.lang:
+annotation @UnderInitialization: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package org.checkerframework.afu.annotator.tests:
+class MethodMultiple:
+
+    method <init>()V:
+
+    method foo()Ljava/lang/String;:
+
+    method foo(Ljava/lang/String;)Ljava/lang/String;:
+        return: @java.lang.UnderInitialization
+

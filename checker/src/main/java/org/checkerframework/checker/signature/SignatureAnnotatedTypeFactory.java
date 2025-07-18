@@ -20,7 +20,6 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.signature.qual.ArrayWithoutPackage;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.BinaryNameOrPrimitiveType;
-import org.checkerframework.checker.signature.qual.BinaryNameWithoutPackage;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.checker.signature.qual.CanonicalNameAndBinaryName;
 import org.checkerframework.checker.signature.qual.ClassGetName;
@@ -84,6 +83,10 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   protected final AnnotationMirror PRIMITIVE_TYPE =
       AnnotationBuilder.fromClass(elements, PrimitiveType.class);
 
+  /** The {@literal @}{@link Identifier} annotation. */
+  protected final AnnotationMirror IDENTIFIER =
+      AnnotationBuilder.fromClass(elements, Identifier.class);
+
   /** The {@link String#replace(char, char)} method. */
   private final ExecutableElement replaceCharChar =
       TreeUtils.getMethod("java.lang.String", "replace", processingEnv, "char", "char");
@@ -110,6 +113,7 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    *
    * @param checker the type-checker associated with this type factory
    */
+  @SuppressWarnings("this-escape")
   public SignatureAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
 
@@ -144,57 +148,56 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     // The below code achieves the same effect as writing a meta-annotation
     //     @QualifierForLiterals(stringPatterns = "...")
     // on each type qualifier definition.  Annotation elements cannot be computations (not even
-    // string concatenations of literal strings) and cannot be not references to compile-time
+    // string concatenations of literal strings) and cannot be references to compile-time
     // constants such as effectively-final fields.  So every `stringPatterns = "..."` would have
     // to be a literal string, which would be verbose ard hard to maintain.
     result.addStringPattern(
-        SignatureRegexes.ArrayWithoutPackageRegex,
+        SignatureRegexes.ArrayWithoutPackagePattern,
         AnnotationBuilder.fromClass(elements, ArrayWithoutPackage.class));
     result.addStringPattern(
-        SignatureRegexes.BinaryNameRegex, AnnotationBuilder.fromClass(elements, BinaryName.class));
+        SignatureRegexes.BinaryNamePattern,
+        AnnotationBuilder.fromClass(elements, BinaryName.class));
     result.addStringPattern(
-        SignatureRegexes.BinaryNameOrPrimitiveTypeRegex,
+        SignatureRegexes.BinaryNameOrPrimitiveTypePattern,
         AnnotationBuilder.fromClass(elements, BinaryNameOrPrimitiveType.class));
     result.addStringPattern(
-        SignatureRegexes.BinaryNameWithoutPackageRegex,
-        AnnotationBuilder.fromClass(elements, BinaryNameWithoutPackage.class));
-    result.addStringPattern(
-        SignatureRegexes.ClassGetNameRegex,
+        SignatureRegexes.ClassGetNamePattern,
         AnnotationBuilder.fromClass(elements, ClassGetName.class));
     result.addStringPattern(
-        SignatureRegexes.ClassGetSimpleNameRegex,
+        SignatureRegexes.ClassGetSimpleNamePattern,
         AnnotationBuilder.fromClass(elements, ClassGetSimpleName.class));
     result.addStringPattern(
-        SignatureRegexes.DotSeparatedIdentifiersRegex,
+        SignatureRegexes.DotSeparatedIdentifiersPattern,
         AnnotationBuilder.fromClass(elements, DotSeparatedIdentifiers.class));
     result.addStringPattern(
-        SignatureRegexes.DotSeparatedIdentifiersOrPrimitiveTypeRegex,
+        SignatureRegexes.DotSeparatedIdentifiersOrPrimitiveTypePattern,
         AnnotationBuilder.fromClass(elements, DotSeparatedIdentifiersOrPrimitiveType.class));
     result.addStringPattern(
-        SignatureRegexes.FieldDescriptorRegex,
+        SignatureRegexes.FieldDescriptorPattern,
         AnnotationBuilder.fromClass(elements, FieldDescriptor.class));
     result.addStringPattern(
-        SignatureRegexes.FieldDescriptorForPrimitiveRegex,
+        SignatureRegexes.FieldDescriptorForPrimitivePattern,
         AnnotationBuilder.fromClass(elements, FieldDescriptorForPrimitive.class));
     result.addStringPattern(
-        SignatureRegexes.FieldDescriptorWithoutPackageRegex,
+        SignatureRegexes.FieldDescriptorWithoutPackagePattern,
         AnnotationBuilder.fromClass(elements, FieldDescriptorWithoutPackage.class));
     result.addStringPattern(
-        SignatureRegexes.FqBinaryNameRegex,
+        SignatureRegexes.FqBinaryNamePattern,
         AnnotationBuilder.fromClass(elements, FqBinaryName.class));
     result.addStringPattern(
-        SignatureRegexes.FullyQualifiedNameRegex,
+        SignatureRegexes.FullyQualifiedNamePattern,
         AnnotationBuilder.fromClass(elements, FullyQualifiedName.class));
     result.addStringPattern(
-        SignatureRegexes.IdentifierRegex, AnnotationBuilder.fromClass(elements, Identifier.class));
+        SignatureRegexes.IdentifierPattern,
+        AnnotationBuilder.fromClass(elements, Identifier.class));
     result.addStringPattern(
-        SignatureRegexes.IdentifierOrPrimitiveTypeRegex,
+        SignatureRegexes.IdentifierOrPrimitiveTypePattern,
         AnnotationBuilder.fromClass(elements, IdentifierOrPrimitiveType.class));
     result.addStringPattern(
-        SignatureRegexes.InternalFormRegex,
+        SignatureRegexes.InternalFormPattern,
         AnnotationBuilder.fromClass(elements, InternalForm.class));
     result.addStringPattern(
-        SignatureRegexes.PrimitiveTypeRegex,
+        SignatureRegexes.PrimitiveTypePattern,
         AnnotationBuilder.fromClass(elements, PrimitiveType.class));
     return result;
   }
@@ -207,9 +210,20 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
+
       if (TreeUtils.isStringConcatenation(tree)) {
-        // This could be made more precise.
-        type.replaceAnnotation(SIGNATURE_UNKNOWN);
+        AnnotatedTypeMirror lType = getAnnotatedType(tree.getLeftOperand());
+        AnnotatedTypeMirror rType = getAnnotatedType(tree.getRightOperand());
+
+        // An identifier can end, but not start, with digits
+        if (lType.getPrimaryAnnotation(Identifier.class) != null
+            && (rType.getPrimaryAnnotation(Identifier.class) != null
+                || TypesUtils.isIntegralNumericOrBoxed(rType.getUnderlyingType()))) {
+          type.replaceAnnotation(IDENTIFIER);
+        } else {
+          // This could be made more precise.
+          type.replaceAnnotation(SIGNATURE_UNKNOWN);
+        }
       }
       return null; // super.visitBinary(tree, type);
     }
@@ -229,10 +243,10 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      *
      * <pre><code>
      * {@literal @}InternalForm String internalForm = binaryName.replace('.', '/');
-     * {@literal @}BinaryName String binaryName = internalForm.replace('/', '.');
+     * {@literal @}DotSeparatedIdentifiers String dsi = internalForm.replace('/', '.');
      * </code></pre>
      *
-     * Class.getName and Class.getCanonicalName(): Cwhen called on a primitive type ,the return a
+     * Class.getName and Class.getCanonicalName(): when called on a primitive type, they return a
      * {@link PrimitiveType}. When called on a non-array, non-nested, non-primitive type, they
      * return a {@link BinaryName}:
      *
@@ -274,7 +288,7 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
           type.replaceAnnotation(INTERNAL_FORM);
         } else if ((oldChar == '/' && newChar == '.')
             && receiverType.getPrimaryAnnotation(InternalForm.class) != null) {
-          type.replaceAnnotation(BINARY_NAME);
+          type.replaceAnnotation(DOT_SEPARATED_IDENTIFIERS);
         }
       } else {
         boolean isClassGetName = TreeUtils.isMethodInvocation(tree, classGetName, processingEnv);
@@ -284,7 +298,7 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
           ExpressionTree receiver = TreeUtils.getReceiverTree(tree);
           if (TreeUtils.isClassLiteral(receiver)) {
             ExpressionTree classExpr = ((MemberSelectTree) receiver).getExpression();
-            if (classExpr.getKind() == Tree.Kind.PRIMITIVE_TYPE) {
+            if (classExpr instanceof PrimitiveTypeTree) {
               if (((PrimitiveTypeTree) classExpr).getPrimitiveTypeKind() == TypeKind.VOID) {
                 // do nothing
               } else {

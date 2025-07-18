@@ -44,11 +44,19 @@ The Checker Framework comes with checkers for specific types of errors:
   \ahrefloc{tainting-checker}{Tainting Checker} for trust and security errors
   (see \chapterpageref{tainting-checker})
 \item
+  \ahrefloc{sql-quotes-checker}{SQL Quotes Checker} to mitigate SQL injection
+  attacks
+  (see \chapterpageref{sql-quotes-checker})
+\item
   \ahrefloc{lock-checker}{Lock Checker} for concurrency and lock errors
   (see \chapterpageref{lock-checker})
 \item
   \ahrefloc{index-checker}{Index Checker} for array accesses
   (see \chapterpageref{index-checker})
+% TODO: Uncomment when the Non-Empty Checker is ready to be publicized.
+% \item
+%   \ahrefloc{non-empty-checker}{Non-Empty Checker} to determine whether a
+%   collection, iterator, iterable, or map is non-empty (see \chapterpageref{non-empty-checker})
 \item
   \ahrefloc{regex-checker}{Regex Checker} to prevent use of syntactically
   invalid regular expressions (see \chapterpageref{regex-checker})
@@ -206,7 +214,7 @@ optional step.
   %BEGIN LATEX
   \\
   %END LATEX
-  \url{https://checkerframework.org/checker-framework-3.44.0.zip}
+  \url{https://checkerframework.org/checker-framework-3.49.5.zip}
 
 \item
   Unzip it to create a \code{checker-framework-\ReleaseVersion{}} directory.
@@ -643,15 +651,6 @@ More sound (strict) checking: enable errors that are disabled by default
 \item \<-AconcurrentSemantics>
   Whether to assume concurrent semantics (field values may change at any
   time) or sequential semantics; see Section~\ref{faq-concurrency}.
-\item \<-AconservativeUninferredTypeArguments>
-  Whether an error should be issued if type arguments could not be inferred and
-  whether method type arguments that could not be inferred should use
-  conservative defaults.
-  By default, such type arguments are (largely) ignored in later
-  checks.
-  Passing this option uses a conservative value instead.
-  See \href{https://github.com/typetools/checker-framework/issues/979}{Issue
-  979}.
 \item \<-AignoreRawTypeArguments=false>
   Do not ignore subtype tests for type arguments that were inferred for a
   raw type.  See Section~\ref{generics-raw-types}.
@@ -768,6 +767,7 @@ Debugging
  \<-AprintVerboseGenerics>,
  \<-Anomsgtext>,
  \<-AdumpOnErrors>
+ \<-AexceptionLineSeparator>
 Amount of detail in messages; see Section~\ref{creating-debugging-options-detail}.
 
 \item
@@ -809,6 +809,14 @@ See Section~\ref{creating-debugging-options-output-args}.
  \<-AatfDoNotCache>,
  \<-AatfCacheSize>
 Miscellaneous debugging options; see Section~\ref{creating-debugging-options-misc}.
+
+\item
+ \<-AslowTypecheckingSeconds=N>
+Print a warning for any program construct, such as a method or class, whose
+type-checking takes more than N seconds (default 45).
+Often, generic type inference is the slowest part of type-checking, and you
+can significantly speed up type-checking by explicitly writing a few
+generic type arguments.
 
 \item
  \<-Aversion>
@@ -1656,7 +1664,7 @@ or suppress warnings.
 % LocalWords:  Djsr qual Alint javac's dotequals nullable supertype JLS Papi
 % LocalWords:  deserialization Mahmood Telmo Correa changelog txt nullness ESC
 % LocalWords:  Nullness unselect checkbox unsetting PolyNull typedefs arg
-% LocalWords:  bashrc IDE xml buildfile enum API elts INF
+% LocalWords:  bashrc IDE xml buildfile enum API elts INF sql WPI
 % LocalWords:  type-checker proc discoverable Xlint util QualifierDefaults Foo
 % LocalWords:  DefaultQualifier SoyLatte GetStarted Formatter bcel csv sbt
 % LocalWords:  Dcheckers Warski MyClass ProcessorName compareTo toString myDate
@@ -1696,3 +1704,4 @@ or suppress warnings.
 % LocalWords:  AwarnRedundantAnnotations AinferOutputOriginal
 % LocalWords:  AshowPrefixInWarningMessages AstubNoWarnIfNotFound
 % LocalWords:  AshowWpiFailedInferences AassumePureGetters AonlyFiles AskipFiles
+% LocalWords:  AexceptionLineSeparator

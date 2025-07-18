@@ -276,8 +276,8 @@ TreeAnnotator
   <p>To release the Maven artifacts to the Maven Central <b>snapshot</b> repository:</p>
   <ol>
     <li>
-      Ensure that <code>~/.gradle/gradle.properties</code> includes your <code>SONATYPE_NEXUS_USERNAME</code>
-      and <code>SONATYPE_NEXUS_PASSWORD</code>.
+      Ensure that <code>~/.gradle/gradle.properties</code> includes your user token in <code>SONATYPE_NEXUS_USERNAME</code>
+      and your user token key in <code>SONATYPE_NEXUS_PASSWORD</code>.
     </li>
     <li>
       Ensure that the version number in <code>checker-framework/build.gradle</code> (in <code>allprojects { version ... }</code>) ends in <code>-SNAPSHOT</code>.
@@ -375,13 +375,13 @@ configurations.all({
     </tr>
     <tr>
       <td>4.</td>
-      <td><strong>Add your account information to gradle/build.properties in your home directory.</strong><br/>
+      <td><strong>Add your user token information to gradle/build.properties in your home directory.</strong><br/>
+        Follow the <a href="https://central.sonatype.org/publish/generate-token/">instructions</a> to generate a user token.
         Create a <code>~/.gradle/gradle.properties</code> file with the following:
         <pre>
-SONATYPE_NEXUS_USERNAME=your_user_name
-SONATYPE_NEXUS_PASSWORD=your_password</pre>
-        using the information you just created for your Sonatype Account on tern or other
-        network host.  Since the file contains your password, make it non-readable:  <code>chmod og-rw ~/.gradle/gradle.properties</code>
+SONATYPE_NEXUS_USERNAME=your_tokenuser
+SONATYPE_NEXUS_PASSWORD=your_tokenkey</pre>
+ Since the file contains your password, make it non-readable:  <code>chmod og-rw ~/.gradle/gradle.properties</code>
       </td>
     </tr>
     <tr>
@@ -537,7 +537,7 @@ git config --global user.email you@example.com</pre>
           is correct through scripts and manual steps.  When the user is satisfied the website
           is correct it deploys the website to the live website:
           <a href="https://checkerframework.org/">https://checkerframework.org/</a>.
-          It also pushes Maven artifacts to Maven central.
+          It also pushes Maven artifacts to Maven Central.
           This script is thoroughly documented in code comments located in its <code>main()</code> function.
         </td>
       </tr>
@@ -659,7 +659,7 @@ git config --global user.email you@example.com</pre>
   <h3 id="backing_out_steps">Manual Steps to Back Out a Release</h3>
   <ul>
     <li><strong>Drop the artifacts from Central</strong><br/>
-      You may have staged and then closed the artifacts in the Sonatype Central repository.  Drop (do NOT release)
+      You may have staged and then closed the artifacts in the Sonatype Central Repository.  Drop (do NOT release)
       these artifacts.  See
       <a href="https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide#SonatypeOSSMavenRepositoryUsageGuide-DroppingaStagingRepository%28i.e.WhattoDoifYourStagingRepositoryHasErrors%29">
         the Sonatype OSS Repository Usage Guidelines.
@@ -674,7 +674,7 @@ git config --global user.email you@example.com</pre>
       </p>
 
       At the moment, we have decided to drop the user of our local Maven repository in favor of using
-      the Central repository exclusively.  This may not be the case in the future.  If we do have a
+      the Central Repository exclusively.  This may not be the case in the future.  If we do have a
       local repository, you need to go into the repositories directory (usually an m2-repo directory) and
       manually delete the versions of the Maven artifacts.  For instance, for the artifacts checker and compiler
       using version 0.9.8, I would delete the directories:

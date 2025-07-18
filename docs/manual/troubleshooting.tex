@@ -731,9 +731,9 @@ in this manual.)
 sudo apt-get -qqy update
 sudo apt-get -qqy install \
  openjdk-17-jdk \
- ant cpp git gradle jq jtreg6 libcurl3-gnutls \
- make maven pipx python3-requests unzip wget \
- autoconf devscripts dia hevea imagemagick junit jtreg6 latexmk \
+ ant cpp git gradle jq jtreg7 libcurl3-gnutls \
+ make maven pipx python3-requests python3-setuptools unzip wget \
+ autoconf devscripts dia hevea imagemagick junit jtreg7 latexmk \
  librsvg2-bin libasound2-dev libcups2-dev libfontconfig1-dev \
  libx11-dev libxext-dev libxrender-dev libxrandr-dev libxtst-dev libxt-dev \
  pdf2svg rsync shellcheck \
@@ -761,38 +761,43 @@ In a startup file, write:
 \end{smaller}
 %END LATEX
 
-\item[Mac OS]
+\item[macOS]
   If you employ \href{https://brew.sh}{homebrew} to install packages, run
   the following commands:
 
 \begin{Verbatim}
 brew update
-brew install git ant hevea maven librsvg unzip make
-brew tap homebrew/cask-versions
+brew install git graphviz ant hevea maven librsvg unzip make
 brew install --cask temurin17
 brew install --cask mactex
 \end{Verbatim}
+
+Note: Running \<brew install --cask temurin17> is only necessary if you do not
+already have a JDK that is compatible with the Checker Framework installed.
 
 Make a \<latex> directory and copy \<hevea.sty> file into it.
 (\url{https://hevea.inria.fr/} gives the current version number.)
 
 \begin{Verbatim}
 mkdir -p $HOME/Library/texmf/tex/latex
-cp -p /usr/local/Cellar/hevea/2.36/lib/hevea/hevea.sty $HOME/Library/texmf/tex/latex/
+cp -p /opt/homebrew/Cellar/hevea/2.36/lib/hevea/hevea.sty $HOME/Library/texmf/tex/latex/
 \end{Verbatim}
 
 Note: If copy permission is denied, try \<sudo>.
 
-In a startup file, write:
+If \<echo \$JAVA\_HOME> outputs nothing (that is, if the \<JAVA\_HOME>
+environment variable is not set), then write the following
+in a startup file:
 
 \begin{Verbatim}
-export JAVA_HOME=$(/usr/libexec/java_home -v 17)
+export JAVA_HOME=$(/usr/libexec/java_home -v XX)
 \end{Verbatim}
 or
 \begin{Verbatim}
-export JAVA_HOME=/Library/Java/JavaVirtualMachines/adoptopenjdk-17.jdk/Contents/Home/
+export JAVA_HOME=/Library/Java/JavaVirtualMachines/adoptopenjdk-XX.jdk/Contents/Home/
 \end{Verbatim}
 
+In the command, \emph{XX} is a JDK version such as 17, 21, 24, etc.
 
 \item[Windows]
   To build on Windows 10 or later,
@@ -931,12 +936,21 @@ Install Docker on your local computer, then perform commands like the
 following to get a shell within Docker:
 
 \begin{Verbatim}
-docker pull mdernst/cf-ubuntu-jdk17
-docker run -it mdernst/cf-ubuntu-jdk17 /bin/bash
+docker pull mdernst/cf-ubuntu-jdk21
+docker run -it mdernst/cf-ubuntu-jdk21 /bin/bash
 \end{Verbatim}
 
 Then, you can run arbitrary commands, including those that appear in the
-CI configuration files.
+CI configuration files.  For example:
+
+\begin{Verbatim}
+git clone --filter=blob:none -b docker-ubuntu-24-10 https://github.com/mernst/checker-framework.git
+cd checker-framework
+export CHECKERFRAMEWORK=$(pwd)
+alias javacheck='$CHECKERFRAMEWORK/checker/bin/javac'
+export NO_WRITE_VERIFICATION_METADATA=true
+checker/bin-devel/test-cftests-junit.sh
+\end{Verbatim}
 
 
 \subsectionAndLabel{Related repositories}{building-related-repositories}

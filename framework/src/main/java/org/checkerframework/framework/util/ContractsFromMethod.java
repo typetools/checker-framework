@@ -106,7 +106,7 @@ public class ContractsFromMethod {
         Contract.ConditionalPostcondition.class);
   }
 
-  /// Helper methods
+  // Helper methods
 
   /**
    * Returns the contracts (of a particular kind) on method or constructor {@code

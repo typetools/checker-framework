@@ -41,7 +41,7 @@ public class AnnotationMirrorSet
   /** The canonical unmodifiable empty set. */
   private static AnnotationMirrorSet emptySet = unmodifiableSet(Collections.emptySet());
 
-  /// Constructors and factory methods
+  // Constructors and factory methods
 
   /** Default constructor. */
   public AnnotationMirrorSet() {}
@@ -52,6 +52,7 @@ public class AnnotationMirrorSet
    *
    * @param value the AnnotationMirror to put in the set
    */
+  @SuppressWarnings("this-escape") // `add()` is safe to call
   public AnnotationMirrorSet(AnnotationMirror value) {
     this.add(value);
   }
@@ -61,6 +62,7 @@ public class AnnotationMirrorSet
    *
    * @param annos the AnnotationMirrors to put in the set
    */
+  @SuppressWarnings("this-escape") // `addAll()` is safe to call
   public AnnotationMirrorSet(Collection<? extends AnnotationMirror> annos) {
     this.addAll(annos);
   }
@@ -119,7 +121,7 @@ public class AnnotationMirrorSet
     return emptySet;
   }
 
-  /// Set methods
+  // Set methods
 
   @Override
   public int size() {
@@ -266,7 +268,7 @@ public class AnnotationMirrorSet
     return result;
   }
 
-  /// NavigableSet methods
+  // NavigableSet methods
 
   @SuppressWarnings({
     "interning:override.return", // looks like a bug (in interning checker)

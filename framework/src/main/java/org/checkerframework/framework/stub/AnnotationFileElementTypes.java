@@ -452,9 +452,13 @@ public class AnnotationFileElementTypes {
   public @Nullable AnnotationMirrorSet getDeclAnnotations(Element elt) {
     if (stubDebug) {
       if (isParsing()) {
-        System.out.printf("AFET.getDeclAnnotations(%s [%s])%n", elt, elt.getClass());
+        System.out.printf(
+            "AFET.getDeclAnnotations(%s [%s]): isParsing() => true, returning emptySet.%n",
+            elt, elt.getClass());
       } else {
-        System.out.printf("AFET.getDeclAnnotations(%s [%s]) IS NOT PARSING%n", elt, elt.getClass());
+        System.out.printf(
+            "AFET.getDeclAnnotations(%s [%s]): isParsing() => false, proceeding.%n",
+            elt, elt.getClass());
       }
     }
 
@@ -660,9 +664,9 @@ public class AnnotationFileElementTypes {
         fakeReceiverType, candidates, applicableClasses, applicableInterfaces);
   }
 
-  ///
-  /// End of public methods, private helper methods follow
-  ///
+  //
+  // End of public methods, private helper methods follow
+  //
 
   /**
    * Parses the outermost enclosing class of {@code e} if it is in the annotated JDK and it has not

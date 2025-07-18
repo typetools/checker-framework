@@ -59,6 +59,7 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForInd
    *
    * @param checker the type-checker associated with this type factory
    */
+  @SuppressWarnings("this-escape")
   public LessThanAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     postInit();

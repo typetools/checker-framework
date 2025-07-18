@@ -1,0 +1,34 @@
+package:
+annotation @A: @java.lang.annotation.Target(value={TYPE_USE})
+annotation @B: @java.lang.annotation.Target(value={TYPE_USE})
+annotation @C: @java.lang.annotation.Target(value={TYPE_USE})
+
+class LambdaExpression:
+
+    field f2:
+        lambda *0:
+            parameter 0:
+                type: @A
+
+    field f3:
+        lambda *0:
+            parameter 0:
+                type: @A
+
+    field f4:
+        lambda *0:
+            parameter 0:
+                type: @A
+            parameter 1:
+                type: @B
+
+    field selectCommon:
+        lambda *0:
+            parameter 0:
+                type: @B
+                inner-type 0, 0: @A
+            parameter 1:
+                type: @A
+                inner-type 3, 0: @B
+                inner-type 3, 0, 2, 0: @C
+

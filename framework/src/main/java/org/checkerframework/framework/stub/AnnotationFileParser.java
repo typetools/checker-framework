@@ -284,7 +284,7 @@ public class AnnotationFileParser {
      * than in the real files. So, map keys are the verbose element name, as returned by
      * ElementUtils.getQualifiedName.
      */
-    public final Map<String, AnnotationMirrorSet> declAnnos = new HashMap<>(1);
+    public final Map<String, AnnotationMirrorSet> declAnnos = new HashMap<>(4);
 
     /**
      * Map from a method element to all the fake overrides of it. Given a key {@code ee}, the fake
@@ -292,7 +292,7 @@ public class AnnotationFileParser {
      * {@code ee.getReceiverType()}.
      */
     public final Map<ExecutableElement, List<IPair<TypeMirror, AnnotatedTypeMirror>>>
-        fakeOverrides = new HashMap<>(1);
+        fakeOverrides = new HashMap<>(4);
 
     /** Maps fully qualified record name to information in the stub file. */
     public final Map<String, RecordStub> records = new HashMap<>();
@@ -770,7 +770,8 @@ public class AnnotationFileParser {
 
   /**
    * Process {@link #stubUnit}, which is the AST produced by {@link #parseStubUnit}. Processing
-   * means copying annotations from Stub Parser data structures to {@code #annotationFileAnnos}.
+   * means copying annotations from Stub Parser data structures to argument {@code
+   * annotationFileAnnos}.
    *
    * @param annotationFileAnnos annotations from the file; side-effected by this method
    */
@@ -781,7 +782,7 @@ public class AnnotationFileParser {
   }
 
   /**
-   * Process the given StubUnit: copy its annotations to {@code #annotationFileAnnos}.
+   * Process the given StubUnit: copy its annotations to {@code this.annotationFileAnnos}.
    *
    * @param su the StubUnit to process
    */
@@ -1400,7 +1401,7 @@ public class AnnotationFileParser {
             param.getType(),
             param.getAnnotations(),
             param);
-        // The "VarArgsAnnotations" are those just before "...".
+        // The "VarargsAnnotations" are those just before "...".
         annotate(paramType, param.getVarArgsAnnotations(), param);
       } else {
         annotate(paramType, param.getType(), param.getAnnotations(), param);
@@ -2577,9 +2578,9 @@ public class AnnotationFileParser {
       return convert(((LongLiteralExpr) expr).asNumber(), valueKind);
     } else if (expr instanceof UnaryExpr) {
       switch (expr.toString()) {
-          // Special-case the minimum values.  Separately parsing a "-" and a value
-          // doesn't correctly handle the minimum values, because the absolute value of
-          // the smallest member of an integral type is larger than the largest value.
+        // Special-case the minimum values.  Separately parsing a "-" and a value
+        // doesn't correctly handle the minimum values, because the absolute value of
+        // the smallest member of an integral type is larger than the largest value.
         case "-9223372036854775808L":
         case "-9223372036854775808l":
           return convert(Long.MIN_VALUE, valueKind, false);
@@ -2887,9 +2888,9 @@ public class AnnotationFileParser {
     return res;
   }
 
-  ///////////////////////////////////////////////////////////////////////////
-  /// Map utilities
-  ///
+  // ///////////////////////////////////////////////////////////////////////////
+  // Map utilities
+  //
 
   /**
    * Just like Map.put, but does not override any existing value in the map.
@@ -2981,9 +2982,9 @@ public class AnnotationFileParser {
     }
   }
 
-  ///////////////////////////////////////////////////////////////////////////
-  /// Issue warnings
-  ///
+  // ///////////////////////////////////////////////////////////////////////////
+  // Issue warnings
+  //
 
   /** The warnings that have been issued so far. */
   private static final Set<String> warnings = new HashSet<>();
@@ -3199,9 +3200,9 @@ public class AnnotationFileParser {
     }
   }
 
-  ///////////////////////////////////////////////////////////////////////////
-  /// Parse state
-  ///
+  // ///////////////////////////////////////////////////////////////////////////
+  // Parse state
+  //
 
   /** Represents a class: its package name and name (including outer class names if any). */
   private static class FqName {

@@ -106,7 +106,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
     this.atypeFactory = atypeFactory;
   }
 
-  /// This class doesn't customize the clone() method; use deepCopy() instead.
+  // // This class doesn't customize the clone() method; use deepCopy() instead.
   // @Override
   // public AnnotatedTypeMirror clone() { ... }
 
@@ -1215,6 +1215,47 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
     public @Nullable AnnotatedDeclaredType getEnclosingType() {
       return enclosingType;
     }
+
+    /**
+     * Returns all the primary annotations, even those that are not qualifiers in this type system,
+     * on {@code e}.
+     *
+     * @param e an element
+     * @param declaredType the type of the element
+     * @param annotatedTypeFactory a type factory
+     * @return all the primary annotations, even those that are not qualifiers in this type system,
+     *     on {@code e}
+     */
+    public static AnnotationMirrorSet getPrimaryAnnotationsFromElement(
+        Element e, DeclaredType declaredType, AnnotatedTypeFactory annotatedTypeFactory) {
+      AnnotatedTypeMirror atm =
+          new AnnotatedDeclaredTypeNoHierarchy(declaredType, annotatedTypeFactory);
+      ElementAnnotationApplier.apply(atm, e, annotatedTypeFactory);
+
+      return atm.getPrimaryAnnotations();
+    }
+  }
+
+  /**
+   * This is a subclass of {@link AnnotatedDeclaredType} that adds annotations even if they are not
+   * supported by the type system.
+   */
+  private static class AnnotatedDeclaredTypeNoHierarchy extends AnnotatedDeclaredType {
+
+    /**
+     * Constructor for this type. The result contains no annotations.
+     *
+     * @param type underlying kind of this type
+     * @param atypeFactory the AnnotatedTypeFactory used to create this type
+     */
+    private AnnotatedDeclaredTypeNoHierarchy(DeclaredType type, AnnotatedTypeFactory atypeFactory) {
+      super(type, atypeFactory, false);
+    }
+
+    @Override
+    public void addAnnotation(AnnotationMirror annotation) {
+      primaryAnnotations.add(annotation);
+    }
   }
 
   /** Represents a type of an executable. An executable is a method, constructor, or initializer. */
@@ -1271,7 +1312,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
      *
      * @return true if this type represents a varargs method
      */
-    public boolean isVarArgs() {
+    public boolean isVarargs() {
       return this.element.isVarArgs();
     }
 
@@ -1716,7 +1757,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
 
       AnnotatedTypeVariable result = this.shallowCopy();
       result.declaration = false;
-      Map<TypeVariable, AnnotatedTypeMirror> mapping = new HashMap<>(1);
+      Map<TypeVariable, AnnotatedTypeMirror> mapping = new HashMap<>(4);
       mapping.put(getUnderlyingType(), result);
       AnnotatedTypeMirror upperBound =
           atypeFactory

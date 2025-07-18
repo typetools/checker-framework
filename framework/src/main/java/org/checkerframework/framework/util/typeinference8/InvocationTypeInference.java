@@ -118,6 +118,7 @@ public class InvocationTypeInference {
    * @param factory the annotated type factory to use
    * @param pathToExpression path to the expression for which inference is preformed
    */
+  @SuppressWarnings("this-escape")
   public InvocationTypeInference(AnnotatedTypeFactory factory, TreePath pathToExpression) {
     this.checker = factory.getChecker();
     this.context = new Java8InferenceContext(factory, pathToExpression, this);
@@ -149,7 +150,7 @@ public class InvocationTypeInference {
     InvocationType invocationType = new InvocationType(methodType, e, invocation, context);
     ProperType target = context.inferenceTypeFactory.getTargetType();
     List<? extends ExpressionTree> args;
-    if (invocation.getKind() == Tree.Kind.METHOD_INVOCATION) {
+    if (invocation instanceof MethodInvocationTree) {
       args = ((MethodInvocationTree) invocation).getArguments();
     } else {
       args = ((NewClassTree) invocation).getArguments();
@@ -264,8 +265,8 @@ public class InvocationTypeInference {
       ExpressionTree ei = args.get(i);
       AbstractType fi = formals.get(i);
 
-      if (!notPertinentToApplicability(ei, fi.isUseOfVariable())) {
-        c.add(new Expression(ei, fi));
+      if (!notPertinentToApplicability(ei, fi)) {
+        c.add(new Expression("Argument constraint", ei, fi));
       }
     }
 
@@ -315,7 +316,11 @@ public class InvocationTypeInference {
     for (int i = 0; i < formals.size(); i++) {
       AbstractType ei = args.get(i);
       AbstractType fi = formals.get(i);
-      c.add(new Typing(ei, fi, Kind.TYPE_COMPATIBILITY));
+      String source =
+          String.format(
+              "Method reference: %s, constraint against arguments, index %s.",
+              methodType.getInvocation(), i);
+      c.add(new Typing(source, ei, fi, Kind.TYPE_COMPATIBILITY));
     }
 
     BoundSet newBounds = c.reduce(context);
@@ -349,8 +354,12 @@ public class InvocationTypeInference {
       // If unchecked conversion was necessary for the method to be applicable during
       // constraint set reduction in 18.5.1, the constraint formula <|R| -> T> is reduced and
       // incorporated with B2.
+      String source =
+          "Constraint between method call type and target type for method call (unchecked"
+              + " conversion): "
+              + invocation;
       BoundSet b =
-          new ConstraintSet(new Typing(r.getErased(), target, Kind.TYPE_COMPATIBILITY))
+          new ConstraintSet(new Typing(source, r.getErased(), target, Kind.TYPE_COMPATIBILITY))
               .reduce(context);
       b2.incorporateToFixedPoint(b);
       return b2;
@@ -393,8 +402,13 @@ public class InvocationTypeInference {
       if (compatibility) {
         BoundSet resolve = Resolution.resolve(alpha, b2, context);
         ProperType u = (ProperType) alpha.getBounds().getInstantiation().capture(context);
+        String source =
+            "Constraint between method call type and target type for method call (compatibility"
+                + " constraint): "
+                + invocation;
+
         ConstraintSet constraintSet =
-            new ConstraintSet(new Typing(u, target, Kind.TYPE_COMPATIBILITY));
+            new ConstraintSet(new Typing(source, u, target, Kind.TYPE_COMPATIBILITY));
         BoundSet newBounds = constraintSet.reduce(context);
         resolve.incorporateToFixedPoint(newBounds);
         return resolve;
@@ -403,14 +417,20 @@ public class InvocationTypeInference {
         // From the JLS:
         // "T is a primitive type, and one of the primitive wrapper classes mentioned in
         // 5.1.7 is an instantiation, upper bound, or lower bound for [the variable] in B2."
-        ConstraintSet constraintSet = new ConstraintSet(new Typing(r, target, Kind.SUBTYPE));
+        String source =
+            "Constraint between method call type and target type for method call: " + invocation;
+
+        ConstraintSet constraintSet =
+            new ConstraintSet(new Typing(source, r, target, Kind.SUBTYPE));
         BoundSet newBounds = constraintSet.reduce(context);
         b2.incorporateToFixedPoint(newBounds);
         return b2;
       }
     }
-
-    ConstraintSet constraintSet = new ConstraintSet(new Typing(r, target, Kind.TYPE_COMPATIBILITY));
+    String source =
+        "Constraint between method call type and target type for method call:" + invocation;
+    ConstraintSet constraintSet =
+        new ConstraintSet(new Typing(source, r, target, Kind.TYPE_COMPATIBILITY));
     BoundSet newBounds = constraintSet.reduce(context);
     b2.incorporateToFixedPoint(newBounds);
     return b2;
@@ -436,18 +456,15 @@ public class InvocationTypeInference {
     for (int i = 0; i < formals.size(); i++) {
       ExpressionTree ei = args.get(i);
       AbstractType fi = formals.get(i);
-      if (notPertinentToApplicability(ei, fi.isUseOfVariable())) {
-        c.add(new Expression(ei, fi));
+      if (notPertinentToApplicability(ei, fi)) {
+        c.add(new Expression("Argument constraint", ei, fi));
       }
-      if (ei.getKind() == Tree.Kind.METHOD_INVOCATION || ei.getKind() == Tree.Kind.NEW_CLASS) {
+      if (ei instanceof MethodInvocationTree || ei instanceof NewClassTree) {
         if (TreeUtils.isPolyExpression(ei)) {
           AdditionalArgument aa = new AdditionalArgument(ei);
           c.addAll(aa.reduce(context));
         }
       } else {
-        // Wait to reduce additional argument constraints from lambdas and method references
-        // because the additional constraints might require other inference variables to be
-        // resolved before the constraint can be created.
         c.addAll(createAdditionalArgConstraints(ei, fi, map));
       }
     }
@@ -496,7 +513,7 @@ public class InvocationTypeInference {
       case METHOD_INVOCATION:
       case NEW_CLASS:
         if (TreeUtils.isPolyExpression(ei)) {
-          c.add(new AdditionalArgument(ei));
+          c.addAll(new AdditionalArgument(ei).reduce(context));
         }
         break;
       case PARENTHESIZED:
@@ -547,7 +564,15 @@ public class InvocationTypeInference {
       case METHOD_INVOCATION:
       case NEW_CLASS:
         if (TreeUtils.isPolyExpression(expression)) {
-          c.add(new AdditionalArgument(expression));
+          try {
+            c.addAll(new AdditionalArgument(expression).reduce(context));
+          } catch (Exception e) {
+            // Sometimes in order to create the additional argument constraint, other inference
+            // variables must be resolved first. This happens when a lambda parameter is used in the
+            // additional argument constraint.
+            // See framework/tests/all-systems/SimpleLambdaParameter.java
+            c.add(new AdditionalArgument(expression));
+          }
         }
         break;
       case PARENTHESIZED:
@@ -581,16 +606,15 @@ public class InvocationTypeInference {
    * provide explicit type arguments)
    *
    * @param expressionTree expression tree
-   * @param isTargetVariable whether the corresponding target type (as derived from the signature of
-   *     m) is a type parameter of m and therefore a variable
+   * @param formalParameterType the formal parameter type of the method invocation
    * @return whether {@code expressionTree} is pertinent to applicability
    */
   private boolean notPertinentToApplicability(
-      ExpressionTree expressionTree, boolean isTargetVariable) {
+      ExpressionTree expressionTree, AbstractType formalParameterType) {
     switch (expressionTree.getKind()) {
       case LAMBDA_EXPRESSION:
         LambdaExpressionTree lambda = (LambdaExpressionTree) expressionTree;
-        if (TreeUtils.isImplicitlyTypedLambda(lambda) || isTargetVariable) {
+        if (TreeUtils.isImplicitlyTypedLambda(lambda) || formalParameterType.isUseOfVariable()) {
           // An implicitly typed lambda expression.
           return true;
         } else {
@@ -598,8 +622,9 @@ public class InvocationTypeInference {
           // where at least one result expression is not pertinent to applicability.
           // An explicitly typed lambda expression whose body is an expression that is
           // not pertinent to applicability.
+          AbstractType funcReturn = formalParameterType.getFunctionTypeReturnType();
           for (ExpressionTree result : TreeUtils.getReturnedExpressions(lambda)) {
-            if (notPertinentToApplicability(result, isTargetVariable)) {
+            if (notPertinentToApplicability(result, funcReturn)) {
               return true;
             }
           }
@@ -607,25 +632,25 @@ public class InvocationTypeInference {
         }
       case MEMBER_REFERENCE:
         // An inexact method reference expression.
-        return isTargetVariable
+        return formalParameterType.isUseOfVariable()
             || !TreeUtils.isExactMethodReference((MemberReferenceTree) expressionTree);
       case PARENTHESIZED:
         // A parenthesized expression whose contained expression is not pertinent to
         // applicability.
         return notPertinentToApplicability(
-            TreeUtils.withoutParens(expressionTree), isTargetVariable);
+            TreeUtils.withoutParens(expressionTree), formalParameterType);
       case CONDITIONAL_EXPRESSION:
         ConditionalExpressionTree conditional = (ConditionalExpressionTree) expressionTree;
         // A conditional expression whose second or third operand is not pertinent to
         // applicability.
-        return notPertinentToApplicability(conditional.getTrueExpression(), isTargetVariable)
-            || notPertinentToApplicability(conditional.getFalseExpression(), isTargetVariable);
+        return notPertinentToApplicability(conditional.getTrueExpression(), formalParameterType)
+            || notPertinentToApplicability(conditional.getFalseExpression(), formalParameterType);
       default:
         if (TreeUtils.isSwitchExpression(expressionTree)) {
           SwitchExpressionScanner<Boolean, Void> scanner =
               new FunctionalSwitchExpressionScanner<>(
                   (ExpressionTree tree, Void unused) ->
-                      notPertinentToApplicability(tree, isTargetVariable),
+                      notPertinentToApplicability(tree, formalParameterType),
                   (r1, r2) -> (r1 != null && r1) || (r2 != null && r2));
           ;
           return scanner.scanSwitchExpression(expressionTree, null);
@@ -649,7 +674,7 @@ public class InvocationTypeInference {
     Set<Variable> newVariables = c.getAllInferenceVariables();
     while (!c.isEmpty()) {
 
-      ConstraintSet subset = c.getClosedSubset(b3.getDependencies(newVariables));
+      ConstraintSet subset = ConstraintSet.getClosedSubset(c, b3.getDependencies(newVariables));
       Set<Variable> alphas = subset.getAllInputVariables();
       if (!alphas.isEmpty()) {
         // First resolve only the variables with proper bounds.
@@ -668,7 +693,14 @@ public class InvocationTypeInference {
         c.applyInstantiations();
       }
       c.remove(subset);
-      BoundSet newBounds = subset.reduce(context);
+      BoundSet newBounds = subset.reduceAdditionalArgOnce(context);
+      if (!subset.isEmpty()) {
+        // The subset is not empty at this point if an additional argument constraint was
+        // found.  In this case, a new subset needs to be picked so that dependencies of
+        // the constraints from reducing the additional argument constraint can be taken
+        // into account.
+        c.addAll(subset);
+      }
       b3.incorporateToFixedPoint(newBounds);
     }
     return b3;

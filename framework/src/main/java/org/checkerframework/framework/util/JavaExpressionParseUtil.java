@@ -34,7 +34,9 @@ import com.sun.tools.javac.code.Type.ArrayType;
 import com.sun.tools.javac.code.Type.ClassType;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -117,6 +119,16 @@ public class JavaExpressionParseUtil {
 
   /** The replacement for a formal parameter in "#2" syntax. */
   private static final String PARAMETER_REPLACEMENT = PARAMETER_PREFIX + "$1";
+
+  /** Binary operations that return {@code boolean}. */
+  private static final Set<BinaryExpr.Operator> COMPARISON_OPERATORS =
+      EnumSet.of(
+          BinaryExpr.Operator.EQUALS,
+          BinaryExpr.Operator.NOT_EQUALS,
+          BinaryExpr.Operator.GREATER,
+          BinaryExpr.Operator.GREATER_EQUALS,
+          BinaryExpr.Operator.LESS,
+          BinaryExpr.Operator.LESS_EQUALS);
 
   /**
    * Parses a string to a {@link JavaExpression}.
@@ -217,6 +229,9 @@ public class JavaExpressionParseUtil {
     /** The java.lang.String type. */
     private final TypeMirror stringTypeMirror;
 
+    /** The primitive boolean type. */
+    private final TypeMirror booleanTypeMirror;
+
     /** The enclosing type. Used to look up unqualified method, field, and class names. */
     private final TypeMirror enclosingType;
 
@@ -257,7 +272,8 @@ public class JavaExpressionParseUtil {
       this.localVarPath = localVarPath;
       this.env = env;
       this.types = env.getTypeUtils();
-      this.stringTypeMirror = env.getElementUtils().getTypeElement("java.lang.String").asType();
+      this.stringTypeMirror = ElementUtils.getTypeElement(env, String.class).asType();
+      this.booleanTypeMirror = types.getPrimitiveType(TypeKind.BOOLEAN);
       this.enclosingType = enclosingType;
       this.thisReference = thisReference;
       this.parameters = parameters;
@@ -441,6 +457,7 @@ public class JavaExpressionParseUtil {
         return fieldAccess;
       }
 
+      // Class name
       if (localVarPath != null) {
         Element classElem = resolver.findClass(s, localVarPath);
         TypeMirror classType = ElementUtils.getType(classElem);
@@ -448,7 +465,6 @@ public class JavaExpressionParseUtil {
           return new ClassName(classType);
         }
       }
-
       ClassName classType = getIdentifierAsUnqualifiedClassName(s);
       if (classType != null) {
         return classType;
@@ -873,15 +889,16 @@ public class JavaExpressionParseUtil {
                   dimension.getDimension().map(dim -> dim.accept(this, aVoid)).orElse(null),
               expr.getLevels());
 
-      List<JavaExpression> initializers;
-      if (expr.getInitializer().isPresent()) {
-        initializers =
-            CollectionsPlume.mapList(
-                (Expression initializer) -> initializer.accept(this, null),
-                expr.getInitializer().get().getValues());
-      } else {
-        initializers = Collections.emptyList();
-      }
+      List<JavaExpression> initializers =
+          expr.getInitializer()
+              .map(
+                  arrayInitializerExpr -> {
+                    return CollectionsPlume.mapList(
+                        (Expression initializer) -> initializer.accept(this, null),
+                        arrayInitializerExpr.getValues());
+                  })
+              .orElse(Collections.emptyList());
+
       TypeMirror arrayType = convertTypeToTypeMirror(expr.getElementType());
       if (arrayType == null) {
         throw new ParseRuntimeException(
@@ -946,19 +963,32 @@ public class JavaExpressionParseUtil {
 
     @Override
     public JavaExpression visit(BinaryExpr expr, Void aVoid) {
+      BinaryExpr.Operator op = expr.getOperator();
       JavaExpression leftJe = expr.getLeft().accept(this, null);
       JavaExpression rightJe = expr.getRight().accept(this, null);
       TypeMirror leftType = leftJe.getType();
       TypeMirror rightType = rightJe.getType();
       TypeMirror type;
       // isSubtype() first does the cheaper test isSameType(), so no need to do it here.
-      if (types.isSubtype(leftType, rightType)) {
+      if (op == BinaryExpr.Operator.PLUS
+          && (TypesUtils.isString(leftType) || TypesUtils.isString(rightType))) {
+        // JLS 15.18.1 says, "If only one operand expression is of type String, then string
+        // conversion is performed on the other operand to produce a string at run time."
+        type = stringTypeMirror;
+      } else if (COMPARISON_OPERATORS.contains(op)) {
+        if (types.isSubtype(leftType, rightType) || types.isSubtype(rightType, leftType)) {
+          type = booleanTypeMirror;
+        } else {
+          // Don't fall through, issue an error immediately instead.
+          throw new ParseRuntimeException(
+              constructJavaExpressionParseError(
+                  expr.toString(),
+                  String.format("inconsistent types %s %s for %s", leftType, rightType, expr)));
+        }
+      } else if (types.isSubtype(leftType, rightType)) {
         type = rightType;
       } else if (types.isSubtype(rightType, leftType)) {
         type = leftType;
-      } else if (expr.getOperator() == BinaryExpr.Operator.PLUS
-          && (TypesUtils.isString(leftType) || TypesUtils.isString(rightType))) {
-        type = stringTypeMirror;
       } else {
         throw new ParseRuntimeException(
             constructJavaExpressionParseError(
@@ -1086,9 +1116,9 @@ public class JavaExpressionParseUtil {
     return -1;
   }
 
-  ///////////////////////////////////////////////////////////////////////////
-  /// Contexts
-  ///
+  // ///////////////////////////////////////////////////////////////////////////
+  // Contexts
+  //
 
   /**
    * Returns the type of the innermost enclosing class. Returns Type.noType if the type is a
@@ -1120,9 +1150,9 @@ public class JavaExpressionParseUtil {
     }
   }
 
-  ///////////////////////////////////////////////////////////////////////////
-  /// Exceptions
-  ///
+  // ///////////////////////////////////////////////////////////////////////////
+  // Exceptions
+  //
 
   /**
    * An exception that indicates a parse error. Call {@link #getDiagMessage} to obtain a {@link
@@ -1180,6 +1210,18 @@ public class JavaExpressionParseUtil {
     public boolean isFlowParseError() {
       return errorKey.endsWith("flowexpr.parse.error");
     }
+
+    @Override
+    public String toString() {
+      Throwable cause = getCause();
+      if (cause == null) {
+        return String.format("JavaExpressionParseException([null cause]: %s)", getMessage());
+      } else {
+        return String.format(
+            "JavaExpressionParseException(%s [%s]: %s)",
+            cause.toString(), cause.getClass(), getMessage());
+      }
+    }
   }
 
   /**
@@ -1191,7 +1233,7 @@ public class JavaExpressionParseUtil {
    * @return a {@link JavaExpressionParseException} for the expression {@code expr} with explanation
    *     {@code explanation}.
    */
-  private static JavaExpressionParseException constructJavaExpressionParseError(
+  public static JavaExpressionParseException constructJavaExpressionParseError(
       String expr, String explanation) {
     if (expr == null) {
       throw new BugInCF("Must have an expression.");
@@ -1216,6 +1258,11 @@ public class JavaExpressionParseUtil {
 
     private JavaExpressionParseException getCheckedException() {
       return exception;
+    }
+
+    @Override
+    public String getMessage() {
+      return "JavaExpressionParseException(" + exception + ")";
     }
   }
 }

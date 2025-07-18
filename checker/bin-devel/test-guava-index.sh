@@ -2,20 +2,24 @@
 # Use `bash` instead of `sh` because of use of BASH_SOURCE.
 
 set -e
-set -o verbose
+# set -o verbose
 set -o xtrace
 export SHELLOPTS
 echo "SHELLOPTS=${SHELLOPTS}"
 
-SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-export ORG_GRADLE_PROJECT_useJdk17Compiler=true
-source "$SCRIPTDIR"/clone-related.sh
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
+# Test that the CF, when built with JDK 21, works on other JDKs.
+export ORG_GRADLE_PROJECT_useJdk21Compiler=true
 
+# Run Gradle using Java 21.
+mkdir ~/.gradle && echo "org.gradle.java.home=/usr/lib/jvm/java-21-openjdk-amd64" >> ~/.gradle/gradle.properties
 
-"$SCRIPTDIR/.git-scripts/git-clone-related" typetools guava
+source "$SCRIPT_DIR"/clone-related.sh
+
+"$SCRIPT_DIR/.git-scripts/git-clone-related" typetools guava
 cd ../guava
 
-if [ "$TRAVIS" = "true" ] ; then
+if [ "$TRAVIS" = "true" ]; then
   # Travis which kills jobs that have not produced output for 10 minutes.
   echo "Setting up sleep-and-output jobs for Travis"
   (sleep 1 && echo "1 second has elapsed") &

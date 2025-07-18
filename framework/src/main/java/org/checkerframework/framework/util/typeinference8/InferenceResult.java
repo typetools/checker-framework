@@ -46,6 +46,9 @@ public class InferenceResult {
   /** Whether unchecked conversion was necessary to infer the type arguments. */
   private final boolean uncheckedConversion;
 
+  /** Whether inference crashed. */
+  private final boolean inferenceCrashed;
+
   /** If {@code annoInferenceFailed}, then this is the error message to report to the user. */
   private final String errorMsg;
 
@@ -62,10 +65,29 @@ public class InferenceResult {
       boolean uncheckedConversion,
       boolean annoInferenceFailed,
       String errorMsg) {
+    this(variables, uncheckedConversion, annoInferenceFailed, false, errorMsg);
+  }
+
+  /**
+   * Creates an inference result.
+   *
+   * @param variables instantiated variables
+   * @param uncheckedConversion where unchecked conversion was required to infer the type arguments
+   * @param annoInferenceFailed whether inference failed because of annotations
+   * @param inferenceCrashed the type argument inference code crashed
+   * @param errorMsg message to report to users if inference failed
+   */
+  public InferenceResult(
+      Collection<Variable> variables,
+      boolean uncheckedConversion,
+      boolean annoInferenceFailed,
+      boolean inferenceCrashed,
+      String errorMsg) {
     this.results = convert(variables);
     this.uncheckedConversion = uncheckedConversion;
     this.annoInferenceFailed = annoInferenceFailed;
     this.errorMsg = errorMsg;
+    this.inferenceCrashed = inferenceCrashed;
   }
 
   /**
@@ -95,6 +117,15 @@ public class InferenceResult {
    */
   public boolean inferenceFailed() {
     return annoInferenceFailed;
+  }
+
+  /**
+   * Whether inference crashed.
+   *
+   * @return whether inference crashed
+   */
+  public boolean inferenceCrashed() {
+    return inferenceCrashed;
   }
 
   /**

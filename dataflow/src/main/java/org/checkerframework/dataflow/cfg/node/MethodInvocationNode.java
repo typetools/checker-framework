@@ -1,5 +1,6 @@
 package org.checkerframework.dataflow.cfg.node;
 
+import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
@@ -49,6 +50,15 @@ public class MethodInvocationNode extends Node {
    * <p>Is set by {@link #setIterableExpression}.
    */
   protected @Nullable ExpressionTree iterableExpression;
+
+  /**
+   * If this MethodInvocationNode is a node for an {@link Iterator#next()} desugared from an
+   * enhanced for loop, then the {@code enhancedForLoop} field is the {@code EnhancedForLoopTree}
+   * AST node.
+   *
+   * <p>Is set by {@link #setEnhancedForLoop}.
+   */
+  protected @Nullable EnhancedForLoopTree enhancedForLoop;
 
   /**
    * Create a MethodInvocationNode.
@@ -103,6 +113,18 @@ public class MethodInvocationNode extends Node {
   }
 
   /**
+   * If this MethodInvocationNode is a node for an {@link Iterator#next()} desugared from an
+   * enhanced for loop, then return the corresponding {@code EnhancedForLoopTree} AST node.
+   * Otherwise, return null.
+   *
+   * @return the {@code EnhancedForLoopTree}, or null if this is not a {@link Iterator#next()} from
+   *     an enhanced for loop
+   */
+  public @Nullable EnhancedForLoopTree getEnhancedForLoop() {
+    return enhancedForLoop;
+  }
+
+  /**
    * Set the iterable expression from a for loop.
    *
    * @param iterableExpression iterable expression
@@ -110,6 +132,16 @@ public class MethodInvocationNode extends Node {
    */
   public void setIterableExpression(@Nullable ExpressionTree iterableExpression) {
     this.iterableExpression = iterableExpression;
+  }
+
+  /**
+   * Set the enhanced for loop for which {@code this} is the desugared loop update.
+   *
+   * @param enhancedForLoop the {@code EnhancedForLoopTree}
+   * @see #getEnhancedForLoop()
+   */
+  public void setEnhancedForLoop(@Nullable EnhancedForLoopTree enhancedForLoop) {
+    this.enhancedForLoop = enhancedForLoop;
   }
 
   @Override

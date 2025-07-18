@@ -150,4 +150,9 @@ public class RegularTransferResult<V extends AbstractValue<V>, S extends Store<S
   public boolean storeChanged() {
     return storeChanged;
   }
+
+  @Override
+  public RegularTransferResult<V, S> withExceptionalStores(Map<TypeMirror, S> exceptionalStores) {
+    return new RegularTransferResult<>(resultValue, store, exceptionalStores, storeChanged);
+  }
 }

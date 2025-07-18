@@ -189,16 +189,16 @@ public class Resolution {
     assert !boundSet.containsFalse();
 
     if (boundSet.containsCapture(as)) {
-      resolveNoCapturesFirst(new ArrayList<>(as));
+      BoundSet resolvedBounds = resolveWithoutCapture(as, boundSet);
       boundSet.getInstantiatedVariables().forEach(as::remove);
       // Then resolve the capture variables
-      return resolveWithCapture(as, boundSet, context);
+      return resolveWithCapture(as, resolvedBounds, context);
     } else {
       BoundSet copy = new BoundSet(boundSet);
       // Save the current bounds in case the first attempt at resolution fails.
       copy.saveBounds();
       try {
-        BoundSet resolvedBounds = resolveNoCapture(as, boundSet);
+        BoundSet resolvedBounds = resolveWithoutCapture(as, boundSet);
         if (!resolvedBounds.containsFalse()) {
           return resolvedBounds;
         }
@@ -206,65 +206,94 @@ public class Resolution {
         // Try with capture.
       }
       boundSet = copy;
-      // If resolveNoCapture fails, then undo all resolved variables from the failed attempt.
+      // If resolveWithoutCapture fails, then undo all resolved variables from the failed attempt.
       boundSet.restore();
       return resolveWithCapture(as, boundSet, context);
     }
   }
 
   /**
-   * Resolves all the non-capture variables in {@code variables}.
+   * Apply the instantiated variables to the bounds of the variables in {@code variables}. This may
+   * result in an instantiation being found of a variable in {@code variables}. All instantiated
+   * variables are removed from {@code variables}.
    *
-   * @param variables the variables
+   * @param variables a list of variables; side-effected by this method
    */
-  private void resolveNoCapturesFirst(List<Variable> variables) {
-    Variable smallV;
+  private static void applyAndRemoveInstantiations(List<Variable> variables) {
+    boolean changed;
     do {
-      smallV = null;
-      int smallest = Integer.MAX_VALUE;
+      changed = false;
       for (Variable v : variables) {
+        if (v.getBounds().hasInstantiation()) {
+          continue;
+        }
         v.getBounds().applyInstantiationsToBounds();
         if (v.getBounds().hasInstantiation()) {
-          variables.remove(v);
-          // loop again because a new instantiation has been found.
-          // (Also avoids concurrent modification exception.)
-          break;
-        }
-        if (!v.isCaptureVariable()) {
-          int size = v.getBounds().getVariablesMentionedInBounds().size();
-          if (size < smallest) {
-            smallest = size;
-            smallV = v;
-          }
+          // If v now has an instantiation, then loop through all the variables again to apply it to
+          // all the bounds of the other variables.
+          changed = true;
         }
       }
-      if (smallV != null) {
-        resolveNoCapture(smallV);
-        variables.remove(smallV);
-      }
-    } while (smallV != null);
+    } while (changed);
+    variables.removeIf(v -> v.getBounds().hasInstantiation());
   }
 
   /**
    * Resolves all variables in {@code as} by instantiating each to the greatest lower bound of its
    * proper upper bounds. This may fail and resolveWithCapture will need to be used instead.
    *
+   * <p>Resolves all non-captured variables in {@code as} by:
+   *
+   * <ul>
+   *   <li>Resolving all variables with proper lower bounds by instantiating them to the least upper
+   *       bound of their proper lower bounds. The instantiations are applies to the bounds of all
+   *       variables in {@code as}. Then this step is repeated until no new instantiations are
+   *       found.
+   *   <li>Resolving all remaining variables using the greatest lower bound of their proper upper
+   *       bounds.
+   * </ul>
+   *
+   * Then all bounds are reduced and incorporated into {@code boundSet}.
+   *
+   * <p>Any of these steps may fail in which case the resulting bound set will contain false and
+   * {@link #resolveWithCapture(Set, BoundSet, Java8InferenceContext)} should be used instead.
+   *
    * @param as variables to resolve
    * @param boundSet the bound set to use
    * @return the resolved bound st
    */
-  private BoundSet resolveNoCapture(Set<Variable> as, BoundSet boundSet) {
+  private BoundSet resolveWithoutCapture(Set<Variable> as, BoundSet boundSet) {
     BoundSet resolvedBoundSet = new BoundSet(context);
-    for (Variable ai : as) {
-      ai.getBounds().applyInstantiationsToBounds();
-      if (ai.getBounds().hasInstantiation()) {
-        continue;
+    List<Variable> varsToResolve = new ArrayList<>(as);
+    varsToResolve.removeIf(Variable::isCaptureVariable);
+    applyAndRemoveInstantiations(varsToResolve);
+
+    // Resolve variables with proper lower bounds first.
+    boolean changed = true;
+    while (changed) {
+      changed = false;
+      for (Variable ai : varsToResolve) {
+        Set<ProperType> lowerBounds = ai.getBounds().findProperLowerBounds();
+        if (!lowerBounds.isEmpty()) {
+          resolveWithLowerBounds(ai, lowerBounds);
+          changed = true;
+        }
       }
-      resolveNoCapture(ai);
-      if (!ai.getBounds().hasInstantiation()) {
-        resolvedBoundSet.addFalse();
-        break;
+      applyAndRemoveInstantiations(varsToResolve);
+    }
+
+    // Resolve with upper bounds.
+    for (Variable ai : varsToResolve) {
+      Set<ProperType> upperBounds = ai.getBounds().findProperUpperBounds();
+      if (!upperBounds.isEmpty()) {
+        // Object is always an upper bound so this branch is always executed.
+        resolveWithUpperBounds(ai, upperBounds);
       }
+    }
+    applyAndRemoveInstantiations(varsToResolve);
+
+    if (!varsToResolve.isEmpty()) {
+      resolvedBoundSet.addFalse();
     }
     boundSet.incorporateToFixedPoint(resolvedBoundSet);
     return boundSet;
@@ -273,61 +302,58 @@ public class Resolution {
   /**
    * Resolves {@code ai} by instantiating it to the greatest lower bound of its proper upper bounds.
    *
-   * @param ai variable to resolve
+   * @param ai a variable to resolve
+   * @param upperBounds {@code ai}'s set of proper upper bounds
    */
-  private void resolveNoCapture(Variable ai) {
-    assert !ai.getBounds().hasInstantiation();
-    Set<ProperType> lowerBounds = ai.getBounds().findProperLowerBounds();
-
-    if (!lowerBounds.isEmpty()) {
-      ProperType lubProperType = context.inferenceTypeFactory.lub(lowerBounds);
-      Set<AbstractQualifier> qualifierLowerBounds =
-          ai.getBounds().qualifierBounds.get(BoundKind.LOWER);
-      if (!qualifierLowerBounds.isEmpty()) {
-        QualifierHierarchy qh = context.typeFactory.getQualifierHierarchy();
-        Set<AnnotationMirror> lubAnnos = AbstractQualifier.lub(qualifierLowerBounds, context);
-        if (lubProperType.getAnnotatedType().getKind() != TypeKind.TYPEVAR) {
-          Set<? extends AnnotationMirror> newLubAnnos =
-              qh.leastUpperBoundsQualifiersOnly(
-                  lubAnnos, lubProperType.getAnnotatedType().getPrimaryAnnotations());
-          lubProperType.getAnnotatedType().replaceAnnotations(newLubAnnos);
-        } else {
-
-          AnnotatedTypeVariable lubTV = (AnnotatedTypeVariable) lubProperType.getAnnotatedType();
-          Set<? extends AnnotationMirror> newLubAnnos =
-              qh.leastUpperBoundsQualifiersOnly(
-                  lubAnnos, lubTV.getLowerBound().getPrimaryAnnotations());
-          lubTV.getLowerBound().replaceAnnotations(newLubAnnos);
-        }
+  private void resolveWithUpperBounds(Variable ai, Set<ProperType> upperBounds) {
+    ProperType ti = null;
+    boolean useRuntimeEx = false;
+    for (ProperType liProperType : upperBounds) {
+      TypeMirror li = liProperType.getJavaType();
+      if (ai.getBounds().hasThrowsBound()
+          && context.env.getTypeUtils().isSubtype(context.runtimeEx, li)) {
+        useRuntimeEx = true;
       }
-      ai.getBounds().addBound(VariableBounds.BoundKind.EQUAL, lubProperType);
-      return;
-    }
-
-    Set<ProperType> upperBounds = ai.getBounds().findProperUpperBounds();
-    if (!upperBounds.isEmpty()) {
-      ProperType ti = null;
-      boolean useRuntimeEx = false;
-      for (ProperType liProperType : upperBounds) {
-        TypeMirror li = liProperType.getJavaType();
-        if (ai.getBounds().hasThrowsBound()
-            && context.env.getTypeUtils().isSubtype(context.runtimeEx, li)) {
-          useRuntimeEx = true;
-        }
-        if (ti == null) {
-          ti = liProperType;
-        } else {
-          ti = (ProperType) context.inferenceTypeFactory.glb(ti, liProperType);
-        }
-      }
-      if (useRuntimeEx) {
-        ai.getBounds()
-            .addBound(
-                VariableBounds.BoundKind.EQUAL, context.inferenceTypeFactory.getRuntimeException());
+      if (ti == null) {
+        ti = liProperType;
       } else {
-        ai.getBounds().addBound(VariableBounds.BoundKind.EQUAL, ti);
+        ti = (ProperType) context.inferenceTypeFactory.glb(ti, liProperType);
       }
     }
+    if (useRuntimeEx) {
+      ti = context.inferenceTypeFactory.getRuntimeException();
+    }
+    ai.getBounds().addBound(null, BoundKind.EQUAL, ti);
+  }
+
+  /**
+   * Resolve {@code ai} by instantiating it to the least upper bound of its proper lower bounds.
+   *
+   * @param ai a variable to resolve
+   * @param lowerBounds {@code ai}'s set of proper lower bounds
+   */
+  private void resolveWithLowerBounds(Variable ai, Set<ProperType> lowerBounds) {
+    ProperType lubProperType = context.inferenceTypeFactory.lub(lowerBounds);
+    Set<AbstractQualifier> qualifierLowerBounds =
+        ai.getBounds().qualifierBounds.get(BoundKind.LOWER);
+    if (!qualifierLowerBounds.isEmpty()) {
+      QualifierHierarchy qh = context.typeFactory.getQualifierHierarchy();
+      Set<AnnotationMirror> lubAnnos = AbstractQualifier.lub(qualifierLowerBounds, context);
+      if (lubProperType.getAnnotatedType().getKind() != TypeKind.TYPEVAR) {
+        Set<? extends AnnotationMirror> newLubAnnos =
+            qh.leastUpperBoundsQualifiersOnly(
+                lubAnnos, lubProperType.getAnnotatedType().getPrimaryAnnotations());
+        lubProperType.getAnnotatedType().replaceAnnotations(newLubAnnos);
+      } else {
+
+        AnnotatedTypeVariable lubTV = (AnnotatedTypeVariable) lubProperType.getAnnotatedType();
+        Set<? extends AnnotationMirror> newLubAnnos =
+            qh.leastUpperBoundsQualifiersOnly(
+                lubAnnos, lubTV.getLowerBound().getPrimaryAnnotations());
+        lubTV.getLowerBound().replaceAnnotations(newLubAnnos);
+      }
+    }
+    ai.getBounds().addBound(null, BoundKind.EQUAL, lubProperType);
   }
 
   /**
@@ -418,7 +444,7 @@ public class Resolution {
     // Create the new bounds.
     for (int i = 0; i < asList.size(); i++) {
       Variable ai = asList.get(i);
-      ai.getBounds().addBound(VariableBounds.BoundKind.EQUAL, subsTypeArg.get(i));
+      ai.getBounds().addBound(null, VariableBounds.BoundKind.EQUAL, subsTypeArg.get(i));
     }
 
     boundSet.incorporateToFixedPoint(resolvedBoundSet);

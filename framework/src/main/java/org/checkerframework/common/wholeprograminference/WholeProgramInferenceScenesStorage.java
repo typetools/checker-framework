@@ -302,6 +302,7 @@ public class WholeProgramInferenceScenesStorage
 
   @Override
   public ATypeElement getPreOrPostconditions(
+      String className,
       Analysis.BeforeOrAfter preOrPost,
       ExecutableElement methodElement,
       String expression,
@@ -309,9 +310,9 @@ public class WholeProgramInferenceScenesStorage
       AnnotatedTypeFactory atypeFactory) {
     switch (preOrPost) {
       case BEFORE:
-        return getPreconditionsForExpression(methodElement, expression, declaredType);
+        return getPreconditionsForExpression(className, methodElement, expression, declaredType);
       case AFTER:
-        return getPostconditionsForExpression(methodElement, expression, declaredType);
+        return getPostconditionsForExpression(className, methodElement, expression, declaredType);
       default:
         throw new BugInCF("Unexpected " + preOrPost);
     }
@@ -320,13 +321,18 @@ public class WholeProgramInferenceScenesStorage
   /**
    * Returns the precondition annotations for a Java expression.
    *
+   * @param className the class that contains the method, for diagnostics only
    * @param methodElement the method
    * @param expression the expression
    * @param declaredType the declared type of the expression
    * @return the precondition annotations for a Java expression
    */
+  @SuppressWarnings("UnusedVariable")
   private ATypeElement getPreconditionsForExpression(
-      ExecutableElement methodElement, String expression, AnnotatedTypeMirror declaredType) {
+      String className,
+      ExecutableElement methodElement,
+      String expression,
+      AnnotatedTypeMirror declaredType) {
     AMethod methodAnnos = getMethodAnnos(methodElement);
     preconditionsToDeclaredTypes.put(methodAnnos.methodSignature + expression, declaredType);
     return methodAnnos.vivifyAndAddTypeMirrorToPrecondition(
@@ -337,13 +343,18 @@ public class WholeProgramInferenceScenesStorage
   /**
    * Returns the postcondition annotations for a Java expression.
    *
+   * @param className the class that contains the method, for diagnostics only
    * @param methodElement the method
    * @param expression the expression
    * @param declaredType the declared type of the expression
    * @return the postcondition annotations for a Java expression
    */
+  @SuppressWarnings("UnusedVariable")
   private ATypeElement getPostconditionsForExpression(
-      ExecutableElement methodElement, String expression, AnnotatedTypeMirror declaredType) {
+      String className,
+      ExecutableElement methodElement,
+      String expression,
+      AnnotatedTypeMirror declaredType) {
     AMethod methodAnnos = getMethodAnnos(methodElement);
     postconditionsToDeclaredTypes.put(methodAnnos.methodSignature + expression, declaredType);
     return methodAnnos.vivifyAndAddTypeMirrorToPostcondition(
@@ -617,25 +628,25 @@ public class WholeProgramInferenceScenesStorage
             ((AnnotatedTypeVariable) sourceCodeATM).getUpperBound(),
             ((AnnotatedTypeVariable) jaifATM).getUpperBound());
         break;
-        //        case WILDCARD:
-        // Because inferring type arguments is not supported, wildcards won't be encoutered
-        //            updateAtmWithLub(((AnnotatedWildcardType)
-        // sourceCodeATM).getExtendsBound(),
-        //                              ((AnnotatedWildcardType)
-        // jaifATM).getExtendsBound());
-        //            updateAtmWithLub(((AnnotatedWildcardType)
-        // sourceCodeATM).getSuperBound(),
-        //                              ((AnnotatedWildcardType) jaifATM).getSuperBound());
-        //            break;
+      //        case WILDCARD:
+      // Because inferring type arguments is not supported, wildcards won't be encoutered
+      //            updateAtmWithLub(((AnnotatedWildcardType)
+      // sourceCodeATM).getExtendsBound(),
+      //                              ((AnnotatedWildcardType)
+      // jaifATM).getExtendsBound());
+      //            updateAtmWithLub(((AnnotatedWildcardType)
+      // sourceCodeATM).getSuperBound(),
+      //                              ((AnnotatedWildcardType) jaifATM).getSuperBound());
+      //            break;
       case ARRAY:
         updateAtmWithLub(
             ((AnnotatedArrayType) sourceCodeATM).getComponentType(),
             ((AnnotatedArrayType) jaifATM).getComponentType());
         break;
-        // case DECLARED:
-        // inferring annotations on type arguments is not supported, so no need to recur on
-        // generic types. If this was every implemented, this method would need VisitHistory
-        // object to prevent infinite recursion on types such as T extends List<T>.
+      // case DECLARED:
+      // inferring annotations on type arguments is not supported, so no need to recur on
+      // generic types. If this was every implemented, this method would need VisitHistory
+      // object to prevent infinite recursion on types such as T extends List<T>.
       default:
         // ATM only has primary annotations
         break;
@@ -812,9 +823,9 @@ public class WholeProgramInferenceScenesStorage
     updateTypeElementFromATM(typeToUpdate, defLoc, newATM, curATM, ignoreIfAnnotated);
   }
 
-  ///
-  /// Writing to a file
-  ///
+  //
+  // Writing to a file
+  //
 
   // The prepare*ForWriting hooks are needed in addition to the postProcessClassTree hook because
   // a scene may be modifed and written at any time, including before or after
@@ -839,7 +850,7 @@ public class WholeProgramInferenceScenesStorage
    */
   public void wpiPrepareClassForWriting(AClass classAnnos) {
     for (Map.Entry<String, AMethod> methodEntry : classAnnos.methods.entrySet()) {
-      wpiPrepareMethodForWriting(methodEntry.getValue());
+      wpiPrepareMethodForWriting(classAnnos.className, methodEntry.getValue());
     }
   }
 
@@ -847,10 +858,11 @@ public class WholeProgramInferenceScenesStorage
    * Side-effects the method or constructor annotations to make any desired changes before writing
    * to a file.
    *
+   * @param className the class that contains the method, for diagnostics only
    * @param methodAnnos the method or constructor annotations to modify
    */
-  public void wpiPrepareMethodForWriting(AMethod methodAnnos) {
-    atypeFactory.wpiPrepareMethodForWriting(methodAnnos);
+  public void wpiPrepareMethodForWriting(String className, AMethod methodAnnos) {
+    atypeFactory.wpiPrepareMethodForWriting(className, methodAnnos);
   }
 
   @Override

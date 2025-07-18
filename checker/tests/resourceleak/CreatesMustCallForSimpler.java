@@ -1,4 +1,4 @@
-// A simpler test that @CreatesMustCallFor works as intended wrt the Object Construction Checker.
+// A simpler test that @CreatesMustCallFor works as intended wrt the Resource Leak Checker.
 
 import org.checkerframework.checker.calledmethods.qual.*;
 import org.checkerframework.checker.mustcall.qual.*;

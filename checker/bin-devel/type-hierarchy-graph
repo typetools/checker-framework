@@ -1,0 +1,54 @@
+#!/usr/bin/env python3
+
+"""Outputs a dot graph of the type hierarchy.
+
+Must be run in a qual/ directory that contains type qualifier definitions (in
+.java files).
+"""
+
+import re
+import subprocess
+import tempfile
+from pathlib import Path
+
+subtypeof_pattern = re.compile(r"@SubtypeOf\(\{?([^})]*)\}?\)", re.MULTILINE)
+
+with tempfile.NamedTemporaryFile(mode="w+", delete=False) as tmp:
+    print(tmp.name)
+
+    tmp.write("digraph TypeHierarchy {\n")
+    tmp.write("rankdir=BT\n")
+
+    for filename in Path.cwd().glob("*.java"):
+        with Path.open(filename) as file:
+            typename = Path(Path(filename).stem).name
+            # print(filename)
+            data = file.read()
+            # print(data)
+            match = subtypeof_pattern.search(data)
+            if match is not None:
+                # print(match)
+                supertypes = match.group(1).strip()
+                # print(f"supertypes = {supertypes}")
+                if supertypes:
+                    for supertype in supertypes.split(","):
+                        supertype = supertype.strip()
+                        # print(f"supertype: {supertype}")
+                        assert supertype.endswith(".class")
+                        supertype = supertype[0:-6]
+                        tmp.write(f"{typename} -> {supertype}\n")
+
+    tmp.write("}\n")
+
+    # It is essential to close the file, or the shell commands cannot read it
+    tmp.close()
+
+    # subresult = subprocess.run(["cat", tmp.name])
+
+    subresult = subprocess.run(
+        ["dot", "-Tpdf", tmp.name, "-o", "type-hierarchy.pdf"],
+        capture_output=True,  # Python >= 3.7 only
+        text=True,  # Python >= 3.7 only
+    )
+
+    Path.unlink(Path(tmp.name))

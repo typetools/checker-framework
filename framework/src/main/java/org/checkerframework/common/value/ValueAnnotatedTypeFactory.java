@@ -149,10 +149,12 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   public final AnnotationMirror POLY = AnnotationBuilder.fromClass(elements, PolyValue.class);
 
   /** The canonical @{@link BoolVal}(true) annotation. */
+  @SuppressWarnings("this-escape")
   public final AnnotationMirror BOOLEAN_TRUE =
       createBooleanAnnotation(Collections.singletonList(true));
 
   /** The canonical @{@link BoolVal}(false) annotation. */
+  @SuppressWarnings("this-escape")
   public final AnnotationMirror BOOLEAN_FALSE =
       createBooleanAnnotation(Collections.singletonList(false));
 
@@ -222,7 +224,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /** Helper class that holds references to special methods. */
   private final ValueMethodIdentifier methods;
 
-  @SuppressWarnings("StaticAssignmentInConstructor") // static Range.ignoreOverflow is gross
+  @SuppressWarnings({
+    "StaticAssignmentInConstructor", // static Range.ignoreOverflow is gross
+    "this-escape"
+  })
   public ValueAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
 
@@ -418,6 +423,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /** The classes of field invariant annotations. */
+  @SuppressWarnings("this-escape")
   private Set<Class<? extends Annotation>> fieldInvariantDeclarationAnnotations =
       computeFieldInvariantDeclarationAnnotations();
 
@@ -641,7 +647,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /*package-private*/ AnnotationMirror convertSpecialIntRangeToStandardIntRange(
       AnnotationMirror anm, TypeKind primitiveKind) {
     long max = Long.MAX_VALUE;
-    if (TypesUtils.isIntegralPrimitive(primitiveKind)) {
+    if (TypeKindUtils.isIntegral(primitiveKind)) {
       Range maxRange = Range.create(primitiveKind);
       max = maxRange.to;
     }
