@@ -1,0 +1,27 @@
+package :
+annotation @X:
+
+package org.checkerframework.afu.annotator.tests:
+class Initializers:
+
+    field s1:
+        insert-annotation Class.initializer 0, Block.statement 0, Variable.initializer, NewClass.identifier: @X
+
+    field s2:
+        insert-annotation Class.initializer 1, Block.statement 0, Variable.initializer, NewClass.identifier: @X
+
+    field o1:
+        insert-annotation Class.initializer 2, Block.statement 0, Variable.initializer, NewClass.identifier: @X
+
+    field o2:
+        insert-annotation Class.initializer 3, Block.statement 0, Variable.initializer, NewClass.identifier: @X
+
+package org.checkerframework.afu.annotator.tests:
+class Initializers$MyEnum:
+
+    field s:
+        insert-annotation Class.initializer 0, Block.statement 0, Variable.initializer, NewClass.identifier: @X
+
+    field o:
+        insert-annotation Class.initializer 1, Block.statement 0, Variable.initializer, NewClass.identifier: @X
+

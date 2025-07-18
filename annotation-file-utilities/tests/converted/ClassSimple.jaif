@@ -1,0 +1,6 @@
+package java.lang:
+annotation @Tainted: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package org.checkerframework.afu.annotator.tests:
+class ClassSimple: @java.lang.Tainted
+

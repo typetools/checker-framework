@@ -43,7 +43,7 @@ public abstract class AbstractQualifier {
    * Returns whether {@code other} is in the same hierarchy as this.
    *
    * @param other another abstract qualifier
-   * @return whether {@code other} is in the same hierarchy as this.
+   * @return whether {@code other} is in the same hierarchy as this
    */
   public boolean sameHierarchy(AbstractQualifier other) {
     return this.hierarchyName == other.hierarchyName;
@@ -52,7 +52,7 @@ public abstract class AbstractQualifier {
   /**
    * Returns the instantiation of this.
    *
-   * @return the instantiation of this.
+   * @return the instantiation of this
    */
   abstract AnnotationMirror getInstantiation();
 

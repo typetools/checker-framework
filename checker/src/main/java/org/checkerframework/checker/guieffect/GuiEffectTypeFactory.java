@@ -2,10 +2,12 @@ package org.checkerframework.checker.guieffect;
 
 import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.Tree;
 import java.util.HashSet;
@@ -81,6 +83,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
   /** The @{@link UI} annotation. */
   protected final AnnotationMirror UI = AnnotationBuilder.fromClass(elements, UI.class);
 
+  @SuppressWarnings("this-escape")
   public GuiEffectTypeFactory(BaseTypeChecker checker, boolean spew) {
     // use true to enable flow inference, false to disable it
     super(checker, false);
@@ -283,10 +286,10 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
     if (targetEffect.isPoly()) {
       AnnotatedTypeMirror srcType = null;
       ExpressionTree methodSelect = tree.getMethodSelect();
-      if (methodSelect.getKind() == Tree.Kind.MEMBER_SELECT) {
+      if (methodSelect instanceof MemberSelectTree) {
         ExpressionTree src = ((MemberSelectTree) methodSelect).getExpression();
         srcType = getAnnotatedType(src);
-      } else if (methodSelect.getKind() == Tree.Kind.IDENTIFIER) {
+      } else if (methodSelect instanceof IdentifierTree) {
         // Tree.Kind.IDENTIFIER, e.g. a direct call like "super()"
         if (callerReceiver == null) {
           // Not enought information provided to instantiate this type-polymorphic effects
@@ -343,9 +346,9 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
    * @return whether it is a lambda expression or new class marked as UI by inference
    */
   public boolean isDirectlyMarkedUIThroughInference(Tree tree) {
-    if (tree.getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
+    if (tree instanceof LambdaExpressionTree) {
       return uiLambdas.contains((LambdaExpressionTree) tree);
-    } else if (tree.getKind() == Tree.Kind.NEW_CLASS) {
+    } else if (tree instanceof NewClassTree) {
       AnnotatedTypeMirror typeMirror = super.getAnnotatedType(tree);
       if (typeMirror.getKind() == TypeKind.DECLARED) {
         return uiAnonClasses.contains(((DeclaredType) typeMirror.getUnderlyingType()).asElement());
@@ -364,10 +367,10 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
     // containing such class/lambda
     if (isDirectlyMarkedUIThroughInference(tree)) {
       typeMirror.replaceAnnotation(AnnotationBuilder.fromClass(elements, UI.class));
-    } else if (tree.getKind() == Tree.Kind.PARENTHESIZED) {
+    } else if (tree instanceof ParenthesizedTree) {
       ParenthesizedTree parenthesizedTree = (ParenthesizedTree) tree;
       return this.getAnnotatedType(parenthesizedTree.getExpression());
-    } else if (tree.getKind() == Tree.Kind.CONDITIONAL_EXPRESSION) {
+    } else if (tree instanceof ConditionalExpressionTree) {
       ConditionalExpressionTree cet = (ConditionalExpressionTree) tree;
       boolean isTrueOperandUI =
           (cet.getTrueExpression() != null

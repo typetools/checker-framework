@@ -1,0 +1,15 @@
+package qual:
+  annotation @Inner:
+    int number
+    String text
+
+package qual:
+  annotation @Outer:
+    annotation-field qual.Inner[] innerArray
+
+package :
+class Issue156:
+
+method main()V:
+insert-annotation Method.body, Block.statement 0, Variable.type: @qual.Inner(text="m", number=0)
+insert-annotation Method.body, Block.statement 1, Variable.type: @qual.Outer(innerArray={@qual.Inner(text="m", number=0), @qual.Inner(text="s", number=0)})

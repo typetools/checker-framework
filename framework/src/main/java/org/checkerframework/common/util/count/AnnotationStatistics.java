@@ -2,6 +2,7 @@ package org.checkerframework.common.util.count;
 
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayTypeTree;
+import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.InstanceOfTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -171,9 +172,7 @@ public class AnnotationStatistics extends SourceChecker {
         TreePath path = getCurrentPath();
         Tree prev = null;
         for (Tree t : path) {
-          if (prev != null
-              && prev.getKind() == Tree.Kind.BLOCK
-              && t.getKind() == Tree.Kind.METHOD) {
+          if (prev != null && prev instanceof BlockTree && t instanceof MethodTree) {
             isBodyAnnotation = true;
             break;
           }

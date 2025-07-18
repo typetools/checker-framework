@@ -1,78 +1,55 @@
 # Create a Docker image that is ready to run the full Checker Framework tests,
 # including building the manual and Javadoc, using JDK 21.
-# (This is OpenJDK, not Oracle JDK.  There are different instructions for
-# installing a LTS release of Java.)
-# To convert this file to use a newer JDK, search (from the top level of the
-# Checker Framework and Annotation Tools repositories) for: (java|jdk).?21\b
 
 # "ubuntu" is the latest LTS release.  "ubuntu:rolling" is the latest release.
 # Both might lag behind; as of 2024-11-16, ubuntu:rolling was still 24.04 rather than 24.10.
-FROM ubuntu:24.10
+FROM ubuntu
 LABEL org.opencontainers.image.authors="Michael Ernst <mernst@cs.washington.edu>"
-
-## Keep this file in sync with ../../docs/manual/troubleshooting.tex
 
 # According to
 # https://docs.docker.com/engine/userguide/eng-image/dockerfile_best-practices/:
-#  * Put "apt-get update" and "apt-get install" and "apt cleanup" in the same RUN command.
-#  * Do not run "apt-get upgrade"; instead get upstream to update.
+#  * Put "apt update" and "apt install" and "apt cleanup" in the same RUN command.
+#  * Do not run "apt upgrade"; instead get upstream to update.
 
 RUN export DEBIAN_FRONTEND=noninteractive \
-&& apt-get -qqy update \
-&& apt-get install -y locales \
+&& apt -qqy update \
+&& apt install -y locales \
 && rm -rf /var/lib/apt/lists/* \
 && locale-gen "en_US.UTF-8"
 ENV LANG=en_US.UTF-8 \
     LANGUAGE=en_US:en \
     LC_ALL=en_US.UTF-8
 
+# Always install JDK 21 to compile the code, even if tests run under a different JDK.
 RUN export DEBIAN_FRONTEND=noninteractive \
-&& apt-get -qqy update \
-&& apt-get -y install aptitude \
-&& aptitude -y install \
-  apt-utils
-
-RUN export DEBIAN_FRONTEND=noninteractive \
-&& apt-get -qqy update \
-&& aptitude -y install \
-  openjdk-17-jdk \
+&& apt -qqy update \
+&& apt -y install \
   openjdk-21-jdk
+ENV JAVA21_HOME=/usr/lib/jvm/java-21-openjdk-amd64
 
 # Known good combinations of JTReg and the JDK appear at https://builds.shipilev.net/jtreg/ .
 
 RUN export DEBIAN_FRONTEND=noninteractive \
-&& apt-get -qqy update \
-&& aptitude -y install \
+&& apt -qqy update \
+&& apt -y install \
   ant \
   cpp \
   git \
   jq \
+  jtreg7 \
   libcurl3-gnutls \
   make \
   maven \
   python3-requests \
   python3-setuptools \
   unzip \
-  wget \
-&& aptitude -y install \
-  jtreg7
+  wget
 
-# Maven 3.8.7 is the default on Ubuntu 23.04, so the below is not needed.
-# (Don't try to use a variable here for the Maven version.)
-# RUN export DEBIAN_FRONTEND=noninteractive \
-# && wget https://mirrors.sonic.net/apache/maven/maven-3/3.9.5/binaries/apache-maven-3.9.5-bin.tar.gz \
-# && tar xzvf apache-maven-3.9.5-bin.tar.gz
-# ENV PATH="/apache-maven-3.9.5/bin:$PATH"
-
-# Bug fix to make jtreg runnable: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=754942;msg=2
-RUN export DEBIAN_FRONTEND=noninteractive \
-&& apt-get -qqy update \
-&& aptitude -y install \
-  default-jre-headless
 
 RUN export DEBIAN_FRONTEND=noninteractive \
-&& apt-get -qqy update \
-&& aptitude -y install \
+&& apt -qqy update \
+&& apt -y install \
+  asciidoctor \
   autoconf \
   devscripts \
   dia \
@@ -86,6 +63,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   pdf2svg \
   rsync \
   shellcheck \
+  shfmt \
   texlive-font-utils \
   texlive-fonts-recommended \
   texlive-latex-base \
@@ -97,14 +75,24 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 # Azure creates a new user and runs jobs as it.
 # So, install into /usr/local/bin which is already on every user's path.
 RUN export DEBIAN_FRONTEND=noninteractive \
-&& apt-get -qqy update \
-&& aptitude -y install \
+&& apt -qqy update \
+&& apt -y install \
   pipx \
 && PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install black \
 && PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install flake8 \
-&& PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install html5validator
+&& PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install html5validator \
+&& PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install mypy \
+&& PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install ruff
+
 
 RUN export DEBIAN_FRONTEND=noninteractive \
-&& apt-get autoremove \
-&& apt-get clean \
+&& apt -qqy update \
+&& apt -y install \
+  openjdk-21-jdk \
+&& update-java-alternatives -s java-1.21.0-openjdk-amd64
+ENV JAVA21_HOME=/usr/lib/jvm/java-21-openjdk-amd64
+
+RUN export DEBIAN_FRONTEND=noninteractive \
+&& apt autoremove \
+&& apt clean \
 && rm -rf /var/lib/apt/lists/*

@@ -442,7 +442,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
       case NEW_CLASS:
         NewClassTree nct = (NewClassTree) tree;
         ExpressionTree nctid = nct.getIdentifier();
-        if (nctid.getKind() == Tree.Kind.PARAMETERIZED_TYPE) {
+        if (nctid instanceof ParameterizedTypeTree) {
           typeargtree = (ParameterizedTypeTree) nctid;
           /*
            * This is quite tricky... for anonymous class instantiations,

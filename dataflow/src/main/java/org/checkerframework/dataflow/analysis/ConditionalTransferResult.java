@@ -150,4 +150,11 @@ public class ConditionalTransferResult<V extends AbstractValue<V>, S extends Sto
   public boolean storeChanged() {
     return storeChanged;
   }
+
+  @Override
+  public ConditionalTransferResult<V, S> withExceptionalStores(
+      Map<TypeMirror, S> exceptionalStores) {
+    return new ConditionalTransferResult<>(
+        resultValue, thenStore, elseStore, exceptionalStores, storeChanged);
+  }
 }

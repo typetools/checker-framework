@@ -1,0 +1,116 @@
+package annotations.tests:
+annotation invisible @AClass:
+
+package annotations.tests:
+annotation invisible @CClass:
+
+package annotations.tests:
+annotation invisible @A0A:
+
+package annotations.tests:
+annotation invisible @C0A:
+
+package annotations.tests:
+annotation invisible @A0B:
+
+package annotations.tests:
+annotation invisible @C0B:
+
+package annotations.tests:
+annotation invisible @A06:
+
+package annotations.tests:
+annotation invisible @C06:
+
+package annotations.tests:
+annotation invisible @A0C:
+
+package annotations.tests:
+annotation invisible @C0C:
+
+package annotations.tests:
+annotation invisible @A0D:
+
+package annotations.tests:
+annotation invisible @C0D:
+
+package annotations.tests:
+annotation invisible @A08:
+
+package annotations.tests:
+annotation invisible @C08:
+
+package annotations.tests:
+annotation invisible @A09:
+
+package annotations.tests:
+annotation invisible @C09:
+
+package annotations.tests:
+annotation invisible @A00:
+
+package annotations.tests:
+annotation invisible @C00:
+
+package annotations.tests:
+annotation invisible @A01:
+
+package annotations.tests:
+annotation invisible @C01:
+
+package annotations.tests:
+annotation invisible @A02:
+
+package annotations.tests:
+annotation invisible @C02:
+
+package annotations.tests:
+annotation invisible @A04:
+
+package annotations.tests:
+annotation invisible @C04:
+
+package annotations.tests:
+annotation invisible @A05:
+
+package annotations.tests:
+annotation invisible @C05:
+
+package annotations.tests:
+annotation invisible @A0E:
+
+package annotations.tests:
+annotation invisible @C0E:
+
+package annotations.tests:
+annotation invisible @A0F:
+
+package annotations.tests:
+annotation invisible @C0F:
+
+package annotations.tests:
+class AnnotationTest: @annotations.tests.AClass @annotations.tests.CClass
+    bound 0 &0: @annotations.tests.A10 @annotations.tests.C10
+        inner-type 0: @annotations.tests.A11 @annotations.tests.C11
+
+    field field: @annotations.tests.A0E @annotations.tests.C0E
+        inner-type 0: @annotations.tests.A0F @annotations.tests.C0F
+
+    method <init>()V:
+
+    method doSomething(Ljava/util/Set;)Ljava/util/HashSet;:
+        return: @annotations.tests.A0A @annotations.tests.C0A
+            inner-type 0: @annotations.tests.A0B @annotations.tests.C0B
+        bound 0 &0: @annotations.tests.A12 @annotations.tests.C12
+            inner-type 0: @annotations.tests.A13 @annotations.tests.C13
+        parameter #0: @annotations.tests.A0C @annotations.tests.C0C
+            inner-type 0: @annotations.tests.A0D @annotations.tests.C0D
+        receiver: @annotations.tests.A06 @annotations.tests.C06
+        local 2 #23+2: @annotations.tests.A08 @annotations.tests.C08
+            inner-type 0: @annotations.tests.A09 @annotations.tests.C09
+        typecast #7: @annotations.tests.A00 @annotations.tests.C00
+            inner-type 0: @annotations.tests.A01 @annotations.tests.C01
+        instanceof #0: @annotations.tests.A02 @annotations.tests.C02
+        new #15: @annotations.tests.A04 @annotations.tests.C04
+            inner-type 0: @annotations.tests.A05 @annotations.tests.C05
+

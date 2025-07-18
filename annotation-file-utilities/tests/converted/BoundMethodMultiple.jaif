@@ -1,0 +1,41 @@
+// @skip-test
+
+package java.lang:
+annotation @A: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package java.lang:
+annotation @B: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package java.lang:
+annotation @C: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package java.lang:
+annotation @D: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package java.lang:
+annotation @E: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package java.lang:
+annotation @F: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package org.checkerframework.afu.annotator.tests:
+class BoundMethodMultiple:
+
+    method foo(Ljava/lang/Object;)V:
+        return:
+        insert-annotation Method.parameter 0, Variable.type: @java.lang.A
+
+    method foo(Ljava/util/Date;)V:
+        return:
+        insert-annotation Method.typeParameter 0, TypeParameter.bound 0: @java.lang.B
+
+    method foo(Ljava/util/List;)V:
+        return:
+        insert-annotation Method.typeParameter 0, TypeParameter.bound 0: @java.lang.C
+        insert-annotation Method.typeParameter 0, TypeParameter.bound 1: @java.lang.D
+
+    method foo(Ljava/util/Date;Ljava/util/Map;)V:
+        return:
+        insert-annotation Method.typeParameter 0, TypeParameter.bound 0: @java.lang.E
+        insert-annotation Method.typeParameter 1, TypeParameter.bound 0: @java.lang.F
+

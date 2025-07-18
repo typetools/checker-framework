@@ -6,7 +6,6 @@ import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
-import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -91,7 +90,7 @@ public class Expression extends TypeConstraint {
         s = new ProperType(expression, context);
       } else {
         AnnotatedTypeMirror atm = context.typeFactory.getAnnotatedType(expression);
-        s = getT().create(atm, atm.getUnderlyingType());
+        s = getT().create(atm, atm.getUnderlyingType(), false);
       }
       return new Typing(this, s, T, TypeConstraint.Kind.TYPE_COMPATIBILITY);
     }
@@ -161,7 +160,7 @@ public class Expression extends TypeConstraint {
   private BoundSet reduceMethodInvocation(Java8InferenceContext context) {
     ExpressionTree expressionTree = expression;
     List<? extends ExpressionTree> args;
-    if (expressionTree.getKind() == Tree.Kind.NEW_CLASS) {
+    if (expressionTree instanceof NewClassTree) {
       NewClassTree newClassTree = (NewClassTree) expressionTree;
       args = newClassTree.getArguments();
     } else {
@@ -200,7 +199,7 @@ public class Expression extends TypeConstraint {
         AbstractType referenceType;
         if (context.isLambdaParam(preColonTree)) {
           AnnotatedTypeMirror atm = context.typeFactory.getAnnotatedType(preColonTree);
-          referenceType = T.create(atm, atm.getUnderlyingType());
+          referenceType = T.create(atm, atm.getUnderlyingType(), false);
         } else {
           if (MemberReferenceKind.getMemberReferenceKind(memRef).isUnbound()) {
             AnnotatedTypeMirror atm =

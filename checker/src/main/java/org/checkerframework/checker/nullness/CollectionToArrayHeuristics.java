@@ -105,7 +105,7 @@ public class CollectionToArrayHeuristics {
       }
 
       if (receiverIsNonNull && !argIsHandled) {
-        if (argument.getKind() != Tree.Kind.NEW_ARRAY) {
+        if (!(argument instanceof NewArrayTree)) {
           checker.reportWarning(tree, "toarray.nullable.elements.not.newarray");
         } else {
           checker.reportWarning(tree, "toarray.nullable.elements.mismatched.size");
@@ -135,7 +135,7 @@ public class CollectionToArrayHeuristics {
    * @return true if the argument is handled and assume to return nonnull elements
    */
   private boolean isHandledArrayCreation(Tree argument, String receiver) {
-    if (argument.getKind() != Tree.Kind.NEW_ARRAY) {
+    if (!(argument instanceof NewArrayTree)) {
       return false;
     }
     NewArrayTree newArr = (NewArrayTree) argument;
@@ -215,10 +215,11 @@ public class CollectionToArrayHeuristics {
    * The name of the receiver object of the tree.
    *
    * @param tree either an identifier tree or a member select tree
+   * @return the name of the receiver object of the tree
    */
   // This method is quite sloppy, but works most of the time
   private String receiverName(Tree tree) {
-    if (tree.getKind() == Tree.Kind.MEMBER_SELECT) {
+    if (tree instanceof MemberSelectTree) {
       return ((MemberSelectTree) tree).getExpression().toString();
     } else {
       return "this";

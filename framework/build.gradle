@@ -33,14 +33,10 @@ configurations {
 dependencies {
   api project(':javacutil')
   api project(':dataflow')
-  api 'org.checkerframework:stubparser:3.26.2'
-  stubifierImplementation 'org.checkerframework:stubparser:3.26.2'
+  api 'org.checkerframework:stubparser:3.26.4'
+  stubifierImplementation 'org.checkerframework:stubparser:3.26.4'
   implementation sourceSets.stubifier.output
-  // AFU is an "includedBuild" imported in checker-framework/settings.gradle, so the version number doesn't matter.
-  // https://docs.gradle.org/current/userguide/composite_builds.html#settings_defined_composite
-  api('org.checkerframework:annotation-file-utilities:*') {
-    exclude group: 'com.google.errorprone', module: 'javac'
-  }
+  api project(':annotation-file-utilities')
   api project(':checker-qual')
 
   // External dependencies:
@@ -49,7 +45,7 @@ dependencies {
   implementation "org.plumelib:hashmap-util:${versions.hashmapUtil}"
   implementation "org.plumelib:plume-util:${versions.plumeUtil}"
   implementation "org.plumelib:reflection-util:${versions.reflectionUtil}"
-  implementation 'io.github.classgraph:classgraph:4.8.179'
+  implementation 'io.github.classgraph:classgraph:4.8.181'
 
   testImplementation group: 'junit', name: 'junit', version: '4.13.2'
   testImplementation project(':framework-test')
@@ -154,14 +150,6 @@ shadowJar {
   }
 }
 
-createCheckTypeTask(project.name, 'CompilerMessages',
-    'org.checkerframework.checker.compilermsgs.CompilerMessagesChecker')
-checkCompilerMessages {
-  options.compilerArgs += [
-    '-Apropfiles=' + sourceSets.main.resources.filter { file -> file.name.equals('messages.properties') }.asPath
-  ]
-}
-
 task loaderTests(type: Exec, dependsOn: 'shadowJar', group: 'Verification') {
   description = 'Run tests for the annotation class loader'
   dependsOn(compileTestJava)
@@ -177,35 +165,33 @@ clean {
 }
 
 
-task delombok {
-  description = 'Delomboks the source code tree in tests/returnsreceiverlombok'
-
-  def srcDelomboked = 'tests/returnsreceiverdelomboked'
-  def srcJava = 'tests/returnsreceiverlombok'
-
-  inputs.files file(srcJava)
-  outputs.dir file(srcDelomboked)
-
-  // This dependency is required to ensure the checker-qual jar exists,
-  // to prevent lombok from emitting "cannot find symbol" errors for @This
-  // annotations in the test input code.
-  dependsOn project(':checker-qual').tasks.jar
-
-  doLast {
-    if(!skipDelombok) {
-      def collection = files(configurations.testCompileClasspath)
-      ant.taskdef(name: 'delombok', classname: 'lombok.delombok.ant.Tasks$Delombok',
-      classpath: collection.asPath)
-      ant.delombok(from: srcJava, to: srcDelomboked, classpath: collection.asPath)
-    }
-  }
-}
-
 if (skipDelombok) {
-  delombok.enabled = false
   test {
     exclude '**/ReturnsReceiverLombokTest.java'
   }
 } else {
+  task delombok {
+    description = 'Delomboks the source code tree in tests/returnsreceiverlombok'
+
+    def srcDelomboked = 'tests/returnsreceiverdelomboked'
+    def srcJava = 'tests/returnsreceiverlombok'
+
+    inputs.files file(srcJava)
+    outputs.dir file(srcDelomboked)
+
+    // This dependency is required to ensure the checker-qual jar exists,
+    // to prevent lombok from emitting "cannot find symbol" errors for @This
+    // annotations in the test input code.
+    dependsOn project(':checker-qual').tasks.jar
+
+    doLast {
+      if (!skipDelombok) {
+        def collection = files(configurations.testCompileClasspath)
+        ant.taskdef(name: 'delombok', classname: 'lombok.delombok.ant.Tasks$Delombok',
+        classpath: collection.asPath)
+        ant.delombok(from: srcJava, to: srcDelomboked, classpath: collection.asPath)
+      }
+    }
+  }
   tasks.test.dependsOn('delombok')
 }

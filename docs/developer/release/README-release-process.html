@@ -537,7 +537,7 @@ git config --global user.email you@example.com</pre>
           is correct through scripts and manual steps.  When the user is satisfied the website
           is correct it deploys the website to the live website:
           <a href="https://checkerframework.org/">https://checkerframework.org/</a>.
-          It also pushes Maven artifacts to Maven central.
+          It also pushes Maven artifacts to Maven Central.
           This script is thoroughly documented in code comments located in its <code>main()</code> function.
         </td>
       </tr>
@@ -659,7 +659,7 @@ git config --global user.email you@example.com</pre>
   <h3 id="backing_out_steps">Manual Steps to Back Out a Release</h3>
   <ul>
     <li><strong>Drop the artifacts from Central</strong><br/>
-      You may have staged and then closed the artifacts in the Sonatype Central repository.  Drop (do NOT release)
+      You may have staged and then closed the artifacts in the Sonatype Central Repository.  Drop (do NOT release)
       these artifacts.  See
       <a href="https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide#SonatypeOSSMavenRepositoryUsageGuide-DroppingaStagingRepository%28i.e.WhattoDoifYourStagingRepositoryHasErrors%29">
         the Sonatype OSS Repository Usage Guidelines.
@@ -674,7 +674,7 @@ git config --global user.email you@example.com</pre>
       </p>
 
       At the moment, we have decided to drop the user of our local Maven repository in favor of using
-      the Central repository exclusively.  This may not be the case in the future.  If we do have a
+      the Central Repository exclusively.  This may not be the case in the future.  If we do have a
       local repository, you need to go into the repositories directory (usually an m2-repo directory) and
       manually delete the versions of the Maven artifacts.  For instance, for the artifacts checker and compiler
       using version 0.9.8, I would delete the directories:
