@@ -19,7 +19,7 @@ public class GrowOnlyJdkTest {
     @GrowOnly
     List<String> localList = new @GrowOnly ArrayList<>();
     localList.add("hello");
-    // :: error: (method.invocation) :: error: (growonly.method.invocation)
+    // :: error: (method.invocation) :: error: (growonly.collection.shrink)
     localList.clear();
   }
 
