@@ -1597,7 +1597,8 @@ public final class TreeUtils {
    * @return the name of the method accessed by {@code tree}
    */
   public static String getMethodName(Tree tree) {
-    assert isMethodAccess(tree);
+    assert isMethodAccess(tree)
+        : "Call getMethodName with a method access, not " + tree.getKind() + " " + tree;
     if (tree instanceof MemberSelectTree) {
       MemberSelectTree mtree = (MemberSelectTree) tree;
       return mtree.getIdentifier().toString();
