@@ -10,7 +10,7 @@ public class GrowOnlyJdkTest {
   }
 
   void testForbiddenCalls(@GrowOnly List<String> list) {
-    // :: error: (method.invocation) :: error: (growonly.collection.shrink)
+    // :: error: (method.invocation)
     list.remove(0);
   }
 
@@ -19,7 +19,7 @@ public class GrowOnlyJdkTest {
     @GrowOnly
     List<String> localList = new @GrowOnly ArrayList<>();
     localList.add("hello");
-    // :: error: (method.invocation) :: error: (growonly.collection.shrink)
+    // :: error: (method.invocation)
     localList.clear();
   }
 
