@@ -1658,19 +1658,21 @@ public class MustCallConsistencyAnalyzer {
    * construction, in order to suppress potential false positive resource leak warnings.
    *
    * <p>This method takes a conservative approach: it returns {@code true} only if it can
-   * definitively prove that this is the first and only assignment to the field during construction.
-   * Later assignments, if any, are analyzed independently and will raise errors if they overwrite
+   * definitively prove that this is the first assignment to the field during construction. Later
+   * assignments, if any, are analyzed independently and will raise errors if they overwrite
    * unclosed resources. Therefore, we only check statements before this assignment.
    *
    * <p>The result is {@code true} if all the following hold:
    *
    * <ul>
-   *   <li>The field is private
-   *   <li>It has no non-null inline initializer
-   *   <li>It is not assigned in any instance initializer block
-   *   <li>The constructor does not use constructor chaining via {@code this(...)}
-   *   <li>There are no earlier assignments to the same field before this one in the constructor
-   *   <li>There are no method calls before this assignment that might modify the field
+   *   <li>(1) The field is private.
+   *   <li>(2) It has no non-null inline initializer at its declaration.
+   *   <li>(3) It is not assigned in any instance initializer block.
+   *   <li>(4) The constructor does not use constructor chaining via {@code this(...)}.
+   *   <li>(5) There are no earlier assignments to the same field before this one in the
+   *       constructor.
+   *   <li>(6) There are no method calls before this assignment that might have already set the
+   *       field.
    * </ul>
    *
    * @param field the field being assigned
@@ -1681,27 +1683,29 @@ public class MustCallConsistencyAnalyzer {
    */
   private boolean isFirstAssignmentToField(
       VariableElement field, MethodTree constructor, @FindDistinct Tree currentAssignment) {
-    @Nullable TreePath constructorPath = cmAtf.getPath(constructor);
+    TreePath constructorPath = cmAtf.getPath(constructor);
     ClassTree classTree = TreePathUtil.enclosingClass(constructorPath);
     String fieldName = field.getSimpleName().toString();
 
-    // Disallow non-null inline initializer
+    // (2) Disallow non-null inline initializer
     for (Tree member : classTree.getMembers()) {
       if (member instanceof VariableTree) {
-        VariableTree var = (VariableTree) member;
-        if (var.getName().contentEquals(fieldName) && var.getInitializer() != null) {
-          if (var.getInitializer().getKind() != Tree.Kind.NULL_LITERAL) {
+        VariableTree decl = (VariableTree) member;
+        if (decl.getName().contentEquals(fieldName) && decl.getInitializer() != null) {
+          if (decl.getInitializer().getKind() != Tree.Kind.NULL_LITERAL) {
             return false;
           }
         }
       }
     }
 
-    // Disallow assignment in instance initializer blocks
+    // (3) Disallow assignment in instance initializer blocks
     for (Tree member : classTree.getMembers()) {
       if (member instanceof BlockTree) {
         BlockTree block = (BlockTree) member;
-        if (block.isStatic()) continue;
+        if (block.isStatic()) {
+          continue;
+        }
         // The variables accessed from within the inner class need to be effectively final, so
         // AtomicBoolean is used here.
         AtomicBoolean found = new AtomicBoolean(false);
@@ -1726,11 +1730,14 @@ public class MustCallConsistencyAnalyzer {
         }
       }
     }
-    // Check constructor initialization chaining
+
+    // (4) Check constructor initialization chaining
     if (callsThisConstructor(constructor)) {
       return false;
     }
-    // Check for earlier assignments to the same field, or any method calls other than super
+
+    // (5) Check for earlier assignments to the same field, or
+    // (6) any method calls other than super.
     List<? extends StatementTree> statements = constructor.getBody().getStatements();
     for (StatementTree stmt : statements) {
       if (!(stmt instanceof ExpressionStatementTree)) {
@@ -1741,7 +1748,7 @@ public class MustCallConsistencyAnalyzer {
       if (expr == currentAssignment) {
         break;
       }
-      // Prior assignment to the same field
+      // (5) Prior assignment to the same field
       if (expr instanceof AssignmentTree) {
         ExpressionTree lhs = ((AssignmentTree) expr).getVariable();
         Name lhsName = null;
@@ -1754,7 +1761,7 @@ public class MustCallConsistencyAnalyzer {
           return false; // Unsafe: field already assigned earlier
         }
       }
-      // Any method call before assignment (except super constructor)
+      // (6) Any method call before assignment (except super constructor)
       if (expr instanceof MethodInvocationTree
           && !TreeUtils.isSuperConstructorCall((MethodInvocationTree) expr)) {
         return false; // Unsafe: method may write to field internally
