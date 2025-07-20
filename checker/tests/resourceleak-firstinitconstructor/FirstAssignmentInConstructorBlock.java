@@ -10,6 +10,7 @@ class FirstAssignmentInConstructorBlock {
   private @Owning FileInputStream s;
 
   static FileInputStream s2;
+  static FileInputStream s3;
 
   public FirstAssignmentInConstructorBlock() {
     s = s2;
@@ -34,6 +35,22 @@ class FirstAssignmentInConstructorBlock {
     {
       // :: error: (required.method.not.called)
       s = s2;
+    }
+  }
+
+  public FirstAssignmentInConstructorBlock(byte b) {
+    {
+      s = s3;
+    }
+    // :: error: (required.method.not.called)
+    s = s2;
+  }
+
+  public FirstAssignmentInConstructorBlock(char c) {
+    s = s2;
+    {
+      // :: error: (required.method.not.called)
+      s = s3;
     }
   }
 
