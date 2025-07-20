@@ -74,14 +74,7 @@ manual.fls
 manual.haux
 manual.html
 manual.htoc
-manual.image.log
-manual.image.out
-manual.image.tex
-manual.image.pdf
-manual.image.aux
-manual.image.fls
-manual.image.fdb_latexmk
-manual.image.tex.new
+manual.image.*
 manual.log
 manual.out
 manual.pdf
