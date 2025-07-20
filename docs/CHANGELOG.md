@@ -3,6 +3,8 @@ Version 3.49.6 (August 1, 2025)
 
 **User-visible changes:**
 
+New Confidential Checker to identify sensitive information exposure.
+
 **Implementation details:**
 
 **Closed issues:**
