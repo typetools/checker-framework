@@ -339,7 +339,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
     try {
       treeMcType = mcAtf.getAnnotatedType(tree);
     } catch (BugInCF e) {
-      return false; 
+      return false;
     }
     List<String> list = getMustCallValuesOfResourceCollectionComponent(treeMcType);
     return list != null && list.size() > 0;
