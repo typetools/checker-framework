@@ -437,6 +437,24 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
     return flowResult.getStoreAfter(block);
   }
 
+  /**
+   * Returns the then or else store after {@code block} depending on the value of {@code then} is
+   * returned.
+   *
+   * @param block a conditional block
+   * @param then wether the then store should be returned
+   * @return the then or else store after {@code block} depending on the value of {@code then} is
+   *     returned
+   */
+  public AccumulationStore getStoreAfterConditionalBlock(ConditionalBlock block, boolean then) {
+    TransferInput<AccumulationValue, AccumulationStore> transferInput = flowResult.getInput(block);
+    assert transferInput != null : "@AssumeAssertion(nullness): transferInput should be non-null";
+    if (then) {
+      return transferInput.getThenStore();
+    }
+    return transferInput.getElseStore();
+  }
+
   @Override
   @SuppressWarnings("TypeParameterUnusedInFormals") // Intentional abuse
   public <T extends GenericAnnotatedTypeFactory<?, ?, ?, ?>>

@@ -3494,14 +3494,16 @@ public class MustCallConsistencyAnalyzer {
         boolean isLastBlockOfBody = successorAndExceptionType.first == loopUpdateBlock;
         if (isLastBlockOfBody) {
           Set<String> calledMethodsAfterBlock =
-              analyzeTypeOfCollectionElement(currentBlock, potentiallyFulfillingLoop, obligations);
+              analyzeTypeOfCollectionElement(currentBlock, potentiallyFulfillingLoop, obligations, loopUpdateBlock);
           // intersect the called methods after this block with the accumulated ones so far.
           // This is required because there may be multiple "back edges" of the loop, in which
           // case we must intersect the called methods between those.
-          if (calledMethodsInLoop == null) {
-            calledMethodsInLoop = calledMethodsAfterBlock;
-          } else {
-            calledMethodsInLoop.retainAll(calledMethodsAfterBlock);
+          if (calledMethodsAfterBlock  != null) {
+            if (calledMethodsInLoop == null) {
+              calledMethodsInLoop = calledMethodsAfterBlock;
+            } else {
+              calledMethodsInLoop.retainAll(calledMethodsAfterBlock);
+            }
           }
         } else {
           try {
@@ -3535,15 +3537,22 @@ public class MustCallConsistencyAnalyzer {
    * @param lastLoopBodyBlock last block of loop body
    * @param potentiallyFulfillingLoop loop wrapper of the loop to analyze
    * @param obligations the set of tracked obligations
+   * @param loopUpdateBlock block that updates the loop
    * @return the union of methods in the CalledMethods type of the collection element and all its
-   *     resource aliases.
+   *     resource aliases or {@code null} if the called methods is bottom
    */
   private Set<String> analyzeTypeOfCollectionElement(
       Block lastLoopBodyBlock,
       PotentiallyFulfillingLoop potentiallyFulfillingLoop,
-      Set<Obligation> obligations) {
+      Set<Obligation> obligations,
+      Block loopUpdateBlock) {
     AccumulationStore store = null;
-    if (lastLoopBodyBlock.getLastNode() == null) {
+    if (lastLoopBodyBlock.getType() == BlockType.CONDITIONAL_BLOCK) {
+      ConditionalBlock conditionalBlock = (ConditionalBlock) lastLoopBodyBlock;
+      boolean thenSuccessor = conditionalBlock.getThenSuccessor() == loopUpdateBlock;
+      store = cmAtf.getStoreAfterConditionalBlock(conditionalBlock, thenSuccessor);
+    } else if (lastLoopBodyBlock.getLastNode() == null) {
+      // TODO SCK: this probably can't happen anymore
       // TODO is this really the right store? I think we need to get the then-or else store
       store = cmAtf.getStoreAfterBlock(lastLoopBodyBlock);
     } else {
@@ -3561,7 +3570,7 @@ public class MustCallConsistencyAnalyzer {
       //         + potentiallyFulfillingLoop.collectionElementTree);
     }
 
-    Set<String> calledMethodsAfterThisBlock = new HashSet<>();
+    Set<String> calledMethodsAfterThisBlock = null;
 
     // add the called methods of the ICE
     IteratedCollectionElement ice =
@@ -3571,18 +3580,24 @@ public class MustCallConsistencyAnalyzer {
     if (ice != null) {
       AccumulationValue cmValOfIce = store.getValue(ice);
       List<String> calledMethods = getCalledMethods(cmValOfIce);
-      if (calledMethods != null && calledMethods.size() > 0) {
-        calledMethodsAfterThisBlock.addAll(calledMethods);
+      if (calledMethods != null) {
+        calledMethodsAfterThisBlock = new HashSet<>(calledMethods);
       }
     }
 
     // add the called methods of possible aliases of the collection element
     for (ResourceAlias alias : collectionElementObligation.resourceAliases) {
       AccumulationValue cmValOfAlias = store.getValue(alias.reference);
-      if (cmValOfAlias == null) continue;
+      if (cmValOfAlias == null) {
+        continue;
+      }
       List<String> calledMethods = getCalledMethods(cmValOfAlias);
-      if (calledMethods != null && calledMethods.size() > 0) {
-        calledMethodsAfterThisBlock.addAll(calledMethods);
+      if (calledMethods != null) {
+        if (calledMethodsAfterThisBlock == null) {
+          calledMethodsAfterThisBlock = new HashSet<>(calledMethods);
+        } else {
+          calledMethodsAfterThisBlock.addAll(calledMethods);
+        }
       }
     }
 
@@ -3590,10 +3605,11 @@ public class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Returns the set of called methods values given an AccumulationValue.
+   * Returns the set of called methods values given an AccumulationValue or null if the accumulation
+   * value is bottom.
    *
    * @param cmVal the accumulation value
-   * @return the set of called methods of the given value
+   * @return the set of called methods of the given value or null if the accumulation value is bottom
    */
   private List<String> getCalledMethods(AccumulationValue cmVal) {
     Set<String> calledMethods = cmVal.getAccumulatedValues();
@@ -3604,6 +3620,9 @@ public class MustCallConsistencyAnalyzer {
         if (AnnotationUtils.areSameByName(
             anno, "org.checkerframework.checker.calledmethods.qual.CalledMethods")) {
           return cmAtf.getCalledMethods(anno);
+        } else if (AnnotationUtils.areSameByName(
+            anno, "org.checkerframework.checker.calledmethods.qual.CalledMethodsBottom")) {
+          return null;
         }
       }
     }
