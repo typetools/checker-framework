@@ -3494,11 +3494,12 @@ public class MustCallConsistencyAnalyzer {
         boolean isLastBlockOfBody = successorAndExceptionType.first == loopUpdateBlock;
         if (isLastBlockOfBody) {
           Set<String> calledMethodsAfterBlock =
-              analyzeTypeOfCollectionElement(currentBlock, potentiallyFulfillingLoop, obligations, loopUpdateBlock);
+              analyzeTypeOfCollectionElement(
+                  currentBlock, potentiallyFulfillingLoop, obligations, loopUpdateBlock);
           // intersect the called methods after this block with the accumulated ones so far.
           // This is required because there may be multiple "back edges" of the loop, in which
           // case we must intersect the called methods between those.
-          if (calledMethodsAfterBlock  != null) {
+          if (calledMethodsAfterBlock != null) {
             if (calledMethodsInLoop == null) {
               calledMethodsInLoop = calledMethodsAfterBlock;
             } else {
@@ -3609,7 +3610,8 @@ public class MustCallConsistencyAnalyzer {
    * value is bottom.
    *
    * @param cmVal the accumulation value
-   * @return the set of called methods of the given value or null if the accumulation value is bottom
+   * @return the set of called methods of the given value or null if the accumulation value is
+   *     bottom
    */
   private List<String> getCalledMethods(AccumulationValue cmVal) {
     Set<String> calledMethods = cmVal.getAccumulatedValues();
