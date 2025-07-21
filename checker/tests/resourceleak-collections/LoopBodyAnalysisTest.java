@@ -90,22 +90,22 @@ class LoopBodyAnalysisTests {
   //   }
   // }
 
-  // void nullableElementWithCheck(@OwningCollection List<Resource> resources) {
-  //   for (Resource r : resources) {
-  //     if (r != null) {
-  //       r.close();
-  //       r.flush();
-  //     }
-  //   }
-  // }
+  void nullableElementWithCheck(@OwningCollection List<Resource> resources) {
+    for (Resource r : resources) {
+      if (r != null) {
+        r.close();
+        r.flush();
+      }
+    }
+  }
 
-  // void nullableElementHelper(@OwningCollection List<Resource> resources) {
-  //   for (Resource r : resources) {
-  //     if (r != null) {
-  //       doCloseFlush(r);
-  //     }
-  //   }
-  // }
+  void nullableElementHelper(@OwningCollection List<Resource> resources) {
+    for (Resource r : resources) {
+      if (r != null) {
+        doCloseFlush(r);
+      }
+    }
+  }
 
   @EnsuresCalledMethods(
       value = "#1",
