@@ -17,7 +17,7 @@ plugins {
   // Only works on JDK 11+ (even including the plugin crashes Gradle on JDK 8);
   // shell scripts in checker/bin-devel/ ensure spotless isn't called unless
   // the JDK is 17 or later.
-  id 'com.diffplug.spotless' version '7.2.0'
+  id 'com.diffplug.spotless' version '7.2.1'
 }
 
 // There is another `repositories { ... }` block below; if you change this one, change that one as well.
