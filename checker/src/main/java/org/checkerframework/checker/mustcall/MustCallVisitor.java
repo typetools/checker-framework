@@ -390,6 +390,9 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
     StatementTree init = tree.getInitializer().get(0);
     ExpressionTree condition = tree.getCondition();
     ExpressionStatementTree update = tree.getUpdate().get(0);
+    if (!(condition instanceof BinaryTree)) {
+      return;
+    }
     Name identifierInHeader = verifyAllElementsAreCalledOn(init, (BinaryTree) condition, update);
     Name iterator = getNameFromStatementTree(init);
     if (identifierInHeader == null || iterator == null) {
