@@ -910,23 +910,13 @@ task tags(type: Exec, group: 'Emacs') {
 }
 
 tasks.register('zip', Zip) {
+
   archiveFileName = "checker-framework-${version}.zip"
   destinationDirectory = file(project.property('destDir'))
 
-
   String checker = project.property('checker')
   String checkerframework = "${checker}/.."
-  String checkerIncludes = "${checkerframework}/docs/developer/release/checker-includes"
-  String checkerExcludes = "${checkerframework}/docs/developer/release/checker-excludes"
-  if(!file(checkerIncludes).exists()){
-    throw new GradleException("${checkerIncludes} includes file not available")
-  }
-  if(!file(checkerExcludes).exists()){
-    throw new GradleException("${checkerExcludes} includes file not available")
-  }
-  doFirst {
-    delete(destFile)
-  }
+
   from(layout.buildDirectory.dir(checkerframework)) {
     exclude 'api/**',
         'checker/bin/README',
@@ -967,11 +957,8 @@ tasks.register('zip', Zip) {
         'docs/tutorial/**'
   }
 
-  from(layout.buildDirectory.dir(checkerframework)) {
-    include 'checker/bin/javac'
-    filePermissions{unix(755)}
-  }
 
+  // Copy to CFLogo.png to multiple places.
   from(layout.buildDirectory.dir(checkerframework)) {
     include 'docs/logo/Logo/CFLogo.png'
     into 'docs/manual/'
