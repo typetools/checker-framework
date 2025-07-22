@@ -15,6 +15,7 @@ import org.checkerframework.checker.index.samelen.SameLenChecker;
 import org.checkerframework.checker.index.searchindex.SearchIndexChecker;
 import org.checkerframework.checker.index.substringindex.SubstringIndexChecker;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
+import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.framework.qual.RelevantJavaTypes;
@@ -95,6 +96,14 @@ public class UpperBoundChecker extends BaseTypeChecker {
     ltOMLengthOfValueElement = TreeUtils.getMethod(LTOMLengthOf.class, "value", 0, processingEnv);
     upperBoundLiteralValueElement =
         TreeUtils.getMethod(UpperBoundLiteral.class, "value", 0, processingEnv);
+  }
+
+  @Override
+  public boolean shouldSkipUses(@FullyQualifiedName String typeName) {
+    if (collectionBaseTypeNames.contains(typeName)) {
+      return true;
+    }
+    return super.shouldSkipUses(typeName);
   }
 
   @Override

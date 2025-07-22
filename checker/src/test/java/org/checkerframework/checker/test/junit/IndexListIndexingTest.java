@@ -7,7 +7,7 @@ import java.util.List;
 import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
-/** JUnit tests for the Index Checker when running together with the InitializedFields Checker. */
+/** JUnit tests for the Index Checker when checking lists as well as arrays and strings. */
 public class IndexListIndexingTest extends CheckerFrameworkPerDirectoryTest {
 
   /**
