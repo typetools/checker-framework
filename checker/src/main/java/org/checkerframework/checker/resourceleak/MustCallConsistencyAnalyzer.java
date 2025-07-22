@@ -3554,7 +3554,7 @@ public class MustCallConsistencyAnalyzer {
       boolean thenSuccessor = conditionalBlock.getThenSuccessor() == loopUpdateBlock;
       store = cmAtf.getStoreAfterConditionalBlock(conditionalBlock, thenSuccessor);
     } else if (lastLoopBodyBlock.getLastNode() == null) {
-      throw new BugInCF("Loop Body Analysis -- Block " + lastLoopBodyBlock  + " has no nodes");
+      throw new BugInCF("Loop Body Analysis -- Block " + lastLoopBodyBlock + " has no nodes");
       // store = cmAtf.getStoreAfterBlock(lastLoopBodyBlock);
     } else {
       store = cmAtf.getStoreAfter(lastLoopBodyBlock.getLastNode());
