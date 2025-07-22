@@ -52,6 +52,7 @@ public class LambdaScanner extends CommonScanner {
   }
 
   @Override
+  @SuppressWarnings("interning:not.interned") // reference equality check
   public Void visitLambdaExpression(LambdaExpressionTree node, Void p) {
     if (!done) {
       index++;

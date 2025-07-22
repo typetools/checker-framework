@@ -53,6 +53,8 @@ import java.util.ArrayList;
 import java.util.List;
 import org.checkerframework.afu.annotator.Main;
 import org.checkerframework.afu.scenelib.io.ASTPath;
+import org.checkerframework.checker.interning.qual.FindDistinct;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /** A criterion to determine if a node matches a path through the AST. */
 public class ASTPathCriterion implements Criterion {
@@ -75,7 +77,7 @@ public class ASTPathCriterion implements Criterion {
   }
 
   @Override
-  public boolean isSatisfiedBy(TreePath path, Tree leaf) {
+  public boolean isSatisfiedBy(@Nullable TreePath path, @FindDistinct Tree leaf) {
     if (path == null) {
       return false;
     }
@@ -84,7 +86,7 @@ public class ASTPathCriterion implements Criterion {
   }
 
   @Override
-  public boolean isSatisfiedBy(TreePath path) {
+  public boolean isSatisfiedBy(@Nullable TreePath path) {
     if (path == null) {
       return false;
     }
@@ -210,6 +212,7 @@ public class ASTPathCriterion implements Criterion {
    * @param node a tree
    * @return true if the given trees match
    */
+  @SuppressWarnings("interning:not.interned") // check for reference equality
   private boolean matchNext(Tree next, Tree node) {
     boolean b1 = next instanceof JCTree;
     boolean b2 = node instanceof JCTree;

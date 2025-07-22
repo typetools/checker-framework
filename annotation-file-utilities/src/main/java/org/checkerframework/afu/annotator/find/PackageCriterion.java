@@ -7,6 +7,8 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import org.checkerframework.afu.annotator.Main;
+import org.checkerframework.checker.interning.qual.FindDistinct;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /** Represents the criterion that a program element is in a method with a certain name. */
 final class PackageCriterion implements Criterion {
@@ -23,13 +25,13 @@ final class PackageCriterion implements Criterion {
   }
 
   @Override
-  public boolean isSatisfiedBy(TreePath path, Tree tree) {
-    assert path == null || path.getLeaf() == tree;
+  public boolean isSatisfiedBy(@Nullable TreePath path, @FindDistinct Tree leaf) {
+    assert path == null || path.getLeaf() == leaf;
     return isSatisfiedBy(path);
   }
 
   @Override
-  public boolean isSatisfiedBy(TreePath path) {
+  public boolean isSatisfiedBy(@Nullable TreePath path) {
     Tree tree = path.getLeaf();
     Criteria.dbug.debug(
         "PackageCriterion.isSatisfiedBy(%s, %s); this=%s%n",

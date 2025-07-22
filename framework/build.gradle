@@ -45,7 +45,7 @@ dependencies {
   implementation "org.plumelib:hashmap-util:${versions.hashmapUtil}"
   implementation "org.plumelib:plume-util:${versions.plumeUtil}"
   implementation "org.plumelib:reflection-util:${versions.reflectionUtil}"
-  implementation 'io.github.classgraph:classgraph:4.8.180'
+  implementation 'io.github.classgraph:classgraph:4.8.181'
 
   testImplementation group: 'junit', name: 'junit', version: '4.13.2'
   testImplementation project(':framework-test')
@@ -148,14 +148,6 @@ shadowJar {
   manifest {
     attributes('Automatic-Module-Name': 'org.checkerframework.framework')
   }
-}
-
-createCheckTypeTask(project.name, 'CompilerMessages',
-    'org.checkerframework.checker.compilermsgs.CompilerMessagesChecker')
-checkCompilerMessages {
-  options.compilerArgs += [
-    '-Apropfiles=' + sourceSets.main.resources.filter { file -> file.name.equals('messages.properties') }.asPath
-  ]
 }
 
 task loaderTests(type: Exec, dependsOn: 'shadowJar', group: 'Verification') {

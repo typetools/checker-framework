@@ -13,6 +13,7 @@ import org.checkerframework.afu.scenelib.el.RelativeLocation;
 import org.checkerframework.afu.scenelib.el.TypeIndexLocation;
 import org.checkerframework.afu.scenelib.io.ASTPath;
 import org.checkerframework.afu.scenelib.io.DebugWriter;
+import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.objectweb.asm.TypePath;
@@ -65,7 +66,8 @@ public final class Criteria {
    *     case the leaf is a CompilationUnitTree
    * @return true if all of these criteria are satisfied by the given path, false otherwise
    */
-  public boolean isSatisfiedBy(TreePath path, Tree leaf) {
+  // @FindDistinct is for the benefit of an assertion
+  public boolean isSatisfiedBy(@Nullable TreePath path, @FindDistinct Tree leaf) {
     if (path == null) {
       return false;
     }
@@ -97,7 +99,7 @@ public final class Criteria {
    * @param path the tree path to check against
    * @return true if all of these criteria are satisfied by the given path, false otherwise
    */
-  public boolean isSatisfiedBy(TreePath path) {
+  public boolean isSatisfiedBy(@Nullable TreePath path) {
     for (Criterion c : criteria.values()) {
       if (!c.isSatisfiedBy(path)) {
         dbug.debug("UNsatisfied criterion: %s%n", c);

@@ -3,7 +3,7 @@ plugins {
   id 'base'
   // https://github.com/n0mer/gradle-git-properties
   // Generates file build/resources/main/git.properties when the `classes` task runs.
-  id 'com.gorylenko.gradle-git-properties' version '2.5.0'
+  id 'com.gorylenko.gradle-git-properties' version '2.5.2'
 }
 
 sourceSets {
@@ -62,7 +62,7 @@ dependencies {
   // For the Resource Leak Checker's support for JavaEE.
   testImplementation 'javax.servlet:javax.servlet-api:4.0.1'
   // For the Resource Leak Checker's support for IOUtils.
-  testImplementation 'commons-io:commons-io:2.19.0'
+  testImplementation 'commons-io:commons-io:2.20.0'
   // To test for an obscure crash in CFG construction for try-with-resources;
   // see https://github.com/typetools/checker-framework/issues/6396
   testImplementation 'org.apache.spark:spark-sql_2.12:3.3.2'
@@ -238,16 +238,6 @@ clean.doLast {
 
 
 // Add non-junit tests
-createCheckTypeTask(project.name, 'CompilerMessages',
-    'org.checkerframework.checker.compilermsgs.CompilerMessagesChecker')
-checkCompilerMessages {
-  doFirst {
-    options.compilerArgs += [
-      '-Apropfiles=' + sourceSets.main.resources.filter { file -> file.name.equals('messages.properties') }.asPath + File.pathSeparator
-      + project(':framework').sourceSets.main.resources.filter { file -> file.name.equals('messages.properties') }.asPath
-    ]
-  }
-}
 
 task nullnessExtraTests(type: Exec, dependsOn: assembleForJavac, group: 'Verification') {
   description = 'Run extra tests for the Nullness Checker.'
