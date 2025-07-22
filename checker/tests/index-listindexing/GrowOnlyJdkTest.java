@@ -10,7 +10,7 @@ public class GrowOnlyJdkTest {
   }
 
   void testForbiddenCalls(@GrowOnly List<String> list) {
-    // :: error: (method.invocation)
+    // :: error: (method.invocation) :: error: (argument)
     list.remove(0);
   }
 
@@ -29,6 +29,7 @@ public class GrowOnlyJdkTest {
     @UncheckedShrinkable
     List<String> list = new @UncheckedShrinkable ArrayList<>();
     list.add("hello");
+    // :: error: (argument)
     list.remove(0);
   }
 }
