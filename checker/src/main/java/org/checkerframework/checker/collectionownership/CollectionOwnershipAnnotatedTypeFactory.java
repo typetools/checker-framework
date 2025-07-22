@@ -49,9 +49,11 @@ import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
+import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.JavaExpressionParseUtil;
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationBuilder;
@@ -577,8 +579,72 @@ public class CollectionOwnershipAnnotatedTypeFactory
     }
 
     @Override
-    public Void visitExecutable(AnnotatedTypeMirror.AnnotatedExecutableType t, Void p) {
+    public Void visitExecutable(AnnotatedExecutableType t, Void p) {
+      List<? extends AnnotatedTypeMirror> params = t.getParameterTypes();
+
+      AnnotatedDeclaredType receiver = t.getReceiverType();
+      AnnotationMirror receiverAnno =
+          receiver == null ? null : receiver.getEffectiveAnnotationInHierarchy(TOP);
+      boolean receiverHasManualAnno =
+          receiverAnno != null && !AnnotationUtils.areSameByName(BOTTOM, receiverAnno);
+
       AnnotatedTypeMirror returnType = t.getReturnType();
+      AnnotationMirror returnAnno = returnType.getEffectiveAnnotationInHierarchy(TOP);
+      boolean returnHasManualAnno =
+          returnAnno != null && !AnnotationUtils.areSameByName(BOTTOM, returnAnno);
+
+      // inherit supertype annotations
+
+      Map<AnnotatedDeclaredType, ExecutableElement> overriddenMethods =
+          AnnotatedTypes.overriddenMethods(
+              elements, CollectionOwnershipAnnotatedTypeFactory.this, t.getElement());
+
+      if (overriddenMethods != null) {
+        for (ExecutableElement superElt : overriddenMethods.values()) {
+          AnnotatedExecutableType annotatedSuperMethod =
+              CollectionOwnershipAnnotatedTypeFactory.this.getAnnotatedType(superElt);
+
+          AnnotatedDeclaredType superReceiver = annotatedSuperMethod.getReceiverType();
+          AnnotationMirror superReceiverAnno = superReceiver.getEffectiveAnnotationInHierarchy(TOP);
+          boolean superReceiverHasManualAnno =
+              superReceiverAnno != null
+                  && !AnnotationUtils.areSameByName(BOTTOM, superReceiverAnno);
+          if (!receiverHasManualAnno) {
+            if (superReceiverHasManualAnno) {
+              receiver.replaceAnnotation(superReceiverAnno);
+            }
+          }
+
+          AnnotatedTypeMirror superReturnType = annotatedSuperMethod.getReturnType();
+          AnnotationMirror superReturnAnno = superReturnType.getEffectiveAnnotationInHierarchy(TOP);
+          boolean superReturnHasManualAnno =
+              superReturnAnno != null && !AnnotationUtils.areSameByName(BOTTOM, superReturnAnno);
+          if (!returnHasManualAnno) {
+            if (superReturnHasManualAnno) {
+              returnType.replaceAnnotation(superReturnAnno);
+            }
+          }
+
+          List<? extends AnnotatedTypeMirror> superParams =
+              annotatedSuperMethod.getParameterTypes();
+          if (params.size() == superParams.size()) {
+            for (int i = 0; i < superParams.size(); i++) {
+              AnnotationMirror superParamAnno =
+                  superParams.get(i).getEffectiveAnnotationInHierarchy(TOP);
+              AnnotationMirror paramAnno = params.get(i).getEffectiveAnnotationInHierarchy(TOP);
+              boolean paramHasManualAnno =
+                  paramAnno != null && !AnnotationUtils.areSameByName(BOTTOM, paramAnno);
+              boolean superParamHasManualAnno =
+                  superParamAnno != null && !AnnotationUtils.areSameByName(BOTTOM, superParamAnno);
+              if (!paramHasManualAnno) {
+                if (superParamHasManualAnno) {
+                  params.get(i).replaceAnnotation(superParamAnno);
+                }
+              }
+            }
+          }
+        }
+      }
 
       if (isResourceCollection(returnType.getUnderlyingType())) {
         AnnotationMirror manualAnno = returnType.getEffectiveAnnotationInHierarchy(TOP);
