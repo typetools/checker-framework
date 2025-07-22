@@ -64,8 +64,10 @@ ext {
   skipDelombok = gradleRunsOnJava24orHigher
 
   parentDir = file("${rootDir}/../").absolutePath
+  afuManualDir = 'docs/manual/annotation-file-utilities/'
 
   gitScriptsHome = "${project(':checker').projectDir}/bin-devel/.git-scripts"
+  plumeBibHome = "${projectDir}/docs/manual/plume-bib"
   plumeScriptsHome = "${project(':checker').projectDir}/bin-devel/.plume-scripts"
   htmlToolsHome = "${project(':checker').projectDir}/bin-devel/.html-tools"
   doLikeJavacHome = "${project(':checker').projectDir}/bin/.do-like-javac"
@@ -692,13 +694,36 @@ task allJavadoc(type: Javadoc, group: 'Documentation') {
 // See documentation for allJavadoc task.
 javadoc.dependsOn(allJavadoc)
 
-task cleanManual(type: Exec) {
+tasks.register('cleanCFManual', Exec) {
   description = 'Clean the manual'
-  commandLine 'make', '-C', 'docs/manual', 'clean'
+  commandLine 'make', '-C', 'docs/manual/checker-framework', 'clean'
 }
+
+tasks.register('cleanAFUManual', Exec) {
+  description = 'Clean the manual'
+  commandLine 'make', '-C', "${afuManualDir}/figures", 'clean'
+}
+
+tasks.register('cleanManual'){
+  dependsOn('cleanCFManual','cleanAFUManual')
+}
+
 clean.dependsOn(cleanManual)
 clean {
   delete(file("${rootDir}/docs/api"))
+  delete "${afuManualDir}/annotation-file-format.aux"
+  delete "${afuManualDir}/annotation-file-format.blg"
+  delete "${afuManualDir}/annotation-file-format.dvi"
+  delete "${afuManualDir}/annotation-file-format.haux"
+  delete "${afuManualDir}/annotation-file-format.html"
+  delete "${afuManualDir}/annotation-file-format.htoc"
+  delete "${afuManualDir}/annotation-file-format.log"
+  delete "${afuManualDir}/annotation-file-format.pdf"
+  delete "${afuManualDir}/annotation-file-format.toc"
+  delete "${afuManualDir}/corresp.png"
+  delete "${afuManualDir}/dataflow.png"
+  delete "${afuManualDir}/nocast.png"
+  delete "${afuManualDir}/typecast.png"
 }
 
 configurations {
@@ -759,9 +784,87 @@ def createJavadocTask(taskName, taskDescription, memberLevel) {
 
 createJavadocTask('javadocDoclintAll', 'Runs javadoc with -Xdoclint:all option.', JavadocMemberLevel.PRIVATE)
 
-task manual(type: Exec, group: 'Documentation') {
+
+
+tasks.register('makeCFManual', Exec) {
+  description = 'Build the Checker Framework manual'
+  commandLine 'make', '-C', 'docs/manual/checker-framework', 'all'
+}
+
+interface InjectedExecOps {
+  @javax.inject.Inject
+  ExecOperations getExecOps()
+}
+
+tasks.register('makeAnnotationFileFormat') {
+  dependsOn getPlumeBib
+  description = 'Make documentation: annotation-file-format.{html,pdf}.'
+
+  def injected = project.objects.newInstance(InjectedExecOps)
+
+  doLast {
+    injected.execOps.exec {
+      executable 'make'
+      args = [
+        '-C',
+        "${afuManualDir}/figures"
+      ]
+    }
+    injected.execOps.exec {
+      workingDir(file(afuManualDir))
+      executable 'latex'
+      args 'annotation-file-format.tex'
+    }
+
+    injected.execOps.exec {
+      workingDir(file(afuManualDir))
+      executable 'bibtex'
+      args 'annotation-file-format'
+      environment BIBINPUTS: ".:${plumeBibHome}"
+    }
+
+    injected.execOps.exec {
+      workingDir(file(afuManualDir))
+      executable 'latex'
+      args 'annotation-file-format.tex'
+    }
+
+    injected.execOps.exec {
+      workingDir(file(afuManualDir))
+      executable 'latex'
+      args 'annotation-file-format.tex'
+    }
+
+    injected.execOps.exec {
+      workingDir(file(afuManualDir))
+      executable 'pdflatex'
+      args 'annotation-file-format.tex'
+    }
+
+    injected.execOps.exec {
+      workingDir(file(afuManualDir))
+      executable 'hevea'
+      args = [
+        "-fix",
+        "-exec",
+        "xxdate.exe",
+        "urlhref.hva",
+        "annotation-file-format.tex"
+      ]
+    }
+  }
+}
+
+
+tasks.register('manual'){
   description = 'Build the manual'
-  commandLine 'make', '-C', 'docs/manual', 'all'
+  dependsOn('makeCFManual','makeAnnotationFileFormat')
+}
+
+tasks.register('getPlumeBib', CloneTask) {
+  url.set('https://github.com/mernst/plume-bib.git')
+  directory.set(file(plumeBibHome))
+  outputs.upToDateWhen { false }
 }
 
 tasks.register('getGitScripts', CloneTask) {
@@ -805,6 +908,86 @@ task tags(type: Exec, group: 'Emacs') {
   // running this task will also run the tags task in the subprojects, which is defined later in this file.
   commandLine 'etags', '-i', 'annotation-file-utilities/TAGS', '-i', 'checker/TAGS', '-i', 'checker-qual/TAGS', '-i', 'checker-util/TAGS', '-i', 'dataflow/TAGS', '-i', 'framework/TAGS', '-i', 'framework-test/TAGS', '-i', 'javacutil/TAGS', '-i', 'docs/manual/TAGS'
 }
+
+tasks.register('zip', Zip) {
+  archiveFileName = "checker-framework-${version}.zip"
+  destinationDirectory = file(project.property('destDir'))
+
+
+  String checker = project.property('checker')
+  String checkerframework = "${checker}/.."
+  String checkerIncludes = "${checkerframework}/docs/developer/release/checker-includes"
+  String checkerExcludes = "${checkerframework}/docs/developer/release/checker-excludes"
+  if(!file(checkerIncludes).exists()){
+    throw new GradleException("${checkerIncludes} includes file not available")
+  }
+  if(!file(checkerExcludes).exists()){
+    throw new GradleException("${checkerExcludes} includes file not available")
+  }
+  doFirst {
+    delete(destFile)
+  }
+  from(layout.buildDirectory.dir(checkerframework)) {
+    exclude 'api/**',
+        'checker/bin/README',
+        'checker/bin/javac',
+        'checker/dist/*.asc',
+        'docs/tutorial/tests/**',
+        'docs/tutorial/src/**',
+        'docs/tutorial/test/**',
+        'docs/tutorial/Makefile',
+        'docs/tutorial/README'
+    include 'README.html',
+        'LICENSE.txt',
+        'checker/bin/**',
+        'checker/dist/**',
+        'checker/resources/**',
+        'docs/CHANGELOG.md',
+        'docs/manual/manual.html',
+        'docs/manual/manual.pdf',
+        'docs/manual/*.svg',
+        'docs/manual/manual001.png',
+        'docs/manual/manual001.svg',
+        'docs/examples/InterningExample.java',
+        'docs/examples/InterningExampleWithWarnings.java',
+        'docs/examples/NullnessExample.java',
+        'docs/examples/NullnessExampleWithWarnings.java',
+        'docs/examples/NullnessReleaseTests.java',
+        'docs/examples/units-extension/Demo.java',
+        'docs/examples/units-extension/Expected.txt',
+        'docs/examples/units-extension/Frequency.java',
+        'docs/examples/units-extension/FrequencyRelations.java',
+        'docs/examples/units-extension/Hz.java',
+        'docs/examples/units-extension/kHz.java',
+        'docs/examples/units-extension/Makefile',
+        'docs/examples/units-extension/README',
+        'docs/examples/MavenExample/pom.xml',
+        'docs/examples/MavenExample/README',
+        'docs/examples/MavenExample/src/main/java/org/checkerframework/example/MavenExample.java',
+        'docs/tutorial/**'
+  }
+
+  from(layout.buildDirectory.dir(checkerframework)) {
+    include 'checker/bin/javac'
+    filePermissions{unix(755)}
+  }
+
+  from(layout.buildDirectory.dir(checkerframework)) {
+    include 'docs/logo/Logo/CFLogo.png'
+    into 'docs/manual/'
+  }
+
+  from(layout.buildDirectory.dir(checkerframework)) {
+    include 'docs/logo/Logo/CFLogo.png'
+    into 'docs/tutorial/'
+  }
+
+  from(layout.buildDirectory.dir(checkerframework)) {
+    include 'docs/logo/Logo/CFLogo.png'
+    into 'docs/tutorial/webpages'
+  }
+}
+
 
 subprojects {
   configurations {

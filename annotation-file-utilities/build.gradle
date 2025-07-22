@@ -119,105 +119,9 @@ task cleanTestAnnotator(type: Exec) {
   args("clean")
 }
 
-ext.plumeBibHome = "${projectDir}/plume-bib"
-
-task getPlumeBib(type: Exec) {
-  description = 'Obtain or update the plume-bib bibliography.'
-  doFirst {
-    if (file(plumeBibHome).exists()) {
-      workingDir plumeBibHome
-      executable 'git'
-      args = ['pull', '-q']
-      ignoreExitValue = true
-    } else {
-      workingDir "${plumeBibHome}/../"
-      executable 'git'
-      args = [
-        'clone',
-        '-q',
-        'https://github.com/mernst/plume-bib.git'
-      ]
-    }
-  }
-}
-
-interface InjectedExecOps {
-  @javax.inject.Inject
-  ExecOperations getExecOps()
-}
-
-task makeAnnotationFileFormat(dependsOn: getPlumeBib) {
-  description = 'Make documentation: annotation-file-format.{html,pdf}.'
-  def injected = project.objects.newInstance(InjectedExecOps)
-
-  doLast {
-    injected.execOps.exec {
-      executable 'make'
-      args = [
-        '-C',
-        'figures'
-      ]
-    }
-    injected.execOps.exec {
-      executable 'latex'
-      args 'annotation-file-format.tex'
-    }
-
-    injected.execOps.exec {
-      executable 'bibtex'
-      args 'annotation-file-format'
-      environment BIBINPUTS: ".:${plumeBibHome}"
-    }
-
-    injected.execOps.exec {
-      executable 'latex'
-      args 'annotation-file-format.tex'
-    }
-
-    injected.execOps.exec {
-      executable 'latex'
-      args 'annotation-file-format.tex'
-    }
-
-    injected.execOps.exec {
-      executable 'pdflatex'
-      args 'annotation-file-format.tex'
-    }
-
-    injected.execOps.exec {
-      executable 'hevea'
-      args = [
-        "-fix",
-        "-exec",
-        "xxdate.exe",
-        "urlhref.hva",
-        "annotation-file-format.tex"
-      ]
-    }
-  }
-}
-
-task cleanManual(type: Exec) {
-  executable 'make'
-  args = [
-    '-C',
-    'figures',
-    'clean'
-  ]
-}
-
 clean {
-  dependsOn(cleanTestAnnotator, cleanManual)
+  dependsOn(cleanTestAnnotator)
   delete('annotation-file-utilities.jar','annotation-file-utilities-all.jar', 'annotation-tools.zip')
-  delete "annotation-file-format.aux"
-  delete "annotation-file-format.dvi"
-  delete "annotation-file-format.haux"
-  delete "annotation-file-format.html"
-  delete "annotation-file-format.htoc"
-  delete "annotation-file-format.log"
-  delete "annotation-file-format.pdf"
-  delete "annotation-file-format.toc"
-  delete "scene-lib-type-hierarchy.png"
 }
 
 task htmlValidate(type: Exec) {
@@ -289,7 +193,8 @@ artifacts {
 
 ext.tmpAnnotationTools = "${layout.buildDirectory.get()}/tmp-annotation-tools"
 task cloneAndPrepDirectoryForZipfile(type: Exec) {
-  dependsOn(assemble, makeAnnotationFileFormat)
+  dependsOn(assemble)
+  //    dependsOn(assemble, makeAnnotationFileFormat)
   description = 'Copy files from repository to temporary directory from which they will be packaged up.'
   doFirst {
     delete tmpAnnotationTools
