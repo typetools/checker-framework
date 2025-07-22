@@ -3550,12 +3550,12 @@ public class MustCallConsistencyAnalyzer {
     AccumulationStore store = null;
     if (lastLoopBodyBlock.getType() == BlockType.CONDITIONAL_BLOCK) {
       ConditionalBlock conditionalBlock = (ConditionalBlock) lastLoopBodyBlock;
+      @SuppressWarnings("interning:not.interned")
       boolean thenSuccessor = conditionalBlock.getThenSuccessor() == loopUpdateBlock;
       store = cmAtf.getStoreAfterConditionalBlock(conditionalBlock, thenSuccessor);
     } else if (lastLoopBodyBlock.getLastNode() == null) {
-      // TODO SCK: this probably can't happen anymore
-      // TODO is this really the right store? I think we need to get the then-or else store
-      store = cmAtf.getStoreAfterBlock(lastLoopBodyBlock);
+      throw new BugInCF("Loop Body Analysis -- Block " + lastLoopBodyBlock  + " has no nodes");
+      // store = cmAtf.getStoreAfterBlock(lastLoopBodyBlock);
     } else {
       store = cmAtf.getStoreAfter(lastLoopBodyBlock.getLastNode());
     }
