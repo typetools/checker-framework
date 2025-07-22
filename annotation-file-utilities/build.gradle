@@ -26,7 +26,7 @@ java {
 
 dependencies {
   // Annotations in checker-qual.jar are used, but no checkers are (currently) run on the code.
-  compileOnly 'org.checkerframework:checker-qual:3.49.5'
+  compileOnly project(':checker-qual')
 
   implementation 'org.plumelib:options:2.0.3'
   implementation 'org.plumelib:plume-util:1.11.0'
@@ -37,7 +37,7 @@ dependencies {
   }
   implementation 'org.ow2.asm:asm:9.8'
   testImplementation group: 'junit', name: 'junit', version: '4.13.2'
-  testImplementation 'org.checkerframework:checker-qual:3.49.5'
+  testImplementation project(':checker-qual')
 }
 
 
