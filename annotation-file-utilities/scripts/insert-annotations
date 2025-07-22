@@ -28,7 +28,7 @@ while [ "$#" -gt 0 ]; do
 done
 
 AFU=${AFU:-$(dirname "$0")/..}
-ANNOTATION_FILE_UTILS="${AFU}/annotation-file-utilities-all.jar"
+ANNOTATION_FILE_UTILS="${AFU}/dist/annotation-file-utilities-all.jar"
 JAVAC_JAR="${JAVAC_JAR:-${AFU}/lib/javac-9+181-r4173-1.jar}"
 
 if java -version 2>&1 | grep version | grep 1.8 > /dev/null; then
