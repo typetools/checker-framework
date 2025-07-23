@@ -47,6 +47,7 @@ import org.checkerframework.afu.scenelib.type.BoundedType;
 import org.checkerframework.afu.scenelib.type.DeclaredType;
 import org.checkerframework.afu.scenelib.type.Type;
 import org.checkerframework.checker.interning.qual.Interned;
+import org.checkerframework.checker.mustcall.qual.NotOwning;
 import org.objectweb.asm.TypePath;
 
 /**
@@ -210,7 +211,7 @@ public class Insertions implements Iterable<Insertion> {
       }
 
       @Override
-      public Insertion next() {
+      public @NotOwning Insertion next() {
         if (hasNext()) {
           return iiter.next();
         }

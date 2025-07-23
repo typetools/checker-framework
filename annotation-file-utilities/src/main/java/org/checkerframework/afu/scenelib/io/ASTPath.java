@@ -61,6 +61,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import org.checkerframework.afu.annotator.find.CaseUtils;
+import org.checkerframework.checker.collectionownership.qual.NotOwningCollection;
 import org.plumelib.util.ArraysPlume;
 
 /** A path through the AST. */
@@ -1460,18 +1461,18 @@ class ImmutableStack<E> {
     }
   }
 
-  public boolean isEmpty() {
+  public boolean isEmpty(@NotOwningCollection ImmutableStack<E> this) {
     return size == 0;
   }
 
-  public E peek() {
+  public E peek(@NotOwningCollection ImmutableStack<E> this) {
     if (isEmpty()) {
       throw new IllegalStateException("peek() on empty stack");
     }
     return elem;
   }
 
-  public ImmutableStack<E> pop() {
+  public ImmutableStack<E> pop(@NotOwningCollection ImmutableStack<E> this) {
     if (isEmpty()) {
       throw new IllegalStateException("pop() on empty stack");
     }
@@ -1482,7 +1483,7 @@ class ImmutableStack<E> {
     return extend(elem, this);
   }
 
-  public int size() {
+  public int size(@NotOwningCollection ImmutableStack<E> this) {
     return size;
   }
 
