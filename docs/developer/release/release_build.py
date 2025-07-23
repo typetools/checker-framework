@@ -215,9 +215,8 @@ def build_annotation_tools_release(version, afu_interm_dir):
 
     # Deploy to intermediate site
     gradle_cmd = (
-        "../gradlew releaseBuildWithoutTest -Pafu.version=%s -Pdeploy-dir=%s"
+        "../gradlew copyWebsiteToDeployDir -Pdeploy-dir=%s"
         % (
-            version,
             afu_interm_dir,
         )
     )

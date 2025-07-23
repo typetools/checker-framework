@@ -190,9 +190,14 @@ artifacts {
   archives skinnyJar
 }
 
-task copyToDeployDir {
-  description = 'copy release to deployDir.'
+tasks.register('copyWebsiteToDeployDir') {
+  description = 'Copy website deployDir.'
   doLast {
+    if (!project.hasProperty('deploy-dir')) {
+      println project.properties.entrySet()*.toString().sort().toString().replaceAll(", ", "\n")
+      throw new RuntimeException("You must specify a deploy-dir. The live site deploy-dir=/cse/www2/types/annotation-file-utilities/releases/VERSIONNUMBER")
+    }
+
     String deployDir = project.getProperties().get("deploy-dir")
     println("Export location: ${deployDir}")
     copy {
@@ -204,56 +209,8 @@ task copyToDeployDir {
       include 'figures/*.svg'
       include 'figures/*.png'
       include 'figures/*.gif'
-      include 'changelog.html'
     }
     delete "${deployDir}/index.html"
     Files.createSymbolicLink(file("${deployDir}/index.html").toPath(), file("${deployDir}/annotation-file-utilities.html").toPath())
   }
-}
-
-task releaseBuild(type: GradleBuild) {
-  description = 'Build everything required for a release, after cleaning.'
-  doFirst {
-    if (!project.hasProperty('deploy-dir')) {
-      println project.properties.entrySet()*.toString().sort().toString().replaceAll(", ","\n")
-      throw new RuntimeException("You must specify a deploy-dir. The live site deploy-dir=/cse/www2/types/annotation-file-utilities/releases/VERSIONNUMBER")
-    }
-    if (!project.hasProperty('afu.version')) {
-      println project.properties.entrySet()*.toString().sort().toString().replaceAll(", ","\n")
-      throw new RuntimeException("You must specify an afu.version, such as 3.6.22")
-    }
-  }
-
-  startParameter.projectProperties += gradle.startParameter.projectProperties
-  startParameter.projectProperties += [release: true.toString()]
-
-  tasks = [
-    'clean',
-    'zipfile',
-    'testAnnotator',
-    'copyToDeployDir'
-  ]
-}
-
-task releaseBuildWithoutTest(type: GradleBuild) {
-  description = 'Build everything required for a release, without cleaning first.'
-  doFirst {
-    if (!project.hasProperty('deploy-dir')) {
-      println project.properties.entrySet()*.toString().sort().toString().replaceAll(", ","\n")
-      throw new RuntimeException("You must specify a deploy-dir. The live site deploy-dir=/cse/www2/types/annotation-file-utilities/releases/VERSIONNUMBER")
-    }
-    if (!project.hasProperty('afu.version')) {
-      println project.properties.entrySet()*.toString().sort().toString().replaceAll(", ","\n")
-      throw new RuntimeException("You must specify an afu.version, such as 3.6.22")
-    }
-  }
-
-  startParameter.projectProperties += gradle.startParameter.projectProperties
-  startParameter.projectProperties += [release: true.toString()]
-
-  tasks = [
-    'clean',
-    'zipfile',
-    'copyToDeployDir'
-  ]
 }
