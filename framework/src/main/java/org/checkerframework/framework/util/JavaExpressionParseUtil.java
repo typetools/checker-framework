@@ -1,7 +1,5 @@
 package org.checkerframework.framework.util;
 
-import static org.checkerframework.dataflow.expression.JavaExpression.fromTree;
-
 import com.github.javaparser.ParseProblemException;
 import com.github.javaparser.ParserConfiguration.LanguageLevel;
 import com.github.javaparser.ast.ArrayCreationLevel;
@@ -34,11 +32,8 @@ import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewArrayTree;
-import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParenthesizedTree;
-import com.sun.source.tree.PrimitiveTypeTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.util.SimpleTreeVisitor;
 import com.sun.source.util.TreePath;
@@ -1129,25 +1124,50 @@ public class JavaExpressionParseUtil {
     }
   }
 
-  /** A visitor class that converts a Javac JavaExpressionTree */
-  @SuppressWarnings("unused")
+  /**
+   * A visitor class that converts a Javac {@link ExpressionTree} to a {@link JavaExpression}. This
+   * class does not viewpoint-adapt the expression.
+   */
   public static class ExpressionTreeToJavaExpressionVisitor
       extends SimpleTreeVisitor<JavaExpression, Void> {
-    @SuppressWarnings({"FieldCanBeLocal", "unused"})
+
+    /** The processing environment. */
     private final ProcessingEnvironment env;
 
-    @SuppressWarnings({"FieldCanBeLocal", "unused"})
+    /** The type utilities. */
     private final Types types;
 
-    @SuppressWarnings({"FieldCanBeLocal", "unused"})
+    /** The resolver. Computed from the environment. */
     private final Resolver resolver;
 
-    private static final String PARAMETER_PREFIX = "_param_";
+    /**
+     * For each formal parameter, the expression to which to parse it. For example, the second
+     * (index 1) element of the list is what "#2" parses to. If this field is {@code null}, a parse
+     * error will be thrown if "#2" appears in the expression.
+     */
     private final @Nullable List<FormalParameter> parameters;
+
+    private static final String PARAMETER_PREFIX = "_param_";
+
     private static final int PARAMETER_PREFIX_LENGTH = PARAMETER_PREFIX.length();
+
+    /** If non-null, the expression is parsed as if it were written at this location. */
     private final @Nullable TreePath localVarPath;
+
+    /**
+     * The expression to use for "this". If {@code null}, a parse error will be thrown if "this"
+     * appears in the expression.
+     */
     @Nullable ThisReference thisReference;
+
+    /** The enclosing type. Used to look up unqualified method, field, and class names. */
     TypeMirror enclosingType;
+
+    /**
+     * The underlying javac API used to convert from Strings to Elements requires a tree path even
+     * when the information could be deduced from elements alone. So use the path to the current
+     * CompilationUnit.
+     */
     TreePath pathToCompilationUnit;
 
     /** The java.lang.String type. */
@@ -1165,6 +1185,19 @@ public class JavaExpressionParseUtil {
             Tree.Kind.GREATER_THAN,
             Tree.Kind.GREATER_THAN_EQUAL);
 
+    /**
+     * Create a new ExpressionTreeToJavaExpressionVisitor.
+     *
+     * @param enclosingType type of the class that encloses the JavaExpression
+     * @param thisReference a JavaExpression to which to parse "this", or null if "this" should not
+     *     appear in the expression
+     * @param parameters list of JavaExpressions to which to parse a formal parameter reference such
+     *     as "#2", or null if parameters should not appear in the expression
+     * @param localVarPath if non-null, the expression is parsed as if it were written at this
+     *     location
+     * @param pathToCompilationUnit required to use the underlying Javac API
+     * @param env the processing environment
+     */
     public ExpressionTreeToJavaExpressionVisitor(
         ProcessingEnvironment env,
         @Nullable List<FormalParameter> parameters,
@@ -1184,6 +1217,23 @@ public class JavaExpressionParseUtil {
       this.booleanTypeMirror = types.getPrimitiveType(TypeKind.BOOLEAN);
     }
 
+    /**
+     * Converts a Javac {@link ExpressionTree} to a {@link JavaExpression}.
+     *
+     * @param tree the Javac {@link ExpressionTree} to convert
+     * @param enclosingType type of the class that encloses the JavaExpression
+     * @param thisReference a JavaExpression to which to parse "this", or null if "this" should not
+     *     appear in the expression
+     * @param parameters list of JavaExpressions to which to parse parameters, or null if parameters
+     *     should not appear in the expression
+     * @param localVarPath if non-null, the expression is parsed as if it were written at this
+     *     location
+     * @param pathToCompilationUnit required to use the underlying Javac API
+     * @param env the processing environment
+     * @return {@code tree} as a {@code JavaExpression}
+     * @throws JavaExpressionParseException if {@code tree} cannot be converted to a {@code
+     *     JavaExpression}
+     */
     public static JavaExpression convert(
         ExpressionTree tree,
         ProcessingEnvironment env,
@@ -1191,11 +1241,19 @@ public class JavaExpressionParseUtil {
         @Nullable TreePath localVarPath,
         @Nullable ThisReference thisReference,
         TypeMirror enclosingType,
-        TreePath pathToCompilationUnit) {
-      return tree.accept(
-          new ExpressionTreeToJavaExpressionVisitor(
-              env, parameters, localVarPath, thisReference, enclosingType, pathToCompilationUnit),
-          null);
+        TreePath pathToCompilationUnit)
+        throws JavaExpressionParseException {
+      try {
+        return tree.accept(
+            new ExpressionTreeToJavaExpressionVisitor(
+                env, parameters, localVarPath, thisReference, enclosingType, pathToCompilationUnit),
+            null);
+      } catch (ParseRuntimeException e) {
+        // Convert unchecked to checked exception. Visitor methods can't throw checked
+        // exceptions. They override the methods in the superclass, and a checked exception
+        // would change the method signature.
+        throw e.getCheckedException();
+      }
     }
 
     @Override
@@ -1336,6 +1394,15 @@ public class JavaExpressionParseUtil {
       throw new ParseRuntimeException(constructJavaExpressionParseError(s, "identifier not found"));
     }
 
+    /**
+     * Return the {@link FieldAccess} expression for the field with name {@code identifier} accessed
+     * via {@code receiverExpr}. If no such field exists, then {@code null} is returned.
+     *
+     * @param receiverExpr the receiver of the field access; the expression used to access the field
+     * @param identifier possibly a field name
+     * @return a field access, or null if {@code identifier} is not a field that can be accessed via
+     *     {@code receiverExpr}
+     */
     protected @Nullable FieldAccess getIdentifierAsFieldAccess(
         JavaExpression receiverExpr, String identifier) {
       // setResolverField();
@@ -1425,7 +1492,7 @@ public class JavaExpressionParseUtil {
       JavaExpression receiverExpr;
       String methodName;
 
-      // Step 1: Resolve receiver and method name
+      // Resolve receiver and method name
       if (methodSelect instanceof MemberSelectTree) {
         // method call like `obj.method()` or `Class.staticMethod()`
         MemberSelectTree memberSelect = (MemberSelectTree) methodSelect;
@@ -1445,13 +1512,13 @@ public class JavaExpressionParseUtil {
                 node.toString(), "unsupported method invocation syntax"));
       }
 
-      // Step 2: Convert argument expressions
+      // Convert argument expressions
       List<JavaExpression> arguments = new ArrayList<>();
       for (ExpressionTree arg : args) {
         arguments.add(arg.accept(this, null));
       }
 
-      // Step 3: Resolve method
+      // Resolve method
       ExecutableElement methodElement;
       try {
         methodElement =
@@ -1461,7 +1528,7 @@ public class JavaExpressionParseUtil {
         throw new ParseRuntimeException(e);
       }
 
-      // Step 4: Box arguments if needed
+      // Box arguments if needed
       for (int i = 0; i < arguments.size(); i++) {
         VariableElement parameter = methodElement.getParameters().get(i);
         TypeMirror parameterType = parameter.asType();
@@ -1480,7 +1547,7 @@ public class JavaExpressionParseUtil {
         }
       }
 
-      // Step 5: Construct MethodCall expression
+      // Construct MethodCall expression
       if (ElementUtils.isStatic(methodElement)) {
         Element classElem = methodElement.getEnclosingElement();
         JavaExpression staticClassReceiver = new ClassName(ElementUtils.getType(classElem));
@@ -1576,9 +1643,8 @@ public class JavaExpressionParseUtil {
 
     @Override
     public JavaExpression visitParenthesized(ParenthesizedTree node, Void unused) {
-      // Handles expressions in parentheses
-      // TODO: delegate to inner expression
-      throw new UnsupportedOperationException("visitParenthesized not yet implemented");
+      // Handles expressions inside parentheses
+      return node.getExpression().accept(this, null);
     }
 
     @Override
@@ -1639,32 +1705,23 @@ public class JavaExpressionParseUtil {
       return new BinaryOperation(type, operator, leftJe, rightJe);
     }
 
-    @Override
-    public JavaExpression visitTypeCast(TypeCastTree node, Void unused) {
-      // Handles (Type)expr casts
-      // TODO: likely not supported in original visitor; can throw parse exception
-      throw new UnsupportedOperationException("visitTypeCast not yet implemented");
-    }
-
-    @Override
-    public JavaExpression visitNewClass(NewClassTree node, Void unused) {
-      // Optional: if object creation is supported
-      // TODO: not present in original visitor, can throw parse error
-      throw new UnsupportedOperationException("visitNewClass not yet implemented");
-    }
-
-    @Override
-    public JavaExpression visitPrimitiveType(PrimitiveTypeTree node, Void unused) {
-      // Only needed if you support primitives as standalone expressions
-      // Might not be necessary
-      throw new UnsupportedOperationException("visitPrimitiveType not yet implemented");
-    }
-
+    /** If the expression is not supported, throw a {@link ParseRuntimeException} by default. */
     @Override
     protected JavaExpression defaultAction(Tree node, Void unused) {
-      return fromTree((ExpressionTree) node);
+      throw new ParseRuntimeException(
+          constructJavaExpressionParseError(
+              node.toString(), node.getClass() + " is not a supported expression"));
     }
 
+    /**
+     * If {@code identifier} is the simple class name of any inner class of {@code type}, return the
+     * {@link ClassName} for the inner class. If not, return null.
+     *
+     * @param type type to search for {@code identifier}
+     * @param identifier possible simple class name
+     * @return the {@code ClassName} for {@code identifier}, or null if it is not a simple class
+     *     name
+     */
     protected @Nullable ClassName getIdentifierAsInnerClassName(
         TypeMirror type, String identifier) {
       if (type.getKind() != TypeKind.DECLARED) {
@@ -1683,6 +1740,15 @@ public class JavaExpressionParseUtil {
       return null;
     }
 
+    /**
+     * If {@code s} a parameter expressed using the {@code #NN} syntax, then returns a
+     * JavaExpression for the given parameter; that is, returns an element of {@code parameters}.
+     * Otherwise, returns {@code null}.
+     *
+     * @param s a String that starts with PARAMETER_PREFIX
+     * @return the JavaExpression for the given parameter or {@code null} if {@code s} is not a
+     *     parameter
+     */
     private @Nullable JavaExpression getParameterJavaExpression(String s) {
       if (!s.startsWith(PARAMETER_PREFIX)) {
         return null;
@@ -1706,6 +1772,24 @@ public class JavaExpressionParseUtil {
       return parameters.get(idx - 1);
     }
 
+    /**
+     * If {@code identifier} is a class name with that can be referenced using only its simple name
+     * within {@code enclosingType}, return the {@link ClassName} for the class. If not, return
+     * null.
+     *
+     * <p>{@code identifier} may be
+     *
+     * <ol>
+     *   <li>the simple name of {@code type}.
+     *   <li>the simple name of a class declared in {@code type} or in an enclosing type of {@code
+     *       type}.
+     *   <li>the simple name of a class in the java.lang package.
+     *   <li>the simple name of a class in the unnamed package.
+     * </ol>
+     *
+     * @param identifier possible class name
+     * @return the {@code ClassName} for {@code identifier}, or null if it is not a class name
+     */
     protected @Nullable ClassName getIdentifierAsUnqualifiedClassName(String identifier) {
       // Is identifier an inner class of enclosingType or of any enclosing class of
       // enclosingType?
@@ -1761,6 +1845,13 @@ public class JavaExpressionParseUtil {
       return null;
     }
 
+    /**
+     * Converts the JavaParser type to a TypeMirror. Returns null if {@code tree} is not handled;
+     * this method does not handle type variables, union types, or intersection types.
+     *
+     * @param tree a JCTree instance.
+     * @return a TypeMirror corresponding to {@code tree}, or null if {@code tree} isn't handled
+     */
     private @Nullable TypeMirror convertTreeToTypeMirror(JCTree tree) {
 
       if (tree instanceof MemberSelectTree) {
@@ -1816,6 +1907,19 @@ public class JavaExpressionParseUtil {
       return null;
     }
 
+    /**
+     * Returns the ExecutableElement for a method, or throws an exception.
+     *
+     * <p>(This method takes into account autoboxing.)
+     *
+     * @param methodName the method name
+     * @param receiverType the receiver type
+     * @param pathToCompilationUnit the path to the compilation unit
+     * @param arguments the arguments
+     * @param resolver the resolver
+     * @return the ExecutableElement for a method, or throws an exception
+     * @throws JavaExpressionParseException if the string cannot be parsed as a method name
+     */
     private ExecutableElement getMethodElement(
         String methodName,
         TypeMirror receiverType,
