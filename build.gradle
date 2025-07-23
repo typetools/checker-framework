@@ -784,8 +784,6 @@ def createJavadocTask(taskName, taskDescription, memberLevel) {
 
 createJavadocTask('javadocDoclintAll', 'Runs javadoc with -Xdoclint:all option.', JavadocMemberLevel.PRIVATE)
 
-
-
 tasks.register('makeCFManual', Exec) {
   description = 'Build the Checker Framework manual'
   commandLine 'make', '-C', 'docs/manual/checker-framework', 'all'
@@ -858,7 +856,7 @@ tasks.register('makeAnnotationFileFormat') {
 
 tasks.register('manual'){
   description = 'Build the manual'
-  dependsOn('makeCFManual','makeAnnotationFileFormat')
+  dependsOn('makeCFManual','makeAnnotationFileFormat', ':dataflow:manual')
 }
 
 tasks.register('getPlumeBib', CloneTask) {
@@ -909,8 +907,9 @@ task tags(type: Exec, group: 'Emacs') {
   commandLine 'etags', '-i', 'annotation-file-utilities/TAGS', '-i', 'checker/TAGS', '-i', 'checker-qual/TAGS', '-i', 'checker-util/TAGS', '-i', 'dataflow/TAGS', '-i', 'framework/TAGS', '-i', 'framework-test/TAGS', '-i', 'javacutil/TAGS', '-i', 'docs/manual/TAGS'
 }
 
-tasks.register('zip', Zip) {
-
+tasks.register('createCheckerFrameworkZip', Zip) {
+  description = 'Creates a zip archive for the Checker Framework.'
+  dependsOn('buildAll')
   archiveFileName = "checker-framework-${version}.zip"
   destinationDirectory = file(project.property('destDir'))
 
@@ -927,6 +926,7 @@ tasks.register('zip', Zip) {
         'docs/tutorial/test/**',
         'docs/tutorial/Makefile',
         'docs/tutorial/README'
+
     include 'README.html',
         'LICENSE.txt',
         'annotation-file-utilities/bin/**',
@@ -964,20 +964,22 @@ tasks.register('zip', Zip) {
         'docs/tutorial/**'
   }
 
+  from('dataflow/manual/dataflow.pdf') {
+    into 'docs/manual/checker-framework/'
+
+    rename 'dataflow.pdf', 'checker-framework-dataflow-manual.pdf'
+  }
 
   // Copy to CFLogo.png to multiple places.
-  from(layout.buildDirectory.dir(checkerframework)) {
-    include 'docs/logo/Logo/CFLogo.png'
+  from('docs/logo/Logo/CFLogo.png') {
     into 'docs/manual/checker-framework/'
   }
 
-  from(layout.buildDirectory.dir(checkerframework)) {
-    include 'docs/logo/Logo/CFLogo.png'
+  from('docs/logo/Logo/CFLogo.png') {
     into 'docs/tutorial/'
   }
 
-  from(layout.buildDirectory.dir(checkerframework)) {
-    include 'docs/logo/Logo/CFLogo.png'
+  from('docs/logo/Logo/CFLogo.png') {
     into 'docs/tutorial/webpages'
   }
 }
@@ -1330,6 +1332,7 @@ task buildAll(group: 'Build') {
   }
   dependsOn('framework:allJavadocJar', 'framework:allSourcesJar', 'checker:allJavadocJar', 'checker:allSourcesJar', 'checker-qual:jar', 'checker-util:jar')
   dependsOn('checker:assembleForJavac')
+  dependsOn('manual')
 }
 
 task releaseBuild(group: 'Build') {

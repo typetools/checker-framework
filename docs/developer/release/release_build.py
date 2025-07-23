@@ -276,32 +276,19 @@ def build_checker_framework_release(
     gradle_cmd = "./gradlew releaseBuild"
     execute(gradle_cmd, True, False, CHECKER_FRAMEWORK)
 
-    # make the Checker Framework Manual
-    checker_manual_dir = os.path.join(CHECKER_FRAMEWORK, "docs", "manual")
-    execute("make manual.pdf manual.html", True, False, checker_manual_dir)
-
-    # make the dataflow manual
-    dataflow_manual_dir = os.path.join(CHECKER_FRAMEWORK, "dataflow", "manual")
-    execute("make", True, False, dataflow_manual_dir)
-
     # make the checker framework tutorial
     checker_tutorial_dir = os.path.join(CHECKER_FRAMEWORK, "docs", "tutorial")
     execute("make", True, False, checker_tutorial_dir)
 
-    cfZipName = "checker-framework-%s.zip" % version
-
     # Create checker-framework-X.Y.Z.zip and put it in checker_framework_interm_dir
-    ant_props = "-Dchecker=%s -Ddest.dir=%s -Dfile.name=%s -Dversion=%s" % (
-        checker_dir,
-        checker_framework_interm_dir,
-        cfZipName,
-        version,
-    )
     # IMPORTANT: The release.xml in the directory where the Checker Framework
     # is being built is used. Not the release.xml in the directory you ran
     # release_build.py from.
-    ant_cmd = "ant %s -f release.xml %s zip-checker-framework " % (ant_debug, ant_props)
-    execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
+    gradle_cmd = "./gradlew createCheckerFrameworkZip -Pchecker=%s -PdestDir=%s" % (
+        checker_dir,
+        checker_framework_interm_dir,
+    )
+    execute(gradle_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
     ant_props = "-Dchecker=%s -Ddest.dir=%s -Dfile.name=%s -Dversion=%s" % (
         checker_dir,

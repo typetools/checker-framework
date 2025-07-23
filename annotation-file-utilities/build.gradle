@@ -190,58 +190,14 @@ artifacts {
   archives skinnyJar
 }
 
-
-ext.tmpAnnotationTools = "${layout.buildDirectory.get()}/tmp-annotation-tools"
-task cloneAndPrepDirectoryForZipfile(type: Exec) {
-  dependsOn(assemble)
-  //    dependsOn(assemble, makeAnnotationFileFormat)
-  description = 'Copy files from repository to temporary directory from which they will be packaged up.'
-  doFirst {
-    delete tmpAnnotationTools
-  }
-  executable 'git'
-  args = [
-    'clone',
-    '../',
-    "${tmpAnnotationTools}"
-  ]
-  doLast {
-    delete "${tmpAnnotationTools}/scene-lib.orig-hand-annos"
-    delete "${tmpAnnotationTools}/.git"
-    delete "${tmpAnnotationTools}/.gitignore"
-    delete "${tmpAnnotationTools}/.hg_archival.txt"
-    delete "${tmpAnnotationTools}/.hgignore"
-    copy {
-      from projectDir
-      into "${tmpAnnotationTools}/annotation-file-utilities"
-      include "annotation-file-format.dvi"
-      include "annotation-file-format.html"
-      include "annotation-file-format.pdf"
-      include "annotation-file-utilities.jar"
-      include "dist/annotation-file-utilities-all.jar"
-    }
-  }
-}
-
-task zipfile(type: Zip) {
-  description = "create the distribution: annotation-tools.zip"
-  dependsOn(cloneAndPrepDirectoryForZipfile)
-  archiveFileName = 'annotation-tools.zip'
-  destinationDirectory = projectDir
-  from files(tmpAnnotationTools)
-}
-
 task copyToDeployDir {
   description = 'copy release to deployDir.'
   doLast {
     String deployDir = project.getProperties().get("deploy-dir")
-    String afuVersion = project.getProperties().get("afu.version")
     println("Export location: ${deployDir}")
-    println("Copying annotation-tools.zip")
     copy {
       from projectDir
       into deployDir
-      include 'annotation-tools.zip'
       include 'annotation-file-utilities.html'
       include 'annotation-file-format.html'
       include 'annotation-file-format.pdf'
@@ -249,7 +205,6 @@ task copyToDeployDir {
       include 'figures/*.png'
       include 'figures/*.gif'
       include 'changelog.html'
-      rename('annotation-tools.zip', "annotation-tools-${afuVersion}.zip")
     }
     delete "${deployDir}/index.html"
     Files.createSymbolicLink(file("${deployDir}/index.html").toPath(), file("${deployDir}/annotation-file-utilities.html").toPath())
@@ -257,7 +212,7 @@ task copyToDeployDir {
 }
 
 task releaseBuild(type: GradleBuild) {
-  description = 'Build everything required for a release, after cleanning.'
+  description = 'Build everything required for a release, after cleaning.'
   doFirst {
     if (!project.hasProperty('deploy-dir')) {
       println project.properties.entrySet()*.toString().sort().toString().replaceAll(", ","\n")

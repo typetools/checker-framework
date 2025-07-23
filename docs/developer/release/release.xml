@@ -137,49 +137,6 @@
 
     </target>
 
-    <target name="zip-checker-framework" description="Creates a zip archive for the Checker Framework.">
-
-        <fail unless="checker"     message="checker property is not set!" />
-        <fail unless="dest.dir"    message="dest.dir property is not set!"  />
-        <fail unless="file.name"   message="file.name property is not set!" />
-        <fail unless="version"     message="version number is not set!"     />
-
-        <property name="dest.file" value="${dest.dir}/${file.name}"/>
-        <property name="checkerframework" value="${checker}/.."/>
-
-        <property name="checker.includes" value="${checkerframework}/docs/developer/release/checker-includes"/>
-        <property name="checker.excludes" value="${checkerframework}/docs/developer/release/checker-excludes"/>
-
-        <echo message="${checker.includes}" />
-        <available file="${checker.includes}"  property="checker.includes.available"/>
-        <available file="${checker.excludes}"  property="checker.excludes.available"/>
-
-        <fail unless="${checker.includes.available}" message="${checker.includes} includes file not available"/>
-        <fail unless="${checker.excludes.available}" message="${checker.excludes} excludes file not available"/>
-
-        <chmod file="${checker}/bin/javac" perm="+x"/>
-
-        <delete file="${dest.file}"/>
-
-        <zip destfile="${dest.file}" update="true">
-            <zipfileset dir="${checkerframework}" prefix="checker-framework-${version}"
-                        includesfile="${checker.includes}" excludesfile="${checker.excludes}"/>
-
-            <zipfileset dir="${checkerframework}" prefix="checker-framework-${version}"
-                        includes="checker/bin/javac" filemode="755"/>
-
-            <zipfileset dir="${checkerframework}"
-                        includes="docs/logo/Logo/CFLogo.png" fullpath="checker-framework-${version}/docs/manual/CFLogo.png"/>
-
-            <zipfileset dir="${checkerframework}"
-                        includes="docs/logo/Logo/CFLogo.png" fullpath="checker-framework-${version}/docs/tutorial/CFLogo.png"/>
-
-            <zipfileset dir="${checkerframework}"
-                        includes="docs/logo/Logo/CFLogo.png" fullpath="checker-framework-${version}/docs/tutorial/webpages/CFLogo.png"/>
-        </zip>
-
-    </target>
-
     <target name="zip-tutorial" description="Create a zip archive for the directory tutorial.">
         <fail unless="checker"    message="checker property is not set!" />
         <fail unless="dest.dir"   message="dest.dir property is not set!"  />

@@ -144,30 +144,27 @@ The current release is Annotation File Utilities version
 
 <ol>
 <li>
-  Download
-  <a href="annotation-tools-3.23.0.zip"><!-- annotation-tools-zip-version -->annotation-tools-3.49.5.zip<!-- /annotation-tools-zip-version --></a>.
+  Download: <a href="checker-framework-3.49.5.zip"><!-- checker-framework-zip-version -->checker-framework-3.49.5.zip<!-- /checker-framework-zip-version --></a>
 </li>
 
 <li>
   Create a directory named
-  <code>annotation-tools</code> by
+  <code>checker-framework</code> by
   unpacking the distribution zipfile.
-  (You will typically make <code>annotation-tools/</code> a sibling of
-  <code>checker-framework/</code>.)
 
-  <pre><code>unzip annotation-tools-3.23.0.zip</code></pre>
+  <pre><code>unzip checker-framework-3.49.6.zip</code></pre>
 
 </li>
 
 <li>
-Add the <code>annotation-file-utilities</code> directory to your path.
+Add the <code>annotation-file-utilities/bin</code> directory to your path.
 
 <ul>
 <li>
 For <b>Unix</b> (including Linux and MacOS), add the directory to your PATH
 environment variable.  If your shell is sh or bash, add to your
 <code>~/.bashrc</code> or <code>~/.bash_profile</code> file:
-<pre><code>export PATH=${PATH}:<em>/path/to</em>/annotation-tools/annotation-file-utilities/scripts</code></pre>
+<pre><code>export PATH=${PATH}:<em>/path/to</em>/checker-framework/annotation-file-utilities/bin</code></pre>
 <!-- Omitted to save space and simplify instructions
 For csh/tcsh, add to ~/.tcshrc or ~/.cshrc or ~/.login:
 <pre><code>setenv PATH=${PATH}:/path/to/annotation-file-utilities/</code></pre>
@@ -181,7 +178,7 @@ variable by going to
 <pre><code> Control Panel -> System -> Advanced -> Environment Variables </code></pre>
 
 From there, find the <code>PATH</code> variable under &ldquo;System variables&rdquo;
-and append to it the directory <code><em>path\to</em>\annotatation-tools\annotation-file-utilities\scripts</code>.
+and append to it the directory <code><em>path\to</em>\annotatation-tools\annotation-file-utilities\bin</code>.
 </li>
 </ul>
 </li>
@@ -504,7 +501,7 @@ create a new <code>.jaif</code> file.</p>
 <h4 id="bytecode-insertion" class="subsubsection">Bytecode Insertion</h4>
 
 <p>Annotations can be inserted into bytecode by executing the
-<code>annotation-file-utilities/scripts/insert-annotations</code>
+<code>annotation-file-utilities/bin/insert-annotations</code>
 script. This script takes one or more &langle;class name,
 <code>.jaif</code> file&rangle; pairs as arguments. The annotations
 specified in the <code>.jaif</code> file are inserted into the
@@ -525,7 +522,7 @@ out.</p>
 <h4 id="bytecode-extraction" class="subsubsection">Bytecode Extraction</h4>
 
 <p>Annotations can be extracted from bytecode by executing the
-<code>annotation-file-utilities/scripts/extract-annotations</code>
+<code>annotation-file-utilities/bin/extract-annotations</code>
 script. This script takes one or more class names as arguments and
 outputs the annotations found in those classes to <code>.jaif</code>
 files.</p><p>First, an empty <code>AScene</code> is constructed to store
@@ -541,7 +538,7 @@ them to the correct part of the <code>AScene</code>. After this, the
 
 <p>The <code>annotation-file-utilities</code> sub-project inserts annotations into source
 code. It can be run by executing the
-<code>annotation-file-utilities/scripts/insert-annotations-to-source</code>
+<code>annotation-file-utilities/bin/insert-annotations-to-source</code>
 script.  The script takes one or more <code>.jaif</code> files, followed by one or more <code>.java</code> source files as arguments. The annotations in the <code>.jaif</code> files are inserted into the <code>.java</code> source files.</p><p>First, an instance of
 <code>annotation-file-utilities/src/org/checkerframework/afu/annotator/specification/IndexFileSpecification.java</code>
 is created. Its <code>parse</code> method parses the <code>.jaif</code>
@@ -637,13 +634,6 @@ You can also reach the developers at
 But please use the
   <a href="https://github.com/typetools/checker-framework/issues">issue
   tracker</a> for bug reports and feature requests.
-</p>
-
-
-<h3 id="changelog">Changelog</h3>
-
-<p>
-The <a href="changelog.html">changelog</a> describes what is new in each release.
 </p>
 
 
