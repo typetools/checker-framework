@@ -802,11 +802,8 @@ tasks.register('makeAnnotationFileFormat') {
 
   doLast {
     injected.execOps.exec {
+      workingDir(file("${afuManualDir}/figures"))
       executable 'make'
-      args = [
-        '-C',
-        "${afuManualDir}/figures"
-      ]
     }
     injected.execOps.exec {
       workingDir(file(afuManualDir))
