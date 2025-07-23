@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.checkerframework.checker.collectionownership.qual.OwningCollection;
+import org.checkerframework.checker.collectionownership.qual.PolyOwningCollection;
 import org.checkerframework.checker.mustcall.qual.NotOwning;
 import org.checkerframework.checker.mustcall.qual.Owning;
 
@@ -39,10 +40,6 @@ public class LinkedHashKeyedSet<K, V> extends AbstractSet<V> implements KeyedSet
   }
 
   private class KeyedSetIterator implements Iterator<V> {
-    // the iterator is @PolyOwningCollection and thus the assignment
-    // reports an error. Since however it is an iterator over V, which
-    // has bottom as its upper bound, this is a false positive.
-    @SuppressWarnings("collectionownership:assignment")
     private final Iterator<V> itr = theValues.iterator();
 
     @Override
@@ -64,7 +61,7 @@ public class LinkedHashKeyedSet<K, V> extends AbstractSet<V> implements KeyedSet
   }
 
   @Override
-  public Iterator<V> iterator() {
+  public Iterator<V> iterator(@PolyOwningCollection LinkedHashKeyedSet<K, V> this) {
     return new KeyedSetIterator();
   }
 

@@ -46,10 +46,6 @@ public abstract class VivifyingMap<K, V> extends WrapperMap<K, V> {
   protected abstract V createValueFor(K k);
 
   /** Prunes this map by deleting entries with empty values. */
-  // ei.remove() reports an error, since ei is @PolyOwningCollection. However, since
-  // the Map has bottom type var upper bound, the iterator is always going to be bottom
-  // in instances, so this is a false positive.
-  @SuppressWarnings("collectionownership:method.invocation")
   public void prune() {
     // It would be cleaner to write
     //   for (Map.Entry<K, V> entry : entrySet()) {

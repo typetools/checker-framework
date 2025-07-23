@@ -990,10 +990,7 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
    * @param p list of insertions not yet placed
    */
   @Override
-  @SuppressWarnings({
-    "interning:not.interned", // reference equality check in assertion
-    "collectionownership:method.invocation"
-  }) // Iterator#remove() on a PolyOwningCollection iterator
+  @SuppressWarnings("interning:not.interned") // reference equality check in assertion
   public Void scan(Tree node, List<Insertion> p) {
     if (node == null || p.isEmpty()) {
       return null;
@@ -1834,10 +1831,7 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
         neu.getInnerTypeInsertions(), neu.getType(), neu.getCriteria().getASTPath());
   }
 
-  @SuppressWarnings({
-    "interning:not.interned",
-    "collectionownership:method.invocation"
-  }) // Iterator#remove() on a PolyOwningCollection iterator
+  @SuppressWarnings("interning:not.interned")
   private void addConstructor(TreePath path, ConstructorInsertion cons, MethodTree method) {
     ReceiverInsertion recv = cons.getReceiverInsertion();
     assert method == (MethodTree) path.getLeaf();
