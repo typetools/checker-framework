@@ -88,6 +88,9 @@ public class CollectionOwnershipAnnotatedTypeFactory
    */
   public final AnnotationMirror BOTTOM;
 
+  /** The {@code @}{@link PolyOwningCollection}{@code ()} polymorphic annotation. */
+  public final AnnotationMirror POLY;
+
   /** The value element of the {@code @}{@link CollectionFieldDestructor} annotation. */
   private final ExecutableElement collectionFieldDestructorValueElement =
       TreeUtils.getMethod(CollectionFieldDestructor.class, "value", 0, processingEnv);
@@ -174,6 +177,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
     OWNINGCOLLECTIONWITHOUTOBLIGATION =
         AnnotationBuilder.fromClass(elements, OwningCollectionWithoutObligation.class);
     BOTTOM = AnnotationBuilder.fromClass(elements, OwningCollectionBottom.class);
+    POLY = AnnotationBuilder.fromClass(elements, PolyOwningCollection.class);
     this.postInit();
   }
 
