@@ -185,6 +185,7 @@ public class Insertions implements Iterable<Insertion> {
     return size;
   }
 
+  @SuppressWarnings("collectionownership:assignment")
   @Override
   public Iterator<Insertion> iterator() {
     return new Iterator<Insertion>() {

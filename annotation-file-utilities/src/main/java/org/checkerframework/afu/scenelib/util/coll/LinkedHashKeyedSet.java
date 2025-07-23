@@ -39,6 +39,10 @@ public class LinkedHashKeyedSet<K, V> extends AbstractSet<V> implements KeyedSet
   }
 
   private class KeyedSetIterator implements Iterator<V> {
+    // the iterator is @PolyOwningCollection and thus the assignment
+    // reports an error. Since however it is an iterator over V, which
+    // has bottom as its upper bound, this is a false positive.
+    @SuppressWarnings("collectionownership:assignment")
     private final Iterator<V> itr = theValues.iterator();
 
     @Override
