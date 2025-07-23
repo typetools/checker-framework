@@ -730,9 +730,18 @@ public class CollectionOwnershipAnnotatedTypeFactory
             type.replaceAnnotation(OWNINGCOLLECTION);
           }
         } else if (isParam) {
-          AnnotationMirror paramAnno = type.getEffectiveAnnotationInHierarchy(TOP);
-          if (paramAnno == null || AnnotationUtils.areSameByName(BOTTOM, paramAnno)) {
-            type.replaceAnnotation(NOTOWNINGCOLLECTION);
+          // propagate annotation computed for parameter declaration
+          // to the use site
+          Element enclosingElement = elt.getEnclosingElement();
+          ExecutableElement method = (ExecutableElement) enclosingElement;
+          AnnotatedExecutableType annotatedMethod =
+              CollectionOwnershipAnnotatedTypeFactory.this.getAnnotatedType(method);
+          List<? extends VariableElement> params = method.getParameters();
+          List<? extends AnnotatedTypeMirror> paramTypes = annotatedMethod.getParameterTypes();
+          for (int i = 0; i < params.size(); i++) {
+            if (params.get(i).getSimpleName() == elt.getSimpleName()) {
+              type.replaceAnnotation(paramTypes.get(i).getEffectiveAnnotationInHierarchy(TOP));
+            }
           }
         }
       }
