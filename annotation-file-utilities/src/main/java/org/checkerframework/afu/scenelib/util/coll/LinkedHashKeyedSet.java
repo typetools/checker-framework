@@ -75,6 +75,14 @@ public class LinkedHashKeyedSet<K, V> extends AbstractSet<V> implements KeyedSet
     return theValues.toArray(a);
   }
 
+  /**
+   * Prepares for adding an element to this. Removes the given element if {@code behavior} is
+   * REPLACE.
+   *
+   * @param behavior what action this method should take
+   * @param old the element to be removed, if {@code behavior} is REPLACE
+   * @return true if an element was removed
+   */
   private boolean checkAdd(@OwningCollection LinkedHashKeyedSet<K, V> this, int behavior, V old) {
     switch (behavior) {
       case REPLACE:

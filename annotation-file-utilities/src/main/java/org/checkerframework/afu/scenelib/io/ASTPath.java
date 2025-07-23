@@ -1462,6 +1462,11 @@ class ImmutableStack<E> {
     }
   }
 
+  /**
+   * Returns true if the stack is empty.
+   *
+   * @return true if the stack is empty
+   */
   public boolean isEmpty(@NotOwningCollection ImmutableStack<E> this) {
     return size == 0;
   }
@@ -1494,6 +1499,11 @@ class ImmutableStack<E> {
     return extend(elem, this);
   }
 
+  /**
+   * Returns the size: the number of elements in the stack.
+   *
+   * @return the size of this stack
+   */
   public int size(@NotOwningCollection ImmutableStack<E> this) {
     return size;
   }
