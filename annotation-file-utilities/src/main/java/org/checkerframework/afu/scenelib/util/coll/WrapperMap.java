@@ -3,6 +3,7 @@ package org.checkerframework.afu.scenelib.util.coll;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
+import org.checkerframework.checker.mustcall.qual.NotOwning;
 
 /**
  * A {@link WrapperMap} is a map all of whose methods delegate by default to those of a supplied
@@ -39,7 +40,7 @@ public class WrapperMap<K, V> implements Map<K, V> {
   }
 
   @Override
-  public V get(Object key) {
+  public @NotOwning V get(Object key) {
     return back.get(key);
   }
 
@@ -54,7 +55,7 @@ public class WrapperMap<K, V> implements Map<K, V> {
   }
 
   @Override
-  public V put(K key, V value) {
+  public @NotOwning V put(K key, V value) {
     return back.put(key, value);
   }
 

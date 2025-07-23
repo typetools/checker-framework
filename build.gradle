@@ -17,7 +17,7 @@ plugins {
   // Only works on JDK 11+ (even including the plugin crashes Gradle on JDK 8);
   // shell scripts in checker/bin-devel/ ensure spotless isn't called unless
   // the JDK is 17 or later.
-  id 'com.diffplug.spotless' version '7.1.0'
+  id 'com.diffplug.spotless' version '7.2.1'
 }
 
 // There is another `repositories { ... }` block below; if you change this one, change that one as well.
@@ -90,7 +90,7 @@ ext {
     //  * Temporarily comment out "-Werror" elsewhere in this file
     //  * Repeatedly run `./gradlew clean compileJava` and fix all errors
     //  * Uncomment "-Werror"
-    errorprone : '2.39.0',
+    errorprone : '2.40.0',
   ]
 }
 
@@ -803,7 +803,7 @@ task tags(type: Exec, group: 'Emacs') {
   dependsOn docTags
   description = 'Create Emacs TAGS table'
   // running this task will also run the tags task in the subprojects, which is defined later in this file.
-  commandLine 'etags', '-i', 'checker/TAGS', '-i', 'checker-qual/TAGS', '-i', 'checker-util/TAGS', '-i', 'dataflow/TAGS', '-i', 'framework/TAGS', '-i', 'framework-test/TAGS', '-i', 'javacutil/TAGS', '-i', 'docs/manual/TAGS'
+  commandLine 'etags', '-i', 'annotation-file-utilities/TAGS', '-i', 'checker/TAGS', '-i', 'checker-qual/TAGS', '-i', 'checker-util/TAGS', '-i', 'dataflow/TAGS', '-i', 'framework/TAGS', '-i', 'framework-test/TAGS', '-i', 'javacutil/TAGS', '-i', 'docs/manual/TAGS'
 }
 
 subprojects {
@@ -885,7 +885,7 @@ subprojects {
       }
     }
 
-    // Tasks such as `checkResourceLeak` to run various checkers on all the main source sets.
+    // Tasks such as `checkInterning` and `checkResourceLeak` run various checkers on all the main source sets.
     // These pass and are run by the `typecheck` task.
     // When you add one here, also update a dependsOn item for the 'typecheck' task.
     createCheckTypeTask(project.name, 'Formatter',
@@ -924,6 +924,20 @@ subprojects {
       createCheckTypeTask(project.name, 'Nullness',
           'org.checkerframework.checker.nullness.NullnessChecker',
           ['-AskipUses=com\\.sun\\.*'])
+    }
+
+
+    createCheckTypeTask(project.name, 'CompilerMessages',
+        'org.checkerframework.checker.compilermsgs.CompilerMessagesChecker')
+    checkCompilerMessages {
+      doFirst {
+        String propfiles = sourceSets.main.resources.filter { file -> file.name.equals('messages.properties') }.asPath
+        if (project.name.is('checker')) {
+          String frameworkPropFiles = project(':framework').sourceSets.main.resources.filter { file -> file.name.equals('messages.properties') }.asPath
+          propfiles = propfiles + File.pathSeparator + frameworkPropFiles
+        }
+        options.compilerArgs += ["-Apropfiles=${propfiles}"]
+      }
     }
 
 
@@ -1091,18 +1105,12 @@ subprojects {
     }
     tasks.create(name: 'typecheck-part1', group: 'Verification') {
       description = 'Run the Checker Framework on itself (part 1)'
-      dependsOn('checkFormatter', 'checkOptional', 'checkPurity')
-      if (!project.name.is('annotation-file-utilities')) {
-        // TODO: Annotate AFU for Interning Checker.
-        dependsOn('checkInterning')
-      }
+      dependsOn('checkFormatter', 'checkInterning', 'checkOptional', 'checkPurity')
     }
     tasks.create(name: 'typecheck-part2', group: 'Verification') {
       description = 'Run the Checker Framework on itself (part 2)'
-      dependsOn('checkResourceLeak', 'checkSignature')
-      if (project.name.is('framework') || project.name.is('checker')) {
-        dependsOn('checkCompilerMessages')
-      } else {
+      dependsOn('checkCompilerMessages', 'checkResourceLeak', 'checkSignature')
+      if (!(project.name.is('framework') || project.name.is('checker'))) {
         dependsOn('checkNullness')
       }
     }

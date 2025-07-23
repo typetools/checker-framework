@@ -46,6 +46,9 @@ import org.checkerframework.afu.scenelib.type.ArrayType;
 import org.checkerframework.afu.scenelib.type.BoundedType;
 import org.checkerframework.afu.scenelib.type.DeclaredType;
 import org.checkerframework.afu.scenelib.type.Type;
+import org.checkerframework.checker.collectionownership.qual.PolyOwningCollection;
+import org.checkerframework.checker.interning.qual.Interned;
+import org.checkerframework.checker.mustcall.qual.NotOwning;
 import org.objectweb.asm.TypePath;
 
 /**
@@ -184,7 +187,7 @@ public class Insertions implements Iterable<Insertion> {
   }
 
   @Override
-  public Iterator<Insertion> iterator() {
+  public @PolyOwningCollection Iterator<Insertion> iterator(@PolyOwningCollection Insertions this) {
     return new Iterator<Insertion>() {
       private Iterator<Map<String, Set<Insertion>>> miter = store.values().iterator();
       // These two fields are initially empty iterators, but are set the first time that hasNext is
@@ -209,7 +212,7 @@ public class Insertions implements Iterable<Insertion> {
       }
 
       @Override
-      public Insertion next() {
+      public @NotOwning Insertion next() {
         if (hasNext()) {
           return iiter.next();
         }
@@ -960,7 +963,9 @@ public class Insertions implements Iterable<Insertion> {
    */
   private void mergeTypes(Type t1, Type t2) {
     // TODO: should this test for .equals too?
-    if (t1 == t2) {
+    @SuppressWarnings("interning:not.interned")
+    boolean same = t1 == t2;
+    if (same) {
       return;
     }
     switch (t1.getKind()) {
@@ -1476,10 +1481,13 @@ public class Insertions implements Iterable<Insertion> {
     }
 
     static final class IdentifierTT extends TypeTree implements IdentifierTree {
-      private final String name;
+      private final String dname;
+      private final Name name;
 
+      @SuppressWarnings("interning:interned.object.creation")
       IdentifierTT(String dname) {
-        this.name = dname;
+        this.dname = dname;
+        this.name = new @Interned TypeName(dname);
       }
 
       @Override
@@ -1494,12 +1502,12 @@ public class Insertions implements Iterable<Insertion> {
 
       @Override
       public Name getName() {
-        return new TypeName(name);
+        return name;
       }
 
       @Override
       public String toString() {
-        return name;
+        return dname;
       }
     }
 
@@ -1544,11 +1552,14 @@ public class Insertions implements Iterable<Insertion> {
 
     static final class TypeParameterTT extends TypeTree implements TypeParameterTree {
       private final String bname;
+      private final Name name;
       private final BoundedType.BoundKind bk;
       private final Tree bound;
 
+      @SuppressWarnings("interning:interned.object.creation")
       TypeParameterTT(String bname, BoundedType.BoundKind bk, TypeTree bound) {
         this.bname = bname;
+        this.name = new @Interned TypeName(bname);
         this.bk = bk;
         this.bound = bound;
       }
@@ -1565,7 +1576,7 @@ public class Insertions implements Iterable<Insertion> {
 
       @Override
       public Name getName() {
-        return new TypeName(bname);
+        return name;
       }
 
       @Override
@@ -1584,7 +1595,7 @@ public class Insertions implements Iterable<Insertion> {
       }
     }
 
-    static final class TypeName implements Name {
+    static final @Interned class TypeName implements Name {
       private final String str;
 
       TypeName(String str) {

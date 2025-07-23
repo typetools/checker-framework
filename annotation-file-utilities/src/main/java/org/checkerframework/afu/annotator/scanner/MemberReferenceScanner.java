@@ -46,6 +46,7 @@ public class MemberReferenceScanner extends CommonScanner {
   }
 
   @Override
+  @SuppressWarnings("interning:not.interned") // reference equality check
   public Void visitMemberReference(MemberReferenceTree node, Void p) {
     if (!done) {
       index++;

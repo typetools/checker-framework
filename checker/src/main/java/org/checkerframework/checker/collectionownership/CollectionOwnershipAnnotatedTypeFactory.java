@@ -88,6 +88,9 @@ public class CollectionOwnershipAnnotatedTypeFactory
    */
   public final AnnotationMirror BOTTOM;
 
+  /** The {@code @}{@link PolyOwningCollection}{@code ()} polymorphic annotation. */
+  public final AnnotationMirror POLY;
+
   /** The value element of the {@code @}{@link CollectionFieldDestructor} annotation. */
   private final ExecutableElement collectionFieldDestructorValueElement =
       TreeUtils.getMethod(CollectionFieldDestructor.class, "value", 0, processingEnv);
@@ -174,6 +177,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
     OWNINGCOLLECTIONWITHOUTOBLIGATION =
         AnnotationBuilder.fromClass(elements, OwningCollectionWithoutObligation.class);
     BOTTOM = AnnotationBuilder.fromClass(elements, OwningCollectionBottom.class);
+    POLY = AnnotationBuilder.fromClass(elements, PolyOwningCollection.class);
     this.postInit();
   }
 
@@ -605,10 +609,11 @@ public class CollectionOwnershipAnnotatedTypeFactory
               CollectionOwnershipAnnotatedTypeFactory.this.getAnnotatedType(superElt);
 
           AnnotatedDeclaredType superReceiver = annotatedSuperMethod.getReceiverType();
-          AnnotationMirror superReceiverAnno = superReceiver.getEffectiveAnnotationInHierarchy(TOP);
+          AnnotationMirror superReceiverAnno = superReceiver.getPrimaryAnnotationInHierarchy(TOP);
           boolean superReceiverHasManualAnno =
               superReceiverAnno != null
-                  && !AnnotationUtils.areSameByName(BOTTOM, superReceiverAnno);
+                  && !AnnotationUtils.areSameByName(BOTTOM, superReceiverAnno)
+                  && !AnnotationUtils.areSameByName(POLY, superReceiverAnno);
           if (!receiverHasManualAnno) {
             if (superReceiverHasManualAnno) {
               receiver.replaceAnnotation(superReceiverAnno);
@@ -616,9 +621,11 @@ public class CollectionOwnershipAnnotatedTypeFactory
           }
 
           AnnotatedTypeMirror superReturnType = annotatedSuperMethod.getReturnType();
-          AnnotationMirror superReturnAnno = superReturnType.getEffectiveAnnotationInHierarchy(TOP);
+          AnnotationMirror superReturnAnno = superReturnType.getPrimaryAnnotationInHierarchy(TOP);
           boolean superReturnHasManualAnno =
-              superReturnAnno != null && !AnnotationUtils.areSameByName(BOTTOM, superReturnAnno);
+              superReturnAnno != null
+                  && !AnnotationUtils.areSameByName(BOTTOM, superReturnAnno)
+                  && !AnnotationUtils.areSameByName(POLY, superReturnAnno);
           if (!returnHasManualAnno) {
             if (superReturnHasManualAnno) {
               returnType.replaceAnnotation(superReturnAnno);
@@ -630,12 +637,14 @@ public class CollectionOwnershipAnnotatedTypeFactory
           if (params.size() == superParams.size()) {
             for (int i = 0; i < superParams.size(); i++) {
               AnnotationMirror superParamAnno =
-                  superParams.get(i).getEffectiveAnnotationInHierarchy(TOP);
+                  superParams.get(i).getPrimaryAnnotationInHierarchy(TOP);
               AnnotationMirror paramAnno = params.get(i).getEffectiveAnnotationInHierarchy(TOP);
               boolean paramHasManualAnno =
                   paramAnno != null && !AnnotationUtils.areSameByName(BOTTOM, paramAnno);
               boolean superParamHasManualAnno =
-                  superParamAnno != null && !AnnotationUtils.areSameByName(BOTTOM, superParamAnno);
+                  superParamAnno != null
+                      && !AnnotationUtils.areSameByName(BOTTOM, superParamAnno)
+                      && !AnnotationUtils.areSameByName(POLY, superParamAnno);
               if (!paramHasManualAnno) {
                 if (superParamHasManualAnno) {
                   params.get(i).replaceAnnotation(superParamAnno);
@@ -721,9 +730,18 @@ public class CollectionOwnershipAnnotatedTypeFactory
             type.replaceAnnotation(OWNINGCOLLECTION);
           }
         } else if (isParam) {
-          AnnotationMirror paramAnno = type.getEffectiveAnnotationInHierarchy(TOP);
-          if (paramAnno == null || AnnotationUtils.areSameByName(BOTTOM, paramAnno)) {
-            type.replaceAnnotation(NOTOWNINGCOLLECTION);
+          // propagate annotation computed for parameter declaration
+          // to the use site
+          Element enclosingElement = elt.getEnclosingElement();
+          ExecutableElement method = (ExecutableElement) enclosingElement;
+          AnnotatedExecutableType annotatedMethod =
+              CollectionOwnershipAnnotatedTypeFactory.this.getAnnotatedType(method);
+          List<? extends VariableElement> params = method.getParameters();
+          List<? extends AnnotatedTypeMirror> paramTypes = annotatedMethod.getParameterTypes();
+          for (int i = 0; i < params.size(); i++) {
+            if (params.get(i).getSimpleName() == elt.getSimpleName()) {
+              type.replaceAnnotation(paramTypes.get(i).getEffectiveAnnotationInHierarchy(TOP));
+            }
           }
         }
       }
