@@ -142,9 +142,9 @@ public class JavaExpressionParseUtil {
 
     String expressionWithParameterNames =
         StringsPlume.replaceAll(expression, FORMAL_PARAMETER, PARAMETER_REPLACEMENT);
-    ExpressionTree expTree;
+    ExpressionTree exprTree;
     try {
-      expTree = JavacParseUtil.parseExpression(expressionWithParameterNames);
+      exprTree = JavacParseUtil.parseExpression(expressionWithParameterNames);
     } catch (ParseProblemException e) {
       String extra = ".";
       if (!e.getProblems().isEmpty()) {
@@ -160,7 +160,7 @@ public class JavaExpressionParseUtil {
 
     JavaExpression result =
         ExpressionTreeToJavaExpressionVisitor.convert(
-            expTree,
+            exprTree,
             env,
             parameters,
             localVarPath,
@@ -179,7 +179,7 @@ public class JavaExpressionParseUtil {
   }
 
   /**
-   * A visitor class that converts a Javac {@link ExpressionTree} to a {@link JavaExpression}. This
+   * A visitor class that converts a javac {@link ExpressionTree} to a {@link JavaExpression}. This
    * class does not viewpoint-adapt the expression.
    */
   public static class ExpressionTreeToJavaExpressionVisitor
@@ -194,39 +194,37 @@ public class JavaExpressionParseUtil {
     /** The resolver. Computed from the environment. */
     private final Resolver resolver;
 
-    /**
-     * For each formal parameter, the expression to which to parse it. For example, the second
-     * (index 1) element of the list is what "#2" parses to. If this field is {@code null}, a parse
-     * error will be thrown if "#2" appears in the expression.
-     */
-    private final @Nullable List<FormalParameter> parameters;
-
-    // private static final String PARAMETER_PREFIX = "_param_";
-
     /** If non-null, the expression is parsed as if it were written at this location. */
     private final @Nullable TreePath localVarPath;
-
-    /**
-     * The expression to use for "this". If {@code null}, a parse error will be thrown if "this"
-     * appears in the expression.
-     */
-    @Nullable ThisReference thisReference;
-
-    /** The enclosing type. Used to look up unqualified method, field, and class names. */
-    TypeMirror enclosingType;
-
-    /**
-     * The underlying javac API used to convert from Strings to Elements requires a tree path even
-     * when the information could be deduced from elements alone. So use the path to the current
-     * CompilationUnit.
-     */
-    TreePath pathToCompilationUnit;
 
     /** The java.lang.String type. */
     private final TypeMirror stringTypeMirror;
 
     /** The primitive boolean type. */
     private final TypeMirror booleanTypeMirror;
+
+    /**
+     * The underlying javac API used to convert from Strings to Elements requires a tree path even
+     * when the information could be deduced from elements alone. So use the path to the current
+     * CompilationUnit.
+     */
+    private final TreePath pathToCompilationUnit;
+
+    /** The enclosing type. Used to look up unqualified method, field, and class names. */
+    private final TypeMirror enclosingType;
+
+    /**
+     * The expression to use for "this". If {@code null}, a parse error will be thrown if "this"
+     * appears in the expression.
+     */
+    private final @Nullable ThisReference thisReference;
+
+    /**
+     * For each formal parameter, the expression to which to parse it. For example, the second
+     * (index 1) element of the list is what "#2" parses to. If this field is {@code null}, a parse
+     * error will be thrown if "#2" appears in the expression.
+     */
+    private final @Nullable List<FormalParameter> parameters;
 
     /**
      * Create a new ExpressionTreeToJavaExpressionVisitor.
@@ -884,7 +882,7 @@ public class JavaExpressionParseUtil {
      * Converts the JavaParser type to a TypeMirror. Returns null if {@code tree} is not handled;
      * this method does not handle type variables, union types, or intersection types.
      *
-     * @param tree a JCTree instance.
+     * @param tree a JCTree
      * @return a TypeMirror corresponding to {@code tree}, or null if {@code tree} isn't handled
      */
     private @Nullable TypeMirror convertTreeToTypeMirror(JCTree tree) {
