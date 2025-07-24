@@ -52,8 +52,6 @@ if [ $status -ne 0 ]; then exit $status; fi
 ## User documentation
 echo "makeCFManual"
 ./gradlew makeCFManual
-echo "makeAnnotationFileFormat"
-./gradlew makeAnnotationFileFormat
 echo ":dataflow:manual"
 ./gradlew :dataflow:manual
 git diff --exit-code docs/manual/contributors.tex \
