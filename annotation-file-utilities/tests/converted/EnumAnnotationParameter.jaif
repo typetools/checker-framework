@@ -1,0 +1,10 @@
+package java.lang:
+annotation @TestAnnotation:
+    enum java.lang.TestEnum value
+
+package org.checkerframework.afu.annotator.tests:
+class EnumAnnotationParameter:
+
+    method foo()V: @java.lang.TestAnnotation(value=A)
+        return:
+

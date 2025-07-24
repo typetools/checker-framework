@@ -159,7 +159,7 @@ def maven_sanity_check(sub_sanity_dir_name, repo_url, release_version):
         maven_example_pom = os.path.join(maven_example_dir, "pom.xml")
         add_repo_information(maven_example_pom, repo_url)
 
-    os.environ["JAVA_HOME"] = os.environ["JAVA_17_HOME"]
+    os.environ["JAVA_HOME"] = os.environ["JAVA_21_HOME"]
     execute_write_to_file("mvn compile", output_log, False, maven_example_dir)
     if repo_url != "":
         delete_path(path_to_artifacts)

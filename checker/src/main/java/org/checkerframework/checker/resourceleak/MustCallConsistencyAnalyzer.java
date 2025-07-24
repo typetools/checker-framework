@@ -926,7 +926,7 @@ public class MustCallConsistencyAnalyzer {
   public boolean shouldTrackInvocationResult(
       Set<Obligation> obligations, Node node, boolean isMustCallInference) {
     Tree callTree = node.getTree();
-    if (callTree.getKind() == Tree.Kind.NEW_CLASS) {
+    if (callTree instanceof NewClassTree) {
       // Constructor results from new expressions are tracked as long as the declared type has
       // a non-empty @MustCall annotation.
       NewClassTree newClassTree = (NewClassTree) callTree;
@@ -1466,7 +1466,7 @@ public class MustCallConsistencyAnalyzer {
       // The assignment is taking place outside of a method:  in a variable declaration's
       // initializer or in an initializer block.
       // The Resource Leak Checker issues no error if the assignment is a field initializer.
-      if (node.getTree().getKind() == Tree.Kind.VARIABLE) {
+      if (node.getTree() instanceof VariableTree) {
         // An assignment to a field that is also a declaration must be a field initializer
         // (VARIABLE Trees are only used for declarations).  Assignment in a field
         // initializer is always permitted.
@@ -2158,7 +2158,7 @@ public class MustCallConsistencyAnalyzer {
    *
    * @param currentBlock source block of the CFG edge. Must contain no {@link Node}s.
    * @param successor target block of the CFG edge.
-   * @return store propagated by the {@link RLCCalledMethodsAnalysis} along the CFG edge.
+   * @return store propagated by the {@link RLCCalledMethodsAnalysis} along the CFG edge
    */
   private AccumulationStore getStoreForEdgeFromEmptyBlock(Block currentBlock, Block successor) {
     switch (currentBlock.getType()) {

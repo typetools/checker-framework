@@ -1,0 +1,6 @@
+import foo.qual.TA;
+import foo.bar.EnumClass;
+public class C {
+  @TA(EnumClass.EnumValue)
+  Object f;
+}

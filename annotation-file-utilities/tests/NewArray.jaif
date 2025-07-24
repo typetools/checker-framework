@@ -1,0 +1,80 @@
+package:
+annotation @Z:
+annotation @A:
+annotation @B:
+annotation @C:
+annotation @D:
+annotation @E:
+annotation @X:
+annotation @Nullable: @java.lang.annotation.Target(value={TYPE_USE,TYPE_PARAMETER}) @java.lang.annotation.Retention(value=RUNTIME)
+
+class NewArray:
+
+field names01:
+new *0:
+inner-type 0, 0: @X
+
+field names02:
+new *0:
+inner-type 0, 0: @X
+
+field names03:
+new *0:
+inner-type 0, 0: @X
+
+field table1:
+new *0: @B
+inner-type 0, 0: @A
+
+field table2:
+new *0: @B
+inner-type 0, 0: @A
+
+field names0:
+new *0: @Z
+field names1:
+new *0:
+inner-type 0, 0: @A
+field names2:
+new *0:
+inner-type 0, 0, 0, 0: @B
+field names3:
+new *0:
+inner-type 0, 0, 0, 0, 0, 0: @C
+field names4:
+new *0:
+inner-type 0, 0, 0, 0, 0, 0, 0, 0: @D
+field names5:
+new *0:
+inner-type 0, 0, 0, 0, 0, 0, 0, 0, 0, 0: @E
+
+field names10:
+new *0: @Z
+field names11:
+new *0:
+inner-type 0, 0: @A
+field names12:
+new *0:
+inner-type 0, 0, 0, 0: @B
+field names13:
+new *0:
+inner-type 0, 0, 0, 0, 0, 0: @C
+field names14:
+new *0:
+inner-type 0, 0, 0, 0, 0, 0, 0, 0: @D
+field names15:
+new *0:
+inner-type 0, 0, 0, 0, 0, 0, 0, 0, 0, 0: @E
+
+field lists:
+type: @B
+inner-type 0, 0: @Z
+inner-type 0, 0, 3, 0: @A
+new *0: @E
+inner-type 0, 0: @C
+inner-type 0, 0, 3, 0: @D
+
+method <clinit>()V:
+new #2:
+inner-type 0, 0: @Nullable
+

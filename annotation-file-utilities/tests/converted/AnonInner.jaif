@@ -1,0 +1,45 @@
+package :
+annotation @A:
+
+package :
+annotation @D:
+
+package :
+annotation @C:
+
+package :
+annotation @B:
+
+package :
+annotation @F:
+
+package :
+annotation @E:
+
+package :
+class AnonInner$InnerOne:
+
+    method m1(Ljava/lang/String;)Ljava/lang/Object;:
+        return:
+        insert-annotation Method.body, Block.statement 0, Return.expression, NewClass.identifier: @A
+
+    method m2(Ljava/lang/String;)Ljava/lang/Object;:
+        return:
+        insert-annotation Method.body, Block.statement 0, Return.expression, NewClass.identifier: @D
+
+package :
+class AnonInner$InnerOne$1:
+
+    method e1(Ljava/lang/Object;)Ljava/lang/Object;:
+        return:
+        insert-annotation Method.body, Block.statement 0, Return.expression, NewClass.identifier: @C
+        insert-annotation Method.type: @B
+
+package :
+class AnonInner$InnerOne$2:
+
+    method e2(Ljava/lang/Object;)Ljava/lang/Object;:
+        return:
+        insert-annotation Method.body, Block.statement 0, Return.expression, NewClass.identifier: @F
+        insert-annotation Method.type: @E
+

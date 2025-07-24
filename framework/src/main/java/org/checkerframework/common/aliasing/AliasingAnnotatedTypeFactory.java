@@ -43,6 +43,7 @@ public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       AnnotationBuilder.fromClass(elements, MaybeLeaked.class);
 
   /** Create the type factory. */
+  @SuppressWarnings("this-escape")
   public AliasingAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     if (this.getClass() == AliasingAnnotatedTypeFactory.class) {

@@ -224,10 +224,17 @@ public abstract class AbstractAnalysis<
    *
    * @param in the current node values
    */
+  @SuppressWarnings("interning:not.interned") // see comment about if-check below
   /*package-private*/ void setNodeValues(IdentityHashMap<Node, V> in) {
     assert !isRunning;
-    nodeValues.clear();
-    nodeValues.putAll(in);
+    // The if-check below is not just an optimization.  Without it, this method misbehaves
+    // when `in` and `nodeValues` alias: the call to `clear()` clears BOTH objects.  There
+    // are some places where `this.nodeValues` flows to the `in` argument (through several
+    // other layers of abstraction).
+    if (nodeValues != in) {
+      nodeValues.clear();
+      nodeValues.putAll(in);
+    }
   }
 
   @Override

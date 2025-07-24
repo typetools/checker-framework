@@ -1,11 +1,51 @@
-Version 3.49.2 (April 1, 2025)
-------------------------------
+Version 3.49.6 (August 1, 2025)
+-----------------------------
 
 **User-visible changes:**
 
 **Implementation details:**
 
 **Closed issues:**
+
+
+Version 3.49.5 (June 30, 2025)
+-----------------------------
+
+**User-visible changes:**
+
+The Checker Framework runs under JDK 25 -- that is, it runs on a version 25 JVM.
+
+**Closed issues:**
+
+#7093.
+
+
+Version 3.49.4 (June 2, 2025)
+-----------------------------
+
+**Closed issues:**
+
+#6740, #7013, #7038, #7070, #7082.
+
+
+Version 3.49.3 (May 2, 2025)
+-----------------------------
+
+**User-visible changes:**
+
+The Checker Framework runs under JDK 24 -- that is, it runs on a version 24 JVM.
+
+**Closed issues:**
+
+#6520, #6671, #6750, #6762, #6887, #7001, #7019, #7024, #7029, #7053.
+
+
+Version 3.49.2 (April 1, 2025)
+------------------------------
+
+**Closed issues:**
+
+#6747, #6755, #6789, #6891, #6963, #6996, #7001, #7008, #7014.
 
 
 Version 3.49.1 (March 3, 2025)
@@ -80,11 +120,11 @@ Version 3.48.0 (October 2, 2024)
 
 **User-visible changes:**
 
-The new SqlQuotesChecker prevents errors in quoting in SQL queries.  It prevents
-injection attacks that exploit quoting errors.
+The new SQL Quotes Checker prevents errors in quoting in SQL queries.  It
+prevents injection attacks that exploit quoting errors.
 
-Aggregate Checkers now interleave error messages so that all errors about a line of code appear
-together.
+Aggregate Checkers now interleave error messages so that all errors about a line
+of code appear together.
 
 **Closed issues:**
 
@@ -115,6 +155,9 @@ Version 3.46.0 (August 1, 2024)
 -----------------------------
 
 **User-visible changes:**
+
+The new SqlQuotesChecker prevents errors in quoting in SQL queries.  It prevents
+injection attacks that exploit quoting errors.
 
 Renamed `@EnsuresCalledMethodsVarArgs`to `@EnsuresCalledMethodsVarargs`.
 

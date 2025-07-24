@@ -1,0 +1,10 @@
+package java.lang:
+annotation @A:
+
+annotation @ShouldNotAppearInOutput:
+
+package org.checkerframework.afu.annotator.tests:
+class MatchReturnValue:
+
+    method clone()Lorg.checkerframework.afu.annotator.tests.MatchReturnValue;: @A
+    method clone()Ljava.lang.Object;: @ShouldNotAppearInOutput

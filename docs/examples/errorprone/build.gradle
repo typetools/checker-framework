@@ -15,8 +15,10 @@ dependencies {
   // Must use at least version 2.4.0 of Error Prone.
   if (JavaVersion.current() == JavaVersion.VERSION_1_8) {
     errorprone 'com.google.errorprone:error_prone_core:2.10.0'
+  } else if (JavaVersion.current() == JavaVersion.VERSION_11) {
+    errorprone 'com.google.errorprone:error_prone_core:2.31.0'
   } else {
-    errorprone 'com.google.errorprone:error_prone_core:2.12.0'
+    errorprone 'com.google.errorprone:error_prone_core:2.38.0'
   }
 }
 

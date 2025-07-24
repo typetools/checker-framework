@@ -86,6 +86,7 @@ public abstract class AccumulationAnnotatedTypeFactory
    * @param predicate the predicate annotation. Either null (if predicates are not supported), or an
    *     annotation with a single element named "value" whose type is a String.
    */
+  @SuppressWarnings("this-escape")
   protected AccumulationAnnotatedTypeFactory(
       BaseTypeChecker checker,
       Class<? extends Annotation> accumulator,

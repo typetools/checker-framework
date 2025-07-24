@@ -160,8 +160,10 @@ public class VariableBounds {
     }
     if (bounds.get(kind).add(otherType)) {
       addConstraintsFromComplementaryBounds(parent, kind, otherType);
-      Set<AbstractQualifier> aQuals = otherType.getQualifiers();
-      addConstraintsFromComplementaryQualifierBounds(kind, aQuals);
+      if (!otherType.ignoreAnnotations) {
+        Set<AbstractQualifier> aQuals = otherType.getQualifiers();
+        addConstraintsFromComplementaryQualifierBounds(kind, aQuals);
+      }
       return true;
     }
     return false;
@@ -300,7 +302,7 @@ public class VariableBounds {
         }
       }
     }
-    if (boundType.isUseOfVariable()) {
+    if (boundType.isUseOfVariable() && !boundType.ignoreAnnotations) {
       UseOfVariable boundVar = (UseOfVariable) boundType;
       switch (kind) {
         case EQUAL:
@@ -395,7 +397,7 @@ public class VariableBounds {
   /**
    * Returns whether this variable only has bounds against proper types.
    *
-   * @return whether this variable only has bounds against proper types.
+   * @return whether this variable only has bounds against proper types
    */
   public boolean onlyProperBounds() {
     for (BoundKind k : BoundKind.values()) {

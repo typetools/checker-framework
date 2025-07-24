@@ -5,7 +5,6 @@ import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.tools.javac.code.Attribute;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Type;
@@ -721,7 +720,7 @@ public class AnnotatedTypes {
       AnnotatedExecutableType preType,
       boolean inferTypeArgs) {
 
-    if (expr.getKind() != Kind.MEMBER_REFERENCE
+    if (!(expr instanceof MemberReferenceTree)
         && elt.getTypeParameters().isEmpty()
         && !TreeUtils.isDiamondTree(expr)) {
       return emptyFalsePair;
@@ -1047,7 +1046,9 @@ public class AnnotatedTypes {
    *
    * <p>This expands the parameters if the call uses varargs or contracts the parameters if the call
    * is to an anonymous class that extends a class with an enclosing type. If the call is neither of
-   * these, then the parameters are returned unchanged.
+   * these, then the parameters are returned unchanged. For example, String.format is declared to
+   * take {@code (String, Object...)}. Given {@code String.format(a, b, c, d)}, this returns
+   * (String, Object, Object, Object).
    *
    * @param atypeFactory the type factory to use for fetching annotated types
    * @param method the method or constructor's type
@@ -1137,7 +1138,7 @@ public class AnnotatedTypes {
     AnnotatedArrayType varargs = (AnnotatedArrayType) parameters.get(parameters.size() - 1);
 
     if (parameters.size() == args.size()) {
-      // Check if one sent an element or an array
+      // Check if the client passed an element or an array.
       AnnotatedTypeMirror lastArg = args.get(args.size() - 1);
       if (lastArg.getKind() == TypeKind.ARRAY
           && (getArrayDepth(varargs) == getArrayDepth((AnnotatedArrayType) lastArg)
