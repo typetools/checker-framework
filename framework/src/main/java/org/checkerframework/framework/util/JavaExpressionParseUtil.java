@@ -358,8 +358,6 @@ public class JavaExpressionParseUtil {
     @Override
     public JavaExpression visitIdentifier(IdentifierTree node, Void unused) {
       String s = node.getName().toString();
-      // setResolverField();
-
       // this and super logic
       if (s.equals("this") || s.equals("super")) {
         if (thisReference == null) {
@@ -448,7 +446,6 @@ public class JavaExpressionParseUtil {
      */
     protected @Nullable FieldAccess getIdentifierAsFieldAccess(
         JavaExpression receiverExpr, String identifier) {
-      // setResolverField();
       // Find the field element.
       TypeMirror enclosingTypeOfField = receiverExpr.getType();
       VariableElement fieldElem;
@@ -528,7 +525,6 @@ public class JavaExpressionParseUtil {
 
     @Override
     public JavaExpression visitMethodInvocation(MethodInvocationTree node, Void unused) {
-      // setResolverField();
       ExpressionTree methodSelect = node.getMethodSelect();
       List<? extends ExpressionTree> args = node.getArguments();
 
@@ -611,8 +607,6 @@ public class JavaExpressionParseUtil {
 
     @Override
     public JavaExpression visitMemberSelect(MemberSelectTree node, Void unused) {
-      // setResolverField();
-
       // Handle class literal (e.g., SomeClass.class)
       if (node.getIdentifier().contentEquals("class")) {
         Tree selected = node.getExpression();
@@ -848,8 +842,6 @@ public class JavaExpressionParseUtil {
         }
         searchType = getTypeOfEnclosingClass(searchDeclaredType);
       }
-
-      // setResolverField();
 
       if (enclosingType.getKind() == TypeKind.DECLARED) {
         // Is identifier in the same package as this?
