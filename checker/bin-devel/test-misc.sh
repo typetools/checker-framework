@@ -50,7 +50,7 @@ fi
 if [ $status -ne 0 ]; then exit $status; fi
 
 ## User documentation
-./gradlew manual
+./gradlew manual --debug
 git diff --exit-code docs/manual/contributors.tex \
   || (set +x && set +v \
     && echo "docs/manual/contributors.tex is not up to date." \
