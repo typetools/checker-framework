@@ -20,7 +20,7 @@ with tempfile.NamedTemporaryFile(mode="w+", delete=False) as tmp:
     tmp.write("rankdir=BT\n")
 
     for filename in Path.cwd().glob("*.java"):
-        with Path.open(filename) as file:
+        with Path(filename).open() as file:
             typename = Path(Path(filename).stem).name
             # print(filename)
             data = file.read()
