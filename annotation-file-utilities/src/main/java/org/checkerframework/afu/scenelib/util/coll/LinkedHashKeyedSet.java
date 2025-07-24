@@ -10,6 +10,7 @@ import java.util.Map;
  * A simple implementation of {@link KeyedSet} backed by an insertion-order {@link
  * java.util.LinkedHashMap} and its {@link java.util.LinkedHashMap#values() value collection}.
  */
+@SuppressWarnings("resourceleak:required.method.not.known") // Not relevant to resources
 public class LinkedHashKeyedSet<K, V> extends AbstractSet<V> implements KeyedSet<K, V> {
   private final Keyer<? extends K, ? super V> keyer;
 

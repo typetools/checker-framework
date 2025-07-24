@@ -195,6 +195,7 @@ public class Main {
   // TODO: remove this.
   public static boolean temporaryDebug = false;
 
+  @SuppressWarnings("resourceleak:required.method.not.known") // Not relevant to resources
   private static ElementVisitor<Void, AElement> classFilter =
       new ElementVisitor<Void, AElement>() {
         <K, V extends AElement> Void filter(VivifyingMap<K, V> vm0, VivifyingMap<K, V> vm1) {
