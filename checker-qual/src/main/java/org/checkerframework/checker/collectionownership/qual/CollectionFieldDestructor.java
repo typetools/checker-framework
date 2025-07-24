@@ -9,8 +9,8 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
 import org.checkerframework.framework.qual.PostconditionAnnotation;
 
 /**
- * Indicates that the given resource collection fields are destructed within this method, i.e. this
- * method calls all required methods on their elements.
+ * The annotated method destructs the given resource collection fields. That is, this method calls
+ * all required methods on their elements.
  *
  * <pre><code>
  *  {@literal @}CollectionFieldDestructor("socketList")
@@ -22,6 +22,8 @@ import org.checkerframework.framework.qual.PostconditionAnnotation;
  *    }
  *  }
  * </code></pre>
+ *
+ * @checker_framework.manual #resource-leak-checker Resource Leak Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
@@ -30,9 +32,9 @@ import org.checkerframework.framework.qual.PostconditionAnnotation;
 @InheritedAnnotation
 public @interface CollectionFieldDestructor {
   /**
-   * Returns the resource collection field whose collection obligation the destructor fulfills.
+   * Returns the resource collection fields whose collection obligation the destructor fulfills.
    *
-   * @return the resource collection field whose collection obligation the destructor fulfills
+   * @return the resource collection fields whose collection obligation the destructor fulfills
    */
   String[] value();
 }

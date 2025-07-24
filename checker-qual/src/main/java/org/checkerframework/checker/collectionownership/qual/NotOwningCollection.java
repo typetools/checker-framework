@@ -7,13 +7,11 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * The top qualifier in the Collection Ownership type hierarchy.
+ * An expression of type {@code NotOwningCollection} is a non-owning reference to a resource
+ * collection/array. Because it does not own the underlying collection/array, it cannot add or
+ * remove elements from it.
  *
- * <p>An expression of type {@code NotOwningCollection} is a resource collection/array, which may
- * not own the underlying collection/array, and thus cannot add or remove elements from it.
- *
- * <p>This annotation can be enforced by running the Resource Leak Checker. It enforces that the
- * expression is not used to add to or remove elements from the underlying collection/array.
+ * @checker_framework.manual #resource-leak-checker Resource Leak Checker
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})

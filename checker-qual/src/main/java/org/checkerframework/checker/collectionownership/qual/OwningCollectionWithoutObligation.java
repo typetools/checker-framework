@@ -7,22 +7,16 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * An expression of type {@code @OwningCollectionWithoutObligation} is a resource collection/arary,
- * which definitely owns the underlying collection/array and has definitely called all of the
- * methods in the {@code @MustCall} type of its elements on all of its elements.
+ * An expression of type {@code @OwningCollectionWithoutObligation} is a resource collection/array,
+ * which definitely owns the underlying collection/array. Furthermore, every element has already
+ * called all of the methods in its {@code @MustCall} type.
  *
- * <p>This annotation exists such that for a destructor method {@code d} of a class {@code C} with
- * an {@code @OwningCollection} field {@code f}, the post-condition of said destructor method can be
- * of the form {@code @EnsuresQualifier(expression = "this.f", qualifier =
+ * <p>Consider a destructor method {@code d} of a class {@code C} with an {@code @OwningCollection}
+ * field {@code f}. The post-condition of the destructor method is
+ * {@code @EnsuresQualifier(expression = "this.f", qualifier =
  * OwningCollectionWithoutObligation.class)}.
  *
- * <p>This annotation can be enforced by running the Resource Leak Checker. The dataflow analysis
- * running after the type checker tracks at least one owner per underlying resource
- * collection/array. In particular, if an expression has type {@code @OwningCollection}, it is also
- * tracked as an owner by the dataflow analysis, which checks that it (or one of its aliases) calls
- * the methods in the {@code @MustCall} type of its elements on all of its elements before leaving
- * scope, or it passes on the obligation (by writing to an {@code @OwningCollection}, passing to an
- * {@code @OwningCollection} parameter, or returning as an {@code @OwningCollection} return type).
+ * @checker_framework.manual #resource-leak-checker Resource Leak Checker
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})

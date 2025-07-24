@@ -8,14 +8,18 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
 
 /**
  * A method carrying this annotation creates a {@code CollectionObligation} for the receiver
- * collection. If the receiver of a method annotated with this annotation is of type
- * {@code @OwningCollectionWithoutObligation}, it is unrefined to {@code @OwningCollection}, and a
- * CollectionObligation is created for each {@code @MustCall} method of the type variable of the
- * receiver.
+ * collection.
+ *
+ * <p>Consider a call to a {@code CreatesCollectionObligation}-annotated method. If the receiver is
+ * of type {@code @OwningCollectionWithoutObligation}, it is unrefined to {@code @OwningCollection},
+ * and a CollectionObligation is created for each {@code @MustCall} method of the type variable of
+ * the receiver.
  *
  * <p>This annotation should only be used on method and constructor declarations of collections, as
  * defined by the CollectionOwnershipChecker, that is, {@code java.lang.Iterable} and {@code
  * java.util.Iterator} implementations.
+ *
+ * @checker_framework.manual #resource-leak-checker Resource Leak Checker
  */
 @InheritedAnnotation
 @Retention(RetentionPolicy.RUNTIME)
