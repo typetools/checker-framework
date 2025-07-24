@@ -565,7 +565,7 @@ public class JavaExpressionParseUtil {
         throw new ParseRuntimeException(e);
       }
 
-      // Box arguments if needed
+      // Box arguments if needed.
       for (int i = 0; i < arguments.size(); i++) {
         VariableElement parameter = methodElement.getParameters().get(i);
         TypeMirror parameterType = parameter.asType();
@@ -573,18 +573,19 @@ public class JavaExpressionParseUtil {
         TypeMirror argumentType = argument.getType();
 
         if (TypesUtils.isBoxedPrimitive(parameterType) && TypesUtils.isPrimitive(argumentType)) {
+          // Boxing is necessary.
           MethodSymbol valueOfMethod = TreeBuilder.getValueOfMethod(env, parameterType);
-          JavaExpression boxed =
+          JavaExpression boxedParam =
               new MethodCall(
                   parameterType,
                   valueOfMethod,
                   new ClassName(parameterType),
                   Collections.singletonList(argument));
-          arguments.set(i, boxed);
+          arguments.set(i, boxedParam);
         }
       }
 
-      // Construct MethodCall expression
+      // Build the MethodCall expression object.
       if (ElementUtils.isStatic(methodElement)) {
         Element classElem = methodElement.getEnclosingElement();
         JavaExpression staticClassReceiver = new ClassName(ElementUtils.getType(classElem));
@@ -620,7 +621,7 @@ public class JavaExpressionParseUtil {
       Tree expr = node.getExpression();
       String name = node.getIdentifier().toString();
 
-      // Check if the expression refers to a fully-qualified class name
+      // Check if the expression refers to a fully-qualified class name.
       Symbol.PackageSymbol packageSymbol =
           resolver.findPackage(expr.toString(), pathToCompilationUnit);
       if (packageSymbol != null) {
@@ -635,22 +636,22 @@ public class JavaExpressionParseUtil {
                 "could not find class " + name + " in package " + expr.toString()));
       }
 
-      // Otherwise treat as field access or inner class
+      // Otherwise treat as field access or inner class.
       JavaExpression receiver = expr.accept(this, null);
 
-      // Try as a field
+      // Try as a field.
       FieldAccess fieldAccess = getIdentifierAsFieldAccess(receiver, name);
       if (fieldAccess != null) {
         return fieldAccess;
       }
 
-      // Try as an inner class
+      // Try as an inner class.
       ClassName innerClass = getIdentifierAsInnerClassName(receiver.getType(), name);
       if (innerClass != null) {
         return innerClass;
       }
 
-      // Nothing matched
+      // Nothing matched.
       throw new ParseRuntimeException(
           constructJavaExpressionParseError(
               name, String.format("field or class %s not found in %s", name, receiver)));
