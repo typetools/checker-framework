@@ -794,17 +794,22 @@ interface InjectedExecOps {
   ExecOperations getExecOps()
 }
 
+tasks.register('makeFigures', Exec){
+  executable 'make'
+  args "-C", "${afuManualDir}/figures"
+}
 tasks.register('makeAnnotationFileFormat') {
   dependsOn getPlumeBib
+  dependsOn makeFigures
   description = 'Make documentation: annotation-file-format.{html,pdf}.'
 
   def injected = project.objects.newInstance(InjectedExecOps)
 
   doLast {
-    injected.execOps.exec {
-      workingDir(file("${afuManualDir}/figures"))
-      executable 'make'
-    }
+    //    injected.execOps.exec {
+    //      workingDir(file("${afuManualDir}/figures"))
+    //      executable 'make'
+    //    }
     injected.execOps.exec {
       workingDir(file(afuManualDir))
       executable 'latex'
