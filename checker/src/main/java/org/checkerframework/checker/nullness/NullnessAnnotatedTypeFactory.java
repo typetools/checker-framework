@@ -117,7 +117,7 @@ public class NullnessAnnotatedTypeFactory
       TreeUtils.getMethod("java.util.Map", "get", 1, processingEnv);
 
   // List is in alphabetical order.  If you update it, also update
-  // ../../../../../../../../docs/manual/nullness-checker.tex
+  // ../../../../../../../../docs/manual/checker-framework/nullness-checker.tex
   // and make a pull request for variables NONNULL_ANNOTATIONS and BASE_COPYABLE_ANNOTATIONS in
   // https://github.com/rzwitserloot/lombok/blob/master/src/core/lombok/core/handlers/HandlerUtil.java .
   // Avoid changes to the string constants by ShadowJar relocate by using "start".toString() +
@@ -220,7 +220,7 @@ public class NullnessAnnotatedTypeFactory
           "reactor.util.annotation.NonNull");
 
   // List is in alphabetical order.  If you update it, also update
-  // ../../../../../../../../docs/manual/nullness-checker.tex .
+  // ../../../../../../../../docs/manual/checker-framework/nullness-checker.tex .
   // See more comments with NONNULL_ALIASES above.
   /** Aliases for {@code @Nullable}. */
   @SuppressWarnings({
@@ -357,7 +357,7 @@ public class NullnessAnnotatedTypeFactory
           "reactor.util.annotation.Nullable");
 
   // List is in alphabetical order.  If you update it, also update
-  // ../../../../../../../../docs/manual/nullness-checker.tex .
+  // ../../../../../../../../docs/manual/checker-framework/nullness-checker.tex .
   // See more comments with NONNULL_ALIASES above.
   /** Aliases for {@code @PolyNull}. */
   @SuppressWarnings({

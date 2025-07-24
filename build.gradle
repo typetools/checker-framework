@@ -634,7 +634,7 @@ task htmlValidate(type: Exec, group: 'Format') {
     '--ignore',
     '/api/',
     '/build/',
-    '/docs/manual/manual.html',
+    '/docs/manual/checker-framework/manual.html',
     '/docs/manual/plume-bib/docs/index.html',
     '/checker/jdk/nullness/src/java/lang/ref/package.html'
   ]
@@ -899,14 +899,14 @@ task pythonIsInstalled(type: Exec) {
 }
 
 task docTags(type: Exec, group: 'Emacs') {
-  commandLine 'make', '-C', 'docs/manual', 'tags'
+  commandLine 'make', '-C', 'docs/manual/checker-framework/', 'tags'
 }
 
 task tags(type: Exec, group: 'Emacs') {
   dependsOn docTags
   description = 'Create Emacs TAGS table'
   // running this task will also run the tags task in the subprojects, which is defined later in this file.
-  commandLine 'etags', '-i', 'annotation-file-utilities/TAGS', '-i', 'checker/TAGS', '-i', 'checker-qual/TAGS', '-i', 'checker-util/TAGS', '-i', 'dataflow/TAGS', '-i', 'framework/TAGS', '-i', 'framework-test/TAGS', '-i', 'javacutil/TAGS', '-i', 'docs/manual/TAGS'
+  commandLine 'etags', '-i', 'annotation-file-utilities/TAGS', '-i', 'checker/TAGS', '-i', 'checker-qual/TAGS', '-i', 'checker-util/TAGS', '-i', 'dataflow/TAGS', '-i', 'framework/TAGS', '-i', 'framework-test/TAGS', '-i', 'javacutil/TAGS', '-i', 'docs/manual/checker-framework/TAGS'
 }
 
 tasks.register('createCheckerFrameworkZip', Zip) {
