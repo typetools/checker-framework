@@ -1,6 +1,9 @@
 package org.checkerframework.framework.util;
 
-import com.sun.source.tree.*;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.JavacTask;
 import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.api.JavacTool;
@@ -8,7 +11,10 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.Collections;
 import javax.lang.model.type.TypeMirror;
-import javax.tools.*;
+import javax.tools.JavaCompiler;
+import javax.tools.JavaFileObject;
+import javax.tools.SimpleJavaFileObject;
+import javax.tools.StandardJavaFileManager;
 
 /**
  * Utility class that provides methods for parsing Java expressions using the {@code javac} compiler
