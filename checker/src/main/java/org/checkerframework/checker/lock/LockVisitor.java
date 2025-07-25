@@ -266,7 +266,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
    * @param methodDefinitionReceiver the ATM of the formal receiver parameter of the method being
    *     called
    * @param methodCallReceiver the ATM of the receiver argument of the method call
-   * @return whether the caller can skip the receiver subtype check
+   * @return true if the caller can skip the receiver subtype check
    */
   @Override
   protected boolean skipReceiverSubtypeCheck(

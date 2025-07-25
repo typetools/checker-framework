@@ -147,7 +147,7 @@ public class JavaStubifier {
 
   /** Visitor to process one compilation unit; see class documentation for details. */
   private static class MinimizerVisitor extends ModifierVisitor<Void> {
-    /** Whether to consider members implicitly public. */
+    /** True if to consider members implicitly public. */
     private boolean implicitlyPublic = false;
 
     @Override

@@ -630,8 +630,8 @@ public class ValueTransfer extends CFTransfer {
   }
 
   /**
-   * Checks whether or not the passed node is nullable. This superficial check assumes that every
-   * node is nullable unless it is a primitive, String literal, or compile-time constant.
+   * Returns true if the passed node is nullable. This superficial check assumes that every node is
+   * nullable unless it is a primitive, String literal, or compile-time constant.
    *
    * @return false if the node's run-time can't be null; true if the node's run-time value may be
    *     null, or if this method is not precise enough

@@ -426,7 +426,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
   }
 
   /**
-   * Tests whether a method invocation is an invocation of {@link #equals} with one argument.
+   * Returns true if a method invocation is an invocation of {@link #equals} with one argument.
    *
    * <p>Returns true even if a method overloads {@link Object#equals(Object)}, because of the common
    * idiom of writing an equals method with a non-Object parameter, in addition to the equals method

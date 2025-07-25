@@ -143,7 +143,7 @@ public class WholeProgramInferenceJavaParserStorage
   /** Maps from binary class name to the source file that contains it. */
   private Map<String, String> classToSource = new HashMap<>();
 
-  /** Whether the {@code -AinferOutputOriginal} option was supplied to the checker. */
+  /** True if the {@code -AinferOutputOriginal} option was supplied to the checker. */
   private final boolean inferOutputOriginal;
 
   /**
@@ -177,7 +177,7 @@ public class WholeProgramInferenceJavaParserStorage
    * annotations.
    *
    * @param atypeFactory the associated type factory
-   * @param inferOutputOriginal whether the -AinferOutputOriginal option was supplied to the checker
+   * @param inferOutputOriginal true if the -AinferOutputOriginal option was supplied to the checker
    */
   public WholeProgramInferenceJavaParserStorage(
       AnnotatedTypeFactory atypeFactory, boolean inferOutputOriginal) {

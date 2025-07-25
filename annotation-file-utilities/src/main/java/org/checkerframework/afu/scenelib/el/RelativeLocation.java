@@ -59,7 +59,7 @@ public final class RelativeLocation implements Comparable<RelativeLocation> {
   }
 
   /**
-   * Returns whether this {@link RelativeLocation} equals <code>o</code>; a slightly faster variant
+   * Returns true if this {@link RelativeLocation} equals <code>o</code>; a slightly faster variant
    * of {@link #equals(Object)} for when the argument is statically known to be another nonnull
    * {@link RelativeLocation}.
    */

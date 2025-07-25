@@ -62,7 +62,7 @@ public abstract class VivifyingMap<K, V> extends WrapperMap<K, V> {
   }
 
   /**
-   * Returns whether the given value is "empty" -- that is, it is the same as what {@link
+   * Returns true if the given value is "empty" -- that is, it is the same as what {@link
    * #getVivify} would create.
    *
    * <p>This method does not recursively prune its argument, and it does not need to.

@@ -673,7 +673,7 @@ public class MustCallInference {
   }
 
   /**
-   * Checks whether the given element is a resource alias of the given node in the provided set of
+   * Returns true if the given element is a resource alias of the given node in the provided set of
    * obligations.
    *
    * @param obligations the current set of tracked Obligations

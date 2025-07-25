@@ -22,10 +22,10 @@ public class TestDiagnostic {
    */
   private final String message;
 
-  /** Whether this diagnostic should no longer be reported after whole program inference. */
+  /** Returns true if this diagnostic should no longer be reported after whole program inference. */
   private final boolean isFixable;
 
-  /** Whether or not the toString representation should omit the parentheses around the message. */
+  /** True if the toString representation should omit the parentheses around the message. */
   private final boolean omitParentheses;
 
   /** Basic constructor that sets the immutable fields of this diagnostic. */
@@ -65,9 +65,9 @@ public class TestDiagnostic {
   }
 
   /**
-   * Returns whether or not the printed representation should omit parentheses around the message.
+   * Returns true if the printed representation should omit parentheses around the message.
    *
-   * @return whether or not the printed representation should omit parentheses around the message
+   * @return true if the printed representation should omit parentheses around the message
    */
   public boolean shouldOmitParentheses() {
     return omitParentheses;

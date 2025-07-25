@@ -815,8 +815,8 @@ public class AnnotationClassLoader implements Closeable {
   }
 
   /**
-   * Checks to see whether a particular annotation class has the {@link Target} meta-annotation, and
-   * has the required {@link ElementType} values.
+   * Returns true if a particular annotation class has the {@link Target} meta-annotation and has
+   * the required {@link ElementType} values.
    *
    * <p>A subclass may override this method to load annotations that are not intended to be
    * annotated in source code. E.g.: {@code SubtypingChecker} overrides this method to load {@code
@@ -832,7 +832,7 @@ public class AnnotationClassLoader implements Closeable {
   }
 
   /**
-   * Checks to see whether a particular annotation class is supported.
+   * Returns true if a particular annotation class is supported.
    *
    * <p>By default, all loaded annotations that pass the basic checks in {@link
    * #loadAnnotationClass(String, boolean)} are supported.
