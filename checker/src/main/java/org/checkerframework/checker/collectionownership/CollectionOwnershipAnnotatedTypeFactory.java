@@ -256,11 +256,11 @@ public class CollectionOwnershipAnnotatedTypeFactory
   }
 
   /**
-   * Returns true if the given element is a resource collection field that is
-   * {@code @OwningCollection} by declaration, which is the default behavior, i.e. with no different
-   * collection ownership annotation.
+   * Returns true if the given element is a resource collection field that is declared as
+   * {@code @OwningCollection}. Since that is the default, this method also returns true if the
+   * field has no collection ownership annotation.
    *
-   * @param elt the element
+   * @param elt a field that might be a resource collection
    * @return true if the element is a resource collection field that is {@code @OwningCollection} by
    *     declaration
    */
@@ -268,8 +268,8 @@ public class CollectionOwnershipAnnotatedTypeFactory
     if (elt == null) {
       return false;
     }
-    if (isResourceCollection(elt.asType())) {
-      if (elt.getKind().isField()) {
+    if (elt.getKind().isField()) {
+      if (isResourceCollection(elt.asType())) {
         AnnotatedTypeMirror atm = getAnnotatedType(elt);
         CollectionOwnershipType fieldType =
             getCoType(Collections.singletonList(atm.getEffectiveAnnotationInHierarchy(TOP)));
@@ -291,15 +291,15 @@ public class CollectionOwnershipAnnotatedTypeFactory
   /**
    * Returns true if the given element is a resource collection field.
    *
-   * @param elt the element
-   * @return true if the element is a resource collection field.
+   * @param elt an element
+   * @return true if the element is a resource collection field
    */
   public boolean isResourceCollectionField(Element elt) {
     if (elt == null) {
       return false;
     }
-    if (isResourceCollection(elt.asType())) {
-      if (elt.getKind().isField()) {
+    if (elt.getKind().isField()) {
+      if (isResourceCollection(elt.asType())) {
         return true;
       }
     }
@@ -307,11 +307,11 @@ public class CollectionOwnershipAnnotatedTypeFactory
   }
 
   /**
-   * Returns true if the given element is a resource collection parameter that is
-   * {@code @OwningCollection} by declaration, which is the default behavior, i.e. with no different
-   * collection ownership annotation.
+   * Returns true if the given element is a resource collection parameter that is declared as
+   * {@code @OwningCollection}. Since that is the default, this method also returns true if the
+   * parameter has no collection ownership annotation.
    *
-   * @param elt the element
+   * @param elt an element
    * @return true if the element is a resource collection parameter that is
    *     {@code @OwningCollection} by declaration
    */
@@ -356,8 +356,8 @@ public class CollectionOwnershipAnnotatedTypeFactory
     } catch (BugInCF e) {
       return false;
     }
-    List<String> list = getMustCallValuesOfResourceCollectionComponent(treeMcType);
-    return list != null && list.size() > 0;
+    List<String> mcValues = getMustCallValuesOfResourceCollectionComponent(treeMcType);
+    return mcValues != null && mcValues.size() > 0;
   }
 
   /**
@@ -397,7 +397,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
 
   /**
    * If the given tree represents a collection, this method returns the MustCall values of its
-   * elements or null if there are none or if the given type is not a collection.
+   * elements. It returns null if there are none or if the given type is not a collection.
    *
    * <p>That is, if the given tree is of a Java.util.Collection implementation, this method returns
    * the MustCall values of its type variable upper bound if there are any or else null.
@@ -412,8 +412,8 @@ public class CollectionOwnershipAnnotatedTypeFactory
   }
 
   /**
-   * If the given type is a collection, this method returns the MustCall values of its elements or
-   * null if there are none or if the given type is not a collection.
+   * If the given type is a collection, this method returns the MustCall values of its elements. It
+   * returns null if there are none or if the given type is not a collection.
    *
    * <p>That is, if the given type is a Java.util.Collection implementation, this method returns the
    * MustCall values of its type variable upper bound if there are any or else null.
