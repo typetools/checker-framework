@@ -1740,10 +1740,10 @@ public final class TreeUtils {
   }
 
   /**
-   * Returns whether the given tree is of the form object.size()
+   * Returns true if the given tree is of the form object.size().
    *
    * @param tree the tree to check
-   * @return whether the given tree is of the form object.size()
+   * @return true if the given tree is of the form object.size()
    */
   public static boolean isSizeAccess(Tree tree) {
     return (tree instanceof MethodInvocationTree)

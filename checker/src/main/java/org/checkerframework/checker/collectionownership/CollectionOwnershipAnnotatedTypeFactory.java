@@ -202,7 +202,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
    * afterFirstStore} is true, then the store after {@code firstBlock} is returned; if {@code
    * afterFirstStore} is false, the store before {@code succBlock} is returned.
    *
-   * @param afterFirstStore whether to use the store after the first block or the store before its
+   * @param afterFirstStore if true, use the store after the first block or the store before its
    *     successor, succBlock
    * @param firstBlock a block
    * @param succBlock {@code firstBlock}'s successor
@@ -247,7 +247,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
    * <p>That is, whether the given type is
    *
    * @param t the AnnotatedTypeMirror
-   * @return whether t is a resource collection
+   * @return true if t is a resource collection
    */
   public boolean isResourceCollection(TypeMirror t) {
     if (t == null) return false;
@@ -256,9 +256,9 @@ public class CollectionOwnershipAnnotatedTypeFactory
   }
 
   /**
-   * Whether the given element is a resource collection field that is {@code @OwningCollection} by
-   * declaration, which is the default behavior, i.e. with no different collection ownership
-   * annotation.
+   * Returns true if the given element is a resource collection field that is
+   * {@code @OwningCollection} by declaration, which is the default behavior, i.e. with no different
+   * collection ownership annotation.
    *
    * @param elt the element
    * @return true if the element is a resource collection field that is {@code @OwningCollection} by
@@ -287,7 +287,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
   }
 
   /**
-   * Whether the given element is a resource collection field.
+   * Returns true if the given element is a resource collection field.
    *
    * @param elt the element
    * @return true if the element is a resource collection field.
@@ -303,9 +303,9 @@ public class CollectionOwnershipAnnotatedTypeFactory
   }
 
   /**
-   * Whether the given element is a resource collection parameter that is {@code @OwningCollection}
-   * by declaration, which is the default behavior, i.e. with no different collection ownership
-   * annotation.
+   * Returns true if the given element is a resource collection parameter that is
+   * {@code @OwningCollection} by declaration, which is the default behavior, i.e. with no different
+   * collection ownership annotation.
    *
    * @param elt the element
    * @return true if the element is a resource collection parameter that is
@@ -333,13 +333,13 @@ public class CollectionOwnershipAnnotatedTypeFactory
   }
 
   /**
-   * Returns whether the given AST tree is a resource collection.
+   * Returns true if the given AST tree is a resource collection.
    *
    * <p>That is, whether the given tree is of a type assignable from java.util.Collection, whose
    * only type var has non-empty MustCall type.
    *
    * @param tree the tree
-   * @return whether the tree is a resource collection
+   * @return true if the tree is a resource collection
    */
   public boolean isResourceCollection(Tree tree) {
     if (tree == null) return false;

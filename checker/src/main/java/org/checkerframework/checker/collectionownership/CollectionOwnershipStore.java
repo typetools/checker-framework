@@ -19,7 +19,7 @@ public class CollectionOwnershipStore extends CFAbstractStore<CFValue, Collectio
    * Constructs a collection ownership store.
    *
    * @param analysis the collection ownership analysis
-   * @param sequentialSemantics whether to use sequential semantics
+   * @param sequentialSemantics if true, use sequential semantics
    */
   public CollectionOwnershipStore(
       CollectionOwnershipAnalysis analysis, boolean sequentialSemantics) {

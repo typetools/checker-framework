@@ -238,8 +238,8 @@ public class ResourceLeakUtils {
     } else {
       throw new IllegalArgumentException(
           "Argument referenceChecker to"
-              + " ResourceLeakUtils#getCollectionOwnershipAnnotatedTypeFactory(referenceChecker) expected to"
-              + " be an RLC checker but is "
+              + " ResourceLeakUtils#getCollectionOwnershipAnnotatedTypeFactory(referenceChecker)"
+              + " expected to be an RLC checker but is "
               + className);
     }
   }
@@ -262,7 +262,7 @@ public class ResourceLeakUtils {
   }
 
   /**
-   * Returns whether the given Element is a java.lang.Iterable or java.util.Iterator type by
+   * Returns true if the given Element is a java.lang.Iterable or java.util.Iterator type by
    * checking whether the raw type of the element is assignable from either. Returns false if
    * element is null, or has no valid type.
    *
@@ -278,7 +278,7 @@ public class ResourceLeakUtils {
   }
 
   /**
-   * Returns whether the given {@link TypeMirror} is a java.lang.Iterable or java.util.Iterator
+   * Returns true if the given {@link TypeMirror} is a java.lang.Iterable or java.util.Iterator
    * subclass. This is determined by getting the class of the TypeMirror and checking whether it is
    * assignable from either.
    *
@@ -295,12 +295,12 @@ public class ResourceLeakUtils {
   }
 
   /**
-   * Returns whether the given {@link TypeMirror} is a java.util.Iterator subclass. This is
+   * Returns true if the given {@link TypeMirror} is a java.util.Iterator subclass. This is
    * determined by getting the class of the TypeMirror and checking whether it is assignable from
    * java.util.Iterator.
    *
    * @param type the TypeMirror
-   * @return whether type is a java.util.Iterator
+   * @return true if type is a java.util.Iterator
    */
   public static boolean isIterator(TypeMirror type) {
     if (type == null) return false;

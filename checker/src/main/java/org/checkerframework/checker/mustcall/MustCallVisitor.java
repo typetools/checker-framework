@@ -374,8 +374,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
   }
 
   /**
-   * Checks whether a for-loop potentially fulfills collection obligations of a collection and marks
-   * the loop in case the check is successful.
+   * Marks the for-loop if it potentially fulfills collection obligations of a collection.
    *
    * @param tree forlooptree
    */
@@ -664,7 +663,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
   }
 
   /**
-   * Returns whether the given collection name is consistent with the identifier from the loop
+   * Returns true if the given collection name is consistent with the identifier from the loop
    * header.
    *
    * <p>That is, the names are equal.
@@ -673,8 +672,8 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
    *
    * @param idInHeader identifier from loop header
    * @param collectionName name of collection
-   * @return whether the given collection name is consistent with the identifier from the loop
-   *     header.
+   * @return true if the given collection name is consistent with the identifier from the loop
+   *     header
    */
   private boolean loopHeaderConsistentWithCollection(Name idInHeader, Name collectionName) {
     if (idInHeader == null || collectionName == null) return false;
@@ -683,12 +682,12 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
   }
 
   /**
-   * Returns whether the given tree is of the form collection.get(i), where i is the given index
+   * Returns true if the given tree is of the form collection.get(i), where i is the given index
    * name.
    *
    * @param tree the tree to check
    * @param index the index variable name
-   * @return whether the given tree is of the form collection.get(index)
+   * @return true if the given tree is of the form collection.get(index)
    */
   private boolean isIthCollectionElement(Tree tree, Name index) {
     if (tree == null || index == null) return false;
