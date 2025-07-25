@@ -20,7 +20,8 @@ tasks.register('updateVersionNumbers', Copy) {
       line.replaceAll("<!-- checker-framework-date -->(.*)<!-- /checker-framework-date -->", "<!-- checker-framework-date -->${currentDate}<!-- /checker-framework-date -->")
     }
   }
-  from('docs/manual/checker-framework/external-tools.tex') {
+  from('docs') {
+    include 'manual/checker-framework/external-tools.tex'
     filter { String line ->
       line = line.replaceAll("checker-framework-${releaseVersionRegex}{0,1}", "checker-framework-${releaseVersion}");
 
@@ -38,13 +39,16 @@ tasks.register('updateVersionNumbers', Copy) {
     }
   }
 
-  from('docs/manual/checker-framework/manual.tex') {
+  from('docs') {
+    include 'manual/checker-framework/manual.tex'
+
     filter { String line ->
       line = line.replaceAll("ReleaseInfo\\}\\{(.*)\\}", "ReleaseInfo}{${releaseVersion} (${currentDate})}");
       line.replaceAll("ReleaseVersion\\}\\{(.*)\\}", "ReleaseVersion}{${releaseVersion}}");
     }
   }
-  from('docs/examples/MavenExample/pom.xml') {
+  from('docs') {
+    include 'examples/MavenExample/pom.xml'
 
     filter { String line ->
       line.replaceAll("<!-- checker-framework-version -->(.*)<!-- /checker-framework-version -->", "<!-- checker-framework-version -->${releaseVersion}<!-- /checker-framework-version -->")
