@@ -64,7 +64,7 @@ public abstract class AnnotationFieldType extends EqualByStringRepresentation {
 
   /**
    * Returns an {@link AnnotationFieldType} containing all the information from both arguments, or
-   * <code>null</code> if the two arguments contradict each other.
+   * {@code null} if the two arguments contradict each other.
    *
    * <p>Currently this just merges the {@link ArrayAFT#elementType} field, so that if both arguments
    * are {@link ArrayAFT}s, one of known element type and the other of unknown element type, an

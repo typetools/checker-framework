@@ -44,8 +44,8 @@ import org.checkerframework.afu.scenelib.util.Strings;
 import org.objectweb.asm.TypePath;
 
 /**
- * IndexFileWriter provides two static methods named <code>write</code> that write a given {@link
- * AScene} to a given {@link Writer} or filename, in index file format.
+ * IndexFileWriter provides two static methods named {@code write} that write a given {@link AScene}
+ * to a given {@link Writer} or filename, in index file format.
  */
 public final class IndexFileWriter {
   final AScene scene;
@@ -187,7 +187,7 @@ public final class IndexFileWriter {
    *
    * @param typePath TypePath to be processed
    * @param index dentifies the TypePathEntry to convert
-   * @return String representing the TypePathEntry
+   * @return string representing the TypePathEntry
    */
   private String typePathStepToString(TypePath typePath, int index) {
     int typePathStep = typePath.getStep(index);
@@ -564,8 +564,8 @@ public final class IndexFileWriter {
   }
 
   /**
-   * Writes the annotations in <code>scene</code> and their definitions to <code>out</code> in index
-   * file format.
+   * Writes the annotations in {@code scene} and their definitions to {@code out} in index file
+   * format.
    *
    * <p>An {@link AScene} can contain several annotations of the same type but different
    * definitions, while an index file can accommodate only a single definition for each annotation
@@ -590,8 +590,8 @@ public final class IndexFileWriter {
   }
 
   /**
-   * Writes the annotations in <code>scene</code> and their definitions to the file <code>filename
-   * </code> in index file format; see {@link #write(AScene, Writer)}.
+   * Writes the annotations in {@code scene} and their definitions to the file {@code filename} in
+   * index file format; see {@link #write(AScene, Writer)}.
    */
   public static void write(AScene scene, String filename) throws IOException, DefException {
     try (Writer w = Files.newBufferedWriter(Paths.get(filename), StandardCharsets.UTF_8)) {

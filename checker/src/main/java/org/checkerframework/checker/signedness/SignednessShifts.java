@@ -81,7 +81,7 @@ public class SignednessShifts {
   }
 
   /**
-   * Returns the long value of an Integer or a Long
+   * Returns the long value of an Integer or a Long.
    *
    * @param obj either an Integer or a Long
    * @return the long value of obj

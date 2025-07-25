@@ -406,7 +406,7 @@ public final class TypesUtils {
   }
 
   /**
-   * Return true if this is an immutable type in the JDK.
+   * Returns true if this is an immutable type in the JDK.
    *
    * <p>This does not use immutability annotations and always returns false for user-defined
    * classes.
@@ -546,7 +546,7 @@ public final class TypesUtils {
   }
 
   /**
-   * Return true if the argument TypeMirror is a (possibly boxed) integral type.
+   * Returns true if the argument TypeMirror is a (possibly boxed) integral type.
    *
    * @param type the type to inspect
    * @return true if type is an integral type
@@ -567,7 +567,7 @@ public final class TypesUtils {
   }
 
   /**
-   * Return true if the argument TypeMirror is a (possibly boxed) integral type, excluding char and
+   * Returns true if the argument TypeMirror is a (possibly boxed) integral type, excluding char and
    * Character which do not print as numbers.
    *
    * @param type the type to inspect
@@ -647,7 +647,7 @@ public final class TypesUtils {
   }
 
   /**
-   * Return true if the argument TypeMirror is a (possibly boxed) floating point type.
+   * Returns true if the argument TypeMirror is a (possibly boxed) floating point type.
    *
    * @param type the type to inspect
    * @return true if type is a floating point type
@@ -750,8 +750,8 @@ public final class TypesUtils {
   }
 
   /**
-   * Get the type parameter for this wildcard from the underlying type's bound field. This field is
-   * sometimes null, in that case this method will return null.
+   * Returns the type parameter for this wildcard from the underlying type's bound field. This field
+   * is sometimes null, in that case this method will return null.
    *
    * @param wildcard wildcard type
    * @return the TypeParameterElement the wildcard is an argument to, {@code null} otherwise
@@ -761,8 +761,8 @@ public final class TypesUtils {
   }
 
   /**
-   * Get the type parameter for this wildcard from the underlying type's bound field. This field is
-   * sometimes null, in that case this method will return null.
+   * Returns the type parameter for this wildcard from the underlying type's bound field. This field
+   * is sometimes null, in that case this method will return null.
    *
    * @param wildcard wildcard type
    * @return the TypeParameterElement the wildcard is an argument to, {@code null} otherwise
@@ -1471,7 +1471,7 @@ public final class TypesUtils {
   }
 
   /**
-   * Return true if {@code typeMirror} is a declared type that has at least one wildcard as a type
+   * Returns true if {@code typeMirror} is a declared type that has at least one wildcard as a type
    * argument.
    *
    * @param typeMirror type to check

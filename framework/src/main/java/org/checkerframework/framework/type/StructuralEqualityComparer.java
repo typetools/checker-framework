@@ -100,7 +100,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
   }
 
   /**
-   * Return true if type1 and type2 have the same set of annotations.
+   * Returns true if type1 and type2 have the same set of annotations.
    *
    * @param type1 a type
    * @param type2 a type
