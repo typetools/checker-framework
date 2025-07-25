@@ -17,6 +17,7 @@ import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
+import com.sun.tools.javac.code.Symbol.PackageSymbol;
 import com.sun.tools.javac.code.Type.ArrayType;
 import com.sun.tools.javac.code.Type.ClassType;
 import com.sun.tools.javac.tree.JCTree;
@@ -373,9 +374,10 @@ public class JavaExpressionParseUtil {
       return new ArrayAccess(componentType, array, index);
     }
 
+    // `id` is an identifier with no dots in its name.
     @Override
-    public JavaExpression visitIdentifier(IdentifierTree exprTree, Void unused) {
-      String s = exprTree.getName().toString();
+    public JavaExpression visitIdentifier(IdentifierTree id, Void unused) {
+      String s = id.getName().toString();
       setResolverField();
       // this and super logic
       if (s.equals("this") || s.equals("super")) {
@@ -480,7 +482,7 @@ public class JavaExpressionParseUtil {
       }
       if (idx > parameters.size()) {
         throw new ParseRuntimeException(
-            new JavaExpressionParseUtil.JavaExpressionParseException(
+            new JavaExpressionParseException(
                 "flowexpr.parse.index.too.big", Integer.toString(idx)));
       }
       return parameters.get(idx - 1);
@@ -551,21 +553,21 @@ public class JavaExpressionParseUtil {
 
       if (enclosingType.getKind() == TypeKind.DECLARED) {
         // Is identifier in the same package as this?
-        Symbol.PackageSymbol packageSymbol =
-            (Symbol.PackageSymbol)
+        PackageSymbol packageSymbol =
+            (PackageSymbol)
                 ElementUtils.enclosingPackage(((DeclaredType) enclosingType).asElement());
-        Symbol.ClassSymbol classSymbol =
+        ClassSymbol classSymbol =
             resolver.findClassInPackage(identifier, packageSymbol, pathToCompilationUnit);
         if (classSymbol != null) {
           return new ClassName(classSymbol.asType());
         }
       }
       // Is identifier a simple name for a class in java.lang?
-      Symbol.PackageSymbol packageSymbol = resolver.findPackage("java.lang", pathToCompilationUnit);
+      PackageSymbol packageSymbol = resolver.findPackage("java.lang", pathToCompilationUnit);
       if (packageSymbol == null) {
         throw new BugInCF("Can't find java.lang package.");
       }
-      Symbol.ClassSymbol classSymbol =
+      ClassSymbol classSymbol =
           resolver.findClassInPackage(identifier, packageSymbol, pathToCompilationUnit);
       if (classSymbol != null) {
         return new ClassName(classSymbol.asType());
@@ -676,15 +678,13 @@ public class JavaExpressionParseUtil {
     }
 
     @Override
-    public JavaExpression visitMethodInvocation(MethodInvocationTree exprTree, Void unused) {
+    public JavaExpression visitMethodInvocation(MethodInvocationTree invocation, Void unused) {
       setResolverField();
-      ExpressionTree methodSelect = exprTree.getMethodSelect();
-      List<? extends ExpressionTree> args = exprTree.getArguments();
-
-      JavaExpression receiverExpr;
-      String methodName;
+      ExpressionTree methodSelect = invocation.getMethodSelect();
 
       // Resolve receiver and method name
+      JavaExpression receiverExpr;
+      String methodName;
       if (methodSelect instanceof MemberSelectTree) {
         // method call like `obj.method()` or `Class.staticMethod()`
         MemberSelectTree memberSelect = (MemberSelectTree) methodSelect;
@@ -701,14 +701,13 @@ public class JavaExpressionParseUtil {
       } else {
         throw new ParseRuntimeException(
             constructJavaExpressionParseError(
-                exprTree.toString(), "unsupported method invocation syntax"));
+                invocation.toString(), "unsupported method invocation syntax"));
       }
 
       // Convert argument expressions
-      List<JavaExpression> arguments = new ArrayList<>();
-      for (ExpressionTree arg : args) {
-        arguments.add(arg.accept(this, null));
-      }
+      List<JavaExpression> arguments =
+          CollectionsPlume.mapList(
+              argument -> argument.accept(this, null), invocation.getArguments());
 
       // Resolve method
       ExecutableElement methodElement;
@@ -750,7 +749,7 @@ public class JavaExpressionParseUtil {
         if (receiverExpr instanceof ClassName) {
           throw new ParseRuntimeException(
               constructJavaExpressionParseError(
-                  exprTree.toString(),
+                  invocation.toString(),
                   "a non-static method call cannot have a class name as a receiver"));
         }
         TypeMirror methodType =
@@ -824,8 +823,7 @@ public class JavaExpressionParseUtil {
       String name = exprTree.getIdentifier().toString();
 
       // Check if the expression refers to a fully-qualified class name.
-      Symbol.PackageSymbol packageSymbol =
-          resolver.findPackage(expr.toString(), pathToCompilationUnit);
+      PackageSymbol packageSymbol = resolver.findPackage(expr.toString(), pathToCompilationUnit);
       if (packageSymbol != null) {
         ClassSymbol classSymbol =
             resolver.findClassInPackage(name, packageSymbol, pathToCompilationUnit);
@@ -1133,23 +1131,25 @@ public class JavaExpressionParseUtil {
 
   /**
    * Returns a {@link JavaExpressionParseException} with error key "flowexpr.parse.error" for the
-   * expression {@code expr} with explanation {@code explanation}.
+   * expression {@code exprString} with explanation {@code explanation}.
    *
-   * @param expr the string that could not be parsed
+   * @param exprString the string that could not be parsed
    * @param explanation an explanation of the parse failure
-   * @return a {@link JavaExpressionParseException} for the expression {@code expr} with explanation
-   *     {@code explanation}.
+   * @return a {@link JavaExpressionParseException} for the expression {@code exprString} with
+   *     explanation {@code explanation}.
    */
   public static JavaExpressionParseException constructJavaExpressionParseError(
-      String expr, String explanation) {
-    if (expr == null) {
+      String exprString, String explanation) {
+    if (exprString == null) {
       throw new BugInCF("Must have an expression.");
     }
     if (explanation == null) {
       throw new BugInCF("Must have an explanation.");
     }
     return new JavaExpressionParseException(
-        (Throwable) null, "flowexpr.parse.error", "Invalid '" + expr + "' because " + explanation);
+        (Throwable) null,
+        "flowexpr.parse.error",
+        "Invalid '" + exprString + "' because " + explanation);
   }
 
   /**
