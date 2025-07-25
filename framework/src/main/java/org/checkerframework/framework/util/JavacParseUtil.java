@@ -10,7 +10,6 @@ import com.sun.tools.javac.api.JavacTool;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Collections;
-import javax.lang.model.type.TypeMirror;
 import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
 import javax.tools.SimpleJavaFileObject;
@@ -20,12 +19,8 @@ import javax.tools.StandardJavaFileManager;
  * Utility class that provides methods for parsing Java expressions using the {@code javac} compiler
  * API.
  *
- * <p>This serves as an alternative to JavaParser when working directly with the JDK compiler
- * infrastructure. Unlike JavaParser, which builds its own independent AST, this utility uses {@link
- * JavacTask} and the standard {@code com.sun.source.tree} API to parse expressions.
- *
- * <p>It is particularly useful for Checker Framework internals that wish to interoperate directly
- * with compiler-native types like {@link ExpressionTree} and {@link TypeMirror}.
+ * <p>This utility uses {@link JavacTask} and the standard {@code com.sun.source.tree} API to parse
+ * expressions.
  */
 public class JavacParseUtil {
 
