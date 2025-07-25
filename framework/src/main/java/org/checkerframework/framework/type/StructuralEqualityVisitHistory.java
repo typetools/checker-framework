@@ -12,13 +12,15 @@ public class StructuralEqualityVisitHistory {
 
   /**
    * Types in this history are structurally equal. (Use {@link SubtypeVisitHistory} because it
-   * implements a {@code Map<IPair<AnnotatedTypeMirror, AnnotatedTypeMirror>, AnnotationMirrorSet>})
+   * implements a {@code Map<IPair<AnnotatedTypeMirror, AnnotatedTypeMirror>,
+   * AnnotationMirrorSet>}).
    */
   private final SubtypeVisitHistory trueHistory;
 
   /**
    * Types in this history are not structurally equal. (Use {@link SubtypeVisitHistory} because it
-   * implements a {@code Map<IPair<AnnotatedTypeMirror, AnnotatedTypeMirror>, AnnotationMirrorSet>})
+   * implements a {@code Map<IPair<AnnotatedTypeMirror, AnnotatedTypeMirror>,
+   * AnnotationMirrorSet>}).
    */
   private final SubtypeVisitHistory falseHistory;
 

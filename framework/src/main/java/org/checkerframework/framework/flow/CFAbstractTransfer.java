@@ -909,7 +909,7 @@ public abstract class CFAbstractTransfer<
    * @param secondValue the abstract value that might be less precise
    * @param res the previous result
    * @param notEqualTo if true, indicates that the logic is flipped (i.e., the information is added
-   *     to the {@code elseStore} instead of the {@code thenStore}) for a not-equal comparison.
+   *     to the {@code elseStore} instead of the {@code thenStore}) for a not-equal comparison
    * @return the conditional transfer result (if information has been added), or {@code res}
    */
   protected TransferResult<V, S> strengthenAnnotationOfEqualTo(

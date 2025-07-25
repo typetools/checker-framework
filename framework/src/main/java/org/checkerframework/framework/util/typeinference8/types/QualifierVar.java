@@ -80,7 +80,7 @@ public class QualifierVar extends AbstractQualifier {
   }
 
   /**
-   * Add a bound for this qualifier variable
+   * Add a bound for this qualifier variable.
    *
    * @param kind a bound kind
    * @param otherQual the bound to add

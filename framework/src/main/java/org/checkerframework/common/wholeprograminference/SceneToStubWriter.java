@@ -503,7 +503,7 @@ public final class SceneToStubWriter {
   }
 
   /**
-   * Return true if the given annotation is an internal JDK annotation, whose name includes '+'.
+   * Returns true if the given annotation is an internal JDK annotation, whose name includes '+'.
    *
    * @param annotationName the name of the annotation
    * @return true iff this is an internal JDK annotation
@@ -876,7 +876,7 @@ public final class SceneToStubWriter {
   }
 
   /**
-   * Return a string containing n indents.
+   * Returns a string containing n indents.
    *
    * @param n the number of indents
    * @return a string containing that many indents

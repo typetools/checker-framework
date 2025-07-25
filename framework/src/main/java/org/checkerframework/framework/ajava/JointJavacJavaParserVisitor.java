@@ -1606,7 +1606,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   }
 
   /**
-   * Visit a YieldTree
+   * Visit a YieldTree.
    *
    * @param tree a YieldTree, typed as Tree to be backward-compatible
    * @param node a YieldStmt, typed as Node to be backward-compatible
