@@ -11,7 +11,8 @@ ext {
 tasks.register('updateVersionNumbers', Copy) {
   into layout.buildDirectory.dir('docs/')
   from('docs/') {
-    include 'checker-framework-quick-start.html',
+    include 'manual/annotation-file-utilities/annotation-file-utilities.html',
+        'checker-framework-quick-start.html',
         'checker-framework-webpage.html',
         'manual/checker-framework/introduction.tex'
 
