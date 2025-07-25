@@ -40,6 +40,8 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
+import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.regex.qual.Regex;
@@ -161,12 +163,12 @@ public class JavaExpressionParseUtil {
     JavaExpression result =
         ExpressionTreeToJavaExpressionVisitor.convert(
             exprTree,
-            env,
+            enclosingType,
+            thisReference,
             parameters,
             localVarPath,
-            thisReference,
-            enclosingType,
-            pathToCompilationUnit);
+            pathToCompilationUnit,
+            env);
 
     if (result instanceof ClassName && !expression.endsWith(".class")) {
       throw constructJavaExpressionParseError(
@@ -191,11 +193,8 @@ public class JavaExpressionParseUtil {
     /** The type utilities. */
     private final Types types;
 
-    /** The resolver. Computed from the environment. */
-    private final Resolver resolver;
-
-    /** If non-null, the expression is parsed as if it were written at this location. */
-    private final @Nullable TreePath localVarPath;
+    /** The resolver. Computed from the environment, but lazily initialized. */
+    private @MonotonicNonNull Resolver resolver = null;
 
     /** The java.lang.String type. */
     private final TypeMirror stringTypeMirror;
@@ -209,6 +208,9 @@ public class JavaExpressionParseUtil {
      * CompilationUnit.
      */
     private final TreePath pathToCompilationUnit;
+
+    /** If non-null, the expression is parsed as if it were written at this location. */
+    private final @Nullable TreePath localVarPath;
 
     /** The enclosing type. Used to look up unqualified method, field, and class names. */
     private final TypeMirror enclosingType;
@@ -239,29 +241,28 @@ public class JavaExpressionParseUtil {
      * @param pathToCompilationUnit required to use the underlying Javac API
      * @param env the processing environment
      */
-    public ExpressionTreeToJavaExpressionVisitor(
-        ProcessingEnvironment env,
+    private ExpressionTreeToJavaExpressionVisitor(
+        TypeMirror enclosingType,
+        @Nullable ThisReference thisReference,
         @Nullable List<FormalParameter> parameters,
         @Nullable TreePath localVarPath,
-        @Nullable ThisReference thisReference,
-        TypeMirror enclosingType,
-        TreePath pathToCompilationUnit) {
+        TreePath pathToCompilationUnit,
+        ProcessingEnvironment env) {
+      this.pathToCompilationUnit = pathToCompilationUnit;
+      this.localVarPath = localVarPath;
       this.env = env;
       this.types = env.getTypeUtils();
-      this.resolver = new Resolver(env);
-      this.parameters = parameters;
-      this.localVarPath = localVarPath;
-      this.thisReference = thisReference;
-      this.enclosingType = enclosingType;
-      this.pathToCompilationUnit = pathToCompilationUnit;
       this.stringTypeMirror = ElementUtils.getTypeElement(env, String.class).asType();
       this.booleanTypeMirror = types.getPrimitiveType(TypeKind.BOOLEAN);
+      this.enclosingType = enclosingType;
+      this.thisReference = thisReference;
+      this.parameters = parameters;
     }
 
     /**
      * Converts a Javac {@link ExpressionTree} to a {@link JavaExpression}.
      *
-     * @param tree the Javac {@link ExpressionTree} to convert
+     * @param exprTree the Javac {@link ExpressionTree} to convert
      * @param enclosingType type of the class that encloses the JavaExpression
      * @param thisReference a JavaExpression to which to parse "this", or null if "this" should not
      *     appear in the expression
@@ -276,18 +277,18 @@ public class JavaExpressionParseUtil {
      *     JavaExpression}
      */
     public static JavaExpression convert(
-        ExpressionTree tree,
-        ProcessingEnvironment env,
+        ExpressionTree exprTree,
+        TypeMirror enclosingType,
+        @Nullable ThisReference thisReference,
         @Nullable List<FormalParameter> parameters,
         @Nullable TreePath localVarPath,
-        @Nullable ThisReference thisReference,
-        TypeMirror enclosingType,
-        TreePath pathToCompilationUnit)
+        TreePath pathToCompilationUnit,
+        ProcessingEnvironment env)
         throws JavaExpressionParseException {
       try {
-        return tree.accept(
+        return exprTree.accept(
             new ExpressionTreeToJavaExpressionVisitor(
-                env, parameters, localVarPath, thisReference, enclosingType, pathToCompilationUnit),
+                enclosingType, thisReference, parameters, localVarPath, pathToCompilationUnit, env),
             null);
       } catch (ParseRuntimeException e) {
         // Convert unchecked to checked exception. Visitor methods can't throw checked
@@ -297,30 +298,23 @@ public class JavaExpressionParseUtil {
       }
     }
 
+    /**
+     * Initializes the {@code resolver} field if necessary. Does nothing on invocations after the
+     * first.
+     */
+    @EnsuresNonNull("resolver")
+    private void setResolverField() {
+      if (resolver == null) {
+        resolver = new Resolver(env);
+      }
+    }
+
+    /** If the expression is not supported, throw a {@link ParseRuntimeException} by default. */
     @Override
-    public JavaExpression visitNewArray(NewArrayTree node, Void unused) {
-      List<JavaExpression> dimensions = new ArrayList<>();
-      for (ExpressionTree dim : node.getDimensions()) {
-        dimensions.add(dim == null ? null : dim.accept(this, null));
-      }
-      if (dimensions.isEmpty()) {
-        dimensions.add(null);
-      }
-      List<JavaExpression> initializers = new ArrayList<>();
-      if (node.getInitializers() != null) {
-        for (ExpressionTree init : node.getInitializers()) {
-          initializers.add(init.accept(this, null));
-        }
-      }
-      TypeMirror arrayType = convertTreeToTypeMirror((JCTree) node.getType());
-      if (arrayType == null) {
-        throw new ParseRuntimeException(
-            constructJavaExpressionParseError(node.getType().toString(), "type not parsable"));
-      }
-      for (int i = 0; i < dimensions.size(); i++) {
-        arrayType = TypesUtils.createArrayType(arrayType, env.getTypeUtils());
-      }
-      return new ArrayCreation(arrayType, dimensions, initializers);
+    protected JavaExpression defaultAction(com.sun.source.tree.Tree treeNode, Void unused) {
+      throw new ParseRuntimeException(
+          constructJavaExpressionParseError(
+              treeNode.toString(), treeNode.getClass() + " is not a supported expression"));
     }
 
     @Override
@@ -354,8 +348,35 @@ public class JavaExpressionParseUtil {
     }
 
     @Override
+    public JavaExpression visitParenthesized(ParenthesizedTree node, Void unused) {
+      // Handles expressions inside parentheses
+      return node.getExpression().accept(this, null);
+    }
+
+    @Override
+    public JavaExpression visitArrayAccess(ArrayAccessTree node, Void unused) {
+      // Handles array[index] expressions
+      JavaExpression array = node.getExpression().accept(this, null);
+      TypeMirror arrayType = array.getType();
+      if (arrayType.getKind() != TypeKind.ARRAY) {
+        throw new ParseRuntimeException(
+            constructJavaExpressionParseError(
+                node.toString(),
+                String.format(
+                    "expected an array, found %s of type %s [%s]",
+                    array, arrayType, arrayType.getKind())));
+      }
+      TypeMirror componentType = ((ArrayType) arrayType).getComponentType();
+
+      JavaExpression index = node.getIndex().accept(this, null);
+
+      return new ArrayAccess(componentType, array, index);
+    }
+
+    @Override
     public JavaExpression visitIdentifier(IdentifierTree node, Void unused) {
       String s = node.getName().toString();
+      setResolverField();
       // this and super logic
       if (s.equals("this") || s.equals("super")) {
         if (thisReference == null) {
@@ -434,6 +455,138 @@ public class JavaExpressionParseUtil {
     }
 
     /**
+     * If {@code s} a parameter expressed using the {@code #NN} syntax, then returns a
+     * JavaExpression for the given parameter; that is, returns an element of {@code parameters}.
+     * Otherwise, returns {@code null}.
+     *
+     * @param s a String that starts with PARAMETER_PREFIX
+     * @return the JavaExpression for the given parameter or {@code null} if {@code s} is not a
+     *     parameter
+     */
+    private @Nullable JavaExpression getParameterJavaExpression(String s) {
+      if (!s.startsWith(PARAMETER_PREFIX)) {
+        return null;
+      }
+      if (parameters == null) {
+        throw new ParseRuntimeException(
+            constructJavaExpressionParseError(s, "no parameters found"));
+      }
+      int idx = Integer.parseInt(s.substring(PARAMETER_PREFIX_LENGTH));
+
+      if (idx == 0) {
+        throw new ParseRuntimeException(
+            constructJavaExpressionParseError(
+                "#0", "Use \"this\" for the receiver or \"#1\" for the first formal parameter"));
+      }
+      if (idx > parameters.size()) {
+        throw new ParseRuntimeException(
+            new JavaExpressionParseUtil.JavaExpressionParseException(
+                "flowexpr.parse.index.too.big", Integer.toString(idx)));
+      }
+      return parameters.get(idx - 1);
+    }
+
+    /**
+     * If {@code identifier} is the simple class name of any inner class of {@code type}, return the
+     * {@link ClassName} for the inner class. If not, return null.
+     *
+     * @param type type to search for {@code identifier}
+     * @param identifier possible simple class name
+     * @return the {@code ClassName} for {@code identifier}, or null if it is not a simple class
+     *     name
+     */
+    protected @Nullable ClassName getIdentifierAsInnerClassName(
+        TypeMirror type, String identifier) {
+      if (type.getKind() != TypeKind.DECLARED) {
+        return null;
+      }
+
+      Element outerClass = ((DeclaredType) type).asElement();
+      for (Element memberElement : outerClass.getEnclosedElements()) {
+        if (!(memberElement.getKind().isClass() || memberElement.getKind().isInterface())) {
+          continue;
+        }
+        if (memberElement.getSimpleName().contentEquals(identifier)) {
+          return new ClassName(ElementUtils.getType(memberElement));
+        }
+      }
+      return null;
+    }
+
+    /**
+     * If {@code identifier} is a class name with that can be referenced using only its simple name
+     * within {@code enclosingType}, return the {@link ClassName} for the class. If not, return
+     * null.
+     *
+     * <p>{@code identifier} may be
+     *
+     * <ol>
+     *   <li>the simple name of {@code type}.
+     *   <li>the simple name of a class declared in {@code type} or in an enclosing type of {@code
+     *       type}.
+     *   <li>the simple name of a class in the java.lang package.
+     *   <li>the simple name of a class in the unnamed package.
+     * </ol>
+     *
+     * @param identifier possible class name
+     * @return the {@code ClassName} for {@code identifier}, or null if it is not a class name
+     */
+    protected @Nullable ClassName getIdentifierAsUnqualifiedClassName(String identifier) {
+      // Is identifier an inner class of enclosingType or of any enclosing class of
+      // enclosingType?
+      TypeMirror searchType = enclosingType;
+      while (searchType.getKind() == TypeKind.DECLARED) {
+        DeclaredType searchDeclaredType = (DeclaredType) searchType;
+        if (searchDeclaredType.asElement().getSimpleName().contentEquals(identifier)) {
+          return new ClassName(searchType);
+        }
+        ClassName className = getIdentifierAsInnerClassName(searchType, identifier);
+        if (className != null) {
+          return className;
+        }
+        searchType = getTypeOfEnclosingClass(searchDeclaredType);
+      }
+
+      setResolverField();
+
+      if (enclosingType.getKind() == TypeKind.DECLARED) {
+        // Is identifier in the same package as this?
+        Symbol.PackageSymbol packageSymbol =
+            (Symbol.PackageSymbol)
+                ElementUtils.enclosingPackage(((DeclaredType) enclosingType).asElement());
+        Symbol.ClassSymbol classSymbol =
+            resolver.findClassInPackage(identifier, packageSymbol, pathToCompilationUnit);
+        if (classSymbol != null) {
+          return new ClassName(classSymbol.asType());
+        }
+      }
+      // Is identifier a simple name for a class in java.lang?
+      Symbol.PackageSymbol packageSymbol = resolver.findPackage("java.lang", pathToCompilationUnit);
+      if (packageSymbol == null) {
+        throw new BugInCF("Can't find java.lang package.");
+      }
+      Symbol.ClassSymbol classSymbol =
+          resolver.findClassInPackage(identifier, packageSymbol, pathToCompilationUnit);
+      if (classSymbol != null) {
+        return new ClassName(classSymbol.asType());
+      }
+
+      // Is identifier a class in the unnamed package?
+      Element classElem = resolver.findClass(identifier, pathToCompilationUnit);
+      if (classElem != null) {
+        PackageElement pkg = ElementUtils.enclosingPackage(classElem);
+        if (pkg != null && pkg.isUnnamed()) {
+          TypeMirror classType = ElementUtils.getType(classElem);
+          if (classType != null) {
+            return new ClassName(classType);
+          }
+        }
+      }
+
+      return null;
+    }
+
+    /**
      * Return the {@link FieldAccess} expression for the field with name {@code identifier} accessed
      * via {@code receiverExpr}. If no such field exists, then {@code null} is returned.
      *
@@ -444,6 +597,7 @@ public class JavaExpressionParseUtil {
      */
     protected @Nullable FieldAccess getIdentifierAsFieldAccess(
         JavaExpression receiverExpr, String identifier) {
+      setResolverField();
       // Find the field element.
       TypeMirror enclosingTypeOfField = receiverExpr.getType();
       VariableElement fieldElem;
@@ -523,6 +677,7 @@ public class JavaExpressionParseUtil {
 
     @Override
     public JavaExpression visitMethodInvocation(MethodInvocationTree node, Void unused) {
+      setResolverField();
       ExpressionTree methodSelect = node.getMethodSelect();
       List<? extends ExpressionTree> args = node.getArguments();
 
@@ -604,8 +759,55 @@ public class JavaExpressionParseUtil {
       }
     }
 
+    /**
+     * Returns the ExecutableElement for a method, or throws an exception.
+     *
+     * <p>(This method takes into account autoboxing.)
+     *
+     * @param methodName the method name
+     * @param receiverType the receiver type
+     * @param pathToCompilationUnit the path to the compilation unit
+     * @param arguments the arguments
+     * @param resolver the resolver
+     * @return the ExecutableElement for a method, or throws an exception
+     * @throws JavaExpressionParseException if the string cannot be parsed as a method name
+     */
+    private ExecutableElement getMethodElement(
+        String methodName,
+        TypeMirror receiverType,
+        TreePath pathToCompilationUnit,
+        List<JavaExpression> arguments,
+        Resolver resolver)
+        throws JavaExpressionParseException {
+
+      List<TypeMirror> argumentTypes = CollectionsPlume.mapList(JavaExpression::getType, arguments);
+
+      if (receiverType.getKind() == TypeKind.ARRAY) {
+        ExecutableElement element =
+            resolver.findMethod(methodName, receiverType, pathToCompilationUnit, argumentTypes);
+        if (element == null) {
+          throw constructJavaExpressionParseError(methodName, "no such method");
+        }
+        return element;
+      }
+
+      // Search for method in each enclosing class.
+      while (receiverType.getKind() == TypeKind.DECLARED) {
+        ExecutableElement element =
+            resolver.findMethod(methodName, receiverType, pathToCompilationUnit, argumentTypes);
+        if (element != null) {
+          return element;
+        }
+        receiverType = getTypeOfEnclosingClass((DeclaredType) receiverType);
+      }
+
+      // Method not found.
+      throw constructJavaExpressionParseError(methodName, "no such method");
+    }
+
     @Override
     public JavaExpression visitMemberSelect(MemberSelectTree node, Void unused) {
+      setResolverField();
       // Handle class literal (e.g., SomeClass.class)
       if (node.getIdentifier().contentEquals("class")) {
         Tree selected = node.getExpression();
@@ -658,29 +860,29 @@ public class JavaExpressionParseUtil {
     }
 
     @Override
-    public JavaExpression visitArrayAccess(ArrayAccessTree node, Void unused) {
-      // Handles array[index] expressions
-      JavaExpression array = node.getExpression().accept(this, null);
-      TypeMirror arrayType = array.getType();
-      if (arrayType.getKind() != TypeKind.ARRAY) {
-        throw new ParseRuntimeException(
-            constructJavaExpressionParseError(
-                node.toString(),
-                String.format(
-                    "expected an array, found %s of type %s [%s]",
-                    array, arrayType, arrayType.getKind())));
+    public JavaExpression visitNewArray(NewArrayTree node, Void unused) {
+      List<JavaExpression> dimensions = new ArrayList<>();
+      for (ExpressionTree dim : node.getDimensions()) {
+        dimensions.add(dim == null ? null : dim.accept(this, null));
       }
-      TypeMirror componentType = ((ArrayType) arrayType).getComponentType();
-
-      JavaExpression index = node.getIndex().accept(this, null);
-
-      return new ArrayAccess(componentType, array, index);
-    }
-
-    @Override
-    public JavaExpression visitParenthesized(ParenthesizedTree node, Void unused) {
-      // Handles expressions inside parentheses
-      return node.getExpression().accept(this, null);
+      if (dimensions.isEmpty()) {
+        dimensions.add(null);
+      }
+      List<JavaExpression> initializers = new ArrayList<>();
+      if (node.getInitializers() != null) {
+        for (ExpressionTree init : node.getInitializers()) {
+          initializers.add(init.accept(this, null));
+        }
+      }
+      TypeMirror arrayType = convertTreeToTypeMirror((JCTree) node.getType());
+      if (arrayType == null) {
+        throw new ParseRuntimeException(
+            constructJavaExpressionParseError(node.getType().toString(), "type not parsable"));
+      }
+      for (int i = 0; i < dimensions.size(); i++) {
+        arrayType = TypesUtils.createArrayType(arrayType, env.getTypeUtils());
+      }
+      return new ArrayCreation(arrayType, dimensions, initializers);
     }
 
     @Override
@@ -739,144 +941,6 @@ public class JavaExpressionParseUtil {
                 String.format("inconsistent types %s %s for %s", leftType, rightType, node)));
       }
       return new BinaryOperation(type, operator, leftJe, rightJe);
-    }
-
-    /** If the expression is not supported, throw a {@link ParseRuntimeException} by default. */
-    @Override
-    protected JavaExpression defaultAction(Tree node, Void unused) {
-      throw new ParseRuntimeException(
-          constructJavaExpressionParseError(
-              node.toString(), node.getClass() + " is not a supported expression"));
-    }
-
-    /**
-     * If {@code identifier} is the simple class name of any inner class of {@code type}, return the
-     * {@link ClassName} for the inner class. If not, return null.
-     *
-     * @param type type to search for {@code identifier}
-     * @param identifier possible simple class name
-     * @return the {@code ClassName} for {@code identifier}, or null if it is not a simple class
-     *     name
-     */
-    protected @Nullable ClassName getIdentifierAsInnerClassName(
-        TypeMirror type, String identifier) {
-      if (type.getKind() != TypeKind.DECLARED) {
-        return null;
-      }
-
-      Element outerClass = ((DeclaredType) type).asElement();
-      for (Element memberElement : outerClass.getEnclosedElements()) {
-        if (!(memberElement.getKind().isClass() || memberElement.getKind().isInterface())) {
-          continue;
-        }
-        if (memberElement.getSimpleName().contentEquals(identifier)) {
-          return new ClassName(ElementUtils.getType(memberElement));
-        }
-      }
-      return null;
-    }
-
-    /**
-     * If {@code s} a parameter expressed using the {@code #NN} syntax, then returns a
-     * JavaExpression for the given parameter; that is, returns an element of {@code parameters}.
-     * Otherwise, returns {@code null}.
-     *
-     * @param s a String that starts with PARAMETER_PREFIX
-     * @return the JavaExpression for the given parameter or {@code null} if {@code s} is not a
-     *     parameter
-     */
-    private @Nullable JavaExpression getParameterJavaExpression(String s) {
-      if (!s.startsWith(PARAMETER_PREFIX)) {
-        return null;
-      }
-      if (parameters == null) {
-        throw new ParseRuntimeException(
-            constructJavaExpressionParseError(s, "no parameters found"));
-      }
-      int idx = Integer.parseInt(s.substring(PARAMETER_PREFIX_LENGTH));
-
-      if (idx == 0) {
-        throw new ParseRuntimeException(
-            constructJavaExpressionParseError(
-                "#0", "Use \"this\" for the receiver or \"#1\" for the first formal parameter"));
-      }
-      if (idx > parameters.size()) {
-        throw new ParseRuntimeException(
-            new JavaExpressionParseUtil.JavaExpressionParseException(
-                "flowexpr.parse.index.too.big", Integer.toString(idx)));
-      }
-      return parameters.get(idx - 1);
-    }
-
-    /**
-     * If {@code identifier} is a class name with that can be referenced using only its simple name
-     * within {@code enclosingType}, return the {@link ClassName} for the class. If not, return
-     * null.
-     *
-     * <p>{@code identifier} may be
-     *
-     * <ol>
-     *   <li>the simple name of {@code type}.
-     *   <li>the simple name of a class declared in {@code type} or in an enclosing type of {@code
-     *       type}.
-     *   <li>the simple name of a class in the java.lang package.
-     *   <li>the simple name of a class in the unnamed package.
-     * </ol>
-     *
-     * @param identifier possible class name
-     * @return the {@code ClassName} for {@code identifier}, or null if it is not a class name
-     */
-    protected @Nullable ClassName getIdentifierAsUnqualifiedClassName(String identifier) {
-      // Is identifier an inner class of enclosingType or of any enclosing class of
-      // enclosingType?
-      TypeMirror searchType = enclosingType;
-      while (searchType.getKind() == TypeKind.DECLARED) {
-        DeclaredType searchDeclaredType = (DeclaredType) searchType;
-        if (searchDeclaredType.asElement().getSimpleName().contentEquals(identifier)) {
-          return new ClassName(searchType);
-        }
-        ClassName className = getIdentifierAsInnerClassName(searchType, identifier);
-        if (className != null) {
-          return className;
-        }
-        searchType = getTypeOfEnclosingClass(searchDeclaredType);
-      }
-
-      if (enclosingType.getKind() == TypeKind.DECLARED) {
-        // Is identifier in the same package as this?
-        Symbol.PackageSymbol packageSymbol =
-            (Symbol.PackageSymbol)
-                ElementUtils.enclosingPackage(((DeclaredType) enclosingType).asElement());
-        Symbol.ClassSymbol classSymbol =
-            resolver.findClassInPackage(identifier, packageSymbol, pathToCompilationUnit);
-        if (classSymbol != null) {
-          return new ClassName(classSymbol.asType());
-        }
-      }
-      // Is identifier a simple name for a class in java.lang?
-      Symbol.PackageSymbol packageSymbol = resolver.findPackage("java.lang", pathToCompilationUnit);
-      if (packageSymbol == null) {
-        throw new BugInCF("Can't find java.lang package.");
-      }
-      Symbol.ClassSymbol classSymbol =
-          resolver.findClassInPackage(identifier, packageSymbol, pathToCompilationUnit);
-      if (classSymbol != null) {
-        return new ClassName(classSymbol.asType());
-      }
-
-      // Is identifier a class in the unnamed package?
-      Element classElem = resolver.findClass(identifier, pathToCompilationUnit);
-      if (classElem != null) {
-        PackageElement pkg = ElementUtils.enclosingPackage(classElem);
-        if (pkg != null && pkg.isUnnamed()) {
-          TypeMirror classType = ElementUtils.getType(classElem);
-          if (classType != null) {
-            return new ClassName(classType);
-          }
-        }
-      }
-
-      return null;
     }
 
     /**
@@ -939,52 +1003,6 @@ public class JavaExpressionParseUtil {
         return types.getArrayType(componentType);
       }
       return null;
-    }
-
-    /**
-     * Returns the ExecutableElement for a method, or throws an exception.
-     *
-     * <p>(This method takes into account autoboxing.)
-     *
-     * @param methodName the method name
-     * @param receiverType the receiver type
-     * @param pathToCompilationUnit the path to the compilation unit
-     * @param arguments the arguments
-     * @param resolver the resolver
-     * @return the ExecutableElement for a method, or throws an exception
-     * @throws JavaExpressionParseException if the string cannot be parsed as a method name
-     */
-    private ExecutableElement getMethodElement(
-        String methodName,
-        TypeMirror receiverType,
-        TreePath pathToCompilationUnit,
-        List<JavaExpression> arguments,
-        Resolver resolver)
-        throws JavaExpressionParseException {
-
-      List<TypeMirror> argumentTypes = CollectionsPlume.mapList(JavaExpression::getType, arguments);
-
-      if (receiverType.getKind() == TypeKind.ARRAY) {
-        ExecutableElement element =
-            resolver.findMethod(methodName, receiverType, pathToCompilationUnit, argumentTypes);
-        if (element == null) {
-          throw constructJavaExpressionParseError(methodName, "no such method");
-        }
-        return element;
-      }
-
-      // Search for method in each enclosing class.
-      while (receiverType.getKind() == TypeKind.DECLARED) {
-        ExecutableElement element =
-            resolver.findMethod(methodName, receiverType, pathToCompilationUnit, argumentTypes);
-        if (element != null) {
-          return element;
-        }
-        receiverType = getTypeOfEnclosingClass((DeclaredType) receiverType);
-      }
-
-      // Method not found.
-      throw constructJavaExpressionParseError(methodName, "no such method");
     }
   }
 
