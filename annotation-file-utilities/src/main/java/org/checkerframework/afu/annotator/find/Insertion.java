@@ -203,7 +203,7 @@ public abstract class Insertion {
    * Sets whether this insertion has already been inserted into source code.
    *
    * @param inserted {@code true} if this insertion has already been inserted, {@code false}
-   *     otherwise.
+   *     otherwise
    */
   public void setInserted(boolean inserted) {
     if (Main.temporaryDebug) {
@@ -256,7 +256,7 @@ public abstract class Insertion {
   /**
    * Removes the leading package.
    *
-   * @return given <code>@com.foo.bar(baz)</code> it returns the pair <code>{ com.foo, @bar(baz) }
+   * @return given {@code @com.foo.bar(baz)} it returns the pair <code>{ com.foo, @bar(baz) }
    *     </code>.
    */
   public static IPair<String, String> removePackage(String s) {

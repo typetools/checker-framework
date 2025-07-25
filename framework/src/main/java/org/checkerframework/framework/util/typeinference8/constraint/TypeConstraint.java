@@ -42,7 +42,7 @@ public abstract class TypeConstraint implements Constraint {
   public @Nullable String source;
 
   /**
-   * Creates a type constraint
+   * Creates a type constraint.
    *
    * @param source a string describing where this constraint came from
    * @param T the type of the right hand side of the constraint
@@ -55,7 +55,7 @@ public abstract class TypeConstraint implements Constraint {
   }
 
   /**
-   * Creates a type constraint
+   * Creates a type constraint.
    *
    * @param parent the constraint whose reduction created this constraint
    * @param T the type of the right hand side of the constraint
@@ -97,7 +97,7 @@ public abstract class TypeConstraint implements Constraint {
   /**
    * Returns T which is the type on the right hand side of the constraint.
    *
-   * @return T, that is the type on the right hand side of the constraint
+   * @return t, that is the type on the right hand side of the constraint
    */
   public AbstractType getT() {
     return T;

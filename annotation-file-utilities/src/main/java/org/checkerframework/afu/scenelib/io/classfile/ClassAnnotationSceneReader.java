@@ -583,16 +583,16 @@ public class ClassAnnotationSceneReader extends CodeOffsetAdapter {
      * @param visible true if this annotation is visible at run time
      * @param aElement the AElement into which the annotation visited should be inserted
      * @param annotationWriter the AnnotationWriter passed by the caller
-     * @param typeRef A reference to the annotated type. This has information about the target type,
+     * @param typeRef a reference to the annotated type. This has information about the target type,
      *     param index and bound index for the type annotation. @see org.objectweb.asm.TypeReference
-     * @param typePath The path to the annotated type argument, wildcard bound, array element type,
+     * @param typePath the path to the annotated type argument, wildcard bound, array element type,
      *     or static inner type within 'typeRef'. May be null if the annotation targets 'typeRef' as
      *     a whole.
      * @param start the start of the scopes of the element being visited. Used only for
      *     TypeReference#LOCAL_VARIABLE and TypeReference#RESOURCE_VARIABLE.
      * @param end the end of the scopes of the element being visited. Used only for
      *     TypeReference#LOCAL_VARIABLE and TypeReference#RESOURCE_VARIABLE.
-     * @param index The indices of the element being visited in the classfile. Used only for
+     * @param index the indices of the element being visited in the classfile. Used only for
      *     TypeReference#LOCAL_VARIABLE and TypeReference#RESOURCE_VARIABLE.
      */
     TypeAnnotationSceneReader(
@@ -629,16 +629,16 @@ public class ClassAnnotationSceneReader extends CodeOffsetAdapter {
      * @param visible true if this annotation is visible at run time
      * @param aElement the AElement into which the annotation visited should be inserted
      * @param annotationWriter the AnnotationWriter passed by the caller
-     * @param typeRef A reference to the annotated type. This has information about the target type,
+     * @param typeRef a reference to the annotated type. This has information about the target type,
      *     param index and bound index for the type annotation. @see org.objectweb.asm.TypeReference
-     * @param typePath The path to the annotated type argument, wildcard bound, array element type,
+     * @param typePath the path to the annotated type argument, wildcard bound, array element type,
      *     or static inner type within 'typeRef'. May be null if the annotation targets 'typeRef' as
      *     a whole.
      * @param start the start of the scopes of the element being visited. Used only for
      *     TypeReference#LOCAL_VARIABLE and TypeReference#RESOURCE_VARIABLE.
      * @param end the end of the scopes of the element being visited. Used only for
      *     TypeReference#LOCAL_VARIABLE and TypeReference#RESOURCE_VARIABLE.
-     * @param index The indices of the element being visited in the classfile. Used only for
+     * @param index the indices of the element being visited in the classfile. Used only for
      *     TypeReference#LOCAL_VARIABLE and TypeReference#RESOURCE_VARIABLE.
      * @param localVariableName the name of the local variable being visited; may be null
      */

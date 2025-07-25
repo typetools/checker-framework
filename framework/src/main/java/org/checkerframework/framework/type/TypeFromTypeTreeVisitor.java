@@ -260,7 +260,7 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
    * @param type type variable used to find declaration tree
    * @param f annotated type factory
    * @return the AnnotatedTypeVariable from the declaration of {@code type} or {@code type} if no
-   *     tree is found.
+   *     tree is found
    */
   private AnnotatedTypeVariable getTypeVariableFromDeclaration(
       AnnotatedTypeVariable type, AnnotatedTypeFactory f) {

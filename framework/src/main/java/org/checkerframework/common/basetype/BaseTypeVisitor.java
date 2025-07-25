@@ -270,7 +270,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   /** True if "-AcheckCastElementType" was passed on the command line. */
   private final boolean checkCastElementType;
 
-  /** True if "-AwarnRedundantAnnotations" was passed on the command line */
+  /** True if "-AwarnRedundantAnnotations" was passed on the command line. */
   protected final boolean warnRedundantAnnotations;
 
   /** The tree of the enclosing method that is currently being visited, if any. */
@@ -1693,7 +1693,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    *
    * @param tree an AST node
    * @param type get the explicit annotation on this type and compare it with the default one for
-   *     this type and location.
+   *     this type and location
    */
   protected void warnRedundantAnnotations(Tree tree, AnnotatedTypeMirror type) {
     if (!warnRedundantAnnotations) {
@@ -1807,7 +1807,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Return true if the given annotation is a type annotation: that is, its definition is
+   * Returns true if the given annotation is a type annotation: that is, its definition is
    * meta-annotated with {@code @Target({TYPE_USE,....})}.
    */
   private boolean isTypeAnnotation(AnnotationTree anno) {
@@ -2728,7 +2728,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    *     parameter
    * @param top the top qualifier of the hierarchy to check
    * @return true if casting the {@code exprType} to {@code castType}, a type with a qualifier
-   *     parameter, is legal.
+   *     parameter, is legal
    */
   private boolean isTypeCastSafeInvariant(
       AnnotatedTypeMirror castType, AnnotatedTypeMirror exprType, AnnotationMirror top) {
@@ -3488,7 +3488,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
               false);
 
   /**
-   * Return true iff there are two annotated types (anywhere in any ATM) such that their toStrings
+   * Returns true iff there are two annotated types (anywhere in any ATM) such that their toStrings
    * are the same but their verbose toStrings differ. If so, the Checker Framework prints types
    * verbosely.
    *

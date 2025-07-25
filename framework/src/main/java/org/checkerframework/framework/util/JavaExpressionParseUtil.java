@@ -612,8 +612,8 @@ public class JavaExpressionParseUtil {
     }
 
     /**
-     * Return the {@link FieldAccess} expression for the field with name {@code identifier} accessed
-     * via {@code receiverExpr}. If no such field exists, then {@code null} is returned.
+     * Returns the {@link FieldAccess} expression for the field with name {@code identifier}
+     * accessed via {@code receiverExpr}. If no such field exists, then {@code null} is returned.
      *
      * @param receiverExpr the receiver of the field access; the expression used to access the field
      * @param identifier possibly a field name
@@ -1194,7 +1194,7 @@ public class JavaExpressionParseUtil {
     }
 
     /**
-     * Return a DiagMessage that can be used for error reporting.
+     * Returns a DiagMessage that can be used for error reporting.
      *
      * @return a DiagMessage that can be used for error reporting
      */
@@ -1226,7 +1226,7 @@ public class JavaExpressionParseUtil {
    * @param expr the string that could not be parsed
    * @param explanation an explanation of the parse failure
    * @return a {@link JavaExpressionParseException} for the expression {@code expr} with explanation
-   *     {@code explanation}.
+   *     {@code explanation}
    */
   public static JavaExpressionParseException constructJavaExpressionParseError(
       String expr, String explanation) {

@@ -236,9 +236,9 @@ public abstract class DefCollector {
 
   /**
    * Calls {@link #visitAnnotationDef} on the definitions collected from the scene that was passed
-   * to the constructor. Visiting is done in topological order: if the definition of <code>A</code>
-   * contains a subannotation of type <code>B</code>, then <code>B</code> is guaranteed to be
-   * visited before <code>A</code>.
+   * to the constructor. Visiting is done in topological order: if the definition of {@code A}
+   * contains a subannotation of type {@code B}, then {@code B} is guaranteed to be visited before
+   * {@code A}.
    */
   public final void visit() {
     for (AnnotationDef d : defs) {

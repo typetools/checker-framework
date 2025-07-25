@@ -842,7 +842,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   }
 
   /**
-   * Return a list of stub files to be treated as if they had been written in a {@code @StubFiles}
+   * Returns a list of stub files to be treated as if they had been written in a {@code @StubFiles}
    * annotation.
    *
    * @return stub files to be treated as if they had been written in a {@code @StubFiles} annotation
@@ -900,7 +900,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   }
 
   /**
-   * Return the given skip pattern if supplied by the user, or else a pattern that matches nothing.
+   * Returns the given skip pattern if supplied by the user, or else a pattern that matches nothing.
    *
    * @param patternName "skipUses" or "skipDefs"
    * @param options the command-line options
@@ -914,7 +914,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   }
 
   /**
-   * Return the given only pattern if supplied by the user, or else a pattern that matches
+   * Returns the given only pattern if supplied by the user, or else a pattern that matches
    * everything.
    *
    * @param patternName "onlyUses" or "onlyDefs"
@@ -1205,10 +1205,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   }
 
   /**
-   * Get the list of all subcheckers (if any). This list is only non-empty for the one checker that
-   * runs all other subcheckers. These are recursively instantiated via instantiateSubcheckers() the
-   * first time this method is called if field {@code subcheckers} is null. Assumes all checkers run
-   * on the same thread.
+   * Returns the list of all subcheckers (if any). This list is only non-empty for the one checker
+   * that runs all other subcheckers. These are recursively instantiated via
+   * instantiateSubcheckers() the first time this method is called if field {@code subcheckers} is
+   * null. Assumes all checkers run on the same thread.
    *
    * @return the list of all subcheckers (if any)
    */
@@ -1226,7 +1226,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   }
 
   /**
-   * Get the shared TreePathCacher instance.
+   * Returns the shared TreePathCacher instance.
    *
    * @return the shared TreePathCacher instance
    */
@@ -2060,7 +2060,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   }
 
   /**
-   * Get the lint options from the {@link SupportedLintOptions} annotation on this class.
+   * Returns the lint options from the {@link SupportedLintOptions} annotation on this class.
    *
    * @return the lint options from the {@link SupportedLintOptions} annotation
    */
@@ -2844,7 +2844,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   }
 
   /**
-   * Return true if the element has an {@code @AnnotatedFor} annotation, for this checker or an
+   * Returns true if the element has an {@code @AnnotatedFor} annotation, for this checker or an
    * upstream checker that called this one.
    *
    * @param elt the source code element to check, or null
@@ -3228,7 +3228,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   //
 
   /**
-   * Return true to indicate that method {@link #shutdownHook} should be added as a shutdownHook of
+   * Returns true to indicate that method {@link #shutdownHook} should be added as a shutdownHook of
    * the JVM.
    *
    * @return true to add {@link #shutdownHook} as a shutdown hook of the JVM
@@ -3434,7 +3434,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   }
 
   /**
-   * Return the path to the current compilation unit.
+   * Returns the path to the current compilation unit.
    *
    * @return path to the current compilation unit
    */
