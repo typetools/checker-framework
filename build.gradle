@@ -92,7 +92,7 @@ ext {
     //  * Temporarily comment out "-Werror" elsewhere in this file
     //  * Repeatedly run `./gradlew clean compileJava` and fix all errors
     //  * Uncomment "-Werror"
-    errorprone : '2.40.0',
+    errorprone : '2.41.0',
   ]
 }
 
@@ -565,6 +565,8 @@ allprojects { currentProj ->
           //   implementation "com.google.errorprone:error_prone_core:${errorproneVersion}"
           // Adding that line in build.gradle causes a javac crash when running the Checker Framework.
           "-Xep:ASTHelpersSuggestions:OFF",
+          // Removing "public" from private class members loses information about the abstraction.
+          "-Xep:EffectivelyPrivate:OFF",
           // -Werror halts the build if Error Prone issues a warning, which ensures that
           // the errors get fixed.  On the downside, Error Prone (or maybe the compiler?)
           // stops as soon as it issues one warning, rather than outputting them all.
