@@ -19,6 +19,7 @@ plugins {
   // the JDK is 17 or later.
   id 'com.diffplug.spotless' version '7.2.1'
 }
+apply from: rootProject.file('release.gradle')
 
 // There is another `repositories { ... }` block below; if you change this one, change that one as well.
 repositories {
@@ -145,12 +146,13 @@ spotlessPredeclare {
 }
 
 allprojects { currentProj ->
+  // TODO: doc
   // Increment the minor version (second number) rather than just the patch
   // level (third number) if:
   //   * any new checkers have been added, or
   //   * backward-incompatible changes have been made to APIs or elsewhere.
   // To make a snapshot release, version should end in "-SNAPSHOT", then: ./gradlew publish
-  version = '3.49.6-SNAPSHOT'
+  version = releaseVersion
 
   tasks.withType(JavaCompile).configureEach {
     options.fork = true

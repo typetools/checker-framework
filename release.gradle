@@ -1,0 +1,54 @@
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+
+ext {
+  currentDate = LocalDateTime.now().format(DateTimeFormatter.ofPattern("d MMM yyyy"))
+  releaseVersionRegex = "\\d\\.\\d+\\.\\d+(?:\\.\\d)"
+  releaseVersion = '3.49.6-SNAPSHOT'
+}
+
+
+tasks.register('updateVersionNumbers', Copy) {
+  into layout.buildDirectory.dir('docs/')
+  from('docs/') {
+    include 'checker-framework-quick-start.html',
+        'checker-framework-webpage.html',
+        'manual/checker-framework/introduction.tex'
+
+    filter { String line ->
+      line = line.replaceAll("checker-framework-${releaseVersionRegex}{0,1}", "checker-framework-${releaseVersion}")
+      line.replaceAll("<!-- checker-framework-date -->(.*)<!-- /checker-framework-date -->", "<!-- checker-framework-date -->${currentDate}<!-- /checker-framework-date -->")
+    }
+  }
+  from('docs/manual/checker-framework/external-tools.tex') {
+    filter { String line ->
+      line = line.replaceAll("checker-framework-${releaseVersionRegex}{0,1}", "checker-framework-${releaseVersion}");
+
+      line = line.replaceAll("checker-${releaseVersionRegex}{0,1}", "checker-${releaseVersion}");
+      line = line.replaceAll("checker-qual-${releaseVersionRegex}{0,1}", "checker-qual-${releaseVersion}");
+      line = line.replaceAll("checker-util-${releaseVersionRegex}{0,1}", "checker-util-${releaseVersion}");
+
+      line = line.replaceAll("checker/${releaseVersionRegex}{0,1}", "checker/${releaseVersion}");
+      line = line.replaceAll("checker-qual/${releaseVersionRegex}{0,1}", "checker-qual/${releaseVersion}");
+      line = line.replaceAll("checker-util/${releaseVersionRegex}{0,1}", "checker-util/${releaseVersion}");
+
+      line = line.replaceAll("/${releaseVersionRegex}{0,1}/jar", "/${releaseVersion}/");
+
+      line.replaceAll("ext.checkerFrameworkVersion = '${releaseVersionRegex}{0,1}", "ext.checkerFrameworkVersion = '${releaseVersion}");
+    }
+  }
+
+  from('docs/manual/checker-framework/manual.tex') {
+    filter { String line ->
+      line = line.replaceAll("ReleaseInfo\\}\\{(.*)\\}", "ReleaseInfo}{${releaseVersion} (${currentDate})}");
+      line.replaceAll("ReleaseVersion\\}\\{(.*)\\}", "ReleaseVersion}{${releaseVersion}}");
+    }
+  }
+  from('docs/examples/MavenExample/pom.xml') {
+
+    filter { String line ->
+      line.replaceAll("<!-- checker-framework-version -->(.*)<!-- /checker-framework-version -->", "<!-- checker-framework-version -->${releaseVersion}<!-- /checker-framework-version -->")
+    }
+  }
+}
+
