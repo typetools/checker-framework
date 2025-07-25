@@ -134,13 +134,13 @@ public class AnnotationStatistics extends SourceChecker {
 
   class Visitor extends SourceVisitor<Void, Void> {
 
-    /** Whether annotation locations should be printed. */
+    /** True if annotation locations should be printed. */
     private final boolean locations;
 
-    /** Whether annotation details should be printed. */
+    /** True if annotation details should be printed. */
     private final boolean annotations;
 
-    /** Whether only a summary should be printed. */
+    /** True if only a summary should be printed. */
     private final boolean annotationsummaryonly;
 
     /**

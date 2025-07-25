@@ -311,13 +311,13 @@ public class InferenceFactory {
   }
 
   /**
-   * Returns whether argumentTree is the tree at the leaf of path. If tree is a conditional
+   * Returns true if argumentTree is the tree at the leaf of path. If tree is a conditional
    * expression, isArgument is called recursively on the true and false expressions. If tree is a
    * switch expression isArgument is called recursively on all yielded expressions.
    *
    * @param path tree path might contain {@code argumentTree}
    * @param argumentTree an expression tree that might be in {@code path}
-   * @return whether argumentTree is the tree at the leaf of path
+   * @return true if argumentTree is the tree at the leaf of path
    */
   @SuppressWarnings("interning:not.interned") // Checking for exact object.
   private static boolean isArgument(TreePath path, ExpressionTree argumentTree) {

@@ -277,7 +277,7 @@ public final class TypesUtils {
    *
    * @param t1 the first type to test
    * @param t2 the second type to test
-   * @return whether the arguments are the same declared types
+   * @return true if the arguments are the same declared types
    */
   public static boolean areSameDeclaredTypes(Type.ClassType t1, Type.ClassType t2) {
     // Do a cheaper test first
@@ -292,7 +292,7 @@ public final class TypesUtils {
    *
    * @param left a type
    * @param right a type
-   * @return whether the arguments are the same primitive type
+   * @return true if the arguments are the same primitive type
    */
   public static boolean areSamePrimitiveTypes(TypeMirror left, TypeMirror right) {
     if (!isPrimitive(left) || !isPrimitive(right)) {
@@ -438,7 +438,7 @@ public final class TypesUtils {
   /**
    * Returns true iff the argument is an anonymous type.
    *
-   * @return whether the argument is an anonymous type
+   * @return true if the argument is an anonymous type
    */
   public static boolean isAnonymous(TypeMirror type) {
     return (type instanceof DeclaredType)
@@ -450,7 +450,7 @@ public final class TypesUtils {
    * Returns true iff the argument is a primitive type.
    *
    * @param type a type
-   * @return whether the argument is a primitive type
+   * @return true if the argument is a primitive type
    */
   public static boolean isPrimitive(TypeMirror type) {
     switch (type.getKind()) {
@@ -539,7 +539,7 @@ public final class TypesUtils {
    * Returns true iff the argument is an integral primitive type.
    *
    * @param type a type
-   * @return whether the argument is an integral primitive type
+   * @return true if the argument is an integral primitive type
    */
   public static boolean isIntegralPrimitive(TypeMirror type) {
     return TypeKindUtils.isIntegral(type.getKind());
@@ -560,7 +560,7 @@ public final class TypesUtils {
    * Returns true iff the argument is an integral primitive type.
    *
    * @param type a type
-   * @return whether the argument is an integral primitive type
+   * @return true if the argument is an integral primitive type
    */
   public static boolean isIntegralNumericPrimitive(TypeMirror type) {
     return TypeKindUtils.isIntegralNumeric(type.getKind());
@@ -619,7 +619,7 @@ public final class TypesUtils {
    * Returns true iff the argument is a boxed floating point type.
    *
    * @param type type to test
-   * @return whether the argument is a boxed floating point type
+   * @return true if the argument is a boxed floating point type
    */
   public static boolean isBoxedFloating(TypeMirror type) {
     if (type.getKind() != TypeKind.DECLARED) {
@@ -634,7 +634,7 @@ public final class TypesUtils {
    * Returns true iff the argument is a primitive floating point type.
    *
    * @param type type mirror
-   * @return whether the argument is a primitive floating point type
+   * @return true if the argument is a primitive floating point type
    */
   public static boolean isFloatingPrimitive(TypeMirror type) {
     switch (type.getKind()) {
@@ -658,7 +658,7 @@ public final class TypesUtils {
   }
 
   /**
-   * Returns whether a TypeMirror represents a class type.
+   * Returns true if a TypeMirror represents a class type.
    *
    * @param type a type that might be a class type
    * @return true if {@code} is a class type
@@ -668,11 +668,11 @@ public final class TypesUtils {
   }
 
   /**
-   * Returns whether or not {@code type} is a functional interface type (as defined in JLS 9.8).
+   * Returns true if {@code type} is a functional interface type (as defined in JLS 9.8).
    *
    * @param type possible functional interface type
    * @param env the processing environment
-   * @return whether or not {@code type} is a functional interface type (as defined in JLS 9.8)
+   * @return true if {@code type} is a functional interface type (as defined in JLS 9.8)
    */
   public static boolean isFunctionalInterface(TypeMirror type, ProcessingEnvironment env) {
     Context ctx = ((JavacProcessingEnvironment) env).getContext();
@@ -1420,10 +1420,10 @@ public final class TypesUtils {
   }
 
   /**
-   * Return whether or not {@code type} is raw.
+   * Returns true if {@code type} is raw.
    *
    * @param type the type to check
-   * @return whether or not {@code type} is raw
+   * @return true if {@code type} is raw
    */
   public static boolean isRaw(TypeMirror type) {
     if (type.getKind() != TypeKind.DECLARED) {

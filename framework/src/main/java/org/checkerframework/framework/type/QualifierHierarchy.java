@@ -45,7 +45,7 @@ public abstract class QualifierHierarchy {
   }
 
   /**
-   * Determine whether this QualifierHierarchy is valid.
+   * Returns true if this QualifierHierarchy is valid.
    *
    * @return true if this QualifierHierarchy is valid
    */
@@ -135,7 +135,7 @@ public abstract class QualifierHierarchy {
   // **********************************************************************
 
   /**
-   * Tests whether {@code subQualifier} is equal to or a sub-qualifier of {@code superQualifier},
+   * Returns true if {@code subQualifier} is equal to or a sub-qualifier of {@code superQualifier},
    * according to the type qualifier hierarchy, ignoring Java basetypes.
    *
    * <p>Clients should generally call {@link #isSubtypeShallow}. However, subtypes should generally
@@ -155,7 +155,7 @@ public abstract class QualifierHierarchy {
       AnnotationMirror subQualifier, AnnotationMirror superQualifier);
 
   /**
-   * Tests whether {@code subQualifier} is equal to or a sub-qualifier of {@code superQualifier},
+   * Returns true if {@code subQualifier} is equal to or a sub-qualifier of {@code superQualifier},
    * according to the type qualifier hierarchy, ignoring Java basetypes.
    *
    * <p>This method is for clients outside the framework, and should not be used by framework code.
@@ -170,7 +170,7 @@ public abstract class QualifierHierarchy {
   }
 
   /**
-   * Tests whether {@code subQualifier} is equal to or a sub-qualifier of {@code superQualifier},
+   * Returns true if {@code subQualifier} is equal to or a sub-qualifier of {@code superQualifier},
    * according to the type qualifier hierarchy. The types {@code subType} and {@code superType} are
    * not necessarily in a Java subtyping relationship with one another and are only used by this
    * method for special cases when qualifier subtyping depends on the Java basetype.
@@ -201,7 +201,7 @@ public abstract class QualifierHierarchy {
   }
 
   /**
-   * Tests whether {@code subQualifier} is equal to or a sub-qualifier of {@code superQualifier},
+   * Returns true if {@code subQualifier} is equal to or a sub-qualifier of {@code superQualifier},
    * according to the type qualifier hierarchy. The type {@code typeMirror} is only used by this
    * method for special cases when qualifier subtyping depends on the Java basetype.
    *
@@ -225,7 +225,7 @@ public abstract class QualifierHierarchy {
   }
 
   /**
-   * Tests whether all qualifiers in {@code subQualifiers} are a subqualifier or equal to the
+   * Returns true if all qualifiers in {@code subQualifiers} are a subqualifier or equal to the
    * qualifier in the same hierarchy in {@code superQualifiers}. The types {@code subType} and
    * {@code superType} are not necessarily in a Java subtyping relationship with one another and are
    * only used by this method for special cases when qualifier subtyping depends on the Java
@@ -263,7 +263,7 @@ public abstract class QualifierHierarchy {
   }
 
   /**
-   * Tests whether all qualifiers in {@code subQualifiers} are a subqualifier or equal to the
+   * Returns true if all qualifiers in {@code subQualifiers} are a subqualifier or equal to the
    * qualifier in the same hierarchy in {@code superQualifiers}. The types {@code subType} and
    * {@code superType} are not necessarily in a Java subtyping relationship with one another and are
    * only used by this method for special cases when qualifier subtyping depends on the Java
@@ -297,7 +297,7 @@ public abstract class QualifierHierarchy {
   }
 
   /**
-   * Tests whether all qualifiers in {@code subQualifiers} are a subqualifier of or equal to the
+   * Returns true if all qualifiers in {@code subQualifiers} are a subqualifier of or equal to the
    * qualifier in the same hierarchy in {@code superQualifiers}. The type {@code typeMirror} is only
    * used by this method for special cases when qualifier subtyping depends on the Java basetype.
    *

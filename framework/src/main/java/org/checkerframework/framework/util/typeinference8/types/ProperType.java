@@ -48,7 +48,7 @@ public class ProperType extends AbstractType {
    * @param type the annotated type
    * @param properType the java type
    * @param context the context
-   * @param ignoreAnnotations whether the annotations on this type should be ignored
+   * @param ignoreAnnotations true if the annotations on this type should be ignored
    */
   public ProperType(
       AnnotatedTypeMirror type,
@@ -65,7 +65,7 @@ public class ProperType extends AbstractType {
    * @param properType the java type
    * @param qualifierVars a mapping from polymorphic annotation to {@link QualifierVar}
    * @param context the context
-   * @param ignoreAnnotations whether the annotations on this type should be ignored
+   * @param ignoreAnnotations true if the annotations on this type should be ignored
    */
   public ProperType(
       AnnotatedTypeMirror type,

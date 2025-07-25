@@ -24,7 +24,7 @@ import org.checkerframework.dataflow.qual.Pure;
 public interface SetOfTypes {
 
   /**
-   * Test whether this set contains the given type.
+   * Returns true if this set contains the given type.
    *
    * @param typeUtils a {@code Types} object for computing the relationships between types
    * @param type the type in question

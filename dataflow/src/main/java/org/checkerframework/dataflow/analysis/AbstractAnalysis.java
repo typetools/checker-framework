@@ -142,7 +142,7 @@ public abstract class AbstractAnalysis<
    * @param node the node of the target block
    * @param currentInput the current transfer input
    * @param flowRule the flow rule being used
-   * @param addToWorklistAgain whether the block should be added to {@link #worklist} again
+   * @param addToWorklistAgain true if the block should be added to {@link #worklist} again
    */
   protected abstract void propagateStoresTo(
       Block nextBlock,

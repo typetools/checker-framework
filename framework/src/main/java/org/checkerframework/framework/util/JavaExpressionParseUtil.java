@@ -100,12 +100,6 @@ public class JavaExpressionParseUtil {
       Pattern.compile("^" + PARAMETER_REGEX + "$");
 
   /**
-   * Unanchored pattern for a formal parameter use; can be used to find all formal parameter uses.
-   */
-  protected static final @Regex(1) Pattern UNANCHORED_PARAMETER_PATTERN =
-      Pattern.compile(PARAMETER_REGEX);
-
-  /**
    * Parsable replacement for formal parameter references. It is parsable because it is a Java
    * identifier.
    */
@@ -164,9 +158,9 @@ public class JavaExpressionParseUtil {
     LanguageLevel currentSourceVersion = JavaParserUtil.getCurrentSourceVersion(env);
     String expressionWithParameterNames =
         StringsPlume.replaceAll(expression, FORMAL_PARAMETER, PARAMETER_REPLACEMENT);
-    Expression expr;
+    Expression exprTree;
     try {
-      expr = JavaParserUtil.parseExpression(expressionWithParameterNames, currentSourceVersion);
+      exprTree = JavaParserUtil.parseExpression(expressionWithParameterNames, currentSourceVersion);
     } catch (ParseProblemException e) {
       String extra = ".";
       if (!e.getProblems().isEmpty()) {
@@ -182,7 +176,7 @@ public class JavaExpressionParseUtil {
 
     JavaExpression result =
         ExpressionToJavaExpressionVisitor.convert(
-            expr,
+            exprTree,
             enclosingType,
             thisReference,
             parameters,
@@ -207,6 +201,21 @@ public class JavaExpressionParseUtil {
   private static class ExpressionToJavaExpressionVisitor
       extends GenericVisitorWithDefaults<JavaExpression, Void> {
 
+    /** The processing environment. */
+    private final ProcessingEnvironment env;
+
+    /** The type utilities. */
+    private final Types types;
+
+    /** The resolver. Computed from the environment, but lazily initialized. */
+    private @MonotonicNonNull Resolver resolver = null;
+
+    /** The java.lang.String type. */
+    private final TypeMirror stringTypeMirror;
+
+    /** The primitive boolean type. */
+    private final TypeMirror booleanTypeMirror;
+
     /**
      * The underlying javac API used to convert from Strings to Elements requires a tree path even
      * when the information could be deduced from elements alone. So use the path to the current
@@ -216,21 +225,6 @@ public class JavaExpressionParseUtil {
 
     /** If non-null, the expression is parsed as if it were written at this location. */
     private final @Nullable TreePath localVarPath;
-
-    /** The processing environment. */
-    private final ProcessingEnvironment env;
-
-    /** The resolver. Computed from the environment, but lazily initialized. */
-    private @MonotonicNonNull Resolver resolver = null;
-
-    /** The type utilities. */
-    private final Types types;
-
-    /** The java.lang.String type. */
-    private final TypeMirror stringTypeMirror;
-
-    /** The primitive boolean type. */
-    private final TypeMirror booleanTypeMirror;
 
     /** The enclosing type. Used to look up unqualified method, field, and class names. */
     private final TypeMirror enclosingType;
@@ -735,15 +729,15 @@ public class JavaExpressionParseUtil {
         throw new ParseRuntimeException(e);
       }
 
-      // Box any arguments that require it.
+      // Box arguments if needed.
       for (int i = 0; i < arguments.size(); i++) {
         VariableElement parameter = methodElement.getParameters().get(i);
         TypeMirror parameterType = parameter.asType();
         JavaExpression argument = arguments.get(i);
         TypeMirror argumentType = argument.getType();
-        // is boxing necessary?
+
         if (TypesUtils.isBoxedPrimitive(parameterType) && TypesUtils.isPrimitive(argumentType)) {
-          // boxing is necessary
+          // Boxing is necessary.
           MethodSymbol valueOfMethod = TreeBuilder.getValueOfMethod(env, parameterType);
           JavaExpression boxedParam =
               new MethodCall(
@@ -832,7 +826,7 @@ public class JavaExpressionParseUtil {
       Expression scope = expr.getScope();
       String name = expr.getNameAsString();
 
-      // Check for fully qualified class name.
+      // Check if the expression refers to a fully-qualified class name.
       Symbol.PackageSymbol packageSymbol =
           resolver.findPackage(scope.toString(), pathToCompilationUnit);
       if (packageSymbol != null) {
@@ -852,18 +846,19 @@ public class JavaExpressionParseUtil {
 
       JavaExpression receiver = scope.accept(this, null);
 
-      // Check for field access expression.
+      // Try as a field.
       FieldAccess fieldAccess = getIdentifierAsFieldAccess(receiver, name);
       if (fieldAccess != null) {
         return fieldAccess;
       }
 
-      // Check for inner class.
-      ClassName classType = getIdentifierAsInnerClassName(receiver.getType(), name);
-      if (classType != null) {
-        return classType;
+      // Try as an inner class.
+      ClassName innerClass = getIdentifierAsInnerClassName(receiver.getType(), name);
+      if (innerClass != null) {
+        return innerClass;
       }
 
+      // Nothing matched.
       throw new ParseRuntimeException(
           constructJavaExpressionParseError(
               name, String.format("field or class %s not found in %s", name, receiver)));

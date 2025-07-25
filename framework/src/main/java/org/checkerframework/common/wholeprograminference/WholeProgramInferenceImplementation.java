@@ -109,16 +109,16 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
   protected final AnnotatedTypeFactory atypeFactory;
 
   /**
-   * Whether to print debugging information when an inference is attempted, but cannot be completed.
-   * An inference can be attempted without success for example because the current storage system
-   * does not support placing annotation in the location for which an annotation was inferred.
+   * If true, print debugging information when an inference is attempted but cannot be completed. An
+   * inference can be attempted without success for example because the current storage system does
+   * not support placing annotation in the location for which an annotation was inferred.
    */
   private final boolean showWpiFailedInferences;
 
   /** The storage for the inferred annotations. */
   private final WholeProgramInferenceStorage<T> storage;
 
-  /** Whether to ignore assignments where the rhs is null. */
+  /** If true, ignore assignments where the rhs is null. */
   private final boolean ignoreNullAssignments;
 
   /** The @{@link Deterministic} annotation. */
@@ -151,7 +151,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
    *
    * @param atypeFactory the associated type factory
    * @param storage the storage used for inferred annotations and for writing output files
-   * @param showWpiFailedInferences whether the {@code -AshowWpiFailedInferences} argument was
+   * @param showWpiFailedInferences true if the {@code -AshowWpiFailedInferences} argument was
    *     passed to the checker, and therefore whether to print debugging messages when inference
    *     fails
    */

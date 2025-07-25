@@ -47,10 +47,10 @@ public class AssignmentNode extends Node {
   /** The node for the RHS of the assignment tree. */
   protected final Node rhs;
 
-  /** Whether the assignment node is synthetic */
+  /** True if the assignment node is synthetic */
   protected final boolean synthetic;
 
-  /** Whether the assignment node is desugared from an enhanced-for-loop over an array. */
+  /** True if the assignment node is desugared from an enhanced-for-loop over an array. */
   protected boolean desugaredFromEnhancedArrayForLoop;
 
   /**
@@ -70,7 +70,7 @@ public class AssignmentNode extends Node {
    * @param tree the {@code AssignmentTree} corresponding to the {@code AssignmentNode}
    * @param target the lhs of {@code tree}
    * @param expression the rhs of {@code tree}
-   * @param synthetic whether the assignment node is synthetic
+   * @param synthetic true if the assignment node is synthetic
    */
   public AssignmentNode(Tree tree, Node target, Node expression, boolean synthetic) {
     super(TreeUtils.typeOf(tree));

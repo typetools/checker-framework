@@ -175,10 +175,10 @@ public class CaptureBound {
   }
 
   /**
-   * Returns whether this bound contains any {@code variables}.
+   * Returns true if this bound contains any {@code variables}.
    *
    * @param variables inference variables
-   * @return whether this bound contains any {@code variables}
+   * @return true if this bound contains any {@code variables}
    */
   public boolean isCaptureMentionsAny(Collection<Variable> variables) {
     for (Variable a : variables) {
