@@ -729,15 +729,15 @@ public class JavaExpressionParseUtil {
         throw new ParseRuntimeException(e);
       }
 
-      // Box any arguments that require it.
+      // Box arguments if needed.
       for (int i = 0; i < arguments.size(); i++) {
         VariableElement parameter = methodElement.getParameters().get(i);
         TypeMirror parameterType = parameter.asType();
         JavaExpression argument = arguments.get(i);
         TypeMirror argumentType = argument.getType();
-        // is boxing necessary?
+
         if (TypesUtils.isBoxedPrimitive(parameterType) && TypesUtils.isPrimitive(argumentType)) {
-          // boxing is necessary
+          // Boxing is necessary.
           MethodSymbol valueOfMethod = TreeBuilder.getValueOfMethod(env, parameterType);
           JavaExpression boxedParam =
               new MethodCall(
@@ -826,7 +826,7 @@ public class JavaExpressionParseUtil {
       Expression scope = expr.getScope();
       String name = expr.getNameAsString();
 
-      // Check for fully qualified class name.
+      // Check if the expression refers to a fully-qualified class name.
       Symbol.PackageSymbol packageSymbol =
           resolver.findPackage(scope.toString(), pathToCompilationUnit);
       if (packageSymbol != null) {
@@ -846,18 +846,19 @@ public class JavaExpressionParseUtil {
 
       JavaExpression receiver = scope.accept(this, null);
 
-      // Check for field access expression.
+      // Try as a field.
       FieldAccess fieldAccess = getIdentifierAsFieldAccess(receiver, name);
       if (fieldAccess != null) {
         return fieldAccess;
       }
 
-      // Check for inner class.
-      ClassName classType = getIdentifierAsInnerClassName(receiver.getType(), name);
-      if (classType != null) {
-        return classType;
+      // Try as an inner class.
+      ClassName innerClass = getIdentifierAsInnerClassName(receiver.getType(), name);
+      if (innerClass != null) {
+        return innerClass;
       }
 
+      // Nothing matched.
       throw new ParseRuntimeException(
           constructJavaExpressionParseError(
               name, String.format("field or class %s not found in %s", name, receiver)));
