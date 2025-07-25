@@ -145,8 +145,8 @@ public abstract class GenericAnnotatedTypeFactory<
     extends AnnotatedTypeFactory {
 
   /**
-   * Whether to output verbose, low-level debugging messages. Also see {@code TreeAnnotator.debug}
-   * and {@link AnnotatedTypeFactory#debugGat}.
+   * If true, output verbose, low-level debugging messages. Also see {@code TreeAnnotator.debug} and
+   * {@link AnnotatedTypeFactory#debugGat}.
    */
   private static final boolean debug = false;
 
@@ -1889,7 +1889,7 @@ public abstract class GenericAnnotatedTypeFactory<
    *
    * @param tree an AST node
    * @param type the type obtained from tree
-   * @param iUseFlow whether to use information from dataflow analysis
+   * @param iUseFlow if true, use information from dataflow analysis
    */
   protected void addComputedTypeAnnotations(Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {
     if (root == null && ajavaTypes.isParsing()) {
@@ -1958,7 +1958,7 @@ public abstract class GenericAnnotatedTypeFactory<
    *
    * @param tree an AST node
    * @param type the type obtained from tree
-   * @param iUseFlow whether to use information from dataflow analysis
+   * @param iUseFlow if true, use information from dataflow analysis
    */
   protected void addComputedTypeAnnotationsForWarnRedundant(
       Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {

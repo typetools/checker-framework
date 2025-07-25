@@ -81,7 +81,7 @@ public class ClassAnnotationSceneWriter extends CodeOffsetAdapter {
   //     annotations in the scene at the first call of visit{Code, End}.
   //
 
-  /** Whether to output error messages for unsupported cases. */
+  /** If true, output error messages for unsupported cases. */
   private static final boolean strict = false;
 
   // None of these fields should be null, except for aClass, which
@@ -100,8 +100,8 @@ public class ClassAnnotationSceneWriter extends CodeOffsetAdapter {
   private boolean hasVisitedClassAnnotationsInScene;
 
   /**
-   * Whether or not to overwrite existing annotations on the same element in a class file if a
-   * similar annotation is found in scene.
+   * If true, overwrite existing annotations on the same element in a class file if a similar
+   * annotation is found in scene.
    */
   private final boolean overwrite;
 

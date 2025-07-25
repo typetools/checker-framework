@@ -162,32 +162,30 @@ public class AnnotationFileParser {
   private CompilationUnitTree root;
 
   /**
-   * Whether to print warnings about types/members that were not found. The warning states that a
+   * If true, print warnings about types/members that were not found. The warning states that a
    * class/field in the file is not found on the user's real classpath. Since the file may contain
    * packages that are not on the classpath, this can be OK, so default to false.
    */
   private final boolean warnIfNotFound;
 
   /**
-   * Whether to ignore missing classes even when warnIfNotFound is set to true. This allows the
-   * files to contain classes not in the classpath (even if another class in the classpath has the
-   * same package), but still warn if members of the class (methods, fields) are missing. This
-   * option does nothing unless warnIfNotFound is also set.
+   * If true, ignore missing classes even when warnIfNotFound is set to true. This allows the files
+   * to contain classes not in the classpath (even if another class in the classpath has the same
+   * package), but still warn if members of the class (methods, fields) are missing. This option
+   * does nothing unless warnIfNotFound is also set.
    */
   private final boolean warnIfNotFoundIgnoresClasses;
 
-  /** Whether to print warnings about stub files that overwrite annotations from bytecode. */
+  /** If true, print warnings about stub files that overwrite annotations from bytecode. */
   private final boolean warnIfStubOverwritesBytecode;
 
-  /**
-   * Whether to print warnings about stub files that are redundant with annotations from bytecode.
-   */
+  /** If true, print warnings about stub files that are redundant with annotations from bytecode. */
   private final boolean warnIfStubRedundantWithBytecode;
 
   /** The diagnostic kind for stub file warnings: NOTE or WARNING. */
   private final Diagnostic.Kind stubWarnDiagnosticKind;
 
-  /** Whether to print verbose debugging messages. */
+  /** If true, print verbose debugging messages. */
   private final boolean debugAnnotationFileParser;
 
   /** The name of the file being processed; used only for diagnostic messages. */
@@ -2673,7 +2671,7 @@ public class AnnotationFileParser {
    *
    * @param number a Number value to be converted
    * @param expectedKind one of type {byte, short, int, long, char, float, double}
-   * @param negate whether to negate the value of the Number Object while converting
+   * @param negate if true, negate the value of the Number Object while converting
    * @return the converted Object
    */
   private Object convert(Number number, TypeKind expectedKind, boolean negate) {
@@ -3006,7 +3004,7 @@ public class AnnotationFileParser {
    *
    * @param astNode where to report errors
    * @param warning warning to print
-   * @param warnIfNotFound whether to print warnings about types/members that were not found
+   * @param warnIfNotFound if true, print warnings about types/members that were not found
    */
   private void stubWarnNotFound(NodeWithRange<?> astNode, String warning, boolean warnIfNotFound) {
     if (warnIfNotFound || debugAnnotationFileParser) {

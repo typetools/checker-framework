@@ -509,7 +509,7 @@ public class LockAnnotatedTypeFactory
    * conservative default.
    *
    * @param methodElement the method element
-   * @param issueErrorIfMoreThanOnePresent whether to issue an error if more than one side effect
+   * @param issueErrorIfMoreThanOnePresent if true, issue an error if more than one side effect
    *     annotation is present on the method
    * @return the side effect annotation that is present on the given method
    */

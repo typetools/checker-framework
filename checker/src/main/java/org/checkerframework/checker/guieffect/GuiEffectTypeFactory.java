@@ -408,7 +408,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
    *
    * @param declaringType the type declaring the override
    * @param overridingMethod the method override itself
-   * @param issueConflictWarning whether or not to issue warnings
+   * @param issueConflictWarning if true, issue warnings
    * @param errorTree the method declaration AST node; used for reporting errors
    * @return the min and max inherited effects, or null if none were discovered
    */

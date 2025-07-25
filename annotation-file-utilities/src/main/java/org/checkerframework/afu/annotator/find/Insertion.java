@@ -57,7 +57,7 @@ public abstract class Insertion {
    * Creates a new insertion.
    *
    * @param criteria where to insert the text
-   * @param separateLine whether to insert the text on its own
+   * @param separateLine if true, insert the text on its own line
    */
   public Insertion(Criteria criteria, boolean separateLine) {
     this.criteria = criteria;

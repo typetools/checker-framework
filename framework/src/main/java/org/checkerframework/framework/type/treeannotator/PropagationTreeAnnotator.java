@@ -57,10 +57,10 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
   }
 
   /**
-   * Whether to use the assignment context when computing the type of a new array expression. This
-   * is a hack to prevent infinite recursion if computing the type of the assignment context
-   * includes computing the type of the right-hand side of the assignment. This happens when the
-   * assignment is the pseudo-assignment of a method argument to a formal parameter.
+   * If true, use the assignment context when computing the type of a new array expression. This is
+   * a hack to prevent infinite recursion if computing the type of the assignment context includes
+   * computing the type of the right-hand side of the assignment. This happens when the assignment
+   * is the pseudo-assignment of a method argument to a formal parameter.
    */
   private boolean useAssignmentContext = true;
 

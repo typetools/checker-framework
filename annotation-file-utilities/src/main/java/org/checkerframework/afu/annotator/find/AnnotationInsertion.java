@@ -39,7 +39,7 @@ public class AnnotationInsertion extends Insertion {
    * @param fullyQualifiedAnnotationText the annotation text to be inserted into source code; starts
    *     with "@", and must be a fully-qualified name
    * @param criteria where to insert the annotation
-   * @param separateLine whether to insert the annotation on its own
+   * @param separateLine if true, insert the annotation on its own line
    */
   public AnnotationInsertion(
       String fullyQualifiedAnnotationText, Criteria criteria, boolean separateLine) {
@@ -52,7 +52,7 @@ public class AnnotationInsertion extends Insertion {
    * @param fullyQualifiedAnnotationText the annotation text to be inserted into source code; starts
    *     with "@", and must be a fully-qualified name
    * @param criteria where to insert the annotation
-   * @param separateLine whether to insert the annotation on its own
+   * @param separateLine if true, insert the annotation on its own line
    * @param annotation the annotation being inserted
    */
   public AnnotationInsertion(

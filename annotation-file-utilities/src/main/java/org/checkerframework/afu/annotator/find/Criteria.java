@@ -437,7 +437,7 @@ public final class Criteria {
    * Creates an "in class" criterion: that a program element is enclosed by the specified class.
    *
    * @param name the name of the enclosing class
-   * @param exactMatch whether to match only in the class itself, not in its inner classes
+   * @param exactMatch if true, match only in the class itself, not in its inner classes
    * @return an "in class" criterion
    */
   // TODO: Should `name` be `@BinaryName`??

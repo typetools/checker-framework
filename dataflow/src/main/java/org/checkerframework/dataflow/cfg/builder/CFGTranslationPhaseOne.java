@@ -1227,8 +1227,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    *
    * @param node a Node producing a value
    * @param varType the type of a variable
-   * @param contextAllowsNarrowing whether or not to allow narrowing (for assignment conversion)
-   *     (for method invocation conversion)
+   * @param contextAllowsNarrowing if true, allow narrowing (for assignment conversion) (for method
+   *     invocation conversion)
    * @return a Node with the value converted to the type of the variable, which may be the input
    *     node itself
    */

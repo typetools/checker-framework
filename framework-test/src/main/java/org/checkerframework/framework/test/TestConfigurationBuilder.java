@@ -229,7 +229,7 @@ public class TestConfigurationBuilder {
    *       addProcessor instead)
    * </ul>
    *
-   * @param requireProcessors whether or not to require that there is at least one processor
+   * @param requireProcessors if true, require that there is at least one processor
    * @return a list of errors found while validating this configuration
    */
   public List<String> validate(boolean requireProcessors) {
@@ -469,7 +469,7 @@ public class TestConfigurationBuilder {
   /**
    * Sets {@code this} to output debug info depending on the parameter.
    *
-   * @param shouldEmitDebugInfo whether to emit debug info
+   * @param shouldEmitDebugInfo if true, emit debug info
    * @return the current object {@code this}
    */
   public TestConfigurationBuilder setShouldEmitDebugInfo(boolean shouldEmitDebugInfo) {

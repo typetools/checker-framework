@@ -182,10 +182,10 @@ import org.plumelib.util.SystemPlume;
  */
 public class AnnotatedTypeFactory implements AnnotationProvider {
 
-  /** Whether to output verbose, low-level debugging messages about {@link #getAnnotatedType}. */
+  /** If true, output verbose, low-level debugging messages about {@link #getAnnotatedType}. */
   private static final boolean debugGat = false;
 
-  /** Whether to print verbose debugging messages about stub files. */
+  /** If true, print verbose debugging messages about stub files. */
   private final boolean debugStubParser;
 
   /** The {@link Trees} instance to use for tree node path finding. */
@@ -538,7 +538,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   /** Mapping from CFG-generated trees to their enclosing elements. */
   protected final Map<Tree, Element> artificialTreeToEnclosingElementMap;
 
-  /** Whether to ignore type arguments from raw types. */
+  /** If true, ignore type arguments from raw types. */
   public final boolean ignoreRawTypeArguments;
 
   /** The Object.getClass method. */
@@ -2567,7 +2567,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *
    * @param tree either a method invocation or a member reference tree
    * @param type declared method type before type variable substitution
-   * @param resolvePolyQuals whether to resolve polymorphic qualifiers
+   * @param resolvePolyQuals if true, resolve polymorphic qualifiers
    */
   protected void methodFromUsePreSubstitution(
       ExpressionTree tree, AnnotatedExecutableType type, boolean resolvePolyQuals) {
@@ -2972,7 +2972,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *
    * @param tree a NewClassTree from constructorFromUse()
    * @param type declared method type before type variable substitution
-   * @param resolvePolyQuals whether to resolve polymorphic qualifiers
+   * @param resolvePolyQuals if true, resolve polymorphic qualifiers
    */
   protected void constructorFromUsePreSubstitution(
       NewClassTree tree, AnnotatedExecutableType type, boolean resolvePolyQuals) {}
@@ -3966,8 +3966,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *
    * @param elt the element to retrieve the annotation from
    * @param annoClass the class of the annotation to retrieve
-   * @param checkAliases whether to return an annotation mirror for an alias of the requested
-   *     annotation class name
+   * @param checkAliases if true, the metnhod may return an annotation mirror for an alias of the
+   *     requested annotation class name
    * @return the annotation mirror for the requested annotation, or null if not found
    */
   private @Nullable AnnotationMirror getDeclAnnotation(

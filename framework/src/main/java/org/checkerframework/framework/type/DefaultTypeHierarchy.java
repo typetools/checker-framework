@@ -61,10 +61,10 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
   /** The equality comparer. */
   protected final StructuralEqualityComparer equalityComparer;
 
-  /** Whether to ignore raw types. */
+  /** If true, ignore raw types. */
   protected final boolean ignoreRawTypes;
 
-  /** Whether to make array subtyping invariant with respect to array component types. */
+  /** If true, make array subtyping invariant with respect to array component types. */
   protected final boolean invariantArrayComponents;
 
   /** The top annotation of the hierarchy currently being checked. */
@@ -88,8 +88,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
    *
    * @param checker the type-checker that is associated with this
    * @param qualHierarchy the qualifier hierarchy that is associated with this
-   * @param ignoreRawTypes whether to ignore raw types
-   * @param invariantArrayComponents whether to make array subtyping invariant with respect to array
+   * @param ignoreRawTypes if true, ignore raw types
+   * @param invariantArrayComponents if true, make array subtyping invariant with respect to array
    *     component types
    */
   @SuppressWarnings("this-escape")
