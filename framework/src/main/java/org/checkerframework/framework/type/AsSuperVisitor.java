@@ -39,8 +39,8 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
   private final QualifierHierarchy qualHierarchy;
 
   /**
-   * Whether or not the type being visited is a type argument from a raw type. If true, then the
-   * underlying type may not have the correct relationship with the supertype.
+   * True if the type being visited is a type argument from a raw type. If true, then the underlying
+   * type may not have the correct relationship with the supertype.
    */
   private boolean isTypeArgumentFromRawType = false;
 

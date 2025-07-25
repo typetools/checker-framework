@@ -31,7 +31,7 @@ public final class BoundLocation {
   }
 
   /**
-   * Returns whether this {@link BoundLocation} equals <code>o</code>; a slightly faster variant of
+   * Returns true if this {@link BoundLocation} equals <code>o</code>; a slightly faster variant of
    * {@link #equals(Object)} for when the argument is statically known to be another nonnull {@link
    * BoundLocation}.
    */

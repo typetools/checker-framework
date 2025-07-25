@@ -350,7 +350,7 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
     return new Parser(s).parseASTPath();
   }
 
-  /** Determine whether this {@code ASTPath} matches a given {@code TreePath}. */
+  /** Returns true if this {@code ASTPath} matches a given {@code TreePath}. */
   public boolean matches(TreePath treePath) {
     CompilationUnitTree cut = treePath.getCompilationUnit();
     Tree leaf = treePath.getLeaf();
@@ -1341,7 +1341,7 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
   }
 
   /**
-   * Determines whether an {@code ASTPath} can identify nodes of the given kind.
+   * Returns true if an {@code ASTPath} can identify nodes of the given kind.
    *
    * @param kind the kind to test
    * @return true if the given kind can be identified by an {@code ASTPath}

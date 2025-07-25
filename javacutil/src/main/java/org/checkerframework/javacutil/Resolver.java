@@ -92,10 +92,10 @@ public class Resolver {
   private static final int sourceVersionNumber =
       Integer.parseInt(SourceVersion.latest().toString().substring("RELEASE_".length()));
 
-  /** Whether we are running on at least Java 13. */
+  /** True if we are running on at least Java 13. */
   private static final boolean atLeastJava13 = sourceVersionNumber >= 13;
 
-  /** Whether we are running on at least Java 23. */
+  /** True if we are running on at least Java 23. */
   private static final boolean atLeastJava23 = sourceVersionNumber >= 23;
 
   static {

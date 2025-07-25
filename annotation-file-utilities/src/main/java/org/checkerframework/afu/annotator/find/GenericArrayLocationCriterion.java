@@ -33,7 +33,7 @@ import org.objectweb.asm.TypePath;
  */
 public class GenericArrayLocationCriterion implements Criterion {
 
-  /** Whether or not to output debug information. */
+  /** If true, output debug information. */
   private static final boolean debug = false;
 
   /** The location as a list of TypePathEntrys. */

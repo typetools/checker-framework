@@ -665,7 +665,7 @@ public class AnnotationUtils {
    * @param elementName the name of the element to access
    * @param expectedType the type of the element and the return value
    * @param <T> the class of the type
-   * @param useDefaults whether to apply default values to the element
+   * @param useDefaults if true, apply default values to the element
    * @return the value of the element with the given name
    * @deprecated use {@link #getElementValue(AnnotationMirror, ExecutableElement, Class)} or {@link
    *     #getElementValue(AnnotationMirror, ExecutableElement, Class, Object)}
@@ -732,7 +732,7 @@ public class AnnotationUtils {
    * @param elementName the name of the element to access
    * @param expectedType the type of the element and the return value
    * @param <T> the class of the type
-   * @param useDefaults whether to apply default values to the element
+   * @param useDefaults if true, apply default values to the element
    * @return the value of the element with the given name, or null
    */
   public static <T> @Nullable T getElementValueOrNull(
@@ -757,7 +757,7 @@ public class AnnotationUtils {
    * @param elementName the name of the element to access
    * @param expectedType the component type of the element and of the return value
    * @param <T> the class of the component type
-   * @param useDefaults whether to apply default values to the element
+   * @param useDefaults if true, apply default values to the element
    * @return the value of the element with the given name, or null
    */
   public static <T> @Nullable List<T> getElementValueArrayOrNull(
@@ -787,7 +787,7 @@ public class AnnotationUtils {
    * @param elementName the name of the element to access
    * @param expectedType the component type of the element and of the return type
    * @param <T> the class of the type
-   * @param useDefaults whether to apply default values to the element
+   * @param useDefaults if true, apply default values to the element
    * @return the value of the element with the given name; it is a new list, so it is safe for
    *     clients to side-effect
    * @deprecated use {@code #getElementValueArray(AnnotationMirror, ExecutableElement, Class)} or
@@ -833,7 +833,7 @@ public class AnnotationUtils {
    *
    * @param anno the annotation to disassemble
    * @param elementName the name of the element to access; it must be present in the annotation
-   * @param useDefaults whether to apply default values to the element
+   * @param useDefaults if true, apply default values to the element
    * @return the name of the class that is referenced by element with the given name; may be an
    *     empty name, for a local or anonymous class
    * @deprecated use an ExecutableElement

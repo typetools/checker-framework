@@ -53,7 +53,7 @@ public @interface AssertMethod {
   int parameter() default 1;
 
   /**
-   * Returns whether this method asserts that the boolean expression is false.
+   * Returns true if this method asserts that the boolean expression is false.
    *
    * <p>For example, Junit's <a
    * href="https://junit.org/junit5/docs/5.0.1/api/org/junit/jupiter/api/Assertions.html#assertFalse-boolean-">Assertions.assertFalse(...)</a>

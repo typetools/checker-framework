@@ -145,8 +145,8 @@ public abstract class GenericAnnotatedTypeFactory<
     extends AnnotatedTypeFactory {
 
   /**
-   * Whether to output verbose, low-level debugging messages. Also see {@code TreeAnnotator.debug}
-   * and {@link AnnotatedTypeFactory#debugGat}.
+   * If true, output verbose, low-level debugging messages. Also see {@code TreeAnnotator.debug} and
+   * {@link AnnotatedTypeFactory#debugGat}.
    */
   private static final boolean debug = false;
 
@@ -190,7 +190,7 @@ public abstract class GenericAnnotatedTypeFactory<
   public final @Nullable Set<TypeMirror> relevantJavaTypes;
 
   /**
-   * Whether users may write type annotations on arrays. Ignored unless {@link #relevantJavaTypes}
+   * True if users may write type annotations on arrays. Ignored unless {@link #relevantJavaTypes}
    * is non-null.
    */
   protected final boolean arraysAreRelevant;
@@ -329,7 +329,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * Creates a type factory. Its compilation unit is not yet set.
    *
    * @param checker the checker to which this type factory belongs
-   * @param useFlow whether flow analysis should be performed
+   * @param useFlow true if flow analysis should be performed
    */
   @SuppressWarnings("this-escape")
   protected GenericAnnotatedTypeFactory(BaseTypeChecker checker, boolean useFlow) {
@@ -1675,7 +1675,7 @@ public abstract class GenericAnnotatedTypeFactory<
     handleCFGViz(cfg);
   }
 
-  /** Whether handling CFG visualization is necessary. */
+  /** True if handling CFG visualization is necessary. */
   private final boolean handleCFGViz;
 
   /**
@@ -1889,7 +1889,7 @@ public abstract class GenericAnnotatedTypeFactory<
    *
    * @param tree an AST node
    * @param type the type obtained from tree
-   * @param iUseFlow whether to use information from dataflow analysis
+   * @param iUseFlow if true, use information from dataflow analysis
    */
   protected void addComputedTypeAnnotations(Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {
     if (root == null && ajavaTypes.isParsing()) {
@@ -1958,7 +1958,7 @@ public abstract class GenericAnnotatedTypeFactory<
    *
    * @param tree an AST node
    * @param type the type obtained from tree
-   * @param iUseFlow whether to use information from dataflow analysis
+   * @param iUseFlow if true, use information from dataflow analysis
    */
   protected void addComputedTypeAnnotationsForWarnRedundant(
       Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {
@@ -2973,7 +2973,7 @@ public abstract class GenericAnnotatedTypeFactory<
    *
    * @param tree the source code corresponding to cfg
    * @param cfg the control flow graph to use for tree
-   * @return whether a shared CFG was found to actually add to (duplicate keys also return true)
+   * @return true if a shared CFG was found to actually add to (duplicate keys also return true)
    */
   public boolean addSharedCFGForTree(Tree tree, ControlFlowGraph cfg) {
     if (!shouldCache) {

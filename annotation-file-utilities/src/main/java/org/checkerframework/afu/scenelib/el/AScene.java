@@ -105,7 +105,7 @@ public class AScene implements Cloneable {
   }
 
   /**
-   * Returns whether this {@link AScene} equals <code>o</code>; the commentary and the cautionary
+   * Returns true if this {@link AScene} equals <code>o</code>; the commentary and the cautionary
    * remarks on {@link AElement#equals(Object)} also apply to {@link AScene#equals(Object)}.
    */
   @Override
@@ -114,7 +114,7 @@ public class AScene implements Cloneable {
   }
 
   /**
-   * Returns whether this {@link AScene} equals <code>o</code>; a slightly faster variant of {@link
+   * Returns true if this {@link AScene} equals <code>o</code>; a slightly faster variant of {@link
    * #equals(Object)} for when the argument is statically known to be another nonnull {@link
    * AScene}.
    */
@@ -136,7 +136,7 @@ public class AScene implements Cloneable {
     return ImmutableMap.copyOf(classes);
   }
 
-  /** Returns whether this {@link AScene} is empty. */
+  /** Returns true if this {@link AScene} is empty. */
   public boolean isEmpty() {
     return classes.isEmpty() && packages.isEmpty();
   }

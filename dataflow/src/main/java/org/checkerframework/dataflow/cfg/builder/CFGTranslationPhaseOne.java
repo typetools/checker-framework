@@ -1201,11 +1201,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Return whether a conversion from the type of the node to varType requires narrowing.
+   * Returns true if a conversion from the type of the node to varType requires narrowing.
    *
    * @param varType the type of a variable (or general LHS) to be converted to
    * @param node a node whose value is being converted
-   * @return whether this conversion requires narrowing to succeed
+   * @return true if this conversion requires narrowing to succeed
    */
   protected boolean conversionRequiresNarrowing(TypeMirror varType, Node node) {
     // Narrowing is restricted to cases where the left hand side is byte, char, short or Byte,
@@ -1227,8 +1227,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    *
    * @param node a Node producing a value
    * @param varType the type of a variable
-   * @param contextAllowsNarrowing whether to allow narrowing (for assignment conversion) or not
-   *     (for method invocation conversion)
+   * @param contextAllowsNarrowing if true, allow narrowing (for assignment conversion) (for method
+   *     invocation conversion)
    * @return a Node with the value converted to the type of the variable, which may be the input
    *     node itself
    */
@@ -4091,7 +4091,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Returns whether an exceptional node for {@code target} exists in {@link #nodeList} or not.
+   * Returns true if an exceptional node for {@code target} exists in {@link #nodeList}.
    *
    * @param target label for exception
    * @return true when an exceptional node for {@code target} exists in {@link #nodeList}

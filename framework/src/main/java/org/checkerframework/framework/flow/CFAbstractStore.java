@@ -194,14 +194,14 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   }
 
   /**
-   * Indicates whether the given method is side-effect-free as far as the current store is
-   * concerned. In some cases, a store for a checker allows for other mechanisms to specify whether
-   * a method is side-effect-free. For example, unannotated methods may be considered
-   * side-effect-free by default.
+   * Returns true if the given method is side-effect-free as far as the current store is concerned.
+   * In some cases, a store for a checker allows for other mechanisms to specify whether a method is
+   * side-effect-free. For example, unannotated methods may be considered side-effect-free by
+   * default.
    *
    * @param atypeFactory the type factory used to retrieve annotations on the method element
    * @param method the method element
-   * @return whether the method is side-effect-free
+   * @return true if the method is side-effect-free
    * @deprecated use {@link org.checkerframework.javacutil.AnnotationProvider#isSideEffectFree}
    */
   @Deprecated // 2022-09-27
@@ -471,7 +471,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    *
    * @param expr an expression
    * @param newAnno the expression's annotation
-   * @param permitNondeterministic whether nondeterministic expressions may be inserted into the
+   * @param permitNondeterministic true if nondeterministic expressions may be inserted into the
    *     store
    */
   protected void insertOrRefine(

@@ -83,7 +83,7 @@ public class AElement implements Cloneable {
   }
 
   /**
-   * Returns whether this {@link AElement} equals <code>o</code> (see warnings below). Generally
+   * Returns true if this {@link AElement} equals <code>o</code> (see warnings below). Generally
    * speaking, two {@link AElement}s are equal if they are of the same type, have the same {@link
    * #tlAnnotationsHere}, and have recursively equal, corresponding subelements. Two warnings:
    *
@@ -103,7 +103,7 @@ public class AElement implements Cloneable {
   }
 
   /**
-   * Returns whether this {@link AElement} equals <code>o</code>. This is a slightly faster variant
+   * Returns true if this {@link AElement} equals <code>o</code>. This is a slightly faster variant
    * of {@link #equals(Object)} for when the argument is statically known to be another nonnull
    * {@link AElement}.
    *
@@ -132,7 +132,7 @@ public class AElement implements Cloneable {
   }
 
   /**
-   * Returns whether this {@link AElement} is empty.
+   * Returns true if this {@link AElement} is empty.
    *
    * @return true iff this is empty
    */

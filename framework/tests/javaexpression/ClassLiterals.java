@@ -3,6 +3,9 @@ package javaexpression;
 import org.checkerframework.framework.testchecker.javaexpression.qual.FlowExp;
 
 public class ClassLiterals {
+
+  // In ordinary Java code, "String.class" is the same as "java.lang.String.class".
+  // This declaration causes the two to be different.
   static class String {}
 
   void method(

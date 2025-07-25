@@ -205,10 +205,10 @@ public class OffsetEquation {
   }
 
   /**
-   * Returns whether or not this equation is known to be less than or equal to the other equation.
+   * Returns true if this equation is known to be less than or equal to the other equation.
    *
    * @param other equation
-   * @return whether or not this equation is known to be less than or equal to the other equation
+   * @return true if this equation is known to be less than or equal to the other equation
    */
   public boolean lessThanOrEqual(OffsetEquation other) {
     return (isInt() && other.isInt() && intValue <= other.getInt()) || this.equals(other);
