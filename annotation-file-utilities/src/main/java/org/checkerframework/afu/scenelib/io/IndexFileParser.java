@@ -256,7 +256,9 @@ public final class IndexFileParser {
   private boolean isValidIdentifier(String x) {
     if (x.length() == 0
         || !Character.isJavaIdentifierStart(x.charAt(0))
-        || knownKeywords.contains(x)) return false;
+        || knownKeywords.contains(x)) {
+      return false;
+    }
     for (int i = 1; i < x.length(); i++) {
       if (!Character.isJavaIdentifierPart(x.charAt(i))) {
         return false;
@@ -934,8 +936,8 @@ public final class IndexFileParser {
       key = "<" + basename + ">";
     } else {
       key = expectIdentifier();
-      // too bad className is private in AClass and thus must be
-      // extracted from what toString() returns
+      // It's too bad that className is private in AClass and thus must be
+      // extracted from what toString() returns.
       if (Pattern.matches("AClass: (?:[^. ]+\\.)*" + key, c.toString())) { // ugh
         key = "<init>";
       }
