@@ -9,7 +9,7 @@ ext {
 
 
 tasks.register('updateVersionNumbers', Copy) {
-  into layout.buildDirectory.dir('docs/')
+  into 'docs/'
   from('docs/') {
     include 'manual/annotation-file-utilities/annotation-file-utilities.html',
         'checker-framework-quick-start.html',
