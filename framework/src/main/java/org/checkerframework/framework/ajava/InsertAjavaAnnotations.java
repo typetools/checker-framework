@@ -119,7 +119,7 @@ public class InsertAjavaAnnotations {
     /** The contents of the insertion. */
     public final String contents;
 
-    /** Whether the insertion should be on its own separate line. */
+    /** True if the insertion should be on its own separate line. */
     public final boolean ownLine;
 
     /**

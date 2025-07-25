@@ -404,7 +404,7 @@ public class ElementUtils {
   }
 
   /**
-   * Checks whether a given element came from a source file.
+   * Returns true if a given element came from a source file.
    *
    * <p>By contrast, {@link ElementUtils#isElementFromByteCode(Element)} returns true if there is a
    * classfile for the given element, even if there is also a source file.
@@ -424,7 +424,7 @@ public class ElementUtils {
   }
 
   /**
-   * Checks whether a given ClassSymbol came from a source file.
+   * Returns true if a given ClassSymbol came from a source file.
    *
    * <p>By contrast, {@link ElementUtils#isElementFromByteCode(Element)} returns true if there is a
    * classfile for the given element, even if there is also a source file.
@@ -585,7 +585,7 @@ public class ElementUtils {
    * does not require a receiver.
    *
    * @param element the element to test
-   * @return whether the element requires a receiver for accesses
+   * @return true if the element requires a receiver for accesses
    */
   public static boolean hasReceiver(Element element) {
     if (element.getKind() == ElementKind.CONSTRUCTOR) {

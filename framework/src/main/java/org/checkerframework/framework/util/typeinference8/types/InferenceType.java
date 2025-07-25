@@ -55,7 +55,7 @@ public class InferenceType extends AbstractType {
    * @param map a mapping from type variable to inference variablef
    * @param qualifierVars a mapping from polymorphic annotation to {@link QualifierVar}
    * @param context the context
-   * @param ignoreAnnotations whether the annotations on this type should be ignored
+   * @param ignoreAnnotations true if the annotations on this type should be ignored
    */
   private InferenceType(
       AnnotatedTypeMirror type,
@@ -111,7 +111,7 @@ public class InferenceType extends AbstractType {
    * @param map a mapping from type variable to inference variable
    * @param qualifierVars a mapping from polymorphic annotation to {@link QualifierVar}
    * @param context the context
-   * @param ignoreAnnotations whether the annotations on this type should be ignored
+   * @param ignoreAnnotations true if the annotations on this type should be ignored
    * @return the abstract type for the given TypeMirror and AnnotatedTypeMirror
    */
   public static AbstractType create(
@@ -150,7 +150,7 @@ public class InferenceType extends AbstractType {
    * @param map a mapping from type variable to inference variable
    * @param qualifierVars a mapping from polymorphic annotation to {@link QualifierVar}
    * @param context the context
-   * @param ignoreAnnotations whether the annotations on this type should be ignored
+   * @param ignoreAnnotations true if the annotations on this type should be ignored
    * @return the abstract type for the given TypeMirror and AnnotatedTypeMirror
    */
   public static AbstractType createIgnoreInstantiated(

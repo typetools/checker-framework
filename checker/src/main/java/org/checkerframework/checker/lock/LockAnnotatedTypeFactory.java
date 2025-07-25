@@ -205,7 +205,7 @@ public class LockAnnotatedTypeFactory
   }
 
   /**
-   * Returns whether or not the expression is effectively final.
+   * Returns true if the expression is effectively final.
    *
    * <p>This method returns true in the following cases when expr is:
    *
@@ -220,7 +220,7 @@ public class LockAnnotatedTypeFactory
    * <p>4. a this reference or a class literal
    *
    * @param expr expression
-   * @return whether or not the expression is effectively final
+   * @return true if the expression is effectively final
    */
   boolean isExpressionEffectivelyFinal(JavaExpression expr) {
     if (expr instanceof FieldAccess) {

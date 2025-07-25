@@ -43,10 +43,10 @@ public class BoundSet implements ReductionResult {
   /** The error message to report to users. */
   public String errorMsg = "";
 
-  /** Whether this bounds set contains the false bound. */
+  /** True if this bounds set contains the false bound. */
   private boolean containsFalse;
 
-  /** Whether unchecked conversion was necessary to reduce and incorporate this bound set. */
+  /** True if unchecked conversion was necessary to reduce and incorporate this bound set. */
   private boolean uncheckedConversion;
 
   /**
@@ -114,7 +114,7 @@ public class BoundSet implements ReductionResult {
    * Merges {@code newSet} into this bound set.
    *
    * @param newSet bound set to merge
-   * @return whether the merge changed this bound set
+   * @return true if the merge changed this bound set
    */
   public boolean merge(BoundSet newSet) {
     boolean changed = captures.addAll(newSet.captures);
@@ -136,18 +136,18 @@ public class BoundSet implements ReductionResult {
   }
 
   /**
-   * Return whether this bound set contains false.
+   * Returns true if this bound set contains false.
    *
-   * @return whether this bound set contains false
+   * @return true if this bound set contains false
    */
   public boolean containsFalse() {
     return containsFalse;
   }
 
   /**
-   * Return whether unchecked conversion was necessary to reduce and incorporate this bound set
+   * Returns true if unchecked conversion was necessary to reduce and incorporate this bound set
    *
-   * @return whether unchecked conversion was necessary to reduce and incorporate this bound set
+   * @return true if unchecked conversion was necessary to reduce and incorporate this bound set
    */
   public boolean isUncheckedConversion() {
     return uncheckedConversion;
@@ -156,7 +156,7 @@ public class BoundSet implements ReductionResult {
   /**
    * Sets whether unchecked conversion was necessary to reduce and incorporate this bound set.
    *
-   * @param uncheckedConversion whether unchecked conversion was necessary to reduce and incorporate
+   * @param uncheckedConversion true if unchecked conversion was necessary to reduce and incorporate
    *     this bound set
    */
   public void setUncheckedConversion(boolean uncheckedConversion) {
@@ -178,7 +178,7 @@ public class BoundSet implements ReductionResult {
    * any variable in {@code as}?
    *
    * @param as a collection of varialbes
-   * @return whether the bound set contain a bound of the form {@code G<..., ai, ...> =
+   * @return true if the bound set contain a bound of the form {@code G<..., ai, ...> =
    *     capture(G<...>)} for any variable in {@code as}
    */
   public boolean containsCapture(Collection<Variable> as) {

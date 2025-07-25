@@ -270,7 +270,7 @@ public final class AnnotationDef extends AElement {
   }
 
   /**
-   * Returns whether this {@link AnnotationDef} equals <code>o</code>; a slightly faster variant of
+   * Returns true if this {@link AnnotationDef} equals <code>o</code>; a slightly faster variant of
    * {@link #equals(Object)} for when the argument is statically known to be another nonnull {@link
    * AnnotationDef}.
    *

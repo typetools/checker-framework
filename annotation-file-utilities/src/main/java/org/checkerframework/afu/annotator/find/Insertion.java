@@ -38,7 +38,7 @@ public abstract class Insertion {
   // horizontally aligned with the location.
   private final boolean separateLine;
 
-  /** Whether this insertion has already been inserted into source code. */
+  /** True if this insertion has already been inserted into source code. */
   private boolean inserted;
 
   /**
@@ -182,16 +182,16 @@ public abstract class Insertion {
   }
 
   /**
-   * Gets whether the insertion goes on a separate line.
+   * Returns true if the insertion goes on a separate line.
    *
-   * @return whether the insertion goes on a separate line
+   * @return true if the insertion goes on a separate line
    */
   public boolean isSeparateLine() {
     return separateLine;
   }
 
   /**
-   * Gets whether this insertion has already been inserted into source code.
+   * Returns true if this insertion has already been inserted into source code.
    *
    * @return {@code true} if this insertion has already been inserted, {@code false} otherwise
    */

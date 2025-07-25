@@ -356,7 +356,7 @@ public class TreeUtilsAfterJava11 {
     private static @Nullable Method GET_PATTERN = null;
 
     /**
-     * Returns whether {@code tree} is a {@code PatternCaseLabelTree}.
+     * Returns true if {@code tree} is a {@code PatternCaseLabelTree}.
      *
      * @param tree a tree to check
      * @return true if {@code tree} is a {@code PatternCaseLabelTree}

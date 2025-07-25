@@ -322,7 +322,7 @@ public class AutoValueSupport implements BuilderFrameworkSupport {
       };
 
   /**
-   * Returns whether AutoValue considers a type to be "optional". Optional types do not need to be
+   * Returns true if AutoValue considers a type to be "optional". Optional types do not need to be
    * set before build is called on a builder. Adapted from AutoValue source code.
    *
    * @param type some type

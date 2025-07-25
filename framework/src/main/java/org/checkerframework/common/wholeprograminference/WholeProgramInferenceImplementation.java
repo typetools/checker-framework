@@ -151,7 +151,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
    *
    * @param atypeFactory the associated type factory
    * @param storage the storage used for inferred annotations and for writing output files
-   * @param showWpiFailedInferences whether the {@code -AshowWpiFailedInferences} argument was
+   * @param showWpiFailedInferences true if the {@code -AshowWpiFailedInferences} argument was
    *     passed to the checker, and therefore whether to print debugging messages when inference
    *     fails
    */

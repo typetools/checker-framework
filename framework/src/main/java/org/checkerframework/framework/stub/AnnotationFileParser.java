@@ -259,7 +259,7 @@ public class AnnotationFileParser {
   /** The line separator. */
   private static final String LINE_SEPARATOR = System.lineSeparator().intern();
 
-  /** Whether or not the {@code -AmergeStubsWithSource} command-line argument was passed. */
+  /** True if the {@code -AmergeStubsWithSource} command-line argument was passed. */
   private final boolean mergeStubsWithSource;
 
   /**
@@ -355,7 +355,7 @@ public class AnnotationFileParser {
      */
     private final AnnotationMirrorSet allAnnotations;
 
-    /** Whether this component has an accessor of exactly the same name in the stubs file. */
+    /** True if this component has an accessor of exactly the same name in the stubs file. */
     private boolean hasAccessorInStubs = false;
 
     /**
@@ -389,7 +389,7 @@ public class AnnotationFileParser {
     }
 
     /**
-     * Returns whether there is an accessor in a stub file.
+     * Returns true if there is an accessor in a stub file.
      *
      * @return true if some stub file contains an accessor for this record component
      */

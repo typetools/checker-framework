@@ -197,7 +197,7 @@ public abstract class InitializationAnnotatedTypeFactory<
   public abstract AnnotationMirror getFieldInvariantAnnotation();
 
   /**
-   * Returns whether or not {@code field} has the invariant annotation.
+   * Returns true if {@code field} has the invariant annotation.
    *
    * <p>This method is a convenience method for {@link
    * #hasFieldInvariantAnnotation(AnnotatedTypeMirror, VariableElement)}.
@@ -207,7 +207,7 @@ public abstract class InitializationAnnotatedTypeFactory<
    * NullnessAnnotatedTypeFactory#hasFieldInvariantAnnotation(VariableTree)} for an example.
    *
    * @param field field that might have invariant annotation
-   * @return whether or not field has the invariant annotation
+   * @return true if field has the invariant annotation
    */
   protected final boolean hasFieldInvariantAnnotation(VariableTree field) {
     AnnotatedTypeMirror type = getAnnotatedType(field);
@@ -216,7 +216,7 @@ public abstract class InitializationAnnotatedTypeFactory<
   }
 
   /**
-   * Returns whether or not {@code type} has the invariant annotation.
+   * Returns true if {@code type} has the invariant annotation.
    *
    * <p>If the {@code type} is a type variable, this method returns true if any possible
    * instantiation of the type parameter could have the invariant annotation. See {@link
@@ -225,7 +225,7 @@ public abstract class InitializationAnnotatedTypeFactory<
    * @param type of field that might have invariant annotation
    * @param fieldElement the field element, which can be used to check annotations on the
    *     declaration
-   * @return whether or not the type has the invariant annotation
+   * @return true if the type has the invariant annotation
    */
   protected abstract boolean hasFieldInvariantAnnotation(
       AnnotatedTypeMirror type, VariableElement fieldElement);
@@ -649,7 +649,7 @@ public abstract class InitializationAnnotatedTypeFactory<
     return initializedFields;
   }
 
-  /** Returns whether the field {@code f} is unused, given the annotations on the receiver. */
+  /** Returns true if the field {@code f} is unused, given the annotations on the receiver. */
   private boolean isUnused(
       VariableTree field, Collection<? extends AnnotationMirror> receiverAnnos) {
     if (receiverAnnos.isEmpty()) {

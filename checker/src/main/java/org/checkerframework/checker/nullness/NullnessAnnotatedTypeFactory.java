@@ -761,7 +761,7 @@ public class NullnessAnnotatedTypeFactory
    * <p>In other words, is the lower bound @NonNull?
    *
    * @param type of field that might have invariant annotation
-   * @return whether or not type has the invariant annotation
+   * @return true if type has the invariant annotation
    */
   @Override
   protected boolean hasFieldInvariantAnnotation(

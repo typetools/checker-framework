@@ -190,7 +190,7 @@ public abstract class GenericAnnotatedTypeFactory<
   public final @Nullable Set<TypeMirror> relevantJavaTypes;
 
   /**
-   * Whether users may write type annotations on arrays. Ignored unless {@link #relevantJavaTypes}
+   * True if users may write type annotations on arrays. Ignored unless {@link #relevantJavaTypes}
    * is non-null.
    */
   protected final boolean arraysAreRelevant;
@@ -329,7 +329,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * Creates a type factory. Its compilation unit is not yet set.
    *
    * @param checker the checker to which this type factory belongs
-   * @param useFlow whether flow analysis should be performed
+   * @param useFlow true if flow analysis should be performed
    */
   @SuppressWarnings("this-escape")
   protected GenericAnnotatedTypeFactory(BaseTypeChecker checker, boolean useFlow) {
@@ -1675,7 +1675,7 @@ public abstract class GenericAnnotatedTypeFactory<
     handleCFGViz(cfg);
   }
 
-  /** Whether handling CFG visualization is necessary. */
+  /** True if handling CFG visualization is necessary. */
   private final boolean handleCFGViz;
 
   /**
@@ -2973,7 +2973,7 @@ public abstract class GenericAnnotatedTypeFactory<
    *
    * @param tree the source code corresponding to cfg
    * @param cfg the control flow graph to use for tree
-   * @return whether a shared CFG was found to actually add to (duplicate keys also return true)
+   * @return true if a shared CFG was found to actually add to (duplicate keys also return true)
    */
   public boolean addSharedCFGForTree(Tree tree, ControlFlowGraph cfg) {
     if (!shouldCache) {

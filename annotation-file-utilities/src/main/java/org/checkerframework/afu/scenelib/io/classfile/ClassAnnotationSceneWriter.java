@@ -96,7 +96,7 @@ public class ClassAnnotationSceneWriter extends CodeOffsetAdapter {
   /** A list of annotations on this class that this has already visited in the class file. */
   private final List<String> existingClassAnnotations;
 
-  /** Whether or not this has visited the corresponding annotations in scene. */
+  /** True if this has visited the corresponding annotations in scene. */
   private boolean hasVisitedClassAnnotationsInScene;
 
   /**
@@ -124,7 +124,7 @@ public class ClassAnnotationSceneWriter extends CodeOffsetAdapter {
    * @param classReader the reader for the class being modified
    * @param scene the annotation scene containing annotations to be inserted into the class this
    *     visits
-   * @param overwrite whether or not to overwrite existing annotations on the same element
+   * @param overwrite true if to overwrite existing annotations on the same element
    */
   public ClassAnnotationSceneWriter(
       int api, ClassReader classReader, AScene scene, boolean overwrite) {
@@ -532,7 +532,7 @@ public class ClassAnnotationSceneWriter extends CodeOffsetAdapter {
     /** The AMethod that represents this method in scene. */
     private final AMethod aMethod;
 
-    /** Whether or not this has visit the method's annotations in scene. */
+    /** True if this has visit the method's annotations in scene. */
     private boolean hasVisitedMethodAnnotations;
 
     /** The existing annotations this method has visited. */
@@ -692,7 +692,7 @@ public class ClassAnnotationSceneWriter extends CodeOffsetAdapter {
      * this method's annotations.
      *
      * @param tla the Annotation to visit
-     * @return whether the annotation should be skipped
+     * @return true if the annotation should be skipped
      */
     private boolean shouldSkip(Annotation tla) {
       return (!overwrite && existingMethodAnnotations.contains(name(tla)));
@@ -703,7 +703,7 @@ public class ClassAnnotationSceneWriter extends CodeOffsetAdapter {
      * exists in this method's annotations.
      *
      * @param name the name of the annotation
-     * @return whether the annotation should be skipped
+     * @return true if the annotation should be skipped
      */
     private boolean shouldSkipExisting(String name) {
       return (!overwrite && aMethod.lookup(name) != null);
@@ -1133,7 +1133,7 @@ public class ClassAnnotationSceneWriter extends CodeOffsetAdapter {
      *
      * @param typeReference the type of annotation to search for
      * @param aTypeElement the element to search for annotations
-     * @param maybeSkip whether the annotation might be skipped
+     * @param maybeSkip true if the annotation might be skipped
      */
     private void visitTypeAnnotationsOnTypeElement(
         TypeReference typeReference, ATypeElement aTypeElement, boolean maybeSkip) {
@@ -1166,7 +1166,7 @@ public class ClassAnnotationSceneWriter extends CodeOffsetAdapter {
      *
      * @param typeReference the type of annotation to search for
      * @param aTypeElement the element to search for annotations
-     * @param maybeSkip whether the annotation might be skipped
+     * @param maybeSkip true if the annotation might be skipped
      */
     private void visitInsnAnnotationsOnTypeElement(
         TypeReference typeReference, ATypeElement aTypeElement, boolean maybeSkip) {

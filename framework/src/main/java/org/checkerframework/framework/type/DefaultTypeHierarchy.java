@@ -358,7 +358,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
    *     underlying type
    * @param outside a possibly-containing type; its underlying type contains {@code inside}'s
    *     underlying type
-   * @param canBeCovariant whether or not type arguments are allowed to be covariant
+   * @param canBeCovariant true if type arguments are allowed to be covariant
    * @return true if inside is contained by outside, or if canBeCovariant == true and {@code inside
    *     <: outside}
    */
@@ -440,7 +440,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
    * @param inside a possibly-contained type
    * @param outsideLower the lower bound of the possibly-containing type
    * @param outsideUpper the upper bound of the possibly-containing type
-   * @param canBeCovariant whether or not type arguments are allowed to be covariant
+   * @param canBeCovariant true if type arguments are allowed to be covariant
    * @return true if inside is contained by outside, or if canBeCovariant == true and {@code inside
    *     <: outside}
    */
@@ -566,8 +566,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
    *
    * @param subtype a possible subtype
    * @param supertype a possible supertype
-   * @param subtypeRaw whether {@code subtype} is a raw type
-   * @param supertypeRaw whether {@code supertype} is a raw type
+   * @param subtypeRaw true if {@code subtype} is a raw type
+   * @param supertypeRaw true if {@code supertype} is a raw type
    * @return true if the type arguments in {@code supertype} contain the type arguments in {@code
    *     subtype} and false otherwise
    */
@@ -646,7 +646,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
    * @param supertypeTypeArgs supertype arguments
    * @param covariantArgIndexes indexes into the type arguments list which correspond to the type
    *     arguments that are marked @{@link Covariant}.
-   * @return whether {@code supertypeTypeArgs} contain {@code subtypeTypeArgs}
+   * @return true if {@code supertypeTypeArgs} contain {@code subtypeTypeArgs}
    */
   protected boolean isContainedMany(
       List<? extends AnnotatedTypeMirror> subtypeTypeArgs,
@@ -1129,7 +1129,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
    *
    * @param subtype an intersection type
    * @param supertype an annotated type
-   * @return whether {@code subtype} is a subtype of {@code supertype}
+   * @return true if {@code subtype} is a subtype of {@code supertype}
    */
   protected boolean visitIntersection_Type(
       AnnotatedIntersectionType subtype, AnnotatedTypeMirror supertype) {
@@ -1238,7 +1238,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
    *
    * @param subtype the potential subtype to check
    * @param supertype the supertype to check
-   * @return whether all the alternatives of subtype are subtypes of supertype
+   * @return true if all the alternatives of subtype are subtypes of supertype
    */
   protected boolean visitUnion_Type(AnnotatedUnionType subtype, AnnotatedTypeMirror supertype) {
     return areAllSubtypes(subtype.getAlternatives(), supertype);
@@ -1249,7 +1249,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
    *
    * @param subtype the potential subtype to check
    * @param supertype the wildcard supertype to check
-   * @return whether the subtype is a subtype of the supertype's super bound
+   * @return true if the subtype is a subtype of the supertype's super bound
    */
   protected boolean visitType_Wildcard(
       AnnotatedTypeMirror subtype, AnnotatedWildcardType supertype) {
@@ -1264,7 +1264,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
    *
    * @param subtype the potential wildcard subtype to check
    * @param supertype the supertype to check
-   * @return whether the subtype's extends bound is a subtype of the supertype
+   * @return true if the subtype's extends bound is a subtype of the supertype
    */
   protected boolean visitWildcard_Type(
       AnnotatedWildcardType subtype, AnnotatedTypeMirror supertype) {

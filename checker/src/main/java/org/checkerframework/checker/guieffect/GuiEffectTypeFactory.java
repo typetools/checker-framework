@@ -343,7 +343,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
    * #getAnnotatedType(Tree)} instead.
    *
    * @param tree the tree to check
-   * @return whether it is a lambda expression or new class marked as UI by inference
+   * @return true if it is a lambda expression or new class marked as UI by inference
    */
   public boolean isDirectlyMarkedUIThroughInference(Tree tree) {
     if (tree instanceof LambdaExpressionTree) {

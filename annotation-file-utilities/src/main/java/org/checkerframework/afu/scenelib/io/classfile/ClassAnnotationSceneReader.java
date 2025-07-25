@@ -247,7 +247,7 @@ public class ClassAnnotationSceneReader extends CodeOffsetAdapter {
     /** The AElement into which the annotation visited should be inserted. */
     protected AElement aElement;
 
-    /** Whether or not this annotation is visible at run time. */
+    /** True if this annotation is visible at run time. */
     protected boolean visible;
 
     /** The AnnotationBuilder used to create this annotation. */
@@ -300,7 +300,7 @@ public class ClassAnnotationSceneReader extends CodeOffsetAdapter {
      *
      * @param api the ASM API version to use
      * @param descriptor the class descriptor of the enumeration class
-     * @param visible whether or not this annotation is visible at run time
+     * @param visible true if this annotation is visible at run time
      * @param aElement the AElement into which the annotation visited should be inserted
      * @param annotationWriter the AnnotationWriter passed by the caller
      */
@@ -580,7 +580,7 @@ public class ClassAnnotationSceneReader extends CodeOffsetAdapter {
      *
      * @param api the ASM API version to use
      * @param descriptor the descriptor of the reader
-     * @param visible whether or not this annotation is visible at run time
+     * @param visible true if this annotation is visible at run time
      * @param aElement the AElement into which the annotation visited should be inserted
      * @param annotationWriter the AnnotationWriter passed by the caller
      * @param typeRef A reference to the annotated type. This has information about the target type,
@@ -626,7 +626,7 @@ public class ClassAnnotationSceneReader extends CodeOffsetAdapter {
      *
      * @param api the ASM API version to use
      * @param descriptor the descriptor of the reader
-     * @param visible whether or not this annotation is visible at run time
+     * @param visible true if this annotation is visible at run time
      * @param aElement the AElement into which the annotation visited should be inserted
      * @param annotationWriter the AnnotationWriter passed by the caller
      * @param typeRef A reference to the annotated type. This has information about the target type,
