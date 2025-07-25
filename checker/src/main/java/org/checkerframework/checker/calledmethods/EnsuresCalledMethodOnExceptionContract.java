@@ -20,8 +20,8 @@ public class EnsuresCalledMethodOnExceptionContract {
   private final String method;
 
   /**
-   * Create a new <code>EnsuredCalledMethodOnException</code>. Usually this should be constructed
-   * from a {@link org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethodsOnException}
+   * Create a new {@code EnsuredCalledMethodOnException}. Usually this should be constructed from a
+   * {@link org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethodsOnException}
    * appearing in the source code.
    *
    * @param expression the expression described by this postcondition

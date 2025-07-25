@@ -32,7 +32,7 @@ public class ValueCheckerUtils {
   }
 
   /**
-   * Get a list of the values of an annotation, and then cast the values to a given type.
+   * Returns a list of the values of an annotation, and then cast the values to a given type.
    *
    * @param anno the annotation that contains values
    * @param castTo the type that is cast to
@@ -45,7 +45,7 @@ public class ValueCheckerUtils {
   }
 
   /**
-   * Get a list of the values of an annotation, and then cast the values to a given type.
+   * Returns a list of the values of an annotation, and then cast the values to a given type.
    *
    * @param anno the annotation that contains values
    * @param castTo the unannotated type that is casted to
@@ -130,8 +130,9 @@ public class ValueCheckerUtils {
   }
 
   /**
-   * Get all possible values from the given type and cast them into a boxed primitive type. Returns
-   * null if the list would have length greater than {@link ValueAnnotatedTypeFactory#MAX_VALUES}.
+   * Returns all possible values from the given type and cast them into a boxed primitive type.
+   * Returns null if the list would have length greater than {@link
+   * ValueAnnotatedTypeFactory#MAX_VALUES}.
    *
    * <p>{@code expectedType} must be a boxed type, not a primitive type, because primitive types
    * cannot be stored in a list.
@@ -220,7 +221,7 @@ public class ValueCheckerUtils {
   }
 
   /**
-   * Convert a list of longs to a given type
+   * Convert a list of longs to a given type.
    *
    * @param longs the integral values to convert
    * @param newClass determines the type of the result

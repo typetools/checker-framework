@@ -971,7 +971,7 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
    *
    * @param location the list to check
    * @return {@code true} if the last {@link TypePathEntry} is a {@link TypePath#WILDCARD_BOUND},
-   *     {@code false} otherwise.
+   *     {@code false} otherwise
    */
   private boolean wildcardLast(List<TypePathEntry> location) {
     return location.get(location.size() - 1).step == TypePath.WILDCARD_BOUND;
@@ -1599,7 +1599,7 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
    * @param path the location in the AST to check for the annotation
    * @param ins the annotation to check for
    * @return {@code true} if the given annotation is already at the given location in the AST,
-   *     {@code false} otherwise.
+   *     {@code false} otherwise
    */
   private boolean alreadyPresent(TreePath path, Insertion ins) {
     List<? extends AnnotationTree> alreadyPresent = null;
@@ -1964,7 +1964,7 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
   //
 
   /**
-   * Return a printed representation of a TreePath.
+   * Returns a printed representation of a TreePath.
    *
    * @param path a TreePath
    * @return a printed representation of the given TreePath
@@ -1995,7 +1995,7 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
   }
 
   /**
-   * Return toString(), but without line separators.
+   * Returns toString(), but without line separators.
    *
    * @param tree a tree
    * @return a one-line string representation of the tree
@@ -2005,7 +2005,7 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
   }
 
   /**
-   * Return either {@link #toStringOneLine} if it is no more than {@code length} characters, or
+   * Returns either {@link #toStringOneLine} if it is no more than {@code length} characters, or
    * {@link #toStringOneLine} quoted and truncated.
    *
    * @param tree a tree

@@ -674,7 +674,7 @@ public abstract class InitializationAnnotatedTypeFactory<
   }
 
   /**
-   * Return true if the type is initialized with respect to the given frame -- that is, all of the
+   * Returns true if the type is initialized with respect to the given frame -- that is, all of the
    * fields of the frame are initialized.
    *
    * @param type the type whose initialization type qualifiers to check

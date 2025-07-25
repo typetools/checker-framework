@@ -9,15 +9,15 @@ public class AnnotationInsertion extends Insertion {
   /**
    * The annotation text to be inserted into source code, always starts with "@".
    *
-   * <p>E.g. An example would be <code>com.foo.Bar(baz)</code>
+   * <p>E.g. An example would be {@code com.foo.Bar(baz)}
    */
   private final String fullyQualifiedAnnotationText;
 
   /**
    * The fully-qualified name of the annotation to be inserted.
    *
-   * <p>E.g. Given an annotation <code>com.foo.Bar(baz)</code>, its fully quailified name would be
-   * <code>com.foo.Bar</code>.
+   * <p>E.g. Given an annotation {@code com.foo.Bar(baz)}, its fully quailified name would be {@code
+   * com.foo.Bar}.
    */
   private final String fullyQualifiedAnnotationName;
 
@@ -167,10 +167,10 @@ public class AnnotationInsertion extends Insertion {
   }
 
   /**
-   * Get the fully-qualified name of the annotation.
+   * Returns the fully-qualified name of the annotation.
    *
-   * <p>E.g. given <code>@com.foo.Bar(baz)</code>, the fully-qualified name of this annotation is
-   * <code>com.foo.Bar</code>.
+   * <p>E.g. given {@code @com.foo.Bar(baz)}, the fully-qualified name of this annotation is {@code
+   * com.foo.Bar}.
    *
    * @return the annotation's fully-qualified name
    */

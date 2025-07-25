@@ -97,7 +97,7 @@ import org.checkerframework.javacutil.TypesUtils;
   }
 
   /**
-   * Return this variable's current bounds.
+   * Returns this variable's current bounds.
    *
    * @return this variable's current bounds
    */

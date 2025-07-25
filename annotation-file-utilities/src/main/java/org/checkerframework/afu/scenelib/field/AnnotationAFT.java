@@ -23,10 +23,10 @@ public final class AnnotationAFT extends ScalarAFT {
   }
 
   /**
-   * The string representation of an {@link AnnotationAFT} looks like <code>&#64;Foo</code> even
-   * though the subannotation definition is logically part of the {@link AnnotationAFT}. This is
-   * because the subannotation field type appears as <code>&#64;Foo</code> in an index file and the
-   * subannotation definition is written separately.
+   * The string representation of an {@link AnnotationAFT} looks like {@code @Foo} even though the
+   * subannotation definition is logically part of the {@link AnnotationAFT}. This is because the
+   * subannotation field type appears as {@code @Foo} in an index file and the subannotation
+   * definition is written separately.
    */
   @Override
   public String toString() {

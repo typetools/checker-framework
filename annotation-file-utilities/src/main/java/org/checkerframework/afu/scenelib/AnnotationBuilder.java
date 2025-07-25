@@ -152,7 +152,7 @@ public class AnnotationBuilder {
    * Begins supplying an array field of the given name and type. The elements of the array must be
    * passed to the returned {@link ArrayBuilder} in order, and the {@link ArrayBuilder} must be
    * finished before any other methods on this {@link AnnotationBuilder} are called. <code>
-   * aft.{@link ArrayAFT#elementType elementType}</code> must be known (not <code>null</code>).
+   * aft.{@link ArrayAFT#elementType elementType}</code> must be known (not {@code null}).
    *
    * <p>Each field may be supplied only once. This method may throw an exception if the {@link
    * AnnotationBuilder} expects a certain definition for the built annotation and the given field
@@ -181,7 +181,7 @@ public class AnnotationBuilder {
   /**
    * Supplies an zero-element array field whose element type is unknown. The field type of this
    * array is represented by an {@link ArrayAFT} with {@link ArrayAFT#elementType elementType} ==
-   * <code>null</code>.
+   * {@code null}.
    *
    * <p>This can sometimes happen due to a design flaw in the format of annotations in class files.
    * An array value does not specify an type itself; instead, each element carries a type. Thus, a

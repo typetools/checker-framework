@@ -53,25 +53,25 @@ public class Resolver {
   /** Instance of {@link Trees}. */
   private final Trees trees;
 
-  /** Instance of {@link Log} for error logs */
+  /** Instance of {@link Log} for error logs. */
   private final Log log;
 
-  /** {@code Resolve#findMethod} method */
+  /** {@code Resolve#findMethod} method. */
   private static final Method FIND_METHOD;
 
-  /** {@code Resolve#findVar} method */
+  /** {@code Resolve#findVar} method. */
   private static final Method FIND_VAR;
 
-  /** {@code Resolve#findIdent} method */
+  /** {@code Resolve#findIdent} method. */
   private static final Method FIND_IDENT;
 
-  /** {@code Resolve#findIdentInType} method */
+  /** {@code Resolve#findIdentInType} method. */
   private static final Method FIND_IDENT_IN_TYPE;
 
-  /** {@code Resolve#findIdentInPackage} method */
+  /** {@code Resolve#findIdentInPackage} method. */
   private static final Method FIND_IDENT_IN_PACKAGE;
 
-  /** {@code Resolve#findType} method */
+  /** {@code Resolve#findType} method. */
   private static final Method FIND_TYPE;
 
   /** {@code com.sun.tools.javac.comp.Resolve$AccessError} class. */
