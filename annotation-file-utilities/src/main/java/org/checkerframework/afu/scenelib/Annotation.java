@@ -206,7 +206,7 @@ public final class Annotation {
   }
 
   /**
-   * Returns whether this annotation equals <code>o</code>; a slightly faster variant of {@link
+   * Returns true if this annotation equals <code>o</code>; a slightly faster variant of {@link
    * #equals(Object)} for when the argument is statically known to be another nonnull {@link
    * Annotation}. Subclasses may wish to override this with a hard-coded "&amp;&amp;" of field
    * comparisons to improve performance.

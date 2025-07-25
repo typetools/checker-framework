@@ -877,8 +877,8 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    * Returns a shallow copy of this type. A shallow copy implies that each component type in the
    * output copy refers to the same object as the object being copied.
    *
-   * @param copyAnnotations whether copy should have annotations, i.e. whether field {@code
-   *     annotations} should be copied.
+   * @param copyAnnotations true if copy should have annotations, i.e., field {@code annotations}
+   *     should be copied.
    */
   public abstract AnnotatedTypeMirror shallowCopy(boolean copyAnnotations);
 
@@ -894,9 +894,9 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
   public abstract AnnotatedTypeMirror shallowCopy();
 
   /**
-   * Whether this contains any captured type variables.
+   * Returns true if this contains any captured type variables.
    *
-   * @return whether the {@code type} contains any captured type variables
+   * @return true if the {@code type} contains any captured type variables
    */
   public boolean containsCapturedTypes() {
     return atypeFactory.containsCapturedTypes(this);
@@ -951,7 +951,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
     protected @MonotonicNonNull List<AnnotatedTypeMirror> typeArgs;
 
     /**
-     * Whether the type was initially raw, i.e. the user did not provide the type arguments.
+     * True if the type was initially raw, i.e. the user did not provide the type arguments.
      * typeArgs will contain inferred type arguments, which might be too conservative at the moment.
      *
      * <p>Ideally, the field would be final. However, when we determine the supertype of a raw type,
@@ -1277,7 +1277,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
     /** The parameter types; an unmodifiable list. */
     /*package-private*/ @MonotonicNonNull List<AnnotatedTypeMirror> paramTypes = null;
 
-    /** Whether {@link paramTypes} has been computed. */
+    /** True if {@link paramTypes} has been computed. */
     private boolean paramTypesComputed = false;
 
     /**
@@ -1286,25 +1286,25 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
      */
     /*package-private*/ @Nullable AnnotatedDeclaredType receiverType;
 
-    /** Whether {@link receiverType} has been computed. */
+    /** True if {@link receiverType} has been computed. */
     private boolean receiverTypeComputed = false;
 
     /** The return type. */
     /*package-private*/ @MonotonicNonNull AnnotatedTypeMirror returnType;
 
-    /** Whether {@link returnType} has been computed. */
+    /** True if {@link returnType} has been computed. */
     private boolean returnTypeComputed = false;
 
     /** The thrown types; an unmodifiable list. */
     /*package-private*/ @MonotonicNonNull List<AnnotatedTypeMirror> thrownTypes;
 
-    /** Whether {@link thrownTypes} has been computed. */
+    /** True if {@link thrownTypes} has been computed. */
     private boolean thrownTypesComputed = false;
 
     /** The type variables; an unmodifiable list. */
     /*package-private*/ @MonotonicNonNull List<AnnotatedTypeVariable> typeVarTypes;
 
-    /** Whether {@link typeVarTypes} has been computed. */
+    /** True if {@link typeVarTypes} has been computed. */
     private boolean typeVarTypesComputed = false;
 
     /**
@@ -2097,7 +2097,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
     private AnnotatedTypeMirror extendsBound;
 
     /**
-     * Whether this is a type argument for a type whose {@code #underlyingType} is raw. The Checker
+     * True if this is a type argument for a type whose {@code #underlyingType} is raw. The Checker
      * Framework gives raw types wildcard type arguments so that the annotated type can be used as
      * if the annotated type was not raw.
      */
@@ -2273,11 +2273,11 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
     }
 
     /**
-     * Whether this is a type argument to a type whose {@code #underlyingType} is raw. The Checker
-     * Framework gives raw types wildcard type arguments so that the annotated type can be used as
-     * if the annotated type was not raw.
+     * Returns true if this is a type argument to a type whose {@code #underlyingType} is raw. The
+     * Checker Framework gives raw types wildcard type arguments so that the annotated type can be
+     * used as if the annotated type was not raw.
      *
-     * @return whether this is a type argument to a type whose {@code #underlyingType} is raw
+     * @return true if this is a type argument to a type whose {@code #underlyingType} is raw
      */
     public boolean isTypeArgOfRawType() {
       return typeArgOfRawType;

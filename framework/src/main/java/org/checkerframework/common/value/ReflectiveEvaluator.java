@@ -44,7 +44,7 @@ public class ReflectiveEvaluator {
   private final BaseTypeChecker checker;
 
   /**
-   * Whether to report warnings about problems with evaluation. Controlled by the -AreportEvalWarns
+   * If true, report warnings about problems with evaluation. Controlled by the -AreportEvalWarns
    * command-line option.
    */
   private final boolean reportWarnings;

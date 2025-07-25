@@ -291,7 +291,7 @@ public class CheckerMain {
    * groups to the returned list. Remove all matching args from the input args list.
    *
    * @param pattern a pattern with at least one matching group
-   * @param allowEmpties whether or not to add empty group(1) matches to the returned list
+   * @param allowEmpties if true, add empty group(1) matches to the returned list
    * @param args the arguments to extract from
    * @return a list of arguments from the first group that matched the pattern for each input args
    *     or the empty list if there were none
@@ -884,7 +884,7 @@ public class CheckerMain {
    *     processor
    * @param fullyQualifiedCheckerNames a list of fully-qualified checker names to match
    *     processorsString against
-   * @param allowSubcheckers whether to match against fully qualified checker names ending with
+   * @param allowSubcheckers if true, match against fully qualified checker names ending with
    *     "Subchecker"
    * @return processorsString where all shorthand references to Checker Framework built-in checkers
    *     are replaced with fully-qualified references
@@ -910,7 +910,7 @@ public class CheckerMain {
    *
    * @param processorName a processor name, possibly in shorthand
    * @param fullyQualifiedCheckerNames all checker names
-   * @param allowSubcheckers whether to match subcheckers as well as checkers
+   * @param allowSubcheckers if true, match subcheckers as well as checkers
    * @return the fully-qualified version of {@code processorName} in {@code
    *     fullyQualifiedCheckerNames}, or else {@code processorName} itself
    */
@@ -954,7 +954,7 @@ public class CheckerMain {
    * @param processorName a string identifying one processor
    * @param fullyQualifiedCheckerNames a list of fully-qualified checker names to match
    *     processorName against
-   * @param allowSubcheckers whether to match against fully qualified checker names ending with
+   * @param allowSubcheckers if true, match against fully qualified checker names ending with
    *     "Subchecker"
    * @return true if the shorthand processor name can be expanded to a checker in {@code
    *     fullyQualifiedCheckerNames}

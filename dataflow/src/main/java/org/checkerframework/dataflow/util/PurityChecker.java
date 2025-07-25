@@ -354,7 +354,7 @@ public class PurityChecker {
     }
 
     /**
-     * Check whether {@code variable} is permitted on the left-hand-side of an assignment.
+     * Returns true if {@code variable} is permitted on the left-hand-side of an assignment.
      *
      * @param variable the lhs to check
      */
