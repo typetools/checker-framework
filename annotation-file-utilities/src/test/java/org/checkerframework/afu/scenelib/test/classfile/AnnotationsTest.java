@@ -168,7 +168,7 @@ public class AnnotationsTest {
    * @param oldFileName the class file to read from
    * @param newFileName the class file to write to
    * @param scene the scene that contains annotations to be inserted
-   * @param overwrite whether to overwrite existing annotations
+   * @param overwrite if true, overwrite existing annotations
    */
   private void writeClass(String oldFileName, String newFileName, AScene scene, boolean overwrite) {
     try {

@@ -343,7 +343,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
    * #getAnnotatedType(Tree)} instead.
    *
    * @param tree the tree to check
-   * @return whether it is a lambda expression or new class marked as UI by inference
+   * @return true if it is a lambda expression or new class marked as UI by inference
    */
   public boolean isDirectlyMarkedUIThroughInference(Tree tree) {
     if (tree instanceof LambdaExpressionTree) {
@@ -408,7 +408,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
    *
    * @param declaringType the type declaring the override
    * @param overridingMethod the method override itself
-   * @param issueConflictWarning whether or not to issue warnings
+   * @param issueConflictWarning if true, issue warnings
    * @param errorTree the method declaration AST node; used for reporting errors
    * @return the min and max inherited effects, or null if none were discovered
    */

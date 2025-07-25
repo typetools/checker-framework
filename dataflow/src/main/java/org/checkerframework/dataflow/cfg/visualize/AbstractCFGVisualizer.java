@@ -171,8 +171,7 @@ public abstract class AbstractCFGVisualizer<
   }
 
   /**
-   * Checks whether a block exists in the visited blocks list, and, if not, adds it to the visited
-   * blocks list and the work list.
+   * Adds the block to the visited blocks list and the work list, if necessary.
    *
    * @param b the block to check
    * @param visited the set of blocks that have already been visited or are in the work list

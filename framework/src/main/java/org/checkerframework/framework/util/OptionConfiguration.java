@@ -18,7 +18,7 @@ public interface OptionConfiguration {
   Map<String, String> getOptions();
 
   /**
-   * Check whether the given option is provided.
+   * Returns true if the given option is provided.
    *
    * <p>Note that {@link #getOption} can still return null even if {@code hasOption} returns true:
    * this happens e.g. for {@code -Amyopt}

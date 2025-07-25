@@ -351,7 +351,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
    *
    * @param gtNode the node that is greater or equal to the offset
    * @param offsetNode a node part of the offset
-   * @param offsetAddOne whether to add one to the offset
+   * @param offsetAddOne if true, add one to the offset
    * @param in input of the transfer function
    * @param store location to store the refined types
    */

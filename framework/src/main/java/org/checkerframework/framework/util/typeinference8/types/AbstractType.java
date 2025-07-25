@@ -68,14 +68,14 @@ public abstract class AbstractType {
   /** The {@link AnnotatedTypeFactory}. */
   protected final AnnotatedTypeFactory typeFactory;
 
-  /** Whether the annotations on this type should be ignored. */
+  /** True if the annotations on this type should be ignored. */
   public final boolean ignoreAnnotations;
 
   /**
    * Creates an {@link AbstractType}.
    *
    * @param context the context object
-   * @param ignoreAnnotations whether the annotations on this type should be ignored
+   * @param ignoreAnnotations true if the annotations on this type should be ignored
    */
   protected AbstractType(Java8InferenceContext context, boolean ignoreAnnotations) {
     this.context = context;
@@ -131,7 +131,7 @@ public abstract class AbstractType {
    *
    * @param atm annotated type mirror
    * @param type type mirror
-   * @param ignoreAnnotations whether the annotations on this type should be ignored
+   * @param ignoreAnnotations true if the annotations on this type should be ignored
    * @return the new type
    */
   public abstract AbstractType create(
@@ -398,10 +398,10 @@ public abstract class AbstractType {
   }
 
   /**
-   * Whether the proper type is a parameterized class or interface type, or an inner class type of a
-   * parameterized class or interface type (directly or indirectly)
+   * Returns true if the proper type is a parameterized class or interface type, or an inner class
+   * type of a parameterized class or interface type (directly or indirectly)
    *
-   * @return whether T is a parameterized type
+   * @return true if T is a parameterized type
    */
   public boolean isParameterizedType() {
     // TODO this isn't matching the JavaDoc.
