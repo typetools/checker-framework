@@ -244,15 +244,13 @@ public class CollectionOwnershipAnnotatedTypeFactory
    * <p>This overload should be used before computation of AnnotatedTypeMirrors is completed, in
    * particular in addComputedTypeAnnotations(AnnotatedTypeMirror).
    *
-   * <p>That is, whether the given type is
-   *
    * @param t the AnnotatedTypeMirror
    * @return true if t is a resource collection
    */
   public boolean isResourceCollection(TypeMirror t) {
     if (t == null) return false;
-    List<String> list = getMustCallValuesOfResourceCollectionComponent(t);
-    return list != null && list.size() > 0;
+    List<String> mcValues = getMustCallValuesOfResourceCollectionComponent(t);
+    return mcValues != null && mcValues.size() > 0;
   }
 
   /**
@@ -265,7 +263,9 @@ public class CollectionOwnershipAnnotatedTypeFactory
    *     declaration
    */
   public boolean isOwningCollectionField(Element elt) {
-    if (elt == null) return false;
+    if (elt == null) {
+      return false;
+    }
     if (isResourceCollection(elt.asType())) {
       if (elt.getKind().isField()) {
         AnnotatedTypeMirror atm = getAnnotatedType(elt);
@@ -293,7 +293,9 @@ public class CollectionOwnershipAnnotatedTypeFactory
    * @return true if the element is a resource collection field.
    */
   public boolean isResourceCollectionField(Element elt) {
-    if (elt == null) return false;
+    if (elt == null) {
+      return false;
+    }
     if (isResourceCollection(elt.asType())) {
       if (elt.getKind().isField()) {
         return true;
@@ -312,7 +314,9 @@ public class CollectionOwnershipAnnotatedTypeFactory
    *     {@code @OwningCollection} by declaration
    */
   public boolean isOwningCollectionParameter(Element elt) {
-    if (elt == null) return false;
+    if (elt == null) {
+      return false;
+    }
     if (isResourceCollection(elt.asType())) {
       if (elt.getKind() == ElementKind.PARAMETER) {
         AnnotatedTypeMirror atm = getAnnotatedType(elt);
