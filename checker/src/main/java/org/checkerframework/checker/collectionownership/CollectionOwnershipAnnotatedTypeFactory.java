@@ -248,7 +248,9 @@ public class CollectionOwnershipAnnotatedTypeFactory
    * @return true if t is a resource collection
    */
   public boolean isResourceCollection(TypeMirror t) {
-    if (t == null) return false;
+    if (t == null) {
+      return false;
+    }
     List<String> mcValues = getMustCallValuesOfResourceCollectionComponent(t);
     return mcValues != null && mcValues.size() > 0;
   }
