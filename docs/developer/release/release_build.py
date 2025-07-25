@@ -242,21 +242,11 @@ def build_checker_framework_release(
     execute("./gradlew assemble -Prelease=true", True, False, ANNO_FILE_UTILITIES)
 
     # update versions
-    ant_props = (
-        '-Dchecker=%s -Drelease.ver=%s -Dafu.version=%s -Dafu.properties=%s -Dafu.release.date="%s"'
-        % (checker_dir, version, version, afu_build_properties, afu_release_date)
-    )
-    # IMPORTANT: The release.xml in the directory where the Checker Framework is
-    # being built is used. Not the release.xml in the directory you ran
-    # release_build.py from.
-    ant_cmd = "ant %s -f release.xml %s update-checker-framework-versions " % (
-        ant_debug,
-        ant_props,
-    )
-    execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
+    execute("./gradlew updateVersionNumbers", working_dir=CHECKER_FRAMEWORK)
+
     # Update version numbers in the manual and API documentation,
     # which come from source files that have just been changed.
-    # Otherwise the manual and API documentation show up in the grep command below.
+    # Otherwise, the manual and API documentation show up in the grep command below.
     execute("./gradlew assemble", working_dir=CHECKER_FRAMEWORK)
     execute("./gradlew allJavadoc", working_dir=CHECKER_FRAMEWORK)
     execute("./gradlew manual", working_dir=CHECKER_FRAMEWORK)
@@ -280,24 +270,16 @@ def build_checker_framework_release(
     execute("make", True, False, checker_tutorial_dir)
 
     # Create checker-framework-X.Y.Z.zip and put it in checker_framework_interm_dir
-    # IMPORTANT: The release.xml in the directory where the Checker Framework
-    # is being built is used. Not the release.xml in the directory you ran
-    # release_build.py from.
-    gradle_cmd = "./gradlew createCheckerFrameworkZip -Pchecker=%s -PdestDir=%s" % (
-        checker_dir,
+    gradle_cmd = "./gradlew createCheckerFrameworkZip -PdestDir=%s" % (
         checker_framework_interm_dir,
     )
     execute(gradle_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
-    ant_props = "-Dchecker=%s -Ddest.dir=%s -Dfile.name=%s -Dversion=%s" % (
-        checker_dir,
+    gradle_cmd = "./gradlew zipMavenExamples-PdestDir=%s" % (
         checker_framework_interm_dir,
-        "mvn-examples.zip",
-        version,
     )
-    # IMPORTANT: The release.xml in the directory where the Checker Framework is being built is used. Not the release.xml in the directory you ran release_build.py from.
-    ant_cmd = "ant %s -f release.xml %s zip-maven-examples " % (ant_debug, ant_props)
-    execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
+
+    execute(gradle_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
     # copy the remaining checker-framework website files to checker_framework_interm_dir
     ant_props = (

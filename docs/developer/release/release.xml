@@ -7,18 +7,7 @@
     </description>
 
 
-    <target name="zip-tutorial" description="Create a zip archive for the directory tutorial.">
-        <fail unless="checker"    message="checker property is not set!" />
-        <fail unless="dest.dir"   message="dest.dir property is not set!"  />
 
-        <zip destfile="${dest.dir}/$tutorial.zip">
-            <zipfileset dir="${checkerframework}" prefix="tutorial"
-                        includes="docs/tutorial/**"
-                        excludes="docs/tutorial/test/** docs/tutorial/src/** docs/tutorial/Makefile docs/tutorial/README"/>
-            <zipfileset dir="${checkerframework}" includes="docs/logo/Logo/CFLogo.png" fullpath="docs/tutorial/CFLogo.png"/>
-            <zipfileset dir="${checkerframework}" includes="docs/logo/Logo/CFLogo.png" fullpath="docs/tutorial/webpages/CFLogo.png"/>
-        </zip>
-    </target>
 
     <target name="zip-maven-examples" description="Create a zip archive for the directory checker/examples/MavenExample.">
         <fail unless="checker"    message="checker property is not set!" />
