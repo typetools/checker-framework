@@ -184,7 +184,7 @@ public class JavaExpressionParseUtil {
    * A visitor class that converts a javac {@link ExpressionTree} to a {@link JavaExpression}. This
    * class does not viewpoint-adapt the expression.
    */
-  public static class ExpressionTreeToJavaExpressionVisitor
+  private static class ExpressionTreeToJavaExpressionVisitor
       extends SimpleTreeVisitor<JavaExpression, Void> {
 
     /** The processing environment. */
@@ -311,7 +311,7 @@ public class JavaExpressionParseUtil {
 
     /** If the expression is not supported, throw a {@link ParseRuntimeException} by default. */
     @Override
-    protected JavaExpression defaultAction(com.sun.source.tree.Tree treeNode, Void unused) {
+    public JavaExpression defaultAction(com.sun.source.tree.Tree treeNode, Void unused) {
       throw new ParseRuntimeException(
           constructJavaExpressionParseError(
               treeNode.toString(), treeNode.getClass() + " is not a supported expression"));
