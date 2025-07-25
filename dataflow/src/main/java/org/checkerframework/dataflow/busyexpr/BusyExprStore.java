@@ -71,7 +71,7 @@ public class BusyExprStore implements Store<BusyExprStore> {
   }
 
   /**
-   * Add expressions to the store, add sub-expressions to the store recursively
+   * Add expressions to the store, add sub-expressions to the store recursively.
    *
    * @param e the expression to be added
    */

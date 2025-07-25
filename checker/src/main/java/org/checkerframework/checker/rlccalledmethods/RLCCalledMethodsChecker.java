@@ -25,7 +25,7 @@ public class RLCCalledMethodsChecker extends CalledMethodsChecker {
   /** Creates a RLCCalledMethodsChecker. */
   public RLCCalledMethodsChecker() {}
 
-  /** The parent resource leak checker */
+  /** The parent resource leak checker. */
   private @MonotonicNonNull ResourceLeakChecker rlc;
 
   @Override
@@ -79,7 +79,10 @@ public class RLCCalledMethodsChecker extends CalledMethodsChecker {
         this.rlc = ResourceLeakUtils.getResourceLeakChecker(this);
       } catch (TypeSystemError e) {
         throw new UserError(
-            "Cannot find ResourceLeakChecker in checker hierarchy. The RLCCalledMethods checker shouldn't be invoked directly, it is only a subchecker of the ResourceLeakChecker. Use the ResourceLeakChecker or the CalledMethodsChecker instead.");
+            "Cannot find ResourceLeakChecker in checker hierarchy. The RLCCalledMethods checker"
+                + " shouldn't be invoked directly, it is only a subchecker of the"
+                + " ResourceLeakChecker. Use the ResourceLeakChecker or the CalledMethodsChecker"
+                + " instead.");
       }
     }
 

@@ -596,10 +596,10 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
   }
 
   /**
-   * Get name from an ExpressionTree
+   * Get name from an ExpressionTree.
    *
    * @param expr ExpressionTree
-   * @return Name of the identifier the expression evaluates to or null if it doesn't
+   * @return name of the identifier the expression evaluates to or null if it doesn't
    */
   protected Name getNameFromExpressionTree(ExpressionTree expr) {
     if (expr == null) return null;
@@ -624,7 +624,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
    * Get name from a {@code StatementTree}
    *
    * @param expr the {@code StatementTree}
-   * @return Name of the identifier the expression evaluates to or null if it doesn't
+   * @return name of the identifier the expression evaluates to or null if it doesn't
    */
   protected Name getNameFromStatementTree(StatementTree expr) {
     if (expr == null) return null;
@@ -639,7 +639,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
   }
 
   /**
-   * Returns the ExpressionTree of the collection in the given expression
+   * Returns the ExpressionTree of the collection in the given expression.
    *
    * @param expr ExpressionTree
    * @return the expression evaluates to or null if it doesn't

@@ -252,9 +252,9 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
   }
 
   /**
-   * Update the given <code>exceptionalStores</code> for the {@link
+   * Update the given {@code exceptionalStores} for the {@link
    * org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethodsOnException} annotations
-   * written on the given <code>method</code>.
+   * written on the given {@code method}.
    *
    * @param node a method invocation
    * @param method the method being invoked

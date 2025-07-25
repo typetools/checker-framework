@@ -155,7 +155,7 @@ public class RegexTransfer extends CFTransfer {
 
   /**
    * If possibleMatcher is a call of groupCount on a Matcher and possibleConstant is a constant,
-   * annotate the matcher as constant + 1 if !isAlsoEqual constant if isAlsoEqual
+   * annotate the matcher as constant + 1 if !isAlsoEqual constant if isAlsoEqual.
    *
    * @param possibleMatcher the Node that might be a call of Matcher.groupCount()
    * @param possibleConstant the Node that might be a constant

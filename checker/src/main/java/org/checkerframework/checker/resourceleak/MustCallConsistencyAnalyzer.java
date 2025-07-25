@@ -530,7 +530,7 @@ public class MustCallConsistencyAnalyzer {
     }
 
     /**
-     * Create a CollectionObligation from an Obligation
+     * Create a CollectionObligation from an Obligation.
      *
      * @param obligation the obligation to create a CollectionObligation from
      * @param mustCallMethod the method that must be called on the elements of the collection
@@ -779,7 +779,8 @@ public class MustCallConsistencyAnalyzer {
             coAtf.getMustCallValuesOfResourceCollectionComponent(node.getTree());
         if (mustCallValues == null) {
           throw new BugInCF(
-              "List of MustCall values of component type is null for OwningCollection return value: "
+              "List of MustCall values of component type is null for OwningCollection return value:"
+                  + " "
                   + node);
         }
         if (!ResourceLeakUtils.isIterator(node.getType())) {
@@ -871,7 +872,7 @@ public class MustCallConsistencyAnalyzer {
    *
    * @param obligations the Obligations to update
    * @param node the method or constructor invocation
-   * @param exceptionType a description of the outgoing CFG edge from the node: <code>null</code> to
+   * @param exceptionType a description of the outgoing CFG edge from the node: {@code null} to
    *     indicate normal return, or a {@link TypeMirror} to indicate a subclass of the given
    *     throwable class was thrown
    */
@@ -1260,7 +1261,7 @@ public class MustCallConsistencyAnalyzer {
    * @param obligations the current set of Obligations, which is side-effected to remove Obligations
    *     for locals that are passed as owning parameters to the method or constructor
    * @param node a method or constructor invocation node
-   * @param exceptionType a description of the outgoing CFG edge from the node: <code>null</code> to
+   * @param exceptionType a description of the outgoing CFG edge from the node: {@code null} to
    *     indicate normal return, or a {@link TypeMirror} to indicate a subclass of the given
    *     throwable class was thrown
    */
@@ -2488,9 +2489,8 @@ public class MustCallConsistencyAnalyzer {
    * @param obligations the Obligations for the current block
    * @param currentBlock the current block
    * @param successor a successor of the current block
-   * @param exceptionType the type of edge from <code>currentBlock</code> to <code>successor
-   *     </code>: <code>null</code> for normal control flow, or a throwable type for exceptional
-   *     control flow
+   * @param exceptionType the type of edge from {@code currentBlock} to {@code successor}: {@code
+   *     null} for normal control flow, or a throwable type for exceptional control flow
    * @param visited block-Obligations pairs already analyzed or already on the worklist
    * @param worklist current worklist
    * @throws InvalidLoopBodyAnalysisException if the propagation is called as part of a loop body
@@ -3644,7 +3644,7 @@ public class MustCallConsistencyAnalyzer {
   private static class InvalidLoopBodyAnalysisException extends Exception {
 
     /**
-     * Construct an InvalidLoopBodyAnalysisException
+     * Construct an InvalidLoopBodyAnalysisException.
      *
      * @param message the error message
      */

@@ -132,7 +132,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
       new HashMap<>();
 
   /**
-   * Marks the specified loop as fulfilling a collection obligation
+   * Marks the specified loop as fulfilling a collection obligation.
    *
    * @param loop the loop wrapper
    */
@@ -441,7 +441,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
 
   /**
    * Utility method to get the flow-sensitive {@code CollectionOwnershipType} that the given node
-   * has in the given store
+   * has in the given store.
    *
    * @param node the node
    * @param coStore the store
@@ -526,11 +526,11 @@ public class CollectionOwnershipAnnotatedTypeFactory
   }
 
   /**
-   * Determine if the given expression <code>e</code> refers to <code>this.field</code>.
+   * Determine if the given expression {@code e} refers to {@code this.field}.
    *
    * @param e the expression
    * @param field the field
-   * @return true if <code>e</code> refers to <code>this.field</code>
+   * @return true if {@code e} refers to {@code this.field}
    */
   public boolean expressionEqualsField(String e, VariableElement field) {
     try {

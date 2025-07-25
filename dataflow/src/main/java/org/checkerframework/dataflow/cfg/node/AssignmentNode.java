@@ -47,7 +47,7 @@ public class AssignmentNode extends Node {
   /** The node for the RHS of the assignment tree. */
   protected final Node rhs;
 
-  /** True if the assignment node is synthetic */
+  /** True if the assignment node is synthetic. */
   protected final boolean synthetic;
 
   /** True if the assignment node is desugared from an enhanced-for-loop over an array. */

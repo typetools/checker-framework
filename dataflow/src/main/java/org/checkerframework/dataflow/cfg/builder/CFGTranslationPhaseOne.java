@@ -607,7 +607,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Visit a SwitchExpressionTree
+   * Visit a SwitchExpressionTree.
    *
    * @param switchExpressionTree a SwitchExpressionTree, typed as Tree to be backward-compatible
    * @param p parameter
@@ -622,7 +622,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Visit a BindingPatternTree
+   * Visit a BindingPatternTree.
    *
    * @param bindingPatternTree a BindingPatternTree, typed as Tree to be backward-compatible
    * @param p parameter

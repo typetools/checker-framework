@@ -323,7 +323,7 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
   }
 
   /**
-   * Gets the tree for a temporary variable
+   * Gets the tree for a temporary variable.
    *
    * @param node a node for a temporary variable
    * @return the tree for {@code node}

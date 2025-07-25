@@ -499,7 +499,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
 
   /**
    * Helper for {@link #getExceptionalPostconditions(ExecutableElement)} that parses a {@link
-   * EnsuresCalledMethodsOnException.List} annotation and stores the results in <code>out</code>.
+   * EnsuresCalledMethodsOnException.List} annotation and stores the results in {@code out}.
    *
    * @param annotation the annotation
    * @param out the output collection
@@ -524,7 +524,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
 
   /**
    * Helper for {@link #getExceptionalPostconditions(ExecutableElement)} that parses a {@link
-   * EnsuresCalledMethodsOnException} annotation and stores the results in <code>out</code>.
+   * EnsuresCalledMethodsOnException} annotation and stores the results in {@code out}.
    *
    * @param annotation the annotation
    * @param out the output collection
