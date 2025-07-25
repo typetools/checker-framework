@@ -1,6 +1,5 @@
 package org.checkerframework.framework.util;
 
-import com.github.javaparser.ParseProblemException;
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ExpressionTree;
@@ -148,14 +147,10 @@ public class JavaExpressionParseUtil {
     ExpressionTree exprTree;
     try {
       exprTree = JavacParseUtil.parseExpression(expressionWithParameterNames);
-    } catch (ParseProblemException e) {
+    } catch (RuntimeException e) {
       String extra = ".";
-      if (!e.getProblems().isEmpty()) {
-        String message = e.getProblems().get(0).getMessage();
-        int newLine = message.indexOf(System.lineSeparator());
-        if (newLine != -1) {
-          message = message.substring(0, newLine);
-        }
+      if (!e.getMessage().isEmpty()) {
+        String message = e.getMessage();
         extra = ". Error message: " + message;
       }
       throw constructJavaExpressionParseError(expression, "the expression did not parse" + extra);
@@ -942,8 +937,8 @@ public class JavaExpressionParseUtil {
     }
 
     /**
-     * Converts the JavaParser type to a TypeMirror. Returns null if {@code tree} is not handled;
-     * this method does not handle type variables, union types, or intersection types.
+     * Converts the Javac {@link JCTree} to a {@link TypeMirror}. Returns null if {@code tree} is
+     * not handled; this method does not handle type variables, union types, or intersection types.
      *
      * @param tree a JCTree
      * @return a TypeMirror corresponding to {@code tree}, or null if {@code tree} isn't handled
@@ -957,7 +952,7 @@ public class JavaExpressionParseUtil {
         if (parsed instanceof IdentifierTree) {
           try {
             return JavacParseUtil.parseExpression(tree.toString()).accept(this, null).getType();
-          } catch (ParseProblemException e) {
+          } catch (RuntimeException e) {
             return null;
           }
         }
@@ -966,7 +961,7 @@ public class JavaExpressionParseUtil {
       if (tree instanceof IdentifierTree) {
         try {
           return JavacParseUtil.parseExpression(tree.toString()).accept(this, null).getType();
-        } catch (ParseProblemException e) {
+        } catch (RuntimeException e) {
           return null;
         }
       } else if (tree instanceof JCTree.JCPrimitiveTypeTree) {
