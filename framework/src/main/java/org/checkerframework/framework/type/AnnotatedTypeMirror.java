@@ -878,7 +878,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    * output copy refers to the same object as the object being copied.
    *
    * @param copyAnnotations true if copy should have annotations, i.e., field {@code annotations}
-   *     should be copied.
+   *     should be copied
    */
   public abstract AnnotatedTypeMirror shallowCopy(boolean copyAnnotations);
 
@@ -1175,7 +1175,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
     }
 
     /**
-     * Return the declared type with its type arguments removed. This also replaces the underlying
+     * Returns the declared type with its type arguments removed. This also replaces the underlying
      * type with its erasure.
      *
      * @return a fresh copy of the declared type with no type arguments
@@ -1794,7 +1794,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
     }
 
     /**
-     * Get the lower bound field directly, bypassing any lazy initialization. This method is
+     * Returns the lower bound field directly, bypassing any lazy initialization. This method is
      * necessary to prevent infinite recursions in initialization. In general, prefer getLowerBound.
      *
      * @return the lower bound field
@@ -1860,7 +1860,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
     }
 
     /**
-     * Get the upper bound field directly, bypassing any lazy initialization. This method is
+     * Returns the upper bound field directly, bypassing any lazy initialization. This method is
      * necessary to prevent infinite recursions in initialization. In general, prefer getUpperBound.
      *
      * @return the upper bound field
@@ -1870,9 +1870,9 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
     }
 
     /**
-     * Get the upper bound of the type variable, possibly lazily initializing it. Attention: If the
-     * upper bound is lazily initialized, it will not contain any annotations! Callers of the method
-     * have to make sure that an AnnotatedTypeFactory first processed the bound.
+     * Returns the upper bound of the type variable, possibly lazily initializing it. Attention: If
+     * the upper bound is lazily initialized, it will not contain any annotations! Callers of the
+     * method have to make sure that an AnnotatedTypeFactory first processed the bound.
      *
      * @return the upper bound type of this type variable
      */

@@ -320,7 +320,7 @@ public class NullnessVisitor
   }
 
   /**
-   * Return true if the given tree is "new X[]", in the context "toArray(new X[])".
+   * Returns true if the given tree is "new X[]", in the context "toArray(new X[])".
    *
    * @param tree a tree to test
    * @return true if the tree is a new array within acall to toArray()

@@ -134,7 +134,7 @@ public class AMethod extends ADeclaration {
   }
 
   /**
-   * Get the type parameters of this method.
+   * Returns the type parameters of this method.
    *
    * @return the list of type parameters
    */
@@ -228,7 +228,7 @@ public class AMethod extends ADeclaration {
   }
 
   /**
-   * Get the return type.
+   * Returns the return type.
    *
    * @return the return type, or null if the return type is unknown or void
    */
@@ -255,7 +255,7 @@ public class AMethod extends ADeclaration {
   }
 
   /**
-   * Get the parameters, as a map from parameter index (0-indexed) to representation.
+   * Returns the parameters, as a map from parameter index (0-indexed) to representation.
    *
    * @return an immutable copy of the vivified parameters, as a map from index to representation
    */
@@ -264,7 +264,7 @@ public class AMethod extends ADeclaration {
   }
 
   /**
-   * Get the preconditions: annotations that apply to fields at method entry.
+   * Returns the preconditions: annotations that apply to fields at method entry.
    *
    * @return an immutable copy of the vivified preconditions
    */
@@ -273,7 +273,7 @@ public class AMethod extends ADeclaration {
   }
 
   /**
-   * Get the postconditions: annotations that apply to fields at method exit.
+   * Returns the postconditions: annotations that apply to fields at method exit.
    *
    * @return an immutable copy of the vivified postconditions
    */

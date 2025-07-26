@@ -128,7 +128,7 @@ class TypeFromTree {
   }
 
   /**
-   * Return a string with the two arguments, for diagnostics.
+   * Returns a string with the two arguments, for diagnostics.
    *
    * @param typeFactory a type factory
    * @param tree a tree

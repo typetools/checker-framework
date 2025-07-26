@@ -121,7 +121,7 @@ public class AnnotationFileUtil {
    * @param className fully qualified name of the type declaration to find
    * @param indexFile a StubUnit to search
    * @return the declaration in {@code indexFile} with {@code className} if it exists, null
-   *     otherwise.
+   *     otherwise
    */
   /*package-private*/ static @Nullable TypeDeclaration<?> findDeclaration(
       String className, StubUnit indexFile) {
@@ -374,7 +374,7 @@ public class AnnotationFileUtil {
   }
 
   /**
-   * Return annotation files found at a given file system location (does not look on classpath).
+   * Returns annotation files found at a given file system location (does not look on classpath).
    *
    * @param location an annotation file (stub file or ajava file), a jarfile, or a directory. Look
    *     for it as an absolute file and relative to the current directory.

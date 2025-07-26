@@ -12,8 +12,8 @@ import org.plumelib.options.Option;
 import org.plumelib.options.Options;
 
 /**
- * A <code> ClassFileReader </code> provides methods for reading in annotations from a class file
- * into an {@link AScene}.
+ * A {@code ClassFileReader } provides methods for reading in annotations from a class file into an
+ * {@link AScene}.
  */
 public class ClassFileReader {
   public static final String INDEX_UTILS_VERSION = "Annotation File Utilities v3.9.14";
@@ -153,13 +153,13 @@ public class ClassFileReader {
   }
 
   /**
-   * Reads the annotations from the class file <code> fileName </code> and inserts them into <code>
-   *  scene </code>. <code> fileName </code> should be a file name that can be resolved from the
-   * current working directory, which means it should end in ".class" for standard Java class files.
+   * Reads the annotations from the class file {@code fileName} and inserts them into {@code scene}.
+   * {@code fileName} should be a file name that can be resolved from the current working directory,
+   * which means it should end in ".class" for standard Java class files.
    *
    * @param scene the scene into which the annotations should be inserted
    * @param fileName the file name of the class the annotations should be read from
-   * @throws IOException if there is a problem reading from <code> fileName </code>
+   * @throws IOException if there is a problem reading from {@code fileName}
    */
   public static void read(AScene scene, String fileName) throws IOException {
     try (FileInputStream fis = new FileInputStream(fileName)) {
@@ -168,12 +168,12 @@ public class ClassFileReader {
   }
 
   /**
-   * Reads the annotations from the class <code> className </code>, assumed to be in your classpath,
-   * and inserts them into <code> scene </code>.
+   * Reads the annotations from the class {@code className}, assumed to be in your classpath, and
+   * inserts them into {@code scene}.
    *
    * @param scene the scene into which the annotations should be inserted
    * @param className the name of the class to read in
-   * @throws IOException if there is a problem reading <code> className </code>
+   * @throws IOException if there is a problem reading {@code className}
    */
   public static void readFromClass(AScene scene, String className) throws IOException {
     read(scene, new ClassReader(className));
@@ -185,7 +185,7 @@ public class ClassFileReader {
    *
    * @param scene the scene into which the annotations should be inserted
    * @param input an input stream containing the class that the annotations should be read from
-   * @throws IOException if there is a problem reading from <code> in </code>
+   * @throws IOException if there is a problem reading from {@code in}
    */
   public static void read(AScene scene, InputStream input) throws IOException {
     read(scene, new ClassReader(input));

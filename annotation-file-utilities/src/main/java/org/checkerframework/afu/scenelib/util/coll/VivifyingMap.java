@@ -40,7 +40,7 @@ public abstract class VivifyingMap<K, V> extends WrapperMap<K, V> {
   }
 
   /**
-   * Returns a new, "empty" value to which the key <code>k</code> can be mapped; subclasses must
+   * Returns a new, "empty" value to which the key {@code k} can be mapped; subclasses must
    * implement.
    */
   protected abstract V createValueFor(K k);
