@@ -5,6 +5,10 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import org.checkerframework.checker.collectionownership.qual.OwningCollection;
+import org.checkerframework.checker.collectionownership.qual.PolyOwningCollection;
+import org.checkerframework.checker.mustcall.qual.NotOwning;
+import org.checkerframework.checker.mustcall.qual.Owning;
 
 /**
  * A simple implementation of {@link KeyedSet} backed by an insertion-order {@link
@@ -44,7 +48,7 @@ public class LinkedHashKeyedSet<K, V> extends AbstractSet<V> implements KeyedSet
     }
 
     @Override
-    public V next() {
+    public @NotOwning V next() {
       return itr.next();
     }
 
@@ -57,7 +61,7 @@ public class LinkedHashKeyedSet<K, V> extends AbstractSet<V> implements KeyedSet
   }
 
   @Override
-  public Iterator<V> iterator() {
+  public Iterator<V> iterator(@PolyOwningCollection LinkedHashKeyedSet<K, V> this) {
     return new KeyedSetIterator();
   }
 
@@ -71,7 +75,15 @@ public class LinkedHashKeyedSet<K, V> extends AbstractSet<V> implements KeyedSet
     return theValues.toArray(a);
   }
 
-  private boolean checkAdd(int behavior, V old) {
+  /**
+   * Prepares for adding an element to this. Removes the given element if {@code behavior} is
+   * REPLACE.
+   *
+   * @param behavior what action this method should take
+   * @param old the element to be removed, if {@code behavior} is REPLACE
+   * @return true if an element was removed
+   */
+  private boolean checkAdd(@OwningCollection LinkedHashKeyedSet<K, V> this, int behavior, V old) {
     switch (behavior) {
       case REPLACE:
         remove(old);
@@ -90,7 +102,11 @@ public class LinkedHashKeyedSet<K, V> extends AbstractSet<V> implements KeyedSet
   }
 
   @Override
-  public V add(V o, int conflictBehavior, int equalBehavior) {
+  public V add(
+      @OwningCollection LinkedHashKeyedSet<K, V> this,
+      V o,
+      int conflictBehavior,
+      int equalBehavior) {
     K key = keyer.getKeyFor(o);
     V old = theMap.get(key);
     if (old == null
@@ -100,12 +116,12 @@ public class LinkedHashKeyedSet<K, V> extends AbstractSet<V> implements KeyedSet
   }
 
   @Override
-  public boolean add(V o) {
+  public boolean add(@Owning V o) {
     return add(o, THROW_EXCEPTION, IGNORE) == null;
   }
 
   @Override
-  public boolean remove(Object o) {
+  public boolean remove(@OwningCollection LinkedHashKeyedSet<K, V> this, Object o) {
     return theValues.remove(o);
   }
 
