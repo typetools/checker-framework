@@ -1110,7 +1110,7 @@ public final class TreeUtils {
   }
 
   /**
-   * Return the set of kinds that represent classes.
+   * Returns the set of kinds that represent classes.
    *
    * @return the set of kinds that represent classes
    */
@@ -1142,7 +1142,7 @@ public final class TreeUtils {
   }
 
   /**
-   * Return the set of kinds that represent declarations: classes, methods, and variables.
+   * Returns the set of kinds that represent declarations: classes, methods, and variables.
    *
    * @return the set of kinds that represent declarations
    */
@@ -1173,7 +1173,7 @@ public final class TreeUtils {
           Tree.Kind.ANNOTATED_TYPE);
 
   /**
-   * Return the set of kinds that represent types.
+   * Returns the set of kinds that represent types.
    *
    * @return the set of kinds that represent types
    */
@@ -1451,7 +1451,7 @@ public final class TreeUtils {
   }
 
   /**
-   * Returns true if {@code tree} is a class literal, such as
+   * Returns true if {@code tree} is a class literal, such as:
    *
    * <pre>
    *   <em>Object</em> . <em>class</em>
@@ -1468,7 +1468,7 @@ public final class TreeUtils {
   }
 
   /**
-   * Returns true if {@code tree} is a field access expression, such as
+   * Returns true if {@code tree} is a field access expression, such as:
    *
    * <pre>
    *   <em>f</em>
@@ -1485,7 +1485,7 @@ public final class TreeUtils {
   }
 
   /**
-   * Return the field that {@code tree} is a field access expression for, or null.
+   * Returns the field that {@code tree} is a field access expression for, or null.
    *
    * <pre>
    *   <em>f</em>
@@ -1522,7 +1522,7 @@ public final class TreeUtils {
   }
 
   /**
-   * Return the {@code statementTree} as an instance of {@link AssignmentTree}, or null.
+   * Returns the {@code statementTree} as an instance of {@link AssignmentTree}, or null.
    *
    * @param statementTree a statement tree that might represent an assignment
    * @return the {@code statementTree} as an instance of {@link AssignmentTree}, or null
@@ -1609,7 +1609,7 @@ public final class TreeUtils {
   }
 
   /**
-   * Return {@code true} if and only if {@code tree} can have a type annotation.
+   * Returns {@code true} if and only if {@code tree} can have a type annotation.
    *
    * @return {@code true} if and only if {@code tree} can have a type annotation
    */
@@ -1985,17 +1985,17 @@ public final class TreeUtils {
   public enum MemberReferenceKind {
     /** super # instMethod */
     SUPER(ReferenceMode.INVOKE, false),
-    /** Type # instMethod */
+    /** Type # instMethod. */
     UNBOUND(ReferenceMode.INVOKE, true),
-    /** Type # staticMethod */
+    /** Type # staticMethod. */
     STATIC(ReferenceMode.INVOKE, false),
-    /** Expr # instMethod */
+    /** Expr # instMethod. */
     BOUND(ReferenceMode.INVOKE, false),
-    /** Inner # new */
+    /** Inner # new. */
     IMPLICIT_INNER(ReferenceMode.NEW, false),
-    /** Toplevel # new */
+    /** Toplevel # new. */
     TOPLEVEL(ReferenceMode.NEW, false),
-    /** ArrayType # new */
+    /** ArrayType # new. */
     ARRAY_CTOR(ReferenceMode.NEW, false);
 
     /** True if this kind is a method reference or a constructor reference. */
@@ -2092,7 +2092,7 @@ public final class TreeUtils {
   }
 
   /**
-   * Return toString(), but without line separators.
+   * Returns toString(), but without line separators.
    *
    * @param tree a tree
    * @return a one-line string representation of the tree
@@ -2102,7 +2102,7 @@ public final class TreeUtils {
   }
 
   /**
-   * Return either {@link #toStringOneLine} if it is no more than {@code length} characters, or
+   * Returns either {@link #toStringOneLine} if it is no more than {@code length} characters, or
    * {@link #toStringOneLine} quoted and truncated.
    *
    * @param tree a tree
@@ -2249,7 +2249,7 @@ public final class TreeUtils {
   }
 
   /**
-   * Return a tree for the default value of the given type. The default value is 0, false, or null.
+   * Returns a tree for the default value of the given type. The default value is 0, false, or null.
    *
    * @param typeMirror a type
    * @param processingEnv the processing environment
@@ -2377,7 +2377,7 @@ public final class TreeUtils {
   }
 
   /**
-   * Get the list of expressions from a case expression. For the default case, this is empty.
+   * Returns the list of expressions from a case expression. For the default case, this is empty.
    * Otherwise, in JDK 11 and earlier, this is a singleton list. In JDK 12 onwards, there can be
    * multiple expressions per case.
    *

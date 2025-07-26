@@ -6,8 +6,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * A <code>BasicAFT</code> represents a primitive or {@link String} annotation field type. Get one
- * using {@link #forType(Class)}.
+ * A {@code BasicAFT} represents a primitive or {@link String} annotation field type. Get one using
+ * {@link #forType(Class)}.
  */
 // should be an enum except they can't be generic and can't extend a class
 public final class BasicAFT extends ScalarAFT {
@@ -31,15 +31,14 @@ public final class BasicAFT extends ScalarAFT {
   }
 
   /**
-   * Returns the <code>BasicAFT</code> for <code>type</code>, which should be primitive (e.g.,
-   * int.class) or String. Returns null if <code>type</code> is not appropriate for a basic
-   * annotation field type.
+   * Returns the {@code BasicAFT} for {@code type}, which should be primitive (e.g., int.class) or
+   * String. Returns null if {@code type} is not appropriate for a basic annotation field type.
    */
   public static BasicAFT forType(Class<?> type) {
     return bafts.get(type);
   }
 
-  /** Maps from {@link #type} to <code>BasicAFT</code>. Contains every BasicAFT. */
+  /** Maps from {@link #type} to {@code BasicAFT}. Contains every BasicAFT. */
   // Disgusting reason for being public; need to fix.
   public static final Map<Class<?>, BasicAFT> bafts;
 

@@ -11,7 +11,7 @@ import java.util.List;
 public class CaseUtils {
   // This is a copy of a method from checker-framework's {@code TreeUtils}.  Keep them in sync.
   /**
-   * Get the list of expressions from a case expression. In JDK 11 and earlier, this will be a
+   * Returns the list of expressions from a case expression. In JDK 11 and earlier, this will be a
    * singleton list. In JDK 12 onwards, there can be multiple expressions per case.
    *
    * @param caseTree the case expression to get the expressions from

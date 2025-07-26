@@ -383,7 +383,7 @@ public class OffsetEquation {
   private static Pattern intPattern = Pattern.compile("[-+]?[0-9]+");
 
   /**
-   * Returns true if the given string is an integer literal
+   * Returns true if the given string is an integer literal.
    *
    * @param string a string
    * @return true if the given string is an integer literal

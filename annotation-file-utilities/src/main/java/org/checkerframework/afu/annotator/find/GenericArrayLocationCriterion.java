@@ -49,7 +49,7 @@ public class GenericArrayLocationCriterion implements Criterion {
 
   /**
    * Creates a new GenericArrayLocationCriterion specifying that the element is an outer type, such
-   * as: <code>@A List&lt;Integer&gt;</code> or <code>Integer @A []</code>
+   * as: {@code @A List<Integer>} or {@code Integer @A []}
    */
   public GenericArrayLocationCriterion() {
     this(null, null);
@@ -100,7 +100,7 @@ public class GenericArrayLocationCriterion implements Criterion {
    *
    * @param location the list to check
    * @return {@code true} if the list only contains {@link TypePath#ARRAY_ELEMENT}, {@code false}
-   *     otherwise.
+   *     otherwise
    */
   private boolean containsOnlyArray(List<TypePathEntry> location) {
     for (TypePathEntry tpe : location) {
@@ -523,6 +523,8 @@ public class GenericArrayLocationCriterion implements Criterion {
   }
 
   /**
+   * Returns true if the field is static.
+   *
    * @param fieldAccess a field access expression
    * @return true if the field is static
    */

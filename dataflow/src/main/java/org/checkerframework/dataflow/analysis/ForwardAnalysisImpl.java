@@ -534,7 +534,7 @@ public class ForwardAnalysisImpl<
   }
 
   /**
-   * Return the store corresponding to the location right before the basic block {@code b}.
+   * Returns the store corresponding to the location right before the basic block {@code b}.
    *
    * @param b a block
    * @param kind the kind of store which will be returned

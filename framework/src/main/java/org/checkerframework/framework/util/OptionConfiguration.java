@@ -11,7 +11,7 @@ import org.checkerframework.framework.source.SupportedOptions;
 public interface OptionConfiguration {
 
   /**
-   * Return all active options for this checker.
+   * Returns all active options for this checker.
    *
    * @return all active options for this checker
    */

@@ -1,6 +1,6 @@
 package org.checkerframework.afu.scenelib.io;
 
-/** <code>IOUtils</code> has some static methods useful to scene I/O code. */
+/** {@code IOUtils} has some static methods useful to scene I/O code. */
 class IOUtils {
   private IOUtils() {}
 
