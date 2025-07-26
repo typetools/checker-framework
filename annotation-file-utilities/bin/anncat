@@ -5,5 +5,5 @@
 SCENE_LIB=$(dirname "$0")
 WORKSPACE=$SCENE_LIB/..
 
-export CLASSPATH="$WORKSPACE"/annotation-file-utilities-all.jar:"$CLASSPATH"
+export CLASSPATH="$WORKSPACE"/dist/annotation-file-utilities-all.jar:"$CLASSPATH"
 java org.checkerframework.afu.scenelib.tools.Anncat "$@"
