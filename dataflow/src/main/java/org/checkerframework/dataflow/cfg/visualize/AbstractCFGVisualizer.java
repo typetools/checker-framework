@@ -293,7 +293,7 @@ public abstract class AbstractCFGVisualizer<
     return sbBlockNode.toString();
   }
 
-  /** Whether to visualize before or after a block. */
+  /** Where to visualize: before or after a block. */
   protected enum VisualizeWhere {
     /** Visualize before the block. */
     BEFORE,
