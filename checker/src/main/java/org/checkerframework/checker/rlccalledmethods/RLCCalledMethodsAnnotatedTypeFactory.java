@@ -150,9 +150,9 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
   }
 
   /**
-   * Return the static set of {@code PotentiallyFulfillingLoop}s scheduled for analysis.
+   * Returns the static set of {@code PotentiallyFulfillingLoop}s scheduled for analysis.
    *
-   * @return the static set of {@code PotentiallyFulfillingLoop}s scheduled for analysis.
+   * @return the static set of {@code PotentiallyFulfillingLoop}s scheduled for analysis
    */
   public static Set<PotentiallyFulfillingLoop> getPotentiallyFulfillingLoops() {
     return potentiallyFulfillingLoops;
@@ -664,7 +664,7 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
      * @param collectionElementTree AST {@code Tree} for collection element iterated over
      * @param condition AST {@code Tree} for loop condition
      * @param associatedMethods set of methods associated with this loop
-     * @param loopKind whether this is an assigning/fulfilling loop
+     * @param loopKind the type of loop, e.g., assigning/fulfilling
      */
     protected CollectionObligationAlteringLoop(
         ExpressionTree collectionTree,
@@ -695,7 +695,7 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
     }
 
     /**
-     * Return methods associated with this loop. For assigning loops, these are methods that are to
+     * Returns methods associated with this loop. For assigning loops, these are methods that are to
      * be added to the {@code MustCallOnElements} type and for fulfilling loops, methods that are to
      * be removed from the {@code MustCallOnElements} and added to the {@code
      * CalledMethodsOnElements} type.
@@ -710,16 +710,16 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
   /** Wrapper for a loop that potentially calls methods on all elements of a collection/array. */
   public static class PotentiallyFulfillingLoop extends CollectionObligationAlteringLoop {
 
-    /** cfg {@code Block} containing the loop body entry */
+    /** cfg {@code Block} containing the loop body entry. */
     public final Block loopBodyEntryBlock;
 
-    /** cfg {@code Block} containing the loop update */
+    /** cfg {@code Block} containing the loop update. */
     public final Block loopUpdateBlock;
 
-    /** cfg conditional {@link Block} following loop condition */
+    /** cfg conditional {@link Block} following loop condition. */
     public final ConditionalBlock loopConditionalBlock;
 
-    /** cfg {@code Node} for the collection element iterated over */
+    /** cfg {@code Node} for the collection element iterated over. */
     public final Node collectionElementNode;
 
     /**

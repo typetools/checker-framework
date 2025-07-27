@@ -369,7 +369,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
    *
    * @param atm the AnnotatedTypeMirror
    * @return if the given type is a collection, returns the MustCall values of its elements or null
-   *     if there are none or if the given type is not a collection.
+   *     if there are none or if the given type is not a collection
    */
   public List<String> getMustCallValuesOfResourceCollectionComponent(AnnotatedTypeMirror atm) {
     if (atm == null) {
@@ -404,7 +404,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
    *
    * @param tree the AST tree
    * @return if the given tree represents a collection, returns the MustCall values of its elements
-   *     or null if there are none or if the given type is not a collection.
+   *     or null if there are none or if the given type is not a collection
    */
   public List<String> getMustCallValuesOfResourceCollectionComponent(Tree tree) {
     MustCallAnnotatedTypeFactory mcAtf = ResourceLeakUtils.getMustCallAnnotatedTypeFactory(this);
@@ -420,7 +420,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
    *
    * @param t the TypeMirror
    * @return if the given type is a collection, returns the MustCall values of its elements or null
-   *     if there are none or if the given type is not a collection.
+   *     if there are none or if the given type is not a collection
    */
   public List<String> getMustCallValuesOfResourceCollectionComponent(TypeMirror t) {
     if (t == null) {
@@ -451,7 +451,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
    *
    * @param node the node
    * @param coStore the store
-   * @return the {@code CollectionOwnershipType} that the given node has in the given store.
+   * @return the {@code CollectionOwnershipType} that the given node has in the given store
    */
   public CollectionOwnershipType getCoType(Node node, CollectionOwnershipStore coStore) {
     try {
@@ -468,7 +468,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
    * has.
    *
    * @param tree the tree
-   * @return the {@code CollectionOwnershipType} that the given tree has.
+   * @return the {@code CollectionOwnershipType} that the given tree has
    */
   public CollectionOwnershipType getCoType(Tree tree) {
     JavaExpression jx = null;
@@ -518,7 +518,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
    *
    * @param method the method
    * @return the field names in the {@code @CollectionFieldDestructor} annotation that the given
-   *     method has or an empty list if there is no such annotation.
+   *     method has or an empty list if there is no such annotation
    */
   public List<String> getCollectionFieldDestructorAnnoFields(ExecutableElement method) {
     AnnotationMirror collectionFieldDestructorAnno =
@@ -550,7 +550,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
   }
 
   /**
-   * Return a JavaExpression for the given String or null if the conversion fails.
+   * Returns a JavaExpression for the given String or null if the conversion fails.
    *
    * @param s the string
    * @param method the method with the annotation

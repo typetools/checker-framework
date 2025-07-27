@@ -10,8 +10,8 @@ public class AccumulationStore extends CFAbstractStore<AccumulationValue, Accumu
    * Constructor matching super.
    *
    * @param analysis the analysis
-   * @param sequentialSemantics whether to use sequential semantics (true) or concurrent semantics
-   *     (false)
+   * @param sequentialSemantics if true, use sequential semantics; if false, use concurrent
+   *     semantics
    */
   protected AccumulationStore(
       CFAbstractAnalysis<AccumulationValue, AccumulationStore, ?> analysis,

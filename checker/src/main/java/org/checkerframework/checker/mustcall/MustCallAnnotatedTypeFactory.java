@@ -171,7 +171,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
    *
    * @param tree the tree
    * @param adt the annotated declared type for which all Collection type variables with Top type
-   *     are to be replaced with Bottom.
+   *     are to be replaced with Bottom
    */
   private void replaceCollectionTypeVarsWithBottomIfTop(Tree tree, AnnotatedDeclaredType adt) {
     if (ResourceLeakUtils.isCollection(adt.getUnderlyingType())) {
@@ -589,7 +589,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
    * afterFirstStore} is true, then the store after {@code firstBlock} is returned; if {@code
    * afterFirstStore} is false, the store before {@code succBlock} is returned.
    *
-   * @param afterFirstStore whether to use the store after the first block or the store before its
+   * @param afterFirstStore if true, use the store after the first block or the store before its
    *     successor, {@code succBlock}
    * @param firstBlock a CFG block
    * @param succBlock {@code firstBlock}'s successor

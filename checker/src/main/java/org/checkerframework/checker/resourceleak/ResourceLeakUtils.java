@@ -268,7 +268,7 @@ public class ResourceLeakUtils {
    *
    * @param element the element
    * @param atf an AnnotatedTypeFactory to get the annotated type of the element
-   * @return whether the given element is a Java.lang.Iterable or Java.util.Iterator type
+   * @return true if the given element is a Java.lang.Iterable or Java.util.Iterator type
    */
   public static boolean isCollection(Element element, AnnotatedTypeFactory atf) {
     if (element == null) return false;
@@ -283,7 +283,7 @@ public class ResourceLeakUtils {
    * assignable from either.
    *
    * @param type the TypeMirror
-   * @return whether type is a java.lang.Iterable or java.util.Iterator
+   * @return true if type is a java.lang.Iterable or java.util.Iterator
    */
   public static boolean isCollection(TypeMirror type) {
     if (type == null) return false;
@@ -341,7 +341,7 @@ public class ResourceLeakUtils {
    * @param type the {@code TypeMirror}
    * @param mcAtf the {@code MustCallAnnotatedTypeFactory} to get the {@code MustCall} type
    * @return the list of mustcall obligations for the upper bound of {@code type} or null if the
-   *     upper bound is null.
+   *     upper bound is null
    */
   public static @Nullable List<String> getMcValues(
       TypeMirror type, MustCallAnnotatedTypeFactory mcAtf) {
@@ -398,7 +398,7 @@ public class ResourceLeakUtils {
    *
    * @param type the {@code AnnotatedTypeMirror}
    * @param mcAtf the {@code MustCallAnnotatedTypeFactory} to get the {@code MustCall} type
-   * @return the list of mustcall obligations for the upper bound of {@code type}.
+   * @return the list of mustcall obligations for the upper bound of {@code type}
    */
   public static List<String> getMcValues(
       AnnotatedTypeMirror type, MustCallAnnotatedTypeFactory mcAtf) {
@@ -413,7 +413,7 @@ public class ResourceLeakUtils {
   }
 
   /**
-   * Return true if the passed {@code TypeMirror} has a manual {@code MustCallUnknown} annotation.
+   * Returns true if the passed {@code TypeMirror} has a manual {@code MustCallUnknown} annotation.
    *
    * @param typeMirror the {@code TypeMirror}
    * @return true if the passed {@code TypeMirror} has a manual {@code MustCallUnknown} annotation
@@ -429,7 +429,7 @@ public class ResourceLeakUtils {
   }
 
   /**
-   * Return true if the passed {@code AnnotatedTypeMirror} has a manual {@code MustCallUnknown}
+   * Returns true if the passed {@code AnnotatedTypeMirror} has a manual {@code MustCallUnknown}
    * annotation.
    *
    * @param annotatedTypeMirror the {@code AnnotatedTypeMirror}

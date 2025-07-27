@@ -596,7 +596,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
   }
 
   /**
-   * Get name from an ExpressionTree.
+   * Returns the identifier of an ExpressionTree, or null.
    *
    * @param expr ExpressionTree
    * @return name of the identifier the expression evaluates to or null if it doesn't
@@ -621,7 +621,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
   }
 
   /**
-   * Get name from a {@code StatementTree}
+   * Returns the name from a {@code StatementTree}, or null.
    *
    * @param expr the {@code StatementTree}
    * @return name of the identifier the expression evaluates to or null if it doesn't

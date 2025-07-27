@@ -79,9 +79,8 @@ public class RLCCalledMethodsTransfer extends CalledMethodsTransfer {
   }
 
   /**
-   * Checks whether the given node is the element of a collection iterated over in a
-   * potentially-Mcoe-obligation-fulfilling loop. If it is, accumulates the called methods to this
-   * collection element.
+   * Accumulates the called methods to this collection element if the given node is the element of a
+   * collection iterated over in a potentially-Mcoe-obligation-fulfilling loop.
    *
    * @param valuesAsList the list of called methods
    * @param result the transfer result

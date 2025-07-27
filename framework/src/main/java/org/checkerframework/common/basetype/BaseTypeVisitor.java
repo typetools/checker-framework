@@ -3307,7 +3307,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * Prints a diagnostic about exiting {@code commonAssignmentCheck()}, if the showchecks option was
    * set.
    *
-   * @param success whether the check succeeded or failed
+   * @param success true if the check succeeded
    * @param extraMessage information about why the result is what it is; may be null
    * @param varType the annotated type of the variable
    * @param valueType the annotated type of the value
@@ -4505,7 +4505,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /**
      * Issue an error message or log message about checking an overriding return type.
      *
-     * @param success whether the check succeeded or failed
+     * @param success true if the check succeeded
      */
     private void checkReturnMsg(boolean success) {
       if (success && !showchecks) {

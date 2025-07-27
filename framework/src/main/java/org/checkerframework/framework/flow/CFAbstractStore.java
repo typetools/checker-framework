@@ -808,7 +808,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    *
    * @param node CFG node for which the associated {@link IteratedCollectionElement} is sought
    * @param tree AST tree for which the associated {@link IteratedCollectionElement} is sought
-   * @return the {@link IteratedCollectionElement} associated with the given node or tree.
+   * @return the {@link IteratedCollectionElement} associated with the given node or tree
    */
   @SuppressWarnings("interning:not.interned") // we want to check reference equality
   public @Nullable IteratedCollectionElement getIteratedCollectionElement(Node node, Tree tree) {

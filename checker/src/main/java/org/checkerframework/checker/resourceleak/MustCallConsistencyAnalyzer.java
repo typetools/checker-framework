@@ -517,7 +517,7 @@ public class MustCallConsistencyAnalyzer {
     /**
      * Create a CollectionObligation from a set of resource aliases.
      *
-     * @param mustCallMethod the method to be called on all elements of the collection.
+     * @param mustCallMethod the method to be called on all elements of the collection
      * @param resourceAliases a set of resource aliases
      * @param whenToEnforce when this Obligation should be enforced
      */
@@ -3293,8 +3293,7 @@ public class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Checks whether the given {@code MethodInvocationNode} is desugared from an enhanced for loop
-   * and calls a loop-body-analysis on the detected loop if it is.
+   * Calls a loop-body-analysis on the loop if it is desugared from an enhanced for loop.
    *
    * <p>If a {@code MethodInvocationNode} is desugared from an enhanced for loop over a collection
    * it corresponds to the node in the synthetic {@code Iterator.next()} method call, which is the
@@ -3308,7 +3307,7 @@ public class MustCallConsistencyAnalyzer {
    * MustCallOnElements checker.
    *
    * @param methodInvocationNode the {@code MethodInvocationNode}, for which it is checked, whether
-   *     it is desugared from an enhanced for loop.
+   *     it is desugared from an enhanced for loop
    * @param cfg the enclosing cfg of the {@code MethodInvocationNode}
    */
   private void patternMatchEnhancedCollectionForLoop(

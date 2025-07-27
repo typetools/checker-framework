@@ -7,7 +7,7 @@ import org.checkerframework.javacutil.AnnotationProvider;
 
 /**
  * Represents a collection element that is iterated over in a potentially
- * collection-obligation-fulfilling loop, for example {@code o} in {@code for (Object o: list) { }}
+ * collection-obligation-fulfilling loop, for example {@code o} in {@code for (Object o: list) { }}.
  */
 public class IteratedCollectionElement extends JavaExpression {
   /** The CFG node for this collection element. */
