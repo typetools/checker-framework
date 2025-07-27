@@ -28,30 +28,27 @@ public class JavacParseUtil {
    * Parses the given Java expression string and returns it as a {@link ExpressionTree} using the
    * {@code javac} compiler API.
    *
-   * <p>The method works by embedding the expression in a dummy class and variable declaration, then
-   * parsing the resulting source to extract the expression tree.
-   *
-   * <p>For example, the input {@code "1 + 2"} is transformed into:
-   *
-   * <pre>{@code
-   * class Dummy { Object expression = 1 + 2; }
-   * }</pre>
-   *
-   * The initializer of the {@code expression} field is then extracted and returned.
-   *
    * @param expressionSource the string representation of a Java expression (e.g., "foo.bar()", "1 +
    *     2")
    * @return the parsed {@link ExpressionTree}
    * @throws RuntimeException if parsing fails or the expression cannot be found in the AST
    */
   public static ExpressionTree parseExpression(String expressionSource) {
-    // Embed the expression inside a dummy class and variable declaration
+    // This method works by embedding the expression in a dummy class and variable declaration, then
+    // parsing the resulting source to extract the expression tree.
+    //
+    // For example, the input {@code "1 + 2"} is transformed into:
+    //   class Dummy { Object expression = 1 + 2; }
+    //
+    // The initializer of the {@code expression} field is then extracted and returned.
+
+    // Embed the expression inside a dummy class and variable declaration.
     String dummySource = "class Dummy { Object expression = " + expressionSource + "; }";
 
-    // Obtain the system Java compiler
+    // Obtain the system Java compiler.
     JavaCompiler compiler = JavacTool.create();
 
-    // Create an in-memory Java file from the dummy source code
+    // Create an in-memory Java file from the dummy source code.
     JavaFileObject fileObject =
         new SimpleJavaFileObject(URI.create("string:///Dummy.java"), JavaFileObject.Kind.SOURCE) {
           @Override
