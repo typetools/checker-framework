@@ -571,7 +571,7 @@ public abstract class InitializationAnnotatedTypeFactory<
    *
    * @param store a store
    * @param path the current path, used to determine the current class
-   * @param isStatic whether to report static fields or instance fields
+   * @param isStatic if true, report static fields; if false, report instance fields
    * @param receiverAnnotations the annotations on the receiver
    * @return the fields that are not yet initialized in a given store (a pair of lists)
    */
@@ -610,7 +610,7 @@ public abstract class InitializationAnnotatedTypeFactory<
    *
    * @param store a store
    * @param path the current path, used to determine the current class
-   * @param isStatic whether to report static fields or instance fields
+   * @param isStatic if true, report static fields; if false, report instance fields
    * @param receiverAnnotations the annotations on the receiver
    * @return the fields that have the invariant annotation and are not yet initialized in a given
    *     store (a pair of lists)
