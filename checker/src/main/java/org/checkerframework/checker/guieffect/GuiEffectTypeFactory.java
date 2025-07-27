@@ -269,8 +269,8 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
-   * Get the effect of a method call at its callsite, acknowledging polymorphic instantiation using
-   * type use annotations.
+   * Returns the effect of a method call at its callsite, acknowledging polymorphic instantiation
+   * using type use annotations.
    *
    * @param tree the method invocation as an AST node
    * @param callerReceiver the type of the receiver object if available. Used to resolve direct
@@ -312,8 +312,8 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
-   * Get the inferred effect of a lambda expression based on the type annotations of its functional
-   * interface and the effects of the calls in its body.
+   * Returns the inferred effect of a lambda expression based on the type annotations of its
+   * functional interface and the effects of the calls in its body.
    *
    * <p>This relies on GuiEffectVisitor to perform the actual inference step and mark lambdas
    * with @PolyUIEffect functional interfaces as being explicitly UI-affecting using the {@link

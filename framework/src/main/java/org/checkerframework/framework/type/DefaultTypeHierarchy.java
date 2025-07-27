@@ -479,7 +479,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
    *
    * @param type type to check
    * @return true if {@code type} is a type argument from a raw type and if the checker should not
-   *     issue warnings about such type arguments.
+   *     issue warnings about such type arguments
    */
   private boolean shouldIgnoreRawTypeArgs(AnnotatedTypeMirror type) {
     return this.ignoreRawTypes && AnnotatedTypes.isTypeArgOfRawType(type);

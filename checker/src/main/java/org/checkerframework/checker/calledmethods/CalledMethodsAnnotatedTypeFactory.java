@@ -404,7 +404,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
   }
 
   /**
-   * Get the called methods specified by the given {@link CalledMethods} annotation.
+   * Returns the called methods specified by the given {@link CalledMethods} annotation.
    *
    * @param calledMethodsAnnotation the annotation
    * @return the called methods
@@ -477,7 +477,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
   }
 
   /**
-   * Get the exceptional postconditions for the given method from the {@link
+   * Returns the exceptional postconditions for the given method from the {@link
    * EnsuresCalledMethodsOnException} annotations on it.
    *
    * @param methodOrConstructor the method to examine

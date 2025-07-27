@@ -62,9 +62,9 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
    * @param <T> the type of the supertype
    * @param type type from which to copy annotations
    * @param superType a type whose erased Java type is a supertype of {@code type}'s erased Java
-   *     type.
+   *     type
    * @return a copy of {@code superType} with annotations copied from {@code type} and type
-   *     variables substituted from {@code type}.
+   *     variables substituted from {@code type}
    */
   @SuppressWarnings({
     "unchecked",

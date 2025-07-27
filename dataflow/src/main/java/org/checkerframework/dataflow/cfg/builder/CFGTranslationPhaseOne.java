@@ -3650,7 +3650,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Return the first argument if it is non-null, otherwise return the second argument. Throws an
+   * Returns the first argument if it is non-null, otherwise return the second argument. Throws an
    * exception if both arguments are null.
    *
    * @param <A> the type of the arguments

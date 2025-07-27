@@ -9,22 +9,22 @@ import org.checkerframework.afu.scenelib.io.IndexFileParser;
 import org.checkerframework.afu.scenelib.util.coll.VivifyingMap;
 
 /**
- * An <code>AScene</code> (annotated scene) represents the annotations on a set of Java classes and
+ * An {@code AScene} (annotated scene) represents the annotations on a set of Java classes and
  * packages along with the definitions of some or all of the annotation types used.
  *
  * <p>Each client of the annotation library may wish to use its own representation for certain kinds
  * of annotations instead of a simple name-value map; thus, a layer of abstraction in the storage of
  * annotations was introduced.
  *
- * <p><code>AScene</code>s and many {@link AElement}s can contain other {@link AElement}s. When
- * these objects are created, their collections of subelements are empty. In order to associate an
- * annotation with a particular Java element in an <code>AScene</code>, one must first ensure that
- * an appropriate {@link AElement} exists in the <code>AScene</code>. To this end, the maps of
- * subelements have a <code>vivify</code> method. Calling <code>vivify</code> to access a particular
- * subelement will return the subelement if it already exists; otherwise it will create and then
- * return the subelement. (Compare to vivification in Perl.) For example, the following code will
- * obtain an {@link AMethod} representing <code>Foo.bar</code> in the <code>AScene</code> <code>s
- * </code>, creating it if it did not already exist:
+ * <p>{@code AScene}s and many {@link AElement}s can contain other {@link AElement}s. When these
+ * objects are created, their collections of subelements are empty. In order to associate an
+ * annotation with a particular Java element in an {@code AScene}, one must first ensure that an
+ * appropriate {@link AElement} exists in the {@code AScene}. To this end, the maps of subelements
+ * have a {@code vivify} method. Calling {@code vivify} to access a particular subelement will
+ * return the subelement if it already exists; otherwise it will create and then return the
+ * subelement. (Compare to vivification in Perl.) For example, the following code will obtain an
+ * {@link AMethod} representing {@code Foo.bar} in the {@code AScene} {@code s}, creating it if it
+ * did not already exist:
  *
  * <pre>
  * AMethod&lt;A&gt; m = s.classes.getVivify("Foo").methods.getVivify("bar");
@@ -43,19 +43,19 @@ public class AScene implements Cloneable {
   /** If true, check that the copy constructor works correctly. */
   private static boolean checkClones = true;
 
-  /** This scene's annotated packages; map key is package name */
+  /** This scene's annotated packages; map key is package name. */
   public final VivifyingMap<String, AElement> packages = AElement.<String>newVivifyingLHMap_AE();
 
   /**
    * Contains for each annotation type a set of imports to be added to the source if the annotation
    * is inserted with the "abbreviate" option on.<br>
-   * <strong>Key</strong>: fully-qualified name of an annotation. e.g. for <code>@com.foo.Bar(x)
-   * </code>, the fully-qualified name is <code>com.foo.Bar</code> <br>
+   * <strong>Key</strong>: fully-qualified name of an annotation. e.g. for {@code @com.foo.Bar(x) },
+   * the fully-qualified name is {@code com.foo.Bar} <br>
    * <strong>Value</strong>: names of packages this annotation needs
    */
   public final Map<String, Set<String>> imports = new LinkedHashMap<>();
 
-  /** This scene's annotated classes; map key is class name */
+  /** This scene's annotated classes; map key is class name. */
   public final VivifyingMap</*@BinaryName*/ String, AClass> classes =
       new VivifyingMap<String, AClass>(new LinkedHashMap<>()) {
         @Override
@@ -105,8 +105,8 @@ public class AScene implements Cloneable {
   }
 
   /**
-   * Returns true if this {@link AScene} equals <code>o</code>; the commentary and the cautionary
-   * remarks on {@link AElement#equals(Object)} also apply to {@link AScene#equals(Object)}.
+   * Returns true if this {@link AScene} equals {@code o}; the commentary and the cautionary remarks
+   * on {@link AElement#equals(Object)} also apply to {@link AScene#equals(Object)}.
    */
   @Override
   public boolean equals(Object o) {
@@ -114,7 +114,7 @@ public class AScene implements Cloneable {
   }
 
   /**
-   * Returns true if this {@link AScene} equals <code>o</code>; a slightly faster variant of {@link
+   * Returns true if this {@link AScene} equals {@code o}; a slightly faster variant of {@link
    * #equals(Object)} for when the argument is statically known to be another nonnull {@link
    * AScene}.
    */

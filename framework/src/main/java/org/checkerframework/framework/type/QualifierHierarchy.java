@@ -85,8 +85,8 @@ public abstract class QualifierHierarchy {
   }
 
   /**
-   * Return the top qualifier for the given qualifier, that is, the qualifier that is a supertype of
-   * {@code qualifier} but no further supertypes exist.
+   * Returns the top qualifier for the given qualifier, that is, the qualifier that is a supertype
+   * of {@code qualifier} but no further supertypes exist.
    *
    * @param qualifier any qualifier from one of the qualifier hierarchies represented by this
    * @return the top qualifier of {@code qualifier}'s hierarchy
@@ -102,7 +102,7 @@ public abstract class QualifierHierarchy {
   public abstract AnnotationMirrorSet getBottomAnnotations();
 
   /**
-   * Return the bottom for the given qualifier, that is, the qualifier that is a subtype of {@code
+   * Returns the bottom for the given qualifier, that is, the qualifier that is a subtype of {@code
    * qualifier} but no further subtypes exist.
    *
    * @param qualifier any qualifier from one of the qualifier hierarchies represented by this

@@ -145,7 +145,7 @@ public class BoundSet implements ReductionResult {
   }
 
   /**
-   * Returns true if unchecked conversion was necessary to reduce and incorporate this bound set
+   * Returns true if unchecked conversion was necessary to reduce and incorporate this bound set.
    *
    * @return true if unchecked conversion was necessary to reduce and incorporate this bound set
    */

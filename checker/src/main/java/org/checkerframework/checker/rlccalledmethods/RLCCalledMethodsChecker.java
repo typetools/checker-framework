@@ -34,7 +34,7 @@ public class RLCCalledMethodsChecker extends CalledMethodsChecker {
   }
 
   /**
-   * Get the set of exceptions that should be ignored. This set comes from the {@link
+   * Returns the set of exceptions that should be ignored. This set comes from the {@link
    * ResourceLeakChecker#IGNORED_EXCEPTIONS} option if it was provided, or {@link
    * ResourceLeakChecker#DEFAULT_IGNORED_EXCEPTIONS} if not.
    *

@@ -457,14 +457,14 @@ public abstract class AbstractCFGVisualizer<
   protected abstract String visualizeEdge(Object sId, Object eId, String flowRule);
 
   /**
-   * Return the header of the generated graph.
+   * Returns the header of the generated graph.
    *
    * @return the String representation of the header of the control flow graph
    */
   protected abstract String visualizeGraphHeader();
 
   /**
-   * Return the footer of the generated graph.
+   * Returns the footer of the generated graph.
    *
    * @return the String representation of the footer of the control flow graph
    */
@@ -483,7 +483,7 @@ public abstract class AbstractCFGVisualizer<
   }
 
   /**
-   * Get the simple name of a node.
+   * Returns the simple name of a node.
    *
    * @param n a node
    * @return the node's simple name, without "Node"

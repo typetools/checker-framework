@@ -132,7 +132,7 @@ public class LessThanTransfer extends IndexAbstractTransfer {
   }
 
   /**
-   * Return the expressions that {@code node} is less than.
+   * Returns the expressions that {@code node} is less than.
    *
    * @param node a CFG node
    * @return the expressions that {@code node} is less than
@@ -150,7 +150,7 @@ public class LessThanTransfer extends IndexAbstractTransfer {
   }
 
   /**
-   * Return true if {@code expr} is a double or float literal, which can't be parsed by {@link
+   * Returns true if {@code expr} is a double or float literal, which can't be parsed by {@link
    * JavaExpressionParseUtil}.
    */
   private boolean isDoubleOrFloatLiteral(JavaExpression expr) {
@@ -163,7 +163,7 @@ public class LessThanTransfer extends IndexAbstractTransfer {
   }
 
   /**
-   * Return the string representation of {@code expr + 1}.
+   * Returns the string representation of {@code expr + 1}.
    *
    * @param expr a JavaExpression
    * @return the string representation of {@code expr + 1}
