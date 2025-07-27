@@ -446,8 +446,8 @@ public class CollectionOwnershipAnnotatedTypeFactory
   }
 
   /**
-   * Utility method to get the flow-sensitive {@code CollectionOwnershipType} that the given node
-   * has in the given store.
+   * Returns the flow-sensitive {@code CollectionOwnershipType} that the given node has in the given
+   * store.
    *
    * @param node the node
    * @param coStore the store
@@ -464,8 +464,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
   }
 
   /**
-   * Utility method to get the flow-sensitive {@code CollectionOwnershipType} that the given tree
-   * has.
+   * Returns the flow-sensitive {@code CollectionOwnershipType} of the given tree.
    *
    * @param tree the tree
    * @return the {@code CollectionOwnershipType} that the given tree has

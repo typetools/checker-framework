@@ -159,7 +159,8 @@ public class RegexTransfer extends CFTransfer {
    *
    * @param possibleMatcher the Node that might be a call of Matcher.groupCount()
    * @param possibleConstant the Node that might be a constant
-   * @param isAlsoEqual if true, the comparison operation is strict; if false, it is reflexive
+   * @param isAlsoEqual if true, the comparison operation is strict; if false, the comparison is
+   *     reflexive
    * @param resultIn the TransferResult
    * @return the possibly refined output TransferResult
    */
