@@ -145,7 +145,7 @@ public class CollectionOwnershipVisitor
           List<String> destructedFields =
               atypeFactory.getCollectionFieldDestructorAnnoFields(siblingMethod);
           for (String destructedFieldName : destructedFields) {
-            if (atypeFactory.expressionEqualsField(destructedFieldName, fieldElement)) {
+            if (atypeFactory.expressionIsFieldAccess(destructedFieldName, fieldElement)) {
               return;
             }
           }

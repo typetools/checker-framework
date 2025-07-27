@@ -516,28 +516,27 @@ public class CollectionOwnershipAnnotatedTypeFactory
    * method has or an empty list if there is no such annotation.
    *
    * @param method the method
-   * @return the field names in the {@code @CollectionFieldDestructor} annotation that the given
-   *     method has or an empty list if there is no such annotation
+   * @return the field names in the method's {@code @CollectionFieldDestructor} annotation, or an
+   *     empty list if there is no such annotation
    */
   public List<String> getCollectionFieldDestructorAnnoFields(ExecutableElement method) {
     AnnotationMirror collectionFieldDestructorAnno =
         getDeclAnnotation(method, CollectionFieldDestructor.class);
-    if (collectionFieldDestructorAnno != null) {
-      return AnnotationUtils.getElementValueArray(
-          collectionFieldDestructorAnno, collectionFieldDestructorValueElement, String.class);
-    } else {
+    if (collectionFieldDestructorAnno == null) {
       return new ArrayList<String>();
     }
+    return AnnotationUtils.getElementValueArray(
+        collectionFieldDestructorAnno, collectionFieldDestructorValueElement, String.class);
   }
 
   /**
-   * Determine if the given expression {@code e} refers to {@code this.field}.
+   * Returnst true if the given expression {@code e} refers to {@code this.field}.
    *
    * @param e the expression
    * @param field the field
    * @return true if {@code e} refers to {@code this.field}
    */
-  public boolean expressionEqualsField(String e, VariableElement field) {
+  public boolean expressionIsFieldAccess(String e, VariableElement field) {
     try {
       JavaExpression je = StringToJavaExpression.atFieldDecl(e, field, this.checker);
       return je instanceof FieldAccess && ((FieldAccess) je).getField().equals(field);
@@ -549,15 +548,17 @@ public class CollectionOwnershipAnnotatedTypeFactory
   }
 
   /**
-   * Returns a JavaExpression for the given String or null if the conversion fails.
+   * Returns a JavaExpression for the given String. Returns null if string is not parsable as a Java
+   * expression.
    *
    * @param s the string
    * @param method the method with the annotation
-   * @return a JavaExpression for the given String or null if the conversion fails
+   * @return a JavaExpression for the given String, or null if the string is not parsable as a Java
+   *     expression
    */
   public JavaExpression stringToJavaExpression(String s, ExecutableElement method) {
     Tree methodTree = declarationFromElement(method);
-    if (methodTree != null && (methodTree instanceof MethodTree)) {
+    if (methodTree instanceof MethodTree) {
       try {
         return StringToJavaExpression.atMethodBody(s, (MethodTree) methodTree, checker);
       } catch (JavaExpressionParseUtil.JavaExpressionParseException ex) {
