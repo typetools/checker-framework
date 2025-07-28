@@ -275,7 +275,7 @@ def build_checker_framework_release(
     )
     execute(gradle_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
-    gradle_cmd = "./gradlew zipMavenExamples-PdestDir=%s" % (
+    gradle_cmd = "./gradlew zipMavenExamples -PdestDir=%s" % (
         checker_framework_interm_dir,
     )
 

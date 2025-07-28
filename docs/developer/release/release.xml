@@ -8,21 +8,6 @@
 
 
 
-
-    <target name="zip-maven-examples" description="Create a zip archive for the directory checker/examples/MavenExample.">
-        <fail unless="checker"    message="checker property is not set!" />
-        <fail unless="dest.dir"    message="dest.dir property is not set!"  />
-        <fail unless="file.name"   message="file.name property is not set!" />
-        <fail unless="version"     message="version is not set!" />
-
-        <property name="cf.docs"             value="${checker}/../docs"  />
-        <property name="cf.docs.examples"    value="${cf.docs}/examples" />
-
-        <zip destfile="${dest.dir}/${file.name}">
-            <zipfileset dir="${cf.docs.examples}/MavenExample" filemode="755" prefix="maven-examples-${version}"/>
-        </zip>
-    </target>
-
     <!-- TODO: Document the params -->
     <target name="checker-framework-website-docs" description="Copies the relevant Checker Framework files to the given directory">
         <!-- This assumes all files have been built; it just does the copying -->
