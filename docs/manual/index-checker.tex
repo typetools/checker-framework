@@ -828,6 +828,10 @@ The type qualifiers of Figure~\ref{growonly-mutability-lattice} indicate whether
 
 \item[\refqualclass{checker/index/qual}{GrowOnly}]
   A strong guarantee that the annotated collection will never shrink as long as this reference exists. The checker ensures that no shrinking methods can be called through this reference, and the type system guarantees that no other alias can be used to shrink the collection either.
+  A grow-only list can be created like this:
+\begin{Verbatim}
+@GrowOnly List<String> list = new @GrowOnly ArrayList<>();
+\end{Verbatim}
 
 \item[\refqualclass{checker/index/qual}{Shrinkable}]
   The length of the sequence may be increased or decreased, via methods such as \<add()>, \<remove()>, and \<clear()>.
