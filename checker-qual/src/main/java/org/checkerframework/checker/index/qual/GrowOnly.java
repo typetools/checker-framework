@@ -8,10 +8,11 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * A reference that may only grow the collection. Shrinking operations like remove(), clear() are
- * disallowed.
+ * An expression of type {@code @UnshrinkableRef} may not be used to remove elements, e.g., by
+ * calling {@code remove()} or {@code clear()} on it. The underlying collection is guaranteed not to
+ * shrink via operations on aliases.
  *
- * @checker_framework.manual #index-checker Index Checker
+ * @checker_framework.manual #growonly-checker Grow-only Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

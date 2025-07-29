@@ -10,13 +10,11 @@ import org.checkerframework.framework.qual.InvisibleQualifier;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * Represents a reference to a collection that must not be used to shrink it (e.g., remove or
- * clear), though other references might be able to do so. This is the most general qualifier in the
- * hierarchy.
+ * An expression of type {@code @UnshrinkableRef} may not be used to remove elements, e.g., by
+ * calling {@code remove()} or {@code clear()} on it. The collection might be shrunk by some other
+ * reference that aliases the expression of type {@code @UnshrinkableRef}.
  *
- * <p>This is the default qualifier in the hierarchy of the GrowOnly checker.
- *
- * @checker_framework.manual #index-checker Index Checker
+ * @checker_framework.manual #growonly-checker Grow-only Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

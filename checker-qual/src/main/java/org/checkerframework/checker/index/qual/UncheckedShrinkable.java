@@ -8,10 +8,18 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * A Shrinkable reference that is no longer index-safe. Index accesses via this reference should be
- * considered potentially unsafe due to mutations.
+ * An expression of type {@code @UncheckedShrinkable} may be used to remove elements, e.g., by
+ * calling {@code remove()} or {@code clear()} on it.
+ *
+ * <p>The Index Checker does not issue warnings about possible {@code IndexOutOfBoundsException}s
+ * when the collection has type {@code UncheckedShrinkable}.
+ *
+ * <p>Thus, {@code @UncheckedShrinkable} is combination of {@code @}{@link Shrinkable} and a warning
+ * suppression. It is particularly useful when first annotating a codebase, to temporarily suppress
+ * some warnings while focusing on others.
  *
  * @checker_framework.manual #index-checker Index Checker
+ * @checker_framework.manual #growonly-checker Grow-only Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

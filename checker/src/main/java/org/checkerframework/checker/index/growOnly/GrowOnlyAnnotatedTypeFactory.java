@@ -19,7 +19,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationBuilder;
 
-/** The type factory for the GrowOnly Checker. */
+/** The type factory for the Grow-only Checker. */
 public class GrowOnlyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   /** The canonical @{@link GrowOnly} annotation. */

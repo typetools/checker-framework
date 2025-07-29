@@ -8,9 +8,10 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * A reference that may shrink the collection (remove elements, clear, etc.).
+ * An expression of type {@code @Shrinkable} may be used to remove elements, e.g., by calling {@code
+ * remove()} or {@code clear()} on it.
  *
- * @checker_framework.manual #index-checker Index Checker
+ * @checker_framework.manual #growonly-checker Grow-only Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

@@ -798,15 +798,15 @@ warnings:
 \end{Verbatim}
 
 
-\sectionAndLabel{The GrowOnly Checker: Verifying Non-Shrinking Lists}{growonly-checker}
+\sectionAndLabel{The Grow-only Checker: Verifying Non-Shrinking Lists}{growonly-checker}
 
-This section discusses the GrowOnly Checker, a tool for verifying that certain collections, like \texttt{List}, do not shrink in size.
+This section discusses the Grow-only Checker, a tool for verifying that certain collections, like \texttt{List}, do not shrink in size.
 
 The fundamental problem with checking indices in mutable collections is that an operation could shrink the collection, invalidating an otherwise valid index. To solve this, the Checker Framework needs to know which collections are guaranteed never to shrink.
 
-The GrowOnly Checker's sole purpose is to provide this guarantee. It introduces a type hierarchy (see Figure~\ref{growonly-mutability-lattice}) that lets a programmer declare that a collection is \texttt{@GrowOnly}. The checker then verifies that no "shrinking" methods (like \texttt{remove()} or \texttt{clear()}) are ever called on a reference with this annotation.
+The Grow-only Checker's sole purpose is to provide this guarantee. It introduces a type hierarchy (see Figure~\ref{growonly-mutability-lattice}) that lets a programmer declare that a collection is \texttt{@GrowOnly}. The checker then verifies that no "shrinking" methods (like \texttt{remove()} or \texttt{clear()}) are ever called on a reference with this annotation.
 
-By providing this guarantee, the GrowOnly Checker \emph{enables} other checkers (like the Index Checker) to perform more precise and sound analysis in the future. However, the GrowOnly Checker itself does not perform any index checking; it only verifies the non-shrinking property.
+By providing this guarantee, the Grow-only Checker \emph{enables} other checkers (like the Index Checker) to perform more precise and sound analysis in the future. However, the Grow-only Checker itself does not perform any index checking; it only verifies the non-shrinking property.
 
 The type qualifiers of Figure~\ref{growonly-mutability-lattice} indicate whether a sequence might shrink.
 \begin{description}
@@ -820,14 +820,14 @@ The type qualifiers of Figure~\ref{growonly-mutability-lattice} indicate whether
   The length of the sequence may be increased or decreased, via methods such as \texttt{add()}, \texttt{remove()}, and \texttt{clear()}.
 
 \item[\refqualclass{checker/index/qual}{UncheckedShrinkable}]
-  A subtype of \texttt{@Shrinkable}. For the purposes of the GrowOnly Checker, this is treated exactly like \texttt{@Shrinkable}. It indicates that the collection can shrink. (Its special properties related to opting out of index checking are not relevant to the GrowOnly Checker).
+  A subtype of \texttt{@Shrinkable}. For the purposes of the Grow-only Checker, this is treated exactly like \texttt{@Shrinkable}. It indicates that the collection can shrink. (Its special properties related to opting out of index checking are not relevant to the Grow-only Checker).
 \end{description}
 
 \begin{figure}
 \begin{center}
 \includeimage{index-mutability}{5cm}
 \end{center}
-\caption{Qualifier hierarchy for the GrowOnly Checker.}
+\caption{Qualifier hierarchy for the Grow-only Checker.}
 \label{growonly-mutability-lattice}
 \end{figure}
 
