@@ -387,8 +387,6 @@ def main(argv):
         checker_framework_interm_dir,
         afu_interm_dir
     )
-    build_annotation_tools_release(cf_version, afu_interm_dir)
-
 
 print_step("Build Step 6: Overwrite .htaccess and CFLogo.png .")  # AUTO
 

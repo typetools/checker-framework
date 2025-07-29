@@ -85,7 +85,7 @@ tasks.register('createCheckerFrameworkZip', Zip) {
   description = 'Creates a zip archive for the Checker Framework.'
   dependsOn('buildAll')
   archiveFileName = "checker-framework-${version}.zip"
-  destinationDirectory = file(project.property('destDir'))
+  destinationDirectory = file(project.property('cfWebsite'))
 
   from(layout.projectDirectory) {
     exclude 'api/**',
@@ -156,31 +156,22 @@ tasks.register('createCheckerFrameworkZip', Zip) {
 
 tasks.register('zipMavenExamples', Zip) {
   description = 'Creates a zip archive for the Maven example.'
-  archiveFileName = "maven-examples-${version}.zip"
-  destinationDirectory = file(project.property('destDir'))
+  archiveFileName = "mvn-examples.zip"
+  destinationDirectory = file(project.property('cfWebsite'))
   from('docs/examples/MavenExample')
 }
 
-tasks.register('copyWebRoot', Copy) {
-  String webRoot = project.property('webRoot')
-  destinationDir=file(webRoot)
-  from ("${projectDir}/docs") {
-    include('checker-framework-webpage.html', 'CHANGELOG.md')
-  }
-  from("${projectDir}/docs/logo/Logo/CFLogo.png")
-  from("${projectDir}/docs/logo/Checkmark/CFCheckmark_favicon.png") {
-    rename('CFCheckmark_favicon.png','favicon-checkerframework.png' )
-  }
-
-  doLast{
-    Files.createSymbolicLink(file("${webRoot}/index.html").toPath(), file("${webRoot}/checker-framework-webpage.html").toPath())
-  }
-}
-
 tasks.register('copyCFWebsite', Copy) {
+  dependsOn(':allJavadoc')
   String destDir = project.property('cfWebsite')
   destinationDir = file(destDir)
-
+  doLast{
+    delete(file("${destDir}/index.html"))
+    Files.createSymbolicLink(file("${destDir}/index.html").toPath(), file("${destDir}/checker-framework-webpage.html").toPath())
+  }
+  from ('docs') {
+    include('checker-framework-webpage.html', 'CHANGELOG.md')
+  }
   from('docs/logo/Logo/CFLogo.png') {
     into 'tutorial/'
   }
@@ -238,7 +229,8 @@ tasks.register('copyCFWebsite', Copy) {
   }
 
   doLast{
-    Files.createSymbolicLink(file("${destDir}/manual/index.html").toPath(), file("${deployDir}/manual.html").toPath())
+    delete(file("${destDir}/manual/index.html"))
+    Files.createSymbolicLink(file("${destDir}/manual/index.html").toPath(), file("${destDir}/manual.html").toPath())
   }
 }
 
@@ -247,7 +239,7 @@ tasks.register('copyAFUWebsite', Copy) {
   String destDir = project.property('afuWebsite')
   destinationDir = file(destDir)
 
-  from projectDir
+  from 'docs/manual/annotation-file-utilities'
 
   include 'annotation-file-utilities.html'
   include 'annotation-file-format.html'
@@ -257,10 +249,13 @@ tasks.register('copyAFUWebsite', Copy) {
   include 'figures/*.gif'
 
   doLast {
-
     delete "${destDir}/index.html"
-    Files.createSymbolicLink(file("${deployDir}/index.html").toPath(), file("${deployDir}/annotation-file-utilities.html").toPath())
+    Files.createSymbolicLink(file("${destDir}/index.html").toPath(), file("${destDir}/annotation-file-utilities.html").toPath())
   }
+}
+
+tasks.register('copyToWebsite'){
+  dependsOn('copyCFWebsite','copyAFUWebsite', 'createCheckerFrameworkZip','zipMavenExamples')
 }
 
 tasks.register('updateCopyMavenExample', Copy){
@@ -272,12 +267,4 @@ tasks.register('updateCopyMavenExample', Copy){
   }
 }
 
-tasks.register('copyToWebsite'){
-  dependsOn('copyCFWebsite', 'copyWebRoot','copyAFUWebsite')
-  doFirst {
-    if(!(project.hasProperty('afuWebsite') && project.hasProperty('webRoot') && project.hasProperty('cfWebsite'))) {
-      println project.properties.entrySet()*.toString().sort().toString().replaceAll(", ", "\n")
-      throw new RuntimeException("You must specify the following properties: webRoot, afuWebsite, cfWebsite")
-    }
-  }
-}
+
