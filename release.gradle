@@ -7,7 +7,14 @@ ext {
   releaseVersion = '3.49.6-SNAPSHOT'
 }
 
-
+tasks.register('updateVersionNumbersAFU', Copy){
+  into 'annotation-file-utilities'
+  from 'annotation-file-utilities'
+  include 'src/main/java/org/checkerframework/afu/scenelib/io/classfile/ClassFileReader.java'
+  filter { String line ->
+    line.replaceAll( "Annotation File Utilities v${releaseVersionRegex}{0,1}", "Annotation File Utilities v${releaseVersion}")
+  }
+}
 tasks.register('updateVersionNumbers', Copy) {
   into 'docs/'
   from('docs/') {
