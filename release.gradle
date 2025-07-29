@@ -162,6 +162,8 @@ tasks.register('zipMavenExamples', Zip) {
 }
 
 tasks.register('copyCFWebsite', Copy) {
+  description = 'Copy CF website to the location set in property cfWebsite.'
+
   dependsOn(':allJavadoc')
   String destDir = project.property('cfWebsite')
   destinationDir = file(destDir)
@@ -235,7 +237,7 @@ tasks.register('copyCFWebsite', Copy) {
 }
 
 tasks.register('copyAFUWebsite', Copy) {
-  description = 'Copy website deployDir.'
+  description = 'Copy AFU website to the location set in property afuWebsite.'
   String destDir = project.property('afuWebsite')
   destinationDir = file(destDir)
 
@@ -254,7 +256,8 @@ tasks.register('copyAFUWebsite', Copy) {
   }
 }
 
-tasks.register('copyToWebsite'){
+tasks.register('copyToFilesWebsite'){
+  description = 'Copy files to website and create Checker Framework zip file. Requires properties afuWebsite and cfWebsite to be set.'
   dependsOn('copyCFWebsite','copyAFUWebsite', 'createCheckerFrameworkZip','zipMavenExamples')
 }
 

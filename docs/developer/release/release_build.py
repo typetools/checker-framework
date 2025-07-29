@@ -208,19 +208,10 @@ def build_checker_framework_release(
     """Build the release files for the Checker Framework project, including the
     manual and the zip file, and run tests on the build."""
 
-
-    # build annotation-tools
-    execute("./gradlew assemble -Prelease=true", True, False, ANNO_FILE_UTILITIES)
+    execute("./gradlew clean", working_dir=CHECKER_FRAMEWORK)
 
     # update versions
     execute("./gradlew updateVersionNumbers", working_dir=CHECKER_FRAMEWORK)
-
-    # Update version numbers in the manual and API documentation,
-    # which come from source files that have just been changed.
-    # Otherwise, the manual and API documentation show up in the grep command below.
-    execute("./gradlew assemble", working_dir=CHECKER_FRAMEWORK)
-    execute("./gradlew allJavadoc", working_dir=CHECKER_FRAMEWORK)
-    execute("./gradlew manual", working_dir=CHECKER_FRAMEWORK)
 
     # Check that updating versions didn't overlook anything.
     print("Here are occurrences of the old version number, " + old_cf_version + ":")
@@ -241,24 +232,12 @@ def build_checker_framework_release(
     execute("make", True, False, checker_tutorial_dir)
 
     # Create checker-framework-X.Y.Z.zip and put it in checker_framework_interm_dir
-    gradle_cmd = "./gradlew createCheckerFrameworkZip -PdestDir=%s" % (
-        checker_framework_interm_dir,
-    )
-    execute(gradle_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
-
-    gradle_cmd = "./gradlew zipMavenExamples -PdestDir=%s" % (
-        checker_framework_interm_dir,
-    )
-
-    execute(gradle_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
-
     # copy the remaining checker-framework website files to checker_framework_interm_dir
     gradle_cmd = (
-        "./gradlew copyToWebsite  -PcfWebsite=%s -PafuWebsite=%s -PwebRoot=%s"
+        "./gradlew copyToWebsite  -PcfWebsite=%s -PafuWebsite=%s"
         % (
             checker_framework_interm_dir,
-            afu_interm_dir,
-            DEV_SITE_DIR
+            afu_interm_dir
         )
     )
     execute(gradle_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
