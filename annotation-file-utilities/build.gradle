@@ -63,7 +63,7 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 task skinnyJar(type: ShadowJar, dependsOn: compileJava) {
   description = 'Builds annotation-file-utilities.jar with only scene-lib and annotation-file-utilities classes.'
   includeEmptyDirs = false
-  destinationDirectory = projectDir
+  destinationDirectory = file("${projectDir}/dist")
   archiveFileName = 'annotation-file-utilities.jar'
   include 'org/checkerframework/afu/scenelib/**/*.class'
   include 'org/checkerframework/afu/annotator/**/*.class'

@@ -134,10 +134,9 @@ def maven_sanity_check(sub_sanity_dir_name, repo_url, release_version):
     maven_example_dir = os.path.join(maven_sanity_dir, "MavenExample")
     output_log = os.path.join(maven_example_dir, "output.log")
 
-    ant_release_script = os.path.join(CHECKER_FRAMEWORK_RELEASE, "release.xml")
     get_example_dir_cmd = (
-        "ant -f %s update-and-copy-maven-example -Dchecker=%s -Dversion=%s -Ddest.dir=%s"
-        % (ant_release_script, checker_dir, release_version, maven_sanity_dir)
+        "./gradlew updateCopyMavenExample -PdestDir=%s"
+        % (maven_sanity_dir)
     )
 
     execute(get_example_dir_cmd)

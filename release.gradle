@@ -59,6 +59,7 @@ tasks.register('updateVersionNumbers', Copy) {
   }
 }
 
+
 tasks.register('createCheckerFrameworkZip', Zip) {
   description = 'Creates a zip archive for the Checker Framework.'
   dependsOn('buildAll')
@@ -119,7 +120,6 @@ tasks.register('createCheckerFrameworkZip', Zip) {
     rename 'dataflow.pdf', 'checker-framework-dataflow-manual.pdf'
   }
 
-  // Copy to CFLogo.png to multiple places.
   from('docs/logo/Logo/CFLogo.png') {
     into 'docs/manual/checker-framework/'
   }
@@ -140,3 +140,89 @@ tasks.register('zipMavenExamples', Zip) {
   from('docs/examples/MavenExample')
 }
 
+tasks.register('copyWebRoot', Copy) {
+  String webRoot = project.property('webRoot')
+  destinationDir=file(webRoot)
+  from ("${projectDir}/docs") {
+    include('checker-framework-webpage.html', 'CHANGELOG.md')
+  }
+  from("${projectDir}/docs/logo/Logo/CFLogo.png")
+  from("${projectDir}/docs/logo/Checkmark/CFCheckmark_favicon.png") {
+    rename('CFCheckmark_favicon.png','favicon-checkerframework.png' )
+  }
+}
+
+tasks.register('copyWebsiteDocs', Copy) {
+  dependsOn('copyWebRoot')
+  String destDir = project.property('destDir')
+  destinationDir = file(destDir)
+
+  from('docs/logo/Logo/CFLogo.png') {
+    into 'tutorial/'
+  }
+
+  from('docs/logo/Logo/CFLogo.png') {
+    into 'tutorial/webpages'
+  }
+
+  from('docs/logo/Logo/CFLogo.png') {
+    into 'manual'
+  }
+
+  // Copy favicon
+  from('docs/logo/Checkmark/CFCheckmark_favicon.png') {
+    rename('CFCheckmark_favicon.png','favicon-checkerframework.png' )
+  }
+
+  from('docs/logo/Checkmark/CFCheckmark_favicon.png') {
+    into 'manual'
+    rename('CFCheckmark_favicon.png','favicon-checkerframework.png' )
+  }
+
+  // Copy manual files
+  from('docs/manual/checker-framework'){
+    into 'manual'
+    include 'manual.html',
+        'manual.pdf',
+        '*.svg',
+        'manual001.png',
+        'manual001.svg'
+  }
+
+  // Copy developer docs
+  from('docs/developer'){
+    into 'manual'
+    include 'developer-manual.html',
+        'gsoc-ideas.html',
+        'new-contributor-projects.html'
+  }
+
+  // Copy Dataflow manual
+  from ('dataflow/manual/dataflow.pdf'){
+    into 'manual'
+    rename 'dataflow.pdf','checker-framework-dataflow-manual.pdf'
+  }
+
+  // Copy tutorial
+  from ('docs/tutorial'){
+    into 'tutorial'
+  }
+
+  // Copy Javadoc
+  from ('docs/api') {
+    into 'api'
+  }
+
+  // TODO:  Add symlink to python script
+  //  <symlink link="${dest.dir.manual}/index.html" resource="${manual.name}.html" />
+  //  <symlink overwrite="true" link="${dest.dir}/index.html" resource="${checker.webpage}" />
+}
+
+tasks.register('updateCopyMavenExample', Copy){
+  String destDir = project.property('destDir') + '/MavenExample'
+  destinationDir = file(destDir)
+  from 'docs/examples/MavenExample'
+  filter { String line ->
+    line.replaceAll("<!-- checker-framework-version -->(.*)<!-- /checker-framework-version -->", "<!-- checker-framework-version -->${releaseVersion}<!-- /checker-framework-version -->")
+  }
+}

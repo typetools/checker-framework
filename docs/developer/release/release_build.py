@@ -258,7 +258,7 @@ def build_checker_framework_release(
     )
     execute(grep_cmd, False, False, CHECKER_FRAMEWORK)
     continue_or_exit(
-        'If any occurrence is not acceptable, then stop the release, update target "update-checker-framework-versions" in file release.xml, and start over.'
+        'If any occurrence is not acceptable, then stop the release, update target "updateVersionNumbers" in file release.gradle, and start over.'
     )
 
     # Build the Checker Framework binaries and documents.  Tests are run by release_push.py.
@@ -282,23 +282,15 @@ def build_checker_framework_release(
     execute(gradle_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
     # copy the remaining checker-framework website files to checker_framework_interm_dir
-    ant_props = (
-        "-Dchecker=%s -Ddest.dir=%s -Dmanual.name=%s -Ddataflow.manual.name=%s -Dchecker.webpage=%s"
+    gradle_cmd = (
+        "./gradlew copyWebsiteDocs  -PdestDir=%s -PwebRoot==%s"
         % (
-            checker_dir,
             checker_framework_interm_dir,
-            "checker-framework-manual",
-            "checker-framework-dataflow-manual",
-            "checker-framework-webpage.html",
+            DEV_SITE_DIR
         )
     )
 
-    # IMPORTANT: The release.xml in the directory where the Checker Framework is being built is used. Not the release.xml in the directory you ran release_build.py from.
-    ant_cmd = "ant %s -f release.xml %s checker-framework-website-docs " % (
-        ant_debug,
-        ant_props,
-    )
-    execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
+    execute(gradle_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
     # clean no longer necessary files left over from building the checker framework tutorial
     checker_tutorial_dir = os.path.join(CHECKER_FRAMEWORK, "docs", "tutorial")
