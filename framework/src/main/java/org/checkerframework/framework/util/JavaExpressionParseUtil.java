@@ -268,8 +268,8 @@ public class JavaExpressionParseUtil {
      *     location
      * @param pathToCompilationUnit required to use the underlying Javac API
      * @param env the processing environment
-     * @return {@code tree} as a {@code JavaExpression}
-     * @throws JavaExpressionParseException if {@code tree} cannot be converted to a {@code
+     * @return {@code exprTree} as a {@code JavaExpression}
+     * @throws JavaExpressionParseException if {@code exprTree} cannot be converted to a {@code
      *     JavaExpression}
      */
     public static JavaExpression convert(
@@ -818,7 +818,8 @@ public class JavaExpressionParseUtil {
       String name = exprTree.getIdentifier().toString();
 
       // Check if the expression refers to a fully-qualified class name.
-      PackageSymbol packageSymbol = resolver.findPackage(expr.toString(), pathToCompilationUnit);
+      PackageSymbol packageSymbol =
+          resolver.findPackage(exprTree.toString(), pathToCompilationUnit);
       if (packageSymbol != null) {
         ClassSymbol classSymbol =
             resolver.findClassInPackage(name, packageSymbol, pathToCompilationUnit);
@@ -1131,7 +1132,7 @@ public class JavaExpressionParseUtil {
    * @param exprString the string that could not be parsed
    * @param explanation an explanation of the parse failure
    * @return a {@link JavaExpressionParseException} for the expression {@code exprString} with
-   *     explanation {@code explanation}.
+   *     explanation {@code explanation}
    */
   public static JavaExpressionParseException constructJavaExpressionParseError(
       String exprString, String explanation) {
