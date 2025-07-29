@@ -797,6 +797,50 @@ warnings:
     }
 \end{Verbatim}
 
+
+\sectionAndLabel{The Grow-only Checker: Verifying Non-Shrinking Lists}{growonly-checker}
+
+The GrowOnly Checker permits a programmer to specify that certain
+collections do not shrink in size.  If a collection is
+\refqualclass{checker/index/qual}{GrowOnly}, then the GrowOnly Checker
+issues a warning if a method like like \<remove()> or \<clear()> is called
+on the collection.
+
+Programmers do not run the GrowOnly Checker directly.  It is run as part of
+the Index Checker.  If a collection is
+\refqualclass{checker/index/qual}{GrowOnly}, then once the Index Checker
+determines that an index is in-range for the collection, the index remains
+in-range.  If a collection can shrink, then any time the collection might
+be modified, the fact about the index being in-range could be violated.
+
+\begin{figure}
+\begin{center}
+\includeimage{index-mutability}{5cm}
+\end{center}
+\caption{Qualifier hierarchy for the Grow-only Checker.}
+\label{growonly-mutability-lattice}
+\end{figure}
+
+The type qualifiers of Figure~\ref{growonly-mutability-lattice} indicate whether a sequence might shrink.
+\begin{description}
+\item[\refqualclass{checker/index/qual}{UnshrinkableRef}]
+  The sequence cannot be shrunk through this reference. However, the sequence might still shrink if another alias to it is used to perform a shrinking operation. This is the default qualifier.
+
+\item[\refqualclass{checker/index/qual}{GrowOnly}]
+  A strong guarantee that the annotated collection will never shrink as long as this reference exists. The checker ensures that no shrinking methods can be called through this reference, and the type system guarantees that no other alias can be used to shrink the collection either.
+  A grow-only list can be created like this:
+\begin{Verbatim}
+@GrowOnly List<String> list = new @GrowOnly ArrayList<>();
+\end{Verbatim}
+
+\item[\refqualclass{checker/index/qual}{Shrinkable}]
+  The length of the sequence may be increased or decreased, via methods such as \<add()>, \<remove()>, and \<clear()>.
+
+\item[\refqualclass{checker/index/qual}{UncheckedShrinkable}]
+  For the purposes of the GrowOnly Checker, this is treated exactly like \<@Shrinkable>. It indicates that the collection can shrink. (Its special properties related to opting out of index checking are not relevant to the GrowOnly Checker).
+\end{description}
+
+
 \sectionAndLabel{Technical papers}{index-papers}
 
 The paper ``Lightweight Verification of Array Indexing'' (ISSTA 2018,
@@ -804,7 +848,6 @@ The paper ``Lightweight Verification of Array Indexing'' (ISSTA 2018,
 gives more details about the Index Checker.
 ``Enforcing correct array indexes with a type system''~\cite{Santino2016} (FSE 2016) describes
 an earlier version.
-
 
 %%  LocalWords:  NegativeArraySizeException pre myArray IndexFor someArray
 %%  LocalWords:  MyJavaFile LTLengthOf LTEqLengthOf GTENegativeOne GTE str
@@ -820,5 +863,5 @@ an earlier version.
 %%  LocalWords:  SearchIndex bitwise SearchIndexBottom SearchIndexUnknown
 %%  LocalWords:  Substring substringindex substring SubstringIndexFor
 %%  LocalWords:  SubstringIndexBottom SubstringIndexUnknown LessThanBottom
-%%  LocalWords:  LessThanUnknown typecheck typechecks system''
-% LocalWords:  UpperBoundLiteral
+%%  LocalWords:  LessThanUnknown typecheck typechecks system'' GrowOnly
+%%  LocalWords:  UpperBoundLiteral UnshrinkableRef UncheckedShrinkable
