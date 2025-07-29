@@ -8,15 +8,22 @@ ext {
 }
 
 tasks.register('updateVersionNumbersAFU', Copy){
-  into 'annotation-file-utilities'
+  into layout.buildDirectory.file('updateVersionNumbers/annotation-file-utilities')
   from 'annotation-file-utilities'
   include 'src/main/java/org/checkerframework/afu/scenelib/io/classfile/ClassFileReader.java'
   filter { String line ->
     line.replaceAll( "Annotation File Utilities v${releaseVersionRegex}{0,1}", "Annotation File Utilities v${releaseVersion}")
   }
 }
-tasks.register('updateVersionNumbers', Copy) {
-  into 'docs/'
+tasks.register('UpdateVersionNumbers', Copy){
+  dependsOn('updateVersionNumbersInDocs')
+  dependsOn('updateVersionNumbersAFU')
+  from layout.buildDirectory.file('updateVersionNumbers/')
+  into layout.projectDirectory.file('updateVersionNumbers/')
+}
+
+tasks.register('updateVersionNumbersInDocs', Copy) {
+  into layout.buildDirectory.file('updateVersionNumbers/docs/')
   from('docs/') {
     include 'manual/annotation-file-utilities/annotation-file-utilities.html',
         'checker-framework-quick-start.html',
