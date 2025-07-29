@@ -1,11 +1,10 @@
 package org.checkerframework.framework.util;
 
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.JavacTask;
-import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.api.JavacTool;
 import java.io.IOException;
 import java.net.URI;
@@ -74,40 +73,21 @@ public class JavacParseUtil {
                   Collections.singletonList(fileObject));
 
       // Parse the source and extract the CompilationUnit
-      Iterable<? extends CompilationUnitTree> trees = task.parse();
-      CompilationUnitTree cu = trees.iterator().next();
+      CompilationUnitTree cu = task.parse().iterator().next();
 
-      // Use a TreeScanner to extract the expression from the variable initializer
-      ExpressionExtractor extractor = new ExpressionExtractor();
-      for (Tree typeDecl : cu.getTypeDecls()) {
-        typeDecl.accept(extractor, null);
-      }
+      // Get the first member (the dummy field) from the ClassTree and cast to VariableTree
+      ClassTree classTree = (ClassTree) cu.getTypeDecls().get(0);
+      VariableTree varTree = (VariableTree) classTree.getMembers().get(0);
 
-      if (extractor.result == null) {
+      ExpressionTree expr = varTree.getInitializer();
+      if (expr == null) {
         throw new RuntimeException("Expression not found in AST.");
       }
 
-      return extractor.result;
+      return expr;
 
-    } catch (IOException e) {
-      throw new RuntimeException("Expression Parsing failed", e);
-    }
-  }
-
-  /**
-   * A TreeScanner that locates the dummy variable declaration and captures its initializer (i.e.,
-   * the target expression being parsed).
-   */
-  private static class ExpressionExtractor extends TreeScanner<Void, Void> {
-    ExpressionTree result = null;
-
-    @Override
-    public Void visitVariable(VariableTree node, Void p) {
-      // Look for the "expression" variable introduced in dummy source
-      if (node.getName().contentEquals("expression")) {
-        result = node.getInitializer();
-      }
-      return super.visitVariable(node, p);
+    } catch (IOException | IndexOutOfBoundsException | ClassCastException e) {
+      throw new RuntimeException("Expression parsing failed", e);
     }
   }
 }
