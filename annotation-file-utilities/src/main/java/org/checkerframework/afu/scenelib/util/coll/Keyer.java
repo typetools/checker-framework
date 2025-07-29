@@ -7,6 +7,6 @@ package org.checkerframework.afu.scenelib.util.coll;
  * @param <V> the element type
  */
 public interface Keyer<K, V> {
-  /** Returns the key that this keyer wishes to assign to the element <code>v</code>. */
+  /** Returns the key that this keyer wishes to assign to the element {@code v}. */
   public abstract K getKeyFor(V v);
 }

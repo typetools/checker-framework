@@ -458,8 +458,8 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
    * afterFirstStore} is true, then the store after {@code firstBlock} is returned; if {@code
    * afterFirstStore} is false, the store before {@code succBlock} is returned.
    *
-   * @param afterFirstStore whether to use the store after the firstBlock block or the store before
-   *     its successor, succBlock
+   * @param afterFirstStore if true, use the store after the firstBlock block; if false, use the
+   *     store before its successor, succBlock
    * @param firstBlock a CFG block
    * @param succBlock {@code firstBlock}'s successor
    * @return the appropriate CFStore, populated with MustCall annotations, from the results of
@@ -537,7 +537,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   }
 
   /**
-   * Return the temporary variable for node, if it exists. See {@code #tempVars}.
+   * Returns the temporary variable for node, if it exists. See {@code #tempVars}.
    *
    * @param node a CFG node
    * @return the corresponding temporary variable, or null if there is not one

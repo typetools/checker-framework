@@ -81,7 +81,7 @@ public class Range {
   /** The number of values representable in 8 bits: 2^8 or 1&lt;&lt;8. */
   private static final long BYTE_WIDTH = BYTE_EVERYTHING.width();
 
-  /** The empty range. This is the only Range object that contains nothing */
+  /** The empty range. This is the only Range object that contains nothing. */
   @SuppressWarnings("interning:assignment") // no other constructor call makes this
   public static final @InternedDistinct Range NOTHING = new Range(Long.MAX_VALUE, Long.MIN_VALUE);
 
@@ -425,7 +425,7 @@ public class Range {
   }
 
   /**
-   * Return x clipped to the given range; out-of-range values become extremal values. Appropriate
+   * Returns x clipped to the given range; out-of-range values become extremal values. Appropriate
    * only when {@link #ignoreOverflow} is true.
    *
    * @param x a value

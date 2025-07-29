@@ -5,7 +5,7 @@ import java.util.List;
 import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
-/** JUnit tests for the Non-Empty Checker */
+/** JUnit tests for the Non-Empty Checker. */
 public class NonEmptyTest extends CheckerFrameworkPerDirectoryTest {
 
   /**

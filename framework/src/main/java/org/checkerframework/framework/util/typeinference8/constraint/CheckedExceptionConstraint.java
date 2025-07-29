@@ -39,7 +39,7 @@ public class CheckedExceptionConstraint extends TypeConstraint {
    * @param expression {@link com.sun.source.tree.LambdaExpressionTree} or {@link
    *     com.sun.source.tree.MemberReferenceTree} for this constraint
    * @param t a function type
-   * @param map The mapping from type variable to inference variable to use with this constraint
+   * @param map the mapping from type variable to inference variable to use with this constraint
    */
   public CheckedExceptionConstraint(ExpressionTree expression, AbstractType t, Theta map) {
     super("Checked exception for " + expression, t);

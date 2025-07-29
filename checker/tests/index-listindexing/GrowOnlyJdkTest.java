@@ -15,19 +15,14 @@ public class GrowOnlyJdkTest {
   }
 
   void testLocalVariable() {
-    @SuppressWarnings("cast.unsafe.constructor.invocation")
-    @GrowOnly
-    List<String> localList = new @GrowOnly ArrayList<>();
+    @GrowOnly List<String> localList = new @GrowOnly ArrayList<>();
     localList.add("hello");
     // :: error: (method.invocation)
     localList.clear();
   }
 
   void testUncheckedShrinkable() {
-    // This assignment should be fine by default
-    @SuppressWarnings("cast.unsafe.constructor.invocation")
-    @UncheckedShrinkable
-    List<String> list = new @UncheckedShrinkable ArrayList<>();
+    @UncheckedShrinkable List<String> list = new @UncheckedShrinkable ArrayList<>();
     list.add("hello");
     list.remove(0);
   }

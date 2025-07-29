@@ -271,7 +271,7 @@ public class WholeProgramInferenceJavaParserStorage
   }
 
   /**
-   * Get the annotations for a method or constructor.
+   * Returns the annotations for a method or constructor.
    *
    * @param methodElt the method or constructor
    * @return the annotations for a method or constructor
@@ -290,7 +290,7 @@ public class WholeProgramInferenceJavaParserStorage
   }
 
   /**
-   * Get the annotations for a field.
+   * Returns the annotations for a field.
    *
    * @param fieldElt a field
    * @return the annotations for a field
@@ -979,7 +979,7 @@ public class WholeProgramInferenceJavaParserStorage
   }
 
   /**
-   * Return all the CallableDeclarationAnnos for the given signature.
+   * Returns all the CallableDeclarationAnnos for the given signature.
    *
    * @param jvmSignature the JVM signature
    * @param typeNames a collection of type names

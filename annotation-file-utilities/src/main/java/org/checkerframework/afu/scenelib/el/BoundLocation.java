@@ -31,7 +31,7 @@ public final class BoundLocation {
   }
 
   /**
-   * Returns true if this {@link BoundLocation} equals <code>o</code>; a slightly faster variant of
+   * Returns true if this {@link BoundLocation} equals {@code o}; a slightly faster variant of
    * {@link #equals(Object)} for when the argument is statically known to be another nonnull {@link
    * BoundLocation}.
    */
@@ -40,9 +40,9 @@ public final class BoundLocation {
   }
 
   /**
-   * This {@link BoundLocation} equals <code>o</code> if and only if <code>o</code> is another
-   * nonnull {@link BoundLocation} and <code>this</code> and <code>o</code> have equal {@link
-   * #paramIndex} and {@link #boundIndex}.
+   * This {@link BoundLocation} equals {@code o} if and only if {@code o} is another nonnull {@link
+   * BoundLocation} and {@code this} and {@code o} have equal {@link #paramIndex} and {@link
+   * #boundIndex}.
    */
   @Override
   public boolean equals(Object o) {

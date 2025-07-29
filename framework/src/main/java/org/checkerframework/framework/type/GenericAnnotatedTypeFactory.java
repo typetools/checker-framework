@@ -1305,7 +1305,7 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
-   * Return the first {@link Node} for a given {@link Tree} that has class {@code kind}.
+   * Returns the first {@link Node} for a given {@link Tree} that has class {@code kind}.
    *
    * <p>You probably don't want to use this function: iterate over the result of {@link
    * #getNodesForTree(Tree)} yourself or ask for a conservative approximation of the store using
@@ -2623,7 +2623,8 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
-   * Return the type of the default value of the given type. The default value is 0, false, or null.
+   * Returns the type of the default value of the given type. The default value is 0, false, or
+   * null.
    *
    * @param typeMirror a type
    * @return the annotated type of {@code type}'s default value
@@ -2639,8 +2640,8 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
-   * Return the contract annotations (that is, pre- and post-conditions) for the given AMethod. Does
-   * not modify the AMethod.
+   * Returns the contract annotations (that is, pre- and post-conditions) for the given AMethod.
+   * Does not modify the AMethod.
    *
    * <p>This overload must only be called when using WholeProgramInferenceScenes.
    *
@@ -2657,7 +2658,7 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
-   * Return the precondition annotations for the given AMethod. Does not modify the AMethod.
+   * Returns the precondition annotations for the given AMethod. Does not modify the AMethod.
    *
    * <p>This overload must only be called when using WholeProgramInferenceScenes.
    *
@@ -2694,7 +2695,7 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
-   * Return the postcondition annotations for the given AMethod. Does not modify the AMethod.
+   * Returns the postcondition annotations for the given AMethod. Does not modify the AMethod.
    *
    * <p>This overload must only be called when using WholeProgramInferenceScenes.
    *
@@ -2735,7 +2736,7 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
-   * Return the contract annotations (that is, pre- and post-conditions) for the given
+   * Returns the contract annotations (that is, pre- and post-conditions) for the given
    * CallableDeclarationAnnos. Does not modify the CallableDeclarationAnnos.
    *
    * <p>This overload must only be called when using WholeProgramInferenceJavaParserStorage.
@@ -2754,8 +2755,8 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
-   * Return the precondition annotations for the given CallableDeclarationAnnos. Does not modify the
-   * CallableDeclarationAnnos.
+   * Returns the precondition annotations for the given CallableDeclarationAnnos. Does not modify
+   * the CallableDeclarationAnnos.
    *
    * <p>This overload must only be called when using WholeProgramInferenceJavaParserStorage.
    *
@@ -2775,7 +2776,7 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
-   * Return the postcondition annotations for the given CallableDeclarationAnnos. Does not modify
+   * Returns the postcondition annotations for the given CallableDeclarationAnnos. Does not modify
    * the CallableDeclarationAnnos.
    *
    * <p>This overload must only be called when using WholeProgramInferenceJavaParserStorage.
@@ -2863,7 +2864,7 @@ public abstract class GenericAnnotatedTypeFactory<
    *     of {@code preOrPost})
    * @param declaredType the declared type of the expression, which is used to determine if the
    *     inferred type supplies no additional information beyond the declared type
-   * @param preOrPost whether to return preconditions or postconditions
+   * @param preOrPost what to return: preconditions or postconditions
    * @param preconds the precondition annotations for the method; used to suppress redundant
    *     postconditions; non-null exactly when {@code preOrPost} is {@code AFTER}
    * @return precondition or postcondition annotations for the element (possibly an empty list)
@@ -2929,7 +2930,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * @param qualifier the qualifier that must be present
    * @param declaredType the declared type of the expression, which is used to avoid inferring
    *     redundant pre- or postcondition annotations
-   * @param preOrPost whether to return a precondition or postcondition annotation
+   * @param preOrPost what to return: a precondition or postcondition annotation
    * @param preconds the list of precondition annotations; used to suppress redundant
    *     postconditions; non-null exactly when {@code preOrPost} is {@code BeforeOrAfter.BEFORE}
    * @return a {@code RequiresQualifier("...")} or {@code EnsuresQualifier("...")} annotation for
@@ -3005,9 +3006,9 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
-   * Get the shared control flow graph used for {@code tree} by this checker's topmost superchecker.
-   * Returns null if no information is available about the given tree, or if this checker has a
-   * parent checker that does not have a GenericAnnotatedTypeFactory.
+   * Returns the shared control flow graph used for {@code tree} by this checker's topmost
+   * superchecker. Returns null if no information is available about the given tree, or if this
+   * checker has a parent checker that does not have a GenericAnnotatedTypeFactory.
    *
    * <p>Calls to this method should be guarded by checking {@link #hasOrIsSubchecker}; it is
    * nonsensical to have a shared CFG when a checker is running alone.
