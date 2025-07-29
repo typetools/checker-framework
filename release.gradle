@@ -21,6 +21,11 @@ tasks.register('updateVersionNumbersAFU', Copy){
   filter { String line ->
     line.replaceAll( "Annotation File Utilities v${releaseVersionRegex}{0,1}", "Annotation File Utilities v${releaseVersion}")
   }
+  doFirst {
+    if(!file('annotation-file-utilities/src/main/java/org/checkerframework/afu/scenelib/io/classfile/ClassFileReader.java').exists()){
+      throw new GradleException("File annotation-file-utilities/src/main/java/org/checkerframework/afu/scenelib/io/classfile/ClassFileReader.java not found.")
+    }
+  }
 }
 
 tasks.register('updateVersionNumbersInDocs', Copy) {
