@@ -7,6 +7,13 @@ ext {
   releaseVersion = '3.49.6-SNAPSHOT'
 }
 
+tasks.register('updateVersionNumbers', Copy){
+  dependsOn('updateVersionNumbersInDocs')
+  dependsOn('updateVersionNumbersAFU')
+  from layout.buildDirectory.file('updateVersionNumbers/')
+  into layout.projectDirectory
+}
+
 tasks.register('updateVersionNumbersAFU', Copy){
   into layout.buildDirectory.file('updateVersionNumbers/annotation-file-utilities')
   from 'annotation-file-utilities'
@@ -14,12 +21,6 @@ tasks.register('updateVersionNumbersAFU', Copy){
   filter { String line ->
     line.replaceAll( "Annotation File Utilities v${releaseVersionRegex}{0,1}", "Annotation File Utilities v${releaseVersion}")
   }
-}
-tasks.register('UpdateVersionNumbers', Copy){
-  dependsOn('updateVersionNumbersInDocs')
-  dependsOn('updateVersionNumbersAFU')
-  from layout.buildDirectory.file('updateVersionNumbers/')
-  into layout.projectDirectory.file('updateVersionNumbers/')
 }
 
 tasks.register('updateVersionNumbersInDocs', Copy) {
