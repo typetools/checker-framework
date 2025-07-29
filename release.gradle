@@ -1,3 +1,4 @@
+import java.nio.file.Files
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -170,11 +171,14 @@ tasks.register('copyWebRoot', Copy) {
   from("${projectDir}/docs/logo/Checkmark/CFCheckmark_favicon.png") {
     rename('CFCheckmark_favicon.png','favicon-checkerframework.png' )
   }
+
+  doLast{
+    Files.createSymbolicLink(file("${webRoot}/index.html").toPath(), file("${webRoot}/checker-framework-webpage.html").toPath())
+  }
 }
 
-tasks.register('copyWebsiteDocs', Copy) {
-  dependsOn('copyWebRoot')
-  String destDir = project.property('destDir')
+tasks.register('copyCFWebsite', Copy) {
+  String destDir = project.property('cfWebsite')
   destinationDir = file(destDir)
 
   from('docs/logo/Logo/CFLogo.png') {
@@ -233,9 +237,30 @@ tasks.register('copyWebsiteDocs', Copy) {
     into 'api'
   }
 
-  // TODO:  Add symlink to python script
-  //  <symlink link="${dest.dir.manual}/index.html" resource="${manual.name}.html" />
-  //  <symlink overwrite="true" link="${dest.dir}/index.html" resource="${checker.webpage}" />
+  doLast{
+    Files.createSymbolicLink(file("${destDir}/manual/index.html").toPath(), file("${deployDir}/manual.html").toPath())
+  }
+}
+
+tasks.register('copyAFUWebsite', Copy) {
+  description = 'Copy website deployDir.'
+  String destDir = project.property('afuWebsite')
+  destinationDir = file(destDir)
+
+  from projectDir
+
+  include 'annotation-file-utilities.html'
+  include 'annotation-file-format.html'
+  include 'annotation-file-format.pdf'
+  include 'figures/*.svg'
+  include 'figures/*.png'
+  include 'figures/*.gif'
+
+  doLast {
+
+    delete "${destDir}/index.html"
+    Files.createSymbolicLink(file("${deployDir}/index.html").toPath(), file("${deployDir}/annotation-file-utilities.html").toPath())
+  }
 }
 
 tasks.register('updateCopyMavenExample', Copy){
@@ -244,5 +269,15 @@ tasks.register('updateCopyMavenExample', Copy){
   from 'docs/examples/MavenExample'
   filter { String line ->
     line.replaceAll("<!-- checker-framework-version -->(.*)<!-- /checker-framework-version -->", "<!-- checker-framework-version -->${releaseVersion}<!-- /checker-framework-version -->")
+  }
+}
+
+tasks.register('copyToWebsite'){
+  dependsOn('copyCFWebsite', 'copyWebRoot','copyAFUWebsite')
+  doFirst {
+    if(!(project.hasProperty('afuWebsite') && project.hasProperty('webRoot') && project.hasProperty('cfWebsite'))) {
+      println project.properties.entrySet()*.toString().sort().toString().replaceAll(", ", "\n")
+      throw new RuntimeException("You must specify the following properties: webRoot, afuWebsite, cfWebsite")
+    }
   }
 }

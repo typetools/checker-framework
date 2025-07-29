@@ -189,28 +189,3 @@ artifacts {
   archives shadowJar
   archives skinnyJar
 }
-
-tasks.register('copyWebsiteToDeployDir') {
-  description = 'Copy website deployDir.'
-  doLast {
-    if (!project.hasProperty('deploy-dir')) {
-      println project.properties.entrySet()*.toString().sort().toString().replaceAll(", ", "\n")
-      throw new RuntimeException("You must specify a deploy-dir. The live site deploy-dir=/cse/www2/types/annotation-file-utilities/releases/VERSIONNUMBER")
-    }
-
-    String deployDir = project.getProperties().get("deploy-dir")
-    println("Export location: ${deployDir}")
-    copy {
-      from projectDir
-      into deployDir
-      include 'annotation-file-utilities.html'
-      include 'annotation-file-format.html'
-      include 'annotation-file-format.pdf'
-      include 'figures/*.svg'
-      include 'figures/*.png'
-      include 'figures/*.gif'
-    }
-    delete "${deployDir}/index.html"
-    Files.createSymbolicLink(file("${deployDir}/index.html").toPath(), file("${deployDir}/annotation-file-utilities.html").toPath())
-  }
-}

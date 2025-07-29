@@ -198,45 +198,16 @@ def get_current_date():
     "Return today's date in a string format similar to: 02 May 2016"
     return datetime.date.today().strftime("%d %b %Y")
 
-
-def build_annotation_tools_release(version, afu_interm_dir):
-    """Build the Annotation File Utilities project's artifacts and place them
-    in the development web site."""
-    execute("java -version", True)
-
-    date = get_current_date()
-
-    buildfile = os.path.join(ANNO_FILE_UTILITIES, "build.xml")
-    ant_cmd = (
-        'ant %s -buildfile %s -e update-versions -Drelease.ver="%s" -Drelease.date="%s"'
-        % (ant_debug, buildfile, version, date)
-    )
-    execute(ant_cmd)
-
-    # Deploy to intermediate site
-    gradle_cmd = (
-        "../gradlew copyWebsiteToDeployDir -Pdeploy-dir=%s"
-        % (
-            afu_interm_dir,
-        )
-    )
-    execute(gradle_cmd, True, False, ANNO_FILE_UTILITIES)
-
-    update_project_dev_website("annotation-file-utilities", version)
-
-
 def build_and_locally_deploy_maven(version):
     execute("./gradlew publishToMavenLocal", working_dir=CHECKER_FRAMEWORK)
 
 
 def build_checker_framework_release(
-    version, old_cf_version, afu_release_date, checker_framework_interm_dir
+    version, old_cf_version, checker_framework_interm_dir, afu_interm_dir
 ):
     """Build the release files for the Checker Framework project, including the
     manual and the zip file, and run tests on the build."""
-    checker_dir = os.path.join(CHECKER_FRAMEWORK, "checker")
 
-    afu_build_properties = os.path.join(ANNO_FILE_UTILITIES, "build.properties")
 
     # build annotation-tools
     execute("./gradlew assemble -Prelease=true", True, False, ANNO_FILE_UTILITIES)
@@ -283,13 +254,13 @@ def build_checker_framework_release(
 
     # copy the remaining checker-framework website files to checker_framework_interm_dir
     gradle_cmd = (
-        "./gradlew copyWebsiteDocs  -PdestDir=%s -PwebRoot==%s"
+        "./gradlew copyToWebsite  -PcfWebsite=%s -PafuWebsite=%s -PwebRoot=%s"
         % (
             checker_framework_interm_dir,
+            afu_interm_dir,
             DEV_SITE_DIR
         )
     )
-
     execute(gradle_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
     # clean no longer necessary files left over from building the checker framework tutorial
@@ -299,6 +270,7 @@ def build_checker_framework_release(
     build_and_locally_deploy_maven(version)
 
     update_project_dev_website("checker-framework", version)
+    update_project_dev_website("annotation-file-utilities", version)
 
     return
 
@@ -409,19 +381,16 @@ def main(argv):
     # might want to get a cup of coffee and do something else until it is done.
 
     print_step("Build Step 5: Build projects and websites.")  # AUTO
-
-    print_step("Step 5a: Build Annotation File Utilities.")
-    build_annotation_tools_release(cf_version, afu_interm_dir)
-
-    print_step("Step 5b: Build Checker Framework.")
     build_checker_framework_release(
         cf_version,
         old_cf_version,
-        afu_date,
         checker_framework_interm_dir,
+        afu_interm_dir
     )
+    build_annotation_tools_release(cf_version, afu_interm_dir)
 
-    print_step("Build Step 6: Overwrite .htaccess and CFLogo.png .")  # AUTO
+
+print_step("Build Step 6: Overwrite .htaccess and CFLogo.png .")  # AUTO
 
     # Not "cp -p" because that does not work across filesystems whereas rsync does
     CFLOGO = os.path.join(CHECKER_FRAMEWORK, "docs", "logo", "Logo", "CFLogo.png")
