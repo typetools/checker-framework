@@ -186,7 +186,10 @@ public class AnnotationUtils {
    */
   @EqualsMethod
   public static boolean areSameByName(AnnotationMirror a1, AnnotationMirror a2) {
-    return a1 == a2 || compareByName(a1, a2) == 0;
+    if (a1 == a2) {
+      return true;
+    }
+    return compareByName(a1, a2) == 0;
   }
 
   /**
