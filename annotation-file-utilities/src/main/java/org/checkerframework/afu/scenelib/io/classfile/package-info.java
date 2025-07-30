@@ -1,5 +1,5 @@
 /**
- * <code> org.checkerframework.afu.scenelib.io.classfile </code> provides methods for writing {@link
+ * {@code org.checkerframework.afu.scenelib.io.classfile} provides methods for writing {@link
  * org.checkerframework.afu.scenelib.el.AScene}s to Java class files and reading in annotations from
  * a Java class file into an {@link org.checkerframework.afu.scenelib.el.AScene}. This package
  * requires the core ASM package (see <a

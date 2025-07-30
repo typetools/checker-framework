@@ -29,13 +29,13 @@ import org.checkerframework.checker.signature.qual.BinaryName;
 import org.plumelib.util.FileIOException;
 
 /**
- * <code>JavapParser</code> provides a static method that parses a class dump in the form produced
- * by <code>xjavap -s -verbose -annotations</code> and adds the annotations to an {@link AScene},
- * using the scene's {@link AnnotationFactory} to build individual annotations. If the scene's
- * {@link AnnotationFactory} announces that it does not want an annotation found in the javap
- * output, that annotation is skipped. Annotations from the javap output are merged into the scene;
- * it is an error if both the scene and the javap output contain annotations of the same type on the
- * same element.
+ * {@code JavapParser} provides a static method that parses a class dump in the form produced by
+ * {@code xjavap -s -verbose -annotations} and adds the annotations to an {@link AScene}, using the
+ * scene's {@link AnnotationFactory} to build individual annotations. If the scene's {@link
+ * AnnotationFactory} announces that it does not want an annotation found in the javap output, that
+ * annotation is skipped. Annotations from the javap output are merged into the scene; it is an
+ * error if both the scene and the javap output contain annotations of the same type on the same
+ * element.
  *
  * <p>THIS CLASS IS NOT FINISHED YET!
  *
@@ -410,7 +410,7 @@ public final class JavapParser {
     this.scene = scene;
   }
 
-  /** Transfers annotations from <code>in</code> to <code>scene</code>. */
+  /** Transfers annotations from {@code in} to {@code scene}. */
   public static void parse(Reader in, AScene scene) throws IOException, ParseException {
     new JavapParser(in, scene).parse();
   }

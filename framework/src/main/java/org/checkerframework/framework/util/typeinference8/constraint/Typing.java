@@ -100,7 +100,7 @@ public class Typing extends TypeConstraint {
   }
 
   /**
-   * Return one of the abstract types in this constraint.
+   * Returns one of the abstract types in this constraint.
    *
    * @return one of the abstract types in this constraint
    */

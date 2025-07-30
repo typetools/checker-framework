@@ -57,7 +57,7 @@ public class TreeBuilder {
   /** The internal javac {@link com.sun.tools.javac.code.Types} object. */
   protected final com.sun.tools.javac.code.Types javacTypes;
 
-  /** For constructing trees */
+  /** For constructing trees. */
   protected final TreeMaker maker;
 
   /** The javac {@link Names} object. */

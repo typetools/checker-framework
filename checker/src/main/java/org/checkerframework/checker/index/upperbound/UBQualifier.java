@@ -325,7 +325,7 @@ public abstract class UBQualifier {
   }
 
   /**
-   * Return true if this is UBQualifier.PolyQualifier.
+   * Returns true if this is UBQualifier.PolyQualifier.
    *
    * @return true if this is UBQualifier.PolyQualifier
    */

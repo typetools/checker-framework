@@ -228,7 +228,7 @@ public class CheckerMain {
   }
 
   /**
-   * Return the arguments that start with @ and therefore are files that contain javac arguments.
+   * Returns the arguments that start with @ and therefore are files that contain javac arguments.
    *
    * @param args a list of command-line arguments; is not modified
    * @return a List of files representing all arguments that started with @
@@ -359,7 +359,7 @@ public class CheckerMain {
   }
 
   /**
-   * Return the last {@code -cp} or {@code -classpath} option. If no {@code -cp} or {@code
+   * Returns the last {@code -cp} or {@code -classpath} option. If no {@code -cp} or {@code
    * -classpath} arguments were present, then return the CLASSPATH environment variable (if set)
    * followed by the current directory.
    *
@@ -660,7 +660,7 @@ public class CheckerMain {
   }
 
   /**
-   * Return all the lines in all the files.
+   * Returns all the lines in all the files.
    *
    * @param files a list of files
    * @return a list of all the lines in all the files

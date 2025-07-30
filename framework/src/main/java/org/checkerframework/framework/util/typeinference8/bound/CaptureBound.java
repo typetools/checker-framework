@@ -29,7 +29,7 @@ import org.checkerframework.javacutil.TypesUtils;
  * may be types or wildcards and may mention inference variables).
  */
 public class CaptureBound {
-  /** {@code G<A1, ..., An>} sometimes called the right hand side */
+  /** {@code G<A1, ..., An>} sometimes called the right hand side. */
   private final AbstractType capturedType;
 
   /**
@@ -157,7 +157,7 @@ public class CaptureBound {
   }
 
   /**
-   * Return all variables on the left-hand side of this capture.
+   * Returns all variables on the left-hand side of this capture.
    *
    * @return all variables on the left-hand side of this capture
    */
@@ -166,7 +166,7 @@ public class CaptureBound {
   }
 
   /**
-   * Return all variables on the right-hand side of this capture.
+   * Returns all variables on the right-hand side of this capture.
    *
    * @return all variables on the right-hand side of this capture
    */

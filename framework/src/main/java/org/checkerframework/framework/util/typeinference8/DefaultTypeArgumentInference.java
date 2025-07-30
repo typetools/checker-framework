@@ -223,7 +223,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
    * @param argTree the argument of interest
    * @param newClassTree the new class tree or {@code null} if {@code executableElement} is a method
    * @return true if {@code argTree} is pseudo-assigned to a parameter in {@code executableElement}
-   *     that contains a type variable that needs to be inferred.
+   *     that contains a type variable that needs to be inferred
    */
   private static boolean argumentNeedsInference(
       ExecutableElement executableElement,
