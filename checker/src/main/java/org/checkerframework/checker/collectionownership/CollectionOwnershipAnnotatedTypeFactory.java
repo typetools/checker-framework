@@ -583,7 +583,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
   private class CollectionOwnershipTypeAnnotator extends TypeAnnotator {
 
     /**
-     * Constructor matching super.
+     * Creates a CollectionOwnershipTypeAnnotator.
      *
      * @param atypeFactory the type factory
      */
@@ -593,11 +593,10 @@ public class CollectionOwnershipAnnotatedTypeFactory
 
     @Override
     public Void visitExecutable(AnnotatedExecutableType t, Void p) {
-      List<? extends AnnotatedTypeMirror> params = t.getParameterTypes();
 
-      AnnotatedDeclaredType receiver = t.getReceiverType();
+      AnnotatedDeclaredType receiverType = t.getReceiverType();
       AnnotationMirror receiverAnno =
-          receiver == null ? null : receiver.getEffectiveAnnotationInHierarchy(TOP);
+          receiverType == null ? null : receiverType.getEffectiveAnnotationInHierarchy(TOP);
       boolean receiverHasManualAnno =
           receiverAnno != null && !AnnotationUtils.areSameByName(BOTTOM, receiverAnno);
 
@@ -625,7 +624,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
                   && !AnnotationUtils.areSameByName(POLY, superReceiverAnno);
           if (!receiverHasManualAnno) {
             if (superReceiverHasManualAnno) {
-              receiver.replaceAnnotation(superReceiverAnno);
+              receiverType.replaceAnnotation(superReceiverAnno);
             }
           }
 
@@ -641,13 +640,14 @@ public class CollectionOwnershipAnnotatedTypeFactory
             }
           }
 
-          List<? extends AnnotatedTypeMirror> superParams =
+          List<? extends AnnotatedTypeMirror> paramTypes = t.getParameterTypes();
+          List<? extends AnnotatedTypeMirror> superParamTypes =
               annotatedSuperMethod.getParameterTypes();
-          if (params.size() == superParams.size()) {
-            for (int i = 0; i < superParams.size(); i++) {
+          if (paramTypes.size() == superParamTypes.size()) {
+            for (int i = 0; i < superParamTypes.size(); i++) {
               AnnotationMirror superParamAnno =
-                  superParams.get(i).getPrimaryAnnotationInHierarchy(TOP);
-              AnnotationMirror paramAnno = params.get(i).getEffectiveAnnotationInHierarchy(TOP);
+                  superParamTypes.get(i).getPrimaryAnnotationInHierarchy(TOP);
+              AnnotationMirror paramAnno = paramTypes.get(i).getEffectiveAnnotationInHierarchy(TOP);
               boolean paramHasManualAnno =
                   paramAnno != null && !AnnotationUtils.areSameByName(BOTTOM, paramAnno);
               boolean superParamHasManualAnno =
@@ -656,7 +656,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
                       && !AnnotationUtils.areSameByName(POLY, superParamAnno);
               if (!paramHasManualAnno) {
                 if (superParamHasManualAnno) {
-                  params.get(i).replaceAnnotation(superParamAnno);
+                  paramTypes.get(i).replaceAnnotation(superParamAnno);
                 }
               }
             }

@@ -340,7 +340,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
   private class CalledMethodsTypeAnnotator extends TypeAnnotator {
 
     /**
-     * Constructor matching super.
+     * Creates a CalledMethodsTypeAnnotator.
      *
      * @param atypeFactory the type factory
      */
