@@ -48,13 +48,13 @@ public class CollectionOwnershipVisitor
   }
 
   /**
-   * This method typically issues a warning if the result type of the constructor is not top,
+   * This method checks that the result type of a constructor is a supertype of the declared type on
+   * the class, if one exists.
+   *
+   * <p>This method typically issues a warning if the result type of the constructor is not top,
    * because in top-default type systems that indicates a potential problem. The Must Call Checker
    * does not need this warning, because it expects the type of all constructors to be {@code
    * OwningCollectionBottom} (by default).
-   *
-   * <p>Instead, this method checks that the result type of a constructor is a supertype of the
-   * declared type on the class, if one exists.
    *
    * @param constructorType an AnnotatedExecutableType for the constructor
    * @param constructorElement element that declares the constructor
@@ -101,11 +101,11 @@ public class CollectionOwnershipVisitor
   }
 
   /**
-   * Checks validity of an {@code OwningCollection} field {@code field}. Say the type of the
-   * elements of {@code field} is {@code @MustCall("m"}}. This method checks that the enclosing
-   * class of {@code field} has a type {@code @MustCall("m2")} for some method {@code m2}, and that
-   * {@code m2} has an annotation {@code @CollectionFieldDestructor("field")}, guaranteeing that the
-   * {@code @MustCall} obligation of the field will be satisfied.
+   * Checks validity of an {@code OwningCollection} field {@code field}. Say the element type {@code
+   * field} is {@code @MustCall("m"}}. This method checks that the enclosing class of {@code field}
+   * has a type {@code @MustCall("m2")} for some method {@code m2}, and that {@code m2} has an
+   * annotation {@code @CollectionFieldDestructor("field")}, guaranteeing that the {@code @MustCall}
+   * obligation of the field will be satisfied.
    *
    * @param fieldTree the declaration of the field to check
    */
@@ -118,17 +118,17 @@ public class CollectionOwnershipVisitor
       return;
     }
 
-    String error;
     RLCCalledMethodsAnnotatedTypeFactory rlAtf =
         ResourceLeakUtils.getRLCCalledMethodsAnnotatedTypeFactory(atypeFactory);
     Element enclosingElement = fieldElement.getEnclosingElement();
     List<String> enclosingMustCallValues = rlAtf.getMustCallValues(enclosingElement);
 
+    String error;
     if (enclosingMustCallValues == null) {
       error =
           " The enclosing element "
               + ElementUtils.getQualifiedName(enclosingElement)
-              + " doesn't have a @MustCall annotation";
+              + " has no @MustCall annotation";
     } else if (enclosingMustCallValues.isEmpty()) {
       error =
           " The enclosing element "

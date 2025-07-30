@@ -101,13 +101,13 @@ public class CollectionOwnershipAnnotatedTypeFactory
    * hierarchy.
    */
   public enum CollectionOwnershipType {
-    /** the @NotOwningCollection type */
+    /** The @NotOwningCollection type. */
     NotOwningCollection,
-    /** the @OwningCollection type */
+    /** The @OwningCollection type. */
     OwningCollection,
-    /** the @OwningCollectionWithoutObligation type */
+    /** The @OwningCollectionWithoutObligation type. */
     OwningCollectionWithoutObligation,
-    /** the @OwningCollectionBottom type */
+    /** The @OwningCollectionBottom type. */
     OwningCollectionBottom
   };
 
@@ -616,25 +616,25 @@ public class CollectionOwnershipAnnotatedTypeFactory
           AnnotatedExecutableType annotatedSuperMethod =
               CollectionOwnershipAnnotatedTypeFactory.this.getAnnotatedType(superElt);
 
-          AnnotatedDeclaredType superReceiver = annotatedSuperMethod.getReceiverType();
-          AnnotationMirror superReceiverAnno = superReceiver.getPrimaryAnnotationInHierarchy(TOP);
-          boolean superReceiverHasManualAnno =
-              superReceiverAnno != null
-                  && !AnnotationUtils.areSameByName(BOTTOM, superReceiverAnno)
-                  && !AnnotationUtils.areSameByName(POLY, superReceiverAnno);
           if (!receiverHasManualAnno) {
+            AnnotatedDeclaredType superReceiver = annotatedSuperMethod.getReceiverType();
+            AnnotationMirror superReceiverAnno = superReceiver.getPrimaryAnnotationInHierarchy(TOP);
+            boolean superReceiverHasManualAnno =
+                superReceiverAnno != null
+                    && !AnnotationUtils.areSameByName(BOTTOM, superReceiverAnno)
+                    && !AnnotationUtils.areSameByName(POLY, superReceiverAnno);
             if (superReceiverHasManualAnno) {
               receiverType.replaceAnnotation(superReceiverAnno);
             }
           }
 
-          AnnotatedTypeMirror superReturnType = annotatedSuperMethod.getReturnType();
-          AnnotationMirror superReturnAnno = superReturnType.getPrimaryAnnotationInHierarchy(TOP);
-          boolean superReturnHasManualAnno =
-              superReturnAnno != null
-                  && !AnnotationUtils.areSameByName(BOTTOM, superReturnAnno)
-                  && !AnnotationUtils.areSameByName(POLY, superReturnAnno);
           if (!returnHasManualAnno) {
+            AnnotatedTypeMirror superReturnType = annotatedSuperMethod.getReturnType();
+            AnnotationMirror superReturnAnno = superReturnType.getPrimaryAnnotationInHierarchy(TOP);
+            boolean superReturnHasManualAnno =
+                superReturnAnno != null
+                    && !AnnotationUtils.areSameByName(BOTTOM, superReturnAnno)
+                    && !AnnotationUtils.areSameByName(POLY, superReturnAnno);
             if (superReturnHasManualAnno) {
               returnType.replaceAnnotation(superReturnAnno);
             }
@@ -645,16 +645,16 @@ public class CollectionOwnershipAnnotatedTypeFactory
               annotatedSuperMethod.getParameterTypes();
           if (paramTypes.size() == superParamTypes.size()) {
             for (int i = 0; i < superParamTypes.size(); i++) {
-              AnnotationMirror superParamAnno =
-                  superParamTypes.get(i).getPrimaryAnnotationInHierarchy(TOP);
               AnnotationMirror paramAnno = paramTypes.get(i).getEffectiveAnnotationInHierarchy(TOP);
               boolean paramHasManualAnno =
                   paramAnno != null && !AnnotationUtils.areSameByName(BOTTOM, paramAnno);
-              boolean superParamHasManualAnno =
-                  superParamAnno != null
-                      && !AnnotationUtils.areSameByName(BOTTOM, superParamAnno)
-                      && !AnnotationUtils.areSameByName(POLY, superParamAnno);
               if (!paramHasManualAnno) {
+                AnnotationMirror superParamAnno =
+                    superParamTypes.get(i).getPrimaryAnnotationInHierarchy(TOP);
+                boolean superParamHasManualAnno =
+                    superParamAnno != null
+                        && !AnnotationUtils.areSameByName(BOTTOM, superParamAnno)
+                        && !AnnotationUtils.areSameByName(POLY, superParamAnno);
                 if (superParamHasManualAnno) {
                   paramTypes.get(i).replaceAnnotation(superParamAnno);
                 }
@@ -662,7 +662,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
             }
           }
         }
-      }
+      } // end "if (overriddenMethods != null)"
 
       if (isResourceCollection(returnType.getUnderlyingType())) {
         AnnotationMirror manualAnno = returnType.getEffectiveAnnotationInHierarchy(TOP);
@@ -716,33 +716,25 @@ public class CollectionOwnershipAnnotatedTypeFactory
     }
   }
 
-  /*
-   * Default resource collection fields to @OwningCollection and resource collection parameters to
-   * @NotOwningCollection (inside the method).
-   *
-   * Resource collections are either java.lang.Iterable's and java.util.Iterator's, whose component has
-   * non-empty @MustCall type, as defined by the predicate isResourceCollection(AnnotatedTypeMirror).
-   */
+  // Default resource collection fields to @OwningCollection and resource collection parameters
+  // to @NotOwningCollection (inside the method).
+  //
+  // A resource collection is a `Iterable` or `Iterator`, whose component has non-empty
+  // @MustCall type, as defined by the predicate isResourceCollection(AnnotatedTypeMirror).
   @Override
   public void addComputedTypeAnnotations(Element elt, AnnotatedTypeMirror type) {
     super.addComputedTypeAnnotations(elt, type);
 
     if (elt instanceof VariableElement) {
-      boolean isField = elt.getKind() == ElementKind.FIELD;
-      boolean isParam = elt.getKind() == ElementKind.PARAMETER;
-      boolean isResourceCollection = isResourceCollection(type.getUnderlyingType());
-
-      if (isResourceCollection) {
-        if (isField) {
+      if (isResourceCollection(type.getUnderlyingType())) {
+        if (elt.getKind() == ElementKind.FIELD) {
           AnnotationMirror fieldAnno = type.getEffectiveAnnotationInHierarchy(TOP);
           if (fieldAnno == null || AnnotationUtils.areSameByName(BOTTOM, fieldAnno)) {
             type.replaceAnnotation(OWNINGCOLLECTION);
           }
-        } else if (isParam) {
-          // propagate annotation computed for parameter declaration
-          // to the use site
-          Element enclosingElement = elt.getEnclosingElement();
-          ExecutableElement method = (ExecutableElement) enclosingElement;
+        } else if (elt.getKind() == ElementKind.PARAMETER) {
+          // Propagate the parameter annotation to the use site.
+          ExecutableElement method = (ExecutableElement) elt.getEnclosingElement();
           AnnotatedExecutableType annotatedMethod =
               CollectionOwnershipAnnotatedTypeFactory.this.getAnnotatedType(method);
           List<? extends VariableElement> params = method.getParameters();

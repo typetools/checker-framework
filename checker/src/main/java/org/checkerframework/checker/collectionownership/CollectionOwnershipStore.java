@@ -6,13 +6,14 @@ import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 
 /**
- * The CollectionOwnership Store behaves like CFAbstractStore but keeps @OwningCollection fields in
- * the store. This is justified by the strict access rules of such fields. Keeping the field in the
- * store is required for verifying the postcondition annotation {@code @CollectionFieldDestructor}.
+ * The CollectionOwnership Store behaves like CFAbstractStore but keeps {@code @}{@link
+ * OwningCollection} fields in the store. This is justified by the strict access rules of such
+ * fields. Keeping the field in the store is required for verifying the postcondition annotation
+ * {@code @}{@link CollectionFieldDestructor}.
  */
 public class CollectionOwnershipStore extends CFAbstractStore<CFValue, CollectionOwnershipStore> {
 
-  /** the annotated type factory */
+  /** The annotated type factory. */
   private final CollectionOwnershipAnnotatedTypeFactory atypeFactory;
 
   /**

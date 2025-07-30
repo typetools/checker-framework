@@ -71,9 +71,9 @@ public class RLCCalledMethodsTransfer extends CalledMethodsTransfer {
         (RLCCalledMethodsAnnotatedTypeFactory) this.analysis.getTypeFactory();
     for (RLCCalledMethodsAnnotatedTypeFactory.PotentiallyFulfillingLoop loop :
         RLCCalledMethodsAnnotatedTypeFactory.getPotentiallyFulfillingLoops()) {
-      IteratedCollectionElement collectionElementJx =
+      IteratedCollectionElement collectionElementJE =
           new IteratedCollectionElement(loop.collectionElementNode, loop.collectionElementTree);
-      store.insertValue(collectionElementJx, cmAtf.top);
+      store.insertValue(collectionElementJE, cmAtf.top);
     }
     return store;
   }
@@ -250,12 +250,7 @@ public class RLCCalledMethodsTransfer extends CalledMethodsTransfer {
         if (anm == null) {
           anm = rlTypeFactory.top;
         }
-        if (result.containsTwoStores()) {
-          result.getThenStore().insertValue(localExp, anm);
-          result.getElseStore().insertValue(localExp, anm);
-        } else {
-          result.getRegularStore().insertValue(localExp, anm);
-        }
+        insertIntoStores(result, localExp, anm);
       }
     }
   }

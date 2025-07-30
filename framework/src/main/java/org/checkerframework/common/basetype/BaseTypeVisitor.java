@@ -3018,12 +3018,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Returns a set of AnnotationMirrors that is a lower bound for exception parameters.
+   * Returns a set of AnnotationMirrors that is a lower bound for exception parameters. If a user
+   * writes a more specific (lower) annotation that this on an exception parameter, the Checker
+   * Framework issues a warning saying that the written annotation cannot be verified.
    *
    * <p>This implementation returns top; subclasses can change this behavior.
-   *
-   * <p>Note: by default this method is called by {@link #getThrowUpperBoundAnnotations()}, so that
-   * this annotation is enforced.
    *
    * @return set of annotation mirrors, one per hierarchy, that form a lower bound of annotations
    *     that can be written on an exception parameter
@@ -3083,12 +3082,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Returns a set of AnnotationMirrors that is a upper bound for thrown exceptions.
+   * Returns a set of AnnotationMirrors that is an upper bound for thrown exceptions.
    *
-   * <p>Note: by default this method is returns by getExceptionParameterLowerBoundAnnotations(), so
-   * that this annotation is enforced.
+   * <p>Note: by default this method returns {@code getExceptionParameterLowerBoundAnnotations()},
+   * so that this annotation is enforced.
    *
-   * <p>(Default is top)
+   * <p>(Default is top.)
    *
    * @return set of annotation mirrors, one per hierarchy, that form an upper bound of thrown
    *     expressions

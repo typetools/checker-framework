@@ -44,7 +44,7 @@ public class CollectionOwnershipTransfer
   /** The checker. */
   private final CollectionOwnershipChecker checker;
 
-  /** The MustCall type factory to manage temp vars. */
+  /** The MustCall type factory to manage temporary variables. */
   private final MustCallAnnotatedTypeFactory mcAtf;
 
   /**
@@ -56,8 +56,8 @@ public class CollectionOwnershipTransfer
   public CollectionOwnershipTransfer(
       CollectionOwnershipAnalysis analysis, CollectionOwnershipChecker checker) {
     super(analysis);
-    atypeFactory = (CollectionOwnershipAnnotatedTypeFactory) analysis.getTypeFactory();
-    mcAtf = ResourceLeakUtils.getMustCallAnnotatedTypeFactory(checker);
+    this.atypeFactory = (CollectionOwnershipAnnotatedTypeFactory) analysis.getTypeFactory();
+    this.mcAtf = ResourceLeakUtils.getMustCallAnnotatedTypeFactory(checker);
     this.checker = checker;
   }
 
@@ -66,29 +66,27 @@ public class CollectionOwnershipTransfer
       AssignmentNode node, TransferInput<CFValue, CollectionOwnershipStore> in) {
     TransferResult<CFValue, CollectionOwnershipStore> res = super.visitAssignment(node, in);
 
-    Node lhs = node.getTarget();
-    lhs = getNodeOrTempVar(lhs);
-    JavaExpression lhsJx = JavaExpression.fromNode(lhs);
+    Node lhs = getNodeOrTempVar(node.getTarget());
+    JavaExpression lhsJE = JavaExpression.fromNode(lhs);
 
-    Node rhs = node.getExpression();
-    rhs = getNodeOrTempVar(rhs);
-    CollectionOwnershipStore coStore = atypeFactory.getStoreBefore(node);
-    CollectionOwnershipType rhsType = atypeFactory.getCoType(rhs, coStore);
+    Node rhs = getNodeOrTempVar(node.getExpression());
+    CollectionOwnershipType rhsType =
+        atypeFactory.getCoType(rhs, atypeFactory.getStoreBefore(node));
 
-    // ownership transfer from rhs into lhs usually.
-    // special case desugared assignments of a temporary array variable
-    // and rhs being owning resource collection field
+    // Ownership transfer from rhs into lhs usually.
+    // Special case: desugared assignments of a temporary array variable
+    // and rhs being owning resource collection field.
     if (rhsType != null) {
       switch (rhsType) {
         case OwningCollection:
         case OwningCollectionWithoutObligation:
-          JavaExpression rhsJx = JavaExpression.fromNode(rhs);
+          JavaExpression rhsJE = JavaExpression.fromNode(rhs);
           if (node.isDesugaredFromEnhancedArrayForLoop()
               || atypeFactory.isOwningCollectionField(
                   TreeUtils.elementFromTree(node.getExpression().getTree()))) {
-            replaceInStores(res, lhsJx, atypeFactory.NOTOWNINGCOLLECTION);
+            replaceInStores(res, lhsJE, atypeFactory.NOTOWNINGCOLLECTION);
           } else {
-            replaceInStores(res, rhsJx, atypeFactory.NOTOWNINGCOLLECTION);
+            replaceInStores(res, rhsJE, atypeFactory.NOTOWNINGCOLLECTION);
           }
           break;
         default:
@@ -99,7 +97,7 @@ public class CollectionOwnershipTransfer
 
     // if (assignmentOfOwningCollectionArrayElement) {
     //   ExpressionTree arrayExpression = ((ArrayAccessTree) lhs.getTree()).getExpression();
-    //   JavaExpression arrayJx = JavaExpression.fromTree(arrayExpression);
+    //   JavaExpression arrayJE = JavaExpression.fromTree(arrayExpression);
 
     //   boolean inAssigningLoop =
     //       MustCallOnElementsAnnotatedTypeFactory.doesAssignmentCreateArrayObligation(
@@ -109,17 +107,17 @@ public class CollectionOwnershipTransfer
     //   // not the assignment node. So, only transform if not in an assigning loop.
     //   if (!inAssigningLoop) {
     //     store =
-    //         transformWriteToOwningCollection(arrayJx, arrayExpression, node.getExpression(),
+    //         transformWriteToOwningCollection(arrayJE, arrayExpression, node.getExpression(),
     // store);
     //   }
     return res;
   }
 
   /**
-   * Checks if the given AST tree is the condition for a collection-obligation-fulfilling and
-   * whether this loop calls all methods in the MustCall type of the elements of some collection. In
-   * this case, refine the type of the collection to @OwningCollectionWithoutObligation in the else
-   * store of the incoming transfer result.
+   * May refine the type of the collection to @OwningCollectionWithoutObligation in the else store
+   * of the incoming transfer result. Does so if the given AST tree is the condition for a
+   * collection-obligation-fulfilling loop that calls all methods in the MustCall type of the
+   * elements of some collection.
    *
    * @param res the incoming transfer result
    * @param tree the AST tree that is possibly the loop condition for a
@@ -132,15 +130,15 @@ public class CollectionOwnershipTransfer
         CollectionOwnershipAnnotatedTypeFactory.getFulfillingLoopForCondition(tree);
     if (loop != null) {
       CollectionOwnershipStore elseStore = res.getElseStore();
-      JavaExpression collectionJx = JavaExpression.fromTree(loop.collectionTree);
+      JavaExpression collectionJE = JavaExpression.fromTree(loop.collectionTree);
 
       CollectionOwnershipType collectionCoType = atypeFactory.getCoType(loop.collectionTree);
       if (collectionCoType == CollectionOwnershipType.OwningCollection) {
         List<String> mustCallValuesOfElements =
             atypeFactory.getMustCallValuesOfResourceCollectionComponent(loop.collectionTree);
         if (loop.getMethods().containsAll(mustCallValuesOfElements)) {
-          elseStore.clearValue(collectionJx);
-          elseStore.insertValue(collectionJx, atypeFactory.OWNINGCOLLECTIONWITHOUTOBLIGATION);
+          elseStore.clearValue(collectionJE);
+          elseStore.insertValue(collectionJE, atypeFactory.OWNINGCOLLECTIONWITHOUTOBLIGATION);
           return new ConditionalTransferResult<>(
               res.getResultValue(), res.getThenStore(), elseStore);
         }
@@ -168,7 +166,7 @@ public class CollectionOwnershipTransfer
     res = transferOwnershipForMethodInvocation(method, node, args, res);
     res = transformPotentiallyFulfillingLoop(res, node.getTree());
 
-    // check whether the method is annotated @CreatesCollectionObligation
+    // Check whether the method is annotated @CreatesCollectionObligation.
     ExecutableElement methodElement = TreeUtils.elementFromUse(node.getTree());
     boolean hasCreatesCollectionObligation =
         atypeFactory.getDeclAnnotation(methodElement, CreatesCollectionObligation.class) != null;
@@ -176,11 +174,10 @@ public class CollectionOwnershipTransfer
         atypeFactory.getDeclAnnotation(methodElement, CollectionFieldDestructor.class) != null;
     if (hasCreatesCollectionObligation) {
       Node receiverNode = node.getTarget().getReceiver();
-      JavaExpression receiverJx = JavaExpression.fromNode(receiverNode);
-      CollectionOwnershipStore coStore = atypeFactory.getStoreBefore(node);
-      if (atypeFactory.getCoType(receiverNode, coStore)
+      JavaExpression receiverJE = JavaExpression.fromNode(receiverNode);
+      if (atypeFactory.getCoType(receiverNode, atypeFactory.getStoreBefore(node))
           == CollectionOwnershipType.OwningCollectionWithoutObligation) {
-        replaceInStores(res, receiverJx, atypeFactory.OWNINGCOLLECTION);
+        replaceInStores(res, receiverJE, atypeFactory.OWNINGCOLLECTION);
       }
     }
     if (hasCollectionFieldDestructor) {
@@ -216,11 +213,10 @@ public class CollectionOwnershipTransfer
 
     for (int i = 0; i < Math.min(args.size(), params.size()); i++) {
       VariableElement param = params.get(i);
-      Node arg = args.get(i);
-      arg = getNodeOrTempVar(arg);
-      JavaExpression argJx = JavaExpression.fromNode(arg);
-      CollectionOwnershipStore coStore = atypeFactory.getStoreBefore(node);
-      CollectionOwnershipType argType = atypeFactory.getCoType(arg, coStore);
+      Node arg = getNodeOrTempVar(args.get(i));
+      JavaExpression argJE = JavaExpression.fromNode(arg);
+      CollectionOwnershipType argType =
+          atypeFactory.getCoType(arg, atypeFactory.getStoreBefore(node));
       CollectionOwnershipType paramType =
           atypeFactory.getCoType(new HashSet<>(param.asType().getAnnotationMirrors()));
       if (paramType == null) {
@@ -254,7 +250,7 @@ public class CollectionOwnershipTransfer
           checker.reportError(
               arg.getTree(), "transfer.owningcollection.field.ownership", arg.getTree().toString());
         } else {
-          replaceInStores(res, argJx, atypeFactory.NOTOWNINGCOLLECTION);
+          replaceInStores(res, argJE, atypeFactory.NOTOWNINGCOLLECTION);
         }
       }
     }
@@ -272,9 +268,9 @@ public class CollectionOwnershipTransfer
     List<Node> args = node.getArguments();
     result = transferOwnershipForMethodInvocation(constructor, node, args, result);
 
-    // the return value defaulting logic cannot recognize that a diamond constructed collection
+    // The return value defaulting logic cannot recognize that a diamond-constructed collection
     // is a resource collection, as it runs before the type variable is inferred:
-    // List<Socket> = new ArrayList<>();
+    //   List<Socket> = new ArrayList<>();
     // Thus, the following checks object creation expressions again on whether they are
     // resource collections with no type variables, and if they are @Bottom, they are
     // unrefined to @OwningCollection. Change the type of both the type var and the computed
@@ -282,15 +278,15 @@ public class CollectionOwnershipTransfer
     CollectionOwnershipStore store = result.getRegularStore();
     CFValue resultValue = result.getResultValue();
     Node tempVarNode = getNodeOrTempVar(node);
-    JavaExpression tempVarJx = JavaExpression.fromNode(tempVarNode);
+    JavaExpression tempVarJE = JavaExpression.fromNode(tempVarNode);
 
-    CollectionOwnershipStore coStore = atypeFactory.getStoreBefore(node);
-    CollectionOwnershipType resolvedType = atypeFactory.getCoType(tempVarNode, coStore);
+    CollectionOwnershipType resolvedType =
+        atypeFactory.getCoType(tempVarNode, atypeFactory.getStoreBefore(node));
     if (atypeFactory.isResourceCollection(node.getTree())) {
       boolean isDiamond = node.getTree().getTypeArguments().size() == 0;
       if (isDiamond && resolvedType == CollectionOwnershipType.OwningCollectionBottom) {
-        store.clearValue(tempVarJx);
-        store.insertValue(tempVarJx, atypeFactory.OWNINGCOLLECTIONWITHOUTOBLIGATION);
+        store.clearValue(tempVarJE);
+        store.insertValue(tempVarJE, atypeFactory.OWNINGCOLLECTIONWITHOUTOBLIGATION);
         resultValue =
             analysis.createSingleAnnotationValue(
                 atypeFactory.OWNINGCOLLECTIONWITHOUTOBLIGATION, node.getType());
@@ -301,8 +297,7 @@ public class CollectionOwnershipTransfer
   }
 
   /**
-   * This method either creates or looks up the temp var t for node, and then updates the store to
-   * give t the same type as {@code node}.
+   * Updates the store to give the temp var for {@code node} the same type as {@code node}.
    *
    * @param node the node to be assigned to a temporary variable
    * @param result the transfer result containing the store to be modified
@@ -324,7 +319,8 @@ public class CollectionOwnershipTransfer
   }
 
   /**
-   * Inserts newAnno as the value into all stores (conditional or not) in the result for node.
+   * Inserts {@code newAnno} as the value into all stores (conditional or not) in the result for
+   * node.
    *
    * @param result the TransferResult holding the stores to modify
    * @param target the receiver whose value should be modified
@@ -343,8 +339,8 @@ public class CollectionOwnershipTransfer
   }
 
   /**
-   * Inserts newAnno as the value into all stores (conditional or not) in the result for node,
-   * clearing the previous value first.
+   * Inserts {@code newAnno} as the value into all stores (conditional or not) in the result for
+   * node, clearing the previous value first.
    *
    * @param result the TransferResult holding the stores to modify
    * @param target the receiver whose value should be modified
@@ -366,8 +362,8 @@ public class CollectionOwnershipTransfer
   }
 
   /**
-   * Removes casts from {@code node} and returns the temp-var corresponding to it if it exists or
-   * else {@code node} with removed casts.
+   * Returns the temp-var corresponding to {@code node} if it exists, or else returns {@code node}
+   * with casts removed.
    *
    * @param node the node
    * @return the temp-var corresponding to {@code node} with casts removed if it exists or else
