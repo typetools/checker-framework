@@ -353,7 +353,7 @@ def main(argv):
         afu_interm_dir
     )
 
-print_step("Build Step 6: Overwrite .htaccess and CFLogo.png .")  # AUTO
+    print_step("Build Step 6: Overwrite .htaccess and CFLogo.png .")  # AUTO
 
     # Not "cp -p" because that does not work across filesystems whereas rsync does
     CFLOGO = os.path.join(CHECKER_FRAMEWORK, "docs", "logo", "Logo", "CFLogo.png")
