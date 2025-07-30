@@ -218,12 +218,12 @@ def build_checker_framework_release(
         'If any occurrence is not acceptable, then stop the release, update target "updateVersionNumbers" in file release.gradle, and start over.'
     )
 
-    # Build the Checker Framework manual.
-    gradle_cmd = "./gradlew manual"
-    execute(gradle_cmd, True, False, CHECKER_FRAMEWORK)
-
     # Build the Checker Framework binaries and documents.  Tests are run by release_push.py.
     gradle_cmd = "./gradlew releaseBuild"
+    execute(gradle_cmd, True, False, CHECKER_FRAMEWORK)
+
+    # Build the Checker Framework manual.
+    gradle_cmd = "./gradlew manual"
     execute(gradle_cmd, True, False, CHECKER_FRAMEWORK)
 
     # make the checker framework tutorial
