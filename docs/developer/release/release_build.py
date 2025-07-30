@@ -235,7 +235,7 @@ def build_checker_framework_release(
             afu_interm_dir
         )
     )
-    execute(gradle_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
+    execute(gradle_cmd, True, False, CHECKER_FRAMEWORK)
 
     # clean no longer necessary files left over from building the checker framework tutorial
     checker_tutorial_dir = os.path.join(CHECKER_FRAMEWORK, "docs", "tutorial")
