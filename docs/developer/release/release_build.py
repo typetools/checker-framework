@@ -222,16 +222,13 @@ def build_checker_framework_release(
     gradle_cmd = "./gradlew releaseBuild"
     execute(gradle_cmd, True, False, CHECKER_FRAMEWORK)
 
-    # Build the Checker Framework manual.
-    gradle_cmd = "./gradlew manual"
-    execute(gradle_cmd, True, False, CHECKER_FRAMEWORK)
-
     # make the checker framework tutorial
     checker_tutorial_dir = os.path.join(CHECKER_FRAMEWORK, "docs", "tutorial")
     execute("make", True, False, checker_tutorial_dir)
 
     # Create checker-framework-X.Y.Z.zip and put it in checker_framework_interm_dir
     # copy the remaining checker-framework website files to checker_framework_interm_dir
+    # This also makes the manuals.
     gradle_cmd = (
         "./gradlew copyToWebsite  -PcfWebsite=%s -PafuWebsite=%s"
         % (
