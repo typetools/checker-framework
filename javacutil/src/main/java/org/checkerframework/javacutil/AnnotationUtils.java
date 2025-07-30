@@ -1188,7 +1188,7 @@ public class AnnotationUtils {
    * and {@code am2} must be the same type of annotation.
    *
    * @param am1 the first AnnotationMirror to compare
-   * @param am2 the second AnnotationMirror to compare
+   * @param am2 the second AnnotationMirror to compare; the same type of annotation as {@code am1}
    * @return true if the two annotations have the same elements (fields)
    */
   @EqualsMethod
@@ -1197,10 +1197,15 @@ public class AnnotationUtils {
       return true;
     }
 
+    // This method might return true even if these maps differ, because of default values.
     Map<? extends ExecutableElement, ? extends AnnotationValue> vals1 = am1.getElementValues();
     Map<? extends ExecutableElement, ? extends AnnotationValue> vals2 = am2.getElementValues();
-    for (ExecutableElement meth :
-        ElementFilter.methodsIn(am1.getAnnotationType().asElement().getEnclosedElements())) {
+
+    // Same elts for both annotations, because am1.getAnnotationType() == am2.getAnnotationType().
+    List<ExecutableElement> elts =
+        ElementFilter.methodsIn(am1.getAnnotationType().asElement().getEnclosedElements());
+
+    for (ExecutableElement meth : elts) {
       AnnotationValue aval1 = vals1.get(meth);
       AnnotationValue aval2 = vals2.get(meth);
       @SuppressWarnings("interning:not.interned") // optimization via equality test
