@@ -1192,18 +1192,18 @@ public class AnnotationUtils {
    * @return true if the two annotations have the same elements (fields)
    */
   @EqualsMethod
-  public static boolean sameElementValues(AnnotationMirror am1, AnnotationMirror am2) {
-    if (am1 == am2) {
+  private static boolean sameElementValues(AnnotationMirror am1, AnnotationMirror am2) {
+
+    // Same elts for both annotations, because am1.getAnnotationType() == am2.getAnnotationType().
+    List<ExecutableElement> elts =
+        ElementFilter.methodsIn(am1.getAnnotationType().asElement().getEnclosedElements());
+    if (elts.isEmpty()) {
       return true;
     }
 
     // This method might return true even if these maps differ, because of default values.
     Map<? extends ExecutableElement, ? extends AnnotationValue> vals1 = am1.getElementValues();
     Map<? extends ExecutableElement, ? extends AnnotationValue> vals2 = am2.getElementValues();
-
-    // Same elts for both annotations, because am1.getAnnotationType() == am2.getAnnotationType().
-    List<ExecutableElement> elts =
-        ElementFilter.methodsIn(am1.getAnnotationType().asElement().getEnclosedElements());
 
     for (ExecutableElement meth : elts) {
       AnnotationValue aval1 = vals1.get(meth);
