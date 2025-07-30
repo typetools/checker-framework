@@ -93,7 +93,7 @@ INTERM_REPO_ROOT = TMP_DIR + "/interm"
 INTERM_CHECKER_REPO = os.path.join(INTERM_REPO_ROOT, "checker-framework")
 
 # The central repositories for Checker Framework related projects
-LIVE_CHECKER_REPO = "git@github.com:typetools/checker-framework.git"
+LIVE_CHECKER_REPO = "git@github.com:smillst/checker-framework.git"
 GIT_SCRIPTS_REPO = "https://github.com/plume-lib/git-scripts"
 PLUME_SCRIPTS_REPO = "https://github.com/plume-lib/plume-scripts"
 CHECKLINK_REPO = "https://github.com/plume-lib/checklink"

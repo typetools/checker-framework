@@ -306,7 +306,7 @@ def clone(src_repo, dst_repo, bareflag):
     """Clone the given git repo from scratch into the filesystem
     path specified by dst_repo. The bareflag parameter indicates whether the
     cloned repo must be a bare git repo."""
-    flags = ""
+    flags = "-b clean-up-release-test"
     if bareflag:
         flags = "--bare"
     execute("git clone --quiet %s %s %s" % (flags, src_repo, dst_repo))
