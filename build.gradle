@@ -669,7 +669,7 @@ task addFavicon(type: Exec) {
 //   in the subproject or `./gradlew :checker:javadoc` at the top level.
 task allJavadoc(type: Javadoc, group: 'Documentation') {
   description = 'Generates API documentation that includes all the modules.'
-  dependsOn(':checker:shadowJar', 'getPlumeScripts', 'getHtmlTools')
+  dependsOn(':checker:shadowJar', 'getPlumeScripts', 'getHtmlTools', ':checker-qual:jar')
   destinationDir = file("${rootDir}/docs/api")
   source(
       project(':checker-util').sourceSets.main.allJava,
