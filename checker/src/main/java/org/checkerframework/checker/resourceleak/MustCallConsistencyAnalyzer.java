@@ -294,16 +294,15 @@ public class MustCallConsistencyAnalyzer {
     }
 
     /**
-     * Creates and returns an obligation derived from the given tree that is either an {@code
-     * ExpressionTree} or a {@code VariableTree}.
+     * Creates and returns an obligation derived from the given expression.
      *
-     * @param tree the tree from which the Obligation is to be created. Must be ExpressionTree or
-     *     VariableTree.
+     * @param tree the tree from which the Obligation is to be created. Must be {@code
+     *     ExpressionTree} or {@code VariableTree}.
      * @return an obligation derived from the given tree
      */
     public static Obligation fromTree(Tree tree) {
-      JavaExpression jx = null;
-      Element elem = null;
+      JavaExpression jx;
+      Element elem;
       if (tree instanceof ExpressionTree) {
         jx = JavaExpression.fromTree((ExpressionTree) tree);
         elem = TreeUtils.elementFromTree((ExpressionTree) tree);
@@ -508,7 +507,7 @@ public class MustCallConsistencyAnalyzer {
     }
   }
 
-  /** Obligation for calling a certain method on all elements of a collection. */
+  /** Obligation to call a certain method on all elements of a collection. */
   static class CollectionObligation extends Obligation {
 
     /** The method that must be called on all elements of the collection. */
@@ -541,11 +540,10 @@ public class MustCallConsistencyAnalyzer {
     }
 
     /**
-     * Creates and returns a CollectionObligation derived from the given tree that is either an
-     * {@code ExpressionTree} or a {@code VariableTree}.
+     * Creates and returns a CollectionObligation derived from the given expression.
      *
-     * @param tree the tree from which the CollectionObligation is to be created. Must be
-     *     ExpressionTree or VariableTree.
+     * @param tree the tree from which to create the CollectionObligation. Must be {@code
+     *     ExpressionTree} or {@code VariableTree}.
      * @param mustCallMethod the method that must be called on the elements of the collection
      * @return a CollectionObligation derived from the given tree
      */
@@ -572,12 +570,14 @@ public class MustCallConsistencyAnalyzer {
 
     @Override
     public boolean equals(@Nullable Object obj) {
-      if (!super.equals(obj)) {
-        return false;
-      } else {
-        return (obj instanceof CollectionObligation)
-            && ((CollectionObligation) obj).mustCallMethod.equals(this.mustCallMethod);
+      if (obj == this) {
+        return true;
       }
+      if (!(obj instanceof CollectionObligation)) {
+        return false;
+      }
+      return super.equals(obj)
+          && ((CollectionObligation) obj).mustCallMethod.equals(this.mustCallMethod);
     }
   }
 
@@ -762,10 +762,10 @@ public class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Adds {@code CollectionObligation}s if the return type is {@code @OwningCollection}.
+   * Adds {@code CollectionObligation}s if the type of {@code node} is {@code @OwningCollection}.
    *
    * @param obligations the set of tracked obligations
-   * @param node the node of the return expression
+   * @param node the node of a return expression
    */
   private void addObligationsForOwningCollectionReturn(Set<Obligation> obligations, Node node) {
     LocalVariableNode tmpVar = cmAtf.getTempVarForNode(node);
