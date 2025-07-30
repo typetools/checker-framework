@@ -217,7 +217,14 @@ public abstract class CFAbstractAnalysis<
       AnnotationMirrorSet annotations, TypeMirror underlyingType);
 
   // This cannot be inlined into `createAbstractValue()`, because the Java type system forbids it.
-  /** Default implementation for {@link #createAbstractValue(AnnotationMirrorSet, TypeMirror)}. */
+  /**
+   * Default implementation for {@link #createAbstractValue(AnnotationMirrorSet, TypeMirror)}.
+   *
+   * @param analysis the analysis
+   * @param annotations the annotations for the result annotated type
+   * @param underlyingType the unannotated type for the result annotated type
+   * @return an abstract value containing the given {@code annotations} and {@code underlyingType}
+   */
   public final @Nullable CFValue defaultCreateAbstractValue(
       CFAbstractAnalysis<CFValue, ?, ?> analysis,
       AnnotationMirrorSet annotations,

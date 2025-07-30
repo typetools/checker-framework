@@ -1,5 +1,7 @@
 package org.checkerframework.checker.collectionownership;
 
+import org.checkerframework.checker.collectionownership.qual.CollectionFieldDestructor;
+import org.checkerframework.checker.collectionownership.qual.OwningCollection;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFValue;
