@@ -174,7 +174,10 @@ public class AnnotationUtils {
   }
 
   /**
-   * Returns true iff a1 and a2 have the same annotation type.
+   * Returns true iff a1 and a2 have the same annotation type. Does not check annotation
+   * element/field values. One reason to that clients may call this is that it is slightly faster
+   * than {@link #areSame} when the annotation is known to have no elements/fields. (TODO: Is that
+   * considered to be good style?)
    *
    * @param a1 the first AnnotationMirror to compare
    * @param a2 the second AnnotationMirror to compare
@@ -183,12 +186,12 @@ public class AnnotationUtils {
    */
   @EqualsMethod
   public static boolean areSameByName(AnnotationMirror a1, AnnotationMirror a2) {
-    return compareByName(a1, a2) == 0;
+    return a1 == a2 || compareByName(a1, a2) == 0;
   }
 
   /**
    * Checks that the annotation {@code am} has the name {@code aname} (a fully-qualified type name).
-   * Values are ignored.
+   * Does not check annotation element/field values.
    *
    * @param am the AnnotationMirror whose name to compare
    * @param aname the string to compare
