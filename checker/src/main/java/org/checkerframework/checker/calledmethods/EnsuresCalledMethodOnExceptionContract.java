@@ -52,8 +52,12 @@ public class EnsuresCalledMethodOnExceptionContract {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (!(o instanceof EnsuresCalledMethodOnExceptionContract)) return false;
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof EnsuresCalledMethodOnExceptionContract)) {
+      return false;
+    }
     EnsuresCalledMethodOnExceptionContract that = (EnsuresCalledMethodOnExceptionContract) o;
     return expression.equals(that.expression) && method.equals(that.method);
   }
