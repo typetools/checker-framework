@@ -230,17 +230,16 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
    *
    * <p>This is necessary, as the type variable upper bounds for collections is
    * {@code @MustCallUnknown}. When the type variable is a generic or wildcard with no upper bound,
-   * the type parameter does default to {@code @MustCallUnknown}, which is both unsound and
-   * imprecise.
+   * the type parameter defaults to {@code @MustCallUnknown}, which is both unsound and imprecise.
    *
    * <p>This method changes the type parameter annotations for declared types directly. The other
    * overload with access to {@code Element}s handles type parameter annotations for method return
    * types and parameters, such that the changes are 'visible' at call-site as well as within the
    * method. Changing this on the {@code Tree} is not sufficient. The reason that declared types are
-   * handled here is that for object initializations where the type parameter is left for inference,
-   * we don't want to change the type parameter annotation here, but wait for the inference instead,
-   * which instantiates it with the inferred type and corresponding annotation. {@code new
-   * Object<>()} Access to the {@code Tree} allows us to detect whether we have a new class tree
+   * handled here is that for object initializations where the type parameter is left for inference
+   * (e.g., {@code new Object<>()}), we don't want to change the type parameter annotation here, but
+   * wait for the inference instead, which instantiates it with the inferred type and corresponding
+   * annotation. Access to the {@code Tree} allows us to detect whether we have a new class tree
    * without type parameters.
    */
   @Override

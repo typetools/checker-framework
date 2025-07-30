@@ -282,7 +282,7 @@ public class MustCallConsistencyAnalyzer {
      * <p>We need this method since we frequently need to replace obligations. If the old obligation
      * was of a certain subclass, we want the replacement to be as well. Dynamic dispatch then
      * allows us to simply call getReplacement() on an obligation and get the replacement of the
-     * right (sub)class.
+     * correct (sub)class.
      *
      * @param resourceAliases set of resource aliases for the new obligation
      * @param whenToEnforce when this Obligation should be enforced
