@@ -1260,7 +1260,6 @@ task buildAll(group: 'Build') {
   }
   dependsOn('framework:allJavadocJar', 'framework:allSourcesJar', 'checker:allJavadocJar', 'checker:allSourcesJar', 'checker-qual:jar', 'checker-util:jar')
   dependsOn('checker:assembleForJavac')
-  dependsOn('manual')
 }
 
 task releaseBuild(group: 'Build') {
