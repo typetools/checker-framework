@@ -424,7 +424,9 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
       if (collectionEltNodes != null) {
         nodeForCollectionElt = collectionEltNodes.iterator().next();
       }
-      if (loopUpdateBlock == null || loopConditionBlock == null) return;
+      if (loopUpdateBlock == null || loopConditionBlock == null) {
+        return;
+      }
       // add the blocks into a static datastructure in the calledmethodsatf, such that it can
       // analyze
       // them (call MustCallConsistencyAnalyzer.analyzeFulfillingLoops, which in turn adds the trees
@@ -483,7 +485,9 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
         return null;
       }
       // verify that condition is of the form: i < something
-      if (!(condition.getLeftOperand() instanceof IdentifierTree)) return null;
+      if (!(condition.getLeftOperand() instanceof IdentifierTree)) {
+        return null;
+      }
       if (initVar.getName()
               != ((IdentifierTree) condition.getLeftOperand()).getName() // i=0 and i<n are same "i"
           || initVar.getName()
@@ -602,7 +606,9 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
    * @return name of the identifier the expression evaluates to or null if it doesn't
    */
   protected Name getNameFromExpressionTree(ExpressionTree expr) {
-    if (expr == null) return null;
+    if (expr == null) {
+      return null;
+    }
     switch (expr.getKind()) {
       case IDENTIFIER:
         return ((IdentifierTree) expr).getName();
@@ -627,7 +633,9 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
    * @return name of the identifier the expression evaluates to or null if it doesn't
    */
   protected Name getNameFromStatementTree(StatementTree expr) {
-    if (expr == null) return null;
+    if (expr == null) {
+      return null;
+    }
     switch (expr.getKind()) {
       case VARIABLE:
         return ((VariableTree) expr).getName();
@@ -676,7 +684,9 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
    *     header
    */
   private boolean loopHeaderConsistentWithCollection(Name idInHeader, Name collectionName) {
-    if (idInHeader == null || collectionName == null) return false;
+    if (idInHeader == null || collectionName == null) {
+      return false;
+    }
     boolean namesAreEqual = collectionName == idInHeader;
     return namesAreEqual;
   }
@@ -690,7 +700,9 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
    * @return true if the given tree is of the form collection.get(index)
    */
   private boolean isIthCollectionElement(Tree tree, Name index) {
-    if (tree == null || index == null) return false;
+    if (tree == null || index == null) {
+      return false;
+    }
     if (tree instanceof MethodInvocationTree
         && index == getNameFromExpressionTree(TreeUtils.getIdxForGetCall(tree))) {
       MethodInvocationTree mit = (MethodInvocationTree) tree;

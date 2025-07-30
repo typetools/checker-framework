@@ -271,9 +271,13 @@ public class ResourceLeakUtils {
    * @return true if the given element is a Java.lang.Iterable or Java.util.Iterator type
    */
   public static boolean isCollection(Element element, AnnotatedTypeFactory atf) {
-    if (element == null) return false;
+    if (element == null) {
+      return false;
+    }
     AnnotatedTypeMirror elementTypeMirror = atf.getAnnotatedType(element).getErased();
-    if (elementTypeMirror == null || elementTypeMirror.getUnderlyingType() == null) return false;
+    if (elementTypeMirror == null || elementTypeMirror.getUnderlyingType() == null) {
+      return false;
+    }
     return isCollection(elementTypeMirror.getUnderlyingType());
   }
 
@@ -286,9 +290,13 @@ public class ResourceLeakUtils {
    * @return true if type is a java.lang.Iterable or java.util.Iterator
    */
   public static boolean isCollection(TypeMirror type) {
-    if (type == null) return false;
+    if (type == null) {
+      return false;
+    }
     Class<?> elementRawType = TypesUtils.getClassFromType(type);
-    if (elementRawType == null) return false;
+    if (elementRawType == null) {
+      return false;
+    }
     return Iterable.class.isAssignableFrom(elementRawType)
         || Iterator.class.isAssignableFrom(elementRawType)
         || Map.class.isAssignableFrom(elementRawType);
@@ -303,9 +311,13 @@ public class ResourceLeakUtils {
    * @return true if type is a java.util.Iterator
    */
   public static boolean isIterator(TypeMirror type) {
-    if (type == null) return false;
+    if (type == null) {
+      return false;
+    }
     Class<?> elementRawType = TypesUtils.getClassFromType(type);
-    if (elementRawType == null) return false;
+    if (elementRawType == null) {
+      return false;
+    }
     return Iterator.class.isAssignableFrom(elementRawType);
   }
 
@@ -419,7 +431,9 @@ public class ResourceLeakUtils {
    * @return true if the passed {@code TypeMirror} has a manual {@code MustCallUnknown} annotation
    */
   public static boolean hasManualMustCallUnknownAnno(TypeMirror typeMirror) {
-    if (typeMirror == null) return false;
+    if (typeMirror == null) {
+      return false;
+    }
     for (AnnotationMirror paramAnno : typeMirror.getAnnotationMirrors()) {
       if (AnnotationUtils.areSameByName(paramAnno, MustCallUnknown.class.getCanonicalName())) {
         return true;
@@ -439,9 +453,13 @@ public class ResourceLeakUtils {
    */
   public static boolean hasManualMustCallUnknownAnno(
       AnnotatedTypeMirror annotatedTypeMirror, MustCallAnnotatedTypeFactory mcAtf) {
-    if (annotatedTypeMirror == null) return false;
+    if (annotatedTypeMirror == null) {
+      return false;
+    }
     AnnotationMirror manualMcAnno = annotatedTypeMirror.getPrimaryAnnotationInHierarchy(mcAtf.TOP);
-    if (manualMcAnno == null) return false;
+    if (manualMcAnno == null) {
+      return false;
+    }
     if (AnnotationUtils.areSameByName(manualMcAnno, MustCallUnknown.class.getCanonicalName())) {
       return true;
     }

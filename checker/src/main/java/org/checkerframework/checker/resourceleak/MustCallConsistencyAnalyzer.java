@@ -1522,7 +1522,9 @@ public class MustCallConsistencyAnalyzer {
     }
     Obligation oldObligation = null, newObligation = null;
     for (Obligation o : obligations) {
-      if (oldObligation != null && newObligation != null) break;
+      if (oldObligation != null && newObligation != null) {
+        break;
+      }
       for (ResourceAlias alias : o.resourceAliases) {
         if ((alias.tree instanceof ExpressionTree)
             && (rhsExpr.getTree() instanceof ExpressionTree)
@@ -1846,7 +1848,9 @@ public class MustCallConsistencyAnalyzer {
               for (Obligation obligation : obligationsForVar) {
                 obligations.remove(obligation);
               }
-              if (isFinalField) return;
+              if (isFinalField) {
+                return;
+              }
             }
           // fall through
           case NotOwningCollection:

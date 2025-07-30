@@ -348,7 +348,9 @@ public class CollectionOwnershipAnnotatedTypeFactory
    * @return true if the tree is a resource collection
    */
   public boolean isResourceCollection(Tree tree) {
-    if (tree == null) return false;
+    if (tree == null) {
+      return false;
+    }
     MustCallAnnotatedTypeFactory mcAtf = ResourceLeakUtils.getMustCallAnnotatedTypeFactory(this);
     AnnotatedTypeMirror treeMcType = null;
     try {
@@ -497,7 +499,9 @@ public class CollectionOwnershipAnnotatedTypeFactory
       return null;
     }
     for (AnnotationMirror anm : annos) {
-      if (anm == null) continue;
+      if (anm == null) {
+        continue;
+      }
       if (AnnotationUtils.areSame(anm, NOTOWNINGCOLLECTION)) {
         return CollectionOwnershipType.NotOwningCollection;
       } else if (AnnotationUtils.areSame(anm, OWNINGCOLLECTION)) {
