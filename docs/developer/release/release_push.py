@@ -200,21 +200,19 @@ def run_link_checker(site, output, additional_param=""):
 
 
 def check_all_links(
-    afu_website,
     checker_website,
     suffix,
     test_mode,
     cf_version_of_broken_link_to_suppress="",
 ):
-    """Checks all links on the given web sites for the AFU
-    and the Checker Framework. The suffix parameter should be \"dev\" for the
-    dev web site and \"live\" for the live web site. test_mode indicates
+    """Checks all links on the given website for
+    the Checker Framework. The suffix parameter should be \"dev\" for the
+    dev web site and \"live\" for the liveweb site. test_mode indicates
     whether this script is being run in release or in test mode. The
     cf_version_of_broken_link_to_suppress parameter should be set to the
     new Checker Framework version and should only be passed when checking links
     for the dev web site (to prevent reporting of a broken link to the
     not-yet-live zip file for the new release)."""
-    afuCheck = run_link_checker(afu_website, TMP_DIR + "/afu." + suffix + ".check")
     additional_param = ""
     if cf_version_of_broken_link_to_suppress != "":
         additional_param = (
@@ -228,17 +226,11 @@ def check_all_links(
         additional_param,
     )
 
-    is_afuCheck_empty = is_file_empty(afuCheck)
     is_checkerCheck_empty = is_file_empty(checkerCheck)
 
-    errors_reported = not (is_afuCheck_empty and is_checkerCheck_empty)
-    if errors_reported:
-        print("Link checker results can be found at:\n")
-    if not is_afuCheck_empty:
-        print("\t" + afuCheck + "\n")
     if not is_checkerCheck_empty:
+        print("Link checker results can be found at:\n")
         print("\t" + checkerCheck + "\n")
-    if errors_reported:
         if not prompt_yes_no("Continue despite link checker results?", True):
             release_option = ""
             if not test_mode:
@@ -255,8 +247,8 @@ def check_all_links(
 
 
 def push_interm_to_release_repos():
-    """Push the release to the GitHub repositories for
-    the AFU and the Checker Framework. This is an
+    """Push the release to the GitHub repository for
+    the Checker Framework. This is an
     irreversible step."""
     push_changes_prompt_if_fail(INTERM_CHECKER_REPO)
 
@@ -288,8 +280,8 @@ def print_usage():
 
 def main(argv):
     """The release_push script is mainly responsible for copying the artifacts
-    (for the AFU and the Checker Framework) from the
-    development web site to Maven Central and to
+    (for the Checker Framework) from the
+    development website to Maven Central and to
     the live site. It also performs link checking on the live site, pushes
     the release to GitHub repositories, and guides the user to
     perform manual steps such as sending the
@@ -327,15 +319,13 @@ def main(argv):
     if not os.path.exists(RELEASE_BUILD_COMPLETED_FLAG_FILE):
         continue_or_exit(
             "It appears that release_build.py has not been run since the last push to "
-            + "the AFU or Checker Framework repositories.  Please ensure it has "
+            + "the Checker Framework repository.  Please ensure it has "
             + "been run."
         )
 
     # The release script checks that the new release version is greater than the previous release version.
 
     print_step("Push Step 1: Checking release versions")  # SEMIAUTO
-    dev_afu_website = os.path.join(DEV_SITE_URL, "annotation-file-utilities")
-    live_afu_website = os.path.join(LIVE_SITE_URL, "annotation-file-utilities")
 
     dev_checker_website = DEV_SITE_URL
     live_checker_website = LIVE_SITE_URL
@@ -344,7 +334,7 @@ def main(argv):
     check_release_version(current_cf_version, new_cf_version)
 
     print(
-        "Checker Framework and AFU:  current-version=%s    new-version=%s"
+        "Checker Framework:  current-version=%s    new-version=%s"
         % (current_cf_version, new_cf_version)
     )
 
@@ -361,9 +351,7 @@ def main(argv):
     print_step("Push Step 2: Check links on development site")  # SEMIAUTO
 
     if prompt_yes_no("Run link checker on DEV site?", True):
-        check_all_links(
-            dev_afu_website, dev_checker_website, "dev", test_mode, new_cf_version
-        )
+        check_all_links( dev_checker_website, "dev", test_mode, new_cf_version)
 
     # Runs sanity tests on the development release. Later, we will run a smaller set of sanity
     # tests on the live release to ensure no errors occurred when promoting the release.
@@ -484,7 +472,7 @@ def main(argv):
     print_step("Push Step 8. Check live site links")  # SEMIAUTO
     if not test_mode:
         if prompt_yes_no("Run link checker on LIVE site?", True):
-            check_all_links(live_afu_website, live_checker_website, "live", test_mode)
+            check_all_links(live_checker_website, "live", test_mode)
     else:
         print("Test mode: Skipping checking of live site links.")
 
@@ -551,9 +539,6 @@ def main(argv):
             + "  https://checkerframework.org/checker-framework-"
             + new_cf_version
             + ".zip\n"
-            + "  https://checkerframework.org/annotation-file-utilities/annotation-tools-"
-            + new_cf_version
-            + ".zip\n"
             + "\n"
             + "To post the Checker Framework release on GitHub:\n"
             + "\n"
@@ -565,8 +550,6 @@ def main(argv):
             + "\n"
             + "* For the description, insert the latest Checker Framework changelog entry (available at https://checkerframework.org/CHANGELOG.md). Please include the first line with the release version and date.\n"
             + '* Find the link below "Attach binaries by dropping them here or selecting them." Click on "selecting them" and upload checker-framework-'
-            + new_cf_version
-            + ".zip and upload annotation-tools-"
             + new_cf_version
             + ".zip from your machine.\n"
             + '* Click on the green "Publish release" button.\n'

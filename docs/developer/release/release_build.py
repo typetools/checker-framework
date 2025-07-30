@@ -112,12 +112,6 @@ The following repositories will be cloned or updated from their origins:
     clone_from_scratch_or_update(PLUME_BIB_REPO, PLUME_BIB, clone_from_scratch, False)
 
 
-def get_afu_date():
-    """If the AFU is being built, return the current date, otherwise return the
-    date of the last AFU release as indicated in the AFU home page."""
-    return get_current_date()
-
-
 def get_new_version(project_name, curr_version):
     "Queries the user for the new version number; returns old and new version numbers."
 
@@ -281,11 +275,9 @@ def main(argv):
     if debug:
         ant_debug = "-debug"
 
-    afu_date = get_afu_date()
-
     # For each project, build what is necessary but don't push
 
-    print("Building a new release of Annotation Tools and the Checker Framework!")
+    print("Building a new release of the Checker Framework!")
 
     print("\nPATH:\n" + os.environ["PATH"] + "\n")
 
@@ -322,7 +314,7 @@ def main(argv):
     check_tools(TOOLS)
 
     # Usually we increment the release by 0.0.1 per release unless there is a major change.
-    # The release script will read the current version of the Checker Framework/Annotation File Utilities
+    # The release script will read the current version of the Checker Framework
     # from the release website and then suggest the next release version 0.0.1 higher than the current
     # version. You can also manually specify a version higher than the current version. Lower or equivalent
     # versions are not possible and will be rejected when you try to push the release.
@@ -352,13 +344,7 @@ def main(argv):
         checker_framework_interm_dir,
     ) = create_dirs_for_dev_website_release_versions(cf_version)
 
-    # The projects are built in the following order:
-    # Annotation File Utilities and Checker Framework. Furthermore, their
-    # manuals and websites are also built and placed in their relevant locations
-    # at https://checkerframework.org/dev/ .  This is the most time-consuming
-    # piece of the release. There are no prompts from this step forward; you
-    # might want to get a cup of coffee and do something else until it is done.
-
+    # The Checker Framework jar files and documentation are built and the website is updated.
     print_step("Build Step 5: Build projects and websites.")  # AUTO
     build_checker_framework_release(
         cf_version,
