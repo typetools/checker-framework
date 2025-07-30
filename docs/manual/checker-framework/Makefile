@@ -48,7 +48,7 @@ faq.tex \
 troubleshooting.tex \
 contributors.tex
 
-all: manual.pdf manual.html
+all: manual.pdf manual.html  ../../api
 
 .PHONY: figures-all
 figures-all:
@@ -58,7 +58,7 @@ manual.pdf: ${TEX_FILES} plume-bib figures-all check-labels
 	latexmk -silent -pdf -interaction=nonstopmode manual.tex || latexmk -gg -pdf -interaction=nonstopmode manual.tex
 
 html: manual.html
-manual.html: manual.pdf CFLogo.png favicon-checkerframework.png ../../api
+manual.html: manual.pdf CFLogo.png favicon-checkerframework.png
 	hevea -fix svg.hva -exec xxdate.exe manual.tex
 # I'm not sure why this is necessary; "hevea -fix" should run it automatically.
 # Also, you need ImageMagick 6.8.0-2 Beta or later to avoid a bug.

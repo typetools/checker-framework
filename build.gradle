@@ -789,8 +789,9 @@ def createJavadocTask(taskName, taskDescription, memberLevel) {
 createJavadocTask('javadocDoclintAll', 'Runs javadoc with -Xdoclint:all option.', JavadocMemberLevel.PRIVATE)
 
 tasks.register('makeCFManual', Exec) {
+  dependsOn('allJavadoc')
   description = 'Build the Checker Framework manual'
-  commandLine 'make', '-C', 'docs/manual/checker-framework', 'all'
+  commandLine 'make', '-C', 'docs/manual/checker-framework', 'manual.pdf', 'manual.html'
 }
 
 interface InjectedExecOps {
