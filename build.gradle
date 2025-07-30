@@ -23,7 +23,7 @@ apply from: rootProject.file('release.gradle')
 
 // There is another `repositories { ... }` block below; if you change this one, change that one as well.
 repositories {
-  maven { url = 'https://oss.sonatype.org/content/repositories/snapshots/'}
+  maven { url = 'https://central.sonatype.com/repository/maven-snapshots/'}
   mavenCentral()
 }
 
@@ -168,7 +168,7 @@ allprojects { currentProj ->
 
   // Keep in sync with "repositories { ... }" block above.
   repositories {
-    maven { url = 'https://oss.sonatype.org/content/repositories/snapshots/'}
+    maven { url = 'https://central.sonatype.com/repository/maven-snapshots/'}
     mavenCentral()
   }
 
