@@ -216,6 +216,7 @@ public abstract class CFAbstractAnalysis<
   public abstract @Nullable V createAbstractValue(
       AnnotationMirrorSet annotations, TypeMirror underlyingType);
 
+  // This cannot be inlined into `createAbstractValue()`, because the Java type system forbids it.
   /** Default implementation for {@link #createAbstractValue(AnnotationMirrorSet, TypeMirror)}. */
   public @Nullable CFValue defaultCreateAbstractValue(
       CFAbstractAnalysis<CFValue, ?, ?> analysis,
@@ -227,6 +228,11 @@ public abstract class CFAbstractAnalysis<
     return new CFValue(analysis, annotations, underlyingType);
   }
 
+  /**
+   * Returns the type hierarchy.
+   *
+   * @return the type hierarchy
+   */
   public TypeHierarchy getTypeHierarchy() {
     return typeHierarchy;
   }
