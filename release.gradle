@@ -232,7 +232,7 @@ tasks.register('copyCFWebsite', Copy) {
 
   doLast{
     delete(file("${destDir}/manual/index.html"))
-    Files.createSymbolicLink(file("${destDir}/manual/index.html").toPath(), file("${destDir}/manual.html").toPath())
+    Files.createSymbolicLink(file("${destDir}/manual/index.html").toPath(), file("${destDir}/manual/manual.html").toPath())
   }
 }
 
@@ -256,7 +256,7 @@ tasks.register('copyAFUWebsite', Copy) {
   }
 }
 
-tasks.register('copyToFilesWebsite'){
+tasks.register('copyToWebsite'){
   description = 'Copy files to website and create Checker Framework zip file. Requires properties afuWebsite and cfWebsite to be set.'
   dependsOn('copyCFWebsite','copyAFUWebsite', 'createCheckerFrameworkZip','zipMavenExamples')
 }
