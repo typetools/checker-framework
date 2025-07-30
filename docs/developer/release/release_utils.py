@@ -272,7 +272,7 @@ def commit_tag_and_push(version, path, tag_prefix):
     # Do nothing (instead of erring) if there is nothing to commit.
     if execute("git diff-index --quiet HEAD", False, False, working_dir=path) != 0:
         execute('git commit -a -m "new release %s"' % (version), working_dir=path)
-    execute("git tag %s%s" % (tag_prefix, version), working_dir=path)
+    # execute("git tag %s%s" % (tag_prefix, version), working_dir=path)
     push_changes(path)
 
 
