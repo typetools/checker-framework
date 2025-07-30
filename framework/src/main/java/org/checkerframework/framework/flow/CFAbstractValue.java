@@ -51,10 +51,10 @@ import org.plumelib.util.StringsPlume;
  *
  * @param <V> the values that this CFAbstractValue wraps
  */
-public abstract class CFAbstractValue<CFValue> implements AbstractValue<CFValue> {
+public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements AbstractValue<V> {
 
   /** The analysis class this value belongs to. */
-  protected final CFAbstractAnalysis<CFValue, ?, ?> analysis;
+  protected final CFAbstractAnalysis<V, ?, ?> analysis;
 
   /** The type factory. */
   protected final AnnotatedTypeFactory atypeFactory;
@@ -77,7 +77,7 @@ public abstract class CFAbstractValue<CFValue> implements AbstractValue<CFValue>
    */
   @SuppressWarnings("this-escape")
   protected CFAbstractValue(
-      CFAbstractAnalysis<CFValue, ?, ?> analysis,
+      CFAbstractAnalysis<V, ?, ?> analysis,
       AnnotationMirrorSet annotations,
       TypeMirror underlyingType) {
     this.analysis = analysis;
@@ -245,10 +245,10 @@ public abstract class CFAbstractValue<CFValue> implements AbstractValue<CFValue>
    * @param backup the value to use if {@code this} and {@code other} are incomparable
    * @return the more specific of two values {@code this} and {@code other}
    */
-  public CFValue mostSpecific(@Nullable CFValue other, @Nullable CFValue backup) {
+  public V mostSpecific(@Nullable V other, @Nullable V backup) {
     if (other == null) {
       @SuppressWarnings("unchecked")
-      CFValue v = (CFValue) this;
+      V v = (V) this;
       return v;
     }
     Types types = analysis.getTypes();
@@ -294,7 +294,7 @@ public abstract class CFAbstractValue<CFValue> implements AbstractValue<CFValue>
      *
      * @param backup value to use if no most specific value is found
      */
-    public MostSpecificVisitor(CFValue backup) {
+    public MostSpecificVisitor(V backup) {
       if (backup != null) {
         this.backupAMSet = backup.getAnnotations();
         // this.backupTypeMirror = backup.getUnderlyingType();
@@ -437,7 +437,7 @@ public abstract class CFAbstractValue<CFValue> implements AbstractValue<CFValue>
    * of this method.
    */
   @Override
-  public final CFValue leastUpperBound(@Nullable CFValue other) {
+  public final V leastUpperBound(@Nullable V other) {
     return upperBound(other, false);
   }
 
@@ -454,7 +454,7 @@ public abstract class CFAbstractValue<CFValue> implements AbstractValue<CFValue>
    *     least upper bound
    * @return the least upper bound of two abstract values
    */
-  public final CFValue leastUpperBound(@Nullable CFValue other, TypeMirror typeMirror) {
+  public final V leastUpperBound(@Nullable V other, TypeMirror typeMirror) {
     return upperBound(other, typeMirror, false);
   }
 
@@ -483,7 +483,7 @@ public abstract class CFAbstractValue<CFValue> implements AbstractValue<CFValue>
    * @param previous must be the previous value
    * @return an upper bound of two values that is wider than the least upper bound of the two values
    */
-  public final CFValue widenUpperBound(@Nullable CFValue previous) {
+  public final V widenUpperBound(@Nullable V previous) {
     return upperBound(previous, true);
   }
 
@@ -494,10 +494,10 @@ public abstract class CFAbstractValue<CFValue> implements AbstractValue<CFValue>
    * @param shouldWiden true if the lub should perform widening
    * @return the least upper bound of this and {@code other}
    */
-  private CFValue upperBound(@Nullable CFValue other, boolean shouldWiden) {
+  private V upperBound(@Nullable V other, boolean shouldWiden) {
     if (other == null) {
       @SuppressWarnings("unchecked")
-      CFValue v = (CFValue) this;
+      V v = (V) this;
       return v;
     }
     ProcessingEnvironment processingEnv = atypeFactory.getProcessingEnv();
@@ -521,8 +521,7 @@ public abstract class CFAbstractValue<CFValue> implements AbstractValue<CFValue>
    * @param shouldWiden true if the method should perform widening
    * @return an upper bound of this and {@code other}
    */
-  protected CFValue upperBound(
-      @Nullable CFValue other, TypeMirror upperBoundTypeMirror, boolean shouldWiden) {
+  protected V upperBound(@Nullable V other, TypeMirror upperBoundTypeMirror, boolean shouldWiden) {
     ValueLub valueLub = new ValueLub(shouldWiden);
     AnnotationMirrorSet lub =
         valueLub.combineSets(
@@ -639,10 +638,10 @@ public abstract class CFAbstractValue<CFValue> implements AbstractValue<CFValue>
    * @param other another value
    * @return the greatest lower bound of two values
    */
-  public CFValue greatestLowerBound(@Nullable CFValue other) {
+  public V greatestLowerBound(@Nullable V other) {
     if (other == null) {
       @SuppressWarnings("unchecked")
-      CFValue v = (CFValue) this;
+      V v = (V) this;
       return v;
     }
     ProcessingEnvironment processingEnv = atypeFactory.getProcessingEnv();
