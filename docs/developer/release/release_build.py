@@ -94,7 +94,7 @@ The following repositories will be cloned or updated from their origins:
         ):
             print("WARNING: Continuing without refreshing repositories.\n")
             return
-    flags = "-b clean-up-release-test"
+    flags = "-b clean-up-release-test --bare"
     execute("git clone --quiet %s %s %s" % (flags, "git@github.com:smillst/checker-framework.git", INTERM_CHECKER_REPO))
     # for live_to_interm in LIVE_TO_INTERM_REPOS:
     #     clone_from_scratch_or_update(
