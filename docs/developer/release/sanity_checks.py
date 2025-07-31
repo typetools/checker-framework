@@ -50,19 +50,13 @@ def javac_sanity_check(checker_framework_website, release_version):
         delete_path(javac_sanity_dir)
     execute("mkdir -p " + javac_sanity_dir)
 
-    javac_sanity_zip = os.path.join(
-        javac_sanity_dir, "checker-framework-%s.zip" % release_version
-    )
+    javac_sanity_zip = os.path.join(javac_sanity_dir, "checker-framework-%s.zip" % release_version)
 
-    print(
-        "Attempting to download %s to %s" % (new_checkers_release_zip, javac_sanity_zip)
-    )
+    print("Attempting to download %s to %s" % (new_checkers_release_zip, javac_sanity_zip))
     download_binary(new_checkers_release_zip, javac_sanity_zip)
 
     nullness_example_url = "https://raw.githubusercontent.com/typetools/checker-framework/master/docs/examples/NullnessExampleWithWarnings.java"
-    nullness_example = os.path.join(
-        javac_sanity_dir, "NullnessExampleWithWarnings.java"
-    )
+    nullness_example = os.path.join(javac_sanity_dir, "NullnessExampleWithWarnings.java")
 
     if os.path.isfile(nullness_example):
         delete(nullness_example)
@@ -102,12 +96,7 @@ def javac_sanity_check(checker_framework_website, release_version):
     # this is a smoke test for the built-in checker shorthand feature
     # https://checkerframework.org/manual/#shorthand-for-checkers
     nullness_shorthand_output = os.path.join(deploy_dir, "output_shorthand.log")
-    cmd = (
-        sanity_javac
-        + " -processor NullnessChecker "
-        + nullness_example
-        + " -Anomsgtext"
-    )
+    cmd = sanity_javac + " -processor NullnessChecker " + nullness_example + " -Anomsgtext"
     execute_write_to_file(cmd, nullness_shorthand_output, False)
     check_results(
         "Javac Shorthand Sanity Check",
@@ -133,10 +122,7 @@ def maven_sanity_check(sub_sanity_dir_name, repo_url, release_version):
     maven_example_dir = os.path.join(maven_sanity_dir, "MavenExample")
     output_log = os.path.join(maven_example_dir, "output.log")
 
-    get_example_dir_cmd = (
-        "./gradlew updateCopyMavenExample -PdestDir=%s"
-        % (maven_sanity_dir)
-    )
+    get_example_dir_cmd = "./gradlew updateCopyMavenExample -PdestDir=%s" % (maven_sanity_dir)
 
     execute(get_example_dir_cmd, True, False, CHECKER_FRAMEWORK)
     path_to_artifacts = os.path.join(

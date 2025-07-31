@@ -83,19 +83,22 @@ The following repositories will be cloned or updated from their origins:
     message += CHECKLINK + "\n"
     message += PLUME_BIB + "\n"
 
-    message += "Clone repositories from scratch (answer no to be given a chance to update them instead)?"
+    message += (
+        "Clone repositories from scratch (answer no to be given a chance to update them instead)?"
+    )
 
     clone_from_scratch = True
 
     if not prompt_yes_no(message, True):
         clone_from_scratch = False
-        if not prompt_yes_no(
-            "Update the repositories without cloning them from scratch?", True
-        ):
+        if not prompt_yes_no("Update the repositories without cloning them from scratch?", True):
             print("WARNING: Continuing without refreshing repositories.\n")
             return
     flags = "-b clean-up-release-test --bare"
-    execute("git clone --quiet %s %s %s" % (flags, "git@github.com:smillst/checker-framework.git", INTERM_CHECKER_REPO))
+    execute(
+        "git clone --quiet %s %s %s"
+        % (flags, "git@github.com:smillst/checker-framework.git", INTERM_CHECKER_REPO)
+    )
     # for live_to_interm in LIVE_TO_INTERM_REPOS:
     #     clone_from_scratch_or_update(
     #         live_to_interm[0], live_to_interm[1], clone_from_scratch, True
@@ -106,9 +109,7 @@ The following repositories will be cloned or updated from their origins:
             interm_to_build[0], interm_to_build[1], clone_from_scratch, False
         )
 
-    clone_from_scratch_or_update(
-        PLUME_SCRIPTS_REPO, PLUME_SCRIPTS, clone_from_scratch, False
-    )
+    clone_from_scratch_or_update(PLUME_SCRIPTS_REPO, PLUME_SCRIPTS, clone_from_scratch, False)
     clone_from_scratch_or_update(CHECKLINK_REPO, CHECKLINK, clone_from_scratch, False)
     clone_from_scratch_or_update(PLUME_BIB_REPO, PLUME_BIB, clone_from_scratch, False)
 
@@ -152,12 +153,8 @@ def create_dirs_for_dev_website_release_versions(cf_version):
     projects under the releases directory of the dev web site.
     For example,
     /cse/www2/types/dev/checker-framework/<project_name>/releases/<version> ."""
-    afu_interm_dir = create_dev_website_release_version_dir(
-        "annotation-file-utilities", cf_version
-    )
-    checker_framework_interm_dir = create_dev_website_release_version_dir(
-        None, cf_version
-    )
+    afu_interm_dir = create_dev_website_release_version_dir("annotation-file-utilities", cf_version)
+    checker_framework_interm_dir = create_dev_website_release_version_dir(None, cf_version)
 
     return (afu_interm_dir, checker_framework_interm_dir)
 
@@ -181,9 +178,7 @@ def update_project_dev_website(project_name, release_version):
         project_dev_site = DEV_SITE_DIR
     else:
         project_dev_site = os.path.join(DEV_SITE_DIR, project_name)
-    dev_website_relative_dir = os.path.join(
-        project_dev_site, "releases", release_version
-    )
+    dev_website_relative_dir = os.path.join(project_dev_site, "releases", release_version)
 
     print("Copying from : " + dev_website_relative_dir + "\nto: " + project_dev_site)
     copy_tree(dev_website_relative_dir, project_dev_site)
@@ -192,6 +187,7 @@ def update_project_dev_website(project_name, release_version):
 def get_current_date():
     "Return today's date in a string format similar to: 02 May 2016"
     return datetime.date.today().strftime("%d %b %Y")
+
 
 def build_and_locally_deploy_maven(version):
     execute("./gradlew publishToMavenLocal", working_dir=CHECKER_FRAMEWORK)
@@ -210,9 +206,7 @@ def build_checker_framework_release(
 
     # Check that updating versions didn't overlook anything.
     print("Here are occurrences of the old version number, " + old_cf_version + ":")
-    grep_cmd = (
-        "grep -n -r --exclude-dir=build --exclude-dir=.git -F %s" % old_cf_version
-    )
+    grep_cmd = "grep -n -r --exclude-dir=build --exclude-dir=.git -F %s" % old_cf_version
     execute(grep_cmd, False, False, CHECKER_FRAMEWORK)
     continue_or_exit(
         'If any occurrence is not acceptable, then stop the release, update target "updateVersionNumbers" in file release.gradle, and start over.'
@@ -229,12 +223,9 @@ def build_checker_framework_release(
     # Create checker-framework-X.Y.Z.zip and put it in checker_framework_interm_dir
     # copy the remaining checker-framework website files to checker_framework_interm_dir
     # This also makes the manuals.
-    gradle_cmd = (
-        "./gradlew copyToWebsite  -PcfWebsite=%s -PafuWebsite=%s"
-        % (
-            checker_framework_interm_dir,
-            afu_interm_dir
-        )
+    gradle_cmd = "./gradlew copyToWebsite  -PcfWebsite=%s -PafuWebsite=%s" % (
+        checker_framework_interm_dir,
+        afu_interm_dir,
     )
     execute(gradle_cmd, True, False, CHECKER_FRAMEWORK)
 
@@ -337,9 +328,7 @@ def main(argv):
         )
         prompt_to_continue()
 
-    print_step(
-        "Build Step 4: Create directories for the current release on the dev site."
-    )  # AUTO
+    print_step("Build Step 4: Create directories for the current release on the dev site.")  # AUTO
 
     (
         afu_interm_dir,
@@ -349,10 +338,7 @@ def main(argv):
     # The Checker Framework jar files and documentation are built and the website is updated.
     print_step("Build Step 5: Build projects and websites.")  # AUTO
     build_checker_framework_release(
-        cf_version,
-        old_cf_version,
-        checker_framework_interm_dir,
-        afu_interm_dir
+        cf_version, old_cf_version, checker_framework_interm_dir, afu_interm_dir
     )
 
     print_step("Build Step 6: Overwrite .htaccess and CFLogo.png .")  # AUTO
