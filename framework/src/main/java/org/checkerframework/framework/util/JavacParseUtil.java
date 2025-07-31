@@ -59,9 +59,8 @@ public class JavacParseUtil {
           }
         };
 
-    try {
-      // Prepare the file manager and task
-      StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, null, null);
+    // Prepare the file manager and task
+    try (StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, null, null)) {
       JavacTask task =
           (JavacTask)
               compiler.getTask(
