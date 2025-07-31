@@ -108,7 +108,7 @@ import org.plumelib.util.CollectionsPlume;
  */
 public class DependentTypesHelper {
 
-  /** AnnotatedTypeFactory */
+  /** AnnotatedTypeFactory. */
   protected final AnnotatedTypeFactory factory;
 
   /**

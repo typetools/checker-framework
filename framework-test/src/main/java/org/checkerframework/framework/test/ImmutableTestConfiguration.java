@@ -31,7 +31,7 @@ public class ImmutableTestConfiguration implements TestConfiguration {
 
   /**
    * These files contain diagnostics that should be returned by Javac. If this list is empty, the
-   * diagnostics are instead read from comments in the Java file itself
+   * diagnostics are instead read from comments in the Java file itself.
    */
   private final List<File> diagnosticFiles;
 

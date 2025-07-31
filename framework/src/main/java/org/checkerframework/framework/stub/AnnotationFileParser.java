@@ -193,7 +193,9 @@ public class AnnotationFileParser {
 
   /**
    * The AST of the parsed file that this class is processing. May be null if there was a problem
-   * parsing the file. (TODO: Should the Checker Framework just halt in that case?)
+   * parsing the file.
+   *
+   * <p>TODO: Should the Checker Framework just halt in that case?
    */
   // Not final in order to accommodate a default value.
   private @Nullable StubUnit stubUnit;
@@ -368,7 +370,7 @@ public class AnnotationFileParser {
     }
 
     /**
-     * Get the record component annotations that are applicable to the given element kind.
+     * Returns the record component annotations that are applicable to the given element kind.
      *
      * @param elementKind the element kind to apply to (e.g., FIELD, METHOD)
      * @return the set of annotations from the component that apply
@@ -491,8 +493,8 @@ public class AnnotationFileParser {
   }
 
   /**
-   * Get all members of a Type that are importable in an annotation file. Currently these are values
-   * of enums, or compile time constants.
+   * Returns all members of a Type that are importable in an annotation file. Currently these are
+   * values of enums, or compile time constants.
    *
    * @param typeElement the type whose members to return
    * @return a list of fully-qualified member names
@@ -2149,7 +2151,7 @@ public class AnnotationFileParser {
   }
 
   /**
-   * Return the annotated type corresponding to {@code type}, or null if none exists. More
+   * Returns the annotated type corresponding to {@code type}, or null if none exists. More
    * specifically, returns the element of {@code types} whose name matches {@code type}.
    *
    * @param type the type to search for
@@ -2398,8 +2400,8 @@ public class AnnotationFileParser {
   }
 
   /**
-   * Get the type element for the given fully-qualified type name. If none is found, issue a warning
-   * and return null.
+   * Returns the type element for the given fully-qualified type name. If none is found, issue a
+   * warning and return null.
    *
    * @param typeName a type name
    * @param msg a warning message to issue if the type element for {@code typeName} cannot be found
@@ -3167,7 +3169,7 @@ public class AnnotationFileParser {
   }
 
   /**
-   * Return the prefix for a warning line: A file name, line number, and column number.
+   * Returns the prefix for a warning line: A file name, line number, and column number.
    *
    * @param astNode where to report errors
    * @return file name, line number, and column number

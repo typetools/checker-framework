@@ -7,7 +7,9 @@ import org.checkerframework.afu.scenelib.util.coll.VivifyingMap;
 
 /** A declaration, as opposed to an expression. Base class for AClass, AMethod, and AField. */
 public abstract class ADeclaration extends AElement {
-  /** The element's insert-annotation invocations; map key is the AST path to the insertion place */
+  /**
+   * The element's insert-annotation invocations; map key is the AST path to the insertion place.
+   */
   public final VivifyingMap<ASTPath, ATypeElement> insertAnnotations =
       new VivifyingMap<ASTPath, ATypeElement>(new TreeMap<>()) {
         @Override

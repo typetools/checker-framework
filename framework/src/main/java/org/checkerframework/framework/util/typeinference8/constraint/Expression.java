@@ -177,7 +177,7 @@ public class Expression extends TypeConstraint {
   }
 
   /**
-   * Reduce this constraint
+   * Reduce this constraint.
    *
    * @param context the context
    * @return the result of reducing this constraint
@@ -270,7 +270,7 @@ public class Expression extends TypeConstraint {
   }
 
   /**
-   * Reduce this constraint
+   * Reduce this constraint.
    *
    * @param context the context
    * @return the result of reducing this constraint

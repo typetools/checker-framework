@@ -219,7 +219,9 @@ public class AnnotationMirrorMap<V> implements Map<@KeyFor("this") AnnotationMir
   @Override
   public int hashCode() {
     int result = 0;
-    for (Entry<AnnotationMirror, V> entry : entrySet()) result += entry.hashCode();
+    for (Entry<AnnotationMirror, V> entry : entrySet()) {
+      result += entry.hashCode();
+    }
     return result;
   }
 }

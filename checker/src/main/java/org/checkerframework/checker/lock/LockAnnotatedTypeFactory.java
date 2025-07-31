@@ -655,14 +655,14 @@ public class LockAnnotatedTypeFactory
    * with that in {@code annotationInGuardedByHierarchy}.
    *
    * @param methodReturnAtm the AnnotatedTypeMirror for the return type of a method that will
-   *     potentially have its annotation in the {@code @GuardedBy} hierarchy replaced.
+   *     potentially have its annotation in the {@code @GuardedBy} hierarchy replaced
    * @param atm an AnnotatedTypeMirror that may contain a {@code @GuardSatisfied} annotation. May be
    *     null.
    * @param matchingGuardSatisfiedIndex the {code @GuardSatisfied} index that the
    *     {@code @GuardSatisfied} annotation in {@code atm} must have in order for the replacement to
-   *     occur.
+   *     occur
    * @param annotationInGuardedByHierarchy if the replacement occurs, the annotation in the
-   *     {@code @GuardedBy} hierarchy in this parameter will be used for the replacement.
+   *     {@code @GuardedBy} hierarchy in this parameter will be used for the replacement
    * @return true if the replacement occurred, false otherwise
    */
   private boolean replaceAnnotationInGuardedByHierarchyIfGuardSatisfiedIndexMatches(

@@ -452,7 +452,7 @@ public final class TreePathUtil {
   //
 
   /**
-   * Return a printed representation of a TreePath.
+   * Returns a printed representation of a TreePath.
    *
    * @param path a TreePath
    * @return a printed representation of the given TreePath
@@ -487,9 +487,9 @@ public final class TreePathUtil {
    * utility method prioritizes method elements over class elements. It returns the element of the
    * closest method scope if available; otherwise, it defaults to the enclosing class scope.
    *
-   * @param path the {@link TreePath} to analyze for the nearest enclosing scope.
+   * @param path the {@link TreePath} to analyze for the nearest enclosing scope
    * @return the {@link Element} of the nearest enclosing method or class, or {@code null} if no
-   *     such enclosing element can be found.
+   *     such enclosing element can be found
    */
   public static @Nullable Element findNearestEnclosingElement(TreePath path) {
     MethodTree enclosingMethodTree = TreePathUtil.enclosingMethod(path);

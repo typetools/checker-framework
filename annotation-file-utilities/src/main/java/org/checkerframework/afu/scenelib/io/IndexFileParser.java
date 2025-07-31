@@ -125,7 +125,7 @@ public final class IndexFileParser {
   }
 
   /**
-   * Return true if the next thing to be read from st is the given string. In that case, also read
+   * Returns true if the next thing to be read from st is the given string. In that case, also read
    * past the given string. If the result is false, reads nothing from st.
    */
   private boolean matchChar(char c) throws IOException {
@@ -138,7 +138,7 @@ public final class IndexFileParser {
   }
 
   /**
-   * Return true if the next thing to be read from st is the given string. In that case, also read
+   * Returns true if the next thing to be read from st is the given string. In that case, also read
    * past the given string. If the result is false, reads nothing from st.
    */
   private boolean matchKeyword(String s) throws IOException {
@@ -676,7 +676,7 @@ public final class IndexFileParser {
   }
 
   /**
-   * Get the {@link ScalarAFT} for the annotation currenttly being parsed.
+   * Returns the {@link ScalarAFT} for the annotation currenttly being parsed.
    *
    * @param annotationFullyQualifiedName the fully-qualified name of current parsing annotation
    * @return the {@link ScalarAFT} of current parsing annotation
@@ -1818,9 +1818,9 @@ public final class IndexFileParser {
   }
 
   /**
-   * Reads annotations from <code>in</code> in index file format and merges them into <code>scene
-   * </code>. Annotations from the input are merged into the scene; it is an error if both the scene
-   * and the input contain annotations of the same type on the same element.
+   * Reads annotations from {@code in} in index file format and merges them into {@code scene}.
+   * Annotations from the input are merged into the scene; it is an error if both the scene and the
+   * input contain annotations of the same type on the same element.
    *
    * <p>Since each annotation in a scene carries its own definition and the scene as a whole no
    * longer has a set of definitions, annotation definitions that are given in the input but never
@@ -1838,8 +1838,8 @@ public final class IndexFileParser {
   }
 
   /**
-   * Reads annotations from the index file <code>filename</code> and merges them into <code>scene
-   * </code>; see {@link #parse(LineNumberReader, String, AScene)}.
+   * Reads annotations from the index file {@code filename} and merges them into {@code scene}; see
+   * {@link #parse(LineNumberReader, String, AScene)}.
    */
   public static Map<String, AnnotationDef> parseFile(String filename, AScene scene)
       throws IOException {
@@ -1852,8 +1852,8 @@ public final class IndexFileParser {
   }
 
   /**
-   * Reads annotations from the string (in index file format) and merges them into <code>scene
-   * </code>; see {@link #parse(LineNumberReader, String, AScene)}. Primarily for testing.
+   * Reads annotations from the string (in index file format) and merges them into {@code scene};
+   * see {@link #parse(LineNumberReader, String, AScene)}. Primarily for testing.
    */
   public static Map<String, AnnotationDef> parseString(
       String fileContents, String source, AScene scene) throws IOException {
