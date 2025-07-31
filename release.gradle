@@ -92,6 +92,7 @@ tasks.register('createCheckerFrameworkZip', Zip) {
   dependsOn('buildAll')
   archiveFileName = "checker-framework-${version}.zip"
   destinationDirectory = file(project.property('cfWebsite'))
+  into "checker-framework-${releaseVersion}"
 
   from(layout.projectDirectory) {
     exclude 'api/**',
