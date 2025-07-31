@@ -97,7 +97,6 @@ tasks.register('createCheckerFrameworkZip', Zip) {
   from(layout.projectDirectory) {
     exclude 'api/**',
         'checker/bin/README',
-        'checker/bin/javac',
         'checker/dist/*.asc',
         'docs/tutorial/tests/**',
         'docs/tutorial/src/**',
