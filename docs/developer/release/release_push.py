@@ -148,7 +148,7 @@ def stage_maven_artifacts_in_maven_central(new_cf_version):
         "/projects/swlab1/checker-framework/hosting-info/release-private.password"
     )
     execute(
-        "./gradlew publish -Prelease=true --no-parallel -Psigning.gnupg.keyName=checker-framework-dev@googlegroups.com -Psigning.gnupg.passphrase=%s"
+        "./gradlew publish --no-parallel -Psigning.gnupg.keyName=checker-framework-dev@googlegroups.com -Psigning.gnupg.passphrase=%s"
         % gnupgPassphrase,
         working_dir=CHECKER_FRAMEWORK,
     )
