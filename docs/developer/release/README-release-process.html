@@ -34,15 +34,14 @@
 
 <body>
 <div class="page-header">
-  <h1>Release Process: <small>Annotation File Utilities, Checker Framework</small></h1> <!-- omit from toc -->
+  <h1>Release Process: <small>Checker Framework</small></h1> <!-- omit from toc -->
 </div>
 
 <div class="container">
 <div class="row" style="width: 100%">
 <div id="content">
 <p>
-  This document explains how to make a release of the Checker Framework
-  and the Annotation File Utilities.
+  This document explains how to make a release of the Checker Frameworks.
 The process takes around 2 hours (including manual steps) when all goes according to plan.
   However, the lengthiest steps are automatic so you will be able to work on other tasks.
 </p>
@@ -132,13 +131,12 @@ miss a step if you only read the paragraph asking you to say 'yes'.
         prevent such pull requests for the next month.)
       </li>
       <li>
-        <b>Update AFU and Checker Framework change logs</b> by following the instructions
+        <b>Update Checker Framework change log</b> by following the instructions
         at <a href="#content_guidelines">content guidelines</a>.
       </li>
       <li> <b>Update the Checker Framework version number</b>
-        in <code>checker-framework/build.gradle</code>,
-        in the <code>allprojects</code> block.
-        (The AFU version is updated as part of the release scripts.)
+        in <code>checker-framework/release.gradle</code>,
+        in the <code>ext</code> block.
 
         <p>
         Update the minor version (middle number in the version number)
@@ -175,11 +173,6 @@ TreeAnnotator
         </p>
       </li>
       <li>
-        <b>Update the Annotation Tools version number</b>, again <em>in the <code>master</code> branch</em>,
-        in <code>annotation-file-utilities/build.gradle</code>.
-        (TODO: Are any other replacements necessary?)
-      </li>
-      <li>
         <b>Commit and push</b> these changes to typetools/master.
       </li>
     </ul>
@@ -191,7 +184,7 @@ TreeAnnotator
       <strong>In a user-specific temporary directory, clone/update the Checker Framework repository (it contains the release scripts).</strong><br/>
       <!-- This isn't a <pre> block because that formats differently than commands. -->
       <code>mkdir -p /scratch/$USER/cf-release<br/></code>
-      <code>chown -R types_www /scratch/$USER/cf-release<br/></code>
+      <code>chown -R :types_www /scratch/$USER/cf-release<br/></code>
       <code>chmod -R g+rw /scratch/$USER/cf-release<br/></code>
       <code>cd /scratch/$USER/cf-release<br/></code>
       <code>test -d checker-framework && (cd checker-framework && git pull --ff-only --quiet) || git clone --quiet https://github.com/typetools/checker-framework.git<br/></code>
@@ -223,10 +216,6 @@ TreeAnnotator
     If the release did not add, remove, or rename any type qualifiers, no changes are required.
     Those instructions do not work on macOS, so you may need to use a Linux machine to make the changes.
   </li>
-  <li><strong>Update the Annotation Tools' use of the Checker Framework</strong>
-    by making a pull request that changes two occurrences of the old version number in
-    <code>annotation-file-utilities/build.gradle</code>.
-  </li>
   <li> <strong>Make Daikon use the latest Checker Framework version.</strong>
 
     Follow the  instructions in
@@ -242,7 +231,6 @@ TreeAnnotator
   </p>
 
   <ul>
-    <li>Annotation File Utilities: <a href="https://dev.azure.com/checkerframework/checkerframework/_build/latest?definitionId=1&branchName=master"><img src="https://dev.azure.com/checkerframework/checkerframework/_apis/build/status%2Ftypetools.annotation-tools?branchName=master" alt="Azure Pipelines typetools/annotation-tools status"></a></li>
     <li>Checker Framework: <a href="https://dev.azure.com/checkerframework/checkerframework/_build/latest?definitionId=5&branchName=master"><img src="https://dev.azure.com/checkerframework/checkerframework/_apis/build/status%2Ftypetools.checker-framework?branchName=master" alt="Azure Pipelines typetools/checker-framework status"></a></li>
     <li>JDK: <a href="https://dev.azure.com/checkerframework/checkerframework/_build/latest?definitionId=6&branchName=master"><img src="https://dev.azure.com/checkerframework/checkerframework/_apis/build/status%2Ftypetools.jdk17u?branchName=master" alt="Azure Pipelines typetools/jdk17u status"></a></li>
     <li>Daikon: <a href="https://dev.azure.com/mernstdaikon/daikon/_build/latest?definitionId=1&branchName=master"><img src="https://dev.azure.com/mernstdaikon/daikon/_apis/build/status%2Fcodespecs.daikon?branchName=master" alt="codespecs/daikon Azure Pipelines status"></a></li>
@@ -392,7 +380,7 @@ SONATYPE_NEXUS_PASSWORD=your_tokenkey</pre>
     </tr>
     <tr>
       <td>5.</td>
-      <td><strong>Get edit privileges for Checker Framework, Annotation Tools</strong><br/>
+      <td><strong>Get edit privileges for Checker Framework</strong><br/>
         Once a release has been completed, you will be prompted to update issues in the
         issue tracker for each project that has been released.
         You will need to be a "developer" for each project so that you have update privileges for
@@ -450,7 +438,7 @@ git config --global user.email you@example.com</pre>
         <td></td>
         <td colspan="2">build</td>
         <td>Contains repositories for:
-          annotation-tools, checker-framework, git-scripts, plume-bib, plume-scripts<br/>
+          checker-framework, git-scripts, plume-bib, plume-scripts<br/>
           These repositories are used to build the Checker Framework and its dependencies.
         </td>
       </tr>
@@ -458,7 +446,7 @@ git config --global user.email you@example.com</pre>
         <td></td>
         <td colspan="2">interm</td>
         <td>Contains repositories for:
-          annotation-tools, checker-framework, git-scripts, plume-bib, plume-scripts<br/>
+          checker-framework, git-scripts, plume-bib, plume-scripts<br/>
           The repositories in build are clones of repositories in interm.  The repositories
           in interm are clones of the GitHub repositories.  This is so that
           we can test and push the release to the interm repositories then check the

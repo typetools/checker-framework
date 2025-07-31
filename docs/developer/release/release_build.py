@@ -219,7 +219,7 @@ def build_checker_framework_release(
     )
 
     # Build the Checker Framework binaries and documents.  Tests are run by release_push.py.
-    gradle_cmd = "./gradlew releaseBuild"
+    gradle_cmd = "./gradlew buildAll"
     execute(gradle_cmd, True, False, CHECKER_FRAMEWORK)
 
     # make the checker framework tutorial

@@ -5,6 +5,12 @@ import java.time.format.DateTimeFormatter
 ext {
   currentDate = LocalDateTime.now().format(DateTimeFormatter.ofPattern("d MMM yyyy"))
   releaseVersionRegex = "\\d\\.\\d+\\.\\d+(?:\\.\\d)"
+
+  // Increment the minor version (second number) rather than just the patch
+  // level (third number) if:
+  //   * any new checkers have been added, or
+  //   * backward-incompatible changes have been made to APIs or elsewhere.
+  // To make a snapshot release, version should end in "-SNAPSHOT", then: ./gradlew publish
   releaseVersion = '3.49.6'
 }
 
@@ -269,5 +275,3 @@ tasks.register('updateCopyMavenExample', Copy){
     line.replaceAll("<!-- checker-framework-version -->(.*)<!-- /checker-framework-version -->", "<!-- checker-framework-version -->${releaseVersion}<!-- /checker-framework-version -->")
   }
 }
-
-

@@ -146,12 +146,8 @@ spotlessPredeclare {
 }
 
 allprojects { currentProj ->
-  // TODO: doc
-  // Increment the minor version (second number) rather than just the patch
-  // level (third number) if:
-  //   * any new checkers have been added, or
-  //   * backward-incompatible changes have been made to APIs or elsewhere.
-  // To make a snapshot release, version should end in "-SNAPSHOT", then: ./gradlew publish
+
+  // Update releaseVersion in release.gradle.
   version = releaseVersion
 
   tasks.withType(JavaCompile).configureEach {
@@ -791,6 +787,7 @@ createJavadocTask('javadocDoclintAll', 'Runs javadoc with -Xdoclint:all option.'
 tasks.register('makeCFManual', Exec) {
   dependsOn('allJavadoc')
   description = 'Build the Checker Framework manual'
+  // Don't make all because it will re-run allJavadoc which causes problems when building the release.
   commandLine 'make', '-C', 'docs/manual/checker-framework', 'manual.pdf', 'manual.html'
 }
 
@@ -799,22 +796,20 @@ interface InjectedExecOps {
   ExecOperations getExecOps()
 }
 
-tasks.register('makeFigures', Exec){
+tasks.register('makeAFUFigures', Exec){
+  description = 'Make figures for AFU.'
+
   executable 'make'
   args "-C", "${afuManualDir}/figures"
 }
 tasks.register('makeAnnotationFileFormat') {
   dependsOn getPlumeBib
-  dependsOn makeFigures
+  dependsOn makeAFUFigures
   description = 'Make documentation: annotation-file-format.{html,pdf}.'
 
   def injected = project.objects.newInstance(InjectedExecOps)
 
   doLast {
-    //    injected.execOps.exec {
-    //      workingDir(file("${afuManualDir}/figures"))
-    //      executable 'make'
-    //    }
     injected.execOps.exec {
       workingDir(file(afuManualDir))
       executable 'latex'
@@ -1261,21 +1256,6 @@ task buildAll(group: 'Build') {
   }
   dependsOn('framework:allJavadocJar', 'framework:allSourcesJar', 'checker:allJavadocJar', 'checker:allSourcesJar', 'checker-qual:jar', 'checker-util:jar')
   dependsOn('checker:assembleForJavac')
-}
-
-task releaseBuild(group: 'Build') {
-  description = 'Cleans, then builds everything required for a release'
-  dependsOn(clean)
-  dependsOn(buildAll)
-}
-
-// No group so it does not show up in the output of `gradlew tasks`
-task releaseAndTest {
-  description = 'Build everything required for a release and run allTests'
-  dependsOn(releaseBuild)
-  subprojects { Project subproject ->
-    dependsOn("${subproject.name}:allTests")
-  }
 }
 
 // Don't create an empty checker-framework-VERSION.jar
