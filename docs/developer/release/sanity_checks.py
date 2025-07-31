@@ -124,7 +124,6 @@ def maven_sanity_check(sub_sanity_dir_name, repo_url, release_version):
     Run the Maven sanity check with the local artifacts or from the repo at
     repo_url.
     """
-    checker_dir = os.path.join(CHECKER_FRAMEWORK, "checker")
     maven_sanity_dir = os.path.join(SANITY_DIR, sub_sanity_dir_name)
     if os.path.isdir(maven_sanity_dir):
         delete_path(maven_sanity_dir)
@@ -139,7 +138,7 @@ def maven_sanity_check(sub_sanity_dir_name, repo_url, release_version):
         % (maven_sanity_dir)
     )
 
-    execute(get_example_dir_cmd)
+    execute(get_example_dir_cmd, True, False, CHECKER_FRAMEWORK)
     path_to_artifacts = os.path.join(
         os.path.expanduser("~"), ".m2", "repository", "org", "checkerframework"
     )
