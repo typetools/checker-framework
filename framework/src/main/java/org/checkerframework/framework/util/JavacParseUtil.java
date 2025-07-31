@@ -23,6 +23,9 @@ import javax.tools.StandardJavaFileManager;
  */
 public class JavacParseUtil {
 
+  /** Creates a JavacParseUtil. */
+  public JavacParseUtil() {}
+
   /**
    * Parses the given Java expression string and returns it as a {@link ExpressionTree} using the
    * {@code javac} compiler API.
