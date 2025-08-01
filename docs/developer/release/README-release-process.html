@@ -296,7 +296,13 @@ TreeAnnotator
   <pre>
 repositories {
   ...
-  maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
+  maven {
+    url 'https://central.sonatype.com/repository/maven-snapshots/'
+    // Only search this repository for Checker Framework artifacts.
+    content {
+      includeGroup('org.checkerframework')
+    }
+  }
 }
 
 ext.checkerFrameworkVersion = '3.28.1-SNAPSHOT'
@@ -333,7 +339,7 @@ configurations.all({
   <pre>
     &lt;repository&gt;
       &lt;id&gt;snapshots-repo&lt;/id&gt;
-      &lt;url&gt;https://oss.sonatype.org/content/repositories/snapshots&lt;/url&gt;
+      &lt;url&gt;https://central.sonatype.com/repository/maven-snapshots/s&lt;/url&gt;
       &lt;releases&gt;&lt;enabled&gt;false&lt;/enabled&gt;&lt;/releases&gt;
       &lt;snapshots&gt;&lt;enabled&gt;true&lt;/enabled&gt;&lt;/snapshots&gt;
     &lt;/repository&gt;</pre>
