@@ -26,7 +26,7 @@ DIFFS := $(wildcard *.goal)
 DISABLED := $(shell grep -le "@skip-test" $(DIFFS))
 FILTERED := $(filter-out $(DISABLED),$(DIFFS))
 DIFFS := $(patsubst %.goal, %.diff, $(FILTERED))
-AFU_JARS := ../../annotation-file-utilities-all.jar
+AFU_JARS := ../../dist/annotation-file-utilities-all.jar
 JAIF := C.jaif
 SRC := $(patsubst %.goal, %.java, $(FILTERED))
 OUT := $(patsubst %.goal, %.output, $(FILTERED))
@@ -62,7 +62,7 @@ compile : $(SRC)
 # Actually runs the annotator to create the annotated java file.
 output: compile $(JAIF) ../../build/classes/java/main $(AFU_JARS)
 	$(JAVA) \
-	-cp ../../annotation-file-utilities-all.jar:bin \
+	-cp ../../dist/annotation-file-utilities-all.jar:bin \
 	org.checkerframework.afu.annotator.Main \
 	${DEBUG} \
 	--abbreviate=true \

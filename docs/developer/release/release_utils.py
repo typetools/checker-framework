@@ -37,9 +37,7 @@ def has_command_line_option(argv, argument):
 # Command utils
 
 
-def execute_write_to_file(
-    command_args, output_file_path, halt_if_fail=True, working_dir=None
-):
+def execute_write_to_file(command_args, output_file_path, halt_if_fail=True, working_dir=None):
     """Execute the given command, capturing the output to the given file."""
     print("Executing: %s" % (command_args))
     import shlex
@@ -47,17 +45,13 @@ def execute_write_to_file(
     args = shlex.split(command_args) if isinstance(command_args, str) else command_args
 
     output_file = open(output_file_path, "w+")
-    process = subprocess.Popen(
-        args, stdout=output_file, stderr=output_file, cwd=working_dir
-    )
+    process = subprocess.Popen(args, stdout=output_file, stderr=output_file, cwd=working_dir)
     process.communicate()
     process.wait()
     output_file.close()
 
     if process.returncode != 0 and halt_if_fail:
-        raise Exception(
-            "Error %s while executing %s" % (process.returncode, command_args)
-        )
+        raise Exception("Error %s while executing %s" % (process.returncode, command_args))
 
 
 def check_command(command):
@@ -194,9 +188,7 @@ def current_distribution_by_website(site):
     returns the version of the current release.
     """
     print("Looking up checker-framework-version from %s\n" % site)
-    ver_re = re.compile(
-        r"<!-- checker-framework-zip-version -->checker-framework-(.*)\.zip"
-    )
+    ver_re = re.compile(r"<!-- checker-framework-zip-version -->checker-framework-(.*)\.zip")
     text = urllib.request.urlopen(url=site).read().decode("utf-8")
     result = ver_re.search(text)
     return result.group(1)
@@ -329,9 +321,7 @@ def is_repo_cleaned_and_updated(repo):
         return is_updated
     else:
         # Could add "--untracked-files=no" to this command
-        is_clean = not execute(
-            "git status --porcelain", working_dir=repo, capture_output=True
-        )
+        is_clean = not execute("git status --porcelain", working_dir=repo, capture_output=True)
         execute("git fetch origin", working_dir=repo)
         is_updated = not execute(
             "git diff origin/master..master", working_dir=repo, capture_output=True
@@ -339,30 +329,27 @@ def is_repo_cleaned_and_updated(repo):
         return is_clean and is_updated
 
 
-def check_repos(repos, fail_on_error, is_intermediate_repo_list):
+def check_repo(repo, fail_on_error, is_intermediate_repo_list):
     """Fail if the repository is not clean and up to date."""
-    for repo in repos:
-        if git_repo_exists_at_path(repo):
-            if not is_repo_cleaned_and_updated(repo):
-                if is_intermediate_repo_list:
-                    print(
-                        (
-                            "\nWARNING: Intermediate repository "
-                            + repo
-                            + " is not up to date with respect to the live repository.\n"
-                            + "A separate warning will not be issued for a build repository that is cloned off of the intermediate repository."
-                        )
+    if git_repo_exists_at_path(repo):
+        if not is_repo_cleaned_and_updated(repo):
+            if is_intermediate_repo_list:
+                print(
+                    (
+                        "\nWARNING: Intermediate repository "
+                        + repo
+                        + " is not up to date with respect to the live repository.\n"
+                        + "A separate warning will not be issued for a build repository that is cloned off of the intermediate repository."
                     )
-                if fail_on_error:
-                    raise Exception("repo %s is not cleaned and updated!" % repo)
-                else:
-                    if not prompt_yn(
-                        "%s is not clean and up to date! Continue (answering 'n' will exit the script)?"
-                        % repo
-                    ):
-                        raise Exception(
-                            "%s is not clean and up to date! Halting!" % repo
-                        )
+                )
+            if fail_on_error:
+                raise Exception("repo %s is not cleaned and updated!" % repo)
+            else:
+                if not prompt_yn(
+                    "%s is not clean and up to date! Continue (answering 'n' will exit the script)?"
+                    % repo
+                ):
+                    raise Exception("%s is not clean and up to date! Halting!" % repo)
 
 
 def get_tag_line(lines, revision, tag_prefixes):
