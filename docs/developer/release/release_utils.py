@@ -246,7 +246,7 @@ def push_changes(repo_root):
     """Pushes changes, including tags, that were committed to the repository at
     the given filesystem path."""
     execute("git push --tags", working_dir=repo_root)
-    # execute("git push origin master", working_dir=repo_root)
+    execute("git push origin master", working_dir=repo_root)
 
 
 def update_repo(path, bareflag):

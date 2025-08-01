@@ -94,15 +94,11 @@ The following repositories will be cloned or updated from their origins:
         if not prompt_yes_no("Update the repositories without cloning them from scratch?", True):
             print("WARNING: Continuing without refreshing repositories.\n")
             return
-    flags = "-b clean-up-release-test --bare"
-    execute(
-        "git clone --quiet %s %s %s"
-        % (flags, "git@github.com:smillst/checker-framework.git", INTERM_CHECKER_REPO)
-    )
-    # for live_to_interm in LIVE_TO_INTERM_REPOS:
-    #     clone_from_scratch_or_update(
-    #         live_to_interm[0], live_to_interm[1], clone_from_scratch, True
-    #     )
+
+    for live_to_interm in LIVE_TO_INTERM_REPOS:
+        clone_from_scratch_or_update(
+            live_to_interm[0], live_to_interm[1], clone_from_scratch, True
+        )
 
     for interm_to_build in INTERM_TO_BUILD_REPOS:
         clone_from_scratch_or_update(
