@@ -391,6 +391,8 @@ def main(argv):
         stage_maven_artifacts_in_maven_central(new_cf_version)
 
         print_step("Step 5b: Close staged artifacts at Maven Central.")
+        ## TODO: We should be able to follow these instructions on the command line, but when I
+        # copy the curl commands, nothing happens.
         continue_or_exit(
             "Maven artifacts have been staged!  Please 'close' (but don't release) the artifacts.\n"
             + "Go to: https://ossrh-staging-api.central.sonatype.com/swagger-ui/#/default/manual_search_repositories.\n"
@@ -487,14 +489,12 @@ def main(argv):
     # available to the Java community through the Central Repository. Follow the prompts. The Maven
     # artifacts (such as checker-qual.jar) are still needed, but the Maven plug-in is no longer maintained.
 
-    ## TODO: Update the instructions below once I've tried the new location.
     print_step("Push Step 10. Release staged artifacts in Central Repository.")  # MANUAL
     if test_mode:
         msg = (
             "Test Mode: You are in test_mode.  Please 'DROP' the artifacts. "
             + "To drop, log into https://central.sonatype.com/publishing/deployments using your "
-            + "Sonatype credentials and follow the 'DROP' instructions at: "
-            + "http://central.sonatype.org/pages/releasing-the-deployment.html"
+            + "Sonatype credentials click 'DROP'"
         )
     else:
         msg = (
