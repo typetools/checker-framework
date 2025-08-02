@@ -174,7 +174,10 @@ public class AnnotationUtils {
   }
 
   /**
-   * Returns true iff a1 and a2 have the same annotation type.
+   * Returns true iff a1 and a2 have the same annotation type. Does not check annotation
+   * element/field values. One reason to that clients may call this is that it is slightly faster
+   * than {@link #areSame} when the annotation is known to have no elements/fields. (TODO: Is that
+   * considered to be good style?)
    *
    * @param a1 the first AnnotationMirror to compare
    * @param a2 the second AnnotationMirror to compare
@@ -183,12 +186,15 @@ public class AnnotationUtils {
    */
   @EqualsMethod
   public static boolean areSameByName(AnnotationMirror a1, AnnotationMirror a2) {
+    if (a1 == a2) {
+      return true;
+    }
     return compareByName(a1, a2) == 0;
   }
 
   /**
    * Checks that the annotation {@code am} has the name {@code aname} (a fully-qualified type name).
-   * Values are ignored.
+   * Does not check annotation element/field values.
    *
    * @param am the AnnotationMirror whose name to compare
    * @param aname the string to compare
@@ -1188,19 +1194,24 @@ public class AnnotationUtils {
    * and {@code am2} must be the same type of annotation.
    *
    * @param am1 the first AnnotationMirror to compare
-   * @param am2 the second AnnotationMirror to compare
+   * @param am2 the second AnnotationMirror to compare; the same type of annotation as {@code am1}
    * @return true if the two annotations have the same elements (fields)
    */
   @EqualsMethod
-  public static boolean sameElementValues(AnnotationMirror am1, AnnotationMirror am2) {
-    if (am1 == am2) {
+  private static boolean sameElementValues(AnnotationMirror am1, AnnotationMirror am2) {
+
+    // Same elts for both annotations, because am1.getAnnotationType() == am2.getAnnotationType().
+    List<ExecutableElement> elts =
+        ElementFilter.methodsIn(am1.getAnnotationType().asElement().getEnclosedElements());
+    if (elts.isEmpty()) {
       return true;
     }
 
+    // This method might return true even if these maps differ, because of default values.
     Map<? extends ExecutableElement, ? extends AnnotationValue> vals1 = am1.getElementValues();
     Map<? extends ExecutableElement, ? extends AnnotationValue> vals2 = am2.getElementValues();
-    for (ExecutableElement meth :
-        ElementFilter.methodsIn(am1.getAnnotationType().asElement().getEnclosedElements())) {
+
+    for (ExecutableElement meth : elts) {
       AnnotationValue aval1 = vals1.get(meth);
       AnnotationValue aval2 = vals2.get(meth);
       @SuppressWarnings("interning:not.interned") // optimization via equality test
