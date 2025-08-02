@@ -133,8 +133,12 @@ public class Range {
     long max = min;
     for (Number value : values) {
       long current = value.longValue();
-      if (min > current) min = current;
-      if (max < current) max = current;
+      if (min > current) {
+        min = current;
+      }
+      if (max < current) {
+        max = current;
+      }
     }
     return create(min, max);
   }

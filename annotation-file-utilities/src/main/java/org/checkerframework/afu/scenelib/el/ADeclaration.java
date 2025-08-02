@@ -84,8 +84,12 @@ public abstract class ADeclaration extends AElement {
   @Override
   public void prune() {
     super.prune();
-    if (insertAnnotations != null) insertAnnotations.prune();
-    if (insertTypecasts != null) insertTypecasts.prune();
+    if (insertAnnotations != null) {
+      insertAnnotations.prune();
+    }
+    if (insertTypecasts != null) {
+      insertTypecasts.prune();
+    }
   }
 
   @Override
