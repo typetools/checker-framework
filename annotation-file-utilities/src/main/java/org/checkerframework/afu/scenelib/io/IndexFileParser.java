@@ -256,7 +256,9 @@ public final class IndexFileParser {
   private boolean isValidIdentifier(String x) {
     if (x.length() == 0
         || !Character.isJavaIdentifierStart(x.charAt(0))
-        || knownKeywords.contains(x)) return false;
+        || knownKeywords.contains(x)) {
+      return false;
+    }
     for (int i = 1; i < x.length(); i++) {
       if (!Character.isJavaIdentifierPart(x.charAt(i))) {
         return false;
@@ -349,8 +351,10 @@ public final class IndexFileParser {
   private int checkNNInteger() {
     if (st.ttype == StreamTokenizer.TT_NUMBER) {
       int x = (int) st.nval;
-      if (x == st.nval && x >= -1) // shouldn't give us a huge number
-      return x;
+      if (x == st.nval && x >= -1) {
+        // shouldn't give us a huge number
+        return x;
+      }
     }
     return -1;
   }
@@ -934,8 +938,8 @@ public final class IndexFileParser {
       key = "<" + basename + ">";
     } else {
       key = expectIdentifier();
-      // too bad className is private in AClass and thus must be
-      // extracted from what toString() returns
+      // It's too bad that className is private in AClass and thus must be
+      // extracted from what toString() returns.
       if (Pattern.matches("AClass: (?:[^. ]+\\.)*" + key, c.toString())) { // ugh
         key = "<init>";
       }

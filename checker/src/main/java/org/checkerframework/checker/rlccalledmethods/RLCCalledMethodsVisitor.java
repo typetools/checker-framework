@@ -443,8 +443,12 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
 
     @Override
     public boolean equals(Object o) {
-      if (this == o) return true;
-      if (o == null || getClass() != o.getClass()) return false;
+      if (this == o) {
+        return true;
+      }
+      if (o == null || getClass() != o.getClass()) {
+        return false;
+      }
       DestructorObligation that = (DestructorObligation) o;
       return mustCallMethod.equals(that.mustCallMethod) && exitKind == that.exitKind;
     }
