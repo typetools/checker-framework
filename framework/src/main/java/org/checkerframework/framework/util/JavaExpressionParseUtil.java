@@ -818,8 +818,7 @@ public class JavaExpressionParseUtil {
       String name = exprTree.getIdentifier().toString();
 
       // Check if the expression refers to a fully-qualified class name.
-      PackageSymbol packageSymbol =
-          resolver.findPackage(exprTree.toString(), pathToCompilationUnit);
+      PackageSymbol packageSymbol = resolver.findPackage(expr.toString(), pathToCompilationUnit);
       if (packageSymbol != null) {
         ClassSymbol classSymbol =
             resolver.findClassInPackage(name, packageSymbol, pathToCompilationUnit);
