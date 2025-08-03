@@ -19,6 +19,7 @@ plugins {
   // the JDK is 17 or later.
   id 'com.diffplug.spotless' version '7.2.1'
 }
+apply from: rootProject.file('release.gradle')
 
 // There is another `repositories { ... }` block below; if you change this one, change that one as well.
 repositories {
@@ -64,8 +65,10 @@ ext {
   skipDelombok = gradleRunsOnJava24orHigher
 
   parentDir = file("${rootDir}/../").absolutePath
+  afuManualDir = 'docs/annotation-file-utilities/'
 
   gitScriptsHome = "${project(':checker').projectDir}/bin-devel/.git-scripts"
+  plumeBibHome = "${projectDir}/docs/manual/plume-bib"
   plumeScriptsHome = "${project(':checker').projectDir}/bin-devel/.plume-scripts"
   htmlToolsHome = "${project(':checker').projectDir}/bin-devel/.html-tools"
   doLikeJavacHome = "${project(':checker').projectDir}/bin/.do-like-javac"
@@ -143,12 +146,9 @@ spotlessPredeclare {
 }
 
 allprojects { currentProj ->
-  // Increment the minor version (second number) rather than just the patch
-  // level (third number) if:
-  //   * any new checkers have been added, or
-  //   * backward-incompatible changes have been made to APIs or elsewhere.
-  // To make a snapshot release, version should end in "-SNAPSHOT", then: ./gradlew publish
-  version = '3.49.6-SNAPSHOT'
+
+  // Update releaseVersion in release.gradle.
+  version = releaseVersion
 
   tasks.withType(JavaCompile).configureEach {
     options.fork = true
@@ -665,7 +665,7 @@ task addFavicon(type: Exec) {
 //   in the subproject or `./gradlew :checker:javadoc` at the top level.
 task allJavadoc(type: Javadoc, group: 'Documentation') {
   description = 'Generates API documentation that includes all the modules.'
-  dependsOn(':checker:shadowJar', 'getPlumeScripts', 'getHtmlTools')
+  dependsOn(':checker:shadowJar', 'getPlumeScripts', 'getHtmlTools', ':checker-qual:jar')
   destinationDir = file("${rootDir}/docs/api")
   source(
       project(':checker-util').sourceSets.main.allJava,
@@ -694,13 +694,36 @@ task allJavadoc(type: Javadoc, group: 'Documentation') {
 // See documentation for allJavadoc task.
 javadoc.dependsOn(allJavadoc)
 
-task cleanManual(type: Exec) {
+tasks.register('cleanCfManual', Exec) {
   description = 'Clean the manual'
-  commandLine 'make', '-C', 'docs/manual', 'clean'
+  commandLine 'make', '-C', 'docs/manual/checker-framework', 'clean'
 }
+
+tasks.register('cleanAfuManual', Exec) {
+  description = 'Clean the manual'
+  commandLine 'make', '-C', "${afuManualDir}", 'clean'
+}
+
+tasks.register('cleanManual'){
+  dependsOn('cleanCfManual', 'cleanAfuManual')
+}
+
 clean.dependsOn(cleanManual)
 clean {
   delete(file("${rootDir}/docs/api"))
+  delete "${afuManualDir}/annotation-file-format.aux"
+  delete "${afuManualDir}/annotation-file-format.blg"
+  delete "${afuManualDir}/annotation-file-format.dvi"
+  delete "${afuManualDir}/annotation-file-format.haux"
+  delete "${afuManualDir}/annotation-file-format.html"
+  delete "${afuManualDir}/annotation-file-format.htoc"
+  delete "${afuManualDir}/annotation-file-format.log"
+  delete "${afuManualDir}/annotation-file-format.pdf"
+  delete "${afuManualDir}/annotation-file-format.toc"
+  delete "${afuManualDir}/corresp.png"
+  delete "${afuManualDir}/dataflow.png"
+  delete "${afuManualDir}/nocast.png"
+  delete "${afuManualDir}/typecast.png"
 }
 
 configurations {
@@ -761,9 +784,63 @@ def createJavadocTask(taskName, taskDescription, memberLevel) {
 
 createJavadocTask('javadocDoclintAll', 'Runs javadoc with -Xdoclint:all option.', JavadocMemberLevel.PRIVATE)
 
-task manual(type: Exec, group: 'Documentation') {
+tasks.register('makeCfManual', Exec) {
+  dependsOn('allJavadoc')
+  description = 'Build the Checker Framework manual'
+  // Don't make all because it will re-run allJavadoc which causes problems when building the release.
+  commandLine 'make', '-C', 'docs/manual/checker-framework', 'manual.pdf', 'manual.html'
+}
+
+interface InjectedExecOps {
+  @javax.inject.Inject
+  ExecOperations getExecOps()
+}
+
+tasks.register('makeAFUFigures', Exec){
+  description = 'Make figures for AFU.'
+
+  executable 'make'
+  args "-C", "${afuManualDir}/figures"
+}
+tasks.register('makeAnnotationFileFormat') {
+  dependsOn getPlumeBib
+  dependsOn makeAFUFigures
+  description = 'Make documentation: annotation-file-format.{html,pdf}.'
+
+  def injected = project.objects.newInstance(InjectedExecOps)
+
+  doLast {
+    injected.execOps.exec {
+      workingDir(file(afuManualDir))
+      executable 'latexmk'
+      args 'annotation-file-format.tex'
+      environment BIBINPUTS: ".:${plumeBibHome}"
+    }
+
+    injected.execOps.exec {
+      workingDir(file(afuManualDir))
+      executable 'hevea'
+      args = [
+        "-fix",
+        "-exec",
+        "xxdate.exe",
+        "urlhref.hva",
+        "annotation-file-format.tex"
+      ]
+    }
+  }
+}
+
+
+tasks.register('manual'){
   description = 'Build the manual'
-  commandLine 'make', '-C', 'docs/manual', 'all'
+  dependsOn('makeCfManual','makeAnnotationFileFormat', ':dataflow:manual')
+}
+
+tasks.register('getPlumeBib', CloneTask) {
+  url.set('https://github.com/mernst/plume-bib.git')
+  directory.set(file(plumeBibHome))
+  outputs.upToDateWhen { false }
 }
 
 tasks.register('getGitScripts', CloneTask) {
@@ -798,7 +875,7 @@ task pythonIsInstalled(type: Exec) {
 }
 
 task docTags(type: Exec, group: 'Emacs') {
-  commandLine 'make', '-C', 'docs/manual', 'tags'
+  commandLine 'make', '-C', 'docs/manual/', 'tags'
 }
 
 task tags(type: Exec, group: 'Emacs') {
@@ -1155,21 +1232,6 @@ task buildAll(group: 'Build') {
   }
   dependsOn('framework:allJavadocJar', 'framework:allSourcesJar', 'checker:allJavadocJar', 'checker:allSourcesJar', 'checker-qual:jar', 'checker-util:jar')
   dependsOn('checker:assembleForJavac')
-}
-
-task releaseBuild(group: 'Build') {
-  description = 'Cleans, then builds everything required for a release'
-  dependsOn(clean)
-  dependsOn(buildAll)
-}
-
-// No group so it does not show up in the output of `gradlew tasks`
-task releaseAndTest {
-  description = 'Build everything required for a release and run allTests'
-  dependsOn(releaseBuild)
-  subprojects { Project subproject ->
-    dependsOn("${subproject.name}:allTests")
-  }
 }
 
 // Don't create an empty checker-framework-VERSION.jar
