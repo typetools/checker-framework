@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
-# encoding: utf-8
-"""
-release_build.py
+"""release_build.py
 
 Created by Jonathan Burke on 2013-08-01.
 
@@ -10,48 +8,48 @@ Copyright (c) 2015 University of Washington. All rights reserved.
 
 # See README-release-process.html for more information
 
-from release_vars import ANNO_FILE_UTILITIES
-from release_vars import CF_VERSION
-from release_vars import CHECKER_FRAMEWORK
-from release_vars import CHECKER_FRAMEWORK_RELEASE
-from release_vars import CHECKLINK
-from release_vars import CHECKLINK_REPO
-from release_vars import DEV_SITE_DIR
-from release_vars import INTERM_CHECKER_REPO
-from release_vars import INTERM_TO_BUILD_REPOS
-from release_vars import LIVE_SITE_URL
-from release_vars import LIVE_TO_INTERM_REPOS
-from release_vars import PLUME_BIB
-from release_vars import PLUME_BIB_REPO
-from release_vars import PLUME_SCRIPTS
-from release_vars import PLUME_SCRIPTS_REPO
-from release_vars import RELEASE_BUILD_COMPLETED_FLAG_FILE
-from release_vars import TOOLS
-
-from release_vars import execute
-
-from release_utils import check_repo
-from release_utils import check_tools
-from release_utils import clone_from_scratch_or_update
-from release_utils import commit_tag_and_push
-from release_utils import continue_or_exit
-from release_utils import create_empty_file
-from release_utils import current_distribution_by_website
-from release_utils import delete_if_exists
-from release_utils import delete_path_if_exists
-from release_utils import ensure_group_access
-from release_utils import increment_version
-from release_utils import os
-from release_utils import print_step
-from release_utils import prompt_to_continue
-from release_utils import prompt_w_default
-from release_utils import prompt_yes_no
-from release_utils import has_command_line_option
-from release_utils import set_umask
-
-from distutils.dir_util import copy_tree
 import datetime
 import sys
+from distutils.dir_util import copy_tree
+
+from release_utils import (
+    check_repo,
+    check_tools,
+    clone_from_scratch_or_update,
+    commit_tag_and_push,
+    continue_or_exit,
+    create_empty_file,
+    current_distribution_by_website,
+    delete_if_exists,
+    delete_path_if_exists,
+    ensure_group_access,
+    has_command_line_option,
+    increment_version,
+    os,
+    print_step,
+    prompt_to_continue,
+    prompt_w_default,
+    prompt_yes_no,
+    set_umask,
+)
+from release_vars import (
+    CF_VERSION,
+    CHECKER_FRAMEWORK,
+    CHECKLINK,
+    CHECKLINK_REPO,
+    DEV_SITE_DIR,
+    INTERM_CHECKER_REPO,
+    INTERM_TO_BUILD_REPOS,
+    LIVE_SITE_URL,
+    LIVE_TO_INTERM_REPOS,
+    PLUME_BIB,
+    PLUME_BIB_REPO,
+    PLUME_SCRIPTS,
+    PLUME_SCRIPTS_REPO,
+    RELEASE_BUILD_COMPLETED_FLAG_FILE,
+    TOOLS,
+    execute,
+)
 
 # Turned on by the --debug command-line option.
 debug = False
@@ -66,7 +64,8 @@ def print_usage():
 
 def clone_or_update_repos():
     """Clone the relevant repos from scratch or update them if they exist and
-    if directed to do so by the user."""
+    if directed to do so by the user.
+    """
     message = """Before building the release, we clone or update the release repositories.
 However, if you have had to run the script multiple times today and no files
 have changed since the last attempt, you may skip this step.
@@ -83,9 +82,7 @@ The following repositories will be cloned or updated from their origins:
     message += CHECKLINK + "\n"
     message += PLUME_BIB + "\n"
 
-    message += (
-        "Clone repositories from scratch (answer no to get a chance to update them instead)?"
-    )
+    message += "Clone repositories from scratch (answer no to get a chance to update them instead)?"
 
     clone_from_scratch = True
 
@@ -96,9 +93,7 @@ The following repositories will be cloned or updated from their origins:
             return
 
     for live_to_interm in LIVE_TO_INTERM_REPOS:
-        clone_from_scratch_or_update(
-            live_to_interm[0], live_to_interm[1], clone_from_scratch, True
-        )
+        clone_from_scratch_or_update(live_to_interm[0], live_to_interm[1], clone_from_scratch, True)
 
     for interm_to_build in INTERM_TO_BUILD_REPOS:
         clone_from_scratch_or_update(
@@ -111,8 +106,7 @@ The following repositories will be cloned or updated from their origins:
 
 
 def get_new_version(project_name, curr_version):
-    "Queries the user for the new version number; returns old and new version numbers."
-
+    """Queries the user for the new version number; returns old and new version numbers."""
     print("Current " + project_name + " version: " + curr_version)
     suggested_version = increment_version(curr_version)
 
@@ -133,7 +127,8 @@ def get_new_version(project_name, curr_version):
 
 def create_dev_website_release_version_dir(project_name, version):
     """Create the directory for the given version of the given project under
-    the releases directory of the dev web site."""
+    the releases directory of the dev web site.
+    """
     if project_name in (None, "checker-framework"):
         interm_dir = os.path.join(DEV_SITE_DIR, "releases", version)
     else:
@@ -148,7 +143,8 @@ def create_dirs_for_dev_website_release_versions(cf_version):
     """Create directories for the given versions of the CF, and AFU
     projects under the releases directory of the dev web site.
     For example,
-    /cse/www2/types/dev/checker-framework/<project_name>/releases/<version> ."""
+    /cse/www2/types/dev/checker-framework/<project_name>/releases/<version> .
+    """
     afu_interm_dir = create_dev_website_release_version_dir("annotation-file-utilities", cf_version)
     checker_framework_interm_dir = create_dev_website_release_version_dir(None, cf_version)
 
@@ -169,7 +165,8 @@ def create_dirs_for_dev_website_release_versions(cf_version):
 
 def update_project_dev_website(project_name, release_version):
     """Update the dev web site for the given project
-    according to the given release of the project on the dev web site."""
+    according to the given release of the project on the dev web site.
+    """
     if project_name == "checker-framework":
         project_dev_site = DEV_SITE_DIR
     else:
@@ -181,7 +178,7 @@ def update_project_dev_website(project_name, release_version):
 
 
 def get_current_date():
-    "Return today's date in a string format similar to: 02 May 2016"
+    """Return today's date in a string format similar to: 02 May 2016"""
     return datetime.date.today().strftime("%d %b %Y")
 
 
@@ -193,8 +190,8 @@ def build_checker_framework_release(
     version, old_cf_version, checker_framework_interm_dir, afu_interm_dir
 ):
     """Build the release files for the Checker Framework project, including the
-    manual and the zip file, and run tests on the build."""
-
+    manual and the zip file, and run tests on the build.
+    """
     execute("./gradlew clean", working_dir=CHECKER_FRAMEWORK)
 
     # update versions
@@ -240,7 +237,8 @@ def build_checker_framework_release(
 def commit_to_interm_projects(cf_version):
     """Commit the changes for each project from its build repo to its
     corresponding intermediate repo in preparation for running the release_push
-    script, which does not read the build repos."""
+    script, which does not read the build repos.
+    """
     # Use project definition instead, see find project location find_project_locations
 
     commit_tag_and_push(cf_version, CHECKER_FRAMEWORK, "checker-framework-")
@@ -250,7 +248,8 @@ def main(argv):
     """The release_build script is responsible for building the release
     artifacts for the AFU and the Checker Framework projects
     and placing them in the development web site. It can also be used to review
-    the documentation and changelogs for the three projects."""
+    the documentation and changelogs for the three projects.
+    """
     # MANUAL Indicates a manual step
     # AUTO Indicates the step is fully automated.
 
@@ -258,8 +257,7 @@ def main(argv):
 
     set_umask()
 
-    global debug
-    global ant_debug
+    global debug, ant_debug
     debug = has_command_line_option(argv, "--debug")
     if debug:
         ant_debug = "-debug"
@@ -316,11 +314,11 @@ def main(argv):
 
     if old_cf_version == cf_version:
         print(
-            (
+
                 "It is *strongly discouraged* to not update the release version numbers for the Checker Framework "
-                + "even if no changes were made to these in a month. This would break so much "
-                + "in the release scripts that they would become unusable. Update the version number in checker-framework/build.gradle\n"
-            )
+                 "even if no changes were made to these in a month. This would break so much "
+                 "in the release scripts that they would become unusable. Update the version number in checker-framework/build.gradle\n"
+
         )
         prompt_to_continue()
 

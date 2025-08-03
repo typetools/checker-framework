@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
-# encoding: utf-8
-"""
-releaseutils.py
+"""releaseutils.py
 
 This contains no main method only utility functions to
 run sanity checks on the Checker Framework.
@@ -12,31 +10,26 @@ Copyright (c) 2012 University of Washington
 
 import zipfile
 
-from release_vars import CHECKER_FRAMEWORK
-from release_vars import CHECKER_FRAMEWORK_RELEASE
-from release_vars import SANITY_DIR
-
-from release_vars import execute
-
-from release_utils import are_in_file
-from release_utils import delete
-from release_utils import delete_path
-from release_utils import download_binary
-from release_utils import ensure_user_access
-from release_utils import execute_write_to_file
-from release_utils import insert_before_line
-from release_utils import os
-from release_utils import wget_file
+from release_utils import (
+    are_in_file,
+    delete,
+    delete_path,
+    download_binary,
+    ensure_user_access,
+    execute_write_to_file,
+    insert_before_line,
+    os,
+    wget_file,
+)
+from release_vars import CHECKER_FRAMEWORK, SANITY_DIR, execute
 
 
 def javac_sanity_check(checker_framework_website, release_version):
-    """
-    Download the release of the Checker Framework from the development website
+    """Download the release of the Checker Framework from the development website
     and NullnessExampleWithWarnings.java from the GitHub repository.
     Run the Nullness Checker on NullnessExampleWithWarnings and verify the output
     Fails if the expected errors are not found in the output.
     """
-
     new_checkers_release_zip = os.path.join(
         checker_framework_website,
         "releases",
@@ -109,8 +102,7 @@ def javac_sanity_check(checker_framework_website, release_version):
 
 
 def maven_sanity_check(sub_sanity_dir_name, repo_url, release_version):
-    """
-    Run the Maven sanity check with the local artifacts or from the repo at
+    """Run the Maven sanity check with the local artifacts or from the repo at
     repo_url.
     """
     maven_sanity_dir = os.path.join(SANITY_DIR, sub_sanity_dir_name)
@@ -130,12 +122,12 @@ def maven_sanity_check(sub_sanity_dir_name, repo_url, release_version):
     )
     if repo_url != "":
         print(
-            (
+
                 "This script will now delete your Maven Checker Framework artifacts.\n"
-                + "See README-release-process.html#Maven-Plugin dependencies.  These artifacts "
-                + "will need to be re-downloaded the next time you need them.  This will be "
-                + "done automatically by Maven next time you use the plugin."
-            )
+                 "See README-release-process.html#Maven-Plugin dependencies.  These artifacts "
+                 "will need to be re-downloaded the next time you need them.  This will be "
+                 "done automatically by Maven next time you use the plugin."
+
         )
 
         if os.path.isdir(path_to_artifacts):
@@ -154,7 +146,8 @@ def check_results(title, output_log, expected_errors):
     expected output. If the sanity check passed, print the given title of the
     sanity check and a success message. If the sanity check failed, raise an
     exception whose text contains the given title of the sanity check and the
-    actual and expected output."""
+    actual and expected output.
+    """
     found_errors = are_in_file(output_log, expected_errors)
 
     if not found_errors:
@@ -167,13 +160,13 @@ def check_results(title, output_log, expected_errors):
             + "should contain the following errors: [ "
             + ", ".join(expected_errors)
         )
-    else:
-        print("%s check: passed!\n" % title)
+    print("%s check: passed!\n" % title)
 
 
 def add_repo_information(pom, repo_url):
     """Adds development maven repo to pom file so that the artifacts used are
-    the development artifacts"""
+    the development artifacts
+    """
     to_insert = """
         <repositories>
               <repository>
