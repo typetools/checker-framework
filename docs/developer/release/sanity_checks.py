@@ -1,5 +1,5 @@
-#!/usr/bin/env python3
-"""releaseutils.py
+#!/usr/bin/env python
+"""Release utilities.
 
 This contains no main method only utility functions to
 run sanity checks on the Checker Framework.
@@ -25,8 +25,9 @@ from release_vars import CHECKER_FRAMEWORK, CHECKER_FRAMEWORK_RELEASE, SANITY_DI
 
 
 def javac_sanity_check(checker_framework_website, release_version):
-    """Download the release of the Checker Framework from the development website
-    and NullnessExampleWithWarnings.java from the GitHub repository.
+    """Download the release of the Checker Framework from the development website.
+
+    Download NullnessExampleWithWarnings.java from the GitHub repository.
     Run the Nullness Checker on NullnessExampleWithWarnings and verify the output
     Fails if the expected errors are not found in the output.
     """
@@ -102,9 +103,7 @@ def javac_sanity_check(checker_framework_website, release_version):
 
 
 def maven_sanity_check(sub_sanity_dir_name, repo_url, release_version):
-    """Run the Maven sanity check with the local artifacts or from the repo at
-    repo_url.
-    """
+    """Run the Maven sanity check with the local artifacts or from the repo at repo_url."""
     checker_dir = os.path.join(CHECKER_FRAMEWORK, "checker")
     maven_sanity_dir = os.path.join(SANITY_DIR, sub_sanity_dir_name)
     if os.path.isdir(maven_sanity_dir):
@@ -127,12 +126,10 @@ def maven_sanity_check(sub_sanity_dir_name, repo_url, release_version):
     )
     if repo_url != "":
         print(
-
-                "This script will now delete your Maven Checker Framework artifacts.\n"
-                 "See README-release-process.html#Maven-Plugin dependencies.  These artifacts "
-                 "will need to be re-downloaded the next time you need them.  This will be "
-                 "done automatically by Maven next time you use the plugin."
-
+            "This script will now delete your Maven Checker Framework artifacts.\n"
+            "See README-release-process.html#Maven-Plugin dependencies.  These artifacts "
+            "will need to be re-downloaded the next time you need them.  This will be "
+            "done automatically by Maven next time you use the plugin."
         )
 
         if os.path.isdir(path_to_artifacts):
@@ -147,8 +144,9 @@ def maven_sanity_check(sub_sanity_dir_name, repo_url, release_version):
 
 
 def check_results(title, output_log, expected_errors):
-    """Verify the given actual output of a sanity check against the given
-    expected output. If the sanity check passed, print the given title of the
+    """Verify the given actual output of a sanity check against the given expected output.
+
+    If the sanity check passed, print the given title of the
     sanity check and a success message. If the sanity check failed, raise an
     exception whose text contains the given title of the sanity check and the
     actual and expected output.
@@ -169,9 +167,7 @@ def check_results(title, output_log, expected_errors):
 
 
 def add_repo_information(pom, repo_url):
-    """Adds development maven repo to pom file so that the artifacts used are
-    the development artifacts
-    """
+    """Add development maven repo to pom file, to use the development artifacts."""
     to_insert = """
         <repositories>
               <repository>
