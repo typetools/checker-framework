@@ -397,7 +397,7 @@ def main(argv):
         # able to close the artifacts by doing the following:
         continue_or_exit(
             "Maven artifacts have been staged!  Please 'close' (but don't release) the artifacts.\n"
-            + "Go to: https://ossrh-staging-api.central.sonatype.com/swagger-ui/#/default/manual_search_repositories.\n"
+            + "Browse to https://ossrh-staging-api.central.sonatype.com/swagger-ui/#/default/manual_search_repositories.\n"
             + "Expand GET manual/search/repositories\n"
             + "Click try it out.\n"
             + "Type any in the IP field.\n"
@@ -496,7 +496,7 @@ def main(argv):
         msg = (
             "Test Mode: You are in test_mode.  Please 'DROP' the artifacts. "
             + "To drop, log into https://central.sonatype.com/publishing/deployments using your "
-            + "Sonatype credentials click 'DROP'"
+            + "Sonatype credentials and click 'DROP'"
         )
     else:
         msg = (
