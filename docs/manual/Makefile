@@ -3,7 +3,7 @@
 -include Makefile.user
 
 # To regenerate this list, run:
-# ../../../checker/bin-devel/.plume-scripts/latex-process-inputs -makefilelist manual.tex
+# ../../checker/bin-devel/.plume-scripts/latex-process-inputs -makefilelist manual.tex
 TEX_FILES = \
 manual.tex \
 manual-style.tex \
@@ -48,7 +48,7 @@ faq.tex \
 troubleshooting.tex \
 contributors.tex
 
-all: manual.pdf manual.html  ../../api
+all: manual.pdf manual.html  ../api
 
 .PHONY: figures-all
 figures-all:
@@ -74,25 +74,25 @@ manual.html: manual.pdf CFLogo.png favicon-checkerframework.png
 # Add CSS styling for some links, since \ahrefloc doesn't permit styling
 	sed -i -e 's%\(<a href="#[^"]*"\)\(><span style="font-size:small">&\#X1F517;</span></a>\)%\1 style="color:inherit; text-decoration:none"\2%g' manual.html
 
-../../../checker/bin-devel/.git-scripts:
-	cd ../../.. && ./gradlew --stacktrace getGitScripts
+../../checker/bin-devel/.git-scripts:
+	cd ../.. && ./gradlew --stacktrace getGitScripts
 
-../../../checker/bin-devel/.plume-scripts:
-	cd ../../.. && ./gradlew --stacktrace getPlumeScripts
+../../checker/bin-devel/.plume-scripts:
+	cd ../.. && ./gradlew --stacktrace getPlumeScripts
 
 .PHONY: contributors.tex
 contributors.tex:
 # Update git-scripts even if it is already cloned
-	cd ../../.. && (./gradlew --stacktrace getGitScripts || (sleep 60 && ./gradlew --stacktrace getGitScripts))
-	../../../checker/bin-devel/.git-scripts/git-authors --latex --punctuation > contributors.tex
+	cd ../.. && (./gradlew --stacktrace getGitScripts || (sleep 60 && ./gradlew --stacktrace getGitScripts))
+	../../checker/bin-devel/.git-scripts/git-authors --latex --punctuation > contributors.tex
 
-../../api:
-	cd ../../.. && ./gradlew allJavadoc
+../api:
+	cd ../.. && ./gradlew allJavadoc
 
-CFLogo.png: ../../logo/Logo/CFLogo.png
+CFLogo.png: ../logo/Logo/CFLogo.png
 	cp -p $< $@
 
-favicon-checkerframework.png: ../../logo/Checkmark/CFCheckmark_favicon.png
+favicon-checkerframework.png: ../logo/Checkmark/CFCheckmark_favicon.png
 	cp -p $< $@
 
 # Don't use \section; use \sectionAndLabel instead
@@ -100,7 +100,7 @@ favicon-checkerframework.png: ../../logo/Checkmark/CFCheckmark_favicon.png
 check-labels:
 	if ( grep -n '^\\\(chapter\|\(sub\)*section\|paragraph\){' *.tex ) ; then false ; else true ; fi
 
-export BIBINPUTS = $BIBINPUTS:.:../plume-bib
+export BIBINPUTS = $BIBINPUTS:.:plume-bib
 plume-bib:
 	cd ../../.. && ./gradlew getPlumeBib
 

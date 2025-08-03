@@ -701,11 +701,11 @@ tasks.register('cleanCfManual', Exec) {
 
 tasks.register('cleanAfuManual', Exec) {
   description = 'Clean the manual'
-  commandLine 'make', '-C', "${afuManualDir}/figures", 'clean'
+  commandLine 'make', '-C', "${afuManualDir}", 'clean'
 }
 
 tasks.register('cleanManual'){
-  dependsOn('cleanCfManual','cleanAfuManual')
+  dependsOn('cleanCfManual', 'cleanAfuManual')
 }
 
 clean.dependsOn(cleanManual)

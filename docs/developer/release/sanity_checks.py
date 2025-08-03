@@ -103,9 +103,7 @@ def javac_sanity_check(checker_framework_website, release_version):
 
 
 def maven_sanity_check(sub_sanity_dir_name, repo_url, release_version):
-    """Run the Maven sanity check with the local artifacts or from the repo at
-    repo_url.
-    """
+    """Run the Maven sanity check with the local artifacts or from the repo at repo_url."""
     maven_sanity_dir = os.path.join(SANITY_DIR, sub_sanity_dir_name)
     if os.path.isdir(maven_sanity_dir):
         delete_path(maven_sanity_dir)
