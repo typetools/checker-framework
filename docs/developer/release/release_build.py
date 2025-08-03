@@ -314,11 +314,9 @@ def main(argv):
 
     if old_cf_version == cf_version:
         print(
-
-                "It is *strongly discouraged* to not update the release version numbers for the Checker Framework "
-                 "even if no changes were made to these in a month. This would break so much "
-                 "in the release scripts that they would become unusable. Update the version number in checker-framework/build.gradle\n"
-
+            "It is *strongly discouraged* to not update the release version numbers for the Checker Framework "
+            "even if no changes were made to these in a month. This would break so much "
+            "in the release scripts that they would become unusable. Update the version number in checker-framework/build.gradle\n"
         )
         prompt_to_continue()
 

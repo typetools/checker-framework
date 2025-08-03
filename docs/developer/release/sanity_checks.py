@@ -122,12 +122,10 @@ def maven_sanity_check(sub_sanity_dir_name, repo_url, release_version):
     )
     if repo_url != "":
         print(
-
-                "This script will now delete your Maven Checker Framework artifacts.\n"
-                 "See README-release-process.html#Maven-Plugin dependencies.  These artifacts "
-                 "will need to be re-downloaded the next time you need them.  This will be "
-                 "done automatically by Maven next time you use the plugin."
-
+            "This script will now delete your Maven Checker Framework artifacts.\n"
+            "See README-release-process.html#Maven-Plugin dependencies.  These artifacts "
+            "will need to be re-downloaded the next time you need them.  This will be "
+            "done automatically by Maven next time you use the plugin."
         )
 
         if os.path.isdir(path_to_artifacts):

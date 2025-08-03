@@ -129,11 +129,9 @@ def check_tools(tools):
     print("\nChecking to make sure the following programs are installed:")
     print(", ".join(tools))
     print(
-
-            "Note: If you are NOT working on the CSE file system then you "
-             "likely need to change the variables that are set in release.py\n"
-             'Search for "Set environment variables".'
-
+        "Note: If you are NOT working on the CSE file system then you "
+        "likely need to change the variables that are set in release.py\n"
+        'Search for "Set environment variables".'
     )
     list(map(check_command, tools))
     print()
@@ -159,8 +157,7 @@ def version_number_to_array(version_num):
 
 
 def increment_version(version_num):
-    """Returns the next incremental version after the argument.
-    """
+    """Returns the next incremental version after the argument."""
     # Drop the fourth and subsequent parts if present
     version_array = version_number_to_array(version_num)[:3]
     version_array[-1] = version_array[-1] + 1
@@ -346,12 +343,10 @@ def check_repo(repo, fail_on_error, is_intermediate_repo_list):
         if not is_repo_cleaned_and_updated(repo):
             if is_intermediate_repo_list:
                 print(
-
-                        "\nWARNING: Intermediate repository "
-                        + repo
-                        + " is not up to date with respect to the live repository.\n"
-                        + "A separate warning will not be issued for a build repository that is cloned off of the intermediate repository."
-
+                    "\nWARNING: Intermediate repository "
+                    + repo
+                    + " is not up to date with respect to the live repository.\n"
+                    + "A separate warning will not be issued for a build repository that is cloned off of the intermediate repository."
                 )
             if fail_on_error:
                 raise Exception("repo %s is not cleaned and updated!" % repo)

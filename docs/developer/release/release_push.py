@@ -174,12 +174,10 @@ def run_link_checker(site, output, additional_param=""):
     out_file = open(output, "w+")
 
     print(
-
-            "Executing: "
-            + " ".join("%s=%r" % (key2, val2) for (key2, val2) in list(env.items()))
-            + " "
-            + " ".join(cmd)
-
+        "Executing: "
+        + " ".join("%s=%r" % (key2, val2) for (key2, val2) in list(env.items()))
+        + " "
+        + " ".join(cmd)
     )
     process = subprocess.Popen(cmd, env=env, stdout=out_file, stderr=out_file)
     process.communicate()
@@ -238,12 +236,10 @@ def check_all_links(
                 release_option = " release"
             raise Exception(
                 "The link checker reported errors.  Please fix them by committing changes to the mainline\n"
-                 "repository and pushing them to GitHub, then updating the development and live sites by\n"
-                 "running\n"
-                 "  python3 release_build.py all\n"
-                 "  python3 release_push"
-                + release_option
-                + "\n"
+                "repository and pushing them to GitHub, then updating the development and live sites by\n"
+                "running\n"
+                "  python3 release_build.py all\n"
+                "  python3 release_push" + release_option + "\n"
             )
 
 
@@ -273,12 +269,10 @@ def print_usage():
     set test or release mode.
     """
     print(
-
-            "Usage: python3 release_build.py [release]\n"
-             'If the "release" argument is '
-             "NOT specified then the script will execute all steps that checking and prompting "
-             "steps but will NOT actually perform a release.  This is for testing the script."
-
+        "Usage: python3 release_build.py [release]\n"
+        'If the "release" argument is '
+        "NOT specified then the script will execute all steps that checking and prompting "
+        "steps but will NOT actually perform a release.  This is for testing the script."
     )
 
 
@@ -306,11 +300,11 @@ def main(argv):
     if test_mode:
         msg = (
             "You have chosen test_mode.\n"
-             "This means that this script will execute all build steps that "
-             "do not have side effects.  That is, this is a test run of the script.  All checks and user prompts "
-             "will be shown but no steps will be executed that will cause the release to be deployed or partially "
-             "deployed.\n"
-             'If you meant to do an actual release, re-run this script with one argument, "release".'
+            "This means that this script will execute all build steps that "
+            "do not have side effects.  That is, this is a test run of the script.  All checks and user prompts "
+            "will be shown but no steps will be executed that will cause the release to be deployed or partially "
+            "deployed.\n"
+            'If you meant to do an actual release, re-run this script with one argument, "release".'
         )
     else:
         msg = "You have chosen release_mode.  Please follow the prompts to run a full Checker Framework release."
@@ -324,8 +318,8 @@ def main(argv):
     if not pathlib.Path(RELEASE_BUILD_COMPLETED_FLAG_FILE).exists():
         continue_or_exit(
             "It appears that release_build.py has not been run since the last push to "
-             "the Checker Framework repository.  Please ensure it has "
-             "been run."
+            "the Checker Framework repository.  Please ensure it has "
+            "been run."
         )
 
     # The release script checks that the new release version is greater than the previous release version.
@@ -408,21 +402,21 @@ def main(argv):
         # able to close the artifacts by doing the following:
         continue_or_exit(
             "Maven artifacts have been staged!  Please 'close' (but don't release) the artifacts.\n"
-             "Browse to https://ossrh-staging-api.central.sonatype.com/swagger-ui/#/default/manual_search_repositories.\n"
-             "Expand GET manual/search/repositories\n"
-             "Click try it out.\n"
-             "Type any in the IP field.\n"
-             "Click Execute\n"
-             "Log in with user token/password\n"
-             "Scroll down until you see a JSON block that includes a key like this:\n"
-             '           "key": "user/ip/org.checkerframework--default-repository",'
-             "Copy the key field\n"
-             "Expand POST manual/upload/repositories/{repository_key}\n"
-             "Click try it out.\n"
-             "Copy key field from above into repository_key\n"
-             "Click Execute, it may take a minute or two to update\n"
-             "Under Server response it should say Code 200\n"
-             "Go to https://central.sonatype.com/publishing and make sure you see a deployment org.checkerframework (via OSSRH Staging API)\n"
+            "Browse to https://ossrh-staging-api.central.sonatype.com/swagger-ui/#/default/manual_search_repositories.\n"
+            "Expand GET manual/search/repositories\n"
+            "Click try it out.\n"
+            "Type any in the IP field.\n"
+            "Click Execute\n"
+            "Log in with user token/password\n"
+            "Scroll down until you see a JSON block that includes a key like this:\n"
+            '           "key": "user/ip/org.checkerframework--default-repository",'
+            "Copy the key field\n"
+            "Expand POST manual/upload/repositories/{repository_key}\n"
+            "Click try it out.\n"
+            "Copy key field from above into repository_key\n"
+            "Click Execute, it may take a minute or two to update\n"
+            "Under Server response it should say Code 200\n"
+            "Go to https://central.sonatype.com/publishing and make sure you see a deployment org.checkerframework (via OSSRH Staging API)\n"
         )
         ## I can't find a URL to copy anymore.
         # print_step("Step 5c: Run Maven sanity test on Maven Central artifacts.")
@@ -506,20 +500,18 @@ def main(argv):
     if test_mode:
         msg = (
             "Test Mode: You are in test_mode.  Please 'DROP' the artifacts. "
-             "To drop, log into https://central.sonatype.com/publishing/deployments using your "
-             "Sonatype credentials and click 'DROP'"
+            "To drop, log into https://central.sonatype.com/publishing/deployments using your "
+            "Sonatype credentials and click 'DROP'"
         )
     else:
         msg = (
             "Please 'release' the artifacts.\n"
-             "First log into https://central.sonatype.com/publishing/deployments using your Sonatype credentials. Go to Staging Repositories and "
-             "locate the org.checkerframework repository and click on it.\n"
-             "If you have a permissions problem, try logging out and back in.\n"
-             "Finally, click on the Release button at the top of the page. In the dialog box that pops up, "
-             'leave the "Automatically drop" box checked. For the description, write '
-             "Checker Framework release "
-            + new_cf_version
-            + "\n\n"
+            "First log into https://central.sonatype.com/publishing/deployments using your Sonatype credentials. Go to Staging Repositories and "
+            "locate the org.checkerframework repository and click on it.\n"
+            "If you have a permissions problem, try logging out and back in.\n"
+            "Finally, click on the Release button at the top of the page. In the dialog box that pops up, "
+            'leave the "Automatically drop" box checked. For the description, write '
+            "Checker Framework release " + new_cf_version + "\n\n"
         )
 
     print(msg)
@@ -537,9 +529,9 @@ def main(argv):
 
         msg = (
             "\n"
-             "Download the following files to your local machine."
-             "\n"
-             "  https://checkerframework.org/checker-framework-"
+            "Download the following files to your local machine."
+            "\n"
+            "  https://checkerframework.org/checker-framework-"
             + new_cf_version
             + ".zip\n"
             + "\n"
@@ -575,13 +567,13 @@ def main(argv):
         print("You might have to wait for Maven Central to propagate changes.\n")
         continue_or_exit(
             "Please update the Checker Framework Gradle plugin:\n"
-             "https://github.com/kelloggm/checkerframework-gradle-plugin/blob/master/RELEASE.md#updating-the-checker-framework-version\n"
+            "https://github.com/kelloggm/checkerframework-gradle-plugin/blob/master/RELEASE.md#updating-the-checker-framework-version\n"
         )
         continue_or_exit(
             "Make a pull request to the Checker Framework that\n"
-             "updates the version number of the Checker Framework\n"
-             "Gradle Plugin in docs/examples/lombok and docs/examples/errorprone .\n"
-             "The pull request's tests will fail; you will merge it in a day."
+            "updates the version number of the Checker Framework\n"
+            "Gradle Plugin in docs/examples/lombok and docs/examples/errorprone .\n"
+            "The pull request's tests will fail; you will merge it in a day."
         )
 
     delete_if_exists(RELEASE_BUILD_COMPLETED_FLAG_FILE)
