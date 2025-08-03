@@ -694,18 +694,18 @@ task allJavadoc(type: Javadoc, group: 'Documentation') {
 // See documentation for allJavadoc task.
 javadoc.dependsOn(allJavadoc)
 
-tasks.register('cleanCFManual', Exec) {
+tasks.register('cleanCfManual', Exec) {
   description = 'Clean the manual'
   commandLine 'make', '-C', 'docs/manual/checker-framework', 'clean'
 }
 
-tasks.register('cleanAFUManual', Exec) {
+tasks.register('cleanAfuManual', Exec) {
   description = 'Clean the manual'
   commandLine 'make', '-C', "${afuManualDir}/figures", 'clean'
 }
 
 tasks.register('cleanManual'){
-  dependsOn('cleanCFManual','cleanAFUManual')
+  dependsOn('cleanCfManual','cleanAfuManual')
 }
 
 clean.dependsOn(cleanManual)
@@ -784,7 +784,7 @@ def createJavadocTask(taskName, taskDescription, memberLevel) {
 
 createJavadocTask('javadocDoclintAll', 'Runs javadoc with -Xdoclint:all option.', JavadocMemberLevel.PRIVATE)
 
-tasks.register('makeCFManual', Exec) {
+tasks.register('makeCfManual', Exec) {
   dependsOn('allJavadoc')
   description = 'Build the Checker Framework manual'
   // Don't make all because it will re-run allJavadoc which causes problems when building the release.
@@ -812,33 +812,9 @@ tasks.register('makeAnnotationFileFormat') {
   doLast {
     injected.execOps.exec {
       workingDir(file(afuManualDir))
-      executable 'latex'
+      executable 'latexmk'
       args 'annotation-file-format.tex'
-    }
-
-    injected.execOps.exec {
-      workingDir(file(afuManualDir))
-      executable 'bibtex'
-      args 'annotation-file-format'
       environment BIBINPUTS: ".:${plumeBibHome}"
-    }
-
-    injected.execOps.exec {
-      workingDir(file(afuManualDir))
-      executable 'latex'
-      args 'annotation-file-format.tex'
-    }
-
-    injected.execOps.exec {
-      workingDir(file(afuManualDir))
-      executable 'latex'
-      args 'annotation-file-format.tex'
-    }
-
-    injected.execOps.exec {
-      workingDir(file(afuManualDir))
-      executable 'pdflatex'
-      args 'annotation-file-format.tex'
     }
 
     injected.execOps.exec {
@@ -858,7 +834,7 @@ tasks.register('makeAnnotationFileFormat') {
 
 tasks.register('manual'){
   description = 'Build the manual'
-  dependsOn('makeCFManual','makeAnnotationFileFormat', ':dataflow:manual')
+  dependsOn('makeCfManual','makeAnnotationFileFormat', ':dataflow:manual')
 }
 
 tasks.register('getPlumeBib', CloneTask) {

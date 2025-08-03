@@ -201,7 +201,7 @@ def check_all_links(
 ):
     """Checks all links on the given website for
     the Checker Framework. The suffix parameter should be \"dev\" for the
-    dev web site and \"live\" for the liveweb site. test_mode indicates
+    dev web site and \"live\" for the live web site. test_mode indicates
     whether this script is being run in release or in test mode. The
     cf_version_of_broken_link_to_suppress parameter should be set to the
     new Checker Framework version and should only be passed when checking links
@@ -241,9 +241,9 @@ def check_all_links(
 
 
 def push_interm_to_release_repos():
-    """Push the release to the GitHub repository for
-    the Checker Framework. This is an
-    irreversible step."""
+    """Push the release to the GitHub repository for the Checker Framework.
+
+    This is an irreversible step."""
     push_changes_prompt_if_fail(INTERM_CHECKER_REPO)
 
 

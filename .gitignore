@@ -97,6 +97,9 @@ docs/examples/errorprone/Out.txt
 docs/examples/lombok/.gradle/
 docs/examples/lombok/Out.txt
 docs/examples/lombok/lombok.config
+docs/manual/annotation-file-utilities/annotation-file-format.log
+docs/manual/annotation-file-utilities/annotation-file-format.pdf
+docs/manual/annotation-file-utilities/annotation-file-format.toc
 docs/manual/checker-framework/*.png
 docs/manual/checker-framework/*.svg
 docs/manual/checker-framework/contributors.txt
