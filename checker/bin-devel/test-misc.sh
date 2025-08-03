@@ -51,10 +51,10 @@ if [ $status -ne 0 ]; then exit $status; fi
 
 ## User documentation
 ./gradlew manual
-git diff --exit-code docs/manual/checker-framework/contributors.tex \
+git diff --exit-code docs/manual/contributors.tex \
   || (set +x && set +v \
-    && echo "docs/manual/checker-framework/contributors.tex is not up to date." \
-    && echo "If the above suggestion is appropriate, run: make -C docs/manual/checker-framework contributors.tex" \
+    && echo "docs/manual/contributors.tex is not up to date." \
+    && echo "If the above suggestion is appropriate, run: make -C docs/manual contributors.tex" \
     && echo "If the suggestion contains a username rather than a human name, then do all the following:" \
     && echo "  * Update your git configuration by running:  git config --global user.name \"YOURFULLNAME\"" \
     && echo "  * Add your name to your GitHub account profile at https://github.com/settings/profile" \

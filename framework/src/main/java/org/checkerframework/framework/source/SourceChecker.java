@@ -113,7 +113,7 @@ import org.plumelib.util.UtilPlume;
   // 1. Add a brief blurb here about the use case
   //    and a pointer to one prominent use of the option.
   // 2. Update the Checker Framework manual:
-  //     * docs/manual/checker-framework/introduction.tex contains a list of all options,
+  //     * docs/manual/introduction.tex contains a list of all options,
   //       which should be in the same order as this source code file.
   //     * a specific section should contain a detailed discussion.
 

@@ -90,6 +90,9 @@ manual003.gif
 manual003.png
 manual004.gif
 manual004.png
+docs/annotation-file-utilities/annotation-file-format.log
+docs/annotation-file-utilities/annotation-file-format.pdf
+docs/annotation-file-utilities/annotation-file-format.toc
 docs/examples/**/*.class
 docs/examples/MavenExample/Out.txt
 docs/examples/errorprone/.gradle/
@@ -97,17 +100,14 @@ docs/examples/errorprone/Out.txt
 docs/examples/lombok/.gradle/
 docs/examples/lombok/Out.txt
 docs/examples/lombok/lombok.config
-docs/manual/annotation-file-utilities/annotation-file-format.log
-docs/manual/annotation-file-utilities/annotation-file-format.pdf
-docs/manual/annotation-file-utilities/annotation-file-format.toc
-docs/manual/checker-framework/*.png
-docs/manual/checker-framework/*.svg
-docs/manual/checker-framework/contributors.txt
-docs/manual/checker-framework/figures/*.eps
-docs/manual/checker-framework/figures/*.pdf
-docs/manual/checker-framework/figures/*.png
-docs/manual/fchecker-framework/igures/signature-types-with-canonicalname.dia
-docs/manual/checker-framework/manual.html-e
+docs/manual/*.png
+docs/manual/*.svg
+docs/manual/contributors.txt
+docs/manual/figures/*.eps
+docs/manual/figures/*.pdf
+docs/manual/figures/*.png
+docs/manual/figures/signature-types-with-canonicalname.dia
+docs/manual/manual.html-e
 docs/tmpapi/
 
 # dataflow manual

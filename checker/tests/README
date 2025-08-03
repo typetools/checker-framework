@@ -2,7 +2,7 @@ This document describes how to write and run tests for the Checker
 Framework.  Writing and running tests is useful for bug submitters,
 checker writers, and Checker Framework maintainers.  Users of the Checker
 Framework and of the checkers packaged with it should read the manual
-instead; see file ../../docs/manual/checker-framework/manual.html .
+instead; see file ../../docs/manual/manual.html .
 
 
 How to run all the tests for the Checker Framework

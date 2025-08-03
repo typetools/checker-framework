@@ -2,7 +2,7 @@ import org.checkerframework.checker.nullness.qual.*;
 
 // This is the example from manual section:
 // "Generics (parametric polymorphism or type polymorphism)"
-// whose source code is ../../../docs/manual/checker-framework/advanced-features.tex
+// whose source code is ../../../docs/manual/advanced-features.tex
 public class GenericsExample {
 
   class MyList1<@Nullable T> {
