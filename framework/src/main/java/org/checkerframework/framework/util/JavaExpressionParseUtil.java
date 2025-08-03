@@ -813,6 +813,14 @@ public class JavaExpressionParseUtil {
         }
         return new ClassName(result);
       }
+      // Handle "this" identifier (e.g., Foo.this)
+      if (exprTree.getIdentifier().contentEquals("this")) {
+        if (thisReference == null) {
+          throw new ParseRuntimeException(
+              constructJavaExpressionParseError("this", "\"this\" isn't allowed here"));
+        }
+        return thisReference;
+      }
 
       Tree expr = exprTree.getExpression();
       String name = exprTree.getIdentifier().toString();
