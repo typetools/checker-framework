@@ -11,7 +11,7 @@ asciidoc-style-check:
 	asciidoctor -o /dev/null ${ASCIIDOC_FILES}
 
 # TODO: add $(wildcard checker/bin-devel/*.py) $(wildcard docs/developer/release/*.py)
-PYTHON_FILES:=$(wildcard checker/bin-devel/*.py) $(wildcard docs/developer/release/*.py) $(shell grep -r -l --exclude='*.py' --exclude='*~' --exclude='*.tar' --exclude=gradlew --exclude-dir=.git --exclude-dir=.do-like-javac --exclude-dir=.html-tools --exclude-dir=.plume-scripts '^\#! \?\(/bin/\|/usr/bin/env \)python')
+PYTHON_FILES:=$(shell grep -r -l --exclude='*.py' --exclude='*~' --exclude='*.tar' --exclude=gradlew --exclude-dir=.git --exclude-dir=.do-like-javac --exclude-dir=.html-tools --exclude-dir=.plume-scripts '^\#! \?\(/bin/\|/usr/bin/env \)python')
 PYTHON_FILES_TO_CHECK:=$(filter-out ${lcb_runner},${PYTHON_FILES})
 install-mypy:
 	@if ! command -v mypy ; then pipx install mypy && pipx ensurepath ; fi
