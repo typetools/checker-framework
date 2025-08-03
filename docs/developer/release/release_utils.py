@@ -1,5 +1,5 @@
-#!/usr/bin/env python3
-"""releaseutils.py
+#!/usr/bin/env python
+"""Release utilities.
 
 Python Utils for releasing the Checker Framework
 This contains no main method only utility functions
@@ -25,9 +25,7 @@ from release_vars import execute
 
 
 def has_command_line_option(argv, argument):
-    """Returns True if the given command line arguments contain the specified
-    argument, False otherwise.
-    """
+    """Return True if the given command line arguments contain the specified argument."""
     for index in range(1, len(argv)):
         if argv[index] == argument:
             return True
@@ -56,9 +54,7 @@ def execute_write_to_file(command_args, output_file_path, halt_if_fail=True, wor
 
 
 def check_command(command):
-    """Executes the UNIX \"which\" command to determine whether the given command
-    is installed and on the PATH.
-    """
+    """Throw an exception if the command is not on the PATH."""
     p = execute(["which", command], False)
     if p:
         raise AssertionError("command not found: %s" % command)
@@ -66,8 +62,9 @@ def check_command(command):
 
 
 def prompt_yes_no(msg, default=False):
-    """Prints the given message and continually prompts the user until they
-    answer yes or no. Returns true if the answer was yes, false otherwise.
+    """Print the given message and continually prompt the user until they answer yes or no.
+
+    Return true if the answer was yes, false otherwise.
     """
     default_str = "no"
     if default:
@@ -81,8 +78,9 @@ def prompt_yes_no(msg, default=False):
 
 
 def prompt_yn(msg):
-    """Prints the given message and continually prompts the user until they
-    answer y or n. Returns true if the answer was y, false otherwise.
+    """Print the given message and continually prompts the user until they answer y or n.
+
+    Return true if the answer was y, false otherwise.
     """
     y_or_n = "z"
     while y_or_n != "y" and y_or_n != "n":
@@ -99,9 +97,7 @@ def prompt_to_continue():
 
 
 def prompt_w_default(msg, default, valid_regex=None):
-    """Only accepts answers that match valid_regex.
-    If default is None, requires an answer.
-    """
+    """Only accept answers that match valid_regex.  If default is None, require an answer."""
     answer = None
     while answer is None:
         answer = input(msg + " (%s): " % default)
@@ -123,9 +119,7 @@ def prompt_w_default(msg, default, valid_regex=None):
 
 
 def check_tools(tools):
-    """Given an array specifying a set of tools, verify that the tools are
-    installed and on the PATH.
-    """
+    """Verify that each tools is on the PATH."""
     print("\nChecking to make sure the following programs are installed:")
     print(", ".join(tools))
     print(
@@ -157,7 +151,7 @@ def version_number_to_array(version_num):
 
 
 def increment_version(version_num):
-    """Returns the next incremental version after the argument."""
+    """Return the next incremental version after the argument."""
     # Drop the fourth and subsequent parts if present
     version_array = version_number_to_array(version_num)[:3]
     version_array[-1] = version_array[-1] + 1
@@ -185,9 +179,7 @@ def test_increment_version():
 
 
 def current_distribution_by_website(site):
-    """Reads the checker framework version from the checker framework website and
-    returns the version of the current release.
-    """
+    """Return the Checker Framework version from the checker framework website."""
     print("Looking up checker-framework-version from %s\n" % site)
     ver_re = re.compile(r"<!-- checker-framework-zip-version -->checker-framework-(.*)\.zip")
     text = urllib.request.urlopen(url=site).read().decode("utf-8")
@@ -202,22 +194,21 @@ def current_distribution_by_website(site):
 def git_bare_repo_exists_at_path(
     repo_root,
 ):  # Bare git repos have no .git directory but they have a refs directory
-    """Returns whether a bare git repository exists at the given filesystem path."""
+    """Return true if a bare git repository exists at the given filesystem path."""
     if pathlib.Path(repo_root + "/refs").is_dir():
         return True
     return False
 
 
 def git_repo_exists_at_path(repo_root):
-    """Returns whether a (bare or non-bare) git repository exists at the given
-    filesystem path.
-    """
+    """Return true if a (bare or non-bare) git repository exists at the given filesystem path."""
     return pathlib.Path(repo_root + "/.git").is_dir() or git_bare_repo_exists_at_path(repo_root)
 
 
 def push_changes_prompt_if_fail(repo_root):
-    """Attempt to push changes, including tags, that were committed to the
-    repository at the given filesystem path. In case of failure, ask the user
+    """Attempt to push changes, including tags, for the repository at the given filesystem path.
+
+    In case of failure, ask the user
     if they would like to try again. Loop until pushing changes succeeds or the
     user answers opts to not try again.
     """
@@ -245,15 +236,15 @@ def push_changes_prompt_if_fail(repo_root):
 
 
 def push_changes(repo_root):
-    """Pushes changes, including tags, that were committed to the repository at
-    the given filesystem path.
-    """
+    """Push changes, including tags, for the repository at the given filesystem path."""
     execute("git push --tags", working_dir=repo_root)
     execute("git push origin master", working_dir=repo_root)
 
 
 def update_repo(path, bareflag):
-    """Pull the latest changes to the given repo and update. The bareflag
+    """Pull the latest changes to the given repo and update.
+
+    The bareflag
     parameter indicates whether the updated repo must be a bare git repo.
     """
     if bareflag:
@@ -263,9 +254,7 @@ def update_repo(path, bareflag):
 
 
 def commit_tag_and_push(version, path, tag_prefix):
-    """Commit the changes made for this release, add a tag for this release, and
-    push these changes.
-    """
+    """Commit the changes made for this release, add a tag, and push these changes."""
     # Do nothing (instead of erring) if there is nothing to commit.
     if execute("git diff-index --quiet HEAD", False, False, working_dir=path) != 0:
         execute('git commit -a -m "new release %s"' % (version), working_dir=path)
@@ -274,7 +263,9 @@ def commit_tag_and_push(version, path, tag_prefix):
 
 
 def clone_from_scratch_or_update(src_repo, dst_repo, clone_from_scratch, bareflag):
-    """If the clone_from_scratch flag is True, clone the given git
+    """Clone or update the repo.
+
+    If the clone_from_scratch flag is True, clone the given git
     repo from scratch into the filesystem path specified by dst_repo,
     deleting it first if the repo is present on the filesystem.
     Otherwise, if a repo exists at the filesystem path given by dst_repo, pull
@@ -292,8 +283,9 @@ def clone_from_scratch_or_update(src_repo, dst_repo, clone_from_scratch, barefla
 
 
 def delete_and_clone(src_repo, dst_repo, bareflag):
-    """Clone the given git repo from scratch into the filesystem
-    path specified by dst_repo. If a repo exists at the filesystem path given
+    """Clone the given git repo from scratch into the filesystem path specified by dst_repo.
+
+    If a repo exists at the filesystem path given
     by dst_repo, delete it first. The bareflag parameter indicates whether
     the cloned repo must be a bare git repo.
     """
@@ -302,9 +294,9 @@ def delete_and_clone(src_repo, dst_repo, bareflag):
 
 
 def clone(src_repo, dst_repo, bareflag):
-    """Clone the given git repo from scratch into the filesystem
-    path specified by dst_repo. The bareflag parameter indicates whether the
-    cloned repo must be a bare git repo.
+    """Clone the given git repo from scratch into the filesystem path specified by dst_repo.
+
+    The bareflag parameter indicates whether the cloned repo must be a bare git repo.
     """
     flags = ""
     if bareflag:
@@ -313,15 +305,17 @@ def clone(src_repo, dst_repo, bareflag):
 
 
 def is_repo_cleaned_and_updated(repo):
-    """IMPORTANT: this function is not known to be fully reliable in ensuring
+    """Return true if the repository at the given filesystem path is clean and up-to-date.
+
+    Clean means there are no committed changes and no untracked files in the working tree.
+
+    IMPORTANT: this function is not known to be fully reliable in ensuring
     that a repo is fully clean of all changes, such as committed tags. To be
     certain of success throughout the release_build and release_push process,
     the best option is to clone repositories from scratch.
-    Returns whether the repository at the given filesystem path is clean (i.e.
-    there are no committed changes and no untracked files in the working tree)
-    and up-to-date with respect to the repository it was cloned from.
     """
-    # The idiom "not execute(..., capture_output=True)" evaluates to True when the captured output is empty.
+    # The idiom "not execute(..., capture_output=True)" evaluates to True when the captured output
+    # is empty.
     if git_bare_repo_exists_at_path(repo):
         execute("git fetch origin", working_dir=repo)
         is_updated = not execute(
@@ -358,7 +352,9 @@ def check_repo(repo, fail_on_error, is_intermediate_repo_list):
 
 
 def get_tag_line(lines, revision, tag_prefixes):
-    """Get the revision hash for the tag matching the given project revision in
+    """Get the revision hash for the tag matching the given project revision.
+
+    in
     the given lines containing revision hashes. Uses the given array of tag
     prefix strings if provided. For example, given an array of tag prefixes
     [\"checker-framework-\", \"checkers-\"] and project revision \"2.0.0\", the
@@ -373,7 +369,9 @@ def get_tag_line(lines, revision, tag_prefixes):
 
 
 def get_commit_for_tag(revision, repo_file_path, tag_prefixes):
-    """Get the commit hash for the tag matching the given project revision of
+    """Get the commit hash for the tag matching the given project revision.
+
+    of
     the Git repository at the given filesystem path. Uses the given array of
     tag prefix strings if provided. For example, given an array of tag prefixes
     [\"checker-framework-\", \"checkers-\"] and project revision \"2.0.0\", the
@@ -406,6 +404,7 @@ def get_commit_for_tag(revision, repo_file_path, tag_prefixes):
 
 def wget_file(source_url, destination_dir):
     """Download a file from the source URL to the given destination directory.
+
     Useful since download_binary does not seem to work on source files.
     """
     print("DEST DIR: " + destination_dir)
@@ -413,9 +412,7 @@ def wget_file(source_url, destination_dir):
 
 
 def download_binary(source_url, destination):
-    """Download a file from the given URL and save its contents to the
-    destination filename.
-    """
+    """Download a file from the given URL and save its contents to the destination filename."""
     http_response = urllib.request.urlopen(url=source_url)
     content_length = http_response.headers["content-length"]
 
@@ -436,14 +433,14 @@ def read_first_line(file_path):
 
 
 def ensure_group_access(path):
-    """Give group access to all files and directories under the specified path"""
+    """Give group access to all files and directories under the specified path."""
     # Errs for any file not owned by this user.
     # But, the point is to set group writeability of any *new* files.
     execute("chmod -f -R g+rw %s" % path, halt_if_fail=False)
 
 
 def ensure_user_access(path):
-    """Give the user access to all files and directories under the specified path"""
+    """Give the user access to all files and directories under the specified path."""
     execute("chmod -f -R u+rwx %s" % path, halt_if_fail=True)
 
 
@@ -470,17 +467,15 @@ def delete_path(path):
 
 
 def delete_path_if_exists(path):
-    """Check if the specified path exists, and if so, delete all files and
-    directories under it.
-    """
+    """Delete all files and directories under the specified path, if it exists."""
     if pathlib.Path(path).exists():
         delete_path(path)
 
 
 def are_in_file(file_path, strs_to_find):
-    """Returns true if every string in the given strs_to_find array is found in
-    at least one line in the given file. In particular, returns true if
-    strs_to_find is empty. Note that the strs_to_find parameter is mutated.
+    """Return true if every string in the given strs_to_find array appears in the given file.
+
+    Returns true if strs_to_find is empty. Note that the strs_to_find parameter is mutated.
     """
     infile = open(file_path)
 
@@ -499,9 +494,7 @@ def are_in_file(file_path, strs_to_find):
 
 
 def insert_before_line(to_insert, file_path, line):
-    """Insert the given line to the given file before the given 0-indexed line
-    number.
-    """
+    """Insert the given line to the given file before the given 0-indexed line number."""
     mid_line = line - 1
 
     with open(file_path) as infile:
@@ -518,7 +511,7 @@ def insert_before_line(to_insert, file_path, line):
 
 
 def create_empty_file(file_path):
-    """Creates an empty file with the given filename."""
+    """Create an empty file with the given filename."""
     dest_file = open(file_path, "wb")
     dest_file.close()
 
@@ -539,9 +532,7 @@ def print_step(step):
 
 
 def get_announcement_email(version):
-    """Return the template for the e-mail announcing a new release of the
-    Checker Framework.
-    """
+    """Return the template for the e-mail announcing a new release of the Checker Framework."""
     return """
 To:  checker-framework-discuss@googlegroups.com
 Subject: Release %s of the Checker Framework

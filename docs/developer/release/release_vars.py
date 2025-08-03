@@ -1,10 +1,5 @@
-#!/usr/bin/env python3
-"""release_vars.py
-
-Created by Jonathan Burke on 2013-02-05.
-
-Copyright (c) 2014 University of Washington. All rights reserved.
-"""
+#!/usr/bin/env python
+"""Release variables."""
 
 # See release_development.html for an explanation of how the release process works
 # it will be invaluable when trying to understand the scripts that drive the
@@ -21,10 +16,9 @@ import subprocess
 
 
 def getAndAppend(name, append):
-    """Retrieves the given environment variable and appends the given string to
-    its value and returns the new value. The environment variable is not
-    modified. Returns an empty string if the environment variable does not
-    exist.
+    """Retrieve the given environment variable plus `append`, or an empty string.
+
+    Returns an empty string if the environment variable does not exist.
     """
     if name in os.environ:
         return os.environ[name] + append
@@ -34,6 +28,7 @@ def getAndAppend(name, append):
 
 def execute(command_args, halt_if_fail=True, capture_output=False, working_dir=None):
     """Execute the given command.
+
     If capture_output is true, then return the output (and ignore the halt_if_fail argument).
     If capture_output is not true, return the return code of the subprocess call (0 for success).
     """

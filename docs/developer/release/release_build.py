@@ -1,10 +1,5 @@
-#!/usr/bin/env python3
-"""release_build.py
-
-Created by Jonathan Burke on 2013-08-01.
-
-Copyright (c) 2015 University of Washington. All rights reserved.
-"""
+#!/usr/bin/env python
+"""Release the Checker Framework."""
 
 # See README-release-process.html for more information
 
@@ -63,8 +58,9 @@ def print_usage():
 
 
 def clone_or_update_repos():
-    """Clone the relevant repos from scratch or update them if they exist and
-    if directed to do so by the user.
+    """Clone the relevant repos from scratch or update them if they exist.
+
+    The action taken depends on a user query.
     """
     message = """Before building the release, we clone or update the release repositories.
 However, if you have had to run the script multiple times today and no files
@@ -106,7 +102,7 @@ The following repositories will be cloned or updated from their origins:
 
 
 def get_new_version(project_name, curr_version):
-    """Queries the user for the new version number; returns old and new version numbers."""
+    """Query the user for the new version number; returns old and new version numbers."""
     print("Current " + project_name + " version: " + curr_version)
     suggested_version = increment_version(curr_version)
 
@@ -126,9 +122,7 @@ def get_new_version(project_name, curr_version):
 
 
 def create_dev_website_release_version_dir(project_name, version):
-    """Create the directory for the given version of the given project under
-    the releases directory of the dev web site.
-    """
+    """Create the directory for the given version of the given project on the dev web site."""
     if project_name in (None, "checker-framework"):
         interm_dir = os.path.join(DEV_SITE_DIR, "releases", version)
     else:
@@ -140,8 +134,8 @@ def create_dev_website_release_version_dir(project_name, version):
 
 
 def create_dirs_for_dev_website_release_versions(cf_version):
-    """Create directories for the given versions of the CF, and AFU
-    projects under the releases directory of the dev web site.
+    """Create directories for CF project under the releases directory of the dev web site.
+
     For example,
     /cse/www2/types/dev/checker-framework/<project_name>/releases/<version> .
     """
@@ -159,12 +153,14 @@ def create_dirs_for_dev_website_release_versions(cf_version):
 #
 #     dev_website_relative_dir = os.path.join("releases", release_version)
 #
-#     print "Writing symlink: " + link_path + "\nto point to relative directory: " + dev_website_relative_dir
+#     print ("Writing symlink: " + link_path + "\nto point to relative directory: "
+#             + dev_website_relative_dir)
 #     force_symlink(dev_website_relative_dir, link_path)
 
 
 def update_project_dev_website(project_name, release_version):
-    """Update the dev web site for the given project
+    """Update the dev web site for the given project.
+
     according to the given release of the project on the dev web site.
     """
     if project_name == "checker-framework":
@@ -178,7 +174,7 @@ def update_project_dev_website(project_name, release_version):
 
 
 def get_current_date():
-    """Return today's date in a string format similar to: 02 May 2016"""
+    """Return today's date in the format "02 May 2016"."""
     return datetime.date.today().strftime("%d %b %Y")
 
 
@@ -235,8 +231,9 @@ def build_checker_framework_release(
 
 
 def commit_to_interm_projects(cf_version):
-    """Commit the changes for each project from its build repo to its
-    corresponding intermediate repo in preparation for running the release_push
+    """Commit the changes for each project from its build repo to its intermediate repo.
+
+    This is in preparation for running the release_push
     script, which does not read the build repos.
     """
     # Use project definition instead, see find project location find_project_locations
@@ -245,9 +242,9 @@ def commit_to_interm_projects(cf_version):
 
 
 def main(argv):
-    """The release_build script is responsible for building the release
-    artifacts for the AFU and the Checker Framework projects
-    and placing them in the development web site. It can also be used to review
+    """Build the release artifacts for the AFU and the Checker Framework projects.
+
+    Also place them in the development web site. It can also be used to review
     the documentation and changelogs for the three projects.
     """
     # MANUAL Indicates a manual step
@@ -272,30 +269,31 @@ def main(argv):
 
     # Recall that there are 3 relevant sets of repositories for the release:
     # * build repository - repository where the project is built for release
-    # * intermediate repository - repository to which release related changes are pushed after the project is built
+    # * intermediate repository - repository to which release related changes are pushed
+    #   after the project is built
     # * release repository - GitHub repositories, the central repository.
 
-    # Every time we run release_build, changes are committed to the intermediate repository from build but NOT to
-    # the release repositories. If we are running the build script multiple times without actually committing the
-    # release then these changes need to be cleaned before we run the release_build script again.
-    # The "Clone/update repositories" step updates the repositories with respect to the live repositories on
-    # GitHub, but it is the "Verify repositories" step that ensures that they are clean,
-    # i.e. indistinguishable from a freshly cloned repository.
+    # Every time we run release_build, changes are committed to the intermediate repository from
+    # build but NOT to the release repositories. If we are running the build script multiple times
+    # without actually committing the release then these changes need to be cleaned before we run
+    # the release_build script again.  The "Clone/update repositories" step updates the repositories
+    # with respect to the live repositories on GitHub, but it is the "Verify repositories" step that
+    # ensures that they are clean, i.e. indistinguishable from a freshly cloned repository.
 
     # check we are cloning LIVE -> INTERM, INTERM -> RELEASE
     print_step("\nStep 1a: Clone/update repositories.")  # MANUAL
     clone_or_update_repos()
 
-    # This step ensures the previous step worked. It checks to see if we have any modified files, untracked files,
-    # or outgoing changesets. If so, it fails.
+    # This step ensures the previous step worked. It checks to see if we have any modified files,
+    # untracked files, or outgoing changesets. If so, it fails.
 
     print_step("Step 1b: Verify repositories.")  # MANUAL
     check_repo(CHECKER_FRAMEWORK, True, True)
     check_repo(INTERM_CHECKER_REPO, True, False)
 
-    # The release script requires a number of common tools (Ant, Maven, make, etc...). This step checks
-    # to make sure all tools are available on the command line in order to avoid wasting time in the
-    # event a tool is missing late in execution.
+    # The release script requires a number of common tools (Ant, Maven, make, etc...). This step
+    # checks to make sure all tools are available on the command line in order to avoid wasting time
+    # in the event a tool is missing late in execution.
 
     print_step("Build Step 2: Check tools.")  # AUTO
     check_tools(TOOLS)
@@ -314,9 +312,10 @@ def main(argv):
 
     if old_cf_version == cf_version:
         print(
-            "It is *strongly discouraged* to not update the release version numbers for the Checker Framework "
-            "even if no changes were made to these in a month. This would break so much "
-            "in the release scripts that they would become unusable. Update the version number in checker-framework/build.gradle\n"
+            "It is *strongly discouraged* to not update the release version numbers for "
+            "the Checker Framework even if no changes were made to these in a month. "
+            "This would break so much in the release scripts that they would become unusable. "
+            "Update the version number in checker-framework/build.gradle\n"
         )
         prompt_to_continue()
 
@@ -339,10 +338,10 @@ def main(argv):
     CFLOGO = os.path.join(CHECKER_FRAMEWORK, "docs", "logo", "Logo", "CFLogo.png")
     execute("rsync --times %s %s" % (CFLOGO, checker_framework_interm_dir))
 
-    # Each project has a set of files that are updated for release. Usually these updates include new
-    # release date and version information. All changed files are committed and pushed to the intermediate
-    # repositories. Keep this in mind if you have any changed files from steps 1d, 4, or 5. Edits to the
-    # scripts in the cf-release/scripts directory will never be checked in.
+    # Each project has a set of files that are updated for release. Usually these updates include
+    # new release date and version information. All changed files are committed and pushed to the
+    # intermediate repositories. Keep this in mind if you have any changed files from steps 1d, 4,
+    # or 5. Edits to the scripts in the cf-release/scripts directory will never be checked in.
 
     print_step("Build Step 7: Commit projects to intermediate repos.")  # AUTO
     commit_to_interm_projects(cf_version)

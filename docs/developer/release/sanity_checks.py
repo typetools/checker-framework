@@ -1,5 +1,5 @@
-#!/usr/bin/env python3
-"""releaseutils.py
+#!/usr/bin/env python
+"""Release utilities.
 
 This contains no main method only utility functions to
 run sanity checks on the Checker Framework.
@@ -25,8 +25,9 @@ from release_vars import CHECKER_FRAMEWORK, SANITY_DIR, execute
 
 
 def javac_sanity_check(checker_framework_website, release_version):
-    """Download the release of the Checker Framework from the development website
-    and NullnessExampleWithWarnings.java from the GitHub repository.
+    """Download the release of the Checker Framework from the development website.
+
+    Download NullnessExampleWithWarnings.java from the GitHub repository.
     Run the Nullness Checker on NullnessExampleWithWarnings and verify the output
     Fails if the expected errors are not found in the output.
     """
@@ -140,8 +141,9 @@ def maven_sanity_check(sub_sanity_dir_name, repo_url, release_version):
 
 
 def check_results(title, output_log, expected_errors):
-    """Verify the given actual output of a sanity check against the given
-    expected output. If the sanity check passed, print the given title of the
+    """Verify the given actual output of a sanity check against the given expected output.
+
+    If the sanity check passed, print the given title of the
     sanity check and a success message. If the sanity check failed, raise an
     exception whose text contains the given title of the sanity check and the
     actual and expected output.
@@ -162,9 +164,7 @@ def check_results(title, output_log, expected_errors):
 
 
 def add_repo_information(pom, repo_url):
-    """Adds development maven repo to pom file so that the artifacts used are
-    the development artifacts
-    """
+    """Add development maven repo to pom file, to use the development artifacts."""
     to_insert = """
         <repositories>
               <repository>
