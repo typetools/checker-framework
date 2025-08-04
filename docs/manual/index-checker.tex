@@ -786,18 +786,19 @@ the length of a sequence like \code{arr.length} for arrays and
 With these annotations, client code like the following typechecks with no
 warnings:
 \begin{Verbatim}
-    public static void clearIndex1(ArrayWrapper<? extends Object> a, @IndexFor("#1") int i) {
-        a.set(i, null);
-    }
+  public static void clearIndex1(ArrayWrapper<? extends Object> a, @IndexFor("#1") int i) {
+    a.set(i, null);
+  }
 
-    public static void clearIndex2(ArrayWrapper<? extends Object> a, int i) {
-        if (0 <= i && i < a.size()) {
-            a.set(i, null);
-        }
+  public static void clearIndex2(ArrayWrapper<? extends Object> a, int i) {
+    if (0 <= i && i < a.size()) {
+      a.set(i, null);
     }
+  }
 \end{Verbatim}
 
 
+\iffalse % Remove "iffalse" when the Mutable Index Checker is publicized.
 \sectionAndLabel{The Grow-only Checker: Verifying Non-Shrinking Lists}{growonly-checker}
 
 The Grow-only Checker permits a programmer to specify that certain
@@ -806,12 +807,40 @@ collections do not shrink in size.  If a collection is
 issues a warning if a method like like \<remove()> or \<clear()> is called
 on the collection.
 
+\begin{Verbatim}
+  List<String> lst;
+  @GrowOnly List<String> lstGO;
+
+  lst.removeFirst();   // OK
+  lstGO.removeFirst(); // error
+
+  lst.add("hello");    // OK
+  lstGO.add("hello");  // OK
+\end{Verbatim}
+
+
 Programmers do not run the Grow-only Checker directly.  It is run as part of
-the Index Checker.  If a collection is
-\refqualclass{checker/index/qual}{GrowOnly}, then once the Index Checker
-determines that an index is in-range for the collection, the index remains
-in-range.  If a collection can shrink, then any time the collection might
-be modified, the fact about the index being in-range could be violated.
+the Index Checker, and it improves Index Checker output.  Suppose that integer
+\<i> is an index for list \<myList>.  If a method with possible side effects is
+called, then \<i> might no longer be a valid index for \<myList>.
+
+\begin{Verbatim}
+  class C {
+    @NonEmpty List<String> myList;
+
+  void m() {
+    int i = myList.size()-1;
+    myList.get(i);  // OK
+    hasSideEffect();
+    myList.get(i);  // compile error: `hasSideEffect` might have removed an element from myList
+  }
+\end{Verbatim}
+
+In the above code, if \<myList> were
+\refqualclass{checker/index/qual}{GrowOnly}, then the last statement would
+type-check.  Method \<hasSideEffect> might make \<myList> longer or keep it the
+same size, but it cannot invalidate the fact that \<i> is a valid index for
+\<myList>.
 
 \begin{figure}
 \begin{center}
@@ -821,7 +850,9 @@ be modified, the fact about the index being in-range could be violated.
 \label{growonly-mutability-lattice}
 \end{figure}
 
-The type qualifiers of Figure~\ref{growonly-mutability-lattice} indicate whether a sequence might shrink.
+The type qualifiers of Figure~\ref{growonly-mutability-lattice} indicate whether
+a sequence might shrink.
+
 \begin{description}
 \item[\refqualclass{checker/index/qual}{UnshrinkableRef}]
   The sequence cannot be shrunk through this reference. However, the sequence
@@ -829,7 +860,7 @@ The type qualifiers of Figure~\ref{growonly-mutability-lattice} indicate whether
   operation. This is the default qualifier.
 
 \item[\refqualclass{checker/index/qual}{GrowOnly}]
-  A strong guarantee that the annotated collection will never shrink as long as
+  The collection will never shrink as long as
   this reference exists. The checker ensures that no shrinking methods can be
   called through this reference, and the type system guarantees that no other
   alias can be used to shrink the collection either.  A grow-only list can be
@@ -848,7 +879,7 @@ The type qualifiers of Figure~\ref{growonly-mutability-lattice} indicate whether
   properties related to opting out of index checking are not relevant to the
   GrowOnly Checker).
 \end{description}
-
+\fi % iffalse
 
 \sectionAndLabel{Technical papers}{index-papers}
 

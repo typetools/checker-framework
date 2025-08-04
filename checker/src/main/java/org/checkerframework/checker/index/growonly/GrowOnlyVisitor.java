@@ -9,12 +9,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 
-/**
- * The visitor for the Grow-only Checker.
- *
- * <p>This visitor's primary role is to handle annotations on constructor invocations, ensuring they
- * are used soundly.
- */
+/** The visitor for the Grow-only Checker. */
 public class GrowOnlyVisitor extends BaseTypeVisitor<GrowOnlyAnnotatedTypeFactory> {
 
   /**
@@ -28,8 +23,8 @@ public class GrowOnlyVisitor extends BaseTypeVisitor<GrowOnlyAnnotatedTypeFactor
 
   /**
    * Overridden to prevent the base checker from issuing a "cast.unsafe.constructor.invocation"
-   * warning when a programmer correctly annotates a `new` expression. This checker allows any
-   * annotation from the hierarchy on a constructor, except for the unsound @BottomGrowShrink.
+   * warning. This checker allows any annotation from the hierarchy on a constructor invocation,
+   * except for the unsound @BottomGrowShrink.
    */
   @Override
   protected void checkConstructorInvocation(
@@ -38,23 +33,18 @@ public class GrowOnlyVisitor extends BaseTypeVisitor<GrowOnlyAnnotatedTypeFactor
       NewClassTree newClassTree) {
     AnnotatedTypeMirror newClassType = atypeFactory.getAnnotatedType(newClassTree);
 
-    // 1. Check for the unsound case: `new @BottomGrowShrink ArrayList<>()`
+    if (constructorType.getReturnType().hasPrimaryAnnotation(UnshrinkableRef.class)) {
+      // The constructor's return type is the default (@UnshrinkableRef).
+      // This is the normal case for unannotated JDK constructors.
+      // *Do not* call super. This suppresses the default warning.
+      return;
+    }
+
+    super.checkConstructorInvocation(enclosingType, constructorType, newClassTree);
+
+    // Warn about `new @BottomGrowShrink ArrayList<>()`.
     if (newClassType.hasPrimaryAnnotation(BottomGrowShrink.class)) {
       checker.reportError(newClassTree, "growonly.new.bottom");
-      // call super to get the default assignment checks.
-      super.checkConstructorInvocation(enclosingType, constructorType, newClassTree);
-      return;
     }
-
-    // 2. Check if the constructor's return type is the default (@UnshrinkableRef).
-    // This is the normal case for unannotated JDK constructors.
-    if (constructorType.getReturnType().hasPrimaryAnnotation(UnshrinkableRef.class)) {
-      // If so, allow the user-written annotation on the `new` expression
-      // and *do not* call super. This suppresses the default warning.
-      return;
-    }
-
-    // 3. For any other case, fall back to the default Checker Framework behavior.
-    super.checkConstructorInvocation(enclosingType, constructorType, newClassTree);
   }
 }
