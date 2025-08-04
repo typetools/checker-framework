@@ -1,12 +1,5 @@
-#!/usr/bin/env python3
-# encoding: utf-8
-"""
-release_vars.py
-
-Created by Jonathan Burke on 2013-02-05.
-
-Copyright (c) 2014 University of Washington. All rights reserved.
-"""
+#!/usr/bin/env python
+"""Release variables."""
 
 # See release_development.html for an explanation of how the release process works
 # it will be invaluable when trying to understand the scripts that drive the
@@ -14,9 +7,8 @@ Copyright (c) 2014 University of Washington. All rights reserved.
 
 import os
 import pwd
-import subprocess
 import shlex
-
+import subprocess
 
 # ---------------------------------------------------------------------------------
 # The only methods that should go here are methods that help define global release
@@ -24,23 +16,22 @@ import shlex
 
 
 def getAndAppend(name, append):
-    """Retrieves the given environment variable and appends the given string to
-    its value and returns the new value. The environment variable is not
-    modified. Returns an empty string if the environment variable does not
-    exist."""
+    """Retrieve the given environment variable plus `append`, or an empty string.
+
+    Returns an empty string if the environment variable does not exist.
+    """
     if name in os.environ:
         return os.environ[name] + append
 
-    else:
-        return ""
+    return ""
 
 
 def execute(command_args, halt_if_fail=True, capture_output=False, working_dir=None):
     """Execute the given command.
+
     If capture_output is true, then return the output (and ignore the halt_if_fail argument).
     If capture_output is not true, return the return code of the subprocess call (0 for success).
     """
-
     if working_dir is not None:
         print("Executing in %s: %s" % (working_dir, command_args))
     else:
@@ -53,13 +44,10 @@ def execute(command_args, halt_if_fail=True, capture_output=False, working_dir=N
         process.wait()
         return out
 
-    else:
-        result = subprocess.call(args, cwd=working_dir)
-        if halt_if_fail and result:
-            raise Exception(
-                "Error %s while executing %s in %s" % (result, args, working_dir)
-            )
-        return result
+    result = subprocess.call(args, cwd=working_dir)
+    if halt_if_fail and result:
+        raise Exception("Error %s while executing %s in %s" % (result, args, working_dir))
+    return result
 
 
 # ---------------------------------------------------------------------------------
