@@ -10,7 +10,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 
 /**
- * The visitor for the GrowOnly Checker.
+ * The visitor for the Grow-only Checker.
  *
  * <p>This visitor's primary role is to handle annotations on constructor invocations, ensuring they
  * are used soundly.
