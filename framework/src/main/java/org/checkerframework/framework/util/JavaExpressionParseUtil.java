@@ -813,7 +813,7 @@ public class JavaExpressionParseUtil {
         }
         return new ClassName(result);
       }
-      // Handle "this" identifier (e.g., Foo.this)
+      // Handle "this" identifier in a Field access (e.g., Foo.this)
       if (exprTree.getIdentifier().contentEquals("this")) {
         if (thisReference == null) {
           throw new ParseRuntimeException(
