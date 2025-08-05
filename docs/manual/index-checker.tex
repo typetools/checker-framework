@@ -799,7 +799,7 @@ warnings:
 
 
 \iffalse % Remove "iffalse" when the Mutable Index Checker is publicized.
-\sectionAndLabel{The Grow-only Checker: Verifying Non-Shrinking Lists}{growonly-checker}
+\sectionAndLabel{The Grow-only Checker: Verifying non-shrinking lists}{growonly-checker}
 
 The Grow-only Checker permits a programmer to specify that certain
 collections do not shrink in size.  If a collection is
@@ -857,7 +857,8 @@ a sequence might shrink.
 \item[\refqualclass{checker/index/qual}{UnshrinkableRef}]
   The sequence cannot be shrunk through this reference. However, the sequence
   might still shrink if another alias to it is used to perform a shrinking
-  operation. This is the default qualifier.
+  operation. This is the default qualifier.  It is the type of the receiver of
+  methods like \<List.add()>.
 
 \item[\refqualclass{checker/index/qual}{GrowOnly}]
   The collection will never shrink as long as
@@ -888,6 +889,7 @@ The paper ``Lightweight Verification of Array Indexing'' (ISSTA 2018,
 gives more details about the Index Checker.
 ``Enforcing correct array indexes with a type system''~\cite{Santino2016} (FSE 2016) describes
 an earlier version.
+
 
 %%  LocalWords:  NegativeArraySizeException pre myArray IndexFor someArray
 %%  LocalWords:  MyJavaFile LTLengthOf LTEqLengthOf GTENegativeOne GTE str
