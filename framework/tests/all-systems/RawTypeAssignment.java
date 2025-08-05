@@ -18,7 +18,6 @@ public class RawTypeAssignment {
     @SuppressWarnings("assignment")
     // :: warning: [unchecked] unchecked conversion
     ArrayList<Component> clist = getComponents();
-    // :: error: (argument)
     clist.get(0);
   }
 }
