@@ -174,6 +174,7 @@ public class ValueCheckerUtils {
    * @param origValues the objects to format
    * @return a list of the formatted objects
    */
+  @SuppressWarnings("collectionownership:argument") // defaulting/ownership CollectionsPlume.mapList
   private static @Nullable List<?> convertToStringVal(
       List<? extends @MustCallUnknown Object> origValues) {
     if (origValues == null) {
