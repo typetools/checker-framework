@@ -35,6 +35,7 @@ public class Theta extends LinkedHashMap<TypeVariable, Variable> {
   }
 
   @Override
+  @SuppressWarnings("collectionownership:method.invocation") // TEMPORARY, Sascha to fix
   public boolean containsKey(Object key) {
     if (key instanceof TypeVariable) {
       return super.containsKey(getTypeVariable((TypeVariable) key));
@@ -43,6 +44,10 @@ public class Theta extends LinkedHashMap<TypeVariable, Variable> {
   }
 
   @Override
+  @SuppressWarnings({
+    "collectionownership:method.invocation",
+    "builder:owning.override.return"
+  }) // TEMPORARY, Sascha to fix
   public Variable get(Object key) {
     if (key instanceof TypeVariable) {
       return super.get(getTypeVariable((TypeVariable) key));
