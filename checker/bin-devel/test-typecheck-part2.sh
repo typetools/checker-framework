@@ -15,6 +15,7 @@ mkdir ~/.gradle && echo "org.gradle.java.home=/usr/lib/jvm/java-21-openjdk-amd64
 
 source "$SCRIPT_DIR"/clone-related.sh
 
+./gradlew getPlumeScripts
 PLUME_SCRIPTS="$SCRIPT_DIR/.plume-scripts"
 
 # Pluggable type-checking:  run the Checker Framework on itself
