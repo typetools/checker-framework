@@ -41,7 +41,6 @@ local.properties
 api
 build
 dist
-buildSrc/.gradle
 docs/tmpapi/
 stubparser/docs/api
 # Don't want to ignore .jar files in checker/lib/ nor in gradle/wrapper
@@ -74,7 +73,10 @@ manual.fls
 manual.haux
 manual.html
 manual.htoc
-manual.image.*
+manual.image.log
+manual.image.out
+manual.image.tex
+manual.image.tex.new
 manual.log
 manual.out
 manual.pdf
@@ -103,9 +105,7 @@ docs/manual/figures/*.pdf
 docs/manual/figures/*.png
 docs/manual/figures/signature-types-with-canonicalname.dia
 docs/manual/manual.html-e
-docs/manual/manual.image.*
 docs/tmpapi/
-*.fls
 
 # dataflow manual
 dataflow/manual/dataflow.aux
@@ -218,7 +218,6 @@ annotation-file-utilities/javadoc
 annotation-file-utilities/tests/*.diff
 annotation-file-utilities/tests/*.log
 annotation-file-utilities/tests/*.output
-annotation-file-utilities/tests/**/*.class
 annotation-file-utilities/tests/Makefile.user
 annotation-file-utilities/tests/abbreviated/*.diff
 annotation-file-utilities/tests/abbreviated/*.log
