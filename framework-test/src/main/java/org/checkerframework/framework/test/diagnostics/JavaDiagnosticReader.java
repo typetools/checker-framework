@@ -262,6 +262,12 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine>, Close
     return codec.createTestDiagnosticLine(filename, currentLine, currentLineNumber);
   }
 
+  /**
+   * Advances the reader by reading a single line, updating the {@code nextLine} and {@code
+   * NextLineNumber} fields. If there is no remaining line, the reader is {@code close}d.
+   *
+   * @param this the receiver
+   */
   @RequiresNonNull("reader")
   protected void advance(@NotOwningCollection @UnknownInitialization JavaDiagnosticReader this)
       throws IOException {
