@@ -914,12 +914,14 @@ subprojects {
     // The checkNullness task runs on all code, but it only *checks* the following code:
     //  * All files outside the 'framework', 'checker', and 'annotation-file-utilities' subprojects.
     //  * In the 'framework', 'checker', and 'annotation-file-utilities' subprojects, files with `@AnnotatedFor("nullness")`.
-    if (project.name.is('framework') || project.name.is('checker') || project.name.is('annotation-file-utilities')) {
+    boolean nullnessAll = project.getProperties().containsKey('nullnessAll')
+    if (!nullnessAll && (project.name.is('framework') || project.name.is('checker') || project.name.is('annotation-file-utilities'))) {
       createCheckTypeTask(project.name, 'Nullness',
           'org.checkerframework.checker.nullness.NullnessChecker',
           [
             '-AskipUses=com\\.sun\\.*',
-            // If a file does not contain @AnnotatedFor("nullness"), all its routines are assumed to return @Nullable.
+            // If a file does not contain @AnnotatedFor("nullness"), all its routines
+            // are assumed to return @Nullable.
             '-AuseConservativeDefaultsForUncheckedCode=source'
           ])
     } else {
@@ -1107,11 +1109,11 @@ subprojects {
     }
     tasks.create(name: 'typecheck-part1', group: 'Verification') {
       description = 'Run the Checker Framework on itself (part 1)'
-      dependsOn('checkFormatter', 'checkInterning', 'checkOptional', 'checkPurity')
+      dependsOn('checkCompilerMessages', 'checkFormatter', 'checkInterning', 'checkOptional', 'checkPurity')
     }
     tasks.create(name: 'typecheck-part2', group: 'Verification') {
       description = 'Run the Checker Framework on itself (part 2)'
-      dependsOn('checkCompilerMessages', 'checkResourceLeak', 'checkSignature')
+      dependsOn('checkResourceLeak', 'checkSignature')
       if (!(project.name.is('framework') || project.name.is('checker'))) {
         dependsOn('checkNullness')
       }
