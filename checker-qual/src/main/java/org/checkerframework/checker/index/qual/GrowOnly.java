@@ -8,9 +8,9 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * An expression of type {@code @UnshrinkableRef} may not be used to remove elements, e.g., by
- * calling {@code remove()} or {@code clear()} on it. The underlying collection is guaranteed not to
- * shrink via operations on aliases.
+ * An expression of type {@code @GrowOnly} may not be used to remove elements, e.g., by calling
+ * {@code remove()} or {@code clear()} on it. The underlying collection is guaranteed not to shrink
+ * via operations on aliases.
  *
  * @checker_framework.manual #growonly-checker Grow-only Checker
  */
