@@ -20,9 +20,14 @@ public class GrowOnlyViewTest {
     subList.clear();
   }
 
-  void testIterator(@GrowOnly List<String> list) {
-    Iterator<String> itor = list.iterator();
+  void testIterator(@GrowOnly Iterator<String> itor) {
+    itor.next();
     // :: error: (method.invocation)
+    itor.remove();
+  }
+
+  void testIteratorMethod(@GrowOnly List<String> list) {
+    Iterator<String> itor = list.iterator();
     itor.next();
     // :: error: (method.invocation)
     itor.remove();

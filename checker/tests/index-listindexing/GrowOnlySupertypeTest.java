@@ -1,4 +1,5 @@
 import java.util.AbstractCollection;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Deque;
@@ -25,7 +26,14 @@ public class GrowOnlySupertypeTest {
     // :: error: (method.invocation)
     c.clear();
 
-    AbstractCollection<String> ac = (AbstractCollection<String>) list;
+    Iterable<String> ible = list;
+    Iterator<String> itor = ible.iterator();
+    itor.next();
+    // :: error: (method.invocation)
+    itor.remove();
+  }
+
+  void testAbstractCollection(@GrowOnly AbstractCollection<String> ac) {
     // :: error: (method.invocation)
     ac.remove("hello");
     // :: error: (method.invocation)
@@ -34,12 +42,31 @@ public class GrowOnlySupertypeTest {
     ac.retainAll(list2);
     // :: error: (method.invocation)
     ac.clear();
+  }
 
-    Iterable<String> ible = list;
-    Iterator<String> itor = ible.iterator();
-    itor.next();
+  void testArrayList(@GrowOnly ArrayList<String> list) {
+    AbstractCollection<String> ac = list;
     // :: error: (method.invocation)
-    itor.remove();
+    ac.remove("hello");
+    // :: error: (method.invocation)
+    ac.removeAll(list2);
+    // :: error: (method.invocation)
+    ac.retainAll(list2);
+    // :: error: (method.invocation)
+    ac.clear();
+  }
+
+  void testDeque(@GrowOnly Deque<String> d) {
+    // :: error: (method.invocation)
+    d.remove("hello");
+    // :: error: (method.invocation)
+    d.removeAll(list2);
+    // :: error: (method.invocation)
+    d.removeIf(s -> s.equals("hello"));
+    // :: error: (method.invocation)
+    d.retainAll(list2);
+    // :: error: (method.invocation)
+    d.clear();
   }
 
   void testLinkedList(@GrowOnly LinkedList<String> list) {
