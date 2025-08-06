@@ -105,7 +105,7 @@ public class CreatesMustCallForToJavaExpression {
   }
 
   /**
-   * Returns the {@code CreatesMustCallFor} annotations on a method
+   * Returns the {@code CreatesMustCallFor} annotations on a method.
    *
    * @param method the method
    * @param atypeFactory the type factory to use for looking up annotations

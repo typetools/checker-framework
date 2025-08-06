@@ -510,12 +510,12 @@ public class MustCallInference {
   }
 
   /**
-   * Return the (1-based) index of the method parameter that exist in the set of aliases of the
+   * Returns the (1-based) index of the method parameter that exist in the set of aliases of the
    * given {@code obligation}, if one exists; otherwise, return -1.
    *
    * @param obligation the obligation
    * @return the index of the current method parameter that exist in the set of aliases of the given
-   *     obligation, if one exists; otherwise, return -1.
+   *     obligation, if one exists; otherwise, return -1
    */
   private int getIndexOfParam(Obligation obligation) {
     Set<ResourceAlias> resourceAliases = obligation.resourceAliases;
@@ -670,7 +670,7 @@ public class MustCallInference {
   }
 
   /**
-   * Checks whether the given element is a resource alias of the given node in the provided set of
+   * Returns true if the given element is a resource alias of the given node in the provided set of
    * obligations.
    *
    * @param obligations the current set of tracked Obligations

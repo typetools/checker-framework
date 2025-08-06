@@ -156,7 +156,7 @@ public class I18nFormatterTreeUtil {
   }
 
   /**
-   * Takes an {@code @}{@link I18nFormat} annotation, and returns its {@code value} element
+   * Takes an {@code @}{@link I18nFormat} annotation, and returns its {@code value} element.
    *
    * @param anno an {@code @}{@link I18nFormat} annotation
    * @return the {@code @}{@link I18nFormat} annotation's {@code value} element

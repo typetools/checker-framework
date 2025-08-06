@@ -275,7 +275,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   /** True if "-AcheckCastElementType" was passed on the command line. */
   private final boolean checkCastElementType;
 
-  /** True if "-AwarnRedundantAnnotations" was passed on the command line */
+  /** True if "-AwarnRedundantAnnotations" was passed on the command line. */
   protected final boolean warnRedundantAnnotations;
 
   /** The tree of the enclosing method that is currently being visited, if any. */
@@ -1413,7 +1413,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   /**
    * Reports errors found during purity checking.
    *
-   * @param result whether the method is deterministic and/or side-effect-free
+   * @param result true if the method is deterministic and/or side-effect-free
    * @param tree the method
    * @param expectedKinds the expected purity for the method
    */
@@ -1478,7 +1478,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @param methodTree the method declaration
    * @param methodElement the method element
    * @param formalParamNames the formal parameter names
-   * @param abstractMethod whether the method is abstract
+   * @param abstractMethod true if the method is abstract
    */
   private void checkContractsAtMethodDeclaration(
       MethodTree methodTree,
@@ -1799,7 +1799,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    *
    * @param tree an AST node
    * @param type get the explicit annotation on this type and compare it with the default one for
-   *     this type and location.
+   *     this type and location
    */
   protected void warnRedundantAnnotations(Tree tree, AnnotatedTypeMirror type) {
     if (!warnRedundantAnnotations) {
@@ -1913,7 +1913,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Return true if the given annotation is a type annotation: that is, its definition is
+   * Returns true if the given annotation is a type annotation: that is, its definition is
    * meta-annotated with {@code @Target({TYPE_USE,....})}.
    */
   private boolean isTypeAnnotation(AnnotationTree anno) {
@@ -2069,7 +2069,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    *
    * @param tree a tree that requires type argument inference
    * @param methodType the type of the method before type argument substitution
-   * @return whether type argument inference succeeds
+   * @return true if type argument inference succeeds
    */
   private boolean checkTypeArgumentInference(
       ExpressionTree tree, AnnotatedExecutableType methodType) {
@@ -2823,8 +2823,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Return whether casting the {@code exprType} to {@code castType}, a type with a qualifier
-   * parameter, is legal.
+   * Returns true if it is legal to cast the {@code exprType} to {@code castType}, a type with a
+   * qualifier parameter.
    *
    * <p>If {@code exprType} has qualifier parameter, the cast is legal if the qualifiers are
    * invariant. Otherwise, the cast is legal is if the qualifier on both types is bottom.
@@ -2833,8 +2833,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @param exprType type of the expressions that is cast which may or may not have a qualifier
    *     parameter
    * @param top the top qualifier of the hierarchy to check
-   * @return whether casting the {@code exprType} to {@code castType}, a type with a qualifier
-   *     parameter, is legal.
+   * @return true if casting the {@code exprType} to {@code castType}, a type with a qualifier
+   *     parameter, is legal
    */
   private boolean isTypeCastSafeInvariant(
       AnnotatedTypeMirror castType, AnnotatedTypeMirror exprType, AnnotationMirror top) {
@@ -3413,7 +3413,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * Prints a diagnostic about exiting {@code commonAssignmentCheck()}, if the showchecks option was
    * set.
    *
-   * @param success whether the check succeeded or failed
+   * @param success true if the check succeeded
    * @param extraMessage information about why the result is what it is; may be null
    * @param varType the annotated type of the variable
    * @param valueType the annotated type of the value
@@ -3539,8 +3539,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Return whether or not the verbose toString should be used when printing the two annotated
-   * types.
+   * Returns true if the verbose toString should be used when printing the two annotated types.
    *
    * @param atm1 the first AnnotatedTypeMirror
    * @param atm2 the second AnnotatedTypeMirror
@@ -3555,8 +3554,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Return whether or not the verbose toString should be used when printing the annotated type and
-   * the bounds it is not within.
+   * Returns true if the verbose toString should be used when printing the annotated type and the
+   * bounds it is not within.
    *
    * @param atm the type
    * @param bounds the bounds
@@ -3595,7 +3594,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
               false);
 
   /**
-   * Return true iff there are two annotated types (anywhere in any ATM) such that their toStrings
+   * Returns true iff there are two annotated types (anywhere in any ATM) such that their toStrings
    * are the same but their verbose toStrings differ. If so, the Checker Framework prints types
    * verbosely.
    *
@@ -3728,14 +3727,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Indicates whether to skip subtype checks on the receiver when checking method invocability. A
+   * Returns true if to skip subtype checks on the receiver when checking method invocability. A
    * visitor may, for example, allow a method to be invoked even if the receivers are siblings in a
    * hierarchy, provided that some other condition (implemented by the visitor) is satisfied.
    *
    * @param tree the method invocation tree
    * @param methodDefinitionReceiver the ATM of the receiver of the method definition
    * @param methodCallReceiver the ATM of the receiver of the method call
-   * @return whether to skip subtype checks on the receiver
+   * @return true if to skip subtype checks on the receiver
    */
   protected boolean skipReceiverSubtypeCheck(
       MethodInvocationTree tree,
@@ -3745,8 +3744,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Tests whether the method can be invoked using the receiver of the 'tree' method invocation, and
-   * issues a "method.invocation" if the invocation is invalid.
+   * Returns true if the method can be invoked using the receiver of the 'tree' method invocation,
+   * and issues a "method.invocation" if the invocation is invalid.
    *
    * <p>This implementation tests whether the receiver in the method invocation is a subtype of the
    * method receiver type. This behavior can be specialized by overriding skipReceiverSubtypeCheck.
@@ -4612,7 +4611,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /**
      * Issue an error message or log message about checking an overriding return type.
      *
-     * @param success whether the check succeeded or failed
+     * @param success true if the check succeeded or failed
      */
     private void checkReturnMsg(boolean success) {
       if (success && !showchecks) {
@@ -5008,8 +5007,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Tests whether the tree expressed by the passed type tree is a valid type, and emits an error if
-   * that is not the case (e.g. '@Mutable String'). If the tree is a method or constructor, check
+   * Returns true if the tree expressed by the passed type tree is a valid type, and emits an error
+   * if that is not the case (e.g. '@Mutable String'). If the tree is a method or constructor, check
    * the return type.
    *
    * @param tree the AST type supplied by the user
@@ -5045,9 +5044,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Tests whether the type and corresponding type tree is a valid type, and emits an error if that
-   * is not the case (e.g. '@Mutable String'). If the tree is a method or constructor, tests the
-   * return type.
+   * Returns true if the type and corresponding type tree is a valid type, and emits an error if
+   * that is not the case (e.g. '@Mutable String'). If the tree is a method or constructor, tests
+   * the return type.
    *
    * @param tree the type tree supplied by the user
    * @param type the type corresponding to tree
@@ -5069,8 +5068,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   // **********************************************************************
 
   /**
-   * Tests whether the expression should not be checked because of the tree referring to unannotated
-   * classes, as specified in the {@code checker.skipUses} property.
+   * Returns true if the expression should not be checked because of the tree referring to
+   * unannotated classes, as specified in the {@code checker.skipUses} property.
    *
    * <p>It returns true if exprTree is a method invocation or a field access to a class whose
    * qualified name matches the {@code checker.skipUses} property.

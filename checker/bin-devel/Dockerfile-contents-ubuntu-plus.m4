@@ -5,6 +5,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   autoconf \
   devscripts \
   dia \
+  graphviz \
   hevea \
   imagemagick \
   junit \
@@ -33,4 +34,5 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 && PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install black \
 && PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install flake8 \
 && PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install html5validator \
+&& PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install mypy \
 && PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install ruff

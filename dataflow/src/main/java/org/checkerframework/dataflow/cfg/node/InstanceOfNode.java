@@ -95,7 +95,7 @@ public class InstanceOfNode extends Node {
   protected @MonotonicNonNull List<LocalVariableNode> bindingVariables = null;
 
   /**
-   * Return all the binding variables in this instanceof.
+   * Returns all the binding variables in this instanceof.
    *
    * @return all the binding variables in this instanceof
    */

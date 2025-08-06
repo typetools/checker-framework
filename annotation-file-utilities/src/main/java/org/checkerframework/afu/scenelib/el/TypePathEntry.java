@@ -37,14 +37,17 @@ public class TypePathEntry {
   public final int argument;
 
   /** The canonical ARRAY_ELEMENT TypePathEntry for building TypePaths. */
+  @SuppressWarnings("interning:assignment") // @InternedDistinct is not checkable
   public static final @InternedDistinct TypePathEntry ARRAY_ELEMENT =
       new TypePathEntry(TypePath.ARRAY_ELEMENT, 0);
 
   /** The canonical INNER_TYPE TypePathEntry for building TypePaths. */
+  @SuppressWarnings("interning:assignment") // @InternedDistinct is not checkable
   public static final @InternedDistinct TypePathEntry INNER_TYPE =
       new TypePathEntry(TypePath.INNER_TYPE, 0);
 
   /** The canonical WILDCARD_BOUND TypePathEntry for building TypePaths. */
+  @SuppressWarnings("interning:assignment") // @InternedDistinct is not checkable
   public static final @InternedDistinct TypePathEntry WILDCARD_BOUND =
       new TypePathEntry(TypePath.WILDCARD_BOUND, 0);
 
@@ -85,7 +88,7 @@ public class TypePathEntry {
   }
 
   /**
-   * Returns whether this {@link TypePathEntry} equals {@code o}; a slightly faster variant of
+   * Returns true if this {@link TypePathEntry} equals {@code o}; a slightly faster variant of
    * {@link #equals(Object)} for when the argument is statically known to be another nonnull {@link
    * TypePathEntry}.
    *

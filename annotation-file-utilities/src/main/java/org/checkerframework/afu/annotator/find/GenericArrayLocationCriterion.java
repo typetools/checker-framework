@@ -23,6 +23,8 @@ import java.util.List;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.afu.annotator.Main;
 import org.checkerframework.afu.scenelib.el.TypePathEntry;
+import org.checkerframework.checker.interning.qual.FindDistinct;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.objectweb.asm.TypePath;
 
 /**
@@ -31,7 +33,7 @@ import org.objectweb.asm.TypePath;
  */
 public class GenericArrayLocationCriterion implements Criterion {
 
-  /** Whether or not to output debug information. */
+  /** If true, output debug information. */
   private static final boolean debug = false;
 
   /** The location as a list of TypePathEntrys. */
@@ -47,7 +49,7 @@ public class GenericArrayLocationCriterion implements Criterion {
 
   /**
    * Creates a new GenericArrayLocationCriterion specifying that the element is an outer type, such
-   * as: <code>@A List&lt;Integer&gt;</code> or <code>Integer @A []</code>
+   * as: {@code @A List<Integer>} or {@code Integer @A []}
    */
   public GenericArrayLocationCriterion() {
     this(null, null);
@@ -84,7 +86,7 @@ public class GenericArrayLocationCriterion implements Criterion {
   }
 
   @Override
-  public boolean isSatisfiedBy(TreePath path, Tree leaf) {
+  public boolean isSatisfiedBy(@Nullable TreePath path, @FindDistinct Tree leaf) {
     if (path == null) {
       return false;
     }
@@ -98,7 +100,7 @@ public class GenericArrayLocationCriterion implements Criterion {
    *
    * @param location the list to check
    * @return {@code true} if the list only contains {@link TypePath#ARRAY_ELEMENT}, {@code false}
-   *     otherwise.
+   *     otherwise
    */
   private boolean containsOnlyArray(List<TypePathEntry> location) {
     for (TypePathEntry tpe : location) {
@@ -110,7 +112,7 @@ public class GenericArrayLocationCriterion implements Criterion {
   }
 
   @Override
-  public boolean isSatisfiedBy(TreePath path) {
+  public boolean isSatisfiedBy(@Nullable TreePath path) {
     if (path == null || path.getParentPath() == null) {
       if (debug) {
         System.out.println(
@@ -370,7 +372,9 @@ public class GenericArrayLocationCriterion implements Criterion {
           if (childi instanceof AnnotatedTypeTree) {
             childi = ((AnnotatedTypeTree) childi).getUnderlyingType();
           }
-          if (childi == leaf) {
+          @SuppressWarnings("interning:not.interned") // reference equality check
+          boolean foundLeaf = childi == leaf;
+          if (foundLeaf) {
             for (TreePath outerPath = parentPath.getParentPath();
                 outerPath.getLeaf() instanceof MemberSelectTree
                     && !isStatic((JCFieldAccess) outerPath.getLeaf());
@@ -519,6 +523,8 @@ public class GenericArrayLocationCriterion implements Criterion {
   }
 
   /**
+   * Returns true if the field is static.
+   *
    * @param fieldAccess a field access expression
    * @return true if the field is static
    */

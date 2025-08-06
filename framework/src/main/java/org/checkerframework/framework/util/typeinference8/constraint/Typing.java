@@ -44,7 +44,7 @@ public class Typing extends TypeConstraint {
    */
   private final Kind kind;
 
-  /** Whether this constraint is for a covariant type argument. */
+  /** True if this constraint is for a covariant type argument. */
   private boolean isCovarTypeArg;
 
   /**
@@ -79,7 +79,7 @@ public class Typing extends TypeConstraint {
    * @param S left hand side type
    * @param t right hand side type
    * @param kind the kind of constraint
-   * @param covarTypeArg whether the constraint is for a covariant type argument
+   * @param covarTypeArg true if the constraint is for a covariant type argument
    */
   public Typing(
       Constraint parent, AbstractType S, AbstractType t, Kind kind, boolean covarTypeArg) {
@@ -100,7 +100,7 @@ public class Typing extends TypeConstraint {
   }
 
   /**
-   * Return one of the abstract types in this constraint.
+   * Returns one of the abstract types in this constraint.
    *
    * @return one of the abstract types in this constraint
    */

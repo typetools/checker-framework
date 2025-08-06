@@ -124,7 +124,7 @@ public class ASTRecord implements Comparable<ASTRecord> {
     return Objects.hash(ast, className, methodName, varName, astPath);
   }
 
-  /** Indicates whether this record identifies the given {@link TreePath}. */
+  /** Returns true if this record identifies the given {@link TreePath}. */
   public boolean matches(TreePath treePath) {
     String clazz = null;
     String meth = null;

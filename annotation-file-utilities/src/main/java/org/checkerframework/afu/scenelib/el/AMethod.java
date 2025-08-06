@@ -13,6 +13,8 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.afu.scenelib.Annotation;
 import org.checkerframework.afu.scenelib.util.coll.VivifyingMap;
+import org.checkerframework.checker.interning.qual.FindDistinct;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /** An annotated method; contains bounds, return, parameters, receiver, and throws. */
 public class AMethod extends ADeclaration {
@@ -132,7 +134,7 @@ public class AMethod extends ADeclaration {
   }
 
   /**
-   * Get the type parameters of this method.
+   * Returns the type parameters of this method.
    *
    * @return the list of type parameters
    */
@@ -226,7 +228,7 @@ public class AMethod extends ADeclaration {
   }
 
   /**
-   * Get the return type.
+   * Returns the return type.
    *
    * @return the return type, or null if the return type is unknown or void
    */
@@ -235,11 +237,12 @@ public class AMethod extends ADeclaration {
   }
 
   /**
-   * Set the return type. Does nothing if the argument is null.
+   * Set the return type. Does nothing if the argument is null. Errs if called twice with different
+   * non-null arguments.
    *
    * @param returnTypeMirror the return type
    */
-  public void setReturnTypeMirror(/*@Nullable*/ TypeMirror returnTypeMirror) {
+  public void setReturnTypeMirror(@FindDistinct @Nullable TypeMirror returnTypeMirror) {
     if (returnTypeMirror == null) {
       return;
     }
@@ -252,7 +255,7 @@ public class AMethod extends ADeclaration {
   }
 
   /**
-   * Get the parameters, as a map from parameter index (0-indexed) to representation.
+   * Returns the parameters, as a map from parameter index (0-indexed) to representation.
    *
    * @return an immutable copy of the vivified parameters, as a map from index to representation
    */
@@ -261,7 +264,7 @@ public class AMethod extends ADeclaration {
   }
 
   /**
-   * Get the preconditions: annotations that apply to fields at method entry.
+   * Returns the preconditions: annotations that apply to fields at method entry.
    *
    * @return an immutable copy of the vivified preconditions
    */
@@ -270,7 +273,7 @@ public class AMethod extends ADeclaration {
   }
 
   /**
-   * Get the postconditions: annotations that apply to fields at method exit.
+   * Returns the postconditions: annotations that apply to fields at method exit.
    *
    * @return an immutable copy of the vivified postconditions
    */

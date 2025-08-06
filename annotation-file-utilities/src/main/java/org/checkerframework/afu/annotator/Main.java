@@ -532,7 +532,9 @@ public class Main {
       System.exit(0);
     }
 
-    if (in_place && outdir != "annotated/") { // interned
+    @SuppressWarnings("interning:not.interned") // reference equality check
+    boolean outdir_and_in_place = in_place && outdir != "annotated/"; // interned initial value
+    if (outdir_and_in_place) {
       System.out.println("The --outdir and --in-place options are mutually exclusive.");
       options.printUsage();
       System.exit(1);
@@ -1127,7 +1129,7 @@ public class Main {
   private static Pattern javaLangClassPattern = Pattern.compile("^java\\.lang\\.[A-Za-z0-9_]+$");
 
   /**
-   * Return true iff the class is a top-level class in the java.lang package.
+   * Returns true iff the class is a top-level class in the java.lang package.
    *
    * @param classname the class to test
    * @return true iff the class is a top-level class in the java.lang package
@@ -1155,7 +1157,7 @@ public class Main {
   }
 
   /**
-   * Return the representation of the leaf of the path.
+   * Returns the representation of the leaf of the path.
    *
    * @param path a path whose leaf to format
    * @return the representation of the leaf of the path
@@ -1168,7 +1170,7 @@ public class Main {
   }
 
   /**
-   * Return the first 80 characters of the tree's printed representation, on one line.
+   * Returns the first 80 characters of the tree's printed representation, on one line.
    *
    * @param node a tree to format with truncation
    * @return the first 80 characters of the tree's printed representation, on one line
@@ -1184,7 +1186,7 @@ public class Main {
   }
 
   /**
-   * Return the first non-empty line of the string, adding an ellipsis (...) if the string was
+   * Returns the first non-empty line of the string, adding an ellipsis (...) if the string was
    * truncated.
    *
    * @param s a string to truncate
@@ -1203,7 +1205,7 @@ public class Main {
   }
 
   /**
-   * Return the first 80 characters of the string, adding an ellipsis (...) if the string was
+   * Returns the first 80 characters of the string, adding an ellipsis (...) if the string was
    * truncated.
    *
    * @param s a string to truncate
@@ -1238,7 +1240,7 @@ public class Main {
    * Separates the annotation class from its arguments.
    *
    * @param s the string representation of an annotation
-   * @return given <code>@foo(bar)</code> it returns the pair <code>{ @foo, (bar) }</code>
+   * @return given {@code @foo(bar)} it returns the pair <code>{ @foo, (bar) }</code>
    */
   public static IPair<String, String> removeArgs(String s) {
     int pidx = s.indexOf("(");

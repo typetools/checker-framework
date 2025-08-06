@@ -21,7 +21,7 @@ import org.checkerframework.javacutil.TreeUtilsAfterJava11.CaseUtils;
 public class FenumVisitor extends BaseTypeVisitor<FenumAnnotatedTypeFactory> {
 
   /**
-   * Creates a Fenum Visitor
+   * Creates a Fenum Visitor.
    *
    * @param checker the checker
    */

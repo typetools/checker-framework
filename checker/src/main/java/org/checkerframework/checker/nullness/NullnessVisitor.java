@@ -296,8 +296,8 @@ public class NullnessVisitor
   }
 
   /**
-   * Determine whether all dimensions given in a new array expression have zero as length. For
-   * example "new Object[0][0];". Also true for empty dimensions, as in "new Object[] {...}".
+   * Returns true if all dimensions given in a new array expression have zero as length. For example
+   * "new Object[0][0];". Also true for empty dimensions, as in "new Object[] {...}".
    *
    * @param tree the constructor invocation to check
    * @return true if every array dimention has a size of zero
@@ -320,7 +320,7 @@ public class NullnessVisitor
   }
 
   /**
-   * Return true if the given tree is "new X[]", in the context "toArray(new X[])".
+   * Returns true if the given tree is "new X[]", in the context "toArray(new X[])".
    *
    * @param tree a tree to test
    * @return true if the tree is a new array within acall to toArray()
@@ -614,7 +614,7 @@ public class NullnessVisitor
    *
    * @param tree the tree where the error is to reported
    * @param errMsg the error message (must be {@link CompilerMessageKey})
-   * @return whether or not the check succeeded
+   * @return true if the check succeeded
    */
   private boolean checkForNullability(ExpressionTree tree, @CompilerMessageKey String errMsg) {
     AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(tree);
@@ -627,7 +627,7 @@ public class NullnessVisitor
    * @param type annotated type
    * @param tree the tree where the error is to reported
    * @param errMsg the error message (must be {@link CompilerMessageKey})
-   * @return whether or not the check succeeded
+   * @return true if the check succeeded
    */
   private boolean checkForNullability(
       AnnotatedTypeMirror type, Tree tree, @CompilerMessageKey String errMsg) {

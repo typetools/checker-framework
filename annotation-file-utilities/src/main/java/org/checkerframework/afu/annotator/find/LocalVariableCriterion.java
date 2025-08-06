@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Objects;
 import org.checkerframework.afu.annotator.scanner.LocalVariableScanner;
 import org.checkerframework.afu.scenelib.el.LocalLocation;
+import org.checkerframework.checker.interning.qual.FindDistinct;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * Criterion for being a specific local variable.
@@ -27,7 +29,7 @@ public class LocalVariableCriterion implements Criterion {
   }
 
   @Override
-  public boolean isSatisfiedBy(TreePath path, Tree leaf) {
+  public boolean isSatisfiedBy(@Nullable TreePath path, @FindDistinct Tree leaf) {
     if (path == null) {
       return false;
     }
@@ -36,7 +38,7 @@ public class LocalVariableCriterion implements Criterion {
   }
 
   @Override
-  public boolean isSatisfiedBy(TreePath path) {
+  public boolean isSatisfiedBy(@Nullable TreePath path) {
     if (path == null) {
       return false;
     }

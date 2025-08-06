@@ -52,6 +52,7 @@ public class InstanceOfScanner extends CommonScanner {
   }
 
   @Override
+  @SuppressWarnings("interning:not.interned") // reference equality check
   public Void visitInstanceOf(InstanceOfTree node, Void p) {
     if (!done) {
       index++;

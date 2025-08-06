@@ -187,7 +187,7 @@ public class FormatUtil {
   private static @Regex(6) Pattern fsPattern = Pattern.compile(formatSpecifier);
 
   /**
-   * Return the index, in the argument list, of the value that will be formatted by the matched
+   * Returns the index, in the argument list, of the value that will be formatted by the matched
    * format specifier.
    *
    * @param m a matcher that matches a format specifier
@@ -227,7 +227,7 @@ public class FormatUtil {
   }
 
   /**
-   * Return the conversion character that is in the given format specifier.
+   * Returns the conversion character that is in the given format specifier.
    *
    * @param formatSpecifier a <a
    *     href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Formatter.html#syntax">format

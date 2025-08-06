@@ -206,7 +206,7 @@ public class TestDiagnosticUtils {
    * line of the message, without the leading filename.
    *
    * @param original a javax diagnostic
-   * @param noMsgText whether to do work; if false, this returns a pair of (argument, "")
+   * @param noMsgText true if to do work; if false, this returns a pair of (argument, "")
    * @return the diagnostic, split into message and filename
    */
   public static IPair<String, String> formatJavaxToolString(String original, boolean noMsgText) {
@@ -265,7 +265,7 @@ public class TestDiagnosticUtils {
   }
 
   /**
-   * Return true if this line in a Java file indicates an expected diagnostic that might be
+   * Returns true if this line in a Java file indicates an expected diagnostic that might be
    * continued on the next line.
    */
   public static boolean isJavaDiagnosticLineStart(String originalLine) {
@@ -310,7 +310,7 @@ public class TestDiagnosticUtils {
   }
 
   /**
-   * Return the continuation part. The argument is such that {@link
+   * Returns the continuation part. The argument is such that {@link
    * #isJavaDiagnosticLineContinuation} returns true.
    */
   public static String continuationPart(String originalLine) {

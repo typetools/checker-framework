@@ -40,7 +40,7 @@ public abstract class VivifyingMap<K, V> extends WrapperMap<K, V> {
   }
 
   /**
-   * Returns a new, "empty" value to which the key <code>k</code> can be mapped; subclasses must
+   * Returns a new, "empty" value to which the key {@code k} can be mapped; subclasses must
    * implement.
    */
   protected abstract V createValueFor(K k);
@@ -62,7 +62,7 @@ public abstract class VivifyingMap<K, V> extends WrapperMap<K, V> {
   }
 
   /**
-   * Returns whether the given value is "empty" -- that is, it is the same as what {@link
+   * Returns true if the given value is "empty" -- that is, it is the same as what {@link
    * #getVivify} would create.
    *
    * <p>This method does not recursively prune its argument, and it does not need to.

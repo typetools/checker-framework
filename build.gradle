@@ -2,7 +2,7 @@ import de.undercouch.gradle.tasks.download.Download
 
 plugins {
   // https://plugins.gradle.org/plugin/com.gradleup.shadow
-  id 'com.gradleup.shadow' version '8.3.8'
+  id 'com.gradleup.shadow' version '8.3.9'
   // https://plugins.gradle.org/plugin/de.undercouch.download
   id 'de.undercouch.download' version '5.6.0'
   id 'java'
@@ -17,12 +17,12 @@ plugins {
   // Only works on JDK 11+ (even including the plugin crashes Gradle on JDK 8);
   // shell scripts in checker/bin-devel/ ensure spotless isn't called unless
   // the JDK is 17 or later.
-  id 'com.diffplug.spotless' version '7.1.0'
+  id 'com.diffplug.spotless' version '7.2.1'
 }
 
 // There is another `repositories { ... }` block below; if you change this one, change that one as well.
 repositories {
-  maven { url = 'https://oss.sonatype.org/content/repositories/snapshots/'}
+  maven { url = 'https://central.sonatype.com/repository/maven-snapshots/'}
   mavenCentral()
 }
 
@@ -90,7 +90,7 @@ ext {
     //  * Temporarily comment out "-Werror" elsewhere in this file
     //  * Repeatedly run `./gradlew clean compileJava` and fix all errors
     //  * Uncomment "-Werror"
-    errorprone : '2.39.0',
+    errorprone : '2.41.0',
   ]
 }
 
@@ -164,7 +164,7 @@ allprojects { currentProj ->
 
   // Keep in sync with "repositories { ... }" block above.
   repositories {
-    maven { url = 'https://oss.sonatype.org/content/repositories/snapshots/'}
+    maven { url = 'https://central.sonatype.com/repository/maven-snapshots/'}
     mavenCentral()
   }
 
@@ -563,6 +563,8 @@ allprojects { currentProj ->
           //   implementation "com.google.errorprone:error_prone_core:${errorproneVersion}"
           // Adding that line in build.gradle causes a javac crash when running the Checker Framework.
           "-Xep:ASTHelpersSuggestions:OFF",
+          // Removing "public" from private class members loses information about the abstraction.
+          "-Xep:EffectivelyPrivate:OFF",
           // -Werror halts the build if Error Prone issues a warning, which ensures that
           // the errors get fixed.  On the downside, Error Prone (or maybe the compiler?)
           // stops as soon as it issues one warning, rather than outputting them all.
@@ -1105,11 +1107,7 @@ subprojects {
     }
     tasks.create(name: 'typecheck-part1', group: 'Verification') {
       description = 'Run the Checker Framework on itself (part 1)'
-      dependsOn('checkFormatter', 'checkOptional', 'checkPurity')
-      if (!project.name.is('annotation-file-utilities')) {
-        // TODO: Annotate AFU for Interning Checker.
-        dependsOn('checkInterning')
-      }
+      dependsOn('checkFormatter', 'checkInterning', 'checkOptional', 'checkPurity')
     }
     tasks.create(name: 'typecheck-part2', group: 'Verification') {
       description = 'Run the Checker Framework on itself (part 2)'

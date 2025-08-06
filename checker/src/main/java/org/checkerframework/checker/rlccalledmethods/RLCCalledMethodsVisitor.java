@@ -133,7 +133,7 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
   }
 
   /**
-   * Check that an overriding method does not reduce the number of created must-call obligations
+   * Check that an overriding method does not reduce the number of created must-call obligations.
    *
    * @param tree overriding method
    * @param elt element for overriding method
@@ -377,7 +377,7 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
   }
 
   /**
-   * Get all {@link EnsuresCalledMethods} annotations on an element.
+   * Returns all {@link EnsuresCalledMethods} annotations on an element.
    *
    * @param elt an executable element that might have {@link EnsuresCalledMethods} annotations
    * @param atypeFactory a {@link RLCCalledMethodsAnnotatedTypeFactory}
@@ -443,8 +443,12 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
 
     @Override
     public boolean equals(Object o) {
-      if (this == o) return true;
-      if (o == null || getClass() != o.getClass()) return false;
+      if (this == o) {
+        return true;
+      }
+      if (o == null || getClass() != o.getClass()) {
+        return false;
+      }
       DestructorObligation that = (DestructorObligation) o;
       return mustCallMethod.equals(that.mustCallMethod) && exitKind == that.exitKind;
     }
@@ -589,11 +593,11 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
   }
 
   /**
-   * Determine if the given expression <code>e</code> refers to <code>this.field</code>.
+   * Determine if the given expression {@code e} refers to {@code this.field}.
    *
    * @param e the expression
    * @param field the field
-   * @return true if <code>e</code> refers to <code>this.field</code>
+   * @return true if {@code e} refers to {@code this.field}
    */
   private boolean expressionEqualsField(String e, VariableElement field) {
     try {

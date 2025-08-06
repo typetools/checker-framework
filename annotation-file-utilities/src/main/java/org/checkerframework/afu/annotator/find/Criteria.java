@@ -13,6 +13,7 @@ import org.checkerframework.afu.scenelib.el.RelativeLocation;
 import org.checkerframework.afu.scenelib.el.TypeIndexLocation;
 import org.checkerframework.afu.scenelib.io.ASTPath;
 import org.checkerframework.afu.scenelib.io.DebugWriter;
+import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.objectweb.asm.TypePath;
@@ -57,15 +58,16 @@ public final class Criteria {
   }
 
   /**
-   * Determines whether or not the program element at the leaf of the specified path is satisfied by
-   * these criteria.
+   * Returns true if the program element at the leaf of the specified path is satisfied by these
+   * criteria.
    *
    * @param path the tree path to check against
    * @param leaf the tree at the leaf of the path; only relevant when the path is null, in which
    *     case the leaf is a CompilationUnitTree
    * @return true if all of these criteria are satisfied by the given path, false otherwise
    */
-  public boolean isSatisfiedBy(TreePath path, Tree leaf) {
+  // @FindDistinct is for the benefit of an assertion
+  public boolean isSatisfiedBy(@Nullable TreePath path, @FindDistinct Tree leaf) {
     if (path == null) {
       return false;
     }
@@ -91,13 +93,13 @@ public final class Criteria {
   }
 
   /**
-   * Determines whether or not the program element at the leaf of the specified path is satisfied by
-   * these criteria.
+   * Returns true if the program element at the leaf of the specified path is satisfied by these
+   * criteria.
    *
    * @param path the tree path to check against
    * @return true if all of these criteria are satisfied by the given path, false otherwise
    */
-  public boolean isSatisfiedBy(TreePath path) {
+  public boolean isSatisfiedBy(@Nullable TreePath path) {
     for (Criterion c : criteria.values()) {
       if (!c.isSatisfiedBy(path)) {
         dbug.debug("UNsatisfied criterion: %s%n", c);
@@ -147,7 +149,7 @@ public final class Criteria {
   }
 
   /**
-   * Determines whether this is the criteria on a receiver.
+   * Returns true if this is the criteria on a receiver.
    *
    * @return true iff this is the criteria on a receiver
    */
@@ -156,7 +158,7 @@ public final class Criteria {
   }
 
   /**
-   * Determines whether this is the criteria on a package.
+   * Returns true if this is the criteria on a package.
    *
    * @return true iff this is the criteria on a package
    */
@@ -165,7 +167,7 @@ public final class Criteria {
   }
 
   /**
-   * Determines whether this is the criteria on a return type.
+   * Returns true if this is the criteria on a return type.
    *
    * @return true iff this is the criteria on a return type
    */
@@ -174,7 +176,7 @@ public final class Criteria {
   }
 
   /**
-   * Determines whether this is the criteria on a local variable.
+   * Returns true if this is the criteria on a local variable.
    *
    * @return true iff this is the criteria on a local variable
    */
@@ -183,7 +185,7 @@ public final class Criteria {
   }
 
   /**
-   * Determines whether this is the criteria on the RHS of an occurrence of 'instanceof'.
+   * Returns true if this is the criteria on the RHS of an occurrence of 'instanceof'.
    *
    * @return true if this is the criteria on the RHS of an occurrence of 'instanceof'
    */
@@ -192,7 +194,7 @@ public final class Criteria {
   }
 
   /**
-   * Determines whether this is the criteria on an object initializer.
+   * Returns true if this is the criteria on an object initializer.
    *
    * @return true if this is the criteria on an object initializer
    */
@@ -200,7 +202,7 @@ public final class Criteria {
     return criteria.containsKey(Criterion.Kind.NEW);
   }
 
-  /** Determines whether this is the criteria on a class {@code extends} bound. */
+  /** Returns true if this is the criteria on a class {@code extends} bound. */
   public boolean isOnTypeDeclarationExtendsClause() {
     for (Criterion c : criteria.values()) {
       if (c.getKind() == Criterion.Kind.EXTIMPLS_LOCATION) {
@@ -232,7 +234,7 @@ public final class Criteria {
   }
 
   /**
-   * Determines whether this is the criteria on a variable declaration: a local variable or a field
+   * Returns true if this is the criteria on a variable declaration: a local variable or a field
    * declaration, but not a formal parameter declaration.
    *
    * @return true iff this is the criteria on a local variable
@@ -435,7 +437,7 @@ public final class Criteria {
    * Creates an "in class" criterion: that a program element is enclosed by the specified class.
    *
    * @param name the name of the enclosing class
-   * @param exactMatch whether to match only in the class itself, not in its inner classes
+   * @param exactMatch if true, match only in the class itself, not in its inner classes
    * @return an "in class" criterion
    */
   // TODO: Should `name` be `@BinaryName`??

@@ -73,14 +73,14 @@ import org.plumelib.util.CollectionsPlume;
  * @checker_framework.manual #lock-checker Lock Checker
  */
 public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
-  /** The class of GuardedBy */
+  /** The class of GuardedBy. */
   private static final Class<? extends Annotation> checkerGuardedByClass = GuardedBy.class;
 
-  /** The class of GuardSatisfied */
+  /** The class of GuardSatisfied. */
   private static final Class<? extends Annotation> checkerGuardSatisfiedClass =
       GuardSatisfied.class;
 
-  /** A pattern for spotting self receiver */
+  /** A pattern for spotting self receiver. */
   protected static final Pattern SELF_RECEIVER_PATTERN = Pattern.compile("^<self>(\\.(.*))?$");
 
   /**
@@ -266,7 +266,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
    * @param methodDefinitionReceiver the ATM of the formal receiver parameter of the method being
    *     called
    * @param methodCallReceiver the ATM of the receiver argument of the method call
-   * @return whether the caller can skip the receiver subtype check
+   * @return true if the caller can skip the receiver subtype check
    */
   @Override
   protected boolean skipReceiverSubtypeCheck(
