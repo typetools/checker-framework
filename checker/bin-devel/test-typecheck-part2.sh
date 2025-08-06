@@ -24,6 +24,3 @@ else
   (./gradlew checkNullness -PnullnessAll --console=plain --warning-mode=all > /tmp/warnings-checkNullness.txt 2>&1) || true
   "$PLUME_SCRIPTS"/ci-lint-diff /tmp/warnings-checkNullness.txt
 fi
-
-
-
