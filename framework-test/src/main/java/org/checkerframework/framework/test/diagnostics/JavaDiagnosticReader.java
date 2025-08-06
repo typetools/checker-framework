@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import javax.tools.JavaFileObject;
 import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;
+import org.checkerframework.checker.collectionownership.qual.NotOwningCollection;
 import org.checkerframework.checker.index.qual.GTENegativeOne;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.mustcall.qual.NotOwning;
@@ -262,7 +263,8 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine>, Close
   }
 
   @RequiresNonNull("reader")
-  protected void advance(@UnknownInitialization JavaDiagnosticReader this) throws IOException {
+  protected void advance(@NotOwningCollection @UnknownInitialization JavaDiagnosticReader this)
+      throws IOException {
     nextLine = reader.readLine();
     nextLineNumber = reader.getLineNumber();
     if (nextLine == null) {
