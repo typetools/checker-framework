@@ -262,7 +262,6 @@ public class AnnotationMirrorSet
   }
 
   @Override
-  @SuppressWarnings("collectionownership:method.invocation") // iterator() requires polyoc receiver
   public int hashCode() {
     int result = 0;
     Iterator<AnnotationMirror> i = iterator();
