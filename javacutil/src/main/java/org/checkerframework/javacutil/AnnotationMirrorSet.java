@@ -7,7 +7,10 @@ import java.util.Iterator;
 import java.util.NavigableSet;
 import java.util.TreeSet;
 import javax.lang.model.element.AnnotationMirror;
+import org.checkerframework.checker.collectionownership.qual.NotOwningCollection;
+import org.checkerframework.checker.collectionownership.qual.PolyOwningCollection;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
+import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.KeyForBottom;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -124,7 +127,6 @@ public class AnnotationMirrorSet
   // Set methods
 
   @Override
-  @SuppressWarnings("collectionownership:override.receiver")
   public int size() {
     return shadowSet.size();
   }
@@ -143,7 +145,8 @@ public class AnnotationMirrorSet
   }
 
   @Override
-  public Iterator<@KeyFor("this") AnnotationMirror> iterator() {
+  public Iterator<@KeyFor("this") AnnotationMirror> iterator(
+      @PolyOwningCollection AnnotationMirrorSet this) {
     return shadowSet.iterator();
   }
 
@@ -159,13 +162,12 @@ public class AnnotationMirrorSet
   }
 
   @SuppressWarnings({
-    "keyfor:argument", // delegation
-    "collectionownership:override.receiver"
+    "keyfor:argument" // delegation
   })
   @Override
   public boolean add(
       @UnknownInitialization(AnnotationMirrorSet.class) AnnotationMirrorSet this,
-      AnnotationMirror annotationMirror) {
+      @Owning AnnotationMirror annotationMirror) {
     if (contains(annotationMirror)) {
       return false;
     }
@@ -183,7 +185,7 @@ public class AnnotationMirrorSet
   }
 
   @Override
-  public boolean containsAll(Collection<?> c) {
+  public boolean containsAll(@NotOwningCollection AnnotationMirrorSet this, Collection<?> c) {
     for (Object o : c) {
       if (!contains(o)) {
         return false;
