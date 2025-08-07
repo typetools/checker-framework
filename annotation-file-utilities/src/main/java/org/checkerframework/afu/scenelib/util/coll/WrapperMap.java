@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import org.checkerframework.checker.mustcall.qual.NotOwning;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * A {@link WrapperMap} is a map all of whose methods delegate by default to those of a supplied
