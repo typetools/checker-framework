@@ -431,6 +431,7 @@ public class ClassAnnotationSceneWriter extends CodeOffsetAdapter {
     }
 
     @Override
+    @SuppressWarnings("nullness:override.return") // ASM lacks (some?) @Nullable annotations
     public @Nullable AnnotationVisitor visitAnnotation(String descriptor, boolean visible) {
       existingFieldAnnotations.add(descriptor);
 
@@ -444,6 +445,7 @@ public class ClassAnnotationSceneWriter extends CodeOffsetAdapter {
     }
 
     @Override
+    @SuppressWarnings("nullness:override.return") // ASM lacks (some?) @Nullable annotations
     public @Nullable AnnotationVisitor visitTypeAnnotation(
         int typeRef, TypePath typePath, String descriptor, boolean visible) {
       // typeRef: FIELD

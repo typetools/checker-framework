@@ -40,7 +40,7 @@ public class WrapperMap<K, V> implements Map<K, V> {
   }
 
   @Override
-  public @NotOwning V get(Object key) {
+  public @Nullable @NotOwning V get(Object key) {
     return back.get(key);
   }
 
@@ -55,7 +55,8 @@ public class WrapperMap<K, V> implements Map<K, V> {
   }
 
   @Override
-  public @NotOwning V put(K key, V value) {
+  @SuppressWarnings("keyfor:contracts.postcondition") // uses a delegate map
+  public @Nullable @NotOwning V put(K key, V value) {
     return back.put(key, value);
   }
 
