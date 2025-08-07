@@ -12,6 +12,9 @@ import org.checkerframework.checker.mustcall.qual.Owning;
 /**
  * A simple implementation of {@link KeyedSet} backed by an insertion-order {@link
  * java.util.LinkedHashMap} and its {@link java.util.LinkedHashMap#values() value collection}.
+ *
+ * @param <K> the type of keys
+ * @param <V> the type of values
  */
 public class LinkedHashKeyedSet<K, V> extends AbstractSet<V> implements KeyedSet<K, V> {
   /** Produces a key for a value. */
