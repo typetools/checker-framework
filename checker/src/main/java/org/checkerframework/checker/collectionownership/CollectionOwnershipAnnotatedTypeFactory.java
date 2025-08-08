@@ -56,6 +56,7 @@ import org.checkerframework.framework.util.JavaExpressionParseUtil;
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -431,13 +432,17 @@ public class CollectionOwnershipAnnotatedTypeFactory
    * @return the {@code CollectionOwnershipType} that the given node has in the given store
    */
   public CollectionOwnershipType getCoType(Node node, CollectionOwnershipStore coStore) {
+    JavaExpression jx = JavaExpression.fromNode(node);
+    CFValue storeVal;
     try {
-      JavaExpression jx = JavaExpression.fromNode(node);
-      CFValue storeVal = coStore.getValue(jx);
-      return getCoType(storeVal.getAnnotations());
-    } catch (Exception e) {
+      storeVal = coStore.getValue(jx);
+    } catch (BugInCF e) {
+      storeVal = null;
+    }
+    if (storeVal == null) {
       return null;
     }
+    return getCoType(storeVal.getAnnotations());
   }
 
   /**
