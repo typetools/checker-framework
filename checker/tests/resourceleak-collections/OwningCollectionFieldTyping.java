@@ -104,7 +104,7 @@ class ConstructorTakesOwnership implements Closeable {
 }
 
 class OwningCollectionFieldTyping {
-  // :: error: unfulfilled.collection.obligations
+  // :: error: unfulfilled.field.obligations
   List<Resource> ocField = new ArrayList<>();
 
   void tryTransferringFieldOwnershipAssignment() {

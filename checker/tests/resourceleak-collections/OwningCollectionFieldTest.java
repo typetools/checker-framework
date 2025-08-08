@@ -57,7 +57,7 @@ class Aggregator implements Closeable {
 
 // has no @MustCall method
 class IllegalAggregator {
-  // :: error: unfulfilled.collection.obligations
+  // :: error: unfulfilled.field.obligations
   List<Resource> resList = new ArrayList<>();
 
   @CollectionFieldDestructor("resList")
