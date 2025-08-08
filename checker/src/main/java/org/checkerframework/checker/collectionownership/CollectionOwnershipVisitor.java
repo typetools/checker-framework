@@ -77,7 +77,7 @@ public class CollectionOwnershipVisitor
   }
 
   /**
-   * Change the default for exception parameter lower bounds to bottom (the default), to prevent
+   * Change the default for exception parameter lower bounds to bottom, to prevent
    * false positives.
    *
    * @return a set containing only the Bottom annotation

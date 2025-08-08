@@ -218,7 +218,7 @@ public class CollectionOwnershipTransfer
       CollectionOwnershipType argType =
           atypeFactory.getCoType(arg, atypeFactory.getStoreBefore(node));
       CollectionOwnershipType paramType =
-          atypeFactory.getCoType(new HashSet<>(param.asType().getAnnotationMirrors()));
+          atypeFactory.getCoType(param.asType().getAnnotationMirrors());
       if (paramType == null) {
         continue;
       }
@@ -313,28 +313,8 @@ public class CollectionOwnershipTransfer
             atypeFactory
                 .getAnnotatedType(node.getTree())
                 .getPrimaryAnnotationInHierarchy(atypeFactory.TOP);
-        insertInStores(result, localExp, anm == null ? atypeFactory.TOP : anm);
+        insertIntoStores(result, localExp, anm == null ? atypeFactory.TOP : anm);
       }
-    }
-  }
-
-  /**
-   * Inserts {@code newAnno} as the value into all stores (conditional or not) in the result for
-   * node.
-   *
-   * @param result the TransferResult holding the stores to modify
-   * @param target the receiver whose value should be modified
-   * @param newAnno the new value
-   */
-  protected static void insertInStores(
-      TransferResult<CFValue, CollectionOwnershipStore> result,
-      JavaExpression target,
-      AnnotationMirror newAnno) {
-    if (result.containsTwoStores()) {
-      result.getThenStore().insertValue(target, newAnno);
-      result.getElseStore().insertValue(target, newAnno);
-    } else {
-      result.getRegularStore().insertValue(target, newAnno);
     }
   }
 

@@ -669,7 +669,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
   }
 
   /*
-   * Defaults resource collection fields within methods of the class to @OwningCollection.
+   * Defaults resource collection field uses within member methods to @OwningCollection.
    */
   @Override
   protected void addComputedTypeAnnotations(Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {
