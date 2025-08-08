@@ -68,6 +68,12 @@ public class CollectionOwnershipAnnotatedTypeFactory
         CollectionOwnershipTransfer,
         CollectionOwnershipAnalysis> {
 
+  /**
+   * The {@code @} {@link MustCallAnnotatedTypeFactory} instance in the checker hierarchy. Used for
+   * getting the {@code @MustCall} type of expressions.
+   */
+  private final MustCallAnnotatedTypeFactory mcAtf;
+
   /** The {@code @}{@link NotOwningCollection} annotation. */
   public final AnnotationMirror TOP;
 
@@ -176,6 +182,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
         AnnotationBuilder.fromClass(elements, OwningCollectionWithoutObligation.class);
     BOTTOM = AnnotationBuilder.fromClass(elements, OwningCollectionBottom.class);
     POLY = AnnotationBuilder.fromClass(elements, PolyOwningCollection.class);
+    mcAtf = ResourceLeakUtils.getMustCallAnnotatedTypeFactory(checker);
     this.postInit();
   }
 
@@ -332,7 +339,6 @@ public class CollectionOwnershipAnnotatedTypeFactory
    * @return true if the tree is a resource collection
    */
   public boolean isResourceCollection(Tree tree) {
-    MustCallAnnotatedTypeFactory mcAtf = ResourceLeakUtils.getMustCallAnnotatedTypeFactory(this);
     AnnotatedTypeMirror treeMcType = null;
     try {
       treeMcType = mcAtf.getAnnotatedType(tree);
@@ -367,7 +373,6 @@ public class CollectionOwnershipAnnotatedTypeFactory
     }
 
     if (componentType != null) {
-      MustCallAnnotatedTypeFactory mcAtf = ResourceLeakUtils.getMustCallAnnotatedTypeFactory(this);
       List<String> list = ResourceLeakUtils.getMcValues(componentType, mcAtf);
       return list;
     } else {
@@ -387,7 +392,6 @@ public class CollectionOwnershipAnnotatedTypeFactory
    *     or null if there are none or if the given type is not a collection
    */
   public List<String> getMustCallValuesOfResourceCollectionComponent(Tree tree) {
-    MustCallAnnotatedTypeFactory mcAtf = ResourceLeakUtils.getMustCallAnnotatedTypeFactory(this);
     return getMustCallValuesOfResourceCollectionComponent(mcAtf.getAnnotatedType(tree));
   }
 
@@ -414,7 +418,6 @@ public class CollectionOwnershipAnnotatedTypeFactory
     }
 
     if (componentType != null) {
-      MustCallAnnotatedTypeFactory mcAtf = ResourceLeakUtils.getMustCallAnnotatedTypeFactory(this);
       List<String> list = ResourceLeakUtils.getMcValues(componentType, mcAtf);
       return list;
     } else {
