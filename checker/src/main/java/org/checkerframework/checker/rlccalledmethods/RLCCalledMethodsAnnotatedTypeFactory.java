@@ -626,13 +626,8 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
     }
   }
 
-  /** Wrapper class for a loop that might have an effect on the obligation of a collection/array. */
-  public abstract static class CollectionObligationAlteringLoop {
-    /** Loop is fulfilling. */
-    public static enum LoopKind {
-      /** Loop potentially calls methods on all elements of a collection. */
-      FULFILLING
-    }
+  /** Wrapper for a loop that potentially calls methods on all elements of a collection/array. */
+  public static class PotentiallyFulfillingLoop {
 
     /** AST {@code Tree} for collection iterated over. */
     public final ExpressionTree collectionTree;
@@ -644,71 +639,10 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
     public final Tree condition;
 
     /**
-     * methods associated with this loop. For assigning loops, these are methods that are to be
-     * added to the {@code MustCallOnElements} type and for fulfilling loops, methods that are to be
-     * removed from the {@code MustCallOnElements} and added to the {@code CalledMethodsOnElements}
-     * type.
+     * The methods that the loop definitely calls on all elements of the collection it iterates
+     * over.
      */
-    protected final Set<String> associatedMethods;
-
-    /**
-     * Wether loop is assigning (elements with {@code MustCall} obligations to a collection) or
-     * fulfilling.
-     */
-    public final LoopKind loopKind;
-
-    /**
-     * Constructs a new {@code CollectionObligationAlteringLoop}. Called by subclass constructor.
-     *
-     * @param collectionTree AST {@code Tree} for collection iterated over
-     * @param collectionElementTree AST {@code Tree} for collection element iterated over
-     * @param condition AST {@code Tree} for loop condition
-     * @param associatedMethods set of methods associated with this loop
-     * @param loopKind the type of loop, e.g., assigning/fulfilling
-     */
-    protected CollectionObligationAlteringLoop(
-        ExpressionTree collectionTree,
-        Tree collectionElementTree,
-        Tree condition,
-        Set<String> associatedMethods,
-        LoopKind loopKind) {
-      this.collectionTree = collectionTree;
-      this.collectionElementTree = collectionElementTree;
-      this.condition = condition;
-      this.loopKind = loopKind;
-      if (associatedMethods == null) {
-        associatedMethods = new HashSet<>();
-      }
-      this.associatedMethods = associatedMethods;
-    }
-
-    /**
-     * Add methods associated with this loop. For assigning loops, these are methods that are to be
-     * added to the {@code MustCallOnElements} type and for fulfilling loops, methods that are to be
-     * removed from the {@code MustCallOnElements} and added to the {@code CalledMethodsOnElements}
-     * type.
-     *
-     * @param methods the set of methods to add
-     */
-    public void addMethods(Set<String> methods) {
-      associatedMethods.addAll(methods);
-    }
-
-    /**
-     * Returns methods associated with this loop. For assigning loops, these are methods that are to
-     * be added to the {@code MustCallOnElements} type and for fulfilling loops, methods that are to
-     * be removed from the {@code MustCallOnElements} and added to the {@code
-     * CalledMethodsOnElements} type.
-     *
-     * @return the set of associated methdos
-     */
-    public Set<String> getMethods() {
-      return associatedMethods;
-    }
-  }
-
-  /** Wrapper for a loop that potentially calls methods on all elements of a collection/array. */
-  public static class PotentiallyFulfillingLoop extends CollectionObligationAlteringLoop {
+    protected final Set<String> calledMethods;
 
     /** cfg {@code Block} containing the loop body entry. */
     public final Block loopBodyEntryBlock;
@@ -741,16 +675,34 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
         Block loopUpdateBlock,
         ConditionalBlock loopConditionalBlock,
         Node collectionEltNode) {
-      super(
-          collectionTree,
-          collectionElementTree,
-          condition,
-          new HashSet<>(),
-          CollectionObligationAlteringLoop.LoopKind.FULFILLING);
+      this.collectionTree = collectionTree;
+      this.collectionElementTree = collectionElementTree;
+      this.condition = condition;
+      this.calledMethods = new HashSet<>();
       this.loopBodyEntryBlock = loopBodyEntryBlock;
       this.loopUpdateBlock = loopUpdateBlock;
       this.loopConditionalBlock = loopConditionalBlock;
       this.collectionElementNode = collectionEltNode;
+    }
+
+    /**
+     * Add methods that are guaranteed to be invoked on every element of the collection the loop
+     * iterates over.
+     *
+     * @param methods the set of methods to add
+     */
+    public void addCalledMethods(Set<String> methods) {
+      calledMethods.addAll(methods);
+    }
+
+    /**
+     * Returns methods that are guaranteed to be invoked on every element of the collection the loop
+     * iterates over.
+     *
+     * @return the set of methods the loop calls on all elements of the iterated collection
+     */
+    public Set<String> getCalledMethods() {
+      return calledMethods;
     }
   }
 

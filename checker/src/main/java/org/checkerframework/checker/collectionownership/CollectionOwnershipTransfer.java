@@ -136,7 +136,7 @@ public class CollectionOwnershipTransfer
       if (collectionCoType == CollectionOwnershipType.OwningCollection) {
         List<String> mustCallValuesOfElements =
             atypeFactory.getMustCallValuesOfResourceCollectionComponent(loop.collectionTree);
-        if (loop.getMethods().containsAll(mustCallValuesOfElements)) {
+        if (loop.getCalledMethods().containsAll(mustCallValuesOfElements)) {
           elseStore.clearValue(collectionJE);
           elseStore.insertValue(collectionJE, atypeFactory.OWNINGCOLLECTIONWITHOUTOBLIGATION);
           return new ConditionalTransferResult<>(

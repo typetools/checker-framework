@@ -2572,7 +2572,7 @@ public class MustCallConsistencyAnalyzer {
       if (isElseEdgeOfFulfillingLoop) {
         if (obligation instanceof CollectionObligation) {
           String mustCallMethodOfCo = ((CollectionObligation) obligation).mustCallMethod;
-          if (loop.getMethods().contains(mustCallMethodOfCo)) {
+          if (loop.getCalledMethods().contains(mustCallMethodOfCo)) {
             // don't propagate this obligation along this edge, as it was fulfilled
             // in the loop that the currentBlock is the conditional block of
             continue;
@@ -3527,7 +3527,7 @@ public class MustCallConsistencyAnalyzer {
 
     // now put the loop into the static datastructure if it calls any methods on the element
     if (calledMethodsInLoop != null && calledMethodsInLoop.size() > 0) {
-      potentiallyFulfillingLoop.addMethods(calledMethodsInLoop);
+      potentiallyFulfillingLoop.addCalledMethods(calledMethodsInLoop);
       CollectionOwnershipAnnotatedTypeFactory.markFulfillingLoop(potentiallyFulfillingLoop);
     }
   }
