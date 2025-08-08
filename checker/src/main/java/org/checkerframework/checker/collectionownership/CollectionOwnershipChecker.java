@@ -3,7 +3,6 @@ package org.checkerframework.checker.collectionownership;
 import java.util.Set;
 import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsChecker;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.source.SourceChecker;
 
 /**
@@ -15,12 +14,6 @@ public class CollectionOwnershipChecker extends BaseTypeChecker {
 
   /** Creates a CollectionOwnershipChecker. */
   public CollectionOwnershipChecker() {}
-
-  // TODO sck: not sure if this is necessary
-  @Override
-  protected BaseTypeVisitor<?> createSourceVisitor() {
-    return new CollectionOwnershipVisitor(this);
-  }
 
   @Override
   protected Set<Class<? extends SourceChecker>> getImmediateSubcheckerClasses() {
