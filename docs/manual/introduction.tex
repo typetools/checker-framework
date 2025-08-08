@@ -617,6 +617,7 @@ More sound (strict) checking: enable errors that are disabled by default
 \item \<-AcheckPurityAnnotations>
   Check the bodies of methods marked
   \refqualclass{dataflow/qual}{SideEffectFree},
+  \refqualclass{dataflow/qual}{SideEffectsOnly},
   \refqualclass{dataflow/qual}{Deterministic},
   and \refqualclass{dataflow/qual}{Pure}
   to ensure the method satisfies the annotation.  By default,
@@ -1563,6 +1564,10 @@ Here are some examples of the translation.
   If your proof includes ``method \<m> has no side effects'',
   then annotate \<m>'s declaration with
   \refqualclass{dataflow/qual}{SideEffectFree}.
+\item
+  If your proof includes ``method \<m> has limited side effects'',
+  then annotate \<m>'s declaration with
+  \refqualclass{dataflow/qual}{SideEffectsOnly}.
 \item
   If your proof includes ``each call to method \<m> returns the same value'',
   then annotate \<m>'s declaration with
