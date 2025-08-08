@@ -50,7 +50,8 @@
     <ul>
       <li><a href="#hint-about-annotated-library-methods">Indicate library methods that should be used instead</a></li>
       <li><a href="#eisop-features">EISOP features</a></li>
-      <li><a href="#index-errors">Improving error messages</a></li>
+      <li><a href="#explain-errors">Improving error messages</a></li>
+      <li><a href="#improve-errors">Improving error messages</a></li>
       <li><a href="#javaparser-to-javac-parse">Replace JavaParser by javac</a>
         <ul>
           <li><a href="#javaparser-ajava">Replace JavaParser for ajava files</a></li>
@@ -1263,7 +1264,27 @@ It would behave similarly for other library methods.
 </p>
 
 
-<h2 id="index-errors">Improving error messages</h2>
+<h2 id="explain-errors">Improving error messages</h2>
+
+<!-- To compute "340": wc $(findfile messages.properties | grep -v build) -->
+<p>
+  The Checker Framework issues 340 different error messages, revealing 340
+  different types of programming errors.  Users may not understand all of
+  these error messages.  The goal of this project is to write one webpage
+  per error message.  The webpage will explain the message, show an example
+  of code that triggers it, and show how to fix the code so that the
+  message is not issued.
+</p>
+
+<p>
+  Several other tools (<a href="https://errorprone.info/bugpatterns">Error
+  Prone</a>,
+  <a href="https://github.com/koalaman/shellcheck/wiki/Checks">ShellCheck</a>,
+  etc.) have one webpage per error message.
+</p>
+
+
+<h2 id="improve-errors">Improving error messages</h2>
 
 <p>
 Compiler writers have come to realize that clarity of error
@@ -1680,6 +1701,14 @@ This section is relevant only to Google Summer of Code Students.
 </p>
 
 <p>
+  For GSoC students, the best projects are <em>not</em> in the "Create a
+  new type system" category.  The reason is that creating a new type system
+  usually takes more time than one summer.  It is better to succeed with a
+  smaller task than fail with a larger task.  If you finish a smaller task
+  quickly, then you can proceed to a more ambitious goal.
+</p>
+
+<p>
   To <b>apply</b>, you will submit a single PDF through the Google Summer
   of Code website.  This PDF should contain two main parts.  We suggest
   that you number the parts and subparts to ensure that you don't forget anything, and
@@ -1878,7 +1907,7 @@ thought about the problem nor tried to solve it.
  -->
 <!--  LocalWords:  rasmud nondet Geffken Dort unmodifiable MightNotSupport
  -->
-<!--  LocalWords:  SupportsAllOperations asList emptyList JavaExpression
+<!--  LocalWords:  SupportsAllOperations asList emptyList JavaExpression '
  -->
 <!--  LocalWords:  MightSupportNothing Waataja Siwakorn Srisakaokul Papi
  -->
