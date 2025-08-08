@@ -1,7 +1,6 @@
 package org.checkerframework.checker.collectionownership;
 
 import com.sun.source.tree.Tree;
-import java.util.HashSet;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
