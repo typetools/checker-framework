@@ -9,6 +9,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.VariableElement;
+import org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer;
 import org.checkerframework.checker.resourceleak.ResourceLeakUtils;
 import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -52,9 +53,10 @@ public class CollectionOwnershipVisitor
    * the class, if one exists.
    *
    * <p>This method typically issues a warning if the result type of the constructor is not top,
-   * because in top-default type systems that indicates a potential problem. The Must Call Checker
-   * does not need this warning, because it expects the type of all constructors to be {@code
-   * OwningCollectionBottom} (by default).
+   * because in top-default type systems that indicates a potential problem. For the Collection
+   * Ownership Checker, this does not apply, since the default return type is bottom. This is
+   * justified by examining all return types and setting them to a safe default in {@code
+   * CollectionOwnershipTypeAnnotator#visitExecutable}.
    *
    * @param constructorType an AnnotatedExecutableType for the constructor
    * @param constructorElement element that declares the constructor
@@ -158,11 +160,9 @@ public class CollectionOwnershipVisitor
     }
     checker.reportError(
         fieldTree,
-        "unfulfilled.collection.obligations",
-        mustCallValues.get(0).equals(CollectionOwnershipAnnotatedTypeFactory.UNKNOWN_METHOD_NAME)
-            ? "Unknown"
-            : mustCallValues.get(0),
-        "field " + fieldTree.getName().toString(),
+        "unfulfilled.field.obligations",
+        fieldTree.getName().toString(),
+        MustCallConsistencyAnalyzer.formatMissingMustCallMethods(mustCallValues),
         error);
   }
 }

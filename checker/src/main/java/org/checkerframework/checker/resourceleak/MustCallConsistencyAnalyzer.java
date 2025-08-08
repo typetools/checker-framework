@@ -3163,10 +3163,26 @@ public class MustCallConsistencyAnalyzer {
     if (size == 0) {
       throw new TypeSystemError("empty mustCallVal " + mustCallVal);
     } else if (size == 1) {
-      return "method " + mustCallVal.get(0);
+      return "method " + formatMustCallMethod(mustCallVal.get(0));
     } else {
-      return "methods " + String.join(", ", mustCallVal);
+      return "methods "
+          + String.join(", ", mustCallVal.stream().map(s -> formatMustCallMethod(s)).toList());
     }
+  }
+
+  /**
+   * Returns a human-readable representation of a must-call method name. If the given method name
+   * equals {@link CollectionOwnershipAnnotatedTypeFactory#UNKNOWN_METHOD_NAME}, the literal string
+   * {@code "Unknown"} is returned. Otherwise, the original name is returned unchanged.
+   *
+   * @param method the must-call method name
+   * @return {@code "Unknown"} if {@code method} equals {@code UNKNOWN_METHOD_NAME}, otherwise
+   *     {@code method} itself
+   */
+  private static String formatMustCallMethod(String method) {
+    return method.equals(CollectionOwnershipAnnotatedTypeFactory.UNKNOWN_METHOD_NAME)
+        ? "Unknown"
+        : method;
   }
 
   /**
