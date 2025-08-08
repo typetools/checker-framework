@@ -1384,7 +1384,7 @@ public class MustCallConsistencyAnalyzer {
       MethodTree method = ((UnderlyingAST.CFGMethod) underlyingAST).getMethod();
       ExecutableElement executableElement = TreeUtils.elementFromDeclaration(method);
       boolean returnTypeHasManualNocAnno =
-          coAtf.getCoType(new HashSet<>(executableElement.getReturnType().getAnnotationMirrors()))
+          coAtf.getCoType(executableElement.getReturnType().getAnnotationMirrors())
               == CollectionOwnershipType.NotOwningCollection;
       if (returnTypeHasManualNocAnno) {
         // return is @NotOwningCollection. No ownership transfer to call-site.

@@ -269,7 +269,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
       if (isResourceCollection(elt.asType())) {
         AnnotatedTypeMirror atm = getAnnotatedType(elt);
         CollectionOwnershipType fieldType =
-            getCoType(Collections.singletonList(atm.getEffectiveAnnotationInHierarchy(TOP)));
+            getCoType(Collections.singletonList(atm.getPrimaryAnnotationInHierarchy(TOP)));
         if (fieldType == null) {
           return false;
         }
@@ -314,7 +314,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
       if (elt.getKind() == ElementKind.PARAMETER) {
         AnnotatedTypeMirror atm = getAnnotatedType(elt);
         CollectionOwnershipType paramType =
-            getCoType(Collections.singletonList(atm.getEffectiveAnnotationInHierarchy(TOP)));
+            getCoType(Collections.singletonList(atm.getPrimaryAnnotationInHierarchy(TOP)));
         if (paramType == null) {
           return false;
         }
@@ -474,7 +474,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
    * @param annos the {@code AnnotationMirror} collection
    * @return the extracted {@code CollectionOwnershipType} from annos
    */
-  public CollectionOwnershipType getCoType(Collection<AnnotationMirror> annos) {
+  public CollectionOwnershipType getCoType(Collection<? extends AnnotationMirror> annos) {
     for (AnnotationMirror anm : annos) {
       if (anm == null) {
         continue;
@@ -578,12 +578,12 @@ public class CollectionOwnershipAnnotatedTypeFactory
       AnnotatedDeclaredType receiverType = t.getReceiverType();
       AnnotationMirror receiverAnno =
           receiverType == null ? null : receiverType.getEffectiveAnnotationInHierarchy(TOP);
-      boolean receiverHasManualAnno =
+      boolean receiverHasExplicitAnno =
           receiverAnno != null && !AnnotationUtils.areSameByName(BOTTOM, receiverAnno);
 
       AnnotatedTypeMirror returnType = t.getReturnType();
       AnnotationMirror returnAnno = returnType.getEffectiveAnnotationInHierarchy(TOP);
-      boolean returnHasManualAnno =
+      boolean returnHasExplicitAnno =
           returnAnno != null && !AnnotationUtils.areSameByName(BOTTOM, returnAnno);
 
       // inherit supertype annotations
@@ -597,26 +597,26 @@ public class CollectionOwnershipAnnotatedTypeFactory
           AnnotatedExecutableType annotatedSuperMethod =
               CollectionOwnershipAnnotatedTypeFactory.this.getAnnotatedType(superElt);
 
-          if (!receiverHasManualAnno) {
+          if (!receiverHasExplicitAnno) {
             AnnotatedDeclaredType superReceiver = annotatedSuperMethod.getReceiverType();
             AnnotationMirror superReceiverAnno = superReceiver.getPrimaryAnnotationInHierarchy(TOP);
-            boolean superReceiverHasManualAnno =
+            boolean superReceiverHasExplicitAnno =
                 superReceiverAnno != null
                     && !AnnotationUtils.areSameByName(BOTTOM, superReceiverAnno)
                     && !AnnotationUtils.areSameByName(POLY, superReceiverAnno);
-            if (superReceiverHasManualAnno) {
+            if (superReceiverHasExplicitAnno) {
               receiverType.replaceAnnotation(superReceiverAnno);
             }
           }
 
-          if (!returnHasManualAnno) {
+          if (!returnHasExplicitAnno) {
             AnnotatedTypeMirror superReturnType = annotatedSuperMethod.getReturnType();
             AnnotationMirror superReturnAnno = superReturnType.getPrimaryAnnotationInHierarchy(TOP);
-            boolean superReturnHasManualAnno =
+            boolean superReturnHasExplicitAnno =
                 superReturnAnno != null
                     && !AnnotationUtils.areSameByName(BOTTOM, superReturnAnno)
                     && !AnnotationUtils.areSameByName(POLY, superReturnAnno);
-            if (superReturnHasManualAnno) {
+            if (superReturnHasExplicitAnno) {
               returnType.replaceAnnotation(superReturnAnno);
             }
           }
@@ -624,21 +624,19 @@ public class CollectionOwnershipAnnotatedTypeFactory
           List<? extends AnnotatedTypeMirror> paramTypes = t.getParameterTypes();
           List<? extends AnnotatedTypeMirror> superParamTypes =
               annotatedSuperMethod.getParameterTypes();
-          if (paramTypes.size() == superParamTypes.size()) {
-            for (int i = 0; i < superParamTypes.size(); i++) {
-              AnnotationMirror paramAnno = paramTypes.get(i).getEffectiveAnnotationInHierarchy(TOP);
-              boolean paramHasManualAnno =
-                  paramAnno != null && !AnnotationUtils.areSameByName(BOTTOM, paramAnno);
-              if (!paramHasManualAnno) {
-                AnnotationMirror superParamAnno =
-                    superParamTypes.get(i).getPrimaryAnnotationInHierarchy(TOP);
-                boolean superParamHasManualAnno =
-                    superParamAnno != null
-                        && !AnnotationUtils.areSameByName(BOTTOM, superParamAnno)
-                        && !AnnotationUtils.areSameByName(POLY, superParamAnno);
-                if (superParamHasManualAnno) {
-                  paramTypes.get(i).replaceAnnotation(superParamAnno);
-                }
+          for (int i = 0; i < superParamTypes.size(); i++) {
+            AnnotationMirror paramAnno = paramTypes.get(i).getEffectiveAnnotationInHierarchy(TOP);
+            boolean paramHasExplicitAnno =
+                paramAnno != null && !AnnotationUtils.areSameByName(BOTTOM, paramAnno);
+            if (!paramHasExplicitAnno) {
+              AnnotationMirror superParamAnno =
+                  superParamTypes.get(i).getPrimaryAnnotationInHierarchy(TOP);
+              boolean superParamHasExplicitAnno =
+                  superParamAnno != null
+                      && !AnnotationUtils.areSameByName(BOTTOM, superParamAnno)
+                      && !AnnotationUtils.areSameByName(POLY, superParamAnno);
+              if (superParamHasExplicitAnno) {
+                paramTypes.get(i).replaceAnnotation(superParamAnno);
               }
             }
           }
@@ -723,6 +721,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
           for (int i = 0; i < params.size(); i++) {
             if (params.get(i).getSimpleName() == elt.getSimpleName()) {
               type.replaceAnnotation(paramTypes.get(i).getEffectiveAnnotationInHierarchy(TOP));
+              break;
             }
           }
         }
