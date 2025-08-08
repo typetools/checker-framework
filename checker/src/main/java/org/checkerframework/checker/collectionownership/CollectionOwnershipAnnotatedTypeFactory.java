@@ -1,6 +1,5 @@
 package org.checkerframework.checker.collectionownership;
 
-import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
@@ -31,7 +30,6 @@ import org.checkerframework.checker.collectionownership.qual.OwningCollectionBot
 import org.checkerframework.checker.collectionownership.qual.OwningCollectionWithoutObligation;
 import org.checkerframework.checker.collectionownership.qual.PolyOwningCollection;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer;
 import org.checkerframework.checker.resourceleak.MustCallInference;
 import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
@@ -182,11 +180,6 @@ public class CollectionOwnershipAnnotatedTypeFactory
   }
 
   @Override
-  public void setRoot(@Nullable CompilationUnitTree newRoot) {
-    super.setRoot(newRoot);
-  }
-
-  @Override
   protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
     return new LinkedHashSet<>(
         Arrays.asList(
@@ -248,9 +241,6 @@ public class CollectionOwnershipAnnotatedTypeFactory
    * @return true if t is a resource collection
    */
   public boolean isResourceCollection(TypeMirror t) {
-    if (t == null) {
-      return false;
-    }
     List<String> mcValues = getMustCallValuesOfResourceCollectionComponent(t);
     return mcValues != null && mcValues.size() > 0;
   }
@@ -295,9 +285,6 @@ public class CollectionOwnershipAnnotatedTypeFactory
    * @return true if the element is a resource collection field
    */
   public boolean isResourceCollectionField(Element elt) {
-    if (elt == null) {
-      return false;
-    }
     if (elt.getKind().isField()) {
       if (isResourceCollection(elt.asType())) {
         return true;
@@ -316,9 +303,6 @@ public class CollectionOwnershipAnnotatedTypeFactory
    *     {@code @OwningCollection} by declaration
    */
   public boolean isOwningCollectionParameter(Element elt) {
-    if (elt == null) {
-      return false;
-    }
     if (isResourceCollection(elt.asType())) {
       if (elt.getKind() == ElementKind.PARAMETER) {
         AnnotatedTypeMirror atm = getAnnotatedType(elt);
@@ -348,9 +332,6 @@ public class CollectionOwnershipAnnotatedTypeFactory
    * @return true if the tree is a resource collection
    */
   public boolean isResourceCollection(Tree tree) {
-    if (tree == null) {
-      return false;
-    }
     MustCallAnnotatedTypeFactory mcAtf = ResourceLeakUtils.getMustCallAnnotatedTypeFactory(this);
     AnnotatedTypeMirror treeMcType = null;
     try {
@@ -374,9 +355,6 @@ public class CollectionOwnershipAnnotatedTypeFactory
    *     if there are none or if the given type is not a collection
    */
   public List<String> getMustCallValuesOfResourceCollectionComponent(AnnotatedTypeMirror atm) {
-    if (atm == null) {
-      return null;
-    }
     boolean isCollectionType = ResourceLeakUtils.isCollection(atm.getUnderlyingType());
 
     AnnotatedTypeMirror componentType = null;
@@ -425,9 +403,6 @@ public class CollectionOwnershipAnnotatedTypeFactory
    *     if there are none or if the given type is not a collection
    */
   public List<String> getMustCallValuesOfResourceCollectionComponent(TypeMirror t) {
-    if (t == null) {
-      return null;
-    }
     boolean isCollectionType = ResourceLeakUtils.isCollection(t);
 
     TypeMirror componentType = null;
@@ -495,9 +470,6 @@ public class CollectionOwnershipAnnotatedTypeFactory
    * @return the extracted {@code CollectionOwnershipType} from annos
    */
   public CollectionOwnershipType getCoType(Collection<AnnotationMirror> annos) {
-    if (annos == null) {
-      return null;
-    }
     for (AnnotationMirror anm : annos) {
       if (anm == null) {
         continue;
