@@ -265,7 +265,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
    * <p>This method changes the type parameter annotations of {@code Element}s, which is the
    * preferred way for method return types and parameters, such that the changes are 'visible' at
    * call-site as well as within the method. The type parameter annotations at other places is
-   * handled by {@link #addComputedTypeAnnotations(Tree, AnnotatedTypeMirror, Boolean)}, because it
+   * handled by {@link #addComputedTypeAnnotations(Tree, AnnotatedTypeMirror, boolean)}, because it
    * has access to the {@code Tree}.
    */
   @Override
