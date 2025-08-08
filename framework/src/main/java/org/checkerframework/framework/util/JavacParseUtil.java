@@ -45,7 +45,8 @@ public class JavacParseUtil {
     // The initializer of the {@code expression} field is then extracted and returned.
 
     // Embed the expression inside a dummy class and variable declaration.
-    String dummySource = "class Dummy { Object expression = " + expressionSource + "; }";
+    String sanitized = expressionSource.replaceAll("#num(\\d+)", "\\$num$1");
+    String dummySource = "class Dummy { Object expression = " + sanitized + "; }";
 
     // Obtain the system Java compiler.
     JavaCompiler compiler = JavacTool.create();
