@@ -288,7 +288,7 @@ public class MustCallConsistencyAnalyzer {
      * @param whenToEnforce when this Obligation should be enforced
      * @return a new Obligation with the passed traits
      */
-    public Obligation getReplacement(
+    public abstract Obligation getReplacement(
         Set<ResourceAlias> resourceAliases, Set<MethodExitKind> whenToEnforce) {
       return new Obligation(resourceAliases, whenToEnforce);
     }

@@ -123,7 +123,7 @@ public class CollectionOwnershipTransfer
    *     collection-obligation-fulfilling loop
    * @return the resulting transfer result
    */
-  private TransferResult<CFValue, CollectionOwnershipStore> transformPotentiallyFulfillingLoop(
+  private TransferResult<CFValue, CollectionOwnershipStore> updateStoreForPotentiallyFulfillingLoop(
       TransferResult<CFValue, CollectionOwnershipStore> res, Tree tree) {
     PotentiallyFulfillingLoop loop =
         CollectionOwnershipAnnotatedTypeFactory.getFulfillingLoopForCondition(tree);
@@ -150,7 +150,7 @@ public class CollectionOwnershipTransfer
   public TransferResult<CFValue, CollectionOwnershipStore> visitLessThan(
       LessThanNode node, TransferInput<CFValue, CollectionOwnershipStore> in) {
     TransferResult<CFValue, CollectionOwnershipStore> res = super.visitLessThan(node, in);
-    return transformPotentiallyFulfillingLoop(res, node.getTree());
+    return updateStoreForPotentiallyFulfillingLoop(res, node.getTree());
   }
 
   @Override
@@ -163,7 +163,7 @@ public class CollectionOwnershipTransfer
     ExecutableElement method = node.getTarget().getMethod();
     List<Node> args = node.getArguments();
     res = transferOwnershipForMethodInvocation(method, node, args, res);
-    res = transformPotentiallyFulfillingLoop(res, node.getTree());
+    res = updateStoreForPotentiallyFulfillingLoop(res, node.getTree());
 
     // Check whether the method is annotated @CreatesCollectionObligation.
     ExecutableElement methodElement = TreeUtils.elementFromUse(node.getTree());

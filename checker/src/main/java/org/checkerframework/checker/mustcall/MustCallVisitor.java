@@ -364,7 +364,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
   public Void visitForLoop(ForLoopTree tree, Void p) {
     boolean singleLoopVariable = tree.getUpdate().size() == 1 && tree.getInitializer().size() == 1;
     if (singleLoopVariable) {
-      patternMatchFulfillingLoop(tree);
+      detectCollectionObligationFulfillingLoop(tree);
     }
     return super.visitForLoop(tree, p);
   }
@@ -374,7 +374,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
    *
    * @param tree a `for` loop with exactly one loop variable
    */
-  private void patternMatchFulfillingLoop(ForLoopTree tree) {
+  private void detectCollectionObligationFulfillingLoop(ForLoopTree tree) {
     List<? extends StatementTree> loopBodyStatementList;
     if (tree.getStatement() instanceof BlockTree) {
       BlockTree blockT = (BlockTree) tree.getStatement();
@@ -388,13 +388,14 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
     if (!(condition instanceof BinaryTree)) {
       return;
     }
-    Name identifierInHeader = verifyAllElementsAreCalledOn(init, (BinaryTree) condition, update);
+    Name identifierInHeader =
+        nameOfCollectionThatAllElementsAreCalledOn(init, (BinaryTree) condition, update);
     Name iterator = getNameFromStatementTree(init);
     if (identifierInHeader == null || iterator == null) {
       return;
     }
     ExpressionTree collectionElementTree =
-        preMatchLoop(loopBodyStatementList, identifierInHeader, iterator);
+        getLastElementAccessIfLoopValid(loopBodyStatementList, identifierInHeader, iterator);
     if (collectionElementTree != null) {
       // Pattern match succeeded, now mark the loop in the respective datastructures.
 
@@ -463,7 +464,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
    * @param update the loop update
    * @return the name of the collection that the loop iterates over all elements of, or null
    */
-  protected Name verifyAllElementsAreCalledOn(
+  protected Name nameOfCollectionThatAllElementsAreCalledOn(
       StatementTree init, BinaryTree condition, ExpressionStatementTree update) {
     Tree.Kind updateKind = update.getExpression().getKind();
     if (updateKind == Tree.Kind.PREFIX_INCREMENT || updateKind == Tree.Kind.POSTFIX_INCREMENT) {
@@ -525,7 +526,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
    *     block}. Else, return the last encountered collection access tree consistent with the loop
    *     heaer if it exists and else null.
    */
-  private @Nullable ExpressionTree preMatchLoop(
+  private @Nullable ExpressionTree getLastElementAccessIfLoopValid(
       List<? extends StatementTree> statements, Name identifierInHeader, Name iterator) {
     AtomicBoolean blockIsIllegal = new AtomicBoolean(false);
     final ExpressionTree[] collectionElementTree = {null};
@@ -583,8 +584,8 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
           @Override
           public Void visitMethodInvocation(MethodInvocationTree mit, Void p) {
             if (isIthCollectionElement(mit, iterator)
-                && loopHeaderConsistentWithCollection(
-                    identifierInHeader, getNameFromExpressionTree(mit))) {
+                && identifierInHeader == getNameFromExpressionTree(mit)
+                && identifierInHeader != null) {
               collectionElementTree[0] = mit;
             }
             return super.visitMethodInvocation(mit, p);
@@ -601,10 +602,11 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
   }
 
   /**
-   * Returns the identifier of an ExpressionTree, or null.
+   * Returns the simple name of the identifier referenced by the given expression, or {@code null}
+   * if the expression does not reference an identifier.
    *
    * @param expr an expression
-   * @return the name of the identifier the expression evaluates to or null if it doesn't
+   * @return the name of the referenced identifier, or {@code null} if none
    */
   protected Name getNameFromExpressionTree(ExpressionTree expr) {
     if (expr == null) {
@@ -628,10 +630,12 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
   }
 
   /**
-   * Returns the name from a {@code StatementTree}, or null.
+   * Returns the simple name of the identifier declared or referenced by the given statement, or
+   * {@code null} if the statement does not declare or reference an identifier.
    *
    * @param expr the {@code StatementTree}
-   * @return name of the identifier the expression evaluates to or null if it doesn't
+   * @return the name of the identifier declared or referenced by the statement, or {@code null} if
+   *     none
    */
   protected Name getNameFromStatementTree(StatementTree expr) {
     if (expr == null) {
@@ -669,25 +673,6 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
       default:
         return null;
     }
-  }
-
-  /**
-   * Returns true if the given collection name is consistent with the identifier from the loop
-   * header. That is, returns true if the names are equal.
-   *
-   * <p>Returns false if any argument is null.
-   *
-   * @param idInHeader identifier from loop header
-   * @param collectionName name of collection
-   * @return true if the given collection name is consistent with the identifier from the loop
-   *     header
-   */
-  private boolean loopHeaderConsistentWithCollection(Name idInHeader, Name collectionName) {
-    if (idInHeader == null || collectionName == null) {
-      return false;
-    }
-    boolean namesAreEqual = collectionName == idInHeader;
-    return namesAreEqual;
   }
 
   /**
