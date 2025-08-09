@@ -342,7 +342,14 @@ public class CollectionOwnershipAnnotatedTypeFactory
     if (tree == null) {
       return false;
     }
-    AnnotatedTypeMirror treeMcType = mcAtf.getAnnotatedType(tree);
+    AnnotatedTypeMirror treeMcType;
+    try {
+      treeMcType = mcAtf.getAnnotatedType(tree);
+    } catch (BugInCF e) {
+      // this happens if the tree is not of a supported format, thrown by
+      // AnnotatedTypeFactory#getAnnotatedType
+      treeMcType = null;
+    }
     List<String> mcValues = getMustCallValuesOfResourceCollectionComponent(treeMcType);
     return mcValues != null && mcValues.size() > 0;
   }
@@ -359,6 +366,9 @@ public class CollectionOwnershipAnnotatedTypeFactory
    *     if there are none or if the given type is not a collection
    */
   public List<String> getMustCallValuesOfResourceCollectionComponent(AnnotatedTypeMirror atm) {
+    if (atm == null) {
+      return null;
+    }
     boolean isCollectionType = ResourceLeakUtils.isCollection(atm.getUnderlyingType());
 
     AnnotatedTypeMirror componentType = null;
