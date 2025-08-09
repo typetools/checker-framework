@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.StringJoiner;
+import java.util.stream.Collectors;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -3166,7 +3167,9 @@ public class MustCallConsistencyAnalyzer {
       return "method " + formatMustCallMethod(mustCallVal.get(0));
     } else {
       return "methods "
-          + String.join(", ", mustCallVal.stream().map(s -> formatMustCallMethod(s)).toList());
+          + String.join(
+              ", ",
+              mustCallVal.stream().map(s -> formatMustCallMethod(s)).collect(Collectors.toList()));
     }
   }
 
