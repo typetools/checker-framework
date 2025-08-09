@@ -98,7 +98,7 @@ test_wpi_plume_lib() {
       more "$DLJC_OUT_DIR"/*
       # The string is printed by `tools/wpi.py` in the do_like_javac repository.
       AJAVADIR="$(sed -n 's/Directory for generated annotation files: \(.*\)$/\1/p' "$DLJC_OUT_DIR"/dljc-stdout-*)"
-      if [ -z "$AJAVADIR" ] ; then
+      if [ -z "$AJAVADIR" ]; then
         echo "AJAVADIR cannot be determined from $DLJC_OUT_DIR/dljc-stdout-* (printed immediately above)"
       else
         echo "AJAVADIR=$AJAVADIR"

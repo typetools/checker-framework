@@ -80,7 +80,7 @@ script:
 - echo "TRAVIS_REPO_SLUG=${TRAVIS_REPO_SLUG}"
 - >-
   docker run -v $HOME/.gradle:/root/.gradle -v $HOME/.m2:/root/.m2 mdernst/cf-$OS-$JDKVER$TESTING /bin/bash -c "true &&
-     if [ $TRAVIS_EVENT_TYPE = pull_request ] ; then
+     if [ $TRAVIS_EVENT_TYPE = pull_request ]; then
        git clone --quiet $REMOTE_ORIGIN_URL $THIS_REPO || (sleep 1m && git clone --quiet $REMOTE_ORIGIN_URL $THIS_REPO)
        cd $THIS_REPO
        git fetch origin +refs/pull/$TRAVIS_PULL_REQUEST/merge
