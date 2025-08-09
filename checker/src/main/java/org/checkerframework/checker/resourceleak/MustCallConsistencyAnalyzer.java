@@ -3385,12 +3385,12 @@ public class MustCallConsistencyAnalyzer {
             block = predBlocks.iterator().next();
             nodeIterator = block.getNodes().iterator();
           } else {
-            throw new BugInCF(
-                "Encountered more than one CFG Block predeccessor trying to find the"
-                    + " enhanced-for-loop update block. Block: ");
-            // + block
-            // + "\nPredecessors: "
-            // + predBlocks);
+            // there is no trivial resolution here. Best we can do is just skip this loop,
+            // which is of course sound.
+            return;
+            // throw new BugInCF(
+            //     "Encountered more than one CFG Block predecessor trying to find the"
+            //         + " enhanced-for-loop update block. Block: ");
           }
         }
         node = nodeIterator.next();
