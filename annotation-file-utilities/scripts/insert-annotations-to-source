@@ -56,7 +56,7 @@ if [ "$DEBUG" = "1" ]; then
   echo "--- end of insert-annotations-to-source debugging output"
   # echo "--- start of input files"
   # for file in "$@"; do
-  #     if [ -f "$file" ] ; then
+  #     if [ -f "$file" ]; then
   #        echo "$file"
   #        cat "$file"
   #     fi
