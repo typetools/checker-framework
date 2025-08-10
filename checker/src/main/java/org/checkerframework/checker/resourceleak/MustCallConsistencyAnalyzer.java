@@ -1832,9 +1832,9 @@ public class MustCallConsistencyAnalyzer {
           if (TreeUtils.isNullExpression(rhs.getTree())) {
             // assignment to null allowed
             return;
+          } else {
+            rhsCoType = CollectionOwnershipType.NotOwningCollection;
           }
-          throw new BugInCF(
-              "Expression " + rhs + " cannot be found in CollectionOwnership store " + coStore);
         }
         switch (rhsCoType) {
           case OwningCollectionWithoutObligation:
@@ -1879,8 +1879,7 @@ public class MustCallConsistencyAnalyzer {
         if (TreeUtils.isNullExpression(rhs.getTree())) {
           rhsCoType = CollectionOwnershipType.OwningCollectionBottom;
         } else {
-          throw new BugInCF(
-              "Expression " + rhs + " cannot be found in CollectionOwnership store " + coStore);
+          rhsCoType = CollectionOwnershipType.NotOwningCollection;
         }
       }
 
