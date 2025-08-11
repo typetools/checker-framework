@@ -93,7 +93,7 @@ public class GrowOnlyPolymorphicTest {
 
     // Test assignment to more general types
     @GrowOnly List<? extends String> wildcardList = stringList;
-    @GrowOnly java.util.Collection<String> collection = stringList;
+    java.util.Collection<String> collection = stringList;
     @GrowOnly Iterable<String> iterable = stringList;
 
     // All should preserve @GrowOnly restrictions
