@@ -669,8 +669,12 @@ public class JavaExpressionParseUtil {
       if (receiverExpr instanceof ClassName) {
         throw new ParseRuntimeException(
             constructJavaExpressionParseError(
-                fieldElem.getSimpleName().toString(),
-                "a non-static field cannot have a class name as a receiver."));
+                identifier.toString(),
+                "a non-static field "
+                    + fieldElem.getSimpleName().toString()
+                    + " cannot have a class name "
+                    + receiverExpr
+                    + " as a receiver."));
       }
 
       // There are two possibilities, captured by local variable fieldDeclaredInReceiverType:
@@ -763,7 +767,9 @@ public class JavaExpressionParseUtil {
           throw new ParseRuntimeException(
               constructJavaExpressionParseError(
                   invocation.toString(),
-                  "a non-static method call cannot have a class name as a receiver"));
+                  "a non-static method call cannot have a class name "
+                      + receiverExpr
+                      + " as a receiver"));
         }
         TypeMirror methodType =
             TypesUtils.substituteMethodReturnType(methodElement, receiverExpr.getType(), env);

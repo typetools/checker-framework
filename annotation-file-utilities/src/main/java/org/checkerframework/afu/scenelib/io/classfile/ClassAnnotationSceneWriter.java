@@ -435,7 +435,9 @@ public class ClassAnnotationSceneWriter extends CodeOffsetAdapter {
 
       // If annotation exists in scene, and in overwrite mode,
       //  return empty visitor, annotation from scene will be visited later.
-      if (aField.lookup(classDescToName(descriptor)) != null && overwrite) return null;
+      if (aField.lookup(classDescToName(descriptor)) != null && overwrite) {
+        return null;
+      }
 
       return fv.visitAnnotation(descriptor, visible);
     }
@@ -448,7 +450,9 @@ public class ClassAnnotationSceneWriter extends CodeOffsetAdapter {
 
       // If annotation exists in scene, and in overwrite mode,
       //  return empty visitor, annotation from scene will be visited later.
-      if (aField.lookup(classDescToName(descriptor)) != null && overwrite) return null;
+      if (aField.lookup(classDescToName(descriptor)) != null && overwrite) {
+        return null;
+      }
 
       return fv.visitTypeAnnotation(typeRef, typePath, descriptor, visible);
     }
