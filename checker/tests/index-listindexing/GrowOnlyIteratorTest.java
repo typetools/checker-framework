@@ -11,30 +11,27 @@ import org.checkerframework.checker.index.qual.GrowOnly;
 public class GrowOnlyIteratorTest {
 
   void testIteratorRemove(@GrowOnly List<String> list) {
+    list.add("test"); // Ensure list has content
     Iterator<String> iter = list.iterator();
-    if (iter.hasNext()) {
-      iter.next();
-      // :: error: (method.invocation)
-      iter.remove();
-    }
+    iter.next();
+    // :: error: (method.invocation)
+    iter.remove();
   }
 
   void testListIteratorRemove(@GrowOnly List<String> list) {
+    list.add("test"); // Ensure list has content
     ListIterator<String> listIter = list.listIterator();
-    if (listIter.hasNext()) {
-      listIter.next();
-      // :: error: (method.invocation)
-      listIter.remove();
-    }
+    listIter.next();
+    // :: error: (method.invocation)
+    listIter.remove();
   }
 
   void testListIteratorSet(@GrowOnly List<String> list) {
+    list.add("test"); // Ensure list has content
     ListIterator<String> listIter = list.listIterator();
-    if (listIter.hasNext()) {
-      listIter.next();
-      // This should be allowed - set doesn't change size
-      listIter.set("newValue");
-    }
+    listIter.next();
+    // This should be allowed - set doesn't change size
+    listIter.set("newValue");
   }
 
   void testListIteratorAdd(@GrowOnly List<String> list) {
