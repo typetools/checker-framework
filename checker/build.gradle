@@ -103,6 +103,9 @@ jar {
 // checker.jar is copied to checker/dist/ when it is built by the shadowJar task.
 task assembleForJavac(dependsOn: shadowJar, group: 'Build') {
   description = 'Builds or downloads jars required by CheckerMain and puts them in checker/dist/.'
+  dependsOn project(':checker-qual').tasks.jar
+  dependsOn project(':checker-util').tasks.jar
+
   doLast {
 
     copy {
