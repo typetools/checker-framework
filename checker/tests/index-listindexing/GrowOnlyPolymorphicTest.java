@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Stream;
@@ -93,7 +94,7 @@ public class GrowOnlyPolymorphicTest {
 
     // Test assignment to more general types
     @GrowOnly List<? extends String> wildcardList = stringList;
-    java.util.Collection<String> collection = stringList;
+    @GrowOnly Collection<String> collection = stringList;
     @GrowOnly Iterable<String> iterable = stringList;
 
     // All should preserve @GrowOnly restrictions
