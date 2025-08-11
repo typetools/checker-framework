@@ -9,7 +9,6 @@ import com.sun.tools.javac.api.JavacTool;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Collections;
-import java.util.regex.Pattern;
 import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
 import javax.tools.SimpleJavaFileObject;
@@ -27,16 +26,6 @@ public class JavacParseUtil {
   /** Creates a JavacParseUtil. */
   public JavacParseUtil() {}
 
-  // Pattern to reject clearly invalid expressions before parsing
-  private static final Pattern EXPRESSION_GATE =
-      Pattern.compile(
-          "^(?!.*;)\\s*"
-              + "(?!\\[?\\s*error\\s+for\\s+expression:)"
-              + "(?:(?!(?:final\\s+)?(?:byte|short|int|long|float|double|boolean|char|var)\\b.*=).)*"
-              + "(?:(?!(?:if|switch|for|while|do|try|catch|finally|return|throw|break|continue|class|interface|enum)\\b).)*"
-              + ".+\\S.*$",
-          Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
-
   /**
    * Parses the given Java expression string and returns it as a {@link ExpressionTree} using the
    * {@code javac} compiler API.
@@ -47,13 +36,16 @@ public class JavacParseUtil {
    * @throws RuntimeException if parsing fails or the expression cannot be found in the AST
    */
   public static ExpressionTree parseExpression(String expressionSource) {
-    String sanitized = expressionSource.replaceAll("#num(\\d+)", "\\$num$1").trim();
+    // This method works by embedding the expression in a dummy class and variable declaration, then
+    // parsing the resulting source to extract the expression tree.
+    //
+    // For example, the input {@code "1 + 2"} is transformed into:
+    //   class Dummy { Object expression = 1 + 2; }
+    //
+    // The initializer of the {@code expression} field is then extracted and returned.
 
-    // Quick pre-check to skip obvious non-expressions
-    if (!EXPRESSION_GATE.matcher(sanitized).matches()) {
-      throw new RuntimeException("Not a valid Java expression: " + expressionSource);
-    }
-
+    // Embed the expression inside a dummy class and variable declaration.
+    String sanitized = expressionSource.replaceAll("#num(\\d+)", "\\$num$1");
     String dummySource = "class Dummy { Object expression = " + sanitized + "; }";
 
     // Obtain the system Java compiler.
