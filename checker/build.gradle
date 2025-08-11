@@ -27,6 +27,8 @@ configurations {
     canBeConsumed = true
     canBeResolved = false
   }
+  checkerQual
+  checkerUtil
 }
 
 dependencies {
@@ -72,6 +74,9 @@ dependencies {
   testImplementation sourceSets.testannotations.output
 
   testannotationsImplementation project(':checker-qual')
+
+  checkerQual project(':checker-qual')
+  checkerUtil project(':checker-util')
 }
 
 // It's not clear why this dependencies exists, but Gradle issues the following warning:
@@ -98,28 +103,22 @@ jar {
 // checker.jar is copied to checker/dist/ when it is built by the shadowJar task.
 task assembleForJavac(dependsOn: shadowJar, group: 'Build') {
   description = 'Builds or downloads jars required by CheckerMain and puts them in checker/dist/.'
-  dependsOn project(':checker-qual').tasks.jar
   doLast {
-    def checkerQualJarFile = file(project(':checker-qual').tasks.getByName('jar').archiveFile)
-    if (!checkerQualJarFile.exists()) {
-      throw new GradleException('File not found: ' + checkerQualJarFile)
-    }
+
     copy {
-      from checkerQualJarFile
+      from configurations.checkerQual
       into "${projectDir}/dist"
+      duplicatesStrategy = DuplicatesStrategy.INCLUDE
       rename { String fileName ->
         // remove version number on checker-qual.jar
         fileName.replace(fileName, 'checker-qual.jar')
       }
     }
 
-    def checkerUtilJarFile = file(project(':checker-util').tasks.getByName('jar').archiveFile)
-    if (!checkerUtilJarFile.exists()) {
-      throw new GradleException('File not found: ' + checkerUtilJarFile)
-    }
     copy {
-      from checkerUtilJarFile
+      from configurations.checkerUtil
       into "${projectDir}/dist"
+      duplicatesStrategy = DuplicatesStrategy.INCLUDE
       rename { String fileName ->
         // remove version number on checker-util.jar
         fileName.replace(fileName, 'checker-util.jar')
@@ -589,8 +588,7 @@ tasks.register('ainferTestCheckerGenerateJaifsInsertAnnotations', InsertAnnotati
 
   afuDir = '../annotation-file-utilities'
   testDir = 'tests/ainfer-testchecker'
-  def checkerQualJarFile = file(project(':checker-qual').tasks.getByName('jar').archiveFile)
-  classpath = "${sourceSets.test.output.asPath}:${checkerQualJarFile}:"
+  classpath = "${sourceSets.test.output.asPath}:${configurations.checkerQual.singleFile}:"
 }
 
 task ainferTestCheckerValidateJaifs(type: Test) {
@@ -621,7 +619,7 @@ task ainferIndexGenerateAjava(type: Test) {
   dependsOn(compileTestJava)
   doFirst {
     delete('tests/ainfer-index/annotated')
-    delete("${buildDir}/ainfer-index/")
+    delete("${layout.buildDir}/ainfer-index/")
   }
   outputs.upToDateWhen { false }
   include '**/AinferIndexAjavaGenerationTest.class'
@@ -786,8 +784,7 @@ tasks.register('ainferNullnessGenerateJaifsInsertAnnotations', InsertAnnotations
 
   afuDir = '../annotation-file-utilities'
   testDir = 'tests/ainfer-nullness/'
-  def checkerQualJarFile = file(project(':checker-qual').tasks.getByName('jar').archiveFile)
-  classpath = "${sourceSets.test.output.asPath}:${checkerQualJarFile}:"
+  classpath = "${sourceSets.test.output.asPath}:${configurations.checkerQual.singleFile}:"
 }
 
 task ainferNullnessValidateJaifs(type: Test) {
