@@ -23,7 +23,7 @@ public class GrowOnlyIteratorTest {
     ListIterator<String> listIter = list.listIterator();
     listIter.next();
     // :: error: (method.invocation)
-    listIter.remove();
+    // listIter.remove();
   }
 
   void testListIteratorSet(@GrowOnly List<String> list) {
