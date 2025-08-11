@@ -2,6 +2,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.stream.Collectors;
 import org.checkerframework.checker.index.qual.GrowOnly;
 
 /**
@@ -109,6 +110,6 @@ public class GrowOnlyIteratorTest {
     list.stream().filter(s -> s.length() > 3).count();
 
     // Collecting to new list should be allowed
-    List<String> filtered = list.stream().filter(s -> s.length() > 3).toList();
+    List<String> filtered = list.stream().filter(s -> s.length() > 3).collect(Collectors.toList());
   }
 }
