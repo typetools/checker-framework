@@ -696,7 +696,7 @@ javadoc.dependsOn(allJavadoc)
 
 tasks.register('cleanCfManual', Exec) {
   description = 'Clean the manual'
-  commandLine 'make', '-C', 'docs/manual/checker-framework', 'clean'
+  commandLine 'make', '-C', 'docs/manual', 'clean'
 }
 
 tasks.register('cleanAfuManual', Exec) {
@@ -788,7 +788,7 @@ tasks.register('makeCfManual', Exec) {
   dependsOn('allJavadoc')
   description = 'Build the Checker Framework manual'
   // Don't make all because it will re-run allJavadoc which causes problems when building the release.
-  commandLine 'make', '-C', 'docs/manual/checker-framework', 'manual.pdf', 'manual.html'
+  commandLine 'make', '-C', 'docs/manual/', 'manual.pdf', 'manual.html'
 }
 
 interface InjectedExecOps {
@@ -802,7 +802,7 @@ tasks.register('makeAFUFigures', Exec){
   executable 'make'
   args "-C", "${afuManualDir}/figures"
 }
-tasks.register('makeAnnotationFileFormat') {
+tasks.register('makeAfuManual') {
   dependsOn getPlumeBib
   dependsOn makeAFUFigures
   description = 'Make documentation: annotation-file-format.{html,pdf}.'
@@ -834,7 +834,7 @@ tasks.register('makeAnnotationFileFormat') {
 
 tasks.register('manual'){
   description = 'Build the manual'
-  dependsOn('makeCfManual','makeAnnotationFileFormat', ':dataflow:manual')
+  dependsOn('makeCfManual','makeAfuManual', ':dataflow:manual')
 }
 
 tasks.register('getPlumeBib', CloneTask) {

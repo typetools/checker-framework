@@ -38,10 +38,10 @@ tasks.register('updateVersionNumbersAFU', Copy){
 tasks.register('updateVersionNumbersInDocs', Copy) {
   into layout.buildDirectory.file('updateVersionNumbers/docs/')
   from('docs/') {
-    include 'manual/annotation-file-utilities/annotation-file-utilities.html',
+    include 'annotation-file-utilities/annotation-file-utilities.html',
         'checker-framework-quick-start.html',
         'checker-framework-webpage.html',
-        'manual/checker-framework/introduction.tex'
+        'manual/introduction.tex'
 
     filter { String line ->
       line = line.replaceAll("checker-framework-${releaseVersionRegex}{0,1}", "checker-framework-${releaseVersion}")
@@ -50,7 +50,7 @@ tasks.register('updateVersionNumbersInDocs', Copy) {
   }
 
   from('docs') {
-    include 'manual/checker-framework/external-tools.tex'
+    include 'manual/external-tools.tex'
     filter { String line ->
       line = line.replaceAll("checker-framework-${releaseVersionRegex}{0,1}", "checker-framework-${releaseVersion}");
 
@@ -69,7 +69,7 @@ tasks.register('updateVersionNumbersInDocs', Copy) {
   }
 
   from('docs') {
-    include 'manual/checker-framework/manual.tex'
+    include 'manual/manual.tex'
 
     filter { String line ->
       line = line.replaceAll("ReleaseInfo\\}\\{(.*)\\}", "ReleaseInfo}{${releaseVersion} (${currentDate})}");
@@ -203,7 +203,7 @@ tasks.register('copyCFWebsite', Copy) {
   }
 
   // Copy manual files
-  from('docs/manual/checker-framework'){
+  from('docs/manual'){
     into 'manual'
     include 'manual.html',
         'manual.pdf',
@@ -247,7 +247,7 @@ tasks.register('copyAFUWebsite', Copy) {
   String destDir = project.property('afuWebsite')
   destinationDir = file(destDir)
 
-  from 'docs/manual/annotation-file-utilities'
+  from 'docs/annotation-file-utilities'
 
   include 'annotation-file-utilities.html'
   include 'annotation-file-format.html'
