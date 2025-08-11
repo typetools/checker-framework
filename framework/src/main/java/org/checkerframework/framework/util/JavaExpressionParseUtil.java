@@ -103,8 +103,6 @@ public class JavaExpressionParseUtil {
   /** The replacement for a formal parameter in "#2" syntax. */
   private static final String PARAMETER_REPLACEMENT = PARAMETER_PREFIX + "$1";
 
-  private static final Pattern ERROR_MARKER = Pattern.compile("\\[error for expression:");
-
   /** Binary operations that return {@code boolean}. */
   private static final Set<Tree.Kind> COMPARISON_OPERATORS =
       EnumSet.of(
@@ -146,13 +144,6 @@ public class JavaExpressionParseUtil {
 
     String expressionWithParameterNames =
         StringsPlume.replaceAll(expression, FORMAL_PARAMETER, PARAMETER_REPLACEMENT);
-    // bail out early on clearly non-Java inputs
-    if (ERROR_MARKER.matcher(expression).find()) {
-      throw constructJavaExpressionParseError(expression, "the expression did not parse");
-    }
-    if (expressionWithParameterNames.indexOf('#') >= 0) {
-      throw constructJavaExpressionParseError(expression, "the expression did not parse");
-    }
     ExpressionTree exprTree;
     try {
       exprTree = JavacParseUtil.parseExpression(expressionWithParameterNames);
