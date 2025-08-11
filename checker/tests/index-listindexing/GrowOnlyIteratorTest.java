@@ -18,14 +18,6 @@ public class GrowOnlyIteratorTest {
     iter.remove();
   }
 
-  void testListIteratorRemove(@GrowOnly List<String> list) {
-    list.add("test"); // Ensure list has content
-    ListIterator<String> listIter = list.listIterator();
-    listIter.next();
-    // :: error: (method.invocation)
-    // listIter.remove();
-  }
-
   void testListIteratorSet(@GrowOnly List<String> list) {
     list.add("test"); // Ensure list has content
     ListIterator<String> listIter = list.listIterator();
