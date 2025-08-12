@@ -2,6 +2,7 @@ package org.checkerframework.afu.scenelib.util.coll;
 
 import java.util.Iterator;
 import java.util.Map;
+import org.checkerframework.checker.mustcall.qual.MustCall;
 
 /**
  * A {@link VivifyingMap} is a map with two additional methods:
@@ -12,7 +13,7 @@ import java.util.Map;
  *   <li>{@link #prune} removes empty values
  * </ul>
  */
-public abstract class VivifyingMap<K, V> extends WrapperMap<K, V> {
+public abstract class VivifyingMap<K, V> extends WrapperMap<K, @MustCall({}) V> {
   /**
    * Constructs a new {@link VivifyingMap} backed by the given map. All reads and writes to this
    * {@link VivifyingMap} go through to the backing map. However, since the {@link VivifyingMap}
