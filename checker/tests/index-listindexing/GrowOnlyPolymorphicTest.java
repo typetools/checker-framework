@@ -2,6 +2,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.stream.Stream;
 import org.checkerframework.checker.index.qual.GrowOnly;
 import org.checkerframework.checker.index.qual.Shrinkable;
@@ -16,7 +17,7 @@ public class GrowOnlyPolymorphicTest {
       @GrowOnly List<String> growOnlyList, @Shrinkable List<String> shrinkableList) {
     // Test that iterators preserve qualifiers
     Iterator<String> growOnlyIter = growOnlyList.iterator();
-    Iterator<String> shrinkableIter = shrinkableList.iterator();
+    @Shrinkable Iterator<String> shrinkableIter = shrinkableList.iterator();
 
     // GrowOnly iterator should not allow removal
     growOnlyIter.next();
@@ -29,6 +30,7 @@ public class GrowOnlyPolymorphicTest {
 
     // Test subList behavior - should preserve qualifiers
     List<String> growOnlySublist = growOnlyList.subList(0, Math.min(1, growOnlyList.size()));
+    @Shrinkable
     List<String> shrinkableSublist = shrinkableList.subList(0, Math.min(1, shrinkableList.size()));
 
     // GrowOnly sublist should not allow shrinking operations
@@ -52,7 +54,7 @@ public class GrowOnlyPolymorphicTest {
 
   void testListIteratorPolymorphism(@GrowOnly List<String> growOnlyList) {
     // Test that listIterator also preserves qualifiers
-    java.util.ListIterator<String> listIter = growOnlyList.listIterator();
+    @GrowOnly ListIterator<String> listIter = growOnlyList.listIterator();
 
     // Should allow navigation and addition
     if (listIter.hasNext()) {
