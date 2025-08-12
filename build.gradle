@@ -791,44 +791,11 @@ tasks.register('makeCfManual', Exec) {
   commandLine 'make', '-C', 'docs/manual/', 'manual.pdf', 'manual.html'
 }
 
-interface InjectedExecOps {
-  @javax.inject.Inject
-  ExecOperations getExecOps()
-}
-
-tasks.register('makeAFUFigures', Exec){
-  description = 'Make figures for AFU.'
-
-  executable 'make'
-  args "-C", "${afuManualDir}/figures"
-}
-tasks.register('makeAfuManual') {
-  dependsOn getPlumeBib
-  dependsOn makeAFUFigures
+tasks.register('makeAfuManual', Exec){
   description = 'Make documentation: annotation-file-format.{html,pdf}.'
 
-  def injected = project.objects.newInstance(InjectedExecOps)
-
-  doLast {
-    injected.execOps.exec {
-      workingDir(file(afuManualDir))
-      executable 'latexmk'
-      args 'annotation-file-format.tex'
-      environment BIBINPUTS: ".:${plumeBibHome}"
-    }
-
-    injected.execOps.exec {
-      workingDir(file(afuManualDir))
-      executable 'hevea'
-      args = [
-        "-fix",
-        "-exec",
-        "xxdate.exe",
-        "urlhref.hva",
-        "annotation-file-format.tex"
-      ]
-    }
-  }
+  executable 'make'
+  args "-C", "${afuManualDir}"
 }
 
 

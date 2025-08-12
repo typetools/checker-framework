@@ -102,7 +102,7 @@ check-labels:
 
 export BIBINPUTS = $BIBINPUTS:.:plume-bib
 plume-bib:
-	cd ../../.. && ./gradlew getPlumeBib
+	cd ../.. && ./gradlew getPlumeBib
 
 
 # Leaves manual.html, and .svg files that it references.
