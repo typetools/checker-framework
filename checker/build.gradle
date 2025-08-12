@@ -28,7 +28,6 @@ configurations {
     canBeResolved = false
   }
   checkerQual
-  checkerUtil
 }
 
 dependencies {
@@ -76,7 +75,6 @@ dependencies {
   testannotationsImplementation project(':checker-qual')
 
   checkerQual project(':checker-qual')
-  checkerUtil project(':checker-util')
 }
 
 // It's not clear why this dependencies exists, but Gradle issues the following warning:
@@ -107,27 +105,6 @@ task assembleForJavac(dependsOn: shadowJar, group: 'Build') {
   dependsOn project(':checker-util').tasks.jar
 
   doLast {
-
-    copy {
-      from configurations.checkerQual
-      into "${projectDir}/dist"
-      duplicatesStrategy = DuplicatesStrategy.INCLUDE
-      rename { String fileName ->
-        // remove version number on checker-qual.jar
-        fileName.replace(fileName, 'checker-qual.jar')
-      }
-    }
-
-    copy {
-      from configurations.checkerUtil
-      into "${projectDir}/dist"
-      duplicatesStrategy = DuplicatesStrategy.INCLUDE
-      rename { String fileName ->
-        // remove version number on checker-util.jar
-        fileName.replace(fileName, 'checker-util.jar')
-      }
-    }
-
     copy {
       // This is required to *run* the Checker Framework on JDK 8.
       from configurations.javacJar
