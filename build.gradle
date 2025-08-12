@@ -124,7 +124,7 @@ spotless {
   //     > Could not create task ':checker-qual:spotlessJava'.
   //        > File signature can only be created for existing regular files, given:
   //          .../checker-framework/checker-qual/build/libs/checker-qual-3.25.1-SNAPSHOT.jar
-  predeclareDepsFromBuildscript()
+  predeclareDeps()
 }
 
 spotlessPredeclare {
