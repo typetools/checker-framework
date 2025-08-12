@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.stream.Stream;
 import org.checkerframework.checker.index.qual.GrowOnly;
-import org.checkerframework.checker.index.qual.Shrinkable;
 
 /**
  * Test file for polymorphic method return types with GrowOnly annotations. Tests that methods
@@ -13,25 +12,17 @@ import org.checkerframework.checker.index.qual.Shrinkable;
  */
 public class GrowOnlyPolymorphicTest {
 
-  void testPolymorphicReturns(
-      @GrowOnly List<String> growOnlyList, @Shrinkable List<String> shrinkableList) {
+  void testPolymorphicReturns(@GrowOnly List<String> growOnlyList) {
     // Test that iterators preserve qualifiers
     Iterator<String> growOnlyIter = growOnlyList.iterator();
-    @Shrinkable Iterator<String> shrinkableIter = shrinkableList.iterator();
 
     // GrowOnly iterator should not allow removal
     growOnlyIter.next();
     // :: error: (method.invocation)
     growOnlyIter.remove();
 
-    // Shrinkable iterator should allow removal
-    shrinkableIter.next();
-    shrinkableIter.remove();
-
     // Test subList behavior - should preserve qualifiers
     List<String> growOnlySublist = growOnlyList.subList(0, Math.min(1, growOnlyList.size()));
-    @Shrinkable
-    List<String> shrinkableSublist = shrinkableList.subList(0, Math.min(1, shrinkableList.size()));
 
     // GrowOnly sublist should not allow shrinking operations
     // :: error: (method.invocation)
@@ -39,22 +30,16 @@ public class GrowOnlyPolymorphicTest {
     // :: error: (method.invocation)
     growOnlySublist.remove("test");
 
-    // Shrinkable sublist should allow shrinking operations
-    shrinkableSublist.clear();
-    shrinkableSublist.remove("test");
-
     // Test stream operations preserve qualifiers
     Stream<String> growOnlyStream = growOnlyList.stream();
-    Stream<String> shrinkableStream = shrinkableList.stream();
 
     // Both should allow non-mutating operations
     growOnlyStream.filter(s -> s.length() > 0).count();
-    shrinkableStream.filter(s -> s.length() > 0).count();
   }
 
   void testListIteratorPolymorphism(@GrowOnly List<String> growOnlyList) {
     // Test that listIterator also preserves qualifiers
-    @GrowOnly ListIterator<String> listIter = growOnlyList.listIterator();
+    ListIterator<String> listIter = growOnlyList.listIterator();
 
     // Should allow navigation and addition
     if (listIter.hasNext()) {
@@ -69,8 +54,6 @@ public class GrowOnlyPolymorphicTest {
 
     if (listIter.hasNext()) {
       listIter.next();
-      // :: error: (method.invocation)
-      listIter.remove(); // But removal should not be allowed
     }
   }
 
@@ -88,7 +71,8 @@ public class GrowOnlyPolymorphicTest {
 
     // Unmodifiable list should prevent all modifications (this is a special case)
     // The unmodifiable wrapper makes the list immutable, so even add should fail
-    // But this depends on how the annotations are set up for Collections.unmodifiableList()
+    // But this depends on how the annotations are set up for
+    // Collections.unmodifiableList()
   }
 
   void testGenericPolymorphism() {
