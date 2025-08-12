@@ -257,7 +257,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * effect to the value could change them; set this field to true.
    */
   // Not final so that subclasses can set it.
-  public boolean sideEffectsUnrefineAliases = false;
+  public boolean sideEffectsUnrefineAliases = false; // TODO: maybe remove it
 
   /**
    * True if this checker either has one or more subcheckers, or if this checker is a subchecker.
