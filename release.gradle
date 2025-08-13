@@ -17,11 +17,15 @@ ext {
 tasks.register('updateVersionNumbers', Copy){
   dependsOn('updateVersionNumbersInDocs')
   dependsOn('updateVersionNumbersAFU')
+  // It's not possible to update the versions numbers in place, so updateVersionNumbersInDocs and
+  // updateVersionNumbersAFU copy to temporary directory, then this task copies the changed files
+  // back into there original locations.
   from layout.buildDirectory.file('updateVersionNumbers/')
   into layout.projectDirectory
 }
 
 tasks.register('updateVersionNumbersAFU', Copy){
+  // It's not possible to update the versions numbers in place, so copy to temporary directory.
   into layout.buildDirectory.file('updateVersionNumbers/annotation-file-utilities')
   from 'annotation-file-utilities'
   include 'src/main/java/org/checkerframework/afu/scenelib/io/classfile/ClassFileReader.java'
@@ -36,6 +40,7 @@ tasks.register('updateVersionNumbersAFU', Copy){
 }
 
 tasks.register('updateVersionNumbersInDocs', Copy) {
+  // It's not possible to update the versions numbers in place, so copy to temporary directory.
   into layout.buildDirectory.file('updateVersionNumbers/docs/')
   from('docs/') {
     include 'annotation-file-utilities/annotation-file-utilities.html',
