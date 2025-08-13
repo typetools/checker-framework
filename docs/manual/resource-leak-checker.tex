@@ -644,7 +644,8 @@ feature that it is unable to reason about.
 \sectionAndLabel{Collections of resources}{resource-leak-collections}
 
 The Resource Leak Checker handles homogeneous collections of resources. In a homogeneous collection, every element
-has exactly the same must-call and called-methods properties. Instances of \texttt{java.util.Iterable} are supported this section calls those ``collections''. Usage of \texttt{java.util.Iterator}s over \texttt{java.util.Iterable}s are also supported, but they are not considered collections.
+has exactly the same must-call and called-methods properties. Instances of \texttt{java.util.Iterable} are supported;
+this section calls those ``collections''. Usage of \texttt{java.util.Iterator}s over \texttt{java.util.Iterable}s are also supported, but they are not considered collections.
 
 What the checker effectively verifies is that any resource collection is properly disposed of. That is, there is some loop that definitely calls the required methods on all elements of the collection.
 
