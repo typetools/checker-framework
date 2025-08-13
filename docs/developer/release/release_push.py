@@ -253,7 +253,7 @@ def check_all_links(
 
     if not is_checker_check_empty:
         print("Link checker results can be found at:\n")
-        print("\t" + checker_check + "\n")
+        print(f"\t{checker_check}\n")
         if not prompt_yes_no("Continue despite link checker results?", True):
             release_option = ""
             if not test_mode:
