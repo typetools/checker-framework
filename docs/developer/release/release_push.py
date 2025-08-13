@@ -4,15 +4,16 @@
 # See README-release-process.html for more information
 
 import pathlib
+import subprocess
 import sys
 from pathlib import Path
 
 from release_utils import (
     continue_or_exit,
     current_distribution_by_website,
+    delete_directory,
+    delete_directory_if_exists,
     delete_if_exists,
-    delete_path,
-    delete_path_if_exists,
     ensure_group_access,
     get_announcement_email,
     has_command_line_option,
@@ -22,7 +23,6 @@ from release_utils import (
     push_changes_prompt_if_fail,
     read_first_line,
     set_umask,
-    subprocess,
     version_number_to_array,
 )
 from release_vars import (
@@ -48,7 +48,7 @@ from release_vars import (
 from sanity_checks import javac_sanity_check, maven_sanity_check
 
 
-def check_release_version(previous_release, new_release):
+def check_release_version(previous_release: str, new_release: str) -> None:
     """Ensure that the given new release version is greater than the given previous one.
 
     Raises:
@@ -65,7 +65,9 @@ def check_release_version(previous_release, new_release):
         )
 
 
-def copy_release_dir(path_to_dev_releases, path_to_live_releases, release_version):
+def copy_release_dir(
+    path_to_dev_releases: Path, path_to_live_releases: Path, release_version: str
+) -> Path:
     """Copy a release directory from the dev site to the live site.
 
     For example,
@@ -78,14 +80,14 @@ def copy_release_dir(path_to_dev_releases, path_to_live_releases, release_versio
     Raises:
         Exception: If the destination cannot be deleted.
     """
-    source_location = Path(path_to_dev_releases) / release_version
-    dest_location = Path(path_to_live_releases) / release_version
+    source_location = path_to_dev_releases / release_version
+    dest_location = path_to_live_releases / release_version
 
-    if pathlib.Path(dest_location).exists():
-        delete_path(dest_location)
+    if dest_location.exists():
+        delete_directory(dest_location)
 
-    if pathlib.Path(dest_location).exists():
-        raise Exception("Destination location exists: " + dest_location)
+    if dest_location.exists():
+        raise Exception("Destination location exists: " + str(dest_location))
 
     # The / at the end of the source location is necessary so that
     # rsync copies the files in the source directory to the destination directory
@@ -99,7 +101,7 @@ def copy_release_dir(path_to_dev_releases, path_to_live_releases, release_versio
     return dest_location
 
 
-def promote_release(path_to_releases, release_version):
+def promote_release(path_to_releases: Path, release_version: str) -> None:
     """Copy a release directory to the top level.
 
     For example,
@@ -113,25 +115,25 @@ def promote_release(path_to_releases, release_version):
     execute(cmd)
 
 
-def copy_htaccess():
+def copy_htaccess() -> None:
     """Copy the .htaccess file from the dev site to the live site."""
     live_htaccess = Path(LIVE_SITE_DIR) / ".htaccess"
     execute(f"rsync --times {Path(DEV_SITE_DIR) / '.htaccess'} {live_htaccess}")
     ensure_group_access(live_htaccess)
 
 
-def copy_releases_to_live_site(cf_version):
+def copy_releases_to_live_site(cf_version: str) -> None:
     """Copy the new release of the Checker Framework from the dev site to the live site."""
     checker_interm_releases_dir = Path(DEV_SITE_DIR) / "releases"
     copy_release_dir(checker_interm_releases_dir, CHECKER_LIVE_RELEASES_DIR, cf_version)
-    delete_path_if_exists(CHECKER_LIVE_API_DIR)
+    delete_directory_if_exists(CHECKER_LIVE_API_DIR)
     promote_release(CHECKER_LIVE_RELEASES_DIR, cf_version)
     afu_interm_releases_dir = Path(DEV_SITE_DIR) / "annotation-file-utilities" / "releases"
     copy_release_dir(afu_interm_releases_dir, AFU_LIVE_RELEASES_DIR, cf_version)
     promote_release(AFU_LIVE_RELEASES_DIR, cf_version)
 
 
-def ensure_group_access_to_releases():
+def ensure_group_access_to_releases() -> None:
     """Give group access to all files and directories in the "releases" subdirectories.
 
     on the live web site for the AFU and the Checker Framework.
@@ -140,7 +142,7 @@ def ensure_group_access_to_releases():
     ensure_group_access(CHECKER_LIVE_RELEASES_DIR)
 
 
-def stage_maven_artifacts_in_maven_central():
+def stage_maven_artifacts_in_maven_central() -> None:
     """Stage the Checker Framework artifacts on Maven Central.
 
     After the
@@ -151,7 +153,7 @@ def stage_maven_artifacts_in_maven_central():
     having staged them.
     """
     gnupg_passphrase = read_first_line(
-        "/projects/swlab1/checker-framework/hosting-info/release-private.password"
+        Path("/projects/swlab1/checker-framework/hosting-info/release-private.password")
     )
     execute(
         (
@@ -163,16 +165,16 @@ def stage_maven_artifacts_in_maven_central():
     )
 
 
-def is_file_empty(filename):
+def is_file_empty(filename: Path) -> bool:
     """Return true if the given file has size 0.
 
     Returns:
         true if the given file has size 0.
     """
-    return pathlib.Path(filename).stat().st_size == 0
+    return filename.stat().st_size == 0
 
 
-def run_link_checker(site, output_file, additional_param=""):
+def run_link_checker(site: str, output_file: Path, additional_param: str = "") -> Path:
     """Run the link checker on the given web site and save the output to the given file.
 
     Additional parameters (if given) are passed directly to the link checker script.
@@ -186,9 +188,9 @@ def run_link_checker(site, output_file, additional_param=""):
     delete_if_exists(output_file)
     check_links_script = Path(SCRIPTS_DIR) / "checkLinks.sh"
     if additional_param == "":
-        cmd = ["sh", check_links_script, site]
+        cmd = ["sh", str(check_links_script), site]
     else:
-        cmd = ["sh", check_links_script, additional_param, site]
+        cmd = ["sh", str(check_links_script), additional_param, site]
     env = {"CHECKLINK": CHECKLINK}
 
     out_file = Path.open(output_file, "w+")
@@ -217,12 +219,12 @@ def run_link_checker(site, output_file, additional_param=""):
 
 
 def check_all_links(
-    afu_website,
-    checker_website,
-    suffix,
-    test_mode,
-    cf_version_of_broken_link_to_suppress="",
-):
+    afu_website: str,
+    checker_website: str,
+    suffix: str,
+    test_mode: bool,
+    cf_version_of_broken_link_to_suppress: str = "",
+) -> None:
     """Check all links on the given web sites for the AFU and the Checker Framework.
 
     The suffix parameter should be "dev" for the
@@ -236,7 +238,7 @@ def check_all_links(
     Raises:
         Exception: If there are link checking errors.
     """
-    afu_check = run_link_checker(afu_website, TMP_DIR + "/afu." + suffix + ".check")
+    afu_check = run_link_checker(afu_website, TMP_DIR / f"afu.{suffix}.check")
     additional_param = ""
     if cf_version_of_broken_link_to_suppress != "":
         additional_param = (
@@ -246,7 +248,7 @@ def check_all_links(
         )
     checker_check = run_link_checker(
         checker_website,
-        TMP_DIR + "/checker-framework." + suffix + ".check",
+        TMP_DIR / f"checker-framework.{suffix}.check",
         additional_param,
     )
 
@@ -257,9 +259,9 @@ def check_all_links(
     if errors_reported:
         print("Link checker results can be found at:\n")
     if not is_afu_check_empty:
-        print("\t" + afu_check + "\n")
+        print(f"\t{afu_check}\n")
     if not is_checker_check_empty:
-        print("\t" + checker_check + "\n")
+        print(f"\t{checker_check}\n")
     if errors_reported:
         if not prompt_yes_no("Continue despite link checker results?", True):
             release_option = ""
@@ -274,7 +276,7 @@ def check_all_links(
             )
 
 
-def push_interm_to_release_repos():
+def push_interm_to_release_repos() -> None:
     """Push the release to the GitHub repositories for the AFU and the Checker Framework.
 
     This is an irreversible step.
@@ -283,7 +285,7 @@ def push_interm_to_release_repos():
     push_changes_prompt_if_fail(INTERM_CHECKER_REPO)
 
 
-def validate_args(argv):
+def validate_args(argv: list[str]) -> None:
     """Validate the command-line arguments.
 
     Raises:
@@ -298,7 +300,7 @@ def validate_args(argv):
             raise Exception("Invalid arguments. " + ",".join(argv))
 
 
-def print_usage():
+def print_usage() -> None:
     """Print instructions on how to use this script, including how to set test or release mode."""
     print(
         "Usage: python3 release_build.py [release]\n"
@@ -308,7 +310,7 @@ def print_usage():
     )
 
 
-def main(argv):
+def main(argv: list[str]) -> None:
     """Copy the artifacts from the development web site to Maven Central and to the live site.
 
     It also performs link checking on the live site, pushes
@@ -327,7 +329,7 @@ def main(argv):
     validate_args(argv)
     test_mode = not has_command_line_option(argv, "release")
 
-    m2_settings = pathlib.Path("~").expanduser() + "/.m2/settings.xml"
+    m2_settings = str(pathlib.Path("~").expanduser()) + "/.m2/settings.xml"
     if not pathlib.Path(m2_settings).exists():
         raise Exception("File does not exist: " + m2_settings)
 
@@ -363,8 +365,8 @@ def main(argv):
     # version.
 
     print_step("Push Step 1: Checking release versions")  # SEMIAUTO
-    dev_afu_website = Path(DEV_SITE_URL) / "annotation-file-utilities"
-    live_afu_website = Path(LIVE_SITE_URL) / "annotation-file-utilities"
+    dev_afu_website = DEV_SITE_URL + "/annotation-file-utilities"
+    live_afu_website = LIVE_SITE_URL + "/annotation-file-utilities"
 
     dev_checker_website = DEV_SITE_URL
     live_checker_website = LIVE_SITE_URL
@@ -409,10 +411,10 @@ def main(argv):
     print_step("Push Step 4: Run all tests (takes a long time)")
     if prompt_yes_no("Perform this step?", True):
         ant_cmd = "./gradlew allTests"
-        execute(ant_cmd, True, False, CHECKER_FRAMEWORK)
+        execute(ant_cmd, CHECKER_FRAMEWORK)
 
         ant_cmd = "./gradlew test"
-        execute(ant_cmd, True, False, ANNO_FILE_UTILITIES)
+        execute(ant_cmd, ANNO_FILE_UTILITIES)
 
     # The Central Repository is a repository of build artifacts for build programs like Maven and
     # Ivy.  This step stages (but doesn't release) the Checker Framework's Maven artifacts in the
@@ -480,14 +482,12 @@ def main(argv):
     if not test_mode:
         if prompt_yes_no("Run javac sanity test on live release?", True):
             javac_sanity_check(live_checker_website, new_cf_version)
-            sanity_test_checker_framework_dir = SANITY_DIR + "/test-checker-framework"
+            sanity_test_checker_framework_dir = SANITY_DIR / "test-checker-framework"
             if not pathlib.Path(sanity_test_checker_framework_dir).is_dir():
-                execute("mkdir -p " + sanity_test_checker_framework_dir)
+                execute(f"mkdir -p {sanity_test_checker_framework_dir}")
             sanity_test_script = Path(SCRIPTS_DIR) / "test-checker-framework.sh"
             execute(
-                "sh " + sanity_test_script + " " + new_cf_version,
-                True,
-                False,
+                "sh " + str(sanity_test_script) + " " + new_cf_version,
                 sanity_test_checker_framework_dir,
             )
     else:
@@ -646,4 +646,4 @@ def main(argv):
 
 
 if __name__ == "__main__":
-    sys.exit(main(sys.argv))
+    main(sys.argv)

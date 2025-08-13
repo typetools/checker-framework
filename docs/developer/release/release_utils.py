@@ -8,6 +8,8 @@ Created by Jonathan Burke 11/21/2012
 Copyright (c) 2012 University of Washington
 """
 
+from __future__ import annotations
+
 import os
 import os.path
 import pathlib
@@ -20,13 +22,13 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 
-from release_vars import execute
+from release_vars import execute, execute_output, execute_status
 
 # =========================================================================================
 # Parse Args Utils # TODO: Perhaps use argparse module
 
 
-def has_command_line_option(argv, argument):
+def has_command_line_option(argv: list[str], argument: str) -> bool:
     """Return True if the given command line arguments contain the specified argument.
 
     Returns:
@@ -39,7 +41,12 @@ def has_command_line_option(argv, argument):
 # Command utils
 
 
-def execute_write_to_file(command_args, output_file_path, halt_if_fail=True, working_dir=None):
+def execute_write_to_file(
+    command_args: str,
+    output_file_path: Path,
+    halt_if_fail: bool = True,
+    working_dir: Path | None = None,
+) -> None:
     """Execute the given command, capturing the output to the given file.
 
     Raises:
@@ -60,15 +67,15 @@ def execute_write_to_file(command_args, output_file_path, halt_if_fail=True, wor
         raise Exception(msg)
 
 
-def check_command(command):
+def check_command(command: str) -> None:
     """Throw an exception if the command is not on the PATH."""
-    p = execute(["which", command], False)
+    p = execute_status(["which", command])
     if p:
         raise AssertionError("command not found: " + command)
     print()
 
 
-def prompt_yes_no(msg, default=False):
+def prompt_yes_no(msg: str, default: bool = False) -> bool:
     """Print the given message and continually prompt the user until they answer yes or no.
 
     Returns:
@@ -83,7 +90,7 @@ def prompt_yes_no(msg, default=False):
     return result == "yes" or result == "Yes"
 
 
-def prompt_yn(msg):
+def prompt_yn(msg: str) -> bool:
     """Print the given message and continually prompts the user until they answer y or n.
 
     Returns:
@@ -97,13 +104,13 @@ def prompt_yn(msg):
     return y_or_n == "y"
 
 
-def prompt_to_continue():
+def prompt_to_continue() -> None:
     """Prompts the user to continue, until they enter yes."""
     while not prompt_yes_no("Continue?"):
         pass
 
 
-def prompt_w_default(msg, default, valid_regex=None):
+def prompt_w_default(msg: str, default: str, valid_regex: str | None = None) -> str:
     """Only accept answers that match valid_regex.  If default is None, require an answer.
 
     Returns:
@@ -129,7 +136,7 @@ def prompt_w_default(msg, default, valid_regex=None):
     return answer
 
 
-def check_tools(tools):
+def check_tools(tools: list[str]) -> None:
     """Verify that each tools is on the PATH."""
     print("\nChecking to make sure the following programs are installed:")
     print(", ".join(tools))
@@ -142,7 +149,7 @@ def check_tools(tools):
     print()
 
 
-def continue_or_exit(msg):
+def continue_or_exit(msg: str) -> None:
     """Prompts the user whether to continue executing the script."""
     continue_script = prompt_w_default(
         msg + " Continue ('no' will exit the script)?", "yes", "^(Yes|yes|No|no)$"
@@ -156,7 +163,7 @@ def continue_or_exit(msg):
 
 
 # From http://stackoverflow.com/a/1714190/173852, but doesn't strip trailing zeroes
-def version_number_to_array(version_num):
+def version_number_to_array(version_num: str) -> list[int]:
     """Given a version number, return an array of the elements, as integers.
 
     Returns:
@@ -165,7 +172,7 @@ def version_number_to_array(version_num):
     return [int(x) for x in version_num.split(".")]
 
 
-def increment_version(version_num):
+def increment_version(version_num: str) -> str:
     """Return the next incremental version after the argument.
 
     Returns:
@@ -177,7 +184,7 @@ def increment_version(version_num):
     return ".".join(str(x) for x in version_array)
 
 
-def test_increment_version():
+def test_increment_version() -> None:
     """Run test cases to ensure that increment_version works correctly."""
     assert increment_version("1.0.3") == "1.0.4"
     assert increment_version("1.0.9") == "1.0.10"
@@ -197,7 +204,7 @@ def test_increment_version():
     assert increment_version("3.22.6.1") == "3.22.7"
 
 
-def current_distribution_by_website(site):
+def current_distribution_by_website(site: str) -> str:
     """Return the Checker Framework version from the Checker Framework website.
 
     Returns:
@@ -207,6 +214,8 @@ def current_distribution_by_website(site):
     ver_re = re.compile(r"<!-- checker-framework-zip-version -->checker-framework-(.*)\.zip")
     text = urllib.request.urlopen(url=site).read().decode("utf-8")
     result = ver_re.search(text)
+    if result is None:
+        raise Exception("Didn't find zip version in " + site)
     return result.group(1)
 
 
@@ -215,26 +224,28 @@ def current_distribution_by_website(site):
 
 
 def git_bare_repo_exists_at_path(
-    repo_root,
-):  # Bare git repos have no .git directory but they have a refs directory
+    repo_root: Path,
+) -> bool:
     """Return true if a bare git repository exists at the given filesystem path.
+
+    Bare git repos have no .git directory but they have a refs directory.
 
     Returns:
         true if a bare git repository exists at the given filesystem path.
     """
-    return pathlib.Path(repo_root + "/refs").is_dir()
+    return (repo_root / "refs").is_dir()
 
 
-def git_repo_exists_at_path(repo_root):
+def git_repo_exists_at_path(repo_root: Path) -> bool:
     """Return true if a (bare or non-bare) git repository exists at the given filesystem path.
 
     Returns:
         true if a (bare or non-bare) git repository exists at the given filesystem path.
     """
-    return pathlib.Path(repo_root + "/.git").is_dir() or git_bare_repo_exists_at_path(repo_root)
+    return (repo_root / ".git").is_dir() or git_bare_repo_exists_at_path(repo_root)
 
 
-def push_changes_prompt_if_fail(repo_root):
+def push_changes_prompt_if_fail(repo_root: Path) -> None:
     """Attempt to push changes, including tags, for the repository at the given filesystem path.
 
     In case of failure, ask the user
@@ -249,14 +260,8 @@ def push_changes_prompt_if_fail(repo_root):
         if result == 0:
             break
         print(
-            "Could not push from: "
-            + repo_root
-            + "; result="
-            + str(result)
-            + " for command: `"
-            + cmd
-            + "` in "
-            + pathlib.Path.cwd()
+            f"Could not push from: {repo_root}; result={result} for command: `{cmd}`"
+            f" in {pathlib.Path.cwd()}"
         )
         if not prompt_yn(
             "Try again (responding 'n' will skip this push command but will not exit the script) ?"
@@ -264,17 +269,16 @@ def push_changes_prompt_if_fail(repo_root):
             break
 
 
-def push_changes(repo_root):
+def push_changes(repo_root: Path) -> None:
     """Push changes, including tags, for the repository at the given filesystem path."""
     execute("git push --tags", working_dir=repo_root)
     execute("git push origin master", working_dir=repo_root)
 
 
-def update_repo(path, bareflag):
+def update_repo(path: Path, bareflag: bool) -> None:
     """Pull the latest changes to the given repo and update.
 
-    The bareflag
-    parameter indicates whether the updated repo must be a bare git repo.
+    The bareflag parameter indicates whether the updated repo must be a bare git repo.
     """
     if bareflag:
         execute("git fetch origin master:master", working_dir=path)
@@ -282,58 +286,60 @@ def update_repo(path, bareflag):
         execute("git pull --ff-only", working_dir=path)
 
 
-def commit_tag_and_push(version, path, tag_prefix):
+def commit_tag_and_push(version: str, path: Path, tag_prefix: str) -> None:
     """Commit the changes made for this release, add a tag, and push these changes."""
     # Do nothing (instead of erring) if there is nothing to commit.
-    if execute("git diff-index --quiet HEAD", False, False, working_dir=path) != 0:
+    if execute_status("git diff-index --quiet HEAD", working_dir=path) != 0:
         execute(f'git commit -a -m "new release {version}"', working_dir=path)
     execute(f"git tag {tag_prefix}{version}", working_dir=path)
     push_changes(path)
 
 
-def clone_from_scratch_or_update(src_repo, dst_repo, clone_from_scratch, bareflag):
+def clone_from_scratch_or_update(
+    src_repo: str | Path, dst_repo_dir: Path, clone_from_scratch: bool, bareflag: bool
+) -> None:
     """Clone or update the repo.
 
     If the clone_from_scratch flag is True, clone the given git
-    repo from scratch into the filesystem path specified by dst_repo,
+    repo from scratch into the filesystem path specified by dst_repo_dir,
     deleting it first if the repo is present on the filesystem.
-    Otherwise, if a repo exists at the filesystem path given by dst_repo, pull
+    Otherwise, if a repo exists at the filesystem path given by dst_repo_dir, pull
     the latest changes to it and update it. If the repo does not exist, clone it
     from scratch. The bareflag parameter indicates whether the cloned/updated
     repo must be a bare git repo.
     """
     if clone_from_scratch:
-        delete_and_clone(src_repo, dst_repo, bareflag)
+        delete_and_clone(str(src_repo), dst_repo_dir, bareflag)
     else:
-        if pathlib.Path(dst_repo).exists():
-            update_repo(dst_repo, bareflag)
+        if pathlib.Path(dst_repo_dir).exists():
+            update_repo(dst_repo_dir, bareflag)
         else:
-            clone(src_repo, dst_repo, bareflag)
+            clone(str(src_repo), dst_repo_dir, bareflag)
 
 
-def delete_and_clone(src_repo, dst_repo, bareflag):
-    """Clone the given git repo from scratch into the filesystem path specified by dst_repo.
+def delete_and_clone(src_repo: str, dst_repo_dir: Path, bareflag: bool) -> None:
+    """Clone the given git repo from scratch into the filesystem path specified by dst_repo_dir.
 
     If a repo exists at the filesystem path given
-    by dst_repo, delete it first. The bareflag parameter indicates whether
+    by dst_repo_dir, delete it first. The bareflag parameter indicates whether
     the cloned repo must be a bare git repo.
     """
-    delete_path_if_exists(dst_repo)
-    clone(src_repo, dst_repo, bareflag)
+    delete_directory_if_exists(dst_repo_dir)
+    clone(src_repo, dst_repo_dir, bareflag)
 
 
-def clone(src_repo, dst_repo, bareflag):
-    """Clone the given git repo from scratch into the filesystem path specified by dst_repo.
+def clone(src_repo: str, dst_repo_dir: Path, bareflag: bool) -> None:
+    """Clone the given git repo from scratch into the filesystem path specified by dst_repo_dir.
 
     The bareflag parameter indicates whether the cloned repo must be a bare git repo.
     """
     flags = ""
     if bareflag:
         flags = "--bare"
-    execute(f"git clone --quiet {flags} {src_repo} {dst_repo}")
+    execute(f"git clone --quiet {flags} {src_repo} {dst_repo_dir}")
 
 
-def is_repo_cleaned_and_updated(repo):
+def is_repo_cleaned_and_updated(repo_dir: Path) -> bool:
     """Return true if the repository at the given filesystem path is clean and up-to-date.
 
     Clean means there are no committed changes and no untracked files in the working tree.
@@ -346,46 +352,40 @@ def is_repo_cleaned_and_updated(repo):
     Returns:
         true if the repository at the given filesystem path is clean and up-to-date.
     """
-    # The idiom "not execute(..., capture_output=True)" evaluates to True when the captured output
-    # is empty.
-    if git_bare_repo_exists_at_path(repo):
-        execute("git fetch origin", working_dir=repo)
-        is_updated = not execute(
-            "git diff master..FETCH_HEAD", working_dir=repo, capture_output=True
-        )
+    # The idiom "not execute_output(...)" evaluates to True when the captured output is empty.
+    if git_bare_repo_exists_at_path(repo_dir):
+        execute("git fetch origin", working_dir=repo_dir)
+        is_updated = not execute_output("git diff master..FETCH_HEAD", working_dir=repo_dir)
         return is_updated
     # Could add "--untracked-files=no" to this command
-    is_clean = not execute("git status --porcelain", working_dir=repo, capture_output=True)
-    execute("git fetch origin", working_dir=repo)
-    is_updated = not execute(
-        "git diff origin/master..master", working_dir=repo, capture_output=True
-    )
+    is_clean = not execute_output("git status --porcelain", working_dir=repo_dir)
+    execute("git fetch origin", working_dir=repo_dir)
+    is_updated = not execute_output("git diff origin/master..master", working_dir=repo_dir)
     return is_clean and is_updated
 
 
-def check_repos(repos, fail_on_error, is_intermediate_repo_list):
+def check_repos(repos: list[Path], fail_on_error: bool, is_intermediate_repo_list: bool) -> None:
     """Fail if the repository is not clean and up to date."""
     for repo in repos:
         if git_repo_exists_at_path(repo):
             if not is_repo_cleaned_and_updated(repo):
                 if is_intermediate_repo_list:
                     print(
-                        "\nWARNING: Intermediate repository "
-                        + repo
-                        + " is not up to date with respect to the live repository.\n"
-                        + "A separate warning will not be issued for a build repository that is "
-                        + "cloned off of the intermediate repository."
+                        f"\nWARNING: Intermediate repository {repo}"
+                        " is not up to date with respect to the live repository.\n"
+                        "A separate warning will not be issued for a build repository that is "
+                        "cloned off of the intermediate repository."
                     )
                 if fail_on_error:
-                    raise Exception("repo " + repo + " is not cleaned and updated!")
+                    raise Exception("repo " + str(repo) + " is not cleaned and updated!")
                 if not prompt_yn(
-                    repo + " is not clean and up to date!"
+                    f"{repo} is not clean and up to date!"
                     " Continue (answering 'n' will exit the script)?"
                 ):
-                    raise Exception(repo + " is not clean and up to date! Halting!")
+                    raise Exception("repo " + str(repo) + " is not clean and up to date!")
 
 
-def get_tag_line(lines, revision, tag_prefixes):
+def get_tag_line(lines: list[str], revision: str, tag_prefixes: list[str]) -> str | None:
     """Get the revision hash for the tag matching the given project revision.
 
     in
@@ -405,7 +405,7 @@ def get_tag_line(lines, revision, tag_prefixes):
     return None
 
 
-def get_commit_for_tag(revision, repo_file_path, tag_prefixes):
+def get_commit_for_tag(revision: str, repo_file_path: Path, tag_prefixes: list[str]) -> str:
     """Get the commit hash for the tag matching the given project revision.
 
     of
@@ -418,10 +418,8 @@ def get_commit_for_tag(revision, repo_file_path, tag_prefixes):
         the commit hash for the tag matching the given project revision.
     """
     # assume the first is the most recent
-    tags = execute(
+    tags = execute_output(
         "git rev-list " + tag_prefixes[0] + revision,
-        True,
-        True,
         working_dir=repo_file_path,
     )
     lines = tags.splitlines()
@@ -441,16 +439,16 @@ def get_commit_for_tag(revision, repo_file_path, tag_prefixes):
 # File Utils
 
 
-def wget_file(source_url, destination_dir):
+def wget_file(source_url: str, destination_dir: Path) -> None:
     """Download a file from the source URL to the given destination directory.
 
     Useful since download_binary does not seem to work on source files.
     """
-    print("DEST DIR: " + destination_dir)
-    execute(f"wget {source_url}", True, False, destination_dir)
+    print(f"DEST DIR: {destination_dir}")
+    execute(f"wget {source_url}", destination_dir)
 
 
-def download_binary(source_url, destination):
+def download_binary(source_url: str, destination: Path) -> None:
     """Download a file from the given URL and save its contents to the destination filename."""
     http_response = urllib.request.urlopen(url=source_url)
     content_length = http_response.headers["content-length"]
@@ -463,7 +461,7 @@ def download_binary(source_url, destination):
     dest_file.close()
 
 
-def read_first_line(file_path):
+def read_first_line(file_path: Path) -> str:
     """Return the first line in the given file. Assumes the file exists.
 
     Returns:
@@ -475,47 +473,47 @@ def read_first_line(file_path):
     return first_line
 
 
-def ensure_group_access(path):
+def ensure_group_access(path: Path) -> None:
     """Give group access to all files and directories under the specified path."""
     # Errs for any file not owned by this user.
     # But, the point is to set group writeability of any *new* files.
-    execute(f"chmod -f -R g+rw {path}", halt_if_fail=False)
+    execute(f"chmod -f -R g+rw {path}")
 
 
-def ensure_user_access(path):
+def ensure_user_access(path: Path) -> None:
     """Give the user access to all files and directories under the specified path."""
-    execute(f"chmod -f -R u+rwx {path}", halt_if_fail=True)
+    execute(f"chmod -f -R u+rwx {path}")
 
 
-def set_umask():
+def set_umask() -> None:
     """Equivalent to executing "umask g+rw" from the command line."""
     os.umask(os.umask(0) & 0b001111)
 
 
-def delete(file_to_delete):
+def delete(file_to_delete: Path) -> None:
     """Delete the specified file."""
     pathlib.Path(file_to_delete).unlink()
 
 
-def delete_if_exists(file_to_delete):
+def delete_if_exists(file_to_delete: Path) -> None:
     """Check if the specified file exists, and if so, delete it."""
     if pathlib.Path(file_to_delete).exists():
         delete(file_to_delete)
 
 
-def delete_path(path):
+def delete_directory(path: Path) -> None:
     """Delete all files and directories under the specified path."""
     ensure_group_access(path)
     shutil.rmtree(path)
 
 
-def delete_path_if_exists(path):
+def delete_directory_if_exists(path: Path) -> None:
     """Delete all files and directories under the specified path, if it exists."""
     if pathlib.Path(path).exists():
-        delete_path(path)
+        delete_directory(path)
 
 
-def are_in_file(file_path, strs_to_find):
+def are_in_file(file_path: Path, strs_to_find: list[str]) -> bool:
     """Return true if every string in the given strs_to_find array appears in the given file.
 
     Note that the strs_to_find parameter is mutated.
@@ -539,7 +537,7 @@ def are_in_file(file_path, strs_to_find):
     return len(strs_to_find) == 0
 
 
-def insert_before_line(to_insert, file_path, line):
+def insert_before_line(to_insert: str, file_path: Path, line: int) -> None:
     """Insert the given line to the given file before the given 0-indexed line number."""
     mid_line = line - 1
 
@@ -556,7 +554,7 @@ def insert_before_line(to_insert, file_path, line):
     output.close()
 
 
-def create_empty_file(file_path):
+def create_empty_file(file_path: Path) -> None:
     """Create an empty file with the given filename."""
     dest_file = Path.open(file_path, "wb")
     dest_file.close()
@@ -566,7 +564,7 @@ def create_empty_file(file_path):
 # Misc. Utils
 
 
-def print_step(step):
+def print_step(step: str) -> None:
     """Print a step in the release_build or release_push script."""
     print("\n")
     print(step)
@@ -577,7 +575,7 @@ def print_step(step):
     print(dash_str)
 
 
-def get_announcement_email(version):
+def get_announcement_email(version: str) -> str:
     """Return the template for the e-mail announcing a new release of the Checker Framework.
 
     Returns:
@@ -603,7 +601,7 @@ Changes for Checker Framework version {version}:
 # Testing
 
 
-def test_release_utils():
+def test_release_utils() -> None:
     """Test that critical methods in this file work as expected."""
     test_increment_version()
 
