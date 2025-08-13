@@ -101,6 +101,7 @@ ext {
 task setLocalRepo(type:Exec) {
   commandLine 'git', 'worktree', 'list'
   standardOutput = new ByteArrayOutputStream()
+
   doLast {
     String worktreeList = standardOutput.toString()
     localRepo = worktreeList.substring(0, worktreeList.indexOf(' ')) + '/.git'
@@ -640,12 +641,7 @@ task htmlValidate(type: Exec, group: 'Format') {
 
 task addFavicon(type: Exec) {
   dependsOn 'allJavadoc'
-  workingDir "${rootDir}/docs/api"
-  executable "${htmlToolsHome}/html-add-favicon"
-  args += [
-    '.',
-    'favicon-checkerframework.png'
-  ]
+
   doFirst {
     copy {
       from 'docs/logo/Checkmark/CFCheckmark_favicon.png'
@@ -653,6 +649,13 @@ task addFavicon(type: Exec) {
       into "${rootDir}/docs/api"
     }
   }
+
+  workingDir "${rootDir}/docs/api"
+  executable "${htmlToolsHome}/html-add-favicon"
+  args += [
+    '.',
+    'favicon-checkerframework.png'
+  ]
 }
 
 // `gradle allJavadoc` builds the Javadoc for all modules in `docs/api`.
@@ -664,6 +667,13 @@ task addFavicon(type: Exec) {
 task allJavadoc(type: Javadoc, group: 'Documentation') {
   description = 'Generates API documentation that includes all the modules.'
   dependsOn(':checker:shadowJar', 'getPlumeScripts', 'getHtmlTools', ':checker-qual:jar')
+
+  doFirst {
+    source(
+        project(':framework-test').sourceSets.taglet.allJava
+        )
+  }
+
   destinationDir = file("${rootDir}/docs/api")
   source(
       project(':checker-util').sourceSets.main.allJava,
@@ -675,12 +685,6 @@ task allJavadoc(type: Javadoc, group: 'Documentation') {
       project(':framework-test').sourceSets.main.allJava,
       project(':annotation-file-utilities').sourceSets.main.allJava,
       )
-
-  doFirst {
-    source(
-        project(':framework-test').sourceSets.taglet.allJava
-        )
-  }
 
   classpath = configurations.allProjects
   // disable interpreting module-info.java files until all sub-modules support them

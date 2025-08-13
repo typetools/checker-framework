@@ -19,23 +19,24 @@ tasks.register('updateVersionNumbers', Copy) {
   dependsOn('updateVersionNumbersAFU')
   // It's not possible to update the versions numbers in place, so updateVersionNumbersInDocs and
   // updateVersionNumbersAFU copy to temporary directory, then this task copies the changed files
-  // back into there original locations.
+  // back into their original locations.
   from layout.buildDirectory.file('updateVersionNumbers/')
   into layout.projectDirectory
 }
 
 tasks.register('updateVersionNumbersAFU', Copy) {
+  doFirst {
+    if(!file('annotation-file-utilities/src/main/java/org/checkerframework/afu/scenelib/io/classfile/ClassFileReader.java').exists()) {
+      throw new GradleException("File annotation-file-utilities/src/main/java/org/checkerframework/afu/scenelib/io/classfile/ClassFileReader.java not found.")
+    }
+  }
+
   // It's not possible to update the versions numbers in place, so copy to temporary directory.
   into layout.buildDirectory.file('updateVersionNumbers/annotation-file-utilities')
   from 'annotation-file-utilities'
   include 'src/main/java/org/checkerframework/afu/scenelib/io/classfile/ClassFileReader.java'
   filter { String line ->
     line.replaceAll( "Annotation File Utilities v${releaseVersionRegex}", "Annotation File Utilities v${releaseVersion}")
-  }
-  doFirst {
-    if(!file('annotation-file-utilities/src/main/java/org/checkerframework/afu/scenelib/io/classfile/ClassFileReader.java').exists()) {
-      throw new GradleException("File annotation-file-utilities/src/main/java/org/checkerframework/afu/scenelib/io/classfile/ClassFileReader.java not found.")
-    }
   }
 }
 
@@ -172,10 +173,6 @@ tasks.register('copyCFWebsite', Copy) {
   dependsOn(':allJavadoc',':manual')
   String destDir = project.property('cfWebsite')
   destinationDir = file(destDir)
-  doLast{
-    delete(file("${destDir}/index.html"))
-    Files.createSymbolicLink(file("${destDir}/index.html").toPath(), file("${destDir}/checker-framework-webpage.html").toPath())
-  }
   from ('docs') {
     include('checker-framework-webpage.html', 'CHANGELOG.md')
   }
@@ -233,7 +230,11 @@ tasks.register('copyCFWebsite', Copy) {
     into 'api'
   }
 
-  doLast{
+  doLast {
+    delete(file("${destDir}/index.html"))
+    Files.createSymbolicLink(file("${destDir}/index.html").toPath(), file("${destDir}/checker-framework-webpage.html").toPath())
+  }
+  doLast {
     delete(file("${destDir}/manual/index.html"))
     Files.createSymbolicLink(file("${destDir}/manual/index.html").toPath(), file("${destDir}/manual/manual.html").toPath())
   }
