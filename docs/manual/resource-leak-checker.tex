@@ -652,7 +652,7 @@ What the checker effectively verifies is that any resource collection is properl
 Towards that end, the Resource Leak Checker tracks every allocated resource collection in two ways:
 
 \begin{itemize}
-  \item at most one owning reference for each underlying resource collection is tracked via an ownership type system. This owning reference may arbitrarily mutate the collection. All other references are considered not owning and are restricted - they can't be used to add or remove elements to and from the collection respectively for example.
+  \item at most one owning reference for each underlying resource collection is tracked via an ownership type system. This owning reference may arbitrarily mutate the collection. All other references are considered not owning and are restricted - for example, they can't be used to add or remove elements to and from the collection, respectively.
   \item a complementary dataflow analysis tracks an obligation for each allocated resource collection. The obligation can be passed on to method parameters, fields, or return values for example, just like the ownership. The difference is that while the type system tracks at most one owner per resource collection allowed to mutate it without restriction, the dataflow analysis tracks at least one obligation per resource collection to ensure it is definitely fulfilled.
 \end{itemize}
 
@@ -663,7 +663,7 @@ For the purposes of this checker, \textit{resource collections} are precisely de
   \item Its type parameter upper bound has non-empty \texttt{MustCall} type.
 \end{enumerate}
 
-For example, expressions of type \texttt{Socket[]} or \texttt{Iterable<? extends @MustCallUnknown Object>} are both resource collection, but one of type \texttt{Set<String>} is not.
+For example, expressions of type \texttt{Socket[]} or \texttt{Iterable<? extends @MustCallUnknown Object>} are both resource collections, but one of type \texttt{Set<String>} is not.
 
 \subsectionAndLabel{Ownership type system for resource collections}{resource-leak-collections-ownership-types}
 Of the two tracking mechanisms described above, the ownership type system is more visible from the user perspective. The type hierarchy is the following:
@@ -679,10 +679,10 @@ Of the two tracking mechanisms described above, the ownership type system is mor
 \end{verbatim}
 
 \begin{itemize}
-  \item \textbf{@OwningCollectionBottom} is the type of non-\textit{resource collections}. It is thus the type the vast majority of expressions have.
-  \item \textbf{@OwningCollectionWithoutObligation} is the type of \textit{resource collection} references that definitely own the underlying collection, but also definitely don't have any open calling obligations on their elements. For example, a freshly allocated resource collection is of this type.
-  \item \textbf{@OwningCollection} is the type of resource collection references that definitely own the underlying collection, but might have open calling obligations for their elements.
   \item \textbf{@NotOwningCollection} is the type of resource collection references that might not own the underlying resource collection.
+  \item \textbf{@OwningCollection} is the type of resource collection references that definitely own the underlying collection, but might have open calling obligations for their elements.
+  \item \textbf{@OwningCollectionWithoutObligation} is the type of \textit{resource collection} references that definitely own the underlying collection, but also definitely don't have any open calling obligations on their elements. For example, a freshly allocated resource collection that doesn't yet contain any resources is of this type.
+  \item \textbf{@OwningCollectionBottom} is the type of non-\textit{resource collections}. It is thus the type the vast majority of expressions have, because most expressions are not collections of resources.
 \end{itemize}
 
 Only \texttt{@OwningCollection} and \texttt{@NotOwningCollection} are permitted as user-written annotations. The other types are only used internally.
@@ -721,7 +721,7 @@ void m(Iterable<Socket> sockets) {
 
 This means that by default, a resource collection parameter can only do certain 'safe' operations on the collection that do not add, remove, or overwrite existing elements. But it also means that the parameter does not have any calling obligation for the elements of the collection, and it can accept both owning and not owning collection references due to normal subtyping rules. If an \texttt{OwningCollection} reference is passed to an unannotated parameter, the obligation stays at the call-site.
 
-Annotating the parameter with \texttt{@OwningCollection} overrides this behavior. In this case, the ownership is transferred from the call-site argument to the method parameter. Concretely, this means that the call-site obligation is removed and the parameter takes on the responsibility of disposing of the collection. The type of the argument at call-site is changed to \texttt{@NotOwningCollection} to maintain the invariant that there's at most one owning reference for each resource collection.
+Annotating the parameter with \texttt{@OwningCollection} overrides this behavior. In this case, the ownership is transferred from the call-site argument to the method parameter. Concretely, this means that the call-site obligation is removed and the parameter takes on the responsibility of disposing of the collection. The type of the argument at the call-site is changed to \texttt{@NotOwningCollection} to maintain the invariant that there's at most one owning reference for each resource collection.
 
 \begin{Verbatim}
 void m(@OwningCollection Iterable<Socket> sockets) {
@@ -739,7 +739,7 @@ void m(@OwningCollection Iterable<Socket> sockets) {
 }
 \end{Verbatim}
 
-Resource collection return types default to \texttt{@OwningCollection}. Returning a resource collection to such a return type fulfills the obligation for the method. The obligation and ownership are both transferred to the call-site return expression.
+Resource collection return types default to \texttt{@OwningCollection}. Returning a resource collection from a method with that return type fulfills the collection's obligation. The obligation and ownership are both transferred to the method invocation expression at the call-site.
 
 \begin{verbatim}
 List<Socket> returnSocketList() {
@@ -788,7 +788,7 @@ To determine the methods such a loop calls, the checker does the following thing
 
 \begin{itemize}
   \item It checks that the loop does not terminate early.
-  \item It leverages the \texttt{CalledMethods} analysis to determine the methods definitely called on the loop iterator variable. This means that anything that changes the \texttt{CalledMethods} type of the iterator variable is supported, for example passing it as an argument to a method annotated \texttt{@EnsuresCalledMethods(``m'')}, or using try-with constructs. Nullness checks are also supported.
+  \item It leverages the \texttt{CalledMethods} analysis to determine the methods definitely called on the loop iterator variable. This means that anything that changes the \texttt{CalledMethods} type of the iterator variable is supported, for example passing it as an argument to a method annotated \texttt{@EnsuresCalledMethods(``m'')}, or using try-with constructs. Nullness checks are also supported: that is, it is sufficient to fulfill the obligation for every non-null element of the collection; note that this is a simple, syntactic check, not a full-fledged nullness analysis, and so it might fail to certify loops that use an unorthodox method for nullness checking.
 \end{itemize}
 
 If an indexed \texttt{for} loop is used, the checker must additionally check that the loop does in fact iterate over all elements of the collection, and that the loop doesn't write to the loop variable for example. The checks are the following:
