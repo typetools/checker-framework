@@ -80,10 +80,7 @@ def copy_release_dir(path_to_dev_releases, path_to_live_releases, release_versio
     # The / at the end of the source location is necessary so that
     # rsync copies the files in the source directory to the destination directory
     # rather than a subdirectory of the destination directory.
-    cmd = "rsync --no-group --omit-dir-times --recursive --links --quiet %s/ %s" % (
-        source_location,
-        dest_location,
-    )
+    cmd = f"rsync --no-group --omit-dir-times --recursive --links --quiet {source_location}/ {dest_location}"
     execute(cmd)
 
     return dest_location
@@ -99,14 +96,14 @@ def promote_release(path_to_releases, release_version):
     from_dir = os.path.join(path_to_releases, release_version)
     to_dir = os.path.join(path_to_releases, "..")
     # Trailing slash is crucial.
-    cmd = "rsync -aJ --no-group --omit-dir-times %s/ %s" % (from_dir, to_dir)
+    cmd = f"rsync -aJ --no-group --omit-dir-times {from_dir}/ {to_dir}"
     execute(cmd)
 
 
 def copy_htaccess():
     """Copy the .htaccess file from the dev site to the live site."""
     LIVE_HTACCESS = os.path.join(LIVE_SITE_DIR, ".htaccess")
-    execute("rsync --times %s %s" % (os.path.join(DEV_SITE_DIR, ".htaccess"), LIVE_HTACCESS))
+    execute(f"rsync --times {os.path.join(DEV_SITE_DIR, '.htaccess')} {LIVE_HTACCESS}")
     ensure_group_access(LIVE_HTACCESS)
 
 
@@ -147,9 +144,8 @@ def stage_maven_artifacts_in_maven_central(new_cf_version):
         (
             "./gradlew publish -Prelease=true --no-parallel"
             " -Psigning.gnupg.keyName=checker-framework-dev@googlegroups.com"
-            " -Psigning.gnupg.passphrase=%s"
-        )
-        % gnupgPassphrase,
+            f" -Psigning.gnupg.passphrase={gnupgPassphrase}"
+        ),
         working_dir=CHECKER_FRAMEWORK,
     )
 
@@ -186,11 +182,7 @@ def run_link_checker(site, output, additional_param=""):
     out_file.close()
 
     if process.returncode != 0:
-        msg = "Non-zero return code (%s; see output in %s) while executing %s" % (
-            process.returncode,
-            output,
-            cmd,
-        )
+        msg = f"Non-zero return code ({process.returncode}; see output in {output}) while executing {cmd}"
         print(msg + "\n")
         if not prompt_yes_no("Continue despite link checker results?", True):
             raise Exception(msg)
@@ -345,8 +337,7 @@ def main(argv):
     check_release_version(current_cf_version, new_cf_version)
 
     print(
-        "Checker Framework and AFU:  current-version=%s    new-version=%s"
-        % (current_cf_version, new_cf_version)
+        f"Checker Framework and AFU:  current-version={current_cf_version}    new-version={new_cf_version}"
     )
 
     # Runs the link the checker on all websites at:

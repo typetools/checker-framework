@@ -33,9 +33,9 @@ def execute(command_args, halt_if_fail=True, capture_output=False, working_dir=N
     If capture_output is not true, return the return code of the subprocess call (0 for success).
     """
     if working_dir is not None:
-        print("Executing in %s: %s" % (working_dir, command_args))
+        print(f"Executing in {working_dir}: {command_args}")
     else:
-        print("Executing: %s" % (command_args))
+        print(f"Executing: {command_args}")
     args = shlex.split(command_args) if isinstance(command_args, str) else command_args
 
     if capture_output:
@@ -46,7 +46,7 @@ def execute(command_args, halt_if_fail=True, capture_output=False, working_dir=N
 
     result = subprocess.call(args, cwd=working_dir)
     if halt_if_fail and result:
-        raise Exception("Error %s while executing %s in %s" % (result, args, working_dir))
+        raise Exception(f"Error {result} while executing {args} in {working_dir}")
     return result
 
 

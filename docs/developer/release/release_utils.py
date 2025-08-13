@@ -38,7 +38,7 @@ def has_command_line_option(argv, argument):
 
 def execute_write_to_file(command_args, output_file_path, halt_if_fail=True, working_dir=None):
     """Execute the given command, capturing the output to the given file."""
-    print("Executing: %s" % (command_args))
+    print(f"Executing: {command_args}")
     import shlex
 
     args = shlex.split(command_args) if isinstance(command_args, str) else command_args
@@ -50,14 +50,14 @@ def execute_write_to_file(command_args, output_file_path, halt_if_fail=True, wor
     output_file.close()
 
     if process.returncode != 0 and halt_if_fail:
-        raise Exception("Error %s while executing %s" % (process.returncode, command_args))
+        raise Exception(f"Error {process.returncode} while executing {command_args}")
 
 
 def check_command(command):
     """Throw an exception if the command is not on the PATH."""
     p = execute(["which", command], False)
     if p:
-        raise AssertionError("command not found: %s" % command)
+        raise AssertionError(f"command not found: {command}")
     print()
 
 
@@ -100,7 +100,7 @@ def prompt_w_default(msg, default, valid_regex=None):
     """Only accept answers that match valid_regex.  If default is None, require an answer."""
     answer = None
     while answer is None:
-        answer = input(msg + " (%s): " % default)
+        answer = input(msg + f" ({default}): ")
 
         if answer is None or answer == "":
             answer = default
@@ -180,7 +180,7 @@ def test_increment_version():
 
 def current_distribution_by_website(site):
     """Return the Checker Framework version from the checker framework website."""
-    print("Looking up checker-framework-version from %s\n" % site)
+    print(f"Looking up checker-framework-version from {site}\n")
     ver_re = re.compile(r"<!-- checker-framework-zip-version -->checker-framework-(.*)\.zip")
     text = urllib.request.urlopen(url=site).read().decode("utf-8")
     result = ver_re.search(text)
@@ -213,9 +213,9 @@ def push_changes_prompt_if_fail(repo_root):
     user answers opts to not try again.
     """
     while True:
-        cmd = "(cd %s && git push --tags)" % repo_root
+        cmd = f"(cd {repo_root} && git push --tags)"
         result = os.system(cmd)
-        cmd = "(cd %s && git push origin master)" % repo_root
+        cmd = f"(cd {repo_root} && git push origin master)"
         result = os.system(cmd)
         if result == 0:
             break
@@ -257,8 +257,8 @@ def commit_tag_and_push(version, path, tag_prefix):
     """Commit the changes made for this release, add a tag, and push these changes."""
     # Do nothing (instead of erring) if there is nothing to commit.
     if execute("git diff-index --quiet HEAD", False, False, working_dir=path) != 0:
-        execute('git commit -a -m "new release %s"' % (version), working_dir=path)
-    execute("git tag %s%s" % (tag_prefix, version), working_dir=path)
+        execute(f'git commit -a -m "new release {version}"', working_dir=path)
+    execute(f"git tag {tag_prefix}{version}", working_dir=path)
     push_changes(path)
 
 
@@ -301,7 +301,7 @@ def clone(src_repo, dst_repo, bareflag):
     flags = ""
     if bareflag:
         flags = "--bare"
-    execute("git clone --quiet %s %s %s" % (flags, src_repo, dst_repo))
+    execute(f"git clone --quiet {flags} {src_repo} {dst_repo}")
 
 
 def is_repo_cleaned_and_updated(repo):
@@ -345,12 +345,11 @@ def check_repos(repos, fail_on_error, is_intermediate_repo_list):
                         + "cloned off of the intermediate repository."
                     )
                 if fail_on_error:
-                    raise Exception("repo %s is not cleaned and updated!" % repo)
+                    raise Exception(f"repo {repo} is not cleaned and updated!")
                 if not prompt_yn(
-                    "%s is not clean and up to date! Continue (answering 'n' will exit the script)?"
-                    % repo
+                    f"{repo} is not clean and up to date! Continue (answering 'n' will exit the script)?"
                 ):
-                    raise Exception("%s is not clean and up to date! Halting!" % repo)
+                    raise Exception(f"{repo} is not clean and up to date! Halting!")
 
 
 def get_tag_line(lines, revision, tag_prefixes):
@@ -390,11 +389,7 @@ def get_commit_for_tag(revision, repo_file_path, tag_prefixes):
 
     commit = lines[0]
     if commit is None:
-        msg = "Could not find revision %s in repo %s using tags %s " % (
-            revision,
-            repo_file_path,
-            ",".join(tag_prefixes),
-        )
+        msg = f"Could not find revision {revision} in repo {repo_file_path} using tags {','.join(tag_prefixes)} "
         raise Exception(msg)
 
     return commit
@@ -410,7 +405,7 @@ def wget_file(source_url, destination_dir):
     Useful since download_binary does not seem to work on source files.
     """
     print("DEST DIR: " + destination_dir)
-    execute("wget %s" % source_url, True, False, destination_dir)
+    execute(f"wget {source_url}", True, False, destination_dir)
 
 
 def download_binary(source_url, destination):
@@ -438,12 +433,12 @@ def ensure_group_access(path):
     """Give group access to all files and directories under the specified path."""
     # Errs for any file not owned by this user.
     # But, the point is to set group writeability of any *new* files.
-    execute("chmod -f -R g+rw %s" % path, halt_if_fail=False)
+    execute(f"chmod -f -R g+rw {path}", halt_if_fail=False)
 
 
 def ensure_user_access(path):
     """Give the user access to all files and directories under the specified path."""
-    execute("chmod -f -R u+rwx %s" % path, halt_if_fail=True)
+    execute(f"chmod -f -R u+rwx {path}", halt_if_fail=True)
 
 
 def set_umask():
@@ -535,9 +530,9 @@ def print_step(step):
 
 def get_announcement_email(version):
     """Return the template for the e-mail announcing a new release of the Checker Framework."""
-    return """
+    return f"""
 To:  checker-framework-discuss@googlegroups.com
-Subject: Release %s of the Checker Framework
+Subject: Release {version} of the Checker Framework
 
 We have released a new version of the Checker Framework.
 The Checker Framework lets you create and/or run pluggable type checkers, in order to detect and prevent bugs in your code.
@@ -545,13 +540,10 @@ The Checker Framework lets you create and/or run pluggable type checkers, in ord
 You can find documentation and download links at:
 http://CheckerFramework.org/
 
-Changes for Checker Framework version %s:
+Changes for Checker Framework version {version}:
 
 <<Insert latest Checker Framework changelog entry from https://github.com/typetools/checker-framework/blob/master/docs/CHANGELOG.md, preserving its formatting.>>
-""" % (
-        version,
-        version,
-    )
+"""
 
 
 # =========================================================================================

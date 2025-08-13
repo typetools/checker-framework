@@ -44,9 +44,9 @@ def javac_sanity_check(checker_framework_website, release_version):
         delete_path(javac_sanity_dir)
     execute("mkdir -p " + javac_sanity_dir)
 
-    javac_sanity_zip = os.path.join(javac_sanity_dir, "checker-framework-%s.zip" % release_version)
+    javac_sanity_zip = os.path.join(javac_sanity_dir, f"checker-framework-{release_version}.zip")
 
-    print("Attempting to download %s to %s" % (new_checkers_release_zip, javac_sanity_zip))
+    print(f"Attempting to download {new_checkers_release_zip} to {javac_sanity_zip}")
     download_binary(new_checkers_release_zip, javac_sanity_zip)
 
     nullness_example_url = "https://raw.githubusercontent.com/typetools/checker-framework/master/docs/examples/NullnessExampleWithWarnings.java"
@@ -115,10 +115,7 @@ def maven_sanity_check(sub_sanity_dir_name, repo_url, release_version):
     output_log = os.path.join(maven_example_dir, "output.log")
 
     ant_release_script = os.path.join(CHECKER_FRAMEWORK_RELEASE, "release.xml")
-    get_example_dir_cmd = (
-        "ant -f %s update-and-copy-maven-example -Dchecker=%s -Dversion=%s -Ddest.dir=%s"
-        % (ant_release_script, checker_dir, release_version, maven_sanity_dir)
-    )
+    get_example_dir_cmd = f"ant -f {ant_release_script} update-and-copy-maven-example -Dchecker={checker_dir} -Dversion={release_version} -Ddest.dir={maven_sanity_dir}"
 
     execute(get_example_dir_cmd)
     path_to_artifacts = os.path.join(
@@ -163,31 +160,28 @@ def check_results(title, output_log, expected_errors):
             + "should contain the following errors: [ "
             + ", ".join(expected_errors)
         )
-    print("%s check: passed!\n" % title)
+    print(f"{title} check: passed!\n")
 
 
 def add_repo_information(pom, repo_url):
     """Add development maven repo to pom file, to use the development artifacts."""
-    to_insert = """
+    to_insert = f"""
         <repositories>
               <repository>
                   <id>checker-framework-repo</id>
-                  <url>%s</url>
+                  <url>{repo_url}</url>
               </repository>
         </repositories>
 
         <pluginRepositories>
               <pluginRepository>
                     <id>checker-framework-repo</id>
-                    <url>%s</url>
+                    <url>{repo_url}</url>
               </pluginRepository>
         </pluginRepositories>
-        """ % (
-        repo_url,
-        repo_url,
-    )
+        """
 
-    result_str = execute('grep -nm 1 "<build>" %s' % pom, True, True).decode()
+    result_str = execute(f'grep -nm 1 "<build>" {pom}', True, True).decode()
     line_no_str = result_str.split(":")[0]
     line_no = int(line_no_str)
     print(" LINE_NO: " + line_no_str)

@@ -145,7 +145,7 @@ def create_dev_website_release_version_dir(project_name, version):
         interm_dir = os.path.join(DEV_SITE_DIR, project_name, "releases", version)
     delete_path_if_exists(interm_dir)
 
-    execute("mkdir -p %s" % interm_dir, True, False)
+    execute(f"mkdir -p {interm_dir}", True, False)
     return interm_dir
 
 
@@ -204,18 +204,12 @@ def build_annotation_tools_release(version, afu_interm_dir):
     date = get_current_date()
 
     buildfile = os.path.join(ANNO_FILE_UTILITIES, "build.xml")
-    ant_cmd = 'ant %s -buildfile %s -e update-versions -Drelease.ver="%s" -Drelease.date="%s"' % (
-        ant_debug,
-        buildfile,
-        version,
-        date,
-    )
+    ant_cmd = f'ant {ant_debug} -buildfile {buildfile} -e update-versions -Drelease.ver="{version}" -Drelease.date="{date}"'
     execute(ant_cmd)
 
     # Deploy to intermediate site
-    gradle_cmd = "./gradlew releaseBuildWithoutTest -Pafu.version=%s -Pdeploy-dir=%s" % (
-        version,
-        afu_interm_dir,
+    gradle_cmd = (
+        f"./gradlew releaseBuildWithoutTest -Pafu.version={version} -Pdeploy-dir={afu_interm_dir}"
     )
     execute(gradle_cmd, True, False, ANNO_FILE_UTILITIES)
 
@@ -242,17 +236,11 @@ def build_checker_framework_release(
     execute("./gradlew assemble -Prelease=true", True, False, ANNO_FILE_UTILITIES)
 
     # update versions
-    ant_props = (
-        '-Dchecker=%s -Drelease.ver=%s -Dafu.version=%s -Dafu.properties=%s -Dafu.release.date="%s"'
-        % (checker_dir, version, version, afu_build_properties, afu_release_date)
-    )
+    ant_props = f'-Dchecker={checker_dir} -Drelease.ver={version} -Dafu.version={version} -Dafu.properties={afu_build_properties} -Dafu.release.date="{afu_release_date}"'
     # IMPORTANT: The release.xml in the directory where the Checker Framework is
     # being built is used. Not the release.xml in the directory you ran
     # release_build.py from.
-    ant_cmd = "ant %s -f release.xml %s update-checker-framework-versions " % (
-        ant_debug,
-        ant_props,
-    )
+    ant_cmd = f"ant {ant_debug} -f release.xml {ant_props} update-checker-framework-versions "
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
     # Update version numbers in the manual and API documentation,
     # which come from source files that have just been changed.
@@ -263,7 +251,7 @@ def build_checker_framework_release(
 
     # Check that updating versions didn't overlook anything.
     print("Here are occurrences of the old version number, " + old_cf_version + ":")
-    grep_cmd = "grep -n -r --exclude-dir=build --exclude-dir=.git -F %s" % old_cf_version
+    grep_cmd = f"grep -n -r --exclude-dir=build --exclude-dir=.git -F {old_cf_version}"
     execute(grep_cmd, False, False, CHECKER_FRAMEWORK)
     continue_or_exit(
         "If any occurrence is not acceptable, then stop the release, update target"
@@ -286,50 +274,28 @@ def build_checker_framework_release(
     checker_tutorial_dir = os.path.join(CHECKER_FRAMEWORK, "docs", "tutorial")
     execute("make", True, False, checker_tutorial_dir)
 
-    cfZipName = "checker-framework-%s.zip" % version
+    cfZipName = f"checker-framework-{version}.zip"
 
     # Create checker-framework-X.Y.Z.zip and put it in checker_framework_interm_dir
-    ant_props = "-Dchecker=%s -Ddest.dir=%s -Dfile.name=%s -Dversion=%s" % (
-        checker_dir,
-        checker_framework_interm_dir,
-        cfZipName,
-        version,
-    )
+    ant_props = f"-Dchecker={checker_dir} -Ddest.dir={checker_framework_interm_dir} -Dfile.name={cfZipName} -Dversion={version}"
     # IMPORTANT: The release.xml in the directory where the Checker Framework
     # is being built is used. Not the release.xml in the directory you ran
     # release_build.py from.
-    ant_cmd = "ant %s -f release.xml %s zip-checker-framework " % (ant_debug, ant_props)
+    ant_cmd = f"ant {ant_debug} -f release.xml {ant_props} zip-checker-framework "
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
-    ant_props = "-Dchecker=%s -Ddest.dir=%s -Dfile.name=%s -Dversion=%s" % (
-        checker_dir,
-        checker_framework_interm_dir,
-        "mvn-examples.zip",
-        version,
-    )
+    ant_props = f"-Dchecker={checker_dir} -Ddest.dir={checker_framework_interm_dir} -Dfile.name=mvn-examples.zip -Dversion={version}"
     # IMPORTANT: Uses the release.xml in the directory where the Checker Framework is being built.
     # Not the release.xml in the directory you ran release_build.py from.
-    ant_cmd = "ant %s -f release.xml %s zip-maven-examples " % (ant_debug, ant_props)
+    ant_cmd = f"ant {ant_debug} -f release.xml {ant_props} zip-maven-examples "
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
     # copy the remaining checker-framework website files to checker_framework_interm_dir
-    ant_props = (
-        "-Dchecker=%s -Ddest.dir=%s -Dmanual.name=%s -Ddataflow.manual.name=%s -Dchecker.webpage=%s"
-        % (
-            checker_dir,
-            checker_framework_interm_dir,
-            "checker-framework-manual",
-            "checker-framework-dataflow-manual",
-            "checker-framework-webpage.html",
-        )
-    )
+    ant_props = f"-Dchecker={checker_dir} -Ddest.dir={checker_framework_interm_dir} -Dmanual.name=checker-framework-manual -Ddataflow.manual.name=checker-framework-dataflow-manual -Dchecker.webpage=checker-framework-webpage.html"
 
     # IMPORTANT: Uses the release.xml in the directory where the Checker Framework is being built.
     # Not the release.xml in the directory you ran release_build.py from.
-    ant_cmd = "ant %s -f release.xml %s checker-framework-website-docs " % (
-        ant_debug,
-        ant_props,
-    )
+    fant_cmd = f"ant {ant_debug} -f release.xml {ant_props} checker-framework-website-docs "
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
     # clean no longer necessary files left over from building the checker framework tutorial
@@ -468,7 +434,7 @@ def main(argv):
 
     # Not "cp -p" because that does not work across filesystems whereas rsync does
     CFLOGO = os.path.join(CHECKER_FRAMEWORK, "docs", "logo", "Logo", "CFLogo.png")
-    execute("rsync --times %s %s" % (CFLOGO, checker_framework_interm_dir))
+    execute(f"rsync --times {CFLOGO} {checker_framework_interm_dir}")
 
     # Each project has a set of files that are updated for release. Usually these updates include
     # new release date and version information. All changed files are committed and pushed to the
