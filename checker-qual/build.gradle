@@ -16,6 +16,19 @@ sourceSets {
   }
 }
 
+jar {
+  doLast {
+    copy {
+      from archiveFile
+      into layout.projectDirectory.file('../checker/dist')
+      rename { String fileName ->
+        // remove version number on checker-qual.jar
+        fileName.replace(fileName, 'checker-qual.jar')
+      }
+    }
+  }
+}
+
 task compileJava9(type: JavaCompile) {
   source = sourceSets.module_info.java
   destinationDirectory = sourceSets.main.output.classesDirs[0]
