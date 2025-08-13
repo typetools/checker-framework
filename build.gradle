@@ -702,7 +702,7 @@ tasks.register('cleanAfuManual', Exec) {
   commandLine 'make', '-C', "${afuManualDir}", 'clean'
 }
 
-tasks.register('cleanManual'){
+tasks.register('cleanManual') {
   dependsOn('cleanCfManual', 'cleanAfuManual')
 }
 
@@ -789,7 +789,7 @@ tasks.register('makeCfManual', Exec) {
   commandLine 'make', '-C', 'docs/manual/', 'manual.pdf', 'manual.html'
 }
 
-tasks.register('makeAfuManual', Exec){
+tasks.register('makeAfuManual', Exec) {
   description = 'Make documentation: annotation-file-format.{html,pdf}.'
 
   executable 'make'
@@ -797,7 +797,7 @@ tasks.register('makeAfuManual', Exec){
 }
 
 
-tasks.register('manual'){
+tasks.register('manual') {
   description = 'Build the manual'
   dependsOn('makeCfManual','makeAfuManual', ':dataflow:manual')
 }

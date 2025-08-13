@@ -59,7 +59,7 @@ abstract class CloneTask extends DefaultTask {
    * @param ignoreError whether to fail the build if the clone command fails
    * @param extraArgs any extra arguments to pass to git
    */
-  void clone(url, directory, ignoreError, extraArgs = []){
+  void clone(url, directory, ignoreError, extraArgs = []) {
     execOperations.exec {
       workingDir "${directory}/../"
       executable 'git'

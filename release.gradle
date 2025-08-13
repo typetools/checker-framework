@@ -14,7 +14,7 @@ ext {
   releaseVersion = '3.49.6'
 }
 
-tasks.register('updateVersionNumbers', Copy){
+tasks.register('updateVersionNumbers', Copy) {
   dependsOn('updateVersionNumbersInDocs')
   dependsOn('updateVersionNumbersAFU')
   // It's not possible to update the versions numbers in place, so updateVersionNumbersInDocs and
@@ -24,7 +24,7 @@ tasks.register('updateVersionNumbers', Copy){
   into layout.projectDirectory
 }
 
-tasks.register('updateVersionNumbersAFU', Copy){
+tasks.register('updateVersionNumbersAFU', Copy) {
   // It's not possible to update the versions numbers in place, so copy to temporary directory.
   into layout.buildDirectory.file('updateVersionNumbers/annotation-file-utilities')
   from 'annotation-file-utilities'
@@ -33,7 +33,7 @@ tasks.register('updateVersionNumbersAFU', Copy){
     line.replaceAll( "Annotation File Utilities v${releaseVersionRegex}{0,1}", "Annotation File Utilities v${releaseVersion}")
   }
   doFirst {
-    if(!file('annotation-file-utilities/src/main/java/org/checkerframework/afu/scenelib/io/classfile/ClassFileReader.java').exists()){
+    if(!file('annotation-file-utilities/src/main/java/org/checkerframework/afu/scenelib/io/classfile/ClassFileReader.java').exists()) {
       throw new GradleException("File annotation-file-utilities/src/main/java/org/checkerframework/afu/scenelib/io/classfile/ClassFileReader.java not found.")
     }
   }
@@ -202,7 +202,7 @@ tasks.register('copyCFWebsite', Copy) {
   }
 
   // Copy manual files
-  from('docs/manual'){
+  from('docs/manual') {
     into 'manual'
     include 'manual.html',
         'manual.pdf',
@@ -211,7 +211,7 @@ tasks.register('copyCFWebsite', Copy) {
   }
 
   // Copy developer docs
-  from('docs/developer'){
+  from('docs/developer') {
     into 'manual'
     include 'developer-manual.html',
         'gsoc-ideas.html',
@@ -219,12 +219,12 @@ tasks.register('copyCFWebsite', Copy) {
   }
 
   // Copy Dataflow manual
-  from ('dataflow/manual/checker-framework-dataflow-manual.pdf'){
+  from ('dataflow/manual/checker-framework-dataflow-manual.pdf') {
     into 'manual'
   }
 
   // Copy tutorial
-  from ('docs/tutorial'){
+  from ('docs/tutorial') {
     into 'tutorial'
   }
 
@@ -259,12 +259,12 @@ tasks.register('copyAFUWebsite', Copy) {
   }
 }
 
-tasks.register('copyToWebsite'){
+tasks.register('copyToWebsite') {
   description = 'Copy files to website and create Checker Framework zip file. Requires properties afuWebsite and cfWebsite to be set.'
   dependsOn('copyCFWebsite','copyAFUWebsite', 'createCheckerFrameworkZip','zipMavenExamples')
 }
 
-tasks.register('updateCopyMavenExample', Copy){
+tasks.register('updateCopyMavenExample', Copy) {
   String destDir = project.property('destDir') + '/MavenExample'
   destinationDir = file(destDir)
   from 'docs/examples/MavenExample'
