@@ -72,7 +72,7 @@ tasks.register('updateVersionNumbersInDocs', Copy) {
     include 'manual/manual.tex'
 
     filter { String line ->
-      line = line.replaceAll("ReleaseInfo\\}\\{(.*)\\}", "ReleaseInfo}{${releaseVersion} (${currentDate})}");
+      line = line.replaceAll("ReleaseDate\\}\\{(.*)\\}", "ReleaseDate}{${currentDate}}");
       line.replaceAll("ReleaseVersion\\}\\{(.*)\\}", "ReleaseVersion}{${releaseVersion}}");
     }
   }

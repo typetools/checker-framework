@@ -61,7 +61,8 @@ ext {
   compilerJdkVersion = jdk21Compiler ? 21 : testJdkVersion
   compilerRunsOnJava17orHigher = compilerJdkVersion >= 17
 
-  // As of 2025-04-28 (Lombok 1.18.38), delombok supports JDK 24-ea but not JDK 24 proper; see https://projectlombok.org/changelog .
+  // As of 2025-04-28 (Lombok 1.18.38), delombok supports JDK 24-ea but not
+  // JDK 24 proper; see https://projectlombok.org/changelog .
   skipDelombok = gradleRunsOnJava24orHigher
 
   parentDir = file("${rootDir}/../").absolutePath
