@@ -67,7 +67,7 @@ tasks.register('updateVersionNumbersInDocs', Copy) {
       line = line.replaceAll("checker-qual/${releaseVersionRegex}{0,1}", "checker-qual/${releaseVersion}");
       line = line.replaceAll("checker-util/${releaseVersionRegex}{0,1}", "checker-util/${releaseVersion}");
 
-      line = line.replaceAll("/${releaseVersionRegex}{0,1}/jar", "/${releaseVersion}/");
+      line = line.replaceAll("/${releaseVersionRegex}{0,1}/jar", "/${releaseVersion}/jar");
 
       line.replaceAll("ext.checkerFrameworkVersion = '${releaseVersionRegex}{0,1}", "ext.checkerFrameworkVersion = '${releaseVersion}");
     }
@@ -146,10 +146,8 @@ tasks.register('createCheckerFrameworkZip', Zip) {
         'docs/tutorial/**'
   }
 
-  from('dataflow/manual/dataflow.pdf') {
+  from('dataflow/manual/checker-framework-dataflow-manual.pdf') {
     into 'docs/manual/'
-
-    rename 'dataflow.pdf', 'checker-framework-dataflow-manual.pdf'
   }
 
   from('docs/logo/Logo/CFLogo.png') {
@@ -166,7 +164,7 @@ tasks.register('createCheckerFrameworkZip', Zip) {
 }
 
 tasks.register('zipMavenExamples', Zip) {
-  description = 'Creates a zip archive for the Maven example.'
+  description = 'Creates a zip archive for the Maven examples.'
   archiveFileName = "mvn-examples.zip"
   destinationDirectory = file(project.property('cfWebsite'))
   from('docs/examples/MavenExample')
@@ -213,8 +211,7 @@ tasks.register('copyCFWebsite', Copy) {
     include 'manual.html',
         'manual.pdf',
         '*.svg',
-        'manual001.png',
-        'manual001.svg'
+        'manual001.png'
   }
 
   // Copy developer docs
@@ -226,9 +223,8 @@ tasks.register('copyCFWebsite', Copy) {
   }
 
   // Copy Dataflow manual
-  from ('dataflow/manual/dataflow.pdf'){
+  from ('dataflow/manual/checker-framework-dataflow-manual.pdf'){
     into 'manual'
-    rename 'dataflow.pdf','checker-framework-dataflow-manual.pdf'
   }
 
   // Copy tutorial
