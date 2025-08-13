@@ -61,6 +61,8 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import org.checkerframework.afu.annotator.find.CaseUtils;
+import org.checkerframework.checker.collectionownership.qual.NotOwningCollection;
+import org.checkerframework.checker.collectionownership.qual.PolyOwningCollection;
 import org.plumelib.util.ArraysPlume;
 
 /** A path through the AST. */
@@ -295,7 +297,7 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
 
   // TODO: replace w/ skip list?
   @Override
-  public Iterator<ASTEntry> iterator() {
+  public @PolyOwningCollection Iterator<ASTEntry> iterator(@PolyOwningCollection ASTPath this) {
     ImmutableStack<ASTEntry> s = this;
     int n = size();
     ASTEntry[] a = new ASTEntry[n];
@@ -1460,18 +1462,33 @@ class ImmutableStack<E> {
     }
   }
 
-  public boolean isEmpty() {
+  /**
+   * Returns true if the stack is empty.
+   *
+   * @return true if the stack is empty
+   */
+  public boolean isEmpty(@NotOwningCollection ImmutableStack<E> this) {
     return size == 0;
   }
 
-  public E peek() {
+  /**
+   * Returns the top element of the stack, without modifying the stack.
+   *
+   * @return the top element of the stack
+   */
+  public E peek(@NotOwningCollection ImmutableStack<E> this) {
     if (isEmpty()) {
       throw new IllegalStateException("peek() on empty stack");
     }
     return elem;
   }
 
-  public ImmutableStack<E> pop() {
+  /**
+   * Returns all of the stack except the top element.
+   *
+   * @return all of the stack except the top element
+   */
+  public ImmutableStack<E> pop(@NotOwningCollection ImmutableStack<E> this) {
     if (isEmpty()) {
       throw new IllegalStateException("pop() on empty stack");
     }
@@ -1482,11 +1499,21 @@ class ImmutableStack<E> {
     return extend(elem, this);
   }
 
-  public int size() {
+  /**
+   * Returns the size: the number of elements in the stack.
+   *
+   * @return the size of this stack
+   */
+  public int size(@NotOwningCollection ImmutableStack<E> this) {
     return size;
   }
 
-  /** Return the index-th element of this stack. */
+  /**
+   * Returns the index-th element of this stack.
+   *
+   * @param index which element to return
+   * @return the index-th element of this stack
+   */
   public E get(int index) {
     int n = size();
 

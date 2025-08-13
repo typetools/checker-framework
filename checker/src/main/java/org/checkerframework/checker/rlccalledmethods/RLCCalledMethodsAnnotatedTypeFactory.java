@@ -2,6 +2,7 @@ package org.checkerframework.checker.rlccalledmethods;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
@@ -10,6 +11,7 @@ import com.sun.source.tree.VariableTree;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
@@ -34,7 +36,6 @@ import org.checkerframework.checker.mustcall.qual.NotOwning;
 import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer;
-import org.checkerframework.checker.resourceleak.MustCallInference;
 import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
 import org.checkerframework.checker.resourceleak.ResourceLeakUtils;
 import org.checkerframework.common.accumulation.AccumulationStore;
@@ -42,8 +43,8 @@ import org.checkerframework.common.accumulation.AccumulationValue;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
-import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.block.Block;
+import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
@@ -112,6 +113,52 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
   private final BiMap<LocalVariableNode, Tree> tempVarToTree = HashBiMap.create();
 
   /**
+   * Set of potentially collection-obligation-fulfilling loops. Found in the MustCallVisitor, which
+   * checks the header and (parts of the) body.
+   */
+  private static final Set<PotentiallyFulfillingLoop> potentiallyFulfillingLoops = new HashSet<>();
+
+  /**
+   * Construct a {@code PotentiallyFulfillingLoop} and add it to the static set of such loops to
+   * have their loop body analyzed for possibly fulfilling collection obligations.
+   *
+   * @param collectionTree AST {@code Tree} for collection iterated over
+   * @param collectionElementTree AST {@code Tree} for collection element iterated over
+   * @param condition AST {@code Tree} for loop condition
+   * @param loopBodyEntryBlock cfg {@code Block} for loop body entry
+   * @param loopUpdateBlock {@code Block} containing loop update
+   * @param loopConditionalBlock {@code Block} containing loop condition
+   * @param collectionEltNode cfg {@code Node} for collection element iterated over
+   */
+  public static void addPotentiallyFulfillingLoop(
+      ExpressionTree collectionTree,
+      Tree collectionElementTree,
+      Tree condition,
+      Block loopBodyEntryBlock,
+      Block loopUpdateBlock,
+      ConditionalBlock loopConditionalBlock,
+      Node collectionEltNode) {
+    potentiallyFulfillingLoops.add(
+        new PotentiallyFulfillingLoop(
+            collectionTree,
+            collectionElementTree,
+            condition,
+            loopBodyEntryBlock,
+            loopUpdateBlock,
+            loopConditionalBlock,
+            collectionEltNode));
+  }
+
+  /**
+   * Returns the static set of {@code PotentiallyFulfillingLoop}s scheduled for analysis.
+   *
+   * @return the static set of {@code PotentiallyFulfillingLoop}s scheduled for analysis
+   */
+  public static Set<PotentiallyFulfillingLoop> getPotentiallyFulfillingLoops() {
+    return potentiallyFulfillingLoops;
+  }
+
+  /**
    * Creates a new RLCCalledMethodsAnnotatedTypeFactory.
    *
    * @param checker the checker associated with this type factory
@@ -140,24 +187,6 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
    */
   public AnnotationMirror createCalledMethods(String... val) {
     return createAccumulatorAnnotation(Arrays.asList(val));
-  }
-
-  @Override
-  public void postAnalyze(ControlFlowGraph cfg) {
-    rlc.setRoot(root);
-    MustCallConsistencyAnalyzer mustCallConsistencyAnalyzer = new MustCallConsistencyAnalyzer(rlc);
-    mustCallConsistencyAnalyzer.analyze(cfg);
-
-    // Inferring owning annotations for @Owning fields/parameters, @EnsuresCalledMethods for
-    // finalizer methods and @InheritableMustCall annotations for the class declarations.
-    if (getWholeProgramInference() != null) {
-      if (cfg.getUnderlyingAST().getKind() == UnderlyingAST.Kind.METHOD) {
-        MustCallInference.runMustCallInference(this, cfg, mustCallConsistencyAnalyzer);
-      }
-    }
-
-    super.postAnalyze(cfg);
-    tempVarToTree.clear();
   }
 
   @Override
@@ -396,6 +425,36 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
     return !rlc.hasOption(MustCallChecker.NO_CREATES_MUSTCALLFOR);
   }
 
+  /**
+   * Fetches the store from the results of dataflow for {@code block}. The store after {@code block}
+   * is returned.
+   *
+   * @param block a block
+   * @return the appropriate CFStore, populated with CalledMethods annotations, from the results of
+   *     running dataflow
+   */
+  public AccumulationStore getStoreAfterBlock(Block block) {
+    return flowResult.getStoreAfter(block);
+  }
+
+  /**
+   * Returns the then or else store after {@code block} depending on the value of {@code then} is
+   * returned.
+   *
+   * @param block a conditional block
+   * @param then wether the then store should be returned
+   * @return the then or else store after {@code block} depending on the value of {@code then} is
+   *     returned
+   */
+  public AccumulationStore getStoreAfterConditionalBlock(ConditionalBlock block, boolean then) {
+    TransferInput<AccumulationValue, AccumulationStore> transferInput = flowResult.getInput(block);
+    assert transferInput != null : "@AssumeAssertion(nullness): transferInput should be non-null";
+    if (then) {
+      return transferInput.getThenStore();
+    }
+    return transferInput.getElseStore();
+  }
+
   @Override
   @SuppressWarnings("TypeParameterUnusedInFormals") // Intentional abuse
   public <T extends GenericAnnotatedTypeFactory<?, ?, ?, ?>>
@@ -565,5 +624,126 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
     } else {
       return analysis.getInput(block);
     }
+  }
+
+  /** Wrapper for a loop that potentially calls methods on all elements of a collection/array. */
+  public static class PotentiallyFulfillingLoop {
+
+    /** AST {@code Tree} for collection iterated over. */
+    public final ExpressionTree collectionTree;
+
+    /** AST {@code Tree} for collection element iterated over. */
+    public final Tree collectionElementTree;
+
+    /** AST {@code Tree} for loop condition. */
+    public final Tree condition;
+
+    /**
+     * The methods that the loop definitely calls on all elements of the collection it iterates
+     * over.
+     */
+    protected final Set<String> calledMethods;
+
+    /** cfg {@code Block} containing the loop body entry. */
+    public final Block loopBodyEntryBlock;
+
+    /** cfg {@code Block} containing the loop update. */
+    public final Block loopUpdateBlock;
+
+    /** cfg conditional {@link Block} following loop condition. */
+    public final ConditionalBlock loopConditionalBlock;
+
+    /** cfg {@code Node} for the collection element iterated over. */
+    public final Node collectionElementNode;
+
+    /**
+     * Constructs a new {@code PotentiallyFulfillingLoop}
+     *
+     * @param collectionTree AST {@link Tree} for collection iterated over
+     * @param collectionElementTree AST {@link Tree} for collection element iterated over
+     * @param condition AST {@link Tree} for loop condition
+     * @param loopBodyEntryBlock cfg {@link Block} for the loop body entry
+     * @param loopUpdateBlock cfg {@link Block} for the loop update
+     * @param loopConditionalBlock cfg conditional {@link Block} following loop condition
+     * @param collectionEltNode cfg {@link Node} for the collection element iterated over
+     */
+    public PotentiallyFulfillingLoop(
+        ExpressionTree collectionTree,
+        Tree collectionElementTree,
+        Tree condition,
+        Block loopBodyEntryBlock,
+        Block loopUpdateBlock,
+        ConditionalBlock loopConditionalBlock,
+        Node collectionEltNode) {
+      this.collectionTree = collectionTree;
+      this.collectionElementTree = collectionElementTree;
+      this.condition = condition;
+      this.calledMethods = new HashSet<>();
+      this.loopBodyEntryBlock = loopBodyEntryBlock;
+      this.loopUpdateBlock = loopUpdateBlock;
+      this.loopConditionalBlock = loopConditionalBlock;
+      this.collectionElementNode = collectionEltNode;
+    }
+
+    /**
+     * Add methods that are guaranteed to be invoked on every element of the collection the loop
+     * iterates over.
+     *
+     * @param methods the set of methods to add
+     */
+    public void addCalledMethods(Set<String> methods) {
+      calledMethods.addAll(methods);
+    }
+
+    /**
+     * Returns methods that are guaranteed to be invoked on every element of the collection the loop
+     * iterates over.
+     *
+     * @return the set of methods the loop calls on all elements of the iterated collection
+     */
+    public Set<String> getCalledMethods() {
+      return calledMethods;
+    }
+  }
+
+  /**
+   * After running the called-methods analysis, call the consistency analyzer to analyze the loop
+   * bodys of 'potentially-collection-obligation-fulfilling-loops', as determined by a
+   * pre-pattern-match in the MustCallVisitor.
+   *
+   * <p>The analysis uses the CalledMethods type of the collection element iterated over to
+   * determine the methods the loop calls on the collection elements.
+   *
+   * @param cfg the cfg of the enclosing method
+   */
+  @Override
+  public void postAnalyze(ControlFlowGraph cfg) {
+    MustCallConsistencyAnalyzer mustCallConsistencyAnalyzer =
+        new MustCallConsistencyAnalyzer(ResourceLeakUtils.getResourceLeakChecker(this), true);
+
+    // traverse the cfg to find enhanced-for-loops over collections and perform a
+    // loop-body-analysis.
+    // since this runs before the consistency analysis, we unfortunately have to traverse the cfg
+    // twice. The first time to find these for-each loop, and the second time much later to do the
+    // final consistency analysis.
+    mustCallConsistencyAnalyzer.findFulfillingForEachLoops(cfg);
+
+    // perform loop-body-analysis on normal for-loops that were pattern matched on the AST
+    if (potentiallyFulfillingLoops.size() > 0) {
+      Set<PotentiallyFulfillingLoop> analyzed = new HashSet<>();
+      for (PotentiallyFulfillingLoop potentiallyFulfillingLoop : potentiallyFulfillingLoops) {
+        Tree collectionElementTree = potentiallyFulfillingLoop.collectionElementTree;
+        boolean loopContainedInThisMethod =
+            cfg.getNodesCorrespondingToTree(collectionElementTree) != null;
+        if (loopContainedInThisMethod) {
+          mustCallConsistencyAnalyzer.analyzeObligationFulfillingLoop(
+              cfg, potentiallyFulfillingLoop);
+          analyzed.add(potentiallyFulfillingLoop);
+        }
+      }
+      potentiallyFulfillingLoops.removeAll(analyzed);
+    }
+
+    super.postAnalyze(cfg);
   }
 }
