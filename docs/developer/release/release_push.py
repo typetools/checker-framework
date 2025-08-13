@@ -392,7 +392,7 @@ def main(argv: list[str]) -> None:
 
         print_step("3b: Run Maven sanity test on development release.")
         if prompt_yes_no("Run Maven sanity test on development repo?", True):
-            maven_sanity_check("maven-dev", "", new_cf_version)
+            maven_sanity_check("maven-dev", "")
 
     # Runs all tests on the development release.
 
@@ -445,14 +445,15 @@ def main(argv: list[str]) -> None:
             "Copy key field from above into repository_key\n"
             "Click Execute, it may take a minute or two to update\n"
             "Under Server response it should say Code 200\n"
-            "Go to https://central.sonatype.com/publishing and make sure you see a deployment org.checkerframework (via OSSRH Staging API)\n"
+            "Go to https://central.sonatype.com/publishing and make sure you see"
+            " a deployment org.checkerframework (via OSSRH Staging API)\n"
         )
         ## I can't find a URL to copy anymore.
         # print_step("Step 5c: Run Maven sanity test on Maven Central artifacts.")
         # if prompt_yes_no("Run Maven sanity test on Maven Central artifacts?", True):
         #     repo_url = input("Please enter the repo URL of the closed artifacts:\n")
         #
-        #     maven_sanity_check("maven-staging", repo_url, new_cf_version)
+        #     maven_sanity_check("maven-staging", repo_url)
 
     # This step copies the development release directories to the live release directories.
     # It then adds the appropriate permissions to the release. Symlinks need to be updated to point

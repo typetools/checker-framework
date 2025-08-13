@@ -202,9 +202,7 @@ def build_and_locally_deploy_maven() -> None:
     execute("./gradlew publishToMavenLocal", working_dir=CHECKER_FRAMEWORK)
 
 
-def build_checker_framework_release(
-    version: str, old_cf_version: str, checker_framework_interm_dir: Path
-) -> None:
+def build_checker_framework_release(version: str, old_cf_version: str) -> None:
     """Build the release files for the Checker Framework project and run tests.
 
     The release files include the manual and the zip file.
@@ -220,7 +218,8 @@ def build_checker_framework_release(
     #
     execute_status(grep_cmd, CHECKER_FRAMEWORK)
     continue_or_exit(
-        'If any occurrence is not acceptable, then stop the release, update target "updateVersionNumbers" in file release.gradle, and start over.'
+        "If any occurrence is not acceptable, then stop the release, update target"
+        ' "updateVersionNumbers" in file release.gradle, and start over.'
     )
 
     # Build the Checker Framework binaries and documents.  Tests are run by release_push.py.
@@ -234,10 +233,7 @@ def build_checker_framework_release(
     # Create checker-framework-X.Y.Z.zip and put it in checker_framework_interm_dir
     # copy the remaining checker-framework website files to checker_framework_interm_dir
     # This also makes the manuals.
-    gradle_cmd = "./gradlew copyToWebsite  -PcfWebsite=%s -PafuWebsite=%s" % (
-        checker_framework_interm_dir,
-        afu_interm_dir,
-    )
+    gradle_cmd = "./gradlew copyToWebsite  -PcfWebsite={checker_framework_interm_dir}"
     execute(gradle_cmd, CHECKER_FRAMEWORK)
 
     # clean no longer necessary files left over from building the checker framework tutorial
@@ -320,10 +316,10 @@ def main(argv: list[str]) -> None:
     print_step("Build Step 2: Check tools.")  # AUTO
     check_tools(TOOLS)
 
-    # Usually we increment the release by 0.0.1 per release unless there is a major change.
-    # The release script will read the current version of the Checker Framework
-    # from the release website and then suggest the next release version 0.0.1 higher than the current
-    # version. You can also manually specify a version higher than the current version. Lower or equivalent
+    # Usually we increment the release by 0.0.1 per release unless there is a major change.  The
+    # release script will read the current version of the Checker Framework from the release
+    # website and then suggest the next release version 0.0.1 higher than the current version. You
+    # can also manually specify a version higher than the current version. Lower or equivalent
     # versions are not possible and will be rejected when you try to push the release.
 
     print_step("Build Step 3: Determine release versions.")  # MANUAL
@@ -350,9 +346,7 @@ def main(argv: list[str]) -> None:
 
     # The Checker Framework jar files and documentation are built and the website is updated.
     print_step("Build Step 5: Build projects and websites.")  # AUTO
-    build_checker_framework_release(
-        cf_version, old_cf_version, checker_framework_interm_dir, afu_interm_dir
-    )
+    build_checker_framework_release(cf_version, old_cf_version)
 
     print_step("Build Step 6: Overwrite .htaccess and CFLogo.png .")  # AUTO
 

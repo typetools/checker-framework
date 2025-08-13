@@ -25,7 +25,6 @@ from release_utils import (
 )
 from release_vars import (
     CHECKER_FRAMEWORK,
-    CHECKER_FRAMEWORK_RELEASE,
     SANITY_DIR,
     execute,
     execute_output,
@@ -106,7 +105,7 @@ def javac_sanity_check(checker_framework_website: str, release_version: str) -> 
     )
 
 
-def maven_sanity_check(sub_sanity_dir_name: str, repo_url: str, release_version: str) -> None:
+def maven_sanity_check(sub_sanity_dir_name: str, repo_url: str) -> None:
     """Run the Maven sanity check with the local artifacts or from the repo at repo_url."""
     maven_sanity_dir = Path(SANITY_DIR) / sub_sanity_dir_name
     if pathlib.Path(maven_sanity_dir).is_dir():
@@ -117,7 +116,7 @@ def maven_sanity_check(sub_sanity_dir_name: str, repo_url: str, release_version:
     maven_example_dir = Path(maven_sanity_dir) / "MavenExample"
     output_log = Path(maven_example_dir) / "output.log"
 
-    get_example_dir_cmd = "./gradlew updateCopyMavenExample -PdestDir=%s" % (maven_sanity_dir)
+    get_example_dir_cmd = f"./gradlew updateCopyMavenExample -PdestDir={maven_sanity_dir}"
 
     execute(get_example_dir_cmd, CHECKER_FRAMEWORK)
     path_to_artifacts = (
