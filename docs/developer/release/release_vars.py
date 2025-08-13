@@ -16,9 +16,12 @@ import subprocess
 
 
 def getAndAppend(name, append):
-    """Retrieve the given environment variable plus `append`, or an empty string.
+    """Return the given environment variable plus `append`, or an empty string.
 
-    Returns an empty string if the environment variable does not exist.
+    Return an empty string if the environment variable does not exist.
+
+    Returns:
+        the given environment variable plus `append`, or an empty string.
     """
     if name in os.environ:
         return os.environ[name] + append
@@ -31,6 +34,9 @@ def execute(command_args, halt_if_fail=True, capture_output=False, working_dir=N
 
     If capture_output is true, then return the output (and ignore the halt_if_fail argument).
     If capture_output is not true, return the return code of the subprocess call (0 for success).
+
+    Returns:
+        the output or the return code
     """
     if working_dir is not None:
         print(f"Executing in {working_dir}: {command_args}")

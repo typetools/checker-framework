@@ -67,6 +67,9 @@ def copy_release_dir(path_to_dev_releases, path_to_live_releases, release_versio
     For example,
     /cse/www2/types/dev/checker-framework/releases/2.0.0 ->
     /cse/www2/types/checker-framework/releases/2.0.0
+
+    Returns:
+        the destination location.
     """
     source_location = os.path.join(path_to_dev_releases, release_version)
     dest_location = os.path.join(path_to_live_releases, release_version)
@@ -151,16 +154,23 @@ def stage_maven_artifacts_in_maven_central(new_cf_version):
 
 
 def is_file_empty(filename):
-    """Return true if the given file has size 0."""
+    """Return true if the given file has size 0.
+
+    Returns:
+        true if the given file has size 0.
+    """
     return pathlib.Path(filename).stat().st_size == 0
 
 
-def run_link_checker(site, output, additional_param=""):
+def run_link_checker(site, output_file, additional_param=""):
     """Run the link checker on the given web site and save the output to the given file.
 
     Additional parameters (if given) are passed directly to the link checker script.
+
+    Returns:
+        the given output file
     """
-    delete_if_exists(output)
+    delete_if_exists(output_file)
     check_links_script = os.path.join(SCRIPTS_DIR, "checkLinks.sh")
     if additional_param == "":
         cmd = ["sh", check_links_script, site]
@@ -168,7 +178,7 @@ def run_link_checker(site, output, additional_param=""):
         cmd = ["sh", check_links_script, additional_param, site]
     env = {"CHECKLINK": CHECKLINK}
 
-    out_file = open(output, "w+")
+    out_file = open(output_file, "w+")
 
     print(
         "Executing: "
@@ -182,12 +192,12 @@ def run_link_checker(site, output, additional_param=""):
     out_file.close()
 
     if process.returncode != 0:
-        msg = f"Non-zero return code ({process.returncode}; see output in {output}) while executing {cmd}"
+        msg = f"Non-zero return code ({process.returncode}; see output in {output_file}) while executing {cmd}"
         print(msg + "\n")
         if not prompt_yes_no("Continue despite link checker results?", True):
             raise Exception(msg)
 
-    return output
+    return output_file
 
 
 def check_all_links(

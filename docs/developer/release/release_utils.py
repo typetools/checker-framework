@@ -25,7 +25,11 @@ from release_vars import execute
 
 
 def has_command_line_option(argv, argument):
-    """Return True if the given command line arguments contain the specified argument."""
+    """Return True if the given command line arguments contain the specified argument.
+
+    Returns:
+        True if the given command line arguments contain the specified argument.
+    """
     for index in range(1, len(argv)):
         if argv[index] == argument:
             return True
@@ -64,7 +68,8 @@ def check_command(command):
 def prompt_yes_no(msg, default=False):
     """Print the given message and continually prompt the user until they answer yes or no.
 
-    Return true if the answer was yes, false otherwise.
+    Returns:
+        true if the answer was yes, false otherwise.
     """
     default_str = "no"
     if default:
@@ -80,7 +85,8 @@ def prompt_yes_no(msg, default=False):
 def prompt_yn(msg):
     """Print the given message and continually prompts the user until they answer y or n.
 
-    Return true if the answer was y, false otherwise.
+    Returns:
+        true if the answer was y, false otherwise.
     """
     y_or_n = "z"
     while y_or_n != "y" and y_or_n != "n":
@@ -97,7 +103,11 @@ def prompt_to_continue():
 
 
 def prompt_w_default(msg, default, valid_regex=None):
-    """Only accept answers that match valid_regex.  If default is None, require an answer."""
+    """Only accept answers that match valid_regex.  If default is None, require an answer.
+
+    Returns:
+        the user-provided input.
+    """
     answer = None
     while answer is None:
         answer = input(msg + f" ({default}): ")
@@ -146,12 +156,20 @@ def continue_or_exit(msg):
 
 # From http://stackoverflow.com/a/1714190/173852, but doesn't strip trailing zeroes
 def version_number_to_array(version_num):
-    """Given a version number, return an array of the elements, as integers."""
+    """Given a version number, return an array of the elements, as integers.
+
+    Returns:
+        an array of the version number elements.
+    """
     return [int(x) for x in version_num.split(".")]
 
 
 def increment_version(version_num):
-    """Return the next incremental version after the argument."""
+    """Return the next incremental version after the argument.
+
+    Returns:
+        the next incremental version after the argument.
+    """
     # Drop the fourth and subsequent parts if present
     version_array = version_number_to_array(version_num)[:3]
     version_array[-1] = version_array[-1] + 1
@@ -179,7 +197,11 @@ def test_increment_version():
 
 
 def current_distribution_by_website(site):
-    """Return the Checker Framework version from the checker framework website."""
+    """Return the Checker Framework version from the Checker Framework website.
+
+    Returns:
+        the Checker Framework version from the Checker Framework website.
+    """
     print(f"Looking up checker-framework-version from {site}\n")
     ver_re = re.compile(r"<!-- checker-framework-zip-version -->checker-framework-(.*)\.zip")
     text = urllib.request.urlopen(url=site).read().decode("utf-8")
@@ -194,14 +216,22 @@ def current_distribution_by_website(site):
 def git_bare_repo_exists_at_path(
     repo_root,
 ):  # Bare git repos have no .git directory but they have a refs directory
-    """Return true if a bare git repository exists at the given filesystem path."""
+    """Return true if a bare git repository exists at the given filesystem path.
+
+    Returns:
+        true if a bare git repository exists at the given filesystem path.
+    """
     if pathlib.Path(repo_root + "/refs").is_dir():
         return True
     return False
 
 
 def git_repo_exists_at_path(repo_root):
-    """Return true if a (bare or non-bare) git repository exists at the given filesystem path."""
+    """Return true if a (bare or non-bare) git repository exists at the given filesystem path.
+
+    Returns:
+        true if a (bare or non-bare) git repository exists at the given filesystem path.
+    """
     return pathlib.Path(repo_root + "/.git").is_dir() or git_bare_repo_exists_at_path(repo_root)
 
 
@@ -313,6 +343,9 @@ def is_repo_cleaned_and_updated(repo):
     that a repo is fully clean of all changes, such as committed tags. To be
     certain of success throughout the release_build and release_push process,
     the best option is to clone repositories from scratch.
+
+    Returns:
+        true if the repository at the given filesystem path is clean and up-to-date.
     """
     # The idiom "not execute(..., capture_output=True)" evaluates to True when the captured output
     # is empty.
@@ -360,6 +393,9 @@ def get_tag_line(lines, revision, tag_prefixes):
     prefix strings if provided. For example, given an array of tag prefixes
     [\"checker-framework-\", \"checkers-\"] and project revision \"2.0.0\", the
     tags named \"checker-framework-2.0.0\" and \"checkers-2.0.0\" are sought.
+
+    Returns:
+        the revision hash for the tag matching the given project revision.
     """
     for line in lines:
         for prefix in tag_prefixes:
@@ -377,6 +413,9 @@ def get_commit_for_tag(revision, repo_file_path, tag_prefixes):
     tag prefix strings if provided. For example, given an array of tag prefixes
     [\"checker-framework-\", \"checkers-\"] and project revision \"2.0.0\", the
     tags named \"checker-framework-2.0.0\" and \"checkers-2.0.0\" are sought.
+
+    Returns:
+        the commit hash for the tag matching the given project revision.
     """
     # assume the first is the most recent
     tags = execute(
@@ -422,7 +461,11 @@ def download_binary(source_url, destination):
 
 
 def read_first_line(file_path):
-    """Return the first line in the given file. Assumes the file exists."""
+    """Return the first line in the given file. Assumes the file exists.
+
+    Returns:
+        the first line in the given file.
+    """
     infile = open(file_path)
     first_line = infile.readline()
     infile.close()
@@ -472,7 +515,10 @@ def delete_path_if_exists(path):
 def are_in_file(file_path, strs_to_find):
     """Return true if every string in the given strs_to_find array appears in the given file.
 
-    Returns true if strs_to_find is empty. Note that the strs_to_find parameter is mutated.
+    Note that the strs_to_find parameter is mutated.
+
+    Returns:
+        true if strs_to_find is empty.
     """
     infile = open(file_path)
 
@@ -529,7 +575,11 @@ def print_step(step):
 
 
 def get_announcement_email(version):
-    """Return the template for the e-mail announcing a new release of the Checker Framework."""
+    """Return the template for the e-mail announcing a new release of the Checker Framework.
+
+    Returns:
+        the template for the e-mail announcing a new release of the Checker Framework.
+    """
     return f"""
 To:  checker-framework-discuss@googlegroups.com
 Subject: Release {version} of the Checker Framework

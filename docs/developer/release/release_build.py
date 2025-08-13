@@ -113,12 +113,19 @@ def get_afu_date():
 
     If the AFU is being built, return the current date, otherwise return the
     date of the last AFU release as indicated in the AFU home page.
+
+    Returns:
+        the AFU date
     """
     return get_current_date()
 
 
 def get_new_version(project_name, curr_version):
-    """Query the user for the new version number; returns old and new version numbers."""
+    """Query the user for the new version number; returns old and new version numbers.
+
+    Returns:
+        the old and new version numbers
+    """
     print("Current " + project_name + " version: " + curr_version)
     suggested_version = increment_version(curr_version)
 
@@ -138,7 +145,11 @@ def get_new_version(project_name, curr_version):
 
 
 def create_dev_website_release_version_dir(project_name, version):
-    """Create the directory for the given version of the given project on the dev web site."""
+    """Create the directory for the given version of the given project on the dev web site.
+
+    Returns:
+        the dev web site directory for the given project and version.
+    """
     if project_name in (None, "checker-framework"):
         interm_dir = os.path.join(DEV_SITE_DIR, "releases", version)
     else:
@@ -154,6 +165,9 @@ def create_dirs_for_dev_website_release_versions(cf_version):
 
     For example,
     /cse/www2/types/dev/checker-framework/<project_name>/releases/<version> .
+
+    Returns:
+        the dev web site directory for the CF.
     """
     afu_interm_dir = create_dev_website_release_version_dir("annotation-file-utilities", cf_version)
     checker_framework_interm_dir = create_dev_website_release_version_dir(None, cf_version)
@@ -190,7 +204,11 @@ def update_project_dev_website(project_name, release_version):
 
 
 def get_current_date():
-    """Return today's date in the format "02 May 2016"."""
+    """Return today's date in the format "02 May 2016".
+
+    Returns:
+        today's date.
+    """
     return datetime.date.today().strftime("%d %b %Y")
 
 
