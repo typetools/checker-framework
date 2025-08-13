@@ -58,15 +58,11 @@ tasks.register('updateVersionNumbersInDocs', Copy) {
   from('docs') {
     include 'manual/external-tools.tex'
     filter { String line ->
-      line = line.replaceAll("checker-framework-${releaseVersionRegex}", "checker-framework-${releaseVersion}");
-
-      line = line.replaceAll("checker([-/])${releaseVersionRegex}", "checker\1${releaseVersion}");
-      line = line.replaceAll("checker-qual([-/])${releaseVersionRegex}", "checker-qual\1${releaseVersion}");
-      line = line.replaceAll("checker-util([-/])${releaseVersionRegex}", "checker-util\1${releaseVersion}");
+      line = line.replaceAll("checker(|-framework|-qual|-util)([-/])${releaseVersionRegex}", "checker\1\2${releaseVersion}");
 
       line = line.replaceAll("/${releaseVersionRegex}/jar", "/${releaseVersion}/jar");
 
-      line.replaceAll("ext.checkerFrameworkVersion = '${releaseVersionRegex}", "ext.checkerFrameworkVersion = '${releaseVersion}");
+      line.replaceAll("ext.checkerFrameworkVersion = '${releaseVersionRegex}'", "ext.checkerFrameworkVersion = '${releaseVersion}'");
     }
   }
 
