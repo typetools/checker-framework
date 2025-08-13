@@ -55,14 +55,15 @@ def execute_write_to_file(command_args, output_file_path, halt_if_fail=True, wor
     output_file.close()
 
     if process.returncode != 0 and halt_if_fail:
-        raise Exception(f"Error {process.returncode} while executing {command_args}")
+        msg = f"Error {process.returncode} while executing {command_args}"
+        raise Exception(msg)
 
 
 def check_command(command):
     """Throw an exception if the command is not on the PATH."""
     p = execute(["which", command], False)
     if p:
-        raise AssertionError(f"command not found: {command}")
+        raise AssertionError("command not found: " + command)
     print()
 
 
@@ -379,11 +380,12 @@ def check_repos(repos, fail_on_error, is_intermediate_repo_list):
                         + "cloned off of the intermediate repository."
                     )
                 if fail_on_error:
-                    raise Exception(f"repo {repo} is not cleaned and updated!")
+                    raise Exception("repo " + repo + " is not cleaned and updated!")
                 if not prompt_yn(
-                    f"{repo} is not clean and up to date! Continue (answering 'n' will exit the script)?"
+                    repo + " is not clean and up to date!"
+                    " Continue (answering 'n' will exit the script)?"
                 ):
-                    raise Exception(f"{repo} is not clean and up to date! Halting!")
+                    raise Exception(repo + " is not clean and up to date! Halting!")
 
 
 def get_tag_line(lines, revision, tag_prefixes):
@@ -429,7 +431,10 @@ def get_commit_for_tag(revision, repo_file_path, tag_prefixes):
 
     commit = lines[0]
     if commit is None:
-        msg = f"Could not find revision {revision} in repo {repo_file_path} using tags {','.join(tag_prefixes)} "
+        msg = (
+            f"Could not find revision {revision} in repo {repo_file_path}"
+            f" using tags {','.join(tag_prefixes)} "
+        )
         raise Exception(msg)
 
     return commit
@@ -594,7 +599,7 @@ http://CheckerFramework.org/
 Changes for Checker Framework version {version}:
 
 <<Insert latest Checker Framework changelog entry from https://github.com/typetools/checker-framework/blob/master/docs/CHANGELOG.md, preserving its formatting.>>
-"""
+"""  # noqa: E501
 
 
 # =========================================================================================

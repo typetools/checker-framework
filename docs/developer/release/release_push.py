@@ -83,7 +83,10 @@ def copy_release_dir(path_to_dev_releases, path_to_live_releases, release_versio
     # The / at the end of the source location is necessary so that
     # rsync copies the files in the source directory to the destination directory
     # rather than a subdirectory of the destination directory.
-    cmd = f"rsync --no-group --omit-dir-times --recursive --links --quiet {source_location}/ {dest_location}"
+    cmd = (
+        "rsync --no-group --omit-dir-times --recursive --links --quiet"
+        f" {source_location}/ {dest_location}"
+    )
     execute(cmd)
 
     return dest_location
@@ -192,7 +195,10 @@ def run_link_checker(site, output_file, additional_param=""):
     out_file.close()
 
     if process.returncode != 0:
-        msg = f"Non-zero return code ({process.returncode}; see output in {output_file}) while executing {cmd}"
+        msg = (
+            f"Non-zero return code ({process.returncode};"
+            f" see output in {output_file}) while executing {cmd}"
+        )
         print(msg + "\n")
         if not prompt_yes_no("Continue despite link checker results?", True):
             raise Exception(msg)
@@ -347,7 +353,7 @@ def main(argv):
     check_release_version(current_cf_version, new_cf_version)
 
     print(
-        f"Checker Framework and AFU:  current-version={current_cf_version}    new-version={new_cf_version}"
+        f"Checker Framework:  current-version={current_cf_version}    new-version={new_cf_version}"
     )
 
     # Runs the link the checker on all websites at:

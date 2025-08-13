@@ -222,7 +222,10 @@ def build_annotation_tools_release(version, afu_interm_dir):
     date = get_current_date()
 
     buildfile = os.path.join(ANNO_FILE_UTILITIES, "build.xml")
-    ant_cmd = f'ant {ant_debug} -buildfile {buildfile} -e update-versions -Drelease.ver="{version}" -Drelease.date="{date}"'
+    ant_cmd = (
+        f"ant {ant_debug} -buildfile {buildfile} -e update-versions"
+        f' -Drelease.ver="{version}" -Drelease.date="{date}"'
+    )
     execute(ant_cmd)
 
     # Deploy to intermediate site
@@ -254,7 +257,10 @@ def build_checker_framework_release(
     execute("./gradlew assemble -Prelease=true", True, False, ANNO_FILE_UTILITIES)
 
     # update versions
-    ant_props = f'-Dchecker={checker_dir} -Drelease.ver={version} -Dafu.version={version} -Dafu.properties={afu_build_properties} -Dafu.release.date="{afu_release_date}"'
+    ant_props = (
+        f"-Dchecker={checker_dir} -Drelease.ver={version} -Dafu.version={version}"
+        f' -Dafu.properties={afu_build_properties} -Dafu.release.date="{afu_release_date}"'
+    )
     # IMPORTANT: The release.xml in the directory where the Checker Framework is
     # being built is used. Not the release.xml in the directory you ran
     # release_build.py from.
@@ -293,21 +299,32 @@ def build_checker_framework_release(
     execute("make", True, False, checker_tutorial_dir)
 
     # Create checker-framework-X.Y.Z.zip and put it in checker_framework_interm_dir
-    ant_props = f"-Dchecker={checker_dir} -Ddest.dir={checker_framework_interm_dir} -Dfile.name=checker-framework-{version}.zip -Dversion={version}"
+    ant_props = (
+        f"-Dchecker={checker_dir} -Ddest.dir={checker_framework_interm_dir}"
+        f" -Dfile.name=checker-framework-{version}.zip -Dversion={version}"
+    )
     # IMPORTANT: The release.xml in the directory where the Checker Framework
     # is being built is used. Not the release.xml in the directory you ran
     # release_build.py from.
     ant_cmd = f"ant {ant_debug} -f release.xml {ant_props} zip-checker-framework "
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
-    ant_props = f"-Dchecker={checker_dir} -Ddest.dir={checker_framework_interm_dir} -Dfile.name=mvn-examples.zip -Dversion={version}"
+    ant_props = (
+        f"-Dchecker={checker_dir} -Ddest.dir={checker_framework_interm_dir}"
+        f" -Dfile.name=mvn-examples.zip -Dversion={version}"
+    )
     # IMPORTANT: Uses the release.xml in the directory where the Checker Framework is being built.
     # Not the release.xml in the directory you ran release_build.py from.
     ant_cmd = f"ant {ant_debug} -f release.xml {ant_props} zip-maven-examples "
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
     # copy the remaining checker-framework website files to checker_framework_interm_dir
-    ant_props = f"-Dchecker={checker_dir} -Ddest.dir={checker_framework_interm_dir} -Dmanual.name=checker-framework-manual -Ddataflow.manual.name=checker-framework-dataflow-manual -Dchecker.webpage=checker-framework-webpage.html"
+    ant_props = (
+        f"-Dchecker={checker_dir} -Ddest.dir={checker_framework_interm_dir}"
+        " -Dmanual.name=checker-framework-manual"
+        " -Ddataflow.manual.name=checker-framework-dataflow-manual"
+        " -Dchecker.webpage=checker-framework-webpage.html"
+    )
 
     # IMPORTANT: Uses the release.xml in the directory where the Checker Framework is being built.
     # Not the release.xml in the directory you ran release_build.py from.

@@ -52,7 +52,8 @@ def execute(command_args, halt_if_fail=True, capture_output=False, working_dir=N
 
     result = subprocess.call(args, cwd=working_dir)
     if halt_if_fail and result:
-        raise Exception(f"Error {result} while executing {args} in {working_dir}")
+        msg = f"Error {result} while executing {args} in {working_dir}"
+        raise Exception(msg)
     return result
 
 

@@ -115,7 +115,10 @@ def maven_sanity_check(sub_sanity_dir_name, repo_url, release_version):
     output_log = os.path.join(maven_example_dir, "output.log")
 
     ant_release_script = os.path.join(CHECKER_FRAMEWORK_RELEASE, "release.xml")
-    get_example_dir_cmd = f"ant -f {ant_release_script} update-and-copy-maven-example -Dchecker={checker_dir} -Dversion={release_version} -Ddest.dir={maven_sanity_dir}"
+    get_example_dir_cmd = (
+        f"ant -f {ant_release_script} update-and-copy-maven-example"
+        f" -Dchecker={checker_dir} -Dversion={release_version} -Ddest.dir={maven_sanity_dir}"
+    )
 
     execute(get_example_dir_cmd)
     path_to_artifacts = os.path.join(
