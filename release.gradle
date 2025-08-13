@@ -17,11 +17,15 @@ ext {
 tasks.register('updateVersionNumbers', Copy){
   dependsOn('updateVersionNumbersInDocs')
   dependsOn('updateVersionNumbersAFU')
+  // It's not possible to update the versions numbers in place, so updateVersionNumbersInDocs and
+  // updateVersionNumbersAFU copy to temporary directory, then this task copies the changed files
+  // back into there original locations.
   from layout.buildDirectory.file('updateVersionNumbers/')
   into layout.projectDirectory
 }
 
 tasks.register('updateVersionNumbersAFU', Copy){
+  // It's not possible to update the versions numbers in place, so copy to temporary directory.
   into layout.buildDirectory.file('updateVersionNumbers/annotation-file-utilities')
   from 'annotation-file-utilities'
   include 'src/main/java/org/checkerframework/afu/scenelib/io/classfile/ClassFileReader.java'
@@ -36,6 +40,7 @@ tasks.register('updateVersionNumbersAFU', Copy){
 }
 
 tasks.register('updateVersionNumbersInDocs', Copy) {
+  // It's not possible to update the versions numbers in place, so copy to temporary directory.
   into layout.buildDirectory.file('updateVersionNumbers/docs/')
   from('docs/') {
     include 'annotation-file-utilities/annotation-file-utilities.html',
@@ -54,15 +59,11 @@ tasks.register('updateVersionNumbersInDocs', Copy) {
     filter { String line ->
       line = line.replaceAll("checker-framework-${releaseVersionRegex}{0,1}", "checker-framework-${releaseVersion}");
 
-      line = line.replaceAll("checker-${releaseVersionRegex}{0,1}", "checker-${releaseVersion}");
-      line = line.replaceAll("checker-qual-${releaseVersionRegex}{0,1}", "checker-qual-${releaseVersion}");
-      line = line.replaceAll("checker-util-${releaseVersionRegex}{0,1}", "checker-util-${releaseVersion}");
+      line = line.replaceAll("checker([-/])${releaseVersionRegex}{0,1}", "checker\1${releaseVersion}");
+      line = line.replaceAll("checker-qual([-/])${releaseVersionRegex}{0,1}", "checker-qual\1${releaseVersion}");
+      line = line.replaceAll("checker-util([-/])${releaseVersionRegex}{0,1}", "checker-util\1${releaseVersion}");
 
-      line = line.replaceAll("checker/${releaseVersionRegex}{0,1}", "checker/${releaseVersion}");
-      line = line.replaceAll("checker-qual/${releaseVersionRegex}{0,1}", "checker-qual/${releaseVersion}");
-      line = line.replaceAll("checker-util/${releaseVersionRegex}{0,1}", "checker-util/${releaseVersion}");
-
-      line = line.replaceAll("/${releaseVersionRegex}{0,1}/jar", "/${releaseVersion}/");
+      line = line.replaceAll("/${releaseVersionRegex}{0,1}/jar", "/${releaseVersion}/jar");
 
       line.replaceAll("ext.checkerFrameworkVersion = '${releaseVersionRegex}{0,1}", "ext.checkerFrameworkVersion = '${releaseVersion}");
     }
@@ -88,7 +89,7 @@ tasks.register('updateVersionNumbersInDocs', Copy) {
 
 
 tasks.register('createCheckerFrameworkZip', Zip) {
-  description = 'Creates a zip archive for the Checker Framework.'
+  description = 'Creates a zip archive for the Checker Framework. Requires property `cfWebsite` to be set to some directory.'
   dependsOn('buildAll')
   archiveFileName = "checker-framework-${version}.zip"
   destinationDirectory = file(project.property('cfWebsite'))
@@ -141,10 +142,8 @@ tasks.register('createCheckerFrameworkZip', Zip) {
         'docs/tutorial/**'
   }
 
-  from('dataflow/manual/dataflow.pdf') {
+  from('dataflow/manual/checker-framework-dataflow-manual.pdf') {
     into 'docs/manual/'
-
-    rename 'dataflow.pdf', 'checker-framework-dataflow-manual.pdf'
   }
 
   from('docs/logo/Logo/CFLogo.png') {
@@ -161,7 +160,7 @@ tasks.register('createCheckerFrameworkZip', Zip) {
 }
 
 tasks.register('zipMavenExamples', Zip) {
-  description = 'Creates a zip archive for the Maven example.'
+  description = 'Creates a zip archive for the Maven examples.'
   archiveFileName = "mvn-examples.zip"
   destinationDirectory = file(project.property('cfWebsite'))
   from('docs/examples/MavenExample')
@@ -208,8 +207,7 @@ tasks.register('copyCFWebsite', Copy) {
     include 'manual.html',
         'manual.pdf',
         '*.svg',
-        'manual001.png',
-        'manual001.svg'
+        'manual001.png'
   }
 
   // Copy developer docs
@@ -221,9 +219,8 @@ tasks.register('copyCFWebsite', Copy) {
   }
 
   // Copy Dataflow manual
-  from ('dataflow/manual/dataflow.pdf'){
+  from ('dataflow/manual/checker-framework-dataflow-manual.pdf'){
     into 'manual'
-    rename 'dataflow.pdf','checker-framework-dataflow-manual.pdf'
   }
 
   // Copy tutorial

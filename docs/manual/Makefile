@@ -48,7 +48,7 @@ faq.tex \
 troubleshooting.tex \
 contributors.tex
 
-all: manual.pdf manual.html  ../api
+all: manual.pdf manual.html ../api
 
 .PHONY: figures-all
 figures-all:
