@@ -49,7 +49,11 @@ from sanity_checks import javac_sanity_check, maven_sanity_check
 
 
 def check_release_version(previous_release, new_release):
-    """Ensure that the given new release version is greater than the given previous one."""
+    """Ensure that the given new release version is greater than the given previous one.
+
+    Raises:
+        Exception: If the new version is not greater than the previous one.
+    """
     if version_number_to_array(previous_release) >= version_number_to_array(new_release):
         raise Exception(
             "Previous release version ("
@@ -70,6 +74,9 @@ def copy_release_dir(path_to_dev_releases, path_to_live_releases, release_versio
 
     Returns:
         the destination location.
+
+    Raises:
+        Exception: If the destination cannot be deleted.
     """
     source_location = Path(path_to_dev_releases) / release_version
     dest_location = Path(path_to_live_releases) / release_version
@@ -125,7 +132,7 @@ def copy_releases_to_live_site(cf_version):
 
 
 def ensure_group_access_to_releases():
-    """Give group access to all files and directories in the \"releases\" subdirectories.
+    """Give group access to all files and directories in the "releases" subdirectories.
 
     on the live web site for the AFU and the Checker Framework.
     """
@@ -133,7 +140,7 @@ def ensure_group_access_to_releases():
     ensure_group_access(CHECKER_LIVE_RELEASES_DIR)
 
 
-def stage_maven_artifacts_in_maven_central(new_cf_version):
+def stage_maven_artifacts_in_maven_central():
     """Stage the Checker Framework artifacts on Maven Central.
 
     After the
@@ -172,6 +179,9 @@ def run_link_checker(site, output_file, additional_param=""):
 
     Returns:
         the given output file
+
+    Raises:
+        Exception: If the user bails out.
     """
     delete_if_exists(output_file)
     check_links_script = Path(SCRIPTS_DIR) / "checkLinks.sh"
@@ -185,7 +195,7 @@ def run_link_checker(site, output_file, additional_param=""):
 
     print(
         "Executing: "
-        + " ".join("%s=%r" % (key2, val2) for (key2, val2) in list(env.items()))
+        + " ".join(f"{key2}={val2}" for (key2, val2) in list(env.items()))
         + " "
         + " ".join(cmd)
     )
@@ -215,13 +225,16 @@ def check_all_links(
 ):
     """Check all links on the given web sites for the AFU and the Checker Framework.
 
-    The suffix parameter should be \"dev\" for the
-    dev web site and \"live\" for the live web site. test_mode indicates
+    The suffix parameter should be "dev" for the
+    dev web site and "live" for the live web site. test_mode indicates
     whether this script is being run in release or in test mode. The
     cf_version_of_broken_link_to_suppress parameter should be set to the
     new Checker Framework version and should only be passed when checking links
     for the dev web site (to prevent reporting of a broken link to the
     not-yet-live zip file for the new release).
+
+    Raises:
+        Exception: If there are link checking errors.
     """
     afu_check = run_link_checker(afu_website, TMP_DIR + "/afu." + suffix + ".check")
     additional_param = ""
@@ -271,7 +284,11 @@ def push_interm_to_release_repos():
 
 
 def validate_args(argv):
-    """Validate the command-line arguments."""
+    """Validate the command-line arguments.
+
+    Raises:
+        Exception: If the command-line arguments are not valid.
+    """
     if len(argv) > 3:
         print_usage()
         raise Exception("Invalid arguments. " + ",".join(argv))
@@ -298,6 +315,9 @@ def main(argv):
     the release to GitHub repositories, and guides the user to
     perform manual steps such as sending the
     release announcement e-mail.
+
+    Raises:
+        Exception: If the file does not exist.
     """
     # MANUAL Indicates a manual step
     # AUTO Indicates the step is fully automated.
@@ -412,7 +432,7 @@ def main(argv):
 
     print_step("Step 5a: Stage the artifacts at Maven Central.")
     if (not test_mode) or prompt_yes_no("Stage Maven artifacts in Maven Central?", not test_mode):
-        stage_maven_artifacts_in_maven_central(new_cf_version)
+        stage_maven_artifacts_in_maven_central()
 
         print_step("Step 5b: Close staged artifacts at Maven Central.")
         continue_or_exit(

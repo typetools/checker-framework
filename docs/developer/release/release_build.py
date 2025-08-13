@@ -209,7 +209,7 @@ def get_current_date():
     Returns:
         today's date.
     """
-    return datetime.date.today().strftime("%d %b %Y")
+    return datetime.datetime.now().date().strftime("%d %b %Y")  # noqa: DTZ005
 
 
 def build_annotation_tools_release(version, afu_interm_dir):
@@ -237,7 +237,8 @@ def build_annotation_tools_release(version, afu_interm_dir):
     update_project_dev_website("annotation-file-utilities", version)
 
 
-def build_and_locally_deploy_maven(version):
+def build_and_locally_deploy_maven():
+    """Run `./gradlew publishToMavenLocal`."""
     execute("./gradlew publishToMavenLocal", working_dir=CHECKER_FRAMEWORK)
 
 
@@ -328,14 +329,14 @@ def build_checker_framework_release(
 
     # IMPORTANT: Uses the release.xml in the directory where the Checker Framework is being built.
     # Not the release.xml in the directory you ran release_build.py from.
-    fant_cmd = f"ant {ant_debug} -f release.xml {ant_props} checker-framework-website-docs "
+    ant_cmd = f"ant {ant_debug} -f release.xml {ant_props} checker-framework-website-docs "
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
     # clean no longer necessary files left over from building the checker framework tutorial
     checker_tutorial_dir = os.path.join(CHECKER_FRAMEWORK, "docs", "tutorial")
     execute("make clean", True, False, checker_tutorial_dir)
 
-    build_and_locally_deploy_maven(version)
+    build_and_locally_deploy_maven()
 
     update_project_dev_website("checker-framework", version)
 

@@ -12,6 +12,7 @@ import os
 import os.path
 import pathlib
 import re
+import shlex
 import shutil
 import subprocess
 import urllib.error
@@ -31,10 +32,7 @@ def has_command_line_option(argv, argument):
     Returns:
         True if the given command line arguments contain the specified argument.
     """
-    for index in range(1, len(argv)):
-        if argv[index] == argument:
-            return True
-    return False
+    return any(argv[index] == argument for index in range(1, len(argv)))
 
 
 # =========================================================================================
@@ -42,9 +40,12 @@ def has_command_line_option(argv, argument):
 
 
 def execute_write_to_file(command_args, output_file_path, halt_if_fail=True, working_dir=None):
-    """Execute the given command, capturing the output to the given file."""
+    """Execute the given command, capturing the output to the given file.
+
+    Raises:
+        Exception: If the command fails.
+    """
     print(f"Executing: {command_args}")
-    import shlex
 
     args = shlex.split(command_args) if isinstance(command_args, str) else command_args
 
@@ -79,9 +80,7 @@ def prompt_yes_no(msg, default=False):
 
     result = prompt_w_default(msg, default_str, "^(Yes|yes|No|no)$")
 
-    if result == "yes" or result == "Yes":
-        return True
-    return False
+    return result == "yes" or result == "Yes"
 
 
 def prompt_yn(msg):
@@ -223,9 +222,7 @@ def git_bare_repo_exists_at_path(
     Returns:
         true if a bare git repository exists at the given filesystem path.
     """
-    if pathlib.Path(repo_root + "/refs").is_dir():
-        return True
-    return False
+    return pathlib.Path(repo_root + "/refs").is_dir()
 
 
 def git_repo_exists_at_path(repo_root):
@@ -394,8 +391,8 @@ def get_tag_line(lines, revision, tag_prefixes):
     in
     the given lines containing revision hashes. Uses the given array of tag
     prefix strings if provided. For example, given an array of tag prefixes
-    [\"checker-framework-\", \"checkers-\"] and project revision \"2.0.0\", the
-    tags named \"checker-framework-2.0.0\" and \"checkers-2.0.0\" are sought.
+    ["checker-framework-", "checkers-"] and project revision "2.0.0", the
+    tags named "checker-framework-2.0.0" and "checkers-2.0.0" are sought.
 
     Returns:
         the revision hash for the tag matching the given project revision.
@@ -414,8 +411,8 @@ def get_commit_for_tag(revision, repo_file_path, tag_prefixes):
     of
     the Git repository at the given filesystem path. Uses the given array of
     tag prefix strings if provided. For example, given an array of tag prefixes
-    [\"checker-framework-\", \"checkers-\"] and project revision \"2.0.0\", the
-    tags named \"checker-framework-2.0.0\" and \"checkers-2.0.0\" are sought.
+    ["checker-framework-", "checkers-"] and project revision "2.0.0", the
+    tags named "checker-framework-2.0.0" and "checkers-2.0.0" are sought.
 
     Returns:
         the commit hash for the tag matching the given project revision.
@@ -575,7 +572,7 @@ def print_step(step):
     print(step)
 
     dash_str = ""
-    for dummy in range(len(step)):
+    for _dummy in range(len(step)):
         dash_str += "-"
     print(dash_str)
 
