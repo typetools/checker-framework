@@ -17,6 +17,7 @@ import subprocess
 import urllib.error
 import urllib.parse
 import urllib.request
+from pathlib import Path
 
 from release_vars import execute
 
@@ -47,7 +48,7 @@ def execute_write_to_file(command_args, output_file_path, halt_if_fail=True, wor
 
     args = shlex.split(command_args) if isinstance(command_args, str) else command_args
 
-    output_file = open(output_file_path, "w+")
+    output_file = Path.open(output_file_path, "w+")
     process = subprocess.Popen(args, stdout=output_file, stderr=output_file, cwd=working_dir)
     process.communicate()
     process.wait()
@@ -455,7 +456,7 @@ def download_binary(source_url, destination):
     if content_length is None:
         raise Exception("No content-length when downloading: " + source_url)
 
-    dest_file = open(destination, "wb")
+    dest_file = Path.open(destination, "wb")
     dest_file.write(http_response.read())
     dest_file.close()
 
@@ -466,7 +467,7 @@ def read_first_line(file_path):
     Returns:
         the first line in the given file.
     """
-    infile = open(file_path)
+    infile = Path.open(file_path)
     first_line = infile.readline()
     infile.close()
     return first_line
@@ -520,7 +521,7 @@ def are_in_file(file_path, strs_to_find):
     Returns:
         true if strs_to_find is empty.
     """
-    infile = open(file_path)
+    infile = Path.open(file_path)
 
     for line in infile:
         if len(strs_to_find) == 0:
@@ -540,10 +541,10 @@ def insert_before_line(to_insert, file_path, line):
     """Insert the given line to the given file before the given 0-indexed line number."""
     mid_line = line - 1
 
-    with open(file_path) as infile:
+    with Path.open(file_path) as infile:
         content = infile.readlines()
 
-    output = open(file_path, "w")
+    output = Path.open(file_path, "w")
     output.writelines(content[i] for i in range(mid_line))
 
     output.write(to_insert)
@@ -555,7 +556,7 @@ def insert_before_line(to_insert, file_path, line):
 
 def create_empty_file(file_path):
     """Create an empty file with the given filename."""
-    dest_file = open(file_path, "wb")
+    dest_file = Path.open(file_path, "wb")
     dest_file.close()
 
 
@@ -568,10 +569,10 @@ def print_step(step):
     print("\n")
     print(step)
 
-    dashStr = ""
+    dash_str = ""
     for dummy in range(len(step)):
-        dashStr += "-"
-    print(dashStr)
+        dash_str += "-"
+    print(dash_str)
 
 
 def get_announcement_email(version):

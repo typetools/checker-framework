@@ -3,9 +3,9 @@
 
 # See README-release-process.html for more information
 
-import os
 import pathlib
 import sys
+from pathlib import Path
 
 from release_utils import (
     continue_or_exit,
@@ -71,8 +71,8 @@ def copy_release_dir(path_to_dev_releases, path_to_live_releases, release_versio
     Returns:
         the destination location.
     """
-    source_location = os.path.join(path_to_dev_releases, release_version)
-    dest_location = os.path.join(path_to_live_releases, release_version)
+    source_location = Path(path_to_dev_releases) / release_version
+    dest_location = Path(path_to_live_releases) / release_version
 
     if pathlib.Path(dest_location).exists():
         delete_path(dest_location)
@@ -96,8 +96,8 @@ def promote_release(path_to_releases, release_version):
     /cse/www2/types/checker-framework/releases/2.0.0/* ->
     /cse/www2/types/checker-framework/*
     """
-    from_dir = os.path.join(path_to_releases, release_version)
-    to_dir = os.path.join(path_to_releases, "..")
+    from_dir = Path(path_to_releases) / release_version
+    to_dir = Path(path_to_releases) / ".."
     # Trailing slash is crucial.
     cmd = f"rsync -aJ --no-group --omit-dir-times {from_dir}/ {to_dir}"
     execute(cmd)
@@ -105,19 +105,19 @@ def promote_release(path_to_releases, release_version):
 
 def copy_htaccess():
     """Copy the .htaccess file from the dev site to the live site."""
-    LIVE_HTACCESS = os.path.join(LIVE_SITE_DIR, ".htaccess")
-    execute(f"rsync --times {os.path.join(DEV_SITE_DIR, '.htaccess')} {LIVE_HTACCESS}")
-    ensure_group_access(LIVE_HTACCESS)
+    live_htaccess = Path(LIVE_SITE_DIR) / ".htaccess"
+    execute(f"rsync --times {Path(DEV_SITE_DIR) / '.htaccess'} {live_htaccess}")
+    ensure_group_access(live_htaccess)
 
 
 def copy_releases_to_live_site(cf_version):
     """Copy the new release of the Checker Framework from the dev site to the live site."""
-    CHECKER_INTERM_RELEASES_DIR = os.path.join(DEV_SITE_DIR, "releases")
-    copy_release_dir(CHECKER_INTERM_RELEASES_DIR, CHECKER_LIVE_RELEASES_DIR, cf_version)
+    checker_interm_releases_dir = Path(DEV_SITE_DIR) / "releases"
+    copy_release_dir(checker_interm_releases_dir, CHECKER_LIVE_RELEASES_DIR, cf_version)
     delete_path_if_exists(CHECKER_LIVE_API_DIR)
     promote_release(CHECKER_LIVE_RELEASES_DIR, cf_version)
-    AFU_INTERM_RELEASES_DIR = os.path.join(DEV_SITE_DIR, "annotation-file-utilities", "releases")
-    copy_release_dir(AFU_INTERM_RELEASES_DIR, AFU_LIVE_RELEASES_DIR, cf_version)
+    afu_interm_releases_dir = Path(DEV_SITE_DIR) / "annotation-file-utilities" / "releases"
+    copy_release_dir(afu_interm_releases_dir, AFU_LIVE_RELEASES_DIR, cf_version)
     promote_release(AFU_LIVE_RELEASES_DIR, cf_version)
 
 
@@ -140,14 +140,14 @@ def stage_maven_artifacts_in_maven_central(new_cf_version):
     released can be dropped, which for our purposes is equivalent to never
     having staged them.
     """
-    gnupgPassphrase = read_first_line(
+    gnupg_passphrase = read_first_line(
         "/projects/swlab1/checker-framework/hosting-info/release-private.password"
     )
     execute(
         (
             "./gradlew publish -Prelease=true --no-parallel"
             " -Psigning.gnupg.keyName=checker-framework-dev@googlegroups.com"
-            f" -Psigning.gnupg.passphrase={gnupgPassphrase}"
+            f" -Psigning.gnupg.passphrase={gnupg_passphrase}"
         ),
         working_dir=CHECKER_FRAMEWORK,
     )
@@ -171,14 +171,14 @@ def run_link_checker(site, output_file, additional_param=""):
         the given output file
     """
     delete_if_exists(output_file)
-    check_links_script = os.path.join(SCRIPTS_DIR, "checkLinks.sh")
+    check_links_script = Path(SCRIPTS_DIR) / "checkLinks.sh"
     if additional_param == "":
         cmd = ["sh", check_links_script, site]
     else:
         cmd = ["sh", check_links_script, additional_param, site]
     env = {"CHECKLINK": CHECKLINK}
 
-    out_file = open(output_file, "w+")
+    out_file = Path.open(output_file, "w+")
 
     print(
         "Executing: "
@@ -217,7 +217,7 @@ def check_all_links(
     for the dev web site (to prevent reporting of a broken link to the
     not-yet-live zip file for the new release).
     """
-    afuCheck = run_link_checker(afu_website, TMP_DIR + "/afu." + suffix + ".check")
+    afu_check = run_link_checker(afu_website, TMP_DIR + "/afu." + suffix + ".check")
     additional_param = ""
     if cf_version_of_broken_link_to_suppress != "":
         additional_param = (
@@ -225,22 +225,22 @@ def check_all_links(
             + cf_version_of_broken_link_to_suppress
             + ".zip"
         )
-    checkerCheck = run_link_checker(
+    checker_check = run_link_checker(
         checker_website,
         TMP_DIR + "/checker-framework." + suffix + ".check",
         additional_param,
     )
 
-    is_afuCheck_empty = is_file_empty(afuCheck)
-    is_checkerCheck_empty = is_file_empty(checkerCheck)
+    is_afu_check_empty = is_file_empty(afu_check)
+    is_checker_check_empty = is_file_empty(checker_check)
 
-    errors_reported = not (is_afuCheck_empty and is_checkerCheck_empty)
+    errors_reported = not (is_afu_check_empty and is_checker_check_empty)
     if errors_reported:
         print("Link checker results can be found at:\n")
-    if not is_afuCheck_empty:
-        print("\t" + afuCheck + "\n")
-    if not is_checkerCheck_empty:
-        print("\t" + checkerCheck + "\n")
+    if not is_afu_check_empty:
+        print("\t" + afu_check + "\n")
+    if not is_checker_check_empty:
+        print("\t" + checker_check + "\n")
     if errors_reported:
         if not prompt_yes_no("Continue despite link checker results?", True):
             release_option = ""
@@ -337,8 +337,8 @@ def main(argv):
     # version.
 
     print_step("Push Step 1: Checking release versions")  # SEMIAUTO
-    dev_afu_website = os.path.join(DEV_SITE_URL, "annotation-file-utilities")
-    live_afu_website = os.path.join(LIVE_SITE_URL, "annotation-file-utilities")
+    dev_afu_website = Path(DEV_SITE_URL) / "annotation-file-utilities"
+    live_afu_website = Path(LIVE_SITE_URL) / "annotation-file-utilities"
 
     dev_checker_website = DEV_SITE_URL
     live_checker_website = LIVE_SITE_URL
@@ -454,15 +454,15 @@ def main(argv):
     if not test_mode:
         if prompt_yes_no("Run javac sanity test on live release?", True):
             javac_sanity_check(live_checker_website, new_cf_version)
-            SANITY_TEST_CHECKER_FRAMEWORK_DIR = SANITY_DIR + "/test-checker-framework"
-            if not pathlib.Path(SANITY_TEST_CHECKER_FRAMEWORK_DIR).is_dir():
-                execute("mkdir -p " + SANITY_TEST_CHECKER_FRAMEWORK_DIR)
-            sanity_test_script = os.path.join(SCRIPTS_DIR, "test-checker-framework.sh")
+            sanity_test_checker_framework_dir = SANITY_DIR + "/test-checker-framework"
+            if not pathlib.Path(sanity_test_checker_framework_dir).is_dir():
+                execute("mkdir -p " + sanity_test_checker_framework_dir)
+            sanity_test_script = Path(SCRIPTS_DIR) / "test-checker-framework.sh"
             execute(
                 "sh " + sanity_test_script + " " + new_cf_version,
                 True,
                 False,
-                SANITY_TEST_CHECKER_FRAMEWORK_DIR,
+                sanity_test_checker_framework_dir,
             )
     else:
         print("Test mode: Skipping javac sanity tests on the live release.")

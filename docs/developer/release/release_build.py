@@ -292,10 +292,8 @@ def build_checker_framework_release(
     checker_tutorial_dir = os.path.join(CHECKER_FRAMEWORK, "docs", "tutorial")
     execute("make", True, False, checker_tutorial_dir)
 
-    cfZipName = f"checker-framework-{version}.zip"
-
     # Create checker-framework-X.Y.Z.zip and put it in checker_framework_interm_dir
-    ant_props = f"-Dchecker={checker_dir} -Ddest.dir={checker_framework_interm_dir} -Dfile.name={cfZipName} -Dversion={version}"
+    ant_props = f"-Dchecker={checker_dir} -Ddest.dir={checker_framework_interm_dir} -Dfile.name=checker-framework-{version}.zip -Dversion={version}"
     # IMPORTANT: The release.xml in the directory where the Checker Framework
     # is being built is used. Not the release.xml in the directory you ran
     # release_build.py from.
@@ -451,8 +449,8 @@ def main(argv):
     print_step("Build Step 6: Overwrite .htaccess and CFLogo.png .")  # AUTO
 
     # Not "cp -p" because that does not work across filesystems whereas rsync does
-    CFLOGO = os.path.join(CHECKER_FRAMEWORK, "docs", "logo", "Logo", "CFLogo.png")
-    execute(f"rsync --times {CFLOGO} {checker_framework_interm_dir}")
+    cf_logo = os.path.join(CHECKER_FRAMEWORK, "docs", "logo", "Logo", "CFLogo.png")
+    execute(f"rsync --times {cf_logo} {checker_framework_interm_dir}")
 
     # Each project has a set of files that are updated for release. Usually these updates include
     # new release date and version information. All changed files are committed and pushed to the

@@ -15,7 +15,7 @@ import subprocess
 # variables.  All other methods that aid in release should go in release_utils.py
 
 
-def getAndAppend(name, append):
+def get_and_append(name, append):
     """Return the given environment variable plus `append`, or an empty string.
 
     Return an empty string if the environment variable does not exist.
@@ -84,8 +84,8 @@ RELEASE_BUILD_COMPLETED_FLAG_FILE = TMP_DIR + "/release-build-completed"
 
 # Every time a release is built the changes/tags are pushed here
 INTERM_REPO_ROOT = TMP_DIR + "/interm"
-INTERM_CHECKER_REPO = os.path.join(INTERM_REPO_ROOT, "checker-framework")
-INTERM_ANNO_REPO = os.path.join(INTERM_REPO_ROOT, "annotation-tools")
+INTERM_CHECKER_REPO = Path(INTERM_REPO_ROOT) / "checker-framework"
+INTERM_ANNO_REPO = Path(INTERM_REPO_ROOT) / "annotation-tools"
 
 # The central repositories for Checker Framework related projects
 LIVE_ANNO_REPO = "git@github.com:typetools/annotation-tools.git"
@@ -98,8 +98,8 @@ PLUME_BIB_REPO = "https://github.com/mernst/plume-bib"
 # Location of the project directories in which we will build the actual projects.
 # When we build these projects are pushed to the INTERM repositories.
 BUILD_DIR = TMP_DIR + "/build/"
-CHECKER_FRAMEWORK = os.path.join(BUILD_DIR, "checker-framework")
-CHECKER_FRAMEWORK_RELEASE = os.path.join(CHECKER_FRAMEWORK, "docs/developer/release")
+CHECKER_FRAMEWORK = Path(BUILD_DIR) / "checker-framework"
+CHECKER_FRAMEWORK_RELEASE = Path(CHECKER_FRAMEWORK) / "docs/developer/release"
 
 # If a new Gradle wrapper was recently installed, the first ./gradlew command may output:
 #   Downloading https://services.gradle.org/distributions/gradle-6.6.1-bin.zip
@@ -111,13 +111,13 @@ CF_VERSION = (
     .decode("utf-8")
 )
 
-ANNO_TOOLS = os.path.join(BUILD_DIR, "annotation-tools")
-ANNO_FILE_UTILITIES = os.path.join(ANNO_TOOLS, "annotation-file-utilities")
+ANNO_TOOLS = Path(BUILD_DIR) / "annotation-tools"
+ANNO_FILE_UTILITIES = Path(ANNO_TOOLS) / "annotation-file-utilities"
 
-GIT_SCRIPTS = os.path.join(BUILD_DIR, "git-scripts")
-PLUME_SCRIPTS = os.path.join(BUILD_DIR, "plume-scripts")
-CHECKLINK = os.path.join(BUILD_DIR, "checklink")
-PLUME_BIB = os.path.join(BUILD_DIR, "plume-bib")
+GIT_SCRIPTS = Path(BUILD_DIR) / "git-scripts"
+PLUME_SCRIPTS = Path(BUILD_DIR) / "plume-scripts"
+CHECKLINK = Path(BUILD_DIR) / "checklink"
+PLUME_BIB = Path(BUILD_DIR) / "plume-bib"
 
 BUILD_REPOS = (CHECKER_FRAMEWORK, ANNO_TOOLS)
 INTERM_REPOS = (INTERM_CHECKER_REPO, INTERM_ANNO_REPO)
@@ -132,11 +132,11 @@ LIVE_TO_INTERM_REPOS = (
     (LIVE_ANNO_REPO, INTERM_ANNO_REPO),
 )
 
-AFU_LIVE_SITE = os.path.join(LIVE_SITE_DIR, "annotation-file-utilities")
-AFU_LIVE_RELEASES_DIR = os.path.join(AFU_LIVE_SITE, "releases")
+AFU_LIVE_SITE = Path(LIVE_SITE_DIR) / "annotation-file-utilities"
+AFU_LIVE_RELEASES_DIR = Path(AFU_LIVE_SITE) / "releases"
 
-CHECKER_LIVE_RELEASES_DIR = os.path.join(LIVE_SITE_DIR, "releases")
-CHECKER_LIVE_API_DIR = os.path.join(LIVE_SITE_DIR, "api")
+CHECKER_LIVE_RELEASES_DIR = Path(LIVE_SITE_DIR) / "releases"
+CHECKER_LIVE_API_DIR = Path(LIVE_SITE_DIR) / "api"
 
 os.environ["PARENT_DIR"] = BUILD_DIR
 os.environ["CHECKERFRAMEWORK"] = CHECKER_FRAMEWORK
@@ -146,8 +146,8 @@ os.environ["PLUME_SCRIPTS"] = PLUME_SCRIPTS
 os.environ["CHECKLINK"] = CHECKLINK
 os.environ["BIBINPUTS"] = ".:" + PLUME_BIB
 os.environ["TEXINPUTS"] = ".:/homes/gws/mernst/tex/sty:/homes/gws/mernst/tex:..:"
-os.environ["PERLLIB"] = getAndAppend("PERLLIB", ":") + perl_libs
-os.environ["PERL5LIB"] = getAndAppend("PERL5LIB", ":") + perl_libs
+os.environ["PERLLIB"] = get_and_append("PERLLIB", ":") + perl_libs
+os.environ["PERL5LIB"] = get_and_append("PERL5LIB", ":") + perl_libs
 os.environ["JAVA_21_HOME"] = "/usr/lib/jvm/java-21-openjdk/"
 os.environ["JAVA_HOME"] = os.environ["JAVA_21_HOME"]
 
