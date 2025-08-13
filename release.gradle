@@ -59,13 +59,9 @@ tasks.register('updateVersionNumbersInDocs', Copy) {
     filter { String line ->
       line = line.replaceAll("checker-framework-${releaseVersionRegex}{0,1}", "checker-framework-${releaseVersion}");
 
-      line = line.replaceAll("checker-${releaseVersionRegex}{0,1}", "checker-${releaseVersion}");
-      line = line.replaceAll("checker-qual-${releaseVersionRegex}{0,1}", "checker-qual-${releaseVersion}");
-      line = line.replaceAll("checker-util-${releaseVersionRegex}{0,1}", "checker-util-${releaseVersion}");
-
-      line = line.replaceAll("checker/${releaseVersionRegex}{0,1}", "checker/${releaseVersion}");
-      line = line.replaceAll("checker-qual/${releaseVersionRegex}{0,1}", "checker-qual/${releaseVersion}");
-      line = line.replaceAll("checker-util/${releaseVersionRegex}{0,1}", "checker-util/${releaseVersion}");
+      line = line.replaceAll("checker([-/])${releaseVersionRegex}{0,1}", "checker\1${releaseVersion}");
+      line = line.replaceAll("checker-qual([-/])${releaseVersionRegex}{0,1}", "checker-qual\1${releaseVersion}");
+      line = line.replaceAll("checker-util([-/])${releaseVersionRegex}{0,1}", "checker-util\1${releaseVersion}");
 
       line = line.replaceAll("/${releaseVersionRegex}{0,1}/jar", "/${releaseVersion}/jar");
 
