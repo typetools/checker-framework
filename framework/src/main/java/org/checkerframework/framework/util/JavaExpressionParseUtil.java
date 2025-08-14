@@ -147,7 +147,10 @@ public class JavaExpressionParseUtil {
     ExpressionTree exprTree;
     try {
       exprTree = JavacParseUtil.parseExpression(expressionWithParameterNames);
-    } catch (RuntimeException e) {
+    } catch (Throwable e) {
+      System.out.printf(
+          "JEPU.parse(%s): Problem while parsing %s:%n", expression, expressionWithParameterNames);
+      e.printStackTrace();
       String extra = ".";
       if (!e.getMessage().isEmpty()) {
         String message = e.getMessage();
@@ -966,7 +969,9 @@ public class JavaExpressionParseUtil {
         if (parsed instanceof IdentifierTree) {
           try {
             return JavacParseUtil.parseExpression(tree.toString()).accept(this, null).getType();
-          } catch (RuntimeException e) {
+          } catch (Throwable e) {
+            System.out.printf("Problem while parsing %s :%n", tree);
+            e.printStackTrace();
             return null;
           }
         }
@@ -975,7 +980,9 @@ public class JavaExpressionParseUtil {
       if (tree instanceof IdentifierTree) {
         try {
           return JavacParseUtil.parseExpression(tree.toString()).accept(this, null).getType();
-        } catch (RuntimeException e) {
+        } catch (Throwable e) {
+          System.out.printf("Problem while parsing %s :%n", tree);
+          e.printStackTrace();
           return null;
         }
       } else if (tree instanceof JCTree.JCPrimitiveTypeTree) {

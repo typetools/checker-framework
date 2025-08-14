@@ -129,6 +129,8 @@ public class SameLenTransfer extends CFTransfer {
 
     JavaExpression exprRec = JavaExpression.fromNode(node.getExpression());
 
+    System.err.printf("targetRec=%s, exprRec=%s%n", targetRec, exprRec);
+
     if (IndexUtil.isSequenceType(node.getTarget().getType())
         || (rightAnno != null && atypeFactory.areSameByClass(rightAnno, SameLen.class))) {
 
@@ -164,6 +166,8 @@ public class SameLenTransfer extends CFTransfer {
       try {
         je = atypeFactory.parseJavaExpressionString(exprString, currentPath);
       } catch (JavaExpressionParseUtil.JavaExpressionParseException e) {
+        System.err.println(String.format("problem with \"%s\" for %s", exprString, sameLenAnno));
+        e.printStackTrace();
         continue;
       }
       store.clearValue(je);
