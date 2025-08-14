@@ -59,7 +59,7 @@ tasks.register('updateVersionNumbersInDocs', Copy) {
   from('docs') {
     include 'manual/external-tools.tex'
     filter { String line ->
-      line = line.replaceAll("checker(|-framework|-qual|-util)([-/])${releaseVersionRegex}", "checker\1\2${releaseVersion}");
+      line = line.replaceAll("checker(|-framework|-qual|-util)([-/])${releaseVersionRegex}") { "checker${it[1]}${it[2]}${releaseVersion}"};
 
       line = line.replaceAll("/${releaseVersionRegex}/jar", "/${releaseVersion}/jar");
 
