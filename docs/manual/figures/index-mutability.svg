@@ -1,0 +1,333 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="11.287149cm"
+   height="5.8962274cm"
+   version="1.1"
+   viewBox="358 100 233.46528 294.81136"
+   id="svg16"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <defs
+     id="defs16" />
+  <metadata
+     id="metadata1">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     transform="translate(11.370834,-18.998696)"
+     id="g2">
+    <rect
+       x="360"
+       y="120"
+       width="201"
+       height="44"
+       fill="#ffffff"
+       id="rect1" />
+    <rect
+       x="340.92001"
+       y="120.09"
+       width="240.37"
+       height="43.817001"
+       fill="none"
+       stroke="#7f7f7f"
+       stroke-width="2.1826"
+       id="rect2" />
+    <text
+       x="460.5"
+       y="146.772"
+       fill="#7f7f7f"
+       font-family="'courier new'"
+       font-size="14.323px"
+       text-anchor="middle"
+       id="text2"><tspan
+         x="460.5"
+         y="146.772"
+         fill="#7f7f7f"
+         font-size="21.167px"
+         id="tspan2">@UnshrinkableRef</tspan></text>
+  </g>
+  <g
+     transform="translate(156.46775,66.807002)"
+     id="g4">
+    <line
+       x1="460.5"
+       x2="460.5"
+       y1="200"
+       y2="173.74001"
+       fill="none"
+       stroke="#000000"
+       stroke-width="2"
+       id="line3" />
+    <polygon
+       points="455.5,176.24 460.5,166.24 465.5,176.24 460.5,173.74 "
+       id="polygon3" />
+    <polygon
+       points="455.5,176.24 460.5,166.24 465.5,176.24 460.5,173.74 "
+       fill="none"
+       stroke="#000000"
+       stroke-width="2"
+       id="polygon4" />
+  </g>
+  <text
+     x="476.10822"
+     y="376.58261"
+     fill="#7f7f7f"
+     font-family="'courier new'"
+     font-size="15.804px"
+     text-anchor="middle"
+     id="text5"><tspan
+       x="476.10822"
+       y="376.58261"
+       fill="#7f7f7f"
+       font-size="21.167px"
+       id="tspan5">@BottomGrowShrink</tspan></text>
+  <path
+     d="M 590.94083,233.4013"
+     fill="none"
+     stroke="#000000"
+     stroke-width="1.4111px"
+     id="path5" />
+  <g
+     transform="translate(16.383238,194.40744)"
+     id="g6">
+    <rect
+       x="185.22"
+       y="31.009001"
+       width="249.10001"
+       height="43.360001"
+       fill="none"
+       stroke="#000000"
+       stroke-width="1.0249"
+       id="rect5" />
+    <text
+       x="348.12827"
+       y="55.567112"
+       fill="#000000"
+       font-family="'courier new'"
+       font-size="21.167px"
+       text-anchor="middle"
+       id="text6"><tspan
+         x="310"
+         y="58"
+         font-size="21.167px"
+         id="tspan6">@GrowOnly</tspan></text>
+    <text
+       x="638.12012"
+       y="98.040665"
+       fill="#000000"
+       font-family="'courier new'"
+       font-size="21.167px"
+       text-anchor="middle"
+       id="text21"><tspan
+         x="599.99188"
+         y="100.47356"
+         font-size="21.167px"
+         id="tspan21">@UncheckedShrinkable</tspan></text>
+  </g>
+  <g
+     transform="translate(232.33083,155.3513)"
+     id="g7">
+    <rect
+       x="257.39001"
+       y="31.009001"
+       width="246.7"
+       height="43.360001"
+       fill="none"
+       stroke="#000000"
+       stroke-width="1.0249"
+       id="rect6" />
+    <text
+       x="348.12827"
+       y="55.567112"
+       fill="#000000"
+       font-family="'courier new'"
+       font-size="21.167px"
+       text-anchor="middle"
+       id="text7"><tspan
+         x="380"
+         y="58"
+         font-size="21.167px"
+         id="tspan7">@Shrinkable</tspan></text>
+  </g>
+  <path
+     d="M 487.87083,181.8613"
+     fill="none"
+     stroke="#000000"
+     stroke-width="1.4111px"
+     id="path7" />
+  <g
+     transform="matrix(0.76309191,0,0,1.003634,352.4497,236.62882)"
+     id="g8">
+    <rect
+       x="176.38"
+       y="31.124001"
+       width="339.32999"
+       height="43.130001"
+       fill="none"
+       stroke="#000000"
+       stroke-width="1.2545"
+       id="rect7" />
+  </g>
+  <rect
+     x="345.52084"
+     y="349.88132"
+     width="265.91"
+     height="43.860001"
+     fill="none"
+     stroke="#7f7f7f"
+     stroke-width="2.1401"
+     id="rect14" />
+  <g
+     transform="matrix(-1,0,0,1,1010.3927,-167.98817)"
+     id="g16">
+    <g
+       transform="matrix(0.57938,0.81506,-0.81506,0.57938,347.02,-157.87)"
+       id="g15">
+      <line
+         x1="460.5"
+         x2="460.5"
+         y1="200"
+         y2="173.74001"
+         fill="none"
+         stroke="#000000"
+         stroke-width="2"
+         id="line14" />
+      <polygon
+         points="455.5,176.24 460.5,166.24 465.5,176.24 460.5,173.74 "
+         id="polygon14" />
+      <polygon
+         points="455.5,176.24 460.5,166.24 465.5,176.24 460.5,173.74 "
+         fill="none"
+         stroke="#000000"
+         stroke-width="2"
+         id="polygon15" />
+    </g>
+    <path
+       d="m 453.28,331.9 -30.11,20.419 z"
+       fill="none"
+       stroke="#000000"
+       stroke-width="1.4746px"
+       id="path15" />
+    <path
+       d="m 451.78,332.2 -30.11,20.419 z"
+       fill="none"
+       stroke="#000000"
+       stroke-width="1.4746px"
+       id="path16" />
+  </g>
+  <g
+     id="g27"
+     transform="translate(-13.229166,0.00130367)">
+    <g
+       transform="matrix(0.57938,0.81506,-0.81506,0.57938,345.91,-324.02)"
+       id="g9">
+      <line
+         x1="460.5"
+         x2="460.5"
+         y1="200"
+         y2="173.74001"
+         fill="none"
+         stroke="#000000"
+         stroke-width="2"
+         id="line8" />
+      <polygon
+         points="455.5,176.24 460.5,166.24 465.5,176.24 460.5,173.74 "
+         id="polygon8" />
+      <polygon
+         points="455.5,176.24 460.5,166.24 465.5,176.24 460.5,173.74 "
+         fill="none"
+         stroke="#000000"
+         stroke-width="2"
+         id="polygon9" />
+    </g>
+    <path
+       d="m 451.03441,166.23572 -47.80003,33.27945 z"
+       fill="none"
+       stroke="#000000"
+       stroke-width="1.939px"
+       id="path9" />
+    <path
+       d="m 414.3908,191.74254 -47.80003,33.27945 z"
+       fill="none"
+       stroke="#000000"
+       stroke-width="1.939px"
+       id="path22" />
+  </g>
+  <g
+     id="g25"
+     transform="translate(-3.4660511,0.40810014)">
+    <g
+       transform="matrix(-0.57938,0.81506,0.81506,0.57938,470.20862,-200.88301)"
+       id="g23">
+      <line
+         x1="460.5"
+         x2="460.5"
+         y1="200"
+         y2="173.74001"
+         fill="none"
+         stroke="#000000"
+         stroke-width="2"
+         id="line22" />
+      <polygon
+         points="460.5,166.24 465.5,176.24 460.5,173.74 455.5,176.24 "
+         id="polygon22" />
+      <polygon
+         points="460.5,166.24 465.5,176.24 460.5,173.74 455.5,176.24 "
+         fill="none"
+         stroke="#000000"
+         stroke-width="2"
+         id="polygon23" />
+    </g>
+    <path
+       d="m 366.3953,290.30503 39.37306,28.47614 z"
+       fill="none"
+       stroke="#000000"
+       stroke-width="1.99133px"
+       id="path23" />
+    <path
+       d="m 405.75391,318.76828 40.49754,28.84631 z"
+       fill="none"
+       stroke="#000000"
+       stroke-width="2.03265px"
+       id="path25" />
+  </g>
+  <g
+     transform="matrix(0.57938,0.81506,-0.81506,0.57938,462.47324,-157.8375)"
+     id="g26">
+    <line
+       x1="460.5"
+       x2="460.5"
+       y1="200"
+       y2="173.74001"
+       fill="none"
+       stroke="#000000"
+       stroke-width="2"
+       id="line25" />
+    <polygon
+       points="465.5,176.24 460.5,173.74 455.5,176.24 460.5,166.24 "
+       id="polygon25" />
+    <polygon
+       points="465.5,176.24 460.5,173.74 455.5,176.24 460.5,166.24 "
+       fill="none"
+       stroke="#000000"
+       stroke-width="2"
+       id="polygon26" />
+  </g>
+  <path
+     d="m 593.53642,314.36178 -47.80003,33.27945 z"
+     fill="none"
+     stroke="#000000"
+     stroke-width="1.939px"
+     id="path26" />
+</svg>
