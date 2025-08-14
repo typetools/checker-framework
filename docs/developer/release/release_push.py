@@ -26,7 +26,6 @@ from release_utils import (
     version_number_to_array,
 )
 from release_vars import (
-    AFU_LIVE_RELEASES_DIR,
     ANNO_FILE_UTILITIES,
     CF_VERSION,
     CHECKER_FRAMEWORK,
@@ -127,19 +126,6 @@ def copy_releases_to_live_site(cf_version: str) -> None:
     copy_release_dir(checker_interm_releases_dir, CHECKER_LIVE_RELEASES_DIR, cf_version)
     delete_directory_if_exists(CHECKER_LIVE_API_DIR)
     promote_release(CHECKER_LIVE_RELEASES_DIR, cf_version)
-    afu_interm_releases_dir = Path(DEV_SITE_DIR) / "annotation-file-utilities" / "releases"
-    copy_release_dir(afu_interm_releases_dir, AFU_LIVE_RELEASES_DIR, cf_version)
-    promote_release(AFU_LIVE_RELEASES_DIR, cf_version)
-
-
-def ensure_group_access_to_releases() -> None:
-    """Give group access to all files and directories in the "releases" subdirectories.
-
-    on the live web site for the AFU and the Checker Framework.
-    """
-    ensure_group_access(AFU_LIVE_RELEASES_DIR)
-    ensure_group_access(CHECKER_LIVE_RELEASES_DIR)
-
 
 def stage_maven_artifacts_in_maven_central() -> None:
     """Stage the Checker Framework artifacts on Maven Central.
@@ -223,7 +209,7 @@ def check_all_links(
     test_mode: bool,
     cf_version_of_broken_link_to_suppress: str = "",
 ) -> None:
-    """Check all links on the given web sites for the AFU and the Checker Framework.
+    """Check all links on the given web sites for the Checker Framework.
 
     The suffix parameter should be "dev" for the
     dev web site and "live" for the live web site. test_mode indicates
@@ -466,8 +452,8 @@ def main(argv: list[str]) -> None:
             print("Copying to live site")
             copy_releases_to_live_site(new_cf_version)
             copy_htaccess()
-            ensure_group_access_to_releases()
-    else:
+            ensure_group_access(CHECKER_LIVE_RELEASES_DIR)
+else:
         print("Test mode: Skipping copy to live site!")
 
     # This step downloads the checker-framework-X.Y.Z.zip file of the newly live release and ensures

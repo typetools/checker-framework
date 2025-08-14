@@ -129,36 +129,21 @@ def get_new_version(project_name: str, curr_version: str) -> tuple[str, str]:
     return (curr_version, new_version)
 
 
-def create_dev_website_release_version_dir(project_name: str | None, version: str) -> Path:
-    """Create the directory for the given version of the given project on the dev web site.
-
-    Returns:
-        the dev web site directory for the given project and version.
-    """
-    if project_name is None or project_name == "checker-framework":
-        interm_dir = Path(DEV_SITE_DIR) / "releases" / version
-    else:
-        interm_dir = Path(DEV_SITE_DIR) / project_name / "releases" / version
-    delete_directory_if_exists(interm_dir)
-
-    execute(f"mkdir -p {interm_dir}")
-    return interm_dir
-
-
-def create_dirs_for_dev_website_release_versions(cf_version: str) -> tuple[Path, Path]:
-    """Create directories for CF project under the releases directory of the dev web site.
+def create_dir_for_dev_website_release_version(project_name: str | None, version: str) -> Path:
+    """Create directory for CF project under the releases directory of the dev website.
 
     For example,
-    /cse/www2/types/dev/checker-framework/<project_name>/releases/<version> .
+    /cse/www2/types/dev/checker-framework/checker-framework/releases/<version> .
 
     Returns:
         the dev web site directory for the CF.
     """
-    afu_interm_dir = create_dev_website_release_version_dir("annotation-file-utilities", cf_version)
-    checker_framework_interm_dir = create_dev_website_release_version_dir(None, cf_version)
 
-    return (afu_interm_dir, checker_framework_interm_dir)
+    interm_dir = Path(DEV_SITE_DIR) / "releases" / version
+    delete_directory_if_exists(interm_dir)
 
+    execute(f"mkdir -p {interm_dir}")
+    return interm_dir
 
 # def update_project_dev_website_symlink(project_name, release_version):
 #     """Update the \"current\" symlink in the dev web site for the given project
@@ -171,22 +156,6 @@ def create_dirs_for_dev_website_release_versions(cf_version: str) -> tuple[Path,
 #     print ("Writing symlink: " + link_path + "\nto point to relative directory: "
 #             + dev_website_relative_dir)
 #     force_symlink(dev_website_relative_dir, link_path)
-
-
-def update_project_dev_website(project_name: str, release_version: str) -> None:
-    """Update the dev web site for the given project.
-
-    according to the given release of the project on the dev web site.
-    """
-    if project_name == "checker-framework":
-        project_dev_site = DEV_SITE_DIR
-    else:
-        project_dev_site = Path(DEV_SITE_DIR) / project_name
-    dev_website_relative_dir = Path(project_dev_site) / "releases" / release_version
-
-    print(f"Copying from: {dev_website_relative_dir}\n  to: {project_dev_site}")
-    copy_tree(dev_website_relative_dir, project_dev_site)
-
 
 def get_current_date() -> str:
     """Return today's date in the ISO format "2016-05-02".
@@ -242,10 +211,9 @@ def build_checker_framework_release(version: str, old_cf_version: str) -> None:
 
     build_and_locally_deploy_maven()
 
-    update_project_dev_website("checker-framework", version)
-    update_project_dev_website("annotation-file-utilities", version)
-
-    return
+    dev_website_relative_dir = Path(DEV_SITE_DIR) / "releases" / version
+    print(f"Copying from: {dev_website_relative_dir}\n  to: {DEV_SITE_DIR}")
+    copy_tree(dev_website_relative_dir, DEV_SITE_DIR)
 
 
 def commit_to_interm_projects(cf_version: str) -> None:
@@ -260,7 +228,7 @@ def commit_to_interm_projects(cf_version: str) -> None:
 
 
 def main(argv: list[str]) -> None:
-    """Build the release artifacts for the AFU and the Checker Framework projects.
+    """Build the release artifacts for the Checker Framework project.
 
     Also place them in the development web site. It can also be used to review
     the documentation and changelogs for the three projects.
@@ -339,10 +307,8 @@ def main(argv: list[str]) -> None:
 
     print_step("Build Step 4: Create directories for the current release on the dev site.")  # AUTO
 
-    (
-        afu_interm_dir,
-        checker_framework_interm_dir,
-    ) = create_dirs_for_dev_website_release_versions(cf_version)
+
+    checker_framework_interm_dir = create_dir_for_dev_website_release_version(cf_version)
 
     # The Checker Framework jar files and documentation are built and the website is updated.
     print_step("Build Step 5: Build projects and websites.")  # AUTO

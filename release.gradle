@@ -1,4 +1,5 @@
 import java.nio.file.Files
+import java.nio.file.Paths
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -92,10 +93,11 @@ tasks.register('zipMavenExamples', Zip) {
   from('docs/examples/MavenExample')
 }
 
-tasks.register('copyCFWebsite', Copy) {
-  description = 'Copy CF website to the location set in property cfWebsite.'
 
-  dependsOn(':allJavadoc',':manual', ':createZip')
+tasks.register('copyToWebsite', Copy) {
+  description = 'Copy files to location set in the property cfWebsite.'
+
+  dependsOn(':allJavadoc',':manual', ':createZip', 'zipMavenExamples')
   String destDir = project.property('cfWebsite')
   destinationDir = file(destDir)
   from tasks.named('createZip', Zip).get().archiveFile.get().toString()
@@ -158,37 +160,29 @@ tasks.register('copyCFWebsite', Copy) {
 
   doLast {
     delete(file("${destDir}/index.html"))
-    Files.createSymbolicLink(file("${destDir}/index.html").toPath(), file("${destDir}/checker-framework-webpage.html").toPath())
+    Files.createSymbolicLink(file("${destDir}/index.html").toPath(), Paths.get('checker-framework-webpage.html'))
   }
   doLast {
     delete(file("${destDir}/manual/index.html"))
-    Files.createSymbolicLink(file("${destDir}/manual/index.html").toPath(), file("${destDir}/manual/manual.html").toPath())
+    Files.createSymbolicLink(file("${destDir}/manual/index.html").toPath(), Paths.get('manual.html'))
   }
-}
 
-tasks.register('copyAFUWebsite', Copy) {
-  description = 'Copy AFU website to the location set in property afuWebsite.'
-  String destDir = project.property('afuWebsite')
-  destinationDir = file(destDir)
 
-  from 'docs/annotation-file-utilities'
+  from ('docs/annotation-file-utilities') {
 
-  include 'annotation-file-utilities.html'
-  include 'annotation-file-format.html'
-  include 'annotation-file-format.pdf'
-  include 'figures/*.svg'
-  include 'figures/*.png'
-  include 'figures/*.gif'
+    include 'annotation-file-utilities.html'
+    include 'annotation-file-format.html'
+    include 'annotation-file-format.pdf'
+    include 'figures/*.svg'
+    include 'figures/*.png'
+    include 'figures/*.gif'
+    into 'annotation-file-utilities'
+  }
 
   doLast {
-    delete "${destDir}/index.html"
-    Files.createSymbolicLink(file("${destDir}/index.html").toPath(), file("${destDir}/annotation-file-utilities.html").toPath())
+    delete "${destDir}/annotation-file-utilities/index.html"
+    Files.createSymbolicLink(file("${destDir}/annotation-file-utilities/index.html").toPath(), Paths.get('annotation-file-utilities.html'))
   }
-}
-
-tasks.register('copyToWebsite') {
-  description = 'Copy files to website and create Checker Framework zip file. Requires properties afuWebsite and cfWebsite to be set.'
-  dependsOn('copyCFWebsite','copyAFUWebsite', 'createCheckerFrameworkZip','zipMavenExamples')
 }
 
 tasks.register('updateCopyMavenExample', Copy) {
