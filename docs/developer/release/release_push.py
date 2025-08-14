@@ -453,7 +453,7 @@ def main(argv: list[str]) -> None:
             copy_releases_to_live_site(new_cf_version)
             copy_htaccess()
             ensure_group_access(CHECKER_LIVE_RELEASES_DIR)
-else:
+    else:
         print("Test mode: Skipping copy to live site!")
 
     # This step downloads the checker-framework-X.Y.Z.zip file of the newly live release and ensures

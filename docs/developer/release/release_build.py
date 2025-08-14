@@ -145,6 +145,7 @@ def create_dir_for_dev_website_release_version(project_name: str | None, version
     execute(f"mkdir -p {interm_dir}")
     return interm_dir
 
+
 # def update_project_dev_website_symlink(project_name, release_version):
 #     """Update the \"current\" symlink in the dev web site for the given project
 #     to point to the given release of the project on the dev web site."""
@@ -156,6 +157,7 @@ def create_dir_for_dev_website_release_version(project_name: str | None, version
 #     print ("Writing symlink: " + link_path + "\nto point to relative directory: "
 #             + dev_website_relative_dir)
 #     force_symlink(dev_website_relative_dir, link_path)
+
 
 def get_current_date() -> str:
     """Return today's date in the ISO format "2016-05-02".
@@ -306,7 +308,6 @@ def main(argv: list[str]) -> None:
         prompt_to_continue()
 
     print_step("Build Step 4: Create directories for the current release on the dev site.")  # AUTO
-
 
     checker_framework_interm_dir = create_dir_for_dev_website_release_version(cf_version)
 
