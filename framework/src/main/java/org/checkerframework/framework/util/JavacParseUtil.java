@@ -91,6 +91,7 @@ public class JavacParseUtil {
     }
   }
 
+  /* Sanitizing raw expression */
   public static String getSanitizedExpressionString(String expressionSource) {
     return expressionSource.replaceAll("#num(\\d+)", "\\$num$1");
   }
