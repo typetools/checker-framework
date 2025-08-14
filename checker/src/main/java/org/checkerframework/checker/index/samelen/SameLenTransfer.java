@@ -84,9 +84,12 @@ public class SameLenTransfer extends CFTransfer {
       AssignmentNode node, TransferInput<CFValue, CFStore> in) {
     TransferResult<CFValue, CFStore> result = super.visitAssignment(node, in);
 
+    Node exprNode = node.getExpression();
+    Node recNode = node.getTarget();
+
     // Handle b = new T[a.length]
-    if (node.getExpression() instanceof ArrayCreationNode) {
-      ArrayCreationNode acNode = (ArrayCreationNode) node.getExpression();
+    if (exprNode instanceof ArrayCreationNode) {
+      ArrayCreationNode acNode = (ArrayCreationNode) exprNode;
       if (acNode.getDimensions().size() == 1) {
 
         Node lengthNode = acNode.getDimension(0);
@@ -99,7 +102,7 @@ public class SameLenTransfer extends CFTransfer {
           // "lengthNodeReceiver.length()"
 
           // targetRec is the receiver for the left hand side of the assignment.
-          JavaExpression targetRec = JavaExpression.fromNode(node.getTarget());
+          JavaExpression targetRec = JavaExpression.fromNode(recNode);
           JavaExpression otherRec = JavaExpression.fromNode(lengthNodeReceiver);
 
           AnnotationMirror lengthNodeAnnotation =
@@ -118,20 +121,39 @@ public class SameLenTransfer extends CFTransfer {
     }
 
     AnnotationMirror rightAnno =
-        atypeFactory
-            .getAnnotatedType(node.getExpression().getTree())
-            .getPrimaryAnnotationInHierarchy(UNKNOWN);
+        atypeFactory.getAnnotatedType(exprNode.getTree()).getPrimaryAnnotationInHierarchy(UNKNOWN);
 
     // If the left side of the assignment is an array or a string, then have both the right and
     // left side be SameLen of each other.
 
-    JavaExpression targetRec = JavaExpression.fromNode(node.getTarget());
+    JavaExpression targetRec = JavaExpression.fromNode(recNode);
 
-    JavaExpression exprRec = JavaExpression.fromNode(node.getExpression());
+    JavaExpression exprRec = JavaExpression.fromNode(exprNode);
 
-    System.err.printf("targetRec=%s, exprRec=%s%n", targetRec, exprRec);
+    if (node.toString().contains("[]")
+        || targetRec.toString().contains("[]")
+        || exprRec.toString().contains("[]")) {
+      System.err.printf(
+          "In SLT.visitAssignment:%n  node=%s [%s]%n  targetNode=%s [%s]%n  targetRec=%s%n "
+              + " exprNode=%s [%s]%n  exprRec=%s%n",
+          node,
+          node.getClass(),
+          recNode,
+          recNode.getClass(),
+          targetRec,
+          exprNode,
+          exprNode.getClass(),
+          exprRec);
+      if (exprNode instanceof MethodInvocationNode) {
+        MethodInvocationNode mi = (MethodInvocationNode) exprNode;
+        Node arg1 = mi.getArgument(0);
+        JavaExpression je1 = JavaExpression.fromNode(arg1);
+        System.err.printf("  arg1 = %s [%s]%n", arg1, arg1.getClass());
+        System.err.printf("  je1 = %s [%s]%n", je1, je1.getClass());
+      }
+    }
 
-    if (IndexUtil.isSequenceType(node.getTarget().getType())
+    if (IndexUtil.isSequenceType(recNode.getType())
         || (rightAnno != null && atypeFactory.areSameByClass(rightAnno, SameLen.class))) {
 
       AnnotationMirror rightAnnoOrUnknown = rightAnno == null ? UNKNOWN : rightAnno;

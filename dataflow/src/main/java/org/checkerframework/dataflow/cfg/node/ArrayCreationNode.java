@@ -16,7 +16,8 @@ import org.plumelib.util.StringsPlume;
  *
  * <pre>
  *   <em>new type[1][2]</em>
- *   <em>new type[] = { expr1, expr2, ... }</em>
+ *   <em>new type[] { }</em>
+ *   <em>new type[] { expr1, expr2, ... }</em>
  * </pre>
  */
 public class ArrayCreationNode extends Node {
@@ -26,8 +27,8 @@ public class ArrayCreationNode extends Node {
 
   /**
    * The length of this list is the number of dimensions in the array. Each element is the size of
-   * the given dimension. It can be empty if initializers is non-empty, as in {@code new SomeType[]
-   * = { expr1, expr2, ... }}.
+   * the given dimension. If all the sizes are empty, an initializer must be present, as in {@code
+   * new SomeType[] { expr1, expr2, ... }} or {@code new SomeType[] { }}.
    */
   protected final List<Node> dimensions;
 
@@ -42,6 +43,10 @@ public class ArrayCreationNode extends Node {
     this.tree = tree;
     this.dimensions = dimensions;
     this.initializers = initializers;
+    System.err.printf("dimensions (%d) = %s%n", dimensions.size(), dimensions);
+    for (Node d : dimensions) {
+      System.err.printf("  %s [%s]%n", d, d.getClass());
+    }
   }
 
   public List<Node> getDimensions() {
@@ -79,8 +84,8 @@ public class ArrayCreationNode extends Node {
       sb.append(StringsPlume.join(", ", dimensions));
       sb.append(")");
     }
-    if (!initializers.isEmpty()) {
-      sb.append(" = {");
+    if (!initializers.isEmpty() || dimensions.isEmpty()) {
+      sb.append(" {");
       sb.append(StringsPlume.join(", ", initializers));
       sb.append("}");
     }
