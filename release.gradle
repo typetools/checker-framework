@@ -186,6 +186,7 @@ tasks.register('copyToWebsite', Copy) {
 }
 
 tasks.register('updateCopyMavenExample', Copy) {
+  description = 'Copies the Maven example to the location in property destDir.'
   String destDir = project.property('destDir') + '/MavenExample'
   destinationDir = file(destDir)
   from 'docs/examples/MavenExample'
