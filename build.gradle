@@ -334,35 +334,38 @@ allprojects { currentProj ->
       formatAnnotations()
     }
 
-    groovyGradle {
-      target '**/*.gradle'
-      targetExclude doNotFormat
-      greclipse()  // which formatter Spotless should use to format .gradle files.
-      if (project.hasProperty('eisopFormatting')) {
-        leadingTabsToSpaces(4)
-      } else {
-        leadingTabsToSpaces(2)
+    // Only define a groovyGradle task on the root project, for simplicity in setting the target pattern
+    if (currentProj == currentProj.rootProject) {
+      groovyGradle {
+        target '**/*.gradle'
+        targetExclude doNotFormat
+        greclipse()  // which formatter Spotless should use to format .gradle files.
+        if (project.hasProperty('eisopFormatting')) {
+          leadingTabsToSpaces(4)
+        } else {
+          leadingTabsToSpaces(2)
+        }
+        trimTrailingWhitespace()
+        // endWithNewline() // Don't want to end empty files with a newline
       }
-      trimTrailingWhitespace()
-      // endWithNewline() // Don't want to end empty files with a newline
+
+      groovy {
+        target 'buildSrc/**/*.groovy'
+        importOrder()
+
+        // removes semicolons at the end of lines
+        removeSemicolons()
+        greclipse()
+        leadingTabsToSpaces(2)
+        trimTrailingWhitespace()
+      }
+
+      // Don't do this, because it does not respect "ignore=true" in .editorconfig nor `doNotFormat` here.
+      // shell {
+      //   targetExclude doNotFormat
+      //   shfmt() // configuration is in .editorconfig
+      // }
     }
-
-    groovy {
-      target 'buildSrc/**/*.groovy'
-      importOrder()
-
-      // removes semicolons at the end of lines
-      removeSemicolons()
-      greclipse()
-      leadingTabsToSpaces(2)
-      trimTrailingWhitespace()
-    }
-
-    // Don't do this, because it does not respect "ignore=true" in .editorconfig nor `doNotFormat` here.
-    // shell {
-    //   targetExclude doNotFormat
-    //   shfmt() // configuration is in .editorconfig
-    // }
 
     // a useful task for debugging; prints exactly which files are getting formatted by spotless
     tasks.register('printSpotlessTaskInputs') {
