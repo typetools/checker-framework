@@ -129,7 +129,7 @@ def get_new_version(project_name: str, curr_version: str) -> tuple[str, str]:
     return (curr_version, new_version)
 
 
-def create_dir_for_dev_website_release_version(project_name: str | None, version: str) -> Path:
+def create_dir_for_dev_website_release_version(version: str) -> Path:
     """Create directory for CF project under the releases directory of the dev website.
 
     For example,
@@ -138,7 +138,6 @@ def create_dir_for_dev_website_release_version(project_name: str | None, version
     Returns:
         the dev web site directory for the CF.
     """
-
     interm_dir = Path(DEV_SITE_DIR) / "releases" / version
     delete_directory_if_exists(interm_dir)
 

@@ -127,6 +127,7 @@ def copy_releases_to_live_site(cf_version: str) -> None:
     delete_directory_if_exists(CHECKER_LIVE_API_DIR)
     promote_release(CHECKER_LIVE_RELEASES_DIR, cf_version)
 
+
 def stage_maven_artifacts_in_maven_central() -> None:
     """Stage the Checker Framework artifacts on Maven Central.
 
