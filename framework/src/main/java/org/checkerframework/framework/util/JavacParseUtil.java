@@ -45,7 +45,8 @@ public class JavacParseUtil {
     // The initializer of the {@code expression} field is then extracted and returned.
 
     // Embed the expression inside a dummy class and variable declaration.
-    String dummySource = "class Dummy { Object expression = " + expressionSource + "; }";
+    String sanitized = getSanitizedExpressionString(expressionSource);
+    String dummySource = "class Dummy { Object expression = " + sanitized + "; }";
 
     // Obtain the system Java compiler.
     JavaCompiler compiler = JavacTool.create();
@@ -87,8 +88,10 @@ public class JavacParseUtil {
 
     } catch (IOException | IndexOutOfBoundsException | ClassCastException e) {
       throw new RuntimeException("Expression parsing failed", e);
-    } finally {
-      fileObject.delete();
     }
+  }
+
+  public static String getSanitizedExpressionString(String expressionSource) {
+    return expressionSource.replaceAll("#num(\\d+)", "\\$num$1");
   }
 }
