@@ -130,9 +130,11 @@ public class SameLenTransfer extends CFTransfer {
 
     JavaExpression exprRec = JavaExpression.fromNode(exprNode);
 
-    if (node.toString().contains("[]")
-        || targetRec.toString().contains("[]")
-        || exprRec.toString().contains("[]")) {
+    boolean falze = false;
+    if (falze
+        && (node.toString().contains("[]")
+            || targetRec.toString().contains("[]")
+            || exprRec.toString().contains("[]"))) {
       System.err.printf(
           "In SLT.visitAssignment:%n  node=%s [%s]%n  targetNode=%s [%s]%n  targetRec=%s%n "
               + " exprNode=%s [%s]%n  exprRec=%s%n",
@@ -188,8 +190,10 @@ public class SameLenTransfer extends CFTransfer {
       try {
         je = atypeFactory.parseJavaExpressionString(exprString, currentPath);
       } catch (JavaExpressionParseUtil.JavaExpressionParseException e) {
-        System.err.println(String.format("problem with \"%s\" for %s", exprString, sameLenAnno));
-        e.printStackTrace();
+        if (false) {
+          System.err.println(String.format("problem with \"%s\" for %s", exprString, sameLenAnno));
+          e.printStackTrace();
+        }
         continue;
       }
       store.clearValue(je);

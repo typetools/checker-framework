@@ -10,6 +10,7 @@ import org.checkerframework.dataflow.cfg.node.ValueLiteralNode;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.StringsPlume;
 
 /** JavaExpression for literals. */
 public class ValueLiteral extends JavaExpression {
@@ -151,12 +152,12 @@ public class ValueLiteral extends JavaExpression {
   @Override
   public String toString() {
     if (TypesUtils.isString(type)) {
-      return "\"" + value + "\"";
+      return "\"" + StringsPlume.escapeJava((String) value) + "\"";
     } else if (type.getKind() == TypeKind.LONG) {
       assert value != null : "@AssumeAssertion(nullness): invariant";
       return value.toString() + "L";
     } else if (type.getKind() == TypeKind.CHAR) {
-      return "\'" + value + "\'";
+      return "\'" + StringsPlume.charLiteral((Character) value) + "\'";
     }
     return value == null ? "null" : value.toString();
   }

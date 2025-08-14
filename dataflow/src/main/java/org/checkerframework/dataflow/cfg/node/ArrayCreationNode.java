@@ -43,9 +43,11 @@ public class ArrayCreationNode extends Node {
     this.tree = tree;
     this.dimensions = dimensions;
     this.initializers = initializers;
-    System.err.printf("dimensions (%d) = %s%n", dimensions.size(), dimensions);
-    for (Node d : dimensions) {
-      System.err.printf("  %s [%s]%n", d, d.getClass());
+    if (false) {
+      System.err.printf("dimensions (%d) = %s%n", dimensions.size(), dimensions);
+      for (Node d : dimensions) {
+        System.err.printf("  %s [%s]%n", d, d.getClass());
+      }
     }
   }
 

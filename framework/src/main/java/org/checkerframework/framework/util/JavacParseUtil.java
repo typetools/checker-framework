@@ -36,7 +36,8 @@ public class JavacParseUtil {
    * @throws RuntimeException if parsing fails or the expression cannot be found in the AST
    */
   public static ExpressionTree parseExpression(String expressionSource) {
-    if (expressionSource.contains("[]")) {
+    boolean falze = false;
+    if (falze && expressionSource.contains("[]")) {
       System.err.printf("JavacParseUtil.parseExpression(%s)%n", expressionSource);
       new Error("backtrace for " + expressionSource).printStackTrace();
     }
