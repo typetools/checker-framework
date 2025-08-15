@@ -1,3 +1,4 @@
+// :: warning: (slow.typechecking)
 public class Issue6373 {
 
   abstract static class C1<
