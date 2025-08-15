@@ -3,7 +3,7 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 ext {
-  currentDate = LocalDateTime.now().format(DateTimeFormatter.ofPattern("d MMM yyyy"))
+  currentDate = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
   releaseVersionRegex = "\\d\\.\\d+\\.\\d+(?:\\.\\d)"
 
   // Increment the minor version (second number) rather than just the patch
@@ -64,7 +64,7 @@ tasks.register('updateVersionNumbersInDocs', Copy) {
 
       line = line.replaceAll("/${releaseVersionRegex}{0,1}/jar", "/${releaseVersion}/");
 
-      line.replaceAll("ext.checkerFrameworkVersion = '${releaseVersionRegex}{0,1}", "ext.checkerFrameworkVersion = '${releaseVersion}");
+      line.replaceAll("ext.checkerFrameworkVersion = '${releaseVersionRegex}{0,1}'", "ext.checkerFrameworkVersion = '${releaseVersion}'");
     }
   }
 
