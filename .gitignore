@@ -111,11 +111,11 @@ docs/manual/manual.html-e
 docs/tmpapi/
 
 # dataflow manual
-dataflow/manual/dataflow.aux
-dataflow/manual/dataflow.dvi
-dataflow/manual/dataflow.log
-dataflow/manual/dataflow.out
-dataflow/manual/dataflow.pdf
+dataflow/manual/checker-framework-dataflow-manual.aux
+dataflow/manual/checker-framework-dataflow-manual.dvi
+dataflow/manual/checker-framework-dataflow-manual.log
+dataflow/manual/checker-framework-dataflow-manual.out
+dataflow/manual/checker-framework-dataflow-manual.pdf
 
 docs/tutorial/src/personalblog-demo/bin/net/eyde/personalblog/service/PersonalBlogService.class
 docs/tutorial/src/personalblog-demo/bin/net/eyde/personalblog/struts/action/ReadAction.class

@@ -72,18 +72,22 @@ task skinnyJar(type: ShadowJar, dependsOn: compileJava) {
 import java.nio.file.Files
 task testExample(type: JavaExec, dependsOn: compileTestJava, group: 'Verification') {
   description = 'Run the scene-lib example test.'
-  String resourceDir = "${projectDir}/src/test/resources/annotations/tests/executable/"
+
   String outputDir = "${layout.buildDirectory.get()}/example-test/"
 
-  classpath = files(sourceSets.test.java.classesDirectory)
-  classpath += sourceSets.test.compileClasspath
-  mainClass = 'org.checkerframework.afu.scenelib.test.executable.Example'
   doFirst {
     file(outputDir).mkdir()
     new File("${outputDir}/example-stdout.jaif").createNewFile()
 
     standardOutput = new FileOutputStream("${outputDir}/example-stdout.jaif")
   }
+
+  String resourceDir = "${projectDir}/src/test/resources/annotations/tests/executable/"
+
+  classpath = files(sourceSets.test.java.classesDirectory)
+  classpath += sourceSets.test.compileClasspath
+  mainClass = 'org.checkerframework.afu.scenelib.test.executable.Example'
+
   args = [
     "${resourceDir}/example-input.jaif",
     "foo.Bar",

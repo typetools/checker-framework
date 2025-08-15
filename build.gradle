@@ -101,6 +101,7 @@ ext {
 task setLocalRepo(type:Exec) {
   commandLine 'git', 'worktree', 'list'
   standardOutput = new ByteArrayOutputStream()
+
   doLast {
     String worktreeList = standardOutput.toString()
     localRepo = worktreeList.substring(0, worktreeList.indexOf(' ')) + '/.git'
@@ -643,12 +644,7 @@ task htmlValidate(type: Exec, group: 'Format') {
 
 task addFavicon(type: Exec) {
   dependsOn 'allJavadoc'
-  workingDir "${rootDir}/docs/api"
-  executable "${htmlToolsHome}/html-add-favicon"
-  args += [
-    '.',
-    'favicon-checkerframework.png'
-  ]
+
   doFirst {
     copy {
       from 'docs/logo/Checkmark/CFCheckmark_favicon.png'
@@ -656,6 +652,13 @@ task addFavicon(type: Exec) {
       into "${rootDir}/docs/api"
     }
   }
+
+  workingDir "${rootDir}/docs/api"
+  executable "${htmlToolsHome}/html-add-favicon"
+  args += [
+    '.',
+    'favicon-checkerframework.png'
+  ]
 }
 
 // `gradle allJavadoc` builds the Javadoc for all modules in `docs/api`.
@@ -667,6 +670,13 @@ task addFavicon(type: Exec) {
 task allJavadoc(type: Javadoc, group: 'Documentation') {
   description = 'Generates API documentation that includes all the modules.'
   dependsOn(':checker:shadowJar', 'getPlumeScripts', 'getHtmlTools', ':checker-qual:jar')
+
+  doFirst {
+    source(
+        project(':framework-test').sourceSets.taglet.allJava
+        )
+  }
+
   destinationDir = file("${rootDir}/docs/api")
   source(
       project(':checker-util').sourceSets.main.allJava,
@@ -679,12 +689,6 @@ task allJavadoc(type: Javadoc, group: 'Documentation') {
       project(':annotation-file-utilities').sourceSets.main.allJava,
       )
 
-  doFirst {
-    source(
-        project(':framework-test').sourceSets.taglet.allJava
-        )
-  }
-
   classpath = configurations.allProjects
   // disable interpreting module-info.java files until all sub-modules support them
   modularity.inferModulePath = false
@@ -694,6 +698,76 @@ task allJavadoc(type: Javadoc, group: 'Documentation') {
 
 // See documentation for allJavadoc task.
 javadoc.dependsOn(allJavadoc)
+
+tasks.register('createZip', Zip) {
+  description = 'Creates a zip archive for the Checker Framework.'
+  dependsOn('buildAll')
+  archiveFileName = "checker-framework-${version}.zip"
+  destinationDirectory = layout.buildDirectory
+  into "checker-framework-${releaseVersion}"
+
+  from(layout.projectDirectory) {
+    exclude 'api/**',
+        'checker/bin/README',
+        'checker/dist/*.asc',
+        'docs/tutorial/tests/**',
+        'docs/tutorial/src/**',
+        'docs/tutorial/test/**',
+        'docs/tutorial/Makefile',
+        'docs/tutorial/README'
+
+    include 'README.html',
+        'LICENSE.txt',
+        'annotation-file-utilities/bin/**',
+        'annotation-file-utilities/dist/**',
+        'annotation-file-utilities/LICENSE.txt',
+        'checker/bin/**',
+        'checker/dist/**',
+        'checker/resources/**',
+        'docs/CHANGELOG.md',
+        'docs/annotation-file-utilities/annotation-file-utilities.html',
+        'docs/annotation-file-utilities/annotation-file-format.pdf',
+        'docs/annotation-file-utilities/annotation-file-format.html',
+        'docs/annotation-file-utilities/*.png',
+        'docs/manual/manual.html',
+        'docs/manual/manual.pdf',
+        'docs/manual/*.svg',
+        'docs/manual/manual001.png',
+        'docs/examples/InterningExample.java',
+        'docs/examples/InterningExampleWithWarnings.java',
+        'docs/examples/NullnessExample.java',
+        'docs/examples/NullnessExampleWithWarnings.java',
+        'docs/examples/NullnessReleaseTests.java',
+        'docs/examples/units-extension/Demo.java',
+        'docs/examples/units-extension/Expected.txt',
+        'docs/examples/units-extension/Frequency.java',
+        'docs/examples/units-extension/FrequencyRelations.java',
+        'docs/examples/units-extension/Hz.java',
+        'docs/examples/units-extension/kHz.java',
+        'docs/examples/units-extension/Makefile',
+        'docs/examples/units-extension/README',
+        'docs/examples/MavenExample/pom.xml',
+        'docs/examples/MavenExample/README',
+        'docs/examples/MavenExample/src/main/java/org/checkerframework/example/MavenExample.java',
+        'docs/tutorial/**'
+  }
+
+  from('dataflow/manual/checker-framework-dataflow-manual.pdf') {
+    into 'docs/manual/'
+  }
+
+  from('docs/logo/Logo/CFLogo.png') {
+    into 'docs/manual/'
+  }
+
+  from('docs/logo/Logo/CFLogo.png') {
+    into 'docs/tutorial/'
+  }
+
+  from('docs/logo/Logo/CFLogo.png') {
+    into 'docs/tutorial/webpages'
+  }
+}
 
 tasks.register('cleanCfManual', Exec) {
   description = 'Clean the manual'
@@ -705,7 +779,7 @@ tasks.register('cleanAfuManual', Exec) {
   commandLine 'make', '-C', "${afuManualDir}", 'clean'
 }
 
-tasks.register('cleanManual'){
+tasks.register('cleanManual') {
   dependsOn('cleanCfManual', 'cleanAfuManual')
 }
 
@@ -792,7 +866,7 @@ tasks.register('makeCfManual', Exec) {
   commandLine 'make', '-C', 'docs/manual/', 'manual.pdf', 'manual.html'
 }
 
-tasks.register('makeAfuManual', Exec){
+tasks.register('makeAfuManual', Exec) {
   description = 'Make documentation: annotation-file-format.{html,pdf}.'
 
   executable 'make'
@@ -800,7 +874,7 @@ tasks.register('makeAfuManual', Exec){
 }
 
 
-tasks.register('manual'){
+tasks.register('manual') {
   description = 'Build the manual'
   dependsOn('makeCfManual','makeAfuManual', ':dataflow:manual')
 }
