@@ -151,7 +151,9 @@ public class ValueLiteral extends JavaExpression {
 
   @Override
   public String toString() {
-    if (TypesUtils.isString(type)) {
+    if (value == null) {
+      return "null";
+    } else if (TypesUtils.isString(type)) {
       return "\"" + StringsPlume.escapeJava((String) value) + "\"";
     } else if (type.getKind() == TypeKind.LONG) {
       assert value != null : "@AssumeAssertion(nullness): invariant";
@@ -159,7 +161,7 @@ public class ValueLiteral extends JavaExpression {
     } else if (type.getKind() == TypeKind.CHAR) {
       return StringsPlume.charLiteral((Character) value);
     }
-    return value == null ? "null" : value.toString();
+    return value.toString();
   }
 
   @Override
