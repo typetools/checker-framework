@@ -157,7 +157,7 @@ public class ValueLiteral extends JavaExpression {
       assert value != null : "@AssumeAssertion(nullness): invariant";
       return value.toString() + "L";
     } else if (type.getKind() == TypeKind.CHAR) {
-      return "\'" + StringsPlume.charLiteral((Character) value) + "\'";
+      return StringsPlume.charLiteral((Character) value);
     }
     return value == null ? "null" : value.toString();
   }
