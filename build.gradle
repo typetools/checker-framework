@@ -876,7 +876,7 @@ tasks.register('makeAfuManual', Exec) {
 
 tasks.register('manual') {
   description = 'Build the manual'
-  dependsOn('makeCfManual','makeAfuManual', ':dataflow:manual')
+  dependsOn('makeCfManual', 'makeAfuManual', ':dataflow:manual')
 }
 
 tasks.register('getPlumeBib', CloneTask) {
