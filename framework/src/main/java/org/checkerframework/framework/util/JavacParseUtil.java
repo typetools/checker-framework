@@ -9,6 +9,8 @@ import com.sun.tools.javac.api.JavacTool;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Collections;
+import javax.tools.Diagnostic;
+import javax.tools.DiagnosticCollector;
 import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
 import javax.tools.SimpleJavaFileObject;
@@ -22,6 +24,13 @@ import javax.tools.StandardJavaFileManager;
  * expressions.
  */
 public class JavacParseUtil {
+
+  /** Compiler context. */
+  private static final JavaCompiler javaCompiler = JavacTool.create();
+
+  /** File Manager. */
+  private static final StandardJavaFileManager fileManager =
+      javaCompiler.getStandardFileManager(null, null, null);
 
   /** Creates a JavacParseUtil. */
   public JavacParseUtil() {}
@@ -51,11 +60,7 @@ public class JavacParseUtil {
     // The initializer of the {@code expression} field is then extracted and returned.
 
     // Embed the expression inside a dummy class and variable declaration.
-    String sanitized = getSanitizedExpressionString(expressionSource);
-    String dummySource = "class Dummy { Object expression = " + sanitized + "; }";
-
-    // Obtain the system Java compiler.
-    JavaCompiler compiler = JavacTool.create();
+    String dummySource = "class Dummy { Object expression = " + expressionSource + "; }";
 
     // Create an in-memory Java file from the dummy source code.
     JavaFileObject fileObject =
@@ -66,20 +71,28 @@ public class JavacParseUtil {
           }
         };
 
+    DiagnosticCollector<JavaFileObject> diags = new DiagnosticCollector<>();
+
     // Prepare the file manager and task
-    try (StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, null, null)) {
+    try {
       JavacTask task =
           (JavacTask)
-              compiler.getTask(
+              javaCompiler.getTask(
                   null,
                   fileManager,
-                  null,
+                  diags,
                   Collections.emptyList(),
                   null,
                   Collections.singletonList(fileObject));
 
       // Parse the source and extract the CompilationUnit
       CompilationUnitTree cu = task.parse().iterator().next();
+
+      for (Diagnostic<? extends JavaFileObject> d : diags.getDiagnostics()) {
+        if (d.getKind() == Diagnostic.Kind.ERROR) {
+          throw new RuntimeException("Expression is not valid: " + d.getMessage(null));
+        }
+      }
 
       // Get the first member (the dummy field) from the ClassTree and cast to VariableTree
       ClassTree classTree = (ClassTree) cu.getTypeDecls().get(0);
@@ -95,15 +108,5 @@ public class JavacParseUtil {
     } catch (IOException | IndexOutOfBoundsException | ClassCastException e) {
       throw new RuntimeException("Expression parsing failed", e);
     }
-  }
-
-  /**
-   * Sanitizes an expression.
-   *
-   * @param expressionSource the original expression
-   * @return the sanitized expression
-   */
-  public static String getSanitizedExpressionString(String expressionSource) {
-    return expressionSource.replaceAll("#num(\\d+)", "\\$num$1");
   }
 }
