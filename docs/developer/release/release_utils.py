@@ -364,25 +364,24 @@ def is_repo_cleaned_and_updated(repo_dir: Path) -> bool:
     return is_clean and is_updated
 
 
-def check_repos(repos: list[Path], fail_on_error: bool, is_intermediate_repo_list: bool) -> None:
+def check_repo(repo: Path, fail_on_error: bool, is_intermediate_repo_list: bool) -> None:
     """Fail if the repository is not clean and up to date."""
-    for repo in repos:
-        if git_repo_exists_at_path(repo):
-            if not is_repo_cleaned_and_updated(repo):
-                if is_intermediate_repo_list:
-                    print(
-                        f"\nWARNING: Intermediate repository {repo}"
-                        " is not up to date with respect to the live repository.\n"
-                        "A separate warning will not be issued for a build repository that is "
-                        "cloned off of the intermediate repository."
-                    )
-                if fail_on_error:
-                    raise Exception("repo " + str(repo) + " is not cleaned and updated!")
-                if not prompt_yn(
-                    f"{repo} is not clean and up to date!"
-                    " Continue (answering 'n' will exit the script)?"
-                ):
-                    raise Exception("repo " + str(repo) + " is not clean and up to date!")
+    if git_repo_exists_at_path(repo):
+        if not is_repo_cleaned_and_updated(repo):
+            if is_intermediate_repo_list:
+                print(
+                    f"\nWARNING: Intermediate repository {repo}"
+                    " is not up to date with respect to the live repository.\n"
+                    "A separate warning will not be issued for a build repository that is "
+                    "cloned off of the intermediate repository."
+                )
+            if fail_on_error:
+                raise Exception("repo " + str(repo) + " is not cleaned and updated!")
+            if not prompt_yn(
+                f"{repo} is not clean and up to date!"
+                " Continue (answering 'n' will exit the script)?"
+            ):
+                raise Exception("repo " + str(repo) + " is not clean and up to date!")
 
 
 def get_tag_line(lines: list[str], revision: str, tag_prefixes: list[str]) -> str | None:

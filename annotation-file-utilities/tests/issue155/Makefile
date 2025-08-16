@@ -55,9 +55,9 @@ results: ../bin/VerifyDiffs.class
 
 # Actually runs the annotator to create the annotated java file.
 .PRECIOUS: %.output
-%.output: %.jaif %.java ../../build/classes/java/main ../../annotation-file-utilities-all.jar
+%.output: %.jaif %.java ../../build/classes/java/main ../../dist/annotation-file-utilities-all.jar
 	$(JAVA) \
-	-cp ../bin:../../annotation-file-utilities-all.jar:bin \
+	-cp ../bin:../../dist/annotation-file-utilities-all.jar:bin \
 	org.checkerframework.afu.annotator.Main \
 	${DEBUG} \
 	--abbreviate=true \

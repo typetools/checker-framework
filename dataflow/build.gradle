@@ -68,6 +68,10 @@ task manual(type: Exec, group: 'Documentation') {
   commandLine 'make', '-C', 'manual'
 }
 
+clean {
+  delete('manual/checker-framework-dataflow-manual.aux' ,'manual/checker-framework-dataflow-manual.log','manual/checker-framework-dataflow-manual.out','manual/checker-framework-dataflow-manual.pdf')
+}
+
 tasks.withType(Test) {
   dependsOn('allDataflowTests')
 }

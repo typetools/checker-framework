@@ -78,17 +78,6 @@ task copyAndMinimizeAnnotatedJdkFiles(type: JavaExec, dependsOn: cloneTypetoolsJ
 
   description = "Copy annotated JDK files to ${outputDir}. Removes private and package-private methods, method bodies, comments, etc. from the annotated JDK"
 
-  inputs.dir file(inputDir)
-  outputs.dir file(outputDir)
-
-
-  classpath = sourceSets.stubifier.runtimeClasspath
-  standardOutput = System.out
-  errorOutput = System.err
-
-  mainClass = 'org.checkerframework.framework.stubifier.JavaStubifier'
-  args outputDir
-
   doFirst {
     FileTree tree = fileTree(dir: inputDir)
     NavigableSet<String> annotatedForFiles = new TreeSet<>();
@@ -114,6 +103,17 @@ task copyAndMinimizeAnnotatedJdkFiles(type: JavaExec, dependsOn: cloneTypetoolsJ
       }
     }
   }
+
+  inputs.dir file(inputDir)
+  outputs.dir file(outputDir)
+
+
+  classpath = sourceSets.stubifier.runtimeClasspath
+  standardOutput = System.out
+  errorOutput = System.err
+
+  mainClass = 'org.checkerframework.framework.stubifier.JavaStubifier'
+  args outputDir
 }
 sourcesJar.dependsOn(copyAndMinimizeAnnotatedJdkFiles)
 processResources.dependsOn(copyAndMinimizeAnnotatedJdkFiles)
