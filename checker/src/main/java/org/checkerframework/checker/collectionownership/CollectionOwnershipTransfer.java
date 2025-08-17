@@ -91,24 +91,6 @@ public class CollectionOwnershipTransfer
         default:
       }
     }
-    // boolean assignmentOfOwningCollectionArrayElement =
-    //     lhsIsOwningCollection && lhs.getTree().getKind() == Tree.Kind.ARRAY_ACCESS;
-
-    // if (assignmentOfOwningCollectionArrayElement) {
-    //   ExpressionTree arrayExpression = ((ArrayAccessTree) lhs.getTree()).getExpression();
-    //   JavaExpression arrayJE = JavaExpression.fromTree(arrayExpression);
-
-    //   boolean inAssigningLoop =
-    //       MustCallOnElementsAnnotatedTypeFactory.doesAssignmentCreateArrayObligation(
-    //           (AssignmentTree) node.getTree());
-
-    //   // transformation of assigning loop is handled at the loop condition node,
-    //   // not the assignment node. So, only transform if not in an assigning loop.
-    //   if (!inAssigningLoop) {
-    //     store =
-    //         transformWriteToOwningCollection(arrayJE, arrayExpression, node.getExpression(),
-    // store);
-    //   }
     return res;
   }
 
