@@ -98,8 +98,12 @@ test_wpi_plume_lib() {
       more "$DLJC_OUT_DIR"/*
       # The string is printed by `tools/wpi.py` in the do_like_javac repository.
       AJAVADIR="$(sed -n 's/Directory for generated annotation files: \(.*\)$/\1/p' "$DLJC_OUT_DIR"/dljc-stdout-*)"
-      echo "AJAVADIR=$AJAVADIR"
-      find "$AJAVADIR" -type f -print0 | xargs -0 more
+      if [ -z "$AJAVADIR" ]; then
+        echo "AJAVADIR cannot be determined from $DLJC_OUT_DIR/dljc-stdout-* (printed immediately above)"
+      else
+        echo "AJAVADIR=$AJAVADIR"
+        find "$AJAVADIR" -type f -print0 | xargs -0 more
+      fi
       # Repeat the actual error, so it appears at the end of the continuous integration log.
       echo "Comparing $EXPECTED_FILE $ACTUAL_FILE in $(pwd)"
       diff -u expected.txt actual.txt

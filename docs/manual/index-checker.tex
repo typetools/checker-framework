@@ -786,16 +786,107 @@ the length of a sequence like \code{arr.length} for arrays and
 With these annotations, client code like the following typechecks with no
 warnings:
 \begin{Verbatim}
-    public static void clearIndex1(ArrayWrapper<? extends Object> a, @IndexFor("#1") int i) {
-        a.set(i, null);
-    }
+  public static void clearIndex1(ArrayWrapper<? extends Object> a, @IndexFor("#1") int i) {
+    a.set(i, null);
+  }
 
-    public static void clearIndex2(ArrayWrapper<? extends Object> a, int i) {
-        if (0 <= i && i < a.size()) {
-            a.set(i, null);
-        }
+  public static void clearIndex2(ArrayWrapper<? extends Object> a, int i) {
+    if (0 <= i && i < a.size()) {
+      a.set(i, null);
     }
+  }
 \end{Verbatim}
+
+
+\iffalse % Remove "iffalse" when the Mutable Index Checker is publicized.
+\sectionAndLabel{The Grow-only Checker: Verifying non-shrinking lists}{growonly-checker}
+
+The Grow-only Checker permits a programmer to specify that certain
+collections do not shrink in size.  If a collection is
+\refqualclass{checker/index/qual}{GrowOnly}, then the Grow-only Checker
+issues a warning if a method like \<remove()> or \<clear()> is called
+on the collection.
+
+\begin{Verbatim}
+  List<String> lst;
+  @GrowOnly List<String> lstGO;
+
+  lst.removeFirst();   // OK
+  lstGO.removeFirst(); // error
+
+  lst.add("hello");    // OK
+  lstGO.add("hello");  // OK
+\end{Verbatim}
+
+
+Programmers do not run the Grow-only Checker directly.  It is run as part of
+the Index Checker, and it improves Index Checker output.  Suppose that integer
+\<i> is an index for list \<myList>.  If a method with possible side effects is
+called, then \<i> might no longer be a valid index for \<myList>.
+
+\begin{Verbatim}
+  class C {
+    @NonEmpty List<String> myList;
+
+  void m() {
+    int i = myList.size()-1;
+    myList.get(i);  // OK
+    hasSideEffect();
+    myList.get(i);  // compile error: `hasSideEffect` might have removed an element from myList
+  }
+\end{Verbatim}
+
+In the above code, if \<myList> were
+\refqualclass{checker/index/qual}{GrowOnly}, then the last statement would
+type-check.  Method \<hasSideEffect> might make \<myList> longer or keep it the
+same size, but it cannot invalidate the fact that \<i> is a valid index for
+\<myList>.
+
+\begin{figure}
+\begin{center}
+\includeimage{index-mutability}{5cm}
+\end{center}
+\caption{Qualifier hierarchy for the Grow-only Checker.}
+\label{growonly-mutability-lattice}
+\end{figure}
+
+The type qualifiers of Figure~\ref{growonly-mutability-lattice} indicate whether
+a sequence might shrink.
+
+\begin{description}
+\item[\refqualclass{checker/index/qual}{UnshrinkableRef}]
+  The sequence cannot be shrunk through this reference. However, the sequence
+  might still shrink if another alias to it is used to perform a shrinking
+  operation. This is the default qualifier.  It is the type of the receiver of
+  methods like \<List.add()>.
+
+\item[\refqualclass{checker/index/qual}{GrowOnly}]
+  The collection will never shrink as long as
+  this reference exists. The checker ensures that no shrinking methods can be
+  called through this reference, and the type system guarantees that no other
+  alias can be used to shrink the collection either.  A grow-only list can be
+  created like this:
+\begin{Verbatim}
+@GrowOnly List<String> list = new @GrowOnly ArrayList<>();
+\end{Verbatim}
+
+\item[\refqualclass{checker/index/qual}{Shrinkable}]
+  The length of the sequence may be increased or decreased, via methods such as
+  \<add()>, \<remove()>, and \<clear()>.
+
+\item[\refqualclass{checker/index/qual}{UncheckedShrinkable}]
+  For the purposes of the Grow-Only Checker, this is treated exactly like
+  \<@Shrinkable>. It indicates that the collection can shrink. (Its special
+  properties related to opting out of index checking are not relevant to the
+  GrowOnly Checker).
+
+\item[\refqualclass{checker/index/qual}{PolyGrowShrink}]
+  is the polymorphic annotation for the Must Call type system.
+  For a description of polymorphic qualifiers, see
+  Section~\ref{method-qualifier-polymorphism}.
+
+\end{description}
+\fi % iffalse
 
 \sectionAndLabel{Technical papers}{index-papers}
 
@@ -820,5 +911,5 @@ an earlier version.
 %%  LocalWords:  SearchIndex bitwise SearchIndexBottom SearchIndexUnknown
 %%  LocalWords:  Substring substringindex substring SubstringIndexFor
 %%  LocalWords:  SubstringIndexBottom SubstringIndexUnknown LessThanBottom
-%%  LocalWords:  LessThanUnknown typecheck typechecks system''
-%%  LocalWords:  UpperBoundLiteral
+%%  LocalWords:  LessThanUnknown typecheck typechecks system'' GrowOnly
+%%  LocalWords:  UpperBoundLiteral UnshrinkableRef UncheckedShrinkable
