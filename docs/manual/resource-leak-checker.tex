@@ -645,7 +645,8 @@ feature that it is unable to reason about.
 
 The Resource Leak Checker handles homogeneous collections of resources. In a homogeneous collection, every element
 has exactly the same must-call and called-methods properties. Instances of \texttt{java.util.Iterable} are supported;
-this section calls those ``collections''. Usage of \texttt{java.util.Iterator}s over \texttt{java.util.Iterable}s are also supported, but they are not considered collections.
+this section calls those ``collections''.
+% Usage of \texttt{java.util.Iterator}s over \texttt{java.util.Iterable}s are also supported, but they are not considered collections.
 
 What the checker effectively verifies is that any resource collection is properly disposed of. That is, there is some loop that definitely calls the required methods on all elements of the collection.
 
@@ -659,7 +660,7 @@ Towards that end, the Resource Leak Checker tracks every allocated resource coll
 For the purposes of this checker, \textit{resource collections} are precisely defined, as the objects of interest for both the type system and obligation tracking. A Java expression is a \textit{resource collection} if it is:
 
 \begin{enumerate}
-  \item A \texttt{java.util.Iterable} or implementation thereof (which includes the entire Java Collections framework), or a \texttt{java.util.Iterator}, and:
+  \item A \texttt{java.util.Iterable} or implementation thereof (which includes the entire Java Collections framework), and:%, or a \texttt{java.util.Iterator}
   \item Its type parameter upper bound has non-empty \texttt{MustCall} type.
 \end{enumerate}
 
@@ -886,73 +887,73 @@ If the enclosing class is not intended to take responsibility for the resource c
   \item The enclosing class does not have to fulfill any obligations on the field.
 \end{itemize}
 
-\subsectionAndLabel{Iterators over resource collections}{resource-leak-collections-iterators}
-Iterators are frequently used to traverse collections. It is always safe to create an iterator for any non-resource collection. Since an iterator takes a snapshot of the collection at the time it is created, it does not matter what happens with the collection after the iterator is created (else, a \<ConcurrentModificationException> is thrown for the next usage of the iterator).
-An iterator created for a resource collection has the same collection ownership type as the resource collection.
+% \subsectionAndLabel{Iterators over resource collections}{resource-leak-collections-iterators}
+% Iterators are frequently used to traverse collections. It is always safe to create an iterator for any non-resource collection. Since an iterator takes a snapshot of the collection at the time it is created, it does not matter what happens with the collection after the iterator is created (else, a \<ConcurrentModificationException> is thrown for the next usage of the iterator).
+% An iterator created for a resource collection has the same collection ownership type as the resource collection.
 
-\begin{verbatim}
-// `socketList` is @OwningCollectionWithoutObligation
-Iterator<Socket> socketIterator = socketList.iterator();
-// `socketIterator` is @OwningCollectionWithoutObligation
-\end{verbatim}
+% \begin{verbatim}
+% // `socketList` is @OwningCollectionWithoutObligation
+% Iterator<Socket> socketIterator = socketList.iterator();
+% // `socketIterator` is @OwningCollectionWithoutObligation
+% \end{verbatim}
 
-The only concering operation an iterator can do is \texttt{remove()}, as the removed element might have open calling obligations.
+% The only concering operation an iterator can do is \texttt{remove()}, as the removed element might have open calling obligations.
 
-Just like a \texttt{java.util.Collection} of type \texttt{@NotOwningCollection}, an iterator of this type is not allowed to call \texttt{remove()} at all. Iterators of type \texttt{@OwningCollectionBottom} and \texttt{@OwningCollectionWithoutObligation} can always call \texttt{remove()}. The interesting remaining case is that of an \texttt{@OwningCollection} iterator.
-Such an iterator and the values its calls to \texttt{next()} return are tracked with special obligations. This is to ensure that whenever an \texttt{@OwningCollection} iterator calls \texttt{close()}, the value returned by the previous call to \texttt{Iterator.next()} has its \texttt{MustCall} obligations fulfilled.
+% Just like a \texttt{java.util.Collection} of type \texttt{@NotOwningCollection}, an iterator of this type is not allowed to call \texttt{remove()} at all. Iterators of type \texttt{@OwningCollectionBottom} and \texttt{@OwningCollectionWithoutObligation} can always call \texttt{remove()}. The interesting remaining case is that of an \texttt{@OwningCollection} iterator.
+% Such an iterator and the values its calls to \texttt{next()} return are tracked with special obligations. This is to ensure that whenever an \texttt{@OwningCollection} iterator calls \texttt{close()}, the value returned by the previous call to \texttt{Iterator.next()} has its \texttt{MustCall} obligations fulfilled.
 
-Here is an example of unsafe iterator usage:
+% Here is an example of unsafe iterator usage:
 
-\begin{verbatim}
-List<Socket> foo(@OwningCollection List<Socket> list) {
-  Iterator<Socket> iter = list.iterator();
-  // `iter` is @OwningCollection and must be tracked
-  iter.next();
-  iter.remove(); // unsafe!
-  return list;
-}
-\end{verbatim}
+% \begin{verbatim}
+% List<Socket> foo(@OwningCollection List<Socket> list) {
+%   Iterator<Socket> iter = list.iterator();
+%   // `iter` is @OwningCollection and must be tracked
+%   iter.next();
+%   iter.remove(); // unsafe!
+%   return list;
+% }
+% \end{verbatim}
 
-\begin{verbatim}
- error: [required.method.not.called] @MustCall method close may not have been invoked on iter.next() or any of its aliases.
-    iter.next();
-             ^
-\end{verbatim}
+% \begin{verbatim}
+%  error: [required.method.not.called] @MustCall method close may not have been invoked on iter.next() or any of its aliases.
+%     iter.next();
+%              ^
+% \end{verbatim}
 
-The removed element must have its must-call obligations fulfilled. Here is an example of safe usage:
+% The removed element must have its must-call obligations fulfilled. Here is an example of safe usage:
 
-\begin{verbatim}
-List<Socket> foo(@OwningCollection List<Socket> list) {
-  Iterator<Socket> iter = list.iterator();
-  // `iter` is @OwningCollection and must be tracked
-  try {
-    iter.next().close();
-  } catch (Exception e) {
-  }
-  iter.remove();
-  return list;
-}
-\end{verbatim}
+% \begin{verbatim}
+% List<Socket> foo(@OwningCollection List<Socket> list) {
+%   Iterator<Socket> iter = list.iterator();
+%   // `iter` is @OwningCollection and must be tracked
+%   try {
+%     iter.next().close();
+%   } catch (Exception e) {
+%   }
+%   iter.remove();
+%   return list;
+% }
+% \end{verbatim}
 
-The returned element may also be stored in a variable first and the fulfillment of the obligation of the returned element may also occur after the call to \texttt{remove()}:
+% The returned element may also be stored in a variable first and the fulfillment of the obligation of the returned element may also occur after the call to \texttt{remove()}:
 
-\begin{verbatim}
-List<Socket> foo(@OwningCollection List<Socket> list) {
-  Iterator<Socket> iter = list.iterator();
-  // `iter` is @OwningCollection and must be tracked
-  Socket s = iter.next();
-  iter.remove();
-  try {
-    s.close();
-  } catch (Exception e) {
-  }
-  return list;
-}
-\end{verbatim}
+% \begin{verbatim}
+% List<Socket> foo(@OwningCollection List<Socket> list) {
+%   Iterator<Socket> iter = list.iterator();
+%   // `iter` is @OwningCollection and must be tracked
+%   Socket s = iter.next();
+%   iter.remove();
+%   try {
+%     s.close();
+%   } catch (Exception e) {
+%   }
+%   return list;
+% }
+% \end{verbatim}
 
-The returned element by \texttt{iter.next()} may have its must-call obligation fulfilled in any way described by the resource leak checker, even by transfering its ownership (for example by storing it in a field or passing it as an \texttt{@OwningCollection} method argument).
+% The returned element by \texttt{iter.next()} may have its must-call obligation fulfilled in any way described by the resource leak checker, even by transfering its ownership (for example by storing it in a field or passing it as an \texttt{@OwningCollection} method argument).
 
-Iterators over collections with obligations may also be returned, passed as method or constructor arguments and even be stored in fields.
+% Iterators over collections with obligations may also be returned, passed as method or constructor arguments and even be stored in fields.
 
 \subsectionAndLabel{JDK Method Signatures}{resource-leak-collections-jdk-methods}
 [[TODO: Add a table with a number of collection/iterable methods and their collection ownership annotations]]
