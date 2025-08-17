@@ -353,8 +353,11 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
   }
 
   // ///////////////////////////////////////////////////////////////////////////
-  // syntactically match for-loops that iterate over all elements of a collection on the AST
-  //
+  // Syntactically match for-loops that iterate over all elements of a collection on the AST.
+  // This happens here in the MustCallVisitor instead of the CollectionOwnershipVisitor, which
+  // would be the natural place to put this logic, because the matching must be completed
+  // before the CollectionOwnershipTransfer logic runs, and the CollectionOwnershipVisitor runs
+  // after the CollectionOwnershipTransfer.
 
   /**
    * Records, in the {@code @CollectionOwnershipAnnotatedTypeFactory}, loops that call a method on
