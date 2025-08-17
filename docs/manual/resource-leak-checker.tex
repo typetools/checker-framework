@@ -817,17 +817,6 @@ for (int i = 0; i < socketList.size(); i++) {
 
 \subsectionAndLabel{Resource collection fields}{resource-leak-collections-fields}
 By default, resource collection fields are owned by the enclosing class. Static fields are not supported and an error is reported for a declaration of a static resource collection field.
-
-To verify a resource collection field \textit{field}, the checker looks for the following:
-\begin{enumerate}
-  \item A \texttt{@MustCall} annotation on the enclosing class. In this case, the class is of type \texttt{@MustCall(``close'')} by subclassing Closeable.
-  \item Among the methods in the \texttt{@MustCall} type of the enclosing class (usually there's just one), the checker now looks for the post-condition annotation \texttt{@CollectionFieldDestructor(``field'')}.
-  \item The annotation \texttt{@CollectionFieldDestructor(``field'')} asserts that at the method exit, \textit{field} has type \texttt{@OwningCollectionWithoutObligation}, which the checker verifies.
-  \item Methods that call 'unsafe' methods creating obligations for the resource collection field, such as \texttt{socketList.add(Socket)} in this case, must have a \texttt{@CreatesMustCallFor(``this'')} annotation.
-\end{enumerate}
-
-This now shifts the burden to the client of the \texttt{Aggregator} class to call \texttt{close()} on instances before they leave scope.
-
 Consider the following example:
 
 \begin{verbatim}
@@ -863,6 +852,16 @@ class Aggregator extends Closeable {
   }
 }
 \end{verbatim}
+
+To verify a resource collection field \textit{field}, the checker looks for the following:
+\begin{enumerate}
+  \item A \texttt{@MustCall} annotation on the enclosing class. In this case, the class is of type \texttt{@MustCall(``close'')} by subclassing Closeable.
+  \item Among the methods in the \texttt{@MustCall} type of the enclosing class (usually there's just one), the checker now looks for the post-condition annotation \texttt{@CollectionFieldDestructor(``field'')}.
+  \item The annotation \texttt{@CollectionFieldDestructor(``field'')} asserts that at the method exit, \textit{field} has type \texttt{@OwningCollectionWithoutObligation}, which the checker verifies.
+  \item Methods that call 'unsafe' methods creating obligations for the resource collection field, such as \texttt{socketList.add(Socket)} in this case, must have a \texttt{@CreatesMustCallFor(``this'')} annotation.
+\end{enumerate}
+
+This now shifts the burden to the client of the \texttt{Aggregator} class to call \texttt{close()} on instances before they leave scope.
 
 If a resource collection field is final, the checker doesn't have to verify assignments to it. If it is not final, the check verifies assignments in the following way:
 \begin{itemize}
