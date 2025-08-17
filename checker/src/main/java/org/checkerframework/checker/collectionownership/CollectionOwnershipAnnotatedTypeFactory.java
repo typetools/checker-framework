@@ -245,8 +245,8 @@ public class CollectionOwnershipAnnotatedTypeFactory
    * Returns true if the given type is a resource collection: a type assignable from {@code
    * Collection} whose single type var has non-empty MustCall type.
    *
-   * <p>This overload should be used before computation of AnnotatedTypeMirrors is completed, in
-   * particular in addComputedTypeAnnotations(AnnotatedTypeMirror).
+   * <p>This overload should be used only before computation of AnnotatedTypeMirrors is completed,
+   * in particular in addComputedTypeAnnotations(AnnotatedTypeMirror).
    *
    * @param t the AnnotatedTypeMirror
    * @return true if t is a resource collection
