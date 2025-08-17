@@ -49,9 +49,19 @@ class CollectionOwnershipBasicTyping {
   // this is the correct version of above. It passes ownership to another method first,
   // and then returns the non-owning reference.
   @NotOwningCollection
-  Collection<Socket> checkLegalNotOwningReturn() {
+  Collection<Socket> checkLegalNotOwningReturn1() {
     List<Socket> list = new ArrayList<>();
+    try {
+      list.add(new Socket("", 42));
+    } catch (Exception e) {
+    }
     closeElements(list);
+    return list;
+  }
+
+  @NotOwningCollection
+  Collection<Socket> checkLegalNotOwningReturn2() {
+    List<Socket> list = new ArrayList<>();
     return list;
   }
 
