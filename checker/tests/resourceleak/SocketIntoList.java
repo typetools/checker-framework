@@ -16,8 +16,7 @@ public class SocketIntoList {
 
   public List<Socket> test2(@OwningCollection List<Socket> l) {
     // s is unconnected, so no error is expected when it's stored into the list.
-    // But, if the list is unannotated, we do get an error at its declaration site
-    // (as expected, due to #5912).
+    // However, l would be allowed to store even connected sockets.
     Socket s = new Socket();
     l.add(s);
     return l;
