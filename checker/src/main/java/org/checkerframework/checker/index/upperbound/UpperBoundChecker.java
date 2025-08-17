@@ -3,6 +3,7 @@ package org.checkerframework.checker.index.upperbound;
 import java.util.HashSet;
 import java.util.Set;
 import javax.lang.model.element.ExecutableElement;
+import org.checkerframework.checker.index.growonly.GrowOnlyChecker;
 import org.checkerframework.checker.index.inequality.LessThanChecker;
 import org.checkerframework.checker.index.lowerbound.LowerBoundChecker;
 import org.checkerframework.checker.index.qual.LTEqLengthOf;
@@ -19,6 +20,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.framework.qual.RelevantJavaTypes;
 import org.checkerframework.framework.source.SourceChecker;
+import org.checkerframework.framework.source.SupportedOptions;
 import org.checkerframework.framework.source.SuppressWarningsPrefix;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -39,6 +41,7 @@ import org.checkerframework.javacutil.TreeUtils;
   long.class,
   char.class,
 })
+@SupportedOptions({"listIndexing"})
 @SuppressWarningsPrefix({"index", "upperbound"})
 public class UpperBoundChecker extends BaseTypeChecker {
   /** The SubstringIndexFor.value argument/element. */
@@ -112,6 +115,11 @@ public class UpperBoundChecker extends BaseTypeChecker {
     checkers.add(LowerBoundChecker.class);
     checkers.add(ValueChecker.class);
     checkers.add(LessThanChecker.class);
+    // "-AlistIndexing" is unadvertised.  Eventually it will default to true and be advertised
+    // (maybe as "-AnoListIndexing").
+    if (hasOptionNoSubcheckers("listIndexing")) {
+      checkers.add(GrowOnlyChecker.class);
+    }
     return checkers;
   }
 }
