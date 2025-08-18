@@ -1,5 +1,6 @@
 package org.checkerframework.framework.flow;
 
+import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
@@ -136,7 +137,7 @@ public abstract class CFAbstractTransfer<
    * CFAbstractTransfer.
    *
    * @param analysis the analysis used by this transfer function
-   * @param forceConcurrentSemantics whether concurrent semantics should be forced to be on. If
+   * @param forceConcurrentSemantics true if concurrent semantics should be forced to be on. If
    *     false, concurrent semantics are turned off by default, but the user can still turn them on
    *     via {@code -AconcurrentSemantics}. If true, the user cannot turn off concurrent semantics.
    */
@@ -346,7 +347,7 @@ public abstract class CFAbstractTransfer<
               atypeFactory.getPath(lambda.getLambdaTree()), TreeUtils.classAndMethodTreeKinds());
 
       Element enclosingElement = null;
-      if (enclosingTree.getKind() == Tree.Kind.METHOD) {
+      if (enclosingTree instanceof MethodTree) {
         // If it is in an initializer, we need to use locals from the initializer.
         enclosingElement = TreeUtils.elementFromDeclaration((MethodTree) enclosingTree);
 
@@ -399,8 +400,7 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
-   * Determines whether a given lambda expression may be leaked outside the method in which it
-   * appears.
+   * Returns true if a given lambda expression may be leaked outside the method in which it appears.
    *
    * <p>Currently, a lambda is considered leaked unless it is an argument to a method whose
    * corresponding formal parameter is annotated as @{@link NonLeaked}. The @{@link NonLeaked}
@@ -408,15 +408,15 @@ public abstract class CFAbstractTransfer<
    *
    * <p>For example, given the following code:
    *
-   * <pre><code>
-   *   void operateOver(Container container) {
-   *      container.forEach(item -&gt; {...});
-   *   }
+   * <pre>{@code
+   * void operateOver(Container container) {
+   *    container.forEach(item -> {...});
+   * }
    *
-   *   class Container {
-   *     void forEach(@NonLeaked Consumer&lt;T&gt;)
-   *   }
-   * </code></pre>
+   * class Container {
+   *   void forEach(@NonLeaked Consumer<T>)
+   * }
+   * }</pre>
    *
    * The lambda passed to {@code Container.forEach} is not leaked, as the parameter is annotated
    * with @{@link NonLeaked}.
@@ -428,7 +428,7 @@ public abstract class CFAbstractTransfer<
   private boolean doesLambdaLeak(CFGLambda lambda, AnnotatedTypeFactory aTypeFactory) {
     LambdaExpressionTree lambdaTree = lambda.getLambdaTree();
     Tree lambdaParent = aTypeFactory.getPath(lambdaTree).getParentPath().getLeaf();
-    if (lambdaParent.getKind() == Tree.Kind.METHOD_INVOCATION) {
+    if (lambdaParent instanceof MethodInvocationTree) {
       MethodInvocationTree invok = (MethodInvocationTree) lambdaParent;
       ExecutableElement methodElt = TreeUtils.elementFromUse(invok);
       AliasingAnnotatedTypeFactory aliasingAtf =
@@ -909,7 +909,7 @@ public abstract class CFAbstractTransfer<
    * @param secondValue the abstract value that might be less precise
    * @param res the previous result
    * @param notEqualTo if true, indicates that the logic is flipped (i.e., the information is added
-   *     to the {@code elseStore} instead of the {@code thenStore}) for a not-equal comparison.
+   *     to the {@code elseStore} instead of the {@code thenStore}) for a not-equal comparison
    * @return the conditional transfer result (if information has been added), or {@code res}
    */
   protected TransferResult<V, S> strengthenAnnotationOfEqualTo(
@@ -1153,7 +1153,7 @@ public abstract class CFAbstractTransfer<
 
     // The "reference type" is the type after "instanceof".
     Tree refTypeTree = node.getTree().getType();
-    if (refTypeTree != null && refTypeTree.getKind() == Tree.Kind.ANNOTATED_TYPE) {
+    if (refTypeTree != null && refTypeTree instanceof AnnotatedTypeTree) {
       AnnotatedTypeMirror refType = analysis.atypeFactory.getAnnotatedType(refTypeTree);
       AnnotatedTypeMirror expType =
           analysis.atypeFactory.getAnnotatedType(node.getTree().getExpression());
@@ -1175,7 +1175,7 @@ public abstract class CFAbstractTransfer<
    * a @SuppressWarnings, then this method returns false.
    *
    * @param tree a tree
-   * @return whether to perform whole-program inference on the tree
+   * @return true if to perform whole-program inference on the tree
    */
   protected boolean shouldPerformWholeProgramInference(Tree tree) {
     TreePath path = this.analysis.atypeFactory.getPath(tree);
@@ -1188,7 +1188,7 @@ public abstract class CFAbstractTransfer<
    *
    * @param expressionTree the right-hand side of an assignment
    * @param lhsTree the left-hand side of an assignment
-   * @return whether to perform whole-program inference
+   * @return true if to perform whole-program inference
    */
   protected boolean shouldPerformWholeProgramInference(Tree expressionTree, Tree lhsTree) {
     // Check that infer is true and the tree isn't in scope of a @SuppressWarnings
@@ -1206,7 +1206,7 @@ public abstract class CFAbstractTransfer<
    *
    * @param tree a tree
    * @param elt its element
-   * @return whether to perform whole-program inference
+   * @return true if to perform whole-program inference
    */
   private boolean shouldPerformWholeProgramInference(Tree tree, Element elt) {
     return shouldPerformWholeProgramInference(tree)

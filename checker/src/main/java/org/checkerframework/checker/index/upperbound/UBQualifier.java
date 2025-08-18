@@ -325,7 +325,7 @@ public abstract class UBQualifier {
   }
 
   /**
-   * Return true if this is UBQualifier.PolyQualifier.
+   * Returns true if this is UBQualifier.PolyQualifier.
    *
    * @return true if this is UBQualifier.PolyQualifier
    */
@@ -348,7 +348,7 @@ public abstract class UBQualifier {
    * Is the value with this qualifier less than the length of sequence?
    *
    * @param sequence a String sequence
-   * @return whether or not the value with this qualifier is less than the length of sequence
+   * @return true if the value with this qualifier is less than the length of sequence
    */
   public boolean isLessThanLengthOf(String sequence) {
     return false;
@@ -358,30 +358,29 @@ public abstract class UBQualifier {
    * Is the value with this qualifier less than the length of any of the sequences?
    *
    * @param sequences list of sequences
-   * @return whether or not the value with this qualifier is less than the length of any of the
-   *     sequences
+   * @return true if the value with this qualifier is less than the length of any of the sequences
    */
   public boolean isLessThanLengthOfAny(List<String> sequences) {
     return false;
   }
 
   /**
-   * Returns whether or not this qualifier has sequence with the specified offset.
+   * Returns true if this qualifier has sequence with the specified offset.
    *
    * @param sequence sequence expression
    * @param offset the offset being looked for
-   * @return whether or not this qualifier has sequence with the specified offset
+   * @return true if this qualifier has sequence with the specified offset
    */
   public boolean hasSequenceWithOffset(String sequence, int offset) {
     return false;
   }
 
   /**
-   * Returns whether or not this qualifier has sequence with the specified offset.
+   * Returns true if this qualifier has sequence with the specified offset.
    *
    * @param sequence sequence expression
    * @param offset the offset being looked for
-   * @return whether or not this qualifier has sequence with the specified offset
+   * @return true if this qualifier has sequence with the specified offset
    */
   public boolean hasSequenceWithOffset(String sequence, String offset) {
     return false;
@@ -391,8 +390,7 @@ public abstract class UBQualifier {
    * Is the value with this qualifier less than or equal to the length of sequence?
    *
    * @param sequence a String sequence
-   * @return whether or not the value with this qualifier is less than or equal to the length of
-   *     sequence
+   * @return true if the value with this qualifier is less than or equal to the length of sequence
    */
   public boolean isLessThanOrEqualTo(String sequence) {
     return false;
@@ -760,7 +758,7 @@ public abstract class UBQualifier {
      * the sequence that is greater than or equal to the super offset.
      *
      * @param superType other qualifier
-     * @return whether this qualifier is a subtype of superType
+     * @return true if this qualifier is a subtype of superType
      */
     @Override
     public boolean isSubtype(UBQualifier superType) {
@@ -1198,7 +1196,7 @@ public abstract class UBQualifier {
     }
 
     /**
-     * Checks whether replacing sequence with replacementSequence in this qualifier creates
+     * Returns true if replacing sequence with replacementSequence in this qualifier creates
      * replacementSequence entry in other.
      */
     public boolean isValidReplacement(

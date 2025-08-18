@@ -84,6 +84,7 @@ public class KeyForAnnotatedTypeFactory
    *
    * @param checker the associated checker
    */
+  @SuppressWarnings("this-escape")
   public KeyForAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker, true);
 
@@ -166,7 +167,7 @@ public class KeyForAnnotatedTypeFactory
    *
    * @param mapExpression expression that has type Map
    * @param tree expression that might be a key for the map
-   * @return whether or not the expression is a key for the map
+   * @return true if the expression is a key for the map
    */
   public boolean isKeyForMap(String mapExpression, ExpressionTree tree) {
     // This test only has an effect if the Map Key Checker is being run on its own.  If the

@@ -64,8 +64,7 @@ public class AnnotationFileElementTypes {
   private final AnnotationFileAnnotations annotationFileAnnos;
 
   /**
-   * Whether or not a file is currently being parsed. (If one is being parsed, don't try to parse
-   * another.)
+   * True if a file is currently being parsed. (If one is being parsed, don't try to parse another.)
    */
   private boolean parsing;
 

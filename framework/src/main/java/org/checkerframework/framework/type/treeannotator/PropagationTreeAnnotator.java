@@ -7,6 +7,7 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.UnaryTree;
@@ -56,10 +57,10 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
   }
 
   /**
-   * Whether to use the assignment context when computing the type of a new array expression. This
-   * is a hack to prevent infinite recursion if computing the type of the assignment context
-   * includes computing the type of the right-hand side of the assignment. This happens when the
-   * assignment is the pseudo-assignment of a method argument to a formal parameter.
+   * If true, use the assignment context when computing the type of a new array expression. This is
+   * a hack to prevent infinite recursion if computing the type of the assignment context includes
+   * computing the type of the right-hand side of the assignment. This happens when the assignment
+   * is the pseudo-assignment of a method argument to a formal parameter.
    */
   private boolean useAssignmentContext = true;
 
@@ -111,24 +112,24 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
     AnnotatedTypeMirror contextType = null;
     if (path != null && path.getParentPath() != null) {
       Tree parentTree = path.getParentPath().getLeaf();
-      if (parentTree.getKind() == Tree.Kind.ASSIGNMENT) {
+      if (parentTree instanceof AssignmentTree) {
         Tree var = ((AssignmentTree) parentTree).getVariable();
         contextType = atypeFactory.getAnnotatedType(var);
-      } else if (parentTree.getKind() == Tree.Kind.VARIABLE) {
+      } else if (parentTree instanceof VariableTree) {
         if (!TreeUtils.isVariableTreeDeclaredUsingVar((VariableTree) parentTree)) {
           contextType = atypeFactory.getAnnotatedType(parentTree);
         }
       } else if (parentTree instanceof CompoundAssignmentTree) {
         Tree var = ((CompoundAssignmentTree) parentTree).getVariable();
         contextType = atypeFactory.getAnnotatedType(var);
-      } else if (parentTree.getKind() == Tree.Kind.RETURN) {
+      } else if (parentTree instanceof ReturnTree) {
         Tree methodTree = TreePathUtil.enclosingMethodOrLambda(path.getParentPath());
-        if (methodTree.getKind() == Tree.Kind.METHOD) {
+        if (methodTree instanceof MethodTree) {
           AnnotatedExecutableType methodType =
               atypeFactory.getAnnotatedType((MethodTree) methodTree);
           contextType = methodType.getReturnType();
         }
-      } else if (parentTree.getKind() == Tree.Kind.METHOD_INVOCATION && useAssignmentContext) {
+      } else if (parentTree instanceof MethodInvocationTree && useAssignmentContext) {
         MethodInvocationTree methodInvocationTree = (MethodInvocationTree) parentTree;
         useAssignmentContext = false;
         AnnotatedExecutableType m;

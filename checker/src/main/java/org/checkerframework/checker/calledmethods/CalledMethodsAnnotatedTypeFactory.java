@@ -57,7 +57,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
   private final Collection<BuilderFrameworkSupport> builderFrameworkSupports;
 
   /**
-   * Whether to use the Value Checker as a subchecker to reduce false positives when analyzing calls
+   * If true, use the Value Checker as a subchecker to reduce false positives when analyzing calls
    * to the AWS SDK. Defaults to false. Controlled by the command-line option {@code
    * -AuseValueChecker}.
    */
@@ -67,6 +67,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
    * The {@link java.util.Collections#singletonList} method. It is treated specially by {@link
    * #adjustMethodNameUsingValueChecker}.
    */
+  @SuppressWarnings("this-escape")
   private final ExecutableElement collectionsSingletonList =
       TreeUtils.getMethod("java.util.Collections", "singletonList", 1, getProcessingEnv());
 
@@ -95,6 +96,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
    *
    * @param checker the checker
    */
+  @SuppressWarnings("this-escape")
   public CalledMethodsAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker, CalledMethods.class, CalledMethodsBottom.class, CalledMethodsPredicate.class);
 
@@ -239,7 +241,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
   // This cannot return a Name because filterKindToMethodName cannot.
   private @Nullable String filterTreeToMethodName(
       Tree filterTree, ValueAnnotatedTypeFactory valueATF) {
-    while (filterTree != null && filterTree.getKind() == Tree.Kind.METHOD_INVOCATION) {
+    while (filterTree != null && filterTree instanceof MethodInvocationTree) {
 
       MethodInvocationTree filterTreeAsMethodInvocation = (MethodInvocationTree) filterTree;
       String filterMethodName = TreeUtils.methodName(filterTreeAsMethodInvocation).toString();
@@ -258,7 +260,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
     if (filterTree == null) {
       return null;
     }
-    if (filterTree.getKind() == Tree.Kind.NEW_CLASS) {
+    if (filterTree instanceof NewClassTree) {
       ExpressionTree constructorArg = ((NewClassTree) filterTree).getArguments().get(0);
       String filterKindName = ValueCheckerUtils.getExactStringValue(constructorArg, valueATF);
       if (filterKindName != null) {
@@ -402,7 +404,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
   }
 
   /**
-   * Get the called methods specified by the given {@link CalledMethods} annotation.
+   * Returns the called methods specified by the given {@link CalledMethods} annotation.
    *
    * @param calledMethodsAnnotation the annotation
    * @return the called methods
@@ -475,7 +477,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
   }
 
   /**
-   * Get the exceptional postconditions for the given method from the {@link
+   * Returns the exceptional postconditions for the given method from the {@link
    * EnsuresCalledMethodsOnException} annotations on it.
    *
    * @param methodOrConstructor the method to examine
@@ -497,7 +499,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
 
   /**
    * Helper for {@link #getExceptionalPostconditions(ExecutableElement)} that parses a {@link
-   * EnsuresCalledMethodsOnException.List} annotation and stores the results in <code>out</code>.
+   * EnsuresCalledMethodsOnException.List} annotation and stores the results in {@code out}.
    *
    * @param annotation the annotation
    * @param out the output collection
@@ -522,7 +524,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
 
   /**
    * Helper for {@link #getExceptionalPostconditions(ExecutableElement)} that parses a {@link
-   * EnsuresCalledMethodsOnException} annotation and stores the results in <code>out</code>.
+   * EnsuresCalledMethodsOnException} annotation and stores the results in {@code out}.
    *
    * @param annotation the annotation
    * @param out the output collection

@@ -2,42 +2,68 @@ import de.undercouch.gradle.tasks.download.Download
 
 plugins {
   // https://plugins.gradle.org/plugin/com.gradleup.shadow
-  id 'com.gradleup.shadow' version '8.3.6'
+  id 'com.gradleup.shadow' version '8.3.9'
   // https://plugins.gradle.org/plugin/de.undercouch.download
   id 'de.undercouch.download' version '5.6.0'
   id 'java'
   // https://github.com/tbroyer/gradle-errorprone-plugin
-  id 'net.ltgt.errorprone' version '4.2.0'
+  id 'net.ltgt.errorprone' version '4.3.0'
   // https://docs.gradle.org/current/userguide/eclipse_plugin.html
   id 'eclipse'
 
   id 'groovy' // needed for formatting Gradle files
   // Code formatting; defines targets "spotlessApply" and "spotlessCheck".
   // https://github.com/diffplug/spotless/tags ; see tags starting "gradle/"
-  // Only works on JDK 11+ (even including the plugin crashes Gradle on JDK 8).
-  id 'com.diffplug.spotless' version '7.0.4'
+  // Only works on JDK 11+ (even including the plugin crashes Gradle on JDK 8);
+  // shell scripts in checker/bin-devel/ ensure spotless isn't called unless
+  // the JDK is 17 or later.
+  id 'com.diffplug.spotless' version '7.2.1'
 }
 
 // There is another `repositories { ... }` block below; if you change this one, change that one as well.
 repositories {
-  maven { url = 'https://oss.sonatype.org/content/repositories/snapshots/'}
+  maven { url = 'https://central.sonatype.com/repository/maven-snapshots/'}
   mavenCentral()
 }
 
 ext {
-  // This call to `isCompatibleWith` causes a Gradle run-time failure: "No signature of method".
-  // isJava17compatible = JavaVersion.isCompatibleWith(JavaVersion.VERSION_17)
-  isJava17orHigher = JavaVersion.current() >= JavaVersion.VERSION_17
-  isJava21orHigher = JavaVersion.current() >= JavaVersion.VERSION_21
-  isJava22orHigher = JavaVersion.current() >= JavaVersion.VERSION_22
+  // Different JDKs may be used to run Gradle, compile the Checker Framework, and run the CF tests.
+
+  // Ways to specifiy the JDK used by different tasks/Gradle:
+  //
+  // 1. Run Gradle using JDK 21:
+  // mkdir ~/.gradle && echo "org.gradle.java.home=/usr/lib/jvm/java-21-openjdk-amd64" >> ~/.gradle/gradle.properties
+  //
+  // 2. Use JDK 24 for all Java tasks: (24 could be replaced with any version.)
+  // export ORG_GRADLE_PROJECT_jdkTestVersion=24
+  // or
+  // ./gradlew sometask -PjdkTestVersion=24
+  //
+  // 3. Compile the Checker Framework using JDK 21: (Overrides the version specified in `jdkTestVersion` for compiling only.)
+  // export ORG_GRADLE_PROJECT_useJdk21Compiler=true
+  // or
+  // ./gradlew sometask -PuseJdk21Compiler=true
+
+  gradleRunsOnJava17orHigher = JavaVersion.current() >= JavaVersion.VERSION_17
+  gradleRunsOnJava21orHigher = JavaVersion.current() >= JavaVersion.VERSION_21
+  gradleRunsOnJava22orHigher = JavaVersion.current() >= JavaVersion.VERSION_22
+  gradleRunsOnJava24orHigher = JavaVersion.current() >= JavaVersion.VERSION_24
+  // The JDK for running tests: the jdkTestVersion property or if not set, JavaVersion.current()
+  if (project.getProperties().containsKey('jdkTestVersion')) {
+    testJdkVersion = Integer.valueOf(project.getProperties().get('jdkTestVersion'))
+  } else {
+    testJdkVersion = Integer.valueOf(JavaVersion.current().getMajorVersion())
+  }
+  // With 'useJdk21Compiler' property, use JDK 21 to compile all code because the release does.
+  // If you update this line, also update JAVA_HOME in docs/developer/release/release_vars.py.
+  boolean jdk21Compiler = project.getProperties().getOrDefault('useJdk21Compiler', false)
+  compilerJdkVersion = jdk21Compiler ? 21 : testJdkVersion
+  compilerRunsOnJava17orHigher = compilerJdkVersion >= 17
 
   // As of 2025-04-28 (Lombok 1.18.38), delombok supports JDK 24-ea but not JDK 24 proper; see https://projectlombok.org/changelog .
-  skipDelombok = JavaVersion.current() >= JavaVersion.VERSION_24
+  skipDelombok = gradleRunsOnJava24orHigher
 
   parentDir = file("${rootDir}/../").absolutePath
-
-  annotationTools = "${parentDir}/annotation-tools"
-  afu = "${annotationTools}/annotation-file-utilities"
 
   gitScriptsHome = "${project(':checker').projectDir}/bin-devel/.git-scripts"
   plumeScriptsHome = "${project(':checker').projectDir}/bin-devel/.plume-scripts"
@@ -57,14 +83,14 @@ ext {
     lombok          : '1.18.38',
     hashmapUtil : '0.0.1',
     reflectionUtil : '1.1.5',
-    plumeUtil : '1.10.1',
+    plumeUtil : '1.11.0',
 
     // https://mvnrepository.com/artifact/com.google.errorprone/error_prone_core
     // If you update this:
     //  * Temporarily comment out "-Werror" elsewhere in this file
     //  * Repeatedly run `./gradlew clean compileJava` and fix all errors
     //  * Uncomment "-Werror"
-    errorprone : '2.38.0',
+    errorprone : '2.41.0',
   ]
 }
 
@@ -95,7 +121,7 @@ spotless {
   //     > Could not create task ':checker-qual:spotlessJava'.
   //        > File signature can only be created for existing regular files, given:
   //          .../checker-framework/checker-qual/build/libs/checker-qual-3.25.1-SNAPSHOT.jar
-  predeclareDepsFromBuildscript()
+  predeclareDeps()
 }
 
 spotlessPredeclare {
@@ -122,7 +148,7 @@ allprojects { currentProj ->
   //   * any new checkers have been added, or
   //   * backward-incompatible changes have been made to APIs or elsewhere.
   // To make a snapshot release, version should end in "-SNAPSHOT", then: ./gradlew publish
-  version = '3.49.5-SNAPSHOT'
+  version = '3.49.6-SNAPSHOT'
 
   tasks.withType(JavaCompile).configureEach {
     options.fork = true
@@ -138,7 +164,7 @@ allprojects { currentProj ->
 
   // Keep in sync with "repositories { ... }" block above.
   repositories {
-    maven { url = 'https://oss.sonatype.org/content/repositories/snapshots/'}
+    maven { url = 'https://central.sonatype.com/repository/maven-snapshots/'}
     mavenCentral()
   }
 
@@ -243,17 +269,16 @@ allprojects { currentProj ->
         doNotFormat += perProjectDoNotFormat[currentProj.name]
       }
 
-      if (!isJava17orHigher) {
+      if (!gradleRunsOnJava17orHigher) {
         doNotFormat += [
           'tests/**/java17/',
           'tests/*record*/'
         ]
       }
-
-      if (!isJava21orHigher) {
+      if (!gradleRunsOnJava21orHigher) {
         doNotFormat += ['tests/**/java21/']
       }
-      if (!isJava22orHigher) {
+      if (!gradleRunsOnJava22orHigher) {
         doNotFormat += ['tests/**/java22/']
       }
     }
@@ -413,14 +438,20 @@ allprojects { currentProj ->
     // Add standard javac options
     tasks.withType(JavaCompile) { compilationTask ->
       dependsOn(':installGitHooks')
-      // Use JDK 21 because that is what used in the release.  If you update this line, also update,
-      // JAVA_HOME in docs/developer/release/release_vars.py.
-      boolean jdk21Compiler = project.getProperties().getOrDefault('useJdk21Compiler', false)
-      if (jdk21Compiler) {
-        // This uses the Java 21 compiler to compile all code.
-        //  https://docs.gradle.org/current/userguide/toolchains.html
-        javaCompiler = javaToolchains.compilerFor {
-          languageVersion = JavaLanguageVersion.of(21)
+
+      java {
+        toolchain {
+          languageVersion = JavaLanguageVersion.of(testJdkVersion)
+        }
+      }
+
+      javaCompiler = javaToolchains.compilerFor {
+        languageVersion = JavaLanguageVersion.of(compilerJdkVersion)
+      }
+
+      tasks.withType(JavaExec).configureEach {
+        javaLauncher = javaToolchains.launcherFor {
+          languageVersion = JavaLanguageVersion.of(testJdkVersion)
         }
       }
 
@@ -482,15 +513,10 @@ allprojects { currentProj ->
       // -options: To not get a warning about missing bootstrap classpath (when using Java 9 and `-source 8`).
       // -fallthrough: Don't check fallthroughs.  Instead, use Error Prone.  Its
       //   warnings are suppressible with a "// fall through" comment.
-      String lint = '-Xlint:-options,-fallthrough'
-      if (isJava21orHigher || jdk21Compiler) {
-        // TODO: Ignore this-escape warnings for now; perhaps review and suppress each one later.
-        lint +=',-this-escape'
-      }
       options.compilerArgs += [
         '-g',
         '-Werror',
-        lint,
+        '-Xlint:-options,-fallthrough',
         '-Xlint',
       ]
 
@@ -504,7 +530,7 @@ allprojects { currentProj ->
         // Error Prone must be available in the annotation processor path
         options.annotationProcessorPath = configurations.errorProneAnnotationProcessor
         // Enable Error Prone
-        options.errorprone.enabled = isJava17orHigher
+        options.errorprone.enabled = compilerRunsOnJava17orHigher
         options.errorprone.disableWarningsInGeneratedCode = true
         options.errorprone.errorproneArgs = [
           // Many compiler classes are interned.
@@ -530,6 +556,15 @@ allprojects { currentProj ->
           '-Xep:NullableWildcard:OFF',
           // In the visitor pattern, it is natural to forward a Void reference.
           '-Xep:VoidUsed:OFF',
+          // Suggestion assumes there is no overriding equals() method.
+          "-Xep:NonOverridingEquals:OFF",
+          // Suggests using a class that's in Error Prone itself, not in any library for clients.
+          // It requires "import com.google.errorprone.util.ASTHelpers;", and (in build.gradle)
+          //   implementation "com.google.errorprone:error_prone_core:${errorproneVersion}"
+          // Adding that line in build.gradle causes a javac crash when running the Checker Framework.
+          "-Xep:ASTHelpersSuggestions:OFF",
+          // Removing "public" from private class members loses information about the abstraction.
+          "-Xep:EffectivelyPrivate:OFF",
           // -Werror halts the build if Error Prone issues a warning, which ensures that
           // the errors get fixed.  On the downside, Error Prone (or maybe the compiler?)
           // stops as soon as it issues one warning, rather than outputting them all.
@@ -640,6 +675,7 @@ task allJavadoc(type: Javadoc, group: 'Documentation') {
       project(':dataflow').sourceSets.main.allJava,
       project(':javacutil').sourceSets.main.allJava,
       project(':framework-test').sourceSets.main.allJava,
+      project(':annotation-file-utilities').sourceSets.main.allJava,
       )
 
   doFirst {
@@ -769,7 +805,7 @@ task tags(type: Exec, group: 'Emacs') {
   dependsOn docTags
   description = 'Create Emacs TAGS table'
   // running this task will also run the tags task in the subprojects, which is defined later in this file.
-  commandLine 'etags', '-i', 'checker/TAGS', '-i', 'checker-qual/TAGS', '-i', 'checker-util/TAGS', '-i', 'dataflow/TAGS', '-i', 'framework/TAGS', '-i', 'framework-test/TAGS', '-i', 'javacutil/TAGS', '-i', 'docs/manual/TAGS'
+  commandLine 'etags', '-i', 'annotation-file-utilities/TAGS', '-i', 'checker/TAGS', '-i', 'checker-qual/TAGS', '-i', 'checker-util/TAGS', '-i', 'dataflow/TAGS', '-i', 'framework/TAGS', '-i', 'framework-test/TAGS', '-i', 'javacutil/TAGS', '-i', 'docs/manual/TAGS'
 }
 
 subprojects {
@@ -851,7 +887,7 @@ subprojects {
       }
     }
 
-    // Tasks such as `checkResourceLeak` to run various checkers on all the main source sets.
+    // Tasks such as `checkInterning` and `checkResourceLeak` run various checkers on all the main source sets.
     // These pass and are run by the `typecheck` task.
     // When you add one here, also update a dependsOn item for the 'typecheck' task.
     createCheckTypeTask(project.name, 'Formatter',
@@ -876,20 +912,36 @@ subprojects {
         'org.checkerframework.checker.signature.SignatureChecker')
 
     // The checkNullness task runs on all code, but it only *checks* the following code:
-    //  * All files outside the 'framework' and 'checker' subprojects.
-    //  * In the 'framework' and 'checker' subprojects, files with `@AnnotatedFor("nullness")`.
-    if (project.name.is('framework') || project.name.is('checker')) {
+    //  * All files outside the 'framework', 'checker', and 'annotation-file-utilities' subprojects.
+    //  * In the 'framework', 'checker', and 'annotation-file-utilities' subprojects, files with `@AnnotatedFor("nullness")`.
+    boolean nullnessAll = project.getProperties().containsKey('nullnessAll')
+    if (!nullnessAll && (project.name.is('framework') || project.name.is('checker') || project.name.is('annotation-file-utilities'))) {
       createCheckTypeTask(project.name, 'Nullness',
           'org.checkerframework.checker.nullness.NullnessChecker',
           [
             '-AskipUses=com\\.sun\\.*',
-            // If a file does not contain @AnnotatedFor("nullness"), all its routines are assumed to return @Nullable.
+            // If a file does not contain @AnnotatedFor("nullness"), all its routines
+            // are assumed to return @Nullable.
             '-AuseConservativeDefaultsForUncheckedCode=source'
           ])
     } else {
       createCheckTypeTask(project.name, 'Nullness',
           'org.checkerframework.checker.nullness.NullnessChecker',
           ['-AskipUses=com\\.sun\\.*'])
+    }
+
+
+    createCheckTypeTask(project.name, 'CompilerMessages',
+        'org.checkerframework.checker.compilermsgs.CompilerMessagesChecker')
+    checkCompilerMessages {
+      doFirst {
+        String propfiles = sourceSets.main.resources.filter { file -> file.name.equals('messages.properties') }.asPath
+        if (project.name.is('checker')) {
+          String frameworkPropFiles = project(':framework').sourceSets.main.resources.filter { file -> file.name.equals('messages.properties') }.asPath
+          propfiles = propfiles + File.pathSeparator + frameworkPropFiles
+        }
+        options.compilerArgs += ["-Apropfiles=${propfiles}"]
+      }
     }
 
 
@@ -1057,14 +1109,12 @@ subprojects {
     }
     tasks.create(name: 'typecheck-part1', group: 'Verification') {
       description = 'Run the Checker Framework on itself (part 1)'
-      dependsOn('checkFormatter', 'checkInterning', 'checkOptional', 'checkPurity')
+      dependsOn('checkCompilerMessages', 'checkFormatter', 'checkInterning', 'checkOptional', 'checkPurity')
     }
     tasks.create(name: 'typecheck-part2', group: 'Verification') {
       description = 'Run the Checker Framework on itself (part 2)'
       dependsOn('checkResourceLeak', 'checkSignature')
-      if (project.name.is('framework') || project.name.is('checker')) {
-        dependsOn('checkCompilerMessages')
-      } else {
+      if (!(project.name.is('framework') || project.name.is('checker'))) {
         dependsOn('checkNullness')
       }
     }
@@ -1158,5 +1208,13 @@ final sharedPublicationConfiguration(publication) {
       connection = 'scm:git:https://github.com/typetools/checker-framework.git'
       developerConnection = 'scm:git:ssh://git@github.com/typetools/checker-framework.git'
     }
+  }
+}
+tasks.register('printJavaVersion') {
+  description = "Prints the Java version used to run Gradle."
+  doLast {
+    println "Java version used to run Gradle: ${System.getProperty('java.version')}"
+    def currentJvm = org.gradle.internal.jvm.Jvm.current()
+    println currentJvm
   }
 }

@@ -100,6 +100,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   private static final Map<String, AnnotationMirror> aliasMap = new HashMap<>();
 
+  @SuppressWarnings("this-escape")
   public UnitsAnnotatedTypeFactory(BaseTypeChecker checker) {
     // use true to enable flow inference, false to disable it
     super(checker, false);
@@ -305,7 +306,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
-   * Return the name of the given annotation, if it is meta-annotated with UnitsMultiple; otherwise
+   * Returns the name of the given annotation, if it is meta-annotated with UnitsMultiple; otherwise
    * return null.
    *
    * @param anno the annotation to examine
@@ -618,10 +619,6 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    @SuppressWarnings(
-        "nullness:return" // This class UnitsQualifierHierarchy is annotated for nullness,
-    // but the outer class UnitsAnnotatedTypeFactory is not, so the type of fields is @Nullable.
-    )
     protected AnnotationMirror greatestLowerBoundWithElements(
         AnnotationMirror a1,
         QualifierKind qualifierKind1,
@@ -681,7 +678,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Get the direct super qualifier for the given qualifier kind.
+     * Returns the direct super qualifier for the given qualifier kind.
      *
      * @param qualifierKind qualifier kind
      * @return direct super qualifier kind

@@ -194,14 +194,14 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   }
 
   /**
-   * Indicates whether the given method is side-effect-free as far as the current store is
-   * concerned. In some cases, a store for a checker allows for other mechanisms to specify whether
-   * a method is side-effect-free. For example, unannotated methods may be considered
-   * side-effect-free by default.
+   * Returns true if the given method is side-effect-free as far as the current store is concerned.
+   * In some cases, a store for a checker allows for other mechanisms to specify whether a method is
+   * side-effect-free. For example, unannotated methods may be considered side-effect-free by
+   * default.
    *
    * @param atypeFactory the type factory used to retrieve annotations on the method element
    * @param method the method element
-   * @return whether the method is side-effect-free
+   * @return true if the method is side-effect-free
    * @deprecated use {@link org.checkerframework.javacutil.AnnotationProvider#isSideEffectFree}
    */
   @Deprecated // 2022-09-27
@@ -273,16 +273,21 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         updateFieldValuesForMethodCall(gatypeFactory);
       }
 
-      // update array values
+      // Update array values.
       arrayValues.clear();
 
-      // update method values
-      methodCallExpressions.keySet().removeIf(MethodCall::isModifiableByOtherCode);
+      // Update information about method calls.
+      updateMethodCallValues();
     }
 
-    // store information about method call if possible
+    // Store information about method calls if possible.
     JavaExpression methodCall = JavaExpression.fromNode(methodInvocationNode);
     replaceValue(methodCall, val);
+  }
+
+  /** Update information about method calls. */
+  private void updateMethodCallValues() {
+    methodCallExpressions.keySet().removeIf(MethodCall::isModifiableByOtherCode);
   }
 
   /**
@@ -374,9 +379,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     Map<FieldAccess, V> newFieldValues = new HashMap<>(CollectionsPlume.mapCapacity(fieldValues));
     for (Map.Entry<FieldAccess, V> e : fieldValues.entrySet()) {
       FieldAccess fieldAccess = e.getKey();
-      V value = e.getValue();
+      V previousValue = e.getValue();
 
-      V newValue = newFieldValueAfterMethodCall(fieldAccess, atypeFactory, value);
+      V newValue = newFieldValueAfterMethodCall(fieldAccess, atypeFactory, previousValue);
       if (newValue != null) {
         // Keep information for all hierarchies where we had a monotonic annotation.
         newFieldValues.put(fieldAccess, newValue);
@@ -466,7 +471,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    *
    * @param expr an expression
    * @param newAnno the expression's annotation
-   * @param permitNondeterministic whether nondeterministic expressions may be inserted into the
+   * @param permitNondeterministic true if nondeterministic expressions may be inserted into the
    *     store
    */
   protected void insertOrRefine(
@@ -685,7 +690,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   }
 
   /**
-   * Return true if fieldAcc is an update of a monotonic qualifier to its target qualifier.
+   * Returns true if fieldAcc is an update of a monotonic qualifier to its target qualifier.
    * (e.g. @MonotonicNonNull to @NonNull). Always returns false if {@code sequentialSemantics} is
    * true.
    *
@@ -900,7 +905,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * where the right hand side has the abstract value {@code val}.
    *
    * @param val the abstract value of the value assigned to {@code n} (or {@code null} if the
-   *     abstract value is not known).
+   *     abstract value is not known)
    */
   protected void updateForFieldAccessAssignment(FieldAccess fieldAccess, @Nullable V val) {
     removeConflicting(fieldAccess, val);
@@ -938,7 +943,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * been available previously.
    *
    * @param val the abstract value of the value assigned to {@code n} (or {@code null} if the
-   *     abstract value is not known).
+   *     abstract value is not known)
    */
   protected void updateForLocalVariableAssignment(LocalVariable receiver, @Nullable V val) {
     removeConflicting(receiver);
@@ -967,7 +972,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * </ol>
    *
    * @param val the abstract value of the value assigned to {@code n} (or {@code null} if the
-   *     abstract value is not known).
+   *     abstract value is not known)
    */
   protected void removeConflicting(FieldAccess fieldAccess, @Nullable V val) {
     Iterator<Map.Entry<FieldAccess, V>> fieldValuesIterator = fieldValues.entrySet().iterator();
@@ -1026,7 +1031,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * </ol>
    *
    * @param val the abstract value of the value assigned to {@code n} (or {@code null} if the
-   *     abstract value is not known).
+   *     abstract value is not known)
    */
   protected void removeConflicting(ArrayAccess arrayAccess, @Nullable V val) {
     Iterator<Map.Entry<ArrayAccess, V>> arrayValuesIterator = arrayValues.entrySet().iterator();
@@ -1094,14 +1099,14 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       }
     }
 
-    Iterator<Map.Entry<MethodCall, V>> methodCallValuesIterator =
+    Iterator<Map.Entry<MethodCall, V>> methodCallExpressionsIterator =
         methodCallExpressions.entrySet().iterator();
-    while (methodCallValuesIterator.hasNext()) {
-      Map.Entry<MethodCall, V> entry = methodCallValuesIterator.next();
+    while (methodCallExpressionsIterator.hasNext()) {
+      Map.Entry<MethodCall, V> entry = methodCallExpressionsIterator.next();
       MethodCall otherMethodAccess = entry.getKey();
       // case 3:
       if (otherMethodAccess.containsSyntacticEqualJavaExpression(var)) {
-        methodCallValuesIterator.remove();
+        methodCallExpressionsIterator.remove();
       }
     }
   }

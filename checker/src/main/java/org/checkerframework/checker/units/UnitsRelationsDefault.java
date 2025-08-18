@@ -29,15 +29,15 @@ public class UnitsRelationsDefault implements UnitsRelations {
   @SuppressWarnings("nullness:initialization.field.uninitialized") // init() method
   protected AnnotationMirror m, km, mm, s, g, kg;
 
-  /** Derived SI units without special names */
+  /** Derived SI units without special names. */
   @SuppressWarnings("nullness:initialization.field.uninitialized") // init() method
   protected AnnotationMirror m2, km2, mm2, m3, km3, mm3, mPERs, mPERs2;
 
-  /** Derived SI units with special names */
+  /** Derived SI units with special names. */
   @SuppressWarnings("nullness:initialization.field.uninitialized") // init() method
   protected AnnotationMirror N, kN;
 
-  /** Non-SI units */
+  /** Non-SI units. */
   @SuppressWarnings("nullness:initialization.field.uninitialized") // init() method
   protected AnnotationMirror h, kmPERh, t;
 

@@ -1,4 +1,4 @@
-Version 3.49.4 (July 1, 2025)
+Version 3.49.6 (August 1, 2025)
 -----------------------------
 
 **User-visible changes:**
@@ -6,6 +6,18 @@ Version 3.49.4 (July 1, 2025)
 **Implementation details:**
 
 **Closed issues:**
+
+
+Version 3.49.5 (June 30, 2025)
+-----------------------------
+
+**User-visible changes:**
+
+The Checker Framework runs under JDK 25 -- that is, it runs on a version 25 JVM.
+
+**Closed issues:**
+
+#7093.
 
 
 Version 3.49.4 (June 2, 2025)
@@ -143,6 +155,9 @@ Version 3.46.0 (August 1, 2024)
 -----------------------------
 
 **User-visible changes:**
+
+The new SqlQuotesChecker prevents errors in quoting in SQL queries.  It prevents
+injection attacks that exploit quoting errors.
 
 Renamed `@EnsuresCalledMethodsVarArgs`to `@EnsuresCalledMethodsVarargs`.
 

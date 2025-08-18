@@ -392,6 +392,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @param assumeAssertionsEnabled can assertions be assumed to be enabled?
    * @param env annotation processing environment containing type utilities
    */
+  @SuppressWarnings("this-escape")
   public CFGTranslationPhaseOne(
       TreeBuilder treeBuilder,
       AnnotationProvider annotationProvider,
@@ -606,7 +607,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Visit a SwitchExpressionTree
+   * Visit a SwitchExpressionTree.
    *
    * @param switchExpressionTree a SwitchExpressionTree, typed as Tree to be backward-compatible
    * @param p parameter
@@ -621,7 +622,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Visit a BindingPatternTree
+   * Visit a BindingPatternTree.
    *
    * @param bindingPatternTree a BindingPatternTree, typed as Tree to be backward-compatible
    * @param p parameter
@@ -1200,11 +1201,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Return whether a conversion from the type of the node to varType requires narrowing.
+   * Returns true if a conversion from the type of the node to varType requires narrowing.
    *
    * @param varType the type of a variable (or general LHS) to be converted to
    * @param node a node whose value is being converted
-   * @return whether this conversion requires narrowing to succeed
+   * @return true if this conversion requires narrowing to succeed
    */
   protected boolean conversionRequiresNarrowing(TypeMirror varType, Node node) {
     // Narrowing is restricted to cases where the left hand side is byte, char, short or Byte,
@@ -1226,8 +1227,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    *
    * @param node a Node producing a value
    * @param varType the type of a variable
-   * @param contextAllowsNarrowing whether to allow narrowing (for assignment conversion) or not
-   *     (for method invocation conversion)
+   * @param contextAllowsNarrowing if true, allow narrowing (for assignment conversion) (for method
+   *     invocation conversion)
    * @return a Node with the value converted to the type of the variable, which may be the input
    *     node itself
    */
@@ -1541,7 +1542,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   protected @Nullable Name getLabel(TreePath path) {
     if (path.getParentPath() != null) {
       Tree parent = path.getParentPath().getLeaf();
-      if (parent.getKind() == Tree.Kind.LABELED_STATEMENT) {
+      if (parent instanceof LabeledStatementTree) {
         return ((LabeledStatementTree) parent).getLabel();
       }
     }
@@ -1844,7 +1845,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    */
   private Node getReceiver(ExpressionTree tree) {
     assert TreeUtils.isFieldAccess(tree) || TreeUtils.isMethodAccess(tree);
-    if (tree.getKind() == Tree.Kind.MEMBER_SELECT) {
+    if (tree instanceof MemberSelectTree) {
       // `tree` has an explicit receiver.
       MemberSelectTree mtree = (MemberSelectTree) tree;
       return scan(mtree.getExpression(), null);
@@ -3087,7 +3088,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       extendWithNode(arrayVariableNode);
       Node expressionNode = scan(expression, p);
 
-      translateAssignment(arrayVariable, new LocalVariableNode(arrayVariable), expressionNode);
+      translateAssignment(arrayVariable, new LocalVariableNode(arrayVariable), expressionNode)
+          .setDesugaredFromEnhancedArrayForLoop();
 
       // Declare and initialize the loop index variable
       TypeMirror intType = types.getPrimitiveType(TypeKind.INT);
@@ -3648,7 +3650,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Return the first argument if it is non-null, otherwise return the second argument. Throws an
+   * Returns the first argument if it is non-null, otherwise return the second argument. Throws an
    * exception if both arguments are null.
    *
    * @param <A> the type of the arguments
@@ -4089,7 +4091,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Returns whether an exceptional node for {@code target} exists in {@link #nodeList} or not.
+   * Returns true if an exceptional node for {@code target} exists in {@link #nodeList}.
    *
    * @param target label for exception
    * @return true when an exceptional node for {@code target} exists in {@link #nodeList}

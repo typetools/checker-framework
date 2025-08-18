@@ -1,6 +1,6 @@
 plugins {
   id 'java-library'
-  id("biz.aQute.bnd.builder") version "6.4.0"
+  id("biz.aQute.bnd.builder") version "7.1.0"
 }
 
 sourceSets {
@@ -12,6 +12,19 @@ sourceSets {
   module_info {
     java {
       srcDirs ('src/main')
+    }
+  }
+}
+
+jar {
+  doLast {
+    copy {
+      from archiveFile
+      into layout.projectDirectory.file('../checker/dist')
+      rename { String fileName ->
+        // remove version number on checker-qual.jar
+        fileName.replace(fileName, 'checker-qual.jar')
+      }
     }
   }
 }

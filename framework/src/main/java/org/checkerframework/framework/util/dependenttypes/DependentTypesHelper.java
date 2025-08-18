@@ -108,7 +108,7 @@ import org.plumelib.util.CollectionsPlume;
  */
 public class DependentTypesHelper {
 
-  /** AnnotatedTypeFactory */
+  /** AnnotatedTypeFactory. */
   protected final AnnotatedTypeFactory factory;
 
   /**
@@ -453,7 +453,7 @@ public class DependentTypesHelper {
         }
         Tree enclTree = pathTillEnclTree.getLeaf();
 
-        if (enclTree.getKind() == Tree.Kind.METHOD) {
+        if (enclTree instanceof MethodTree) {
           MethodTree methodDeclTree = (MethodTree) enclTree;
           StringToJavaExpression stringToJavaExpr =
               stringExpr ->
@@ -847,7 +847,7 @@ public class DependentTypesHelper {
   }
 
   /**
-   * Whether or not {@code expression} should be passed to the new annotation unchanged. If this
+   * Returns true if {@code expression} should be passed to the new annotation unchanged. If this
    * method returns true, the {@code expression} is not parsed.
    *
    * <p>The default implementation returns true if the {@code expression} is an expression error
@@ -855,8 +855,7 @@ public class DependentTypesHelper {
    * this method to add additional logic.
    *
    * @param expression an expression string in a dependent types annotation
-   * @return whether or not {@code expression} should be passed through unchanged to the new
-   *     annotation
+   * @return true if {@code expression} should be passed through unchanged to the new annotation
    */
   protected boolean shouldPassThroughExpression(String expression) {
     return DependentTypesError.isExpressionError(expression);
@@ -1015,7 +1014,7 @@ public class DependentTypesHelper {
     }
 
     // Report the error at the type rather than at the variable.
-    if (errorTree.getKind() == Tree.Kind.VARIABLE) {
+    if (errorTree instanceof VariableTree) {
       Tree typeTree = ((VariableTree) errorTree).getType();
       // Don't report the error at the type if the type is not present in source code.
       if (((JCTree) typeTree).getPreferredPosition() != -1) {
@@ -1334,6 +1333,7 @@ public class DependentTypesHelper {
   }
 
   /** Returns true if the passed AnnotatedTypeMirror has any dependent type annotations. */
+  @SuppressWarnings("this-escape")
   private final AnnotatedTypeScanner<Boolean, Void> hasDependentTypeScanner =
       new SimpleAnnotatedTypeScanner<>(
           (type, __) -> {

@@ -182,7 +182,7 @@ public class TypeVarUseApplier {
   /**
    * Depending on what element type the annotations are stored on, the relevant annotations might be
    * stored with different annotation positions. getPrimaryAnnotations finds the correct annotations
-   * by annotation position and element kind and returns them
+   * by annotation position and element kind and returns them.
    */
   private static List<Attribute.TypeCompound> getAnnotations(
       Element useElem, Element declarationElem) {

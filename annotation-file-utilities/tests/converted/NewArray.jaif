@@ -1,0 +1,87 @@
+// @skip-test
+
+package :
+annotation @X:
+
+package :
+annotation @B:
+
+package :
+annotation @A:
+
+package :
+annotation @Z:
+
+package :
+annotation @C:
+
+package :
+annotation @D:
+
+package :
+annotation @E:
+
+package :
+class NewArray:
+
+    field names01:
+        insert-annotation Variable.initializer, NewArray.type 1: @X
+
+    field names02:
+        insert-annotation Variable.initializer, NewArray.type 1: @X
+
+    field names03:
+        insert-annotation Variable.initializer, NewArray.type 1: @X
+
+    field table1:
+        insert-annotation Variable.initializer, NewArray.type 0: @B
+        insert-annotation Variable.initializer, NewArray.type 1: @A
+
+    field table2:
+        insert-annotation Variable.initializer, NewArray.type 0: @B
+        insert-annotation Variable.initializer, NewArray.type 1: @A
+
+    field names0:
+        insert-annotation Variable.initializer, NewArray.type 0: @Z
+
+    field names1:
+        insert-annotation Variable.initializer, NewArray.type 1: @A
+
+    field names2:
+        insert-annotation Variable.initializer, NewArray.type 2: @B
+
+    field names3:
+        insert-annotation Variable.initializer, NewArray.type 3: @C
+
+    field names4:
+        insert-annotation Variable.initializer, NewArray.type 4: @D
+
+    field names5:
+        insert-annotation Variable.initializer, NewArray.type 5: @E
+
+    field names10:
+        insert-annotation Variable.initializer, NewArray.type 0: @Z
+
+    field names11:
+        insert-annotation Variable.initializer, NewArray.type 1: @A
+
+    field names12:
+        insert-annotation Variable.initializer, NewArray.type 2: @B
+
+    field names13:
+        insert-annotation Variable.initializer, NewArray.type 3: @C
+
+    field names14:
+        insert-annotation Variable.initializer, NewArray.type 4: @D
+
+    field names15:
+        insert-annotation Variable.initializer, NewArray.type 5: @E
+
+    field lists:
+        insert-annotation Variable.type: @B
+        insert-annotation Variable.type, ArrayType.type: @Z
+        insert-annotation Variable.type, ArrayType.type, ParameterizedType.typeArgument 0: @A
+        insert-annotation Variable.initializer, NewArray.type 0: @E
+        insert-annotation Variable.initializer, NewArray.type 1: @C
+        insert-annotation Variable.initializer, NewArray.type 1, ParameterizedType.typeArgument 0: @D
+

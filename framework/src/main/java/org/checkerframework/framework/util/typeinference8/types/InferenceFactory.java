@@ -80,7 +80,7 @@ public class InferenceFactory {
   private Java8InferenceContext context;
 
   /**
-   * Creates an inference factory
+   * Creates an inference factory.
    *
    * @param context the context
    */
@@ -164,7 +164,7 @@ public class InferenceFactory {
         HashSet<Kind> kinds =
             new HashSet<>(Arrays.asList(Tree.Kind.LAMBDA_EXPRESSION, Tree.Kind.METHOD));
         Tree enclosing = TreePathUtil.enclosingOfKind(path, kinds);
-        if (enclosing.getKind() == Tree.Kind.METHOD) {
+        if (enclosing instanceof MethodTree) {
           MethodTree methodTree = (MethodTree) enclosing;
           AnnotatedTypeMirror res = factory.getMethodReturnType(methodTree);
           return new ProperType(res, TreeUtils.typeOf(methodTree.getReturnType()), this.context);
@@ -244,7 +244,7 @@ public class InferenceFactory {
   }
 
   /**
-   * Return the rhs of the assignment of an argument and its formal parameter.
+   * Returns the rhs of the assignment of an argument and its formal parameter.
    *
    * @param path path to the argument
    * @param invocation a method or constructor invocation
@@ -278,7 +278,7 @@ public class InferenceFactory {
   }
 
   /**
-   * Return the rhs of the assignment of an argument and its formal parameter.
+   * Returns the rhs of the assignment of an argument and its formal parameter.
    *
    * @param path path to the argument
    * @param invocation a method or constructor invocation
@@ -311,20 +311,20 @@ public class InferenceFactory {
   }
 
   /**
-   * Returns whether argumentTree is the tree at the leaf of path. If tree is a conditional
+   * Returns true if argumentTree is the tree at the leaf of path. If tree is a conditional
    * expression, isArgument is called recursively on the true and false expressions. If tree is a
    * switch expression isArgument is called recursively on all yielded expressions.
    *
    * @param path tree path might contain {@code argumentTree}
    * @param argumentTree an expression tree that might be in {@code path}
-   * @return whether argumentTree is the tree at the leaf of path
+   * @return true if argumentTree is the tree at the leaf of path
    */
   @SuppressWarnings("interning:not.interned") // Checking for exact object.
   private static boolean isArgument(TreePath path, ExpressionTree argumentTree) {
     argumentTree = TreeUtils.withoutParens(argumentTree);
     if (argumentTree == path.getLeaf()) {
       return true;
-    } else if (argumentTree.getKind() == Tree.Kind.CONDITIONAL_EXPRESSION) {
+    } else if (argumentTree instanceof ConditionalExpressionTree) {
       ConditionalExpressionTree conditionalExpressionTree =
           (ConditionalExpressionTree) argumentTree;
       return isArgument(path, conditionalExpressionTree.getTrueExpression())
@@ -349,7 +349,7 @@ public class InferenceFactory {
    */
   private static @Nullable DeclaredType getReceiverType(ExpressionTree tree) {
     Tree receiverTree;
-    if (tree.getKind() == Tree.Kind.NEW_CLASS) {
+    if (tree instanceof NewClassTree) {
       receiverTree = ((NewClassTree) tree).getEnclosingExpression();
       if (receiverTree == null && ((NewClassTree) tree).getClassBody() == null) {
         TypeMirror t = TreeUtils.elementFromUse((NewClassTree) tree).getReceiverType();
@@ -373,7 +373,7 @@ public class InferenceFactory {
   }
 
   /**
-   * Return ExecutableType of the method invocation or new class tree adapted to the call site.
+   * Returns ExecutableType of the method invocation or new class tree adapted to the call site.
    *
    * @param expressionTree a method invocation or new class tree
    * @param context the context
@@ -381,15 +381,14 @@ public class InferenceFactory {
    */
   public static ExecutableType getTypeOfMethodAdaptedToUse(
       ExpressionTree expressionTree, Java8InferenceContext context) {
-    assert expressionTree.getKind() == Kind.NEW_CLASS
-        || expressionTree.getKind() == Kind.METHOD_INVOCATION;
+    assert expressionTree instanceof NewClassTree || expressionTree instanceof MethodInvocationTree;
 
     ExecutableElement ele = (ExecutableElement) TreeUtils.elementFromUse(expressionTree);
     ExecutableType executableType = null;
     // First adapt to receiver
     if (!ElementUtils.isStatic(ele)) {
       DeclaredType receiverType = getReceiverType(expressionTree);
-      if (receiverType == null && expressionTree.getKind() == Kind.METHOD_INVOCATION) {
+      if (receiverType == null && expressionTree instanceof MethodInvocationTree) {
         receiverType = context.enclosingType;
       } else if (receiverType != null) {
         receiverType = (DeclaredType) context.types.capture((Type) receiverType);
@@ -400,7 +399,7 @@ public class InferenceFactory {
               == null) {
         TypeMirror enclosing = receiverType.getEnclosingType();
         if (enclosing == null || enclosing.getKind() != TypeKind.DECLARED) {
-          if (expressionTree.getKind() == Tree.Kind.NEW_CLASS) {
+          if (expressionTree instanceof NewClassTree) {
             // No receiver for the constructor.
             executableType = (ExecutableType) ele.asType();
           } else {
@@ -421,8 +420,7 @@ public class InferenceFactory {
     }
 
     // Adapt to class type arguments.
-    if (expressionTree.getKind() == Tree.Kind.NEW_CLASS
-        && !TreeUtils.isDiamondTree(expressionTree)) {
+    if (expressionTree instanceof NewClassTree && !TreeUtils.isDiamondTree(expressionTree)) {
       NewClassTree newClassTree = (NewClassTree) expressionTree;
       List<? extends Tree> typeArgs = TreeUtils.getTypeArgumentsToNewClassTree(newClassTree);
       if (!typeArgs.isEmpty()) {
@@ -446,7 +444,7 @@ public class InferenceFactory {
     }
     // Adapt to explicit method type arguments.
     List<? extends Tree> typeArgs;
-    if (expressionTree.getKind() == Kind.METHOD_INVOCATION) {
+    if (expressionTree instanceof MethodInvocationTree) {
       typeArgs = ((MethodInvocationTree) expressionTree).getTypeArguments();
     } else {
       typeArgs = ((NewClassTree) expressionTree).getTypeArguments();
@@ -708,7 +706,7 @@ public class InferenceFactory {
    */
   public InvocationType getTypeOfMethodAdaptedToUse(ExpressionTree invocation) {
     AnnotatedExecutableType executableType;
-    if (invocation.getKind() == Kind.METHOD_INVOCATION) {
+    if (invocation instanceof MethodInvocationTree) {
       executableType =
           typeFactory.methodFromUseWithoutTypeArgInference((MethodInvocationTree) invocation)
               .executableType;
@@ -848,7 +846,7 @@ public class InferenceFactory {
   }
 
   /**
-   * Return the proper type for object.
+   * Returns the proper type for object.
    *
    * @return the proper type for object
    */
@@ -862,7 +860,7 @@ public class InferenceFactory {
   }
 
   /**
-   * Return the least upper bounds of {@code properTypes}.
+   * Returns the least upper bounds of {@code properTypes}.
    *
    * @param properTypes types to lub
    * @return the least upper bounds of {@code properTypes}
@@ -960,7 +958,7 @@ public class InferenceFactory {
   }
 
   /**
-   * Return the proper type for RuntimeException.
+   * Returns the proper type for RuntimeException.
    *
    * @return the proper type for RuntimeException
    */
@@ -1009,7 +1007,7 @@ public class InferenceFactory {
     }
     List<? extends AnnotatedTypeMirror> thrownTypes;
     List<? extends TypeMirror> thrownTypeMirrors;
-    if (expression.getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
+    if (expression instanceof LambdaExpressionTree) {
       thrownTypeMirrors =
           CheckedExceptionsUtil.thrownCheckedExceptions((LambdaExpressionTree) expression, context);
       thrownTypes =

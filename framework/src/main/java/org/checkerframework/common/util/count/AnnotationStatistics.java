@@ -2,6 +2,7 @@ package org.checkerframework.common.util.count;
 
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayTypeTree;
+import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.InstanceOfTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -133,13 +134,13 @@ public class AnnotationStatistics extends SourceChecker {
 
   class Visitor extends SourceVisitor<Void, Void> {
 
-    /** Whether annotation locations should be printed. */
+    /** True if annotation locations should be printed. */
     private final boolean locations;
 
-    /** Whether annotation details should be printed. */
+    /** True if annotation details should be printed. */
     private final boolean annotations;
 
-    /** Whether only a summary should be printed. */
+    /** True if only a summary should be printed. */
     private final boolean annotationsummaryonly;
 
     /**
@@ -171,9 +172,7 @@ public class AnnotationStatistics extends SourceChecker {
         TreePath path = getCurrentPath();
         Tree prev = null;
         for (Tree t : path) {
-          if (prev != null
-              && prev.getKind() == Tree.Kind.BLOCK
-              && t.getKind() == Tree.Kind.METHOD) {
+          if (prev != null && prev instanceof BlockTree && t instanceof MethodTree) {
             isBodyAnnotation = true;
             break;
           }

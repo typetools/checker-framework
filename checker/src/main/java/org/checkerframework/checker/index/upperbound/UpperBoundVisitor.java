@@ -279,7 +279,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
   }
 
   /**
-   * Returns whether the assignment is legal based on the relaxed assignment rules.
+   * Returns true if the assignment is legal based on the relaxed assignment rules.
    *
    * <p>The relaxed assignment rules are the following: Assuming the varType (left-hand side) is
    * less than the length of some array given some offset
@@ -307,7 +307,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
    * @return true if the assignment is legal based on special Upper Bound rules
    */
   private boolean relaxedCommonAssignment(AnnotatedTypeMirror varType, ExpressionTree valueExp) {
-    if (valueExp.getKind() == Tree.Kind.NEW_ARRAY && varType.getKind() == TypeKind.ARRAY) {
+    if (valueExp instanceof NewArrayTree && varType.getKind() == TypeKind.ARRAY) {
       List<? extends ExpressionTree> expressions = ((NewArrayTree) valueExp).getInitializers();
       if (expressions == null || expressions.isEmpty()) {
         return false;
@@ -490,7 +490,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
   }
 
   /**
-   * Tests whether replacing any of the arrays in sameLenArrays with arrayName makes expQual
+   * Returns true if replacing any of the arrays in sameLenArrays with arrayName makes expQual
    * equivalent to varQual.
    */
   private boolean testSameLen(

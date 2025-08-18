@@ -1,0 +1,33 @@
+package annotations.tests.classfile.foo:
+annotation @A: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+annotation @B: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+	String value
+
+// annotation @C: @Retention(value=CLASS) @java.lang.annotation.Target(value={TYPE_USE})
+annotation @C: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+	int fieldA
+	String fieldB
+
+package annotations.tests.classfile.cases:
+class TestTypeTest:
+
+  method test()V :
+  	instanceof # 4 : @annotations.tests.classfile.foo.B(value="ismap")
+  	instanceof # 14 : @annotations.tests.classfile.foo.A
+  	instanceof # 24 : @annotations.tests.classfile.foo.B(value="islist")
+
+  method test2()V :
+  	instanceof # 4 : @annotations.tests.classfile.foo.A
+  	instanceof # 14 : @annotations.tests.classfile.foo.A
+
+  method test3()V :
+  	instanceof # 4 : @annotations.tests.classfile.foo.B(value="instanceof object")
+
+  method test4()V :
+  	instanceof # 12 : @annotations.tests.classfile.foo.A
+  	instanceof # 28 : @annotations.tests.classfile.foo.B(value="second")
+  	instanceof # 44 : @annotations.tests.classfile.foo.A
+  	instanceof # 60 : @annotations.tests.classfile.foo.B(value="fourth")
+  	instanceof # 76 : @annotations.tests.classfile.foo.A
+

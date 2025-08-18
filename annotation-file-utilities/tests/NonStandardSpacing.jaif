@@ -1,0 +1,28 @@
+package:
+    annotation @Anno:
+
+    class NonStandardSpacing:
+        method m1()V:
+            insert-typecast Block.statement 0, Variable.initializer, Binary.leftOperand: @Anno int
+            insert-typecast Block.statement 1, Variable.initializer, Binary.leftOperand: @Anno int
+            insert-typecast Block.statement 2, Variable.initializer, Binary.leftOperand: @Anno int
+            insert-typecast Block.statement 3, Variable.initializer, Binary.leftOperand: @Anno int
+            insert-typecast Block.statement 4, Variable.initializer, Binary.leftOperand: @Anno int
+
+        method m2()V:
+            receiver: @Anno
+
+        method m3()V:
+            receiver: @Anno
+
+        method m4()V:
+            receiver: @Anno
+
+        method m5()V:
+            receiver: @Anno
+
+        method m6()V:
+            receiver: @Anno
+
+        method m7()V:
+            receiver: @Anno

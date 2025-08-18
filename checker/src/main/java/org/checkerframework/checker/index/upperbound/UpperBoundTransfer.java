@@ -351,7 +351,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
    *
    * @param gtNode the node that is greater or equal to the offset
    * @param offsetNode a node part of the offset
-   * @param offsetAddOne whether to add one to the offset
+   * @param offsetAddOne if true, add one to the offset
    * @param in input of the transfer function
    * @param store location to store the refined types
    */
@@ -532,7 +532,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
   }
 
   /**
-   * Return the result of adding i to j.
+   * Returns the result of adding i to j.
    *
    * <p>When expression i has type {@code @LTLengthOf(value = "f2", offset = "f1.length") int} and
    * expression j is less than or equal to the length of f1, then the type of i + j

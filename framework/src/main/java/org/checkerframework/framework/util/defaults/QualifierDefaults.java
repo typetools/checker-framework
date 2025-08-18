@@ -6,6 +6,7 @@ import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
@@ -66,9 +67,8 @@ public class QualifierDefaults {
   // TODO try to remove some dependencies (e.g. on factory)
 
   /**
-   * This field indicates whether or not a default should be applied to type vars located in the
-   * type being defaulted. This should only ever be true when the type variable is a local variable,
-   * non-component use, i.e.
+   * True if a default should be applied to type vars located in the type being defaulted. This
+   * should only ever be true when the type variable is a local variable, non-component use, i.e.
    *
    * <pre>{@code
    * <T> void method(@NOT_HERE T tIn) {
@@ -208,7 +208,7 @@ public class QualifierDefaults {
   /**
    * Check that a default with TypeUseLocation OTHERWISE or ALL is specified.
    *
-   * @return whether we found a Default with location OTHERWISE or ALL
+   * @return true if we found a Default with location OTHERWISE or ALL
    */
   public boolean hasDefaultsForCheckedCode() {
     for (Default def : checkedCodeDefaults) {
@@ -475,7 +475,7 @@ public class QualifierDefaults {
               break;
             }
           }
-          if (prev != null && prev.getKind() == Tree.Kind.MODIFIERS) {
+          if (prev != null && prev instanceof ModifiersTree) {
             // Annotations are modifiers. We do not want to apply the local variable
             // default to annotations. Without this, test fenum/TestSwitch failed,
             // because the default for an argument became incompatible with the declared
@@ -714,11 +714,11 @@ public class QualifierDefaults {
   }
 
   /**
-   * Given an element, returns whether the conservative default should be applied for it. Handles
+   * Given an element, returns true if the conservative default should be applied for it. Handles
    * elements from bytecode or source code.
    *
    * @param annotationScope the element that the conservative default might apply to
-   * @return whether the conservative default applies to the given element
+   * @return true if the conservative default applies to the given element
    */
   public boolean applyConservativeDefaults(Element annotationScope) {
     if (annotationScope == null) {
@@ -1195,7 +1195,7 @@ public class QualifierDefaults {
       }
 
     } else {
-      if (typeParamDecl.getKind() == Tree.Kind.TYPE_PARAMETER) {
+      if (typeParamDecl instanceof TypeParameterTree) {
         TypeParameterTree tptree = (TypeParameterTree) typeParamDecl;
 
         List<? extends Tree> bnds = tptree.getBounds();

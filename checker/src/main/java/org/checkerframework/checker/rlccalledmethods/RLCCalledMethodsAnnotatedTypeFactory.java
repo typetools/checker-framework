@@ -2,7 +2,11 @@ package org.checkerframework.checker.rlccalledmethods;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collections;
@@ -112,6 +116,7 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
    *
    * @param checker the checker associated with this type factory
    */
+  @SuppressWarnings("this-escape")
   public RLCCalledMethodsAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     this.rlc = ResourceLeakUtils.getResourceLeakChecker(checker);
@@ -186,7 +191,7 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
   }
 
   /**
-   * Returns whether the {@link MustCall#value} element/argument of the @MustCall annotation on the
+   * Returns true if the {@link MustCall#value} element/argument of the @MustCall annotation on the
    * type of {@code tree} is definitely empty.
    *
    * <p>This method only considers the declared type: it does not consider flow-sensitive
@@ -207,7 +212,7 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
   }
 
   /**
-   * Returns whether the {@link MustCall#value} element/argument of the @MustCall annotation on the
+   * Returns true if the {@link MustCall#value} element/argument of the @MustCall annotation on the
    * type of {@code element} is definitely empty.
    *
    * <p>This method only considers the declared type: it does not consider flow-sensitive
@@ -289,7 +294,7 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
   }
 
   /**
-   * Gets the tree for a temporary variable
+   * Gets the tree for a temporary variable.
    *
    * @param node a node for a temporary variable
    * @return the tree for {@code node}
@@ -326,13 +331,13 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
    * CFStore)}.
    *
    * @param tree a tree
-   * @return whether the tree has declared must-call obligations
+   * @return true if the tree has declared must-call obligations
    */
   public boolean declaredTypeHasMustCall(Tree tree) {
-    assert tree.getKind() == Tree.Kind.METHOD
-            || tree.getKind() == Tree.Kind.VARIABLE
-            || tree.getKind() == Tree.Kind.NEW_CLASS
-            || tree.getKind() == Tree.Kind.METHOD_INVOCATION
+    assert tree instanceof MethodTree
+            || tree instanceof VariableTree
+            || tree instanceof NewClassTree
+            || tree instanceof MethodInvocationTree
         : "unexpected declaration tree kind: " + tree.getKind();
     return !hasEmptyMustCallValue(tree);
   }
@@ -442,7 +447,7 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
    * by this checker, not subcheckers).
    *
    * @param elt an element
-   * @return whether there is a NotOwning annotation on the given element
+   * @return true if there is a NotOwning annotation on the given element
    */
   public boolean hasNotOwning(Element elt) {
     MustCallAnnotatedTypeFactory mcatf = getTypeFactoryOfSubchecker(MustCallChecker.class);
@@ -457,7 +462,7 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
    * by this checker, not subcheckers).
    *
    * @param elt an element
-   * @return whether there is an Owning annotation on the given element
+   * @return true if there is an Owning annotation on the given element
    */
   public boolean hasOwning(Element elt) {
     MustCallAnnotatedTypeFactory mcatf = getTypeFactoryOfSubchecker(MustCallChecker.class);
@@ -514,7 +519,7 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
    * names this method.
    *
    * @param elt a method
-   * @return whether that method is one of the must-call methods for its enclosing class
+   * @return true if that method is one of the must-call methods for its enclosing class
    */
   private boolean isMustCallMethod(ExecutableElement elt) {
     TypeElement enclosingClass = ElementUtils.enclosingTypeElement(elt);

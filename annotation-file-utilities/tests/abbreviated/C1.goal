@@ -1,0 +1,9 @@
+import org.checkerframework.checker.nullness.qual.Nullable;
+import javax.annotation.Resource;
+public class C1<T extends Object> {
+  @Resource int values = 0;
+
+  public <A extends Object> C1<A> foo(@Nullable A a) {
+    return null;
+  }
+}

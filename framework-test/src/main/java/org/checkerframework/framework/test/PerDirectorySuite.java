@@ -35,7 +35,7 @@ import org.junit.runners.model.TestClass;
  */
 public class PerDirectorySuite extends RootedSuite {
 
-  /** Name */
+  /** Name. */
   @Retention(RetentionPolicy.RUNTIME)
   @Target(ElementType.METHOD)
   public @interface Name {}
@@ -52,7 +52,10 @@ public class PerDirectorySuite extends RootedSuite {
    *
    * @param klass the class whose tests to run
    */
-  @SuppressWarnings("nullness") // JUnit needs to be annotated
+  @SuppressWarnings({
+    "nullness", // JUnit needs to be annotated
+    "this-escape"
+  })
   public PerDirectorySuite(Class<?> klass) throws Throwable {
     super(klass, Collections.emptyList());
     TestClass testClass = getTestClass();

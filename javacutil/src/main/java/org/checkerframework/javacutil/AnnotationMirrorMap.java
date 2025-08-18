@@ -44,7 +44,7 @@ public class AnnotationMirrorMap<V> implements Map<@KeyFor("this") AnnotationMir
    *
    * @param copy a map whose contents should be copied to the newly created map
    */
-  @SuppressWarnings("nullness:method.invocation") // initialization in constructor
+  @SuppressWarnings({"this-escape", "nullness:method.invocation"}) // initialization in constructor
   public AnnotationMirrorMap(Map<AnnotationMirror, ? extends V> copy) {
     this();
     this.putAll(copy);
@@ -187,7 +187,9 @@ public class AnnotationMirrorMap<V> implements Map<@KeyFor("this") AnnotationMir
     if (o == this) {
       return true;
     }
-    if (!(o instanceof AnnotationMirrorMap)) return false;
+    if (!(o instanceof AnnotationMirrorMap)) {
+      return false;
+    }
     AnnotationMirrorMap<?> m = (AnnotationMirrorMap) o;
     if (m.size() != size()) {
       return false;
@@ -198,9 +200,13 @@ public class AnnotationMirrorMap<V> implements Map<@KeyFor("this") AnnotationMir
         AnnotationMirror key = e.getKey();
         V value = e.getValue();
         if (value == null) {
-          if (!(m.get(key) == null && m.containsKey(key))) return false;
+          if (!(m.get(key) == null && m.containsKey(key))) {
+            return false;
+          }
         } else {
-          if (!value.equals(m.get(key))) return false;
+          if (!value.equals(m.get(key))) {
+            return false;
+          }
         }
       }
     } catch (ClassCastException | NullPointerException unused) {
@@ -213,7 +219,9 @@ public class AnnotationMirrorMap<V> implements Map<@KeyFor("this") AnnotationMir
   @Override
   public int hashCode() {
     int result = 0;
-    for (Entry<AnnotationMirror, V> entry : entrySet()) result += entry.hashCode();
+    for (Entry<AnnotationMirror, V> entry : entrySet()) {
+      result += entry.hashCode();
+    }
     return result;
   }
 }

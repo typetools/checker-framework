@@ -9,6 +9,19 @@ dependencies {
   testImplementation group: 'junit', name: 'junit', version: '4.13.2'
 }
 
+jar {
+  doLast {
+    copy {
+      from archiveFile
+      into layout.projectDirectory.file('../checker/dist')
+      rename { String fileName ->
+        // remove version number on checker-util.jar
+        fileName.replace(fileName, 'checker-util.jar')
+      }
+    }
+  }
+}
+
 apply from: rootProject.file('gradle-mvn-push.gradle')
 
 /** Adds information to the publication for uploading to Maven repositories. */

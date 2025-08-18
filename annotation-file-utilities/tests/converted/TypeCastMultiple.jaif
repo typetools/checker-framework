@@ -1,0 +1,17 @@
+// @skip-test
+
+package java.lang:
+annotation @Tainted: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package java.lang:
+annotation @UnderInitialization: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package org.checkerframework.afu.annotator.tests:
+class TypeCastMultiple:
+
+    method foo(Ljava/lang/Object;)V:
+        return:
+        insert-annotation Method.body, Block.statement 2, Variable.initializer, TypeCast.expression, Parenthesized.expression, TypeCast.type: @java.lang.Tainted
+        insert-annotation Method.body, Block.statement 0, Variable.initializer, TypeCast.type: @java.lang.UnderInitialization
+        insert-annotation Method.body, Block.statement 1, Variable.initializer, TypeCast.type: @java.lang.Tainted
+

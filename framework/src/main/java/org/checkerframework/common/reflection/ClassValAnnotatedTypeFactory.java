@@ -62,6 +62,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    *
    * @param checker the type-checker associated with this factory
    */
+  @SuppressWarnings("this-escape")
   public ClassValAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
 
@@ -285,7 +286,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Return true if this is an invocation of a method annotated with @ForName. An example of such
+     * Returns true if this is an invocation of a method annotated with @ForName. An example of such
      * a method is {@link Class#forName}.
      *
      * @param tree a method invocation
@@ -296,8 +297,8 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Return true if this is an invocation of a method annotated with @GetClass. An example of such
-     * a method is {@link Object#getClass}.
+     * Returns true if this is an invocation of a method annotated with @GetClass. An example of
+     * such a method is {@link Object#getClass}.
      *
      * @param tree a method invocation
      * @return true if this is an invocation of a method annotated with @GetClass
@@ -319,7 +320,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     // TODO: This looks like it returns a @BinaryName. Verify that fact and add a type
     // qualifier.
     /**
-     * Return String representation of class name. This will not return the correct name for
+     * Returns String representation of class name. This will not return the correct name for
      * anonymous classes.
      */
     private String getClassNameFromType(Type classType) {

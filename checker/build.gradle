@@ -3,7 +3,7 @@ plugins {
   id 'base'
   // https://github.com/n0mer/gradle-git-properties
   // Generates file build/resources/main/git.properties when the `classes` task runs.
-  id 'com.gorylenko.gradle-git-properties' version '2.5.0'
+  id 'com.gorylenko.gradle-git-properties' version '2.5.2'
 }
 
 sourceSets {
@@ -27,17 +27,14 @@ configurations {
     canBeConsumed = true
     canBeResolved = false
   }
+  checkerQual
 }
 
 dependencies {
   implementation project(':javacutil')
   implementation project(':dataflow')
   implementation project(':framework')
-  // AFU is an "includedBuild" imported in checker-framework/settings.gradle, so the version number doesn't matter.
-  // https://docs.gradle.org/current/userguide/composite_builds.html#settings_defined_composite
-  implementation('org.checkerframework:annotation-file-utilities:*') {
-    exclude group: 'com.google.errorprone', module: 'javac'
-  }
+  implementation project(':annotation-file-utilities')
   implementation project(':checker-qual')
   implementation project(':checker-util')
 
@@ -62,11 +59,11 @@ dependencies {
   testImplementation 'com.amazonaws:aws-java-sdk-ec2'
   testImplementation 'com.amazonaws:aws-java-sdk-kms'
   // The AWS SDK is used for testing the Called Methods Checker.
-  testImplementation platform('com.amazonaws:aws-java-sdk-bom:1.12.783')
+  testImplementation platform('com.amazonaws:aws-java-sdk-bom:1.12.788')
   // For the Resource Leak Checker's support for JavaEE.
   testImplementation 'javax.servlet:javax.servlet-api:4.0.1'
   // For the Resource Leak Checker's support for IOUtils.
-  testImplementation 'commons-io:commons-io:2.19.0'
+  testImplementation 'commons-io:commons-io:2.20.0'
   // To test for an obscure crash in CFG construction for try-with-resources;
   // see https://github.com/typetools/checker-framework/issues/6396
   testImplementation 'org.apache.spark:spark-sql_2.12:3.3.2'
@@ -76,6 +73,8 @@ dependencies {
   testImplementation sourceSets.testannotations.output
 
   testannotationsImplementation project(':checker-qual')
+
+  checkerQual project(':checker-qual')
 }
 
 // It's not clear why this dependencies exists, but Gradle issues the following warning:
@@ -103,33 +102,9 @@ jar {
 task assembleForJavac(dependsOn: shadowJar, group: 'Build') {
   description = 'Builds or downloads jars required by CheckerMain and puts them in checker/dist/.'
   dependsOn project(':checker-qual').tasks.jar
+  dependsOn project(':checker-util').tasks.jar
+
   doLast {
-    def checkerQualJarFile = file(project(':checker-qual').tasks.getByName('jar').archiveFile)
-    if (!checkerQualJarFile.exists()) {
-      throw new GradleException('File not found: ' + checkerQualJarFile)
-    }
-    copy {
-      from checkerQualJarFile
-      into "${projectDir}/dist"
-      rename { String fileName ->
-        // remove version number on checker-qual.jar
-        fileName.replace(fileName, 'checker-qual.jar')
-      }
-    }
-
-    def checkerUtilJarFile = file(project(':checker-util').tasks.getByName('jar').archiveFile)
-    if (!checkerUtilJarFile.exists()) {
-      throw new GradleException('File not found: ' + checkerUtilJarFile)
-    }
-    copy {
-      from checkerUtilJarFile
-      into "${projectDir}/dist"
-      rename { String fileName ->
-        // remove version number on checker-util.jar
-        fileName.replace(fileName, 'checker-util.jar')
-      }
-    }
-
     copy {
       // This is required to *run* the Checker Framework on JDK 8.
       from configurations.javacJar
@@ -242,16 +217,6 @@ clean.doLast {
 
 
 // Add non-junit tests
-createCheckTypeTask(project.name, 'CompilerMessages',
-    'org.checkerframework.checker.compilermsgs.CompilerMessagesChecker')
-checkCompilerMessages {
-  doFirst {
-    options.compilerArgs += [
-      '-Apropfiles=' + sourceSets.main.resources.filter { file -> file.name.equals('messages.properties') }.asPath + File.pathSeparator
-      + project(':framework').sourceSets.main.resources.filter { file -> file.name.equals('messages.properties') }.asPath
-    ]
-  }
-}
 
 task nullnessExtraTests(type: Exec, dependsOn: assembleForJavac, group: 'Verification') {
   description = 'Run extra tests for the Nullness Checker.'
@@ -392,8 +357,11 @@ test {
 
 task ainferTestCheckerGenerateStubs(type: Test) {
   description = 'Internal task.  Users should run ainferTestCheckerStubTest instead.  This type-checks the ainfer-testchecker files with -Ainfer=stubs to generate stub files.'
-
   dependsOn(compileTestJava)
+
+  testClassesDirs = sourceSets.test.output.classesDirs
+  classpath = sourceSets.test.runtimeClasspath
+
   doFirst {
     delete('tests/ainfer-testchecker/annotated')
     delete("${buildDir}/ainfer-testchecker/")
@@ -435,8 +403,11 @@ task ainferTestCheckerGenerateStubs(type: Test) {
 
 task ainferTestCheckerValidateStubs(type: Test) {
   description = 'Internal task.  Users should run ainferTestCheckerStubTest instead.  This type-checks the ainfer-testchecker tests using the stub files generated by ainferTestCheckerGenerateStubs.'
-
   dependsOn(ainferTestCheckerGenerateStubs)
+
+  testClassesDirs = sourceSets.test.output.classesDirs
+  classpath = sourceSets.test.runtimeClasspath
+
   outputs.upToDateWhen { false }
   include '**/AinferTestCheckerStubsValidationTest.class'
   testLogging {
@@ -451,8 +422,11 @@ task ainferTestCheckerValidateStubs(type: Test) {
 
 task ainferTestCheckerGenerateAjava(type: Test) {
   description = 'Internal task.  Users should run ainferTestCheckerAjavaTest instead.  This type-checks the ainfer-testchecker files with -Ainfer=ajava to generate ajava files.'
-
   dependsOn(compileTestJava)
+
+  testClassesDirs = sourceSets.test.output.classesDirs
+  classpath = sourceSets.test.runtimeClasspath
+
   doFirst {
     delete('tests/ainfer-testchecker/annotated')
     delete("${buildDir}/ainfer-testchecker/")
@@ -494,8 +468,11 @@ task ainferTestCheckerGenerateAjava(type: Test) {
 
 task ainferTestCheckerValidateAjava(type: Test) {
   description = 'Internal task.  Users should run ainferTestCheckerAjavaTest instead.  This re-type-checks the ainfer-testchecker files using the ajava files generated by ainferTestCheckerGenerateAjava'
-
   dependsOn(ainferTestCheckerGenerateAjava)
+
+  testClassesDirs = sourceSets.test.output.classesDirs
+  classpath = sourceSets.test.runtimeClasspath
+
   outputs.upToDateWhen { false }
   include '**/AinferTestCheckerAjavaValidationTest.class'
   testLogging {
@@ -559,6 +536,8 @@ task ainferTestCheckerGenerateJaifs(type: Test) {
 
   dependsOn(compileTestJava)
   dependsOn(':checker-qual:jar')  // For the Value Checker annotations.
+  testClassesDirs = sourceSets.test.output.classesDirs
+  classpath = sourceSets.test.runtimeClasspath
   doFirst {
     delete('tests/ainfer-testchecker/annotated')
   }
@@ -599,17 +578,20 @@ task ainferTestCheckerGenerateJaifs(type: Test) {
 
 tasks.register('ainferTestCheckerGenerateJaifsInsertAnnotations', InsertAnnotationsToSource) {
   dependsOn ainferTestCheckerGenerateJaifs
+  dependsOn(':annotation-file-utilities:shadowJar')
 
-  afuDir = afu
+  afuDir = '../annotation-file-utilities'
   testDir = 'tests/ainfer-testchecker'
-  def checkerQualJarFile = file(project(':checker-qual').tasks.getByName('jar').archiveFile)
-  classpath = "${sourceSets.test.output.asPath}:${checkerQualJarFile}:"
+  classpath = "${sourceSets.test.output.asPath}:${configurations.checkerQual.singleFile}:"
 }
 
 task ainferTestCheckerValidateJaifs(type: Test) {
   description = 'Internal task.  Users should run ainferTestCheckerJaifTest instead.  This type-checks the ainfer-testchecker files using the .jaif files generated by ainferTestCheckerGenerateJaifs'
-
   dependsOn(ainferTestCheckerGenerateJaifs)
+
+  testClassesDirs = sourceSets.test.output.classesDirs
+  classpath = sourceSets.test.runtimeClasspath
+
   outputs.upToDateWhen { false }
   include '**/AinferTestCheckerJaifsValidationTest.class'
   testLogging {
@@ -630,11 +612,12 @@ task ainferTestCheckerJaifTest(dependsOn: 'shadowJar', group: 'Verification') {
 
 task ainferIndexGenerateAjava(type: Test) {
   description = 'Internal task.  Users should run ainferIndexAjavaTest instead.  This type-checks the ainfer-index files with -Ainfer=ajava to generate ajava files.'
-
   dependsOn(compileTestJava)
+  testClassesDirs = sourceSets.test.output.classesDirs
+  classpath = sourceSets.test.runtimeClasspath
   doFirst {
     delete('tests/ainfer-index/annotated')
-    delete("${buildDir}/ainfer-index/")
+    delete("${layout.buildDir}/ainfer-index/")
   }
   outputs.upToDateWhen { false }
   include '**/AinferIndexAjavaGenerationTest.class'
@@ -654,8 +637,10 @@ task ainferIndexGenerateAjava(type: Test) {
 
 task ainferIndexValidateAjava(type: Test) {
   description = 'Internal task.  Users should run ainferIndexAjavaTest instead.  This re-type-checks the ainfer-index files using the ajava files generated by ainferIndexGenerateAjava'
-
   dependsOn(ainferIndexGenerateAjava)
+
+  testClassesDirs = sourceSets.test.output.classesDirs
+  classpath = sourceSets.test.runtimeClasspath
   outputs.upToDateWhen { false }
   include '**/AinferIndexAjavaValidationTest.class'
   testLogging {
@@ -676,8 +661,11 @@ task ainferIndexAjavaTest(dependsOn: 'shadowJar', group: 'Verification') {
 
 task ainferNullnessGenerateAjava(type: Test) {
   description = 'Internal task.  Users should run ainferNullnessAjavaTest instead.  This type-checks the ainfer-nullness files with -Ainfer=ajava to generate ajava files.'
-
   dependsOn(compileTestJava)
+
+  testClassesDirs = sourceSets.test.output.classesDirs
+  classpath = sourceSets.test.runtimeClasspath
+
   doFirst {
     delete('tests/ainfer-nullness/annotated')
     delete("${buildDir}/ainfer-nullness/")
@@ -700,8 +688,11 @@ task ainferNullnessGenerateAjava(type: Test) {
 
 task ainferNullnessValidateAjava(type: Test) {
   description = 'Internal task.  Users should run ainferNullnessAjavaTest instead.  This re-type-checks the ainfer-nullness files using the ajava files generated by ainferNullnessGenerateAjava'
-
   dependsOn(ainferNullnessGenerateAjava)
+
+  testClassesDirs = sourceSets.test.output.classesDirs
+  classpath = sourceSets.test.runtimeClasspath
+
   outputs.upToDateWhen { false }
   include '**/AinferNullnessAjavaValidationTest.class'
   testLogging {
@@ -722,8 +713,11 @@ task ainferNullnessAjavaTest(dependsOn: 'shadowJar', group: 'Verification') {
 
 task ainferResourceLeakGenerateAjava(type: Test) {
   description = 'Internal task.  Users should run ainferResourceLeakAjavaTest instead.  This type-checks the ainfer-index files with -Ainfer=ajava to generate ajava files.'
-
   dependsOn(compileTestJava)
+
+  testClassesDirs = sourceSets.test.output.classesDirs
+  classpath = sourceSets.test.runtimeClasspath
+
   doFirst {
     delete('tests/ainfer-resourceleak/annotated')
     delete("${buildDir}/ainfer-resourceleak/")
@@ -746,8 +740,11 @@ task ainferResourceLeakGenerateAjava(type: Test) {
 
 task ainferResourceLeakValidateAjava(type: Test) {
   description = 'Internal task.  Users should run ainferResourceLeakAjavaTest instead.  This re-type-checks the ainfer-resourceleak files using the ajava files generated by ainferResourceLeakGenerateAjava'
-
   dependsOn(ainferResourceLeakGenerateAjava)
+
+  testClassesDirs = sourceSets.test.output.classesDirs
+  classpath = sourceSets.test.runtimeClasspath
+
   outputs.upToDateWhen { false }
   include '**/AinferResourceLeakAjavaValidationTest.class'
   testLogging {
@@ -768,8 +765,11 @@ task ainferResourceLeakAjavaTest(dependsOn: 'shadowJar', group: 'Verification') 
 
 task ainferNullnessGenerateJaifs(type: Test) {
   description = 'Internal task.  Users should run ainferNullnessJaifTest instead.  This type-checks the ainfer-nullness files with -Ainfer=jaifs to generate .jaif files'
-
   dependsOn(compileTestJava)
+
+  testClassesDirs = sourceSets.test.output.classesDirs
+  classpath = sourceSets.test.runtimeClasspath
+
   doFirst {
     delete('tests/ainfer-nullness/annotated')
   }
@@ -791,21 +791,23 @@ task ainferNullnessGenerateJaifs(type: Test) {
     delete('tests/ainfer-nullness/annotated/TwoCtorGenericAbstract.java')
     delete('tests/ainfer-nullness/annotated/TypeVarReturnAnnotated.java')
   }
-  finalizedBy 'ainferNullnessGenerateJaifsInsertAnnotations'
 }
 tasks.register('ainferNullnessGenerateJaifsInsertAnnotations', InsertAnnotationsToSource) {
   dependsOn ainferNullnessGenerateJaifs
+  dependsOn(':annotation-file-utilities:shadowJar')
 
-  afuDir = afu
+  afuDir = '../annotation-file-utilities'
   testDir = 'tests/ainfer-nullness/'
-  def checkerQualJarFile = file(project(':checker-qual').tasks.getByName('jar').archiveFile)
-  classpath = "${sourceSets.test.output.asPath}:${checkerQualJarFile}:"
+  classpath = "${sourceSets.test.output.asPath}:${configurations.checkerQual.singleFile}:"
 }
 
 task ainferNullnessValidateJaifs(type: Test) {
   description = 'Internal task.  Users should run ainferNullnessJaifTest instead.  This re-type-checks the ainfer-nullness files using the .jaif files generated by ainferNullnessGenerateJaifs'
+  dependsOn('ainferNullnessGenerateJaifsInsertAnnotations')
 
-  dependsOn(ainferNullnessGenerateJaifs)
+  testClassesDirs = sourceSets.test.output.classesDirs
+  classpath = sourceSets.test.runtimeClasspath
+
   outputs.upToDateWhen { false }
   include '**/AinferNullnessJaifsValidationTest.class'
   testLogging {
@@ -948,6 +950,8 @@ task wpiManyTest(type: Exec, group: 'Verification') {
             || line.startsWith('warning: [options] bootstrap')
             // Ignore the warnings about --add-opens arguments to the JVM
             || line.contains('warning: [options] --add-opens has no effect at compile time')
+            // Ignore warning about using -source; should use --release instead.
+            || line.equals("warning: [options] system modules path not set in conjunction with -source 11")
             // Ignore the summary line that reports the total number of warnings (which can be single or plural).
             || line.endsWith(' warning')
             || line.endsWith(' warnings')

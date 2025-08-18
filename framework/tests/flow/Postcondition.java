@@ -154,7 +154,7 @@ public class Postcondition {
   void oddValueF1_invalid(@ValueTypeAnno String p1) {}
 
   @EnsuresQualifier.List({
-    @EnsuresQualifier(expression = "--", qualifier = Odd.class),
+    @EnsuresQualifier(expression = "---", qualifier = Odd.class),
   })
   // :: error: (flowexpr.parse.error)
   void error2() {}

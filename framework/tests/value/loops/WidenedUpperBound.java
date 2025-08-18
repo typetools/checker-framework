@@ -187,13 +187,13 @@ public class WidenedUpperBound {
   }
 
   void exceptionLoop(List<Object> list) {
-    int x = 0;
+    int x_el = 0;
     for (short z = 0; z < list.size(); z++) {
-      x = z;
+      x_el = z;
       if (z == 100) {
         break;
       }
     }
-    @IntRange(from = 0, to = 127) int result = x;
+    @IntRange(from = 0, to = 127) int result = x_el;
   }
 }

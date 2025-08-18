@@ -74,6 +74,8 @@ create_upload_docker_image cf ubuntu jdk17-plus) & \
 create_upload_docker_image cf ubuntu jdk21-plus) & \
 (create_upload_docker_image cf ubuntu jdk24 && \
 create_upload_docker_image cf ubuntu jdk24-plus) & \
+(create_upload_docker_image cf ubuntu jdk25 && \
+create_upload_docker_image cf ubuntu jdk25-plus) & \
 wait && \
 git push && \
 echo "success"
@@ -87,6 +89,8 @@ create_upload_docker_image cf ubuntu jdk17-plus) && \
 create_upload_docker_image cf ubuntu jdk21-plus) && \
 (create_upload_docker_image cf ubuntu jdk24 && \
 create_upload_docker_image cf ubuntu jdk24-plus) && \
+(create_upload_docker_image cf ubuntu jdk25 && \
+create_upload_docker_image cf ubuntu jdk25-plus) && \
 git push && \
 echo "success"
 

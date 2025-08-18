@@ -83,6 +83,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    *
    * @param checker the type-checker associated with this factory
    */
+  @SuppressWarnings("this-escape")
   public MethodValAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     if (this.getClass() == MethodValAnnotatedTypeFactory.class) {
@@ -151,7 +152,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * Returns a list of class names for the given tree using the Class Val Checker.
    *
    * @param tree an ExpressionTree whose class names are requested
-   * @param mustBeExact whether @ClassBound may be read to produce the result; if false,
+   * @param mustBeExact true if @ClassBound may be read to produce the result; if false,
    *     only @ClassVal may be read
    * @return list of class names or the empty list if no class names were found
    */

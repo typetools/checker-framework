@@ -496,10 +496,10 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
       // Check if the left side is a field access of an array's length, or invocation of
       // String.length. If so, try to look up the MinLen of the array, and potentially keep
       // this either NN or POS instead of GTEN1 or LBU.
-      if (leftExpr.getKind() == Tree.Kind.MEMBER_SELECT) {
+      if (leftExpr instanceof MemberSelectTree) {
         MemberSelectTree mstree = (MemberSelectTree) leftExpr;
         minLen = atypeFactory.getMinLenFromMemberSelectTree(mstree);
-      } else if (leftExpr.getKind() == Tree.Kind.METHOD_INVOCATION) {
+      } else if (leftExpr instanceof MethodInvocationTree) {
         MethodInvocationTree mitree = (MethodInvocationTree) leftExpr;
         minLen = atypeFactory.getMinLenFromMethodInvocationTree(mitree);
       }
@@ -758,7 +758,7 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
     return UNKNOWN;
   }
 
-  /** Handles shifts (case 30). * &gt;&gt; NonNegative &rarr; NonNegative */
+  /** Handles shifts (case 30). * &gt;&gt; NonNegative &rarr; NonNegative. */
   private AnnotationMirror getAnnotationForRightShift(
       BinaryOperationNode node, TransferInput<CFValue, CFStore> p) {
     AnnotationMirror leftAnno = getLowerBoundAnnotation(node.getLeftOperand(), p);
@@ -774,7 +774,7 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
 
   /**
    * Handles masking (case 31). Particularly, handles the following cases: * &amp; NonNegative
-   * &rarr; NonNegative
+   * &rarr; NonNegative.
    */
   private AnnotationMirror getAnnotationForAnd(
       BitwiseAndNode node, TransferInput<CFValue, CFStore> p) {

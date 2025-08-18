@@ -1,0 +1,38 @@
+// @skip-test
+
+package :
+annotation @B:
+
+package :
+annotation @E:
+
+package :
+annotation @C:
+
+package :
+annotation @F:
+
+package :
+annotation @A:
+
+package :
+annotation @D:
+
+package :
+class ExtImpl$C1:
+    insert-annotation Class.bound -1, ParameterizedType.typeArgument 0: @B
+    insert-annotation Class.bound 0, ParameterizedType.typeArgument 0: @E
+    insert-annotation Class.bound -1, ParameterizedType.typeArgument 1: @C
+    insert-annotation Class.bound 0, ParameterizedType.typeArgument 1: @F
+    insert-annotation Class.bound -1: @A
+    insert-annotation Class.bound 0: @D
+
+package :
+class ExtImpl$C2:
+    insert-annotation Class.bound 0, ParameterizedType.typeArgument 0: @B
+    insert-annotation Class.bound 1, ParameterizedType.typeArgument 0: @E
+    insert-annotation Class.bound 0, ParameterizedType.typeArgument 1: @C
+    insert-annotation Class.bound 1, ParameterizedType.typeArgument 1: @F
+    insert-annotation Class.bound 0: @A
+    insert-annotation Class.bound 1: @D
+

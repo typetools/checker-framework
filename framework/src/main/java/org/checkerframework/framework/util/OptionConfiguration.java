@@ -11,14 +11,14 @@ import org.checkerframework.framework.source.SupportedOptions;
 public interface OptionConfiguration {
 
   /**
-   * Return all active options for this checker.
+   * Returns all active options for this checker.
    *
    * @return all active options for this checker
    */
   Map<String, String> getOptions();
 
   /**
-   * Check whether the given option is provided.
+   * Returns true if the given option is provided.
    *
    * <p>Note that {@link #getOption} can still return null even if {@code hasOption} returns true:
    * this happens e.g. for {@code -Amyopt}

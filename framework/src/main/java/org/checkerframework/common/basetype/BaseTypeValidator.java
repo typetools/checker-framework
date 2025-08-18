@@ -126,8 +126,8 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
    *
    * @param type the AnnotatedTypeMirror being validated
    * @param tree a Tree whose type is {@code type}
-   * @return whether or not the top-level type should be checked, if {@code type} is a declared or
-   *     primitive type.
+   * @return true if the top-level type should be checked, if {@code type} is a declared or
+   *     primitive type
    */
   protected boolean shouldCheckTopLevelDeclaredOrPrimitiveType(
       AnnotatedTypeMirror type, Tree tree) {
@@ -442,7 +442,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
       case NEW_CLASS:
         NewClassTree nct = (NewClassTree) tree;
         ExpressionTree nctid = nct.getIdentifier();
-        if (nctid.getKind() == Tree.Kind.PARAMETERIZED_TYPE) {
+        if (nctid instanceof ParameterizedTypeTree) {
           typeargtree = (ParameterizedTypeTree) nctid;
           /*
            * This is quite tricky... for anonymous class instantiations,

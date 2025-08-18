@@ -1,11 +1,16 @@
 package org.checkerframework.javacutil;
 
+import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ConditionalExpressionTree;
+import com.sun.source.tree.ExpressionStatementTree;
+import com.sun.source.tree.LambdaExpressionTree;
+import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
@@ -216,7 +221,7 @@ public final class TreePathUtil {
       path = parentPath;
       parentPath = parentPath.getParentPath();
     }
-    if (path.getLeaf().getKind() == Tree.Kind.BLOCK) {
+    if (path.getLeaf() instanceof BlockTree) {
       return (BlockTree) path.getLeaf();
     }
     return null;
@@ -234,7 +239,7 @@ public final class TreePathUtil {
     TreePath parentPath = path.getParentPath();
     Tree enclosing = parentPath.getLeaf();
     Tree enclosingChild = path.getLeaf();
-    while (enclosing.getKind() == Tree.Kind.PARENTHESIZED) {
+    while (enclosing instanceof ParenthesizedTree) {
       parentPath = parentPath.getParentPath();
       enclosingChild = enclosing;
       enclosing = parentPath.getLeaf();
@@ -257,8 +262,8 @@ public final class TreePathUtil {
     // the context.  If a method or constructor invocation is the expression in a type cast,
     // then the invocation has no context.
     boolean isLambdaOrMethodRef =
-        treePath.getLeaf().getKind() == Kind.LAMBDA_EXPRESSION
-            || treePath.getLeaf().getKind() == Kind.MEMBER_REFERENCE;
+        treePath.getLeaf() instanceof LambdaExpressionTree
+            || treePath.getLeaf() instanceof MemberReferenceTree;
     return getContextForPolyExpression(treePath, isLambdaOrMethodRef);
   }
 
@@ -407,11 +412,11 @@ public final class TreePathUtil {
    */
   public static boolean isTopLevelAssignmentInInitializerBlock(TreePath path) {
     TreePath origPath = path;
-    if (path.getLeaf().getKind() != Tree.Kind.ASSIGNMENT) {
+    if (!(path.getLeaf() instanceof AssignmentTree)) {
       return false;
     }
     path = path.getParentPath();
-    if (path.getLeaf().getKind() != Tree.Kind.EXPRESSION_STATEMENT) {
+    if (!(path.getLeaf() instanceof ExpressionStatementTree)) {
       return false;
     }
     Tree prevLeaf = path.getLeaf();
@@ -423,7 +428,7 @@ public final class TreePathUtil {
         case CLASS:
         case ENUM:
         case PARAMETERIZED_TYPE:
-          return prevLeaf.getKind() == Tree.Kind.BLOCK;
+          return prevLeaf instanceof BlockTree;
 
         case COMPILATION_UNIT:
           throw new BugInCF("found COMPILATION_UNIT in " + toString(origPath));
@@ -447,7 +452,7 @@ public final class TreePathUtil {
   //
 
   /**
-   * Return a printed representation of a TreePath.
+   * Returns a printed representation of a TreePath.
    *
    * @param path a TreePath
    * @return a printed representation of the given TreePath
@@ -482,9 +487,9 @@ public final class TreePathUtil {
    * utility method prioritizes method elements over class elements. It returns the element of the
    * closest method scope if available; otherwise, it defaults to the enclosing class scope.
    *
-   * @param path the {@link TreePath} to analyze for the nearest enclosing scope.
+   * @param path the {@link TreePath} to analyze for the nearest enclosing scope
    * @return the {@link Element} of the nearest enclosing method or class, or {@code null} if no
-   *     such enclosing element can be found.
+   *     such enclosing element can be found
    */
   public static @Nullable Element findNearestEnclosingElement(TreePath path) {
     MethodTree enclosingMethodTree = TreePathUtil.enclosingMethod(path);
