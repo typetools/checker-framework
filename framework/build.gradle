@@ -148,6 +148,10 @@ shadowJar {
   manifest {
     attributes('Automatic-Module-Name': 'org.checkerframework.framework')
   }
+  doFirst{
+    // TODO: This is a hack and should be removed.
+    mkdir ('../framework/build/resources/stubifier')
+  }
 }
 
 task loaderTests(type: Exec, dependsOn: 'shadowJar', group: 'Verification') {
