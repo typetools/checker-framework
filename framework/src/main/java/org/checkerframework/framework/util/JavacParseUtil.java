@@ -32,8 +32,10 @@ public class JavacParseUtil {
   private static final StandardJavaFileManager fileManager =
       javaCompiler.getStandardFileManager(null, null, null);
 
-  /** Creates a JavacParseUtil. */
-  public JavacParseUtil() {}
+  /** Do not instantiate JavacParseUtil. */
+  private JavacParseUtil() {
+    throw new Error("do not instantiate");
+  }
 
   /**
    * Parses the given Java expression string and returns it as a {@link ExpressionTree} using the
