@@ -176,10 +176,6 @@ shadowJar {
   // To see what files are incorporated into the shadow jar file:
   // doFirst { println sourceSets.main.runtimeClasspath.asPath }
   archiveClassifier = 'all'
-  doFirst{
-    // TODO: This is a hack and should be removed.
-    mkdir ('../framework/build/resources/stubifier')
-  }
   doLast{
     copy {
       from archiveFile.get()

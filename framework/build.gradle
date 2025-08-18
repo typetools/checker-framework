@@ -35,7 +35,6 @@ dependencies {
   api project(':dataflow')
   api 'org.checkerframework:stubparser:3.26.4'
   stubifierImplementation 'org.checkerframework:stubparser:3.26.4'
-  implementation sourceSets.stubifier.output
   api project(':annotation-file-utilities')
   api project(':checker-qual')
 
@@ -141,16 +140,20 @@ task allJavadocJar(type: Jar, group: 'Build') {
       project(':javacutil').tasks.javadoc.destinationDir)
 }
 
+def stubifierJar = tasks.register('stubifierJar', Jar) {
+  from sourceSets.stubifier.output
+  archiveClassifier.set('stubifier')
+}
+dependencies {
+  implementation files(stubifierJar)
+}
+
 shadowJar {
   description = 'Creates the "fat" framework.jar in dist'
   destinationDirectory = file("${projectDir}/dist")
   archiveFileName = 'framework.jar'
   manifest {
     attributes('Automatic-Module-Name': 'org.checkerframework.framework')
-  }
-  doFirst{
-    // TODO: This is a hack and should be removed.
-    mkdir ('../framework/build/resources/stubifier')
   }
 }
 
