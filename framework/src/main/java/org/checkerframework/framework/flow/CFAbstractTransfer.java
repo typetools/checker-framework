@@ -73,6 +73,7 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.dataflow.util.PurityChecker;
 import org.checkerframework.framework.flow.CFAbstractAnalysis.FieldInitialValue;
+import org.checkerframework.framework.flow.CFAbstractStore.BooleanVarStore;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -91,6 +92,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * The default analysis transfer function for the Checker Framework. It propagates information
@@ -782,6 +784,14 @@ public abstract class CFAbstractTransfer<
     V valueFromStore = store.getValue(n);
     V valueFromFactory = getValueFromFactory(n.getTree(), n);
     V value = moreSpecificValue(valueFromFactory, valueFromStore);
+    BooleanVarStore<V, S> booleanVarStore =
+        store.booleanVarStores.get(new LocalVariable(n.getElement()));
+    if (booleanVarStore != null) {
+      S thenStore = in.getThenStore().mostSpecific(booleanVarStore.thenStore);
+      S elseStore = in.getElseStore().mostSpecific(booleanVarStore.elseStore);
+      return new ConditionalTransferResult<>(
+          finishValue(value, thenStore, elseStore), thenStore, elseStore);
+    }
     return new RegularTransferResult<>(finishValue(value, store), store);
   }
 
@@ -840,7 +850,10 @@ public abstract class CFAbstractTransfer<
   public TransferResult<V, S> visitConditionalNot(ConditionalNotNode n, TransferInput<V, S> p) {
     TransferResult<V, S> result = super.visitConditionalNot(n, p);
     S thenStore = result.getThenStore();
+    thenStore.swapBooleanVarStore();
     S elseStore = result.getElseStore();
+    elseStore.swapBooleanVarStore();
+
     return new ConditionalTransferResult<>(result.getResultValue(), elseStore, thenStore);
   }
 
@@ -993,7 +1006,16 @@ public abstract class CFAbstractTransfer<
             .updateFromFormalParameterAssignment((LocalVariableNode) lhs, rhs, param);
       }
     }
-
+    if (lhs instanceof LocalVariableNode
+        && TypesUtils.isBooleanType(lhs.getType())
+        && in.containsTwoStores()
+        && ElementUtils.isEffectivelyFinal(TreeUtils.elementFromTree(lhs.getTree()))) {
+      LocalVariable lhsExpr = new LocalVariable(((LocalVariableNode) lhs).getElement());
+      BooleanVarStore<V, S> booleanVarStore =
+          new BooleanVarStore<>(in.getThenStore(), in.getElseStore());
+      in.getThenStore().insertBooleanVarStore(lhsExpr, booleanVarStore);
+      in.getElseStore().insertBooleanVarStore(lhsExpr, booleanVarStore);
+    }
     if (n.isSynthetic() && in.containsTwoStores()) {
       // This is a synthetic assignment node created for a ternary expression. In this case
       // the `then` and `else` store are not merged.
