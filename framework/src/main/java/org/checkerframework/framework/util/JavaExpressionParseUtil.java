@@ -814,6 +814,7 @@ public class JavaExpressionParseUtil {
       if (exprTree.getIdentifier().contentEquals("class")) {
         Tree selected = exprTree.getExpression();
         TypeMirror result = convertTreeToTypeMirror((JCTree) selected);
+        System.out.printf("visitMemberSelect(%s): type=%s%n", exprTree, result);
         if (result == null) {
           throw new ParseRuntimeException(
               constructJavaExpressionParseError(

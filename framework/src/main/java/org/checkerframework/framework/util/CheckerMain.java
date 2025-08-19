@@ -461,6 +461,8 @@ public class CheckerMain {
               "--add-exports",
               "jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED",
               "--add-exports",
+              "jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED",
+              "--add-exports",
               "jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED",
               "--add-exports",
               "jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
