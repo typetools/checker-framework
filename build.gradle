@@ -543,6 +543,8 @@ allprojects { currentProj ->
           '-Xep:MixedMutabilityReturnType:OFF',
           // Don't want to add a dependency to ErrorProne.
           '-Xep:AnnotateFormatMethod:OFF',
+          // Don't want to add a dependency to ErrorProne.
+          "-Xep:DoNotCallSuggester:OFF",
           // Warns for every use of "@checker_framework.manual"
           '-Xep:InvalidBlockTag:OFF',
           // Recommends writing @InlineMe which is an Error-Prone-specific annotation
