@@ -27,6 +27,9 @@ whole-program inference.
 \item[\refqualclass{dataflow/qual}{SideEffectFree}]
   indicates that the method has no externally-visible side effects.
 
+\item[\refqualclass{dataflow/qual}{SideEffectsOnly}]
+  indicates that the method has limited externally-visible side effects.
+
 \item[\refqualclass{dataflow/qual}{Deterministic}]
   indicates that if the method is called multiple times with identical
   arguments, then it returns the identical result according to \<==>
@@ -43,6 +46,7 @@ whole-program inference.
 By default, purity annotations are trusted.  Purity annotations on called
 methods affect type-checking of client code.  However, you can make a
 mistake by writing \<\refqualclass{dataflow/qual}{SideEffectFree}>
+or \<\refqualclass{dataflow/qual}{SideEffectsOnly}>
 on the declaration of a method that
 is not actually side-effect-free or by writing \<@Deterministic> on the
 declaration of a method that is not actually deterministic.

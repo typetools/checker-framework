@@ -1029,7 +1029,8 @@ Calling a method typically causes the checker to discard its knowledge of
 the refined type, because the method might assign a field.
 The \refqualclass{dataflow/qual}{SideEffectFree} annotation indicates that
 the method has no side effects, so calling it does not invalidate any
-dataflow facts.
+dataflow facts. Alternately, the \refqualclass{dataflow/qual}{SideEffectsOnly}
+annotation specifies all the expressions that the method might side-effect.
 
 Calling a method twice might have different results, so facts known about
 one call cannot be relied upon at another call.
@@ -1069,7 +1070,7 @@ Consider the following declarations and uses:
   }
 \end{Verbatim}
 
-There are three ways to express that \<computeValue> does not set
+There are four ways to express that \<computeValue> does not set
 \<myField> to \<null>, and thus to prevent the Nullness Checker from
 issuing a warning about the call \<myField.toString()>.
 
@@ -1080,6 +1081,15 @@ issuing a warning about the call \<myField.toString()>.
 
 \begin{Verbatim}
   @SideEffectFree
+  int computeValue() { ... }
+\end{Verbatim}
+
+\item
+  If \<computeValue> has side effects, but they do not affect \<myField>,
+  declare the method as \refqualclass{dataflow/qual}{SideEffectsOnly}:
+
+\begin{Verbatim}
+  @SideEffectsOnly({"someOtherVariable1", "someOtherVariable1"})
   int computeValue() { ... }
 \end{Verbatim}
 
@@ -1134,6 +1144,18 @@ There are two other ways to suppress the warning:
   % cross-reference number is an itemized list number, not a section number.
   Section~\ref{nullness-lint}.
 \end{itemize}
+
+
+\subsubsectionAndLabel{Relationship between \<@SideEffectFree> and \<@SideEffectsOnly>}{side-effects-relationship}
+
+A method cannot be annotated with both \refqualclass{dataflow/qual}{SideEffectFree}
+and \refqualclass{dataflow/qual}{SideEffectsOnly}.
+The annotation \<@SideEffectsOnly(\{\})> (i.e., a \<@SideEffectsOnly> annotation
+with an empty list of expressions) is equivalent to \<@SideEffectFree>.
+Programmers should favor writing \<@SideEffectFree> in this case for clarity.
+If a method has no \refqualclass{dataflow/qual}{SideEffectsOnly}
+or \refqualclass{dataflow/qual}{SideEffectFree} annotation, then the Checker Framework
+assumes that the method may side-effect any expressions (including fields and arguments).
 
 
 \subsubsectionAndLabel{Deterministic methods}{type-refinement-determinism}
