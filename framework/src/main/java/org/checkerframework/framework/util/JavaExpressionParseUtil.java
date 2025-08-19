@@ -60,6 +60,8 @@ import org.checkerframework.dataflow.expression.UnaryOperation;
 import org.checkerframework.dataflow.expression.ValueLiteral;
 import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
+import org.checkerframework.framework.util.javacparse.JavacParse;
+import org.checkerframework.framework.util.javacparse.JavacParseResult;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Resolver;
@@ -146,17 +148,14 @@ public class JavaExpressionParseUtil {
         StringsPlume.replaceAll(expression, FORMAL_PARAMETER, PARAMETER_REPLACEMENT);
     ExpressionTree exprTree;
     try {
-      exprTree = JavacParseUtil.parseExpression(expressionWithParameterNames);
-    } catch (Throwable e) {
-      System.out.printf(
-          "JEPU.parse(%s): Problem while parsing %s:%n", expression, expressionWithParameterNames);
-      e.printStackTrace();
-      String extra = ".";
-      if (!e.getMessage().isEmpty()) {
-        String message = e.getMessage();
-        extra = ". Error message: " + message;
+      JavacParseResult<ExpressionTree> jpr =
+          JavacParse.parseExpression(expressionWithParameterNames);
+      if (jpr.hasParseError()) {
+        throw constructJavaExpressionParseError(expression, jpr.getParseErrorMessages());
       }
-      throw constructJavaExpressionParseError(expression, "the expression did not parse" + extra);
+      exprTree = jpr.getTree();
+    } catch (IllegalArgumentException e) {
+      throw constructJavaExpressionParseError(expression, e.getMessage());
     }
 
     JavaExpression result =
@@ -964,22 +963,19 @@ public class JavaExpressionParseUtil {
 
       if (tree instanceof MemberSelectTree) {
         MemberSelectTree memberSelectTree = (MemberSelectTree) tree;
-        ExpressionTree parsed =
-            JavacParseUtil.parseExpression(memberSelectTree.getIdentifier().toString());
-        if (parsed instanceof IdentifierTree) {
-          try {
-            return JavacParseUtil.parseExpression(tree.toString()).accept(this, null).getType();
-          } catch (Throwable e) {
-            System.out.printf("Problem while parsing %s :%n", tree);
-            e.printStackTrace();
-            return null;
-          }
+        String identifier = memberSelectTree.getIdentifier().toString();
+        JavacParseResult<ExpressionTree> jpr = JavacParse.parseExpression(identifier);
+        if (jpr.hasParseError()) {
+          throw new Error(identifier + " :" + jpr.getParseErrorMessages());
         }
-      }
-
-      if (tree instanceof IdentifierTree) {
+        ExpressionTree parsed = jpr.getTree();
+        // TODO: How can this evaluate to false?  Maybe if the expression is "String.class"??
+        if (parsed instanceof IdentifierTree) {
+          return parsed.accept(this, null).getType();
+        }
+      } else if (tree instanceof IdentifierTree) {
         try {
-          return JavacParseUtil.parseExpression(tree.toString()).accept(this, null).getType();
+          return tree.accept(this, null).getType();
         } catch (Throwable e) {
           System.out.printf("Problem while parsing %s :%n", tree);
           e.printStackTrace();
