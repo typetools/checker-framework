@@ -1,6 +1,7 @@
 package org.checkerframework.framework.util;
 
 import com.sun.source.tree.ArrayAccessTree;
+import com.sun.source.tree.ArrayTypeTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
@@ -9,6 +10,7 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.ParenthesizedTree;
+import com.sun.source.tree.PrimitiveTypeTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.util.SimpleTreeVisitor;
@@ -296,6 +298,7 @@ public class JavaExpressionParseUtil {
         // Convert unchecked to checked exception. Visitor methods can't throw checked
         // exceptions. They override the methods in the superclass, and a checked exception
         // would change the method signature.
+        // e.printStackTrace();
         throw e.getCheckedException();
       }
     }
@@ -316,7 +319,9 @@ public class JavaExpressionParseUtil {
     public JavaExpression defaultAction(com.sun.source.tree.Tree treeNode, Void unused) {
       throw new ParseRuntimeException(
           constructJavaExpressionParseError(
-              treeNode.toString(), treeNode.getClass() + " is not a supported expression"));
+              treeNode.toString(),
+              "ExpressionTreeToJavaExpressionVisitor has no override for "
+                  + treeNode.getClass().getSimpleName()));
     }
 
     @Override
@@ -379,6 +384,7 @@ public class JavaExpressionParseUtil {
     @Override
     public JavaExpression visitIdentifier(IdentifierTree id, Void unused) {
       String s = id.getName().toString();
+      // System.out.printf("visitIdentifier(%s)%n", id);
       setResolverField();
       // this and super logic
       if (s.equals("this") || s.equals("super")) {
@@ -484,9 +490,35 @@ public class JavaExpressionParseUtil {
       if (idx > parameters.size()) {
         throw new ParseRuntimeException(
             new JavaExpressionParseException(
-                "flowexpr.parse.index.too.big", Integer.toString(idx)));
+                "flowexpr.parse.index.too.big",
+                Integer.toString(idx),
+                Integer.toString(parameters.size())));
       }
       return parameters.get(idx - 1);
+    }
+
+    @Override
+    public JavaExpression visitPrimitiveType(PrimitiveTypeTree node, Void unused) {
+      TypeKind typeKind = node.getPrimitiveTypeKind();
+      if (typeKind == TypeKind.VOID) {
+        return new ClassName(types.getNoType(typeKind));
+      } else {
+        return new ClassName(types.getPrimitiveType(typeKind));
+      }
+    }
+
+    @Override
+    public JavaExpression visitArrayType(ArrayTypeTree node, Void unused) {
+      Tree elementTypeTree = node.getType();
+      JavaExpression elementTypeJE = elementTypeTree.accept(this, null);
+      if (elementTypeJE instanceof ClassName) {
+        return new ClassName(types.getArrayType(((ClassName) elementTypeJE).getType()));
+      } else {
+        throw new ParseRuntimeException(
+            constructJavaExpressionParseError(
+                node.toString(),
+                "element of array type is " + elementTypeJE.getClass().getSimpleName()));
+      }
     }
 
     /**
@@ -826,7 +858,21 @@ public class JavaExpressionParseUtil {
 
       // Handle class literal (e.g., SomeClass.class or pkg.pkg2.OuterClass.InnerClass.class)
       if (name.equals("class")) {
-        JavaExpression className = scope.accept(this, null);
+        if (false) {
+          System.out.printf(
+              "scope=%s [%s] [%s]%n", scope, scope.getClass().getSimpleName(), scope.getKind());
+        }
+        JavaExpression className;
+        try {
+          className = scope.accept(this, null);
+        } catch (Throwable t) {
+          // t.printStackTrace(System.out);
+          throw t;
+        }
+        if (false) {
+          System.out.printf(
+              "scope %s => %s [%s]%n", scope, className, className.getClass().getSimpleName());
+        }
         if (className instanceof ClassName) {
           return className;
         } else {
