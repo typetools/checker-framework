@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.StringJoiner;
 import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
+import org.checkerframework.checker.lock.qual.GuardSatisfied;
 
 /**
  * Represents the result of parsing Java code (a file or a subpart thereof).
@@ -71,6 +72,28 @@ public final class JavacParseResult<T extends Tree> {
         sj.add(msg);
       }
     }
+    return sj.toString();
+  }
+
+  @Override
+  @SuppressWarnings({
+    "allcheckers:purity.not.sideeffectfree.call",
+    "lock:method.guarantee.violated"
+  }) // side effect to local StringJoiner
+  public String toString(@GuardSatisfied JavacParseResult<T> this) {
+    String prefix =
+        "JPR{" + tree + " [" + tree.getClass().getSimpleName() + "] [" + tree.getKind() + "]";
+    if (diagnostics.isEmpty()) {
+      return prefix + "}";
+    }
+
+    StringJoiner sj = new StringJoiner(System.lineSeparator());
+    sj.add(prefix);
+    for (Diagnostic<?> d : diagnostics) {
+      sj.add("  " + d);
+    }
+    sj.add("}");
+
     return sj.toString();
   }
 }

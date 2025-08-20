@@ -315,7 +315,7 @@ public class JavaExpressionParseUtil {
 
     /** If the expression is not supported, throw a {@link ParseRuntimeException} by default. */
     @Override
-    public JavaExpression defaultAction(com.sun.source.tree.Tree treeNode, Void unused) {
+    public JavaExpression defaultAction(Tree treeNode, Void unused) {
       throw new ParseRuntimeException(
           constructJavaExpressionParseError(
               treeNode.toString(),
@@ -388,7 +388,7 @@ public class JavaExpressionParseUtil {
       if (s.equals("this") || s.equals("super")) {
         if (thisReference == null) {
           throw new ParseRuntimeException(
-              constructJavaExpressionParseError(s, "\"" + s + "\" isn't allowed here"));
+              constructJavaExpressionParseError(s, "\"" + s + "\" is not allowed here"));
         }
         if (s.equals("this")) {
           return thisReference;
@@ -515,7 +515,7 @@ public class JavaExpressionParseUtil {
         throw new ParseRuntimeException(
             constructJavaExpressionParseError(
                 node.toString(),
-                "element of array type is " + elementTypeJE.getClass().getSimpleName()));
+                "array element type is " + elementTypeJE.getClass().getSimpleName()));
       }
     }
 
@@ -717,22 +717,21 @@ public class JavaExpressionParseUtil {
       setResolverField();
       ExpressionTree methodSelect = invocation.getMethodSelect();
 
-      // Resolve receiver and method name
-      JavaExpression receiverExpr;
+      // Resolve receiver type and method name.  (Receiver itself is resolved below.)
+      JavaExpression receiverExprTmp; // null if not yet computed
+      TypeMirror receiverType;
       String methodName;
       if (methodSelect instanceof MemberSelectTree) {
-        // method call like `obj.method()` or `Class.staticMethod()`
+        // Method call with explicit receiver, like `obj.method()` or `Class.staticMethod()`.
         MemberSelectTree memberSelect = (MemberSelectTree) methodSelect;
-        receiverExpr = memberSelect.getExpression().accept(this, null);
+        receiverExprTmp = memberSelect.getExpression().accept(this, null);
+        receiverType = receiverExprTmp.getType();
         methodName = memberSelect.getIdentifier().toString();
       } else if (methodSelect instanceof IdentifierTree) {
-        // method call like `method()` (implicit this)
+        // Static or instance method call with implicit receiver, like `method()`.
         methodName = ((IdentifierTree) methodSelect).getName().toString();
-        if (thisReference != null) {
-          receiverExpr = thisReference;
-        } else {
-          receiverExpr = new ClassName(enclosingType);
-        }
+        receiverExprTmp = null;
+        receiverType = enclosingType;
       } else {
         throw new ParseRuntimeException(
             constructJavaExpressionParseError(
@@ -748,8 +747,7 @@ public class JavaExpressionParseUtil {
       ExecutableElement methodElement;
       try {
         methodElement =
-            getMethodElement(
-                methodName, receiverExpr.getType(), pathToCompilationUnit, arguments, resolver);
+            getMethodElement(methodName, receiverType, pathToCompilationUnit, arguments, resolver);
       } catch (JavaExpressionParseException e) {
         throw new ParseRuntimeException(e);
       }
@@ -774,25 +772,27 @@ public class JavaExpressionParseUtil {
         }
       }
 
-      // Build the MethodCall expression object.
+      JavaExpression receiverExpr;
+      TypeMirror returnType;
       if (ElementUtils.isStatic(methodElement)) {
         Element classElem = methodElement.getEnclosingElement();
-        JavaExpression staticClassReceiver = new ClassName(ElementUtils.getType(classElem));
-        return new MethodCall(
-            ElementUtils.getType(methodElement), methodElement, staticClassReceiver, arguments);
+        receiverExpr = new ClassName(ElementUtils.getType(classElem));
+        returnType = ElementUtils.getType(methodElement);
       } else {
-        if (receiverExpr instanceof ClassName) {
-          throw new ParseRuntimeException(
-              constructJavaExpressionParseError(
-                  invocation.toString(),
-                  "a non-static method call cannot have a class name "
-                      + receiverExpr
-                      + " as a receiver"));
+        if (methodSelect instanceof MemberSelectTree) {
+          // Method call with explicit receiver, like `obj.method()` or `Class.staticMethod()`.
+          receiverExpr = (@NonNull JavaExpression) receiverExprTmp;
+        } else if (methodSelect instanceof IdentifierTree) {
+          // Static or instance method call with implicit receiver, like `method()`.
+          // TODO: Use a ClassName if the method is static?
+          receiverExpr = thisReference;
+        } else {
+          throw new BugInCF("this can't happen");
         }
-        TypeMirror methodType =
+        returnType =
             TypesUtils.substituteMethodReturnType(methodElement, receiverExpr.getType(), env);
-        return new MethodCall(methodType, methodElement, receiverExpr, arguments);
       }
+      return new MethodCall(returnType, methodElement, receiverExpr, arguments);
     }
 
     /**
@@ -854,7 +854,7 @@ public class JavaExpressionParseUtil {
       Tree scope = exprTree.getExpression();
       String name = exprTree.getIdentifier().toString();
 
-      // Handle class literal (e.g., SomeClass.class or pkg.pkg2.OuterClass.InnerClass.class)
+      // Handle class literal (e.g., SomeClass.class or pkg.pkg2.OuterClass.InnerClass.class).
       if (name.equals("class")) {
         JavaExpression className = scope.accept(this, null);
         if (className instanceof ClassName) {
@@ -867,7 +867,7 @@ public class JavaExpressionParseUtil {
         }
       }
 
-      // Handle outer "this" (e.g., Foo.this)
+      // Handle outer "this" (e.g., Foo.this).
       if (name.equals("this")) {
         JavaExpression className = scope.accept(this, null);
         if (className instanceof ClassName) {
@@ -876,7 +876,7 @@ public class JavaExpressionParseUtil {
           throw new ParseRuntimeException(
               constructJavaExpressionParseError(
                   exprTree.toString(),
-                  "\".class\" preceded by " + className.getClass().getSimpleName()));
+                  "\".this\" preceded by " + className.getClass().getSimpleName()));
         }
       }
 
@@ -1003,12 +1003,13 @@ public class JavaExpressionParseUtil {
      * Converts the Javac {@link JCTree} to a {@link TypeMirror}. Returns null if {@code tree} is
      * not handled; this method does not handle type variables, union types, or intersection types.
      *
-     * @param tree a JCTree
-     * @return a TypeMirror corresponding to {@code tree}, or null if {@code tree} isn't handled
+     * @param typeTree a type
+     * @return a TypeMirror corresponding to {@code typeTree}, or null if {@code typeTree} isn't
+     *     handled
      */
-    private @Nullable TypeMirror convertTreeToTypeMirror(JCTree tree) {
-      if (tree instanceof MemberSelectTree) {
-        MemberSelectTree memberSelectTree = (MemberSelectTree) tree;
+    private @Nullable TypeMirror convertTreeToTypeMirror(JCTree typeTree) {
+      if (typeTree instanceof MemberSelectTree) {
+        MemberSelectTree memberSelectTree = (MemberSelectTree) typeTree;
         String identifier = memberSelectTree.getIdentifier().toString();
         JavacParseResult<ExpressionTree> jpr = JavacParse.parseExpression(identifier);
         if (jpr.hasParseError()) {
@@ -1016,20 +1017,25 @@ public class JavaExpressionParseUtil {
         }
         ExpressionTree parsed = jpr.getTree();
 
-        // TODO: How can this evaluate to false?  Maybe if the expression is "String.class"??
         if (parsed instanceof IdentifierTree) {
           return parsed.accept(this, null).getType();
+        } else {
+          String msg =
+              String.format(
+                  "parsed is not IdentifierTree: %s [%s]",
+                  parsed, parsed.getClass().getSimpleName());
+          throw new BugInCF(msg);
         }
-      } else if (tree instanceof IdentifierTree) {
+      } else if (typeTree instanceof IdentifierTree) {
         try {
-          return tree.accept(this, null).getType();
+          return typeTree.accept(this, null).getType();
         } catch (Throwable e) {
-          System.out.printf("Problem while parsing %s :%n", tree);
+          System.out.printf("Problem while parsing %s :%n", typeTree);
           e.printStackTrace();
           return null;
         }
-      } else if (tree instanceof JCTree.JCPrimitiveTypeTree) {
-        switch (((JCTree.JCPrimitiveTypeTree) tree).getPrimitiveTypeKind()) {
+      } else if (typeTree instanceof JCTree.JCPrimitiveTypeTree) {
+        switch (((JCTree.JCPrimitiveTypeTree) typeTree).getPrimitiveTypeKind()) {
           case BOOLEAN:
             return types.getPrimitiveType(TypeKind.BOOLEAN);
           case BYTE:
@@ -1051,14 +1057,17 @@ public class JavaExpressionParseUtil {
           default:
             return null;
         }
-      } else if (tree instanceof JCTree.JCArrayTypeTree) {
+      } else if (typeTree instanceof JCTree.JCArrayTypeTree) {
         TypeMirror componentType =
-            convertTreeToTypeMirror(((JCTree.JCArrayTypeTree) tree).getType());
+            convertTreeToTypeMirror(((JCTree.JCArrayTypeTree) typeTree).getType());
         if (componentType == null) {
           return null;
         }
         return types.getArrayType(componentType);
       }
+      System.out.printf(
+          "convertTreeToTypeMirror does not handle %s [%s]%n",
+          typeTree, typeTree.getClass().getSimpleName());
       return null;
     }
   }
