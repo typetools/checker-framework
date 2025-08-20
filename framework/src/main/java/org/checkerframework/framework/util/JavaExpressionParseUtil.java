@@ -772,26 +772,45 @@ public class JavaExpressionParseUtil {
         }
       }
 
+      // The compiler will optimize out the redundant variable.
+      boolean isStatic = ElementUtils.isStatic(methodElement);
+      boolean isInstance = !isStatic;
+
       JavaExpression receiverExpr;
-      TypeMirror returnType;
-      if (ElementUtils.isStatic(methodElement)) {
-        Element classElem = methodElement.getEnclosingElement();
-        receiverExpr = new ClassName(ElementUtils.getType(classElem));
-        returnType = ElementUtils.getType(methodElement);
-      } else {
-        if (methodSelect instanceof MemberSelectTree) {
-          // Method call with explicit receiver, like `obj.method()` or `Class.staticMethod()`.
-          receiverExpr = (@NonNull JavaExpression) receiverExprTmp;
-        } else if (methodSelect instanceof IdentifierTree) {
-          // Static or instance method call with implicit receiver, like `method()`.
-          // TODO: Use a ClassName if the method is static?
+
+      if (methodSelect instanceof MemberSelectTree) {
+        // Method call with explicit receiver, like `obj.method()` or `Class.staticMethod()`.
+        receiverExpr = (@NonNull JavaExpression) receiverExprTmp;
+        String msg = null;
+        if (isInstance && receiverExpr instanceof ClassName) {
+          msg = "Use a value, not a class name, as the receiver when calling an instance method";
+        } else if (isStatic && !(receiverExpr instanceof ClassName)) {
+          msg = "Use a class name, not a value, as the receiver when calling a static method";
+        }
+        if (msg != null) {
+          throw new ParseRuntimeException(
+              constructJavaExpressionParseError(invocation.toString(), msg));
+        }
+      } else if (methodSelect instanceof IdentifierTree) {
+        // Static or instance method call with implicit receiver, like `method()`.
+        if (isInstance) {
           receiverExpr = thisReference;
         } else {
-          throw new BugInCF("this can't happen");
+          Element classElem = methodElement.getEnclosingElement();
+          receiverExpr = new ClassName(ElementUtils.getType(classElem));
         }
-        returnType =
-            TypesUtils.substituteMethodReturnType(methodElement, receiverExpr.getType(), env);
+        receiverType = receiverExpr.getType();
+      } else {
+        throw new BugInCF("this can't happen");
       }
+
+      TypeMirror returnType;
+      if (isInstance) {
+        returnType = TypesUtils.substituteMethodReturnType(methodElement, receiverType, env);
+      } else {
+        returnType = ElementUtils.getType(methodElement);
+      }
+
       return new MethodCall(returnType, methodElement, receiverExpr, arguments);
     }
 
