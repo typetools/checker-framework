@@ -122,7 +122,8 @@ public class JavaExpressionParseUtil {
    * @param expression the string expression to parse
    * @param enclosingType type of the class that encloses the JavaExpression
    * @param thisReference the JavaExpression to which to parse "this", or null if "this" should not
-   *     appear in the expression
+   *     appear in the expression; not relevant to qualified "SomeClass.this" or
+   *     "package.SomeClass.this"
    * @param parameters list of JavaExpressions to which to parse formal parameter references such as
    *     "#2", or null if formal parameter references should not appear in the expression
    * @param localVarPath if non-null, the expression is parsed as if it were written at this
@@ -216,7 +217,8 @@ public class JavaExpressionParseUtil {
 
     /**
      * The expression to use for "this". If {@code null}, a parse error will be thrown if "this"
-     * appears in the expression.
+     * appears in the expression. Not relevant to qualified "SomeClass.this" or
+     * "package.SomeClass.this".
      */
     private final @Nullable ThisReference thisReference;
 
@@ -232,7 +234,8 @@ public class JavaExpressionParseUtil {
      *
      * @param enclosingType type of the class that encloses the JavaExpression
      * @param thisReference a JavaExpression to which to parse "this", or null if "this" should not
-     *     appear in the expression
+     *     appear in the expression; not relevant to qualified "SomeClass.this" or
+     *     "package.SomeClass.this"
      * @param parameters list of JavaExpressions to which to parse a formal parameter reference such
      *     as "#2", or null if parameters should not appear in the expression
      * @param localVarPath if non-null, the expression is parsed as if it were written at this
@@ -264,7 +267,8 @@ public class JavaExpressionParseUtil {
      * @param exprTree the Javac {@link ExpressionTree} to convert
      * @param enclosingType type of the class that encloses the JavaExpression
      * @param thisReference a JavaExpression to which to parse "this", or null if "this" should not
-     *     appear in the expression
+     *     appear in the expression; not relevant to qualified "SomeClass.this" or
+     *     "package.SomeClass.this"
      * @param parameters list of JavaExpressions to which to parse parameters, or null if parameters
      *     should not appear in the expression
      * @param localVarPath if non-null, the expression is parsed as if it were written at this
@@ -514,7 +518,7 @@ public class JavaExpressionParseUtil {
     }
 
     /**
-     * If {@code identifier} is a class name with that can be referenced using only its simple name
+     * If {@code identifier} is a class name that can be referenced using only its simple name
      * within {@code enclosingType}, return the {@link ClassName} for the class. If not, return
      * null.
      *
@@ -834,7 +838,7 @@ public class JavaExpressionParseUtil {
       Tree expr = exprTree.getExpression();
       String name = exprTree.getIdentifier().toString();
 
-      // Check if the expression refers to a fully-qualified class name.
+      // Check if the expression refers to a fully-qualified non-nested class name.
       PackageSymbol packageSymbol = resolver.findPackage(expr.toString(), pathToCompilationUnit);
       if (packageSymbol != null) {
         ClassSymbol classSymbol =
