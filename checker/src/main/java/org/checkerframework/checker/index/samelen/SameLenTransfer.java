@@ -130,31 +130,6 @@ public class SameLenTransfer extends CFTransfer {
 
     JavaExpression exprRec = JavaExpression.fromNode(exprNode);
 
-    boolean falze = false;
-    if (falze
-        && (node.toString().contains("[]")
-            || targetRec.toString().contains("[]")
-            || exprRec.toString().contains("[]"))) {
-      System.err.printf(
-          "In SLT.visitAssignment:%n  node=%s [%s]%n  targetNode=%s [%s]%n  targetRec=%s%n "
-              + " exprNode=%s [%s]%n  exprRec=%s%n",
-          node,
-          node.getClass(),
-          recNode,
-          recNode.getClass(),
-          targetRec,
-          exprNode,
-          exprNode.getClass(),
-          exprRec);
-      if (exprNode instanceof MethodInvocationNode) {
-        MethodInvocationNode mi = (MethodInvocationNode) exprNode;
-        Node arg1 = mi.getArgument(0);
-        JavaExpression je1 = JavaExpression.fromNode(arg1);
-        System.err.printf("  arg1 = %s [%s]%n", arg1, arg1.getClass());
-        System.err.printf("  je1 = %s [%s]%n", je1, je1.getClass());
-      }
-    }
-
     if (IndexUtil.isSequenceType(recNode.getType())
         || (rightAnno != null && atypeFactory.areSameByClass(rightAnno, SameLen.class))) {
 
@@ -190,10 +165,6 @@ public class SameLenTransfer extends CFTransfer {
       try {
         je = atypeFactory.parseJavaExpressionString(exprString, currentPath);
       } catch (JavaExpressionParseUtil.JavaExpressionParseException e) {
-        if (false) {
-          System.err.println(String.format("problem with \"%s\" for %s", exprString, sameLenAnno));
-          e.printStackTrace();
-        }
         continue;
       }
       store.clearValue(je);

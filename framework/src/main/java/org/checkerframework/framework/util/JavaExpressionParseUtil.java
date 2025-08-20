@@ -298,7 +298,6 @@ public class JavaExpressionParseUtil {
         // Convert unchecked to checked exception. Visitor methods can't throw checked
         // exceptions. They override the methods in the superclass, and a checked exception
         // would change the method signature.
-        // e.printStackTrace();
         throw e.getCheckedException();
       }
     }
@@ -384,7 +383,6 @@ public class JavaExpressionParseUtil {
     @Override
     public JavaExpression visitIdentifier(IdentifierTree id, Void unused) {
       String s = id.getName().toString();
-      // System.out.printf("visitIdentifier(%s)%n", id);
       setResolverField();
       // this and super logic
       if (s.equals("this") || s.equals("super")) {
@@ -858,21 +856,7 @@ public class JavaExpressionParseUtil {
 
       // Handle class literal (e.g., SomeClass.class or pkg.pkg2.OuterClass.InnerClass.class)
       if (name.equals("class")) {
-        if (false) {
-          System.out.printf(
-              "scope=%s [%s] [%s]%n", scope, scope.getClass().getSimpleName(), scope.getKind());
-        }
-        JavaExpression className;
-        try {
-          className = scope.accept(this, null);
-        } catch (Throwable t) {
-          // t.printStackTrace(System.out);
-          throw t;
-        }
-        if (false) {
-          System.out.printf(
-              "scope %s => %s [%s]%n", scope, className, className.getClass().getSimpleName());
-        }
+        JavaExpression className = scope.accept(this, null);
         if (className instanceof ClassName) {
           return className;
         } else {
@@ -1033,12 +1017,6 @@ public class JavaExpressionParseUtil {
      * @return a TypeMirror corresponding to {@code tree}, or null if {@code tree} isn't handled
      */
     private @Nullable TypeMirror convertTreeToTypeMirror(JCTree tree) {
-      if (false) {
-        System.out.printf(
-            "convertTreeToTypeMirror(%s [%s] [%s])%n",
-            tree, tree.getClass().getSimpleName(), tree.getKind());
-      }
-
       if (tree instanceof MemberSelectTree) {
         MemberSelectTree memberSelectTree = (MemberSelectTree) tree;
         String identifier = memberSelectTree.getIdentifier().toString();
@@ -1047,17 +1025,6 @@ public class JavaExpressionParseUtil {
           throw new Error(identifier + " :" + jpr.getParseErrorMessages());
         }
         ExpressionTree parsed = jpr.getTree();
-        if (false) {
-          System.out.printf(
-              "convertTreeToTypeMirror(%s): identifier=%s [%s], jpr=%s [%s], parsed=%s [%s]%n",
-              tree,
-              identifier,
-              identifier.getClass().getSimpleName(),
-              jpr,
-              jpr.getClass().getSimpleName(),
-              parsed,
-              parsed.getClass().getSimpleName());
-        }
 
         // TODO: How can this evaluate to false?  Maybe if the expression is "String.class"??
         if (parsed instanceof IdentifierTree) {

@@ -375,10 +375,6 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * @return a @SameLen annotation whose values are the given strings
    */
   public AnnotationMirror createSameLen(Collection<String> exprs) {
-    boolean falze = false;
-    if (falze && exprs.stream().anyMatch(s -> s.contains("[]"))) {
-      new Error(String.format("createSameLen(%s)", exprs)).printStackTrace();
-    }
     AnnotationBuilder builder = new AnnotationBuilder(processingEnv, SameLen.class);
     String[] exprArray = exprs.toArray(new String[0]);
     builder.setValue("value", exprArray);
