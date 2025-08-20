@@ -842,8 +842,8 @@ public class JavaExpressionParseUtil {
     }
 
     // `exprTree` should be a field access, a fully qualified class name, or a class name qualified
-    // with another class name (e.g. {@code OuterClass.InnerClass}).  It can also end with ".class".
-    // If the expression refers
+    // with another class name (e.g. {@code OuterClass.InnerClass}).  It can also end with ".class"
+    // or ".this".  If the expression refers
     // to a class that is not available to the resolver (the class wasn't passed to javac on
     // the command line), then `exprTree` can be "outerpackage.innerpackage", which will lead
     // to a confusing error message.
