@@ -8,16 +8,21 @@ instead; see file ../../docs/manual/manual.html .
 How to run all the tests for the Checker Framework
 ==================================================
 
+```sh
   # To run from the checker-framework directory:
   ./gradlew allTests
+```
 
 Other Gradle tasks also exist to run a subset of the tests; for example,
+
+```sh
   # Run from the checker-framework directory:
   ./gradlew :checker:NullnessTest
   # Run from the checker directory:
   ../gradlew NullnessTest
   # To see all tasks
   ./gradlew tasks
+```
 
 
 How to run just one test for the Checker Framework
@@ -27,8 +32,10 @@ To run a subset of the JUnit tests, use Gradle's --tests command-line
 argument, from a project directory such as checker/, dataflow/, or
 framework/:
 
+```sh
   cd $CHECKERFRAMEWORK/checker
   ../gradlew test --tests '*ParseAllJdkTest'
+```
 
 To check one source code file,
 do something like the following, assuming that the source code
@@ -36,8 +43,10 @@ file to be checked is AssertNonNullTest.java in directory
 $CHECKERFRAMEWORK/checker/tests/nullness/ and the checker is
 org.checkerframework.checker.nullness.NullnessChecker.
 
+```sh
   cd $CHECKERFRAMEWORK
   ./gradlew assembleForJavac && checker/bin/javac -processor org.checkerframework.checker.nullness.NullnessChecker -implicit:class checker/tests/nullness/AssertNonNullTest.java
+```
 
 where the specific checker and command-line arguments are often clear from
 the directory name but can also be determined from a file such as
@@ -72,10 +81,12 @@ tests to check behavior related to unchecked bytecode.
 By convention, when a test is about an issue in the issue tracker, we write
 a comment at the top of the file, in this format:
 
+```
   // Test case for issue 266:
   // https://github.com/typetools/checker-framework/issues/266
 
   // @skip-test until the issue is fixed
+```
 
 
 Specifying expected warnings and errors
@@ -87,12 +98,14 @@ error messages.
 Suppose that you want to test the Nullness Checker's behavior when
 type-checking the following Java class:
 
+```java
 public class MyNullnessTest {
   void method() {
     Object nullable = null;
     nullable.toString();   // should emit error
   }
 }
+```
 
 The Nullness Checker should report an error for the dereference in line 4.
 The non-localized message key for such an error is
@@ -101,15 +114,23 @@ the source code) for org.checkerframework.checker.nullness.NullnessVisitor,
 or by creating the test and observing the failure.
 
 To indicate the expected failure, insert the line
+```
   // :: error: (<error-message-key>)
+```
 directly preceding the expected error line.
 If a warning rather than an error is expected, insert the line
+```
   // :: warning: (<warning-message-key>)
+```
 If a stub parser warning is expected, insert the line
+```
   //warning: AnnotationFileParser: <stub parser warning>
+```
 If multiple errors are expected on a single line, duplicate everything
 except the "//" comment characters, as in
+```
   // :: error: (<error-message-key1>) :: error: (<error-message-key2>)
+```
 If the expected failures line would be very long, you may break it across
 multiple comment lines.
 It is permitted to write a "// ::" comment after "{" that was at the end of
@@ -117,6 +138,7 @@ a line, to indicate a warning on the line immediately after the "{".
 
 So the final test case would be:
 
+```java
 public class MyNullnessTest {
   void method() {
     Object nullable = null;
@@ -124,6 +146,7 @@ public class MyNullnessTest {
     nullable.toString();
   }
 }
+```
 
 The file may appear anywhere in or under
 checker-framework/checker/tests/nullness/.  (You may find it useful to use
@@ -135,23 +158,29 @@ checker-framework/checker/tests/regex/, etc.
 You can indicate an expected warning (as opposed to error) by using
 "warning:" instead of "error:", as in
 
+```
   // :: warning: (nulltest.redundant)
   assert val != null;
+```
 
 Multiple expected messages can be given on the same line using the
 "// :: A :: B :: C" syntax.  This example expects both an error and
 a warning from the same line of code:
 
+```
   @Regex String s1 = null;
   // :: error: (assignment) :: warning: (cast.unsafe)
   @Regex(3) String s2 = (@Regex(2) String) s;
+```
 
 
 As an alternative to writing expected errors in the source file using "// ::"
 syntax, expected errors can be specified in a separate file using the .out
 file extension.  These files contain lines of the following format:
 
+```
 :19: error: (dereference.of.nullable)
+```
 
 The number between the colons is the line number of the expected error
 message.  This format is harder to maintain, and we suggest using the
@@ -217,7 +246,11 @@ Seeing the javac commands that are run
 
 To see the exact javac commands that the Checker Framework test framework
 runs, use
+```
   -Pemit.test.debug=true
+```
 For example:
+```sh
   ./gradlew NullnessStubfileTest -Pemit.test.debug=true
+```
 This may be helpful during debugging.
