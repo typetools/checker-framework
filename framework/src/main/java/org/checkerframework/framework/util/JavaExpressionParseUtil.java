@@ -218,7 +218,7 @@ public class JavaExpressionParseUtil {
 
     /**
      * The expression to use for "this". If {@code null}, a parse error will be thrown if "this"
-     * appears in the expression. Not relevant to parsing qualified "SomeClass.this" or
+     * appears in the expression. Not relevant to qualified "SomeClass.this" or
      * "package.SomeClass.this".
      */
     private final @Nullable ThisReference thisReference;

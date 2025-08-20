@@ -68,10 +68,6 @@ task manual(type: Exec, group: 'Documentation') {
   commandLine 'make', '-C', 'manual'
 }
 
-tasks.withType(Test) {
-  dependsOn('allDataflowTests')
-}
-
 tasks.create(name: 'allDataflowTests', group: 'Verification') {
   description = 'Run all dataflow analysis tests'
   // 'allDataflowTests' is automatically populated by testDataflowAnalysis().
