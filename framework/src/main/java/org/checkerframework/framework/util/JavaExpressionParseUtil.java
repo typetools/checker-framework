@@ -867,6 +867,19 @@ public class JavaExpressionParseUtil {
         }
       }
 
+      // Handle outer "this" (e.g., Foo.this)
+      if (name.equals("this")) {
+        JavaExpression className = scope.accept(this, null);
+        if (className instanceof ClassName) {
+          return new ThisReference(className.getType());
+        } else {
+          throw new ParseRuntimeException(
+              constructJavaExpressionParseError(
+                  exprTree.toString(),
+                  "\".class\" preceded by " + className.getClass().getSimpleName()));
+        }
+      }
+
       // Check if the expression refers to a fully-qualified non-nested class name.
       PackageSymbol packageSymbol = resolver.findPackage(scope.toString(), pathToCompilationUnit);
       if (packageSymbol != null) {
@@ -880,29 +893,6 @@ public class JavaExpressionParseUtil {
                 exprTree.toString(),
                 "could not find class " + name + " in package " + scope.toString()));
       }
-
-      /*
-      // Handle "this" identifier in a Field access (e.g., Foo.this)
-      if (name.equals("this")) {
-        JavaExpression className = scope.accept(this, null);
-        if (className instanceof ClassName) {
-          return className;
-        } else {
-          throw new ParseRuntimeException(
-              constructJavaExpressionParseError(
-                  exprTree.toString(),
-                  "\".class\" preceded by " + className.getClass().getSimpleName()));
-        }
-      }
-
-      if (name.equals("this")) {
-        if (thisReference == null) {
-          throw new ParseRuntimeException(
-              constructJavaExpressionParseError("this", "\"this\" isn't allowed here"));
-        }
-        return thisReference;
-      }
-      */
 
       // Otherwise treat as field access or inner class.
       JavaExpression receiver = scope.accept(this, null);
