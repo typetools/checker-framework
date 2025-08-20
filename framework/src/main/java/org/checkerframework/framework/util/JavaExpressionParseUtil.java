@@ -124,7 +124,8 @@ public class JavaExpressionParseUtil {
    * @param expression the string expression to parse
    * @param enclosingType type of the class that encloses the JavaExpression
    * @param thisReference the JavaExpression to which to parse "this", or null if "this" should not
-   *     appear in the expression
+   *     appear in the expression; not relevant to qualified "SomeClass.this" or
+   *     "package.SomeClass.this"
    * @param parameters list of JavaExpressions to which to parse formal parameter references such as
    *     "#2", or null if formal parameter references should not appear in the expression
    * @param localVarPath if non-null, the expression is parsed as if it were written at this
@@ -215,7 +216,8 @@ public class JavaExpressionParseUtil {
 
     /**
      * The expression to use for "this". If {@code null}, a parse error will be thrown if "this"
-     * appears in the expression.
+     * appears in the expression. Not relevant to parsing qualified "SomeClass.this" or
+     * "package.SomeClass.this".
      */
     private final @Nullable ThisReference thisReference;
 
@@ -231,7 +233,8 @@ public class JavaExpressionParseUtil {
      *
      * @param enclosingType type of the class that encloses the JavaExpression
      * @param thisReference a JavaExpression to which to parse "this", or null if "this" should not
-     *     appear in the expression
+     *     appear in the expression; not relevant to qualified "SomeClass.this" or
+     *     "package.SomeClass.this"
      * @param parameters list of JavaExpressions to which to parse a formal parameter reference such
      *     as "#2", or null if parameters should not appear in the expression
      * @param localVarPath if non-null, the expression is parsed as if it were written at this
@@ -263,7 +266,8 @@ public class JavaExpressionParseUtil {
      * @param exprTree the Javac {@link ExpressionTree} to convert
      * @param enclosingType type of the class that encloses the JavaExpression
      * @param thisReference a JavaExpression to which to parse "this", or null if "this" should not
-     *     appear in the expression
+     *     appear in the expression; not relevant to qualified "SomeClass.this" or
+     *     "package.SomeClass.this"
      * @param parameters list of JavaExpressions to which to parse parameters, or null if parameters
      *     should not appear in the expression
      * @param localVarPath if non-null, the expression is parsed as if it were written at this
@@ -513,7 +517,7 @@ public class JavaExpressionParseUtil {
     }
 
     /**
-     * If {@code identifier} is a class name with that can be referenced using only its simple name
+     * If {@code identifier} is a class name that can be referenced using only its simple name
      * within {@code enclosingType}, return the {@link ClassName} for the class. If not, return
      * null.
      *
@@ -807,35 +811,34 @@ public class JavaExpressionParseUtil {
       throw constructJavaExpressionParseError(methodName, "no such method");
     }
 
+    // `exprTree` should be a field access, a fully qualified class name, or a class name qualified
+    // with another class name (e.g. {@code OuterClass.InnerClass}).  It can also end with ".class".
+    // If the expression refers
+    // to a class that is not available to the resolver (the class wasn't passed to javac on
+    // the command line), then `exprTree` can be "outerpackage.innerpackage", which will lead
+    // to a confusing error message.
     @Override
     public JavaExpression visitMemberSelect(MemberSelectTree exprTree, Void unused) {
       setResolverField();
-      // Handle class literal (e.g., SomeClass.class)
-      if (exprTree.getIdentifier().contentEquals("class")) {
-        Tree selected = exprTree.getExpression();
-        TypeMirror result = convertTreeToTypeMirror((JCTree) selected);
-        System.out.printf("visitMemberSelect(%s): type=%s%n", exprTree, result);
-        if (result == null) {
-          throw new ParseRuntimeException(
-              constructJavaExpressionParseError(
-                  exprTree.toString(), "it is an unparsable class literal"));
-        }
-        return new ClassName(result);
-      }
-      // Handle "this" identifier in a Field access (e.g., Foo.this)
-      if (exprTree.getIdentifier().contentEquals("this")) {
-        if (thisReference == null) {
-          throw new ParseRuntimeException(
-              constructJavaExpressionParseError("this", "\"this\" isn't allowed here"));
-        }
-        return thisReference;
-      }
 
-      Tree expr = exprTree.getExpression();
+      Tree scope = exprTree.getExpression();
       String name = exprTree.getIdentifier().toString();
 
-      // Check if the expression refers to a fully-qualified class name.
-      PackageSymbol packageSymbol = resolver.findPackage(expr.toString(), pathToCompilationUnit);
+      // Handle class literal (e.g., SomeClass.class or pkg.pkg2.OuterClass.InnerClass.class)
+      if (name.equals("class")) {
+        JavaExpression className = scope.accept(this, null);
+        if (className instanceof ClassName) {
+          return className;
+        } else {
+          throw new ParseRuntimeException(
+              constructJavaExpressionParseError(
+                  exprTree.toString(),
+                  "\".class\" preceded by " + className.getClass().getSimpleName()));
+        }
+      }
+
+      // Check if the expression refers to a fully-qualified non-nested class name.
+      PackageSymbol packageSymbol = resolver.findPackage(scope.toString(), pathToCompilationUnit);
       if (packageSymbol != null) {
         ClassSymbol classSymbol =
             resolver.findClassInPackage(name, packageSymbol, pathToCompilationUnit);
@@ -845,11 +848,34 @@ public class JavaExpressionParseUtil {
         throw new ParseRuntimeException(
             constructJavaExpressionParseError(
                 exprTree.toString(),
-                "could not find class " + name + " in package " + expr.toString()));
+                "could not find class " + name + " in package " + scope.toString()));
       }
 
+      /*
+      // Handle "this" identifier in a Field access (e.g., Foo.this)
+      if (name.equals("this")) {
+        JavaExpression className = scope.accept(this, null);
+        if (className instanceof ClassName) {
+          return className;
+        } else {
+          throw new ParseRuntimeException(
+              constructJavaExpressionParseError(
+                  exprTree.toString(),
+                  "\".class\" preceded by " + className.getClass().getSimpleName()));
+        }
+      }
+
+      if (name.equals("this")) {
+        if (thisReference == null) {
+          throw new ParseRuntimeException(
+              constructJavaExpressionParseError("this", "\"this\" isn't allowed here"));
+        }
+        return thisReference;
+      }
+      */
+
       // Otherwise treat as field access or inner class.
-      JavaExpression receiver = expr.accept(this, null);
+      JavaExpression receiver = scope.accept(this, null);
 
       // Try as a field.
       FieldAccess fieldAccess = getIdentifierAsFieldAccess(receiver, name);
@@ -961,6 +987,11 @@ public class JavaExpressionParseUtil {
      * @return a TypeMirror corresponding to {@code tree}, or null if {@code tree} isn't handled
      */
     private @Nullable TypeMirror convertTreeToTypeMirror(JCTree tree) {
+      if (false) {
+        System.out.printf(
+            "convertTreeToTypeMirror(%s [%s] [%s])%n",
+            tree, tree.getClass().getSimpleName(), tree.getKind());
+      }
 
       if (tree instanceof MemberSelectTree) {
         MemberSelectTree memberSelectTree = (MemberSelectTree) tree;
@@ -970,6 +1001,18 @@ public class JavaExpressionParseUtil {
           throw new Error(identifier + " :" + jpr.getParseErrorMessages());
         }
         ExpressionTree parsed = jpr.getTree();
+        if (false) {
+          System.out.printf(
+              "convertTreeToTypeMirror(%s): identifier=%s [%s], jpr=%s [%s], parsed=%s [%s]%n",
+              tree,
+              identifier,
+              identifier.getClass().getSimpleName(),
+              jpr,
+              jpr.getClass().getSimpleName(),
+              parsed,
+              parsed.getClass().getSimpleName());
+        }
+
         // TODO: How can this evaluate to false?  Maybe if the expression is "String.class"??
         if (parsed instanceof IdentifierTree) {
           return parsed.accept(this, null).getType();
