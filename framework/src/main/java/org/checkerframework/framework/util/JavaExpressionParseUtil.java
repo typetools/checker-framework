@@ -781,15 +781,16 @@ public class JavaExpressionParseUtil {
       if (methodSelect instanceof MemberSelectTree) {
         // Method call with explicit receiver, like `obj.method()` or `Class.staticMethod()`.
         receiverExpr = (@NonNull JavaExpression) receiverExprTmp;
-        String msg = null;
         if (isInstance && receiverExpr instanceof ClassName) {
-          msg = "Use a value, not a class name, as the receiver when calling an instance method";
-        } else if (isStatic && !(receiverExpr instanceof ClassName)) {
-          msg = "Use a class name, not a value, as the receiver when calling a static method";
-        }
-        if (msg != null) {
           throw new ParseRuntimeException(
-              constructJavaExpressionParseError(invocation.toString(), msg));
+              constructJavaExpressionParseError(
+                  invocation.toString(),
+                  "Use a value, not a class name, as the receiver when calling an instance"
+                      + " method"));
+        } else if (isStatic && !(receiverExpr instanceof ClassName)) {
+          // TODO: Should we instead issue an error "Use a class name, not a value, as the receiver
+          // when calling a static method"?
+          receiverExpr = new ClassName(receiverExpr.getType());
         }
       } else if (methodSelect instanceof IdentifierTree) {
         // Static or instance method call with implicit receiver, like `method()`.

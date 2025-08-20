@@ -76,10 +76,7 @@ public final class JavacParseResult<T extends Tree> {
   }
 
   @Override
-  @SuppressWarnings({
-    "allcheckers:purity.not.sideeffectfree.call",
-    "lock:method.guarantee.violated"
-  }) // side effect to local StringJoiner
+  @SuppressWarnings("lock:method.guarantee.violated") // side effect to local StringJoiner
   public String toString(@GuardSatisfied JavacParseResult<T> this) {
     String prefix =
         "JPR{" + tree + " [" + tree.getClass().getSimpleName() + "] [" + tree.getKind() + "]";
