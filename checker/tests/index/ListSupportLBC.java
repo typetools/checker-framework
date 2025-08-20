@@ -3,6 +3,8 @@ import org.checkerframework.checker.index.qual.GTENegativeOne;
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.index.qual.Positive;
 
+// @skip-test until we bring list support back
+
 public class ListSupportLBC {
 
   void testGet() {

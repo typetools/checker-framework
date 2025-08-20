@@ -2,6 +2,8 @@ import org.checkerframework.checker.index.qual.LTEqLengthOf;
 import org.checkerframework.checker.index.qual.LTLengthOf;
 import org.checkerframework.checker.index.qual.UpperBoundBottom;
 
+// @skip-test until we bring list support back
+
 public class ListSupport {
 
   void indexOf(List<Integer> list) {
