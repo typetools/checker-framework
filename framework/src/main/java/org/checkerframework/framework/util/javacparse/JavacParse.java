@@ -76,10 +76,13 @@ public final class JavacParse {
       throw new IllegalArgumentException(
           "Type declaration source code has imports: " + classSource);
     }
+    // CompilationUnitTree.getModule() is defined in Java 17 and later.
+    /*
     if (cu.getModule() != null) {
       throw new IllegalArgumentException(
           "Type declaration source code has a module declaration: " + classSource);
     }
+    */
     if (cu.getPackage() != null) {
       throw new IllegalArgumentException(
           "Type declaration source code has a package declaration: " + classSource);
