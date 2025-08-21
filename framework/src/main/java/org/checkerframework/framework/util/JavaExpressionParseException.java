@@ -109,13 +109,26 @@ public class JavaExpressionParseException extends Exception {
    * The unchecked exception equivalent of checked exception {@link JavaExpressionParseException}.
    */
   static class JavaExpressionParseExceptionUnchecked extends RuntimeException {
-    private static final long serialVersionUID = 2L;
+    /** Serial version UID. */
+    private static final long serialVersionUID = 20250820;
+
+    /** The underlying checked exception. */
     private final JavaExpressionParseException exception;
 
+    /**
+     * Creates a JavaExpressionParseExceptionUnchecked.
+     *
+     * @param exception the underlying checked exception
+     */
     public JavaExpressionParseExceptionUnchecked(JavaExpressionParseException exception) {
       this.exception = exception;
     }
 
+    /**
+     * Returns the underlying checked exception.
+     *
+     * @return the underlying checked exception
+     */
     public JavaExpressionParseException getCheckedException() {
       return exception;
     }

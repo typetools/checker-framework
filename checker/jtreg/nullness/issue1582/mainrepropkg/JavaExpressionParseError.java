@@ -2,7 +2,7 @@ package mainrepropkg;
 
 import foo.Foo;
 
-public class JavaExpressionParseException {
+public class JavaExpressionParseError {
 
   public void printAThing(Foo foo) {
     if (foo.hasTheObject()) {
