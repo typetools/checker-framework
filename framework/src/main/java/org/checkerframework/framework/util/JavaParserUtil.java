@@ -28,8 +28,9 @@ import javax.annotation.processing.ProcessingEnvironment;
 import org.checkerframework.javacutil.BugInCF;
 
 /**
- * Utility methods for working with JavaParser. It is a replacement for StaticJavaParser that does
- * not leak memory, and it provides some other methods.
+ * Utility methods for working with JavaParser. It is a replacement for {@code
+ * com.github.javaparser.StaticJavaParser} that does not leak memory, and it provides some other
+ * methods.
  */
 public class JavaParserUtil {
 
