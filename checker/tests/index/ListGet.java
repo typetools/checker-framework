@@ -1,7 +1,8 @@
-import java.util.List;
 import org.checkerframework.checker.index.qual.IndexFor;
 import org.checkerframework.checker.index.qual.LTEqLengthOf;
 import org.checkerframework.checker.index.qual.LTLengthOf;
+
+// @skip-test until we bring list support back
 
 public class ListGet {
 

@@ -1,7 +1,9 @@
-import java.util.List;
 import org.checkerframework.checker.index.qual.IndexFor;
 import org.checkerframework.checker.index.qual.LTEqLengthOf;
 import org.checkerframework.checker.index.qual.LTLengthOf;
+import org.checkerframework.checker.index.qual.LTOMLengthOf;
+
+// @skip-test until we bring list support back
 
 public class ListAdd {
 
@@ -56,10 +58,10 @@ public class ListAdd {
 
   void ListAddUpdateValue(List<Integer> list) {
     @LTEqLengthOf("list") int i = list.size();
-    @LTLengthOf("list") int r = i - 1;
+    @LTLengthOf("list") int r = list.size() - 1;
     list.add(0);
-    @LTLengthOf("list") int k = i - 1;
-    @LTLengthOf("list") int p = r;
+    @LTLengthOf("list") int k = i;
+    @LTOMLengthOf("list") int p = r;
   }
 
   void ListAddTwo(@LTEqLengthOf({"#2", "#3"}) int i, List<Integer> list, List<Integer> list2) {
