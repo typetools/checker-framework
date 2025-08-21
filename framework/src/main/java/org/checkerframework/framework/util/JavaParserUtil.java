@@ -34,6 +34,11 @@ import org.checkerframework.javacutil.BugInCF;
  */
 public class JavaParserUtil {
 
+  /** Do not instantiate. */
+  private JavaParserUtil() {
+    throw new Error("Do not instantiate.");
+  }
+
   /**
    * The Language Level to use when parsing if a specific level isn't applied. This should be the
    * highest version of Java that the Checker Framework can process.
