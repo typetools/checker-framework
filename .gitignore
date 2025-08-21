@@ -103,7 +103,6 @@ docs/manual/figures/*.pdf
 docs/manual/figures/*.png
 docs/manual/figures/signature-types-with-canonicalname.dia
 docs/manual/manual.html-e
-docs/manual/manual.image.*
 docs/tmpapi/
 *.fls
 
