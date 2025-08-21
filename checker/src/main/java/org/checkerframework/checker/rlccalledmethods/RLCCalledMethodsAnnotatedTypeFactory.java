@@ -328,7 +328,7 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
    * org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer.Obligation}. Instead, use
    * {@link
    * org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer.Obligation#getMustCallMethods(RLCCalledMethodsAnnotatedTypeFactory,
-   * CFStore)}
+   * CFStore)}.
    *
    * @param tree a tree
    * @return true if the tree has declared must-call obligations
