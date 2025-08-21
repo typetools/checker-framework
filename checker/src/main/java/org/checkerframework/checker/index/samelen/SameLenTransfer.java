@@ -29,7 +29,7 @@ import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.util.JavaExpressionParseUtil;
+import org.checkerframework.framework.util.JavaExpressionParseException;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
@@ -164,7 +164,7 @@ public class SameLenTransfer extends CFTransfer {
       JavaExpression je;
       try {
         je = atypeFactory.parseJavaExpressionString(exprString, currentPath);
-      } catch (JavaExpressionParseUtil.JavaExpressionParseException e) {
+      } catch (JavaExpressionParseException e) {
         continue;
       }
       store.clearValue(je);

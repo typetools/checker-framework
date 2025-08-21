@@ -21,7 +21,7 @@ import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.util.JavaExpressionParseUtil;
+import org.checkerframework.framework.util.JavaExpressionParseException;
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -94,7 +94,7 @@ public class CalledMethodsVisitor extends AccumulationVisitor {
     JavaExpression e;
     try {
       e = StringToJavaExpression.atMethodBody(postcond.getExpression(), tree, checker);
-    } catch (JavaExpressionParseUtil.JavaExpressionParseException ex) {
+    } catch (JavaExpressionParseException ex) {
       checker.report(tree, ex.getDiagMessage());
       return;
     }

@@ -32,7 +32,7 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.SubtypeIsSupersetQualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.util.JavaExpressionParseUtil;
+import org.checkerframework.framework.util.JavaExpressionParseException;
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationBuilder;
@@ -289,7 +289,7 @@ public class KeyForAnnotatedTypeFactory
                     stringExpr, methodInvocationTree, factory.getChecker());
             Unknown unknown = result.containedOfClass(Unknown.class);
             if (unknown != null) {
-              throw JavaExpressionParseUtil.constructJavaExpressionParseError(
+              throw JavaExpressionParseException.construct(
                   result.toString(), "Expression " + unknown.toString() + " is unparsable.");
             }
             return result;

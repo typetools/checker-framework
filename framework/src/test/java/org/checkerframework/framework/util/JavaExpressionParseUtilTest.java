@@ -8,7 +8,6 @@ import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Options;
 import javax.annotation.processing.ProcessingEnvironment;
 import org.checkerframework.dataflow.expression.JavaExpression;
-import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.junit.Test;
 
 public class JavaExpressionParseUtilTest {

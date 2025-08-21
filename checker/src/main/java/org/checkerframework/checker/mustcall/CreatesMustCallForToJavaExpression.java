@@ -13,7 +13,7 @@ import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.Unknown;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
-import org.checkerframework.framework.util.JavaExpressionParseUtil;
+import org.checkerframework.framework.util.JavaExpressionParseException;
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -172,7 +172,7 @@ public class CreatesMustCallForToJavaExpression {
         issueUnparseableError(tree, methodName, atypeFactory, targetStrWithoutAdaptation);
         return null;
       }
-    } catch (JavaExpressionParseUtil.JavaExpressionParseException e) {
+    } catch (JavaExpressionParseException e) {
       issueUnparseableError(tree, methodName, atypeFactory, targetStrWithoutAdaptation);
       return null;
     }
