@@ -154,14 +154,15 @@ task checkerJar(type: ShadowJar, dependsOn: compileJava, group: 'Build') {
 
   from shadowJar.source
   configurations = shadowJar.configurations
-  // To see what files are incorporated into the shadow jar file:
-  // doLast { println sourceSets.main.runtimeClasspath.asPath }
   manifest {
     attributes('Main-Class': 'org.checkerframework.framework.util.CheckerMain')
   }
   exclude 'org/checkerframework/**/qual/*'
   exclude 'org/checkerframework/checker/**/util/*'
   relocators = shadowJar.getRelocators()
+
+  // To see what files are incorporated into the shadow jar file:
+  // doLast { println sourceSets.main.runtimeClasspath.asPath }
 }
 
 jar {
@@ -359,13 +360,14 @@ task ainferTestCheckerGenerateStubs(type: Test) {
   description = 'Internal task.  Users should run ainferTestCheckerStubTest instead.  This type-checks the ainfer-testchecker files with -Ainfer=stubs to generate stub files.'
   dependsOn(compileTestJava)
 
-  testClassesDirs = sourceSets.test.output.classesDirs
-  classpath = sourceSets.test.runtimeClasspath
-
   doFirst {
     delete('tests/ainfer-testchecker/annotated')
     delete("${buildDir}/ainfer-testchecker/")
   }
+
+  testClassesDirs = sourceSets.test.output.classesDirs
+  classpath = sourceSets.test.runtimeClasspath
+
   outputs.upToDateWhen { false }
   include '**/AinferTestCheckerStubsGenerationTest.class'
   testLogging {
@@ -424,13 +426,14 @@ task ainferTestCheckerGenerateAjava(type: Test) {
   description = 'Internal task.  Users should run ainferTestCheckerAjavaTest instead.  This type-checks the ainfer-testchecker files with -Ainfer=ajava to generate ajava files.'
   dependsOn(compileTestJava)
 
-  testClassesDirs = sourceSets.test.output.classesDirs
-  classpath = sourceSets.test.runtimeClasspath
-
   doFirst {
     delete('tests/ainfer-testchecker/annotated')
     delete("${buildDir}/ainfer-testchecker/")
   }
+
+  testClassesDirs = sourceSets.test.output.classesDirs
+  classpath = sourceSets.test.runtimeClasspath
+
   outputs.upToDateWhen { false }
   include '**/AinferTestCheckerAjavaGenerationTest.class'
   testLogging {
@@ -536,11 +539,14 @@ task ainferTestCheckerGenerateJaifs(type: Test) {
 
   dependsOn(compileTestJava)
   dependsOn(':checker-qual:jar')  // For the Value Checker annotations.
-  testClassesDirs = sourceSets.test.output.classesDirs
-  classpath = sourceSets.test.runtimeClasspath
+
   doFirst {
     delete('tests/ainfer-testchecker/annotated')
   }
+
+  testClassesDirs = sourceSets.test.output.classesDirs
+  classpath = sourceSets.test.runtimeClasspath
+
   outputs.upToDateWhen { false }
   include '**/AinferTestCheckerJaifsGenerationTest.class'
   testLogging {
@@ -613,12 +619,15 @@ task ainferTestCheckerJaifTest(dependsOn: 'shadowJar', group: 'Verification') {
 task ainferIndexGenerateAjava(type: Test) {
   description = 'Internal task.  Users should run ainferIndexAjavaTest instead.  This type-checks the ainfer-index files with -Ainfer=ajava to generate ajava files.'
   dependsOn(compileTestJava)
-  testClassesDirs = sourceSets.test.output.classesDirs
-  classpath = sourceSets.test.runtimeClasspath
+
   doFirst {
     delete('tests/ainfer-index/annotated')
     delete("${layout.buildDir}/ainfer-index/")
   }
+
+  testClassesDirs = sourceSets.test.output.classesDirs
+  classpath = sourceSets.test.runtimeClasspath
+
   outputs.upToDateWhen { false }
   include '**/AinferIndexAjavaGenerationTest.class'
   testLogging {
@@ -663,13 +672,14 @@ task ainferNullnessGenerateAjava(type: Test) {
   description = 'Internal task.  Users should run ainferNullnessAjavaTest instead.  This type-checks the ainfer-nullness files with -Ainfer=ajava to generate ajava files.'
   dependsOn(compileTestJava)
 
-  testClassesDirs = sourceSets.test.output.classesDirs
-  classpath = sourceSets.test.runtimeClasspath
-
   doFirst {
     delete('tests/ainfer-nullness/annotated')
     delete("${buildDir}/ainfer-nullness/")
   }
+
+  testClassesDirs = sourceSets.test.output.classesDirs
+  classpath = sourceSets.test.runtimeClasspath
+
   outputs.upToDateWhen { false }
   include '**/AinferNullnessAjavaGenerationTest.class'
   testLogging {
@@ -715,13 +725,14 @@ task ainferResourceLeakGenerateAjava(type: Test) {
   description = 'Internal task.  Users should run ainferResourceLeakAjavaTest instead.  This type-checks the ainfer-index files with -Ainfer=ajava to generate ajava files.'
   dependsOn(compileTestJava)
 
-  testClassesDirs = sourceSets.test.output.classesDirs
-  classpath = sourceSets.test.runtimeClasspath
-
   doFirst {
     delete('tests/ainfer-resourceleak/annotated')
     delete("${buildDir}/ainfer-resourceleak/")
   }
+
+  testClassesDirs = sourceSets.test.output.classesDirs
+  classpath = sourceSets.test.runtimeClasspath
+
   outputs.upToDateWhen { false }
   include '**/AinferResourceLeakAjavaGenerationTest.class'
   testLogging {
@@ -767,12 +778,13 @@ task ainferNullnessGenerateJaifs(type: Test) {
   description = 'Internal task.  Users should run ainferNullnessJaifTest instead.  This type-checks the ainfer-nullness files with -Ainfer=jaifs to generate .jaif files'
   dependsOn(compileTestJava)
 
-  testClassesDirs = sourceSets.test.output.classesDirs
-  classpath = sourceSets.test.runtimeClasspath
-
   doFirst {
     delete('tests/ainfer-nullness/annotated')
   }
+
+  testClassesDirs = sourceSets.test.output.classesDirs
+  classpath = sourceSets.test.runtimeClasspath
+
   outputs.upToDateWhen { false }
   include '**/AinferNullnessJaifsGenerationTest.class'
   testLogging {

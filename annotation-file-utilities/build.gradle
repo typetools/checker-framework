@@ -42,15 +42,6 @@ dependencies {
 
 
 shadowJar {
-  destinationDirectory = projectDir
-  includeEmptyDirs = false
-  archiveFileName = 'annotation-file-utilities-all.jar'
-  // Don't include any class from the Checker Framework.
-  // This should just be checker-qual.
-  exclude 'org/checkerframework/checker/**'
-  exclude 'org/checkerframework/framework/**'
-  exclude 'org/checkerframework/dataflow/**'
-
   doFirst {
     // TODO: The release fails because of this, so skip it for now.
     if (project.hasProperty('release') && false) {
@@ -62,6 +53,15 @@ shadowJar {
       relocate 'com.google', 'org.checkerframework.com.google'
     }
   }
+
+  destinationDirectory = projectDir
+  includeEmptyDirs = false
+  archiveFileName = 'annotation-file-utilities-all.jar'
+  // Don't include any class from the Checker Framework.
+  // This should just be checker-qual.
+  exclude 'org/checkerframework/checker/**'
+  exclude 'org/checkerframework/framework/**'
+  exclude 'org/checkerframework/dataflow/**'
 }
 
 // Shadowing Test Sources and Dependencies
@@ -78,18 +78,21 @@ task skinnyJar(type: ShadowJar, dependsOn: compileJava) {
 
 task testExample(type: JavaExec, dependsOn: compileTestJava, group: 'Verification') {
   description = 'Run the scene-lib example test.'
-  String resourceDir = "${projectDir}/src/test/resources/annotations/tests/executable/"
+
   String outputDir = "${layout.buildDirectory.get()}/example-test/"
 
-  classpath = files(sourceSets.test.java.classesDirectory)
-  classpath += sourceSets.test.compileClasspath
-  mainClass = 'org.checkerframework.afu.scenelib.test.executable.Example'
   doFirst {
     file(outputDir).mkdir()
     new File("${outputDir}/example-stdout.jaif").createNewFile()
 
     standardOutput = new FileOutputStream("${outputDir}/example-stdout.jaif")
   }
+
+  String resourceDir = "${projectDir}/src/test/resources/annotations/tests/executable/"
+
+  classpath = files(sourceSets.test.java.classesDirectory)
+  classpath += sourceSets.test.compileClasspath
+  mainClass = 'org.checkerframework.afu.scenelib.test.executable.Example'
   args = [
     "${resourceDir}/example-input.jaif",
     "foo.Bar",
