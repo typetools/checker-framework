@@ -367,6 +367,7 @@ task ainferTestCheckerGenerateStubs(type: Test) {
 
   testClassesDirs = sourceSets.test.output.classesDirs
   classpath = sourceSets.test.runtimeClasspath
+
   outputs.upToDateWhen { false }
   include '**/AinferTestCheckerStubsGenerationTest.class'
   testLogging {
@@ -544,6 +545,7 @@ task ainferTestCheckerGenerateJaifs(type: Test) {
 
   testClassesDirs = sourceSets.test.output.classesDirs
   classpath = sourceSets.test.runtimeClasspath
+
   outputs.upToDateWhen { false }
   include '**/AinferTestCheckerJaifsGenerationTest.class'
   testLogging {
@@ -624,6 +626,7 @@ task ainferIndexGenerateAjava(type: Test) {
 
   testClassesDirs = sourceSets.test.output.classesDirs
   classpath = sourceSets.test.runtimeClasspath
+
   outputs.upToDateWhen { false }
   include '**/AinferIndexAjavaGenerationTest.class'
   testLogging {
@@ -675,6 +678,7 @@ task ainferNullnessGenerateAjava(type: Test) {
 
   testClassesDirs = sourceSets.test.output.classesDirs
   classpath = sourceSets.test.runtimeClasspath
+
   outputs.upToDateWhen { false }
   include '**/AinferNullnessAjavaGenerationTest.class'
   testLogging {
