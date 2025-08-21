@@ -543,7 +543,9 @@ public class MustCallConsistencyAnalyzer {
       String referenceStr = reference.toString();
       // We assume that any temporary variable name will not be a syntactically-valid
       // identifier or keyword.
-      return !SourceVersion.isIdentifier(referenceStr) ? tree.toString() : referenceStr;
+      return !SourceVersion.isIdentifier(referenceStr)
+          ? TreeUtils.toStringTruncated(tree, 50)
+          : referenceStr;
     }
   }
 
