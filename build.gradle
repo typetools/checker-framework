@@ -699,7 +699,7 @@ task allJavadoc(type: Javadoc, group: 'Documentation') {
 // See documentation for allJavadoc task.
 javadoc.dependsOn(allJavadoc)
 
-tasks.register('createZip', Zip) {
+tasks.register('zip', Zip) {
   description = 'Creates a zip archive for the Checker Framework.'
   dependsOn('buildAll')
   archiveFileName = "checker-framework-${version}.zip"
