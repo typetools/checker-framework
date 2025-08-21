@@ -1,4 +1,6 @@
-package org.checkerframework.dataflow.expression;
+package org.checkerframework.framework.util;
+
+// TODO: Should this be in package org.checkerframework.dataflow.expression?
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.util.TreePath;
@@ -9,6 +11,10 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.expression.ClassName;
+import org.checkerframework.dataflow.expression.FormalParameter;
+import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.framework.util.javacparse.JavacParse;
 import org.checkerframework.framework.util.javacparse.JavacParseResult;
 import org.plumelib.util.StringsPlume;
