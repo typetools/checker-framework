@@ -1016,7 +1016,7 @@ final checkerPom(publication) {
 publishing {
   publications {
     checker(MavenPublication) {
-      project.shadow.component it
+      from components.shadow
       checkerPom it
       artifact checkerJar
       artifact allSourcesJar
