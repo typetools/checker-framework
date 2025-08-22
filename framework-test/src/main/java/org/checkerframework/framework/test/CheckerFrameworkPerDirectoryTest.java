@@ -40,7 +40,7 @@ import org.junit.runner.RunWith;
  *   }
  *  {@literal @}Parameters
  *   public static String [] getTestDirs() {
- *     return new String[]{"all-systems"};
+ *     return new String[] {"all-systems"};
  *   }
  * }
  * </code></pre>
