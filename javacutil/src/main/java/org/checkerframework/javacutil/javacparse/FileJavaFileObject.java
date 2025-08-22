@@ -1,4 +1,4 @@
-package org.checkerframework.framework.util.javacparse;
+package org.checkerframework.javacutil.javacparse;
 
 import java.io.File;
 import java.io.IOException;

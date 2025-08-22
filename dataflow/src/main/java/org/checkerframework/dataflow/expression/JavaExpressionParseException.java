@@ -1,18 +1,11 @@
-package org.checkerframework.framework.util.expression;
-
-// This class `DiagMessage`, so it must be in the framework project.
+package org.checkerframework.dataflow.expression;
 
 import java.util.Arrays;
-import javax.tools.Diagnostic;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.javacutil.BugInCF;
 
-/**
- * An exception that indicates a parse error. Call {@link #getDiagMessage} to obtain a {@link
- * DiagMessage} that can be used for error reporting.
- */
+/** An exception that indicates a parse error. */
 public class JavaExpressionParseException extends Exception {
   /** The serial version identifier. */
   private static final long serialVersionUID = 2L;
@@ -70,18 +63,27 @@ public class JavaExpressionParseException extends Exception {
         "Invalid '" + exprString + "' because " + explanation);
   }
 
-  @Override
-  public String getMessage() {
-    return errorKey + " " + Arrays.toString(args);
+  /**
+   * Returns the error message key.
+   *
+   * @return the error message key
+   */
+  public String getErrorKey() {
+    return errorKey;
   }
 
   /**
-   * Returns a DiagMessage that can be used for error reporting.
+   * Returns The arguments to the error message key.
    *
-   * @return a DiagMessage that can be used for error reporting
+   * @return the arguments to the error message key
    */
-  public DiagMessage getDiagMessage() {
-    return new DiagMessage(Diagnostic.Kind.ERROR, errorKey, args);
+  public Object[] getArgs() {
+    return args;
+  }
+
+  @Override
+  public String getMessage() {
+    return errorKey + " " + Arrays.toString(args);
   }
 
   /**

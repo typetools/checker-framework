@@ -1,4 +1,4 @@
-package org.checkerframework.framework.test.junit;
+package org.checkerframework.dataflow.expression;
 
 import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.main.Option;
@@ -7,7 +7,6 @@ import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Options;
 import javax.annotation.processing.ProcessingEnvironment;
-import org.checkerframework.dataflow.expression.JavaExpression;
 import org.junit.Test;
 
 public class JavaExpressionParseUtilTest {

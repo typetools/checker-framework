@@ -17,11 +17,11 @@ import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethodsVarar
 import org.checkerframework.common.accumulation.AccumulationVisitor;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.JavaExpressionParseException;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.util.JavaExpressionParseException;
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -95,7 +95,7 @@ public class CalledMethodsVisitor extends AccumulationVisitor {
     try {
       e = StringToJavaExpression.atMethodBody(postcond.getExpression(), tree, checker);
     } catch (JavaExpressionParseException ex) {
-      checker.report(tree, ex.getDiagMessage());
+      checker.report(tree, new DiagMessage(ex));
       return;
     }
 

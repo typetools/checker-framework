@@ -37,18 +37,19 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
+import org.checkerframework.checker.formatter.qual.ConversionCategory;
+import org.checkerframework.checker.formatter.qual.Format;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.framework.util.JavaExpressionParseException.JavaExpressionParseExceptionUnchecked;
-import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
-import org.checkerframework.framework.util.javacparse.JavacParse;
-import org.checkerframework.framework.util.javacparse.JavacParseResult;
+import org.checkerframework.dataflow.expression.JavaExpressionParseException.JavaExpressionParseExceptionUnchecked;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Resolver;
 import org.checkerframework.javacutil.TypesUtils;
+import org.checkerframework.javacutil.javacparse.JavacParse;
+import org.checkerframework.javacutil.javacparse.JavacParseResult;
 import org.checkerframework.javacutil.trees.TreeBuilder;
 import org.plumelib.util.CollectionsPlume;
 
@@ -57,6 +58,10 @@ import org.plumelib.util.CollectionsPlume;
  * class does not viewpoint-adapt the expression.
  */
 class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<JavaExpression, Void> {
+
+  /** How to format warnings about use of formal parameter name. */
+  public static final @Format({ConversionCategory.INT, ConversionCategory.GENERAL}) String
+      FORMAL_PARAM_NAME_STRING = "Use \"#%d\" rather than \"%s\"";
 
   /** Binary operations that return {@code boolean}. */
   private static final Set<Tree.Kind> COMPARISON_OPERATORS =
@@ -334,8 +339,7 @@ class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<JavaExpres
         if (varElt.getSimpleName().contentEquals(idName)) {
           throw new JavaExpressionParseExceptionUnchecked(
               JavaExpressionParseException.construct(
-                  idName,
-                  String.format(DependentTypesError.FORMAL_PARAM_NAME_STRING, i + 1, idName)));
+                  idName, String.format(FORMAL_PARAM_NAME_STRING, i + 1, idName)));
         }
       }
     }

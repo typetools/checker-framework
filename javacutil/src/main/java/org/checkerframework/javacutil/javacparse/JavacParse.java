@@ -1,4 +1,4 @@
-package org.checkerframework.framework.util.javacparse;
+package org.checkerframework.javacutil.javacparse;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
@@ -167,7 +167,7 @@ public final class JavacParse {
   /**
    * Parses the given Java type use.
    *
-   * @param classSource the string representation of a Java type use
+   * @param typeUseSource the string representation of a Java type use
    * @return the parsed type use
    */
   public static JavacParseResult<ExpressionTree> parseTypeUse(String typeUseSource) {

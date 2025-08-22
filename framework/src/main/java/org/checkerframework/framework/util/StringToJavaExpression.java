@@ -1,4 +1,4 @@
-package org.checkerframework.framework.util.expression;
+package org.checkerframework.framework.util;
 
 // This class uses SourceChecker, so it must be in the framework project.
 
@@ -19,6 +19,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.expression.FormalParameter;
 import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.JavaExpressionParseException;
+import org.checkerframework.dataflow.expression.JavaExpressionParseUtil;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.expression.ViewpointAdaptJavaExpression;

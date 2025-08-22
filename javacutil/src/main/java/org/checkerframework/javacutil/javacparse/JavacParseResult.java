@@ -1,4 +1,4 @@
-package org.checkerframework.framework.util.javacparse;
+package org.checkerframework.javacutil.javacparse;
 
 import com.sun.source.tree.Tree;
 import java.util.List;

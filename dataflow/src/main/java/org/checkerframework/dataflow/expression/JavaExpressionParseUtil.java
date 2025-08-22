@@ -9,8 +9,8 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.framework.util.javacparse.JavacParse;
-import org.checkerframework.framework.util.javacparse.JavacParseResult;
+import org.checkerframework.javacutil.javacparse.JavacParse;
+import org.checkerframework.javacutil.javacparse.JavacParseResult;
 import org.plumelib.util.StringsPlume;
 
 /**
