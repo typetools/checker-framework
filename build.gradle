@@ -1267,7 +1267,7 @@ assemble.dependsOn(':checker:assembleForJavac')
 assemble.mustRunAfter(clean)
 
 task buildAll(group: 'Build') {
-  description = 'Build all jar files, including source and javadoc jars'
+  description = 'Build all jar files and the manuals, including source and javadoc jars'
   dependsOn(allJavadoc)
   subprojects { Project subproject ->
     dependsOn("${subproject.name}:assemble")
@@ -1276,6 +1276,7 @@ task buildAll(group: 'Build') {
   }
   dependsOn('framework:allJavadocJar', 'framework:allSourcesJar', 'checker:allJavadocJar', 'checker:allSourcesJar', 'checker-qual:jar', 'checker-util:jar')
   dependsOn('checker:assembleForJavac')
+  dependsOn('manual')
 }
 
 // Don't create an empty checker-framework-VERSION.jar
