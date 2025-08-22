@@ -178,12 +178,10 @@ tasks.register('copyToWebsite', Copy) {
   doLast {
     delete(file("${destDir}/index.html"))
     Files.createSymbolicLink(file("${destDir}/index.html").toPath(), Paths.get('checker-framework-webpage.html'))
-  }
-  doLast {
+
     delete(file("${destDir}/manual/index.html"))
     Files.createSymbolicLink(file("${destDir}/manual/index.html").toPath(), Paths.get('manual.html'))
-  }
-  doLast {
+
     delete "${destDir}/annotation-file-utilities/index.html"
     Files.createSymbolicLink(file("${destDir}/annotation-file-utilities/index.html").toPath(), Paths.get('annotation-file-utilities.html'))
   }
