@@ -165,14 +165,14 @@ public final class JavacParse {
   }
 
   /**
-   * Parses the given Java type declaration (class, interface, enum, record, etc.).
+   * Parses the given Java type use.
    *
-   * @param classSource the string representation of a Java type declaration
-   * @return the parsed type declaration
+   * @param classSource the string representation of a Java type use
+   * @return the parsed type use
    */
-  public static JavacParseResult<ExpressionTree> parseTypeUse(String classSource) {
+  public static JavacParseResult<ExpressionTree> parseTypeUse(String typeUseSource) {
     try {
-      return parseTypeUse(new StringJavaFileObject(classSource));
+      return parseTypeUse(new StringJavaFileObject(typeUseSource));
     } catch (IOException e) {
       throw new Error("This can't happen", e);
     }

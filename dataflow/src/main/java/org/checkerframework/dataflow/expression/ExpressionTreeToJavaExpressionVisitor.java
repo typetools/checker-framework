@@ -1,6 +1,4 @@
-package org.checkerframework.framework.util;
-
-// TODO: Should this be in package org.checkerframework.dataflow.expression?
+package org.checkerframework.dataflow.expression;
 
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.ArrayTypeTree;
@@ -43,19 +41,6 @@ import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.dataflow.expression.ArrayAccess;
-import org.checkerframework.dataflow.expression.ArrayCreation;
-import org.checkerframework.dataflow.expression.BinaryOperation;
-import org.checkerframework.dataflow.expression.ClassName;
-import org.checkerframework.dataflow.expression.FieldAccess;
-import org.checkerframework.dataflow.expression.FormalParameter;
-import org.checkerframework.dataflow.expression.JavaExpression;
-import org.checkerframework.dataflow.expression.LocalVariable;
-import org.checkerframework.dataflow.expression.MethodCall;
-import org.checkerframework.dataflow.expression.SuperReference;
-import org.checkerframework.dataflow.expression.ThisReference;
-import org.checkerframework.dataflow.expression.UnaryOperation;
-import org.checkerframework.dataflow.expression.ValueLiteral;
 import org.checkerframework.framework.util.JavaExpressionParseException.JavaExpressionParseExceptionUnchecked;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
 import org.checkerframework.framework.util.javacparse.JavacParse;
@@ -363,6 +348,9 @@ class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<JavaExpres
    * If {@code s} is a parameter expressed using the "_param_NN" syntax, then returns a
    * JavaExpression for the given parameter; that is, returns an element of {@code parameters}.
    * Otherwise, returns {@code null}.
+   *
+   * <p>The user writes formal parameters like "#2", which is not a legal Java identifier. The
+   * Checker Framework converts that string to "_param_2" before passing it to the Java parser.
    *
    * @param s a String that may be a parameter in the "_param_NN" syntax
    * @return the JavaExpression for the given parameter or {@code null} if {@code s} is not a
@@ -948,9 +936,7 @@ class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<JavaExpres
       try {
         return typeTree.accept(this, null).getType();
       } catch (Throwable e) {
-        System.out.printf("Problem while parsing %s :%n", typeTree);
-        e.printStackTrace();
-        return null;
+        throw new BugInCF("Problem while parsing " + typeTree, e);
       }
     } else if (typeTree instanceof JCTree.JCPrimitiveTypeTree) {
       switch (((JCTree.JCPrimitiveTypeTree) typeTree).getPrimitiveTypeKind()) {

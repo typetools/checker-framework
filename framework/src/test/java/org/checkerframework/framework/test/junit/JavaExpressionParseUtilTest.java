@@ -1,4 +1,4 @@
-package org.checkerframework.framework.util;
+package org.checkerframework.framework.test.junit;
 
 import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.main.Option;

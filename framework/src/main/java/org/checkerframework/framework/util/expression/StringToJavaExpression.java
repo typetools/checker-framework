@@ -1,6 +1,6 @@
-package org.checkerframework.framework.util;
+package org.checkerframework.framework.util.expression;
 
-// TODO: Should this be in package org.checkerframework.dataflow.expression?
+// This class uses SourceChecker, so it must be in the framework project.
 
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberSelectTree;

@@ -1,6 +1,6 @@
-package org.checkerframework.framework.util;
+package org.checkerframework.framework.util.expression;
 
-// TODO: Should this be in package org.checkerframework.dataflow.expression?
+// This class `DiagMessage`, so it must be in the framework project.
 
 import java.util.Arrays;
 import javax.tools.Diagnostic;
