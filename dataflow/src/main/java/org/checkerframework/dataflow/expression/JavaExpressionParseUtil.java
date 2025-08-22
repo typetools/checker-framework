@@ -23,6 +23,11 @@ import org.plumelib.util.StringsPlume;
  */
 public class JavaExpressionParseUtil {
 
+  /** Do not instantiate. */
+  private JavaExpressionParseUtil() {
+    throw new Error("Do not instantiate");
+  }
+
   /** Regular expression for a formal parameter use. */
   static final String PARAMETER_REGEX = "#([1-9][0-9]*)";
 
