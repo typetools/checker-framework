@@ -47,9 +47,9 @@ public class DiagMessage {
   }
 
   /**
-   * Returns a DiagMessage corresponding to the given Java Expression parse exception.
+   * Creates a DiagMessage corresponding to the given Java Expression parse exception.
    *
-   * @return a DiagMessage corresponding to the given Java Expression parse exception
+   * @param jppe a Java Expression parse exception
    */
   public DiagMessage(JavaExpressionParseException jppe) {
     this(Diagnostic.Kind.ERROR, jppe.getErrorKey(), jppe.getArgs());

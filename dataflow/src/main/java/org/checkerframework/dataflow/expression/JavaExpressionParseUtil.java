@@ -44,9 +44,6 @@ public class JavaExpressionParseUtil {
   /**
    * Parses a string to a {@link JavaExpression}.
    *
-   * <p>For most uses, clients should call one of the static methods in {@link
-   * StringToJavaExpression} rather than calling this method directly.
-   *
    * @param expression the string expression to parse
    * @param enclosingType type of the class that encloses the JavaExpression
    * @param thisReference the JavaExpression to which to parse "this", or null if "this" should not
