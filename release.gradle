@@ -54,7 +54,9 @@ tasks.register('updateVersionNumbersInDocs', Copy) {
 
     filter { String line ->
       line = line.replaceAll("checker-framework-${releaseVersionRegex}", "checker-framework-${releaseVersion}")
-      line.replaceAll("<!-- checker-framework-date -->(.*)<!-- /checker-framework-date -->", "<!-- checker-framework-date -->${currentDate}<!-- /checker-framework-date -->")
+      String releaseDatePrefix = '<!-- checker-framework-date -->'
+      String releaseDateSuffix = '<!-- /checker-framework-date -->'
+      line.replaceAll("${releaseDatePrefix}(.*)${releaseDateSuffix}", releaseDatePrefix + currentDate + releaseDateSuffix)
     }
   }
 
