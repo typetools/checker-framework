@@ -51,7 +51,7 @@ tasks.register('updateVersionNumbersAFU', Copy) {
 tasks.register('updateVersionNumbersInDocs', Copy) {
   // See documentation above.
   into layout.buildDirectory.file('updateVersionNumbers/docs/')
-  from('docs/') {
+  from ('docs/') {
     include 'annotation-file-utilities/annotation-file-utilities.html',
         'checker-framework-quick-start.html',
         'checker-framework-webpage.html',
@@ -65,7 +65,7 @@ tasks.register('updateVersionNumbersInDocs', Copy) {
     }
   }
 
-  from('docs') {
+  from ('docs') {
     include 'manual/external-tools.tex'
     filter { String line ->
       line = line.replaceAll("checker(|-framework|-qual|-util)([-/])${releaseVersionRegex}") { "checker${it[1]}${it[2]}${releaseVersion}"};
@@ -76,7 +76,7 @@ tasks.register('updateVersionNumbersInDocs', Copy) {
     }
   }
 
-  from('docs') {
+  from ('docs') {
     include 'manual/manual.tex'
 
     filter { String line ->
@@ -85,7 +85,7 @@ tasks.register('updateVersionNumbersInDocs', Copy) {
     }
   }
 
-  from('docs') {
+  from ('docs') {
     include 'examples/MavenExample/pom.xml'
 
     filter { String line ->
@@ -98,7 +98,7 @@ tasks.register('zipMavenExamples', Zip) {
   description = 'Creates a zip archive for the Maven examples.'
   archiveFileName = "mvn-examples.zip"
   destinationDirectory = file(project.property('cfWebsite'))
-  from('docs/examples/MavenExample')
+  from ('docs/examples/MavenExample')
 }
 
 
@@ -114,27 +114,27 @@ tasks.register('copyToWebsite', Copy) {
     include('checker-framework-webpage.html', 'CHANGELOG.md')
   }
 
-  from('docs/logo/Logo/CFLogo.png') {
+  from ('docs/logo/Logo/CFLogo.png') {
     into 'tutorial/'
   }
-  from('docs/logo/Logo/CFLogo.png') {
+  from ('docs/logo/Logo/CFLogo.png') {
     into 'tutorial/webpages'
   }
-  from('docs/logo/Logo/CFLogo.png') {
+  from ('docs/logo/Logo/CFLogo.png') {
     into 'manual'
   }
 
   // Copy favicon
-  from('docs/logo/Checkmark/CFCheckmark_favicon.png') {
+  from ('docs/logo/Checkmark/CFCheckmark_favicon.png') {
     rename('CFCheckmark_favicon.png','favicon-checkerframework.png' )
   }
-  from('docs/logo/Checkmark/CFCheckmark_favicon.png') {
+  from ('docs/logo/Checkmark/CFCheckmark_favicon.png') {
     into 'manual'
     rename('CFCheckmark_favicon.png','favicon-checkerframework.png' )
   }
 
   // Copy manual files
-  from('docs/manual') {
+  from ('docs/manual') {
     into 'manual'
     include 'manual.html',
         'manual.pdf',
@@ -143,7 +143,7 @@ tasks.register('copyToWebsite', Copy) {
   }
 
   // Copy developer docs
-  from('docs/developer') {
+  from ('docs/developer') {
     into 'manual'
     include 'developer-manual.html',
         'gsoc-ideas.html',
