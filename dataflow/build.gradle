@@ -12,6 +12,8 @@ dependencies {
 
   implementation "org.plumelib:hashmap-util:${versions.hashmapUtil}"
 
+  testImplementation group: 'junit', name: 'junit', version: '4.13.2'
+
   // External dependencies:
   // If you add an external dependency, you must shadow its packages both in the dataflow-shaded
   // artifact (see shadowJar block below) and also in checker.jar (see the comment in
