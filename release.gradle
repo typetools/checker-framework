@@ -188,6 +188,7 @@ tasks.register('copyToWebsite', Copy) {
 }
 
 tasks.register('updateCopyMavenExample', Copy) {
+  // This task is used during the release in "sanity_checks.py" to check that the Maven artifacts were uploaded correctly.
   description = 'Copies the Maven example to the location in property destDir.'
   String destDir = project.property('destDir') + '/MavenExample'
   destinationDir = file(destDir)
