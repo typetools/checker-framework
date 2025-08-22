@@ -100,7 +100,7 @@ tasks.register('zipMavenExamples', Zip) {
 tasks.register('copyToWebsite', Copy) {
   description = 'Copy files to location set in the property cfWebsite.'
 
-  dependsOn(':allJavadoc',':manual', ':createZip', 'zipMavenExamples')
+  dependsOn(':allJavadoc',':manual', ':zip', 'zipMavenExamples')
   String destDir = project.property('cfWebsite')
   destinationDir = file(destDir)
   from tasks.named('createZip', Zip).get().archiveFile.get().toString()
