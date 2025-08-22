@@ -4,29 +4,35 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 ext {
-  // Date in ISO format.
-  currentDate = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
-  releaseVersionRegex = "\\d\\.\\d+\\.\\d+(?:\\.\\d)?"
-
   // Increment the minor version (second number) rather than just the patch
   // level (third number) if:
   //   * any new checkers have been added, or
   //   * backward-incompatible changes have been made to APIs or elsewhere.
   // To make a snapshot release, version should end in "-SNAPSHOT", then: ./gradlew publish
   releaseVersion = '3.49.6'
+
+  releaseVersionRegex = "\\d\\.\\d+\\.\\d+(?:\\.\\d)?"
+
+  // Date in ISO format.
+  currentDate = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
 }
 
+// Note about update tasks:
+// It's not possible to update the version numbers in place, so first
+// updateVersionNumbersInDocs and updateVersionNumbersAFU copy to a temporary
+// directory with a filter to do replacement, then updateVersionNumbers copies
+// the changed files back to their original locations.
+
 tasks.register('updateVersionNumbers', Copy) {
+  // See documentation above.
   dependsOn('updateVersionNumbersInDocs')
   dependsOn('updateVersionNumbersAFU')
-  // It's not possible to update the versions numbers in place, so updateVersionNumbersInDocs and
-  // updateVersionNumbersAFU copy to temporary directory, then this task copies the changed files
-  // back into their original locations.
   from layout.buildDirectory.file('updateVersionNumbers/')
   into layout.projectDirectory
 }
 
 tasks.register('updateVersionNumbersAFU', Copy) {
+  // See documentation above.
   String classFileReader = 'annotation-file-utilities/src/main/java/org/checkerframework/afu/scenelib/io/classfile/ClassFileReader.java'
   doFirst {
     if(!file("annotation-file-utilities/${classFileReader}").exists()) {
@@ -34,7 +40,6 @@ tasks.register('updateVersionNumbersAFU', Copy) {
     }
   }
 
-  // It's not possible to update the versions numbers in place, so copy to temporary directory.
   into layout.buildDirectory.file('updateVersionNumbers/annotation-file-utilities')
   from 'annotation-file-utilities'
   include classFileReader
@@ -44,7 +49,7 @@ tasks.register('updateVersionNumbersAFU', Copy) {
 }
 
 tasks.register('updateVersionNumbersInDocs', Copy) {
-  // It's not possible to update the versions numbers in place, so copy to temporary directory.
+  // See documentation above.
   into layout.buildDirectory.file('updateVersionNumbers/docs/')
   from('docs/') {
     include 'annotation-file-utilities/annotation-file-utilities.html',
@@ -99,22 +104,22 @@ tasks.register('zipMavenExamples', Zip) {
 
 tasks.register('copyToWebsite', Copy) {
   description = 'Copy files to location set in the property cfWebsite.'
-
   dependsOn(':allJavadoc',':manual', ':zip', 'zipMavenExamples')
+
   String destDir = project.property('cfWebsite')
-  destinationDir = file(destDir)
-  from tasks.named('createZip', Zip).get().archiveFile.get().toString()
+  destinationDir = file(destDir) // destinationDir affects all `into` clauses
+
+  from tasks.named('zip', Zip).get().archiveFile.get().toString()
   from ('docs') {
     include('checker-framework-webpage.html', 'CHANGELOG.md')
   }
+
   from('docs/logo/Logo/CFLogo.png') {
     into 'tutorial/'
   }
-
   from('docs/logo/Logo/CFLogo.png') {
     into 'tutorial/webpages'
   }
-
   from('docs/logo/Logo/CFLogo.png') {
     into 'manual'
   }
@@ -123,7 +128,6 @@ tasks.register('copyToWebsite', Copy) {
   from('docs/logo/Checkmark/CFCheckmark_favicon.png') {
     rename('CFCheckmark_favicon.png','favicon-checkerframework.png' )
   }
-
   from('docs/logo/Checkmark/CFCheckmark_favicon.png') {
     into 'manual'
     rename('CFCheckmark_favicon.png','favicon-checkerframework.png' )
@@ -161,18 +165,7 @@ tasks.register('copyToWebsite', Copy) {
     into 'api'
   }
 
-  doLast {
-    delete(file("${destDir}/index.html"))
-    Files.createSymbolicLink(file("${destDir}/index.html").toPath(), Paths.get('checker-framework-webpage.html'))
-  }
-  doLast {
-    delete(file("${destDir}/manual/index.html"))
-    Files.createSymbolicLink(file("${destDir}/manual/index.html").toPath(), Paths.get('manual.html'))
-  }
-
-
   from ('docs/annotation-file-utilities') {
-
     include 'annotation-file-utilities.html'
     include 'annotation-file-format.html'
     include 'annotation-file-format.pdf'
@@ -182,6 +175,14 @@ tasks.register('copyToWebsite', Copy) {
     into 'annotation-file-utilities'
   }
 
+  doLast {
+    delete(file("${destDir}/index.html"))
+    Files.createSymbolicLink(file("${destDir}/index.html").toPath(), Paths.get('checker-framework-webpage.html'))
+  }
+  doLast {
+    delete(file("${destDir}/manual/index.html"))
+    Files.createSymbolicLink(file("${destDir}/manual/index.html").toPath(), Paths.get('manual.html'))
+  }
   doLast {
     delete "${destDir}/annotation-file-utilities/index.html"
     Files.createSymbolicLink(file("${destDir}/annotation-file-utilities/index.html").toPath(), Paths.get('annotation-file-utilities.html'))
