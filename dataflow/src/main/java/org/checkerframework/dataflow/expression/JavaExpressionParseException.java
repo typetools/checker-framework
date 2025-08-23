@@ -57,10 +57,13 @@ public class JavaExpressionParseException extends Exception {
     if (explanation == null) {
       throw new BugInCF("Must have an explanation.");
     }
-    return new JavaExpressionParseException(
-        (Throwable) null,
-        "flowexpr.parse.error",
-        "Invalid '" + exprString + "' because " + explanation);
+    @SuppressWarnings("compilermessages:argument") // defined in the framework project
+    JavaExpressionParseException result =
+        new JavaExpressionParseException(
+            (Throwable) null,
+            "flowexpr.parse.error",
+            "Invalid '" + exprString + "' because " + explanation);
+    return result;
   }
 
   /**
@@ -68,7 +71,7 @@ public class JavaExpressionParseException extends Exception {
    *
    * @return the error message key
    */
-  public String getErrorKey() {
+  public @CompilerMessageKey String getErrorKey() {
     return errorKey;
   }
 

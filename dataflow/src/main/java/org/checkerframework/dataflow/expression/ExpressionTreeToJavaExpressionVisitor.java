@@ -41,7 +41,6 @@ import org.checkerframework.checker.formatter.qual.ConversionCategory;
 import org.checkerframework.checker.formatter.qual.Format;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
-import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.expression.JavaExpressionParseException.JavaExpressionParseExceptionUnchecked;
 import org.checkerframework.javacutil.BugInCF;
@@ -378,11 +377,13 @@ class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<JavaExpres
     }
 
     if (idx > parameters.size()) {
-      throw new JavaExpressionParseExceptionUnchecked(
+      @SuppressWarnings("compilermessages:argument") // defined in the framework project
+      JavaExpressionParseException jepe =
           new JavaExpressionParseException(
               "flowexpr.parse.index.too.big",
               Integer.toString(idx),
-              Integer.toString(parameters.size())));
+              Integer.toString(parameters.size()));
+      throw new JavaExpressionParseExceptionUnchecked(jepe);
     }
     return parameters.get(idx - 1);
   }
@@ -542,6 +543,7 @@ class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<JavaExpres
         return null;
       }
       if (receiverExpr instanceof SuperReference
+          && thisReference != null
           && thisReference.getType().getKind() == TypeKind.DECLARED) {
         Element thisFieldElem =
             resolver.findField(identifier, thisReference.getType(), pathToCompilationUnit);
@@ -670,7 +672,8 @@ class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<JavaExpres
 
     if (methodSelect instanceof MemberSelectTree) {
       // Method call with explicit receiver, like `obj.method()` or `Class.staticMethod()`.
-      receiverExpr = (@NonNull JavaExpression) receiverExprTmp;
+      assert receiverExprTmp != null : "@AssumeAssertion(nullness): established in `if` above";
+      receiverExpr = receiverExprTmp;
       if (isInstance && receiverExpr instanceof ClassName) {
         throw new JavaExpressionParseExceptionUnchecked(
             JavaExpressionParseException.construct(
@@ -685,6 +688,7 @@ class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<JavaExpres
     } else if (methodSelect instanceof IdentifierTree) {
       // Static or instance method call with implicit receiver, like `method()`.
       if (isInstance) {
+        assert thisReference != null : "@AssumeAssertion(nullness): isInstance => thisReference";
         receiverExpr = thisReference;
       } else {
         Element classElem = methodElement.getEnclosingElement();
@@ -827,7 +831,7 @@ class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<JavaExpres
 
   @Override
   public JavaExpression visitNewArray(NewArrayTree exprTree, Void unused) {
-    List<JavaExpression> dimensions = new ArrayList<>();
+    List<@Nullable JavaExpression> dimensions = new ArrayList<>();
     for (ExpressionTree dim : exprTree.getDimensions()) {
       dimensions.add(dim == null ? null : dim.accept(this, null));
     }
