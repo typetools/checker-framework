@@ -4,4 +4,4 @@ depend on side-effect annotations (@Pure, @SideEffectFree) in the JDK.
 Since these are tests of the framework, they do not use the
 org.checkerframework.checker package.
 
-For writing new test cases, see file ../../checker/tests/README.
+For writing new test cases, see file ../../checker/tests/README.md.

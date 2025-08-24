@@ -511,7 +511,9 @@ public class JavaExpressionParseUtil {
       if (idx > parameters.size()) {
         throw new ParseRuntimeException(
             new JavaExpressionParseException(
-                "flowexpr.parse.index.too.big", Integer.toString(idx)));
+                "flowexpr.parse.index.too.big",
+                Integer.toString(idx),
+                Integer.toString(parameters.size())));
       }
       return parameters.get(idx - 1);
     }

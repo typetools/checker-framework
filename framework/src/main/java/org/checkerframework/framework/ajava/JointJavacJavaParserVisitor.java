@@ -1231,7 +1231,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
     // - When there are no initializers, both systems use similar representations. The
     // dimensions line up.
     // - When there is an initializer, they differ greatly for multi-dimensional arrays. Javac
-    // turns an expression like new int[][]{{1, 2}, {3, 4}} into a single NewArray tree with
+    // turns an expression like "new int[][] {{1, 2}, {3, 4}}" into a single NewArray tree with
     // type int[] and two initializer elements {1, 2} and {3, 4}. However, for each of the
     // sub-initializers, it creates an implicit NewArray tree with a null component type.
     // JavaParser keeps the whole expression as one ArrayCreationExpr with multiple dimensions

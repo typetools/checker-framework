@@ -86,9 +86,7 @@ The following repositories will be cloned or updated from their origins:
     message += str(CHECKLINK) + "\n"
     message += str(PLUME_BIB) + "\n"
 
-    message += (
-        "Clone repositories from scratch (answer no to be given a chance to update them instead)?"
-    )
+    message += "Clone repositories from scratch (answer no to get a chance to update them instead)?"
 
     clone_from_scratch = True
 
