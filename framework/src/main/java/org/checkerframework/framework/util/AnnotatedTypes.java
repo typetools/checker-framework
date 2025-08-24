@@ -1066,7 +1066,7 @@ public class AnnotatedTypes {
     List<AnnotatedTypeMirror> parameters = method.getParameterTypes();
 
     // Handle anonymous constructors that extend a class with an enclosing type,
-    // as in `new MyClass(){ ... }`.
+    // as in `new MyClass() { ... }`.
     if (method.getElement().getKind() == ElementKind.CONSTRUCTOR
         && method.getElement().getEnclosingElement().getSimpleName().contentEquals("")) {
       DeclaredType t =
