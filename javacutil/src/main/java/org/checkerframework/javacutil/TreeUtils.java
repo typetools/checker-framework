@@ -795,11 +795,11 @@ public final class TreeUtils {
    * <pre>{@code class Outer {
    *   class Inner { }
    *     void method() {
-   *       this.new Inner(){};
+   *       this.new Inner() {};
    *     }
    * }}</pre>
    *
-   * Java 9 javac creates the following synthetic tree for {@code this.new Inner(){}}:
+   * Java 9 javac creates the following synthetic tree for {@code this.new Inner() {}}:
    *
    * <pre>{@code new Inner(this) {
    *   (.Outer x0) {
@@ -808,7 +808,7 @@ public final class TreeUtils {
    * }}</pre>
    *
    * Java 11 javac creates a different tree without the synthetic argument for {@code this.new
-   * Inner(){}}; the first line in the below code differs:
+   * Inner() {}}; the first line in the below code differs:
    *
    * <pre>{@code this.new Inner() {
    *   (.Outer x0) {
