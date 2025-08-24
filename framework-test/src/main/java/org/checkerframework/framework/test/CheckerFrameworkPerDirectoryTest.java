@@ -30,6 +30,8 @@ import org.junit.runner.RunWith;
  *       It is unnecessary to list child directories of a directory you have already listed.
  * </ol>
  *
+ * Here is an example:
+ *
  * <pre><code>
  * public class MyTest extends CheckerFrameworkPerDirectoryTest {
  *   /** {@literal @}param testFiles the files containing test code, which will be type-checked *{@literal /}
@@ -38,7 +40,7 @@ import org.junit.runner.RunWith;
  *   }
  *  {@literal @}Parameters
  *   public static String [] getTestDirs() {
- *     return new String[]{"all-systems"};
+ *     return new String[] {"all-systems"};
  *   }
  * }
  * </code></pre>

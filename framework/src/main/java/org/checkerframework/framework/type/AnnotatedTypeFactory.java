@@ -2837,7 +2837,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         // If the super class of the anonymous class has an enclosing type, then it is the
         // first parameter of the anonymous constructor. For example,
         // class Outer { class Inner {} }
-        //  new Inner(){};
+        //  new Inner() {};
         // Then javac creates the following constructor:
         //  (.Outer x0) {
         //   x0.super();

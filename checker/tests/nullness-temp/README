@@ -10,7 +10,7 @@ copy.
 
 To add a new file to the test suite, just add it to this directory.
 For more details, see
-  ../README
+  ../README.md
 
 To run the tests, do
   (cd $CHECKERFRAMEWORK && ./gradlew NullnessTempTest)
