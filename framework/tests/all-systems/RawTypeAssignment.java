@@ -18,6 +18,8 @@ public class RawTypeAssignment {
     @SuppressWarnings("assignment")
     // :: warning: [unchecked] unchecked conversion
     ArrayList<Component> clist = getComponents();
-    clist.get(0);
+    // The following line tests raw type assignment, not index safety
+    @SuppressWarnings("index:argument")
+    Component c = clist.get(0);
   }
 }
