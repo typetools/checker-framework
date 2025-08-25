@@ -5,7 +5,6 @@ public class JdkIndexParamNegativeTests {
 
   void get_needs_upper(List<String> xs, int i) {
     if (0 <= i) {
-      // :: error: (argument)
       xs.get(i);
     }
   }
@@ -47,9 +46,9 @@ public class JdkIndexParamNegativeTests {
 
   void subList_view_needs_high(ArrayList<String> xs, int i, int k) {
     if (0 <= i && i <= xs.size()) {
+      // :: error: (argument)
       List<String> view = xs.subList(0, i);
       if (0 <= k && k < view.size()) {
-        // :: error: (argument)
         view.add(k, "x");
       }
     }
@@ -63,9 +62,9 @@ public class JdkIndexParamNegativeTests {
   }
 
   void remove_needs_upper_SubList(ArrayList<String> xs, int i) {
+    // :: error: (argument)
     List<String> view = xs.subList(0, xs.size());
     if (0 <= i) {
-      // :: error: (argument)
       view.remove(i);
     }
   }
@@ -128,9 +127,9 @@ public class JdkIndexParamNegativeTests {
 
   void listIterator_needs_high_on_COWSubList(
       java.util.concurrent.CopyOnWriteArrayList<String> xs, int i) {
+    // :: error: (argument)
     List<String> view = xs.subList(0, xs.size());
     if (0 <= i && i < view.size()) {
-      // :: error: (argument)
       view.listIterator(i);
     }
   }
@@ -177,9 +176,9 @@ public class JdkIndexParamNegativeTests {
 
   void COWSubList_add_needs_high(CopyOnWriteArrayList<String> xs, int i, int k) {
     if (0 <= i && i <= xs.size()) {
+      // :: error: (argument)
       List<String> view = xs.subList(0, i);
       if (0 <= k && k < view.size()) {
-        // :: error: (argument)
         view.add(k, "x");
       }
     }
