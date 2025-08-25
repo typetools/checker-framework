@@ -77,9 +77,9 @@ task testExample(type: JavaExec, dependsOn: compileTestJava, group: 'Verificatio
   doFirst {
     file(outputDir).mkdir()
     new File("${outputDir}/example-stdout.jaif").createNewFile()
+
     standardOutput = new FileOutputStream("${outputDir}/example-stdout.jaif")
   }
-
   doLast {
 
     byte[] goalJaif = Files.readAllBytes(new File(resourceDir, "example-output.jaif.goal").toPath());

@@ -154,8 +154,7 @@ task checkerJar(type: ShadowJar, dependsOn: compileJava, group: 'Build') {
 
   from shadowJar.source
   configurations = shadowJar.configurations
-  // To see what files are incorporated into the shadow jar file:
-  // doLast { println sourceSets.main.runtimeClasspath.asPath }
+
   manifest {
     attributes('Main-Class': 'org.checkerframework.framework.util.CheckerMain')
   }
