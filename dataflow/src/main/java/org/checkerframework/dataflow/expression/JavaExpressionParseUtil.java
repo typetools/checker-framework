@@ -84,7 +84,7 @@ public class JavaExpressionParseUtil {
       }
       exprTree = jpr.getTree();
     } catch (IllegalArgumentException e) {
-      @SuppressWarnings("nullness:assignment") // possible real bug?
+      @SuppressWarnings("nullness:assignment") // presently always non-null; could change in future
       @NonNull String msg = e.getMessage();
       throw JavaExpressionParseException.construct(expression, msg);
     }
