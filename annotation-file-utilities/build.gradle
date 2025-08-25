@@ -35,7 +35,7 @@ dependencies {
 
 
 shadowJar {
-  destinationDirectory = projectDir
+  destinationDirectory = file("${projectDir}/dist")
   includeEmptyDirs = false
   archiveFileName = 'annotation-file-utilities-all.jar'
   // Don't include any class from the Checker Framework.
