@@ -229,6 +229,8 @@ allprojects { currentProj ->
       '--add-exports',
       'jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED',
       '--add-exports',
+      'jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED',
+      '--add-exports',
       'jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED',
       '--add-exports',
       'jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED',
@@ -425,6 +427,7 @@ allprojects { currentProj ->
         options.addBooleanOption('-add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED', true)
         options.addBooleanOption('-add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED', true)
         options.addBooleanOption('-add-exports=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED', true)
+        options.addBooleanOption('-add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED', true)
         options.addBooleanOption('-add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED', true)
         options.addBooleanOption('-add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED', true)
         options.addBooleanOption('-add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED', true)
@@ -489,6 +492,8 @@ allprojects { currentProj ->
           '--add-exports',
           'jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED',
           '--add-exports',
+          'jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED',
+          '--add-exports',
           'jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED',
           '--add-exports',
           'jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED',
@@ -545,6 +550,8 @@ allprojects { currentProj ->
           '-Xep:MixedMutabilityReturnType:OFF',
           // Don't want to add a dependency to ErrorProne.
           '-Xep:AnnotateFormatMethod:OFF',
+          // Don't want to add a dependency to ErrorProne.
+          "-Xep:DoNotCallSuggester:OFF",
           // Warns for every use of "@checker_framework.manual"
           '-Xep:InvalidBlockTag:OFF',
           // Recommends writing @InlineMe which is an Error-Prone-specific annotation
