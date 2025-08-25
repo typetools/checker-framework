@@ -782,7 +782,7 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
           return IPair.of(rec.replacePath(astPath), pos);
         }
         // In a situation like
-        //   node=new String[][][][][]{{{}}}
+        //   node=new String[][][][][] {{{}}}
         // Also see Pretty.printBrackets.
         if (dim == 0) {
           if (na.elemtype == null) {

@@ -154,15 +154,16 @@ task checkerJar(type: ShadowJar, dependsOn: compileJava, group: 'Build') {
 
   from shadowJar.source
   configurations = shadowJar.configurations
+  // To see what files are incorporated into the shadow jar file:
+  // doLast { println sourceSets.main.runtimeClasspath.asPath }
   manifest {
     attributes('Main-Class': 'org.checkerframework.framework.util.CheckerMain')
   }
   exclude 'org/checkerframework/**/qual/*'
   exclude 'org/checkerframework/checker/**/util/*'
   relocators = shadowJar.getRelocators()
-
   // To see what files are incorporated into the shadow jar file:
-  // doLast { println sourceSets.main.runtimeClasspath.asPath }
+  // doFirst { println sourceSets.main.runtimeClasspath.asPath }
 }
 
 jar {
@@ -174,9 +175,9 @@ jar {
 
 shadowJar {
   description = 'Creates checker-VERSION-all.jar and copies it to dist/checker.jar.'
+  archiveClassifier = 'all'
   // To see what files are incorporated into the shadow jar file:
   // doFirst { println sourceSets.main.runtimeClasspath.asPath }
-  archiveClassifier = 'all'
   doLast{
     copy {
       from archiveFile.get()
@@ -360,11 +361,6 @@ task ainferTestCheckerGenerateStubs(type: Test) {
   description = 'Internal task.  Users should run ainferTestCheckerStubTest instead.  This type-checks the ainfer-testchecker files with -Ainfer=stubs to generate stub files.'
   dependsOn(compileTestJava)
 
-  doFirst {
-    delete('tests/ainfer-testchecker/annotated')
-    delete("${buildDir}/ainfer-testchecker/")
-  }
-
   testClassesDirs = sourceSets.test.output.classesDirs
   classpath = sourceSets.test.runtimeClasspath
 
@@ -378,7 +374,10 @@ task ainferTestCheckerGenerateStubs(type: Test) {
     exceptionFormat = 'full'
     events 'passed', 'skipped', 'failed'
   }
-
+  doFirst {
+    delete('tests/ainfer-testchecker/annotated')
+    delete("${buildDir}/ainfer-testchecker/")
+  }
   doLast {
     copyNonannotatedToAnnotatedDirectory('ainfer-testchecker')
     // The stub file format doesn't support annotations on anonymous inner classes, so
@@ -426,13 +425,9 @@ task ainferTestCheckerGenerateAjava(type: Test) {
   description = 'Internal task.  Users should run ainferTestCheckerAjavaTest instead.  This type-checks the ainfer-testchecker files with -Ainfer=ajava to generate ajava files.'
   dependsOn(compileTestJava)
 
-  doFirst {
-    delete('tests/ainfer-testchecker/annotated')
-    delete("${buildDir}/ainfer-testchecker/")
-  }
-
   testClassesDirs = sourceSets.test.output.classesDirs
   classpath = sourceSets.test.runtimeClasspath
+
   outputs.upToDateWhen { false }
   include '**/AinferTestCheckerAjavaGenerationTest.class'
   testLogging {
@@ -443,7 +438,10 @@ task ainferTestCheckerGenerateAjava(type: Test) {
     exceptionFormat = 'full'
     events 'passed', 'skipped', 'failed'
   }
-
+  doFirst {
+    delete('tests/ainfer-testchecker/annotated')
+    delete("${buildDir}/ainfer-testchecker/")
+  }
   doLast {
     copyNonannotatedToAnnotatedDirectory('ainfer-testchecker')
 
@@ -538,14 +536,8 @@ task ainferTestCheckerGenerateJaifs(type: Test) {
 
   dependsOn(compileTestJava)
   dependsOn(':checker-qual:jar')  // For the Value Checker annotations.
-
-  doFirst {
-    delete('tests/ainfer-testchecker/annotated')
-  }
-
   testClassesDirs = sourceSets.test.output.classesDirs
   classpath = sourceSets.test.runtimeClasspath
-
   outputs.upToDateWhen { false }
   include '**/AinferTestCheckerJaifsGenerationTest.class'
   testLogging {
@@ -556,7 +548,9 @@ task ainferTestCheckerGenerateJaifs(type: Test) {
     exceptionFormat = 'full'
     events 'passed', 'skipped', 'failed'
   }
-
+  doFirst {
+    delete('tests/ainfer-testchecker/annotated')
+  }
   doLast {
     copyNonannotatedToAnnotatedDirectory('ainfer-testchecker')
 
@@ -618,15 +612,8 @@ task ainferTestCheckerJaifTest(dependsOn: 'shadowJar', group: 'Verification') {
 task ainferIndexGenerateAjava(type: Test) {
   description = 'Internal task.  Users should run ainferIndexAjavaTest instead.  This type-checks the ainfer-index files with -Ainfer=ajava to generate ajava files.'
   dependsOn(compileTestJava)
-
-  doFirst {
-    delete('tests/ainfer-index/annotated')
-    delete("${layout.buildDir}/ainfer-index/")
-  }
-
   testClassesDirs = sourceSets.test.output.classesDirs
   classpath = sourceSets.test.runtimeClasspath
-
   outputs.upToDateWhen { false }
   include '**/AinferIndexAjavaGenerationTest.class'
   testLogging {
@@ -637,7 +624,10 @@ task ainferIndexGenerateAjava(type: Test) {
     exceptionFormat = 'full'
     events 'passed', 'skipped', 'failed'
   }
-
+  doFirst {
+    delete('tests/ainfer-index/annotated')
+    delete("${layout.buildDir}/ainfer-index/")
+  }
   doLast {
     copyNonannotatedToAnnotatedDirectory('ainfer-index')
   }
@@ -671,14 +661,8 @@ task ainferNullnessGenerateAjava(type: Test) {
   description = 'Internal task.  Users should run ainferNullnessAjavaTest instead.  This type-checks the ainfer-nullness files with -Ainfer=ajava to generate ajava files.'
   dependsOn(compileTestJava)
 
-  doFirst {
-    delete('tests/ainfer-nullness/annotated')
-    delete("${buildDir}/ainfer-nullness/")
-  }
-
   testClassesDirs = sourceSets.test.output.classesDirs
   classpath = sourceSets.test.runtimeClasspath
-
   outputs.upToDateWhen { false }
   include '**/AinferNullnessAjavaGenerationTest.class'
   testLogging {
@@ -689,7 +673,10 @@ task ainferNullnessGenerateAjava(type: Test) {
     exceptionFormat = 'full'
     events 'passed', 'skipped', 'failed'
   }
-
+  doFirst {
+    delete('tests/ainfer-nullness/annotated')
+    delete("${buildDir}/ainfer-nullness/")
+  }
   doLast {
     copyNonannotatedToAnnotatedDirectory('ainfer-nullness')
   }
@@ -724,14 +711,8 @@ task ainferResourceLeakGenerateAjava(type: Test) {
   description = 'Internal task.  Users should run ainferResourceLeakAjavaTest instead.  This type-checks the ainfer-index files with -Ainfer=ajava to generate ajava files.'
   dependsOn(compileTestJava)
 
-  doFirst {
-    delete('tests/ainfer-resourceleak/annotated')
-    delete("${buildDir}/ainfer-resourceleak/")
-  }
-
   testClassesDirs = sourceSets.test.output.classesDirs
   classpath = sourceSets.test.runtimeClasspath
-
   outputs.upToDateWhen { false }
   include '**/AinferResourceLeakAjavaGenerationTest.class'
   testLogging {
@@ -742,7 +723,10 @@ task ainferResourceLeakGenerateAjava(type: Test) {
     exceptionFormat = 'full'
     events 'passed', 'skipped', 'failed'
   }
-
+  doFirst {
+    delete('tests/ainfer-resourceleak/annotated')
+    delete("${buildDir}/ainfer-resourceleak/")
+  }
   doLast {
     copyNonannotatedToAnnotatedDirectory('ainfer-resourceleak')
   }
@@ -777,13 +761,8 @@ task ainferNullnessGenerateJaifs(type: Test) {
   description = 'Internal task.  Users should run ainferNullnessJaifTest instead.  This type-checks the ainfer-nullness files with -Ainfer=jaifs to generate .jaif files'
   dependsOn(compileTestJava)
 
-  doFirst {
-    delete('tests/ainfer-nullness/annotated')
-  }
-
   testClassesDirs = sourceSets.test.output.classesDirs
   classpath = sourceSets.test.runtimeClasspath
-
   outputs.upToDateWhen { false }
   include '**/AinferNullnessJaifsGenerationTest.class'
   testLogging {
@@ -794,7 +773,9 @@ task ainferNullnessGenerateJaifs(type: Test) {
     exceptionFormat = 'full'
     events 'passed', 'skipped', 'failed'
   }
-
+  doFirst {
+    delete('tests/ainfer-nullness/annotated')
+  }
   doLast {
     copyNonannotatedToAnnotatedDirectory('ainfer-nullness')
 
@@ -867,16 +848,6 @@ task wpiManyTest(type: Exec, group: 'Verification') {
 
   def projectDir = project.projectDir
 
-  doFirst {
-    delete("${projectDir}/build/wpi-many-tests-results/")
-    // wpi-many.sh is run in skip mode so that logs are preserved, but
-    // we don't actually want to skip previously-failing tests when we
-    // re-run the tests locally.
-    delete fileTree("${projectDir}/build/wpi-many-tests") {
-      include '**/.cannot-run-wpi'
-    }
-  }
-
   environment CHECKERFRAMEWORK: "${projectDir}/.."
   commandLine 'bin/wpi-many.sh',
       '-i', "${projectDir}/tests/wpi-many/testin.txt",
@@ -886,6 +857,16 @@ task wpiManyTest(type: Exec, group: 'Verification') {
       '--extraJavacArgs=-AenableWpiForRlc'
 
   ignoreExitValue = true
+
+  doFirst {
+    delete("${projectDir}/build/wpi-many-tests-results/")
+    // wpi-many.sh is run in skip mode so that logs are preserved, but
+    // we don't actually want to skip previously-failing tests when we
+    // re-run the tests locally.
+    delete fileTree("${projectDir}/build/wpi-many-tests") {
+      include '**/.cannot-run-wpi'
+    }
+  }
 
   def typecheckFilesDir = "${projectDir}/build/wpi-many-tests-results"
   doLast {

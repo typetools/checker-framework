@@ -35,19 +35,7 @@ dependencies {
 
 
 shadowJar {
-  doFirst {
-    // TODO: The release fails because of this, so skip it for now.
-    if (project.hasProperty('release') && false) {
-      println 'Relocating packages.'
-      relocate 'org.apache', 'org.checkerframework.org.apache'
-      relocate 'org.relaxng', 'org.checkerframework.org.relaxng'
-      relocate 'org.plumelib', 'org.checkerframework.org.plumelib'
-      relocate 'org.objectweb.asm', 'org.checkerframework.org.objectweb.asm'
-      relocate 'com.google', 'org.checkerframework.com.google'
-    }
-  }
-
-  destinationDirectory = file("${projectDir}/dist")
+  destinationDirectory = projectDir
   includeEmptyDirs = false
   archiveFileName = 'annotation-file-utilities-all.jar'
   // Don't include any class from the Checker Framework.
@@ -74,14 +62,6 @@ task testExample(type: JavaExec, dependsOn: compileTestJava, group: 'Verificatio
   description = 'Run the scene-lib example test.'
 
   String outputDir = "${layout.buildDirectory.get()}/example-test/"
-
-  doFirst {
-    file(outputDir).mkdir()
-    new File("${outputDir}/example-stdout.jaif").createNewFile()
-
-    standardOutput = new FileOutputStream("${outputDir}/example-stdout.jaif")
-  }
-
   String resourceDir = "${projectDir}/src/test/resources/annotations/tests/executable/"
 
   classpath = files(sourceSets.test.java.classesDirectory)
@@ -93,6 +73,12 @@ task testExample(type: JavaExec, dependsOn: compileTestJava, group: 'Verificatio
     "foo.Bar",
     "${outputDir}/example-output.jaif"
   ]
+
+  doFirst {
+    file(outputDir).mkdir()
+    new File("${outputDir}/example-stdout.jaif").createNewFile()
+    standardOutput = new FileOutputStream("${outputDir}/example-stdout.jaif")
+  }
 
   doLast {
 

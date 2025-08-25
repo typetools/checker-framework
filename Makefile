@@ -1,3 +1,6 @@
+# This Makefile checks and enforces style for Python and Shell scripts.
+# Most build system functionality exists in file `build.gradle`.
+
 all default: style-check
 	$(MAKE) -C .azure
 	$(MAKE) -C checker/bin-devel

@@ -694,6 +694,12 @@ task allJavadoc(type: Javadoc, group: 'Documentation') {
   modularity.inferModulePath = false
 
   finalizedBy 'addFavicon'
+
+  doFirst {
+    source(
+        project(':framework-test').sourceSets.taglet.allJava
+        )
+  }
 }
 
 // See documentation for allJavadoc task.
@@ -811,7 +817,7 @@ task requireJavadoc(type: JavaExec, group: 'Documentation') {
   description = 'Ensures that Javadoc documentation exists in source code.'
   mainClass = 'org.plumelib.javadoc.RequireJavadoc'
   classpath = configurations.requireJavadoc
-  args 'checker/src/main/java', 'checker-qual/src/main/java', 'checker-util/src/main/java', 'dataflow/src/main/java', 'framework/src/main/java', 'framework-test/src/main/java', 'javacutil/src/main/java'
+  args '--exclude=module-info.java', 'checker/src/main/java', 'checker-qual/src/main/java', 'checker-util/src/main/java', 'dataflow/src/main/java', 'framework/src/main/java', 'framework-test/src/main/java', 'javacutil/src/main/java'
   jvmArgs += [
     '--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED',
     '--add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED',
