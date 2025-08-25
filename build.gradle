@@ -685,17 +685,17 @@ task allJavadoc(type: Javadoc, group: 'Documentation') {
       project(':annotation-file-utilities').sourceSets.main.allJava,
       )
 
-  doFirst {
-    source(
-        project(':framework-test').sourceSets.taglet.allJava
-        )
-  }
-
   classpath = configurations.allProjects
   // disable interpreting module-info.java files until all sub-modules support them
   modularity.inferModulePath = false
 
   finalizedBy 'addFavicon'
+
+  doFirst {
+    source(
+        project(':framework-test').sourceSets.taglet.allJava
+        )
+  }
 }
 
 // See documentation for allJavadoc task.
