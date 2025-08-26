@@ -227,6 +227,8 @@ allprojects { currentProj ->
       '--add-exports',
       'jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED',
       '--add-exports',
+      'jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED',
+      '--add-exports',
       'jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED',
       '--add-exports',
       'jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED',
@@ -423,6 +425,7 @@ allprojects { currentProj ->
         options.addBooleanOption('-add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED', true)
         options.addBooleanOption('-add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED', true)
         options.addBooleanOption('-add-exports=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED', true)
+        options.addBooleanOption('-add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED', true)
         options.addBooleanOption('-add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED', true)
         options.addBooleanOption('-add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED', true)
         options.addBooleanOption('-add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED', true)
@@ -487,6 +490,8 @@ allprojects { currentProj ->
           '--add-exports',
           'jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED',
           '--add-exports',
+          'jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED',
+          '--add-exports',
           'jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED',
           '--add-exports',
           'jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED',
@@ -543,6 +548,8 @@ allprojects { currentProj ->
           '-Xep:MixedMutabilityReturnType:OFF',
           // Don't want to add a dependency to ErrorProne.
           '-Xep:AnnotateFormatMethod:OFF',
+          // Don't want to add a dependency to ErrorProne.
+          "-Xep:DoNotCallSuggester:OFF",
           // Warns for every use of "@checker_framework.manual"
           '-Xep:InvalidBlockTag:OFF',
           // Recommends writing @InlineMe which is an Error-Prone-specific annotation
@@ -678,17 +685,17 @@ task allJavadoc(type: Javadoc, group: 'Documentation') {
       project(':annotation-file-utilities').sourceSets.main.allJava,
       )
 
-  doFirst {
-    source(
-        project(':framework-test').sourceSets.taglet.allJava
-        )
-  }
-
   classpath = configurations.allProjects
   // disable interpreting module-info.java files until all sub-modules support them
   modularity.inferModulePath = false
 
   finalizedBy 'addFavicon'
+
+  doFirst {
+    source(
+        project(':framework-test').sourceSets.taglet.allJava
+        )
+  }
 }
 
 // See documentation for allJavadoc task.

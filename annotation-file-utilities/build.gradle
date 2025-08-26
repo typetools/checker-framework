@@ -84,18 +84,19 @@ task testExample(type: JavaExec, dependsOn: compileTestJava, group: 'Verificatio
   classpath = files(sourceSets.test.java.classesDirectory)
   classpath += sourceSets.test.compileClasspath
   mainClass = 'org.checkerframework.afu.scenelib.test.executable.Example'
-  doFirst {
-    file(outputDir).mkdir()
-    new File("${outputDir}/example-stdout.jaif").createNewFile()
 
-    standardOutput = new FileOutputStream("${outputDir}/example-stdout.jaif")
-  }
   args = [
     "${resourceDir}/example-input.jaif",
     "foo.Bar",
     "${outputDir}/example-output.jaif"
   ]
 
+  doFirst {
+    file(outputDir).mkdir()
+    new File("${outputDir}/example-stdout.jaif").createNewFile()
+
+    standardOutput = new FileOutputStream("${outputDir}/example-stdout.jaif")
+  }
   doLast {
 
     byte[] goalJaif = Files.readAllBytes(new File(resourceDir, "example-output.jaif.goal").toPath());
@@ -297,15 +298,16 @@ ext.tmpAnnotationTools = "${layout.buildDirectory.get()}/tmp-annotation-tools"
 task cloneAndPrepDirectoryForZipfile(type: Exec) {
   dependsOn(assemble, makeAnnotationFileFormat)
   description = 'Copy files from repository to temporary directory from which they will be packaged up.'
-  doFirst {
-    delete tmpAnnotationTools
-  }
+
   executable 'git'
   args = [
     'clone',
     '../',
     "${tmpAnnotationTools}"
   ]
+  doFirst {
+    delete tmpAnnotationTools
+  }
   doLast {
     delete "${tmpAnnotationTools}/scene-lib.orig-hand-annos"
     delete "${tmpAnnotationTools}/.git"
@@ -358,17 +360,7 @@ task copyToDeployDir {
 }
 
 task releaseBuild(type: GradleBuild) {
-  description = 'Build everything required for a release, after cleanning.'
-  doFirst {
-    if (!project.hasProperty('deploy-dir')) {
-      println project.properties.entrySet()*.toString().sort().toString().replaceAll(", ","\n")
-      throw new RuntimeException("You must specify a deploy-dir. The live site deploy-dir=/cse/www2/types/annotation-file-utilities/releases/VERSIONNUMBER")
-    }
-    if (!project.hasProperty('afu.version')) {
-      println project.properties.entrySet()*.toString().sort().toString().replaceAll(", ","\n")
-      throw new RuntimeException("You must specify an afu.version, such as 3.6.22")
-    }
-  }
+  description = 'Build everything required for a release, after cleaning.'
 
   startParameter.projectProperties += gradle.startParameter.projectProperties
   startParameter.projectProperties += [release: true.toString()]
@@ -379,10 +371,6 @@ task releaseBuild(type: GradleBuild) {
     'testAnnotator',
     'copyToDeployDir'
   ]
-}
-
-task releaseBuildWithoutTest(type: GradleBuild) {
-  description = 'Build everything required for a release, without cleaning first.'
   doFirst {
     if (!project.hasProperty('deploy-dir')) {
       println project.properties.entrySet()*.toString().sort().toString().replaceAll(", ","\n")
@@ -393,6 +381,10 @@ task releaseBuildWithoutTest(type: GradleBuild) {
       throw new RuntimeException("You must specify an afu.version, such as 3.6.22")
     }
   }
+}
+
+task releaseBuildWithoutTest(type: GradleBuild) {
+  description = 'Build everything required for a release, without cleaning first.'
 
   startParameter.projectProperties += gradle.startParameter.projectProperties
   startParameter.projectProperties += [release: true.toString()]
@@ -402,4 +394,15 @@ task releaseBuildWithoutTest(type: GradleBuild) {
     'zipfile',
     'copyToDeployDir'
   ]
+
+  doFirst {
+    if (!project.hasProperty('deploy-dir')) {
+      println project.properties.entrySet()*.toString().sort().toString().replaceAll(", ","\n")
+      throw new RuntimeException("You must specify a deploy-dir. The live site deploy-dir=/cse/www2/types/annotation-file-utilities/releases/VERSIONNUMBER")
+    }
+    if (!project.hasProperty('afu.version')) {
+      println project.properties.entrySet()*.toString().sort().toString().replaceAll(", ","\n")
+      throw new RuntimeException("You must specify an afu.version, such as 3.6.22")
+    }
+  }
 }

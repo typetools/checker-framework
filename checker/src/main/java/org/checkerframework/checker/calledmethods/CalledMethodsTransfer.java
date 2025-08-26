@@ -26,9 +26,9 @@ import org.checkerframework.dataflow.cfg.node.ArrayCreationNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.JavaExpressionParseException;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.util.JavaExpressionParseUtil;
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -272,7 +272,7 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
         e =
             StringToJavaExpression.atMethodInvocation(
                 postcond.getExpression(), node.getTree(), atypeFactory.getChecker());
-      } catch (JavaExpressionParseUtil.JavaExpressionParseException ex) {
+      } catch (JavaExpressionParseException ex) {
         // This parse error will be reported later. For now, we'll skip this malformed
         // postcondition and move on to the others.
         continue;
