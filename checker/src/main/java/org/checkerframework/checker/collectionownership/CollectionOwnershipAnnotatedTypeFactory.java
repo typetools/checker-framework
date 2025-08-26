@@ -43,6 +43,7 @@ import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.JavaExpressionParseException;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -52,7 +53,6 @@ import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.framework.util.JavaExpressionParseUtil;
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -535,7 +535,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
     try {
       JavaExpression je = StringToJavaExpression.atFieldDecl(e, field, this.checker);
       return je instanceof FieldAccess && ((FieldAccess) je).getField().equals(field);
-    } catch (JavaExpressionParseUtil.JavaExpressionParseException ex) {
+    } catch (JavaExpressionParseException ex) {
       // The parsing error will be reported elsewhere, assuming e was derived from an
       // annotation.
       return false;
@@ -556,7 +556,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
     if (methodTree instanceof MethodTree) {
       try {
         return StringToJavaExpression.atMethodBody(s, (MethodTree) methodTree, checker);
-      } catch (JavaExpressionParseUtil.JavaExpressionParseException ex) {
+      } catch (JavaExpressionParseException ex) {
         return null;
       }
     }
