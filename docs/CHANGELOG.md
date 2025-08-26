@@ -1,4 +1,4 @@
-Version 3.49.6 (August 1, 2025)
+Version 3.49.6 (2025-08-??)
 -----------------------------
 
 **User-visible changes:**

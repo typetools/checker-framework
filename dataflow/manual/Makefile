@@ -1,6 +1,6 @@
-dataflow.pdf: dataflow.tex content.tex examples
-	pdflatex dataflow
-	pdflatex dataflow
+checker-framework-dataflow-manual.pdf: checker-framework-dataflow-manual.tex content.tex examples
+	pdflatex checker-framework-dataflow-manual
+	pdflatex checker-framework-dataflow-manual
 
 clean:
-	\rm -f dataflow.aux dataflow.log dataflow.out dataflow.pdf
+	\rm -f checker-framework-dataflow-manual.aux checker-framework-dataflow-manual.log checker-framework-dataflow-manual.out checker-framework-dataflow-manual.pdf
