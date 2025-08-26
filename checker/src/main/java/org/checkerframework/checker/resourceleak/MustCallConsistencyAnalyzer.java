@@ -827,6 +827,8 @@ public class MustCallConsistencyAnalyzer {
       }
       switch (receiverType) {
         case OwningCollectionWithoutObligation:
+        // fall through
+        case OwningCollection:
           if (!receiverIsOwningField) {
             List<String> mustCallValues =
                 coAtf.getMustCallValuesOfResourceCollectionComponent(receiverNode.getTree());
@@ -835,8 +837,6 @@ public class MustCallConsistencyAnalyzer {
                   CollectionObligation.fromTree(receiverNode.getTree(), mustCallMethod));
             }
           }
-        // fall through
-        case OwningCollection:
           if (receiverIsOwningField) {
             TreePath currentPath = cmAtf.getPath(node.getTree());
             MethodTree enclosingMethodTree = TreePathUtil.enclosingMethod(currentPath);
