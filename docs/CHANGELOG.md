@@ -5,6 +5,8 @@ Version 3.49.6 (2025-08-??)
 
 **Implementation details:**
 
+Moved the Annotation File Utilities code into the Checker Framework repository as a subproject.
+
 **Closed issues:**
 
 
