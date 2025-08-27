@@ -203,7 +203,6 @@ def build_checker_framework_release(version: str, old_cf_version: str, checker_f
 
     # Create checker-framework-X.Y.Z.zip and put it in checker_framework_interm_dir
     # copy the remaining checker-framework website files to checker_framework_interm_dir
-    dev_website_relative_dir = Path(DEV_SITE_DIR) / "releases" / version
     gradle_cmd = f"./gradlew copyToWebsite  -PcfWebsite={checker_framework_interm_dir}"
     execute(gradle_cmd, CHECKER_FRAMEWORK)
 
@@ -213,6 +212,7 @@ def build_checker_framework_release(version: str, old_cf_version: str, checker_f
 
     build_and_locally_deploy_maven()
 
+    dev_website_relative_dir = Path(DEV_SITE_DIR) / "releases" / version
     print(f"Copying from: {dev_website_relative_dir}\n  to: {DEV_SITE_DIR}")
     copy_tree(str(dev_website_relative_dir), str(DEV_SITE_DIR))
 
