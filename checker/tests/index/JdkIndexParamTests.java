@@ -1,7 +1,7 @@
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-public class JdkIndexParamNegativeTests {
+public class JdkIndexParamTests {
 
   void get_needs_upper(List<String> xs, int i) {
     if (0 <= i) {
