@@ -115,10 +115,8 @@ RELEASE_BUILD_COMPLETED_FLAG_FILE = TMP_DIR / "release-build-completed"
 # Every time a release is built the changes/tags are pushed here.
 INTERM_REPO_ROOT = TMP_DIR / "interm"
 INTERM_CHECKER_REPO = INTERM_REPO_ROOT / "checker-framework"
-INTERM_ANNO_REPO = INTERM_REPO_ROOT / "annotation-tools"
 
 # The central repositories for Checker Framework related projects.
-LIVE_ANNO_REPO = "git@github.com:typetools/annotation-tools.git"
 LIVE_CHECKER_REPO = "git@github.com:typetools/checker-framework.git"
 GIT_SCRIPTS_REPO = "https://github.com/plume-lib/git-scripts"
 PLUME_SCRIPTS_REPO = "https://github.com/plume-lib/plume-scripts"
@@ -136,29 +134,16 @@ CHECKER_FRAMEWORK_RELEASE = CHECKER_FRAMEWORK / "docs" / "developer" / "release"
 execute("./gradlew version -q", TMP_DIR / "checker-framework")
 CF_VERSION = execute_output("./gradlew version -q", TMP_DIR / "checker-framework").strip()
 
-ANNO_TOOLS = BUILD_DIR / "annotation-tools"
-ANNO_FILE_UTILITIES = ANNO_TOOLS / "annotation-file-utilities"
+ANNO_FILE_UTILITIES = CHECKER_FRAMEWORK / "annotation-file-utilities"
 
 GIT_SCRIPTS = BUILD_DIR / "git-scripts"
 PLUME_SCRIPTS = BUILD_DIR / "plume-scripts"
 CHECKLINK = BUILD_DIR / "checklink"
 PLUME_BIB = BUILD_DIR / "plume-bib"
 
-BUILD_REPOS = [CHECKER_FRAMEWORK, ANNO_TOOLS]
-INTERM_REPOS = [INTERM_CHECKER_REPO, INTERM_ANNO_REPO]
+INTERM_TO_BUILD_REPOS = ((INTERM_CHECKER_REPO, CHECKER_FRAMEWORK),)
 
-INTERM_TO_BUILD_REPOS: list[tuple[Path, Path]] = [
-    (INTERM_CHECKER_REPO, CHECKER_FRAMEWORK),
-    (INTERM_ANNO_REPO, ANNO_TOOLS),
-]
-
-LIVE_TO_INTERM_REPOS: list[tuple[str, Path]] = [
-    (LIVE_CHECKER_REPO, INTERM_CHECKER_REPO),
-    (LIVE_ANNO_REPO, INTERM_ANNO_REPO),
-]
-
-AFU_LIVE_SITE = LIVE_SITE_DIR / "annotation-file-utilities"
-AFU_LIVE_RELEASES_DIR = AFU_LIVE_SITE / "releases"
+LIVE_TO_INTERM_REPOS = ((LIVE_CHECKER_REPO, INTERM_CHECKER_REPO),)
 
 CHECKER_LIVE_RELEASES_DIR = LIVE_SITE_DIR / "releases"
 CHECKER_LIVE_API_DIR = LIVE_SITE_DIR / "api"

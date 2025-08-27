@@ -19,6 +19,7 @@ plugins {
   // the JDK is 17 or later.
   id 'com.diffplug.spotless' version '7.2.1'
 }
+apply from: rootProject.file('release.gradle')
 
 // There is another `repositories { ... }` block below; if you change this one, change that one as well.
 repositories {
@@ -60,12 +61,15 @@ ext {
   compilerJdkVersion = jdk21Compiler ? 21 : testJdkVersion
   compilerRunsOnJava17orHigher = compilerJdkVersion >= 17
 
-  // As of 2025-04-28 (Lombok 1.18.38), delombok supports JDK 24-ea but not JDK 24 proper; see https://projectlombok.org/changelog .
+  // As of 2025-04-28 (Lombok 1.18.38), delombok supports JDK 24-ea but not
+  // JDK 24 proper; see https://projectlombok.org/changelog .
   skipDelombok = gradleRunsOnJava24orHigher
 
   parentDir = file("${rootDir}/../").absolutePath
+  afuManualDir = 'docs/annotation-file-utilities/'
 
   gitScriptsHome = "${project(':checker').projectDir}/bin-devel/.git-scripts"
+  plumeBibHome = "${projectDir}/docs/manual/plume-bib"
   plumeScriptsHome = "${project(':checker').projectDir}/bin-devel/.plume-scripts"
   htmlToolsHome = "${project(':checker').projectDir}/bin-devel/.html-tools"
   doLikeJavacHome = "${project(':checker').projectDir}/bin/.do-like-javac"
@@ -97,6 +101,7 @@ ext {
 task setLocalRepo(type:Exec) {
   commandLine 'git', 'worktree', 'list'
   standardOutput = new ByteArrayOutputStream()
+
   doLast {
     String worktreeList = standardOutput.toString()
     localRepo = worktreeList.substring(0, worktreeList.indexOf(' ')) + '/.git'
@@ -143,12 +148,9 @@ spotlessPredeclare {
 }
 
 allprojects { currentProj ->
-  // Increment the minor version (second number) rather than just the patch
-  // level (third number) if:
-  //   * any new checkers have been added, or
-  //   * backward-incompatible changes have been made to APIs or elsewhere.
-  // To make a snapshot release, version should end in "-SNAPSHOT", then: ./gradlew publish
-  version = '3.49.6-SNAPSHOT'
+
+  // Update releaseVersion in release.gradle.
+  version = releaseVersion
 
   tasks.withType(JavaCompile).configureEach {
     options.fork = true
@@ -226,6 +228,8 @@ allprojects { currentProj ->
       'jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED',
       '--add-exports',
       'jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED',
+      '--add-exports',
+      'jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED',
       '--add-exports',
       'jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED',
       '--add-exports',
@@ -423,6 +427,7 @@ allprojects { currentProj ->
         options.addBooleanOption('-add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED', true)
         options.addBooleanOption('-add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED', true)
         options.addBooleanOption('-add-exports=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED', true)
+        options.addBooleanOption('-add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED', true)
         options.addBooleanOption('-add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED', true)
         options.addBooleanOption('-add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED', true)
         options.addBooleanOption('-add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED', true)
@@ -487,6 +492,8 @@ allprojects { currentProj ->
           '--add-exports',
           'jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED',
           '--add-exports',
+          'jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED',
+          '--add-exports',
           'jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED',
           '--add-exports',
           'jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED',
@@ -543,6 +550,8 @@ allprojects { currentProj ->
           '-Xep:MixedMutabilityReturnType:OFF',
           // Don't want to add a dependency to ErrorProne.
           '-Xep:AnnotateFormatMethod:OFF',
+          // Don't want to add a dependency to ErrorProne.
+          "-Xep:DoNotCallSuggester:OFF",
           // Warns for every use of "@checker_framework.manual"
           '-Xep:InvalidBlockTag:OFF',
           // Recommends writing @InlineMe which is an Error-Prone-specific annotation
@@ -642,12 +651,7 @@ task htmlValidate(type: Exec, group: 'Format') {
 
 task addFavicon(type: Exec) {
   dependsOn 'allJavadoc'
-  workingDir "${rootDir}/docs/api"
-  executable "${htmlToolsHome}/html-add-favicon"
-  args += [
-    '.',
-    'favicon-checkerframework.png'
-  ]
+
   doFirst {
     copy {
       from 'docs/logo/Checkmark/CFCheckmark_favicon.png'
@@ -655,6 +659,13 @@ task addFavicon(type: Exec) {
       into "${rootDir}/docs/api"
     }
   }
+
+  workingDir "${rootDir}/docs/api"
+  executable "${htmlToolsHome}/html-add-favicon"
+  args += [
+    '.',
+    'favicon-checkerframework.png'
+  ]
 }
 
 // `gradle allJavadoc` builds the Javadoc for all modules in `docs/api`.
@@ -665,7 +676,14 @@ task addFavicon(type: Exec) {
 //   in the subproject or `./gradlew :checker:javadoc` at the top level.
 task allJavadoc(type: Javadoc, group: 'Documentation') {
   description = 'Generates API documentation that includes all the modules.'
-  dependsOn(':checker:shadowJar', 'getPlumeScripts', 'getHtmlTools')
+  dependsOn(':checker:shadowJar', 'getPlumeScripts', 'getHtmlTools', ':checker-qual:jar')
+
+  doFirst {
+    source(
+        project(':framework-test').sourceSets.taglet.allJava
+        )
+  }
+
   destinationDir = file("${rootDir}/docs/api")
   source(
       project(':checker-util').sourceSets.main.allJava,
@@ -678,29 +696,122 @@ task allJavadoc(type: Javadoc, group: 'Documentation') {
       project(':annotation-file-utilities').sourceSets.main.allJava,
       )
 
-  doFirst {
-    source(
-        project(':framework-test').sourceSets.taglet.allJava
-        )
-  }
-
   classpath = configurations.allProjects
   // disable interpreting module-info.java files until all sub-modules support them
   modularity.inferModulePath = false
 
   finalizedBy 'addFavicon'
+
+  doFirst {
+    source(
+        project(':framework-test').sourceSets.taglet.allJava
+        )
+  }
 }
 
 // See documentation for allJavadoc task.
 javadoc.dependsOn(allJavadoc)
 
-task cleanManual(type: Exec) {
+tasks.register('zip', Zip) {
+  description = 'Creates a zip archive for the Checker Framework.'
+  dependsOn('buildAll')
+  archiveFileName = "checker-framework-${version}.zip"
+  destinationDirectory = layout.buildDirectory
+  into "checker-framework-${releaseVersion}"
+
+  from(layout.projectDirectory) {
+    exclude 'api/**',
+        'checker/bin/README',
+        'checker/dist/*.asc',
+        'docs/tutorial/tests/**',
+        'docs/tutorial/src/**',
+        'docs/tutorial/test/**',
+        'docs/tutorial/Makefile',
+        'docs/tutorial/README'
+
+    include 'README.html',
+        'LICENSE.txt',
+        'annotation-file-utilities/bin/**',
+        'annotation-file-utilities/dist/**',
+        'annotation-file-utilities/LICENSE.txt',
+        'checker/bin/**',
+        'checker/dist/**',
+        'checker/resources/**',
+        'docs/CHANGELOG.md',
+        'docs/annotation-file-utilities/annotation-file-utilities.html',
+        'docs/annotation-file-utilities/annotation-file-format.pdf',
+        'docs/annotation-file-utilities/annotation-file-format.html',
+        'docs/annotation-file-utilities/*.png',
+        'docs/manual/manual.html',
+        'docs/manual/manual.pdf',
+        'docs/manual/*.svg',
+        'docs/manual/manual001.png',
+        'docs/examples/InterningExample.java',
+        'docs/examples/InterningExampleWithWarnings.java',
+        'docs/examples/NullnessExample.java',
+        'docs/examples/NullnessExampleWithWarnings.java',
+        'docs/examples/NullnessReleaseTests.java',
+        'docs/examples/units-extension/Demo.java',
+        'docs/examples/units-extension/Expected.txt',
+        'docs/examples/units-extension/Frequency.java',
+        'docs/examples/units-extension/FrequencyRelations.java',
+        'docs/examples/units-extension/Hz.java',
+        'docs/examples/units-extension/kHz.java',
+        'docs/examples/units-extension/Makefile',
+        'docs/examples/units-extension/README',
+        'docs/examples/MavenExample/pom.xml',
+        'docs/examples/MavenExample/README',
+        'docs/examples/MavenExample/src/main/java/org/checkerframework/example/MavenExample.java',
+        'docs/tutorial/**'
+  }
+
+  from('dataflow/manual/checker-framework-dataflow-manual.pdf') {
+    into 'docs/manual/'
+  }
+
+  from('docs/logo/Logo/CFLogo.png') {
+    into 'docs/manual/'
+  }
+
+  from('docs/logo/Logo/CFLogo.png') {
+    into 'docs/tutorial/'
+  }
+
+  from('docs/logo/Logo/CFLogo.png') {
+    into 'docs/tutorial/webpages'
+  }
+}
+
+tasks.register('cleanCfManual', Exec) {
   description = 'Clean the manual'
   commandLine 'make', '-C', 'docs/manual', 'clean'
 }
+
+tasks.register('cleanAfuManual', Exec) {
+  description = 'Clean the manual'
+  commandLine 'make', '-C', "${afuManualDir}", 'clean'
+}
+
+tasks.register('cleanManual') {
+  dependsOn('cleanCfManual', 'cleanAfuManual')
+}
+
 clean.dependsOn(cleanManual)
 clean {
   delete(file("${rootDir}/docs/api"))
+  delete "${afuManualDir}/annotation-file-format.aux"
+  delete "${afuManualDir}/annotation-file-format.blg"
+  delete "${afuManualDir}/annotation-file-format.dvi"
+  delete "${afuManualDir}/annotation-file-format.haux"
+  delete "${afuManualDir}/annotation-file-format.html"
+  delete "${afuManualDir}/annotation-file-format.htoc"
+  delete "${afuManualDir}/annotation-file-format.log"
+  delete "${afuManualDir}/annotation-file-format.pdf"
+  delete "${afuManualDir}/annotation-file-format.toc"
+  delete "${afuManualDir}/corresp.png"
+  delete "${afuManualDir}/dataflow.png"
+  delete "${afuManualDir}/nocast.png"
+  delete "${afuManualDir}/typecast.png"
 }
 
 configurations {
@@ -761,9 +872,30 @@ def createJavadocTask(taskName, taskDescription, memberLevel) {
 
 createJavadocTask('javadocDoclintAll', 'Runs javadoc with -Xdoclint:all option.', JavadocMemberLevel.PRIVATE)
 
-task manual(type: Exec, group: 'Documentation') {
+tasks.register('makeCfManual', Exec) {
+  dependsOn('allJavadoc')
+  description = 'Build the Checker Framework manual'
+  // Don't make all because it will re-run allJavadoc which causes problems when building the release.
+  commandLine 'make', '-C', 'docs/manual/', 'manual.pdf', 'manual.html'
+}
+
+tasks.register('makeAfuManual', Exec) {
+  description = 'Make documentation: annotation-file-format.{html,pdf}.'
+
+  executable 'make'
+  args "-C", "${afuManualDir}"
+}
+
+
+tasks.register('manual') {
   description = 'Build the manual'
-  commandLine 'make', '-C', 'docs/manual', 'all'
+  dependsOn('makeCfManual', 'makeAfuManual', ':dataflow:manual')
+}
+
+tasks.register('getPlumeBib', CloneTask) {
+  url.set('https://github.com/mernst/plume-bib.git')
+  directory.set(file(plumeBibHome))
+  outputs.upToDateWhen { false }
 }
 
 tasks.register('getGitScripts', CloneTask) {
@@ -798,7 +930,7 @@ task pythonIsInstalled(type: Exec) {
 }
 
 task docTags(type: Exec, group: 'Emacs') {
-  commandLine 'make', '-C', 'docs/manual', 'tags'
+  commandLine 'make', '-C', 'docs/manual/', 'tags'
 }
 
 task tags(type: Exec, group: 'Emacs') {
@@ -1148,7 +1280,7 @@ assemble.dependsOn(':checker:assembleForJavac')
 assemble.mustRunAfter(clean)
 
 task buildAll(group: 'Build') {
-  description = 'Build all jar files, including source and javadoc jars'
+  description = 'Build all jar files and the manuals, including source and javadoc jars'
   dependsOn(allJavadoc)
   subprojects { Project subproject ->
     dependsOn("${subproject.name}:assemble")
@@ -1157,21 +1289,7 @@ task buildAll(group: 'Build') {
   }
   dependsOn('framework:allJavadocJar', 'framework:allSourcesJar', 'checker:allJavadocJar', 'checker:allSourcesJar', 'checker-qual:jar', 'checker-util:jar')
   dependsOn('checker:assembleForJavac')
-}
-
-task releaseBuild(group: 'Build') {
-  description = 'Cleans, then builds everything required for a release'
-  dependsOn(clean)
-  dependsOn(buildAll)
-}
-
-// No group so it does not show up in the output of `gradlew tasks`
-task releaseAndTest {
-  description = 'Build everything required for a release and run allTests'
-  dependsOn(releaseBuild)
-  subprojects { Project subproject ->
-    dependsOn("${subproject.name}:allTests")
-  }
+  dependsOn('manual')
 }
 
 // Don't create an empty checker-framework-VERSION.jar
