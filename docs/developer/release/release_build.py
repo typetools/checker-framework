@@ -172,7 +172,7 @@ def build_and_locally_deploy_maven() -> None:
     execute("./gradlew publishToMavenLocal", working_dir=CHECKER_FRAMEWORK)
 
 
-def build_checker_framework_release(version: str, old_cf_version: str) -> None:
+def build_checker_framework_release(version: str, old_cf_version: str, checker_framework_interm_dir: Path) -> None:
     """Build the release files for the Checker Framework project and run tests.
 
     The release files include the manual and the zip file.
@@ -193,6 +193,7 @@ def build_checker_framework_release(version: str, old_cf_version: str) -> None:
     )
 
     # Build the Checker Framework binaries and documents.  Tests are run by release_push.py.
+    # This also makes the manuals.
     gradle_cmd = "./gradlew buildAll"
     execute(gradle_cmd, CHECKER_FRAMEWORK)
 
@@ -202,8 +203,8 @@ def build_checker_framework_release(version: str, old_cf_version: str) -> None:
 
     # Create checker-framework-X.Y.Z.zip and put it in checker_framework_interm_dir
     # copy the remaining checker-framework website files to checker_framework_interm_dir
-    # This also makes the manuals.
-    gradle_cmd = "./gradlew copyToWebsite  -PcfWebsite={checker_framework_interm_dir}"
+    dev_website_relative_dir = Path(DEV_SITE_DIR) / "releases" / version
+    gradle_cmd = f"./gradlew copyToWebsite  -PcfWebsite={checker_framework_interm_dir}"
     execute(gradle_cmd, CHECKER_FRAMEWORK)
 
     # clean no longer necessary files left over from building the checker framework tutorial
@@ -212,9 +213,8 @@ def build_checker_framework_release(version: str, old_cf_version: str) -> None:
 
     build_and_locally_deploy_maven()
 
-    dev_website_relative_dir = Path(DEV_SITE_DIR) / "releases" / version
     print(f"Copying from: {dev_website_relative_dir}\n  to: {DEV_SITE_DIR}")
-    copy_tree(dev_website_relative_dir, DEV_SITE_DIR)
+    copy_tree(str(dev_website_relative_dir), str(DEV_SITE_DIR))
 
 
 def commit_to_interm_projects(cf_version: str) -> None:
@@ -312,7 +312,7 @@ def main(argv: list[str]) -> None:
 
     # The Checker Framework jar files and documentation are built and the website is updated.
     print_step("Build Step 5: Build projects and websites.")  # AUTO
-    build_checker_framework_release(cf_version, old_cf_version)
+    build_checker_framework_release(cf_version, old_cf_version, checker_framework_interm_dir)
 
     print_step("Build Step 6: Overwrite .htaccess and CFLogo.png .")  # AUTO
 
@@ -336,11 +336,9 @@ def main(argv: list[str]) -> None:
     ensure_group_access(CHECKER_FRAMEWORK)
     ensure_group_access(INTERM_CHECKER_REPO)
 
-    # At the moment, this will lead to output error messages because some metadata in some of the
-    # dirs I think is owned by Mike or Werner.  We should identify these and have them fix it.
-    # But as long as the processes return a zero exit status, we should be ok.
     print_step("\n\nBuild Step 9: Add group permissions to websites.")  # AUTO
-    ensure_group_access(DEV_SITE_DIR)
+    ## TODO: This is returning a status of 1, but it runs fine from the command line.
+    # ensure_group_access(DEV_SITE_DIR)
 
     create_empty_file(RELEASE_BUILD_COMPLETED_FLAG_FILE)
 
