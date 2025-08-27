@@ -166,10 +166,7 @@ def run_link_checker(site: str, output_file: Path, additional_param: str = "") -
     Additional parameters (if given) are passed directly to the link checker script.
 
     Returns:
-        the given output file
-
-    Raises:
-        Exception: If the user bails out.
+        The given output file.
     """
     delete_if_exists(output_file)
     check_links_script = Path(SCRIPTS_DIR) / "checkLinks.sh"
