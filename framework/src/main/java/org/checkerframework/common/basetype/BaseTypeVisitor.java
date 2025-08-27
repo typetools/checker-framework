@@ -447,7 +447,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * <p>Parse the current source file with JavaParser and check that the AST can be matched with the
    * Tree produced by javac. Crash if not.
    *
-   * <p>Subclasses may override this method to disable the test if even the option is provided.
+   * <p>Subclasses may override this method to disable the test even if the "ajavaChecks" option is
+   * provided.
    */
   protected void testJointJavacJavaParserVisitor() {
     if (root == null || !ajavaChecks) {
