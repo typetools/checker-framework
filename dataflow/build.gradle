@@ -30,8 +30,10 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
  * @return
  */
 def createDataflowShaded(shadedPkgName) {
-  tasks.create(name: "dataflow${shadedPkgName}Jar", type: ShadowJar, dependsOn: compileJava, group: 'Build') {
+  tasks.register("dataflow${shadedPkgName}Jar", ShadowJar) {
     description = "Builds dataflow-${shadedPkgName}.jar."
+    group = 'Build'
+    dependsOn(compileJava)
     includeEmptyDirs = false
     base {
       archivesName = "dataflow-${shadedPkgName}"
@@ -65,8 +67,9 @@ createDataflowShaded('shaded')
 createDataflowShaded('nullaway')
 createDataflowShaded('errorprone')
 
-task manual(type: Exec, group: 'Documentation') {
+tasks.register('manual', Exec) {
   description = 'Build the manual'
+  group = 'Documentation'
   commandLine 'make', '-C', 'manual'
 }
 
@@ -74,8 +77,9 @@ clean {
   delete('manual/checker-framework-dataflow-manual.aux' ,'manual/checker-framework-dataflow-manual.log','manual/checker-framework-dataflow-manual.out','manual/checker-framework-dataflow-manual.pdf')
 }
 
-tasks.create(name: 'allDataflowTests', group: 'Verification') {
+tasks.register('allDataflowTests') {
   description = 'Run all dataflow analysis tests'
+  group = 'Verification'
   // 'allDataflowTests' is automatically populated by testDataflowAnalysis().
 }
 
@@ -95,7 +99,7 @@ tasks.create(name: 'allDataflowTests', group: 'Verification') {
  */
 def testDataflowAnalysis(taskName, dirName, className, diff) {
   if(diff) {
-    tasks.create(name: "${taskName}Diff", type: Exec) {
+    tasks.register("${taskName}Diff", Exec) {
       dependsOn taskName
       workingDir = "tests/${dirName}"
       executable 'diff'
@@ -106,8 +110,10 @@ def testDataflowAnalysis(taskName, dirName, className, diff) {
       ]
     }
   }
-  tasks.create(name: taskName, type: JavaExec, dependsOn: [assemble, compileTestJava], group: 'Verification') {
+  tasks.register(taskName, JavaExec) {
+    dependsOn(assemble, compileTestJava)
     description = "Run the ${dirName} dataflow framework test."
+    group = 'Verification'
     if (diff) {
       inputs.file("tests/${dirName}/Expected.txt")
     }

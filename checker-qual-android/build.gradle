@@ -1,6 +1,6 @@
 evaluationDependsOn(':checker-qual')
 
-task copySources(type: Copy) {
+tasks.register('copySources', Copy) {
   description = 'Copy checker-qual source to checker-qual-android'
   includeEmptyDirs = false
   from files(project(':checker-qual').sourceSets.main.java)
