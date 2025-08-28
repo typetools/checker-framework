@@ -132,7 +132,7 @@ public class ClassFileReader {
         System.out.println(e.getMessage());
         e.printStackTrace();
         System.out.println("Please submit a bug report at");
-        System.out.println("  https://github.com/typetools/annotation-tools/issues");
+        System.out.println("  https://github.com/typetools/checker-framework/issues");
         System.out.println("Be sure to include a copy of the output trace, instructions on how");
         System.out.println("to reproduce this error, and all input files.  Thanks!");
         return;
