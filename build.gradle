@@ -1157,7 +1157,7 @@ subprojects {
     }
 
     // Configure JUnit tests
-    tasks.withType(Test).configureEach {
+    tasks.withType(Test) {
       jvmArgs += compilerArgsForRunningCF
 
       // maxParallelForks controls the parallelism of a single Test
