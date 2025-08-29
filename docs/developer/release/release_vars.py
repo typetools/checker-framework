@@ -134,8 +134,6 @@ CHECKER_FRAMEWORK_RELEASE = CHECKER_FRAMEWORK / "docs" / "developer" / "release"
 execute("./gradlew version -q", TMP_DIR / "checker-framework")
 CF_VERSION = execute_output("./gradlew version -q", TMP_DIR / "checker-framework").strip()
 
-ANNO_FILE_UTILITIES = CHECKER_FRAMEWORK / "annotation-file-utilities"
-
 GIT_SCRIPTS = BUILD_DIR / "git-scripts"
 PLUME_SCRIPTS = BUILD_DIR / "plume-scripts"
 CHECKLINK = BUILD_DIR / "checklink"
