@@ -335,7 +335,6 @@ def main(argv: list[str]) -> None:
     live_checker_website = LIVE_SITE_URL
     current_cf_version = current_distribution_by_website(live_checker_website)
     new_cf_version = CF_VERSION
-    check_release_version(current_cf_version, new_cf_version)
 
     print(
         f"Checker Framework:  current-version={current_cf_version}    new-version={new_cf_version}"
@@ -375,9 +374,6 @@ def main(argv: list[str]) -> None:
     if prompt_yes_no("Perform this step?", True):
         ant_cmd = "./gradlew allTests"
         execute(ant_cmd, CHECKER_FRAMEWORK)
-
-        ant_cmd = "./gradlew test"
-        execute(ant_cmd, ANNO_FILE_UTILITIES)
 
     # The Central Repository is a repository of build artifacts for build programs like Maven and
     # Ivy.  This step stages (but doesn't release) the Checker Framework's Maven artifacts in the
@@ -501,24 +497,20 @@ def main(argv: list[str]) -> None:
     # prompts. The Maven artifacts (such as checker-qual.jar) are still needed, but the Maven
     # plug-in is no longer maintained.
 
-    print_step("Push Step 10. Release staged artifacts in Central Repository.")  # MANUAL
+    print_step("Push Step 10. Publish staged artifacts in Central Repository.")  # MANUAL
     if test_mode:
         msg = (
             "Test Mode: You are in test_mode.  Please 'DROP' the artifacts. "
             "To drop, log into https://central.sonatype.com/publishing/deployments using your "
-            "Sonatype credentials and click 'DROP'"
+            "Sonatype credentials and click 'Drop'"
         )
     else:
         msg = (
-            "Please 'release' the artifacts.\n"
+            "Please 'Publish' the artifacts.\n"
             "First log into https://central.sonatype.com/publishing/deployments using your "
-            "Sonatype credentials. Go to Staging Repositories and "
-            "locate the org.checkerframework repository and click on it.\n"
-            "If you have a permissions problem, try logging out and back in.\n"
-            "Finally, click on the Release button at the top of the page.\n"
-            "In the dialog box that pops up, "
-            'leave the "Automatically drop" box checked. For the description, write '
-            "Checker Framework release " + new_cf_version + "\n\n"
+            "Sonatype credentials. Find the deployment labled 'org.checkerframework (via OSSRH Staging API)' "
+            "and click on the Publish button next to it.\n"
+            "Now it should say PUBLISHING nest to the deployment. This will take awhile, you can move onto the next release steps.\n\n"
         )
 
     print(msg)
