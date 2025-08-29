@@ -26,7 +26,6 @@ from release_utils import (
     version_number_to_array,
 )
 from release_vars import (
-    ANNO_FILE_UTILITIES,
     CF_VERSION,
     CHECKER_FRAMEWORK,
     CHECKER_LIVE_API_DIR,
@@ -438,7 +437,7 @@ def main(argv: list[str]) -> None:
             print("Copying to live site")
             copy_releases_to_live_site(new_cf_version)
             copy_htaccess()
-            ensure_group_access(CHECKER_LIVE_RELEASES_DIR/new_cf_version)
+            ensure_group_access(CHECKER_LIVE_RELEASES_DIR / new_cf_version)
     else:
         print("Test mode: Skipping copy to live site!")
 
