@@ -71,13 +71,13 @@ public class ClassAnnotationSceneReader extends CodeOffsetAdapter {
   //  methods; for those three, use a special visitor that does all the work
   //  and inserts the annotations correctly into the specified AElement
 
-  /** Whether to output tracing information. */
+  /** If true, output tracing information. */
   private static final boolean trace = false;
 
-  /** Whether to output error messages for unsupported cases. */
+  /** If true, output error messages for unsupported cases. */
   private static final boolean strict = false;
 
-  /** Whether to include annotations on compiler-generated methods. */
+  /** If true, include annotations on compiler-generated methods. */
   private final boolean ignoreBridgeMethods;
 
   /** The scene into which this class will insert annotations. */
@@ -116,7 +116,7 @@ public class ClassAnnotationSceneReader extends CodeOffsetAdapter {
    * @param api the ASM API version to use
    * @param classReader the {@link ClassReader} that visits this {@code ClassAnnotationSceneReader}
    * @param scene the annotation scene into which annotations this visits will be inserted
-   * @param ignoreBridgeMethods whether to omit annotations on compiler-generated methods
+   * @param ignoreBridgeMethods if true, omit annotations on compiler-generated methods
    */
   public ClassAnnotationSceneReader(
       int api, ClassReader classReader, AScene scene, boolean ignoreBridgeMethods) {
@@ -247,7 +247,7 @@ public class ClassAnnotationSceneReader extends CodeOffsetAdapter {
     /** The AElement into which the annotation visited should be inserted. */
     protected AElement aElement;
 
-    /** Whether or not this annotation is visible at run time. */
+    /** True if this annotation is visible at run time. */
     protected boolean visible;
 
     /** The AnnotationBuilder used to create this annotation. */
@@ -300,7 +300,7 @@ public class ClassAnnotationSceneReader extends CodeOffsetAdapter {
      *
      * @param api the ASM API version to use
      * @param descriptor the class descriptor of the enumeration class
-     * @param visible whether or not this annotation is visible at run time
+     * @param visible true if this annotation is visible at run time
      * @param aElement the AElement into which the annotation visited should be inserted
      * @param annotationWriter the AnnotationWriter passed by the caller
      */
@@ -580,19 +580,19 @@ public class ClassAnnotationSceneReader extends CodeOffsetAdapter {
      *
      * @param api the ASM API version to use
      * @param descriptor the descriptor of the reader
-     * @param visible whether or not this annotation is visible at run time
+     * @param visible true if this annotation is visible at run time
      * @param aElement the AElement into which the annotation visited should be inserted
      * @param annotationWriter the AnnotationWriter passed by the caller
-     * @param typeRef A reference to the annotated type. This has information about the target type,
+     * @param typeRef a reference to the annotated type. This has information about the target type,
      *     param index and bound index for the type annotation. @see org.objectweb.asm.TypeReference
-     * @param typePath The path to the annotated type argument, wildcard bound, array element type,
+     * @param typePath the path to the annotated type argument, wildcard bound, array element type,
      *     or static inner type within 'typeRef'. May be null if the annotation targets 'typeRef' as
      *     a whole.
      * @param start the start of the scopes of the element being visited. Used only for
      *     TypeReference#LOCAL_VARIABLE and TypeReference#RESOURCE_VARIABLE.
      * @param end the end of the scopes of the element being visited. Used only for
      *     TypeReference#LOCAL_VARIABLE and TypeReference#RESOURCE_VARIABLE.
-     * @param index The indices of the element being visited in the classfile. Used only for
+     * @param index the indices of the element being visited in the classfile. Used only for
      *     TypeReference#LOCAL_VARIABLE and TypeReference#RESOURCE_VARIABLE.
      */
     TypeAnnotationSceneReader(
@@ -626,19 +626,19 @@ public class ClassAnnotationSceneReader extends CodeOffsetAdapter {
      *
      * @param api the ASM API version to use
      * @param descriptor the descriptor of the reader
-     * @param visible whether or not this annotation is visible at run time
+     * @param visible true if this annotation is visible at run time
      * @param aElement the AElement into which the annotation visited should be inserted
      * @param annotationWriter the AnnotationWriter passed by the caller
-     * @param typeRef A reference to the annotated type. This has information about the target type,
+     * @param typeRef a reference to the annotated type. This has information about the target type,
      *     param index and bound index for the type annotation. @see org.objectweb.asm.TypeReference
-     * @param typePath The path to the annotated type argument, wildcard bound, array element type,
+     * @param typePath the path to the annotated type argument, wildcard bound, array element type,
      *     or static inner type within 'typeRef'. May be null if the annotation targets 'typeRef' as
      *     a whole.
      * @param start the start of the scopes of the element being visited. Used only for
      *     TypeReference#LOCAL_VARIABLE and TypeReference#RESOURCE_VARIABLE.
      * @param end the end of the scopes of the element being visited. Used only for
      *     TypeReference#LOCAL_VARIABLE and TypeReference#RESOURCE_VARIABLE.
-     * @param index The indices of the element being visited in the classfile. Used only for
+     * @param index the indices of the element being visited in the classfile. Used only for
      *     TypeReference#LOCAL_VARIABLE and TypeReference#RESOURCE_VARIABLE.
      * @param localVariableName the name of the local variable being visited; may be null
      */

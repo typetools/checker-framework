@@ -322,7 +322,7 @@ public class AutoValueSupport implements BuilderFrameworkSupport {
       };
 
   /**
-   * Returns whether AutoValue considers a type to be "optional". Optional types do not need to be
+   * Returns true if AutoValue considers a type to be "optional". Optional types do not need to be
    * set before build is called on a builder. Adapted from AutoValue source code.
    *
    * @param type some type
@@ -353,7 +353,7 @@ public class AutoValueSupport implements BuilderFrameworkSupport {
   }
 
   /**
-   * Return true if the given method is a setter for an AutoValue builder; that is, its return type
+   * Returns true if the given method is a setter for an AutoValue builder; that is, its return type
    * is the builder itself or a Guava Immutable type.
    *
    * @param method a method of a builder or one of its supertypes
@@ -380,10 +380,10 @@ public class AutoValueSupport implements BuilderFrameworkSupport {
   }
 
   /**
-   * Get all the abstract methods for a class. This includes inherited abstract methods that are not
-   * overridden by the class or a superclass. There is no guarantee that this method will work as
-   * intended on code that implements an interface (which AutoValue classes are not supposed to do:
-   * https://github.com/google/auto/blob/master/value/userguide/howto.md#inherit).
+   * Returns all the abstract methods for a class. This includes inherited abstract methods that are
+   * not overridden by the class or a superclass. There is no guarantee that this method will work
+   * as intended on code that implements an interface (which AutoValue classes are not supposed to
+   * do: https://github.com/google/auto/blob/master/value/userguide/howto.md#inherit).
    *
    * @param classElement the class
    * @return list of all abstract methods
@@ -421,9 +421,9 @@ public class AutoValueSupport implements BuilderFrameworkSupport {
   }
 
   /**
-   * Get the qualified name of the package containing AutoValue annotations. This method constructs
-   * the String dynamically, to ensure it does not get rewritten due to relocation of the {@code
-   * "com.google"} package during the build process.
+   * Returns the qualified name of the package containing AutoValue annotations. This method
+   * constructs the String dynamically, to ensure it does not get rewritten due to relocation of the
+   * {@code "com.google"} package during the build process.
    *
    * @return {@code "com.google.auto.value"}
    */

@@ -36,7 +36,7 @@ import org.plumelib.util.CollectionsPlume;
  */
 public class PerFileSuite extends RootedSuite {
 
-  /** Name */
+  /** Name. */
   @Retention(RetentionPolicy.RUNTIME)
   @Target(ElementType.METHOD)
   public @interface Name {}

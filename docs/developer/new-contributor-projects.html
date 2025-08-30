@@ -50,16 +50,13 @@
     <ul>
       <li><a href="#hint-about-annotated-library-methods">Indicate library methods that should be used instead</a></li>
       <li><a href="#eisop-features">EISOP features</a></li>
-      <li><a href="#index-errors">Improving error messages</a></li>
+      <li><a href="#explain-errors">Explaining error messages</a></li>
+      <li><a href="#improve-errors">Improving error messages</a></li>
       <li><a href="#javaparser-to-javac-parse">Replace JavaParser by javac</a>
         <ul>
           <li><a href="#javaparser-ajava">Replace JavaParser for ajava files</a></li>
-          <li><a href="#javaparser-dependent-types">Replace JavaParser for dependent types</a>
-            <ul>
-              <li><a href="#javaparser-use-JavaExpression">Continue to use the JavaExpression class</a></li>
-              <li><a href="#java-expression-parser">Eliminate the JavaExpression class</a></li>
-            </ul></li>
           <li><a href="#javaparser-stub">Replace JavaParser for stub files</a></li>
+          <li><a href="#java-expression-parser">Eliminate the JavaExpression class</a></li>
         </ul></li>
       <li><a href="#dataflow">Dataflow enhancements</a></li>
       <li><a href="#SideEffectsOnly">More precise side effect annotations</a></li>
@@ -1263,7 +1260,27 @@ It would behave similarly for other library methods.
 </p>
 
 
-<h2 id="index-errors">Improving error messages</h2>
+<h2 id="explain-errors">Explaining error messages</h2>
+
+<!-- To compute "340": wc $(findfile messages.properties | grep -v build) -->
+<p>
+  The Checker Framework issues 340 different error messages, revealing 340
+  different types of programming errors.  Users may not understand all of
+  these error messages.  The goal of this project is to write one webpage
+  per error message.  The webpage will explain the message, show an example
+  of code that triggers it, and show how to fix the code so that the
+  message is not issued.
+</p>
+
+<p>
+  This project is inspired by other tools
+  (<a href="https://errorprone.info/bugpatterns">Error Prone</a>,
+  <a href="https://github.com/koalaman/shellcheck/wiki/Checks">ShellCheck</a>,
+  etc.) that have one webpage per error message.
+</p>
+
+
+<h2 id="improve-errors">Improving error messages</h2>
 
 <p>
 Compiler writers have come to realize that clarity of error
@@ -1332,8 +1349,9 @@ is to replace every use of JavaParser by a use of javac's parser.
 </p>
 
 <p>
-Here are three uses of JavaParser in the Checker Framework.  Replacing each of
-them is a different project.  The projects are listed from easiest to hardest.
+Here are two uses of JavaParser in the Checker Framework (plus a third
+project related to Java parsing).  Replacing each of them is a different
+project.  The projects are listed from easiest to hardest.
 </p>
 
 
@@ -1350,70 +1368,46 @@ javac's parser instead of JavaParser to read ajava files and query their content
 </p>
 
 
-<h3 id="javaparser-dependent-types">Replace JavaParser for dependent types</h3>
+
+
+
+<h3 id="javaparser-stub">Replace JavaParser for stub files</h3>
 
 <p>
-Programmers can write
+<a href="https://checkerframework.org/manual/#stub">Stub files</a>, like
+ajava files, specify types for unannotated libraries.  A challenge is that
+a stub file is not necessarily a legal Java file.  A stub file looks like
+the concatenation of multiple Java files (for example, it can have
+multiple <code>package</code> declarations and multiple blocks
+of <code>import</code> statements).  Furthermore, a stub file may
+omit method bodies, replacing the body by ";".
+</p>
+
+<p>
+Currently, the Checker Framework uses a modified version of JavaParser,
+called <a href="https://central.sonatype.com/artifact/org.checkerframework/stubparser/versions">StubParser</a>
+or <a href="https://checkerframework.org/api/org/checkerframework/framework/stub/AnnotationFileParser.html">AnnotationFileParser</a>.
+The modified version can parse stub files.
+</p>
+
+<p>
+Using javac to parse stub files would likewise require some modifications
+or wrappers.  One possibility is to (1) split a stub file into many
+small files, (2) make those files legal Java (or at least parsable) by
+replacing "<code>;</code>" bodies by "<code>{ throw new Error(); }</code>", and
+(3) parse those files.
+</p>
+
+
+<h3 id="java-expression-parser">Eliminate the JavaExpression class</h3>
+
+<p>Programmers can write
 <a href="https://checkerframework.org/manual/#java-expressions-as-arguments">Java
-expressions</a> within annotations, such as in dependent types.  The
-Checker Framework currently uses JavaParser to parse these expressions.  We
-would rather use javac's parser instead.
-</p>
-
-<p>
-This project may resolve some of
-<a href="https://github.com/typetools/checker-framework/issues?q=is%3Aopen+is%3Aissue+label%3AJavaExpressions">the
-issues that are labeled "JavaExpression".</a>
-</p>
-
-<p>
-Here are two different approaches to replace JavaParser for dependent
-types.
-</p>
-
-
-<h4 id="javaparser-use-JavaExpression">Continue to use the JavaExpression class</h4>
-
-<p>
+expressions</a> within annotations, such as in dependent types.
 The Checker Framework parses a Java expression string written by a
 programmer into a
-<a href="https://checkerframework.org/api/org/checkerframework/dataflow/expression/JavaExpression.html"><code>JavaExpression</code></a>.
-</p>
-
-<p>
-This parsing happens in  class
-<a href="https://checkerframework.org/api/org/checkerframework/framework/util/JavaExpressionParseUtil.html"><code>JavaExpressionParseUtil</code></a>,
-in
-method <a href="https://checkerframework.org/api/org/checkerframework/framework/util/JavaExpressionParseUtil.html#parse(java.lang.String,javax.lang.model.type.TypeMirror,org.checkerframework.dataflow.expression.ThisReference,java.util.List,com.sun.source.util.TreePath,com.sun.source.util.TreePath,javax.annotation.processing.ProcessingEnvironment)"><code>parse()</code></a>.
-You will change the implementation, but not the API (the interface),
-of <code>JavaExpressionParseUtil</code>.  You will change the line
-</p>
-
-<pre>
-  expr = JavaParserUtil.parseExpression(expressionWithParameterNames, currentSourceVersion);
-</pre>
-
-<p>
-to call the javac parser instead (currently, <code>expr</code> is a
-JavaParser datatype), and you will rewrite the
-<code>ExpressionToJavaExpressionVisitor</code> nested class so that it
-converts a javac parse tree into a <code>JavaExpression</code>.
-</p>
-
-<p>
-Note that <code>JavaExpressionParseUtil</code> is also used by class
-<a href="https://checkerframework.org/api/org/checkerframework/framework/util/StringToJavaExpression.html"><code>StringToJavaExpression</code></a>.
-</p>
-
-
-<h4 id="java-expression-parser">Eliminate the JavaExpression class</h4>
-
-<p>
-The approach in "Continue to use the JavaExpression class" (just above) has
-these steps: (1) parse a string into a javac tree, (2) convert the javac
-tree into a
 <a href="https://checkerframework.org/api/org/checkerframework/dataflow/expression/JavaExpression.html"><code>JavaExpression</code></a>,
-and (3) use the <code>JavaExpression</code> throughout the Checker
+which is used throughout the Checker
 Framework codebase.
 </p>
 
@@ -1463,32 +1457,6 @@ Here is a possible sequence of steps for this project:
     be deleted.  The deletion of code is an advantage of this approach.
   </li>
 </ol>
-
-
-<h3 id="javaparser-stub">Replace JavaParser for stub files</h3>
-
-<p>
-<a href="https://checkerframework.org/manual/#stub">Stub files</a>, like
-ajava files, specify types for unannotated libraries.  A challenge is that
-a stub file is not necessarily a legal Java file.  A stub file looks like
-the concatenation of multiple Java files (for example, it can have
-multiple <code>package</code> declarations).  Furthermore, a stub file may
-omit method bodies, replacing the body by ";".
-</p>
-
-<p>
-Currently, the Checker Framework uses a modified version of JavaParser,
-called <a href="https://central.sonatype.com/artifact/org.checkerframework/stubparser/versions">StubParser</a>
-or <a href="https://checkerframework.org/api/org/checkerframework/framework/stub/AnnotationFileParser.html">AnnotationFileParser</a>.
-The modified version can parse stub files.
-</p>
-
-<p>
-Using javac to parse stub files would likewise require some modifications
-or wrappers.  One possibility would be to (1) split a stub file into many
-small files, (2) make those files legal Java (or at least parsable), and
-(3) parse those files.  There may be other implementation strategies as well.
-</p>
 
 
 <h2 id="dataflow">Dataflow enhancements</h2>
@@ -1677,6 +1645,14 @@ currently of interest.
 
 <p>
 This section is relevant only to Google Summer of Code Students.
+</p>
+
+<p>
+  For GSoC students, the best projects are <em>not</em> in the "Create a
+  new type system" category.  The reason is that creating a new type system
+  usually takes more time than one summer.  It is better to succeed with a
+  smaller task than to fail with a larger task.  If you finish a smaller task
+  quickly, then you can proceed to a more ambitious goal.
 </p>
 
 <p>
@@ -1878,7 +1854,7 @@ thought about the problem nor tried to solve it.
  -->
 <!--  LocalWords:  rasmud nondet Geffken Dort unmodifiable MightNotSupport
  -->
-<!--  LocalWords:  SupportsAllOperations asList emptyList JavaExpression
+<!--  LocalWords:  SupportsAllOperations asList emptyList JavaExpression '
  -->
 <!--  LocalWords:  MightSupportNothing Waataja Siwakorn Srisakaokul Papi
  -->

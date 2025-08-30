@@ -249,7 +249,7 @@ public class BackwardAnalysisImpl<
    * @param pred the basic block
    * @param node the node of the basic block {@code b}
    * @param s the store being added
-   * @param addBlockToWorklist whether the basic block {@code b} should be added back to {@code
+   * @param addBlockToWorklist true if the basic block {@code b} should be added back to {@code
    *     Worklist}
    */
   protected void addStoreAfter(Block pred, @Nullable Node node, S s, boolean addBlockToWorklist) {

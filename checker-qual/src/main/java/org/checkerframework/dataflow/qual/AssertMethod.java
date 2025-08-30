@@ -14,9 +14,9 @@ import java.lang.annotation.Target;
  * <p>The annotation enables flow-sensitive type refinement to be more precise. For example, if
  * {@code Assertions.assertTrue} is annotated as follows:
  *
- * <pre><code>@AssertMethod(value = AssertionFailedError.class)
+ * <pre>{@code @AssertMethod(value = AssertionFailedError.class)
  * public static void assertFalse(boolean condition);
- * </code></pre>
+ * }</pre>
  *
  * Then, in the code below, the Optional Checker can determine that {@code optional} has a value and
  * the call to {@code Optional#get} will not throw an exception.
@@ -53,15 +53,15 @@ public @interface AssertMethod {
   int parameter() default 1;
 
   /**
-   * Returns whether this method asserts that the boolean expression is false.
+   * Returns true if this method asserts that the boolean expression is false.
    *
    * <p>For example, Junit's <a
    * href="https://junit.org/junit5/docs/5.0.1/api/org/junit/jupiter/api/Assertions.html#assertFalse-boolean-">Assertions.assertFalse(...)</a>
    * throws an exception if the first argument is false. So it is annotated as follows:
    *
-   * <pre><code>@AssertMethod(value = AssertionFailedError.class, isAssertFalse = true)
+   * <pre>{@code @AssertMethod(value = AssertionFailedError.class, isAssertFalse = true)
    * public static void assertFalse(boolean condition);
-   * </code></pre>
+   * }</pre>
    *
    * @return the value for {@link #parameter} on which the method throws an exception
    */

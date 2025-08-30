@@ -44,7 +44,7 @@ public class ReflectiveEvaluator {
   private final BaseTypeChecker checker;
 
   /**
-   * Whether to report warnings about problems with evaluation. Controlled by the -AreportEvalWarns
+   * If true, report warnings about problems with evaluation. Controlled by the -AreportEvalWarns
    * command-line option.
    */
   private final boolean reportWarnings;
@@ -277,7 +277,7 @@ public class ReflectiveEvaluator {
   }
 
   /**
-   * Return the value of a static field access. Return null if accessing the field reflectively
+   * Returns the value of a static field access. Return null if accessing the field reflectively
    * fails.
    *
    * @param classname the class containing the field

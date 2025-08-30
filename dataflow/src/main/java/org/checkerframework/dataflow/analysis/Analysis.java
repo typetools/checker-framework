@@ -41,7 +41,7 @@ public interface Analysis<
   }
 
   /**
-   * Get the direction of this analysis.
+   * Returns the direction of this analysis.
    *
    * @return the direction of this analysis
    */
@@ -100,14 +100,14 @@ public interface Analysis<
   AnalysisResult<V, S> getResult();
 
   /**
-   * Get the transfer function of this analysis.
+   * Returns the transfer function of this analysis.
    *
    * @return the transfer function of this analysis
    */
   @Nullable T getTransferFunction();
 
   /**
-   * Get the transfer input of a given {@link Block} b.
+   * Returns the transfer input of a given {@link Block} b.
    *
    * @param b a given Block
    * @return the transfer input of this Block
@@ -125,7 +125,7 @@ public interface Analysis<
   @Nullable V getValue(Node n);
 
   /**
-   * Return the abstract value for {@link Tree} {@code t}, or {@code null} if no information is
+   * Returns the abstract value for {@link Tree} {@code t}, or {@code null} if no information is
    * available. Note that if the analysis has not finished yet, this value might not represent the
    * final value for this node.
    *

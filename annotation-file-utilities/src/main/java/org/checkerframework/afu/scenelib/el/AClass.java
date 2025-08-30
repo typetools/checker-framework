@@ -16,7 +16,7 @@ import org.plumelib.util.CollectionsPlume;
 
 /** An annotated class. */
 public class AClass extends ADeclaration {
-  /** The class's annotated type parameter bounds */
+  /** The class's annotated type parameter bounds. */
   public final VivifyingMap<BoundLocation, ATypeElement> bounds =
       ATypeElement.<BoundLocation>newVivifyingLHMap_ATE();
 
@@ -36,7 +36,7 @@ public class AClass extends ADeclaration {
 
   public final VivifyingMap<Integer, ABlock> instanceInits = createInitBlockMap();
 
-  /** The class's annotated fields; map key is field name */
+  /** The class's annotated fields; map key is field name. */
   public final VivifyingMap<String, AField> fields = AField.<String>newVivifyingLHMap_AF();
 
   public final VivifyingMap<String, AExpression> fieldInits = createFieldInitMap();
@@ -254,7 +254,7 @@ public class AClass extends ADeclaration {
   }
 
   /**
-   * Checks whether the given class is an enum.
+   * Returns true if the given class is an enum.
    *
    * @param className the simple class name of this class or one of its outer classes
    * @return true if the given class is an enum
@@ -264,7 +264,7 @@ public class AClass extends ADeclaration {
   }
 
   /**
-   * Checks whether this class is an enum.
+   * Returns true if this class is an enum.
    *
    * @return true if this class is an enum
    */
@@ -313,7 +313,7 @@ public class AClass extends ADeclaration {
   }
 
   /**
-   * Checks whether the given class is an annotation.
+   * Returns true if the given class is an annotation.
    *
    * @param className the simple class name of this class or one of its outer classes
    * @return true if the given class is an annotation
@@ -323,7 +323,7 @@ public class AClass extends ADeclaration {
   }
 
   /**
-   * Checks whether this class is an annotation.
+   * Returns true if this class is an annotation.
    *
    * @return true if this class is an annotation
    */
@@ -342,7 +342,7 @@ public class AClass extends ADeclaration {
   }
 
   /**
-   * Checks whether the given class is an interface.
+   * Returns true if the given class is an interface.
    *
    * @param className the simple class name of this class or one of its outer classes
    * @return true if the given class is an interface
@@ -352,7 +352,7 @@ public class AClass extends ADeclaration {
   }
 
   /**
-   * Checks whether this class is an interface.
+   * Returns true if this class is an interface.
    *
    * @return true if this class is an interface
    */
@@ -371,7 +371,7 @@ public class AClass extends ADeclaration {
   }
 
   /**
-   * Checks whether the given class is an record.
+   * Returns true if the given class is an record.
    *
    * @param className the simple class name of this class or one of its outer classes
    * @return true if the given class is an record
@@ -381,7 +381,7 @@ public class AClass extends ADeclaration {
   }
 
   /**
-   * Checks whether this class is an record.
+   * Returns true if this class is an record.
    *
    * @return true if this class is an record
    */
@@ -400,7 +400,7 @@ public class AClass extends ADeclaration {
   }
 
   /**
-   * Get the type of the class, or null if it is unknown. Callers should ensure that either:
+   * Returns the type of the class, or null if it is unknown. Callers should ensure that either:
    *
    * <ul>
    *   <li>{@link #setTypeElement(TypeElement)} has been called, or
@@ -428,7 +428,7 @@ public class AClass extends ADeclaration {
   }
 
   /**
-   * Get all the methods that have been vivified on a class.
+   * Returns all the methods that have been vivified on a class.
    *
    * @return a map from method signature (in JVM format) to the object representing the method
    */
@@ -437,7 +437,7 @@ public class AClass extends ADeclaration {
   }
 
   /**
-   * Get all the fields that have been vivified on a class.
+   * Returns all the fields that have been vivified on a class.
    *
    * @return a map from field name to the object representing the field
    */
@@ -446,7 +446,7 @@ public class AClass extends ADeclaration {
   }
 
   /**
-   * Get the annotations on the class.
+   * Returns the annotations on the class.
    *
    * @return the annotations, directly from scenelib
    */

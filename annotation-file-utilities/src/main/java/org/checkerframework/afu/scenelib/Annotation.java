@@ -170,10 +170,10 @@ public final class Annotation {
    * <ul>
    *   <li>Primitive value: wrapper object, such as {@link Integer}.
    *   <li>{@link String}: {@link String}.
-   *   <li>Class token: name of the type as a {@link String}, using the source code notation <code>
-   *       int[]</code> for arrays.
+   *   <li>Class token: name of the type as a {@link String}, using the source code notation {@code
+   *       int[]} for arrays.
    *   <li>Enumeration constant: name of the constant as a {@link String}.
-   *   <li>Subannotation: <code>Annotation</code> object.
+   *   <li>Subannotation: {@code Annotation} object.
    *   <li>Array: {@link List} of elements in the formats defined here. If the element type is
    *       unknown (see {@link AnnotationBuilder#addEmptyArrayField}), the array must have zero
    *       elements.
@@ -196,9 +196,9 @@ public final class Annotation {
   }
 
   /**
-   * This {@link Annotation} equals <code>o</code> if and only if <code>o</code> is a nonnull {@link
-   * Annotation} and <code>this</code> and <code>o</code> have recursively equal definitions and
-   * field values, even if they were created by different {@link AnnotationFactory}s.
+   * This {@link Annotation} equals {@code o} if and only if {@code o} is a nonnull {@link
+   * Annotation} and {@code this} and {@code o} have recursively equal definitions and field values,
+   * even if they were created by different {@link AnnotationFactory}s.
    */
   @Override
   public final boolean equals(Object o) {
@@ -206,7 +206,7 @@ public final class Annotation {
   }
 
   /**
-   * Returns whether this annotation equals <code>o</code>; a slightly faster variant of {@link
+   * Returns true if this annotation equals {@code o}; a slightly faster variant of {@link
    * #equals(Object)} for when the argument is statically known to be another nonnull {@link
    * Annotation}. Subclasses may wish to override this with a hard-coded "&amp;&amp;" of field
    * comparisons to improve performance.

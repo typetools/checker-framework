@@ -39,10 +39,10 @@ import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.StringLiteralNode;
+import org.checkerframework.dataflow.expression.JavaExpressionParseUtil;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
-import org.checkerframework.framework.util.JavaExpressionParseUtil;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -156,7 +156,7 @@ public class I18nFormatterTreeUtil {
   }
 
   /**
-   * Takes an {@code @}{@link I18nFormat} annotation, and returns its {@code value} element
+   * Takes an {@code @}{@link I18nFormat} annotation, and returns its {@code value} element.
    *
    * @param anno an {@code @}{@link I18nFormat} annotation
    * @return the {@code @}{@link I18nFormat} annotation's {@code value} element

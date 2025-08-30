@@ -23,13 +23,13 @@ import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.JavaExpressionParseException;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.util.JavaExpressionParseUtil;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
@@ -84,9 +84,12 @@ public class SameLenTransfer extends CFTransfer {
       AssignmentNode node, TransferInput<CFValue, CFStore> in) {
     TransferResult<CFValue, CFStore> result = super.visitAssignment(node, in);
 
+    Node exprNode = node.getExpression();
+    Node recNode = node.getTarget();
+
     // Handle b = new T[a.length]
-    if (node.getExpression() instanceof ArrayCreationNode) {
-      ArrayCreationNode acNode = (ArrayCreationNode) node.getExpression();
+    if (exprNode instanceof ArrayCreationNode) {
+      ArrayCreationNode acNode = (ArrayCreationNode) exprNode;
       if (acNode.getDimensions().size() == 1) {
 
         Node lengthNode = acNode.getDimension(0);
@@ -99,7 +102,7 @@ public class SameLenTransfer extends CFTransfer {
           // "lengthNodeReceiver.length()"
 
           // targetRec is the receiver for the left hand side of the assignment.
-          JavaExpression targetRec = JavaExpression.fromNode(node.getTarget());
+          JavaExpression targetRec = JavaExpression.fromNode(recNode);
           JavaExpression otherRec = JavaExpression.fromNode(lengthNodeReceiver);
 
           AnnotationMirror lengthNodeAnnotation =
@@ -118,18 +121,16 @@ public class SameLenTransfer extends CFTransfer {
     }
 
     AnnotationMirror rightAnno =
-        atypeFactory
-            .getAnnotatedType(node.getExpression().getTree())
-            .getPrimaryAnnotationInHierarchy(UNKNOWN);
+        atypeFactory.getAnnotatedType(exprNode.getTree()).getPrimaryAnnotationInHierarchy(UNKNOWN);
 
     // If the left side of the assignment is an array or a string, then have both the right and
     // left side be SameLen of each other.
 
-    JavaExpression targetRec = JavaExpression.fromNode(node.getTarget());
+    JavaExpression targetRec = JavaExpression.fromNode(recNode);
 
-    JavaExpression exprRec = JavaExpression.fromNode(node.getExpression());
+    JavaExpression exprRec = JavaExpression.fromNode(exprNode);
 
-    if (IndexUtil.isSequenceType(node.getTarget().getType())
+    if (IndexUtil.isSequenceType(recNode.getType())
         || (rightAnno != null && atypeFactory.areSameByClass(rightAnno, SameLen.class))) {
 
       AnnotationMirror rightAnnoOrUnknown = rightAnno == null ? UNKNOWN : rightAnno;
@@ -163,7 +164,7 @@ public class SameLenTransfer extends CFTransfer {
       JavaExpression je;
       try {
         je = atypeFactory.parseJavaExpressionString(exprString, currentPath);
-      } catch (JavaExpressionParseUtil.JavaExpressionParseException e) {
+      } catch (JavaExpressionParseException e) {
         continue;
       }
       store.clearValue(je);

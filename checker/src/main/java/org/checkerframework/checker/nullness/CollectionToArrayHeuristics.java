@@ -42,7 +42,7 @@ public class CollectionToArrayHeuristics {
   /** The type factory. */
   private final NullnessAnnotatedTypeFactory atypeFactory;
 
-  /** Whether to trust {@code @ArrayLen(0)} annotations. */
+  /** If true, trust {@code @ArrayLen(0)} annotations. */
   private final boolean trustArrayLenZero;
 
   /** The Collection type. */

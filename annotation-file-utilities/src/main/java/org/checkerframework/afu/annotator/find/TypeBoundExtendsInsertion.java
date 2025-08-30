@@ -8,7 +8,7 @@ public class TypeBoundExtendsInsertion extends AnnotationInsertion {
    *
    * @param text the text to insert
    * @param criteria where to insert the text
-   * @param separateLine whether to insert the text on its own
+   * @param separateLine if true, insert the text on its own line
    */
   public TypeBoundExtendsInsertion(String text, Criteria criteria, boolean separateLine) {
     super(text, criteria, separateLine);

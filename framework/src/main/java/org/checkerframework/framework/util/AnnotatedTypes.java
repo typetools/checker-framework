@@ -105,9 +105,9 @@ public class AnnotatedTypes {
    * @param atypeFactory {@link AnnotatedTypeFactory}
    * @param type type from which to copy annotations
    * @param superType a type whose erased Java type is a supertype of {@code type}'s erased Java
-   *     type.
+   *     type
    * @return {@code superType} with annotations copied from {@code type} and type variables
-   *     substituted from {@code type}.
+   *     substituted from {@code type}
    */
   public static <T extends AnnotatedTypeMirror> T asSuper(
       AnnotatedTypeFactory atypeFactory, AnnotatedTypeMirror type, T superType) {
@@ -442,7 +442,7 @@ public class AnnotatedTypes {
    * @param receiver type of the receiver of the call
    * @param method the element of a method or constructor
    * @param types type utilities
-   * @return whether the call to {@code method} with {@code receiver} raw
+   * @return true if the call to {@code method} with {@code receiver} raw
    */
   private static boolean isRawCall(AnnotatedDeclaredType receiver, Element method, Types types) {
     // Section 4.8, "Raw Types".
@@ -708,7 +708,7 @@ public class AnnotatedTypes {
    * @param elt the element corresponding to the tree
    * @param preType the (partially annotated) type corresponding to the tree - the result of
    *     AnnotatedTypes.asMemberOf with the receiver and elt
-   * @param inferTypeArgs whether the type argument should be inferred
+   * @param inferTypeArgs true if the type argument should be inferred
    * @return the mapping of type variables to type arguments for this method or constructor
    *     invocation, and whether unchecked conversion was required to infer the type arguments, and
    *     whether type argument inference crashed
@@ -797,18 +797,18 @@ public class AnnotatedTypes {
     /** A mapping from {@link TypeVariable} to its annotated type argument. */
     public final Map<TypeVariable, AnnotatedTypeMirror> typeArguments;
 
-    /** Whether unchecked conversion was needed for inference. */
+    /** True if unchecked conversion was needed for inference. */
     public final boolean uncheckedConversion;
 
-    /** Whether type argument inference crashed. */
+    /** True if type argument inference crashed. */
     public final boolean inferenceCrash;
 
     /**
      * Creates a {@link TypeArguments} object.
      *
      * @param typeArguments a mapping from {@link TypeVariable} to its annotated type argument
-     * @param uncheckedConversion whether unchecked conversion was needed for inference
-     * @param inferenceCrash whether type argument inference crashed
+     * @param uncheckedConversion true if unchecked conversion was needed for inference
+     * @param inferenceCrash true if type argument inference crashed
      */
     public TypeArguments(
         Map<TypeVariable, AnnotatedTypeMirror> typeArguments,
@@ -1066,7 +1066,7 @@ public class AnnotatedTypes {
     List<AnnotatedTypeMirror> parameters = method.getParameterTypes();
 
     // Handle anonymous constructors that extend a class with an enclosing type,
-    // as in `new MyClass(){ ... }`.
+    // as in `new MyClass() { ... }`.
     if (method.getElement().getKind() == ElementKind.CONSTRUCTOR
         && method.getElement().getEnclosingElement().getSimpleName().contentEquals("")) {
       DeclaredType t =
@@ -1210,14 +1210,14 @@ public class AnnotatedTypes {
   }
 
   /**
-   * Checks whether type contains the given modifier, also recursively in type arguments and arrays.
-   * This method might be easier to implement directly as instance method in AnnotatedTypeMirror; it
-   * corresponds to a "deep" version of {@link
+   * Returns true if type contains the given modifier, also recursively in type arguments and
+   * arrays. This method might be easier to implement directly as instance method in
+   * AnnotatedTypeMirror; it corresponds to a "deep" version of {@link
    * AnnotatedTypeMirror#hasPrimaryAnnotation(AnnotationMirror)}.
    *
    * @param type the type to search
    * @param modifier the modifier to search for
-   * @return whether the type contains the modifier
+   * @return true if the type contains the modifier
    */
   public static boolean containsModifier(AnnotatedTypeMirror type, AnnotationMirror modifier) {
     return containsModifierImpl(type, modifier, new ArrayList<>());
@@ -1410,9 +1410,9 @@ public class AnnotatedTypes {
    * it finds a concrete type from which it can pull an annotation.
    *
    * @param top the top of the hierarchy for which you are searching
-   * @param canBeEmpty whether or not the effective type can have NO annotation in the hierarchy
-   *     specified by top. If this param is false, an exception will be thrown if no annotation is
-   *     found. Otherwise the result is null.
+   * @param canBeEmpty true if the effective type can have NO annotation in the hierarchy specified
+   *     by top. If this param is false, an exception will be thrown if no annotation is found.
+   *     Otherwise the result is null.
    * @return the AnnotationMirror that represents the type of {@code toSearch} in the hierarchy of
    *     {@code top}
    */
@@ -1749,12 +1749,12 @@ public class AnnotatedTypes {
   }
 
   /**
-   * Returns whether {@code type} is a type argument to a type whose {@code #underlyingType} is raw.
+   * Returns true if {@code type} is a type argument to a type whose {@code #underlyingType} is raw.
    * The Checker Framework gives raw types wildcard type arguments so that the annotated type can be
    * used as if the annotated type was not raw.
    *
    * @param type an annotated type
-   * @return whether this is a type argument to a type whose {@code #underlyingType} is raw
+   * @return true if this is a type argument to a type whose {@code #underlyingType} is raw
    */
   public static boolean isTypeArgOfRawType(AnnotatedTypeMirror type) {
     return type.getKind() == TypeKind.WILDCARD

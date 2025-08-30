@@ -20,8 +20,8 @@ public class EnsuresCalledMethodOnExceptionContract {
   private final String method;
 
   /**
-   * Create a new <code>EnsuredCalledMethodOnException</code>. Usually this should be constructed
-   * from a {@link org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethodsOnException}
+   * Create a new {@code EnsuredCalledMethodOnException}. Usually this should be constructed from a
+   * {@link org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethodsOnException}
    * appearing in the source code.
    *
    * @param expression the expression described by this postcondition
@@ -52,8 +52,12 @@ public class EnsuresCalledMethodOnExceptionContract {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (!(o instanceof EnsuresCalledMethodOnExceptionContract)) return false;
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof EnsuresCalledMethodOnExceptionContract)) {
+      return false;
+    }
     EnsuresCalledMethodOnExceptionContract that = (EnsuresCalledMethodOnExceptionContract) o;
     return expression.equals(that.expression) && method.equals(that.method);
   }

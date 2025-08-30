@@ -44,7 +44,7 @@ abstract class InsertAnnotationsToSource extends DefaultTask {
     }
 
     execOperations.exec {
-      executable "${afuDir}/scripts/insert-annotations-to-source"
+      executable "${afuDir}/bin/insert-annotations-to-source"
       // Script argument -cp must precede Java program argument -i.
       // checker-qual is needed for Constant Value Checker annotations.
       // Note that "/" works on Windows as well as on Linux.

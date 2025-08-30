@@ -436,7 +436,7 @@ public class ForwardAnalysisImpl<
    * @param node the node of the basic block {@code b}
    * @param s the store being added
    * @param kind the kind of store {@code s}
-   * @param addBlockToWorklist whether the basic block {@code b} should be added back to {@code
+   * @param addBlockToWorklist true if the basic block {@code b} should be added back to {@code
    *     Worklist}
    */
   protected void addStoreBefore(
@@ -534,7 +534,7 @@ public class ForwardAnalysisImpl<
   }
 
   /**
-   * Return the store corresponding to the location right before the basic block {@code b}.
+   * Returns the store corresponding to the location right before the basic block {@code b}.
    *
    * @param b a block
    * @param kind the kind of store which will be returned

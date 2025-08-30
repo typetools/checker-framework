@@ -48,17 +48,17 @@ faq.tex \
 troubleshooting.tex \
 contributors.tex
 
-all: manual.pdf manual.html
+all: manual.pdf manual.html ../api
 
 .PHONY: figures-all
 figures-all:
 	${MAKE} -C figures all
 
-manual.pdf: ${TEX_FILES} plume-bib-update figures-all check-labels
+manual.pdf: ${TEX_FILES} plume-bib figures-all check-labels
 	latexmk -silent -pdf -interaction=nonstopmode manual.tex || latexmk -gg -pdf -interaction=nonstopmode manual.tex
 
 html: manual.html
-manual.html: manual.pdf CFLogo.png favicon-checkerframework.png ../api
+manual.html: manual.pdf CFLogo.png favicon-checkerframework.png
 	hevea -fix svg.hva -exec xxdate.exe manual.tex
 # I'm not sure why this is necessary; "hevea -fix" should run it automatically.
 # Also, you need ImageMagick 6.8.0-2 Beta or later to avoid a bug.
@@ -75,10 +75,10 @@ manual.html: manual.pdf CFLogo.png favicon-checkerframework.png ../api
 	sed -i -e 's%\(<a href="#[^"]*"\)\(><span style="font-size:small">&\#X1F517;</span></a>\)%\1 style="color:inherit; text-decoration:none"\2%g' manual.html
 
 ../../checker/bin-devel/.git-scripts:
-	cd ../.. && ./gradlew --stacktrace getGitScripts
+	cd ../.. && ./gradlew getGitScripts
 
 ../../checker/bin-devel/.plume-scripts:
-	cd ../.. && ./gradlew --stacktrace getPlumeScripts
+	cd ../.. && ./gradlew getPlumeScripts
 
 .PHONY: contributors.tex
 contributors.tex:
@@ -102,14 +102,8 @@ check-labels:
 
 export BIBINPUTS = $BIBINPUTS:.:plume-bib
 plume-bib:
-	(git clone --depth=1 -q https://github.com/mernst/plume-bib.git || git clone --depth=1 -q https://github.com/mernst/plume-bib.git)
-.PHONY: plume-bib-update
-plume-bib-update: plume-bib
-# Even if this command fails, it does not terminate the make job.
-# However, to skip it, invoke make as:  make NOGIT=1 ...
-ifndef NOGIT
-	-(cd plume-bib && (timeout 10s git pull || true) && make)
-endif
+	cd ../.. && ./gradlew getPlumeBib
+
 
 # Leaves manual.html, and .svg files that it references.
 clean:

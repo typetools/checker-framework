@@ -12,6 +12,8 @@ dependencies {
 
   implementation "org.plumelib:hashmap-util:${versions.hashmapUtil}"
 
+  testImplementation group: 'junit', name: 'junit', version: '4.13.2'
+
   // External dependencies:
   // If you add an external dependency, you must shadow its packages both in the dataflow-shaded
   // artifact (see shadowJar block below) and also in checker.jar (see the comment in
@@ -68,8 +70,8 @@ task manual(type: Exec, group: 'Documentation') {
   commandLine 'make', '-C', 'manual'
 }
 
-tasks.withType(Test) {
-  dependsOn('allDataflowTests')
+clean {
+  delete('manual/checker-framework-dataflow-manual.aux' ,'manual/checker-framework-dataflow-manual.log','manual/checker-framework-dataflow-manual.out','manual/checker-framework-dataflow-manual.pdf')
 }
 
 tasks.create(name: 'allDataflowTests', group: 'Verification') {
@@ -130,6 +132,8 @@ def testDataflowAnalysis(taskName, dirName, className, diff) {
         'jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED',
         '--add-opens',
         'jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED',
+        '--add-opens',
+        'jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED',
         '--add-opens',
         'jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED',
         '--add-opens',

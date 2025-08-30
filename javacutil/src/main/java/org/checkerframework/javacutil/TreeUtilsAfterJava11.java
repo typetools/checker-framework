@@ -146,9 +146,9 @@ public class TreeUtilsAfterJava11 {
     }
 
     /**
-     * Get the list of labels from a case expression. For {@code default}, this is empty. For {@code
-     * case null, default}, the list contains {@code null}. Otherwise, in JDK 11 and earlier, this
-     * is a list of a single expression tree. In JDK 12+, the list may have multiple expression
+     * Returns the list of labels from a case expression. For {@code default}, this is empty. For
+     * {@code case null, default}, the list contains {@code null}. Otherwise, in JDK 11 and earlier,
+     * this is a list of a single expression tree. In JDK 12+, the list may have multiple expression
      * trees. In JDK 21+, the list might contain a single pattern tree.
      *
      * @param caseTree the case expression to get the labels from
@@ -159,7 +159,7 @@ public class TreeUtilsAfterJava11 {
     }
 
     /**
-     * Get the list of labels from a case expression.
+     * Returns the list of labels from a case expression.
      *
      * <p>For JDKs before 21, if {@code caseTree} is the default case, then the returned list is
      * empty.
@@ -207,7 +207,7 @@ public class TreeUtilsAfterJava11 {
     }
 
     /**
-     * Get the list of expressions from a case expression. For the default case, this is empty.
+     * Returns the list of expressions from a case expression. For the default case, this is empty.
      * Otherwise, in JDK 11 and earlier, this is a singleton list. In JDK 12 onwards, there can be
      * multiple expressions per case.
      *
@@ -356,7 +356,7 @@ public class TreeUtilsAfterJava11 {
     private static @Nullable Method GET_PATTERN = null;
 
     /**
-     * Returns whether {@code tree} is a {@code PatternCaseLabelTree}.
+     * Returns true if {@code tree} is a {@code PatternCaseLabelTree}.
      *
      * @param tree a tree to check
      * @return true if {@code tree} is a {@code PatternCaseLabelTree}
@@ -486,7 +486,7 @@ public class TreeUtilsAfterJava11 {
      * <p>Use {@link TreeUtils#isVariableTreeDeclaredUsingVar(VariableTree)} for a method that works
      * on all versions of java.
      *
-     * @param variableTree a variable tree.
+     * @param variableTree a variable tree
      * @return true if {@code variableTree} was declared using {@code var} and using Java 17+
      */
     @Pure

@@ -41,6 +41,7 @@ local.properties
 api
 build
 dist
+buildSrc/.gradle
 docs/tmpapi/
 stubparser/docs/api
 # Don't want to ignore .jar files in checker/lib/ nor in gradle/wrapper
@@ -73,10 +74,7 @@ manual.fls
 manual.haux
 manual.html
 manual.htoc
-manual.image.log
-manual.image.out
-manual.image.tex
-manual.image.tex.new
+manual.image.*
 manual.log
 manual.out
 manual.pdf
@@ -90,6 +88,19 @@ manual003.gif
 manual003.png
 manual004.gif
 manual004.png
+docs/annotation-file-utilities/annotation-file-format.html
+docs/annotation-file-utilities/annotation-file-format.htoc
+docs/annotation-file-utilities/annotation-file-format.log
+docs/annotation-file-utilities/annotation-file-format.pdf
+docs/annotation-file-utilities/annotation-file-format.toc
+docs/annotation-file-utilities/corresp.png
+docs/annotation-file-utilities/dataflow.png
+docs/annotation-file-utilities/figures/corresp.png
+docs/annotation-file-utilities/figures/dataflow.png
+docs/annotation-file-utilities/figures/nocast.png
+docs/annotation-file-utilities/figures/typecast.png
+docs/annotation-file-utilities/nocast.png
+docs/annotation-file-utilities/typecast.png
 docs/examples/**/*.class
 docs/examples/MavenExample/Out.txt
 docs/examples/errorprone/.gradle/
@@ -106,13 +117,14 @@ docs/manual/figures/*.png
 docs/manual/figures/signature-types-with-canonicalname.dia
 docs/manual/manual.html-e
 docs/tmpapi/
+*.fls
 
 # dataflow manual
-dataflow/manual/dataflow.aux
-dataflow/manual/dataflow.dvi
-dataflow/manual/dataflow.log
-dataflow/manual/dataflow.out
-dataflow/manual/dataflow.pdf
+dataflow/manual/checker-framework-dataflow-manual.aux
+dataflow/manual/checker-framework-dataflow-manual.dvi
+dataflow/manual/checker-framework-dataflow-manual.log
+dataflow/manual/checker-framework-dataflow-manual.out
+dataflow/manual/checker-framework-dataflow-manual.pdf
 
 docs/tutorial/src/personalblog-demo/bin/net/eyde/personalblog/service/PersonalBlogService.class
 docs/tutorial/src/personalblog-demo/bin/net/eyde/personalblog/struts/action/ReadAction.class
@@ -200,8 +212,8 @@ annotation-file-utilities/annotation-file-format.out
 annotation-file-utilities/annotation-file-format.pdf
 annotation-file-utilities/annotation-file-format.ps
 annotation-file-utilities/annotation-file-format.toc
-annotation-file-utilities/annotation-file-utilities.jar
-annotation-file-utilities/annotation-file-utilities-all.jar
+annotation-file-utilities/dist/annotation-file-utilities.jar
+annotation-file-utilities/dist/annotation-file-utilities-all.jar
 annotation-file-utilities/annotation-file-utilities-all-but-javac.jar
 annotation-file-utilities/annotation-tools.zip
 annotation-file-utilities/plume-bib
@@ -218,6 +230,7 @@ annotation-file-utilities/javadoc
 annotation-file-utilities/tests/*.diff
 annotation-file-utilities/tests/*.log
 annotation-file-utilities/tests/*.output
+annotation-file-utilities/tests/**/*.class
 annotation-file-utilities/tests/Makefile.user
 annotation-file-utilities/tests/abbreviated/*.diff
 annotation-file-utilities/tests/abbreviated/*.log

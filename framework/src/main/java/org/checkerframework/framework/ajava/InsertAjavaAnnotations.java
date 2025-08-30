@@ -119,7 +119,7 @@ public class InsertAjavaAnnotations {
     /** The contents of the insertion. */
     public final String contents;
 
-    /** Whether the insertion should be on its own separate line. */
+    /** True if the insertion should be on its own separate line. */
     public final boolean ownLine;
 
     /**
@@ -180,7 +180,7 @@ public class InsertAjavaAnnotations {
     /** The lines of the String representation of the second AST. */
     private final List<String> lines;
 
-    /** The line separator used in the text the second AST was parsed from */
+    /** The line separator used in the text the second AST was parsed from. */
     private final String lineSeparator;
 
     /**

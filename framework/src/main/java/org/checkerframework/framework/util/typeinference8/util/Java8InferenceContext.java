@@ -80,7 +80,7 @@ public class Java8InferenceContext {
   public final Set<VariableElement> lambdaParms = new HashSet<>();
 
   /**
-   * Creates a context
+   * Creates a context.
    *
    * @param factory type factory
    * @param pathToExpression path to the expression whose type arguments are inferred
@@ -116,8 +116,8 @@ public class Java8InferenceContext {
   }
 
   /**
-   * Return the next number to use as the id for a capture variable. This id is only unique for this
-   * inference problem.
+   * Returns the next number to use as the id for a capture variable. This id is only unique for
+   * this inference problem.
    *
    * @return the next number to use as the id for a capture variable
    */
@@ -149,10 +149,10 @@ public class Java8InferenceContext {
   }
 
   /**
-   * Return whether the {@code expression} is a lambda parameter.
+   * Returns true if the {@code expression} is a lambda parameter.
    *
    * @param expression an expression
-   * @return whether the {@code expression} is a lambda parameter
+   * @return true if the {@code expression} is a lambda parameter
    */
   public boolean isLambdaParam(ExpressionTree expression) {
     Element element = TreeUtils.elementFromTree(expression);
