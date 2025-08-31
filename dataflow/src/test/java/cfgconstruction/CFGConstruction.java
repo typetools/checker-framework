@@ -12,7 +12,7 @@ public class CFGConstruction {
     String method = "manyNestedTryFinallyBlocks";
 
     ControlFlowGraph cfg =
-        CFGVisualizeLauncher.generateMethodCFG(inputFile, clazz, method, /* analysis= */ null);
+        CFGVisualizeLauncher.generateMethodCFG(inputFile, method, clazz, /* analysis= */ null);
     cfg.checkInvariants();
   }
 }
