@@ -1,9 +1,13 @@
-Version 3.49.6 (2025-10-01)
+Version 3.51.0 (2025-10-01)
 ---------------------------
 
 **User-visible changes:**
 
 **Implementation details:**
+
+In `CFGVisualizeOptions`:
+ * renamed `isPDF()` to `isPdfOutput()`
+ * renamed `isString()` to `isStringOutput()`
 
 **Closed issues:**
 
