@@ -1944,25 +1944,25 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           Node operNode;
           if (kind == Tree.Kind.MULTIPLY_ASSIGNMENT) {
             operNode = new NumericalMultiplicationNode(operTree, targetRHS, value);
+            extendWithNode(operNode);
           } else if (kind == Tree.Kind.DIVIDE_ASSIGNMENT) {
             if (TypesUtils.isIntegralPrimitive(exprType)) {
               operNode = new IntegerDivisionNode(operTree, targetRHS, value);
-
               extendWithNodeWithException(operNode, arithmeticExceptionType);
             } else {
               operNode = new FloatingDivisionNode(operTree, targetRHS, value);
+              extendWithNode(operNode);
             }
           } else {
             assert kind == Tree.Kind.REMAINDER_ASSIGNMENT;
             if (TypesUtils.isIntegralPrimitive(exprType)) {
               operNode = new IntegerRemainderNode(operTree, targetRHS, value);
-
               extendWithNodeWithException(operNode, arithmeticExceptionType);
             } else {
               operNode = new FloatingRemainderNode(operTree, targetRHS, value);
+              extendWithNode(operNode);
             }
           }
-          extendWithNode(operNode);
 
           TypeMirror castType = TypeAnnotationUtils.unannotatedType(leftType);
           TypeCastTree castTree = treeBuilder.buildTypeCast(castType, operTree);
@@ -2158,8 +2158,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           } else if (kind == Tree.Kind.DIVIDE) {
             if (TypesUtils.isIntegralPrimitive(exprType)) {
               r = new IntegerDivisionNode(tree, left, right);
-
-              extendWithNodeWithException(r, arithmeticExceptionType);
             } else {
               r = new FloatingDivisionNode(tree, left, right);
             }
@@ -2167,8 +2165,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
             assert kind == Tree.Kind.REMAINDER;
             if (TypesUtils.isIntegralPrimitive(exprType)) {
               r = new IntegerRemainderNode(tree, left, right);
-
-              extendWithNodeWithException(r, arithmeticExceptionType);
             } else {
               r = new FloatingRemainderNode(tree, left, right);
             }
@@ -2382,7 +2378,14 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         throw new BugInCF("unexpected binary tree: " + kind);
     }
     assert r != null : "unexpected binary tree";
-    extendWithNode(r);
+    
+    // Check if we need to handle arithmetic exceptions for integer division/remainder
+    if ((kind == Tree.Kind.DIVIDE || kind == Tree.Kind.REMAINDER) 
+        && TypesUtils.isIntegralPrimitive(TreeUtils.typeOf(tree))) {
+      extendWithNodeWithException(r, arithmeticExceptionType);
+    } else {
+      extendWithNode(r);
+    }
     return r;
   }
 
@@ -3390,9 +3393,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     Node array = scan(tree.getExpression(), p);
     Node index = unaryNumericPromotion(scan(tree.getIndex(), p));
     Node arrayAccess = new ArrayAccessNode(tree, array, index);
-    extendWithNode(arrayAccess);
-    extendWithNodeWithException(arrayAccess, arrayIndexOutOfBoundsExceptionType);
-    extendWithNodeWithException(arrayAccess, nullPointerExceptionType);
+    Set<TypeMirror> exceptions = new HashSet<>();
+    exceptions.add(arrayIndexOutOfBoundsExceptionType);
+    exceptions.add(nullPointerExceptionType);
+    extendWithNodeWithExceptions(arrayAccess, exceptions);
     return arrayAccess;
   }
 
