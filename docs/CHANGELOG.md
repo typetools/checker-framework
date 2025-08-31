@@ -1,9 +1,12 @@
-Version 3.49.6 (2025-10-01)
+Version 3.51.0 (2025-10-01)
 ---------------------------
 
 **User-visible changes:**
 
 **Implementation details:**
+
+Dataflow Framework:
+ * In `playground` package, renamed `*Playground.java` to `*Pdf.java`
 
 **Closed issues:**
 
