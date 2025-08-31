@@ -5,6 +5,10 @@ Version 3.51.0 (2025-10-01)
 
 **Implementation details:**
 
+In `CFGVisualizeOptions`:
+ * renamed `isPDF()` to `isPdfOutput()`
+ * renamed `isString()` to `isStringOutput()`
+
 Dataflow Framework:
  * In `playground` package, renamed `*Playground.java` to `*Pdf.java`
 
