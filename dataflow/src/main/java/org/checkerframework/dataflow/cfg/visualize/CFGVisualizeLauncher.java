@@ -113,7 +113,6 @@ public final class CFGVisualizeLauncher {
                   + res);
           return;
         }
-
         System.out.println(stringGraph);
       }
     }
@@ -196,6 +195,7 @@ public final class CFGVisualizeLauncher {
    * @param <V> the abstract value type to be tracked by the analysis
    * @param <S> the store type used in the analysis
    * @param <T> the transfer function type that is used to approximate run-time behavior
+   * @param cfg the control flow graph to visualize
    * @param outputDir source output directory
    * @param pdf also generate a PDF
    * @param verbose show verbose information in CFG
@@ -315,7 +315,6 @@ public final class CFGVisualizeLauncher {
    * @param cfg the control flow graph
    * @param outputFile source output file
    * @param analysis the analysis that was run, or null
-   * @param analysis instance of forward or backward analysis from specific dataflow test case
    */
   @SuppressWarnings("CatchAndPrintStackTrace") // we want to use e.printStackTrace here.
   public static void writeStringOfCFG(
