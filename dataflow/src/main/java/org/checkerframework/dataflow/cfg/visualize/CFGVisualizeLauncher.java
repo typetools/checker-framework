@@ -233,7 +233,7 @@ public final class CFGVisualizeLauncher {
    * @return control flow graph of the specified method
    */
   public static ControlFlowGraph generateMethodCFG(
-      String file, String method, String clas, Analysis<?, ?, ?> analysis) {
+      String file, String method, String clas, @Nullable Analysis<?, ?, ?> analysis) {
     // Note that `clas` occurs before `method` here, but nowhere else in this file.
     CFGProcessor cfgProcessor = new CFGProcessor(clas, method);
 
