@@ -3148,7 +3148,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       extendWithNode(arrayAccessNode);
       AssignmentNode arrayAccessAssignNode =
           translateAssignment(variable, new LocalVariableNode(variable), arrayAccessNode);
-      extendWithNode(arrayAccessNode);
       // translateAssignment() scans variable and creates new nodes, so set the expression
       // there, too.
       Node arrayAccessAssignNodeExpr = arrayAccessAssignNode.getExpression();
