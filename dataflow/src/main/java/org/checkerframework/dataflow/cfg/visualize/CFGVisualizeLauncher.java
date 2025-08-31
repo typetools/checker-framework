@@ -101,16 +101,14 @@ public final class CFGVisualizeLauncher {
                 config.isVerbose(),
                 analysis);
         if (res == null) {
-          System.err.println("result shouldn't be null when generating string control flow graph.");
+          System.err.println("result shouldn't be null when generating string CFG.");
           return;
         }
 
         String stringGraph = (String) res.get("stringGraph");
         if (stringGraph == null) {
           System.err.println(
-              "\"stringGraph\" key shouldn't map to null when generating string control flow"
-                  + " graph: "
-                  + res);
+              "\"stringGraph\" key shouldn't map to null when generating string CFG: " + res);
           return;
         }
         System.out.println(stringGraph);
@@ -356,7 +354,7 @@ public final class CFGVisualizeLauncher {
    * @param method name of the method to generate the CFG for
    * @param clas name of the class which includes the method to generate the CFG for
    * @param verbose show verbose information in CFG
-   * @param analysis analysis to perform (or {@code null} if no analysis is to be performed)
+   * @param analysis the analysis to perform (or {@code null} if no analysis is to be performed)
    * @return a map which includes a key "stringGraph" and the String representation of CFG as the
    *     value
    */
