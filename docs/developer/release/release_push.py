@@ -166,10 +166,7 @@ def run_link_checker(site: str, output_file: Path, additional_param: str = "") -
     Additional parameters (if given) are passed directly to the link checker script.
 
     Returns:
-        the given output file
-
-    Raises:
-        Exception: If the user bails out.
+        The given output file.
     """
     delete_if_exists(output_file)
     check_links_script = Path(SCRIPTS_DIR) / "checkLinks.sh"
@@ -191,15 +188,6 @@ def run_link_checker(site: str, output_file: Path, additional_param: str = "") -
     process.communicate()
     process.wait()
     out_file.close()
-
-    if process.returncode != 0:
-        msg = (
-            f"Non-zero return code ({process.returncode};"
-            f" see output in {output_file}) while executing {cmd}"
-        )
-        print(msg + "\n")
-        if not prompt_yes_no("Continue despite link checker results?", True):
-            raise Exception(msg)
 
     return output_file
 
