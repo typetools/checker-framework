@@ -38,6 +38,7 @@
     </ul></li>
   <li><a href="#create-new-type-system">Create a new type system</a>
     <ul>
+      <li><a href="#resource-leak-collections">Preventing resource leaks in collections of resources</a></li>
       <li><a href="#ownership-type-system">Ownership type system</a></li>
       <li><a href="#nullness-queue">Nullness Checker precise handling of Queue.peek() and poll()</a></li>
       <li><a href="#non-empty-checker">Non-Empty Checker</a></li>
@@ -759,6 +760,38 @@ Checker Framework for easy use.
 Each of these projects requires you to design a <a href="https://checkerframework.org/manual/#creating-a-checker">new type system</a>,
 implement it, and perform case studies to demonstrate that it is both
 usable and effective in finding/preventing bugs.
+</p>
+
+
+<h2 id="resource-leak-collections">Preventing resource leaks in collections of resources</h2>
+
+<p>
+The <a href="https://checkerframework.org/manual/#resource-leak-checker">Resource
+Leak Checker</a> ensures that resources (sockets, file descriptors,
+database connections, ...) are closed.  This prevents resource exhaustion,
+which can lead to crashes and denial-of-service attacks.  The Resource Leak
+Checker may be the second-most-used checker in the Checker Framework (after
+the Nullness Checker).  Real-world users have asked us to extend it to
+handle <em>collections</em> of resources.
+</p>
+
+<p>
+<a href="https://github.com/typetools/checker-framework/pull/7166">Pull
+request #7166</a> implements resource leak checking for collections.  The
+goal of this project is to finish up the work by doing case studies.
+The <a href="https://github.com/njit-jerse/specimin">Specimin tool</a> can
+extract just the parts of a project that are relevant to resource
+leak <em>collections</em>, so it may be possible to type-check only a few
+hundred lines of a large project and be sure that there are no leaks
+related to collections of resources.
+</p>
+
+<p>
+Maybe the case studies will be easy to do and this project is very quickly
+finished.  Or, maybe as the checker is run on more and more projects, we
+will discover more and more different ways that real-world projects use
+collections of resources, and this will require improvements and extensions
+to the algorithm and implementation.
 </p>
 
 
@@ -1856,7 +1889,7 @@ thought about the problem nor tried to solve it.
  -->
 <!--  LocalWords:  SupportsAllOperations asList emptyList JavaExpression '
  -->
-<!--  LocalWords:  MightSupportNothing Waataja Siwakorn Srisakaokul Papi
+<!--  LocalWords:  MightSupportNothing Waataja Siwakorn Srisakaokul Papi '
  -->
 <!--  LocalWords:  Quinonez Mah Telmo Correa rdf4j Doop FqBinaryName EISOP
  -->
@@ -1869,4 +1902,6 @@ thought about the problem nor tried to solve it.
 <!--  LocalWords:  expressionWithParameterNames currentSourceVersion
  -->
 <!--  LocalWords:  AnnotationFileParser EnsuresCalledMethods CalledMethods
+<!--  LocalWords:  Specimin
+ -->
  -->
