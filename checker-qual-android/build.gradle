@@ -3,10 +3,6 @@ evaluationDependsOn(':checker-qual')
 task copySources(type: Copy) {
   description = 'Copy checker-qual source to checker-qual-android'
   includeEmptyDirs = false
-  doFirst {
-    // Delete the directory in case a previously copied file should no longer be in checker-qual
-    delete file(layout.buildDirectory.dir("generated/sources/main/java"))
-  }
   from files(project(':checker-qual').sourceSets.main.java)
   include '**/*.java'
   exclude '**/SignednessUtilExtra.java'
@@ -31,6 +27,11 @@ task copySources(type: Copy) {
       execute = true
     }
     other.read = true
+  }
+
+  doFirst {
+    // Delete the directory in case a previously copied file should no longer be in checker-qual
+    delete file(layout.buildDirectory.dir("generated/sources/main/java"))
   }
 }
 

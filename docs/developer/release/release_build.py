@@ -12,7 +12,7 @@ from distutils.dir_util import copy_tree
 from pathlib import Path
 
 from release_utils import (
-    check_repos,
+    check_repo,
     check_tools,
     clone_from_scratch_or_update,
     commit_tag_and_push,
@@ -31,16 +31,12 @@ from release_utils import (
     set_umask,
 )
 from release_vars import (
-    ANNO_FILE_UTILITIES,
-    ANNO_TOOLS,
-    BUILD_REPOS,
     CF_VERSION,
     CHECKER_FRAMEWORK,
-    CHECKER_FRAMEWORK_RELEASE,
     CHECKLINK,
     CHECKLINK_REPO,
     DEV_SITE_DIR,
-    INTERM_REPOS,
+    INTERM_CHECKER_REPO,
     INTERM_TO_BUILD_REPOS,
     LIVE_SITE_URL,
     LIVE_TO_INTERM_REPOS,
@@ -107,19 +103,6 @@ The following repositories will be cloned or updated from their origins:
     clone_from_scratch_or_update(PLUME_SCRIPTS_REPO, PLUME_SCRIPTS, clone_from_scratch, False)
     clone_from_scratch_or_update(CHECKLINK_REPO, CHECKLINK, clone_from_scratch, False)
     clone_from_scratch_or_update(PLUME_BIB_REPO, PLUME_BIB, clone_from_scratch, False)
-    # clone_from_scratch_or_update(LIVE_ANNO_REPO, ANNO_TOOLS, clone_from_scratch, False)
-
-
-def get_afu_date() -> str:
-    """Return the AFU date.
-
-    If the AFU is being built, return the current date, otherwise return the
-    date of the last AFU release as indicated in the AFU home page.
-
-    Returns:
-        the AFU date
-    """
-    return get_current_date()
 
 
 def get_new_version(project_name: str, curr_version: str) -> tuple[str, str]:
@@ -146,35 +129,20 @@ def get_new_version(project_name: str, curr_version: str) -> tuple[str, str]:
     return (curr_version, new_version)
 
 
-def create_dev_website_release_version_dir(project_name: str | None, version: str) -> Path:
-    """Create the directory for the given version of the given project on the dev web site.
-
-    Returns:
-        the dev web site directory for the given project and version.
-    """
-    if project_name is None or project_name == "checker-framework":
-        interm_dir = Path(DEV_SITE_DIR) / "releases" / version
-    else:
-        interm_dir = Path(DEV_SITE_DIR) / project_name / "releases" / version
-    delete_directory_if_exists(interm_dir)
-
-    execute(f"mkdir -p {interm_dir}")
-    return interm_dir
-
-
-def create_dirs_for_dev_website_release_versions(cf_version: str) -> tuple[Path, Path]:
-    """Create directories for CF project under the releases directory of the dev web site.
+def create_dir_for_dev_website_release_version(version: str) -> Path:
+    """Create directory for CF project under the releases directory of the dev website.
 
     For example,
-    /cse/www2/types/dev/checker-framework/<project_name>/releases/<version> .
+    /cse/www2/types/dev/checker-framework/checker-framework/releases/<version> .
 
     Returns:
         the dev web site directory for the CF.
     """
-    afu_interm_dir = create_dev_website_release_version_dir("annotation-file-utilities", cf_version)
-    checker_framework_interm_dir = create_dev_website_release_version_dir(None, cf_version)
+    interm_dir = Path(DEV_SITE_DIR) / "releases" / version
+    delete_directory_if_exists(interm_dir)
 
-    return (afu_interm_dir, checker_framework_interm_dir)
+    execute(f"mkdir -p {interm_dir}")
+    return interm_dir
 
 
 # def update_project_dev_website_symlink(project_name, release_version):
@@ -190,21 +158,6 @@ def create_dirs_for_dev_website_release_versions(cf_version: str) -> tuple[Path,
 #     force_symlink(dev_website_relative_dir, link_path)
 
 
-def update_project_dev_website(project_name: str, release_version: str) -> None:
-    """Update the dev web site for the given project.
-
-    according to the given release of the project on the dev web site.
-    """
-    if project_name == "checker-framework":
-        project_dev_site = DEV_SITE_DIR
-    else:
-        project_dev_site = Path(DEV_SITE_DIR) / project_name
-    dev_website_relative_dir = Path(project_dev_site) / "releases" / release_version
-
-    print(f"Copying from: {dev_website_relative_dir}\n  to: {project_dev_site}")
-    copy_tree(dev_website_relative_dir, project_dev_site)
-
-
 def get_current_date() -> str:
     """Return today's date in the ISO format "2016-05-02".
 
@@ -214,67 +167,22 @@ def get_current_date() -> str:
     return datetime.datetime.now().date().isoformat()  # noqa: DTZ005
 
 
-def build_annotation_tools_release(version: str, afu_interm_dir: Path) -> None:
-    """Build the Annotation File Utilities project's artifacts.
-
-    Also place them in the development web site.
-    """
-    execute("java -version")
-
-    date = get_current_date()
-
-    buildfile = Path(ANNO_FILE_UTILITIES) / "build.xml"
-    ant_cmd = (
-        f"ant {ant_debug} -buildfile {buildfile} -e update-versions"
-        f' -Drelease.ver="{version}" -Drelease.date="{date}"'
-    )
-    execute(ant_cmd)
-
-    # Deploy to intermediate site
-    gradle_cmd = (
-        f"./gradlew releaseBuildWithoutTest -Pafu.version={version} -Pdeploy-dir={afu_interm_dir}"
-    )
-    execute(gradle_cmd, ANNO_FILE_UTILITIES)
-
-    update_project_dev_website("annotation-file-utilities", version)
-
-
 def build_and_locally_deploy_maven() -> None:
     """Run `./gradlew publishToMavenLocal`."""
     execute("./gradlew publishToMavenLocal", working_dir=CHECKER_FRAMEWORK)
 
 
 def build_checker_framework_release(
-    version: str, old_cf_version: str, afu_release_date: str, checker_framework_interm_dir: Path
+    version: str, old_cf_version: str, checker_framework_interm_dir: Path
 ) -> None:
     """Build the release files for the Checker Framework project and run tests.
 
     The release files include the manual and the zip file.
-
     """
-    checker_dir = Path(CHECKER_FRAMEWORK) / "checker"
-
-    afu_build_properties = Path(ANNO_FILE_UTILITIES) / "build.properties"
-
-    # build annotation-tools
-    execute("./gradlew assemble -Prelease=true", ANNO_FILE_UTILITIES)
+    execute("./gradlew clean", working_dir=CHECKER_FRAMEWORK)
 
     # update versions
-    ant_props = (
-        f"-Dchecker={checker_dir} -Drelease.ver={version} -Dafu.version={version}"
-        f' -Dafu.properties={afu_build_properties} -Dafu.release.date="{afu_release_date}"'
-    )
-    # IMPORTANT: The release.xml in the directory where the Checker Framework is
-    # being built is used. Not the release.xml in the directory you ran
-    # release_build.py from.
-    ant_cmd = f"ant {ant_debug} -f release.xml {ant_props} update-checker-framework-versions "
-    execute(ant_cmd, CHECKER_FRAMEWORK_RELEASE)
-    # Update version numbers in the manual and API documentation,
-    # which come from source files that have just been changed.
-    # Otherwise the manual and API documentation show up in the grep command below.
-    execute("./gradlew assemble", working_dir=CHECKER_FRAMEWORK)
-    execute("./gradlew allJavadoc", working_dir=CHECKER_FRAMEWORK)
-    execute("./gradlew manual", working_dir=CHECKER_FRAMEWORK)
+    execute("./gradlew updateVersionNumbers", working_dir=CHECKER_FRAMEWORK)
 
     # Check that updating versions didn't overlook anything.
     print("Here are occurrences of the old version number, " + old_cf_version + ":")
@@ -283,57 +191,22 @@ def build_checker_framework_release(
     execute_status(grep_cmd, CHECKER_FRAMEWORK)
     continue_or_exit(
         "If any occurrence is not acceptable, then stop the release, update target"
-        ' "update-checker-framework-versions" in file release.xml, and start over.'
+        ' "updateVersionNumbers" in file release.gradle, and start over.'
     )
 
     # Build the Checker Framework binaries and documents.  Tests are run by release_push.py.
-    gradle_cmd = "./gradlew releaseBuild"
+    # This also makes the manuals.
+    gradle_cmd = "./gradlew buildAll"
     execute(gradle_cmd, CHECKER_FRAMEWORK)
-
-    # make the Checker Framework Manual
-    checker_manual_dir = Path(CHECKER_FRAMEWORK) / "docs" / "manual"
-    execute("make manual.pdf manual.html", checker_manual_dir)
-
-    # make the dataflow manual
-    dataflow_manual_dir = Path(CHECKER_FRAMEWORK) / "dataflow" / "manual"
-    execute("make", dataflow_manual_dir)
 
     # make the checker framework tutorial
     checker_tutorial_dir = Path(CHECKER_FRAMEWORK) / "docs" / "tutorial"
     execute("make", checker_tutorial_dir)
 
     # Create checker-framework-X.Y.Z.zip and put it in checker_framework_interm_dir
-    ant_props = (
-        f"-Dchecker={checker_dir} -Ddest.dir={checker_framework_interm_dir}"
-        f" -Dfile.name=checker-framework-{version}.zip -Dversion={version}"
-    )
-    # IMPORTANT: The release.xml in the directory where the Checker Framework
-    # is being built is used. Not the release.xml in the directory you ran
-    # release_build.py from.
-    ant_cmd = f"ant {ant_debug} -f release.xml {ant_props} zip-checker-framework "
-    execute(ant_cmd, CHECKER_FRAMEWORK_RELEASE)
-
-    ant_props = (
-        f"-Dchecker={checker_dir} -Ddest.dir={checker_framework_interm_dir}"
-        f" -Dfile.name=mvn-examples.zip -Dversion={version}"
-    )
-    # IMPORTANT: Uses the release.xml in the directory where the Checker Framework is being built.
-    # Not the release.xml in the directory you ran release_build.py from.
-    ant_cmd = f"ant {ant_debug} -f release.xml {ant_props} zip-maven-examples "
-    execute(ant_cmd, CHECKER_FRAMEWORK_RELEASE)
-
     # copy the remaining checker-framework website files to checker_framework_interm_dir
-    ant_props = (
-        f"-Dchecker={checker_dir} -Ddest.dir={checker_framework_interm_dir}"
-        " -Dmanual.name=checker-framework-manual"
-        " -Ddataflow.manual.name=checker-framework-dataflow-manual"
-        " -Dchecker.webpage=checker-framework-webpage.html"
-    )
-
-    # IMPORTANT: Uses the release.xml in the directory where the Checker Framework is being built.
-    # Not the release.xml in the directory you ran release_build.py from.
-    ant_cmd = f"ant {ant_debug} -f release.xml {ant_props} checker-framework-website-docs "
-    execute(ant_cmd, CHECKER_FRAMEWORK_RELEASE)
+    gradle_cmd = f"./gradlew copyToWebsite  -PcfWebsite={checker_framework_interm_dir}"
+    execute(gradle_cmd, CHECKER_FRAMEWORK)
 
     # clean no longer necessary files left over from building the checker framework tutorial
     checker_tutorial_dir = Path(CHECKER_FRAMEWORK) / "docs" / "tutorial"
@@ -341,9 +214,9 @@ def build_checker_framework_release(
 
     build_and_locally_deploy_maven()
 
-    update_project_dev_website("checker-framework", version)
-
-    return
+    dev_website_relative_dir = Path(DEV_SITE_DIR) / "releases" / version
+    print(f"Copying from: {dev_website_relative_dir}\n  to: {DEV_SITE_DIR}")
+    copy_tree(str(dev_website_relative_dir), str(DEV_SITE_DIR))
 
 
 def commit_to_interm_projects(cf_version: str) -> None:
@@ -354,13 +227,11 @@ def commit_to_interm_projects(cf_version: str) -> None:
     """
     # Use project definition instead, see find project location find_project_locations
 
-    commit_tag_and_push(cf_version, ANNO_TOOLS, "")
-
     commit_tag_and_push(cf_version, CHECKER_FRAMEWORK, "checker-framework-")
 
 
 def main(argv: list[str]) -> None:
-    """Build the release artifacts for the AFU and the Checker Framework projects.
+    """Build the release artifacts for the Checker Framework project.
 
     Also place them in the development web site. It can also be used to review
     the documentation and changelogs for the three projects.
@@ -377,11 +248,9 @@ def main(argv: list[str]) -> None:
     if debug:
         ant_debug = "-debug"
 
-    afu_date = get_afu_date()
-
     # For each project, build what is necessary but don't push
 
-    print("Building a new release of Annotation Tools and the Checker Framework!")
+    print("Building a new release of the Checker Framework!")
 
     print("\nPATH:\n" + os.environ["PATH"] + "\n")
 
@@ -408,8 +277,8 @@ def main(argv: list[str]) -> None:
     # untracked files, or outgoing changesets. If so, it fails.
 
     print_step("Step 1b: Verify repositories.")  # MANUAL
-    check_repos(INTERM_REPOS, True, True)
-    check_repos(BUILD_REPOS, True, False)
+    check_repo(CHECKER_FRAMEWORK, True, True)
+    check_repo(INTERM_CHECKER_REPO, True, False)
 
     # The release script requires a number of common tools (Ant, Maven, make, etc...). This step
     # checks to make sure all tools are available on the command line in order to avoid wasting time
@@ -419,11 +288,10 @@ def main(argv: list[str]) -> None:
     check_tools(TOOLS)
 
     # Usually we increment the release by 0.0.1 per release unless there is a major change.  The
-    # release script will read the current version of the Checker Framework/Annotation File
-    # Utilities from the release website and then suggest the next release version 0.0.1 higher than
-    # the current version. You can also manually specify a version higher than the current
-    # version. Lower or equivalent versions are not possible and will be rejected when you try to
-    # push the release.
+    # release script will read the current version of the Checker Framework from the release
+    # website and then suggest the next release version 0.0.1 higher than the current version. You
+    # can also manually specify a version higher than the current version. Lower or equivalent
+    # versions are not possible and will be rejected when you try to push the release.
 
     print_step("Build Step 3: Determine release versions.")  # MANUAL
 
@@ -442,30 +310,11 @@ def main(argv: list[str]) -> None:
 
     print_step("Build Step 4: Create directories for the current release on the dev site.")  # AUTO
 
-    (
-        afu_interm_dir,
-        checker_framework_interm_dir,
-    ) = create_dirs_for_dev_website_release_versions(cf_version)
+    checker_framework_interm_dir = create_dir_for_dev_website_release_version(cf_version)
 
-    # The projects are built in the following order:
-    # Annotation File Utilities and Checker Framework. Furthermore, their
-    # manuals and websites are also built and placed in their relevant locations
-    # at https://checkerframework.org/dev/ .  This is the most time-consuming
-    # piece of the release. There are no prompts from this step forward; you
-    # might want to get a cup of coffee and do something else until it is done.
-
+    # The Checker Framework jar files and documentation are built and the website is updated.
     print_step("Build Step 5: Build projects and websites.")  # AUTO
-
-    print_step("Step 5a: Build Annotation File Utilities.")
-    build_annotation_tools_release(cf_version, afu_interm_dir)
-
-    print_step("Step 5b: Build Checker Framework.")
-    build_checker_framework_release(
-        cf_version,
-        old_cf_version,
-        afu_date,
-        checker_framework_interm_dir,
-    )
+    build_checker_framework_release(cf_version, old_cf_version, checker_framework_interm_dir)
 
     print_step("Build Step 6: Overwrite .htaccess and CFLogo.png .")  # AUTO
 
@@ -486,17 +335,12 @@ def main(argv: list[str]) -> None:
     # permissions in order for them to be served.
 
     print_step("\n\nBuild Step 8: Add group permissions to repos.")
-    for build in BUILD_REPOS:
-        ensure_group_access(build)
+    ensure_group_access(CHECKER_FRAMEWORK)
+    ensure_group_access(INTERM_CHECKER_REPO)
 
-    for interm in INTERM_REPOS:
-        ensure_group_access(interm)
-
-    # At the moment, this will lead to output error messages because some metadata in some of the
-    # dirs I think is owned by Mike or Werner.  We should identify these and have them fix it.
-    # But as long as the processes return a zero exit status, we should be ok.
     print_step("\n\nBuild Step 9: Add group permissions to websites.")  # AUTO
-    ensure_group_access(DEV_SITE_DIR)
+    ## TODO: This is returning a status of 1, but it runs fine from the command line.
+    # ensure_group_access(DEV_SITE_DIR)
 
     create_empty_file(RELEASE_BUILD_COMPLETED_FLAG_FILE)
 

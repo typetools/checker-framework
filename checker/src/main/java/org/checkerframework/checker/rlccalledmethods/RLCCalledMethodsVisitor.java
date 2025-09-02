@@ -30,9 +30,9 @@ import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.JavaExpressionParseException;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.util.JavaExpressionParseUtil;
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -603,7 +603,7 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
     try {
       JavaExpression je = StringToJavaExpression.atFieldDecl(e, field, this.checker);
       return je instanceof FieldAccess && ((FieldAccess) je).getField().equals(field);
-    } catch (JavaExpressionParseUtil.JavaExpressionParseException ex) {
+    } catch (JavaExpressionParseException ex) {
       // The parsing error will be reported elsewhere, assuming e was derived from an
       // annotation.
       return false;

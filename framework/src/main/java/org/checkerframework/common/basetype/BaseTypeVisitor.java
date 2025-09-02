@@ -85,6 +85,7 @@ import org.checkerframework.dataflow.cfg.node.BooleanLiteralNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.JavaExpressionParseException;
 import org.checkerframework.dataflow.expression.JavaExpressionScanner;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.qual.Deterministic;
@@ -128,7 +129,6 @@ import org.checkerframework.framework.util.Contract.Postcondition;
 import org.checkerframework.framework.util.Contract.Precondition;
 import org.checkerframework.framework.util.ContractsFromMethod;
 import org.checkerframework.framework.util.FieldInvariants;
-import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.framework.util.JavaParserUtil;
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.framework.util.typeinference8.InferenceResult;
@@ -447,7 +447,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * <p>Parse the current source file with JavaParser and check that the AST can be matched with the
    * Tree produced by javac. Crash if not.
    *
-   * <p>Subclasses may override this method to disable the test if even the option is provided.
+   * <p>Subclasses may override this method to disable the test even if the "ajavaChecks" option is
+   * provided.
    */
   protected void testJointJavacJavaParserVisitor() {
     if (root == null || !ajavaChecks) {
@@ -1396,7 +1397,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       try {
         exprJe = StringToJavaExpression.atMethodBody(expressionString, methodTree, checker);
       } catch (JavaExpressionParseException e) {
-        DiagMessage diagMessage = e.getDiagMessage();
+        DiagMessage diagMessage = new DiagMessage(e);
         if (diagMessage.getMessageKey().equals("flowexpr.parse.error")) {
           String s =
               String.format(
@@ -1407,7 +1408,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                   methodTree.getName().toString());
           checker.reportError(methodTree, "flowexpr.parse.error", s + diagMessage.getArgs()[0]);
         } else {
-          checker.report(methodTree, e.getDiagMessage());
+          checker.report(methodTree, new DiagMessage(e));
         }
         continue;
       }
@@ -2110,7 +2111,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         exprJe = StringToJavaExpression.atMethodInvocation(expressionString, tree, checker);
       } catch (JavaExpressionParseException e) {
         // report errors here
-        checker.report(tree, e.getDiagMessage());
+        checker.report(tree, new DiagMessage(e));
         return;
       }
 
@@ -4713,7 +4714,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         exprJe = stringToJavaExpr.toJavaExpression(expressionString);
       } catch (JavaExpressionParseException e) {
         // report errors here
-        checker.report(methodTree, e.getDiagMessage());
+        checker.report(methodTree, new DiagMessage(e));
         continue;
       }
       result.add(IPair.of(exprJe, annotation));

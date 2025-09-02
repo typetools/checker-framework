@@ -1,0 +1,199 @@
+import java.nio.file.Files
+import java.nio.file.Paths
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+
+ext {
+  // Increment the minor version (second number) rather than just the patch
+  // level (third number) if:
+  //   * any new checkers have been added, or
+  //   * backward-incompatible changes have been made to APIs or elsewhere.
+  // To make a snapshot release, version should end in "-SNAPSHOT", then: ./gradlew publish
+  releaseVersion = '3.50.1-SNAPSHOT'
+
+  releaseVersionRegex = "\\d\\.\\d+\\.\\d+(?:\\.\\d)?"
+
+  // Date in ISO format.
+  currentDate = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+}
+
+// Note about update tasks:
+// It's not possible to update the version numbers in place, so first
+// updateVersionNumbersInDocs and updateVersionNumbersAFU copy to a temporary
+// directory with a filter to do replacement, then updateVersionNumbers copies
+// the changed files back to their original locations.
+
+tasks.register('updateVersionNumbers', Copy) {
+  // See documentation above.
+  dependsOn('updateVersionNumbersInDocs')
+  dependsOn('updateVersionNumbersAFU')
+  from layout.buildDirectory.file('updateVersionNumbers/')
+  into layout.projectDirectory
+}
+
+tasks.register('updateVersionNumbersAFU', Copy) {
+  // See documentation above.
+  String classFileReader = 'annotation-file-utilities/src/main/java/org/checkerframework/afu/scenelib/io/classfile/ClassFileReader.java'
+  doFirst {
+    if(!file("annotation-file-utilities/${classFileReader}").exists()) {
+      throw new GradleException("File annotation-file-utilities/${classFileReader} not found.")
+    }
+  }
+
+  into layout.buildDirectory.file('updateVersionNumbers/annotation-file-utilities')
+  from 'annotation-file-utilities'
+  include classFileReader
+  filter { String line ->
+    line.replaceAll( "Annotation File Utilities v${releaseVersionRegex}", "Annotation File Utilities v${releaseVersion}")
+  }
+}
+
+tasks.register('updateVersionNumbersInDocs', Copy) {
+  // See documentation above.
+  into layout.buildDirectory.file('updateVersionNumbers/docs/')
+  from ('docs/') {
+    include 'annotation-file-utilities/annotation-file-utilities.html',
+        'checker-framework-quick-start.html',
+        'checker-framework-webpage.html',
+        'manual/introduction.tex'
+
+    filter { String line ->
+      line = line.replaceAll("checker-framework-${releaseVersionRegex}", "checker-framework-${releaseVersion}")
+      String releaseDatePrefix = '<!-- checker-framework-date -->'
+      String releaseDateSuffix = '<!-- /checker-framework-date -->'
+      line.replaceAll("${releaseDatePrefix}(.*)${releaseDateSuffix}", releaseDatePrefix + currentDate + releaseDateSuffix)
+    }
+  }
+
+  from ('docs') {
+    include 'manual/external-tools.tex'
+    filter { String line ->
+      line = line.replaceAll("checker(|-framework|-qual|-util)([-/])${releaseVersionRegex}") { "checker${it[1]}${it[2]}${releaseVersion}"};
+
+      line = line.replaceAll("/${releaseVersionRegex}/jar", "/${releaseVersion}/jar");
+
+      line.replaceAll("ext.checkerFrameworkVersion = '${releaseVersionRegex}'", "ext.checkerFrameworkVersion = '${releaseVersion}'");
+    }
+  }
+
+  from ('docs') {
+    include 'manual/manual.tex'
+
+    filter { String line ->
+      line = line.replaceAll("ReleaseDate\\}\\{(.*)\\}", "ReleaseDate}{${currentDate}}");
+      line.replaceAll("ReleaseVersion\\}\\{(.*)\\}", "ReleaseVersion}{${releaseVersion}}");
+    }
+  }
+
+  from ('docs') {
+    include 'examples/MavenExample/pom.xml'
+
+    filter { String line ->
+      line.replaceAll("<!-- checker-framework-version -->(.*)<!-- /checker-framework-version -->", "<!-- checker-framework-version -->${releaseVersion}<!-- /checker-framework-version -->")
+    }
+  }
+}
+
+tasks.register('zipMavenExamples', Zip) {
+  description = 'Creates a zip archive for the Maven examples.'
+  archiveFileName = "mvn-examples.zip"
+  destinationDirectory = file(project.property('cfWebsite'))
+  from ('docs/examples/MavenExample')
+}
+
+
+tasks.register('copyToWebsite', Copy) {
+  description = 'Copy files to location set in the property cfWebsite.'
+  dependsOn(':allJavadoc',':manual', ':zip', 'zipMavenExamples')
+
+  String destDir = project.property('cfWebsite')
+  destinationDir = file(destDir) // destinationDir affects all `into` clauses
+
+  from tasks.named('zip', Zip).get().archiveFile.get().toString()
+  from ('docs') {
+    include('checker-framework-webpage.html', 'CHANGELOG.md')
+  }
+
+  from ('docs/logo/Logo/CFLogo.png') {
+    into 'tutorial/'
+  }
+  from ('docs/logo/Logo/CFLogo.png') {
+    into 'tutorial/webpages'
+  }
+  from ('docs/logo/Logo/CFLogo.png') {
+    into 'manual'
+  }
+
+  // Copy favicon
+  from ('docs/logo/Checkmark/CFCheckmark_favicon.png') {
+    rename('CFCheckmark_favicon.png','favicon-checkerframework.png' )
+  }
+  from ('docs/logo/Checkmark/CFCheckmark_favicon.png') {
+    into 'manual'
+    rename('CFCheckmark_favicon.png','favicon-checkerframework.png' )
+  }
+
+  // Copy manual files
+  from ('docs/manual') {
+    into 'manual'
+    include 'manual.html',
+        'manual.pdf',
+        '*.svg',
+        'manual001.png'
+  }
+
+  // Copy developer docs
+  from ('docs/developer') {
+    into 'manual'
+    include 'developer-manual.html',
+        'gsoc-ideas.html',
+        'new-contributor-projects.html'
+  }
+
+  // Copy Dataflow manual
+  from ('dataflow/manual/checker-framework-dataflow-manual.pdf') {
+    into 'manual'
+  }
+
+  // Copy tutorial
+  from ('docs/tutorial') {
+    into 'tutorial'
+  }
+
+  // Copy Javadoc
+  from ('docs/api') {
+    into 'api'
+  }
+
+  from ('docs/annotation-file-utilities') {
+    include 'annotation-file-utilities.html'
+    include 'annotation-file-format.html'
+    include 'annotation-file-format.pdf'
+    include 'figures/*.svg'
+    include 'figures/*.png'
+    include 'figures/*.gif'
+    into 'annotation-file-utilities'
+  }
+
+  doLast {
+    delete(file("${destDir}/index.html"))
+    Files.createSymbolicLink(file("${destDir}/index.html").toPath(), Paths.get('checker-framework-webpage.html'))
+
+    delete(file("${destDir}/manual/index.html"))
+    Files.createSymbolicLink(file("${destDir}/manual/index.html").toPath(), Paths.get('manual.html'))
+
+    delete "${destDir}/annotation-file-utilities/index.html"
+    Files.createSymbolicLink(file("${destDir}/annotation-file-utilities/index.html").toPath(), Paths.get('annotation-file-utilities.html'))
+  }
+}
+
+tasks.register('updateCopyMavenExample', Copy) {
+  // This task is used during the release in "sanity_checks.py" to check that the Maven artifacts were uploaded correctly.
+  description = 'Copies the Maven example to the location in property destDir.'
+  String destDir = project.property('destDir') + '/MavenExample'
+  destinationDir = file(destDir)
+  from 'docs/examples/MavenExample'
+  filter { String line ->
+    line.replaceAll("<!-- checker-framework-version -->(.*)<!-- /checker-framework-version -->", "<!-- checker-framework-version -->${releaseVersion}<!-- /checker-framework-version -->")
+  }
+}
