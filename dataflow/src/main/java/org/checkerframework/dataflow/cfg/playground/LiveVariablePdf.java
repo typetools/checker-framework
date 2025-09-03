@@ -3,24 +3,21 @@ package org.checkerframework.dataflow.cfg.playground;
 import org.checkerframework.dataflow.analysis.BackwardAnalysis;
 import org.checkerframework.dataflow.analysis.BackwardAnalysisImpl;
 import org.checkerframework.dataflow.analysis.UnusedAbstractValue;
-import org.checkerframework.dataflow.busyexpr.BusyExprStore;
-import org.checkerframework.dataflow.busyexpr.BusyExprTransfer;
 import org.checkerframework.dataflow.cfg.visualize.CFGVisualizeLauncher;
 import org.checkerframework.dataflow.cfg.visualize.CFGVisualizeOptions;
+import org.checkerframework.dataflow.livevariable.LiveVarStore;
+import org.checkerframework.dataflow.livevariable.LiveVarTransfer;
 
-/**
- * The playground for busy expression analysis. As an example, try {@code
- * dataflow/manual/examples/BusyExprSimple.java}.
- */
-public class BusyExpressionPlayground {
+/** Run live variable analysis on a file and create a PDF of the CFG. */
+public class LiveVariablePdf {
 
   /** Class cannot be instantiated. */
-  private BusyExpressionPlayground() {
-    throw new AssertionError("Class BusyExpressionPlayground cannot be instantiated.");
+  private LiveVariablePdf() {
+    throw new Error("Do not instantiate");
   }
 
   /**
-   * Run busy expression analysis on a file.
+   * Run live variable analysis on a file and create a PDF of the CFG.
    *
    * @param args command-line arguments
    */
@@ -29,9 +26,9 @@ public class BusyExpressionPlayground {
     // Parse the arguments.
     CFGVisualizeOptions config = CFGVisualizeOptions.parseArgs(args);
 
-    // Run the analysis and create a PDF file
-    BusyExprTransfer transfer = new BusyExprTransfer();
-    BackwardAnalysis<UnusedAbstractValue, BusyExprStore, BusyExprTransfer> backwardAnalysis =
+    // Run the analysis and create a PDF file.
+    LiveVarTransfer transfer = new LiveVarTransfer();
+    BackwardAnalysis<UnusedAbstractValue, LiveVarStore, LiveVarTransfer> backwardAnalysis =
         new BackwardAnalysisImpl<>(transfer);
     CFGVisualizeLauncher.performAnalysis(config, backwardAnalysis);
   }
