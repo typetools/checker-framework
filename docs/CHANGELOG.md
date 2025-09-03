@@ -11,6 +11,12 @@ Version 3.49.6 (2025-10-01)
 Version 3.50.0 (2025-08-28)
 ---------------------------
 
+**User-visible changes:**
+
+If you supply `--add-exports` flags when you run the Checker Framework,
+you need to add:
+`--add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED`.
+
 **Implementation details:**
 
 Moved the Annotation File Utilities code into the Checker Framework repository as a subproject.
