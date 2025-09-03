@@ -110,7 +110,7 @@ tasks.register('setLocalRepo', Exec) {
 
 // No group so it does not show up in the output of `gradlew tasks`
 tasks.register('installGitHooks', Copy) {
-  dependsOn 'setLocalRepo'
+  dependsOn ('setLocalRepo')
   description = 'Copies git hooks to .git directory'
   from files('checker/bin-devel/git.post-merge', 'checker/bin-devel/git.pre-commit')
   rename('git\\.(.*)', '$1')
@@ -441,150 +441,148 @@ allprojects { currentProj ->
       }
     }
 
-    tasks.withType(JavaExec).configureEach {
-      javaLauncher = javaToolchains.launcherFor {
-        languageVersion = JavaLanguageVersion.of(testJdkVersion)
-      }
-    }
-
     // Add standard javac options
-    tasks.withType(JavaCompile).tap {
-      configureEach { compilationTask ->
-        dependsOn(':installGitHooks')
+    tasks.withType(JavaCompile) { compilationTask ->
+      dependsOn(':installGitHooks')
 
-        java {
-          toolchain {
-            languageVersion = JavaLanguageVersion.of(testJdkVersion)
-          }
+      java {
+        toolchain {
+          languageVersion = JavaLanguageVersion.of(testJdkVersion)
         }
+      }
 
-        javaCompiler = javaToolchains.compilerFor {
-          languageVersion = JavaLanguageVersion.of(compilerJdkVersion)
+      javaCompiler = javaToolchains.compilerFor {
+        languageVersion = JavaLanguageVersion.of(compilerJdkVersion)
+      }
+
+      tasks.withType(JavaExec).configureEach {
+        javaLauncher = javaToolchains.launcherFor {
+          languageVersion = JavaLanguageVersion.of(testJdkVersion)
         }
+      }
 
-        // Sorting is commented out because it disables incremental compilation.
-        // Uncomment when needed.
-        // // Put source files in deterministic order, for debugging.
-        // compilationTask.source = compilationTask.source.sort()
+      // Sorting is commented out because it disables incremental compilation.
+      // Uncomment when needed.
+      // // Put source files in deterministic order, for debugging.
+      // compilationTask.source = compilationTask.source.sort()
 
-        // This test is for whether the Checker Framework supports (runs under) Java 8.
-        // Currently, the Checker Framework does support Java 8.
-        if (true) {
-          // Using `options.release.set(8)` here leads to compilation
-          // errors such as "package com.sun.source.tree does not exist".
-          sourceCompatibility = 8
-          targetCompatibility = 8
-          // Because the target is 8, all of the public compiler classes are accessible, so
-          // --add-exports are not required (nor are they allowed with target 8). See
-          // https://openjdk.org/jeps/247 for details on compiling for older versions.
-        } else {
-          // This makes the class files Java 11, and then the Checker Framework would not run under Java 8.
-          options.release.set(11)
-          options.compilerArgs += [
-            '--add-exports',
-            'jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED',
-            '--add-exports',
-            'jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED',
-            '--add-exports',
-            'jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED',
-            '--add-exports',
-            'jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED',
-            '--add-exports',
-            'jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED',
-            '--add-exports',
-            'jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED',
-            '--add-exports',
-            'jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED',
-            '--add-exports',
-            'jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED',
-            '--add-exports',
-            'jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED',
-            '--add-exports',
-            'jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED',
-          ]
-          // This is equivalent to writing "exports jdk.compiler/... to ALL-UNNAMED" in the
-          // module-info.java of jdk.compiler, so corresponding --add-opens are only required for
-          // reflective access to private members.
-          //
-          // From https://openjdk.org/jeps/261, Section titled: "Breaking encapsulation"
-          // "The effect of each instance [of --add-exports] is to add a qualified export of the
-          // named package from the source module to the target module. This is, essentially, a
-          // command-line form of an exports clause in a module declaration[...].
-          // [...]
-          // The --add-exports option enables access to the public types of a specified package.
-          // It is sometimes necessary to go further and enable access to all non-public elements
-          // via the setAccessible method of the core reflection API. The --add-opens option can
-          // be used, at run time, to do this."
-        }
-
-        options.failOnError = true
-        options.deprecation = true
-        // -options: To not get a warning about missing bootstrap classpath (when using Java 9 and `-source 8`).
-        // -fallthrough: Don't check fallthroughs.  Instead, use Error Prone.  Its
-        //   warnings are suppressible with a "// fall through" comment.
+      // This test is for whether the Checker Framework supports (runs under) Java 8.
+      // Currently, the Checker Framework does support Java 8.
+      if (true) {
+        // Using `options.release.set(8)` here leads to compilation
+        // errors such as "package com.sun.source.tree does not exist".
+        sourceCompatibility = 8
+        targetCompatibility = 8
+        // Because the target is 8, all of the public compiler classes are accessible, so
+        // --add-exports are not required (nor are they allowed with target 8). See
+        // https://openjdk.org/jeps/247 for details on compiling for older versions.
+      } else {
+        // This makes the class files Java 11, and then the Checker Framework would not run under Java 8.
+        options.release.set(11)
         options.compilerArgs += [
-          '-g',
-          '-Werror',
-          '-Xlint:-options,-fallthrough',
-          '-Xlint',
+          '--add-exports',
+          'jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED',
+          '--add-exports',
+          'jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED',
+          '--add-exports',
+          'jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED',
+          '--add-exports',
+          'jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED',
+          '--add-exports',
+          'jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED',
+          '--add-exports',
+          'jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED',
+          '--add-exports',
+          'jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED',
+          '--add-exports',
+          'jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED',
+          '--add-exports',
+          'jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED',
+          '--add-exports',
+          'jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED',
         ]
+        // This is equivalent to writing "exports jdk.compiler/... to ALL-UNNAMED" in the
+        // module-info.java of jdk.compiler, so corresponding --add-opens are only required for
+        // reflective access to private members.
+        //
+        // From https://openjdk.org/jeps/261, Section titled: "Breaking encapsulation"
+        // "The effect of each instance [of --add-exports] is to add a qualified export of the
+        // named package from the source module to the target module. This is, essentially, a
+        // command-line form of an exports clause in a module declaration[...].
+        // [...]
+        // The --add-exports option enables access to the public types of a specified package.
+        // It is sometimes necessary to go further and enable access to all non-public elements
+        // via the setAccessible method of the core reflection API. The --add-opens option can
+        // be used, at run time, to do this."
+      }
 
-        options.encoding = 'UTF-8'
-        options.fork = true
+      options.failOnError = true
+      options.deprecation = true
+      // -options: To not get a warning about missing bootstrap classpath (when using Java 9 and `-source 8`).
+      // -fallthrough: Don't check fallthroughs.  Instead, use Error Prone.  Its
+      //   warnings are suppressible with a "// fall through" comment.
+      options.compilerArgs += [
+        '-g',
+        '-Werror',
+        '-Xlint:-options,-fallthrough',
+        '-Xlint',
+      ]
 
-        // TODO: enable Error Prone on test classes.
-        if (compilationTask.name.equals('compileJava')
-            // Error Prone depends on checker-qual.jar, so don't run it on that project to avoid a circular dependency.
-            && !project.name.startsWith('checker-qual')) {
-          // Error Prone must be available in the annotation processor path
-          options.annotationProcessorPath = configurations.errorProneAnnotationProcessor
-          // Enable Error Prone
-          options.errorprone.enabled = compilerRunsOnJava17orHigher
-          options.errorprone.disableWarningsInGeneratedCode = true
-          options.errorprone.errorproneArgs = [
-            // Many compiler classes are interned.
-            '-Xep:ReferenceEquality:OFF',
-            // Not useful to suggest Splitter; maybe clean up.
-            '-Xep:StringSplitter:OFF',
-            // Too broad, rejects seemingly-correct code.
-            '-Xep:EqualsGetClass:OFF',
-            // Not a real problem
-            '-Xep:MixedMutabilityReturnType:OFF',
-            // Don't want to add a dependency to ErrorProne.
-            '-Xep:AnnotateFormatMethod:OFF',
-            // Don't want to add a dependency to ErrorProne.
-            "-Xep:DoNotCallSuggester:OFF",
-            // Warns for every use of "@checker_framework.manual"
-            '-Xep:InvalidBlockTag:OFF',
-            // Recommends writing @InlineMe which is an Error-Prone-specific annotation
-            '-Xep:InlineMeSuggester:OFF',
-            // Recommends writing @CanIgnoreReturnValue which is an Error-Prone-specific annotation.
-            // It would be great if Error Prone recognized the @This annotation.
-            '-Xep:CanIgnoreReturnValueSuggester:OFF',
-            // Should be turned off when using the Checker Framework.
-            '-Xep:ExtendsObject:OFF',
-            // The Checker Framework is the only nullness tool we care about.
-            '-Xep:NullableWildcard:OFF',
-            // In the visitor pattern, it is natural to forward a Void reference.
-            '-Xep:VoidUsed:OFF',
-            // Suggestion assumes there is no overriding equals() method.
-            "-Xep:NonOverridingEquals:OFF",
-            // Suggests using a class that's in Error Prone itself, not in any library for clients.
-            // It requires "import com.google.errorprone.util.ASTHelpers;", and (in build.gradle)
-            //   implementation "com.google.errorprone:error_prone_core:${errorproneVersion}"
-            // Adding that line in build.gradle causes a javac crash when running the Checker Framework.
-            "-Xep:ASTHelpersSuggestions:OFF",
-            // Removing "public" from private class members loses information about the abstraction.
-            "-Xep:EffectivelyPrivate:OFF",
-            // -Werror halts the build if Error Prone issues a warning, which ensures that
-            // the errors get fixed.  On the downside, Error Prone (or maybe the compiler?)
-            // stops as soon as it issues one warning, rather than outputting them all.
-            // https://github.com/google/error-prone/issues/436
-            '-Werror',
-          ]
-        } else {
-          options.errorprone.enabled = false
-        }
+      options.encoding = 'UTF-8'
+      options.fork = true
+
+      // TODO: enable Error Prone on test classes.
+      if (compilationTask.name.equals('compileJava')
+          // Error Prone depends on checker-qual.jar, so don't run it on that project to avoid a circular dependency.
+          && !project.name.startsWith('checker-qual')) {
+        // Error Prone must be available in the annotation processor path
+        options.annotationProcessorPath = configurations.errorProneAnnotationProcessor
+        // Enable Error Prone
+        options.errorprone.enabled = compilerRunsOnJava17orHigher
+        options.errorprone.disableWarningsInGeneratedCode = true
+        options.errorprone.errorproneArgs = [
+          // Many compiler classes are interned.
+          '-Xep:ReferenceEquality:OFF',
+          // Not useful to suggest Splitter; maybe clean up.
+          '-Xep:StringSplitter:OFF',
+          // Too broad, rejects seemingly-correct code.
+          '-Xep:EqualsGetClass:OFF',
+          // Not a real problem
+          '-Xep:MixedMutabilityReturnType:OFF',
+          // Don't want to add a dependency to ErrorProne.
+          '-Xep:AnnotateFormatMethod:OFF',
+          // Don't want to add a dependency to ErrorProne.
+          "-Xep:DoNotCallSuggester:OFF",
+          // Warns for every use of "@checker_framework.manual"
+          '-Xep:InvalidBlockTag:OFF',
+          // Recommends writing @InlineMe which is an Error-Prone-specific annotation
+          '-Xep:InlineMeSuggester:OFF',
+          // Recommends writing @CanIgnoreReturnValue which is an Error-Prone-specific annotation.
+          // It would be great if Error Prone recognized the @This annotation.
+          '-Xep:CanIgnoreReturnValueSuggester:OFF',
+          // Should be turned off when using the Checker Framework.
+          '-Xep:ExtendsObject:OFF',
+          // The Checker Framework is the only nullness tool we care about.
+          '-Xep:NullableWildcard:OFF',
+          // In the visitor pattern, it is natural to forward a Void reference.
+          '-Xep:VoidUsed:OFF',
+          // Suggestion assumes there is no overriding equals() method.
+          "-Xep:NonOverridingEquals:OFF",
+          // Suggests using a class that's in Error Prone itself, not in any library for clients.
+          // It requires "import com.google.errorprone.util.ASTHelpers;", and (in build.gradle)
+          //   implementation "com.google.errorprone:error_prone_core:${errorproneVersion}"
+          // Adding that line in build.gradle causes a javac crash when running the Checker Framework.
+          "-Xep:ASTHelpersSuggestions:OFF",
+          // Removing "public" from private class members loses information about the abstraction.
+          "-Xep:EffectivelyPrivate:OFF",
+          // -Werror halts the build if Error Prone issues a warning, which ensures that
+          // the errors get fixed.  On the downside, Error Prone (or maybe the compiler?)
+          // stops as soon as it issues one warning, rather than outputting them all.
+          // https://github.com/google/error-prone/issues/436
+          '-Werror',
+        ]
+      } else {
+        options.errorprone.enabled = false
       }
     }
   } // end afterEvaluate
