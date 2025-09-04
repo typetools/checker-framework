@@ -26,7 +26,6 @@ from release_utils import (
     version_number_to_array,
 )
 from release_vars import (
-    ANNO_FILE_UTILITIES,
     CF_VERSION,
     CHECKER_FRAMEWORK,
     CHECKER_LIVE_API_DIR,
@@ -166,10 +165,7 @@ def run_link_checker(site: str, output_file: Path, additional_param: str = "") -
     Additional parameters (if given) are passed directly to the link checker script.
 
     Returns:
-        the given output file
-
-    Raises:
-        Exception: If the user bails out.
+        The given output file.
     """
     delete_if_exists(output_file)
     check_links_script = Path(SCRIPTS_DIR) / "checkLinks.sh"
@@ -191,15 +187,6 @@ def run_link_checker(site: str, output_file: Path, additional_param: str = "") -
     process.communicate()
     process.wait()
     out_file.close()
-
-    if process.returncode != 0:
-        msg = (
-            f"Non-zero return code ({process.returncode};"
-            f" see output in {output_file}) while executing {cmd}"
-        )
-        print(msg + "\n")
-        if not prompt_yes_no("Continue despite link checker results?", True):
-            raise Exception(msg)
 
     return output_file
 
@@ -388,9 +375,6 @@ def main(argv: list[str]) -> None:
         ant_cmd = "./gradlew allTests"
         execute(ant_cmd, CHECKER_FRAMEWORK)
 
-        ant_cmd = "./gradlew test"
-        execute(ant_cmd, ANNO_FILE_UTILITIES)
-
     # The Central Repository is a repository of build artifacts for build programs like Maven and
     # Ivy.  This step stages (but doesn't release) the Checker Framework's Maven artifacts in the
     # Sonatypes Central Repository.
@@ -453,7 +437,7 @@ def main(argv: list[str]) -> None:
             print("Copying to live site")
             copy_releases_to_live_site(new_cf_version)
             copy_htaccess()
-            ensure_group_access(CHECKER_LIVE_RELEASES_DIR)
+            ensure_group_access(CHECKER_LIVE_RELEASES_DIR / new_cf_version)
     else:
         print("Test mode: Skipping copy to live site!")
 
@@ -513,24 +497,22 @@ def main(argv: list[str]) -> None:
     # prompts. The Maven artifacts (such as checker-qual.jar) are still needed, but the Maven
     # plug-in is no longer maintained.
 
-    print_step("Push Step 10. Release staged artifacts in Central Repository.")  # MANUAL
+    print_step("Push Step 10. Publish staged artifacts in Central Repository.")  # MANUAL
     if test_mode:
         msg = (
             "Test Mode: You are in test_mode.  Please 'DROP' the artifacts. "
             "To drop, log into https://central.sonatype.com/publishing/deployments using your "
-            "Sonatype credentials and click 'DROP'"
+            "Sonatype credentials and click 'Drop'"
         )
     else:
         msg = (
-            "Please 'release' the artifacts.\n"
+            "Please 'Publish' the artifacts.\n"
             "First log into https://central.sonatype.com/publishing/deployments using your "
-            "Sonatype credentials. Go to Staging Repositories and "
-            "locate the org.checkerframework repository and click on it.\n"
-            "If you have a permissions problem, try logging out and back in.\n"
-            "Finally, click on the Release button at the top of the page.\n"
-            "In the dialog box that pops up, "
-            'leave the "Automatically drop" box checked. For the description, write '
-            "Checker Framework release " + new_cf_version + "\n\n"
+            "Sonatype credentials. Find the deployment labled "
+            "'org.checkerframework (via OSSRH Staging API)' "
+            "and click on the Publish button next to it.\n"
+            "Now it should say PUBLISHING nest to the deployment. "
+            "This will take a while, you can move onto the next release steps.\n\n"
         )
 
     print(msg)

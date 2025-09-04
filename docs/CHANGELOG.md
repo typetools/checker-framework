@@ -1,11 +1,32 @@
-Version 3.49.6 (2025-08-??)
------------------------------
+Version 3.51.0 (2025-10-01)
+---------------------------
 
 **User-visible changes:**
 
 **Implementation details:**
 
+In `CFGVisualizeOptions`:
+ * renamed `isPDF()` to `isPdfOutput()`
+ * renamed `isString()` to `isStringOutput()`
+
+Dataflow Framework:
+ * In `playground` package, renamed `*Playground.java` to `*Pdf.java`
+
 **Closed issues:**
+
+
+Version 3.50.0 (2025-08-28)
+---------------------------
+
+**User-visible changes:**
+
+If you supply `--add-exports` flags when you run the Checker Framework,
+you need to add:
+`--add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED`.
+
+**Implementation details:**
+
+Moved the Annotation File Utilities code into the Checker Framework repository as a subproject.
 
 
 Version 3.49.5 (June 30, 2025)
