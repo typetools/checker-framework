@@ -1478,16 +1478,62 @@ public abstract class GenericAnnotatedTypeFactory<
         // TODO: at this point, we don't have any information about
         // fields of superclasses.
         for (CFGMethod met : methods) {
-          analyze(
-              classQueue,
-              lambdaQueue,
-              met,
-              fieldValues,
-              classTree,
-              TreeUtils.isConstructor(met.getMethod()),
-              false,
-              false,
-              capturedStore);
+          boolean lambdaChanged = true;
+          Map<LambdaExpressionTree, List<AnnotatedTypeMirror>> lambdaResultTypeMap =
+              new HashMap<>();
+
+          while (lambdaChanged) {
+            Queue<IPair<LambdaExpressionTree, @Nullable Store>> lambdaQueueForMet =
+                new ArrayDeque<>();
+            analyze(
+                classQueue,
+                lambdaQueueForMet,
+                met,
+                fieldValues,
+                classTree,
+                TreeUtils.isConstructor(met.getMethod()),
+                false,
+                false,
+                capturedStore);
+            lambdaChanged = false;
+            while (!lambdaQueueForMet.isEmpty()) {
+              IPair<LambdaExpressionTree, @Nullable Store> lambdaPair = lambdaQueueForMet.poll();
+              LambdaExpressionTree lambda = lambdaPair.first;
+              MethodTree mt =
+                  (MethodTree) TreePathUtil.enclosingOfKind(getPath(lambda), Tree.Kind.METHOD);
+              analyze(
+                  classQueue,
+                  lambdaQueueForMet,
+                  new CFGLambda(lambda, classTree, mt),
+                  fieldValues,
+                  classTree,
+                  false,
+                  false,
+                  false,
+                  lambdaPair.second);
+
+              List<AnnotatedTypeMirror> returnedExpressionTypes = new ArrayList<>();
+              for (ExpressionTree expressionTree : TreeUtils.getReturnedExpressions(lambda)) {
+                returnedExpressionTypes.add(getAnnotatedType(expressionTree));
+              }
+              boolean thisLambdaChanged = false;
+              List<AnnotatedTypeMirror> lastReturnET = lambdaResultTypeMap.get(lambda);
+              if (lastReturnET != null) {
+                for (int i = 0; i < lastReturnET.size(); i++) {
+                  if (!lastReturnET.get(i).equals(returnedExpressionTypes.get(i))) {
+                    thisLambdaChanged = true;
+                    break;
+                  }
+                }
+              } else {
+                thisLambdaChanged = true;
+              }
+              if (thisLambdaChanged) {
+                lambdaResultTypeMap.put(lambda, returnedExpressionTypes);
+                lambdaChanged = true;
+              }
+            }
+          }
         }
 
         while (!lambdaQueue.isEmpty()) {
@@ -1507,7 +1553,7 @@ public abstract class GenericAnnotatedTypeFactory<
               lambdaPair.second);
         }
 
-        // By convention we store the static initialization store as the regular exit
+        // By convention, we store the static initialization store as the regular exit
         // store of the class node, so that it can later be used to check
         // that all fields are initialized properly.
         // See InitializationVisitor.visitClass().
