@@ -190,16 +190,25 @@ public class CFGVisualizeOptions {
   }
 
   /**
-   * Getter for the PDF flag.
+   * Returns true if PDF output should be generated.
    *
-   * @return true if the PDF should be generated
+   * @return true if PDF output should be generated
    */
-  public boolean isPDF() {
+  public boolean isPdfOutput() {
     return pdf;
   }
 
   /**
-   * Getter for the verbose flag.
+   * Returns true if the string representation should be generated.
+   *
+   * @return true if the string representation should be generated
+   */
+  public boolean isStringOutput() {
+    return string;
+  }
+
+  /**
+   * Returns true if the verbose output should be generated.
    *
    * @return true if the verbose output should be generated
    */
@@ -208,18 +217,9 @@ public class CFGVisualizeOptions {
   }
 
   /**
-   * Getter for the string flag.
-   *
-   * @return true if the string representation should be generated
-   */
-  public boolean isString() {
-    return string;
-  }
-
-  /**
    * Print usage information.
    *
-   * <p>Sends the usage information to System.out.
+   * <p>Prints usage information to System.out.
    */
   private static void printUsage() {
     System.out.println(

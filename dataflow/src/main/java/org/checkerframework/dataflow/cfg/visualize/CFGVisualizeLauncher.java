@@ -31,8 +31,7 @@ import org.plumelib.util.ArrayMap;
  *
  * <p>Usage: Directly run it as the main class to generate the DOT representation of the control
  * flow graph of a given method in a given class. See {@link
- * org.checkerframework.dataflow.cfg.playground.ConstantPropagationPlayground} for another way to
- * use it.
+ * org.checkerframework.dataflow.cfg.playground.ConstantPropagationPdf} for another way to use it.
  */
 public final class CFGVisualizeLauncher {
 
@@ -65,14 +64,14 @@ public final class CFGVisualizeLauncher {
    */
   public static <V extends AbstractValue<V>, S extends Store<S>, T extends TransferFunction<V, S>>
       void performAnalysis(CFGVisualizeOptions config, @Nullable Analysis<V, S, T> analysis) {
-    if (!config.isString()) {
+    if (!config.isStringOutput()) {
       if (analysis == null) {
         generateDOTofCFGWithoutAnalysis(
             config.getInputFile(),
             config.getOutputDirectory(),
             config.getMethodName(),
             config.getClassName(),
-            config.isPDF(),
+            config.isPdfOutput(),
             config.isVerbose());
       } else {
         generateDOTofCFG(
@@ -80,7 +79,7 @@ public final class CFGVisualizeLauncher {
             config.getOutputDirectory(),
             config.getMethodName(),
             config.getClassName(),
-            config.isPDF(),
+            config.isPdfOutput(),
             config.isVerbose(),
             analysis);
       }

@@ -94,11 +94,11 @@ tasks.register('allDataflowTests') {
  * @param taskName the task name for the new task
  * @param dirName the directory name of the directory that contains the test files
  * @param className the fully-qualified name of the test class
- * @param diff whether to compare the generated output with a {@code Expected.txt} file
+ * @param runDiff whether to compare (with {@code diff}) the output against an {@code Expected.txt} file
  * @return
  */
-def testDataflowAnalysis(taskName, dirName, className, diff) {
-  if(diff) {
+def testDataflowAnalysis(taskName, dirName, className, runDiff) {
+  if (runDiff) {
     tasks.register("${taskName}Diff", Exec) {
       dependsOn taskName
       workingDir = "tests/${dirName}"
@@ -114,7 +114,7 @@ def testDataflowAnalysis(taskName, dirName, className, diff) {
     dependsOn(assemble, compileTestJava)
     description = "Run the ${dirName} dataflow framework test."
     group = 'Verification'
-    if (diff) {
+    if (runDiff) {
       inputs.file("tests/${dirName}/Expected.txt")
     }
     inputs.file("tests/${dirName}/Test.java")
@@ -152,7 +152,7 @@ def testDataflowAnalysis(taskName, dirName, className, diff) {
     classpath = sourceSets.test.runtimeClasspath
     classpath += sourceSets.test.output
     mainClass = "${className}"
-    if (diff) {
+    if (runDiff) {
       finalizedBy "${taskName}Diff"
     }
   }
