@@ -384,6 +384,12 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   protected final Set<TypeMirror> newArrayExceptionTypes;
 
   /**
+   * Exceptions that can be thrown by array access "a[i]". The size is 2 and the contents are {@code
+   * ArrayIndexOutOfBoundsException} and {@code NullPointerException}.
+   */
+  protected final Set<TypeMirror> arrayAccessExceptionTypes;
+
+  /**
    * Creates {@link CFGTranslationPhaseOne}.
    *
    * @param treeBuilder builder for new AST nodes
@@ -442,6 +448,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     noClassDefFoundErrorType = maybeGetTypeMirror(NoClassDefFoundError.class);
     stringType = getTypeMirror(String.class);
     throwableType = getTypeMirror(Throwable.class);
+
     uncheckedExceptionTypes = new ArraySet<>(2);
     uncheckedExceptionTypes.add(getTypeMirror(RuntimeException.class));
     uncheckedExceptionTypes.add(getTypeMirror(Error.class));
@@ -450,6 +457,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     if (outOfMemoryErrorType != null) {
       newArrayExceptionTypes.add(outOfMemoryErrorType);
     }
+    arrayAccessExceptionTypes = new ArraySet<>(2);
+    arrayAccessExceptionTypes.add(arrayIndexOutOfBoundsExceptionType);
+    arrayAccessExceptionTypes.add(nullPointerExceptionType);
   }
 
   /**
@@ -3373,9 +3383,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     Node array = scan(tree.getExpression(), p);
     Node index = unaryNumericPromotion(scan(tree.getIndex(), p));
     Node arrayAccess = new ArrayAccessNode(tree, array, index);
-    extendWithNode(arrayAccess);
-    extendWithNodeWithException(arrayAccess, arrayIndexOutOfBoundsExceptionType);
-    extendWithNodeWithException(arrayAccess, nullPointerExceptionType);
+    extendWithNodeWithExceptions(arrayAccess, arrayAccessExceptionTypes);
     return arrayAccess;
   }
 
