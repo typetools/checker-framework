@@ -48,7 +48,8 @@ shadowJar {
 // Shadowing Test Sources and Dependencies
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
-task skinnyJar(type: ShadowJar, dependsOn: compileJava) {
+tasks.register('skinnyJar', ShadowJar) {
+  dependsOn compileJava
   description = 'Builds annotation-file-utilities.jar with only scene-lib and annotation-file-utilities classes.'
   includeEmptyDirs = false
   destinationDirectory = file("${projectDir}/dist")
@@ -58,7 +59,9 @@ task skinnyJar(type: ShadowJar, dependsOn: compileJava) {
 }
 
 import java.nio.file.Files
-task testExample(type: JavaExec, dependsOn: compileTestJava, group: 'Verification') {
+
+tasks.register('testExample', JavaExec) {
+  dependsOn compileTestJava
   description = 'Run the scene-lib example test.'
 
   String outputDir = "${layout.buildDirectory.get()}/example-test/"
@@ -96,13 +99,15 @@ task testExample(type: JavaExec, dependsOn: compileTestJava, group: 'Verificatio
   }
 }
 
-task testAnnotator(type: Exec, dependsOn: shadowJar, group: 'Verification') {
+tasks.register('testAnnotator', Exec) {
+  dependsOn shadowJar
   description = 'Run the annotator test.'
+  group = 'Verification'
   workingDir "${projectDir}/tests/"
   executable 'make'
 }
 
-task cleanTestAnnotator(type: Exec) {
+tasks.register('cleanTestAnnotator', Exec) {
   description = "Clean the annotator test."
   workingDir 'tests/'
   executable 'make'
@@ -114,7 +119,7 @@ clean {
   delete('dist/annotation-file-utilities.jar','dist/annotation-file-utilities-all.jar', 'annotation-tools.zip')
 }
 
-task htmlValidate(type: Exec) {
+tasks.register('htmlValidate', Exec) {
   description = 'Validate that HTML files are well-formed.'
   workingDir '../'
   executable 'html5validator'
@@ -134,12 +139,15 @@ task htmlValidate(type: Exec) {
 test.dependsOn testExample
 test.dependsOn testAnnotator
 
-task updateUserOptions(dependsOn: [
-  'updateUserOptionsJavadoc',
-  'updateUserOptionsHtml'
-]) {}
+tasks.register('updateUserOptions') {
+  dependsOn(
+      'updateUserOptionsJavadoc',
+      'updateUserOptionsHtml'
+      )
+}
 
-task updateUserOptionsJavadoc(type: Javadoc, dependsOn: 'assemble') {
+tasks.register('updateUserOptionsJavadoc', Javadoc) {
+  dependsOn 'assemble'
   description = "Updates documentation of command-line arguments in Javadoc."
 
   // Include only sources from annotation-file-utilities, not from scene-lib.
@@ -157,7 +165,8 @@ task updateUserOptionsJavadoc(type: Javadoc, dependsOn: 'assemble') {
   title = ""
 }
 
-task updateUserOptionsHtml(type: Javadoc, dependsOn: 'assemble') {
+tasks.register('updateUserOptionsHtml', Javadoc) {
+  dependsOn 'assemble'
   description = "Updates documentation of command-line arguments in the manual."
 
   // Include only sources from annotation-file-utilities, not from scene-lib.
