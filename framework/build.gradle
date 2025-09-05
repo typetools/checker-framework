@@ -74,10 +74,12 @@ tasks.register('cloneTypetoolsJdk', CloneTask) {
 }
 
 
-task copyAndMinimizeAnnotatedJdkFiles(type: JavaExec, dependsOn: cloneTypetoolsJdk, group: 'Build') {
+tasks.register('copyAndMinimizeAnnotatedJdkFiles', JavaExec) {
+  dependsOn cloneTypetoolsJdk
   def inputDir = "${annotatedJdkHome}/src"
   def outputDir = "${buildDir}/generated/resources/annotated-jdk/"
   description = "Copy annotated JDK files to ${outputDir}. Removes private and package-private methods, method bodies, comments, etc. from the annotated JDK"
+  group = 'Build'
   dependsOn ':framework:compileStubifierJava'
   // we need the next two dependencies because we run JavaStubifier using this project's runtimeClasspath,
   // which refers to the jars for these other projects
@@ -123,25 +125,27 @@ task copyAndMinimizeAnnotatedJdkFiles(type: JavaExec, dependsOn: cloneTypetoolsJ
 sourcesJar.dependsOn(copyAndMinimizeAnnotatedJdkFiles)
 processResources.dependsOn(copyAndMinimizeAnnotatedJdkFiles)
 
-task allSourcesJar(type: Jar, group: 'Build') {
+tasks.register('allSourcesJar', Jar) {
   description = 'Creates a sources jar that includes sources for all Checker Framework classes in framework.jar'
+  group = 'Build'
   destinationDirectory = file("${projectDir}/dist")
   archiveFileName = 'framework-source.jar'
-  from (project(':framework').sourceSets.main.java,
+  from(project(':framework').sourceSets.main.java,
       project(':dataflow').sourceSets.main.allJava,
       project(':javacutil').sourceSets.main.allJava)
 }
 
-task allJavadocJar(type: Jar, group: 'Build') {
+tasks.register('allJavadocJar', Jar) {
   description = 'Creates javadoc jar include Javadoc for all of the framework'
-  dependsOn (project(':framework').tasks.javadoc,
+  group = 'Build'
+  dependsOn(project(':framework').tasks.javadoc,
       project(':dataflow').tasks.javadoc,
       project(':javacutil').tasks.javadoc)
 
   duplicatesStrategy = DuplicatesStrategy.EXCLUDE
   destinationDirectory = file("${projectDir}/dist")
   archiveFileName = 'framework-javadoc.jar'
-  from (project(':framework').tasks.javadoc.destinationDir,
+  from(project(':framework').tasks.javadoc.destinationDir,
       project(':dataflow').tasks.javadoc.destinationDir,
       project(':javacutil').tasks.javadoc.destinationDir)
 }
@@ -155,8 +159,10 @@ shadowJar {
   }
 }
 
-task loaderTests(type: Exec, dependsOn: 'shadowJar', group: 'Verification') {
+tasks.register('loaderTests', Exec) {
+  dependsOn 'shadowJar'
   description = 'Run tests for the annotation class loader'
+  group = 'Verification'
   dependsOn(compileTestJava)
   // TODO: this dependency on checker is a bit ugly.
   dependsOn project(':checker-qual').tasks.jar
@@ -175,7 +181,7 @@ if (skipDelombok) {
     exclude '**/ReturnsReceiverLombokTest.java'
   }
 } else {
-  task delombok {
+  tasks.register('delombok') {
     description = 'Delomboks the source code tree in tests/returnsreceiverlombok'
 
     def srcDelomboked = 'tests/returnsreceiverdelomboked'
