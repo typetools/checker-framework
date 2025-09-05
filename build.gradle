@@ -84,7 +84,7 @@ ext {
     autoValue       : '1.11.0',
     // NOTE: Google Java Format requires JDK 17 or higher as of version 1.25.0.
     googleJavaFormat : '1.25.2',
-    lombok          : '1.18.38',
+    lombok          : '1.18.40',
     hashmapUtil : '0.0.1',
     reflectionUtil : '1.1.5',
     plumeUtil : '1.11.0',
