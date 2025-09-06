@@ -252,6 +252,7 @@ public final class JavacParse {
             new JavacFileManager(context, true, StandardCharsets.UTF_8)) {
 
       Log.instance(context).useSource(source);
+      ParserFactory parserFactory;
       try {
         parserFactory = ParserFactory.instance(context);
       } catch (IllegalAccessError e) {
@@ -284,6 +285,7 @@ public final class JavacParse {
             new JavacFileManager(context, true, StandardCharsets.UTF_8)) {
 
       Log.instance(context).useSource(source);
+      ParserFactory parserFactory;
       try {
         parserFactory = ParserFactory.instance(context);
       } catch (IllegalAccessError e) {
