@@ -7,11 +7,10 @@ reviews:
   high_level_summary: true
   collapse_walkthrough: true
   poem: false
-  review_status: false
+  review_status: true
   ignore_title_keywords:
     - "wip"
     - "draft"
-
 chat:
   art: false
 
