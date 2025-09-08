@@ -1347,6 +1347,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * @param classTree the class to analyze
    */
   protected void performFlowAnalysis(ClassTree classTree) {
+
     if (flowResult == null) {
       this.regularExitStores.clear();
       this.exceptionalExitStores.clear();
@@ -1473,7 +1474,6 @@ public abstract class GenericAnnotatedTypeFactory<
               break;
           }
         }
-
         // Now analyze all methods.
         // TODO: at this point, we don't have any information about
         // fields of superclasses.
@@ -1481,7 +1481,6 @@ public abstract class GenericAnnotatedTypeFactory<
           boolean lambdaChanged = true;
           Map<LambdaExpressionTree, List<AnnotatedTypeMirror>> lambdaResultTypeMap =
               new HashMap<>();
-
           while (lambdaChanged) {
             Queue<IPair<LambdaExpressionTree, @Nullable Store>> lambdaQueueForMet =
                 new ArrayDeque<>();
@@ -1529,9 +1528,14 @@ public abstract class GenericAnnotatedTypeFactory<
                 thisLambdaChanged = true;
               }
               if (thisLambdaChanged) {
-                lambdaResultTypeMap.put(lambda, returnedExpressionTypes);
                 lambdaChanged = true;
               }
+              lambdaResultTypeMap.put(lambda, returnedExpressionTypes);
+            }
+            if (lambdaChanged) {
+              fromExpressionTreeCache.clear();
+              fromMemberTreeCache.clear();
+              fromTypeTreeCache.clear();
             }
           }
         }

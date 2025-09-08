@@ -48,8 +48,8 @@ public class EqualityAtmComparer extends EquivalentAtmComboScanner<Boolean, Void
       return false;
     }
 
-    @SuppressWarnings("TypeEquals") // TODO
-    boolean sameUnderlyingType = type1.getUnderlyingType().equals(type2.getUnderlyingType());
+    boolean sameUnderlyingType =
+        type1.atypeFactory.types.isSameType(type1.getUnderlyingType(), type2.getUnderlyingType());
     return sameUnderlyingType && arePrimaryAnnosEqual(type1, type2);
   }
 
