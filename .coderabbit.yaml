@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+
+language: "en-US"
+
+reviews:
+  profile: "assertive"
+  high_level_summary: true
+  collapse_walkthrough: true
+  poem: false
+  review_status: false
+  path_filters:
+    - "!**/build/**"
+    - "!**/out/**"
+    - "!**/.gradle/**"
+    - "!**/.idea/**"
+    - "!**/node_modules/**"
+  ignore_title_keywords:
+    - "wip"
+    - "draft"
+
+chat:
+  art: false
+
+knowledge_base:
+  code_guidelines:
+    enabled: true
+    filePatterns:
+      - "**/.cursorrules"
+      - "**/CODING_STANDARDS.md"
