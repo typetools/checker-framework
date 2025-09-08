@@ -779,6 +779,7 @@ public abstract class QualifierHierarchy {
    * @param c2 the second collection
    * @param result the result collection
    */
+  @SuppressWarnings("collectionownership:argument") //  defaulting/inference for StringsPlume.join
   public static void assertSameSize(
       @MustCallUnknown Collection<? extends @MustCallUnknown Object> c1,
       @MustCallUnknown Collection<? extends @MustCallUnknown Object> c2,
