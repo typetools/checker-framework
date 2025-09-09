@@ -484,17 +484,16 @@ public class ASTIndex extends WrapperMap<Tree, ASTRecord> {
           className = rec.className + "$" + i;
         } else {
           ClassSymbol sym = classBody.sym;
-          String s = sym == null ? "" : sym.toString();
-          if (s.startsWith("<anonymous ")) {
-            int i = counters.pop();
-            counters.push(++i);
-            className = s.substring(11, s.length() - 1);
+          if (sym != null && sym.flatname != null && sym.flatname.length() > 0) {
+            // Use javac's flatname rather than parsing toString() output.
+            className = sym.flatname.toString();
           } else {
             className = rec.className + "$" + name;
           }
         }
         counters.push(0);
-        classBody.accept(this, new ASTRecord(cut, className, null, null, ASTPath.empty()));
+        classBody.accept(this,
+            new ASTRecord(cut, className, null, null, ASTPath.empty()));
         counters.pop();
       }
       return defaultAction(node, rec);
