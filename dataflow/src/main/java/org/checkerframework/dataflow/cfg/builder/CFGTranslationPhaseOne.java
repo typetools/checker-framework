@@ -4159,7 +4159,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
   @Override
   public Node visitUnary(UnaryTree tree, Void p) {
-    Node result;
+    Node result = null;
     Tree.Kind kind = tree.getKind();
     switch (kind) {
       case BITWISE_COMPLEMENT:
@@ -4186,7 +4186,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
               throw new BugInCF("Unexpected unary tree kind: " + kind);
           }
           extendWithNode(result);
-          return result;
+          break;
         }
 
       case LOGICAL_COMPLEMENT:
@@ -4195,7 +4195,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           Node expr = scan(tree.getExpression(), p);
           result = new ConditionalNotNode(tree, unbox(expr));
           extendWithNode(result);
-          return result;
+          break;
         }
 
       case POSTFIX_DECREMENT:
@@ -4239,12 +4239,13 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
             result = new LocalVariableNode(resultExpr);
             result.setInSource(false);
             extendWithNode(result);
-            createIncrementOrDecrementAssign(tree, expr, isIncrement, isPostfix);
-          } else {
-            result = createIncrementOrDecrementAssign(tree, expr, isIncrement, isPostfix);
-            extendWithNode(result);
           }
-          return result;
+          AssignmentNode unaryAssign =
+              createIncrementOrDecrementAssign(tree, expr, isIncrement, isPostfix);
+          if (!isPostfix) {
+            result = unaryAssign;
+          }
+          break;
         }
 
       case OTHER:
@@ -4254,11 +4255,13 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           Node expr = scan(tree.getExpression(), p);
           result = new NullChkNode(tree, expr);
           extendWithNode(result);
-          return result;
+          break;
         }
 
         throw new BugInCF("Unknown kind (" + kind + ") of unary expression: " + tree);
     }
+
+    return result;
   }
 
   /**
