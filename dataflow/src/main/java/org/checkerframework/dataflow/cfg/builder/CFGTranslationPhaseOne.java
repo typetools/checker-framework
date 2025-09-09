@@ -4159,7 +4159,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
   @Override
   public Node visitUnary(UnaryTree tree, Void p) {
-    Node result = null;
+    Node result;
     Tree.Kind kind = tree.getKind();
     switch (kind) {
       case BITWISE_COMPLEMENT:
@@ -4186,7 +4186,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
               throw new BugInCF("Unexpected unary tree kind: " + kind);
           }
           extendWithNode(result);
-          break;
+          return result;
         }
 
       case LOGICAL_COMPLEMENT:
@@ -4195,7 +4195,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           Node expr = scan(tree.getExpression(), p);
           result = new ConditionalNotNode(tree, unbox(expr));
           extendWithNode(result);
-          break;
+          return result;
         }
 
       case POSTFIX_DECREMENT:
@@ -4211,6 +4211,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           boolean isPostfix =
               kind == Tree.Kind.POSTFIX_INCREMENT || kind == Tree.Kind.POSTFIX_DECREMENT;
 
+          result = null; // for definite assignment; it is assigned in isPostfix and in !isPostfix
           if (isPostfix) {
             TypeMirror exprType = TreeUtils.typeOf(exprTree);
             VariableTree tempVarDecl =
@@ -4255,13 +4256,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           Node expr = scan(tree.getExpression(), p);
           result = new NullChkNode(tree, expr);
           extendWithNode(result);
-          break;
+          return result;
         }
 
         throw new BugInCF("Unknown kind (" + kind + ") of unary expression: " + tree);
     }
-
-    return result;
   }
 
   /**
