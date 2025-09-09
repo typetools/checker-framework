@@ -178,9 +178,9 @@ public class ASTIndex extends WrapperMap<Tree, ASTRecord> {
   // (If the JVM could take advantage of tail recursion, it would be
   // better to save the current node's entry first, at a small cost to
   // the clarity of the code.)
-  class AstIndexVisitor extends SimpleTreeVisitor<Void, ASTRecord> {
-    Deque<Integer> counters = new ArrayDeque<Integer>();
-    String inMethod = null;
+  private class AstIndexVisitor extends SimpleTreeVisitor<Void, ASTRecord> {
+    private final Deque<Integer> counters = new ArrayDeque<Integer>();
+    private String inMethod = null;
 
     private void save(Tree node, ASTRecord rec, Kind kind, String sel) {
       if (node != null) {
