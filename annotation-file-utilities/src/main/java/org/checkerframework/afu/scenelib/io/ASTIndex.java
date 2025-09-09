@@ -492,8 +492,7 @@ public class ASTIndex extends WrapperMap<Tree, ASTRecord> {
           }
         }
         counters.push(0);
-        classBody.accept(this,
-            new ASTRecord(cut, className, null, null, ASTPath.empty()));
+        classBody.accept(this, new ASTRecord(cut, className, null, null, ASTPath.empty()));
         counters.pop();
       }
       return defaultAction(node, rec);
