@@ -503,20 +503,14 @@ public class ASTIndex extends WrapperMap<Tree, ASTRecord> {
     public Void visitLambdaExpression(LambdaExpressionTree node, ASTRecord rec) {
       Kind kind = node.getKind();
       String outMethod = inMethod;
-      Iterable<? extends Tree> nodes = node.getParameters();
-      if (nodes != null) {
+      List<? extends VariableTree> params = node.getParameters();
+      if (params != null) {
         int i = 0;
-        for (Tree t : nodes) {
+        for (VariableTree vt : params) {
           ASTRecord newRec = rec.extend(kind, ASTPath.PARAMETER, i++);
-          Tree.Kind newKind = t.getKind();
-          if (newKind == Tree.Kind.VARIABLE) {
-            VariableTree vt = (VariableTree) t;
-            save(vt.getType(), newRec, newKind, ASTPath.TYPE);
-            save(vt.getInitializer(), newRec, newKind, ASTPath.INITIALIZER);
-            defaultAction(vt, newRec);
-          } else {
-            t.accept(this, rec.extend(kind, ASTPath.PARAMETER, i++));
-          }
+          save(vt.getType(), newRec, Tree.Kind.VARIABLE, ASTPath.TYPE);
+          save(vt.getInitializer(), newRec, Tree.Kind.VARIABLE, ASTPath.INITIALIZER);
+          defaultAction(vt, newRec);
         }
       }
       save(node.getBody(), rec, kind, ASTPath.BODY);
