@@ -1479,7 +1479,7 @@ public abstract class GenericAnnotatedTypeFactory<
         // fields of superclasses.
         for (CFGMethod met : methods) {
           boolean lambdaChanged = true;
-          Map<LambdaExpressionTree, List<AnnotatedTypeMirror>> lambdaResultTypeMap =
+          Map<LambdaExpressionTree, List<AnnotationMirrorSet>> lambdaResultTypeMap =
               new HashMap<>();
           while (lambdaChanged) {
             Queue<IPair<LambdaExpressionTree, @Nullable Store>> lambdaQueueForMet =
@@ -1511,12 +1511,13 @@ public abstract class GenericAnnotatedTypeFactory<
                   false,
                   lambdaPair.second);
 
-              List<AnnotatedTypeMirror> returnedExpressionTypes = new ArrayList<>();
+              List<AnnotationMirrorSet> returnedExpressionTypes = new ArrayList<>();
               for (ExpressionTree expressionTree : TreeUtils.getReturnedExpressions(lambda)) {
-                returnedExpressionTypes.add(getAnnotatedType(expressionTree));
+                returnedExpressionTypes.add(
+                    getAnnotatedType(expressionTree).getPrimaryAnnotations());
               }
               boolean thisLambdaChanged = false;
-              List<AnnotatedTypeMirror> lastReturnET = lambdaResultTypeMap.get(lambda);
+              List<AnnotationMirrorSet> lastReturnET = lambdaResultTypeMap.get(lambda);
               if (lastReturnET != null) {
                 for (int i = 0; i < lastReturnET.size(); i++) {
                   if (!lastReturnET.get(i).equals(returnedExpressionTypes.get(i))) {
