@@ -1195,6 +1195,7 @@ disable animal sniffer by modifying your POM file's properties:
 \end{alltt}
 \end{mysmall}
 
+
 \subsectionAndLabel{Maven, with a locally-built version of the Checker Framework}{maven-locally-built}
 
 To use a locally-built version of the Checker Framework, first run:
@@ -1207,6 +1208,29 @@ To use a locally-built version of the Checker Framework, first run:
 Then use the Maven instructions, but modify the version number for the
 Checker Framework artifacts.  Instead of \<\ReleaseVersion{}>, use the
 version number that is output when you run \<./gradlew version>.
+
+
+\subsectionAndLabel{Maven troubleshooting}{maven-troubleshooting}
+
+If you get an error like ``module jdk.compiler does not export
+com.sun.tools.javac.processing to unnamed module'' (discussed in
+Section~\ref{javac-jdk11-non-modularized}) even though your \<pom.xml>
+contains lines such as
+
+\begin{mysmall}
+\begin{alltt}
+  <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED</arg>
+\end{alltt}
+\end{mysmall}
+
+\noindent
+then perhaps you have omitted this line from your \<pom.xml>:
+
+\begin{mysmall}
+\begin{alltt}
+          <fork>true</fork> <!-- Must fork or else JVM arguments are ignored. -->
+\end{alltt}
+\end{mysmall}
 
 
 \sectionAndLabel{NetBeans}{netbeans}
