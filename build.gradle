@@ -84,7 +84,7 @@ ext {
     autoValue       : '1.11.0',
     // NOTE: Google Java Format requires JDK 17 or higher as of version 1.25.0.
     googleJavaFormat : '1.25.2',
-    lombok          : '1.18.38',
+    lombok          : '1.18.40',
     hashmapUtil : '0.0.1',
     reflectionUtil : '1.1.5',
     plumeUtil : '1.11.0',
@@ -98,7 +98,7 @@ ext {
   ]
 }
 
-task setLocalRepo(type:Exec) {
+tasks.register('setLocalRepo', Exec) {
   commandLine 'git', 'worktree', 'list'
   standardOutput = new ByteArrayOutputStream()
 
@@ -109,7 +109,8 @@ task setLocalRepo(type:Exec) {
 }
 
 // No group so it does not show up in the output of `gradlew tasks`
-task installGitHooks(type: Copy, dependsOn: 'setLocalRepo') {
+tasks.register('installGitHooks', Copy) {
+  dependsOn ('setLocalRepo')
   description = 'Copies git hooks to .git directory'
   from files('checker/bin-devel/git.post-merge', 'checker/bin-devel/git.pre-commit')
   rename('git\\.(.*)', '$1')
@@ -406,7 +407,7 @@ allprojects { currentProj ->
     // Add the fat checker.jar to the classpath of every Javadoc task. This allows Javadoc in
     // any module to reference classes in any other module.
     // Also, build and use ManualTaglet as a taglet.
-    tasks.withType(Javadoc) {
+    tasks.withType(Javadoc).configureEach {
       dependsOn(':checker:shadowJar')
       dependsOn(":framework-test:tagletClasses")
       doFirst {
@@ -414,7 +415,7 @@ allprojects { currentProj ->
         if (!name.equals('javadocDoclintAll')) {
           options.memberLevel = javadocMemberLevel
         }
-        classpath += configurations.getByName('checkerFatJar').asFileTree
+        classpath += configurations.named('checkerFatJar').get().asFileTree
         options.taglets 'org.checkerframework.taglet.ManualTaglet'
         options.tagletPath(project(':framework-test').sourceSets.taglet.output.classesDirs.getFiles() as File[])
 
@@ -587,8 +588,9 @@ allprojects { currentProj ->
   } // end afterEvaluate
 } // end allProjects
 
-task version(group: 'Documentation') {
+tasks.register('version') {
   description = 'Print Checker Framework version'
+  group = 'Documentation'
   doLast {
     println version
   }
@@ -604,9 +606,10 @@ task version(group: 'Documentation') {
  * @param args list of arguments to pass to the checker
  */
 def createCheckTypeTask(projectName, taskName, checker, args = []) {
-  project("${projectName}").tasks.create(name: "check${taskName}", type: JavaCompile, dependsOn: ':checker:shadowJar') {
+  project("${projectName}").tasks.register("check${taskName}", JavaCompile) {
     description = "Run the ${taskName} Checker on the main sources."
     group = 'Verification'
+    dependsOn(':checker:shadowJar')
     // Always run the task.
     outputs.upToDateWhen { false }
     source = project("${projectName}").sourceSets.main.java
@@ -635,8 +638,9 @@ def createCheckTypeTask(projectName, taskName, checker, args = []) {
   }
 }
 
-task htmlValidate(type: Exec, group: 'Format') {
+tasks.register('htmlValidate', Exec) {
   description = 'Validate that HTML files are well-formed'
+  group = 'Format'
   // This is the Nu Html Checker (v.Nu): https://github.com/validator/validator
   executable 'html5validator'
   args = [
@@ -649,7 +653,7 @@ task htmlValidate(type: Exec, group: 'Format') {
   ]
 }
 
-task addFavicon(type: Exec) {
+tasks.register('addFavicon', Exec) {
   dependsOn 'allJavadoc'
 
   doFirst {
@@ -674,8 +678,9 @@ task addFavicon(type: Exec) {
 //   It's needed to create the Javadoc jars that we release in Maven Central.
 // To make javadoc for only one subproject, run `./gradlew javadoc`
 //   in the subproject or `./gradlew :checker:javadoc` at the top level.
-task allJavadoc(type: Javadoc, group: 'Documentation') {
+tasks.register('allJavadoc', Javadoc) {
   description = 'Generates API documentation that includes all the modules.'
+  group = 'Documentation'
   dependsOn(':checker:shadowJar', 'getPlumeScripts', 'getHtmlTools', ':checker-qual:jar')
 
   doFirst {
@@ -820,8 +825,9 @@ configurations {
 dependencies {
   requireJavadoc 'org.plumelib:require-javadoc:2.0.0'
 }
-task requireJavadoc(type: JavaExec, group: 'Documentation') {
+tasks.register('requireJavadoc', JavaExec) {
   description = 'Ensures that Javadoc documentation exists in source code.'
+  group = 'Documentation'
   mainClass = 'org.plumelib.javadoc.RequireJavadoc'
   classpath = configurations.requireJavadoc
   args '--exclude=module-info.java', 'checker/src/main/java', 'checker-qual/src/main/java', 'checker-util/src/main/java', 'dataflow/src/main/java', 'framework/src/main/java', 'framework-test/src/main/java', 'javacutil/src/main/java'
@@ -847,7 +853,7 @@ task requireJavadoc(type: JavaExec, group: 'Documentation') {
  * @return the new task
  */
 def createJavadocTask(taskName, taskDescription, memberLevel) {
-  tasks.create(name: taskName, type: Javadoc) {
+  tasks.register(taskName, Javadoc) {
     description = taskDescription
     destinationDir = file("${rootDir}/docs/tmpapi")
     destinationDir.mkdirs()
@@ -923,19 +929,21 @@ tasks.register('getDoLikeJavac', CloneTask) {
 }
 
 // No group so it does not show up in the output of `gradlew tasks`
-task pythonIsInstalled(type: Exec) {
+tasks.register('pythonIsInstalled', Exec) {
   description = 'Check that the python3 executable is installed.'
   executable = 'python3'
   args '--version'
 }
 
-task docTags(type: Exec, group: 'Emacs') {
+tasks.register('docTags', Exec) {
+  group = 'Emacs'
   commandLine 'make', '-C', 'docs/manual/', 'tags'
 }
 
-task tags(type: Exec, group: 'Emacs') {
+tasks.register('tags', Exec) {
   dependsOn docTags
   description = 'Create Emacs TAGS table'
+  group = 'Emacs'
   // running this task will also run the tags task in the subprojects, which is defined later in this file.
   commandLine 'etags', '-i', 'annotation-file-utilities/TAGS', '-i', 'checker/TAGS', '-i', 'checker-qual/TAGS', '-i', 'checker-util/TAGS', '-i', 'dataflow/TAGS', '-i', 'framework/TAGS', '-i', 'framework-test/TAGS', '-i', 'javacutil/TAGS', '-i', 'docs/manual/TAGS'
 }
@@ -978,7 +986,7 @@ subprojects {
   }
 
   if (!project.name.startsWith('checker-qual-android')) {
-    task tags(type: Exec) {
+    tasks.register('tags', Exec) {
       description = 'Create Emacs TAGS table'
       // `ctags -e -f TAGS` used to work in place of `etags`, but apparently no longer.
       commandLine 'bash', '-c', "find . \\( -name build -o -name jtreg -o -name tests \\) -prune -o -name '*.java' -print | sort-directory-order | xargs etags"
@@ -994,7 +1002,7 @@ subprojects {
   // until the project is evaluated.
   afterEvaluate {
     // Adds manifest to all Jar files
-    tasks.withType(Jar) {
+    tasks.withType(Jar).configureEach {
       includeEmptyDirs = false
       if (archiveFileName.get().startsWith('checker-qual') || archiveFileName.get().startsWith('checker-util')) {
         metaInf {
@@ -1008,7 +1016,7 @@ subprojects {
       manifest {
         attributes('Implementation-Version': "${project.version}")
         attributes('Implementation-URL': 'https://checkerframework.org')
-        if (! archiveFileName.get().endsWith('source.jar') && ! archiveFileName.get().startsWith('checker-qual')) {
+        if (!archiveFileName.get().endsWith('source.jar') && !archiveFileName.get().startsWith('checker-qual')) {
           attributes('Automatic-Module-Name': 'org.checkerframework.' + project.name.replaceAll('-', '.'))
         }
         if (archiveFileName.get().startsWith('checker-qual') || archiveFileName.get().startsWith('checker-util')) {
@@ -1079,8 +1087,9 @@ subprojects {
 
     // Add jtregTests to framework and checker modules
     if (project.name.is('framework') || project.name.is('checker')) {
-      tasks.create(name: 'jtregTests', type: Exec, group: 'Verification') {
+      tasks.register('jtregTests', Exec) {
         description = 'Run the jtreg tests. Requires jtreg to be installed.'
+        group = 'Verification'
         dependsOn('compileJava')
         dependsOn('compileTestJava')
         dependsOn('shadowJar')
@@ -1137,7 +1146,7 @@ subprojects {
     // Create a task for each JUnit test class whose name is the same as the JUnit class name.
     sourceSets.test.allJava.filter { it.path.contains('test/junit') }.forEach { file ->
       String junitClassName = file.name.replaceAll('.java', '')
-      tasks.create(name: "${junitClassName}", type: Test) {
+      tasks.register("${junitClassName}", Test) {
         description = "Run ${junitClassName} tests."
         include "**/${name}.class"
         testClassesDirs = testing.suites.test.sources.output.classesDirs
@@ -1166,7 +1175,7 @@ subprojects {
 
         // Fork the test to try to improve performance.
         // https://docs.gradle.org/current/userguide/performance.html#fork_tests_into_multiple_processes
-        tasks.withType(Test).configureEach {
+        tasks.withType(Test) {
           forkEvery = 25
         }
       }
@@ -1194,8 +1203,9 @@ subprojects {
     }
 
     // Create a nonJunitTests task per project
-    tasks.create(name: 'nonJunitTests', group: 'Verification') {
+    tasks.register('nonJunitTests') {
       description = 'Run all Checker Framework tests except for the Junit tests and inference tests.'
+      group = 'Verification'
       if (project.name.is('framework') || project.name.is('checker')) {
         dependsOn('jtregTests')
       }
@@ -1213,20 +1223,23 @@ subprojects {
     }
 
     // Create an inferenceTests task per project
-    tasks.create(name: 'inferenceTests', group: 'Verification') {
+    tasks.register('inferenceTests') {
       description = 'Run inference tests.'
+      group = 'Verification'
       if (project.name.is('checker')) {
         dependsOn('inferenceTests-part1', 'inferenceTests-part1')
       }
     }
-    tasks.create(name: 'inferenceTests-part1', group: 'Verification') {
+    tasks.register('inferenceTests-part1') {
       description = 'Run inference tests (part 1).'
+      group = 'Verification'
       if (project.name.is('checker')) {
         dependsOn('ainferTest', 'wpiManyTest')
       }
     }
-    tasks.create(name: 'inferenceTests-part2', group: 'Verification') {
+    tasks.register('inferenceTests-part2') {
       description = 'Run inference tests (part 2).'
+      group = 'Verification'
       if (project.name.is('checker')) {
         dependsOn('wpiPlumeLibTest')
       }
@@ -1235,16 +1248,19 @@ subprojects {
     // Create a typecheck task per project (dogfooding the Checker Framework on itself).
     // This isn't a test of the Checker Framework as the test and nonJunitTests tasks are.
     // Tasks such as 'checkInterning' are constructed by createCheckTypeTask.
-    tasks.create(name: 'typecheck', group: 'Verification') {
+    tasks.register('typecheck') {
       description = 'Run the Checker Framework on itself'
+      group = 'Verification'
       dependsOn('typecheck-part1', 'typecheck-part2')
     }
-    tasks.create(name: 'typecheck-part1', group: 'Verification') {
+    tasks.register('typecheck-part1') {
       description = 'Run the Checker Framework on itself (part 1)'
+      group = 'Verification'
       dependsOn('checkCompilerMessages', 'checkFormatter', 'checkInterning', 'checkOptional', 'checkPurity')
     }
-    tasks.create(name: 'typecheck-part2', group: 'Verification') {
+    tasks.register('typecheck-part2') {
       description = 'Run the Checker Framework on itself (part 2)'
+      group = 'Verification'
       dependsOn('checkResourceLeak', 'checkSignature')
       if (!(project.name.is('framework') || project.name.is('checker'))) {
         dependsOn('checkNullness')
@@ -1253,13 +1269,15 @@ subprojects {
 
     // Create an allTests task per project.
     // allTests = test + nonJunitTests + inferenceTests + typecheck
-    tasks.create(name: 'allTests', group: 'Verification') {
+    tasks.register('allTests') {
       description = 'Run all Checker Framework tests'
+      group = 'Verification'
       // The 'test' target is just the JUnit tests.
       dependsOn('test', 'nonJunitTests', 'inferenceTests', 'typecheck')
     }
 
-    task javadocPrivate(dependsOn: javadoc) {
+    tasks.register('javadocPrivate'){
+      dependsOn(javadoc)
       doFirst {
         javadocMemberLevel = JavadocMemberLevel.PRIVATE
       }
@@ -1279,8 +1297,9 @@ assemble.dependsOn(':checker:assembleForJavac')
 
 assemble.mustRunAfter(clean)
 
-task buildAll(group: 'Build') {
+tasks.register('buildAll') {
   description = 'Build all jar files and the manuals, including source and javadoc jars'
+  group = 'Build'
   dependsOn(allJavadoc)
   subprojects { Project subproject ->
     dependsOn("${subproject.name}:assemble")

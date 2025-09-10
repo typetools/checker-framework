@@ -52,7 +52,7 @@ public final class CFGVisualizeLauncher {
   }
 
   /**
-   * Generate a visualization of the CFG of a method, with an optional analysis.
+   * Generate a visualization of the CFG of a method to a file, optionally running an analysis.
    *
    * @param <V> the abstract value type of the analysis
    * @param <S> the store type of the analysis
@@ -100,21 +100,18 @@ public final class CFGVisualizeLauncher {
                 config.getClassName(),
                 config.isVerbose(),
                 analysis);
-        if (res != null) {
-          String stringGraph = (String) res.get("stringGraph");
-          if (stringGraph == null) {
-            System.err.println(
-                "Unexpected output from generating string control flow graph, shouldn't be"
-                    + " null. Result map: "
-                    + res);
-            return;
-          }
-          System.out.println(stringGraph);
-        } else {
-          System.err.println(
-              "Unexpected output from generating string control flow graph, shouldn't be"
-                  + " null.");
+        if (res == null) {
+          System.err.println("result shouldn't be null when generating string CFG.");
+          return;
         }
+
+        String stringGraph = (String) res.get("stringGraph");
+        if (stringGraph == null) {
+          System.err.println(
+              "\"stringGraph\" key shouldn't map to null when generating string CFG: " + res);
+          return;
+        }
+        System.out.println(stringGraph);
       }
     }
   }
@@ -163,7 +160,7 @@ public final class CFGVisualizeLauncher {
   }
 
   /**
-   * Generate the DOT representation of the CFG for a method.
+   * Generate the DOT and PDF representations of the CFG for a method.
    *
    * @param <V> the abstract value type to be tracked by the analysis
    * @param <S> the store type used in the analysis
@@ -186,11 +183,30 @@ public final class CFGVisualizeLauncher {
           boolean pdf,
           boolean verbose,
           @Nullable Analysis<V, S, T> analysis) {
-    ControlFlowGraph cfg = generateMethodCFG(inputFile, clas, method);
-    if (analysis != null) {
-      analysis.performAnalysis(cfg);
-    }
+    ControlFlowGraph cfg = generateMethodCFG(inputFile, method, clas, analysis);
+    generateDOTofCFG(cfg, outputDir, pdf, verbose, analysis);
+  }
 
+  /**
+   * Generate the DOT and PDF representations of the CFG for a method.
+   *
+   * @param <V> the abstract value type to be tracked by the analysis
+   * @param <S> the store type used in the analysis
+   * @param <T> the transfer function type that is used to approximate run-time behavior
+   * @param cfg the control flow graph to visualize
+   * @param outputDir source output directory
+   * @param pdf also generate a PDF
+   * @param verbose show verbose information in CFG
+   * @param analysis analysis to perform before the visualization (or {@code null} if no analysis is
+   *     to be performed)
+   */
+  public static <V extends AbstractValue<V>, S extends Store<S>, T extends TransferFunction<V, S>>
+      void generateDOTofCFG(
+          ControlFlowGraph cfg,
+          String outputDir,
+          boolean pdf,
+          boolean verbose,
+          @Nullable Analysis<V, S, T> analysis) {
     Map<String, Object> args = new ArrayMap<>(2);
     args.put("outdir", outputDir);
     args.put("verbose", verbose);
@@ -210,11 +226,15 @@ public final class CFGVisualizeLauncher {
    * Generate the control flow graph of a method in a class.
    *
    * @param file a Java source file, used as input
-   * @param clas name of the class which includes the method to generate the CFG for
    * @param method name of the method to generate the CFG for
+   * @param clas name of the class which includes the method to generate the CFG for
+   * @param analysis analysis to perform before the visualization (or {@code null} if no analysis is
+   *     to be performed)
    * @return control flow graph of the specified method
    */
-  public static ControlFlowGraph generateMethodCFG(String file, String clas, String method) {
+  public static ControlFlowGraph generateMethodCFG(
+      String file, String method, String clas, @Nullable Analysis<?, ?, ?> analysis) {
+    // Note that `clas` occurs before `method` here, but nowhere else in this file.
     CFGProcessor cfgProcessor = new CFGProcessor(clas, method);
 
     Context context = new Context();
@@ -265,7 +285,11 @@ public final class CFGVisualizeLauncher {
       System.exit(1);
     }
 
-    return res.getCFG();
+    ControlFlowGraph cfg = res.getCFG();
+    if (analysis != null) {
+      analysis.performAnalysis(cfg);
+    }
+    return cfg;
   }
 
   /**
@@ -277,10 +301,23 @@ public final class CFGVisualizeLauncher {
    * @param outputFile source output file
    * @param analysis instance of forward or backward analysis from specific dataflow test case
    */
-  @SuppressWarnings("CatchAndPrintStackTrace") // we want to use e.printStackTrace here.
   public static void writeStringOfCFG(
       String inputFile, String method, String clas, String outputFile, Analysis<?, ?, ?> analysis) {
-    Map<String, Object> res = generateStringOfCFG(inputFile, method, clas, true, analysis);
+    ControlFlowGraph cfg = generateMethodCFG(inputFile, method, clas, analysis);
+    writeStringOfCFG(cfg, outputFile, analysis);
+  }
+
+  /**
+   * Write generated String representation of the CFG for a method to a file.
+   *
+   * @param cfg the control flow graph
+   * @param outputFile source output file
+   * @param analysis the analysis that was run, or null
+   */
+  @SuppressWarnings("CatchAndPrintStackTrace") // we want to use e.printStackTrace here.
+  public static void writeStringOfCFG(
+      ControlFlowGraph cfg, String outputFile, Analysis<?, ?, ?> analysis) {
+    Map<String, Object> res = generateStringOfCFG(cfg, true, analysis);
     try (FileWriter out = new FileWriter(outputFile, StandardCharsets.UTF_8)) {
       if (res != null && res.get("stringGraph") != null) {
         out.write(res.get("stringGraph").toString());
@@ -317,8 +354,7 @@ public final class CFGVisualizeLauncher {
    * @param method name of the method to generate the CFG for
    * @param clas name of the class which includes the method to generate the CFG for
    * @param verbose show verbose information in CFG
-   * @param analysis analysis to perform before the visualization (or {@code null} if no analysis is
-   *     to be performed)
+   * @param analysis the analysis to perform (or {@code null} if no analysis is to be performed)
    * @return a map which includes a key "stringGraph" and the String representation of CFG as the
    *     value
    */
@@ -329,11 +365,27 @@ public final class CFGVisualizeLauncher {
           String clas,
           boolean verbose,
           @Nullable Analysis<V, S, T> analysis) {
-    ControlFlowGraph cfg = generateMethodCFG(inputFile, clas, method);
-    if (analysis != null) {
-      analysis.performAnalysis(cfg);
-    }
+    ControlFlowGraph cfg = generateMethodCFG(inputFile, method, clas, analysis);
 
+    return generateStringOfCFG(cfg, verbose, analysis);
+  }
+
+  /**
+   * Generate the String representation of the CFG for a method.
+   *
+   * @param <V> the abstract value type to be tracked by the analysis
+   * @param <S> the store type used in the analysis
+   * @param <T> the transfer function type that is used to approximate run-time behavior
+   * @param cfg the control flow graph to visualize
+   * @param verbose show verbose information in CFG
+   * @param analysis analysis to perform before the visualization (or {@code null} if no analysis is
+   *     to be performed)
+   * @return a map which includes a key "stringGraph" and the String representation of CFG as the
+   *     value
+   */
+  private static <V extends AbstractValue<V>, S extends Store<S>, T extends TransferFunction<V, S>>
+      @Nullable Map<String, Object> generateStringOfCFG(
+          ControlFlowGraph cfg, boolean verbose, @Nullable Analysis<V, S, T> analysis) {
     Map<String, Object> args = Collections.singletonMap("verbose", verbose);
 
     CFGVisualizer<V, S, T> viz = new StringCFGVisualizer<>();
