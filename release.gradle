@@ -107,9 +107,12 @@ tasks.register('copyToWebsite', Copy) {
   description = 'Copy files to location set in the property cfWebsite.'
   dependsOn(':allJavadoc',':manual', ':zip', 'zipMavenExamples')
 
-  // Defer reading of cfWebsite until execution time to avoid configuration failures.
-  def destDir = providers.gradleProperty('cfWebsite')
-  into { destDir.get() }
+  // Defer reading of cfWebsite until execution time and set the task's
+  // destination directory so it affects all subsequent `into` clauses.
+  def cfWebsite = providers.gradleProperty('cfWebsite')
+  doFirst {
+    destinationDir = file(cfWebsite.get())
+  }
 
   from tasks.named('zip', Zip).get().archiveFile.get().toString()
   from ('docs') {
@@ -178,7 +181,7 @@ tasks.register('copyToWebsite', Copy) {
   }
 
   doLast {
-    def dest = destDir.get()
+    def dest = cfWebsite.get()
     delete(file("${dest}/index.html"))
     Files.createSymbolicLink(file("${dest}/index.html").toPath(), Paths.get('checker-framework-webpage.html'))
 
@@ -193,9 +196,12 @@ tasks.register('copyToWebsite', Copy) {
 tasks.register('updateCopyMavenExample', Copy) {
   // This task is used during the release in "sanity_checks.py" to check that the Maven artifacts were uploaded correctly.
   description = 'Copies the Maven example to the location in property destDir.'
-  // Defer reading of destDir until execution time to avoid configuration failures.
+  // Defer reading of destDir until execution time and set the task's
+  // destination directory so it affects all subsequent `into` clauses.
   def destDir = providers.gradleProperty('destDir').map { it + '/MavenExample' }
-  into { destDir.get() }
+  doFirst {
+    destinationDir = file(destDir.get())
+  }
   from 'docs/examples/MavenExample'
   filter { String line ->
     line.replaceAll("<!-- checker-framework-version -->(.*)<!-- /checker-framework-version -->", "<!-- checker-framework-version -->${releaseVersion}<!-- /checker-framework-version -->")
