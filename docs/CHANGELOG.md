@@ -1,3 +1,13 @@
+Version 3.51.1 (2025-10-02)
+---------------------------
+
+**User-visible changes:**
+
+**Implementation details:**
+
+**Closed issues:**
+
+
 Version 3.51.0 (2025-09-10)
 ---------------------------
 
