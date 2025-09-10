@@ -413,9 +413,9 @@ public class ASTIndex extends WrapperMap<Tree, ASTRecord> {
     @Override
     public Void visitMethod(MethodTree node, ASTRecord rec) {
       Kind kind = node.getKind();
-      Tree rcvr = node.getReceiverParameter();
+      VariableTree rcvr = node.getReceiverParameter();
       ModifiersTree mods = node.getModifiers();
-      List<? extends Tree> params = node.getParameters();
+      List<? extends VariableTree> params = node.getParameters();
       String outMethod = inMethod;
       inMethod = JVMNames.getJVMMethodSignature(node);
       rec = new ASTRecord(cut, rec.className, inMethod, null, ASTPath.empty());
@@ -430,9 +430,9 @@ public class ASTIndex extends WrapperMap<Tree, ASTRecord> {
         List<String> names = new ArrayList<>(params.size());
         int i = 0;
         map.put(inMethod, names);
-        for (Tree param : params) {
+        for (VariableTree param : params) {
           if (param != null) {
-            names.add(((VariableTree) param).getName().toString());
+            names.add(param.getName().toString());
             param.accept(this, rec.extend(Tree.Kind.METHOD, ASTPath.PARAMETER, i++));
           }
         }
