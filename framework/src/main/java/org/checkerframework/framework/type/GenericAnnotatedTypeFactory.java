@@ -1534,9 +1534,12 @@ public abstract class GenericAnnotatedTypeFactory<
               lambdaResultTypeMap.put(lambda, returnedExpressionTypes);
             }
             if (lambdaChanged) {
-              fromExpressionTreeCache.clear();
-              fromMemberTreeCache.clear();
-              fromTypeTreeCache.clear();
+              if (fromExpressionTreeCache != null) {
+                // If one cache is not null, then neither are the others.
+                fromExpressionTreeCache.clear();
+                fromMemberTreeCache.clear();
+                fromTypeTreeCache.clear();
+              }
             }
           }
         }
