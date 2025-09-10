@@ -1347,7 +1347,6 @@ public abstract class GenericAnnotatedTypeFactory<
    * @param classTree the class to analyze
    */
   protected void performFlowAnalysis(ClassTree classTree) {
-
     if (flowResult == null) {
       this.regularExitStores.clear();
       this.exceptionalExitStores.clear();
@@ -1474,14 +1473,14 @@ public abstract class GenericAnnotatedTypeFactory<
               break;
           }
         }
+
         // Now analyze all methods.
-        // TODO: at this point, we don't have any information about
-        // fields of superclasses.
+        // TODO: at this point, we don't have any information about fields of superclasses.
         for (CFGMethod met : methods) {
-          boolean lambdaChanged = true;
+          boolean anyLambdaResultChanged = true;
           Map<LambdaExpressionTree, List<AnnotationMirrorSet>> lambdaResultTypeMap =
               new HashMap<>();
-          while (lambdaChanged) {
+          while (anyLambdaResultChanged) {
             Queue<IPair<LambdaExpressionTree, @Nullable Store>> lambdaQueueForMet =
                 new ArrayDeque<>();
             analyze(
@@ -1494,7 +1493,7 @@ public abstract class GenericAnnotatedTypeFactory<
                 false,
                 false,
                 capturedStore);
-            lambdaChanged = false;
+            anyLambdaResultChanged = false;
             while (!lambdaQueueForMet.isEmpty()) {
               IPair<LambdaExpressionTree, @Nullable Store> lambdaPair = lambdaQueueForMet.poll();
               LambdaExpressionTree lambda = lambdaPair.first;
@@ -1529,11 +1528,11 @@ public abstract class GenericAnnotatedTypeFactory<
                 thisLambdaChanged = true;
               }
               if (thisLambdaChanged) {
-                lambdaChanged = true;
+                anyLambdaResultChanged = true;
               }
               lambdaResultTypeMap.put(lambda, returnedExpressionTypes);
             }
-            if (lambdaChanged) {
+            if (anyLambdaResultChanged) {
               if (fromExpressionTreeCache != null) {
                 // If one cache is not null, then neither are the others.
                 fromExpressionTreeCache.clear();
