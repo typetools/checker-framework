@@ -48,12 +48,8 @@ public class EqualityAtmComparer extends EquivalentAtmComboScanner<Boolean, Void
       return false;
     }
 
-    // If the underlying type includes a wildcard, then isSameType always returns false even if they
-    // are the same TypeMirror object. So check for == first.
-    boolean sameUnderlyingType =
-        type1.getUnderlyingType() == type2.getUnderlyingType()
-            || type1.atypeFactory.types.isSameType(
-                type1.getUnderlyingType(), type2.getUnderlyingType());
+    @SuppressWarnings("TypeEquals") // TODO
+    boolean sameUnderlyingType = type1.getUnderlyingType().equals(type2.getUnderlyingType());
     return sameUnderlyingType && arePrimaryAnnosEqual(type1, type2);
   }
 
