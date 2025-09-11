@@ -97,7 +97,8 @@ tasks.register('updateVersionNumbersInDocs', Copy) {
 tasks.register('zipMavenExamples', Zip) {
   description = 'Creates a zip archive for the Maven examples.'
   archiveFileName = "mvn-examples.zip"
-  destinationDirectory = file(project.property('cfWebsite'))
+  // Defer reading of cfWebsite until execution time to avoid configuration failures.
+  destinationDirectory = layout.projectDirectory.dir(providers.gradleProperty('cfWebsite'))
   from ('docs/examples/MavenExample')
 }
 
@@ -106,9 +107,15 @@ tasks.register('copyToWebsite', Copy) {
   description = 'Copy files to location set in the property cfWebsite.'
   dependsOn(':allJavadoc',':manual', ':zip', 'zipMavenExamples')
 
-  String destDir = project.property('cfWebsite')
-  destinationDir = file(destDir) // destinationDir affects all `into` clauses
-
+  // Defer reading of cfWebsite until execution time and set the task's
+  // destination directory so it affects all subsequent `into` clauses.
+  def cfWebsite = providers.gradleProperty('cfWebsite')
+  doFirst {
+    if (!cfWebsite.isPresent()) {
+      throw new GradleException("Property 'cfWebsite' is required. Pass -PcfWebsite=/abs/or/relative/path")
+    }
+    destinationDir = file(cfWebsite.get())
+  }
   from tasks.named('zip', Zip).get().archiveFile.get().toString()
   from ('docs') {
     include('checker-framework-webpage.html', 'CHANGELOG.md')
@@ -176,22 +183,27 @@ tasks.register('copyToWebsite', Copy) {
   }
 
   doLast {
-    delete(file("${destDir}/index.html"))
-    Files.createSymbolicLink(file("${destDir}/index.html").toPath(), Paths.get('checker-framework-webpage.html'))
+    def dest = cfWebsite.get()
+    delete(file("${dest}/index.html"))
+    Files.createSymbolicLink(file("${dest}/index.html").toPath(), Paths.get('checker-framework-webpage.html'))
 
-    delete(file("${destDir}/manual/index.html"))
-    Files.createSymbolicLink(file("${destDir}/manual/index.html").toPath(), Paths.get('manual.html'))
+    delete(file("${dest}/manual/index.html"))
+    Files.createSymbolicLink(file("${dest}/manual/index.html").toPath(), Paths.get('manual.html'))
 
-    delete "${destDir}/annotation-file-utilities/index.html"
-    Files.createSymbolicLink(file("${destDir}/annotation-file-utilities/index.html").toPath(), Paths.get('annotation-file-utilities.html'))
+    delete "${dest}/annotation-file-utilities/index.html"
+    Files.createSymbolicLink(file("${dest}/annotation-file-utilities/index.html").toPath(), Paths.get('annotation-file-utilities.html'))
   }
 }
 
 tasks.register('updateCopyMavenExample', Copy) {
   // This task is used during the release in "sanity_checks.py" to check that the Maven artifacts were uploaded correctly.
   description = 'Copies the Maven example to the location in property destDir.'
-  String destDir = project.property('destDir') + '/MavenExample'
-  destinationDir = file(destDir)
+  // Defer reading of destDir until execution time and set the task's
+  // destination directory so it affects all subsequent `into` clauses.
+  def destDir = providers.gradleProperty('destDir').map { it + '/MavenExample' }
+  doFirst {
+    destinationDir = file(destDir.get())
+  }
   from 'docs/examples/MavenExample'
   filter { String line ->
     line.replaceAll("<!-- checker-framework-version -->(.*)<!-- /checker-framework-version -->", "<!-- checker-framework-version -->${releaseVersion}<!-- /checker-framework-version -->")
