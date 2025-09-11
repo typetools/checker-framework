@@ -111,9 +111,11 @@ tasks.register('copyToWebsite', Copy) {
   // destination directory so it affects all subsequent `into` clauses.
   def cfWebsite = providers.gradleProperty('cfWebsite')
   doFirst {
+    if (!cfWebsite.isPresent()) {
+      throw new GradleException("Property 'cfWebsite' is required. Pass -PcfWebsite=/abs/or/relative/path")
+    }
     destinationDir = file(cfWebsite.get())
   }
-
   from tasks.named('zip', Zip).get().archiveFile.get().toString()
   from ('docs') {
     include('checker-framework-webpage.html', 'CHANGELOG.md')
