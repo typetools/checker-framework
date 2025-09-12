@@ -254,10 +254,11 @@ public abstract class Insertion {
   public abstract Kind getKind();
 
   /**
-   * Removes the leading package.
+   * Removes and returns the leading package.
    *
-   * @return given {@code @com.foo.bar(baz)} it returns the pair <code>{ com.foo, @bar(baz) }
-   *     </code>.
+   * @param s a string with leading package
+   * @return given {@code @com.foo.bar(baz)} it returns a pair of {@code com.foo} and
+   *     {@code @bar(baz)}.
    */
   public static IPair<String, String> removePackage(String s) {
     int nameEnd = s.indexOf('(');
