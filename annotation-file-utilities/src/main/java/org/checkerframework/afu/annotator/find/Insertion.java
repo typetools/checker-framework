@@ -256,7 +256,7 @@ public abstract class Insertion {
   /**
    * Removes and returns the leading package.
    *
-   * @param s a string with leading package
+   * @param s the string representation of an annotation
    * @return given {@code @com.foo.bar(baz)} it returns a pair of {@code com.foo} and
    *     {@code @bar(baz)}.
    */

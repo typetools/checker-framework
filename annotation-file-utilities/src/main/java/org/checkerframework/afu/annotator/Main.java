@@ -69,6 +69,7 @@ import org.checkerframework.afu.scenelib.type.DeclaredType;
 import org.checkerframework.afu.scenelib.type.Type;
 import org.checkerframework.afu.scenelib.util.CommandLineUtils;
 import org.checkerframework.afu.scenelib.util.coll.VivifyingMap;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.objectweb.asm.TypePath;
 import org.plumelib.options.Option;
 import org.plumelib.options.OptionGroup;
@@ -1242,7 +1243,7 @@ public class Main {
    * @param s the string representation of an annotation
    * @return given {@code @foo(bar)} it returns the pair <code>{ @foo, (bar) }</code>
    */
-  public static IPair<String, String> removeArgs(String s) {
+  public static IPair<String, @Nullable String> removeArgs(String s) {
     int pidx = s.indexOf('(');
     return (pidx == -1)
         ? IPair.of(s, (String) null)
