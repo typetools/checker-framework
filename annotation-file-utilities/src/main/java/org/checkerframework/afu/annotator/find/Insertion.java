@@ -260,7 +260,7 @@ public abstract class Insertion {
    *     </code>.
    */
   public static IPair<String, String> removePackage(String s) {
-    int nameEnd = s.indexOf("(");
+    int nameEnd = s.indexOf('(');
     if (nameEnd == -1) {
       nameEnd = s.length();
     }

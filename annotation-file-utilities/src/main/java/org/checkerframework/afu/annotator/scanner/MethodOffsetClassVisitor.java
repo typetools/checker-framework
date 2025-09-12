@@ -47,7 +47,7 @@ public class MethodOffsetClassVisitor extends ClassVisitor {
   @Override
   public MethodVisitor visitMethod(
       int access, String name, String descriptor, String signature, String[] exceptions) {
-    methodName = name + descriptor.substring(0, descriptor.indexOf(")") + 1);
+    methodName = name + descriptor.substring(0, descriptor.indexOf(')') + 1);
     methodCodeOffsetAdapter =
         codeOffsetAdapter.visitMethod(access, name, descriptor, signature, exceptions);
     return new MethodOffsetMethodVisitor(

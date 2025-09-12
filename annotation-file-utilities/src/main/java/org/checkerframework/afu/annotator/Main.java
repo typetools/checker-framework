@@ -1243,7 +1243,7 @@ public class Main {
    * @return given {@code @foo(bar)} it returns the pair <code>{ @foo, (bar) }</code>
    */
   public static IPair<String, String> removeArgs(String s) {
-    int pidx = s.indexOf("(");
+    int pidx = s.indexOf('(');
     return (pidx == -1)
         ? IPair.of(s, (String) null)
         : IPair.of(s.substring(0, pidx), s.substring(pidx));

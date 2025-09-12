@@ -15,7 +15,7 @@ public class ParamCriterion implements Criterion {
   private final Integer paramPos;
 
   public ParamCriterion(String methodName, Integer pos) {
-    this.methodName = methodName.substring(0, methodName.indexOf(")") + 1);
+    this.methodName = methodName.substring(0, methodName.indexOf(')') + 1);
     this.paramPos = pos;
   }
 
