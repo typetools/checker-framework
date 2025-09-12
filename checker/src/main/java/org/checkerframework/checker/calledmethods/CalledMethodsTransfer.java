@@ -43,7 +43,7 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
    * The element for the CalledMethods annotation's value element. Stored in a field in this class
    * to prevent the need to cast to CalledMethods ATF every time it's used.
    */
-  private final ExecutableElement calledMethodsValueElement;
+  protected final ExecutableElement calledMethodsValueElement;
 
   /** The type mirror for {@link Exception}. */
   protected final TypeMirror javaLangExceptionType;

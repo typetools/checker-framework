@@ -532,7 +532,7 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
                     rlTypeFactory.ensuresCalledMethodsValueElement,
                     String.class);
             for (String value : values) {
-              if (expressionEqualsField(value, field)) {
+              if (expressionIsFieldAccess(value, field)) {
                 List<String> methods =
                     AnnotationUtils.getElementValueArray(
                         ensuresCalledMethodsAnno,
@@ -549,7 +549,7 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
             Set<EnsuresCalledMethodOnExceptionContract> exceptionalPostconds =
                 rlTypeFactory.getExceptionalPostconditions(siblingMethod);
             for (EnsuresCalledMethodOnExceptionContract postcond : exceptionalPostconds) {
-              if (expressionEqualsField(postcond.getExpression(), field)) {
+              if (expressionIsFieldAccess(postcond.getExpression(), field)) {
                 unsatisfiedMustCallObligationsOfOwningField.remove(
                     new DestructorObligation(
                         postcond.getMethod(),
@@ -599,7 +599,7 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
    * @param field the field
    * @return true if {@code e} refers to {@code this.field}
    */
-  private boolean expressionEqualsField(String e, VariableElement field) {
+  private boolean expressionIsFieldAccess(String e, VariableElement field) {
     try {
       JavaExpression je = StringToJavaExpression.atFieldDecl(e, field, this.checker);
       return je instanceof FieldAccess && ((FieldAccess) je).getField().equals(field);
