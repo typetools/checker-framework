@@ -62,3 +62,6 @@ git diff --exit-code docs/manual/contributors.tex \
     && echo "    https://github.com/plume-lib/git-scripts/blob/master/git-authors.sed" \
     && echo "    and remake contributors.tex after that pull request is merged." \
     && false)
+
+## Listing tasks should succeed; this helps ensure importing Checker Framework into IDEs like IntelliJ works.
+./gradlew tasks --all --console=plain --warning-mode=all
