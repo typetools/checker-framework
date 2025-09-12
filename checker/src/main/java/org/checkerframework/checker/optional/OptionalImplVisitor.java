@@ -505,7 +505,7 @@ public class OptionalImplVisitor
     ExpressionTree method = invok.getMethodSelect();
 
     String methodString = method.toString();
-    int dotPos = methodString.lastIndexOf(".");
+    int dotPos = methodString.lastIndexOf('.');
     if (dotPos != -1) {
       methodString = methodString.substring(0, dotPos) + "::" + methodString.substring(dotPos + 1);
     }

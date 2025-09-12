@@ -66,11 +66,11 @@ public class IsSigMethodCriterion implements Criterion {
    * @param fullSignature the full JVML signature (that is, a method descriptor)
    */
   public IsSigMethodCriterion(@MethodDescriptor String fullSignature) {
-    this.signatureWithoutReturnType = fullSignature.substring(0, fullSignature.indexOf(")") + 1);
-    this.simpleMethodName = fullSignature.substring(0, fullSignature.indexOf("("));
+    this.signatureWithoutReturnType = fullSignature.substring(0, fullSignature.indexOf(')') + 1);
+    this.simpleMethodName = fullSignature.substring(0, fullSignature.indexOf('('));
     try {
       String jvmlArgs =
-          fullSignature.substring(fullSignature.indexOf("("), fullSignature.indexOf(")") + 1);
+          fullSignature.substring(fullSignature.indexOf('('), fullSignature.indexOf(')') + 1);
       this.fullyQualifiedParams =
           CollectionsPlume.mapList(
               Signatures::fieldDescriptorToBinaryName, Signatures.splitJvmArglist(jvmlArgs));
@@ -160,7 +160,7 @@ public class IsSigMethodCriterion implements Criterion {
     // must strip off generics, is all of this necessary, though?
     // do you ever have generics anywhere but at the end?
     while (simpleType.contains("<")) {
-      int bracketIndex = simpleType.lastIndexOf("<");
+      int bracketIndex = simpleType.lastIndexOf('<');
       String beforeBracket = simpleType.substring(0, bracketIndex);
       String afterBracket = simpleType.substring(simpleType.indexOf(">", bracketIndex) + 1);
       simpleType = beforeBracket + afterBracket;
@@ -212,12 +212,12 @@ public class IsSigMethodCriterion implements Criterion {
         if (someImport.contains("*")) {
           // don't include the * in the prefix, should end in .
           // TODO: this is a real bug due to nonnull, though I discovered it manually
-          // importPrefix = someImport.substring(0, importPrefix.indexOf("*"));
-          importPrefix = someImport.substring(0, someImport.indexOf("*"));
+          // importPrefix = someImport.substring(0, importPrefix.indexOf('*'));
+          importPrefix = someImport.substring(0, someImport.indexOf('*'));
         } else {
           // if you imported a specific class, you can only use that import
           // if the last part matches the simple type
-          String importSimpleType = someImport.substring(someImport.lastIndexOf(".") + 1);
+          String importSimpleType = someImport.substring(someImport.lastIndexOf('.') + 1);
 
           // Remove array brackets from simpleType if it has them
           int arrayBracket = simpleType.indexOf('[');
@@ -230,7 +230,7 @@ public class IsSigMethodCriterion implements Criterion {
             continue;
           }
 
-          importPrefix = someImport.substring(0, someImport.lastIndexOf(".") + 1);
+          importPrefix = someImport.substring(0, someImport.lastIndexOf('.') + 1);
         }
 
         if (matchWithPrefix(fullType, simpleType, importPrefix)) {

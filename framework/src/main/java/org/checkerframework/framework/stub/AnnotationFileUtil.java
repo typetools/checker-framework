@@ -253,8 +253,9 @@ public class AnnotationFileUtil {
    */
   @SuppressWarnings("signature") // string parsing
   public static IPair<@FullyQualifiedName String, String> partitionQualifiedName(String imported) {
-    @FullyQualifiedName String typeName = imported.substring(0, imported.lastIndexOf("."));
-    String name = imported.substring(imported.lastIndexOf(".") + 1);
+    int lastDot = imported.lastIndexOf('.');
+    @FullyQualifiedName String typeName = imported.substring(0, lastDot);
+    String name = imported.substring(lastDot + 1);
     IPair<String, String> typeParts = IPair.of(typeName, name);
     return typeParts;
   }
