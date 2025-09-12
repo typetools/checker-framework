@@ -338,7 +338,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
           if (classType.getEnclosingType() != null) {
             while (classType.getEnclosingType().getKind() != TypeKind.NONE) {
               classType = classType.getEnclosingType();
-              int last = className.lastIndexOf('.');
+              int last = className.lastIndexOf(".");
               if (last > -1) {
                 className.replace(last, last + 1, "$");
               }
