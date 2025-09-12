@@ -168,7 +168,10 @@ allprojects { currentProj ->
 
   // Keep in sync with "repositories { ... }" block above.
   repositories {
-    maven { url = 'https://central.sonatype.com/repository/maven-snapshots/' }
+    maven {
+      url = 'https://central.sonatype.com/repository/maven-snapshots/'
+      mavenContent { snapshotsOnly() }
+    }
     mavenCentral()
   }
 
