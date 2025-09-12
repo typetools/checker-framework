@@ -74,7 +74,7 @@ tasks.register('manual', Exec) {
 }
 
 clean {
-  delete('manual/checker-framework-dataflow-manual.aux' ,'manual/checker-framework-dataflow-manual.log','manual/checker-framework-dataflow-manual.out','manual/checker-framework-dataflow-manual.pdf')
+  delete('manual/checker-framework-dataflow-manual.aux', 'manual/checker-framework-dataflow-manual.log', 'manual/checker-framework-dataflow-manual.out', 'manual/checker-framework-dataflow-manual.pdf')
 }
 
 tasks.register('allDataflowTests') {
@@ -226,7 +226,7 @@ final dataflowShadedPom(MavenPublication publication, String shadedPkgName) {
           .appendNode('groupId', 'org.checkerframework').parent()
           .appendNode('artifactId', 'checker-qual').parent()
           .appendNode('version', version).parent()
-          .appendNode('scope','runtime')
+          .appendNode('scope', 'runtime')
     }
   }
 }

@@ -11,7 +11,7 @@ sourceSets {
   }
   module_info {
     java {
-      srcDirs ('src/main')
+      srcDirs('src/main')
     }
   }
 }
