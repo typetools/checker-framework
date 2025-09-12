@@ -88,7 +88,7 @@ tasks.register('copyAndMinimizeAnnotatedJdkFiles', JavaExec) {
 
   doFirst {
     FileTree tree = fileTree(dir: inputDir)
-    NavigableSet<String> annotatedForFiles = new TreeSet<>();
+    NavigableSet<String> annotatedForFiles = new TreeSet<>()
     // Populate `annotatedForFiles`.
     tree.visit { FileVisitDetails fvd ->
       if (!fvd.file.isDirectory() && fvd.file.name.matches('.*\\.java')
@@ -96,7 +96,7 @@ tasks.register('copyAndMinimizeAnnotatedJdkFiles', JavaExec) {
         fvd.getFile().readLines().any { line ->
           if (line.contains('@AnnotatedFor') || line.contains('org.checkerframework')) {
             annotatedForFiles.add(fvd.file.absolutePath)
-            return true;
+            return true
           }
         }
       }
