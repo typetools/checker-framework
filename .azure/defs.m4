@@ -63,12 +63,11 @@ define([inference_job_split], [dnl
 ])dnl
 dnl
 define([inference_job], [dnl
-- job: inference_jdk$1
-ifelse($1,canary_version,,[  dependsOn:
+ifelse($1,canary_version,,[- job: inference_jdk$1
+  dependsOn:
    - canary_jobs
    - inference_part1_jdk[]canary_version
    - inference_part2_jdk[]canary_version
-])dnl
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
@@ -78,6 +77,7 @@ ifelse($1,canary_version,,[  dependsOn:
     fetchDepth: 25
   - bash: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-cftests-inference.sh
     displayName: test-cftests-inference.sh
+])dnl
 ])dnl
 dnl
 define([misc_job], [dnl
@@ -116,7 +116,7 @@ define([typecheck_job_split], [dnl
     displayName: test-typecheck-part2.sh])dnl
 dnl
 define([typecheck_job], [dnl
-- job: typecheck_jdk$1
+ifelse($1,canary_version,,[- job: typecheck_jdk$1
   dependsOn:
    - canary_jobs
    - typecheck_part1_jdk[]canary_version
@@ -128,7 +128,7 @@ define([typecheck_job], [dnl
   - checkout: self
     fetchDepth: 1000
   - bash: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-typecheck.sh
-    displayName: test-typecheck.sh])dnl
+    displayName: test-typecheck.sh])])dnl
 dnl
 define([daikon_job_split], [dnl
 - job: daikon_part1_jdk$1
