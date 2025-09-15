@@ -102,7 +102,7 @@ public class AccumulationTransfer
    *     returned true)
    * @param values a list of newly-accumulated values
    */
-  private void updateValueAndInsertIntoStore(
+  protected void updateValueAndInsertIntoStore(
       AccumulationStore store, JavaExpression target, List<String> values) {
     // Make a modifiable copy of the list.
     List<String> valuesAsList = new ArrayList<>(values);
