@@ -42,7 +42,7 @@ dependencies {
   // If you add an external dependency, you must shadow its packages.
   // See the comment in ../build.gradle in the shadowJar block.
 
-  implementation ("org.plumelib:reflection-util:${versions.reflectionUtil}")
+  implementation("org.plumelib:reflection-util:${versions.reflectionUtil}")
   implementation "org.plumelib:plume-util:${versions.plumeUtil}"
 
   // Dependencies added to "shadow" appear as dependencies in Maven Central.
@@ -173,7 +173,7 @@ tasks.register('checkerJar', ShadowJar) {
 jar {
   dependsOn(checkerJar)
   // Never build the skinny jar.
-  onlyIf {false}
+  onlyIf { false }
   archiveClassifier = 'skinny'
 }
 
@@ -182,7 +182,7 @@ shadowJar {
   archiveClassifier = 'all'
   // To see what files are incorporated into the shadow jar file:
   // doFirst { println sourceSets.main.runtimeClasspath.asPath }
-  doLast{
+  doLast {
     copy {
       from archiveFile.get()
       into file("${projectDir}/dist")
@@ -984,7 +984,7 @@ tasks.register('wpiManyTest', Exec) {
             || line.startsWith('DEBUG: ')
             || line.startsWith('warning: DEBUG: ')
             || line.contains('warning: [DEBUG: ')) {
-          return;
+          return
         }
         if (!line.trim().equals('')) {
           println("======== start of contents of ${filename}, which is TYPECHECKING output, not WPI output ========")
