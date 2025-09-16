@@ -1,4 +1,3 @@
-
 plugins {
   id 'java-library'
   id 'base'
@@ -24,7 +23,7 @@ dependencies {
   implementation 'org.plumelib:options:2.0.3'
   implementation 'org.plumelib:plume-util:1.11.0'
   implementation 'org.plumelib:reflection-util:1.1.5'
-  implementation ('org.checkerframework.annotatedlib:guava:33.1.0.2-jre') {
+  implementation('org.checkerframework.annotatedlib:guava:33.1.0.2-jre') {
     // So long as Guava only uses annotations from checker-qual, excluding it should not cause problems.
     exclude group: 'org.checkerframework'
   }
@@ -46,7 +45,10 @@ shadowJar {
 }
 
 // Shadowing Test Sources and Dependencies
+
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
+import java.nio.file.Files
 
 tasks.register('skinnyJar', ShadowJar) {
   dependsOn compileJava
@@ -57,8 +59,6 @@ tasks.register('skinnyJar', ShadowJar) {
   include 'org/checkerframework/afu/scenelib/**/*.class'
   include 'org/checkerframework/afu/annotator/**/*.class'
 }
-
-import java.nio.file.Files
 
 tasks.register('testExample', JavaExec) {
   dependsOn compileTestJava
@@ -85,14 +85,14 @@ tasks.register('testExample', JavaExec) {
   }
   doLast {
 
-    byte[] goalJaif = Files.readAllBytes(new File(resourceDir, "example-output.jaif.goal").toPath());
-    byte[] outputJaif = Files.readAllBytes(new File(outputDir, "example-output.jaif").toPath());
+    byte[] goalJaif = Files.readAllBytes(new File(resourceDir, "example-output.jaif.goal").toPath())
+    byte[] outputJaif = Files.readAllBytes(new File(outputDir, "example-output.jaif").toPath())
     if (!Arrays.equals(goalJaif, outputJaif)) {
       throw new GradleException("In ${outputDir}, file example-output.jaif does not match goal.")
     }
 
-    byte[] goalStdOut = Files.readAllBytes(new File(resourceDir, "example-stdout.jaif.goal").toPath());
-    byte[] stdOut = Files.readAllBytes(new File(outputDir, "example-stdout.jaif").toPath());
+    byte[] goalStdOut = Files.readAllBytes(new File(resourceDir, "example-stdout.jaif.goal").toPath())
+    byte[] stdOut = Files.readAllBytes(new File(outputDir, "example-stdout.jaif").toPath())
     if (!Arrays.equals(goalStdOut, stdOut)) {
       throw new GradleException("In ${outputDir}, file example-stdout.jaif does not match goal.")
     }
@@ -116,7 +116,7 @@ tasks.register('cleanTestAnnotator', Exec) {
 
 clean {
   dependsOn(cleanTestAnnotator)
-  delete('dist/annotation-file-utilities.jar','dist/annotation-file-utilities-all.jar', 'annotation-tools.zip')
+  delete('dist/annotation-file-utilities.jar', 'dist/annotation-file-utilities-all.jar', 'annotation-tools.zip')
 }
 
 tasks.register('htmlValidate', Exec) {
