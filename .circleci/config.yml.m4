@@ -1,12 +1,13 @@
 changequote
 changequote(`[',`]')dnl
+include([../.azure/defs-common.m4])dnl
 include([defs.m4])dnl
 version: 2.1
 
 jobs:
 
-  # Only proceed to other jobs if canary-jobs passes.
-  canary-jobs:
+  # Only proceed to other jobs if canary_jobs passes.
+  canary_jobs:
     docker:
       - image: 'cimg/base:2025.09'
     environment:
@@ -22,19 +23,33 @@ workflows:
   version: 2
   build:
     jobs:
-      - canary-jobs:
+      - canary_jobs:
           requires:
-            - quick-txt-diff-jdk[]canary_version
-            - nonquick-txt-diff-jdk[]canary_version
-            - non-txt-diff-jdk[]canary_version
-            - misc-jdk[]canary_version
-            - kvasir-jdk[]canary_version
-            - typecheck-bundled-jdk[]canary_version
-job_dependences(17, junit_job)
-job_dependences(21, junit_job)
-job_dependences(25, junit_job)
-job_dependences(canary_version, nonjunit_job)
-job_dependences(canary_version, inference_job_split)
-job_dependences(17, misc_job)
-job_dependences(21, misc_job)
-job_dependences(25, misc_job)
+            - junit_jdk[]canary_version
+            - nonjunit_jdk[]canary_version
+            - inference_part1_jdk[]canary_version
+            - inference_part2_jdk[]canary_version
+            - typecheck_part1_jdk[]canary_version
+            - typecheck_part2_jdk[]canary_version
+            - misc_jdk[]canary_version
+            - misc_jdk[]latest_version
+
+job_dependences(11, junit)
+job_dependences(17, junit)
+job_dependences(21, junit)
+job_dependences(25, junit)
+job_dependences(canary_version, nonjunit)
+job_dependences(canary_version, inference_part1)
+job_dependences(canary_version, inference_part2)
+job_dependences(11, misc)
+job_dependences(17, misc)
+job_dependences(21, misc)
+job_dependences(25, misc)
+
+job_dependences(canary_version, typecheck_part1)
+job_dependences(canary_version, typecheck_part2)
+job_dependences(canary_version, daikon_part1)
+job_dependences(canary_version, daikon_part2)
+job_dependences(canary_version, guava)
+job_dependences(canary_version, plume_lib)
+

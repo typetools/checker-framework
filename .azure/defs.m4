@@ -1,11 +1,6 @@
 changequote
 changequote(`[',`]')dnl
-ifelse([The "dnl" m4 macro means "discard to end of line",])dnl
-define([canary_version], [25])dnl
-define([latest_version], [25])dnl
-define([docker_testing], [])dnl
-# define([docker_testing], [-testing])dnl
-ifelse([each macro takes one argument, the JDK version])dnl
+ifelse([The built-in "dnl" m4 macro means "discard to next line",])dnl
 dnl
 define([junit_job], [dnl
 - job: junit_jdk$1
