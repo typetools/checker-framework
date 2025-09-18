@@ -107,7 +107,7 @@ define([typecheck_job_split], [dnl
   steps:
   - checkout: self
     fetchDepth: 1000
-  - bash: ./checker/bin-devel/test-typecheck-part2.sh
+  - bash: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-typecheck-part2.sh
     displayName: test-typecheck-part2.sh])dnl
 dnl
 define([typecheck_job], [dnl
@@ -137,7 +137,7 @@ define([daikon_job_split], [dnl
   - checkout: self
     fetchDepth: 25
   - bash: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-daikon-part1.sh
-    displayName: test-daikon.sh
+    displayName: test-daikon-part1.sh
 - job: daikon_part2_jdk$1
   dependsOn:
    - canary_jobs
@@ -148,7 +148,7 @@ define([daikon_job_split], [dnl
   steps:
   - checkout: self
     fetchDepth: 25
-  - bash: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-daikon.sh
+  - bash: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-daikon-part2.sh
     displayName: test-daikon-part2.sh])dnl
 dnl
 define([daikon_job], [dnl
