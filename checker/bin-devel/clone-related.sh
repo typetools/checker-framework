@@ -73,10 +73,10 @@ fi
 if [ -z "${NO_WRITE_VERIFICATION_METADATA+x}" ]; then
   # shellcheck disable=SC2086
   TERM=dumb timeout 300 ./gradlew ${IS_CI:+"--no-daemon"} --write-verification-metadata sha256 help --dry-run --quiet \
-    || (echo "./gradlew ${IS_CI:+"--no-daemon"} --write-verification-metadata sha256 help --dry-run --quiet failed; sleeping before trying again." \
+    || { echo "./gradlew ${IS_CI:+"--no-daemon"} --write-verification-metadata sha256 help --dry-run --quiet failed; sleeping before trying again." \
       && sleep 1m \
       && echo "Trying again: ./gradlew ${IS_CI:+"--no-daemon"} --write-verification-metadata sha256 help --dry-run --quiet" \
-      && TERM=dumb timeout 300 ./gradlew ${IS_CI:+"--no-daemon"} --write-verification-metadata sha256 help --dry-run)
+      && TERM=dumb timeout 300 ./gradlew ${IS_CI:+"--no-daemon"} --write-verification-metadata sha256 help --dry-run }
 fi
 
 echo Exiting checker/bin-devel/clone-related.sh in "$(pwd)"
