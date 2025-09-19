@@ -15,4 +15,4 @@ mkdir ~/.gradle && echo "org.gradle.java.home=/usr/lib/jvm/java-21-openjdk-amd64
 
 source "$SCRIPT_DIR"/clone-related.sh
 
-./gradlew inferenceTests-part1 --console=plain --warning-mode=all
+./gradlew ${IS_CI:+"--no-daemon"} inferenceTests-part1 --console=plain --warning-mode=all

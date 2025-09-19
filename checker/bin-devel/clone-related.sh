@@ -15,6 +15,8 @@ else
   DEBUG_FLAG=--debug
 fi
 
+IS_CI="$("$CHECKERFRAMEWORK"/checker/bin-devel/is-ci.sh)"
+
 echo "initial CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
 export CHECKERFRAMEWORK="${CHECKERFRAMEWORK:-$(pwd -P)}"
 echo "CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
@@ -69,13 +71,12 @@ fi
 # Download Gradle and dependencies, retrying in case of network problems.
 # echo "NO_WRITE_VERIFICATION_METADATA=$NO_WRITE_VERIFICATION_METADATA"
 if [ -z "${NO_WRITE_VERIFICATION_METADATA+x}" ]; then
-  ./gradlew --write-verification-metadata sha256 help --dry-run --quiet
-  echo "First invocation succeeded"
-  TERM=dumb timeout 300 ./gradlew --write-verification-metadata sha256 help --dry-run --quiet \
-    || (echo "./gradlew --write-verification-metadata sha256 help --dry-run --quiet failed; sleeping before trying again." \
+  # shellcheck disable=SC2086
+  TERM=dumb timeout 300 ./gradlew ${IS_CI:+"--no-daemon"} --write-verification-metadata sha256 help --dry-run --quiet \
+    || (echo "./gradlew ${IS_CI:+"--no-daemon"} --write-verification-metadata sha256 help --dry-run --quiet failed; sleeping before trying again." \
       && sleep 1m \
-      && echo "Trying again: ./gradlew --write-verification-metadata sha256 help --dry-run --quiet" \
-      && TERM=dumb timeout 300 ./gradlew --write-verification-metadata sha256 help --dry-run)
+      && echo "Trying again: ./gradlew ${IS_CI:+"--no-daemon"} --write-verification-metadata sha256 help --dry-run --quiet" \
+      && TERM=dumb timeout 300 ./gradlew ${IS_CI:+"--no-daemon"} --write-verification-metadata sha256 help --dry-run)
 fi
 
 echo Exiting checker/bin-devel/clone-related.sh in "$(pwd)"
