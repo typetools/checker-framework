@@ -181,6 +181,6 @@ ifelse($1,canary_version,,[dnl
 dnl
 ifelse([
 Local Variables:
-eval: (add-hook 'after-save-hook '(lambda () (compile "make")) nil 'local)
+eval: (add-hook 'after-save-hook '(lambda () (run-command nil "make")) nil 'local)
 end:
 ])dnl

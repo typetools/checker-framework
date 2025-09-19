@@ -206,7 +206,6 @@ ifelse($1,canary_version,,[dnl
     displayName: test-plume-lib.sh])dnl
 ifelse([
 Local Variables:
-eval: (make-local-variable 'after-save-hook)
-eval: (add-hook 'after-save-hook '(lambda () (compile "make")))
+eval: (add-hook 'after-save-hook '(lambda () (run-command nil "make")) nil 'local)
 end:
 ])dnl
