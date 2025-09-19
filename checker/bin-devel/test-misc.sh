@@ -22,7 +22,7 @@ status=0
 ## Code style and formatting
 JAVA_VER=$(java -version 2>&1 | head -1 | cut -d'"' -f2 | sed '/^1\./s///' | cut -d'.' -f1 | sed 's/-ea//')
 if [ "${JAVA_VER}" != "8" ] && [ "${JAVA_VER}" != "11" ]; then
-  ./gradlew ${IS_CI:+"--no-daemon"} spotlessCheck --console=plain --warning-mode=all
+  gradle_ci spotlessCheck --warning-mode=all
 fi
 if grep -n -r --exclude-dir=build --exclude-dir=examples --exclude-dir=jtreg --exclude-dir=tests --exclude="*.astub" --exclude="*.tex" '^\(import static \|import .*\*;$\)'; then
   echo "Don't use static import or wildcard import"
@@ -31,26 +31,26 @@ fi
 make style-check --jobs="$(getconf _NPROCESSORS_ONLN)"
 
 ## HTML legality
-./gradlew ${IS_CI:+"--no-daemon"} htmlValidate --console=plain --warning-mode=all
+gradle_ci htmlValidate --warning-mode=all
 
 ## Javadoc documentation
 # Try twice in case of network lossage.
-(./gradlew ${IS_CI:+"--no-daemon"} javadoc --console=plain --warning-mode=all || (sleep 60 && ./gradlew javadoc --console=plain --warning-mode=all)) || status=1
-./gradlew ${IS_CI:+"--no-daemon"} javadocPrivate --console=plain --warning-mode=all || status=1
+(gradle_ci javadoc --warning-mode=all || (sleep 60 && gradle_ci javadoc --warning-mode=all)) || status=1
+gradle_ci javadocPrivate --warning-mode=all || status=1
 # For refactorings that touch a lot of code that you don't understand, create
 # top-level file SKIP-REQUIRE-JAVADOC.  Delete it after the pull request is merged.
 if [ -f SKIP-REQUIRE-JAVADOC ]; then
   echo "Skipping requireJavadoc because file SKIP-REQUIRE-JAVADOC exists."
 else
-  (./gradlew ${IS_CI:+"--no-daemon"} requireJavadoc --console=plain --warning-mode=all > /tmp/warnings-requireJavadoc.txt 2>&1) || true
+  (gradle_ci requireJavadoc --warning-mode=all > /tmp/warnings-requireJavadoc.txt 2>&1) || true
   "$PLUME_SCRIPTS"/ci-lint-diff /tmp/warnings-requireJavadoc.txt || status=1
-  (./gradlew ${IS_CI:+"--no-daemon"} javadocDoclintAll --console=plain --warning-mode=all > /tmp/warnings-javadocDoclintAll.txt 2>&1) || true
+  (gradle-ci javadocDoclintAll --warning-mode=all > /tmp/warnings-javadocDoclintAll.txt 2>&1) || true
   "$PLUME_SCRIPTS"/ci-lint-diff /tmp/warnings-javadocDoclintAll.txt || status=1
 fi
 if [ $status -ne 0 ]; then exit $status; fi
 
 ## User documentation
-./gradlew ${IS_CI:+"--no-daemon"} manual
+gradle_ci manual
 git diff --exit-code docs/manual/contributors.tex \
   || (set +x && set +v \
     && echo "docs/manual/contributors.tex is not up to date." \
@@ -64,4 +64,4 @@ git diff --exit-code docs/manual/contributors.tex \
     && false)
 
 ## Listing tasks should succeed; this helps ensure importing Checker Framework into IDEs like IntelliJ works.
-./gradlew ${IS_CI:+"--no-daemon"} tasks --all --console=plain --warning-mode=all
+gradle_ci tasks --all --warning-mode=all

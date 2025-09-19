@@ -18,7 +18,7 @@ mkdir ~/.gradle && echo "org.gradle.java.home=/usr/lib/jvm/java-21-openjdk-amd64
 
 source "$SCRIPT_DIR"/clone-related.sh
 
-./gradlew ${IS_CI:+"--no-daemon"} allTests --console=plain --warning-mode=all
+gradle_ci allTests --warning-mode=all
 # Moved example-tests out of all tests because it fails in
 # the release script because the newest Maven artifacts are not published yet.
-./gradlew ${IS_CI:+"--no-daemon"} :checker:exampleTests --console=plain --warning-mode=all
+gradle_ci :checker:exampleTests --warning-mode=all

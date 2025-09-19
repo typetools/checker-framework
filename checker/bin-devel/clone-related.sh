@@ -21,6 +21,8 @@ echo "CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
 
 IS_CI="$("$CHECKERFRAMEWORK"/checker/bin-devel/is-ci.sh)"
 
+gradle_ci() { ./gradlew ${IS_CI:+--no-daemon} --console=plain "$@"; }
+
 export SHELLOPTS
 echo "SHELLOPTS=${SHELLOPTS}"
 
@@ -72,11 +74,11 @@ fi
 # echo "NO_WRITE_VERIFICATION_METADATA=$NO_WRITE_VERIFICATION_METADATA"
 if [ -z "${NO_WRITE_VERIFICATION_METADATA+x}" ]; then
   # shellcheck disable=SC2086
-  TERM=dumb timeout 300 ./gradlew ${IS_CI:+"--no-daemon"} --write-verification-metadata sha256 help --dry-run --quiet \
-    || { echo "./gradlew ${IS_CI:+"--no-daemon"} --write-verification-metadata sha256 help --dry-run --quiet failed; sleeping before trying again." \
+  TERM=dumb timeout 300 gradle_ci --write-verification-metadata sha256 help --dry-run --quiet \
+    || { echo "./gradlew --write-verification-metadata sha256 help --dry-run failed; sleeping before trying again." \
       && sleep 1m \
-      && echo "Trying again: ./gradlew ${IS_CI:+"--no-daemon"} --write-verification-metadata sha256 help --dry-run --quiet" \
-      && TERM=dumb timeout 300 ./gradlew ${IS_CI:+"--no-daemon"} --write-verification-metadata sha256 help --dry-run }
+      && echo "Trying again: ./gradlew --write-verification-metadata sha256 help --dry-run" \
+      && TERM=dumb timeout 300 gradle_ci --write-verification-metadata sha256 help --dry-run; }
 fi
 
 echo Exiting checker/bin-devel/clone-related.sh in "$(pwd)"

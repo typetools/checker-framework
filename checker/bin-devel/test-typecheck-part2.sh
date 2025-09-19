@@ -15,15 +15,15 @@ mkdir ~/.gradle && echo "org.gradle.java.home=/usr/lib/jvm/java-21-openjdk-amd64
 
 source "$SCRIPT_DIR"/clone-related.sh
 
-./gradlew ${IS_CI:+"--no-daemon"} getPlumeScripts
+gradle_ci getPlumeScripts
 PLUME_SCRIPTS="$SCRIPT_DIR/.plume-scripts"
 
 # Pluggable type-checking:  run the Checker Framework on itself
-./gradlew ${IS_CI:+"--no-daemon"} typecheck-part2 --console=plain --warning-mode=all
+gradle_ci typecheck-part2 --warning-mode=all
 
 if [ -f SKIP-REQUIRE-JAVADOC ]; then
   echo "Skipping checkNullness because file SKIP-REQUIRE-JAVADOC exists."
 else
-  (./gradlew ${IS_CI:+"--no-daemon"} checkNullness -PnullnessAll --console=plain --warning-mode=all > /tmp/warnings-checkNullness.txt 2>&1) || true
+  (gradle_ci checkNullness -PnullnessAll --warning-mode=all > /tmp/warnings-checkNullness.txt 2>&1) || true
   "$PLUME_SCRIPTS"/ci-lint-diff /tmp/warnings-checkNullness.txt
 fi
