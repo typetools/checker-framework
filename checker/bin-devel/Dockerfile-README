@@ -61,7 +61,23 @@ function create_upload_docker_image {
 }
 
 
-# These first few need not be updated, just created and locally cached.
+## Run sequentially.
+(create_upload_docker_image cf ubuntu jdk11 && \
+create_upload_docker_image cf ubuntu jdk11-plus) && \
+(create_upload_docker_image cf ubuntu jdk17 && \
+create_upload_docker_image cf ubuntu jdk17-plus) && \
+(create_upload_docker_image cf ubuntu jdk21 && \
+create_upload_docker_image cf ubuntu jdk21-plus) && \
+(create_upload_docker_image cf ubuntu jdk24 && \
+create_upload_docker_image cf ubuntu jdk24-plus) && \
+(create_upload_docker_image cf ubuntu jdk25 && \
+create_upload_docker_image cf ubuntu jdk25-plus) && \
+git push && \
+echo "success"
+
+
+## This version might be faster with an SSD.  It might not be with a spinning disk.
+# These first few need not be uploaded, just created and locally cached.
 (create_upload_docker_image cf ubuntu jdkbase && \
 create_upload_docker_image cf ubuntu jdkplus) &
 (create_upload_docker_image cf ubunturolling jdkbase && \
@@ -83,19 +99,6 @@ wait && \
 git push && \
 echo "success"
 
-# Alternately, to run sequentially, which makes error messages easier to see:
-(create_upload_docker_image cf ubuntu jdk11 && \
-create_upload_docker_image cf ubuntu jdk11-plus) && \
-(create_upload_docker_image cf ubuntu jdk17 && \
-create_upload_docker_image cf ubuntu jdk17-plus) && \
-(create_upload_docker_image cf ubuntu jdk21 && \
-create_upload_docker_image cf ubuntu jdk21-plus) && \
-(create_upload_docker_image cf ubuntu jdk24 && \
-create_upload_docker_image cf ubuntu jdk24-plus) && \
-(create_upload_docker_image cf ubuntu jdk25 && \
-create_upload_docker_image cf ubuntu jdk25-plus) && \
-git push && \
-echo "success"
 
 
 

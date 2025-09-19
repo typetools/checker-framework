@@ -69,7 +69,7 @@ dnl
 define([misc_job], [dnl
   misc_jdk$1:
     docker:
-      - image: 'mdernst/cf-ubuntu-jdk$1'
+      - image: 'mdernst/cf-ubuntu-jdk$1-plus'
 circleci_boilerplate
       - run:
          name: test-misc.sh
