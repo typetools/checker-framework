@@ -101,7 +101,6 @@ echo "success"
 
 
 
-
 Note: when updating to a newer version of the JDK, it is necessary to
 update the Gradle version to one that supports that JDK, in projects
 such as wpi-many-tests-bcel-util.
