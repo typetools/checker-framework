@@ -15,4 +15,5 @@ mkdir ~/.gradle && echo "org.gradle.java.home=/usr/lib/jvm/java-21-openjdk-amd64
 
 source "$SCRIPT_DIR"/clone-related.sh
 
+echo "IS_CI=$IS_CI"
 gradle_ci test --warning-mode=all
