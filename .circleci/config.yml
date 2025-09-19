@@ -275,7 +275,7 @@ jobs:
             - .git
       - run:
          name: test-typecheck-part1.sh
-         command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-cftests-typecheck-part1.sh
+         command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-typecheck-part1.sh
   typecheck_part2_jdk25:
     docker:
       - image: 'mdernst/cf-ubuntu-jdk25'
@@ -295,7 +295,7 @@ jobs:
             - .git
       - run:
          name: test-typecheck-part2.sh
-         command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-cftests-typecheck-part2.sh
+         command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-typecheck-part2.sh
 
 
   daikon_part1_jdk25:
