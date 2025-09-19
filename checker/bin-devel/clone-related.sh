@@ -20,6 +20,7 @@ export CHECKERFRAMEWORK="${CHECKERFRAMEWORK:-$(pwd -P)}"
 echo "CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
 
 IS_CI="$("$CHECKERFRAMEWORK"/checker/bin-devel/is-ci.sh)"
+export IS_CI
 
 gradle_ci() { ./gradlew ${IS_CI:+--no-daemon} --console=plain "$@"; }
 
