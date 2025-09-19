@@ -17,7 +17,7 @@ jobs:
 
   junit_jdk11:
     docker:
-      - image: 'mdernst/checkerframework-ubuntu-jdk11'
+      - image: 'mdernst/cf-ubuntu-jdk11'
     resource_class: large
     environment:
       CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
@@ -38,7 +38,7 @@ jobs:
 
   junit_jdk17:
     docker:
-      - image: 'mdernst/checkerframework-ubuntu-jdk17'
+      - image: 'mdernst/cf-ubuntu-jdk17'
     resource_class: large
     environment:
       CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
@@ -59,7 +59,7 @@ jobs:
 
   junit_jdk21:
     docker:
-      - image: 'mdernst/checkerframework-ubuntu-jdk21'
+      - image: 'mdernst/cf-ubuntu-jdk21'
     resource_class: large
     environment:
       CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
@@ -80,7 +80,7 @@ jobs:
 
   junit_jdk25:
     docker:
-      - image: 'mdernst/checkerframework-ubuntu-jdk25'
+      - image: 'mdernst/cf-ubuntu-jdk25'
     resource_class: large
     environment:
       CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
@@ -102,7 +102,7 @@ jobs:
 
   nonjunit_jdk25:
     docker:
-      - image: 'mdernst/checkerframework-ubuntu-jdk25'
+      - image: 'mdernst/cf-ubuntu-jdk25'
     resource_class: large
     environment:
       CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
@@ -129,7 +129,7 @@ jobs:
 # Split into part1 and part2 only for the inference job that "canary_jobs" depends on.
   inference_part1_jdk25:
     docker:
-      - image: 'mdernst/checkerframework-ubuntu-jdk25'
+      - image: 'mdernst/cf-ubuntu-jdk25'
     resource_class: large
     environment:
       CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
@@ -149,7 +149,7 @@ jobs:
          command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-cftests-inference-part1.sh
   inference_part2_jdk25:
     docker:
-      - image: 'mdernst/checkerframework-ubuntu-jdk25'
+      - image: 'mdernst/cf-ubuntu-jdk25'
     resource_class: large
     environment:
       CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
@@ -172,7 +172,7 @@ jobs:
 # Unlimited fetchDepth (0) for misc_jobs, because of need to make contributors.tex .
   misc_jdk11:
     docker:
-      - image: 'mdernst/checkerframework-ubuntu-jdk11'
+      - image: 'mdernst/cf-ubuntu-jdk11'
     resource_class: large
     environment:
       CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
@@ -193,7 +193,7 @@ jobs:
 
   misc_jdk17:
     docker:
-      - image: 'mdernst/checkerframework-ubuntu-jdk17'
+      - image: 'mdernst/cf-ubuntu-jdk17'
     resource_class: large
     environment:
       CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
@@ -214,7 +214,7 @@ jobs:
 
   misc_jdk21:
     docker:
-      - image: 'mdernst/checkerframework-ubuntu-jdk21'
+      - image: 'mdernst/cf-ubuntu-jdk21'
     resource_class: large
     environment:
       CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
@@ -235,7 +235,7 @@ jobs:
 
   misc_jdk25:
     docker:
-      - image: 'mdernst/checkerframework-ubuntu-jdk25'
+      - image: 'mdernst/cf-ubuntu-jdk25'
     resource_class: large
     environment:
       CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
@@ -258,7 +258,7 @@ jobs:
 # Split into part1 and part2 only for the typecheck job that "canary_jobs" depends on.
   typecheck_part1_jdk25:
     docker:
-      - image: 'mdernst/checkerframework-ubuntu-jdk25'
+      - image: 'mdernst/cf-ubuntu-jdk25'
     resource_class: large
     environment:
       CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
@@ -278,7 +278,7 @@ jobs:
          command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-cftests-typecheck-part1.sh
   typecheck_part2_jdk25:
     docker:
-      - image: 'mdernst/checkerframework-ubuntu-jdk25'
+      - image: 'mdernst/cf-ubuntu-jdk25'
     resource_class: large
     environment:
       CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
