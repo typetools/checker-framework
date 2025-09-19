@@ -69,6 +69,8 @@ fi
 # Download Gradle and dependencies, retrying in case of network problems.
 # echo "NO_WRITE_VERIFICATION_METADATA=$NO_WRITE_VERIFICATION_METADATA"
 if [ -z "${NO_WRITE_VERIFICATION_METADATA+x}" ]; then
+  ./gradlew --write-verification-metadata sha256 help --dry-run --quiet
+  echo "First invocation succeeded"
   TERM=dumb timeout 300 ./gradlew --write-verification-metadata sha256 help --dry-run --quiet \
     || (echo "./gradlew --write-verification-metadata sha256 help --dry-run --quiet failed; sleeping before trying again." \
       && sleep 1m \
