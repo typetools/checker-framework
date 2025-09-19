@@ -75,11 +75,11 @@ fi
 # echo "NO_WRITE_VERIFICATION_METADATA=$NO_WRITE_VERIFICATION_METADATA"
 if [ -z "${NO_WRITE_VERIFICATION_METADATA+x}" ]; then
   # Cannot use the gradle_ci function here, because "timeout" is not compatible with shell functions.
-  TERM=dumb timeout 300 ./gradlew ${IS_CI:+"--no-daemon"} --console=plain --write-verification-metadata sha256 help --dry-run --quiet \
-    || { echo "./gradlew --write-verification-metadata sha256 help --dry-run failed; sleeping before trying again." \
+  TERM=dumb timeout 300 ./gradlew ${IS_CI:+"--no-daemon"} --console=plain --write-verification-metadata sha256 fiveMinutes --dry-run --quiet \
+    || { echo "./gradlew --write-verification-metadata sha256 fiveMinutes --dry-run failed; sleeping before trying again." \
       && sleep 1m \
-      && echo "Trying again: ./gradlew --write-verification-metadata sha256 help --dry-run" \
-      && TERM=dumb timeout 300 ./gradlew ${IS_CI:+"--no-daemon"} --console=plain --write-verification-metadata sha256 help --dry-run; }
+      && echo "Trying again: ./gradlew --write-verification-metadata sha256 fiveMinutes --dry-run" \
+      && TERM=dumb timeout 300 ./gradlew ${IS_CI:+"--no-daemon"} --console=plain --write-verification-metadata sha256 fiveMinutes --dry-run; }
 fi
 
 echo Exiting checker/bin-devel/clone-related.sh in "$(pwd)"
