@@ -15,11 +15,11 @@ else
   DEBUG_FLAG=--debug
 fi
 
-IS_CI="$("$CHECKERFRAMEWORK"/checker/bin-devel/is-ci.sh)"
-
 echo "initial CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
 export CHECKERFRAMEWORK="${CHECKERFRAMEWORK:-$(pwd -P)}"
 echo "CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
+
+IS_CI="$("$CHECKERFRAMEWORK"/checker/bin-devel/is-ci.sh)"
 
 export SHELLOPTS
 echo "SHELLOPTS=${SHELLOPTS}"
