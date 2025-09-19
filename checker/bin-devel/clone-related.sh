@@ -73,12 +73,12 @@ fi
 # Download Gradle and dependencies, retrying in case of network problems.
 # echo "NO_WRITE_VERIFICATION_METADATA=$NO_WRITE_VERIFICATION_METADATA"
 if [ -z "${NO_WRITE_VERIFICATION_METADATA+x}" ]; then
-  # shellcheck disable=SC2086
-  TERM=dumb timeout 300 gradle_ci --write-verification-metadata sha256 help --dry-run --quiet \
+  # Cannot use the gradle_ci function here, because "timeout" is not compatible with shell functions.
+  TERM=dumb timeout 300 ./gradlew ${IS_CI:+"--no-daemon"} --console=plain --write-verification-metadata sha256 help --dry-run --quiet \
     || { echo "./gradlew --write-verification-metadata sha256 help --dry-run failed; sleeping before trying again." \
       && sleep 1m \
       && echo "Trying again: ./gradlew --write-verification-metadata sha256 help --dry-run" \
-      && TERM=dumb timeout 300 gradle_ci --write-verification-metadata sha256 help --dry-run; }
+      && TERM=dumb timeout 300 ./gradlew ${IS_CI:+"--no-daemon"} --console=plain --write-verification-metadata sha256 help --dry-run; }
 fi
 
 echo Exiting checker/bin-devel/clone-related.sh in "$(pwd)"
