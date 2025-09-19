@@ -175,6 +175,12 @@ ifelse($1,canary_version,,[dnl
 ])dnl
 ])dnl
 dnl
+define([job_dependences_not_in_canary], [dnl
+      - $2[]_jdk$1[]:
+          requires:
+            - canary_jobs
+])dnl
+dnl
 ifelse([
 Local Variables:
 eval: (add-hook 'after-save-hook '(lambda () (compile "make")) nil 'local)
