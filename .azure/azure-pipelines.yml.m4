@@ -1,6 +1,7 @@
 # DO NOT EDIT azure-pipelines.yml.  Edit azure-pipelines.yml.m4 and defs.m4 instead.
 
 changequote(`[',`]')dnl
+include([defs-common.m4])dnl
 include([defs.m4])dnl
 # Workaround for https://status.dev.azure.com/_event/179641421
 trigger:

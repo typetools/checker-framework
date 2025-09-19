@@ -1,10 +1,7 @@
 changequote
 changequote(`[',`]')dnl
-ifelse([the built-in "dnl" macro means "discard to next line",])dnl
-define([canary_os], [ubuntu])dnl
-define([canary_version], [25])dnl
-define([canary_test], [canary_os[]canary_version])dnl
-ifelse([each macro takes two arguments, the OS name and the JDK version])dnl
+ifelse([The built-in "dnl" macro means "discard to next line".,])dnl
+ifelse([Each macro takes two arguments, the OS name and the JDK version.])dnl
 dnl
 define([circleci_boilerplate], [dnl
     resource_class: large
@@ -167,14 +164,14 @@ circleci_boilerplate
          command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-plume-lib.sh
 ])dnl
 dnl
-ifelse([This is tricky because whether the ":" should appear depends on whether the subsequent "requires: exists,])dnl
 define([job_dependences], [dnl
-      - $2-jdk$1[]dnl
-ifelse($1,canary_test,,[:
+ifelse([This is tricky because whether the ":" should appear depends on whether the subsequent "requires: exists,])dnl
+      - $2[]_jdk$1[]dnl
+ifelse($1,canary_version,,[:
           requires:
-            - canary-jobs
+            - canary_jobs
 ifelse($1,canary_version,,[dnl
-            - $2-jdk[]canary_version
+            - $2_jdk[]canary_version
 ])dnl
 ])dnl
 ])dnl
