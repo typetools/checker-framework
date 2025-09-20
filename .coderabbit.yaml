@@ -20,10 +20,11 @@ reviews:
   ignore_title_keywords:
     - "wip"
     - "draft"
-  ignore_usernames:
-    - "dependabot"
-    - "mend"
-    - "renovate"
+  auto_review:
+    ignore_usernames:
+      - "dependabot"
+      - "mend"
+      - "renovate"
   pre_merge_checks:
     title:
       mode: "off"
