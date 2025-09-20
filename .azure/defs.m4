@@ -1,3 +1,4 @@
+ifelse(["-*- m4 -*-",])dnl
 changequote
 changequote(`[',`]')dnl
 ifelse([The built-in "dnl" m4 macro means "discard to next line",])dnl
@@ -33,7 +34,8 @@ ifelse($1,canary_version,,[  dependsOn:
   - bash: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-cftests-nonjunit.sh
     displayName: test-cftests-nonjunit.sh])dnl
 dnl
-define([inference_job_split], [dnl
+define([inference_job], [dnl
+ifelse($1,canary_version,[dnl
 # Split into part1 and part2 only for the inference job that "canary_jobs" depends on.
 - job: inference_part1_jdk$1
   pool:
@@ -55,10 +57,8 @@ define([inference_job_split], [dnl
     fetchDepth: 25
   - bash: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-cftests-inference-part2.sh
     displayName: test-cftests-inference-part2.sh
-])dnl
-dnl
-define([inference_job], [dnl
-ifelse($1,canary_version,,[- job: inference_jdk$1
+],[dnl
+- job: inference_jdk$1
   dependsOn:
    - canary_jobs
    - inference_part1_jdk[]canary_version
@@ -90,7 +90,8 @@ ifelse($1,canary_version,,$1,latest_version,,[  dependsOn:
   - bash: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-misc.sh
     displayName: test-misc.sh])dnl
 dnl
-define([typecheck_job_split], [dnl
+define([typecheck_job], [dnl
+ifelse($1,canary_version,[dnl
 - job: typecheck_part1_jdk$1
   pool:
     vmImage: 'ubuntu-latest'
@@ -108,10 +109,8 @@ define([typecheck_job_split], [dnl
   - checkout: self
     fetchDepth: 1000
   - bash: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-typecheck-part2.sh
-    displayName: test-typecheck-part2.sh])dnl
-dnl
-define([typecheck_job], [dnl
-ifelse($1,canary_version,,[- job: typecheck_jdk$1
+    displayName: test-typecheck-part2.sh], [dnl
+- job: typecheck_jdk$1
   dependsOn:
    - canary_jobs
    - typecheck_part1_jdk[]canary_version
@@ -125,7 +124,8 @@ ifelse($1,canary_version,,[- job: typecheck_jdk$1
   - bash: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-typecheck.sh
     displayName: test-typecheck.sh])])dnl
 dnl
-define([daikon_job_split], [dnl
+define([daikon_job], [dnl
+ifelse($1,canary_version,[dnl
 - job: daikon_part1_jdk$1
   dependsOn:
    - canary_jobs
@@ -149,9 +149,7 @@ define([daikon_job_split], [dnl
   - checkout: self
     fetchDepth: 25
   - bash: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-daikon-part2.sh
-    displayName: test-daikon-part2.sh])dnl
-dnl
-define([daikon_job], [dnl
+    displayName: test-daikon-part2.sh], [dnl
 - job: daikon_jdk$1
   dependsOn:
    - canary_jobs
@@ -165,7 +163,8 @@ define([daikon_job], [dnl
   - checkout: self
     fetchDepth: 25
   - bash: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-daikon.sh
-    displayName: test-daikon.sh])dnl
+    displayName: test-daikon.sh
+])])dnl
 dnl
 define([guava_job], [dnl
 - job: guava_jdk$1
