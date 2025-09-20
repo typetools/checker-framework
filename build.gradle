@@ -191,11 +191,11 @@ allprojects { currentProj ->
   }
 
   dependencies {
-    errorprone group: 'com.google.errorprone', name: 'error_prone_core', version: versions.errorprone
+    errorprone "com.google.errorprone:error_prone_core:${versions.errorprone}"
 
-    javacJar group: 'com.google.errorprone', name: 'javac', version: "9+181-r4173-1"
+    javacJar 'com.google.errorprone:javac:9+181-r4173-1'
 
-    errorproneJavac("com.google.errorprone:javac:9+181-r4173-1")
+    errorproneJavac 'com.google.errorprone:javac:9+181-r4173-1'
 
     allProjects subprojects
   }
