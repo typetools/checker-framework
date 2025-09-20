@@ -84,4 +84,12 @@ if [ -z "${NO_WRITE_VERIFICATION_METADATA+x}" ]; then
       && TERM=dumb ./gradlew ${IS_CI:+"--no-daemon"} --console=plain --write-verification-metadata sha256 fiveMinutes --dry-run; }
 fi
 
+java -XX:+PrintFlagsFinal -version | grep HeapSize
+echo JAVA_TOOL_OPTIONS="$JAVA_TOOL_OPTIONS"
+echo JDK_JAVA_OPTIONS="$JDK_JAVA_OPTIONS"
+echo _JAVA_OPTIONS="$_JAVA_OPTIONS"
+echo DEFAULT_JVM_OPTS="$DEFAULT_JVM_OPTS"
+echo GRADLE_OPTS="$GRADLE_OPTS"
+echo JAVA_OPTS="$JAVA_OPTS"
+
 echo Exiting checker/bin-devel/clone-related.sh in "$(pwd)"
