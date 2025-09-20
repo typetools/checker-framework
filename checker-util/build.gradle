@@ -6,7 +6,7 @@ dependencies {
   api project(':checker-qual')
   // Don't add implementation dependencies; checker-util.jar should have no dependencies.
 
-  testImplementation group: 'junit', name: 'junit', version: '4.13.2'
+  testImplementation 'junit:junit:4.13.2'
 }
 
 jar {
