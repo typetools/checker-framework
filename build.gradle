@@ -1360,8 +1360,3 @@ tasks.register('printJavaVersion') {
     println currentJvm
   }
 }
-
-tasks.register('fiveMinutes') {
-  description = "Times out after 5 minutes."
-  timeout = Duration.ofMinutes(5)
-}
