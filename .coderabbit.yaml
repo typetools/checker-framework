@@ -17,10 +17,10 @@ reviews:
     - "!**/.gradle/**"
     - "!**/.idea/**"
     - "!**/node_modules/**"
-  ignore_title_keywords:
-    - "wip"
-    - "draft"
   auto_review:
+    ignore_title_keywords:
+      - "wip"
+      - "draft"
     ignore_usernames:
       - "dependabot"
       - "mend"
