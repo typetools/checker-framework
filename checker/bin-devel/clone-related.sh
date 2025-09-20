@@ -64,8 +64,24 @@ fi
 #   echo "... done: (cd ../jspecify/ && ./gradlew build)"
 # fi
 
-## Compile
+# Run Gradle using Java 21.
+export ORG_GRADLE_PROJECT_useJdk21Compiler=true
+if [ -z "${JAVA21_HOME}" ]; then
+  export JAVA21_HOME=/usr/lib/jvm/java-21-openjdk-amd64
+fi
+# Edit `gradle.properties` file.
+GRADLE_DIR="${GRADLE_USER_HOME:-$HOME/.gradle}"
+mkdir -p "${GRADLE_DIR}"
+GRADLE_PROPS="${GRADLE_DIR}/gradle.properties"
+touch "${GRADLE_PROPS}"
+# Replace existing setting or append once
+if grep -q '^org\.gradle\.java\.home=' "${GRADLE_PROPS}"; then
+  sed -i.bak "s|^org\.gradle\.java\.home=.*$|org.gradle.java.home=${JAVA21_HOME}|" "${GRADLE_PROPS}"
+else
+  echo "org.gradle.java.home=${JAVA21_HOME}" >> "${GRADLE_PROPS}"
+fi
 
+## Compile
 # Download dependencies, trying a second time if there is a failure.
 # echo "NO_WRITE_VERIFICATION_METADATA=$NO_WRITE_VERIFICATION_METADATA"
 if [ -z "${NO_WRITE_VERIFICATION_METADATA+x}" ]; then
