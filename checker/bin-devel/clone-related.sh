@@ -22,7 +22,10 @@ echo "CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
 IS_CI="$("$CHECKERFRAMEWORK"/checker/bin-devel/is-ci.sh)"
 export IS_CI
 
-gradle_ci() { ./gradlew ${IS_CI:+--no-daemon} --console=plain "$@"; }
+gradle_ci() {
+  echo "in gradle_ci, IS_CI=${IS_CI}";
+  ./gradlew ${IS_CI:+--no-daemon} --console=plain "$@";
+}
 
 export SHELLOPTS
 echo "SHELLOPTS=${SHELLOPTS}"
