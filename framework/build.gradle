@@ -54,7 +54,7 @@ dependencies {
   implementation "org.plumelib:reflection-util:${versions.reflectionUtil}"
   implementation 'io.github.classgraph:classgraph:4.8.181'
 
-  testImplementation group: 'junit', name: 'junit', version: '4.13.2'
+  testImplementation 'junit:junit:4.13.2'
   testImplementation project(':framework-test')
   testImplementation sourceSets.testannotations.output
 

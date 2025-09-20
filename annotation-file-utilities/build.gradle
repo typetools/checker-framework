@@ -28,7 +28,7 @@ dependencies {
     exclude group: 'org.checkerframework'
   }
   implementation 'org.ow2.asm:asm:9.8'
-  testImplementation group: 'junit', name: 'junit', version: '4.13.2'
+  testImplementation 'junit:junit:4.13.2'
   testImplementation project(':checker-qual')
 }
 
