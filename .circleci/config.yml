@@ -315,7 +315,7 @@ jobs:
 
   daikon_part1_jdk25:
     docker:
-     - image: 'mdernst/cf-ubuntu-jdk25:latest'
+      - image: 'mdernst/cf-ubuntu-jdk25'
     resource_class: large
     environment:
       CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
@@ -336,7 +336,7 @@ jobs:
          command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-daikon-part1.sh
   daikon_part2_jdk25:
     docker:
-     - image: 'mdernst/cf-ubuntu-jdk25:latest'
+      - image: 'mdernst/cf-ubuntu-jdk25'
     resource_class: large
     environment:
       CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
@@ -360,7 +360,7 @@ jobs:
 ## I'm not sure why the guava_jdk11 job is failing (it's due to Error Prone).
   guava_jdk25:
     docker:
-     - image: 'mdernst/cf-ubuntu-jdk25:latest'
+      - image: 'mdernst/cf-ubuntu-jdk25'
     resource_class: large
     environment:
       CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
@@ -384,7 +384,7 @@ jobs:
 
   plume_lib_jdk25:
     docker:
-     - image: 'mdernst/cf-ubuntu-jdk25:latest'
+      - image: 'mdernst/cf-ubuntu-jdk25'
     resource_class: large
     environment:
       CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
