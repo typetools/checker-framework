@@ -92,7 +92,7 @@ echo DEFAULT_JVM_OPTS="$DEFAULT_JVM_OPTS"
 echo GRADLE_OPTS="$GRADLE_OPTS"
 echo JAVA_OPTS="$JAVA_OPTS"
 
-export JAVA_TOOL_OPTIONS='-Xmx6g'
+export JAVA_TOOL_OPTIONS='-Xmx4g'
 
 java -XX:+PrintFlagsFinal -version | grep HeapSize
 echo JAVA_TOOL_OPTIONS="$JAVA_TOOL_OPTIONS"
