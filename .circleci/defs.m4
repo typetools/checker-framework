@@ -6,6 +6,7 @@ define([circleci_boilerplate], [dnl
     resource_class: large
     environment:
       CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
+      TERM: dumb
     steps:
       - restore_cache:
           keys:
@@ -21,7 +22,7 @@ dnl
 define([junit_job], [dnl
   junit_jdk$1:
     docker:
-      - image: 'mdernst/checkerframework-ubuntu-jdk$1'
+      - image: 'mdernst/cf-ubuntu-jdk$1'
 circleci_boilerplate
       - run:
          name: test-cftests-junit.sh
@@ -31,7 +32,7 @@ dnl
 define([nonjunit_job], [dnl
   nonjunit_jdk$1:
     docker:
-      - image: 'mdernst/checkerframework-ubuntu-jdk$1'
+      - image: 'mdernst/cf-ubuntu-jdk$1'
 circleci_boilerplate
       - run:
          name: test-cftests-nonjunit.sh
@@ -42,14 +43,14 @@ define([inference_job_split], [dnl
 # Split into part1 and part2 only for the inference job that "canary_jobs" depends on.
   inference_part1_jdk$1:
     docker:
-      - image: 'mdernst/checkerframework-ubuntu-jdk$1'
+      - image: 'mdernst/cf-ubuntu-jdk$1'
 circleci_boilerplate
       - run:
          name: test-cftests-inference-part1.sh
          command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-cftests-inference-part1.sh
   inference_part2_jdk$1:
     docker:
-      - image: 'mdernst/checkerframework-ubuntu-jdk$1'
+      - image: 'mdernst/cf-ubuntu-jdk$1'
 circleci_boilerplate
       - run:
          name: test-cftests-inference-part2.sh
@@ -59,7 +60,7 @@ dnl
 define([inference_job], [dnl
   inference_jdk$1:
     docker:
-      - image: 'mdernst/checkerframework-ubuntu-jdk$1'
+      - image: 'mdernst/cf-ubuntu-jdk$1'
 circleci_boilerplate
       - run:
          name: test-cftests-inference.sh
@@ -69,7 +70,7 @@ dnl
 define([misc_job], [dnl
   misc_jdk$1:
     docker:
-      - image: 'mdernst/checkerframework-ubuntu-jdk$1'
+      - image: 'mdernst/cf-ubuntu-jdk$1-plus'
 circleci_boilerplate
       - run:
          name: test-misc.sh
@@ -80,28 +81,28 @@ define([typecheck_job_split], [dnl
 # Split into part1 and part2 only for the typecheck job that "canary_jobs" depends on.
   typecheck_part1_jdk$1:
     docker:
-      - image: 'mdernst/checkerframework-ubuntu-jdk$1'
+      - image: 'mdernst/cf-ubuntu-jdk$1'
 circleci_boilerplate
       - run:
-         name: test-cftests-typecheck-part1.sh
-         command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-cftests-typecheck-part1.sh
+         name: test-typecheck-part1.sh
+         command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-typecheck-part1.sh
   typecheck_part2_jdk$1:
     docker:
-      - image: 'mdernst/checkerframework-ubuntu-jdk$1'
+      - image: 'mdernst/cf-ubuntu-jdk$1'
 circleci_boilerplate
       - run:
-         name: test-cftests-typecheck-part2.sh
-         command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-cftests-typecheck-part2.sh
+         name: test-typecheck-part2.sh
+         command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-typecheck-part2.sh
 ])dnl
 dnl
 define([typecheck_job], [dnl
   typecheck_jdk$1:
     docker:
-      - image: 'mdernst/checkerframework-ubuntu-jdk$1'
+      - image: 'mdernst/cf-ubuntu-jdk$1'
 circleci_boilerplate
       - run:
-         name: test-cftests-typecheck.sh
-         command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-cftests-typecheck.sh
+         name: test-typecheck.sh
+         command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-typecheck.sh
 ])dnl
 dnl
 define([typecheck_job], [dnl
@@ -150,6 +151,7 @@ circleci_boilerplate
       - run:
          name: test-guava.sh
          command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-guava.sh
+         no_output_timeout: "30m"
 ])dnl
 dnl
 define([plume_lib_job], [dnl
@@ -172,6 +174,12 @@ ifelse($1,canary_version,,[dnl
             - $2_jdk[]canary_version
 ])dnl
 ])dnl
+])dnl
+dnl
+define([job_dependences_not_in_canary], [dnl
+      - $2[]_jdk$1[]:
+          requires:
+            - canary_jobs
 ])dnl
 dnl
 ifelse([

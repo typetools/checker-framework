@@ -19,6 +19,13 @@ echo "initial CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
 export CHECKERFRAMEWORK="${CHECKERFRAMEWORK:-$(pwd -P)}"
 echo "CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
 
+IS_CI="$("$CHECKERFRAMEWORK"/checker/bin-devel/is-ci.sh)"
+export IS_CI
+
+gradle_ci() {
+  ./gradlew ${IS_CI:+--no-daemon} --console=plain "$@"
+}
+
 export SHELLOPTS
 echo "SHELLOPTS=${SHELLOPTS}"
 
@@ -66,14 +73,33 @@ fi
 
 ## Compile
 
-# Download dependencies, trying a second time if there is a failure.
+# Download Gradle and dependencies, retrying in case of network problems.
 # echo "NO_WRITE_VERIFICATION_METADATA=$NO_WRITE_VERIFICATION_METADATA"
 if [ -z "${NO_WRITE_VERIFICATION_METADATA+x}" ]; then
-  (TERM=dumb timeout 300 ./gradlew --write-verification-metadata sha256 help --dry-run --quiet \
-    || (echo "./gradlew --write-verification-metadata sha256 help --dry-run --quiet failed; sleeping before trying again." \
+  # Cannot use the gradle_ci function here, because "timeout" is not compatible with shell functions.
+  TERM=dumb ./gradlew ${IS_CI:+"--no-daemon"} --console=plain --write-verification-metadata sha256 fiveMinutes --dry-run --quiet \
+    || { echo "./gradlew --write-verification-metadata sha256 fiveMinutes --dry-run failed; sleeping before trying again." \
       && sleep 1m \
-      && echo "Trying again: ./gradlew --write-verification-metadata sha256 help --dry-run --quiet" \
-      && TERM=dumb timeout 300 ./gradlew --write-verification-metadata sha256 help --dry-run --quiet))
+      && echo "Trying again: ./gradlew --write-verification-metadata sha256 fiveMinutes --dry-run" \
+      && TERM=dumb ./gradlew ${IS_CI:+"--no-daemon"} --console=plain --write-verification-metadata sha256 fiveMinutes --dry-run; }
 fi
+
+java -XX:+PrintFlagsFinal -version | grep HeapSize
+echo JAVA_TOOL_OPTIONS="$JAVA_TOOL_OPTIONS"
+echo JDK_JAVA_OPTIONS="$JDK_JAVA_OPTIONS"
+echo _JAVA_OPTIONS="$_JAVA_OPTIONS"
+echo DEFAULT_JVM_OPTS="$DEFAULT_JVM_OPTS"
+echo GRADLE_OPTS="$GRADLE_OPTS"
+echo JAVA_OPTS="$JAVA_OPTS"
+
+export JAVA_TOOL_OPTIONS='-Xmx6g'
+
+java -XX:+PrintFlagsFinal -version | grep HeapSize
+echo JAVA_TOOL_OPTIONS="$JAVA_TOOL_OPTIONS"
+echo JDK_JAVA_OPTIONS="$JDK_JAVA_OPTIONS"
+echo _JAVA_OPTIONS="$_JAVA_OPTIONS"
+echo DEFAULT_JVM_OPTS="$DEFAULT_JVM_OPTS"
+echo GRADLE_OPTS="$GRADLE_OPTS"
+echo JAVA_OPTS="$JAVA_OPTS"
 
 echo Exiting checker/bin-devel/clone-related.sh in "$(pwd)"

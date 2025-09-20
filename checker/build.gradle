@@ -68,7 +68,7 @@ dependencies {
   // see https://github.com/typetools/checker-framework/issues/6396
   testImplementation 'org.apache.spark:spark-sql_2.12:3.3.2'
 
-  testImplementation group: 'junit', name: 'junit', version: '4.13.2'
+  testImplementation 'junit:junit:4.13.2'
   testImplementation project(':framework-test')
   testImplementation sourceSets.testannotations.output
 
