@@ -22,7 +22,7 @@ status=0
 ## Code style and formatting
 JAVA_VER=$(java -version 2>&1 | head -1 | cut -d'"' -f2 | sed '/^1\./s///' | cut -d'.' -f1 | sed 's/-ea//')
 if [ "${JAVA_VER}" != "8" ] && [ "${JAVA_VER}" != "11" ]; then
-  gradle_ci spotlessCheck --warning-mode=all
+  ./gradlew spotlessCheck --warning-mode=all
 fi
 if grep -n -r --exclude-dir=build --exclude-dir=examples --exclude-dir=jtreg --exclude-dir=tests --exclude="*.astub" --exclude="*.tex" '^\(import static \|import .*\*;$\)'; then
   echo "Don't use static import or wildcard import"
@@ -31,18 +31,18 @@ fi
 make style-check --jobs="$(getconf _NPROCESSORS_ONLN)"
 
 ## HTML legality
-gradle_ci htmlValidate --warning-mode=all
+./gradlew htmlValidate --warning-mode=all
 
 ## Javadoc documentation
 # Try twice in case of network lossage.
-(gradle_ci javadoc --warning-mode=all || (sleep 60 && gradle_ci javadoc --warning-mode=all)) || status=1
-gradle_ci javadocPrivate --warning-mode=all || status=1
+(./gradlew javadoc --warning-mode=all || (sleep 60 && ./gradlew javadoc --warning-mode=all)) || status=1
+./gradlew javadocPrivate --warning-mode=all || status=1
 # For refactorings that touch a lot of code that you don't understand, create
 # top-level file SKIP-REQUIRE-JAVADOC.  Delete it after the pull request is merged.
 if [ -f SKIP-REQUIRE-JAVADOC ]; then
   echo "Skipping requireJavadoc because file SKIP-REQUIRE-JAVADOC exists."
 else
-  (gradle_ci requireJavadoc --warning-mode=all > /tmp/warnings-requireJavadoc.txt 2>&1) || true
+  (./gradlew requireJavadoc --warning-mode=all > /tmp/warnings-requireJavadoc.txt 2>&1) || true
   "$PLUME_SCRIPTS"/ci-lint-diff /tmp/warnings-requireJavadoc.txt || status=1
   (gradle-ci javadocDoclintAll --warning-mode=all > /tmp/warnings-javadocDoclintAll.txt 2>&1) || true
   "$PLUME_SCRIPTS"/ci-lint-diff /tmp/warnings-javadocDoclintAll.txt || status=1
@@ -50,7 +50,7 @@ fi
 if [ $status -ne 0 ]; then exit $status; fi
 
 ## User documentation
-gradle_ci manual
+./gradlew manual
 git diff --exit-code docs/manual/contributors.tex \
   || (set +x && set +v \
     && echo "docs/manual/contributors.tex is not up to date." \
@@ -64,4 +64,4 @@ git diff --exit-code docs/manual/contributors.tex \
     && false)
 
 ## Listing tasks should succeed; this helps ensure importing Checker Framework into IDEs like IntelliJ works.
-gradle_ci tasks --all --warning-mode=all
+./gradlew tasks --all --warning-mode=all

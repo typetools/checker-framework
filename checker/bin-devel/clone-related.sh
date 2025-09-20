@@ -22,9 +22,7 @@ echo "CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
 IS_CI="$("$CHECKERFRAMEWORK"/checker/bin-devel/is-ci.sh)"
 export IS_CI
 
-gradle_ci() {
-  ./gradlew ${IS_CI:+--no-daemon} --console=plain "$@"
-}
+GRADLE_OPTS="${IS_CI:+--no-daemon} --console=plain -Xmx4g"
 
 export SHELLOPTS
 echo "SHELLOPTS=${SHELLOPTS}"
@@ -76,8 +74,8 @@ fi
 # Download Gradle and dependencies, retrying in case of network problems.
 # echo "NO_WRITE_VERIFICATION_METADATA=$NO_WRITE_VERIFICATION_METADATA"
 if [ -z "${NO_WRITE_VERIFICATION_METADATA+x}" ]; then
-  # Cannot use the gradle_ci function here, because "timeout" is not compatible with shell functions.
-  TERM=dumb ./gradlew ${IS_CI:+"--no-daemon"} --console=plain --write-verification-metadata sha256 help --dry-run --quiet \
+  # Note that "timeout" is not compatible with shell functions.
+  TERM=dumb ./gradlew --write-verification-metadata sha256 help --dry-run --quiet \
     || { echo "./gradlew --write-verification-metadata sha256 help --dry-run failed; sleeping before trying again." \
       && sleep 1m \
       && echo "Trying again: ./gradlew --write-verification-metadata sha256 help --dry-run" \

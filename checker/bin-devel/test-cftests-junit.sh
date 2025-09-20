@@ -25,4 +25,4 @@ echo DEFAULT_JVM_OPTS="$DEFAULT_JVM_OPTS"
 echo GRADLE_OPTS="$GRADLE_OPTS"
 echo JAVA_OPTS="$JAVA_OPTS"
 
-gradle_ci test --warning-mode=all
+./gradlew test --warning-mode=all

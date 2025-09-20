@@ -39,7 +39,7 @@ mkdir ~/.gradle && echo "org.gradle.java.home=/usr/lib/jvm/java-21-openjdk-amd64
 
 source "$SCRIPT_DIR"/clone-related.sh
 
-gradle_ci assembleForJavac -Dorg.gradle.internal.http.socketTimeout=60000 -Dorg.gradle.internal.http.connectionTimeout=60000
+./gradlew assembleForJavac -Dorg.gradle.internal.http.socketTimeout=60000 -Dorg.gradle.internal.http.connectionTimeout=60000
 
 failing_packages=""
 echo "PACKAGES=" "${PACKAGES[@]}"
@@ -52,7 +52,7 @@ for PACKAGE in "${PACKAGES[@]}"; do
   # https://docs.oracle.com/en/java/javase/17/docs/api/" due to network problems.
   echo "About to call ./gradlew --console=plain -PcfLocal compileJava"
   # Try twice in case of network lossage.
-  (cd "${PACKAGEDIR}" && (gradle_ci -PcfLocal compileJava || (sleep 60 && gradle_ci -PcfLocal compileJava))) || failing_packages="${failing_packages} ${PACKAGE}"
+  (cd "${PACKAGEDIR}" && (./gradlew -PcfLocal compileJava || (sleep 60 && ./gradlew -PcfLocal compileJava))) || failing_packages="${failing_packages} ${PACKAGE}"
 done
 
 if [ -n "${failing_packages}" ]; then
