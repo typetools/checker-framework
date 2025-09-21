@@ -95,7 +95,7 @@ ext {
     //  * Temporarily comment out "-Werror" elsewhere in this file
     //  * Repeatedly run `./gradlew clean compileJava` and fix all errors
     //  * Uncomment "-Werror"
-    errorprone      : '2.41.0',
+    errorprone      : '2.42.0',
   ]
 }
 
@@ -1238,14 +1238,14 @@ subprojects {
       description = 'Run inference tests (part 1).'
       group = 'Verification'
       if (project.name.is('checker')) {
-        dependsOn('ainferTest', 'wpiManyTest')
+        dependsOn('wpiManyTest')
       }
     }
     tasks.register('inferenceTests-part2') {
       description = 'Run inference tests (part 2).'
       group = 'Verification'
       if (project.name.is('checker')) {
-        dependsOn('wpiPlumeLibTest')
+        dependsOn('ainferTest', 'wpiPlumeLibTest')
       }
     }
 

@@ -83,7 +83,7 @@ circleci_boilerplate($1)
          command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-typecheck-part2.sh
 ], [dnl
   typecheck_jdk$1:
-circleci_boilerplate($1,-plus)
+circleci_boilerplate($1,)
       - run:
          name: test-typecheck.sh
          command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-typecheck.sh
