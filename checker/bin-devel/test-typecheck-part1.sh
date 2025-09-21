@@ -16,4 +16,4 @@ mkdir ~/.gradle && echo "org.gradle.java.home=/usr/lib/jvm/java-21-openjdk-amd64
 source "$SCRIPT_DIR"/clone-related.sh
 
 # Pluggable type-checking:  run the Checker Framework on itself
-./gradlew typecheck-part1 --console=plain --warning-mode=all
+./gradlew typecheck-part1 --warning-mode=all
