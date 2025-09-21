@@ -67,13 +67,16 @@ fi
 ## Compile
 
 # Download dependencies, trying a second time if there is a failure.
-# echo "NO_WRITE_VERIFICATION_METADATA=$NO_WRITE_VERIFICATION_METADATA"
-if [ -z "${NO_WRITE_VERIFICATION_METADATA+x}" ]; then
-  (TERM=dumb timeout 300 ./gradlew --write-verification-metadata sha256 help --dry-run --quiet \
-    || (echo "./gradlew --write-verification-metadata sha256 help --dry-run --quiet failed; sleeping before trying again." \
-      && sleep 1m \
-      && echo "Trying again: ./gradlew --write-verification-metadata sha256 help --dry-run --quiet" \
-      && TERM=dumb timeout 300 ./gradlew --write-verification-metadata sha256 help --dry-run --quiet))
+# Under CircleCI, the `timeout` command seems to hang forever.
+if [ -z "$CIRCLECI" ]; then
+  # echo "NO_WRITE_VERIFICATION_METADATA=$NO_WRITE_VERIFICATION_METADATA"
+  if [ -z "${NO_WRITE_VERIFICATION_METADATA+x}" ]; then
+    (TERM=dumb timeout 300 ./gradlew --write-verification-metadata sha256 help --dry-run --quiet \
+      || (echo "./gradlew --write-verification-metadata sha256 help --dry-run --quiet failed; sleeping before trying again." \
+        && sleep 1m \
+        && echo "Trying again: ./gradlew --write-verification-metadata sha256 help --dry-run --quiet" \
+        && TERM=dumb timeout 300 ./gradlew --write-verification-metadata sha256 help --dry-run --quiet))
+  fi
 fi
 
 echo Exiting checker/bin-devel/clone-related.sh in "$(pwd)"
