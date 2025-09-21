@@ -346,6 +346,7 @@ jobs:
       - run:
          name: test-daikon.sh
          command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-daikon-part1.sh
+         no_output_timeout: "30m"
   daikon_part2_jdk25:
     docker:
       - image: 'mdernst/cf-ubuntu-jdk25'
@@ -368,6 +369,7 @@ jobs:
       - run:
          name: test-daikon-part2.sh
          command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-daikon.sh
+         no_output_timeout: "30m"
 
 
 ## I'm not sure why the guava_jdk11 job is failing (it's due to Error Prone).
