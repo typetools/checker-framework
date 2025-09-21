@@ -126,6 +126,7 @@ circleci_boilerplate($1,)
       - run:
          name: test-guava.sh
          command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-guava.sh
+         no_output_timeout: "30m"
 ])dnl
 dnl
 define([plume_lib_job], [dnl
