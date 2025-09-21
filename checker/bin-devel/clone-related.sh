@@ -15,6 +15,8 @@ else
   DEBUG_FLAG=--debug
 fi
 
+export CHECKERFRAMEWORK="${CHECKERFRAMEWORK:-$(pwd -P)}"
+echo "CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
 
 export SHELLOPTS
