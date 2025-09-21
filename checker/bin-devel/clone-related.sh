@@ -21,7 +21,9 @@ echo "CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
 
 IS_CI="$("$SCRIPT_DIR"/is-ci.sh)"
 export IS_CI
-export GRADLE_OPTS="${IS_CI:+--no-daemon} --console=plain -Xmx4g"
+if [ -n "$IS_CI" ]; then
+  export GRADLE_OPTS="${GRADLE_OPTS} -Dorg.gradle.daemon=false -Dorg.gradle.console=plain -Xmx4g"
+fi
 
 export SHELLOPTS
 echo "SHELLOPTS=${SHELLOPTS}"
