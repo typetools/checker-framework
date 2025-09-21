@@ -18,7 +18,7 @@ jobs:
   junit_jdk11:
     docker:
       - image: 'mdernst/cf-ubuntu-jdk11'
-    resource_class: large
+    resource_class: xlarge
     environment:
       CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
       GRADLE_OPTS: -Xmx7g
@@ -42,7 +42,7 @@ jobs:
   junit_jdk17:
     docker:
       - image: 'mdernst/cf-ubuntu-jdk17'
-    resource_class: large
+    resource_class: xlarge
     environment:
       CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
       GRADLE_OPTS: -Xmx7g
@@ -66,7 +66,7 @@ jobs:
   junit_jdk21:
     docker:
       - image: 'mdernst/cf-ubuntu-jdk21'
-    resource_class: large
+    resource_class: xlarge
     environment:
       CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
       GRADLE_OPTS: -Xmx7g
@@ -90,7 +90,7 @@ jobs:
   junit_jdk25:
     docker:
       - image: 'mdernst/cf-ubuntu-jdk25'
-    resource_class: large
+    resource_class: xlarge
     environment:
       CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
       GRADLE_OPTS: -Xmx7g
@@ -115,7 +115,7 @@ jobs:
   nonjunit_jdk25:
     docker:
       - image: 'mdernst/cf-ubuntu-jdk25'
-    resource_class: large
+    resource_class: xlarge
     environment:
       CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
       GRADLE_OPTS: -Xmx7g
@@ -145,7 +145,7 @@ jobs:
   inference_part1_jdk25:
     docker:
       - image: 'mdernst/cf-ubuntu-jdk25'
-    resource_class: large
+    resource_class: xlarge
     environment:
       CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
       GRADLE_OPTS: -Xmx7g
@@ -168,7 +168,7 @@ jobs:
   inference_part2_jdk25:
     docker:
       - image: 'mdernst/cf-ubuntu-jdk25'
-    resource_class: large
+    resource_class: xlarge
     environment:
       CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
       GRADLE_OPTS: -Xmx7g
@@ -194,7 +194,7 @@ jobs:
   misc_jdk11:
     docker:
       - image: 'mdernst/cf-ubuntu-jdk11-plus'
-    resource_class: large
+    resource_class: xlarge
     environment:
       CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
       GRADLE_OPTS: -Xmx7g
@@ -218,7 +218,7 @@ jobs:
   misc_jdk17:
     docker:
       - image: 'mdernst/cf-ubuntu-jdk17-plus'
-    resource_class: large
+    resource_class: xlarge
     environment:
       CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
       GRADLE_OPTS: -Xmx7g
@@ -242,7 +242,7 @@ jobs:
   misc_jdk21:
     docker:
       - image: 'mdernst/cf-ubuntu-jdk21-plus'
-    resource_class: large
+    resource_class: xlarge
     environment:
       CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
       GRADLE_OPTS: -Xmx7g
@@ -266,7 +266,7 @@ jobs:
   misc_jdk25:
     docker:
       - image: 'mdernst/cf-ubuntu-jdk25-plus'
-    resource_class: large
+    resource_class: xlarge
     environment:
       CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
       GRADLE_OPTS: -Xmx7g
@@ -292,7 +292,7 @@ jobs:
   typecheck_part1_jdk25:
     docker:
       - image: 'mdernst/cf-ubuntu-jdk25'
-    resource_class: large
+    resource_class: xlarge
     environment:
       CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
       GRADLE_OPTS: -Xmx7g
@@ -315,7 +315,7 @@ jobs:
   typecheck_part2_jdk25:
     docker:
       - image: 'mdernst/cf-ubuntu-jdk25'
-    resource_class: large
+    resource_class: xlarge
     environment:
       CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
       GRADLE_OPTS: -Xmx7g
@@ -340,7 +340,7 @@ jobs:
   daikon_part1_jdk25:
     docker:
       - image: 'mdernst/cf-ubuntu-jdk25'
-    resource_class: large
+    resource_class: xlarge
     environment:
       CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
       GRADLE_OPTS: -Xmx7g
@@ -364,7 +364,7 @@ jobs:
   daikon_part2_jdk25:
     docker:
       - image: 'mdernst/cf-ubuntu-jdk25'
-    resource_class: large
+    resource_class: xlarge
     environment:
       CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
       GRADLE_OPTS: -Xmx7g
@@ -391,7 +391,7 @@ jobs:
   guava_jdk25:
     docker:
       - image: 'mdernst/cf-ubuntu-jdk25'
-    resource_class: large
+    resource_class: xlarge
     environment:
       CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
       GRADLE_OPTS: -Xmx7g
@@ -417,7 +417,7 @@ jobs:
   plume_lib_jdk25:
     docker:
       - image: 'mdernst/cf-ubuntu-jdk25'
-    resource_class: large
+    resource_class: xlarge
     environment:
       CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
       GRADLE_OPTS: -Xmx7g

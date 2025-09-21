@@ -5,7 +5,7 @@ dnl
 define([circleci_boilerplate], [dnl
     docker:
       - image: 'mdernst/cf-ubuntu-jdk$1[]$2[]docker_testing'
-    resource_class: large
+    resource_class: xlarge
     environment:
       CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
       GRADLE_OPTS: -Xmx7g
