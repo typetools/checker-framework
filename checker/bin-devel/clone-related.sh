@@ -19,8 +19,7 @@ SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
 
 IS_CI="$("$SCRIPT_DIR"/is-ci.sh)"
 export IS_CI
-
-GRADLE_OPTS="${IS_CI:+--no-daemon} --console=plain -Xmx4g"
+export GRADLE_OPTS="${IS_CI:+--no-daemon} --console=plain -Xmx4g"
 
 export SHELLOPTS
 echo "SHELLOPTS=${SHELLOPTS}"
@@ -77,7 +76,7 @@ if [ -z "${NO_WRITE_VERIFICATION_METADATA+x}" ]; then
     || { echo "./gradlew --write-verification-metadata sha256 help --dry-run failed; sleeping before trying again." \
       && sleep 1m \
       && echo "Trying again: ./gradlew --write-verification-metadata sha256 help --dry-run" \
-      && TERM=dumb ./gradlew ${IS_CI:+"--no-daemon"} --console=plain --write-verification-metadata sha256 help --dry-run; }
+      && TERM=dumb ./gradlew --write-verification-metadata sha256 help --dry-run; }
 fi
 
 java -XX:+PrintFlagsFinal -version | grep HeapSize

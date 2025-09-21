@@ -94,13 +94,13 @@ ifelse($1,canary_version, [dnl
   daikon_part1_jdk$1:
 circleci_boilerplate($1)
       - run:
-         name: test-daikon.sh
+         name: test-daikon-part1.sh
          command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-daikon-part1.sh
   daikon_part2_jdk$1:
 circleci_boilerplate($1)
       - run:
          name: test-daikon-part2.sh
-         command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-daikon.sh
+         command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-daikon-part2.sh
 ], [dnl
   daikon_jdk$1:
 circleci_boilerplate($1)

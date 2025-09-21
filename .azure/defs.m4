@@ -1,4 +1,3 @@
-ifelse(["-*- m4 -*-",])dnl
 changequote
 changequote(`[',`]')dnl
 ifelse([The built-in "dnl" m4 macro means "discard to next line",])dnl
@@ -95,7 +94,7 @@ ifelse($1,canary_version,[dnl
 - job: typecheck_part1_jdk$1
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk$1-plus[]docker_testing:latest
+  container: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
   steps:
   - checkout: self
     fetchDepth: 1000
@@ -104,7 +103,7 @@ ifelse($1,canary_version,[dnl
 - job: typecheck_part2_jdk$1
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk$1-plus[]docker_testing:latest
+  container: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
   steps:
   - checkout: self
     fetchDepth: 1000
@@ -117,7 +116,7 @@ ifelse($1,canary_version,[dnl
    - typecheck_part2_jdk[]canary_version
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk$1-plus[]docker_testing:latest
+  container: mdernst/cf-ubuntu-jdk$1[]docker_testing:latest
   steps:
   - checkout: self
     fetchDepth: 1000
