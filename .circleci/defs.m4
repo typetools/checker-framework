@@ -3,6 +3,8 @@ changequote(`[',`]')dnl
 ifelse([each macro takes two arguments, the OS name and the JDK version])dnl
 dnl
 define([circleci_boilerplate], [dnl
+    docker:
+      - image: 'mdernst/cf-ubuntu-jdk$1[]$2[]docker_testing'
     resource_class: large
     environment:
       CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
@@ -20,9 +22,7 @@ define([circleci_boilerplate], [dnl
 dnl
 define([junit_job], [dnl
   junit_jdk$1:
-    docker:
-      - image: 'mdernst/checkerframework-ubuntu-jdk$1'
-circleci_boilerplate
+circleci_boilerplate($1,)
       - run:
          name: test-cftests-junit.sh
          command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-cftests-junit.sh
@@ -30,9 +30,7 @@ circleci_boilerplate
 dnl
 define([nonjunit_job], [dnl
   nonjunit_jdk$1:
-    docker:
-      - image: 'mdernst/checkerframework-ubuntu-jdk$1'
-circleci_boilerplate
+circleci_boilerplate($1,)
       - run:
          name: test-cftests-nonjunit.sh
          command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-cftests-nonjunit.sh
@@ -41,16 +39,12 @@ dnl
 define([inference_job_split], [dnl
 # Split into part1 and part2 only for the inference job that "canary_jobs" depends on.
   inference_part1_jdk$1:
-    docker:
-      - image: 'mdernst/checkerframework-ubuntu-jdk$1'
-circleci_boilerplate
+circleci_boilerplate($1,)
       - run:
          name: test-cftests-inference-part1.sh
          command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-cftests-inference-part1.sh
   inference_part2_jdk$1:
-    docker:
-      - image: 'mdernst/checkerframework-ubuntu-jdk$1'
-circleci_boilerplate
+circleci_boilerplate($1,)
       - run:
          name: test-cftests-inference-part2.sh
          command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-cftests-inference-part2.sh
@@ -58,9 +52,7 @@ circleci_boilerplate
 dnl
 define([inference_job], [dnl
   inference_jdk$1:
-    docker:
-      - image: 'mdernst/checkerframework-ubuntu-jdk$1'
-circleci_boilerplate
+circleci_boilerplate($1,)
       - run:
          name: test-cftests-inference.sh
          command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-cftests-inference.sh
@@ -68,9 +60,7 @@ circleci_boilerplate
 dnl
 define([misc_job], [dnl
   misc_jdk$1:
-    docker:
-      - image: 'mdernst/checkerframework-ubuntu-jdk$1'
-circleci_boilerplate
+circleci_boilerplate($1,-plus)
       - run:
          name: test-misc.sh
          command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-misc.sh
@@ -79,16 +69,12 @@ dnl
 define([typecheck_job_split], [dnl
 # Split into part1 and part2 only for the typecheck job that "canary_jobs" depends on.
   typecheck_part1_jdk$1:
-    docker:
-      - image: 'mdernst/checkerframework-ubuntu-jdk$1'
-circleci_boilerplate
+circleci_boilerplate($1,)
       - run:
          name: test-cftests-typecheck-part1.sh
          command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-cftests-typecheck-part1.sh
   typecheck_part2_jdk$1:
-    docker:
-      - image: 'mdernst/checkerframework-ubuntu-jdk$1'
-circleci_boilerplate
+circleci_boilerplate($1,)
       - run:
          name: test-cftests-typecheck-part2.sh
          command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-cftests-typecheck-part2.sh
@@ -96,9 +82,7 @@ circleci_boilerplate
 dnl
 define([typecheck_job], [dnl
   typecheck_jdk$1:
-    docker:
-      - image: 'mdernst/checkerframework-ubuntu-jdk$1'
-circleci_boilerplate
+circleci_boilerplate($1,)
       - run:
          name: test-cftests-typecheck.sh
          command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-cftests-typecheck.sh
@@ -107,9 +91,7 @@ dnl
 define([typecheck_job], [dnl
 ifelse($1,canary_version,,[dnl
   typecheck_jdk$1:
-    docker:
-     - image: 'mdernst/cf-ubuntu-jdk$1-plus[]docker_testing:latest'
-circleci_boilerplate
+circleci_boilerplate($1,)
       - run:
          name: test-typecheck.sh
          command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-typecheck.sh
@@ -117,16 +99,12 @@ circleci_boilerplate
 dnl
 define([daikon_job_split], [dnl
   daikon_part1_jdk$1:
-    docker:
-     - image: 'mdernst/cf-ubuntu-jdk$1[]docker_testing:latest'
-circleci_boilerplate
+circleci_boilerplate($1,)
       - run:
          name: test-daikon.sh
          command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-daikon-part1.sh
   daikon_part2_jdk$1:
-    docker:
-     - image: 'mdernst/cf-ubuntu-jdk$1[]docker_testing:latest'
-circleci_boilerplate
+circleci_boilerplate($1,)
       - run:
          name: test-daikon-part2.sh
          command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-daikon.sh
@@ -134,9 +112,7 @@ circleci_boilerplate
 dnl
 define([daikon_job], [dnl
   daikon_jdk$1:
-    docker:
-     - image: 'mdernst/cf-ubuntu-jdk$1[]docker_testing:latest'
-circleci_boilerplate
+circleci_boilerplate($1,)
       - run:
          name: test-daikon.sh
          command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-daikon.sh
@@ -144,9 +120,7 @@ circleci_boilerplate
 dnl
 define([guava_job], [dnl
   guava_jdk$1:
-    docker:
-     - image: 'mdernst/cf-ubuntu-jdk$1[]docker_testing:latest'
-circleci_boilerplate
+circleci_boilerplate($1,)
       - run:
          name: test-guava.sh
          command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-guava.sh
@@ -154,9 +128,7 @@ circleci_boilerplate
 dnl
 define([plume_lib_job], [dnl
   plume_lib_jdk$1:
-    docker:
-     - image: 'mdernst/cf-ubuntu-jdk$1[]docker_testing:latest'
-circleci_boilerplate
+circleci_boilerplate($1,)
       - run:
          name: test-plume-lib.sh
          command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-plume-lib.sh
