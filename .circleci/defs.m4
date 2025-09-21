@@ -8,9 +8,6 @@ define([circleci_boilerplate], [dnl
     resource_class: large
     environment:
       CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
-      GRADLE_OPTS: -Xmx7g
-      JVM_OPTS: -Xmx7g
-      # GRADLE_OPTS: -Xmx4g -Dorg.gradle.daemon=false
     steps:
       - restore_cache:
           keys:
