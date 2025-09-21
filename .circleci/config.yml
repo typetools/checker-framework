@@ -344,7 +344,7 @@ jobs:
           paths:
             - .git
       - run:
-         name: test-daikon.sh
+         name: test-daikon-part1.sh
          command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-daikon-part1.sh
          no_output_timeout: "30m"
   daikon_part2_jdk25:
@@ -368,7 +368,7 @@ jobs:
             - .git
       - run:
          name: test-daikon-part2.sh
-         command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-daikon.sh
+         command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-daikon-part2.sh
          no_output_timeout: "30m"
 
 

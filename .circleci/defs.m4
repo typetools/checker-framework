@@ -103,14 +103,14 @@ define([daikon_job_split], [dnl
   daikon_part1_jdk$1:
 circleci_boilerplate($1,)
       - run:
-         name: test-daikon.sh
+         name: test-daikon-part1.sh
          command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-daikon-part1.sh
          no_output_timeout: "30m"
   daikon_part2_jdk$1:
 circleci_boilerplate($1,)
       - run:
          name: test-daikon-part2.sh
-         command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-daikon.sh
+         command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-daikon-part2.sh
          no_output_timeout: "30m"
 ])dnl
 dnl
