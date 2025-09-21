@@ -95,7 +95,7 @@ ext {
     //  * Temporarily comment out "-Werror" elsewhere in this file
     //  * Repeatedly run `./gradlew clean compileJava` and fix all errors
     //  * Uncomment "-Werror"
-    errorprone      : '2.41.0',
+    errorprone      : '2.42.0',
   ]
 }
 
