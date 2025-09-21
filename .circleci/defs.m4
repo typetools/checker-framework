@@ -29,6 +29,7 @@ circleci_boilerplate($1,)
       - run:
          name: test-cftests-junit.sh
          command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-cftests-junit.sh
+         no_output_timeout: "30m"
 ])dnl
 dnl
 define([nonjunit_job], [dnl

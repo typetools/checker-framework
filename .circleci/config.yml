@@ -38,6 +38,7 @@ jobs:
       - run:
          name: test-cftests-junit.sh
          command: export ORG_GRADLE_PROJECT_jdkTestVersion=11 && ./checker/bin-devel/test-cftests-junit.sh
+         no_output_timeout: "30m"
 
   junit_jdk17:
     docker:
@@ -62,6 +63,7 @@ jobs:
       - run:
          name: test-cftests-junit.sh
          command: export ORG_GRADLE_PROJECT_jdkTestVersion=17 && ./checker/bin-devel/test-cftests-junit.sh
+         no_output_timeout: "30m"
 
   junit_jdk21:
     docker:
@@ -86,6 +88,7 @@ jobs:
       - run:
          name: test-cftests-junit.sh
          command: export ORG_GRADLE_PROJECT_jdkTestVersion=21 && ./checker/bin-devel/test-cftests-junit.sh
+         no_output_timeout: "30m"
 
   junit_jdk25:
     docker:
@@ -110,6 +113,7 @@ jobs:
       - run:
          name: test-cftests-junit.sh
          command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-cftests-junit.sh
+         no_output_timeout: "30m"
 
 
   nonjunit_jdk25:
