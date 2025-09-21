@@ -15,9 +15,9 @@ else
   DEBUG_FLAG=--debug
 fi
 
-echo "initial CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
 export CHECKERFRAMEWORK="${CHECKERFRAMEWORK:-$(pwd -P)}"
 echo "CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
 
 IS_CI="$("$SCRIPT_DIR"/is-ci.sh)"
 export IS_CI
@@ -38,11 +38,11 @@ fi
 echo "JAVA_HOME=${JAVA_HOME}"
 
 # Using `(cd "$CHECKERFRAMEWORK" && ./gradlew getGitScripts -q)` leads to infinite regress.
-GIT_SCRIPTS="$CHECKERFRAMEWORK/checker/bin-devel/.git-scripts"
+GIT_SCRIPTS="${SCRIPT_DIR}/.git-scripts"
 if [ -d "$GIT_SCRIPTS" ]; then
   (cd "$GIT_SCRIPTS" && (git pull -q || true))
 else
-  (cd "$CHECKERFRAMEWORK/checker/bin-devel" \
+  (cd "${SCRIPT_DIR}" \
     && (git clone --depth=1 -q https://github.com/plume-lib/git-scripts.git .git-scripts \
       || (sleep 60 && git clone --depth=1 -q https://github.com/plume-lib/git-scripts.git .git-scripts)))
 fi
