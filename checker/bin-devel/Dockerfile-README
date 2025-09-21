@@ -52,8 +52,8 @@ function create_upload_docker_image {
   mkdir -p $DOCKERDIR && \
   cd $DOCKERDIR && \
   \cp -pf ../Dockerfile-$OS-$JDKVER Dockerfile && \
-  docker build -t $DOCKERIMAGE . && \
-  docker push $DOCKERIMAGE && \
+  docker -l warn build -t $DOCKERIMAGE . && \
+  docker -l warn push $DOCKERIMAGE && \
   cd .. &&
   rm -rf $DOCKERDIR && \
   echo "***** Success in $DOCKERIMAGE *****") || \
@@ -61,26 +61,7 @@ function create_upload_docker_image {
 }
 
 
-(create_upload_docker_image cf ubuntu jdkbase && \
-create_upload_docker_image cf ubuntu jdkplus) & \
-(create_upload_docker_image cf ubunturolling jdkbase && \
-create_upload_docker_image cf ubunturolling jdkplus) & \
-wait && \
-(create_upload_docker_image cf ubuntu jdk11 && \
-create_upload_docker_image cf ubuntu jdk11-plus) & \
-(create_upload_docker_image cf ubuntu jdk17 && \
-create_upload_docker_image cf ubuntu jdk17-plus) & \
-(create_upload_docker_image cf ubuntu jdk21 && \
-create_upload_docker_image cf ubuntu jdk21-plus) & \
-(create_upload_docker_image cf ubuntu jdk24 && \
-create_upload_docker_image cf ubuntu jdk24-plus) & \
-(create_upload_docker_image cf ubuntu jdk25 && \
-create_upload_docker_image cf ubuntu jdk25-plus) & \
-wait && \
-git push && \
-echo "success"
-
-# Alternately, to run sequentially, which makes error messages easier to see:
+## Run sequentially.
 (create_upload_docker_image cf ubuntu jdk11 && \
 create_upload_docker_image cf ubuntu jdk11-plus) && \
 (create_upload_docker_image cf ubuntu jdk17 && \
@@ -91,6 +72,30 @@ create_upload_docker_image cf ubuntu jdk21-plus) && \
 create_upload_docker_image cf ubuntu jdk24-plus) && \
 (create_upload_docker_image cf ubuntu jdk25 && \
 create_upload_docker_image cf ubuntu jdk25-plus) && \
+git push && \
+echo "success"
+
+
+## This version might be faster with an SSD.  It might not be with a spinning disk.
+# These first few need not be uploaded, just created and locally cached.
+(create_upload_docker_image cf ubuntu jdkbase && \
+create_upload_docker_image cf ubuntu jdkplus) &
+(create_upload_docker_image cf ubunturolling jdkbase && \
+create_upload_docker_image cf ubunturolling jdkplus) &
+sleep 1
+wait
+(create_upload_docker_image cf ubuntu jdk11 && \
+create_upload_docker_image cf ubuntu jdk11-plus) &
+(create_upload_docker_image cf ubuntu jdk17 && \
+create_upload_docker_image cf ubuntu jdk17-plus) &
+(create_upload_docker_image cf ubuntu jdk21 && \
+create_upload_docker_image cf ubuntu jdk21-plus) &
+(create_upload_docker_image cf ubuntu jdk24 && \
+create_upload_docker_image cf ubuntu jdk24-plus) &
+(create_upload_docker_image cf ubuntu jdk25 && \
+create_upload_docker_image cf ubuntu jdk25-plus) &
+sleep 1
+wait && \
 git push && \
 echo "success"
 
