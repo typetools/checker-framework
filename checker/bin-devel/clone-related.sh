@@ -72,8 +72,8 @@ if [ -z "${NO_WRITE_VERIFICATION_METADATA+x}" ]; then
   (TERM=dumb timeout 300 ./gradlew --write-verification-metadata sha256 help --dry-run --quiet \
     || (echo "./gradlew --write-verification-metadata sha256 help --dry-run --quiet failed; sleeping before trying again." \
       && sleep 1m \
-      && echo "Trying again: ./gradlew --write-verification-metadata sha256 help --dry-run --quiet" \
-      && TERM=dumb timeout 300 ./gradlew --write-verification-metadata sha256 help --dry-run --quiet))
+      && echo "Trying again: ./gradlew --write-verification-metadata sha256 help --dry-run" \
+      && TERM=dumb timeout 300 ./gradlew --write-verification-metadata sha256 help --dry-run))
 fi
 
 echo Exiting checker/bin-devel/clone-related.sh in "$(pwd)"
