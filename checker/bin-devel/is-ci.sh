@@ -4,13 +4,13 @@
 
 if [ -n "$CI" ]; then
   echo "yes"
-elif [ -n "$GITHUB_ACTION" ]; then
-  echo "yes"
-elif [ -n "$TRAVIS" ]; then
-  echo "yes"
 elif [ -n "$AZURE_HTTP_USER_AGENT" ]; then
   echo "yes"
 elif [ -n "$CIRCLE_PR_USERNAME" ]; then
+  echo "yes"
+elif [ -n "$GITHUB_ACTIONS" ]; then
+  echo "yes"
+elif [ -n "$TRAVIS" ]; then
   echo "yes"
 else
   true
