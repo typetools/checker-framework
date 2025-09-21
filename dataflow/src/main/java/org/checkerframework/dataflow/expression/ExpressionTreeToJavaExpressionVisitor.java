@@ -976,6 +976,8 @@ class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<JavaExpres
         return null;
       }
       return types.getArrayType(componentType);
+    } else if (typeTree instanceof JCTree.JCAnnotatedType) {
+      return convertTreeToTypeMirror(((JCTree.JCAnnotatedType) typeTree).getUnderlyingType());
     }
     System.out.printf(
         "convertTreeToTypeMirror does not handle %s [%s]%n",
