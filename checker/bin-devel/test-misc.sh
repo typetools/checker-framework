@@ -44,7 +44,7 @@ if [ -f SKIP-REQUIRE-JAVADOC ]; then
 else
   (./gradlew requireJavadoc --warning-mode=all > /tmp/warnings-requireJavadoc.txt 2>&1) || true
   "$PLUME_SCRIPTS"/ci-lint-diff /tmp/warnings-requireJavadoc.txt || status=1
-  (gradle-ci javadocDoclintAll --warning-mode=all > /tmp/warnings-javadocDoclintAll.txt 2>&1) || true
+  (./gradlew javadocDoclintAll --warning-mode=all > /tmp/warnings-javadocDoclintAll.txt 2>&1) || true
   "$PLUME_SCRIPTS"/ci-lint-diff /tmp/warnings-javadocDoclintAll.txt || status=1
 fi
 if [ $status -ne 0 ]; then exit $status; fi
