@@ -1238,14 +1238,14 @@ subprojects {
       description = 'Run inference tests (part 1).'
       group = 'Verification'
       if (project.name.is('checker')) {
-        dependsOn('ainferTest', 'wpiManyTest')
+        dependsOn('wpiManyTest')
       }
     }
     tasks.register('inferenceTests-part2') {
       description = 'Run inference tests (part 2).'
       group = 'Verification'
       if (project.name.is('checker')) {
-        dependsOn('wpiPlumeLibTest')
+        dependsOn('ainferTest', 'wpiPlumeLibTest')
       }
     }
 
