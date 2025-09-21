@@ -71,21 +71,21 @@ define([typecheck_job_split], [dnl
   typecheck_part1_jdk$1:
 circleci_boilerplate($1,)
       - run:
-         name: test-cftests-typecheck-part1.sh
-         command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-cftests-typecheck-part1.sh
+         name: test-typecheck-part1.sh
+         command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-typecheck-part1.sh
   typecheck_part2_jdk$1:
 circleci_boilerplate($1,)
       - run:
-         name: test-cftests-typecheck-part2.sh
-         command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-cftests-typecheck-part2.sh
+         name: test-typecheck-part2.sh
+         command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-typecheck-part2.sh
 ])dnl
 dnl
 define([typecheck_job], [dnl
   typecheck_jdk$1:
 circleci_boilerplate($1,)
       - run:
-         name: test-cftests-typecheck.sh
-         command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-cftests-typecheck.sh
+         name: test-typecheck.sh
+         command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-typecheck.sh
 ])dnl
 dnl
 define([typecheck_job], [dnl
