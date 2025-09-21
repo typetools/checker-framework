@@ -73,14 +73,17 @@ fi
 ## Compile
 
 # Download Gradle and dependencies, retrying in case of network problems.
-# echo "NO_WRITE_VERIFICATION_METADATA=$NO_WRITE_VERIFICATION_METADATA"
-if [ -z "${NO_WRITE_VERIFICATION_METADATA+x}" ]; then
-  # Note that "timeout" is not compatible with shell functions.
-  TERM=dumb ./gradlew --write-verification-metadata sha256 help --dry-run --quiet \
-    || { echo "./gradlew --write-verification-metadata sha256 help --dry-run failed; sleeping before trying again." \
-      && sleep 1m \
-      && echo "Trying again: ./gradlew --write-verification-metadata sha256 help --dry-run" \
-      && TERM=dumb ./gradlew --write-verification-metadata sha256 help --dry-run; }
+# Under CircleCI, the `timeout` command seems to hang forever.
+if [ -z "$CIRCLECI" ]; then
+  # echo "NO_WRITE_VERIFICATION_METADATA=$NO_WRITE_VERIFICATION_METADATA"
+  if [ -z "${NO_WRITE_VERIFICATION_METADATA+x}" ]; then
+    # Note that "timeout" is not compatible with shell functions.
+    TERM=dumb ./gradlew --write-verification-metadata sha256 help --dry-run --quiet \
+      || { echo "./gradlew --write-verification-metadata sha256 help --dry-run failed; sleeping before trying again." \
+        && sleep 1m \
+        && echo "Trying again: ./gradlew --write-verification-metadata sha256 help --dry-run" \
+        && TERM=dumb ./gradlew --write-verification-metadata sha256 help --dry-run; }
+  fi
 fi
 
 java -XX:+PrintFlagsFinal -version | grep HeapSize
