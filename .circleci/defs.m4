@@ -69,7 +69,7 @@ dnl
 define([misc_job], [dnl
   misc_jdk$1:
     docker:
-      - image: 'mdernst/checkerframework-ubuntu-jdk$1'
+      - image: 'mdernst/checkerframework-ubuntu-jdk$1-plus'
 circleci_boilerplate
       - run:
          name: test-misc.sh
@@ -108,7 +108,7 @@ define([typecheck_job], [dnl
 ifelse($1,canary_version,,[dnl
   typecheck_jdk$1:
     docker:
-     - image: 'mdernst/cf-ubuntu-jdk$1-plus[]docker_testing:latest'
+     - image: 'mdernst/cf-ubuntu-jdk$1[]docker_testing:latest'
 circleci_boilerplate
       - run:
          name: test-typecheck.sh
