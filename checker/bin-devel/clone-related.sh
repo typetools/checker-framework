@@ -78,7 +78,7 @@ if [ -z "${NO_WRITE_VERIFICATION_METADATA+x}" ]; then
     || { echo "./gradlew --write-verification-metadata sha256 help --dry-run failed; sleeping before trying again." \
       && sleep 1m \
       && echo "Trying again: ./gradlew --write-verification-metadata sha256 help --dry-run" \
-      && TERM=dumb ./gradlew ${IS_CI:+"--no-daemon"} --console=plain --write-verification-metadata sha256 help --dry-run; }
+      && TERM=dumb ./gradlew --write-verification-metadata sha256 help --dry-run; }
 fi
 
 echo Exiting checker/bin-devel/clone-related.sh in "$(pwd)"
