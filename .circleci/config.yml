@@ -10,17 +10,20 @@ jobs:
   canary_jobs:
     docker:
       - image: 'cimg/base:2025.09'
+    resource_class: small
     environment:
       CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
+      TERM: dumb
     steps:
       - run: /bin/true
 
   junit_jdk11:
     docker:
-      - image: 'mdernst/checkerframework-ubuntu-jdk11'
+      - image: 'mdernst/cf-ubuntu-jdk11'
     resource_class: large
     environment:
       CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
+      TERM: dumb
     steps:
       - restore_cache:
           keys:
@@ -38,10 +41,11 @@ jobs:
 
   junit_jdk17:
     docker:
-      - image: 'mdernst/checkerframework-ubuntu-jdk17'
+      - image: 'mdernst/cf-ubuntu-jdk17'
     resource_class: large
     environment:
       CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
+      TERM: dumb
     steps:
       - restore_cache:
           keys:
@@ -59,10 +63,11 @@ jobs:
 
   junit_jdk21:
     docker:
-      - image: 'mdernst/checkerframework-ubuntu-jdk21'
+      - image: 'mdernst/cf-ubuntu-jdk21'
     resource_class: large
     environment:
       CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
+      TERM: dumb
     steps:
       - restore_cache:
           keys:
@@ -80,10 +85,11 @@ jobs:
 
   junit_jdk25:
     docker:
-      - image: 'mdernst/checkerframework-ubuntu-jdk25'
+      - image: 'mdernst/cf-ubuntu-jdk25'
     resource_class: large
     environment:
       CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
+      TERM: dumb
     steps:
       - restore_cache:
           keys:
@@ -102,10 +108,11 @@ jobs:
 
   nonjunit_jdk25:
     docker:
-      - image: 'mdernst/checkerframework-ubuntu-jdk25'
+      - image: 'mdernst/cf-ubuntu-jdk25'
     resource_class: large
     environment:
       CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
+      TERM: dumb
     steps:
       - restore_cache:
           keys:
@@ -129,10 +136,11 @@ jobs:
 # Split into part1 and part2 only for the inference job that "canary_jobs" depends on.
   inference_part1_jdk25:
     docker:
-      - image: 'mdernst/checkerframework-ubuntu-jdk25'
+      - image: 'mdernst/cf-ubuntu-jdk25'
     resource_class: large
     environment:
       CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
+      TERM: dumb
     steps:
       - restore_cache:
           keys:
@@ -149,10 +157,11 @@ jobs:
          command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-cftests-inference-part1.sh
   inference_part2_jdk25:
     docker:
-      - image: 'mdernst/checkerframework-ubuntu-jdk25'
+      - image: 'mdernst/cf-ubuntu-jdk25'
     resource_class: large
     environment:
       CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
+      TERM: dumb
     steps:
       - restore_cache:
           keys:
@@ -172,10 +181,11 @@ jobs:
 # Unlimited fetchDepth (0) for misc_jobs, because of need to make contributors.tex .
   misc_jdk11:
     docker:
-      - image: 'mdernst/checkerframework-ubuntu-jdk11'
+      - image: 'mdernst/cf-ubuntu-jdk11-plus'
     resource_class: large
     environment:
       CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
+      TERM: dumb
     steps:
       - restore_cache:
           keys:
@@ -193,10 +203,11 @@ jobs:
 
   misc_jdk17:
     docker:
-      - image: 'mdernst/checkerframework-ubuntu-jdk17'
+      - image: 'mdernst/cf-ubuntu-jdk17-plus'
     resource_class: large
     environment:
       CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
+      TERM: dumb
     steps:
       - restore_cache:
           keys:
@@ -214,10 +225,11 @@ jobs:
 
   misc_jdk21:
     docker:
-      - image: 'mdernst/checkerframework-ubuntu-jdk21'
+      - image: 'mdernst/cf-ubuntu-jdk21-plus'
     resource_class: large
     environment:
       CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
+      TERM: dumb
     steps:
       - restore_cache:
           keys:
@@ -235,10 +247,11 @@ jobs:
 
   misc_jdk25:
     docker:
-      - image: 'mdernst/checkerframework-ubuntu-jdk25'
+      - image: 'mdernst/cf-ubuntu-jdk25-plus'
     resource_class: large
     environment:
       CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
+      TERM: dumb
     steps:
       - restore_cache:
           keys:
@@ -258,10 +271,11 @@ jobs:
 # Split into part1 and part2 only for the typecheck job that "canary_jobs" depends on.
   typecheck_part1_jdk25:
     docker:
-      - image: 'mdernst/checkerframework-ubuntu-jdk25'
+      - image: 'mdernst/cf-ubuntu-jdk25'
     resource_class: large
     environment:
       CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
+      TERM: dumb
     steps:
       - restore_cache:
           keys:
@@ -274,14 +288,15 @@ jobs:
           paths:
             - .git
       - run:
-         name: test-cftests-typecheck-part1.sh
-         command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-cftests-typecheck-part1.sh
+         name: test-typecheck-part1.sh
+         command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-typecheck-part1.sh
   typecheck_part2_jdk25:
     docker:
-      - image: 'mdernst/checkerframework-ubuntu-jdk25'
+      - image: 'mdernst/cf-ubuntu-jdk25'
     resource_class: large
     environment:
       CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
+      TERM: dumb
     steps:
       - restore_cache:
           keys:
@@ -294,16 +309,17 @@ jobs:
           paths:
             - .git
       - run:
-         name: test-cftests-typecheck-part2.sh
-         command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-cftests-typecheck-part2.sh
+         name: test-typecheck-part2.sh
+         command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-typecheck-part2.sh
 
 
   daikon_part1_jdk25:
     docker:
-     - image: 'mdernst/cf-ubuntu-jdk25:latest'
+      - image: 'mdernst/cf-ubuntu-jdk25'
     resource_class: large
     environment:
       CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
+      TERM: dumb
     steps:
       - restore_cache:
           keys:
@@ -320,10 +336,11 @@ jobs:
          command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-daikon-part1.sh
   daikon_part2_jdk25:
     docker:
-     - image: 'mdernst/cf-ubuntu-jdk25:latest'
+      - image: 'mdernst/cf-ubuntu-jdk25'
     resource_class: large
     environment:
       CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
+      TERM: dumb
     steps:
       - restore_cache:
           keys:
@@ -343,10 +360,11 @@ jobs:
 ## I'm not sure why the guava_jdk11 job is failing (it's due to Error Prone).
   guava_jdk25:
     docker:
-     - image: 'mdernst/cf-ubuntu-jdk25:latest'
+      - image: 'mdernst/cf-ubuntu-jdk25'
     resource_class: large
     environment:
       CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
+      TERM: dumb
     steps:
       - restore_cache:
           keys:
@@ -361,14 +379,16 @@ jobs:
       - run:
          name: test-guava.sh
          command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-guava.sh
+         no_output_timeout: "30m"
 
 
   plume_lib_jdk25:
     docker:
-     - image: 'mdernst/cf-ubuntu-jdk25:latest'
+      - image: 'mdernst/cf-ubuntu-jdk25'
     resource_class: large
     environment:
       CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
+      TERM: dumb
     steps:
       - restore_cache:
           keys:
@@ -395,8 +415,6 @@ workflows:
           requires:
             - junit_jdk25
             - nonjunit_jdk25
-            - inference_part1_jdk25
-            - inference_part2_jdk25
             - typecheck_part1_jdk25
             - typecheck_part2_jdk25
             - misc_jdk25
@@ -419,8 +437,6 @@ workflows:
 
       - junit_jdk25
       - nonjunit_jdk25
-      - inference_part1_jdk25
-      - inference_part2_jdk25
       - misc_jdk11:
           requires:
             - canary_jobs
@@ -437,11 +453,31 @@ workflows:
             - misc_jdk25
 
       - misc_jdk25
-
       - typecheck_part1_jdk25
       - typecheck_part2_jdk25
-      - daikon_part1_jdk25
-      - daikon_part2_jdk25
-      - guava_jdk25
-      - plume_lib_jdk25
+
+      - inference_part1_jdk25:
+          requires:
+            - canary_jobs
+
+      - inference_part2_jdk25:
+          requires:
+            - canary_jobs
+
+      - daikon_part1_jdk25:
+          requires:
+            - canary_jobs
+
+      - daikon_part2_jdk25:
+          requires:
+            - canary_jobs
+
+      - guava_jdk25:
+          requires:
+            - canary_jobs
+
+      - plume_lib_jdk25:
+          requires:
+            - canary_jobs
+
 
