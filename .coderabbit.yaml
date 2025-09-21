@@ -23,8 +23,9 @@ reviews:
       - "draft"
     ignore_usernames:
       - "dependabot"
+      - "dependabot[bot]"
       - "mend"
-      - "renovate"
+      - "app/renovate"
   pre_merge_checks:
     title:
       mode: "off"
