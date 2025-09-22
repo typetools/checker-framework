@@ -19,12 +19,6 @@ export CHECKERFRAMEWORK="${CHECKERFRAMEWORK:-$(pwd -P)}"
 echo "CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
 
-IS_CI="$("$SCRIPT_DIR"/is-ci.sh)"
-export IS_CI
-if [ -n "$IS_CI" ]; then
-  export GRADLE_OPTS="${GRADLE_OPTS} -Dorg.gradle.daemon=false -Dorg.gradle.console=plain -Xmx4g"
-fi
-
 export SHELLOPTS
 echo "SHELLOPTS=${SHELLOPTS}"
 
@@ -85,23 +79,5 @@ if [ -z "$CIRCLECI" ]; then
         && TERM=dumb ./gradlew --write-verification-metadata sha256 help --dry-run; }
   fi
 fi
-
-java -XX:+PrintFlagsFinal -version | grep HeapSize
-echo JAVA_TOOL_OPTIONS="$JAVA_TOOL_OPTIONS"
-echo JDK_JAVA_OPTIONS="$JDK_JAVA_OPTIONS"
-echo _JAVA_OPTIONS="$_JAVA_OPTIONS"
-echo DEFAULT_JVM_OPTS="$DEFAULT_JVM_OPTS"
-echo GRADLE_OPTS="$GRADLE_OPTS"
-echo JAVA_OPTS="$JAVA_OPTS"
-
-# export JAVA_TOOL_OPTIONS='-Xmx4g'
-#
-# java -XX:+PrintFlagsFinal -version | grep HeapSize
-# echo JAVA_TOOL_OPTIONS="$JAVA_TOOL_OPTIONS"
-# echo JDK_JAVA_OPTIONS="$JDK_JAVA_OPTIONS"
-# echo _JAVA_OPTIONS="$_JAVA_OPTIONS"
-# echo DEFAULT_JVM_OPTS="$DEFAULT_JVM_OPTS"
-# echo GRADLE_OPTS="$GRADLE_OPTS"
-# echo JAVA_OPTS="$JAVA_OPTS"
 
 echo Exiting checker/bin-devel/clone-related.sh in "$(pwd)"
