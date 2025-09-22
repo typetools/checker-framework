@@ -1,6 +1,6 @@
 changequote
 changequote(`[',`]')dnl
-ifelse([The built-in "dnl" macro means "discard to next line".,])dnl
+ifelse([The built-in "dnl" macro means "discard to next line".],)dnl
 dnl
 ifelse([This macro takes one or two arguments, the JDK version, and a docker image name suffix like "-plus".])dnl
 define([circleci_boilerplate], [dnl
@@ -26,7 +26,7 @@ ifelse([Each macro takes one argument, the JDK version.])dnl
 dnl
 define([junit_job], [dnl
   junit_jdk$1:
-circleci_boilerplate($1)
+circleci_boilerplate($1,)
       - run:
          name: test-cftests-junit.sh
          command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-cftests-junit.sh
@@ -34,7 +34,7 @@ circleci_boilerplate($1)
 dnl
 define([nonjunit_job], [dnl
   nonjunit_jdk$1:
-circleci_boilerplate($1)
+circleci_boilerplate($1,)
       - run:
          name: test-cftests-nonjunit.sh
          command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-cftests-nonjunit.sh
@@ -44,18 +44,18 @@ define([inference_job], [dnl
 ifelse($1,canary_version, [dnl
 # Split into part1 and part2 only for the inference job that "canary_jobs" depends on.
   inference_part1_jdk$1:
-circleci_boilerplate($1)
+circleci_boilerplate($1,)
       - run:
          name: test-cftests-inference-part1.sh
          command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-cftests-inference-part1.sh
   inference_part2_jdk$1:
-circleci_boilerplate($1)
+circleci_boilerplate($1,)
       - run:
          name: test-cftests-inference-part2.sh
          command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-cftests-inference-part2.sh
 ], [dnl
   inference_jdk$1:
-circleci_boilerplate($1)
+circleci_boilerplate($1,)
       - run:
          name: test-cftests-inference.sh
          command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-cftests-inference.sh
@@ -73,12 +73,12 @@ define([typecheck_job], [dnl
 ifelse($1,canary_version,[dnl
 # Split into part1 and part2 only for the typecheck job that "canary_jobs" depends on.
   typecheck_part1_jdk$1:
-circleci_boilerplate($1)
+circleci_boilerplate($1,)
       - run:
          name: test-typecheck-part1.sh
          command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-typecheck-part1.sh
   typecheck_part2_jdk$1:
-circleci_boilerplate($1)
+circleci_boilerplate($1,)
       - run:
          name: test-typecheck-part2.sh
          command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-typecheck-part2.sh
@@ -93,27 +93,30 @@ dnl
 define([daikon_job], [dnl
 ifelse($1,canary_version, [dnl
   daikon_part1_jdk$1:
-circleci_boilerplate($1)
+circleci_boilerplate($1,)
       - run:
          name: test-daikon-part1.sh
          command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-daikon-part1.sh
+         no_output_timeout: "30m"
   daikon_part2_jdk$1:
-circleci_boilerplate($1)
+circleci_boilerplate($1,)
       - run:
          name: test-daikon-part2.sh
          command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-daikon-part2.sh
+         no_output_timeout: "30m"
 ], [dnl
   daikon_jdk$1:
-circleci_boilerplate($1)
+circleci_boilerplate($1,)
       - run:
          name: test-daikon.sh
          command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-daikon.sh
+         no_output_timeout: "30m"
 ])dnl
 ])dnl
 dnl
 define([guava_job], [dnl
   guava_jdk$1:
-circleci_boilerplate($1)
+circleci_boilerplate($1,)
       - run:
          name: test-guava.sh
          command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-guava.sh
@@ -122,7 +125,7 @@ circleci_boilerplate($1)
 dnl
 define([plume_lib_job], [dnl
   plume_lib_jdk$1:
-circleci_boilerplate($1)
+circleci_boilerplate($1,)
       - run:
          name: test-plume-lib.sh
          command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-plume-lib.sh
