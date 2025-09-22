@@ -34,7 +34,7 @@ SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
 BIN_DEVEL_DIR="${SCRIPT_DIR}/checker/bin-devel/"
 
 # For debugging
-(cd "$CHECKERFRAMEWORK" && ./gradlew --no-daemon --console=plain getPlumeScripts)
+(cd "$CHECKERFRAMEWORK" && ./gradlew --console=plain getPlumeScripts)
 "${BIN_DEVEL_DIR}/plume-scripts/ci-info" typetools
 eval "$("${BIN_DEVEL_DIR}/plume-scripts/ci-info" typetools)"
 
