@@ -1162,33 +1162,26 @@ subprojects {
     tasks.withType(Test) {
       jvmArgs += compilerArgsForRunningCF
 
-      // maxParallelForks controls the parallelism of a single Test task.
-      // --parallel controls parallelism for the entire build.
+      // maxParallelForks controls the parallelism of a single Test
+      // task. --parallel controls parallelism for the entire build.
 
       // Run tests in parallel, except on CI where it seems to lead to flaky failures.
-      if (System.getProperty("CI") != null ||
-          System.getProperty("APPVEYOR") != null ||
-          System.getProperty("AZURE_HTTP_USER_AGENT") != null ||
-          System.getProperty("CIRCLECI") != null ||
-          System.getProperty("GITHUB_ACTIONS") != null ||
-          System.getProperty("GITLAB_CI") != null ||
-          System.getProperty("TRAVIS") != null) {
-        // Running under CI.
+      // The TF_BUILD environment variable is set to 'True' for jobs running on Azure Pipelines.
+      if (!System.getenv('TF_BUILD')?.equals('True')) {
+        // Not running under Azure Pipelines CI.
 
-        // Parallelism seems to lead to flaky failures.
+        maxParallelForks = Runtime.runtime.availableProcessors() ?: 1
+      } else {
+        // Running under Azure Pipelines CI.
+
+        // Per Manu's comment above, on CI, parallelism seems to lead to flaky failures.
         maxParallelForks = 1
 
-        // Need to assess whether this helps.
-        // // Fork the test to try to improve performance.
-        // // https://docs.gradle.org/current/userguide/performance.html#fork_tests_into_multiple_processes
-        // // Note that "Forking a JVM is an expensive operation. Setting forkEvery too low can
-        // // increase test time due to excessive process startup overhead."
-        // tasks.withType(Test) {
-        //   forkEvery = 25
-        // }
-      } else {
-        // Not running under CI.
-        maxParallelForks = Runtime.runtime.availableProcessors() ?: 1
+        // Fork the test to try to improve performance.
+        // https://docs.gradle.org/current/userguide/performance.html#fork_tests_into_multiple_processes
+        tasks.withType(Test) {
+          forkEvery = 25
+        }
       }
 
       if (project.name.is('checker')) {
