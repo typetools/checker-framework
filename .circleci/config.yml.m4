@@ -10,8 +10,10 @@ jobs:
   canary_jobs:
     docker:
       - image: 'cimg/base:2025.09'
+    resource_class: small
     environment:
       CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
+      TERM: dumb
     steps:
       - run: /bin/true
 
@@ -27,8 +29,6 @@ workflows:
           requires:
             - junit_jdk[]canary_version
             - nonjunit_jdk[]canary_version
-            - inference_part1_jdk[]canary_version
-            - inference_part2_jdk[]canary_version
             - typecheck_part1_jdk[]canary_version
             - typecheck_part2_jdk[]canary_version
             - misc_jdk[]canary_version
@@ -39,17 +39,17 @@ job_dependences(17, junit)
 job_dependences(21, junit)
 job_dependences(25, junit)
 job_dependences(canary_version, nonjunit)
-job_dependences(canary_version, inference_part1)
-job_dependences(canary_version, inference_part2)
 job_dependences(11, misc)
 job_dependences(17, misc)
 job_dependences(21, misc)
 job_dependences(25, misc)
-
 job_dependences(canary_version, typecheck_part1)
 job_dependences(canary_version, typecheck_part2)
-job_dependences(canary_version, daikon_part1)
-job_dependences(canary_version, daikon_part2)
-job_dependences(canary_version, guava)
-job_dependences(canary_version, plume_lib)
+
+job_dependences_not_in_canary(canary_version, inference_part1)
+job_dependences_not_in_canary(canary_version, inference_part2)
+job_dependences_not_in_canary(canary_version, daikon_part1)
+job_dependences_not_in_canary(canary_version, daikon_part2)
+job_dependences_not_in_canary(canary_version, guava)
+job_dependences_not_in_canary(canary_version, plume_lib)
 

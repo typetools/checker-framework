@@ -1172,7 +1172,7 @@ subprojects {
           System.getProperty("CIRCLECI") != null ||
           System.getProperty("GITHUB_ACTIONS") != null ||
           System.getProperty("GITLAB_CI") != null ||
-          System.getProperty("TRAVIS") != null)  {
+          System.getProperty("TRAVIS") != null) {
         // Running under CI.
 
         // Parallelism seems to lead to flaky failures.
