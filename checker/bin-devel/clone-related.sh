@@ -22,7 +22,7 @@ SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
 IS_CI="$("$SCRIPT_DIR"/is-ci.sh)"
 export IS_CI
 if [ -n "$IS_CI" ]; then
-  export GRADLE_OPTS="${GRADLE_OPTS} -Dorg.gradle.daemon=false -Dorg.gradle.console=plain -Xmx4g"
+  export GRADLE_OPTS="${GRADLE_OPTS} -Dorg.gradle.console=plain -Xmx4g"
 fi
 
 export SHELLOPTS
