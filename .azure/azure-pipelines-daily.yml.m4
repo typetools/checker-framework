@@ -51,7 +51,6 @@ nonjunit_job(25)
 # takes much longer to complete than normal, and this Azure job times out.
 # When there is a timeout, one cannot examine wpi or wpi-many logs.
 # So use a timeout of 90 minutes, and hope that is enough.
-inference_job_split(canary_version)
 # Inference on JDK 11 seems to be broken because do-like-javac doesn't pass --release.
 # inference_job(11)
 inference_job(17)
@@ -61,13 +60,11 @@ inference_job(25)
 # Do not run misc_job daily, because it does diffs that assume it is running in
 # a pull request.
 
-typecheck_job_split(canary_version)
 typecheck_job(11)
 typecheck_job(17)
 typecheck_job(21)
 typecheck_job(25)
 
-daikon_job_split(canary_version)
 daikon_job(11)
 daikon_job(17)
 daikon_job(21)

@@ -385,7 +385,7 @@ jobs:
       - run:
          name: test-guava.sh
          command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-guava.sh
-         no_output_timeout: "50m"
+         no_output_timeout: "30m"
 
 
   plume_lib_jdk25:
@@ -421,8 +421,6 @@ workflows:
           requires:
             - junit_jdk25
             - nonjunit_jdk25
-            - inference_part1_jdk25
-            - inference_part2_jdk25
             - typecheck_part1_jdk25
             - typecheck_part2_jdk25
             - misc_jdk25
@@ -445,8 +443,6 @@ workflows:
 
       - junit_jdk25
       - nonjunit_jdk25
-      - inference_part1_jdk25
-      - inference_part2_jdk25
       - misc_jdk11:
           requires:
             - canary_jobs
@@ -466,8 +462,29 @@ workflows:
 
       - typecheck_part1_jdk25
       - typecheck_part2_jdk25
-      - daikon_part1_jdk25
-      - daikon_part2_jdk25
-      - guava_jdk25
-      - plume_lib_jdk25
+
+      - inference_part1_jdk25:
+          requires:
+            - canary_jobs
+
+      - inference_part2_jdk25:
+          requires:
+            - canary_jobs
+
+      - daikon_part1_jdk25:
+          requires:
+            - canary_jobs
+
+      - daikon_part2_jdk25:
+          requires:
+            - canary_jobs
+
+      - guava_jdk25:
+          requires:
+            - canary_jobs
+
+      - plume_lib_jdk25:
+          requires:
+            - canary_jobs
+
 
