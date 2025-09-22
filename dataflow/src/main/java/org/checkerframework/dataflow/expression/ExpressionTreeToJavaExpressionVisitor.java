@@ -978,11 +978,14 @@ class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<JavaExpres
       return types.getArrayType(componentType);
     } else if (typeTree instanceof JCTree.JCAnnotatedType) {
       return convertTreeToTypeMirror(((JCTree.JCAnnotatedType) typeTree).getUnderlyingType());
+    } else if (typeTree instanceof JCTree.JCTypeApply) {
+      return convertTreeToTypeMirror(((JCTree.JCTypeApply) typeTree).getType());
+    } else {
+      System.out.printf(
+          "convertTreeToTypeMirror does not handle %s [%s]%n",
+          typeTree, typeTree.getClass().getSimpleName());
+      return null;
     }
-    System.out.printf(
-        "convertTreeToTypeMirror does not handle %s [%s]%n",
-        typeTree, typeTree.getClass().getSimpleName());
-    return null;
   }
 
   // ///////////////////////////////////////////////////////////////////////////
