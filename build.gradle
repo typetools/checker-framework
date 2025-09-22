@@ -635,7 +635,7 @@ def createCheckTypeTask(projectName, taskName, checker, args = []) {
       '-AwarnRedundantAnnotations',
     ]
     options.compilerArgs += args
-    options.forkOptions.jvmArgs += ['-Xmx7g']
+    options.forkOptions.jvmArgs += ['-Xmx2g']
 
     options.fork = true
     options.forkOptions.jvmArgs += compilerArgsForRunningCF
