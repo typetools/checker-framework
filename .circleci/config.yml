@@ -38,6 +38,7 @@ jobs:
       - run:
          name: test-cftests-junit.sh
          command: export ORG_GRADLE_PROJECT_jdkTestVersion=11 && ./checker/bin-devel/test-cftests-junit.sh
+         no_output_timeout: "30m"
 
   junit_jdk17:
     docker:
@@ -60,6 +61,7 @@ jobs:
       - run:
          name: test-cftests-junit.sh
          command: export ORG_GRADLE_PROJECT_jdkTestVersion=17 && ./checker/bin-devel/test-cftests-junit.sh
+         no_output_timeout: "30m"
 
   junit_jdk21:
     docker:
@@ -82,6 +84,7 @@ jobs:
       - run:
          name: test-cftests-junit.sh
          command: export ORG_GRADLE_PROJECT_jdkTestVersion=21 && ./checker/bin-devel/test-cftests-junit.sh
+         no_output_timeout: "30m"
 
   junit_jdk25:
     docker:
@@ -104,6 +107,7 @@ jobs:
       - run:
          name: test-cftests-junit.sh
          command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-cftests-junit.sh
+         no_output_timeout: "30m"
 
 
   nonjunit_jdk25:
@@ -334,6 +338,7 @@ jobs:
       - run:
          name: test-daikon-part1.sh
          command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-daikon-part1.sh
+         no_output_timeout: "30m"
   daikon_part2_jdk25:
     docker:
       - image: 'mdernst/cf-ubuntu-jdk25'
@@ -355,6 +360,7 @@ jobs:
       - run:
          name: test-daikon-part2.sh
          command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-daikon-part2.sh
+         no_output_timeout: "30m"
 
 
 ## I'm not sure why the guava_jdk11 job is failing (it's due to Error Prone).
