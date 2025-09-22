@@ -89,7 +89,7 @@ test_wpi_plume_lib() {
   if ! cmp --quiet expected.txt actual.txt; then
     echo "Comparing $EXPECTED_FILE $ACTUAL_FILE in $(pwd)"
     diff -u expected.txt actual.txt
-    if [ -n "$CI" ] || [ -n "$APPVEYOR" ] || [ -n "$AZURE_HTTP_USER_AGENT" ] || [ -n "$CIRCLECI" ] || [ -n "$GITHUB_ACTIONS" ] || [ -n "$GITLAB_CI" ] || [ -n "$TRAVIS" ]; then
+    if [ -n "$AZURE_HTTP_USER_AGENT" ] || [ -n "$CIRCLE_PR_USERNAME" ] || [ -n "$GITHUB_HEAD_REF" ] || [ "$TRAVIS" = "true" ]; then
       # Running under continuous integration.  Output files that may be useful for debugging.
       echo "TESTDIR = ${TESTDIR}"
       echo "project = ${project}"
