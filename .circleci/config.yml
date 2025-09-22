@@ -410,7 +410,6 @@ jobs:
 # The "workflows" section determines which jobs run and what other jobs they depend on.
 # For an explanation of the dependence logic, see ../.azure/azure-pipelines.yml .
 workflows:
-  version: 2
   build:
     jobs:
       - canary_jobs:

@@ -1,7 +1,8 @@
 changequote
 changequote(`[',`]')dnl
+ifelse([The built-in "dnl" macro means "discard to next line".],)dnl
 dnl
-ifelse([this macro takes one or two arguments, the JDK version, and a docker image name suffix like "-plus"])dnl
+ifelse([This macro takes one or two arguments, the JDK version, and a docker image name suffix like "-plus".])dnl
 define([circleci_boilerplate], [dnl
     docker:
       - image: 'mdernst/cf-ubuntu-jdk$1[]$2[]docker_testing'
@@ -21,7 +22,7 @@ define([circleci_boilerplate], [dnl
           paths:
             - .git])dnl
 dnl
-ifelse([each macro takes one argument, the JDK version])dnl
+ifelse([Each macro takes one argument, the JDK version.])dnl
 dnl
 define([junit_job], [dnl
   junit_jdk$1:
@@ -150,6 +151,6 @@ define([job_dependences_not_in_canary], [dnl
 dnl
 ifelse([
 Local Variables:
-eval: (add-hook 'after-save-hook '(lambda () (compile "make")) nil 'local)
+eval: (add-hook 'after-save-hook '(lambda () (run-command nil "make")) nil 'local)
 end:
 ])dnl
