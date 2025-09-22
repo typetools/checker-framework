@@ -385,7 +385,7 @@ jobs:
       - run:
          name: test-guava.sh
          command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-guava.sh
-         no_output_timeout: "30m"
+         no_output_timeout: "50m"
 
 
   plume_lib_jdk25:
