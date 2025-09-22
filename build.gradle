@@ -95,7 +95,7 @@ ext {
     //  * Temporarily comment out "-Werror" elsewhere in this file
     //  * Repeatedly run `./gradlew clean compileJava` and fix all errors
     //  * Uncomment "-Werror"
-    errorprone      : '2.41.0',
+    errorprone      : '2.42.0',
   ]
 }
 
@@ -191,11 +191,11 @@ allprojects { currentProj ->
   }
 
   dependencies {
-    errorprone group: 'com.google.errorprone', name: 'error_prone_core', version: versions.errorprone
+    errorprone "com.google.errorprone:error_prone_core:${versions.errorprone}"
 
-    javacJar group: 'com.google.errorprone', name: 'javac', version: "9+181-r4173-1"
+    javacJar 'com.google.errorprone:javac:9+181-r4173-1'
 
-    errorproneJavac("com.google.errorprone:javac:9+181-r4173-1")
+    errorproneJavac 'com.google.errorprone:javac:9+181-r4173-1'
 
     allProjects subprojects
   }
@@ -1231,21 +1231,21 @@ subprojects {
       description = 'Run inference tests.'
       group = 'Verification'
       if (project.name.is('checker')) {
-        dependsOn('inferenceTests-part1', 'inferenceTests-part1')
+        dependsOn('inferenceTests-part1', 'inferenceTests-part2')
       }
     }
     tasks.register('inferenceTests-part1') {
       description = 'Run inference tests (part 1).'
       group = 'Verification'
       if (project.name.is('checker')) {
-        dependsOn('ainferTest', 'wpiManyTest')
+        dependsOn('wpiManyTest')
       }
     }
     tasks.register('inferenceTests-part2') {
       description = 'Run inference tests (part 2).'
       group = 'Verification'
       if (project.name.is('checker')) {
-        dependsOn('wpiPlumeLibTest')
+        dependsOn('ainferTest', 'wpiPlumeLibTest')
       }
     }
 

@@ -253,8 +253,8 @@ public class BackwardAnalysisImpl<
    *     Worklist}
    */
   protected void addStoreAfter(Block pred, @Nullable Node node, S s, boolean addBlockToWorklist) {
-    // If the block pred is an exception block, decide whether the block of passing node is an
-    // exceptional successor of the block pred
+    // If the block `pred` is an exception block, decide whether the block of passing node is an
+    // exceptional successor of the block `pred`.
     TypeMirror excSuccType = getSuccExceptionType(pred, node);
     if (excSuccType != null) {
       if (isIgnoredExceptionType(excSuccType)) {
