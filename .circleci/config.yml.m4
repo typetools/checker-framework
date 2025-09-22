@@ -43,7 +43,6 @@ job_dependences(11, misc)
 job_dependences(17, misc)
 job_dependences(21, misc)
 job_dependences(25, misc)
-
 job_dependences(canary_version, typecheck_part1)
 job_dependences(canary_version, typecheck_part2)
 

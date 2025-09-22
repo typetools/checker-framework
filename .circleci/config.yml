@@ -459,7 +459,6 @@ workflows:
             - misc_jdk25
 
       - misc_jdk25
-
       - typecheck_part1_jdk25
       - typecheck_part2_jdk25
 
