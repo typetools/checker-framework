@@ -8,6 +8,8 @@ elif [ -n "$APPVEYOR" ]; then
   echo "yes"
 elif [ -n "$AZURE_HTTP_USER_AGENT" ]; then
   echo "yes"
+elif [ -n "$TF_BUILD" ]; then
+  echo "yes"
 elif [ -n "$CIRCLECI" ]; then
   echo "yes"
 elif [ -n "$GITHUB_ACTIONS" ]; then
@@ -23,6 +25,10 @@ elif [ -n "$BUILDKITE" ]; then
 elif [ -n "$TEAMCITY_VERSION" ]; then
   echo "yes"
 elif [ -n "$DRONE" ]; then
+  echo "yes"
+elif [ -n "$DRONE_BUILD_NUMBER" ]; then
+  echo "yes"
+elif [ -n "$BITBUCKET_BUILD_NUMBER" ]; then
   echo "yes"
 else
   true
