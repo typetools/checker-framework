@@ -1162,27 +1162,27 @@ subprojects {
     tasks.withType(Test) {
       jvmArgs += compilerArgsForRunningCF
 
-      // maxParallelForks controls the parallelism of a single Test
-      // task. --parallel controls parallelism for the entire build.
+      // // maxParallelForks controls the parallelism of a single Test task.
+      // // --parallel controls parallelism for the entire build.
 
-      // Run tests in parallel, except on CI where it seems to lead to flaky failures.
-      // The TF_BUILD environment variable is set to 'True' for jobs running on Azure Pipelines.
-      if (!System.getenv('TF_BUILD')?.equals('True')) {
-        // Not running under Azure Pipelines CI.
+      // // Run tests in parallel, except on CI where it seems to lead to flaky failures.
+      // // The TF_BUILD environment variable is set to 'True' for jobs running on Azure Pipelines.
+      // if (!System.getenv('TF_BUILD')?.equals('True')) {
+      //   // Not running under Azure Pipelines CI.
 
-        maxParallelForks = Runtime.runtime.availableProcessors() ?: 1
-      } else {
-        // Running under Azure Pipelines CI.
+      //   maxParallelForks = Runtime.runtime.availableProcessors() ?: 1
+      // } else {
+      //   // Running under Azure Pipelines CI.
 
-        // Per Manu's comment above, on CI, parallelism seems to lead to flaky failures.
-        maxParallelForks = 1
+      //   // Per Manu's comment above, on CI, parallelism seems to lead to flaky failures.
+      //   maxParallelForks = 1
 
-        // Fork the test to try to improve performance.
-        // https://docs.gradle.org/current/userguide/performance.html#fork_tests_into_multiple_processes
-        tasks.withType(Test) {
-          forkEvery = 25
-        }
-      }
+      //   // Fork the test to try to improve performance.
+      //   // https://docs.gradle.org/current/userguide/performance.html#fork_tests_into_multiple_processes
+      //   tasks.withType(Test) {
+      //     forkEvery = 25
+      //   }
+      // }
 
       if (project.name.is('checker')) {
         dependsOn('assembleForJavac')
