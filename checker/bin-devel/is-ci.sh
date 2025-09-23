@@ -16,6 +16,14 @@ elif [ -n "$GITLAB_CI" ]; then
   echo "yes"
 elif [ -n "$TRAVIS" ]; then
   echo "yes"
+elif [ -n "$JENKINS_URL" ]; then
+  echo "yes"
+elif [ -n "$BUILDKITE" ]; then
+  echo "yes"
+elif [ -n "$TEAMCITY_VERSION" ]; then
+  echo "yes"
+elif [ -n "$DRONE" ]; then
+  echo "yes"
 else
   true
 fi
