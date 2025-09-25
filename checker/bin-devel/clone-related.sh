@@ -71,7 +71,6 @@ fi
 #   echo "... done: (cd ../jspecify/ && ./gradlew build)"
 # fi
 
-
 # Test that the CF, when built with JDK 21, works on other JDKs.
 export ORG_GRADLE_PROJECT_useJdk21Compiler=true
 
