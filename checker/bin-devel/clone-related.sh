@@ -79,7 +79,7 @@ export ORG_GRADLE_PROJECT_useJdk21Compiler=true
 # Prefer an OS-appropriate default only if JAVA21_HOME is unset and exists.
 if [ -z "${JAVA21_HOME:-}" ]; then
   if [ "$(uname)" = "Darwin" ]; then
-    CANDIDATE="$(/usr/libexec/java_home -v 21 2>/dev/null || true)"
+    CANDIDATE="$(/usr/libexec/java_home -v 21 2> /dev/null || true)"
     [ -n "$CANDIDATE" ] && export JAVA21_HOME="$CANDIDATE"
   elif [ -d /usr/lib/jvm/java-21-openjdk-amd64 ]; then
     export JAVA21_HOME=/usr/lib/jvm/java-21-openjdk-amd64
