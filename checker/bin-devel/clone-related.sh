@@ -71,21 +71,16 @@ fi
 #   echo "... done: (cd ../jspecify/ && ./gradlew build)"
 # fi
 
-# Run Gradle using Java 21.
+
+# Test that the CF, when built with JDK 21, works on other JDKs.
 export ORG_GRADLE_PROJECT_useJdk21Compiler=true
+
+# Set JAVA_HOME to JDK 21 so that Gradle runs using Java 21.
 if [ -z "${JAVA21_HOME}" ]; then
   export JAVA21_HOME=/usr/lib/jvm/java-21-openjdk-amd64
 fi
-# Edit `gradle.properties` file.
-GRADLE_DIR="${GRADLE_USER_HOME:-$HOME/.gradle}"
-mkdir -p "${GRADLE_DIR}"
-GRADLE_PROPS="${GRADLE_DIR}/gradle.properties"
-touch "${GRADLE_PROPS}"
-# Replace existing setting or append once
-if grep -q '^org\.gradle\.java\.home=' "${GRADLE_PROPS}"; then
-  sed -i.bak "s|^org\.gradle\.java\.home=.*$|org.gradle.java.home=${JAVA21_HOME}|" "${GRADLE_PROPS}"
-else
-  echo "org.gradle.java.home=${JAVA21_HOME}" >> "${GRADLE_PROPS}"
+if [ -d "${JAVA21_HOME}" ]; then
+    export JAVA_HOME=${JAVA21_HOME}
 fi
 
 ## Compile
