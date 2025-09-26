@@ -87,6 +87,9 @@ public @interface RequiresNonEmpty {
    * <p>Programmers generally do not need to write this. It is created by Java when a programmer
    * writes more than one {@link RequiresNonEmpty} annotation at the same location.
    */
+  @Documented
+  @Retention(RetentionPolicy.RUNTIME)
+  @Target({ElementType.METHOD, ElementType.PARAMETER})
   @interface List {
     /**
      * Returns the repeatable annotations.
