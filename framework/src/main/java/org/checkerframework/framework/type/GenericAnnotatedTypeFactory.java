@@ -1483,7 +1483,7 @@ public abstract class GenericAnnotatedTypeFactory<
         // Now analyze all methods.
         // TODO: at this point, we don't have any information about fields of superclasses.
         for (CFGMethod met : methods) {
-          analyzeMethod(classTree, met, classQueue, fieldValues, capturedStore);
+          preformFlowAnalysisMethod(classTree, met, classQueue, fieldValues, capturedStore);
         }
 
         while (!lambdaQueue.isEmpty()) {
@@ -1523,7 +1523,17 @@ public abstract class GenericAnnotatedTypeFactory<
     }
   }
 
-  private void analyzeMethod(
+  /**
+   * A helper method for {@link #performFlowAnalysis(ClassTree)} that analyzes {@code met} and all
+   * lambdas contained within it.
+   *
+   * @param classTree class tree containing {@code met}
+   * @param met method to analyze
+   * @param classQueue classes found in {@code met} are added to this queue
+   * @param fieldValues values of fields to be used
+   * @param capturedStore the input Store to use for captured variables, e.g. in a lambda
+   */
+  private void preformFlowAnalysisMethod(
       ClassTree classTree,
       CFGMethod met,
       Queue<IPair<ClassTree, Store>> classQueue,
@@ -1531,6 +1541,7 @@ public abstract class GenericAnnotatedTypeFactory<
       Store capturedStore) {
     boolean anyLambdaResultChanged = true;
     Map<LambdaExpressionTree, List<AnnotationMirrorSet>> lambdaResultTypeMap = new HashMap<>();
+    Map<LambdaExpressionTree, ControlFlowGraph> lambdaToCFG = new HashMap<>();
     ControlFlowGraph methodCFG = null;
     while (anyLambdaResultChanged) {
       Queue<IPair<ClassTree, Store>> classQueueInMethod = new ArrayDeque<>();
@@ -1553,19 +1564,20 @@ public abstract class GenericAnnotatedTypeFactory<
         LambdaExpressionTree lambda = lambdaPair.first;
         MethodTree mt =
             (MethodTree) TreePathUtil.enclosingOfKind(getPath(lambda), Tree.Kind.METHOD);
-        ControlFlowGraph cfg =
+        ControlFlowGraph cfgLambda = lambdaToCFG.get(lambda);
+        cfgLambda =
             analyze(
                 classQueueInMethod,
                 lambdaQueueForMet,
                 new CFGLambda(lambda, classTree, mt),
                 fieldValues,
                 classTree,
-                null,
+                cfgLambda,
                 false,
                 false,
                 false,
                 lambdaPair.second);
-        postAnalyze(cfg);
+        lambdaToCFG.put(lambda, cfgLambda);
 
         List<AnnotationMirrorSet> returnedExpressionTypes = new ArrayList<>();
         for (ExpressionTree expressionTree : TreeUtils.getReturnedExpressions(lambda)) {
@@ -1600,6 +1612,7 @@ public abstract class GenericAnnotatedTypeFactory<
       }
     }
     postAnalyze(methodCFG);
+    lambdaToCFG.values().forEach(this::postAnalyze);
   }
 
   /** Sorts a list of trees with the variables first. */
@@ -1625,10 +1638,12 @@ public abstract class GenericAnnotatedTypeFactory<
    * @param ast the AST to analyze
    * @param fieldValues the abstract values for all fields of the same class
    * @param currentClass the class we are currently looking at
+   * @param cfg control flow graph to use; if null, one will be created and returned
    * @param isInitializationCode are we analyzing a (static/non-static) initializer block of a class
    * @param updateInitializationStore should the initialization store be updated
    * @param isStatic are we analyzing a static construct
    * @param capturedStore the input Store to use for captured variables, e.g. in a lambda
+   * @return control flow graph for {@code ast}
    * @see #postAnalyze(org.checkerframework.dataflow.cfg.ControlFlowGraph)
    */
   protected ControlFlowGraph analyze(
