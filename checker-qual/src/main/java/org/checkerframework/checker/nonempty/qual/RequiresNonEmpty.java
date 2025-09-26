@@ -62,9 +62,9 @@ import org.checkerframework.framework.qual.PreconditionAnnotation;
  * This annotation should not be used for formal parameters (instead, give them a {@code @NonEmpty}
  * type). The {@code @RequiresNonEmpty} annotation is intended for non-parameter expressions, such
  * as field accesses or method calls.
- *
- * @checker_framework.manual #non-empty-checker Non-Empty Checker
  */
+// Reinstate when the Non-Empty Checker is publicized.
+//  * @checker_framework.manual #non-empty-checker Non-Empty Checker
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.PARAMETER})
