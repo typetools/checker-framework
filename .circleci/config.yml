@@ -1,0 +1,489 @@
+
+
+
+
+version: 2.1
+
+jobs:
+
+  # Only proceed to other jobs if canary_jobs passes.
+  canary_jobs:
+    docker:
+      - image: 'cimg/base:2025.09'
+    resource_class: small
+    environment:
+      CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
+      TERM: dumb
+    steps:
+      - run: /bin/true
+
+  junit_jdk11:
+    docker:
+      - image: 'mdernst/cf-ubuntu-jdk11'
+    resource_class: large
+    environment:
+      CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
+      TERM: dumb
+    steps:
+      - restore_cache:
+          keys:
+            - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
+            - 'source-v1-{{ .Branch }}-'
+            - source-v1-
+      - checkout
+      - save_cache:
+          key: *source-cache
+          paths:
+            - .git
+      - run:
+         name: test-cftests-junit.sh
+         command: export ORG_GRADLE_PROJECT_jdkTestVersion=11 && ./checker/bin-devel/test-cftests-junit.sh
+         no_output_timeout: "30m"
+
+  junit_jdk17:
+    docker:
+      - image: 'mdernst/cf-ubuntu-jdk17'
+    resource_class: large
+    environment:
+      CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
+      TERM: dumb
+    steps:
+      - restore_cache:
+          keys:
+            - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
+            - 'source-v1-{{ .Branch }}-'
+            - source-v1-
+      - checkout
+      - save_cache:
+          key: *source-cache
+          paths:
+            - .git
+      - run:
+         name: test-cftests-junit.sh
+         command: export ORG_GRADLE_PROJECT_jdkTestVersion=17 && ./checker/bin-devel/test-cftests-junit.sh
+         no_output_timeout: "30m"
+
+  junit_jdk21:
+    docker:
+      - image: 'mdernst/cf-ubuntu-jdk21'
+    resource_class: large
+    environment:
+      CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
+      TERM: dumb
+    steps:
+      - restore_cache:
+          keys:
+            - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
+            - 'source-v1-{{ .Branch }}-'
+            - source-v1-
+      - checkout
+      - save_cache:
+          key: *source-cache
+          paths:
+            - .git
+      - run:
+         name: test-cftests-junit.sh
+         command: export ORG_GRADLE_PROJECT_jdkTestVersion=21 && ./checker/bin-devel/test-cftests-junit.sh
+         no_output_timeout: "30m"
+
+  junit_jdk25:
+    docker:
+      - image: 'mdernst/cf-ubuntu-jdk25'
+    resource_class: large
+    environment:
+      CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
+      TERM: dumb
+    steps:
+      - restore_cache:
+          keys:
+            - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
+            - 'source-v1-{{ .Branch }}-'
+            - source-v1-
+      - checkout
+      - save_cache:
+          key: *source-cache
+          paths:
+            - .git
+      - run:
+         name: test-cftests-junit.sh
+         command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-cftests-junit.sh
+         no_output_timeout: "30m"
+
+
+  nonjunit_jdk25:
+    docker:
+      - image: 'mdernst/cf-ubuntu-jdk25'
+    resource_class: large
+    environment:
+      CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
+      TERM: dumb
+    steps:
+      - restore_cache:
+          keys:
+            - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
+            - 'source-v1-{{ .Branch }}-'
+            - source-v1-
+      - checkout
+      - save_cache:
+          key: *source-cache
+          paths:
+            - .git
+      - run:
+         name: test-cftests-nonjunit.sh
+         command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-cftests-nonjunit.sh
+
+
+# Sometimes one of the invocations of wpi-many in `./gradlew wpiManyTest`
+# takes much longer to complete than normal, and this Azure job times out.
+# When there is a timeout, one cannot examine wpi or wpi-many logs.
+# So use a timeout of 90 minutes, and hope that is enough.
+# Split into part1 and part2 only for the inference job that "canary_jobs" depends on.
+  inference_part1_jdk25:
+    docker:
+      - image: 'mdernst/cf-ubuntu-jdk25'
+    resource_class: large
+    environment:
+      CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
+      TERM: dumb
+    steps:
+      - restore_cache:
+          keys:
+            - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
+            - 'source-v1-{{ .Branch }}-'
+            - source-v1-
+      - checkout
+      - save_cache:
+          key: *source-cache
+          paths:
+            - .git
+      - run:
+         name: test-cftests-inference-part1.sh
+         command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-cftests-inference-part1.sh
+  inference_part2_jdk25:
+    docker:
+      - image: 'mdernst/cf-ubuntu-jdk25'
+    resource_class: large
+    environment:
+      CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
+      TERM: dumb
+    steps:
+      - restore_cache:
+          keys:
+            - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
+            - 'source-v1-{{ .Branch }}-'
+            - source-v1-
+      - checkout
+      - save_cache:
+          key: *source-cache
+          paths:
+            - .git
+      - run:
+         name: test-cftests-inference-part2.sh
+         command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-cftests-inference-part2.sh
+
+
+# Unlimited fetchDepth (0) for misc_jobs, because of need to make contributors.tex .
+  misc_jdk11:
+    docker:
+      - image: 'mdernst/cf-ubuntu-jdk11-plus'
+    resource_class: large
+    environment:
+      CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
+      TERM: dumb
+    steps:
+      - restore_cache:
+          keys:
+            - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
+            - 'source-v1-{{ .Branch }}-'
+            - source-v1-
+      - checkout
+      - save_cache:
+          key: *source-cache
+          paths:
+            - .git
+      - run:
+         name: test-misc.sh
+         command: export ORG_GRADLE_PROJECT_jdkTestVersion=11 && ./checker/bin-devel/test-misc.sh
+
+  misc_jdk17:
+    docker:
+      - image: 'mdernst/cf-ubuntu-jdk17-plus'
+    resource_class: large
+    environment:
+      CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
+      TERM: dumb
+    steps:
+      - restore_cache:
+          keys:
+            - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
+            - 'source-v1-{{ .Branch }}-'
+            - source-v1-
+      - checkout
+      - save_cache:
+          key: *source-cache
+          paths:
+            - .git
+      - run:
+         name: test-misc.sh
+         command: export ORG_GRADLE_PROJECT_jdkTestVersion=17 && ./checker/bin-devel/test-misc.sh
+
+  misc_jdk21:
+    docker:
+      - image: 'mdernst/cf-ubuntu-jdk21-plus'
+    resource_class: large
+    environment:
+      CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
+      TERM: dumb
+    steps:
+      - restore_cache:
+          keys:
+            - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
+            - 'source-v1-{{ .Branch }}-'
+            - source-v1-
+      - checkout
+      - save_cache:
+          key: *source-cache
+          paths:
+            - .git
+      - run:
+         name: test-misc.sh
+         command: export ORG_GRADLE_PROJECT_jdkTestVersion=21 && ./checker/bin-devel/test-misc.sh
+
+  misc_jdk25:
+    docker:
+      - image: 'mdernst/cf-ubuntu-jdk25-plus'
+    resource_class: large
+    environment:
+      CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
+      TERM: dumb
+    steps:
+      - restore_cache:
+          keys:
+            - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
+            - 'source-v1-{{ .Branch }}-'
+            - source-v1-
+      - checkout
+      - save_cache:
+          key: *source-cache
+          paths:
+            - .git
+      - run:
+         name: test-misc.sh
+         command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-misc.sh
+
+
+# Split into part1 and part2 only for the typecheck job that "canary_jobs" depends on.
+  typecheck_part1_jdk25:
+    docker:
+      - image: 'mdernst/cf-ubuntu-jdk25'
+    resource_class: large
+    environment:
+      CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
+      TERM: dumb
+    steps:
+      - restore_cache:
+          keys:
+            - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
+            - 'source-v1-{{ .Branch }}-'
+            - source-v1-
+      - checkout
+      - save_cache:
+          key: *source-cache
+          paths:
+            - .git
+      - run:
+         name: test-typecheck-part1.sh
+         command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-typecheck-part1.sh
+  typecheck_part2_jdk25:
+    docker:
+      - image: 'mdernst/cf-ubuntu-jdk25'
+    resource_class: large
+    environment:
+      CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
+      TERM: dumb
+    steps:
+      - restore_cache:
+          keys:
+            - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
+            - 'source-v1-{{ .Branch }}-'
+            - source-v1-
+      - checkout
+      - save_cache:
+          key: *source-cache
+          paths:
+            - .git
+      - run:
+         name: test-typecheck-part2.sh
+         command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-typecheck-part2.sh
+
+
+  daikon_part1_jdk25:
+    docker:
+      - image: 'mdernst/cf-ubuntu-jdk25'
+    resource_class: large
+    environment:
+      CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
+      TERM: dumb
+    steps:
+      - restore_cache:
+          keys:
+            - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
+            - 'source-v1-{{ .Branch }}-'
+            - source-v1-
+      - checkout
+      - save_cache:
+          key: *source-cache
+          paths:
+            - .git
+      - run:
+         name: test-daikon-part1.sh
+         command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-daikon-part1.sh
+         no_output_timeout: "30m"
+  daikon_part2_jdk25:
+    docker:
+      - image: 'mdernst/cf-ubuntu-jdk25'
+    resource_class: large
+    environment:
+      CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
+      TERM: dumb
+    steps:
+      - restore_cache:
+          keys:
+            - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
+            - 'source-v1-{{ .Branch }}-'
+            - source-v1-
+      - checkout
+      - save_cache:
+          key: *source-cache
+          paths:
+            - .git
+      - run:
+         name: test-daikon-part2.sh
+         command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-daikon-part2.sh
+         no_output_timeout: "30m"
+
+
+## I'm not sure why the guava_jdk11 job is failing (it's due to Error Prone).
+  guava_jdk25:
+    docker:
+      - image: 'mdernst/cf-ubuntu-jdk25'
+    resource_class: large
+    environment:
+      CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
+      TERM: dumb
+    steps:
+      - restore_cache:
+          keys:
+            - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
+            - 'source-v1-{{ .Branch }}-'
+            - source-v1-
+      - checkout
+      - save_cache:
+          key: *source-cache
+          paths:
+            - .git
+      - run:
+         name: test-guava.sh
+         command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-guava.sh
+         no_output_timeout: "50m"
+
+
+  plume_lib_jdk25:
+    docker:
+      - image: 'mdernst/cf-ubuntu-jdk25'
+    resource_class: large
+    environment:
+      CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
+      TERM: dumb
+    steps:
+      - restore_cache:
+          keys:
+            - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
+            - 'source-v1-{{ .Branch }}-'
+            - source-v1-
+      - checkout
+      - save_cache:
+          key: *source-cache
+          paths:
+            - .git
+      - run:
+         name: test-plume-lib.sh
+         command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-plume-lib.sh
+
+
+# The "workflows" section determines which jobs run and what other jobs they depend on.
+# For an explanation of the dependence logic, see ../.azure/azure-pipelines.yml .
+workflows:
+  version: 2
+  build:
+    jobs:
+      - canary_jobs:
+          requires:
+            - junit_jdk25
+            - nonjunit_jdk25
+            - typecheck_part1_jdk25
+            - typecheck_part2_jdk25
+            - misc_jdk25
+            - misc_jdk25
+
+      - junit_jdk11:
+          requires:
+            - canary_jobs
+            - junit_jdk25
+
+      - junit_jdk17:
+          requires:
+            - canary_jobs
+            - junit_jdk25
+
+      - junit_jdk21:
+          requires:
+            - canary_jobs
+            - junit_jdk25
+
+      - junit_jdk25
+      - nonjunit_jdk25
+      - misc_jdk11:
+          requires:
+            - canary_jobs
+            - misc_jdk25
+
+      - misc_jdk17:
+          requires:
+            - canary_jobs
+            - misc_jdk25
+
+      - misc_jdk21:
+          requires:
+            - canary_jobs
+            - misc_jdk25
+
+      - misc_jdk25
+      - typecheck_part1_jdk25
+      - typecheck_part2_jdk25
+
+      - inference_part1_jdk25:
+          requires:
+            - canary_jobs
+
+      - inference_part2_jdk25:
+          requires:
+            - canary_jobs
+
+      - daikon_part1_jdk25:
+          requires:
+            - canary_jobs
+
+      - daikon_part2_jdk25:
+          requires:
+            - canary_jobs
+
+      - guava_jdk25:
+          requires:
+            - canary_jobs
+
+      - plume_lib_jdk25:
+          requires:
+            - canary_jobs
+
+
