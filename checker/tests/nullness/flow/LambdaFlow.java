@@ -78,7 +78,7 @@ public class LambdaFlow {
 
   void flowIntoThenOutOfLambda() {
     if (field != null) {
-      // :: error: (assignment)
+      // :: error: (type.arguments.not.inferred)
       @NonNull String g = foo(s -> field);
     }
   }
