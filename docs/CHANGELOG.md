@@ -5,6 +5,8 @@ Version 3.51.1 (2025-10-02)
 
 **User-visible changes:**
 
+New Confidential Checker to identify sensitive information exposure.
+
 **Implementation details:**
 
 **Closed issues:**
