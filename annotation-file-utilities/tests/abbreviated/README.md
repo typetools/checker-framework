@@ -3,4 +3,3 @@ For motivation/explanation, see
 (Note that `C2` in the linked issue became `C0` here because the outcome
 depends on the order of the arguments, and `Makefile` passes the files
 to the annotator in reverse lexicographical order.)
-
