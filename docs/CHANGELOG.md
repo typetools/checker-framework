@@ -1613,7 +1613,8 @@ Version 3.4.1 (June 1, 2020)
 
 New command-line option:
 
-* `-AmergeStubsWithSource` If both a stub file and a source file are available, use both.
+* `-AmergeStubsWithSource` If both a stub file and a source file are available,
+  use both.
 
 **Closed issues:**
 #2893, #3021, #3128, #3160, #3232, #3277, #3285, #3289, #3295, #3302, #3305,

@@ -191,7 +191,7 @@ The number between the colons is the line number of the expected error
 message.  This format is harder to maintain, and we suggest using the
 in-line comment format.
 
-# Writing tests for a new checker or with different command-line arguments
+## Writing tests for a new checker or with different command-line arguments
 
 To create tests for a new checker, mimic some existing checker's tests:
 
