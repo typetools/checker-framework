@@ -1,12 +1,12 @@
+# Testing the Checker Framework
+
 This document describes how to write and run tests for the Checker
 Framework.  Writing and running tests is useful for bug submitters,
 checker writers, and Checker Framework maintainers.  Users of the Checker
 Framework and of the checkers packaged with it should read the manual
 instead; see file `../../docs/manual/manual.html`.
 
-
-How to run all the tests for the Checker Framework
-==================================================
+## How to run all the tests for the Checker Framework
 
 ```sh
   # To run from the checker-framework directory:
@@ -24,9 +24,7 @@ Other Gradle tasks also exist to run a subset of the tests; for example,
   ./gradlew tasks
 ```
 
-
-How to run just one test for the Checker Framework
-==================================================
+## How to run just one test for the Checker Framework
 
 To run a subset of the JUnit tests, use Gradle's `--tests` command-line
 argument, from a project directory such as `checker/`, `dataflow/`, or
@@ -43,24 +41,25 @@ file to be checked is `AssertNonNullTest.java` in directory
 `$CHECKERFRAMEWORK/checker/tests/nullness/` and the checker is
 `org.checkerframework.checker.nullness.NullnessChecker`.
 
+<!-- markdownlint-disable line-length -->
 ```sh
   cd $CHECKERFRAMEWORK
   ./gradlew assembleForJavac && checker/bin/javac -processor org.checkerframework.checker.nullness.NullnessChecker -implicit:class checker/tests/nullness/AssertNonNullTest.java
 ```
+<!-- markdownlint-enable line-length -->
 
 where the specific checker and command-line arguments are often clear from
 the directory name but can also be determined from a file such as
   `checker-framework/checker/tests/src/tests/MyTypeSystemTest.java`
 which is the source code for the test itself.
 
-
-Writing new tests for an existing checker
-=========================================
+## Writing new tests for an existing checker
 
 To create a new test case, just place a Java file in the test directory,
 whose name usually corresponds to the checker name, such as
 `checker-framework/checker/tests/nullness/` .  Unless the README file in
 the test directory specifies otherwise, then the Java file must
+
 1. Not issue any javac errors.
 2. Not declare a class with the same (fully qualified) name as any other class in
    the test directory.
@@ -71,6 +70,7 @@ The testing framework for the Checker Framework is built on top of JUnit.
 However, its tests are more like end-to-end system tests than unit tests.
 
 A checker test case has two parts:
+
   1. the Java class to be compiled, and
   2. a set of expected errors.
 Both parts can be expressed in one Java file (see below).
@@ -81,16 +81,14 @@ tests to check behavior related to unchecked bytecode.
 By convention, when a test is about an issue in the issue tracker, we write
 a comment at the top of the file, in this format:
 
-```
+```java
   // Test case for issue 266:
   // https://github.com/typetools/checker-framework/issues/266
 
   // @skip-test until the issue is fixed
 ```
 
-
-Specifying expected warnings and errors
-=======================================
+## Specifying expected warnings and errors
 
 A test case is a Java file that uses stylized comments to indicate expected
 error messages.
@@ -114,23 +112,31 @@ the source code) for `org.checkerframework.checker.nullness.NullnessVisitor`,
 or by creating the test and observing the failure.
 
 To indicate the expected failure, insert the line
-```
+
+```java
   // :: error: (<error-message-key>)
 ```
+
 directly preceding the expected error line.
 If a warning rather than an error is expected, insert the line
-```
+
+```java
   // :: warning: (<warning-message-key>)
 ```
+
 If a stub parser warning is expected, insert the line
-```
+
+```java
   //warning: AnnotationFileParser: <stub parser warning>
 ```
+
 If multiple errors are expected on a single line, duplicate everything
 except the "//" comment characters, as in
-```
+
+```java
   // :: error: (<error-message-key1>) :: error: (<error-message-key2>)
 ```
+
 If the expected failures line would be very long, you may break it across
 multiple comment lines.
 It is permitted to write a "// ::" comment after "{" that was at the end of
@@ -158,7 +164,7 @@ such as `checker-framework/checker/tests/interning/`,
 You can indicate an expected warning (as opposed to error) by using
 "warning:" instead of "error:", as in
 
-```
+```java
   // :: warning: (nulltest.redundant)
   assert val != null;
 ```
@@ -167,18 +173,17 @@ Multiple expected messages can be given on the same line using the
 "// :: A :: B :: C" syntax.  This example expects both an error and
 a warning from the same line of code:
 
-```
+```java
   @Regex String s1 = null;
   // :: error: (assignment) :: warning: (cast.unsafe)
   @Regex(3) String s2 = (@Regex(2) String) s;
 ```
 
-
 As an alternative to writing expected errors in the source file using "// ::"
 syntax, expected errors can be specified in a separate file using the .out
 file extension.  These files contain lines of the following format:
 
-```
+```output
 :19: error: (dereference.of.nullable)
 ```
 
@@ -186,19 +191,18 @@ The number between the colons is the line number of the expected error
 message.  This format is harder to maintain, and we suggest using the
 in-line comment format.
 
-
-Writing tests for a new checker or with different command-line arguments
-========================================================================
+# Writing tests for a new checker or with different command-line arguments
 
 To create tests for a new checker, mimic some existing checker's tests:
- * create a top-level test directory, such as
+
+* create a top-level test directory, such as
    checker-framework/checker/tests/regex for the test cases
- * create a top-level JUnit test in checker-framework/checker/src/test/java/tests,
+* create a top-level JUnit test in checker-framework/checker/src/test/java/tests,
    such as `RegexTest.java`.
    It is a subclass of `CheckerFrameworkPerDirectoryTest`, and its list of checker
    options must include "`-Anomsgtext`".  (See the API documentation for
    CheckerFrameworkPerDirectoryTest for more detailed information.)
- * include `all-systems/` as a test directly by adding it to the array created
+* include `all-systems/` as a test directly by adding it to the array created
    in getTestDirs in the new test class.  See
    `checker-framework/framework/tests/all-systems/README` for more details about
    the all-systems tests.
@@ -212,9 +216,7 @@ A Gradle task is created for each Junit test class.  The task is named the same
 as the Junit test classname, for example, `./gradlew RegexTest` runs the Regex
 Checker tests.
 
-
-Disabling a test case
-=====================
+## Disabling a test case
 
 Write `@skip-test` (in a comment) anywhere in a test file to disable that test.
 
@@ -234,23 +236,23 @@ it.
 To disable all tests for a given type system, annotate the JUnit test class
 with `@Ignore` (not in a comment).
 
-
-Annotated JDK
-=============
+## Annotated JDK
 
 The tests run with the annotated JDK.  Keep this in mind when writing tests.
 
-
-Seeing the javac commands that are run
-======================================
+## Seeing the javac commands that are run
 
 To see the exact javac commands that the Checker Framework test framework
 runs, use
-```
+
+```sh
   -Pemit.test.debug=true
 ```
+
 For example:
+
 ```sh
   ./gradlew NullnessStubfileTest -Pemit.test.debug=true
 ```
+
 This may be helpful during debugging.
