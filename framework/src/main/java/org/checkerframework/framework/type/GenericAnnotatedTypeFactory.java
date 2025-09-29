@@ -6,6 +6,7 @@ import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
@@ -14,6 +15,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.TreeScanner;
 import java.lang.annotation.Annotation;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -1543,6 +1545,7 @@ public abstract class GenericAnnotatedTypeFactory<
     Map<LambdaExpressionTree, List<AnnotationMirrorSet>> lambdaResultTypeMap = new HashMap<>();
     Map<LambdaExpressionTree, ControlFlowGraph> lambdaToCFG = new HashMap<>();
     ControlFlowGraph methodCFG = null;
+    boolean breakAfterMethod = false;
     while (anyLambdaResultChanged) {
       Queue<IPair<ClassTree, Store>> classQueueInMethod = new ArrayDeque<>();
       Queue<IPair<LambdaExpressionTree, @Nullable Store>> lambdaQueueForMet = new ArrayDeque<>();
@@ -1559,6 +1562,9 @@ public abstract class GenericAnnotatedTypeFactory<
               false,
               capturedStore);
       anyLambdaResultChanged = false;
+      if (breakAfterMethod) {
+        break;
+      }
       while (!lambdaQueueForMet.isEmpty()) {
         IPair<LambdaExpressionTree, @Nullable Store> lambdaPair = lambdaQueueForMet.poll();
         LambdaExpressionTree lambda = lambdaPair.first;
@@ -1600,6 +1606,41 @@ public abstract class GenericAnnotatedTypeFactory<
         }
         lambdaResultTypeMap.put(lambda, returnedExpressionTypes);
       }
+
+      for (LambdaExpressionTree lambda : lambdaToCFG.keySet()) {
+        if (lambdaResultTypeMap.get(lambda).isEmpty()) {
+          // Don't reanalyze.
+        } else {
+          List<VariableElement> paramsElements = new ArrayList<>();
+          TreeScanner<Boolean, List<VariableElement>> s =
+              new TreeScanner<Boolean, List<VariableElement>>() {
+                @Override
+                public Boolean visitIdentifier(
+                    IdentifierTree idTree, List<VariableElement> variableElements) {
+                  Element e = TreeUtils.elementFromTree(idTree);
+                  if (e.getKind() == ElementKind.LOCAL_VARIABLE
+                      || e.getKind() == ElementKind.PARAMETER) {
+                    return !variableElements.contains(e);
+                  }
+                  return false;
+                }
+
+                @Override
+                public Boolean visitVariable(
+                    VariableTree node, List<VariableElement> variableElements) {
+                  variableElements.add(TreeUtils.elementFromDeclaration(node));
+                  return super.visitVariable(node, variableElements);
+                }
+
+                @Override
+                public Boolean reduce(Boolean r1, Boolean r2) {
+                  return (r1 != null && r1) || (r2 != null && r2);
+                }
+              };
+          breakAfterMethod = !s.scan(lambda, paramsElements);
+        }
+      }
+
       if (anyLambdaResultChanged) {
         if (fromExpressionTreeCache != null) {
           // If one cache is not null, then neither are the others.
