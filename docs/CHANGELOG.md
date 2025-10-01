@@ -1,13 +1,11 @@
 <!-- markdownlint-disable no-missing-space-atx -->
 
-Version 3.51.1 (2025-10-02)
+Version 3.51.1 (2025-10-01)
 ---------------------------
 
-**User-visible changes:**
-
-**Implementation details:**
-
 **Closed issues:**
+#6623, #7250.
+
 
 Version 3.51.0 (2025-09-10)
 ---------------------------
