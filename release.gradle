@@ -109,7 +109,7 @@ tasks.register('copyToWebsite', Copy) {
   description = 'Copy files to location set in the property cfWebsite.'
   dependsOn(':allJavadoc', ':manual', ':zip', 'zipMavenExamples')
 
-  String cfWebsite = findProject('cfWebsite') ?: layout.buildDirectory.file('cfWebsite').get().toString()
+  String cfWebsite = findProperty('cfWebsite') ?: layout.buildDirectory.file('cfWebsite').get().toString()
   destinationDir = file(cfWebsite)
 
   from tasks.named('zip', Zip).get().archiveFile.get().toString()
