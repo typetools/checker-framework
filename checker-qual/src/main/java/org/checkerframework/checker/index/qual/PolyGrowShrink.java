@@ -13,6 +13,8 @@ import org.checkerframework.framework.qual.PolymorphicQualifier;
  * @checker_framework.manual #index-checker Index Checker
  * @checker_framework.manual #qualifier-polymorphism Qualifier polymorphism
  */
+// Reinstate when lists are supported:
+//  * @checker_framework.manual #growonly-checker Grow-only Checker
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})

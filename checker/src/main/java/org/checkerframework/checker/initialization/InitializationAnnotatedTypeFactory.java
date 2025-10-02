@@ -800,10 +800,8 @@ public abstract class InitializationAnnotatedTypeFactory<
         if (!TreeUtils.isStandaloneExpression(a)) {
           continue;
         }
-        boolean oldShouldCache = shouldCache;
-        shouldCache = false;
+
         AnnotatedTypeMirror t = getAnnotatedType(a);
-        shouldCache = oldShouldCache;
         allInitialized &= (isInitialized(t) || isFbcBottom(t));
       }
       if (!allInitialized) {

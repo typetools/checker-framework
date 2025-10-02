@@ -9,7 +9,7 @@ ext {
   //   * any new checkers have been added, or
   //   * backward-incompatible changes have been made to APIs or elsewhere.
   // To make a snapshot release, version should end in "-SNAPSHOT", then: ./gradlew publish
-  releaseVersion = '3.51.1-SNAPSHOT'
+  releaseVersion = '3.51.2-SNAPSHOT'
 
   releaseVersionRegex = "\\d\\.\\d+\\.\\d+(?:\\.\\d)?"
 
@@ -97,8 +97,10 @@ tasks.register('updateVersionNumbersInDocs', Copy) {
 tasks.register('zipMavenExamples', Zip) {
   description = 'Creates a zip archive for the Maven examples.'
   archiveFileName = "mvn-examples.zip"
-  // Defer reading of cfWebsite until execution time to avoid configuration failures.
-  destinationDirectory = layout.projectDirectory.dir(providers.gradleProperty('cfWebsite'))
+
+  def cfWebsite = providers.gradleProperty('cfWebsite')
+  destinationDirectory = file(cfWebsite.getOrElse(layout.buildDirectory.file('cfWebsite').get().toString()))
+
   from('docs/examples/MavenExample')
 }
 
@@ -107,15 +109,9 @@ tasks.register('copyToWebsite', Copy) {
   description = 'Copy files to location set in the property cfWebsite.'
   dependsOn(':allJavadoc', ':manual', ':zip', 'zipMavenExamples')
 
-  // Defer reading of cfWebsite until execution time and set the task's
-  // destination directory so it affects all subsequent `into` clauses.
-  def cfWebsite = providers.gradleProperty('cfWebsite')
-  doFirst {
-    if (!cfWebsite.isPresent()) {
-      throw new GradleException("Property 'cfWebsite' is required. Pass -PcfWebsite=/abs/or/relative/path")
-    }
-    destinationDir = file(cfWebsite.get())
-  }
+  String cfWebsite = findProperty('cfWebsite') ?: layout.buildDirectory.file('cfWebsite').get().toString()
+  destinationDir = file(cfWebsite)
+
   from tasks.named('zip', Zip).get().archiveFile.get().toString()
   from('docs') {
     include('checker-framework-webpage.html', 'CHANGELOG.md')
@@ -182,16 +178,19 @@ tasks.register('copyToWebsite', Copy) {
     into 'annotation-file-utilities'
   }
 
+  doFirst {
+    delete(cfWebsite)
+  }
+
   doLast {
-    def dest = cfWebsite.get()
-    delete(file("${dest}/index.html"))
-    Files.createSymbolicLink(file("${dest}/index.html").toPath(), Paths.get('checker-framework-webpage.html'))
+    delete("${cfWebsite}/index.html")
+    Files.createSymbolicLink(file("${cfWebsite}/index.html").toPath(), Paths.get('checker-framework-webpage.html'))
 
-    delete(file("${dest}/manual/index.html"))
-    Files.createSymbolicLink(file("${dest}/manual/index.html").toPath(), Paths.get('manual.html'))
+    delete("${cfWebsite}/manual/index.html")
+    Files.createSymbolicLink(file("${cfWebsite}/manual/index.html").toPath(), Paths.get('manual.html'))
 
-    delete "${dest}/annotation-file-utilities/index.html"
-    Files.createSymbolicLink(file("${dest}/annotation-file-utilities/index.html").toPath(), Paths.get('annotation-file-utilities.html'))
+    delete("${cfWebsite}/annotation-file-utilities/index.html")
+    Files.createSymbolicLink(file("${cfWebsite}/annotation-file-utilities/index.html").toPath(), Paths.get('annotation-file-utilities.html'))
   }
 }
 
@@ -200,10 +199,9 @@ tasks.register('updateCopyMavenExample', Copy) {
   description = 'Copies the Maven example to the location in property destDir.'
   // Defer reading of destDir until execution time and set the task's
   // destination directory so it affects all subsequent `into` clauses.
+
   def destDir = providers.gradleProperty('destDir').map { it + '/MavenExample' }
-  doFirst {
-    destinationDir = file(destDir.get())
-  }
+  destinationDir = file(destDir.getOrElse(layout.buildDirectory.file('cfWebsite/MavenExample').get().toString()))
   from 'docs/examples/MavenExample'
   filter { String line ->
     line.replaceAll("<!-- checker-framework-version -->(.*)<!-- /checker-framework-version -->", "<!-- checker-framework-version -->${releaseVersion}<!-- /checker-framework-version -->")
