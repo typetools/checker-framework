@@ -1584,6 +1584,11 @@ public abstract class GenericAnnotatedTypeFactory<
                 lambdaPair.second);
         lambdaToCFG.put(lambda, cfgLambda);
 
+        if (!mustReanalyzeMethod(lambdaToCFG.keySet())) {
+          classQueue.addAll(classQueueInMethod);
+          break;
+        }
+
         List<AnnotationMirrorSet> returnedExpressionTypes = new ArrayList<>();
         for (ExpressionTree expressionTree : TreeUtils.getReturnedExpressions(lambda)) {
           returnedExpressionTypes.add(getAnnotatedType(expressionTree).getPrimaryAnnotations());
@@ -1606,52 +1611,6 @@ public abstract class GenericAnnotatedTypeFactory<
         lambdaResultTypeMap.put(lambda, returnedExpressionTypes);
       }
 
-      boolean mustReanalyze = false;
-      for (LambdaExpressionTree lambda : lambdaToCFG.keySet()) {
-        if (lambdaResultTypeMap.get(lambda).isEmpty()) {
-          // the lambda return type is void.
-          continue;
-        }
-        TreePath p = getPath(lambda).getParentPath();
-        Tree outer = DefaultTypeArgumentInference.outerInference(lambda, p);
-        if (outer == lambda) {
-          continue;
-        }
-
-        if (lambda.getBodyKind() == BodyKind.EXPRESSION) {
-          List<VariableElement> paramsElements = new ArrayList<>();
-          TreeScanner<Boolean, List<VariableElement>> s =
-              new TreeScanner<Boolean, List<VariableElement>>() {
-                @Override
-                public Boolean visitConditionalExpression(
-                    ConditionalExpressionTree node, List<VariableElement> variableElements) {
-                  return true;
-                }
-
-                @Override
-                public Boolean visitAssignment(
-                    AssignmentTree node, List<VariableElement> variableElements) {
-                  return true;
-                }
-
-                @Override
-                public Boolean reduce(Boolean r1, Boolean r2) {
-                  return (r1 != null && r1) || (r2 != null && r2);
-                }
-              };
-          if (!s.scan(lambda, paramsElements)) {
-            continue;
-          }
-        }
-        mustReanalyze = true;
-        break;
-      }
-
-      if (!mustReanalyze) {
-        classQueue.addAll(classQueueInMethod);
-        break;
-      }
-
       if (anyLambdaResultChanged) {
         if (fromExpressionTreeCache != null) {
           // If one cache is not null, then neither are the others.
@@ -1665,6 +1624,64 @@ public abstract class GenericAnnotatedTypeFactory<
     }
     postAnalyze(methodCFG);
     lambdaToCFG.values().forEach(this::postAnalyze);
+  }
+
+  /**
+   * Returns true if the method containing all lambdas in {@code lambdas} must be reanalyzed.
+   *
+   * @param lambdas lambdas that are all contained within the same method.
+   * @return true if the method containing all lambdas in {@code lambdas} must be reanalyzed.
+   */
+  private boolean mustReanalyzeMethod(Set<LambdaExpressionTree> lambdas) {
+    boolean mustReanalyze = false;
+    for (LambdaExpressionTree lambda : lambdas) {
+      if (TypesUtils.findFunctionType(TreeUtils.typeOf(lambda), processingEnv)
+              .getReturnType()
+              .getKind()
+          == TypeKind.VOID) {
+        // the lambda return type is void.
+        continue;
+      }
+      TreePath p = getPath(lambda).getParentPath();
+      Tree outer = DefaultTypeArgumentInference.outerInference(lambda, p);
+      @SuppressWarnings("interning:not.interned") // looking for exact tree.
+      boolean isSameTree = outer == lambda;
+      if (isSameTree) {
+        // The lambda is not a part of a type argument inference problem.
+        continue;
+      }
+
+      if (lambda.getBodyKind() == BodyKind.EXPRESSION) {
+        List<VariableElement> paramsElements = new ArrayList<>();
+        TreeScanner<Boolean, List<VariableElement>> s =
+            new TreeScanner<Boolean, List<VariableElement>>() {
+              @Override
+              public Boolean visitConditionalExpression(
+                  ConditionalExpressionTree node, List<VariableElement> variableElements) {
+                return true;
+              }
+
+              @Override
+              public Boolean visitAssignment(
+                  AssignmentTree node, List<VariableElement> variableElements) {
+                return true;
+              }
+
+              @Override
+              public Boolean reduce(Boolean r1, Boolean r2) {
+                return (r1 != null && r1) || (r2 != null && r2);
+              }
+            };
+        if (!s.scan(lambda, paramsElements)) {
+          // The lambda's body is an expression which contain no expressions that can be refined by
+          // dataflow.
+          continue;
+        }
+      }
+      mustReanalyze = true;
+      break;
+    }
+    return mustReanalyze;
   }
 
   /** Sorts a list of trees with the variables first. */
