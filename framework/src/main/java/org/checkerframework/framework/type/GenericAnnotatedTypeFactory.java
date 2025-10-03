@@ -1,13 +1,15 @@
 package org.checkerframework.framework.type;
 
 import com.google.common.collect.Ordering;
+import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.LambdaExpressionTree;
+import com.sun.source.tree.LambdaExpressionTree.BodyKind;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
@@ -114,6 +116,7 @@ import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesTreeAnnotator;
+import org.checkerframework.framework.util.typeinference8.DefaultTypeArgumentInference;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -1545,7 +1548,6 @@ public abstract class GenericAnnotatedTypeFactory<
     Map<LambdaExpressionTree, List<AnnotationMirrorSet>> lambdaResultTypeMap = new HashMap<>();
     Map<LambdaExpressionTree, ControlFlowGraph> lambdaToCFG = new HashMap<>();
     ControlFlowGraph methodCFG = null;
-    boolean breakAfterMethod = false;
     while (anyLambdaResultChanged) {
       Queue<IPair<ClassTree, Store>> classQueueInMethod = new ArrayDeque<>();
       Queue<IPair<LambdaExpressionTree, @Nullable Store>> lambdaQueueForMet = new ArrayDeque<>();
@@ -1562,9 +1564,6 @@ public abstract class GenericAnnotatedTypeFactory<
               false,
               capturedStore);
       anyLambdaResultChanged = false;
-      if (breakAfterMethod) {
-        break;
-      }
       while (!lambdaQueueForMet.isEmpty()) {
         IPair<LambdaExpressionTree, @Nullable Store> lambdaPair = lambdaQueueForMet.poll();
         LambdaExpressionTree lambda = lambdaPair.first;
@@ -1607,29 +1606,32 @@ public abstract class GenericAnnotatedTypeFactory<
         lambdaResultTypeMap.put(lambda, returnedExpressionTypes);
       }
 
+      boolean mustReanalyze = false;
       for (LambdaExpressionTree lambda : lambdaToCFG.keySet()) {
         if (lambdaResultTypeMap.get(lambda).isEmpty()) {
-          // Don't reanalyze.
-        } else {
+          // the lambda return type is void.
+          continue;
+        }
+        TreePath p = getPath(lambda).getParentPath();
+        Tree outer = DefaultTypeArgumentInference.outerInference(lambda, p);
+        if (outer == lambda) {
+          continue;
+        }
+
+        if (lambda.getBodyKind() == BodyKind.EXPRESSION) {
           List<VariableElement> paramsElements = new ArrayList<>();
           TreeScanner<Boolean, List<VariableElement>> s =
               new TreeScanner<Boolean, List<VariableElement>>() {
                 @Override
-                public Boolean visitIdentifier(
-                    IdentifierTree idTree, List<VariableElement> variableElements) {
-                  Element e = TreeUtils.elementFromTree(idTree);
-                  if (e.getKind() == ElementKind.LOCAL_VARIABLE
-                      || e.getKind() == ElementKind.PARAMETER) {
-                    return !variableElements.contains(e);
-                  }
-                  return false;
+                public Boolean visitConditionalExpression(
+                    ConditionalExpressionTree node, List<VariableElement> variableElements) {
+                  return true;
                 }
 
                 @Override
-                public Boolean visitVariable(
-                    VariableTree node, List<VariableElement> variableElements) {
-                  variableElements.add(TreeUtils.elementFromDeclaration(node));
-                  return super.visitVariable(node, variableElements);
+                public Boolean visitAssignment(
+                    AssignmentTree node, List<VariableElement> variableElements) {
+                  return true;
                 }
 
                 @Override
@@ -1637,8 +1639,17 @@ public abstract class GenericAnnotatedTypeFactory<
                   return (r1 != null && r1) || (r2 != null && r2);
                 }
               };
-          breakAfterMethod = !s.scan(lambda, paramsElements);
+          if (!s.scan(lambda, paramsElements)) {
+            continue;
+          }
         }
+        mustReanalyze = true;
+        break;
+      }
+
+      if (!mustReanalyze) {
+        classQueue.addAll(classQueueInMethod);
+        break;
       }
 
       if (anyLambdaResultChanged) {
