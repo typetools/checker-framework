@@ -2668,7 +2668,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     boolean useUncheckedDefaultsForSource = false;
     boolean useUncheckedDefaultsForByteCode = false;
     for (String arg : this.getStringsOption("useConservativeDefaultsForUncheckedCode", ',')) {
-      boolean value = arg.indexOf("-") != 0;
+      boolean value = arg.indexOf('-') != 0;
       arg = value ? arg : arg.substring(1);
       if (arg.equals(kindOfCode)) {
         return value;
@@ -2779,7 +2779,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     }
 
     for (String currentSuppressWarningsInEffect : suppressWarningsInEffect) {
-      int colonPos = currentSuppressWarningsInEffect.indexOf(":");
+      int colonPos = currentSuppressWarningsInEffect.indexOf(':');
       String messageKeyInSuppressWarningsString;
       if (colonPos == -1) {
         // The SuppressWarnings string has no colon, so it is not of the form

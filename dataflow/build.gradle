@@ -12,7 +12,7 @@ dependencies {
 
   implementation "org.plumelib:hashmap-util:${versions.hashmapUtil}"
 
-  testImplementation group: 'junit', name: 'junit', version: '4.13.2'
+  testImplementation 'junit:junit:4.13.2'
 
   // External dependencies:
   // If you add an external dependency, you must shadow its packages both in the dataflow-shaded
@@ -74,7 +74,7 @@ tasks.register('manual', Exec) {
 }
 
 clean {
-  delete('manual/checker-framework-dataflow-manual.aux' ,'manual/checker-framework-dataflow-manual.log','manual/checker-framework-dataflow-manual.out','manual/checker-framework-dataflow-manual.pdf')
+  delete('manual/checker-framework-dataflow-manual.aux', 'manual/checker-framework-dataflow-manual.log', 'manual/checker-framework-dataflow-manual.out', 'manual/checker-framework-dataflow-manual.pdf')
 }
 
 tasks.register('allDataflowTests') {
@@ -226,7 +226,7 @@ final dataflowShadedPom(MavenPublication publication, String shadedPkgName) {
           .appendNode('groupId', 'org.checkerframework').parent()
           .appendNode('artifactId', 'checker-qual').parent()
           .appendNode('version', version).parent()
-          .appendNode('scope','runtime')
+          .appendNode('scope', 'runtime')
     }
   }
 }

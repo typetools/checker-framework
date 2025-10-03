@@ -70,6 +70,7 @@ final checkerQualAndroidPom(publication) {
     }
   }
 }
+
 publishing {
   publications {
     checkerQualAndroid(MavenPublication) {
