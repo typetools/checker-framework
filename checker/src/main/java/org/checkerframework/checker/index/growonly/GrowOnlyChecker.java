@@ -13,9 +13,9 @@ import org.checkerframework.framework.source.SuppressWarningsPrefix;
  * methods that can shrink the sequence (e.g., {@code remove()}, {@code clear()}). This allows other
  * checkers, like the Upper Bound Checker, to reason that indices for {@code @GrowOnly} collections
  * remain valid after mutations.
- *
- * @checker_framework.manual #growonly-checker Index Checker
  */
+// Reinstate when lists are supported:
+//  * @checker_framework.manual #growonly-checker Index Checker
 @RelevantJavaTypes({Collection.class, Iterator.class})
 @SuppressWarningsPrefix({"index", "mutable"})
 public class GrowOnlyChecker extends BaseTypeChecker {

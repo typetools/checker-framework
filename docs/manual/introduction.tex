@@ -187,7 +187,7 @@ plugin'' as synonyms.
 This section describes how to install the Checker Framework.
 \begin{itemize}
 \item
-If you use a build system that automatically downloads dependencies,
+If you use a \textbf{build system} that automatically downloads dependencies,
 such as Gradle or Maven, \textbf{no installation is necessary}; just see
 \chapterpageref{external-tools}.
 \item
@@ -214,7 +214,7 @@ optional step.
   %BEGIN LATEX
   \\
   %END LATEX
-  \url{https://checkerframework.org/checker-framework-3.50.0.zip}
+  \url{https://checkerframework.org/checker-framework-3.51.1.zip}
 
   For example, on Unix you can run: \<wget https://checkerframework.org/checker-framework-\ReleaseVersion{}.zip>
 
@@ -484,7 +484,7 @@ This special syntax only works for ``\<checker.jar>''.
 % .)
 
 The annotated libraries that are provided as class files appear in
-\href{https://search.maven.org/search?q=org.checkerframework.annotatedlib}{the
+\href{https://central.sonatype.com/search?q=org.checkerframework.annotatedlib}{the
   \<org.checkerframework.annotatedlib> group in the Maven Central Repository}.
 The annotated library has \emph{identical} behavior to the upstream,
 unannotated version; the source code is identical other than added
@@ -504,7 +504,7 @@ To use an annotated library:
 \begin{itemize}
 \item
 If your project stores \<.jar> files locally, then
-\href{https://search.maven.org/search?q=org.checkerframework.annotatedlib}{download
+\href{https://central.sonatype.com/search?q=org.checkerframework.annotatedlib}{download
   the \<.jar> file from the Maven Central Repository}.
 
 \item
@@ -1688,7 +1688,7 @@ or suppress warnings.
 % LocalWords:  AinvariantArrays AcheckCastElementType formatter pathname
 % LocalWords:  typedef guieffect Gradle jdk8 javadoc MyFile argfiles tz1
 % LocalWords:  AshowSuppressWarningsStrings AoutputArgsToFile RegexChecker
-% LocalWords:  NullnessChecker commandlineargfile AnnotatedFor Xmx2500m
+% LocalWords:  NullnessChecker commandlineargfile AnnotatedFor
 % LocalWords:  AsafeDefaultsForUnannotatedBytecode Signedness Werror jaif
 % LocalWords:  AuseSafeDefaultsForUnannotatedSourceCode beingConstructed
 % LocalWords:  AuseConservativeDefaultsForUncheckedCode AresolveReflection Ainfer

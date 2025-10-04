@@ -111,7 +111,7 @@ clean:
 
 very-clean: very_clean
 very_clean: clean
-	@\rm -f manual.html CFLogo.png manual001.png favicon-checkerframework.png *.svg
+	@\rm -f manual.html manual.bbl CFLogo.png manual001.png favicon-checkerframework.png *.svg
 
 .PHONY: checklink
 checklink:

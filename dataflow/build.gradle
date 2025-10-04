@@ -12,7 +12,7 @@ dependencies {
 
   implementation "org.plumelib:hashmap-util:${versions.hashmapUtil}"
 
-  testImplementation group: 'junit', name: 'junit', version: '4.13.2'
+  testImplementation 'junit:junit:4.13.2'
 
   // External dependencies:
   // If you add an external dependency, you must shadow its packages both in the dataflow-shaded
@@ -30,8 +30,10 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
  * @return
  */
 def createDataflowShaded(shadedPkgName) {
-  tasks.create(name: "dataflow${shadedPkgName}Jar", type: ShadowJar, dependsOn: compileJava, group: 'Build') {
+  tasks.register("dataflow${shadedPkgName}Jar", ShadowJar) {
     description = "Builds dataflow-${shadedPkgName}.jar."
+    group = 'Build'
+    dependsOn(compileJava)
     includeEmptyDirs = false
     base {
       archivesName = "dataflow-${shadedPkgName}"
@@ -65,17 +67,19 @@ createDataflowShaded('shaded')
 createDataflowShaded('nullaway')
 createDataflowShaded('errorprone')
 
-task manual(type: Exec, group: 'Documentation') {
+tasks.register('manual', Exec) {
   description = 'Build the manual'
+  group = 'Documentation'
   commandLine 'make', '-C', 'manual'
 }
 
 clean {
-  delete('manual/checker-framework-dataflow-manual.aux' ,'manual/checker-framework-dataflow-manual.log','manual/checker-framework-dataflow-manual.out','manual/checker-framework-dataflow-manual.pdf')
+  delete('manual/checker-framework-dataflow-manual.aux', 'manual/checker-framework-dataflow-manual.log', 'manual/checker-framework-dataflow-manual.out', 'manual/checker-framework-dataflow-manual.pdf')
 }
 
-tasks.create(name: 'allDataflowTests', group: 'Verification') {
+tasks.register('allDataflowTests') {
   description = 'Run all dataflow analysis tests'
+  group = 'Verification'
   // 'allDataflowTests' is automatically populated by testDataflowAnalysis().
 }
 
@@ -90,12 +94,12 @@ tasks.create(name: 'allDataflowTests', group: 'Verification') {
  * @param taskName the task name for the new task
  * @param dirName the directory name of the directory that contains the test files
  * @param className the fully-qualified name of the test class
- * @param diff whether to compare the generated output with a {@code Expected.txt} file
+ * @param runDiff whether to compare (with {@code diff}) the output against an {@code Expected.txt} file
  * @return
  */
-def testDataflowAnalysis(taskName, dirName, className, diff) {
-  if(diff) {
-    tasks.create(name: "${taskName}Diff", type: Exec) {
+def testDataflowAnalysis(taskName, dirName, className, runDiff) {
+  if (runDiff) {
+    tasks.register("${taskName}Diff", Exec) {
       dependsOn taskName
       workingDir = "tests/${dirName}"
       executable 'diff'
@@ -106,9 +110,11 @@ def testDataflowAnalysis(taskName, dirName, className, diff) {
       ]
     }
   }
-  tasks.create(name: taskName, type: JavaExec, dependsOn: [assemble, compileTestJava], group: 'Verification') {
+  tasks.register(taskName, JavaExec) {
+    dependsOn(assemble, compileTestJava)
     description = "Run the ${dirName} dataflow framework test."
-    if (diff) {
+    group = 'Verification'
+    if (runDiff) {
       inputs.file("tests/${dirName}/Expected.txt")
     }
     inputs.file("tests/${dirName}/Test.java")
@@ -146,7 +152,7 @@ def testDataflowAnalysis(taskName, dirName, className, diff) {
     classpath = sourceSets.test.runtimeClasspath
     classpath += sourceSets.test.output
     mainClass = "${className}"
-    if (diff) {
+    if (runDiff) {
       finalizedBy "${taskName}Diff"
     }
   }
@@ -220,7 +226,7 @@ final dataflowShadedPom(MavenPublication publication, String shadedPkgName) {
           .appendNode('groupId', 'org.checkerframework').parent()
           .appendNode('artifactId', 'checker-qual').parent()
           .appendNode('version', version).parent()
-          .appendNode('scope','runtime')
+          .appendNode('scope', 'runtime')
     }
   }
 }

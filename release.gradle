@@ -9,7 +9,7 @@ ext {
   //   * any new checkers have been added, or
   //   * backward-incompatible changes have been made to APIs or elsewhere.
   // To make a snapshot release, version should end in "-SNAPSHOT", then: ./gradlew publish
-  releaseVersion = '3.50.1-SNAPSHOT'
+  releaseVersion = '3.51.2-SNAPSHOT'
 
   releaseVersionRegex = "\\d\\.\\d+\\.\\d+(?:\\.\\d)?"
 
@@ -35,7 +35,7 @@ tasks.register('updateVersionNumbersAFU', Copy) {
   // See documentation above.
   String classFileReader = 'annotation-file-utilities/src/main/java/org/checkerframework/afu/scenelib/io/classfile/ClassFileReader.java'
   doFirst {
-    if(!file("annotation-file-utilities/${classFileReader}").exists()) {
+    if (!file("annotation-file-utilities/${classFileReader}").exists()) {
       throw new GradleException("File annotation-file-utilities/${classFileReader} not found.")
     }
   }
@@ -44,14 +44,14 @@ tasks.register('updateVersionNumbersAFU', Copy) {
   from 'annotation-file-utilities'
   include classFileReader
   filter { String line ->
-    line.replaceAll( "Annotation File Utilities v${releaseVersionRegex}", "Annotation File Utilities v${releaseVersion}")
+    line.replaceAll("Annotation File Utilities v${releaseVersionRegex}", "Annotation File Utilities v${releaseVersion}")
   }
 }
 
 tasks.register('updateVersionNumbersInDocs', Copy) {
   // See documentation above.
   into layout.buildDirectory.file('updateVersionNumbers/docs/')
-  from ('docs/') {
+  from('docs/') {
     include 'annotation-file-utilities/annotation-file-utilities.html',
         'checker-framework-quick-start.html',
         'checker-framework-webpage.html',
@@ -65,27 +65,27 @@ tasks.register('updateVersionNumbersInDocs', Copy) {
     }
   }
 
-  from ('docs') {
+  from('docs') {
     include 'manual/external-tools.tex'
     filter { String line ->
-      line = line.replaceAll("checker(|-framework|-qual|-util)([-/])${releaseVersionRegex}") { "checker${it[1]}${it[2]}${releaseVersion}"};
+      line = line.replaceAll("checker(|-framework|-qual|-util)([-/])${releaseVersionRegex}") { "checker${it[1]}${it[2]}${releaseVersion}" }
 
-      line = line.replaceAll("/${releaseVersionRegex}/jar", "/${releaseVersion}/jar");
+      line = line.replaceAll("/${releaseVersionRegex}/jar", "/${releaseVersion}/jar")
 
-      line.replaceAll("ext.checkerFrameworkVersion = '${releaseVersionRegex}'", "ext.checkerFrameworkVersion = '${releaseVersion}'");
+      line.replaceAll("ext.checkerFrameworkVersion = '${releaseVersionRegex}'", "ext.checkerFrameworkVersion = '${releaseVersion}'")
     }
   }
 
-  from ('docs') {
+  from('docs') {
     include 'manual/manual.tex'
 
     filter { String line ->
-      line = line.replaceAll("ReleaseDate\\}\\{(.*)\\}", "ReleaseDate}{${currentDate}}");
-      line.replaceAll("ReleaseVersion\\}\\{(.*)\\}", "ReleaseVersion}{${releaseVersion}}");
+      line = line.replaceAll("ReleaseDate\\}\\{(.*)\\}", "ReleaseDate}{${currentDate}}")
+      line.replaceAll("ReleaseVersion\\}\\{(.*)\\}", "ReleaseVersion}{${releaseVersion}}")
     }
   }
 
-  from ('docs') {
+  from('docs') {
     include 'examples/MavenExample/pom.xml'
 
     filter { String line ->
@@ -97,44 +97,47 @@ tasks.register('updateVersionNumbersInDocs', Copy) {
 tasks.register('zipMavenExamples', Zip) {
   description = 'Creates a zip archive for the Maven examples.'
   archiveFileName = "mvn-examples.zip"
-  destinationDirectory = file(project.property('cfWebsite'))
-  from ('docs/examples/MavenExample')
+
+  def cfWebsite = providers.gradleProperty('cfWebsite')
+  destinationDirectory = file(cfWebsite.getOrElse(layout.buildDirectory.file('cfWebsite').get().toString()))
+
+  from('docs/examples/MavenExample')
 }
 
 
 tasks.register('copyToWebsite', Copy) {
   description = 'Copy files to location set in the property cfWebsite.'
-  dependsOn(':allJavadoc',':manual', ':zip', 'zipMavenExamples')
+  dependsOn(':allJavadoc', ':manual', ':zip', 'zipMavenExamples')
 
-  String destDir = project.property('cfWebsite')
-  destinationDir = file(destDir) // destinationDir affects all `into` clauses
+  String cfWebsite = findProperty('cfWebsite') ?: layout.buildDirectory.file('cfWebsite').get().toString()
+  destinationDir = file(cfWebsite)
 
   from tasks.named('zip', Zip).get().archiveFile.get().toString()
-  from ('docs') {
+  from('docs') {
     include('checker-framework-webpage.html', 'CHANGELOG.md')
   }
 
-  from ('docs/logo/Logo/CFLogo.png') {
+  from('docs/logo/Logo/CFLogo.png') {
     into 'tutorial/'
   }
-  from ('docs/logo/Logo/CFLogo.png') {
+  from('docs/logo/Logo/CFLogo.png') {
     into 'tutorial/webpages'
   }
-  from ('docs/logo/Logo/CFLogo.png') {
+  from('docs/logo/Logo/CFLogo.png') {
     into 'manual'
   }
 
   // Copy favicon
-  from ('docs/logo/Checkmark/CFCheckmark_favicon.png') {
-    rename('CFCheckmark_favicon.png','favicon-checkerframework.png' )
+  from('docs/logo/Checkmark/CFCheckmark_favicon.png') {
+    rename('CFCheckmark_favicon.png', 'favicon-checkerframework.png')
   }
-  from ('docs/logo/Checkmark/CFCheckmark_favicon.png') {
+  from('docs/logo/Checkmark/CFCheckmark_favicon.png') {
     into 'manual'
-    rename('CFCheckmark_favicon.png','favicon-checkerframework.png' )
+    rename('CFCheckmark_favicon.png', 'favicon-checkerframework.png')
   }
 
   // Copy manual files
-  from ('docs/manual') {
+  from('docs/manual') {
     into 'manual'
     include 'manual.html',
         'manual.pdf',
@@ -143,7 +146,7 @@ tasks.register('copyToWebsite', Copy) {
   }
 
   // Copy developer docs
-  from ('docs/developer') {
+  from('docs/developer') {
     into 'manual'
     include 'developer-manual.html',
         'gsoc-ideas.html',
@@ -151,21 +154,21 @@ tasks.register('copyToWebsite', Copy) {
   }
 
   // Copy Dataflow manual
-  from ('dataflow/manual/checker-framework-dataflow-manual.pdf') {
+  from('dataflow/manual/checker-framework-dataflow-manual.pdf') {
     into 'manual'
   }
 
   // Copy tutorial
-  from ('docs/tutorial') {
+  from('docs/tutorial') {
     into 'tutorial'
   }
 
   // Copy Javadoc
-  from ('docs/api') {
+  from('docs/api') {
     into 'api'
   }
 
-  from ('docs/annotation-file-utilities') {
+  from('docs/annotation-file-utilities') {
     include 'annotation-file-utilities.html'
     include 'annotation-file-format.html'
     include 'annotation-file-format.pdf'
@@ -175,23 +178,30 @@ tasks.register('copyToWebsite', Copy) {
     into 'annotation-file-utilities'
   }
 
+  doFirst {
+    delete(cfWebsite)
+  }
+
   doLast {
-    delete(file("${destDir}/index.html"))
-    Files.createSymbolicLink(file("${destDir}/index.html").toPath(), Paths.get('checker-framework-webpage.html'))
+    delete("${cfWebsite}/index.html")
+    Files.createSymbolicLink(file("${cfWebsite}/index.html").toPath(), Paths.get('checker-framework-webpage.html'))
 
-    delete(file("${destDir}/manual/index.html"))
-    Files.createSymbolicLink(file("${destDir}/manual/index.html").toPath(), Paths.get('manual.html'))
+    delete("${cfWebsite}/manual/index.html")
+    Files.createSymbolicLink(file("${cfWebsite}/manual/index.html").toPath(), Paths.get('manual.html'))
 
-    delete "${destDir}/annotation-file-utilities/index.html"
-    Files.createSymbolicLink(file("${destDir}/annotation-file-utilities/index.html").toPath(), Paths.get('annotation-file-utilities.html'))
+    delete("${cfWebsite}/annotation-file-utilities/index.html")
+    Files.createSymbolicLink(file("${cfWebsite}/annotation-file-utilities/index.html").toPath(), Paths.get('annotation-file-utilities.html'))
   }
 }
 
 tasks.register('updateCopyMavenExample', Copy) {
   // This task is used during the release in "sanity_checks.py" to check that the Maven artifacts were uploaded correctly.
   description = 'Copies the Maven example to the location in property destDir.'
-  String destDir = project.property('destDir') + '/MavenExample'
-  destinationDir = file(destDir)
+  // Defer reading of destDir until execution time and set the task's
+  // destination directory so it affects all subsequent `into` clauses.
+
+  def destDir = providers.gradleProperty('destDir').map { it + '/MavenExample' }
+  destinationDir = file(destDir.getOrElse(layout.buildDirectory.file('cfWebsite/MavenExample').get().toString()))
   from 'docs/examples/MavenExample'
   filter { String line ->
     line.replaceAll("<!-- checker-framework-version -->(.*)<!-- /checker-framework-version -->", "<!-- checker-framework-version -->${releaseVersion}<!-- /checker-framework-version -->")

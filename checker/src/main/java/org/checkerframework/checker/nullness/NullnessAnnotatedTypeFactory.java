@@ -320,7 +320,7 @@ public class NullnessAnnotatedTypeFactory
           // https://github.com/gatein/gatein-shindig/blob/master/java/common/src/main/java/org/apache/shindig/common/Nullable.java
           // "org.apache.shindig.common.Nullable",
           "org.apa".toString() + "che.shindig.common.Nullable",
-          // https://search.maven.org/search?q=a:checker-compat-qual
+          // https://central.sonatype.com/search?q=checker-compat-qual
           "org.checkerframework.checker.nullness.compatqual.NullableDecl",
           "org.checkerframework.checker.nullness.compatqual.NullableType",
           // https://source.chromium.org/chromium/chromium/src/+/main:build/android/java/src/org/chromium/build/annotations/Nullable.java

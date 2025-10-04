@@ -3,7 +3,7 @@ plugins {
   id 'base'
   // https://github.com/n0mer/gradle-git-properties
   // Generates file build/resources/main/git.properties when the `classes` task runs.
-  id 'com.gorylenko.gradle-git-properties' version '2.5.2'
+  id 'com.gorylenko.gradle-git-properties' version '2.5.3'
 }
 
 sourceSets {
@@ -42,7 +42,7 @@ dependencies {
   // If you add an external dependency, you must shadow its packages.
   // See the comment in ../build.gradle in the shadowJar block.
 
-  implementation ("org.plumelib:reflection-util:${versions.reflectionUtil}")
+  implementation("org.plumelib:reflection-util:${versions.reflectionUtil}")
   implementation "org.plumelib:plume-util:${versions.plumeUtil}"
 
   // Dependencies added to "shadow" appear as dependencies in Maven Central.
@@ -68,7 +68,7 @@ dependencies {
   // see https://github.com/typetools/checker-framework/issues/6396
   testImplementation 'org.apache.spark:spark-sql_2.12:3.3.2'
 
-  testImplementation group: 'junit', name: 'junit', version: '4.13.2'
+  testImplementation 'junit:junit:4.13.2'
   testImplementation project(':framework-test')
   testImplementation sourceSets.testannotations.output
 
@@ -99,7 +99,8 @@ jar {
 // This task differs from the `assemble` task in that it does not build Javadoc.
 // It is useful for those who only want to run `javac`.
 // checker.jar is copied to checker/dist/ when it is built by the shadowJar task.
-task assembleForJavac(dependsOn: shadowJar, group: 'Build') {
+tasks.register('assembleForJavac') {
+  dependsOn shadowJar
   description = 'Builds or downloads jars required by CheckerMain and puts them in checker/dist/.'
   dependsOn project(':checker-qual').tasks.jar
   dependsOn project(':checker-util').tasks.jar
@@ -119,18 +120,20 @@ task assembleForJavac(dependsOn: shadowJar, group: 'Build') {
 assemble.dependsOn assembleForJavac
 assemble.dependsOn(':getDoLikeJavac')
 
-task allSourcesJar(type: Jar, group: 'Build') {
+tasks.register('allSourcesJar', Jar) {
   description = 'Creates a sources jar that includes sources for all Checker Framework classes in checker.jar'
+  group = 'Build'
   destinationDirectory = file("${projectDir}/dist")
   archiveFileName = 'checker-source.jar'
   archiveClassifier = 'sources'
-  from (sourceSets.main.java, project(':framework').sourceSets.main.allJava,
+  from(sourceSets.main.java, project(':framework').sourceSets.main.allJava,
       project(':dataflow').sourceSets.main.allJava, project(':javacutil').sourceSets.main.allJava,
       project(':checker-qual').sourceSets.main.allJava, project(':checker-util').sourceSets.main.allJava)
 }
 
-task allJavadocJar(type: Jar, group: 'Build') {
+tasks.register('allJavadocJar', Jar) {
   description = 'Creates javadoc jar including Javadoc for all of the Checker Framework'
+  group = 'Build'
   dependsOn rootProject.tasks.allJavadoc
   // TODO: This should not be required, but without it the addFavicon task is sometimes not run
   // before this one.
@@ -145,8 +148,10 @@ task allJavadocJar(type: Jar, group: 'Build') {
 // Shadowing Test Sources and Dependencies
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
-task checkerJar(type: ShadowJar, dependsOn: compileJava, group: 'Build') {
+tasks.register('checkerJar', ShadowJar) {
+  dependsOn compileJava
   description = "Builds checker-${project.version}.jar with all dependencies except checker-qual and checker-util."
+  group = 'Build'
   includeEmptyDirs = false
   base {
     archivesName = 'checker'
@@ -168,7 +173,7 @@ task checkerJar(type: ShadowJar, dependsOn: compileJava, group: 'Build') {
 jar {
   dependsOn(checkerJar)
   // Never build the skinny jar.
-  onlyIf {false}
+  onlyIf { false }
   archiveClassifier = 'skinny'
 }
 
@@ -177,7 +182,7 @@ shadowJar {
   archiveClassifier = 'all'
   // To see what files are incorporated into the shadow jar file:
   // doFirst { println sourceSets.main.runtimeClasspath.asPath }
-  doLast{
+  doLast {
     copy {
       from archiveFile.get()
       into file("${projectDir}/dist")
@@ -219,22 +224,28 @@ clean.doLast {
 
 // Add non-junit tests
 
-task nullnessExtraTests(type: Exec, dependsOn: assembleForJavac, group: 'Verification') {
+tasks.register('nullnessExtraTests', Exec) {
+  dependsOn assembleForJavac
   description = 'Run extra tests for the Nullness Checker.'
+  group = 'Verification'
   executable 'make'
   environment JAVAC: "${projectDir}/bin/javac", JAVAP: 'javap'
   args = ['-C', 'tests/nullness-extra/']
 }
 
-task commandLineTests(type: Exec, dependsOn: assembleForJavac, group: 'Verification') {
+tasks.register('commandLineTests', Exec) {
+  dependsOn assembleForJavac
   description = 'Run tests that need a special command line.'
+  group = 'Verification'
   executable 'make'
   environment JAVAC: "${projectDir}/bin/javac"
   args = ['-C', 'tests/command-line/']
 }
 
-task tutorialTests(dependsOn: assembleForJavac, group: 'Verification') {
+tasks.register('tutorialTests') {
+  dependsOn assembleForJavac
   description = 'Test that the tutorial is working as expected.'
+  group = 'Verification'
   doLast {
     ant.ant(dir: "${rootDir}/docs/tutorial/tests", useNativeBasedir: 'true', inheritAll: 'false') {
       target(name: 'check-tutorial')
@@ -242,35 +253,41 @@ task tutorialTests(dependsOn: assembleForJavac, group: 'Verification') {
   }
 }
 
-task exampleTests(type: Exec, dependsOn: assembleForJavac, group: 'Verification') {
+tasks.register('exampleTests', Exec) {
+  dependsOn assembleForJavac
   description = 'Run tests for the example programs.'
+  group = 'Verification'
   executable 'make'
   environment JAVAC: "${projectDir}/bin/javac"
   args = ['-C', '../docs/examples']
 }
 
-task allNullnessTests(type: Test, group: 'Verification') {
+tasks.register('allNullnessTests', Test) {
   description = 'Run all Junit tests for the Nullness Checker.'
+  group = 'Verification'
   include '**/Nullness*.class'
 }
 
-task allCalledMethodsTests(type: Test, group: 'Verification') {
+tasks.register('allCalledMethodsTests', Test) {
   description = 'Run all Junit tests for the Called Methods Checker.'
+  group = 'Verification'
   include '**/CalledMethods*.class'
   if (!skipDelombok) {
     dependsOn 'delombok'
   }
 }
 
-task allResourceLeakTests(type: Test, group: 'Verification') {
+tasks.register('allResourceLeakTests', Test) {
   description = 'Run all Junit tests for the Resource Leak Checker.'
+  group = 'Verification'
   include '**/ResourceLeak*.class'
   include '**/MustCall*.class'
 }
 
 // These are tests that should only be run with JDK 11+.
-task jtregJdk11Tests(type: Exec, group: 'Verification') {
+tasks.register('jtregJdk11Tests', Exec) {
   description = 'Run the jtreg tests made for JDK 11+.'
+  group = 'Verification'
   dependsOn('compileJava')
   dependsOn('compileTestJava')
   dependsOn('shadowJar')
@@ -315,7 +332,7 @@ test {
 }
 
 if (!skipDelombok) {
-  task delombok {
+  tasks.register('delombok') {
     description = 'Delomboks the source code tree in tests/calledmethods-lombok'
 
     def srcDelomboked = 'tests/calledmethods-delomboked'
@@ -328,7 +345,7 @@ if (!skipDelombok) {
     dependsOn project(':checker-qual').tasks.jar
 
     doLast {
-      if(!skipDelombok) {
+      if (!skipDelombok) {
         def collection = files(configurations.testCompileClasspath)
         ant.taskdef(name: 'delombok', classname: 'lombok.delombok.ant.Tasks$Delombok',
         classpath: collection.asPath)
@@ -356,7 +373,7 @@ test {
   }
 }
 
-task ainferTestCheckerGenerateStubs(type: Test) {
+tasks.register('ainferTestCheckerGenerateStubs', Test) {
   description = 'Internal task.  Users should run ainferTestCheckerStubTest instead.  This type-checks the ainfer-testchecker files with -Ainfer=stubs to generate stub files.'
   dependsOn(compileTestJava)
 
@@ -401,7 +418,7 @@ task ainferTestCheckerGenerateStubs(type: Test) {
   }
 }
 
-task ainferTestCheckerValidateStubs(type: Test) {
+tasks.register('ainferTestCheckerValidateStubs', Test) {
   description = 'Internal task.  Users should run ainferTestCheckerStubTest instead.  This type-checks the ainfer-testchecker tests using the stub files generated by ainferTestCheckerGenerateStubs.'
   dependsOn(ainferTestCheckerGenerateStubs)
 
@@ -420,7 +437,7 @@ task ainferTestCheckerValidateStubs(type: Test) {
   }
 }
 
-task ainferTestCheckerGenerateAjava(type: Test) {
+tasks.register('ainferTestCheckerGenerateAjava', Test) {
   description = 'Internal task.  Users should run ainferTestCheckerAjavaTest instead.  This type-checks the ainfer-testchecker files with -Ainfer=ajava to generate ajava files.'
   dependsOn(compileTestJava)
 
@@ -465,7 +482,7 @@ task ainferTestCheckerGenerateAjava(type: Test) {
   }
 }
 
-task ainferTestCheckerValidateAjava(type: Test) {
+tasks.register('ainferTestCheckerValidateAjava', Test) {
   description = 'Internal task.  Users should run ainferTestCheckerAjavaTest instead.  This re-type-checks the ainfer-testchecker files using the ajava files generated by ainferTestCheckerGenerateAjava'
   dependsOn(ainferTestCheckerGenerateAjava)
 
@@ -517,20 +534,24 @@ void copyNonannotatedToAnnotatedDirectory(String testdir) {
 // This task is similar to the ainferTestCheckerJaifTest task below, but it doesn't
 // run the insert-annotations-to-source tool. Instead, it tests the -Ainfer=stubs feature
 // and the -AmergeStubsWithSource feature to do WPI using stub files.
-task ainferTestCheckerStubTest(dependsOn: 'shadowJar', group: 'Verification') {
+tasks.register('ainferTestCheckerStubTest') {
+  dependsOn 'shadowJar'
   description = 'Run tests for whole-program inference using stub files'
+  group = 'Verification'
   dependsOn(ainferTestCheckerValidateStubs)
   outputs.upToDateWhen { false }
 }
 
 // Like ainferTestCheckerStubTest, but with ajava files instead
-task ainferTestCheckerAjavaTest(dependsOn: 'shadowJar', group: 'Verification') {
+tasks.register('ainferTestCheckerAjavaTest') {
+  dependsOn 'shadowJar'
   description = 'Run tests for whole-program inference using ajava files'
+  group = 'Verification'
   dependsOn(ainferTestCheckerValidateAjava)
   outputs.upToDateWhen { false }
 }
 
-task ainferTestCheckerGenerateJaifs(type: Test) {
+tasks.register('ainferTestCheckerGenerateJaifs', Test) {
   description = 'Internal task.  Users should run ainferTestCheckerJaifTest instead.  This type-checks the ainfer-testchecker files with -Ainfer=jaifs to generate .jaif files'
 
   dependsOn(compileTestJava)
@@ -583,7 +604,7 @@ tasks.register('ainferTestCheckerGenerateJaifsInsertAnnotations', InsertAnnotati
   classpath = "${sourceSets.test.output.asPath}:${configurations.checkerQual.singleFile}:"
 }
 
-task ainferTestCheckerValidateJaifs(type: Test) {
+tasks.register('ainferTestCheckerValidateJaifs', Test) {
   description = 'Internal task.  Users should run ainferTestCheckerJaifTest instead.  This type-checks the ainfer-testchecker files using the .jaif files generated by ainferTestCheckerGenerateJaifs'
   dependsOn(ainferTestCheckerGenerateJaifs)
 
@@ -602,13 +623,15 @@ task ainferTestCheckerValidateJaifs(type: Test) {
   }
 }
 
-task ainferTestCheckerJaifTest(dependsOn: 'shadowJar', group: 'Verification') {
+tasks.register('ainferTestCheckerJaifTest') {
+  dependsOn 'shadowJar'
   description = 'Run tests for whole-program inference using .jaif files'
+  group = 'Verification'
   dependsOn(ainferTestCheckerValidateJaifs)
   outputs.upToDateWhen { false }
 }
 
-task ainferIndexGenerateAjava(type: Test) {
+tasks.register('ainferIndexGenerateAjava', Test) {
   description = 'Internal task.  Users should run ainferIndexAjavaTest instead.  This type-checks the ainfer-index files with -Ainfer=ajava to generate ajava files.'
   dependsOn(compileTestJava)
   testClassesDirs = sourceSets.test.output.classesDirs
@@ -632,7 +655,7 @@ task ainferIndexGenerateAjava(type: Test) {
   }
 }
 
-task ainferIndexValidateAjava(type: Test) {
+tasks.register('ainferIndexValidateAjava', Test) {
   description = 'Internal task.  Users should run ainferIndexAjavaTest instead.  This re-type-checks the ainfer-index files using the ajava files generated by ainferIndexGenerateAjava'
   dependsOn(ainferIndexGenerateAjava)
 
@@ -650,13 +673,15 @@ task ainferIndexValidateAjava(type: Test) {
   }
 }
 
-task ainferIndexAjavaTest(dependsOn: 'shadowJar', group: 'Verification') {
+tasks.register('ainferIndexAjavaTest') {
+  dependsOn 'shadowJar'
   description = 'Run tests for whole-program inference using ajava files and the Index Checker'
+  group = 'Verification'
   dependsOn(ainferIndexValidateAjava)
   outputs.upToDateWhen { false }
 }
 
-task ainferNullnessGenerateAjava(type: Test) {
+tasks.register('ainferNullnessGenerateAjava', Test) {
   description = 'Internal task.  Users should run ainferNullnessAjavaTest instead.  This type-checks the ainfer-nullness files with -Ainfer=ajava to generate ajava files.'
   dependsOn(compileTestJava)
 
@@ -681,7 +706,7 @@ task ainferNullnessGenerateAjava(type: Test) {
   }
 }
 
-task ainferNullnessValidateAjava(type: Test) {
+tasks.register('ainferNullnessValidateAjava', Test) {
   description = 'Internal task.  Users should run ainferNullnessAjavaTest instead.  This re-type-checks the ainfer-nullness files using the ajava files generated by ainferNullnessGenerateAjava'
   dependsOn(ainferNullnessGenerateAjava)
 
@@ -700,13 +725,15 @@ task ainferNullnessValidateAjava(type: Test) {
   }
 }
 
-task ainferNullnessAjavaTest(dependsOn: 'shadowJar', group: 'Verification') {
+tasks.register('ainferNullnessAjavaTest') {
+  dependsOn 'shadowJar'
   description = 'Run tests for whole-program inference using ajava files and the Nullness Checker'
+  group = 'Verification'
   dependsOn(ainferNullnessValidateAjava)
   outputs.upToDateWhen { false }
 }
 
-task ainferResourceLeakGenerateAjava(type: Test) {
+tasks.register('ainferResourceLeakGenerateAjava', Test) {
   description = 'Internal task.  Users should run ainferResourceLeakAjavaTest instead.  This type-checks the ainfer-index files with -Ainfer=ajava to generate ajava files.'
   dependsOn(compileTestJava)
 
@@ -731,7 +758,7 @@ task ainferResourceLeakGenerateAjava(type: Test) {
   }
 }
 
-task ainferResourceLeakValidateAjava(type: Test) {
+tasks.register('ainferResourceLeakValidateAjava', Test) {
   description = 'Internal task.  Users should run ainferResourceLeakAjavaTest instead.  This re-type-checks the ainfer-resourceleak files using the ajava files generated by ainferResourceLeakGenerateAjava'
   dependsOn(ainferResourceLeakGenerateAjava)
 
@@ -750,13 +777,15 @@ task ainferResourceLeakValidateAjava(type: Test) {
   }
 }
 
-task ainferResourceLeakAjavaTest(dependsOn: 'shadowJar', group: 'Verification') {
+tasks.register('ainferResourceLeakAjavaTest') {
+  dependsOn 'shadowJar'
   description = 'Run tests for whole-program inference using ajava files and the Resource Leak Checker'
+  group = 'Verification'
   dependsOn(ainferResourceLeakValidateAjava)
   outputs.upToDateWhen { false }
 }
 
-task ainferNullnessGenerateJaifs(type: Test) {
+tasks.register('ainferNullnessGenerateJaifs', Test) {
   description = 'Internal task.  Users should run ainferNullnessJaifTest instead.  This type-checks the ainfer-nullness files with -Ainfer=jaifs to generate .jaif files'
   dependsOn(compileTestJava)
 
@@ -792,7 +821,7 @@ tasks.register('ainferNullnessGenerateJaifsInsertAnnotations', InsertAnnotations
   classpath = "${sourceSets.test.output.asPath}:${configurations.checkerQual.singleFile}:"
 }
 
-task ainferNullnessValidateJaifs(type: Test) {
+tasks.register('ainferNullnessValidateJaifs', Test) {
   description = 'Internal task.  Users should run ainferNullnessJaifTest instead.  This re-type-checks the ainfer-nullness files using the .jaif files generated by ainferNullnessGenerateJaifs'
   dependsOn('ainferNullnessGenerateJaifsInsertAnnotations')
 
@@ -811,8 +840,10 @@ task ainferNullnessValidateJaifs(type: Test) {
   }
 }
 
-task ainferNullnessJaifTest(dependsOn: 'shadowJar', group: 'Verification') {
+tasks.register('ainferNullnessJaifTest') {
+  dependsOn 'shadowJar'
   description = 'Run tests for whole-program inference using .jaif files'
+  group = 'Verification'
   dependsOn(ainferNullnessValidateJaifs)
   outputs.upToDateWhen { false }
 }
@@ -820,8 +851,9 @@ task ainferNullnessJaifTest(dependsOn: 'shadowJar', group: 'Verification') {
 
 // Empty task that just runs both the jaif and stub WPI tests.
 // It is run as part of the inferenceTests task.
-task ainferTest(group: 'Verification') {
+tasks.register('ainferTest') {
   description = 'Run tests for all whole program inference modes.'
+  group = 'Verification'
   dependsOn('ainferTestCheckerJaifTest')
   dependsOn('ainferTestCheckerStubTest')
   dependsOn('ainferTestCheckerAjavaTest')
@@ -838,8 +870,9 @@ task ainferTest(group: 'Verification') {
 // This is run as part of the inferenceTests task.
 // File checker/tests/wpi-many/testin.txt lists the tests that are run.  To
 // debug one WPI test, comment out all but one line of that file.
-task wpiManyTest(type: Exec, group: 'Verification') {
+tasks.register('wpiManyTest', Exec) {
   description = 'Tests the wpi-many.sh script (and indirectly the wpi.sh script). Requires an Internet connection.'
+  group = 'Verification'
   dependsOn(assembleForJavac)
   dependsOn(':getDoLikeJavac')
   // This test must always be re-run when requested.
@@ -951,7 +984,7 @@ task wpiManyTest(type: Exec, group: 'Verification') {
             || line.startsWith('DEBUG: ')
             || line.startsWith('warning: DEBUG: ')
             || line.contains('warning: [DEBUG: ')) {
-          return;
+          return
         }
         if (!line.trim().equals('')) {
           println("======== start of contents of ${filename}, which is TYPECHECKING output, not WPI output ========")
@@ -966,8 +999,9 @@ task wpiManyTest(type: Exec, group: 'Verification') {
 }
 
 // This is run as part of the inferenceTests task.
-task wpiPlumeLibTest(type: Exec, group: 'Verification') {
+tasks.register('wpiPlumeLibTest', Exec) {
   description = 'Tests whole-program inference on the plume-lib projects. Requires an Internet connection.'
+  group = 'Verification'
   dependsOn(assembleForJavac)
   dependsOn(':getDoLikeJavac')
 

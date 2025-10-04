@@ -140,10 +140,10 @@ MyFile.java:107: error: [dereference.of.nullable] dereference of possibly-null r
 You are allowed to use any substring of a message key, so long as the
 substring extends at each end to a period or an end of the key.  For
 example, to suppress a warning with message key
-\code{"assignment"}, you could use
-\<@SuppressWarnings("assignment")>,
-\<@SuppressWarnings("assignment.type")>,
-\<@SuppressWarnings("type.incompatible")>, or other variants.
+\code{"lock.expression.possibly.not.final"}, you could use
+\<@SuppressWarnings("lock.expression.possibly.not.final")>,
+\<@SuppressWarnings("lock.expression")>,
+\<@SuppressWarnings("not.final")>, or other variants.
 We recommend using
 the longest possible message key; a short message might suppress more
 warnings than you expect.
@@ -152,7 +152,7 @@ The checkername \<"allcheckers"> means all checkers.  Using this is not
 recommended, except for messages common to all checkers such as
 purity-related messages when using \<-AcheckPurityAnnotations>.  If you use
 \<"allcheckers">, you run some checker that does not issue any warnings,
-and you suply the \<-AwarnUnneededSuppressions> command-line argument, then
+and you supply the \<-AwarnUnneededSuppressions> command-line argument, then
 the Checker Framework will issue an \<unneeded.suppression>
 warning.
 
@@ -665,7 +665,7 @@ are type-checking the whole thing.
 
 \sectionAndLabel{\code{-AskipFiles} and \code{-AonlyFiles} command-line options}{askipfiles}
 
-You can suppresss all errors and warnings originating from classes that are
+You can suppress all errors and warnings originating from classes that are
 located in a given file or directory/folder, or all those that are \emph{not} in a
 given file or directory/folder.
 

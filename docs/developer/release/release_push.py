@@ -26,7 +26,6 @@ from release_utils import (
     version_number_to_array,
 )
 from release_vars import (
-    ANNO_FILE_UTILITIES,
     CF_VERSION,
     CHECKER_FRAMEWORK,
     CHECKER_LIVE_API_DIR,
@@ -91,7 +90,7 @@ def copy_release_dir(
     # rsync copies the files in the source directory to the destination directory
     # rather than a subdirectory of the destination directory.
     cmd = (
-        "rsync --no-group --omit-dir-times --recursive --links --quiet"
+        "rsync --no-p --no-group --omit-dir-times --recursive --links --quiet"
         f" {source_location}/ {dest_location}"
     )
     execute(cmd)
@@ -109,7 +108,7 @@ def promote_release(path_to_releases: Path, release_version: str) -> None:
     from_dir = Path(path_to_releases) / release_version
     to_dir = Path(path_to_releases) / ".."
     # Trailing slash is crucial.
-    cmd = f"rsync -aJ --no-group --omit-dir-times {from_dir}/ {to_dir}"
+    cmd = f"rsync -aJ --no-perms --no-group --omit-dir-times {from_dir}/ {to_dir}"
     execute(cmd)
 
 
@@ -376,9 +375,6 @@ def main(argv: list[str]) -> None:
         ant_cmd = "./gradlew allTests"
         execute(ant_cmd, CHECKER_FRAMEWORK)
 
-        ant_cmd = "./gradlew test"
-        execute(ant_cmd, ANNO_FILE_UTILITIES)
-
     # The Central Repository is a repository of build artifacts for build programs like Maven and
     # Ivy.  This step stages (but doesn't release) the Checker Framework's Maven artifacts in the
     # Sonatypes Central Repository.
@@ -396,7 +392,7 @@ def main(argv: list[str]) -> None:
     print_step("Push Step 5: Stage Maven artifacts in Central")  # SEMIAUTO
 
     print_step("Step 5a: Stage the artifacts at Maven Central.")
-    if (not test_mode) or prompt_yes_no("Stage Maven artifacts in Maven Central?", not test_mode):
+    if prompt_yes_no("Stage Maven artifacts in Maven Central?", True):
         stage_maven_artifacts_in_maven_central()
 
         print_step("Step 5b: Close staged artifacts at Maven Central.")
@@ -441,7 +437,7 @@ def main(argv: list[str]) -> None:
             print("Copying to live site")
             copy_releases_to_live_site(new_cf_version)
             copy_htaccess()
-            ensure_group_access(CHECKER_LIVE_RELEASES_DIR)
+            ensure_group_access(CHECKER_LIVE_RELEASES_DIR / new_cf_version)
     else:
         print("Test mode: Skipping copy to live site!")
 
@@ -501,24 +497,22 @@ def main(argv: list[str]) -> None:
     # prompts. The Maven artifacts (such as checker-qual.jar) are still needed, but the Maven
     # plug-in is no longer maintained.
 
-    print_step("Push Step 10. Release staged artifacts in Central Repository.")  # MANUAL
+    print_step("Push Step 10. Publish staged artifacts in Central Repository.")  # MANUAL
     if test_mode:
         msg = (
             "Test Mode: You are in test_mode.  Please 'DROP' the artifacts. "
-            "To drop, log into https://central.sonatype.com/publishing/deployments using your "
-            "Sonatype credentials and click 'DROP'"
+            "To drop, log into https://central.sonatype.com/publishing using your "
+            "Sonatype credentials and click 'Drop'"
         )
     else:
         msg = (
-            "Please 'release' the artifacts.\n"
-            "First log into https://central.sonatype.com/publishing/deployments using your "
-            "Sonatype credentials. Go to Staging Repositories and "
-            "locate the org.checkerframework repository and click on it.\n"
-            "If you have a permissions problem, try logging out and back in.\n"
-            "Finally, click on the Release button at the top of the page.\n"
-            "In the dialog box that pops up, "
-            'leave the "Automatically drop" box checked. For the description, write '
-            "Checker Framework release " + new_cf_version + "\n\n"
+            "Please 'Publish' the artifacts.\n"
+            "First log into https://central.sonatype.com/publishing using your "
+            "Sonatype credentials. Find the deployment labled "
+            "'org.checkerframework (via OSSRH Staging API)' "
+            "and click on the Publish button next to it.\n"
+            "Now it should say PUBLISHING nest to the deployment. "
+            "This will take a while, you can move onto the next release steps.\n\n"
         )
 
     print(msg)

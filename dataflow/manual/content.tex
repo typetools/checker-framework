@@ -1688,10 +1688,10 @@ information about fields under concurrent semantics.
 
 \section{Example: Constant Propagation}
 
-As a proof-of-concept, I (Stefan) implemented a constant propagation
-analysis for local variables and integer values.  The main class is
-\code{org.checkerframework.dataflow.cfg.playground.ConstantPropagationPlayground}.  I
-describe the most important aspects here.
+As an example, consider a constant propagation
+analysis for local variables and integer values.
+To run constant propagation and create a PDF of the CFG, run
+\code{java org.checkerframework.dataflow.cfg.playground.ConstantPropagationPdf MyFile.java}.
 
 \textbf{Abstract values.} A class \code{Constant} is used as an
 abstract value, which can either be \emph{top} (more than one integer
@@ -1736,8 +1736,9 @@ is also shown in \autoref{fig:ConstSimple}.
 \label{sec:live_variable}
 
 A live variable analysis for local variables and fields was implemented
-to show the backward analysis works properly. The main class is
-\code{org.checkerframework.dataflow.cfg.playground.LiveVariablePlayground}.
+to show the backward analysis works properly.
+To run live varibale analysis and create a PDF of the CFG, run
+\code{java org.checkerframework.dataflow.cfg.playground.LiveVariablePdf MyFile.java}.
 
 \textbf{Abstract values.} A class \code{LiveVarValue} is a live
 variable (which is represented by a node) wrapper turning node into
@@ -1765,7 +1766,8 @@ An expression is ``very busy'' if no matter what path is taken,
 the expression is used before any variables occurring in it are redefined.
 This analysis is a backward analysis that intersects abstract states from successors.
 \\
-The main class is \code{org.checkerframework.dataflow.cfg.playground.BusyExpressionPlayground}.
+To run very busy analysis and create a PDF of the CFG, run \\
+\code{java org.checkerframework.dataflow.cfg.playground.BusyExpressionPdf MyFile.java}
 
 \textbf{Abstract values.} The \code{BusyExprValue} is a very busy expression, represented by a node.
 The node can be any \code{BinaryOperationNode}, such as \code{NumericalAdditionNode}

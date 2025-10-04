@@ -1,0 +1,43 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+
+language: "en-US"
+
+reviews:
+  profile: "assertive"
+  high_level_summary: false
+  review_status: false
+  collapse_walkthrough: true
+  changed_files_summary: false
+  sequence_diagrams: false
+  estimate_code_review_effort: false
+  poem: false
+  path_filters:
+    - "!**/build/**"
+    - "!**/out/**"
+    - "!**/.gradle/**"
+    - "!**/.idea/**"
+    - "!**/node_modules/**"
+  auto_review:
+    ignore_title_keywords:
+      - "wip"
+      - "draft"
+    ignore_usernames:
+      - "dependabot"
+      - "dependabot[bot]"
+      - "mend"
+      - "app/renovate"
+  pre_merge_checks:
+    title:
+      mode: "off"
+    description:
+      mode: "off"
+
+chat:
+  art: false
+
+knowledge_base:
+  code_guidelines:
+    enabled: true
+    filePatterns:
+      - "**/.cursorrules"
+      - "**/CODING_STANDARDS.md"

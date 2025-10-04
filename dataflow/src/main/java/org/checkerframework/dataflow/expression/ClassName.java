@@ -26,7 +26,7 @@ public class ClassName extends JavaExpression {
     super(type);
     String typeString = type.toString();
     if (typeString.endsWith(">")) {
-      typeString = typeString.substring(0, typeString.indexOf("<"));
+      typeString = typeString.substring(0, typeString.indexOf('<'));
     }
     this.typeString = typeString;
   }

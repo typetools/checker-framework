@@ -13,9 +13,9 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * An expression of type {@code @UnshrinkableRef} may not be used to remove elements, e.g., by
  * calling {@code remove()} or {@code clear()} on it. The collection might be shrunk by some other
  * reference that aliases the expression of type {@code @UnshrinkableRef}.
- *
- * @checker_framework.manual #growonly-checker Grow-only Checker
  */
+// Reinstate when lists are supported:
+//  * @checker_framework.manual #growonly-checker Grow-only Checker
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})

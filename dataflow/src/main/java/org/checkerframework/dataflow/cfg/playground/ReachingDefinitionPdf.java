@@ -9,27 +9,28 @@ import org.checkerframework.dataflow.reachingdef.ReachingDefinitionStore;
 import org.checkerframework.dataflow.reachingdef.ReachingDefinitionTransfer;
 
 /**
- * The playground for reaching definition analysis. As an example, try {@code
- * dataflow/manual/examples/ReachSimple.java}.
+ * Run reaching definition analysis on a file and create a PDF of the CFG.
+ *
+ * <p>As an example, try {@code dataflow/manual/examples/ReachSimple.java}.
  */
-public class ReachingDefinitionPlayground {
+public class ReachingDefinitionPdf {
 
   /** Class cannot be instantiated. */
-  private ReachingDefinitionPlayground() {
-    throw new AssertionError("Class ReachingDefinitionPlayground cannot be instantiated.");
+  private ReachingDefinitionPdf() {
+    throw new Error("Do not instantiate");
   }
 
   /**
-   * Run reaching definition analysis for a specific file and create a PDF of the CFG in the end.
+   * Run reaching definition analysis on a file and create a PDF of the CFG.
    *
-   * @param args input arguments, not used
+   * @param args input arguments
    */
   public static void main(String[] args) {
 
     // Parse the arguments.
     CFGVisualizeOptions config = CFGVisualizeOptions.parseArgs(args);
 
-    // Run the analysis and create a PDF file
+    // Run the analysis and create a PDF file.
     ReachingDefinitionTransfer transfer = new ReachingDefinitionTransfer();
     ForwardAnalysis<UnusedAbstractValue, ReachingDefinitionStore, ReachingDefinitionTransfer>
         forwardAnalysis = new ForwardAnalysisImpl<>(transfer);
