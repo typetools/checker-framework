@@ -1584,11 +1584,6 @@ public abstract class GenericAnnotatedTypeFactory<
                 lambdaPair.second);
         lambdaToCFG.put(lambda, cfgLambda);
 
-        if (!mustReanalyzeMethod(lambdaToCFG.keySet())) {
-          classQueue.addAll(classQueueInMethod);
-          break;
-        }
-
         List<AnnotationMirrorSet> returnedExpressionTypes = new ArrayList<>();
         for (ExpressionTree expressionTree : TreeUtils.getReturnedExpressions(lambda)) {
           returnedExpressionTypes.add(getAnnotatedType(expressionTree).getPrimaryAnnotations());
@@ -1611,15 +1606,16 @@ public abstract class GenericAnnotatedTypeFactory<
         lambdaResultTypeMap.put(lambda, returnedExpressionTypes);
       }
 
-      if (anyLambdaResultChanged) {
+      if (!mustReanalyzeMethod(lambdaToCFG.keySet()) || !anyLambdaResultChanged) {
+        classQueue.addAll(classQueueInMethod);
+
+      } else {
         if (fromExpressionTreeCache != null) {
           // If one cache is not null, then neither are the others.
           fromExpressionTreeCache.clear();
           fromMemberTreeCache.clear();
           fromTypeTreeCache.clear();
         }
-      } else {
-        classQueue.addAll(classQueueInMethod);
       }
     }
     postAnalyze(methodCFG);
