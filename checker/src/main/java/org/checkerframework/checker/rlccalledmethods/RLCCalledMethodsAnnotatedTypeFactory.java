@@ -2,6 +2,8 @@ package org.checkerframework.checker.rlccalledmethods;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
@@ -11,6 +13,7 @@ import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Queue;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -47,6 +50,7 @@ import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.framework.flow.CFAbstractAnalysis.FieldInitialValue;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -56,6 +60,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
+import org.plumelib.util.IPair;
 
 /**
  * The type factory for the RLCCalledMethodsChecker. The main difference between this and the Called
@@ -143,7 +148,29 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
   }
 
   @Override
-  public void postAnalyze(ControlFlowGraph cfg) {
+  protected ControlFlowGraph analyze(
+      Queue<IPair<ClassTree, AccumulationStore>> classQueue,
+      Queue<IPair<LambdaExpressionTree, AccumulationStore>> lambdaQueue,
+      UnderlyingAST ast,
+      List<FieldInitialValue<AccumulationValue>> fieldValues,
+      ClassTree currentClass,
+      @Nullable ControlFlowGraph cfg,
+      boolean isInitializationCode,
+      boolean updateInitializationStore,
+      boolean isStatic,
+      @Nullable AccumulationStore capturedStore) {
+    cfg =
+        super.analyze(
+            classQueue,
+            lambdaQueue,
+            ast,
+            fieldValues,
+            currentClass,
+            cfg,
+            isInitializationCode,
+            updateInitializationStore,
+            isStatic,
+            capturedStore);
     rlc.setRoot(root);
     MustCallConsistencyAnalyzer mustCallConsistencyAnalyzer = new MustCallConsistencyAnalyzer(rlc);
     mustCallConsistencyAnalyzer.analyze(cfg);
@@ -156,8 +183,8 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
       }
     }
 
-    super.postAnalyze(cfg);
     tempVarToTree.clear();
+    return cfg;
   }
 
   @Override

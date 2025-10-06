@@ -1563,6 +1563,7 @@ public abstract class GenericAnnotatedTypeFactory<
               false,
               false,
               capturedStore);
+
       anyLambdaResultChanged = false;
       while (!lambdaQueueForMet.isEmpty()) {
         IPair<LambdaExpressionTree, @Nullable Store> lambdaPair = lambdaQueueForMet.poll();
