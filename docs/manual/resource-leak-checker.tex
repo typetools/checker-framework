@@ -663,7 +663,7 @@ For the purposes of this checker, \textit{resource collections} are precisely de
   \item Its type parameter upper bound has non-empty \texttt{MustCall} type.
 \end{enumerate}
 
-For example, expressions of type \texttt{Socket[]} or \texttt{Iterable<? extends @MustCallUnknown Object>} are both resource collections, but one of type \texttt{Set<String>} is not.
+For example, expressions of type \texttt{List<Socket>} or \texttt{Iterable<? extends @MustCallUnknown Object>} are both resource collections, but one of type \texttt{Set<String>} is not.
 
 \subsectionAndLabel{Ownership type system for resource collections}{resource-leak-collections-ownership-types}
 Of the two tracking mechanisms described above, the ownership type system is more visible from the user perspective. The type hierarchy is the following:
@@ -820,7 +820,7 @@ By default, resource collection fields are owned by the enclosing class. Static 
 Consider the following example:
 
 \begin{verbatim}
-class Aggregator extends Closeable {
+class Aggregator implements Closeable {
   List<Socket> socketList = new ArrayList<>();
 
   public Aggregator() {}
