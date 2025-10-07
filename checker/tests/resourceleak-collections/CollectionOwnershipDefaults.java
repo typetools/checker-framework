@@ -17,7 +17,7 @@ class CollectionOwnershipDefaults {
 
   /*
    * Check that manual MustCall annotations are correctly considered when deciding whether
-   * something is a resoure collection.
+   * something is a resource collection.
    */
   public void detectResourceCollection(
       List<@MustCall({}) Socket> l1,
