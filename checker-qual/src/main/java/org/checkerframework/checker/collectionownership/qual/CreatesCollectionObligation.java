@@ -16,7 +16,7 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
  * and a CollectionObligation is created for each {@code @MustCall} method of the type variable of
  * the receiver.
  *
- * <p>This annotation should only be used on method and constructor declarations of collections, as
+ * <p>This annotation should only be used on method declarations of collections, as
  * defined by the CollectionOwnershipChecker, that is, {@code java.lang.Iterable} and {@code
  * java.util.Iterator} implementations.
  *
