@@ -143,6 +143,7 @@ class OwningFieldWithIllegalInitializer implements Closeable {
   }
 
   @CollectionFieldDestructor("fieldList")
+  @Override
   public void close() {
     for (Resource r : fieldList) {
       r.close();
@@ -160,6 +161,7 @@ class OwningFinalFieldWithOwningRHSInitializer implements Closeable {
   }
 
   @CollectionFieldDestructor("fieldList")
+  @Override
   public void close() {
     for (Resource r : fieldList) {
       r.close();
@@ -172,6 +174,7 @@ class OwningFieldWithNullInitializer implements Closeable {
   List<Resource> fieldList = null;
 
   @CollectionFieldDestructor("fieldList")
+  @Override
   public void close() {
     for (Resource r : fieldList) {
       r.close();
