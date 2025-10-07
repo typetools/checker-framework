@@ -38,7 +38,7 @@ public class IteratedCollectionElement extends JavaExpression {
       return false;
     }
     IteratedCollectionElement other = (IteratedCollectionElement) obj;
-    return other.tree.equals(this.tree) && other.node.equals(this.node);
+    return this.tree.equals(other.tree) && this.node.equals(other.node);
   }
 
   @Override
