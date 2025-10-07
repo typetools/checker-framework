@@ -9,8 +9,6 @@ import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.IdentifierTree;
-import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
@@ -43,7 +41,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
-import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
@@ -1522,16 +1519,17 @@ public class MustCallConsistencyAnalyzer {
         }
       }
     } else if (TreeUtils.isConstructor(enclosingMethodTree)) {
-      // Suppress when this assignment is the first write to the private field in this constructor
-      // (later writes/calls are checked at their own CFG points).
+      // If this assignment is verified to be the first write to the private field in this
+      // constructor
+      // do not throw non-final owning field reassignment error.
       Element enclosingClassElement =
           TreeUtils.elementFromDeclaration(enclosingMethodTree).getEnclosingElement();
       if (ElementUtils.isTypeElement(enclosingClassElement)) {
         Element receiverElement = TypesUtils.getTypeElement(receiver.getType());
         if (Objects.equals(enclosingClassElement, receiverElement)) {
           VariableElement lhsElement = lhs.getElement();
-          if (lhsElement.getModifiers().contains(Modifier.PRIVATE)
-              && isFirstAssignmentToField(lhsElement, enclosingMethodTree, node.getTree())) {
+          if (isFirstWriteToFieldInConstructor(lhsElement, enclosingMethodTree, node.getTree())) {
+            // Safe; first assignment in constructor
             return;
           }
         }
@@ -1656,25 +1654,27 @@ public class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Determines whether the given assignment is the first write to a private field during object
-   * construction, in order to suppress potential false positive resource leak warnings.
+   * Determines whether the given assignment is provably the first write to a {@code private} field
+   * during object construction. If true, the caller may skip reporting a non-final owning field
+   * reassignment error for this write.
    *
-   * <p>This method takes a conservative approach: it returns {@code true} only if it can
-   * definitively prove that this is the first assignment to the field during construction. Later
-   * assignments, if any, are analyzed independently and will raise errors if they overwrite
-   * unclosed resources. Therefore, we only check statements before this assignment.
+   * <p>This method is deliberately conservative: it returns {@code false} unless it can prove that
+   * the write is the first along the current control-flow path. It inspects earlier constructor
+   * statements in source order and descends into each statement’s subtree. If there is any
+   * possibility that an earlier statement either (a) writes the same field or (b) performs a method
+   * call (other than a {@code super(...)} constructor invocation) that might assign the field, the
+   * method returns {@code false}.
    *
-   * <p>The result is {@code true} if all the following hold:
+   * <p>The result is {@code true} only if all of the following hold:
    *
    * <ul>
-   *   <li>(1) The field is private.
-   *   <li>(2) It has no non-null inline initializer at its declaration.
-   *   <li>(3) It is not assigned in any instance initializer block.
-   *   <li>(4) The constructor does not use constructor chaining via {@code this(...)}.
-   *   <li>(5) There are no earlier assignments to the same field before this one in the
-   *       constructor.
-   *   <li>(6) There are no method calls before this assignment that might have already set the
-   *       field.
+   *   <li>(1) The field is {@code private}
+   *   <li>(2) The field has no non-null inline initializer at its declaration.
+   *   <li>(3) The field is not assigned in any instance initializer block.
+   *   <li>(4) The constructor does not delegate via {@code this(...)}.
+   *   <li>(5) No earlier assignment to the same field appears before the current statement.
+   *   <li>(6) No earlier method call appears before the current statement (except {@code
+   *       super(...)}).
    * </ul>
    *
    * @param field the field being assigned
@@ -1683,93 +1683,105 @@ public class MustCallConsistencyAnalyzer {
    *     {@code constructor}
    * @return true if this assignment can be safely considered the first write during construction
    */
-  private boolean isFirstAssignmentToField(
+  private boolean isFirstWriteToFieldInConstructor(
       VariableElement field, MethodTree constructor, @FindDistinct Tree currentAssignment) {
-    TreePath constructorPath = cmAtf.getPath(constructor);
-    ClassTree classTree = TreePathUtil.enclosingClass(constructorPath);
-    String fieldName = field.getSimpleName().toString();
-
-    // (2) Disallow non-null inline initializer
-    for (Tree member : classTree.getMembers()) {
-      if (member instanceof VariableTree) {
-        VariableTree decl = (VariableTree) member;
-        if (decl.getName().contentEquals(fieldName) && decl.getInitializer() != null) {
-          if (decl.getInitializer().getKind() != Tree.Kind.NULL_LITERAL) {
-            return false;
-          }
-        }
-      }
+    // (1) The field must be private
+    if (!field.getModifiers().contains(Modifier.PRIVATE)) {
+      return false;
     }
 
-    // (3) Disallow assignment in instance initializer blocks
+    TreePath constructorPath = cmAtf.getPath(constructor);
+    ClassTree classTree = TreePathUtil.enclosingClass(constructorPath);
+
     for (Tree member : classTree.getMembers()) {
+      // (2) Disallow non-null inline initializer on the same field declaration.
+      if (member instanceof VariableTree) {
+        VariableTree decl = (VariableTree) member;
+        VariableElement declElement = TreeUtils.elementFromDeclaration(decl);
+        if (field.equals(declElement)
+            && decl.getInitializer() != null
+            && decl.getInitializer().getKind() != Tree.Kind.NULL_LITERAL) {
+          return false;
+        }
+      }
+      // (3) Disallow assignment in any instance initializer block (IIB).
       if (member instanceof BlockTree) {
         BlockTree block = (BlockTree) member;
         if (block.isStatic()) {
           continue;
         }
-        // The variables accessed from within the inner class need to be effectively final, so
+        // The variables accessed from within the anonymous class need to be effectively final, so
         // AtomicBoolean is used here.
-        AtomicBoolean found = new AtomicBoolean(false);
+        AtomicBoolean initializedInIIB = new AtomicBoolean(false);
         block.accept(
             new TreeScanner<Void, Void>() {
               @Override
               public Void visitAssignment(AssignmentTree node, Void unused) {
                 ExpressionTree lhs = node.getVariable();
-                Name lhsName =
-                    lhs instanceof MemberSelectTree
-                        ? ((MemberSelectTree) lhs).getIdentifier()
-                        : lhs instanceof IdentifierTree ? ((IdentifierTree) lhs).getName() : null;
-                if (lhsName != null && lhsName.contentEquals(fieldName)) {
-                  found.set(true);
+                Element lhsElement = TreeUtils.elementFromTree(lhs);
+                if (field.equals(lhsElement)) {
+                  initializedInIIB.set(true);
+                  return null;
                 }
                 return super.visitAssignment(node, unused);
               }
             },
             null);
-        if (found.get()) {
+        if (initializedInIIB.get()) {
           return false;
         }
       }
     }
 
-    // (4) Check constructor initialization chaining
+    // (4) Reject constructor chaining via this(...).
+    // If this constructor chains, the "first write" can occur in the callee constructor.
     if (callsThisConstructor(constructor)) {
       return false;
     }
 
-    // (5) Check for earlier assignments to the same field, or
-    // (6) any method calls other than super.
-    List<? extends StatementTree> statements = constructor.getBody().getStatements();
-    for (StatementTree stmt : statements) {
-      if (!(stmt instanceof ExpressionStatementTree)) {
-        continue;
-      }
-      ExpressionTree expr = ((ExpressionStatementTree) stmt).getExpression();
-      // Stop when we reach the current assignment
-      if (expr == currentAssignment) {
-        break;
-      }
-      // (5) Prior assignment to the same field
-      if (expr instanceof AssignmentTree) {
-        ExpressionTree lhs = ((AssignmentTree) expr).getVariable();
-        Name lhsName = null;
-        if (lhs instanceof MemberSelectTree) {
-          lhsName = ((MemberSelectTree) lhs).getIdentifier();
-        } else if (lhs instanceof IdentifierTree) {
-          lhsName = ((IdentifierTree) lhs).getName();
-        }
-        if (lhsName != null && lhsName.contentEquals(fieldName)) {
-          return false; // Unsafe: field already assigned earlier
-        }
-      }
-      // (6) Any method call before assignment (except super constructor)
-      if (expr instanceof MethodInvocationTree
-          && !TreeUtils.isSuperConstructorCall((MethodInvocationTree) expr)) {
-        return false; // Unsafe: method may write to field internally
-      }
+    // (5) & (6): Single-pass scan in source order.
+    // For each top-level statement, descend into its subtree and:
+    //   - If we encounter an assignment to the same field:
+    //       • if it is the current assignment -> first write -> return true
+    //       • otherwise (earlier assignment) -> not first write -> return false
+    //   - If we encounter any method call before seeing the current assignment
+    //     (other than a super(...) ctor call) -> return false
+    List<? extends StatementTree> stmts = constructor.getBody().getStatements();
+    for (StatementTree st : stmts) {
+      Boolean scanResult =
+          new TreeScanner<Boolean, Void>() {
+            @Override
+            public Boolean visitAssignment(AssignmentTree node, Void p) {
+              Element lhsEl = TreeUtils.elementFromUse(node.getVariable());
+              if (field.equals(lhsEl)) {
+                return (node == currentAssignment)
+                    ? Boolean.TRUE
+                    : Boolean.FALSE; // (5) Earlier assignment to same field
+              }
+              return super.visitAssignment(node, p);
+            }
+
+            @Override
+            public Boolean visitMethodInvocation(MethodInvocationTree node, Void p) {
+              // (6) Any earlier call might assign internally; allow only super(...).
+              return TreeUtils.isSuperConstructorCall(node)
+                  ? super.visitMethodInvocation(node, p)
+                  : Boolean.FALSE;
+            }
+
+            @Override
+            public Boolean reduce(Boolean r1, Boolean r2) {
+              // Return the first non-null result from child scans.
+              // This lets the traversal stop as soon as a matching condition is detected.
+              if (r1 != null) return r1;
+              return r2;
+            }
+          }.scan(st, null);
+
+      if (scanResult != null) return scanResult;
     }
-    return true;
+    // The current assignment was not found in the constructor body, conservatively return false.
+    return false;
   }
 
   /**

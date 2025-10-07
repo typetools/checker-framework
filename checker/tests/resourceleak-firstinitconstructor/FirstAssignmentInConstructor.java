@@ -1,4 +1,4 @@
-// Test: Field has no initializer and is first assigned in constructor.
+// Test: Field has no initializer and is first assigned in constructor in a try-catch block.
 // Expected: No warning in constructor, warning in open().
 
 import java.io.FileInputStream;

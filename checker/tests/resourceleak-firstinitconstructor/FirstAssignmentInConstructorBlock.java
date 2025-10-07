@@ -1,5 +1,6 @@
-// Test: Field has no initializer and is first assigned in constructor.
-// Expected: No warning in constructor, warning in open().
+// Test: Field has no initializer and is first assigned in constructor, but in a constructor block.
+// Expected: No warning in the first assignment in the constructor block, warning in any later
+// assignments in the constructor and in open().
 
 import java.io.FileInputStream;
 import org.checkerframework.checker.calledmethods.qual.*;
