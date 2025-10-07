@@ -158,7 +158,11 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
       boolean isInitializationCode,
       boolean updateInitializationStore,
       boolean isStatic,
+      boolean firstAnalyze,
       @Nullable AccumulationStore capturedStore) {
+    if (!firstAnalyze) {
+      return cfg;
+    }
     cfg =
         super.analyze(
             classQueue,
@@ -170,6 +174,7 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
             isInitializationCode,
             updateInitializationStore,
             isStatic,
+            firstAnalyze,
             capturedStore);
     rlc.setRoot(root);
     MustCallConsistencyAnalyzer mustCallConsistencyAnalyzer = new MustCallConsistencyAnalyzer(rlc);
