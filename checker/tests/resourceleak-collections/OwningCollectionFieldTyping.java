@@ -188,6 +188,7 @@ class OwningFinalField implements Closeable {
   }
 
   @CollectionFieldDestructor("fieldList")
+  @Override
   public void close() {
     for (Resource r : fieldList) {
       r.close();
