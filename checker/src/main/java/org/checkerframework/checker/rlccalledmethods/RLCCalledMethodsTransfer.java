@@ -123,8 +123,6 @@ public class RLCCalledMethodsTransfer extends CalledMethodsTransfer {
               s.replaceValue(
                   collectionElement,
                   analysis.createSingleAnnotationValue(newAnno, collectionElement.getType())));
-      // TODO unsure this is necessary/harmful
-      result.withExceptionalStores(exceptionalStores);
     }
   }
 
