@@ -105,7 +105,7 @@ class CollectionOwnershipBasicTyping {
 
   void checkAdvancedDiamond() {
     // check that this doesn't create an obligation and defaults to @OwningCollectionBottom
-    Collection<@MustCall Socket> c = new ArrayList<>();
+    Collection<@MustCall({}) Socket> c = new ArrayList<>();
     checkArgIsBottom(c);
 
     // these all create obligations
