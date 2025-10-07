@@ -870,7 +870,7 @@ If a resource collection field is final, the checker doesn't have to verify assi
   \item Thanks to the above two restrictions, it can be assumed that an owned resource collection field is \texttt{@OwningCollectionWithoutObligation} at the beginning of a constructor. An assignment to the field is now allowed if the field is \texttt{@OwningCollectionWithoutObligation} just before the assignment. This condition holds in any other (non-constructor) method too, but the field is \texttt{@OwningCollection} at the method entrance, unlike for a constructor. A legal assignment to an owning resource collection field resolves the obligation of the right-hand side.
 \end{itemize}
 
-Resource collection fields owned by the enclosing class are special cases for ownership transfer, as the checker doesn't allow transfering the ownership away from such a field. If for example a member method were able to transfer the ownership of the field to an external method parameter, the checker would have to track that the field is no longer the owner and set its type to \texttt{@NotOwningCollection} for future method invocations on the class instance. For the sake of simplicity, the checker doesn't track this and thus doesn't allow ownership transfers for fields. In particular:
+Resource collection fields owned by the enclosing class are special cases for ownership transfer, as the checker doesn't allow transferring the ownership away from such a field. If for example a member method were able to transfer the ownership of the field to an external method parameter, the checker would have to track that the field is no longer the owner and set its type to \texttt{@NotOwningCollection} for future method invocations on the class instance. For the sake of simplicity, the checker doesn't track this and thus doesn't allow ownership transfers for fields. In particular:
 
 \begin{itemize}
   \item The field cannot be passed as an argument to an \texttt{@OwningCollection} parameter.
@@ -950,7 +950,7 @@ If the enclosing class is not intended to take responsibility for the resource c
 % }
 % \end{verbatim}
 
-% The returned element by \texttt{iter.next()} may have its must-call obligation fulfilled in any way described by the resource leak checker, even by transfering its ownership (for example by storing it in a field or passing it as an \texttt{@OwningCollection} method argument).
+% The returned element by \texttt{iter.next()} may have its must-call obligation fulfilled in any way described by the resource leak checker, even by transferring its ownership (for example by storing it in a field or passing it as an \texttt{@OwningCollection} method argument).
 
 % Iterators over collections with obligations may also be returned, passed as method or constructor arguments and even be stored in fields.
 
