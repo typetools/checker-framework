@@ -3539,6 +3539,7 @@ public class MustCallConsistencyAnalyzer {
                 visited,
                 worklist);
           } catch (InvalidLoopBodyAnalysisException e) {
+            // Expected when analyzing unreachable loop bodies. Safely abort the analysis.
             return;
           }
         }
