@@ -1547,11 +1547,10 @@ public abstract class GenericAnnotatedTypeFactory<
       Queue<IPair<ClassTree, Store>> classQueue,
       List<FieldInitialValue<Value>> fieldValues,
       Store capturedStore) {
-    boolean anyLambdaResultChanged = true;
     Map<LambdaExpressionTree, List<AnnotationMirrorSet>> lambdaResultTypeMap = new HashMap<>();
     Map<LambdaExpressionTree, ControlFlowGraph> lambdaToCFG = new HashMap<>();
     ControlFlowGraph methodCFG = null;
-    while (anyLambdaResultChanged) {
+    while (true) {
       Queue<IPair<ClassTree, Store>> classQueueInMethod = new ArrayDeque<>();
       Queue<IPair<LambdaExpressionTree, @Nullable Store>> lambdaQueueForMet = new ArrayDeque<>();
       methodCFG =
@@ -1568,7 +1567,7 @@ public abstract class GenericAnnotatedTypeFactory<
               methodCFG == null,
               capturedStore);
 
-      anyLambdaResultChanged = false;
+      boolean anyLambdaResultChanged = false;
       while (!lambdaQueueForMet.isEmpty()) {
         IPair<LambdaExpressionTree, @Nullable Store> lambdaPair = lambdaQueueForMet.poll();
         LambdaExpressionTree lambda = lambdaPair.first;
@@ -1594,19 +1593,15 @@ public abstract class GenericAnnotatedTypeFactory<
         for (ExpressionTree expressionTree : TreeUtils.getReturnedExpressions(lambda)) {
           returnedExpressionTypes.add(getAnnotatedType(expressionTree).getPrimaryAnnotations());
         }
-        boolean thisLambdaChanged = false;
         List<AnnotationMirrorSet> lastReturnET = lambdaResultTypeMap.get(lambda);
         if (lastReturnET != null) {
           for (int i = 0; i < lastReturnET.size(); i++) {
             if (!lastReturnET.get(i).equals(returnedExpressionTypes.get(i))) {
-              thisLambdaChanged = true;
+              anyLambdaResultChanged = true;
               break;
             }
           }
         } else {
-          thisLambdaChanged = true;
-        }
-        if (thisLambdaChanged) {
           anyLambdaResultChanged = true;
         }
         lambdaResultTypeMap.put(lambda, returnedExpressionTypes);
@@ -1614,7 +1609,7 @@ public abstract class GenericAnnotatedTypeFactory<
 
       if (!mustReanalyzeMethod(lambdaToCFG.keySet()) || !anyLambdaResultChanged) {
         classQueue.addAll(classQueueInMethod);
-
+        break;
       } else {
         if (fromExpressionTreeCache != null) {
           // If one cache is not null, then neither are the others.
