@@ -6,7 +6,7 @@ import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
 import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
-/** Tests for the Resource Leak Checker. */
+/** Tests for the Resource Leak Checker for Collections. */
 public class ResourceLeakCollections extends CheckerFrameworkPerDirectoryTest {
   public ResourceLeakCollections(List<File> testFiles) {
     super(

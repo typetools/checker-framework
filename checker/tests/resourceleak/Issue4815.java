@@ -10,7 +10,7 @@ public class Issue4815 {
     object.initialize();
     // `list` resolves to List<@MustCall Component> and thus cannot accept
     // an element of non-empty @MustCall type enforced by the Java
-    // typechecker. This is an unfortunate consequence of the otherwise
+    // type checker. This is an unfortunate consequence of the otherwise
     // elegant extension of the RLC to collections, which doesn't detect
     // that object already fulfilled its obligation here.
     // :: error: argument

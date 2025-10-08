@@ -23,10 +23,9 @@ public class SocketIntoList {
   }
 
   public void test3(List<@MustCall({}) Socket> l) throws Exception {
-    // although s is illegally assigned into the list l, an error
-    // for required.method.not.called is not additionally reported at
-    // this declaration site of s. list#add(@Owning E) takes on
-    // the obligation of the argument.
+    // although s is illegally added to l, a required.method.not.called error
+    // is not additionally reported at this declaration site. List#add(@Owning E) takes on
+    // the obligation of its argument.
     Socket s = new Socket();
     s.bind(new InetSocketAddress("192.168.0.1", 0));
     // l cannot hold elements with non-empty @MustCall values

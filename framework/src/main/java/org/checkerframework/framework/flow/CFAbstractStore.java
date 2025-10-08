@@ -1238,7 +1238,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       if (thisVal != null) {
         V otherVal = e.getValue();
         V mergedVal = upperBoundOfValues(otherVal, thisVal, shouldWiden);
-        newStore.iteratedCollectionElements.put(ice, mergedVal);
+        if (mergedVal != null) {
+          newStore.iteratedCollectionElements.put(ice, mergedVal);
+        }
       }
     }
 

@@ -108,8 +108,8 @@ public interface CFGVisualizer<
    * element.
    *
    * @param ice the iterated collection element
-   * @param value the value of the local variable
-   * @return the String representation of the local variable
+   * @param value the value associated with {@code ice}
+   * @return the String representation of this entry
    */
   String visualizeStoreIteratedCollectionElt(IteratedCollectionElement ice, V value);
 

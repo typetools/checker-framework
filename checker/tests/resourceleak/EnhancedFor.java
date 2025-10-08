@@ -26,9 +26,9 @@ class EnhancedFor {
   }
 
   void test3(List<Socket> list) {
-    // With the extension of the RLC to collections, this is no longer an error.
-    // The return type of Iterator#next is NotOwning, because the iterator does not
-    // own the elements, but instead the host collection the iterator is associated with.
+    // With the RLC collection extension, this is no longer an error.
+    // Iterator#next returns @NotOwning: iterators do not own their elements; ownership
+    // stays with the host collection associated with the iterator.
     for (Socket s : list) {}
   }
 

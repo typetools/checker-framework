@@ -1,5 +1,6 @@
 package org.checkerframework.checker.collectionownership;
 
+import java.util.LinkedHashSet;
 import java.util.Set;
 import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsChecker;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -17,7 +18,8 @@ public class CollectionOwnershipChecker extends BaseTypeChecker {
 
   @Override
   protected Set<Class<? extends SourceChecker>> getImmediateSubcheckerClasses() {
-    Set<Class<? extends SourceChecker>> checkers = super.getImmediateSubcheckerClasses();
+    Set<Class<? extends SourceChecker>> checkers =
+        new LinkedHashSet<>(super.getImmediateSubcheckerClasses());
     checkers.add(RLCCalledMethodsChecker.class);
     return checkers;
   }

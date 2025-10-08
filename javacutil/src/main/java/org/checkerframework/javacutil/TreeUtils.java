@@ -176,7 +176,7 @@ public final class TreeUtils {
    * @return true iff tree describes a call to hasNext
    */
   public static boolean isHasNextCall(MethodInvocationTree tree) {
-    return isNamedMethodCall("hasNext", tree);
+    return isNamedMethodCall("hasNext", tree) && tree.getArguments().isEmpty();
   }
 
   /**
@@ -1747,7 +1747,8 @@ public final class TreeUtils {
    */
   public static boolean isSizeAccess(Tree tree) {
     return (tree instanceof MethodInvocationTree)
-        && isNamedMethodCall("size", (MethodInvocationTree) tree);
+        && isNamedMethodCall("size", (MethodInvocationTree) tree)
+        && ((MethodInvocationTree) tree).getArguments().isEmpty();
   }
 
   /**

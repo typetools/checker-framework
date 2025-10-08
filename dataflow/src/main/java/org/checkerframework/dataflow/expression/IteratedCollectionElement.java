@@ -20,12 +20,12 @@ public class IteratedCollectionElement extends JavaExpression {
   /**
    * Creates a new IteratedCollectionElement.
    *
-   * @param var a CFG node
+   * @param node CFG node
    * @param tree an AST tree
    */
-  public IteratedCollectionElement(Node var, Tree tree) {
-    super(var.getType());
-    this.node = var;
+  public IteratedCollectionElement(Node node, Tree tree) {
+    super(node.getType());
+    this.node = node;
     this.tree = tree;
   }
 
