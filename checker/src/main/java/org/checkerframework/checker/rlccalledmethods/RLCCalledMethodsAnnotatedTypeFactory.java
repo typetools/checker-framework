@@ -160,6 +160,8 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
       boolean isStatic,
       boolean firstAnalyze,
       @Nullable AccumulationStore capturedStore) {
+    // This code really belongs in postAnalyze but, this code does not work correctly when
+    // methods/lambdas are reanalyzed.  See checker/tests/resourceleak/RLLambda.java.
     if (!firstAnalyze) {
       return cfg;
     }
