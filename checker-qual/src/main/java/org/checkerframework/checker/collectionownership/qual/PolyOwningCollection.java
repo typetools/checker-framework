@@ -12,6 +12,7 @@ import org.checkerframework.framework.qual.PolymorphicQualifier;
  *
  * @checker_framework.manual #resource-leak-checker Resource Leak Checker
  * @checker_framework.manual #qualifier-polymorphism Qualifier polymorphism
+ * @see NotOwningCollection
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
