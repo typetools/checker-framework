@@ -1544,6 +1544,15 @@ public abstract class GenericAnnotatedTypeFactory<
       Queue<IPair<ClassTree, Store>> classQueue,
       List<FieldInitialValue<Value>> fieldValues,
       Store capturedStore) {
+    // The code in
+    // org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsAnnotatedTypeFactory.postAnalyze
+    // does not work correctly when methods/lambdas are reanalyzed.  See
+    // checker/test/resourceleak/RLLambda.java.
+    boolean isResourceLeakChecker =
+        this.getClass()
+            .getCanonicalName()
+            .equals(
+                "org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsAnnotatedTypeFactory");
     boolean anyLambdaResultChanged = true;
     Map<LambdaExpressionTree, List<AnnotationMirrorSet>> lambdaResultTypeMap = new HashMap<>();
     Map<LambdaExpressionTree, ControlFlowGraph> lambdaToCFG = new HashMap<>();
@@ -1563,6 +1572,9 @@ public abstract class GenericAnnotatedTypeFactory<
               false,
               false,
               capturedStore);
+      if (isResourceLeakChecker) {
+        postAnalyze(methodCFG);
+      }
 
       anyLambdaResultChanged = false;
       while (!lambdaQueueForMet.isEmpty()) {
@@ -1584,6 +1596,9 @@ public abstract class GenericAnnotatedTypeFactory<
                 false,
                 lambdaPair.second);
         lambdaToCFG.put(lambda, cfgLambda);
+        if (isResourceLeakChecker) {
+          postAnalyze(cfgLambda);
+        }
 
         List<AnnotationMirrorSet> returnedExpressionTypes = new ArrayList<>();
         for (ExpressionTree expressionTree : TreeUtils.getReturnedExpressions(lambda)) {
@@ -1609,11 +1624,9 @@ public abstract class GenericAnnotatedTypeFactory<
 
       if (!mustReanalyzeMethod(lambdaToCFG.keySet())
           || !anyLambdaResultChanged
-          || this.getClass()
-              .toString()
-              .equals(
-                  "org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsAnnotatedTypeFactory")) {
+          || isResourceLeakChecker) {
         classQueue.addAll(classQueueInMethod);
+        break;
       } else {
         if (fromExpressionTreeCache != null) {
           // If one cache is not null, then neither are the others.
@@ -1623,8 +1636,10 @@ public abstract class GenericAnnotatedTypeFactory<
         }
       }
     }
-    postAnalyze(methodCFG);
-    lambdaToCFG.values().forEach(this::postAnalyze);
+    if (!isResourceLeakChecker) {
+      postAnalyze(methodCFG);
+      lambdaToCFG.values().forEach(this::postAnalyze);
+    }
   }
 
   /**
