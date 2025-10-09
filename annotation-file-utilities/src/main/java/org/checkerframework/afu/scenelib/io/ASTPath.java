@@ -1486,6 +1486,7 @@ class ImmutableStack<E> {
    * Returns all of the stack except the top element.
    *
    * @return all of the stack except the top element
+   * @throws IllegalStateException if the stack is empty
    */
   public ImmutableStack<E> pop() {
     if (isEmpty()) {
@@ -1512,6 +1513,7 @@ class ImmutableStack<E> {
    *
    * @param index which element to return
    * @return the index-th element of this stack
+   * @throws NoSuchElementException if the index is out of bounds
    */
   public E get(int index) {
     int n = size();
