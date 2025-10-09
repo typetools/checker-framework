@@ -27,6 +27,7 @@ import org.checkerframework.afu.scenelib.field.AnnotationFieldType;
 import org.checkerframework.afu.scenelib.field.ArrayAFT;
 import org.checkerframework.afu.scenelib.field.ClassTokenAFT;
 import org.checkerframework.afu.scenelib.field.EnumAFT;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.Attribute;
@@ -430,7 +431,8 @@ public class ClassAnnotationSceneWriter extends CodeOffsetAdapter {
     }
 
     @Override
-    public AnnotationVisitor visitAnnotation(String descriptor, boolean visible) {
+    @SuppressWarnings("nullness:override.return") // ASM lacks (some?) @Nullable annotations
+    public @Nullable AnnotationVisitor visitAnnotation(String descriptor, boolean visible) {
       existingFieldAnnotations.add(descriptor);
 
       // If annotation exists in scene, and in overwrite mode,
@@ -443,7 +445,8 @@ public class ClassAnnotationSceneWriter extends CodeOffsetAdapter {
     }
 
     @Override
-    public AnnotationVisitor visitTypeAnnotation(
+    @SuppressWarnings("nullness:override.return") // ASM lacks (some?) @Nullable annotations
+    public @Nullable AnnotationVisitor visitTypeAnnotation(
         int typeRef, TypePath typePath, String descriptor, boolean visible) {
       // typeRef: FIELD
       existingFieldAnnotations.add(descriptor);
