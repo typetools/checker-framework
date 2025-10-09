@@ -1488,7 +1488,7 @@ public abstract class GenericAnnotatedTypeFactory<
         // Now analyze all methods.
         // TODO: at this point, we don't have any information about fields of superclasses.
         for (CFGMethod met : methods) {
-          preformFlowAnalysisOnMethod(classTree, met, classQueue, fieldValues, capturedStore);
+          performFlowAnalysisMethod(classTree, met, classQueue, fieldValues, capturedStore);
         }
 
         while (!lambdaQueue.isEmpty()) {
@@ -1538,7 +1538,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * @param fieldValues values of fields to be used
    * @param capturedStore the input Store to use for captured variables, e.g. in a lambda
    */
-  private void preformFlowAnalysisOnMethod(
+  private void performFlowAnalysisMethod(
       ClassTree classTree,
       CFGMethod met,
       Queue<IPair<ClassTree, Store>> classQueue,
@@ -1821,14 +1821,14 @@ public abstract class GenericAnnotatedTypeFactory<
   /**
    * Perform any additional operations on a CFG. Called once per CFG, after the CFG has been
    * analyzed by {@link #analyze(Queue, Queue, UnderlyingAST, List, ClassTree, ControlFlowGraph,
-   * boolean, boolean, boolean, CFAbstractStore)}. If the CFG is analyzed more than once, this
-   * method is still only called one time after the last time the CFG is analyzed. This method can
-   * be used to initialize additional state or to perform any analyzes that are easier to perform on
-   * the CFG instead of the AST.
+   * boolean, boolean, boolean, Store)}. If the CFG is analyzed more than once, this method is still
+   * only called one time after the last time the CFG is analyzed. This method can be used to
+   * initialize additional state or to perform any analyzes that are easier to perform on the CFG
+   * instead of the AST.
    *
    * @param cfg the CFG
    * @see #analyze(Queue, Queue, UnderlyingAST, List, ClassTree, ControlFlowGraph, boolean, boolean,
-   *     boolean, CFAbstractStore)
+   *     boolean, Store)
    */
   protected void postAnalyze(ControlFlowGraph cfg) {
     handleCFGViz(cfg);
