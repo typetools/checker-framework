@@ -2826,8 +2826,6 @@ public class MustCallConsistencyAnalyzer {
         }
         if (coAtf.isOwningCollectionParameter(paramElement)) {
           List<String> mustCallValues = coAtf.getMustCallValuesOfResourceCollectionComponent(param);
-          {
-          }
           if (mustCallValues != null) {
             if (!ResourceLeakUtils.isIterator(paramElement.asType())) {
               for (String mustCallMethod : mustCallValues) {

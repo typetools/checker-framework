@@ -23,7 +23,7 @@ public class SocketIntoList {
   }
 
   public void test3(List<@MustCall({}) Socket> l) throws Exception {
-    // although s is illegally added to l, a required.method.not.called error
+    // Although s is illegally added to l, a required.method.not.called error
     // is not additionally reported at this declaration site. List#add(@Owning E) takes on
     // the obligation of its argument.
     Socket s = new Socket();
@@ -35,9 +35,8 @@ public class SocketIntoList {
 
   // This input list might have been produced by e.g., test1()
   public void test4(List<@MustCall({}) Socket> l) throws Exception {
-    // l.get(0) is not an error as List#get returns @NotOwning.
-    // However, s.bind tries to reset the mustcall obligations of s,
-    // which is only permitted if s is owning.
+    // l.get(0) is not an error as List#get returns @NotOwning.  However, s.bind tries
+    // to reset the MustCall obligations of s, which is only permitted if s is owning.
     Socket s = l.get(0);
     // :: error: reset.not.owning
     s.bind(new InetSocketAddress("192.168.0.1", 0));

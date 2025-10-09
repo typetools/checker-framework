@@ -34,8 +34,8 @@ import org.checkerframework.framework.source.SupportedOptions;
  * RLCCalledMethodsChecker &rarr; MustCallChecker
  *
  * <p>The subchecker hierarchy is a line graph (instead of siblings), since we want them to operate
- * on the same cfg (so we can get both a CM, MC, and CO store for a given cfg block), which only
- * works if they are in a linear subchecker hierarchy.
+ * on the same CFG (so we can get a CalledMethods, MustCall, and CollectionOwnership store for a
+ * given CFG block), which only works if they are in a linear subchecker hierarchy.
  */
 @SupportedOptions({
   "permitStaticOwning",
