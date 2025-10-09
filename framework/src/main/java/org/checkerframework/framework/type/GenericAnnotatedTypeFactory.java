@@ -1,15 +1,12 @@
 package org.checkerframework.framework.type;
 
 import com.google.common.collect.Ordering;
-import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
-import com.sun.source.tree.LambdaExpressionTree.BodyKind;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
@@ -17,7 +14,6 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
-import com.sun.source.util.TreeScanner;
 import java.lang.annotation.Annotation;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -116,7 +112,6 @@ import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesTreeAnnotator;
-import org.checkerframework.framework.util.typeinference8.DefaultTypeArgumentInference;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -1636,42 +1631,6 @@ public abstract class GenericAnnotatedTypeFactory<
           == TypeKind.VOID) {
         // the lambda return type is void.
         continue;
-      }
-      TreePath p = getPath(lambda).getParentPath();
-      Tree outer = DefaultTypeArgumentInference.outerInference(lambda, p);
-      @SuppressWarnings("interning:not.interned") // looking for exact tree.
-      boolean isSameTree = outer == lambda;
-      if (isSameTree) {
-        // The lambda is not a part of a type argument inference problem.
-        continue;
-      }
-
-      if (lambda.getBodyKind() == BodyKind.EXPRESSION) {
-        List<VariableElement> paramsElements = new ArrayList<>();
-        TreeScanner<Boolean, List<VariableElement>> s =
-            new TreeScanner<Boolean, List<VariableElement>>() {
-              @Override
-              public Boolean visitConditionalExpression(
-                  ConditionalExpressionTree node, List<VariableElement> variableElements) {
-                return true;
-              }
-
-              @Override
-              public Boolean visitAssignment(
-                  AssignmentTree node, List<VariableElement> variableElements) {
-                return true;
-              }
-
-              @Override
-              public Boolean reduce(Boolean r1, Boolean r2) {
-                return (r1 != null && r1) || (r2 != null && r2);
-              }
-            };
-        if (!s.scan(lambda, paramsElements)) {
-          // The lambda's body is an expression which contain no expressions that can be refined by
-          // dataflow.
-          continue;
-        }
       }
       mustReanalyze = true;
       break;
