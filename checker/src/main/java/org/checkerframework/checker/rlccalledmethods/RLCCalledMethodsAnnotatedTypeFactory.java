@@ -160,9 +160,16 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
       boolean isStatic,
       boolean firstAnalyze,
       @Nullable AccumulationStore capturedStore) {
-    // This code really belongs in postAnalyze but, this code does not work correctly when
-    // methods/lambdas are reanalyzed.  See checker/tests/resourceleak/RLLambda.java.
+    // This is a work around a bug that I tried and fail to fix.
+    // This code really belongs in postAnalyze but, this code only works correctly when called after
+    // a method is
+    // analyzed the first time and before any containing lambdas are analyzed.
+    // See checker/tests/resourceleak/RLLambda.java.
+    // This work around means there could be false positives when the type of a method invocation
+    // depends on dataflow in a lambda.
+
     if (!firstAnalyze) {
+      // No call to super.
       return cfg;
     }
     cfg =
@@ -178,6 +185,7 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
             isStatic,
             firstAnalyze,
             capturedStore);
+
     rlc.setRoot(root);
     MustCallConsistencyAnalyzer mustCallConsistencyAnalyzer = new MustCallConsistencyAnalyzer(rlc);
     mustCallConsistencyAnalyzer.analyze(cfg);
