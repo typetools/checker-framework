@@ -1473,6 +1473,7 @@ class ImmutableStack<E> {
    * Returns the top element of the stack, without modifying the stack.
    *
    * @return the top element of the stack
+   * @throws IllegalStateException if the stack is empty
    */
   public E peek() {
     if (isEmpty()) {
