@@ -7,6 +7,8 @@ Version 3.51.2 (2025-11-01)
 
 **Implementation details:**
 
+In `CFAbstractAnalysis`, renamed `defaultCreateAbstractValue` to `getCfValue`
+
 **Closed issues:**
 
 
