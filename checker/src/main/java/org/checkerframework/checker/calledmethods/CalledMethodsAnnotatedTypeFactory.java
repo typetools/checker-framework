@@ -340,7 +340,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
   private class CalledMethodsTypeAnnotator extends TypeAnnotator {
 
     /**
-     * Constructor matching super.
+     * Creates a CalledMethodsTypeAnnotator.
      *
      * @param atypeFactory the type factory
      */
@@ -409,7 +409,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
    * @param calledMethodsAnnotation the annotation
    * @return the called methods
    */
-  protected List<String> getCalledMethods(AnnotationMirror calledMethodsAnnotation) {
+  public List<String> getCalledMethods(AnnotationMirror calledMethodsAnnotation) {
     return AnnotationUtils.getElementValueArray(
         calledMethodsAnnotation, calledMethodsValueElement, String.class, Collections.emptyList());
   }

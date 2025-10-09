@@ -4,17 +4,23 @@ import java.util.AbstractSet;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.Map;
 
 /**
  * A simple implementation of {@link KeyedSet} backed by an insertion-order {@link
  * java.util.LinkedHashMap} and its {@link java.util.LinkedHashMap#values() value collection}.
+ *
+ * @param <K> the type of keys
+ * @param <V> the type of values
  */
 public class LinkedHashKeyedSet<K, V> extends AbstractSet<V> implements KeyedSet<K, V> {
+  /** Produces a key for a value. */
   private final Keyer<? extends K, ? super V> keyer;
 
-  private final Map<K, V> theMap = new LinkedHashMap<>();
+  /** The map that backs this set. */
+  // Declared as LinkedHashMap because some implementations of Map prohibit null keys.
+  private final LinkedHashMap<K, V> theMap = new LinkedHashMap<>();
 
+  /** The values in the set. Implemented as a view into the map. */
   final Collection<V> theValues = theMap.values();
 
   /**
@@ -71,6 +77,14 @@ public class LinkedHashKeyedSet<K, V> extends AbstractSet<V> implements KeyedSet
     return theValues.toArray(a);
   }
 
+  /**
+   * Prepares for adding an element to this. Removes the given element if {@code behavior} is
+   * REPLACE.
+   *
+   * @param behavior what action this method should take
+   * @param old the element to be removed, if {@code behavior} is REPLACE
+   * @return true if an element was removed
+   */
   private boolean checkAdd(int behavior, V old) {
     switch (behavior) {
       case REPLACE:
