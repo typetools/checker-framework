@@ -235,6 +235,11 @@ public abstract class CFAbstractAnalysis<
     return new CFValue(analysis, annotations, underlyingType);
   }
 
+  /**
+   * Returns the type hierarchy.
+   *
+   * @return the type hierarchy
+   */
   public TypeHierarchy getTypeHierarchy() {
     return typeHierarchy;
   }
