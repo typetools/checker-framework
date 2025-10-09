@@ -1452,7 +1452,6 @@ public abstract class GenericAnnotatedTypeFactory<
                         true,
                         true,
                         isStatic,
-                        true,
                         capturedStore);
                 postAnalyze(cfg);
                 Value initializerValue = flowResult.getValue(initializer);
@@ -1477,7 +1476,6 @@ public abstract class GenericAnnotatedTypeFactory<
                       true,
                       true,
                       b.isStatic(),
-                      true,
                       capturedStore);
               postAnalyze(cfg);
               break;
@@ -1509,7 +1507,6 @@ public abstract class GenericAnnotatedTypeFactory<
                   false,
                   false,
                   false,
-                  true,
                   lambdaPair.second);
           postAnalyze(cfg);
         }
@@ -1567,7 +1564,6 @@ public abstract class GenericAnnotatedTypeFactory<
               TreeUtils.isConstructor(met.getMethod()),
               false,
               false,
-              methodCFG == null,
               capturedStore);
 
       boolean anyLambdaResultChanged = false;
@@ -1588,7 +1584,6 @@ public abstract class GenericAnnotatedTypeFactory<
                 false,
                 false,
                 false,
-                lambdaResultTypeMap.isEmpty(),
                 lambdaPair.second);
         lambdaToCFG.put(lambda, cfgLambda);
 
@@ -1711,7 +1706,6 @@ public abstract class GenericAnnotatedTypeFactory<
    * @param isInitializationCode are we analyzing a (static/non-static) initializer block of a class
    * @param updateInitializationStore should the initialization store be updated
    * @param isStatic are we analyzing a static construct
-   * @param firstAnalyze whether this is the first time {@code ast} has been analyzed
    * @param capturedStore the input Store to use for captured variables, e.g. in a lambda
    * @return control flow graph for {@code ast}
    * @see #postAnalyze(org.checkerframework.dataflow.cfg.ControlFlowGraph)
@@ -1726,7 +1720,6 @@ public abstract class GenericAnnotatedTypeFactory<
       boolean isInitializationCode,
       boolean updateInitializationStore,
       boolean isStatic,
-      boolean firstAnalyze,
       @Nullable Store capturedStore) {
     if (cfg == null) {
       cfg = CFCFGBuilder.build(root, ast, checker, this, processingEnv);
@@ -1828,14 +1821,14 @@ public abstract class GenericAnnotatedTypeFactory<
   /**
    * Perform any additional operations on a CFG. Called once per CFG, after the CFG has been
    * analyzed by {@link #analyze(Queue, Queue, UnderlyingAST, List, ClassTree, ControlFlowGraph,
-   * boolean, boolean, boolean, boolean, CFAbstractStore)}. If the CFG is analyzed more than once,
-   * this method is still only called one time after the last time the CFG is analyzed. This method
-   * can be used to initialize additional state or to perform any analyzes that are easier to
-   * perform on the CFG instead of the AST.
+   * boolean, boolean, boolean, CFAbstractStore)}. If the CFG is analyzed more than once, this
+   * method is still only called one time after the last time the CFG is analyzed. This method can
+   * be used to initialize additional state or to perform any analyzes that are easier to perform on
+   * the CFG instead of the AST.
    *
    * @param cfg the CFG
    * @see #analyze(Queue, Queue, UnderlyingAST, List, ClassTree, ControlFlowGraph, boolean, boolean,
-   *     boolean, boolean, CFAbstractStore)
+   *     boolean, CFAbstractStore)
    */
   protected void postAnalyze(ControlFlowGraph cfg) {
     handleCFGViz(cfg);
