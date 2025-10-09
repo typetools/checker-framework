@@ -17,7 +17,7 @@ public class LinkedHashKeyedSet<K, V> extends AbstractSet<V> implements KeyedSet
   private final Keyer<? extends K, ? super V> keyer;
 
   /** The map that backs this set. */
-  // Declared as LinkedHashMap because some implementations of Map prohibit null keys.
+  // Not declared as Map because some implementations of Map prohibit null keys.
   private final LinkedHashMap<K, V> theMap = new LinkedHashMap<>();
 
   /** The values in the set. Implemented as a view into the map. */
