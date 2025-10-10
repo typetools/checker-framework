@@ -180,6 +180,7 @@ jar {
 shadowJar {
   description = 'Creates checker-VERSION-all.jar and copies it to dist/checker.jar.'
   archiveClassifier = 'all'
+  outputs.file("${projectDir}/dist/checker.jar")
   // To see what files are incorporated into the shadow jar file:
   // doFirst { println sourceSets.main.runtimeClasspath.asPath }
   doLast {
