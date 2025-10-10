@@ -166,7 +166,10 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
     // This work around means there could be false positives when the type of a method invocation
     // depends on dataflow in a lambda.
 
-    boolean firstAnalysis = cfg != null;
+    if (cfg != null) {
+      // If the cfg is not null, then the analysis has been run before, so don't rerun it.
+      return cfg;
+    }
     cfg =
         super.analyze(
             classQueue,
@@ -179,10 +182,6 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
             updateInitializationStore,
             isStatic,
             capturedStore);
-    if (!firstAnalysis) {
-      return cfg;
-    }
-    // This code is only run the first time the CFG is analyzed.
     assert root != null : "@AssumeAssertion(nullness): at this point root is always nonnull";
     rlc.setRoot(root);
     MustCallConsistencyAnalyzer mustCallConsistencyAnalyzer = new MustCallConsistencyAnalyzer(rlc);
