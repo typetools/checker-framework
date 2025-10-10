@@ -1694,37 +1694,38 @@ public class MustCallConsistencyAnalyzer {
             && decl.getInitializer().getKind() != Tree.Kind.NULL_LITERAL) {
           return false;
         }
+        continue;
       }
-      // (3) Disallow assignment in any instance initializer block (IIB).
+      // (3) Disallow assignment in any instance initializer block.
       if (member instanceof BlockTree) {
-        BlockTree block = (BlockTree) member;
-        if (block.isStatic()) {
+        BlockTree initBlock = (BlockTree) member;
+        if (initBlock.isStatic()) {
           continue;
         }
         // The variables accessed from within the anonymous class need to be effectively final, so
         // AtomicBoolean is used here.
-        AtomicBoolean initializedInIIB = new AtomicBoolean(false);
-        block.accept(
+        AtomicBoolean isInitialized = new AtomicBoolean(false);
+        initBlock.accept(
             new TreeScanner<Void, Void>() {
               @Override
               public Void visitAssignment(AssignmentTree assignmentTree, Void unused) {
                 ExpressionTree lhs = assignmentTree.getVariable();
                 Element lhsElement = TreeUtils.elementFromTree(lhs);
                 if (field.equals(lhsElement)) {
-                  initializedInIIB.set(true);
+                  isInitialized.set(true);
                   return null;
                 }
                 return super.visitAssignment(assignmentTree, unused);
               }
             },
             null);
-        if (initializedInIIB.get()) {
+        if (isInitialized.get()) {
           return false;
         }
       }
     }
 
-    // (4) Reject constructor chaining via this(...).
+    // (4) Reject constructor chaining via `this(...)`.
     // If this constructor chains, the "first write" can occur in the callee constructor.
     if (callsThisConstructor(constructor)) {
       return false;
@@ -1733,8 +1734,8 @@ public class MustCallConsistencyAnalyzer {
     // (5) & (6): Single-pass scan in source order.
     // For each top-level statement, descend into its subtree and:
     //   - If we encounter an assignment to the same field:
-    //       • if it is the current assignment -> first write -> return true
-    //       • otherwise (earlier assignment) -> not first write -> return false
+    //       * if it is the current assignment -> first write -> return true
+    //       * otherwise (earlier assignment) -> not first write -> return false
     //   - If we encounter any method call before seeing the current assignment
     //     (other than a super(...) ctor call) -> return false
     List<? extends StatementTree> stmts = constructor.getBody().getStatements();
@@ -1764,12 +1765,16 @@ public class MustCallConsistencyAnalyzer {
             public Boolean reduce(Boolean r1, Boolean r2) {
               // Return the first non-null result from child scans.
               // This lets the traversal stop as soon as a matching condition is detected.
-              if (r1 != null) return r1;
+              if (r1 != null) {
+                return r1;
+              }
               return r2;
             }
           }.scan(st, null);
 
-      if (scanResult != null) return scanResult;
+      if (scanResult != null) {
+        return scanResult;
+      }
     }
     // The current assignment was not found in the constructor body, conservatively return false.
     return false;
@@ -1780,14 +1785,15 @@ public class MustCallConsistencyAnalyzer {
    * a {@code this(...)} call as its first statement.
    *
    * @param constructor a constructor method
-   * @return {@code true} if the constructor starts with a {@code this(...)} call, {@code false}
-   *     otherwise
+   * @return {@code true} if the constructor starts with a {@code this(...)} call
    */
   private boolean callsThisConstructor(MethodTree constructor) {
     List<? extends StatementTree> statements = constructor.getBody().getStatements();
     if (statements.isEmpty()) {
       return false;
     }
+    // This code must be revisited when "JEP 482: Flexible Constructor Bodies" is finalized,
+    // because then a call to `this` need not be the very first statement in a constructor body.
     StatementTree firstStmt = statements.get(0);
     if (firstStmt instanceof ExpressionStatementTree) {
       ExpressionTree expr = ((ExpressionStatementTree) firstStmt).getExpression();
