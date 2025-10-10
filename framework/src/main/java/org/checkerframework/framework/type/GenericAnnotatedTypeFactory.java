@@ -1442,7 +1442,6 @@ public abstract class GenericAnnotatedTypeFactory<
                         lambdaQueue,
                         new CFGStatement(vt, ct),
                         fieldValues,
-                        classTree,
                         null,
                         true,
                         true,
@@ -1466,7 +1465,6 @@ public abstract class GenericAnnotatedTypeFactory<
                       lambdaQueue,
                       new CFGStatement(b, ct),
                       fieldValues,
-                      ct,
                       null,
                       true,
                       true,
@@ -1497,7 +1495,6 @@ public abstract class GenericAnnotatedTypeFactory<
                   lambdaQueue,
                   new CFGLambda(lambdaPair.first, classTree, mt),
                   fieldValues,
-                  classTree,
                   null,
                   false,
                   false,
@@ -1554,7 +1551,6 @@ public abstract class GenericAnnotatedTypeFactory<
               lambdaQueueForMet,
               met,
               fieldValues,
-              classTree,
               methodCFG,
               TreeUtils.isConstructor(met.getMethod()),
               false,
@@ -1574,7 +1570,6 @@ public abstract class GenericAnnotatedTypeFactory<
                 lambdaQueueForMet,
                 new CFGLambda(lambda, classTree, mt),
                 fieldValues,
-                classTree,
                 cfgLambda,
                 false,
                 false,
@@ -1660,7 +1655,6 @@ public abstract class GenericAnnotatedTypeFactory<
    * @param lambdaQueue the queue for encountered lambda expression trees and their initial stores
    * @param ast the AST to analyze
    * @param fieldValues the abstract values for all fields of the same class
-   * @param currentClass the class we are currently looking at
    * @param cfg control flow graph to use; if null, one will be created and returned
    * @param isInitializationCode are we analyzing a (static/non-static) initializer block of a class
    * @param updateInitializationStore should the initialization store be updated
@@ -1674,7 +1668,6 @@ public abstract class GenericAnnotatedTypeFactory<
       Queue<IPair<LambdaExpressionTree, Store>> lambdaQueue,
       UnderlyingAST ast,
       List<FieldInitialValue<Value>> fieldValues,
-      ClassTree currentClass,
       @Nullable ControlFlowGraph cfg,
       boolean isInitializationCode,
       boolean updateInitializationStore,
@@ -1779,15 +1772,15 @@ public abstract class GenericAnnotatedTypeFactory<
 
   /**
    * Perform any additional operations on a CFG. Called once per CFG, after the CFG has been
-   * analyzed by {@link #analyze(Queue, Queue, UnderlyingAST, List, ClassTree, ControlFlowGraph,
-   * boolean, boolean, boolean, CFAbstractStore)}. If the CFG is analyzed more than once, this
-   * method is still only called one time after the last time the CFG is analyzed. This method can
-   * be used to initialize additional state or to perform any analyzes that are easier to perform on
-   * the CFG instead of the AST.
+   * analyzed by {@link #analyze(Queue, Queue, UnderlyingAST, List, ControlFlowGraph, boolean,
+   * boolean, boolean, CFAbstractStore)}. If the CFG is analyzed more than once, this method is
+   * still only called one time after the last time the CFG is analyzed. This method can be used to
+   * initialize additional state or to perform any analyzes that are easier to perform on the CFG
+   * instead of the AST.
    *
    * @param cfg the CFG
-   * @see #analyze(Queue, Queue, UnderlyingAST, List, ClassTree, ControlFlowGraph, boolean, boolean,
-   *     boolean, CFAbstractStore)
+   * @see #analyze(Queue, Queue, UnderlyingAST, List, ControlFlowGraph, boolean, boolean, boolean,
+   *     CFAbstractStore)
    */
   protected void postAnalyze(ControlFlowGraph cfg) {
     handleCFGViz(cfg);
