@@ -225,7 +225,7 @@ public abstract class CFAbstractAnalysis<
    * @param underlyingType the unannotated type for the result annotated type
    * @return an abstract value containing the given {@code annotations} and {@code underlyingType}
    */
-  public final @Nullable CFValue defaultCreateAbstractValue(
+  public final @Nullable CFValue getCfValue(
       CFAbstractAnalysis<CFValue, ?, ?> analysis,
       AnnotationMirrorSet annotations,
       TypeMirror underlyingType) {
