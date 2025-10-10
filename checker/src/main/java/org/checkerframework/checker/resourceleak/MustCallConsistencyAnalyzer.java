@@ -1129,8 +1129,8 @@ public class MustCallConsistencyAnalyzer {
       return;
     }
     // Use the temporary variable for the rhs if it exists.
-    Node rhs = NodeUtils.removeCasts(assignmentNode.getExpression());
-    rhs = getTempVarOrNode(rhs);
+    Node rhsExpr = NodeUtils.removeCasts(assignmentNode.getExpression());
+    Node rhs = getTempVarOrNode(rhsExpr);
 
     // Ownership transfer to @Owning field.
     if (lhsElement.getKind() == ElementKind.FIELD) {
@@ -2181,7 +2181,7 @@ public class MustCallConsistencyAnalyzer {
    * Returns true if {@code alias.reference} is definitely in-scope in the successor store: that is,
    * there is a value for it in {@code successorStore}.
    *
-   * @param successorStore the regular store of the successor block
+   * @param successorStore the regular CalledMethods store of the successor block
    * @param alias the resource alias to check
    * @return true if the variable is definitely in scope for the purposes of the consistency
    *     checking algorithm in the successor block from which the store came

@@ -158,13 +158,15 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
       boolean isInitializationCode,
       boolean updateInitializationStore,
       boolean isStatic,
-      boolean firstAnalyze,
       @Nullable AccumulationStore capturedStore) {
-    // This code really belongs in postAnalyze but, this code does not work correctly when
-    // methods/lambdas are reanalyzed.  See checker/tests/resourceleak/RLLambda.java.
-    if (!firstAnalyze) {
-      return cfg;
-    }
+    // This is a work around a bug that I tried and fail to fix.
+    // This code really belongs in postAnalyze but, this code only works correctly when called after
+    // a method is analyzed the first time and before any containing lambdas are analyzed.
+    // See checker/tests/resourceleak/RLLambda.java.
+    // This work around means there could be false positives when the type of a method invocation
+    // depends on dataflow in a lambda.
+
+    boolean firstAnalysis = cfg != null;
     cfg =
         super.analyze(
             classQueue,
@@ -176,8 +178,12 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
             isInitializationCode,
             updateInitializationStore,
             isStatic,
-            firstAnalyze,
             capturedStore);
+    if (!firstAnalysis) {
+      return cfg;
+    }
+    // This code is only run the first time the CFG is analyzed.
+    assert root != null : "@AssumeAssertion(nullness): at this point root is always nonnull";
     rlc.setRoot(root);
     MustCallConsistencyAnalyzer mustCallConsistencyAnalyzer = new MustCallConsistencyAnalyzer(rlc);
     mustCallConsistencyAnalyzer.analyze(cfg);
