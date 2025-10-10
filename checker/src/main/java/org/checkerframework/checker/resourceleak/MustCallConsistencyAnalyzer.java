@@ -1519,17 +1519,16 @@ public class MustCallConsistencyAnalyzer {
         }
       }
     } else if (TreeUtils.isConstructor(enclosingMethodTree)) {
-      // If this assignment is verified to be the first write to the private field in this
-      // constructor
-      // do not throw non-final owning field reassignment error.
+      // If this assignment the first write to the private field in this constructor,
+      // then do not throw non-final owning field reassignment error.
       Element enclosingClassElement =
           TreeUtils.elementFromDeclaration(enclosingMethodTree).getEnclosingElement();
       if (ElementUtils.isTypeElement(enclosingClassElement)) {
         Element receiverElement = TypesUtils.getTypeElement(receiver.getType());
         if (Objects.equals(enclosingClassElement, receiverElement)) {
           VariableElement lhsElement = lhs.getElement();
-          if (isFirstWriteToFieldInConstructor(lhsElement, enclosingMethodTree, node.getTree())) {
-            // Safe; first assignment in constructor
+          if (isFirstWriteToFieldInConstructor(node.getTree(), lhsElement, enclosingMethodTree)) {
+            // Safe; first assignment in constructor.
             return;
           }
         }
@@ -1654,21 +1653,14 @@ public class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Determines whether the given assignment is provably the first write to a {@code private} field
-   * during object construction. If true, the caller may skip reporting a non-final owning field
-   * reassignment error for this write.
-   *
-   * <p>This method is deliberately conservative: it returns {@code false} unless it can prove that
-   * the write is the first along the current control-flow path. It inspects earlier constructor
-   * statements in source order and descends into each statement’s subtree. If there is any
-   * possibility that an earlier statement either (a) writes the same field or (b) performs a method
-   * call (other than a {@code super(...)} constructor invocation) that might assign the field, the
-   * method returns {@code false}.
+   * Returns true if the given assignment is the first write to a {@code private} field on its path
+   * in in the constructor. This method is conservative: it returns {@code false} unless it can
+   * prove that the write is the first.
    *
    * <p>The result is {@code true} only if all of the following hold:
    *
    * <ul>
-   *   <li>(1) The field is {@code private}
+   *   <li>(1) The field is {@code private}.
    *   <li>(2) The field has no non-null inline initializer at its declaration.
    *   <li>(3) The field is not assigned in any instance initializer block.
    *   <li>(4) The constructor does not delegate via {@code this(...)}.
@@ -1677,14 +1669,13 @@ public class MustCallConsistencyAnalyzer {
    *       super(...)}).
    * </ul>
    *
+   * @param assignment the actual assignment tree being analyzed, which is a statement in
    * @param field the field being assigned
-   * @param constructor the constructor where the assignment appears
-   * @param currentAssignment the actual assignment tree being analyzed, which is a statement in
-   *     {@code constructor}
-   * @return true if this assignment can be safely considered the first write during construction
+   * @param constructor the constructor where the assignment appears {@code constructor}
+   * @return true if this assignment is the first write during construction
    */
   private boolean isFirstWriteToFieldInConstructor(
-      VariableElement field, MethodTree constructor, @FindDistinct Tree currentAssignment) {
+      @FindDistinct Tree assignment, VariableElement field, MethodTree constructor) {
     // (1) The field must be private
     if (!field.getModifiers().contains(Modifier.PRIVATE)) {
       return false;
@@ -1716,14 +1707,14 @@ public class MustCallConsistencyAnalyzer {
         block.accept(
             new TreeScanner<Void, Void>() {
               @Override
-              public Void visitAssignment(AssignmentTree node, Void unused) {
-                ExpressionTree lhs = node.getVariable();
+              public Void visitAssignment(AssignmentTree assignmentTree, Void unused) {
+                ExpressionTree lhs = assignmentTree.getVariable();
                 Element lhsElement = TreeUtils.elementFromTree(lhs);
                 if (field.equals(lhsElement)) {
                   initializedInIIB.set(true);
                   return null;
                 }
-                return super.visitAssignment(node, unused);
+                return super.visitAssignment(assignmentTree, unused);
               }
             },
             null);
@@ -1754,7 +1745,7 @@ public class MustCallConsistencyAnalyzer {
             public Boolean visitAssignment(AssignmentTree node, Void p) {
               Element lhsEl = TreeUtils.elementFromUse(node.getVariable());
               if (field.equals(lhsEl)) {
-                return (node == currentAssignment)
+                return (node == assignment)
                     ? Boolean.TRUE
                     : Boolean.FALSE; // (5) Earlier assignment to same field
               }
