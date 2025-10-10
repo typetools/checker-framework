@@ -1535,7 +1535,7 @@ public abstract class GenericAnnotatedTypeFactory<
       CFGMethod met,
       Queue<IPair<ClassTree, Store>> classQueue,
       List<FieldInitialValue<Value>> fieldValues,
-      Store capturedStore) {
+      @Nullable Store capturedStore) {
     Map<LambdaExpressionTree, List<AnnotationMirrorSet>> lambdaResultTypeMap = new HashMap<>();
     Map<LambdaExpressionTree, ControlFlowGraph> lambdaToCFG = new HashMap<>();
     ControlFlowGraph methodCFG = null;
