@@ -1780,14 +1780,14 @@ public abstract class GenericAnnotatedTypeFactory<
   /**
    * Perform any additional operations on a CFG. Called once per CFG, after the CFG has been
    * analyzed by {@link #analyze(Queue, Queue, UnderlyingAST, List, ClassTree, ControlFlowGraph,
-   * boolean, boolean, boolean, Store)}. If the CFG is analyzed more than once, this method is still
-   * only called one time after the last time the CFG is analyzed. This method can be used to
-   * initialize additional state or to perform any analyzes that are easier to perform on the CFG
-   * instead of the AST.
+   * boolean, boolean, boolean, CFAbstractStore)}. If the CFG is analyzed more than once, this
+   * method is still only called one time after the last time the CFG is analyzed. This method can
+   * be used to initialize additional state or to perform any analyzes that are easier to perform on
+   * the CFG instead of the AST.
    *
    * @param cfg the CFG
    * @see #analyze(Queue, Queue, UnderlyingAST, List, ClassTree, ControlFlowGraph, boolean, boolean,
-   *     boolean, Store)
+   *     boolean, CFAbstractStore)
    */
   protected void postAnalyze(ControlFlowGraph cfg) {
     handleCFGViz(cfg);

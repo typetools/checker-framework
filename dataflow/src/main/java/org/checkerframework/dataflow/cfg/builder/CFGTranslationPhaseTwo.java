@@ -1,6 +1,5 @@
 package org.checkerframework.dataflow.cfg.builder;
 
-import com.sun.source.tree.LambdaExpressionTree;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -16,7 +15,6 @@ import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlockImpl;
 import org.checkerframework.dataflow.cfg.block.SpecialBlock.SpecialBlockType;
 import org.checkerframework.dataflow.cfg.block.SpecialBlockImpl;
 import org.checkerframework.dataflow.cfg.node.CatchMarkerNode;
-import org.checkerframework.dataflow.cfg.node.FunctionalInterfaceNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.javacutil.BugInCF;
 import org.plumelib.util.ArraySet;
@@ -66,11 +64,6 @@ public class CFGTranslationPhaseTwo {
       switch (node.getType()) {
         case NODE:
           if (leaders.contains(i)) {
-            RegularBlockImpl b = new RegularBlockImpl();
-            block.setSuccessor(b);
-            block = b;
-          } else if ((node.getNode() instanceof FunctionalInterfaceNode)
-              && node.getNode().getTree() instanceof LambdaExpressionTree) {
             RegularBlockImpl b = new RegularBlockImpl();
             block.setSuccessor(b);
             block = b;
