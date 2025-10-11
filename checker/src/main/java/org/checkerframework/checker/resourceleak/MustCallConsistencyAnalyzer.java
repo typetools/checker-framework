@@ -1148,7 +1148,7 @@ public class MustCallConsistencyAnalyzer {
       // Check that the must-call obligations of the lhs have been satisfied, if the field is
       // non-final and owning.
       if (isOwningField && cmAtf.canCreateObligations() && !ElementUtils.isFinal(lhsElement)) {
-        checkReassignmentToField(obligations, assignmentNode);
+        checkReassignmentToOwningField(obligations, assignmentNode);
       }
 
       // Remove Obligations from local variables, now that the owning field is responsible.
@@ -1448,13 +1448,16 @@ public class MustCallConsistencyAnalyzer {
    * @param obligations current tracked Obligations
    * @param node an assignment to a non-final, owning field
    */
-  private void checkReassignmentToField(Set<Obligation> obligations, AssignmentNode node) {
+  private void checkReassignmentToOwningField(Set<Obligation> obligations, AssignmentNode node) {
 
     Node lhsNode = node.getTarget();
 
     if (!(lhsNode instanceof FieldAccessNode)) {
       throw new TypeSystemError(
-          "checkReassignmentToField: non-field node " + node + " of class " + node.getClass());
+          "checkReassignmentToOwningField: non-field node "
+              + node
+              + " of class "
+              + node.getClass());
     }
 
     FieldAccessNode lhs = (FieldAccessNode) lhsNode;
