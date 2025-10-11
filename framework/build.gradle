@@ -52,7 +52,7 @@ dependencies {
   implementation "org.plumelib:hashmap-util:${versions.hashmapUtil}"
   implementation "org.plumelib:plume-util:${versions.plumeUtil}"
   implementation "org.plumelib:reflection-util:${versions.reflectionUtil}"
-  implementation 'io.github.classgraph:classgraph:4.8.181'
+  implementation 'io.github.classgraph:classgraph:4.8.184'
 
   testImplementation 'junit:junit:4.13.2'
   testImplementation project(':framework-test')
