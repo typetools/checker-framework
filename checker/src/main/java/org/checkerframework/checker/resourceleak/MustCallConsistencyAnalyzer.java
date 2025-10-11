@@ -1716,6 +1716,16 @@ public class MustCallConsistencyAnalyzer {
                 }
                 return super.visitAssignment(assignmentTree, unused);
               }
+
+              @Override
+              public Void visitMethodInvocation(MethodInvocationTree node, Void unused) {
+                // Any side-effecting method call in an initializer block could write to the field.
+                if (!cmAtf.isSideEffectFree(TreeUtils.elementFromUse(node))) {
+                  isInitialized.set(true);
+                  return null;
+                }
+                return super.visitMethodInvocation(node, unused);
+              }
             },
             null);
         if (isInitialized.get()) {
