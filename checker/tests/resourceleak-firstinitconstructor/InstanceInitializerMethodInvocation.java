@@ -13,7 +13,7 @@ class InstanceInitializerMethodInvocation {
     init();
   }
 
-  public InsanceInitializerMethodInvocation() {
+  public InstanceInitializerMethodInvocation() {
     try {
       // :: error: (required.method.not.called)
       f = new FileInputStream("file.txt");
