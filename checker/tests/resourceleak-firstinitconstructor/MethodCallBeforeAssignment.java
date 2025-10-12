@@ -15,6 +15,12 @@ class MethodCallBeforeAssignment {
     s = new FileInputStream("test.txt");
   }
 
+  public MethodCallBeforeAssignment(boolean its_a_constructor_call) throws Exception {
+    new C();
+    // :: error: (required.method.not.called)
+    s = new FileInputStream("test.txt");
+  }
+
   private void doSomething() {
     System.out.println("placeholder");
   }
@@ -32,4 +38,6 @@ class MethodCallBeforeAssignment {
     } catch (Exception e) {
     }
   }
+
+  class C {}
 }
