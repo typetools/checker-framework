@@ -1530,7 +1530,9 @@ public class MustCallConsistencyAnalyzer {
         Element receiverElement = TypesUtils.getTypeElement(receiver.getType());
         if (Objects.equals(enclosingClassElement, receiverElement)) {
           VariableElement lhsElement = lhs.getElement();
-          if (isFirstWriteToFieldInConstructor(node.getTree(), lhsElement, enclosingMethodTree)) {
+          if (lhsElement.getModifiers().contains(Modifier.PRIVATE)
+              && isFirstWriteToFieldInConstructor(
+                  node.getTree(), lhsElement, enclosingMethodTree)) {
             // Safe; first assignment in constructor.
             return;
           }
@@ -1656,19 +1658,18 @@ public class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Returns true if the given assignment is the first write to a {@code private} field on its path
-   * in in the constructor. This method is conservative: it returns {@code false} unless it can
-   * prove that the write is the first.
+   * Returns true if the given assignment is the first write to a field on its path in the
+   * constructor. This method is conservative: it returns {@code false} unless it can prove that the
+   * write is the first.
    *
-   * <p>The result is {@code true} only if all of the following hold:
+   * <p>The result is {@code true} only if all the following hold:
    *
    * <ul>
-   *   <li>(1) The field is {@code private}.
-   *   <li>(2) The field has no non-null inline initializer at its declaration.
-   *   <li>(3) The field is not assigned in any instance initializer block.
-   *   <li>(4) The constructor does not delegate via {@code this(...)}.
-   *   <li>(5) No earlier assignment to the same field appears before the current statement.
-   *   <li>(6) No earlier method call appears before the current statement (except {@code
+   *   <li>(1) The field has no non-null inline initializer at its declaration.
+   *   <li>(2) The field is not assigned in any instance initializer block.
+   *   <li>(3) The constructor does not delegate via {@code this(...)}.
+   *   <li>(4) No earlier assignment to the same field appears before the current statement.
+   *   <li>(5) No earlier method call appears before the current statement (except {@code
    *       super(...)}).
    * </ul>
    *
@@ -1679,16 +1680,11 @@ public class MustCallConsistencyAnalyzer {
    */
   private boolean isFirstWriteToFieldInConstructor(
       @FindDistinct Tree assignment, VariableElement field, MethodTree constructor) {
-    // (1) The field must be private
-    if (!field.getModifiers().contains(Modifier.PRIVATE)) {
-      return false;
-    }
-
     TreePath constructorPath = cmAtf.getPath(constructor);
     ClassTree classTree = TreePathUtil.enclosingClass(constructorPath);
 
     for (Tree member : classTree.getMembers()) {
-      // (2) Disallow non-null inline initializer on the same field declaration.
+      // (1) Disallow non-null inline initializer on the same field declaration.
       if (member instanceof VariableTree) {
         VariableTree decl = (VariableTree) member;
         VariableElement declElement = TreeUtils.elementFromDeclaration(decl);
@@ -1699,7 +1695,7 @@ public class MustCallConsistencyAnalyzer {
         }
         continue;
       }
-      // (3) Disallow assignment in any instance initializer block.
+      // (2) Disallow assignment in any instance initializer block.
       if (member instanceof BlockTree) {
         BlockTree initBlock = (BlockTree) member;
         if (initBlock.isStatic()) {
@@ -1720,6 +1716,16 @@ public class MustCallConsistencyAnalyzer {
                 }
                 return super.visitAssignment(assignmentTree, unused);
               }
+
+              @Override
+              public Void visitMethodInvocation(MethodInvocationTree node, Void unused) {
+                // Any side-effecting method call in an initializer block could write to the field.
+                if (!cmAtf.isSideEffectFree(TreeUtils.elementFromUse(node))) {
+                  isInitialized.set(true);
+                  return null;
+                }
+                return super.visitMethodInvocation(node, unused);
+              }
             },
             null);
         if (isInitialized.get()) {
@@ -1728,13 +1734,13 @@ public class MustCallConsistencyAnalyzer {
       }
     }
 
-    // (4) Reject constructor chaining via `this(...)`.
+    // (3) Reject constructor chaining via `this(...)`.
     // If this constructor chains, the "first write" can occur in the callee constructor.
     if (callsThisConstructor(constructor)) {
       return false;
     }
 
-    // (5) & (6): Single-pass scan in source order.
+    // (4) & (5): Single-pass scan in source order.
     // For each top-level statement, descend into its subtree and:
     //   - If we encounter an assignment to the same field:
     //       * if it is the current assignment -> first write -> return true
@@ -1743,38 +1749,7 @@ public class MustCallConsistencyAnalyzer {
     //     (other than a super(...) ctor call) -> return false
     List<? extends StatementTree> stmts = constructor.getBody().getStatements();
     for (StatementTree st : stmts) {
-      Boolean scanResult =
-          new TreeScanner<Boolean, Void>() {
-            @Override
-            public Boolean visitAssignment(AssignmentTree node, Void p) {
-              Element lhsEl = TreeUtils.elementFromUse(node.getVariable());
-              if (field.equals(lhsEl)) {
-                return (node == assignment)
-                    ? Boolean.TRUE
-                    : Boolean.FALSE; // (5) Earlier assignment to same field
-              }
-              return super.visitAssignment(node, p);
-            }
-
-            @Override
-            public Boolean visitMethodInvocation(MethodInvocationTree node, Void p) {
-              // (6) Any earlier call might assign internally; allow only super(...).
-              return TreeUtils.isSuperConstructorCall(node)
-                  ? super.visitMethodInvocation(node, p)
-                  : Boolean.FALSE;
-            }
-
-            @Override
-            public Boolean reduce(Boolean r1, Boolean r2) {
-              // Return the first non-null result from child scans.
-              // This lets the traversal stop as soon as a matching condition is detected.
-              if (r1 != null) {
-                return r1;
-              }
-              return r2;
-            }
-          }.scan(st, null);
-
+      Boolean scanResult = ConstructorFirstWriteScanner.scan(st, assignment, field, cmAtf);
       if (scanResult != null) {
         return scanResult;
       }
@@ -2738,6 +2713,96 @@ public class MustCallConsistencyAnalyzer {
         }
       }
       return result.toString();
+    }
+  }
+
+  /**
+   * Visitor that determines whether a given assignment in a constructor is the first write to its
+   * field before any earlier assignment or side-effecting call.
+   *
+   * <p>This performs a single AST traversal in source order and is deliberately conservative: it
+   * does not reason about control flow or path feasibility.
+   */
+  private static final class ConstructorFirstWriteScanner extends TreeScanner<Boolean, Void> {
+
+    /** The assignment under test within the constructor. */
+    private final Tree assignment;
+
+    /** The field potentially written by the assignment. */
+    private final VariableElement field;
+
+    /** The annotated type factory, used for a method's side-effect reasoning. */
+    private final RLCCalledMethodsAnnotatedTypeFactory cmAtf;
+
+    /**
+     * Creates a scanner that checks if {@code assignment} is the first write to {@code field}
+     * within the current constructor. The scan stops as soon as a decisive result (true/false) is
+     * encountered.
+     *
+     * @param assignment the assignment being analyzed
+     * @param field the field written by that assignment
+     * @param cmAtf the type factory for side-effect reasoning
+     */
+    private ConstructorFirstWriteScanner(
+        Tree assignment, VariableElement field, RLCCalledMethodsAnnotatedTypeFactory cmAtf) {
+      this.assignment = assignment;
+      this.field = field;
+      this.cmAtf = cmAtf;
+    }
+
+    /**
+     * Runs the scan for a single top-level constructor statement.
+     *
+     * @param root the statement to scan
+     * @param assignment the target assignment
+     * @param field the field being checked
+     * @param cmAtf the factory for side-effect reasoning
+     * @return {@code true} if the assignment is the first write, {@code false} if a prior
+     *     assignment or a method call with side-effect is found, or {@code null} if neither is
+     *     encountered
+     */
+    static Boolean scan(
+        StatementTree root,
+        Tree assignment,
+        VariableElement field,
+        RLCCalledMethodsAnnotatedTypeFactory cmAtf) {
+      return new ConstructorFirstWriteScanner(assignment, field, cmAtf).scan(root, null);
+    }
+
+    @Override
+    public Boolean visitAssignment(AssignmentTree node, Void p) {
+      Element lhsEl = TreeUtils.elementFromUse(node.getVariable());
+      if (field.equals(lhsEl)) {
+        // Found an assignment to the same field:
+        //   - current assignment → first write → true
+        //   - earlier assignment → not first → false
+        return node.equals(assignment) ? Boolean.TRUE : Boolean.FALSE;
+      }
+      return super.visitAssignment(node, p);
+    }
+
+    @Override
+    public Boolean visitMethodInvocation(MethodInvocationTree node, Void p) {
+      // Treat any method call before the target as side-effecting, unless it is side-effect-free
+      // method or a super(...) constructor call.
+      if (cmAtf.isSideEffectFree(TreeUtils.elementFromUse(node))
+          || TreeUtils.isSuperConstructorCall(node)) {
+        return super.visitMethodInvocation(node, p);
+      }
+      return Boolean.FALSE;
+    }
+
+    @Override
+    public Boolean reduce(Boolean r1, Boolean r2) {
+      // Return the first decisive result. FALSE dominates (unsafe earlier write/call), then TRUE
+      // (reached target safely), null means inconclusive so far.
+      if (Boolean.FALSE.equals(r1) || Boolean.FALSE.equals(r2)) {
+        return Boolean.FALSE;
+      }
+      if (Boolean.TRUE.equals(r1) || Boolean.TRUE.equals(r2)) {
+        return Boolean.TRUE;
+      }
+      return null;
     }
   }
 }
