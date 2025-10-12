@@ -6,7 +6,7 @@ import org.checkerframework.checker.calledmethods.qual.*;
 import org.checkerframework.checker.mustcall.qual.*;
 
 @InheritableMustCall({"close"})
-class InsanceInitializerMethodInvocation {
+class InstanceInitializerMethodInvocation {
   private @Owning FileInputStream f;
 
   {
