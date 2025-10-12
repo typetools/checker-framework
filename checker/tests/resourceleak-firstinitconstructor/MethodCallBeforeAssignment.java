@@ -21,6 +21,17 @@ class MethodCallBeforeAssignment {
     s = new FileInputStream("test.txt");
   }
 
+  public MethodCallBeforeAssignment(int call_method_on_rhs_of_assignment) throws Exception {
+    // :: error: (required.method.not.called)
+    s = helper();
+  }
+
+  @Owning
+  FileInputStream helper() throws Exception {
+    s = new FileInputStream("test.txt");
+    return new FileInputStream("test.txt");
+  }
+
   private void doSomething() {
     System.out.println("placeholder");
   }
