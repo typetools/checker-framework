@@ -1,7 +1,7 @@
 changequote
 changequote(`[',`]')dnl
 dnl
-ifelse([this macro takes one or two arguments, the JDK version, and a docker image name suffix like "-plus"])dnl
+ifelse([This macro takes 1-3 arguments: the JDK version, a docker image name suffix like "-plus", and a checkout method "full"])dnl
 define([circleci_boilerplate], [dnl
     docker:
       - image: 'mdernst/cf-ubuntu-jdk$1[]$2[]docker_testing'
@@ -16,6 +16,8 @@ define([circleci_boilerplate], [dnl
             - 'source-v1-{{ .Branch }}-'
             - source-v1-
       - checkout
+ifelse($3,full,[          method: full
+])dnl
       - save_cache:
           key: *source-cache
           paths:
@@ -63,7 +65,7 @@ circleci_boilerplate($1,)
 dnl
 define([misc_job], [dnl
   misc_jdk$1:
-circleci_boilerplate($1,-plus)
+circleci_boilerplate($1,-plus,full)
       - run:
          name: test-misc.sh
          command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-misc.sh

@@ -85,6 +85,7 @@ ifelse($1,canary_version,,$1,latest_version,,[  dependsOn:
   container: mdernst/cf-ubuntu-jdk$1-plus[]docker_testing:latest
   steps:
   - checkout: self
+    # Unlimited fetchDepth (0) for misc jobs, because of need to make contributors.tex.
     fetchDepth: 0
   - bash: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-misc.sh
     displayName: test-misc.sh])dnl

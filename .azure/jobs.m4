@@ -11,7 +11,6 @@ nonjunit_job(canary_version)
 # So use a timeout of 90 minutes, and hope that is enough.
 inference_job(canary_version)
 
-# Unlimited fetchDepth (0) for misc_jobs, because of need to make contributors.tex .
 misc_job(11)
 misc_job(17)
 misc_job(21)

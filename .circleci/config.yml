@@ -182,7 +182,6 @@ jobs:
          command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-cftests-inference-part2.sh
 
 
-# Unlimited fetchDepth (0) for misc_jobs, because of need to make contributors.tex .
   misc_jdk11:
     docker:
       - image: 'mdernst/cf-ubuntu-jdk11-plus'
@@ -197,6 +196,7 @@ jobs:
             - 'source-v1-{{ .Branch }}-'
             - source-v1-
       - checkout
+          method: full
       - save_cache:
           key: *source-cache
           paths:
@@ -219,6 +219,7 @@ jobs:
             - 'source-v1-{{ .Branch }}-'
             - source-v1-
       - checkout
+          method: full
       - save_cache:
           key: *source-cache
           paths:
@@ -241,6 +242,7 @@ jobs:
             - 'source-v1-{{ .Branch }}-'
             - source-v1-
       - checkout
+          method: full
       - save_cache:
           key: *source-cache
           paths:
@@ -263,6 +265,7 @@ jobs:
             - 'source-v1-{{ .Branch }}-'
             - source-v1-
       - checkout
+          method: full
       - save_cache:
           key: *source-cache
           paths:
