@@ -19,6 +19,13 @@ export CHECKERFRAMEWORK="${CHECKERFRAMEWORK:-$(pwd -P)}"
 echo "CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
 
+IS_CI="$("$SCRIPT_DIR"/is-ci.sh)"
+export IS_CI
+if [ -n "$IS_CI" ]; then
+  # CircleCI fails, for the Daikon job only, if "-Dorg.gradle.daemon=false" is removed.
+  export GRADLE_OPTS="${GRADLE_OPTS} -Dorg.gradle.daemon=false -Dorg.gradle.console=plain -Xmx4g"
+fi
+
 export SHELLOPTS
 echo "SHELLOPTS=${SHELLOPTS}"
 
@@ -64,6 +71,23 @@ fi
 #   echo "... done: (cd ../jspecify/ && ./gradlew build)"
 # fi
 
+# Test that the CF, when built with JDK 21, works on other JDKs.
+export ORG_GRADLE_PROJECT_useJdk21Compiler=true
+
+# Set JAVA_HOME to JDK 21 so that Gradle runs using Java 21.
+# Prefer an OS-appropriate default only if JAVA21_HOME is unset and exists.
+if [ -z "${JAVA21_HOME:-}" ]; then
+  if [ "$(uname)" = "Darwin" ]; then
+    CANDIDATE="$(/usr/libexec/java_home -v 21 2> /dev/null || true)"
+    [ -n "$CANDIDATE" ] && export JAVA21_HOME="$CANDIDATE"
+  elif [ -d /usr/lib/jvm/java-21-openjdk-amd64 ]; then
+    export JAVA21_HOME=/usr/lib/jvm/java-21-openjdk-amd64
+  fi
+fi
+# Only override JAVA_HOME if JAVA21_HOME points to a usable JDK.
+if [ -n "${JAVA21_HOME:-}" ] && [ -x "${JAVA21_HOME}/bin/java" ]; then
+  export JAVA_HOME="${JAVA21_HOME}"
+fi
 ## Compile
 
 # Download Gradle and dependencies, retrying in case of network problems.

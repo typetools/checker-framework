@@ -28,66 +28,67 @@ define([junit_job], [dnl
   junit_jdk$1:
 circleci_boilerplate($1,)
       - run:
-         name: test-cftests-junit.sh
-         command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-cftests-junit.sh
+          name: test-cftests-junit.sh
+          command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-cftests-junit.sh
+          no_output_timeout: "30m"
 ])dnl
 dnl
 define([nonjunit_job], [dnl
   nonjunit_jdk$1:
 circleci_boilerplate($1,)
       - run:
-         name: test-cftests-nonjunit.sh
-         command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-cftests-nonjunit.sh
+          name: test-cftests-nonjunit.sh
+          command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-cftests-nonjunit.sh
 ])dnl
 dnl
 define([inference_job], [dnl
 ifelse($1,canary_version, [dnl
-# Split into part1 and part2 only for the inference job that "canary_jobs" depends on.
+  # Split into part1 and part2 only for the inference job that "canary_jobs" depends on.
   inference_part1_jdk$1:
 circleci_boilerplate($1,)
       - run:
-         name: test-cftests-inference-part1.sh
-         command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-cftests-inference-part1.sh
+          name: test-cftests-inference-part1.sh
+          command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-cftests-inference-part1.sh
   inference_part2_jdk$1:
 circleci_boilerplate($1,)
       - run:
-         name: test-cftests-inference-part2.sh
-         command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-cftests-inference-part2.sh
+          name: test-cftests-inference-part2.sh
+          command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-cftests-inference-part2.sh
 ], [dnl
   inference_jdk$1:
 circleci_boilerplate($1,)
       - run:
-         name: test-cftests-inference.sh
-         command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-cftests-inference.sh
+          name: test-cftests-inference.sh
+          command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-cftests-inference.sh
 ])])dnl
 dnl
 define([misc_job], [dnl
   misc_jdk$1:
 circleci_boilerplate($1,-plus)
       - run:
-         name: test-misc.sh
-         command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-misc.sh
+          name: test-misc.sh
+          command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-misc.sh
 ])dnl
 dnl
 define([typecheck_job], [dnl
 ifelse($1,canary_version,[dnl
-# Split into part1 and part2 only for the typecheck job that "canary_jobs" depends on.
+  # Split into part1 and part2 only for the typecheck job that "canary_jobs" depends on.
   typecheck_part1_jdk$1:
 circleci_boilerplate($1,)
       - run:
-         name: test-typecheck-part1.sh
-         command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-typecheck-part1.sh
+          name: test-typecheck-part1.sh
+          command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-typecheck-part1.sh
   typecheck_part2_jdk$1:
 circleci_boilerplate($1,)
       - run:
-         name: test-typecheck-part2.sh
-         command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-typecheck-part2.sh
+          name: test-typecheck-part2.sh
+          command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-typecheck-part2.sh
 ], [dnl
   typecheck_jdk$1:
 circleci_boilerplate($1,)
       - run:
-         name: test-typecheck.sh
-         command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-typecheck.sh
+          name: test-typecheck.sh
+          command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-typecheck.sh
 ])])dnl
 dnl
 define([daikon_job], [dnl
@@ -95,22 +96,22 @@ ifelse($1,canary_version, [dnl
   daikon_part1_jdk$1:
 circleci_boilerplate($1,)
       - run:
-         name: test-daikon-part1.sh
-         command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-daikon-part1.sh
-         no_output_timeout: "30m"
+          name: test-daikon-part1.sh
+          command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-daikon-part1.sh
+          no_output_timeout: "30m"
   daikon_part2_jdk$1:
 circleci_boilerplate($1,)
       - run:
-         name: test-daikon-part2.sh
-         command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-daikon-part2.sh
-         no_output_timeout: "30m"
+          name: test-daikon-part2.sh
+          command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-daikon-part2.sh
+          no_output_timeout: "30m"
 ], [dnl
   daikon_jdk$1:
 circleci_boilerplate($1,)
       - run:
-         name: test-daikon.sh
-         command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-daikon.sh
-         no_output_timeout: "30m"
+          name: test-daikon.sh
+          command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-daikon.sh
+          no_output_timeout: "30m"
 ])dnl
 ])dnl
 dnl
@@ -118,17 +119,17 @@ define([guava_job], [dnl
   guava_jdk$1:
 circleci_boilerplate($1,)
       - run:
-         name: test-guava.sh
-         command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-guava.sh
-         no_output_timeout: "30m"
+          name: test-guava.sh
+          command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-guava.sh
+          no_output_timeout: "50m"
 ])dnl
 dnl
 define([plume_lib_job], [dnl
   plume_lib_jdk$1:
 circleci_boilerplate($1,)
       - run:
-         name: test-plume-lib.sh
-         command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-plume-lib.sh
+          name: test-plume-lib.sh
+          command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-plume-lib.sh
 ])dnl
 dnl
 define([job_dependences], [dnl

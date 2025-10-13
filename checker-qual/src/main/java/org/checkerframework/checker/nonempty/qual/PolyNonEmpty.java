@@ -10,9 +10,10 @@ import org.checkerframework.framework.qual.PolymorphicQualifier;
 /**
  * A polymorphic qualifier for the Non-Empty type system.
  *
- * @checker_framework.manual #non-empty-checker Non-Empty Checker
  * @checker_framework.manual #qualifier-polymorphism Qualifier polymorphism
  */
+// Reinstate when the Non-Empty Checker is publicized.
+//  * @checker_framework.manual #non-empty-checker Non-Empty Checker
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
