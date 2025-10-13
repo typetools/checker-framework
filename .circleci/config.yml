@@ -195,7 +195,7 @@ jobs:
             - &source-cache source-v1full-{{ .Branch }}-{{ .Revision }}
             - 'source-v1full-{{ .Branch }}-'
             - source-v1full-
-      - checkout
+      - checkout:
           method: full
       - save_cache:
           key: *source-cache
@@ -218,7 +218,7 @@ jobs:
             - &source-cache source-v1full-{{ .Branch }}-{{ .Revision }}
             - 'source-v1full-{{ .Branch }}-'
             - source-v1full-
-      - checkout
+      - checkout:
           method: full
       - save_cache:
           key: *source-cache
@@ -241,7 +241,7 @@ jobs:
             - &source-cache source-v1full-{{ .Branch }}-{{ .Revision }}
             - 'source-v1full-{{ .Branch }}-'
             - source-v1full-
-      - checkout
+      - checkout:
           method: full
       - save_cache:
           key: *source-cache
@@ -264,7 +264,7 @@ jobs:
             - &source-cache source-v1full-{{ .Branch }}-{{ .Revision }}
             - 'source-v1full-{{ .Branch }}-'
             - source-v1full-
-      - checkout
+      - checkout:
           method: full
       - save_cache:
           key: *source-cache

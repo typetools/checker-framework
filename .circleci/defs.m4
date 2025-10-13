@@ -15,9 +15,8 @@ define([circleci_boilerplate], [dnl
             - &source-cache source-v1$3-{{ .Branch }}-{{ .Revision }}
             - 'source-v1$3-{{ .Branch }}-'
             - source-v1$3-
-      - checkout
-ifelse($3,full,[          method: full
-])dnl
+      - checkout[]ifelse($3,full,[:
+          method: full])
       - save_cache:
           key: *source-cache
           paths:
