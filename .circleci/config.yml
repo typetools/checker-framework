@@ -133,10 +133,10 @@ jobs:
          command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-cftests-nonjunit.sh
 
 
-# Sometimes one of the invocations of wpi-many in `./gradlew wpiManyTest`
-# takes much longer to complete than normal, and this Azure job times out.
-# When there is a timeout, one cannot examine wpi or wpi-many logs.
-# So use a timeout of 90 minutes, and hope that is enough.
+  # Sometimes one of the invocations of wpi-many in `./gradlew wpiManyTest`
+  # takes much longer to complete than normal, and this Azure job times out.
+  # When there is a timeout, one cannot examine wpi or wpi-many logs.
+  # So use a timeout of 90 minutes, and hope that is enough.
 # Split into part1 and part2 only for the inference job that "canary_jobs" depends on.
   inference_part1_jdk25:
     docker:
@@ -366,7 +366,7 @@ jobs:
          no_output_timeout: "30m"
 
 
-## I'm not sure why the guava_jdk11 job is failing (it's due to Error Prone).
+  ## I'm not sure why the guava_jdk11 job is failing (it's due to Error Prone).
   guava_jdk25:
     docker:
       - image: 'mdernst/cf-ubuntu-jdk25'
