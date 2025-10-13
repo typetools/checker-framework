@@ -18,7 +18,7 @@ env:
     - THIS_REPO=checker-framework
     - OS=ubuntu
     - TESTING=
-#    - TESTING=-testing
+    # - TESTING=-testing
   matrix:
     - GROUP=cftests-junit JDKVER=jdk11
     - GROUP=cftests-junit JDKVER=jdk17
@@ -28,8 +28,8 @@ env:
     - GROUP=cftests-inference JDKVER=jdk17
     - GROUP=misc JDKVER=jdk11-plus
     - GROUP=misc JDKVER=jdk17-plus
-#    - GROUP=cf-inference JDKVER=jdk11
-#    - GROUP=cf-inference JDKVER=jdk17
+    # - GROUP=cf-inference JDKVER=jdk11
+    # - GROUP=cf-inference JDKVER=jdk17
     - GROUP=daikon-part1 JDKVER=jdk11
     - GROUP=daikon-part1 JDKVER=jdk17
     - GROUP=daikon-part2 JDKVER=jdk11
@@ -56,56 +56,56 @@ env:
 # The "docker run" command will pull if needed.
 # Running this first gives two tries in case of network lossage.
 before_script:
-- timeout 5m docker pull mdernst/cf-$OS-$JDKVER$TESTING || true
+  - timeout 5m docker pull mdernst/cf-$OS-$JDKVER$TESTING || true
 
 # Using travis_wait here seems to cause the job to terminate after 1 minute
 # with no error (!).
 # The git commands are tried twice, in case of temporary network failure.
 # The fcntl line works around a bug where Travis truncates logs and fails.
 script:
-- python -c "import fcntl; fcntl.fcntl(1, fcntl.F_SETFL, 0)"
-- REMOTE_ORIGIN_URL=$(git config --get remote.origin.url)
-- echo "THIS_REPO=${THIS_REPO}"
-- echo "JDKVER=${JDKVER}"
-- echo "GROUP=${GROUP}"
-- echo "TRAVIS_BRANCH=${TRAVIS_BRANCH}"
-- echo "REMOTE_ORIGIN_URL=${REMOTE_ORIGIN_URL}"
-- echo "TRAVIS_EVENT_TYPE=${TRAVIS_EVENT_TYPE}"
-- echo "TRAVIS_COMMIT_RANGE=${TRAVIS_COMMIT_RANGE}"
-- echo "TRAVIS_COMMIT=${TRAVIS_COMMIT}"
-- echo "TRAVIS_PULL_REQUEST=${TRAVIS_PULL_REQUEST}"
-- echo "TRAVIS_PULL_REQUEST_BRANCH=${TRAVIS_PULL_REQUEST_BRANCH}"
-- echo "TRAVIS_PULL_REQUEST_SHA=${TRAVIS_PULL_REQUEST_SHA}"
-- echo "TRAVIS_PULL_REQUEST_SLUG=${TRAVIS_PULL_REQUEST_SLUG}"
-- echo "TRAVIS_REPO_SLUG=${TRAVIS_REPO_SLUG}"
-- >-
-  docker run -v $HOME/.gradle:/root/.gradle -v $HOME/.m2:/root/.m2 mdernst/cf-$OS-$JDKVER$TESTING /bin/bash -c "true &&
-     if [ $TRAVIS_EVENT_TYPE = pull_request ]; then
-       git clone --quiet $REMOTE_ORIGIN_URL $THIS_REPO || (sleep 1m && git clone --quiet $REMOTE_ORIGIN_URL $THIS_REPO)
-       cd $THIS_REPO
-       git fetch origin +refs/pull/$TRAVIS_PULL_REQUEST/merge
-       git checkout -qf $TRAVIS_PULL_REQUEST_SHA
-       git config user.email noone@cares.com
-       git config user.name Noone Cares
-       git remote add theupstream https://github.com/$TRAVIS_REPO_SLUG.git
-       git pull theupstream $TRAVIS_BRANCH || (sleep 1m && git pull theupstream $TRAVIS_BRANCH)
-     else
-       git clone --quiet -b $TRAVIS_BRANCH $REMOTE_ORIGIN_URL $THIS_REPO || (sleep 1m && git clone --quiet -b $TRAVIS_BRANCH $REMOTE_ORIGIN_URL $THIS_REPO)
-       cd $THIS_REPO
-       git checkout -qf $TRAVIS_COMMIT
-     fi &&
-     export JAVA_HOME=\`which javac|xargs readlink -f|xargs dirname|xargs dirname\` &&
-     java -version &&
-     javac -version &&
-     export TRAVIS=$TRAVIS &&
-     export TRAVIS_BRANCH=${TRAVIS_BRANCH} &&
-     export TRAVIS_BUILD_DIR=$TRAVIS_BUILD_DIR &&
-     export TRAVIS_COMMIT_RANGE=$TRAVIS_COMMIT_RANGE &&
-     export TRAVIS_PULL_REQUEST=${TRAVIS_PULL_REQUEST} &&
-     export TRAVIS_PULL_REQUEST_BRANCH=${TRAVIS_PULL_REQUEST_BRANCH} &&
-     export TRAVIS_PULL_REQUEST_SLUG=${TRAVIS_PULL_REQUEST_SLUG} &&
-     export TRAVIS_REPO_SLUG=$TRAVIS_REPO_SLUG &&
-     ./.travis-build.sh $GROUP"
+  - python -c "import fcntl; fcntl.fcntl(1, fcntl.F_SETFL, 0)"
+  - REMOTE_ORIGIN_URL=$(git config --get remote.origin.url)
+  - echo "THIS_REPO=${THIS_REPO}"
+  - echo "JDKVER=${JDKVER}"
+  - echo "GROUP=${GROUP}"
+  - echo "TRAVIS_BRANCH=${TRAVIS_BRANCH}"
+  - echo "REMOTE_ORIGIN_URL=${REMOTE_ORIGIN_URL}"
+  - echo "TRAVIS_EVENT_TYPE=${TRAVIS_EVENT_TYPE}"
+  - echo "TRAVIS_COMMIT_RANGE=${TRAVIS_COMMIT_RANGE}"
+  - echo "TRAVIS_COMMIT=${TRAVIS_COMMIT}"
+  - echo "TRAVIS_PULL_REQUEST=${TRAVIS_PULL_REQUEST}"
+  - echo "TRAVIS_PULL_REQUEST_BRANCH=${TRAVIS_PULL_REQUEST_BRANCH}"
+  - echo "TRAVIS_PULL_REQUEST_SHA=${TRAVIS_PULL_REQUEST_SHA}"
+  - echo "TRAVIS_PULL_REQUEST_SLUG=${TRAVIS_PULL_REQUEST_SLUG}"
+  - echo "TRAVIS_REPO_SLUG=${TRAVIS_REPO_SLUG}"
+  - >-
+    docker run -v $HOME/.gradle:/root/.gradle -v $HOME/.m2:/root/.m2 mdernst/cf-$OS-$JDKVER$TESTING /bin/bash -c "true &&
+       if [ $TRAVIS_EVENT_TYPE = pull_request ]; then
+         git clone --quiet $REMOTE_ORIGIN_URL $THIS_REPO || (sleep 1m && git clone --quiet $REMOTE_ORIGIN_URL $THIS_REPO)
+         cd $THIS_REPO
+         git fetch origin +refs/pull/$TRAVIS_PULL_REQUEST/merge
+         git checkout -qf $TRAVIS_PULL_REQUEST_SHA
+         git config user.email noone@cares.com
+         git config user.name Noone Cares
+         git remote add theupstream https://github.com/$TRAVIS_REPO_SLUG.git
+         git pull theupstream $TRAVIS_BRANCH || (sleep 1m && git pull theupstream $TRAVIS_BRANCH)
+       else
+         git clone --quiet -b $TRAVIS_BRANCH $REMOTE_ORIGIN_URL $THIS_REPO || (sleep 1m && git clone --quiet -b $TRAVIS_BRANCH $REMOTE_ORIGIN_URL $THIS_REPO)
+         cd $THIS_REPO
+         git checkout -qf $TRAVIS_COMMIT
+       fi &&
+       export JAVA_HOME=\`which javac|xargs readlink -f|xargs dirname|xargs dirname\` &&
+       java -version &&
+       javac -version &&
+       export TRAVIS=$TRAVIS &&
+       export TRAVIS_BRANCH=${TRAVIS_BRANCH} &&
+       export TRAVIS_BUILD_DIR=$TRAVIS_BUILD_DIR &&
+       export TRAVIS_COMMIT_RANGE=$TRAVIS_COMMIT_RANGE &&
+       export TRAVIS_PULL_REQUEST=${TRAVIS_PULL_REQUEST} &&
+       export TRAVIS_PULL_REQUEST_BRANCH=${TRAVIS_PULL_REQUEST_BRANCH} &&
+       export TRAVIS_PULL_REQUEST_SLUG=${TRAVIS_PULL_REQUEST_SLUG} &&
+       export TRAVIS_REPO_SLUG=$TRAVIS_REPO_SLUG &&
+       ./.travis-build.sh $GROUP"
 
 git:
   depth: 9
