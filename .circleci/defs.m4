@@ -44,7 +44,7 @@ circleci_boilerplate($1,)
 dnl
 define([inference_job], [dnl
 ifelse($1,canary_version, [dnl
-# Split into part1 and part2 only for the inference job that "canary_jobs" depends on.
+  # Split into part1 and part2 only for the inference job that "canary_jobs" depends on.
   inference_part1_jdk$1:
 circleci_boilerplate($1,)
       - run:
@@ -73,7 +73,7 @@ circleci_boilerplate($1,-plus,full)
 dnl
 define([typecheck_job], [dnl
 ifelse($1,canary_version,[dnl
-# Split into part1 and part2 only for the typecheck job that "canary_jobs" depends on.
+  # Split into part1 and part2 only for the typecheck job that "canary_jobs" depends on.
   typecheck_part1_jdk$1:
 circleci_boilerplate($1,)
       - run:
