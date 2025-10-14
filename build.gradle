@@ -1,6 +1,6 @@
 plugins {
   // https://plugins.gradle.org/plugin/com.gradleup.shadow
-  id 'com.gradleup.shadow' version '9.2.2'
+  id 'com.gradleup.shadow' version '9.0.2'
   // https://plugins.gradle.org/plugin/de.undercouch.download
   id 'de.undercouch.download' version '5.6.0'
   id 'java'
@@ -445,24 +445,24 @@ allprojects { currentProj ->
       }
     }
 
+    java {
+      toolchain {
+        languageVersion = JavaLanguageVersion.of(testJdkVersion)
+      }
+    }
+
+    tasks.withType(JavaExec).configureEach {
+      javaLauncher = javaToolchains.launcherFor {
+        languageVersion = JavaLanguageVersion.of(testJdkVersion)
+      }
+    }
+
     // Add standard javac options
     tasks.withType(JavaCompile) { compilationTask ->
       dependsOn(':installGitHooks')
 
-      java {
-        toolchain {
-          languageVersion = JavaLanguageVersion.of(testJdkVersion)
-        }
-      }
-
       javaCompiler = javaToolchains.compilerFor {
         languageVersion = JavaLanguageVersion.of(compilerJdkVersion)
-      }
-
-      tasks.withType(JavaExec).configureEach {
-        javaLauncher = javaToolchains.launcherFor {
-          languageVersion = JavaLanguageVersion.of(testJdkVersion)
-        }
       }
 
       // Sorting is commented out because it disables incremental compilation.
