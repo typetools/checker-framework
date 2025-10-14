@@ -22,7 +22,6 @@ include([../.azure/jobs.m4])dnl
 # The "workflows" section determines which jobs run and what other jobs they depend on.
 # For an explanation of the dependence logic, see ../.azure/azure-pipelines.yml .
 workflows:
-  version: 2
   build:
     jobs:
       - canary_jobs:
@@ -53,3 +52,8 @@ job_dependences_not_in_canary(canary_version, daikon_part2)
 job_dependences_not_in_canary(canary_version, guava)
 job_dependences_not_in_canary(canary_version, plume_lib)
 
+ifelse([
+Local Variables:
+eval: (add-hook 'after-save-hook '(lambda () (run-command nil "make")) nil 'local)
+end:
+])dnl
