@@ -2,10 +2,11 @@ apply plugin: 'maven-publish'
 apply plugin: 'signing'
 
 final isSnapshot = version.contains('SNAPSHOT')
-// https://github.com/johnrengelman/shadow/issues/586#issuecomment-708375599
-components.java.withVariantsFromConfiguration(configurations.shadowRuntimeElements) {
-  skip()
+
+shadow {
+  addShadowVariantIntoJavaComponent = false
 }
+
 publishing {
   repositories {
     maven {

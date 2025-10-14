@@ -1,6 +1,6 @@
 plugins {
   // https://plugins.gradle.org/plugin/com.gradleup.shadow
-  id 'com.gradleup.shadow' version '9.0.2'
+  id 'com.gradleup.shadow' version '9.2.2'
   // https://plugins.gradle.org/plugin/de.undercouch.download
   id 'de.undercouch.download' version '5.6.0'
   id 'java'
@@ -395,18 +395,19 @@ allprojects { currentProj ->
     maxHeapSize = "4g" // maximum heap size
   }
 
+  configurations {
+    checkerFatJar {
+      canBeConsumed = false
+      canBeResolved = true
+    }
+  }
+
+  dependencies {
+    checkerFatJar(project(path: ':checker', configuration: 'fatJar'))
+  }
+
   // After all the tasks have been created, modify some of them.
   afterEvaluate {
-    configurations {
-      checkerFatJar {
-        canBeConsumed = false
-        canBeResolved = true
-      }
-    }
-
-    dependencies {
-      checkerFatJar(project(path: ':checker', configuration: 'fatJar'))
-    }
 
     // Add the fat checker.jar to the classpath of every Javadoc task. This allows Javadoc in
     // any module to reference classes in any other module.
@@ -445,25 +446,9 @@ allprojects { currentProj ->
       }
     }
 
-    java {
-      toolchain {
-        languageVersion = JavaLanguageVersion.of(testJdkVersion)
-      }
-    }
-
-    tasks.withType(JavaExec).configureEach {
-      javaLauncher = javaToolchains.launcherFor {
-        languageVersion = JavaLanguageVersion.of(testJdkVersion)
-      }
-    }
-
     // Add standard javac options
     tasks.withType(JavaCompile) { compilationTask ->
       dependsOn(':installGitHooks')
-
-      javaCompiler = javaToolchains.compilerFor {
-        languageVersion = JavaLanguageVersion.of(compilerJdkVersion)
-      }
 
       // Sorting is commented out because it disables incremental compilation.
       // Uncomment when needed.
@@ -687,12 +672,6 @@ tasks.register('allJavadoc', Javadoc) {
   group = 'Documentation'
   dependsOn(':checker:shadowJar', 'getPlumeScripts', 'getHtmlTools', ':checker-qual:jar')
 
-  doFirst {
-    source(
-        project(':framework-test').sourceSets.taglet.allJava
-        )
-  }
-
   destinationDir = file("${rootDir}/docs/api")
   source(
       project(':checker-util').sourceSets.main.allJava,
@@ -705,16 +684,19 @@ tasks.register('allJavadoc', Javadoc) {
       project(':annotation-file-utilities').sourceSets.main.allJava,
       )
 
-  classpath = configurations.allProjects
+  subprojects.each { proj ->
+    proj.tasks.withType(Javadoc).each { javadocTask ->
+      classpath += javadocTask.classpath
+    }
+  }
+
   // disable interpreting module-info.java files until all sub-modules support them
   modularity.inferModulePath = false
 
   finalizedBy 'addFavicon'
 
   doFirst {
-    source(
-        project(':framework-test').sourceSets.taglet.allJava
-        )
+    source(project(':framework-test').sourceSets.taglet.allJava)
   }
 }
 
@@ -1000,6 +982,22 @@ subprojects {
   java {
     withJavadocJar()
     withSourcesJar()
+
+    toolchain {
+      languageVersion = JavaLanguageVersion.of(testJdkVersion)
+    }
+  }
+
+  tasks.withType(JavaExec).configureEach {
+    javaLauncher = javaToolchains.launcherFor {
+      languageVersion = JavaLanguageVersion.of(testJdkVersion)
+    }
+  }
+
+  tasks.withType(JavaCompile).configureEach { compilationTask ->
+    javaCompiler = javaToolchains.compilerFor {
+      languageVersion = JavaLanguageVersion.of(compilerJdkVersion)
+    }
   }
 
   // Things in this block reference definitions in the subproject that do not exist,
