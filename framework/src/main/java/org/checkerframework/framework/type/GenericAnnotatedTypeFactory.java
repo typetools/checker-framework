@@ -1479,7 +1479,8 @@ public abstract class GenericAnnotatedTypeFactory<
         }
 
         // Now analyze all methods.
-        // TODO: at this point, we don't have any information about fields of superclasses.
+        // TODO: at this point, we don't have any information about
+        // fields of superclasses.
         for (CFGMethod method : methods) {
           performFlowAnalysisForMethod(classTree, method, classQueue, fieldValues, capturedStore);
         }
