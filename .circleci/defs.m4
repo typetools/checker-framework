@@ -1,7 +1,7 @@
 changequote
 changequote(`[',`]')dnl
 dnl
-ifelse([this macro takes one or two arguments, the JDK version, and a docker image name suffix like "-plus"])dnl
+ifelse([This macro takes 1-3 arguments: the JDK version, a docker image name suffix like "-plus", and a checkout method "full"])dnl
 define([circleci_boilerplate], [dnl
     docker:
       - image: 'mdernst/cf-ubuntu-jdk$1[]$2[]docker_testing'
@@ -12,12 +12,13 @@ define([circleci_boilerplate], [dnl
     steps:
       - restore_cache:
           keys:
-            - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
-            - 'source-v1-{{ .Branch }}-'
-            - source-v1-
-      - checkout
+            - &source$3-cache source-v1$3-{{ .Branch }}-{{ .Revision }}
+            - 'source-v1$3-{{ .Branch }}-'
+            - source-v1$3-
+      - checkout[]ifelse($3,full,[:
+          method: full])
       - save_cache:
-          key: *source-cache
+          key: *source$3-cache
           paths:
             - .git])dnl
 dnl
@@ -42,7 +43,7 @@ circleci_boilerplate($1,)
 dnl
 define([inference_job], [dnl
 ifelse($1,canary_version, [dnl
-# Split into part1 and part2 only for the inference job that "canary_jobs" depends on.
+  # Split into part1 and part2 only for the inference job that "canary_jobs" depends on.
   inference_part1_jdk$1:
 circleci_boilerplate($1,)
       - run:
@@ -63,7 +64,7 @@ circleci_boilerplate($1,)
 dnl
 define([misc_job], [dnl
   misc_jdk$1:
-circleci_boilerplate($1,-plus)
+circleci_boilerplate($1,-plus,full)
       - run:
          name: test-misc.sh
          command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-misc.sh
@@ -71,7 +72,7 @@ circleci_boilerplate($1,-plus)
 dnl
 define([typecheck_job], [dnl
 ifelse($1,canary_version,[dnl
-# Split into part1 and part2 only for the typecheck job that "canary_jobs" depends on.
+  # Split into part1 and part2 only for the typecheck job that "canary_jobs" depends on.
   typecheck_part1_jdk$1:
 circleci_boilerplate($1,)
       - run:
