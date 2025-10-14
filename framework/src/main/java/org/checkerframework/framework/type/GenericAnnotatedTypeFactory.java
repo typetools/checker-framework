@@ -1580,14 +1580,14 @@ public abstract class GenericAnnotatedTypeFactory<
                 lambdaPair.second);
         lambdaToCFG.put(lambda, cfgLambda);
 
-        List<AnnotationMirrorSet> returnedExpressionTypes = new ArrayList<>();
-        for (ExpressionTree expressionTree : TreeUtils.getReturnedExpressions(lambda)) {
-          returnedExpressionTypes.add(getAnnotatedType(expressionTree).getPrimaryAnnotations());
-        }
-        List<AnnotationMirrorSet> prevReturnedExpressionTypes = lambdaResultTypeMap.get(lambda);
-        if (prevReturnedExpressionTypes != null) {
-          for (int i = 0; i < prevReturnedExpressionTypes.size(); i++) {
-            if (!prevReturnedExpressionTypes.get(i).equals(returnedExpressionTypes.get(i))) {
+        List<AnnotationMirrorSet> returnedExpressionAnnos =
+            CollectionsPlume.mapList(
+                tree -> getAnnotatedType(tree).getPrimaryAnnotations(),
+                TreeUtils.getReturnedExpressions(lambda));
+        List<AnnotationMirrorSet> prevReturnedExpressionAnnos = lambdaResultTypeMap.get(lambda);
+        if (prevReturnedExpressionAnnos != null) {
+          for (int i = 0; i < prevReturnedExpressionAnnos.size(); i++) {
+            if (!prevReturnedExpressionAnnos.get(i).equals(returnedExpressionAnnos.get(i))) {
               anyLambdaResultChanged = true;
               break;
             }
@@ -1595,7 +1595,7 @@ public abstract class GenericAnnotatedTypeFactory<
         } else {
           anyLambdaResultChanged = true;
         }
-        lambdaResultTypeMap.put(lambda, returnedExpressionTypes);
+        lambdaResultTypeMap.put(lambda, returnedExpressionAnnos);
       }
 
       if (!mustReanalyzeMethod(lambdaToCFG.keySet()) || !anyLambdaResultChanged) {
@@ -1617,23 +1617,20 @@ public abstract class GenericAnnotatedTypeFactory<
   /**
    * Returns true if the method containing all lambdas in {@code lambdas} must be reanalyzed.
    *
-   * @param lambdas lambdas that are all contained within the same method.
+   * @param lambdas lambdas that are all contained within the same method
    * @return true if the method containing all lambdas in {@code lambdas} must be reanalyzed.
    */
   private boolean mustReanalyzeMethod(Set<LambdaExpressionTree> lambdas) {
-    boolean mustReanalyze = false;
     for (LambdaExpressionTree lambda : lambdas) {
       if (TypesUtils.findFunctionType(TreeUtils.typeOf(lambda), processingEnv)
               .getReturnType()
               .getKind()
-          == TypeKind.VOID) {
-        // the lambda return type is void.
-        continue;
+          != TypeKind.VOID) {
+        // The lambda return type is not void.
+        return true;
       }
-      mustReanalyze = true;
-      break;
     }
-    return mustReanalyze;
+    return false;
   }
 
   /** Sorts a list of trees with the variables first. */
@@ -1663,7 +1660,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * @param updateInitializationStore should the initialization store be updated
    * @param isStatic are we analyzing a static construct
    * @param capturedStore the input Store to use for captured variables, e.g. in a lambda
-   * @return control flow graph for {@code ast}
+   * @return the control flow graph for {@code ast}, which is {@code cfg} if {@code cfg} is non-null
    * @see #postAnalyze(org.checkerframework.dataflow.cfg.ControlFlowGraph)
    */
   protected ControlFlowGraph analyze(
