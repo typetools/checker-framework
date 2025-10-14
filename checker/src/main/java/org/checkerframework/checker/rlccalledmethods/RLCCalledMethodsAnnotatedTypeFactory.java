@@ -158,15 +158,15 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
       boolean updateInitializationStore,
       boolean isStatic,
       @Nullable AccumulationStore capturedStore) {
-    // This is a work around a bug that I tried and fail to fix.
-    // This code really belongs in postAnalyze but, this code only works correctly when called after
-    // a method is analyzed the first time and before any containing lambdas are analyzed.
+    // This is a workaround for a bug that I tried and failed to fix.
     // See checker/tests/resourceleak/RLLambda.java.
-    // This work around means there could be false positives when the type of a method invocation
+    // This code really belongs in postAnalyze, but this code only works correctly when called after
+    // a method is analyzed the first time and before any containing lambdas are analyzed.
+    // This workaround means there could be false positives when the type of a method invocation
     // depends on dataflow in a lambda.
 
     if (cfg != null) {
-      // If the cfg is not null, then the analysis has been run before, so don't rerun it.
+      // The cfg is not null, so the analysis has been run before.  Don't rerun it.
       return cfg;
     }
     cfg =

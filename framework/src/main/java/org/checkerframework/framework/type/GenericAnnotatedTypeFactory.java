@@ -429,7 +429,7 @@ public abstract class GenericAnnotatedTypeFactory<
   @Override
   public void preProcessClassTree(ClassTree classTree) {
     if (this.everUseFlow) {
-      checkAndPerformFlowAnalysis(classTree);
+      performFlowAnalysisForClassOnce(classTree);
     }
   }
 
@@ -1110,7 +1110,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * </pre>
    *
    * Note that flowResult contains analysis results for Trees from multiple classes which are
-   * produced by multiple calls to performFlowAnalysis.
+   * produced by multiple calls to performFlowAnalysisForClass.
    */
   protected @MonotonicNonNull AnalysisResult<Value, Store> flowResult;
 
@@ -1346,7 +1346,7 @@ public abstract class GenericAnnotatedTypeFactory<
    *
    * @param classTree the class to analyze
    */
-  protected void performFlowAnalysis(ClassTree classTree) {
+  protected void performFlowAnalysisForClass(ClassTree classTree) {
     if (flowResult == null) {
       this.regularExitStores.clear();
       this.exceptionalExitStores.clear();
@@ -1424,8 +1424,8 @@ public abstract class GenericAnnotatedTypeFactory<
 
               // Wait with scanning the method until all other members
               // have been processed.
-              CFGMethod met = new CFGMethod(mt, ct);
-              methods.add(met);
+              CFGMethod method = new CFGMethod(mt, ct);
+              methods.add(method);
               break;
             case VARIABLE:
               VariableTree vt = (VariableTree) m;
@@ -1480,8 +1480,8 @@ public abstract class GenericAnnotatedTypeFactory<
 
         // Now analyze all methods.
         // TODO: at this point, we don't have any information about fields of superclasses.
-        for (CFGMethod met : methods) {
-          performFlowAnalysisMethod(classTree, met, classQueue, fieldValues, capturedStore);
+        for (CFGMethod method : methods) {
+          performFlowAnalysisForMethod(classTree, method, classQueue, fieldValues, capturedStore);
         }
 
         while (!lambdaQueue.isEmpty()) {
@@ -1521,59 +1521,61 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
-   * A helper method for {@link #performFlowAnalysis(ClassTree)} that analyzes {@code met} and all
-   * lambdas contained within it.
+   * A helper method for {@link #performFlowAnalysisForClass(ClassTree)} that analyzes {@code
+   * method} and all lambdas contained within it.
    *
-   * @param classTree class tree containing {@code met}
-   * @param met method to analyze
-   * @param classQueue classes found in {@code met} are added to this queue
+   * @param classTree class tree containing {@code method}
+   * @param method method to analyze
+   * @param classQueue classes found within {@code method} are added to this queue
    * @param fieldValues values of fields to be used
    * @param capturedStore the input Store to use for captured variables, e.g. in a lambda
    */
-  private void performFlowAnalysisMethod(
+  private void performFlowAnalysisForMethod(
       ClassTree classTree,
-      CFGMethod met,
+      CFGMethod method,
       Queue<IPair<ClassTree, Store>> classQueue,
       List<FieldInitialValue<Value>> fieldValues,
       @Nullable Store capturedStore) {
+    // The list contains one element for each `return` statement in the lambda (the map key).
     Map<LambdaExpressionTree, List<AnnotationMirrorSet>> lambdaResultTypeMap = new HashMap<>();
     Map<LambdaExpressionTree, ControlFlowGraph> lambdaToCFG = new HashMap<>();
     ControlFlowGraph methodCFG = null;
 
-    // Analyze `met` and all lambdas contained in `met` until the type of the result expressions in
-    // the lambdas do not change.
+    boolean isConstructor = TreeUtils.isConstructor(method.getMethod());
+
+    // Analyze `method` and all lambdas contained in `method` until the type of the lambda result
+    // expressions do not change.
     while (true) {
       Queue<IPair<ClassTree, Store>> classQueueInMethod = new ArrayDeque<>();
-      Queue<IPair<LambdaExpressionTree, @Nullable Store>> lambdaQueueForMet = new ArrayDeque<>();
+      Queue<IPair<LambdaExpressionTree, @Nullable Store>> lambdaQueueForMethod = new ArrayDeque<>();
       methodCFG =
           analyze(
               classQueueInMethod,
-              lambdaQueueForMet,
-              met,
+              lambdaQueueForMethod,
+              method,
               fieldValues,
               methodCFG,
-              TreeUtils.isConstructor(met.getMethod()),
-              false,
-              false,
+              isConstructor,
+              /* updateInitializationStore= */ false,
+              /* isStatic= */ false,
               capturedStore);
 
       boolean anyLambdaResultChanged = false;
-      while (!lambdaQueueForMet.isEmpty()) {
-        IPair<LambdaExpressionTree, @Nullable Store> lambdaPair = lambdaQueueForMet.poll();
+      while (!lambdaQueueForMethod.isEmpty()) {
+        IPair<LambdaExpressionTree, @Nullable Store> lambdaPair = lambdaQueueForMethod.poll();
         LambdaExpressionTree lambda = lambdaPair.first;
         MethodTree mt =
             (MethodTree) TreePathUtil.enclosingOfKind(getPath(lambda), Tree.Kind.METHOD);
-        ControlFlowGraph cfgLambda = lambdaToCFG.get(lambda);
-        cfgLambda =
+        ControlFlowGraph cfgLambda =
             analyze(
                 classQueueInMethod,
-                lambdaQueueForMet,
+                lambdaQueueForMethod,
                 new CFGLambda(lambda, classTree, mt),
                 fieldValues,
-                cfgLambda,
-                false,
-                false,
-                false,
+                lambdaToCFG.get(lambda),
+                /* isInitializationCode= */ false,
+                /* updateInitializationStore= */ false,
+                /* isStatic= */ false,
                 lambdaPair.second);
         lambdaToCFG.put(lambda, cfgLambda);
 
@@ -2085,9 +2087,9 @@ public abstract class GenericAnnotatedTypeFactory<
    *   <li>Flow analysis has not already been performed on {@code tree}
    * </ul>
    *
-   * @param tree the tree to check and possibly perform flow analysis on
+   * @param classTree the tree to check and possibly perform flow analysis on
    */
-  protected void checkAndPerformFlowAnalysis(Tree tree) {
+  protected void performFlowAnalysisForClassOnce(ClassTree classTree) {
     // For performance reasons, we require that getAnnotatedType is called
     // on the ClassTree before it's called on any code contained in the class,
     // so that we can perform flow analysis on the class.  Previously we
@@ -2095,11 +2097,8 @@ public abstract class GenericAnnotatedTypeFactory<
     // alone consumed more than 10% of execution time.  See
     // BaseTypeVisitor.visitClass for the call to getAnnotatedType that
     // triggers analysis.
-    if (tree instanceof ClassTree) {
-      ClassTree classTree = (ClassTree) tree;
-      if (!scannedClasses.containsKey(classTree)) {
-        performFlowAnalysis(classTree);
-      }
+    if (!scannedClasses.containsKey(classTree)) {
+      performFlowAnalysisForClass(classTree);
     }
   }
 
