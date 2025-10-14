@@ -10,6 +10,7 @@ reviews:
   changed_files_summary: false
   sequence_diagrams: false
   estimate_code_review_effort: false
+  in_progress_fortune: false
   poem: false
   path_filters:
     - "!**/build/**"
