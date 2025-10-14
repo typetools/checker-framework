@@ -9,6 +9,10 @@ Version 3.52.0 (2025-11-01)
 
 In `CFAbstractAnalysis`, renamed `defaultCreateAbstractValue` to `getCfValue`
 
+In `GenericAnnotatedTypeFactory`:
+* renamed `performFlowAnalysis` to `performFlowAnalysisForClass`
+* renamed `checkAndPerformFlowAnalysis` to `performFlowAnalysisForClassOnce`
+
 **Closed issues:**
 
 
