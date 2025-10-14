@@ -1485,7 +1485,7 @@ public abstract class GenericAnnotatedTypeFactory<
         }
 
         while (!lambdaQueue.isEmpty()) {
-          IPair<LambdaExpressionTree, @Nullable Store> lambdaPair = lambdaQueue.poll();
+          IPair<LambdaExpressionTree, @Nullable Store> lambdaPair = lambdaQueue.remove();
           MethodTree mt =
               (MethodTree)
                   TreePathUtil.enclosingOfKind(getPath(lambdaPair.first), Tree.Kind.METHOD);
@@ -1562,7 +1562,7 @@ public abstract class GenericAnnotatedTypeFactory<
 
       boolean anyLambdaResultChanged = false;
       while (!lambdaQueueForMethod.isEmpty()) {
-        IPair<LambdaExpressionTree, @Nullable Store> lambdaPair = lambdaQueueForMethod.poll();
+        IPair<LambdaExpressionTree, @Nullable Store> lambdaPair = lambdaQueueForMethod.remove();
         LambdaExpressionTree lambda = lambdaPair.first;
         MethodTree mt =
             (MethodTree) TreePathUtil.enclosingOfKind(getPath(lambda), Tree.Kind.METHOD);
