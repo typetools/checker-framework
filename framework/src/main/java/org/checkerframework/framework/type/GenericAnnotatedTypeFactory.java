@@ -1584,10 +1584,10 @@ public abstract class GenericAnnotatedTypeFactory<
         for (ExpressionTree expressionTree : TreeUtils.getReturnedExpressions(lambda)) {
           returnedExpressionTypes.add(getAnnotatedType(expressionTree).getPrimaryAnnotations());
         }
-        List<AnnotationMirrorSet> lastReturnET = lambdaResultTypeMap.get(lambda);
-        if (lastReturnET != null) {
-          for (int i = 0; i < lastReturnET.size(); i++) {
-            if (!lastReturnET.get(i).equals(returnedExpressionTypes.get(i))) {
+        List<AnnotationMirrorSet> prevReturnedExpressionTypes = lambdaResultTypeMap.get(lambda);
+        if (prevReturnedExpressionTypes != null) {
+          for (int i = 0; i < prevReturnedExpressionTypes.size(); i++) {
+            if (!prevReturnedExpressionTypes.get(i).equals(returnedExpressionTypes.get(i))) {
               anyLambdaResultChanged = true;
               break;
             }
