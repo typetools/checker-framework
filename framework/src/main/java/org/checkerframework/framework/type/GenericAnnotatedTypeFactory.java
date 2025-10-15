@@ -1586,12 +1586,7 @@ public abstract class GenericAnnotatedTypeFactory<
                 TreeUtils.getReturnedExpressions(lambda));
         List<AnnotationMirrorSet> prevReturnedExpressionAnnos = lambdaResultTypeMap.get(lambda);
         if (prevReturnedExpressionAnnos != null) {
-          for (int i = 0; i < prevReturnedExpressionAnnos.size(); i++) {
-            if (!prevReturnedExpressionAnnos.get(i).equals(returnedExpressionAnnos.get(i))) {
-              anyLambdaResultChanged = true;
-              break;
-            }
-          }
+          anyLambdaResultChanged = !prevReturnedExpressionAnnos.equals(returnedExpressionAnnos);
         } else {
           anyLambdaResultChanged = true;
         }
