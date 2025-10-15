@@ -1548,11 +1548,11 @@ public abstract class GenericAnnotatedTypeFactory<
     // expressions do not change.
     while (true) {
       Queue<IPair<ClassTree, Store>> classQueueInMethod = new ArrayDeque<>();
-      Queue<IPair<LambdaExpressionTree, @Nullable Store>> lambdaQueueForMethod = new ArrayDeque<>();
+      Queue<IPair<LambdaExpressionTree, @Nullable Store>> lambdaQueueInMethod = new ArrayDeque<>();
       methodCFG =
           analyze(
               classQueueInMethod,
-              lambdaQueueForMethod,
+              lambdaQueueInMethod,
               method,
               fieldValues,
               methodCFG,
@@ -1562,15 +1562,15 @@ public abstract class GenericAnnotatedTypeFactory<
               capturedStore);
 
       boolean anyLambdaResultChanged = false;
-      while (!lambdaQueueForMethod.isEmpty()) {
-        IPair<LambdaExpressionTree, @Nullable Store> lambdaPair = lambdaQueueForMethod.remove();
+      while (!lambdaQueueInMethod.isEmpty()) {
+        IPair<LambdaExpressionTree, @Nullable Store> lambdaPair = lambdaQueueInMethod.remove();
         LambdaExpressionTree lambda = lambdaPair.first;
         MethodTree mt =
             (MethodTree) TreePathUtil.enclosingOfKind(getPath(lambda), Tree.Kind.METHOD);
         ControlFlowGraph cfgLambda =
             analyze(
                 classQueueInMethod,
-                lambdaQueueForMethod,
+                lambdaQueueInMethod,
                 new CFGLambda(lambda, classTree, mt),
                 fieldValues,
                 lambdaToCFG.get(lambda),
@@ -1598,7 +1598,7 @@ public abstract class GenericAnnotatedTypeFactory<
         lambdaResultTypeMap.put(lambda, returnedExpressionAnnos);
       }
 
-      if (!mustReanalyzeMethod(lambdaToCFG.keySet()) || !anyLambdaResultChanged) {
+      if (containsAllVoidLambdas(lambdaToCFG.keySet()) || !anyLambdaResultChanged) {
         classQueue.addAll(classQueueInMethod);
         break;
       } else {
@@ -1615,22 +1615,22 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
-   * Returns true if the method containing all lambdas in {@code lambdas} must be reanalyzed.
+   * Returns true if all the lambdas in {@code lambdas} have a void return type.
    *
    * @param lambdas lambdas that are all contained within the same method
-   * @return true if the method containing all lambdas in {@code lambdas} must be reanalyzed.
+   * @return true if all the lambdas in {@code lambdas} have a void return type
    */
-  private boolean mustReanalyzeMethod(Set<LambdaExpressionTree> lambdas) {
+  private boolean containsAllVoidLambdas(Set<LambdaExpressionTree> lambdas) {
     for (LambdaExpressionTree lambda : lambdas) {
       if (TypesUtils.findFunctionType(TreeUtils.typeOf(lambda), processingEnv)
               .getReturnType()
               .getKind()
           != TypeKind.VOID) {
         // The lambda return type is not void.
-        return true;
+        return false;
       }
     }
-    return false;
+    return true;
   }
 
   /** Sorts a list of trees with the variables first. */
