@@ -1,5 +1,5 @@
 plugins {
-  id 'java-library'
+  id "java-library"
 }
 
 configurations {
@@ -7,7 +7,7 @@ configurations {
 }
 
 dependencies {
-  implementation project(':checker-qual')
+  implementation project(":checker-qual")
 
   // This is used by org.checkerframework.javacutil.TypesUtils.isImmutableTypeInJdk.
   // https://mvnrepository.com/artifact/org.plumelib/plume-util
@@ -23,20 +23,20 @@ dependencies {
   //   * in ../dataflow/build.gradle in the createDataflowShaded task.
 }
 
-apply from: rootProject.file('gradle-mvn-push.gradle')
+apply from: rootProject.file("gradle-mvn-push.gradle")
 
 final javacUtilPom(publication) {
   sharedPublicationConfiguration(publication)
   publication.from components.java
 
   publication.pom {
-    name = 'Javacutil'
-    description = 'javacutil contains utility classes for the javac compiler.'
+    name = "Javacutil"
+    description = "javacutil contains utility classes for the javac compiler."
     licenses {
       license {
-        name = 'GNU General Public License, version 2 (GPL2), with the classpath exception'
-        url = 'http://www.gnu.org/software/classpath/license.html'
-        distribution = 'repo'
+        name = "GNU General Public License, version 2 (GPL2), with the classpath exception"
+        url = "http://www.gnu.org/software/classpath/license.html"
+        distribution = "repo"
       }
     }
   }
