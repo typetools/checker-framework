@@ -149,8 +149,8 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
 
   @Override
   protected ControlFlowGraph analyze(
-      Queue<IPair<ClassTree, AccumulationStore>> classQueue,
-      Queue<IPair<LambdaExpressionTree, AccumulationStore>> lambdaQueue,
+      Queue<IPair<ClassTree, @Nullable AccumulationStore>> classQueue,
+      Queue<IPair<LambdaExpressionTree, @Nullable AccumulationStore>> lambdaQueue,
       UnderlyingAST ast,
       List<FieldInitialValue<AccumulationValue>> fieldValues,
       @Nullable ControlFlowGraph cfg,
