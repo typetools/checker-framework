@@ -815,7 +815,7 @@ tasks.register('ainferNullnessGenerateJaifs', Test) {
 }
 tasks.register('ainferNullnessGenerateJaifsInsertAnnotations', InsertAnnotationsToSource) {
   dependsOn ainferNullnessGenerateJaifs
-  dependsOn(':annotation-file-utilities:shadowJar')
+  dependsOn(':annotation-file-utilities:shadowJar', ':checkerQual:shadowJar')
 
   afuDir = '../annotation-file-utilities'
   testDir = 'tests/ainfer-nullness/'
