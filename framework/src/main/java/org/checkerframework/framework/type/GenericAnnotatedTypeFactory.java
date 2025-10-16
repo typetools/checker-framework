@@ -1534,7 +1534,7 @@ public abstract class GenericAnnotatedTypeFactory<
   private void performFlowAnalysisForMethod(
       ClassTree classTree,
       CFGMethod method,
-      Queue<IPair<ClassTree, Store>> classQueue,
+      Queue<IPair<ClassTree, @Nullable Store>> classQueue,
       List<FieldInitialValue<Value>> fieldValues,
       @Nullable Store capturedStore) {
     // The list contains one element for each `return` statement in the lambda (the map key).
@@ -1547,7 +1547,7 @@ public abstract class GenericAnnotatedTypeFactory<
     // Analyze `method` and all lambdas contained in `method` until the type of the lambda result
     // expressions do not change.
     while (true) {
-      Queue<IPair<ClassTree, Store>> classQueueInMethod = new ArrayDeque<>();
+      Queue<IPair<ClassTree, @Nullable Store>> classQueueInMethod = new ArrayDeque<>();
       Queue<IPair<LambdaExpressionTree, @Nullable Store>> lambdaQueueInMethod = new ArrayDeque<>();
       methodCFG =
           analyze(
@@ -1585,9 +1585,8 @@ public abstract class GenericAnnotatedTypeFactory<
                 tree -> getAnnotatedType(tree).getPrimaryAnnotations(),
                 TreeUtils.getReturnedExpressions(lambda));
         List<AnnotationMirrorSet> prevReturnedExpressionAnnos = lambdaResultTypeMap.get(lambda);
-        if (prevReturnedExpressionAnnos != null) {
-          anyLambdaResultChanged = !prevReturnedExpressionAnnos.equals(returnedExpressionAnnos);
-        } else {
+        if (prevReturnedExpressionAnnos == null
+            || !prevReturnedExpressionAnnos.equals(returnedExpressionAnnos)) {
           anyLambdaResultChanged = true;
         }
         lambdaResultTypeMap.put(lambda, returnedExpressionAnnos);
@@ -1659,8 +1658,8 @@ public abstract class GenericAnnotatedTypeFactory<
    * @see #postAnalyze(org.checkerframework.dataflow.cfg.ControlFlowGraph)
    */
   protected ControlFlowGraph analyze(
-      Queue<IPair<ClassTree, Store>> classQueue,
-      Queue<IPair<LambdaExpressionTree, Store>> lambdaQueue,
+      Queue<IPair<ClassTree, @Nullable Store>> classQueue,
+      Queue<IPair<LambdaExpressionTree, @Nullable Store>> lambdaQueue,
       UnderlyingAST ast,
       List<FieldInitialValue<Value>> fieldValues,
       @Nullable ControlFlowGraph cfg,
