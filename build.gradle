@@ -155,6 +155,9 @@ subprojects { subProject ->
       || subProject.name.equals("dataflow")
       || subProject.name.equals("framework")){
     apply plugin: "com.gradleup.shadow"
+    shadow {
+      addShadowVariantIntoJavaComponent = false
+    }
     shadowJar {
       // If you add an external dependency, then do the following:
       //  * On the master branch and on the modified branch, run:

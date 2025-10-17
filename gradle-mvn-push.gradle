@@ -3,10 +3,6 @@ apply plugin: "signing"
 
 final isSnapshot = version.contains("SNAPSHOT")
 
-shadow {
-  addShadowVariantIntoJavaComponent = false
-}
-
 publishing {
   repositories {
     maven {
