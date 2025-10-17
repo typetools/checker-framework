@@ -151,7 +151,7 @@ tasks.register("allJavadocJar", Jar) {
 }
 
 shadowJar {
-  description = "Creates the "fat" framework.jar in dist"
+  description = "Creates the \"fat\" framework.jar in dist"
   destinationDirectory = file("${projectDir}/dist")
   archiveFileName = "framework.jar"
   manifest {
@@ -198,7 +198,7 @@ if (skipDelombok) {
     doLast {
       if (!skipDelombok) {
         def collection = files(configurations.testCompileClasspath)
-        ant.taskdef(name: "delombok", classname: "lombok.delombok.ant.Tasks$Delombok",
+        ant.taskdef(name: "delombok", classname: 'lombok.delombok.ant.Tasks$Delombok',
         classpath: collection.asPath)
         ant.delombok(from: srcJava, to: srcDelomboked, classpath: collection.asPath)
       }

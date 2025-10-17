@@ -69,11 +69,11 @@ ext {
   parentDir = file("${rootDir}/../").absolutePath
   afuManualDir = "docs/annotation-file-utilities/"
 
-  gitScriptsHome = "${project(":checker").projectDir}/bin-devel/.git-scripts"
+  gitScriptsHome = "${project(':checker').projectDir}/bin-devel/.git-scripts"
   plumeBibHome = "${projectDir}/docs/manual/plume-bib"
-  plumeScriptsHome = "${project(":checker").projectDir}/bin-devel/.plume-scripts"
-  htmlToolsHome = "${project(":checker").projectDir}/bin-devel/.html-tools"
-  doLikeJavacHome = "${project(":checker").projectDir}/bin/.do-like-javac"
+  plumeScriptsHome = "${project(':checker').projectDir}/bin-devel/.plume-scripts"
+  htmlToolsHome = "${project(':checker').projectDir}/bin-devel/.html-tools"
+  doLikeJavacHome = "${project(':checker').projectDir}/bin/.do-like-javac"
 
   javadocMemberLevel = JavadocMemberLevel.PROTECTED
 
@@ -114,7 +114,7 @@ tasks.register("installGitHooks", Copy) {
   dependsOn("setLocalRepo")
   description = "Copies git hooks to .git directory"
   from files("checker/bin-devel/git.post-merge", "checker/bin-devel/git.pre-commit")
-  rename("git\\.(.*)", "$1")
+  rename("git\\.(.*)", '$1')
   into localRepo + "/hooks"
 }
 
@@ -379,7 +379,7 @@ allprojects { currentProj ->
       doLast {
         project.tasks.forEach { task ->
           if (task.name.contains("spotless")) {
-            println "Inputs for task "${task.name}":"
+            println "Inputs for task \"${task.name}\":"
 
             task.inputs.files.each { inputFile ->
               println "  Input: $inputFile"
@@ -1355,7 +1355,7 @@ final sharedPublicationConfiguration(publication) {
 tasks.register("printJavaVersion") {
   description = "Prints the Java version used to run Gradle."
   doLast {
-    println "Java version used to run Gradle: ${System.getProperty("java.version")}"
+    println "Java version used to run Gradle: ${System.getProperty('java.version')}"
     def currentJvm = org.gradle.internal.jvm.Jvm.current()
     println currentJvm
   }

@@ -79,8 +79,8 @@ dependencies {
 
 // It's not clear why this dependencies exists, but Gradle issues the following warning:
 //   - Gradle detected a problem with the following location:
-//   "/Users/smillst/jsr308/checker-framework/.git'.
-//   Reason: Task ":checker:generateGitProperties" uses this output of task ":installGitHooks"
+//   '/Users/smillst/jsr308/checker-framework/.git'.
+//   Reason: Task ':checker:generateGitProperties' uses this output of task ':installGitHooks'
 //   without declaring an explicit or implicit dependency. This can lead to incorrect results being
 //   produced, depending on what order the tasks are executed. Please refer to
 //   https://docs.gradle.org/7.1/userguide/validation_problems.html#implicit_dependency for more
@@ -348,7 +348,7 @@ if (!skipDelombok) {
     doLast {
       if (!skipDelombok) {
         def collection = files(configurations.testCompileClasspath)
-        ant.taskdef(name: "delombok", classname: "lombok.delombok.ant.Tasks$Delombok",
+        ant.taskdef(name: "delombok", classname: 'lombok.delombok.ant.Tasks$Delombok',
         classpath: collection.asPath)
         ant.delombok(from: srcJava, to: srcDelomboked, classpath: collection.asPath)
       }
@@ -1023,10 +1023,10 @@ final checkerPom(publication) {
     name = "Checker Framework"
     description =
         String.join(System.lineSeparator(),
-        "The Checker Framework enhances Java\'s type system to",
+        "The Checker Framework enhances Java's type system to",
         "make it more powerful and useful. This lets software developers",
         "detect and prevent errors in their Java programs.",
-        "The Checker Framework includes compiler plug-ins ("checkers")",
+        "The Checker Framework includes compiler plug-ins (\"checkers\")",
         "that find bugs or verify their absence. It also permits you to",
         "write your own compiler plug-ins.")
     licenses {
