@@ -993,7 +993,7 @@ subprojects {
     tasks.register("tags", Exec) {
       description = "Create Emacs TAGS table"
       // `ctags -e -f TAGS` used to work in place of `etags`, but apparently no longer.
-      commandLine "bash", "-c", "find . \\( -name build -o -name jtreg -o -name tests \\) -prune -o -name "*.java" -print | sort-directory-order | xargs etags"
+      commandLine "bash", "-c", "find . \\( -name build -o -name jtreg -o -name tests \\) -prune -o -name '*.java' -print | sort-directory-order | xargs etags"
     }
   }
 
