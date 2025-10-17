@@ -78,7 +78,7 @@ public class BackwardAnalysisImpl<
     try {
       init(cfg);
       while (!worklist.isEmpty()) {
-        Block b = worklist.poll();
+        Block b = worklist.remove();
         performAnalysisBlock(b);
       }
     } finally {
