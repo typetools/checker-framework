@@ -36,9 +36,9 @@ jobs:
           paths:
             - .git
       - run:
-         name: test-cftests-junit.sh
-         command: export ORG_GRADLE_PROJECT_jdkTestVersion=11 && ./checker/bin-devel/test-cftests-junit.sh
-         no_output_timeout: "30m"
+          name: test-cftests-junit.sh
+          command: export ORG_GRADLE_PROJECT_jdkTestVersion=11 && ./checker/bin-devel/test-cftests-junit.sh
+          no_output_timeout: "30m"
 
   junit_jdk17:
     docker:
@@ -59,9 +59,9 @@ jobs:
           paths:
             - .git
       - run:
-         name: test-cftests-junit.sh
-         command: export ORG_GRADLE_PROJECT_jdkTestVersion=17 && ./checker/bin-devel/test-cftests-junit.sh
-         no_output_timeout: "30m"
+          name: test-cftests-junit.sh
+          command: export ORG_GRADLE_PROJECT_jdkTestVersion=17 && ./checker/bin-devel/test-cftests-junit.sh
+          no_output_timeout: "30m"
 
   junit_jdk21:
     docker:
@@ -82,9 +82,9 @@ jobs:
           paths:
             - .git
       - run:
-         name: test-cftests-junit.sh
-         command: export ORG_GRADLE_PROJECT_jdkTestVersion=21 && ./checker/bin-devel/test-cftests-junit.sh
-         no_output_timeout: "30m"
+          name: test-cftests-junit.sh
+          command: export ORG_GRADLE_PROJECT_jdkTestVersion=21 && ./checker/bin-devel/test-cftests-junit.sh
+          no_output_timeout: "30m"
 
   junit_jdk25:
     docker:
@@ -105,9 +105,9 @@ jobs:
           paths:
             - .git
       - run:
-         name: test-cftests-junit.sh
-         command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-cftests-junit.sh
-         no_output_timeout: "30m"
+          name: test-cftests-junit.sh
+          command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-cftests-junit.sh
+          no_output_timeout: "30m"
 
 
   nonjunit_jdk25:
@@ -129,15 +129,15 @@ jobs:
           paths:
             - .git
       - run:
-         name: test-cftests-nonjunit.sh
-         command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-cftests-nonjunit.sh
+          name: test-cftests-nonjunit.sh
+          command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-cftests-nonjunit.sh
 
 
-# Sometimes one of the invocations of wpi-many in `./gradlew wpiManyTest`
-# takes much longer to complete than normal, and this Azure job times out.
-# When there is a timeout, one cannot examine wpi or wpi-many logs.
-# So use a timeout of 90 minutes, and hope that is enough.
-# Split into part1 and part2 only for the inference job that "canary_jobs" depends on.
+  # Sometimes one of the invocations of wpi-many in `./gradlew wpiManyTest`
+  # takes much longer to complete than normal, and this Azure job times out.
+  # When there is a timeout, one cannot examine wpi or wpi-many logs.
+  # So use a timeout of 90 minutes, and hope that is enough.
+  # Split into part1 and part2 only for the inference job that "canary_jobs" depends on.
   inference_part1_jdk25:
     docker:
       - image: 'mdernst/cf-ubuntu-jdk25'
@@ -157,8 +157,8 @@ jobs:
           paths:
             - .git
       - run:
-         name: test-cftests-inference-part1.sh
-         command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-cftests-inference-part1.sh
+          name: test-cftests-inference-part1.sh
+          command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-cftests-inference-part1.sh
   inference_part2_jdk25:
     docker:
       - image: 'mdernst/cf-ubuntu-jdk25'
@@ -178,11 +178,10 @@ jobs:
           paths:
             - .git
       - run:
-         name: test-cftests-inference-part2.sh
-         command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-cftests-inference-part2.sh
+          name: test-cftests-inference-part2.sh
+          command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-cftests-inference-part2.sh
 
 
-# Unlimited fetchDepth (0) for misc_jobs, because of need to make contributors.tex .
   misc_jdk11:
     docker:
       - image: 'mdernst/cf-ubuntu-jdk11-plus'
@@ -193,17 +192,18 @@ jobs:
     steps:
       - restore_cache:
           keys:
-            - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
-            - 'source-v1-{{ .Branch }}-'
-            - source-v1-
-      - checkout
+            - &sourcefull-cache source-v1full-{{ .Branch }}-{{ .Revision }}
+            - 'source-v1full-{{ .Branch }}-'
+            - source-v1full-
+      - checkout:
+          method: full
       - save_cache:
-          key: *source-cache
+          key: *sourcefull-cache
           paths:
             - .git
       - run:
-         name: test-misc.sh
-         command: export ORG_GRADLE_PROJECT_jdkTestVersion=11 && ./checker/bin-devel/test-misc.sh
+          name: test-misc.sh
+          command: export ORG_GRADLE_PROJECT_jdkTestVersion=11 && ./checker/bin-devel/test-misc.sh
 
   misc_jdk17:
     docker:
@@ -215,17 +215,18 @@ jobs:
     steps:
       - restore_cache:
           keys:
-            - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
-            - 'source-v1-{{ .Branch }}-'
-            - source-v1-
-      - checkout
+            - &sourcefull-cache source-v1full-{{ .Branch }}-{{ .Revision }}
+            - 'source-v1full-{{ .Branch }}-'
+            - source-v1full-
+      - checkout:
+          method: full
       - save_cache:
-          key: *source-cache
+          key: *sourcefull-cache
           paths:
             - .git
       - run:
-         name: test-misc.sh
-         command: export ORG_GRADLE_PROJECT_jdkTestVersion=17 && ./checker/bin-devel/test-misc.sh
+          name: test-misc.sh
+          command: export ORG_GRADLE_PROJECT_jdkTestVersion=17 && ./checker/bin-devel/test-misc.sh
 
   misc_jdk21:
     docker:
@@ -237,17 +238,18 @@ jobs:
     steps:
       - restore_cache:
           keys:
-            - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
-            - 'source-v1-{{ .Branch }}-'
-            - source-v1-
-      - checkout
+            - &sourcefull-cache source-v1full-{{ .Branch }}-{{ .Revision }}
+            - 'source-v1full-{{ .Branch }}-'
+            - source-v1full-
+      - checkout:
+          method: full
       - save_cache:
-          key: *source-cache
+          key: *sourcefull-cache
           paths:
             - .git
       - run:
-         name: test-misc.sh
-         command: export ORG_GRADLE_PROJECT_jdkTestVersion=21 && ./checker/bin-devel/test-misc.sh
+          name: test-misc.sh
+          command: export ORG_GRADLE_PROJECT_jdkTestVersion=21 && ./checker/bin-devel/test-misc.sh
 
   misc_jdk25:
     docker:
@@ -259,20 +261,21 @@ jobs:
     steps:
       - restore_cache:
           keys:
-            - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
-            - 'source-v1-{{ .Branch }}-'
-            - source-v1-
-      - checkout
+            - &sourcefull-cache source-v1full-{{ .Branch }}-{{ .Revision }}
+            - 'source-v1full-{{ .Branch }}-'
+            - source-v1full-
+      - checkout:
+          method: full
       - save_cache:
-          key: *source-cache
+          key: *sourcefull-cache
           paths:
             - .git
       - run:
-         name: test-misc.sh
-         command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-misc.sh
+          name: test-misc.sh
+          command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-misc.sh
 
 
-# Split into part1 and part2 only for the typecheck job that "canary_jobs" depends on.
+  # Split into part1 and part2 only for the typecheck job that "canary_jobs" depends on.
   typecheck_part1_jdk25:
     docker:
       - image: 'mdernst/cf-ubuntu-jdk25'
@@ -292,8 +295,8 @@ jobs:
           paths:
             - .git
       - run:
-         name: test-typecheck-part1.sh
-         command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-typecheck-part1.sh
+          name: test-typecheck-part1.sh
+          command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-typecheck-part1.sh
   typecheck_part2_jdk25:
     docker:
       - image: 'mdernst/cf-ubuntu-jdk25'
@@ -313,8 +316,8 @@ jobs:
           paths:
             - .git
       - run:
-         name: test-typecheck-part2.sh
-         command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-typecheck-part2.sh
+          name: test-typecheck-part2.sh
+          command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-typecheck-part2.sh
 
 
   daikon_part1_jdk25:
@@ -336,9 +339,9 @@ jobs:
           paths:
             - .git
       - run:
-         name: test-daikon-part1.sh
-         command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-daikon-part1.sh
-         no_output_timeout: "30m"
+          name: test-daikon-part1.sh
+          command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-daikon-part1.sh
+          no_output_timeout: "30m"
   daikon_part2_jdk25:
     docker:
       - image: 'mdernst/cf-ubuntu-jdk25'
@@ -358,12 +361,12 @@ jobs:
           paths:
             - .git
       - run:
-         name: test-daikon-part2.sh
-         command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-daikon-part2.sh
-         no_output_timeout: "30m"
+          name: test-daikon-part2.sh
+          command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-daikon-part2.sh
+          no_output_timeout: "30m"
 
 
-## I'm not sure why the guava_jdk11 job is failing (it's due to Error Prone).
+  ## I'm not sure why the guava_jdk11 job is failing (it's due to Error Prone).
   guava_jdk25:
     docker:
       - image: 'mdernst/cf-ubuntu-jdk25'
@@ -383,9 +386,9 @@ jobs:
           paths:
             - .git
       - run:
-         name: test-guava.sh
-         command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-guava.sh
-         no_output_timeout: "50m"
+          name: test-guava.sh
+          command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-guava.sh
+          no_output_timeout: "50m"
 
 
   plume_lib_jdk25:
@@ -407,14 +410,13 @@ jobs:
           paths:
             - .git
       - run:
-         name: test-plume-lib.sh
-         command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-plume-lib.sh
+          name: test-plume-lib.sh
+          command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-plume-lib.sh
 
 
 # The "workflows" section determines which jobs run and what other jobs they depend on.
 # For an explanation of the dependence logic, see ../.azure/azure-pipelines.yml .
 workflows:
-  version: 2
   build:
     jobs:
       - canary_jobs:
