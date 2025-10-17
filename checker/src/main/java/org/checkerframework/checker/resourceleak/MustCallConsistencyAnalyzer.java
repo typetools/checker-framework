@@ -2773,11 +2773,11 @@ public class MustCallConsistencyAnalyzer {
     @Override
     public Boolean visitAssignment(AssignmentTree node, Void p) {
       Element lhsEl = TreeUtils.elementFromUse(node.getVariable());
-      if (field == lhsEl) {
+      if (field.equals(lhsEl)) {
         // Found an assignment to the same field:
         //   - current assignment → first write → true
         //   - earlier assignment → not first → false
-        return node == assignment ? Boolean.TRUE : Boolean.FALSE;
+        return node.equals(assignment) ? Boolean.TRUE : Boolean.FALSE;
       }
       return super.visitAssignment(node, p);
     }
