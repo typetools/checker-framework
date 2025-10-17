@@ -16,18 +16,25 @@ class MethodCallBeforeAssignment {
   }
 
   public MethodCallBeforeAssignment(boolean its_a_constructor_call) throws Exception {
-    new C();
+    new C(this);
     // :: error: (required.method.not.called)
     s = new FileInputStream("test.txt");
   }
 
   public MethodCallBeforeAssignment(int call_method_on_rhs_of_assignment) throws Exception {
-    // :: error: (required.method.not.called)
     s = helper();
   }
 
+  // :: error: (missing.creates.mustcall.for)
+  public void setS() throws Exception {
+    // :: error: (required.method.not.called)
+    this.s = new FileInputStream("test.txt");
+  }
+
   @Owning
+  // :: error: (missing.creates.mustcall.for)
   FileInputStream helper() throws Exception {
+    // :: error: (required.method.not.called)
     s = new FileInputStream("test.txt");
     return new FileInputStream("test.txt");
   }
@@ -50,5 +57,9 @@ class MethodCallBeforeAssignment {
     }
   }
 
-  class C {}
+  class C {
+    public C(MethodCallBeforeAssignment outer) throws Exception {
+      outer.setS();
+    }
+  }
 }

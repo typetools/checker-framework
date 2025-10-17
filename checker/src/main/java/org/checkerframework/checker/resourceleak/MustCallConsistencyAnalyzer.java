@@ -1660,7 +1660,8 @@ public class MustCallConsistencyAnalyzer {
   /**
    * Returns true if the given assignment is the first write to a field on its path in the
    * constructor. This method is conservative: it returns {@code false} unless it can prove that the
-   * write is the first.
+   * write is the first. This check runs only for non-final fields because the Java compiler already
+   * forbids reassignment of final fields.
    *
    * <p>The result is {@code true} only if all the following hold:
    *
@@ -2772,22 +2773,32 @@ public class MustCallConsistencyAnalyzer {
     @Override
     public Boolean visitAssignment(AssignmentTree node, Void p) {
       Element lhsEl = TreeUtils.elementFromUse(node.getVariable());
-      if (field.equals(lhsEl)) {
+      if (field == lhsEl) {
         // Found an assignment to the same field:
         //   - current assignment → first write → true
         //   - earlier assignment → not first → false
-        return node.equals(assignment) ? Boolean.TRUE : Boolean.FALSE;
+        return node == assignment ? Boolean.TRUE : Boolean.FALSE;
       }
       return super.visitAssignment(node, p);
     }
 
     @Override
     public Boolean visitMethodInvocation(MethodInvocationTree node, Void p) {
-      // Treat any method call before the target as side-effecting, unless it is side-effect-free
-      // method or a super(...) constructor call.
+      // Treat any method call before the target assignment as side-effecting, unless it is
+      // side-effect-free method or a super(...) constructor call.
       if (cmAtf.isSideEffectFree(TreeUtils.elementFromUse(node))
           || TreeUtils.isSuperConstructorCall(node)) {
         return super.visitMethodInvocation(node, p);
+      }
+      return Boolean.FALSE;
+    }
+
+    @Override
+    public Boolean visitNewClass(NewClassTree node, Void p) {
+      // An object creation with side effects can modify constructor fields (e.g., via Helper(this),
+      // where `this` can be modified in Helper’s constructor).
+      if (cmAtf.isSideEffectFree(TreeUtils.elementFromUse(node))) {
+        return super.visitNewClass(node, p);
       }
       return Boolean.FALSE;
     }

@@ -13,6 +13,7 @@ class InstanceInitializerBlockLeak2 {
     assignF();
   }
 
+  // :: error: (missing.creates.mustcall.for)
   void assignF() {
     try {
       // :: error: (required.method.not.called)
