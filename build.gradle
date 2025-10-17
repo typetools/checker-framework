@@ -1,28 +1,28 @@
 plugins {
   // https://plugins.gradle.org/plugin/com.gradleup.shadow
-  id 'com.gradleup.shadow' version '9.0.2'
+  id "com.gradleup.shadow" version "9.0.2"
   // https://plugins.gradle.org/plugin/de.undercouch.download
-  id 'de.undercouch.download' version '5.6.0'
-  id 'java'
+  id "de.undercouch.download" version "5.6.0"
+  id "java"
   // https://github.com/tbroyer/gradle-errorprone-plugin
-  id 'net.ltgt.errorprone' version '4.3.0'
+  id "net.ltgt.errorprone" version "4.3.0"
   // https://docs.gradle.org/current/userguide/eclipse_plugin.html
-  id 'eclipse'
+  id "eclipse"
 
-  id 'groovy' // needed for formatting Gradle files
+  id "groovy" // needed for formatting Gradle files
   // Code formatting; defines targets "spotlessApply" and "spotlessCheck".
   // https://github.com/diffplug/spotless/tags ; see tags starting "gradle/"
   // Only works on JDK 11+ (even including the plugin crashes Gradle on JDK 8);
   // shell scripts in checker/bin-devel/ ensure spotless isn't called unless
   // the JDK is 17 or later.
-  id 'com.diffplug.spotless' version '8.0.0'
+  id "com.diffplug.spotless" version "8.0.0"
 }
-apply from: rootProject.file('release.gradle')
+apply from: rootProject.file("release.gradle")
 
 // There is another `repositories { ... }` block below; if you change this one, change that one as well.
 repositories {
   maven {
-    url = 'https://central.sonatype.com/repository/maven-snapshots/'
+    url = "https://central.sonatype.com/repository/maven-snapshots/"
     mavenContent { snapshotsOnly() }
   }
   mavenCentral()
@@ -51,14 +51,14 @@ ext {
   gradleRunsOnJava22orHigher = JavaVersion.current() >= JavaVersion.VERSION_22
   gradleRunsOnJava24orHigher = JavaVersion.current() >= JavaVersion.VERSION_24
   // The JDK for running tests: the jdkTestVersion property or if not set, JavaVersion.current()
-  if (project.getProperties().containsKey('jdkTestVersion')) {
-    testJdkVersion = Integer.valueOf(project.getProperties().get('jdkTestVersion'))
+  if (project.getProperties().containsKey("jdkTestVersion")) {
+    testJdkVersion = Integer.valueOf(project.getProperties().get("jdkTestVersion"))
   } else {
     testJdkVersion = Integer.valueOf(JavaVersion.current().getMajorVersion())
   }
-  // With 'useJdk21Compiler' property, use JDK 21 to compile all code because the release does.
+  // With "useJdk21Compiler" property, use JDK 21 to compile all code because the release does.
   // If you update this line, also update JAVA_HOME in docs/developer/release/release_vars.py.
-  boolean jdk21Compiler = project.getProperties().getOrDefault('useJdk21Compiler', false)
+  boolean jdk21Compiler = project.getProperties().getOrDefault("useJdk21Compiler", false)
   compilerJdkVersion = jdk21Compiler ? 21 : testJdkVersion
   compilerRunsOnJava17orHigher = compilerJdkVersion >= 17
 
@@ -67,7 +67,7 @@ ext {
   skipDelombok = gradleRunsOnJava24orHigher
 
   parentDir = file("${rootDir}/../").absolutePath
-  afuManualDir = 'docs/annotation-file-utilities/'
+  afuManualDir = "docs/annotation-file-utilities/"
 
   gitScriptsHome = "${project(':checker').projectDir}/bin-devel/.git-scripts"
   plumeBibHome = "${projectDir}/docs/manual/plume-bib"
@@ -79,43 +79,43 @@ ext {
 
   // The local git repository, typically in the .git directory, but not for worktrees.
   // This value is always overwritten, but Gradle needs the variable to be initialized.
-  localRepo = '.git'
+  localRepo = ".git"
 
   versions = [
-    autoValue       : '1.11.0',
+    autoValue       : "1.11.0",
     // NOTE: Google Java Format requires JDK 17 or higher as of version 1.25.0.
-    googleJavaFormat: '1.25.2',
-    lombok          : '1.18.42',
-    hashmapUtil     : '0.0.1',
-    reflectionUtil  : '1.1.5',
-    plumeUtil       : '1.11.0',
+    googleJavaFormat: "1.25.2",
+    lombok          : "1.18.42",
+    hashmapUtil     : "0.0.1",
+    reflectionUtil  : "1.1.5",
+    plumeUtil       : "1.11.0",
 
     // https://mvnrepository.com/artifact/com.google.errorprone/error_prone_core
     // If you update this:
     //  * Temporarily comment out "-Werror" elsewhere in this file
     //  * Repeatedly run `./gradlew clean compileJava` and fix all errors
     //  * Uncomment "-Werror"
-    errorprone      : '2.42.0',
+    errorprone      : "2.42.0",
   ]
 }
 
-tasks.register('setLocalRepo', Exec) {
-  commandLine 'git', 'worktree', 'list'
+tasks.register("setLocalRepo", Exec) {
+  commandLine "git", "worktree", "list"
   standardOutput = new ByteArrayOutputStream()
 
   doLast {
     String worktreeList = standardOutput.toString()
-    localRepo = worktreeList.substring(0, worktreeList.indexOf(' ')) + '/.git'
+    localRepo = worktreeList.substring(0, worktreeList.indexOf(" ")) + "/.git"
   }
 }
 
 // No group so it does not show up in the output of `gradlew tasks`
-tasks.register('installGitHooks', Copy) {
-  dependsOn('setLocalRepo')
-  description = 'Copies git hooks to .git directory'
-  from files('checker/bin-devel/git.post-merge', 'checker/bin-devel/git.pre-commit')
-  rename('git\\.(.*)', '$1')
-  into localRepo + '/hooks'
+tasks.register("installGitHooks", Copy) {
+  dependsOn("setLocalRepo")
+  description = "Copies git hooks to .git directory"
+  from files("checker/bin-devel/git.post-merge", "checker/bin-devel/git.pre-commit")
+  rename("git\\.(.*)", '$1')
+  into localRepo + "/hooks"
 }
 
 spotless {
@@ -123,9 +123,9 @@ spotless {
   // project repositories.  That way the spotless plugin does not use the locally built version of
   // checker-qual as a dependency. Without this, errors like the follow are issued when running
   // a spotless task without a locally-built version of checker-qual.jar:
-  // Could not determine the dependencies of task ':checker-qual:spotlessCheck'.
-  //  > Could not create task ':checker-qual:spotlessJavaCheck'.
-  //     > Could not create task ':checker-qual:spotlessJava'.
+  // Could not determine the dependencies of task ":checker-qual:spotlessCheck'.
+  //  > Could not create task ":checker-qual:spotlessJavaCheck'.
+  //     > Could not create task ":checker-qual:spotlessJava'.
   //        > File signature can only be created for existing regular files, given:
   //          .../checker-framework/checker-qual/build/libs/checker-qual-3.25.1-SNAPSHOT.jar
   predeclareDeps()
@@ -134,9 +134,9 @@ spotless {
 spotlessPredeclare {
   // Put all the formatters that have dependencies here.  Without this, errors like the following
   // will happen:
-  // Could not determine the dependencies of task ':spotlessCheck'.
-  //  > Could not create task ':spotlessJavaCheck'.
-  //     > Could not create task ':spotlessJava'.
+  // Could not determine the dependencies of task ":spotlessCheck'.
+  //  > Could not create task ":spotlessJavaCheck'.
+  //     > Could not create task ":spotlessJava'.
   //        > Add a step with [com.google.googlejavaformat:google-java-format:1.15.0] into the `spotlessPredeclare` block in the root project.
   java {
     googleJavaFormat(versions.googleJavaFormat)
@@ -158,18 +158,18 @@ allprojects { currentProj ->
     options.fork = true
   }
 
-  apply plugin: 'java'
-  apply plugin: 'eclipse'
-  apply plugin: 'com.gradleup.shadow'
-  apply plugin: 'de.undercouch.download'
-  apply plugin: 'net.ltgt.errorprone'
+  apply plugin: "java"
+  apply plugin: "eclipse"
+  apply plugin: "com.gradleup.shadow"
+  apply plugin: "de.undercouch.download"
+  apply plugin: "net.ltgt.errorprone"
 
-  group = 'org.checkerframework'
+  group = "org.checkerframework"
 
   // Keep in sync with "repositories { ... }" block above.
   repositories {
     maven {
-      url = 'https://central.sonatype.com/repository/maven-snapshots/'
+      url = "https://central.sonatype.com/repository/maven-snapshots/"
       mavenContent { snapshotsOnly() }
     }
     mavenCentral()
@@ -183,7 +183,7 @@ allprojects { currentProj ->
     allProjects
 
     // Exclude checker-qual dependency added by Error Prone to avoid a circular dependency.
-    annotationProcessor.exclude group: 'org.checkerframework', module: 'checker-qual'
+    annotationProcessor.exclude group: "org.checkerframework", module: "checker-qual"
 
     // This is to be used to add errorprone to the processorpath of the compile task.  The errorprone
     // configuration can't be used directly because it is marked unresolvable by the errorprone plugin.
@@ -193,9 +193,9 @@ allprojects { currentProj ->
   dependencies {
     errorprone "com.google.errorprone:error_prone_core:${versions.errorprone}"
 
-    javacJar 'com.google.errorprone:javac:9+181-r4173-1'
+    javacJar "com.google.errorprone:javac:9+181-r4173-1"
 
-    errorproneJavac 'com.google.errorprone:javac:9+181-r4173-1'
+    errorproneJavac "com.google.errorprone:javac:9+181-r4173-1"
 
     allProjects subprojects
   }
@@ -223,48 +223,48 @@ allprojects { currentProj ->
       // These are required in Java 16+ because the --illegal-access option is set to deny
       // by default.  None of these packages are accessed via reflection, so the module
       // only needs to be exported, but not opened.
-      '--add-exports',
-      'jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED',
-      '--add-exports',
-      'jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED',
-      '--add-exports',
-      'jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED',
-      '--add-exports',
-      'jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED',
-      '--add-exports',
-      'jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED',
-      '--add-exports',
-      'jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED',
-      '--add-exports',
-      'jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED',
-      '--add-exports',
-      'jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED',
-      '--add-exports',
-      'jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED',
+      "--add-exports",
+      "jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
+      "--add-exports",
+      "jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
+      "--add-exports",
+      "jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
+      "--add-exports",
+      "jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED",
+      "--add-exports",
+      "jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED",
+      "--add-exports",
+      "jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED",
+      "--add-exports",
+      "jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED",
+      "--add-exports",
+      "jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
+      "--add-exports",
+      "jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
       // Required because the Checker Framework reflectively accesses private members in com.sun.tools.javac.comp.
-      '--add-opens',
-      'jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED',
+      "--add-opens",
+      "jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
     ]
   }
 
-  apply plugin: 'com.diffplug.spotless'
+  apply plugin: "com.diffplug.spotless"
   // patterns of files to skip for individual sub-projects
   def perProjectDoNotFormat = [
-    'checker'  : [
-      'bin/.do-like-javac/**',
-      'bin-devel/.git-scripts/**',
-      'bin-devel/.html-tools/**',
-      'bin-devel/.plume-scripts/**',
-      'dist/**',
-      'tests/ainfer-*/annotated/*',
-      'tests/build/**',
-      'tests/calledmethods-delomboked/*',
-      'tests/nullness-javac-errors/*',
+    "checker"  : [
+      "bin/.do-like-javac/**",
+      "bin-devel/.git-scripts/**",
+      "bin-devel/.html-tools/**",
+      "bin-devel/.plume-scripts/**",
+      "dist/**",
+      "tests/ainfer-*/annotated/*",
+      "tests/build/**",
+      "tests/calledmethods-delomboked/*",
+      "tests/nullness-javac-errors/*",
     ],
-    'dataflow' : ['manual/examples/'],
-    'framework': [
-      'tests/build/**',
-      'tests/returnsreceiverdelomboked/*',
+    "dataflow" : ["manual/examples/"],
+    "framework": [
+      "tests/build/**",
+      "tests/returnsreceiverdelomboked/*",
     ],
   ]
   spotless {
@@ -272,7 +272,7 @@ allprojects { currentProj ->
     // add them to the spotlessPredeclare block.
 
     // Never format files under build/ directory.
-    def doNotFormat = ['build/**']
+    def doNotFormat = ["build/**"]
     if (currentProj != project.rootProject) {
       if (perProjectDoNotFormat.containsKey(currentProj.name)) {
         doNotFormat += perProjectDoNotFormat[currentProj.name]
@@ -280,21 +280,21 @@ allprojects { currentProj ->
 
       if (!gradleRunsOnJava17orHigher) {
         doNotFormat += [
-          'tests/**/java17/',
-          'tests/*record*/'
+          "tests/**/java17/",
+          "tests/*record*/"
         ]
       }
       if (!gradleRunsOnJava21orHigher) {
-        doNotFormat += ['tests/**/java21/']
+        doNotFormat += ["tests/**/java21/"]
       }
       if (!gradleRunsOnJava22orHigher) {
-        doNotFormat += ['tests/**/java22/']
+        doNotFormat += ["tests/**/java22/"]
       }
     }
 
-    format 'misc', {
+    format "misc", {
       // define the files to apply `misc` to
-      target '*.md', '*.tex', '.gitignore'
+      target "*.md", "*.tex", ".gitignore"
       targetExclude doNotFormat
       // define the steps to apply to those files
       leadingTabsToSpaces(2)
@@ -302,9 +302,9 @@ allprojects { currentProj ->
       // endWithNewline() // Don't want to end empty files with a newline
     }
 
-    format 'make', {
+    format "make", {
       // define the files to apply `make` to
-      target 'Makefile'
+      target "Makefile"
       targetExclude doNotFormat
       // define the steps to apply to those files
       trimTrailingWhitespace()
@@ -315,8 +315,8 @@ allprojects { currentProj ->
       if (currentProj == currentProj.rootProject) {
         // format .java files outside of Gradle sub-projects
         def targets = [
-          'docs/examples',
-          'docs/tutorial',
+          "docs/examples",
+          "docs/tutorial",
         ]
         targets = targets.collectMany {
           [
@@ -328,13 +328,13 @@ allprojects { currentProj ->
         target targets
       } else {
         // not the root project; format all .java files in the sub-project
-        target '**/*.java'
+        target "**/*.java"
       }
       targetExclude doNotFormat
 
-      if (project.hasProperty('eisopFormatting')) {
+      if (project.hasProperty("eisopFormatting")) {
         googleJavaFormat(versions.googleJavaFormat).aosp()
-        importOrder('com', 'jdk', 'lib', 'lombok', 'org', 'java', 'javax')
+        importOrder("com", "jdk", "lib", "lombok", "org", "java", "javax")
       } else {
         googleJavaFormat(versions.googleJavaFormat) // the formatter to apply to Java files
       }
@@ -344,10 +344,10 @@ allprojects { currentProj ->
     // Only define a groovyGradle task on the root project, for simplicity in setting the target pattern
     if (currentProj == currentProj.rootProject) {
       groovyGradle {
-        target '**/*.gradle'
+        target "**/*.gradle"
         targetExclude doNotFormat
         greclipse()  // which formatter Spotless should use to format .gradle files.
-        if (project.hasProperty('eisopFormatting')) {
+        if (project.hasProperty("eisopFormatting")) {
           leadingTabsToSpaces(4)
         } else {
           leadingTabsToSpaces(2)
@@ -357,7 +357,7 @@ allprojects { currentProj ->
       }
 
       groovy {
-        target 'buildSrc/**/*.groovy'
+        target "buildSrc/**/*.groovy"
         importOrder()
 
         // removes semicolons at the end of lines
@@ -375,11 +375,11 @@ allprojects { currentProj ->
     }
 
     // a useful task for debugging; prints exactly which files are getting formatted by spotless
-    tasks.register('printSpotlessTaskInputs') {
+    tasks.register("printSpotlessTaskInputs") {
       doLast {
         project.tasks.forEach { task ->
-          if (task.name.contains('spotless')) {
-            println "Inputs for task '${task.name}':"
+          if (task.name.contains("spotless")) {
+            println "Inputs for task \"${task.name}\":"
 
             task.inputs.files.each { inputFile ->
               println "  Input: $inputFile"
@@ -405,49 +405,49 @@ allprojects { currentProj ->
     }
 
     dependencies {
-      checkerFatJar(project(path: ':checker', configuration: 'fatJar'))
+      checkerFatJar(project(path: ":checker", configuration: "fatJar"))
     }
 
     // Add the fat checker.jar to the classpath of every Javadoc task. This allows Javadoc in
     // any module to reference classes in any other module.
     // Also, build and use ManualTaglet as a taglet.
     tasks.withType(Javadoc).configureEach {
-      dependsOn(':checker:shadowJar')
+      dependsOn(":checker:shadowJar")
       dependsOn(":framework-test:tagletClasses")
       doFirst {
-        options.encoding = 'UTF-8'
-        if (!name.equals('javadocDoclintAll')) {
+        options.encoding = "UTF-8"
+        if (!name.equals("javadocDoclintAll")) {
           options.memberLevel = javadocMemberLevel
         }
-        classpath += configurations.named('checkerFatJar').get().asFileTree
-        options.taglets 'org.checkerframework.taglet.ManualTaglet'
-        options.tagletPath(project(':framework-test').sourceSets.taglet.output.classesDirs.getFiles() as File[])
+        classpath += configurations.named("checkerFatJar").get().asFileTree
+        options.taglets "org.checkerframework.taglet.ManualTaglet"
+        options.tagletPath(project(":framework-test").sourceSets.taglet.output.classesDirs.getFiles() as File[])
 
         // This file is looked for by Javadoc.
         file("${destinationDir}/resources/fonts/").mkdirs()
         ant.touch(file: "${destinationDir}/resources/fonts/dejavu.css")
 
-        options.addBooleanOption('-add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED', true)
-        options.addBooleanOption('-add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED', true)
-        options.addBooleanOption('-add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED', true)
-        options.addBooleanOption('-add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED', true)
-        options.addBooleanOption('-add-exports=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED', true)
-        options.addBooleanOption('-add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED', true)
-        options.addBooleanOption('-add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED', true)
-        options.addBooleanOption('-add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED', true)
-        options.addBooleanOption('-add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED', true)
-        options.addBooleanOption('-add-exports=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED', true)
+        options.addBooleanOption("-add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED", true)
+        options.addBooleanOption("-add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED", true)
+        options.addBooleanOption("-add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED", true)
+        options.addBooleanOption("-add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED", true)
+        options.addBooleanOption("-add-exports=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED", true)
+        options.addBooleanOption("-add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED", true)
+        options.addBooleanOption("-add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED", true)
+        options.addBooleanOption("-add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED", true)
+        options.addBooleanOption("-add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED", true)
+        options.addBooleanOption("-add-exports=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED", true)
 
         // "-Xwerror" requires Javadoc everywhere.  Currently, CI jobs require Javadoc only
         // on changed lines.  Enable -Xwerror in the future when all Javadoc exists.
-        // options.addBooleanOption('Xwerror', true)
-        options.addStringOption('Xmaxwarns', '99999')
+        // options.addBooleanOption("Xwerror", true)
+        options.addStringOption("Xmaxwarns", "99999")
       }
     }
 
     // Add standard javac options
     tasks.withType(JavaCompile) { compilationTask ->
-      dependsOn(':installGitHooks')
+      dependsOn(":installGitHooks")
 
       java {
         toolchain {
@@ -484,26 +484,26 @@ allprojects { currentProj ->
         // This makes the class files Java 11, and then the Checker Framework would not run under Java 8.
         options.release.set(11)
         options.compilerArgs += [
-          '--add-exports',
-          'jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED',
-          '--add-exports',
-          'jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED',
-          '--add-exports',
-          'jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED',
-          '--add-exports',
-          'jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED',
-          '--add-exports',
-          'jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED',
-          '--add-exports',
-          'jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED',
-          '--add-exports',
-          'jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED',
-          '--add-exports',
-          'jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED',
-          '--add-exports',
-          'jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED',
-          '--add-exports',
-          'jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED',
+          "--add-exports",
+          "jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
+          "--add-exports",
+          "jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
+          "--add-exports",
+          "jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
+          "--add-exports",
+          "jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
+          "--add-exports",
+          "jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED",
+          "--add-exports",
+          "jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED",
+          "--add-exports",
+          "jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED",
+          "--add-exports",
+          "jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED",
+          "--add-exports",
+          "jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
+          "--add-exports",
+          "jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
         ]
         // This is equivalent to writing "exports jdk.compiler/... to ALL-UNNAMED" in the
         // module-info.java of jdk.compiler, so corresponding --add-opens are only required for
@@ -526,19 +526,19 @@ allprojects { currentProj ->
       // -fallthrough: Don't check fallthroughs.  Instead, use Error Prone.  Its
       //   warnings are suppressible with a "// fall through" comment.
       options.compilerArgs += [
-        '-g',
-        '-Werror',
-        '-Xlint:-options,-fallthrough',
-        '-Xlint',
+        "-g",
+        "-Werror",
+        "-Xlint:-options,-fallthrough",
+        "-Xlint",
       ]
 
-      options.encoding = 'UTF-8'
+      options.encoding = "UTF-8"
       options.fork = true
 
       // TODO: enable Error Prone on test classes.
-      if (compilationTask.name.equals('compileJava')
+      if (compilationTask.name.equals("compileJava")
           // Error Prone depends on checker-qual.jar, so don't run it on that project to avoid a circular dependency.
-          && !project.name.startsWith('checker-qual')) {
+          && !project.name.startsWith("checker-qual")) {
         // Error Prone must be available in the annotation processor path
         options.annotationProcessorPath = configurations.errorProneAnnotationProcessor
         // Enable Error Prone
@@ -546,30 +546,30 @@ allprojects { currentProj ->
         options.errorprone.disableWarningsInGeneratedCode = true
         options.errorprone.errorproneArgs = [
           // Many compiler classes are interned.
-          '-Xep:ReferenceEquality:OFF',
+          "-Xep:ReferenceEquality:OFF",
           // Not useful to suggest Splitter; maybe clean up.
-          '-Xep:StringSplitter:OFF',
+          "-Xep:StringSplitter:OFF",
           // Too broad, rejects seemingly-correct code.
-          '-Xep:EqualsGetClass:OFF',
+          "-Xep:EqualsGetClass:OFF",
           // Not a real problem
-          '-Xep:MixedMutabilityReturnType:OFF',
+          "-Xep:MixedMutabilityReturnType:OFF",
           // Don't want to add a dependency to ErrorProne.
-          '-Xep:AnnotateFormatMethod:OFF',
+          "-Xep:AnnotateFormatMethod:OFF",
           // Don't want to add a dependency to ErrorProne.
           "-Xep:DoNotCallSuggester:OFF",
           // Warns for every use of "@checker_framework.manual"
-          '-Xep:InvalidBlockTag:OFF',
+          "-Xep:InvalidBlockTag:OFF",
           // Recommends writing @InlineMe which is an Error-Prone-specific annotation
-          '-Xep:InlineMeSuggester:OFF',
+          "-Xep:InlineMeSuggester:OFF",
           // Recommends writing @CanIgnoreReturnValue which is an Error-Prone-specific annotation.
           // It would be great if Error Prone recognized the @This annotation.
-          '-Xep:CanIgnoreReturnValueSuggester:OFF',
+          "-Xep:CanIgnoreReturnValueSuggester:OFF",
           // Should be turned off when using the Checker Framework.
-          '-Xep:ExtendsObject:OFF',
+          "-Xep:ExtendsObject:OFF",
           // The Checker Framework is the only nullness tool we care about.
-          '-Xep:NullableWildcard:OFF',
+          "-Xep:NullableWildcard:OFF",
           // In the visitor pattern, it is natural to forward a Void reference.
-          '-Xep:VoidUsed:OFF',
+          "-Xep:VoidUsed:OFF",
           // Suggestion assumes there is no overriding equals() method.
           "-Xep:NonOverridingEquals:OFF",
           // Suggests using a class that's in Error Prone itself, not in any library for clients.
@@ -583,7 +583,7 @@ allprojects { currentProj ->
           // the errors get fixed.  On the downside, Error Prone (or maybe the compiler?)
           // stops as soon as it issues one warning, rather than outputting them all.
           // https://github.com/google/error-prone/issues/436
-          '-Werror',
+          "-Werror",
         ]
       } else {
         options.errorprone.enabled = false
@@ -592,9 +592,9 @@ allprojects { currentProj ->
   } // end afterEvaluate
 } // end allProjects
 
-tasks.register('version') {
-  description = 'Print Checker Framework version'
-  group = 'Documentation'
+tasks.register("version") {
+  description = "Print Checker Framework version"
+  group = "Documentation"
   doLast {
     println version
   }
@@ -612,58 +612,58 @@ tasks.register('version') {
 def createCheckTypeTask(projectName, taskName, checker, args = []) {
   project("${projectName}").tasks.register("check${taskName}", JavaCompile) {
     description = "Run the ${taskName} Checker on the main sources."
-    group = 'Verification'
-    dependsOn(':checker:shadowJar')
+    group = "Verification"
+    dependsOn(":checker:shadowJar")
     // Always run the task.
     outputs.upToDateWhen { false }
     source = project("${projectName}").sourceSets.main.java
-    classpath = files(project("${projectName}").compileJava.classpath, project(':checker-qual').sourceSets.main.output)
+    classpath = files(project("${projectName}").compileJava.classpath, project(":checker-qual").sourceSets.main.output)
     destinationDirectory = file("${buildDir}")
 
-    options.annotationProcessorPath = files(project(':checker').tasks.shadowJar.archiveFile)
+    options.annotationProcessorPath = files(project(":checker").tasks.shadowJar.archiveFile)
     options.compilerArgs += [
-      '-processor',
+      "-processor",
       "${checker}",
-      '-proc:only',
-      '-Xlint:-processing',
-      '-Xmaxerrs',
-      '10000',
-      '-Xmaxwarns',
-      '10000',
-      '-ArequirePrefixInWarningSuppressions',
-      '-AwarnUnneededSuppressions',
-      '-AwarnRedundantAnnotations',
+      "-proc:only",
+      "-Xlint:-processing",
+      "-Xmaxerrs",
+      "10000",
+      "-Xmaxwarns",
+      "10000",
+      "-ArequirePrefixInWarningSuppressions",
+      "-AwarnUnneededSuppressions",
+      "-AwarnRedundantAnnotations",
     ]
     options.compilerArgs += args
-    options.forkOptions.jvmArgs += ['-Xmx2g']
+    options.forkOptions.jvmArgs += ["-Xmx2g"]
 
     options.fork = true
     options.forkOptions.jvmArgs += compilerArgsForRunningCF
   }
 }
 
-tasks.register('htmlValidate', Exec) {
-  description = 'Validate that HTML files are well-formed'
-  group = 'Format'
+tasks.register("htmlValidate", Exec) {
+  description = "Validate that HTML files are well-formed"
+  group = "Format"
   // This is the Nu Html Checker (v.Nu): https://github.com/validator/validator
-  executable 'html5validator'
+  executable "html5validator"
   args = [
-    '--ignore',
-    '/api/',
-    '/build/',
-    '/docs/manual/manual.html',
-    '/docs/manual/plume-bib/docs/index.html',
-    '/checker/jdk/nullness/src/java/lang/ref/package.html'
+    "--ignore",
+    "/api/",
+    "/build/",
+    "/docs/manual/manual.html",
+    "/docs/manual/plume-bib/docs/index.html",
+    "/checker/jdk/nullness/src/java/lang/ref/package.html"
   ]
 }
 
-tasks.register('addFavicon', Exec) {
-  dependsOn 'allJavadoc'
+tasks.register("addFavicon", Exec) {
+  dependsOn "allJavadoc"
 
   doFirst {
     copy {
-      from 'docs/logo/Checkmark/CFCheckmark_favicon.png'
-      rename('CFCheckmark_favicon.png', 'favicon-checkerframework.png')
+      from "docs/logo/Checkmark/CFCheckmark_favicon.png"
+      rename("CFCheckmark_favicon.png", "favicon-checkerframework.png")
       into "${rootDir}/docs/api"
     }
   }
@@ -671,8 +671,8 @@ tasks.register('addFavicon', Exec) {
   workingDir "${rootDir}/docs/api"
   executable "${htmlToolsHome}/html-add-favicon"
   args += [
-    '.',
-    'favicon-checkerframework.png'
+    ".",
+    "favicon-checkerframework.png"
   ]
 }
 
@@ -682,38 +682,38 @@ tasks.register('addFavicon', Exec) {
 //   It's needed to create the Javadoc jars that we release in Maven Central.
 // To make javadoc for only one subproject, run `./gradlew javadoc`
 //   in the subproject or `./gradlew :checker:javadoc` at the top level.
-tasks.register('allJavadoc', Javadoc) {
-  description = 'Generates API documentation that includes all the modules.'
-  group = 'Documentation'
-  dependsOn(':checker:shadowJar', 'getPlumeScripts', 'getHtmlTools', ':checker-qual:jar')
+tasks.register("allJavadoc", Javadoc) {
+  description = "Generates API documentation that includes all the modules."
+  group = "Documentation"
+  dependsOn(":checker:shadowJar", "getPlumeScripts", "getHtmlTools", ":checker-qual:jar")
 
   doFirst {
     source(
-        project(':framework-test').sourceSets.taglet.allJava
+        project(":framework-test").sourceSets.taglet.allJava
         )
   }
 
   destinationDir = file("${rootDir}/docs/api")
   source(
-      project(':checker-util').sourceSets.main.allJava,
-      project(':checker-qual').sourceSets.main.allJava,
-      project(':checker').sourceSets.main.allJava,
-      project(':framework').sourceSets.main.allJava,
-      project(':dataflow').sourceSets.main.allJava,
-      project(':javacutil').sourceSets.main.allJava,
-      project(':framework-test').sourceSets.main.allJava,
-      project(':annotation-file-utilities').sourceSets.main.allJava,
+      project(":checker-util").sourceSets.main.allJava,
+      project(":checker-qual").sourceSets.main.allJava,
+      project(":checker").sourceSets.main.allJava,
+      project(":framework").sourceSets.main.allJava,
+      project(":dataflow").sourceSets.main.allJava,
+      project(":javacutil").sourceSets.main.allJava,
+      project(":framework-test").sourceSets.main.allJava,
+      project(":annotation-file-utilities").sourceSets.main.allJava,
       )
 
   classpath = configurations.allProjects
   // disable interpreting module-info.java files until all sub-modules support them
   modularity.inferModulePath = false
 
-  finalizedBy 'addFavicon'
+  finalizedBy "addFavicon"
 
   doFirst {
     source(
-        project(':framework-test').sourceSets.taglet.allJava
+        project(":framework-test").sourceSets.taglet.allJava
         )
   }
 }
@@ -721,88 +721,88 @@ tasks.register('allJavadoc', Javadoc) {
 // See documentation for allJavadoc task.
 javadoc.dependsOn(allJavadoc)
 
-tasks.register('zip', Zip) {
-  description = 'Creates a zip archive for the Checker Framework.'
-  dependsOn('buildAll')
+tasks.register("zip", Zip) {
+  description = "Creates a zip archive for the Checker Framework."
+  dependsOn("buildAll")
   archiveFileName = "checker-framework-${version}.zip"
   destinationDirectory = layout.buildDirectory
   into "checker-framework-${releaseVersion}"
 
   from(layout.projectDirectory) {
-    exclude 'api/**',
-        'checker/bin/README',
-        'checker/dist/*.asc',
-        'docs/tutorial/tests/**',
-        'docs/tutorial/src/**',
-        'docs/tutorial/test/**',
-        'docs/tutorial/Makefile',
-        'docs/tutorial/README'
+    exclude "api/**",
+        "checker/bin/README",
+        "checker/dist/*.asc",
+        "docs/tutorial/tests/**",
+        "docs/tutorial/src/**",
+        "docs/tutorial/test/**",
+        "docs/tutorial/Makefile",
+        "docs/tutorial/README"
 
-    include 'README.html',
-        'LICENSE.txt',
-        'annotation-file-utilities/bin/**',
-        'annotation-file-utilities/dist/**',
-        'annotation-file-utilities/LICENSE.txt',
-        'checker/bin/**',
-        'checker/dist/**',
-        'checker/resources/**',
-        'docs/CHANGELOG.md',
-        'docs/annotation-file-utilities/annotation-file-utilities.html',
-        'docs/annotation-file-utilities/annotation-file-format.pdf',
-        'docs/annotation-file-utilities/annotation-file-format.html',
-        'docs/annotation-file-utilities/*.png',
-        'docs/manual/manual.html',
-        'docs/manual/manual.pdf',
-        'docs/manual/*.svg',
-        'docs/manual/manual001.png',
-        'docs/examples/InterningExample.java',
-        'docs/examples/InterningExampleWithWarnings.java',
-        'docs/examples/NullnessExample.java',
-        'docs/examples/NullnessExampleWithWarnings.java',
-        'docs/examples/NullnessReleaseTests.java',
-        'docs/examples/units-extension/Demo.java',
-        'docs/examples/units-extension/Expected.txt',
-        'docs/examples/units-extension/Frequency.java',
-        'docs/examples/units-extension/FrequencyRelations.java',
-        'docs/examples/units-extension/Hz.java',
-        'docs/examples/units-extension/kHz.java',
-        'docs/examples/units-extension/Makefile',
-        'docs/examples/units-extension/README',
-        'docs/examples/MavenExample/pom.xml',
-        'docs/examples/MavenExample/README',
-        'docs/examples/MavenExample/src/main/java/org/checkerframework/example/MavenExample.java',
-        'docs/tutorial/**'
+    include "README.html",
+        "LICENSE.txt",
+        "annotation-file-utilities/bin/**",
+        "annotation-file-utilities/dist/**",
+        "annotation-file-utilities/LICENSE.txt",
+        "checker/bin/**",
+        "checker/dist/**",
+        "checker/resources/**",
+        "docs/CHANGELOG.md",
+        "docs/annotation-file-utilities/annotation-file-utilities.html",
+        "docs/annotation-file-utilities/annotation-file-format.pdf",
+        "docs/annotation-file-utilities/annotation-file-format.html",
+        "docs/annotation-file-utilities/*.png",
+        "docs/manual/manual.html",
+        "docs/manual/manual.pdf",
+        "docs/manual/*.svg",
+        "docs/manual/manual001.png",
+        "docs/examples/InterningExample.java",
+        "docs/examples/InterningExampleWithWarnings.java",
+        "docs/examples/NullnessExample.java",
+        "docs/examples/NullnessExampleWithWarnings.java",
+        "docs/examples/NullnessReleaseTests.java",
+        "docs/examples/units-extension/Demo.java",
+        "docs/examples/units-extension/Expected.txt",
+        "docs/examples/units-extension/Frequency.java",
+        "docs/examples/units-extension/FrequencyRelations.java",
+        "docs/examples/units-extension/Hz.java",
+        "docs/examples/units-extension/kHz.java",
+        "docs/examples/units-extension/Makefile",
+        "docs/examples/units-extension/README",
+        "docs/examples/MavenExample/pom.xml",
+        "docs/examples/MavenExample/README",
+        "docs/examples/MavenExample/src/main/java/org/checkerframework/example/MavenExample.java",
+        "docs/tutorial/**"
   }
 
-  from('dataflow/manual/checker-framework-dataflow-manual.pdf') {
-    into 'docs/manual/'
+  from("dataflow/manual/checker-framework-dataflow-manual.pdf") {
+    into "docs/manual/"
   }
 
-  from('docs/logo/Logo/CFLogo.png') {
-    into 'docs/manual/'
+  from("docs/logo/Logo/CFLogo.png") {
+    into "docs/manual/"
   }
 
-  from('docs/logo/Logo/CFLogo.png') {
-    into 'docs/tutorial/'
+  from("docs/logo/Logo/CFLogo.png") {
+    into "docs/tutorial/"
   }
 
-  from('docs/logo/Logo/CFLogo.png') {
-    into 'docs/tutorial/webpages'
+  from("docs/logo/Logo/CFLogo.png") {
+    into "docs/tutorial/webpages"
   }
 }
 
-tasks.register('cleanCfManual', Exec) {
-  description = 'Clean the manual'
-  commandLine 'make', '-C', 'docs/manual', 'clean'
+tasks.register("cleanCfManual", Exec) {
+  description = "Clean the manual"
+  commandLine "make", "-C", "docs/manual", "clean"
 }
 
-tasks.register('cleanAfuManual', Exec) {
-  description = 'Clean the manual'
-  commandLine 'make', '-C', "${afuManualDir}", 'clean'
+tasks.register("cleanAfuManual", Exec) {
+  description = "Clean the manual"
+  commandLine "make", "-C", "${afuManualDir}", "clean"
 }
 
-tasks.register('cleanManual') {
-  dependsOn('cleanCfManual', 'cleanAfuManual')
+tasks.register("cleanManual") {
+  dependsOn("cleanCfManual", "cleanAfuManual")
 }
 
 clean.dependsOn(cleanManual)
@@ -827,23 +827,23 @@ configurations {
   requireJavadoc
 }
 dependencies {
-  requireJavadoc 'org.plumelib:require-javadoc:2.0.0'
+  requireJavadoc "org.plumelib:require-javadoc:2.0.0"
 }
-tasks.register('requireJavadoc', JavaExec) {
-  description = 'Ensures that Javadoc documentation exists in source code.'
-  group = 'Documentation'
-  mainClass = 'org.plumelib.javadoc.RequireJavadoc'
+tasks.register("requireJavadoc", JavaExec) {
+  description = "Ensures that Javadoc documentation exists in source code."
+  group = "Documentation"
+  mainClass = "org.plumelib.javadoc.RequireJavadoc"
   classpath = configurations.requireJavadoc
-  args '--exclude=module-info.java', 'checker/src/main/java', 'checker-qual/src/main/java', 'checker-util/src/main/java', 'dataflow/src/main/java', 'framework/src/main/java', 'framework-test/src/main/java', 'javacutil/src/main/java'
+  args "--exclude=module-info.java", "checker/src/main/java", "checker-qual/src/main/java", "checker-util/src/main/java", "dataflow/src/main/java", "framework/src/main/java", "framework-test/src/main/java", "javacutil/src/main/java"
   jvmArgs += [
-    '--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED',
-    '--add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED',
-    '--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED',
-    '--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED',
-    '--add-opens=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED',
-    '--add-opens=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED',
-    '--add-opens=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED',
-    '--add-opens=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED',
+    "--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
+    "--add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED",
+    "--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
+    "--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
+    "--add-opens=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
+    "--add-opens=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED",
+    "--add-opens=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
+    "--add-opens=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
   ]
 }
 
@@ -862,7 +862,7 @@ def createJavadocTask(taskName, taskDescription, memberLevel) {
     destinationDir = file("${rootDir}/docs/tmpapi")
     destinationDir.mkdirs()
     subprojects.forEach {
-      if (!it.name.startsWith('checker-qual-android')) {
+      if (!it.name.startsWith("checker-qual-android")) {
         source += it.sourceSets.main.allJava
       }
     }
@@ -873,83 +873,83 @@ def createJavadocTask(taskName, taskDescription, memberLevel) {
 
     destinationDir.deleteDir()
     options.memberLevel = memberLevel
-    options.addBooleanOption('Xdoclint:all', true)
-    options.addStringOption('Xmaxwarns', '99999')
+    options.addBooleanOption("Xdoclint:all", true)
+    options.addStringOption("Xmaxwarns", "99999")
 
-    // options.addStringOption('skip', 'ClassNotToCheck|OtherClass')
+    // options.addStringOption("skip", "ClassNotToCheck|OtherClass")
   }
 }
 
-createJavadocTask('javadocDoclintAll', 'Runs javadoc with -Xdoclint:all option.', JavadocMemberLevel.PRIVATE)
+createJavadocTask("javadocDoclintAll", "Runs javadoc with -Xdoclint:all option.", JavadocMemberLevel.PRIVATE)
 
-tasks.register('makeCfManual', Exec) {
-  dependsOn('allJavadoc')
-  description = 'Build the Checker Framework manual'
+tasks.register("makeCfManual", Exec) {
+  dependsOn("allJavadoc")
+  description = "Build the Checker Framework manual"
   // Don't make all because it will re-run allJavadoc which causes problems when building the release.
-  commandLine 'make', '-C', 'docs/manual/', 'manual.pdf', 'manual.html'
+  commandLine "make", "-C", "docs/manual/", "manual.pdf", "manual.html"
 }
 
-tasks.register('makeAfuManual', Exec) {
-  description = 'Make documentation: annotation-file-format.{html,pdf}.'
+tasks.register("makeAfuManual", Exec) {
+  description = "Make documentation: annotation-file-format.{html,pdf}."
 
-  executable 'make'
+  executable "make"
   args "-C", "${afuManualDir}"
 }
 
 
-tasks.register('manual') {
-  description = 'Build the manual'
-  dependsOn('makeCfManual', 'makeAfuManual', ':dataflow:manual')
+tasks.register("manual") {
+  description = "Build the manual"
+  dependsOn("makeCfManual", "makeAfuManual", ":dataflow:manual")
 }
 
-tasks.register('getPlumeBib', CloneTask) {
-  url.set('https://github.com/mernst/plume-bib.git')
+tasks.register("getPlumeBib", CloneTask) {
+  url.set("https://github.com/mernst/plume-bib.git")
   directory.set(file(plumeBibHome))
   outputs.upToDateWhen { false }
 }
 
-tasks.register('getGitScripts', CloneTask) {
-  url.set('https://github.com/plume-lib/git-scripts.git')
+tasks.register("getGitScripts", CloneTask) {
+  url.set("https://github.com/plume-lib/git-scripts.git")
   directory.set(file(gitScriptsHome))
   outputs.upToDateWhen { false }
 }
 
-tasks.register('getPlumeScripts', CloneTask) {
-  url.set('https://github.com/plume-lib/plume-scripts.git')
+tasks.register("getPlumeScripts", CloneTask) {
+  url.set("https://github.com/plume-lib/plume-scripts.git")
   directory.set(file(plumeScriptsHome))
   outputs.upToDateWhen { false }
 }
 
-tasks.register('getHtmlTools', CloneTask) {
-  url.set('https://github.com/plume-lib/html-tools.git')
+tasks.register("getHtmlTools", CloneTask) {
+  url.set("https://github.com/plume-lib/html-tools.git")
   directory.set(file(htmlToolsHome))
   outputs.upToDateWhen { false }
 }
 
-tasks.register('getDoLikeJavac', CloneTask) {
-  url.set('https://github.com/kelloggm/do-like-javac.git')
+tasks.register("getDoLikeJavac", CloneTask) {
+  url.set("https://github.com/kelloggm/do-like-javac.git")
   directory.set(file(doLikeJavacHome))
   outputs.upToDateWhen { false }
 }
 
 // No group so it does not show up in the output of `gradlew tasks`
-tasks.register('pythonIsInstalled', Exec) {
-  description = 'Check that the python3 executable is installed.'
-  executable = 'python3'
-  args '--version'
+tasks.register("pythonIsInstalled", Exec) {
+  description = "Check that the python3 executable is installed."
+  executable = "python3"
+  args "--version"
 }
 
-tasks.register('docTags', Exec) {
-  group = 'Emacs'
-  commandLine 'make', '-C', 'docs/manual/', 'tags'
+tasks.register("docTags", Exec) {
+  group = "Emacs"
+  commandLine "make", "-C", "docs/manual/", "tags"
 }
 
-tasks.register('tags', Exec) {
+tasks.register("tags", Exec) {
   dependsOn docTags
-  description = 'Create Emacs TAGS table'
-  group = 'Emacs'
+  description = "Create Emacs TAGS table"
+  group = "Emacs"
   // running this task will also run the tags task in the subprojects, which is defined later in this file.
-  commandLine 'etags', '-i', 'annotation-file-utilities/TAGS', '-i', 'checker/TAGS', '-i', 'checker-qual/TAGS', '-i', 'checker-util/TAGS', '-i', 'dataflow/TAGS', '-i', 'framework/TAGS', '-i', 'framework-test/TAGS', '-i', 'javacutil/TAGS', '-i', 'docs/manual/TAGS'
+  commandLine "etags", "-i", "annotation-file-utilities/TAGS", "-i", "checker/TAGS", "-i", "checker-qual/TAGS", "-i", "checker-util/TAGS", "-i", "dataflow/TAGS", "-i", "framework/TAGS", "-i", "framework-test/TAGS", "-i", "javacutil/TAGS", "-i", "docs/manual/TAGS"
 }
 
 subprojects {
@@ -960,40 +960,40 @@ subprojects {
   dependencies {
     // TODO: it's a bug that annotatedlib:guava requires the error_prone_annotations dependency.
     annotatedGuava "com.google.errorprone:error_prone_annotations:${versions.errorprone}"
-    annotatedGuava('org.checkerframework.annotatedlib:guava:33.1.0.2-jre') {
+    annotatedGuava("org.checkerframework.annotatedlib:guava:33.1.0.2-jre") {
       // So long as Guava only uses annotations from checker-qual, excluding it should not cause problems.
-      exclude group: 'org.checkerframework'
+      exclude group: "org.checkerframework"
     }
   }
 
   shadowJar {
     // If you add an external dependency, then do the following:
     //  * On the master branch and on the modified branch, run:
-    //    ./gradlew assembleForJavac && jar tf checker/dist/checker.jar | grep -v '^annotated-jdk/' | sort > checker-jar-contents.txt
+    //    ./gradlew assembleForJavac && jar tf checker/dist/checker.jar | grep -v "^annotated-jdk/" | sort > checker-jar-contents.txt
     //  * Compare the files, and add relocate lines below.
     //  * Repeat until no new classes appear (all are under org/checkerframework/).
 
     // Relocate packages that might conflict with user's classpath.
-    relocate 'com.github.javaparser', 'org.checkerframework.com.github.javaparser'
-    relocate 'org.apache', 'org.checkerframework.org.apache'
-    relocate 'org.relaxng', 'org.checkerframework.org.relaxng'
-    relocate 'org.plumelib', 'org.checkerframework.org.plumelib'
-    relocate 'org.codehaus', 'org.checkerframework.org.codehaus'
-    relocate 'org.objectweb.asm', 'org.checkerframework.org.objectweb.asm'
-    relocate 'io.github.classgraph', 'org.checkerframework.io.github.classgraph'
-    relocate 'nonapi.io.github.classgraph', 'org.checkerframework.nonapi.io.github.classgraph'
-    // relocate 'sun', 'org.checkerframework.sun'
-    relocate 'com.google', 'org.checkerframework.com.google'
-    relocate 'plume', 'org.checkerframework.plume'
+    relocate "com.github.javaparser", "org.checkerframework.com.github.javaparser"
+    relocate "org.apache", "org.checkerframework.org.apache"
+    relocate "org.relaxng", "org.checkerframework.org.relaxng"
+    relocate "org.plumelib", "org.checkerframework.org.plumelib"
+    relocate "org.codehaus", "org.checkerframework.org.codehaus"
+    relocate "org.objectweb.asm", "org.checkerframework.org.objectweb.asm"
+    relocate "io.github.classgraph", "org.checkerframework.io.github.classgraph"
+    relocate "nonapi.io.github.classgraph", "org.checkerframework.nonapi.io.github.classgraph"
+    // relocate "sun", "org.checkerframework.sun"
+    relocate "com.google", "org.checkerframework.com.google"
+    relocate "plume", "org.checkerframework.plume"
 
-    exclude '**/module-info.class'
+    exclude "**/module-info.class"
   }
 
-  if (!project.name.startsWith('checker-qual-android')) {
-    tasks.register('tags', Exec) {
-      description = 'Create Emacs TAGS table'
+  if (!project.name.startsWith("checker-qual-android")) {
+    tasks.register("tags", Exec) {
+      description = "Create Emacs TAGS table"
       // `ctags -e -f TAGS` used to work in place of `etags`, but apparently no longer.
-      commandLine 'bash', '-c', "find . \\( -name build -o -name jtreg -o -name tests \\) -prune -o -name '*.java' -print | sort-directory-order | xargs etags"
+      commandLine "bash", "-c", "find . \\( -name build -o -name jtreg -o -name tests \\) -prune -o -name '*.java' -print | sort-directory-order | xargs etags"
     }
   }
 
@@ -1008,9 +1008,9 @@ subprojects {
     // Adds manifest to all Jar files
     tasks.withType(Jar).configureEach {
       includeEmptyDirs = false
-      if (archiveFileName.get().startsWith('checker-qual') || archiveFileName.get().startsWith('checker-util')) {
+      if (archiveFileName.get().startsWith("checker-qual") || archiveFileName.get().startsWith("checker-util")) {
         metaInf {
-          from './LICENSE.txt'
+          from "./LICENSE.txt"
         }
       } else {
         metaInf {
@@ -1018,70 +1018,70 @@ subprojects {
         }
       }
       manifest {
-        attributes('Implementation-Version': "${project.version}")
-        attributes('Implementation-URL': 'https://checkerframework.org')
-        if (!archiveFileName.get().endsWith('source.jar') && !archiveFileName.get().startsWith('checker-qual')) {
-          attributes('Automatic-Module-Name': 'org.checkerframework.' + project.name.replaceAll('-', '.'))
+        attributes("Implementation-Version": "${project.version}")
+        attributes("Implementation-URL": "https://checkerframework.org")
+        if (!archiveFileName.get().endsWith("source.jar") && !archiveFileName.get().startsWith("checker-qual")) {
+          attributes("Automatic-Module-Name": "org.checkerframework." + project.name.replaceAll("-", "."))
         }
-        if (archiveFileName.get().startsWith('checker-qual') || archiveFileName.get().startsWith('checker-util')) {
-          attributes('Bundle-License': 'MIT')
+        if (archiveFileName.get().startsWith("checker-qual") || archiveFileName.get().startsWith("checker-util")) {
+          attributes("Bundle-License": "MIT")
         } else {
-          attributes('Bundle-License': '(GPL-2.0-only WITH Classpath-exception-2.0)')
+          attributes("Bundle-License": "(GPL-2.0-only WITH Classpath-exception-2.0)")
         }
       }
     }
 
     // Tasks such as `checkInterning` and `checkResourceLeak` run various checkers on all the main source sets.
     // These pass and are run by the `typecheck` task.
-    // When you add one here, also update a dependsOn item for the 'typecheck' task.
-    createCheckTypeTask(project.name, 'Formatter',
-        'org.checkerframework.checker.formatter.FormatterChecker')
-    createCheckTypeTask(project.name, 'Interning',
-        'org.checkerframework.checker.interning.InterningChecker',
+    // When you add one here, also update a dependsOn item for the "typecheck" task.
+    createCheckTypeTask(project.name, "Formatter",
+        "org.checkerframework.checker.formatter.FormatterChecker")
+    createCheckTypeTask(project.name, "Interning",
+        "org.checkerframework.checker.interning.InterningChecker",
         [
-          '-Astubs=javax-lang-model-element-name.astub'
+          "-Astubs=javax-lang-model-element-name.astub"
         ])
-    createCheckTypeTask(project.name, 'Optional',
-        'org.checkerframework.checker.optional.OptionalChecker',
+    createCheckTypeTask(project.name, "Optional",
+        "org.checkerframework.checker.optional.OptionalChecker",
         [
           // to avoid having to annotate JavaParser
-          '-AassumePureGetters',
-          '-AassumeAssertionsAreEnabled',
+          "-AassumePureGetters",
+          "-AassumeAssertionsAreEnabled",
         ])
-    createCheckTypeTask(project.name, 'Purity',
-        'org.checkerframework.framework.util.PurityChecker')
-    createCheckTypeTask(project.name, 'ResourceLeak',
-        'org.checkerframework.checker.resourceleak.ResourceLeakChecker')
-    createCheckTypeTask(project.name, 'Signature',
-        'org.checkerframework.checker.signature.SignatureChecker')
+    createCheckTypeTask(project.name, "Purity",
+        "org.checkerframework.framework.util.PurityChecker")
+    createCheckTypeTask(project.name, "ResourceLeak",
+        "org.checkerframework.checker.resourceleak.ResourceLeakChecker")
+    createCheckTypeTask(project.name, "Signature",
+        "org.checkerframework.checker.signature.SignatureChecker")
 
     // The checkNullness task runs on all code, but it only *checks* the following code:
-    //  * All files outside the 'framework', 'checker', and 'annotation-file-utilities' subprojects.
-    //  * In the 'framework', 'checker', and 'annotation-file-utilities' subprojects, files with `@AnnotatedFor("nullness")`.
-    boolean nullnessAll = project.getProperties().containsKey('nullnessAll')
-    if (!nullnessAll && (project.name.is('framework') || project.name.is('checker') || project.name.is('annotation-file-utilities'))) {
-      createCheckTypeTask(project.name, 'Nullness',
-          'org.checkerframework.checker.nullness.NullnessChecker',
+    //  * All files outside the "framework", "checker", and "annotation-file-utilities" subprojects.
+    //  * In the "framework", "checker", and "annotation-file-utilities" subprojects, files with `@AnnotatedFor("nullness")`.
+    boolean nullnessAll = project.getProperties().containsKey("nullnessAll")
+    if (!nullnessAll && (project.name.is("framework") || project.name.is("checker") || project.name.is("annotation-file-utilities"))) {
+      createCheckTypeTask(project.name, "Nullness",
+          "org.checkerframework.checker.nullness.NullnessChecker",
           [
-            '-AskipUses=com\\.sun\\.*',
+            "-AskipUses=com\\.sun\\.*",
             // If a file does not contain @AnnotatedFor("nullness"), all its routines
             // are assumed to return @Nullable.
-            '-AuseConservativeDefaultsForUncheckedCode=source'
+            "-AuseConservativeDefaultsForUncheckedCode=source"
           ])
     } else {
-      createCheckTypeTask(project.name, 'Nullness',
-          'org.checkerframework.checker.nullness.NullnessChecker',
-          ['-AskipUses=com\\.sun\\.*'])
+      createCheckTypeTask(project.name, "Nullness",
+          "org.checkerframework.checker.nullness.NullnessChecker",
+          ["-AskipUses=com\\.sun\\.*"])
     }
 
 
-    createCheckTypeTask(project.name, 'CompilerMessages',
-        'org.checkerframework.checker.compilermsgs.CompilerMessagesChecker')
+    createCheckTypeTask(project.name, "CompilerMessages",
+        "org.checkerframework.checker.compilermsgs.CompilerMessagesChecker")
     checkCompilerMessages {
       doFirst {
-        String propfiles = sourceSets.main.resources.filter { file -> file.name.equals('messages.properties') }.asPath
-        if (project.name.is('checker')) {
-          String frameworkPropFiles = project(':framework').sourceSets.main.resources.filter { file -> file.name.equals('messages.properties') }.asPath
+        String propfiles = sourceSets.main.resources.filter { file -> file.name.equals("messages.properties") }.asPath
+        if (project.name.is("checker")) {
+          String frameworkPropFiles = project(":framework").sourceSets.main.resources.filter { file -> file.name.equals("messages.properties") }.asPath
           propfiles = propfiles + File.pathSeparator + frameworkPropFiles
         }
         options.compilerArgs += ["-Apropfiles=${propfiles}"]
@@ -1090,27 +1090,27 @@ subprojects {
 
 
     // Add jtregTests to framework and checker modules
-    if (project.name.is('framework') || project.name.is('checker')) {
-      tasks.register('jtregTests', Exec) {
-        description = 'Run the jtreg tests. Requires jtreg to be installed.'
-        group = 'Verification'
-        dependsOn('compileJava')
-        dependsOn('compileTestJava')
-        dependsOn('shadowJar')
+    if (project.name.is("framework") || project.name.is("checker")) {
+      tasks.register("jtregTests", Exec) {
+        description = "Run the jtreg tests. Requires jtreg to be installed."
+        group = "Verification"
+        dependsOn("compileJava")
+        dependsOn("compileTestJava")
+        dependsOn("shadowJar")
 
         String jtregOutput = "${buildDir}/jtreg"
-        String name = 'all'
-        String tests = '.'
-        executable 'jtreg'
+        String name = "all"
+        String tests = "."
+        executable "jtreg"
         args = [
           "-dir:${projectDir}/jtreg",
           "-workDir:${jtregOutput}/${name}/work",
           "-reportDir:${jtregOutput}/${name}/report",
-          '-verbose:error,fail,nopass',
+          "-verbose:error,fail,nopass",
           // Don't add debugging information
-          //  '-javacoptions:-g',
-          '-keywords:!ignore',
-          '-samevm',
+          //  "-javacoptions:-g",
+          "-keywords:!ignore",
+          "-samevm",
           "-javacoptions:-classpath ${tasks.shadowJar.archiveFile.get()}:${sourceSets.test.output.asPath}",
           // Required for checker/jtreg/nullness/PersistUtil.java and other tests
           "-vmoptions:-classpath ${tasks.shadowJar.archiveFile.get()}:${sourceSets.test.output.asPath}",
@@ -1118,25 +1118,25 @@ subprojects {
         args += [
           // checker/jtreg/nullness/defaultsPersist/ReferenceInfoUtil.java
           // uses the jdk.jdeps module.
-          '-javacoptions:--add-modules jdk.jdeps',
-          '-javacoptions:--add-exports=jdk.jdeps/com.sun.tools.classfile=ALL-UNNAMED',
-          '-vmoptions:--add-opens=jdk.jdeps/com.sun.tools.classfile=ALL-UNNAMED',
-          '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED',
-          '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED',
-          '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED',
-          '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED',
-          '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED',
-          '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED',
-          '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED',
-          '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED',
-          '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED',
+          "-javacoptions:--add-modules jdk.jdeps",
+          "-javacoptions:--add-exports=jdk.jdeps/com.sun.tools.classfile=ALL-UNNAMED",
+          "-vmoptions:--add-opens=jdk.jdeps/com.sun.tools.classfile=ALL-UNNAMED",
+          "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
+          "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
+          "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
+          "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
+          "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED",
+          "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED",
+          "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED",
+          "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
+          "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
         ]
-        if (project.name.is('framework')) {
+        if (project.name.is("framework")) {
           // Do not check for the annotated JDK
           args += [
-            '-javacoptions:-ApermitMissingJdk'
+            "-javacoptions:-ApermitMissingJdk"
           ]
-        } else if (project.name.is('checker')) {
+        } else if (project.name.is("checker")) {
           args += [
             "-javacoptions:-classpath ${sourceSets.testannotations.output.asPath}",
           ]
@@ -1148,8 +1148,8 @@ subprojects {
     }
 
     // Create a task for each JUnit test class whose name is the same as the JUnit class name.
-    sourceSets.test.allJava.filter { it.path.contains('test/junit') }.forEach { file ->
-      String junitClassName = file.name.replaceAll('.java', '')
+    sourceSets.test.allJava.filter { it.path.contains("test/junit") }.forEach { file ->
+      String junitClassName = file.name.replaceAll(".java", "")
       tasks.register("${junitClassName}", Test) {
         description = "Run ${junitClassName} tests."
         include "**/${name}.class"
@@ -1166,8 +1166,8 @@ subprojects {
       // // --parallel controls parallelism for the entire build.
 
       // // Run tests in parallel, except on CI where it seems to lead to flaky failures.
-      // // The TF_BUILD environment variable is set to 'True' for jobs running on Azure Pipelines.
-      // if (!System.getenv('TF_BUILD')?.equals('True')) {
+      // // The TF_BUILD environment variable is set to "True" for jobs running on Azure Pipelines.
+      // if (!System.getenv("TF_BUILD")?.equals("True")) {
       //   // Not running under Azure Pipelines CI.
 
       //   maxParallelForks = Runtime.runtime.availableProcessors() ?: 1
@@ -1184,12 +1184,12 @@ subprojects {
       //   }
       // }
 
-      if (project.name.is('checker')) {
-        dependsOn('assembleForJavac')
+      if (project.name.is("checker")) {
+        dependsOn("assembleForJavac")
       }
 
-      if (project.hasProperty('emit.test.debug')) {
-        systemProperties += ['emit.test.debug': 'true']
+      if (project.hasProperty("emit.test.debug")) {
+        systemProperties += ["emit.test.debug": "true"]
       }
 
       testLogging {
@@ -1198,8 +1198,8 @@ subprojects {
         outputs.upToDateWhen { false }
 
         // Show the found unexpected diagnostics and expected diagnostics not found.
-        exceptionFormat = 'full'
-        events 'failed'
+        exceptionFormat = "full"
+        events "failed"
 
         // Don't show the uninteresting stack traces from the exceptions.
         showStackTraces = false
@@ -1207,80 +1207,80 @@ subprojects {
     }
 
     // Create a nonJunitTests task per project
-    tasks.register('nonJunitTests') {
-      description = 'Run all Checker Framework tests except for the Junit tests and inference tests.'
-      group = 'Verification'
-      if (project.name.is('framework') || project.name.is('checker')) {
-        dependsOn('jtregTests')
+    tasks.register("nonJunitTests") {
+      description = "Run all Checker Framework tests except for the Junit tests and inference tests."
+      group = "Verification"
+      if (project.name.is("framework") || project.name.is("checker")) {
+        dependsOn("jtregTests")
       }
-      if (project.name.is('framework')) {
-        dependsOn('loaderTests')
-      }
-
-      if (project.name.is('checker')) {
-        dependsOn('jtregJdk11Tests', 'nullnessExtraTests', 'commandLineTests', 'tutorialTests')
+      if (project.name.is("framework")) {
+        dependsOn("loaderTests")
       }
 
-      if (project.name.is('dataflow')) {
-        dependsOn('allDataflowTests')
+      if (project.name.is("checker")) {
+        dependsOn("jtregJdk11Tests", "nullnessExtraTests", "commandLineTests", "tutorialTests")
+      }
+
+      if (project.name.is("dataflow")) {
+        dependsOn("allDataflowTests")
       }
     }
 
     // Create an inferenceTests task per project
-    tasks.register('inferenceTests') {
-      description = 'Run inference tests.'
-      group = 'Verification'
-      if (project.name.is('checker')) {
-        dependsOn('inferenceTests-part1', 'inferenceTests-part2')
+    tasks.register("inferenceTests") {
+      description = "Run inference tests."
+      group = "Verification"
+      if (project.name.is("checker")) {
+        dependsOn("inferenceTests-part1", "inferenceTests-part2")
       }
     }
-    tasks.register('inferenceTests-part1') {
-      description = 'Run inference tests (part 1).'
-      group = 'Verification'
-      if (project.name.is('checker')) {
-        dependsOn('wpiManyTest')
+    tasks.register("inferenceTests-part1") {
+      description = "Run inference tests (part 1)."
+      group = "Verification"
+      if (project.name.is("checker")) {
+        dependsOn("wpiManyTest")
       }
     }
-    tasks.register('inferenceTests-part2') {
-      description = 'Run inference tests (part 2).'
-      group = 'Verification'
-      if (project.name.is('checker')) {
-        dependsOn('ainferTest', 'wpiPlumeLibTest')
+    tasks.register("inferenceTests-part2") {
+      description = "Run inference tests (part 2)."
+      group = "Verification"
+      if (project.name.is("checker")) {
+        dependsOn("ainferTest", "wpiPlumeLibTest")
       }
     }
 
     // Create a typecheck task per project (dogfooding the Checker Framework on itself).
     // This isn't a test of the Checker Framework as the test and nonJunitTests tasks are.
-    // Tasks such as 'checkInterning' are constructed by createCheckTypeTask.
-    tasks.register('typecheck') {
-      description = 'Run the Checker Framework on itself'
-      group = 'Verification'
-      dependsOn('typecheck-part1', 'typecheck-part2')
+    // Tasks such as "checkInterning" are constructed by createCheckTypeTask.
+    tasks.register("typecheck") {
+      description = "Run the Checker Framework on itself"
+      group = "Verification"
+      dependsOn("typecheck-part1", "typecheck-part2")
     }
-    tasks.register('typecheck-part1') {
-      description = 'Run the Checker Framework on itself (part 1)'
-      group = 'Verification'
-      dependsOn('checkCompilerMessages', 'checkFormatter', 'checkInterning', 'checkOptional', 'checkPurity')
+    tasks.register("typecheck-part1") {
+      description = "Run the Checker Framework on itself (part 1)"
+      group = "Verification"
+      dependsOn("checkCompilerMessages", "checkFormatter", "checkInterning", "checkOptional", "checkPurity")
     }
-    tasks.register('typecheck-part2') {
-      description = 'Run the Checker Framework on itself (part 2)'
-      group = 'Verification'
-      dependsOn('checkResourceLeak', 'checkSignature')
-      if (!(project.name.is('framework') || project.name.is('checker'))) {
-        dependsOn('checkNullness')
+    tasks.register("typecheck-part2") {
+      description = "Run the Checker Framework on itself (part 2)"
+      group = "Verification"
+      dependsOn("checkResourceLeak", "checkSignature")
+      if (!(project.name.is("framework") || project.name.is("checker"))) {
+        dependsOn("checkNullness")
       }
     }
 
     // Create an allTests task per project.
     // allTests = test + nonJunitTests + inferenceTests + typecheck
-    tasks.register('allTests') {
-      description = 'Run all Checker Framework tests'
-      group = 'Verification'
-      // The 'test' target is just the JUnit tests.
-      dependsOn('test', 'nonJunitTests', 'inferenceTests', 'typecheck')
+    tasks.register("allTests") {
+      description = "Run all Checker Framework tests"
+      group = "Verification"
+      // The "test" target is just the JUnit tests.
+      dependsOn("test", "nonJunitTests", "inferenceTests", "typecheck")
     }
 
-    tasks.register('javadocPrivate') {
+    tasks.register("javadocPrivate") {
       dependsOn(javadoc)
       doFirst {
         javadocMemberLevel = JavadocMemberLevel.PRIVATE
@@ -1297,22 +1297,22 @@ subprojects {
 // The assemble task also produces Javadoc jars, because its purpose is to build
 // all artifacts produced by the Gradle project:
 // https://docs.gradle.org/current/userguide/base_plugin.html#sec:base_tasks
-assemble.dependsOn(':checker:assembleForJavac')
+assemble.dependsOn(":checker:assembleForJavac")
 
 assemble.mustRunAfter(clean)
 
-tasks.register('buildAll') {
-  description = 'Build all jar files and the manuals, including source and javadoc jars'
-  group = 'Build'
+tasks.register("buildAll") {
+  description = "Build all jar files and the manuals, including source and javadoc jars"
+  group = "Build"
   dependsOn(allJavadoc)
   subprojects { Project subproject ->
     dependsOn("${subproject.name}:assemble")
     dependsOn("${subproject.name}:javadocJar")
     dependsOn("${subproject.name}:sourcesJar")
   }
-  dependsOn('framework:allJavadocJar', 'framework:allSourcesJar', 'checker:allJavadocJar', 'checker:allSourcesJar', 'checker-qual:jar', 'checker-util:jar')
-  dependsOn('checker:assembleForJavac')
-  dependsOn('manual')
+  dependsOn("framework:allJavadocJar", "framework:allSourcesJar", "checker:allJavadocJar", "checker:allSourcesJar", "checker-qual:jar", "checker-util:jar")
+  dependsOn("checker:assembleForJavac")
+  dependsOn("manual")
 }
 
 // Don't create an empty checker-framework-VERSION.jar
@@ -1324,35 +1324,35 @@ jar.onlyIf { false }
  */
 final sharedPublicationConfiguration(publication) {
   publication.pom {
-    url = 'https://checkerframework.org/'
+    url = "https://checkerframework.org/"
     developers {
       // These are the lead developers/maintainers, not all the developers or contributors.
       developer {
-        id = 'mernst'
-        name = 'Michael Ernst'
-        email = 'mernst@cs.washington.edu'
-        url = 'https://homes.cs.washington.edu/~mernst/'
-        organization = 'University of Washington'
-        organizationUrl = 'https://www.cs.washington.edu/'
+        id = "mernst"
+        name = "Michael Ernst"
+        email = "mernst@cs.washington.edu"
+        url = "https://homes.cs.washington.edu/~mernst/"
+        organization = "University of Washington"
+        organizationUrl = "https://www.cs.washington.edu/"
       }
       developer {
-        id = 'smillst'
-        name = 'Suzanne Millstein'
-        email = 'smillst@cs.washington.edu'
-        organization = 'University of Washington'
-        organizationUrl = 'https://www.cs.washington.edu/'
+        id = "smillst"
+        name = "Suzanne Millstein"
+        email = "smillst@cs.washington.edu"
+        organization = "University of Washington"
+        organizationUrl = "https://www.cs.washington.edu/"
       }
     }
 
     scm {
-      url = 'https://github.com/typetools/checker-framework.git'
-      connection = 'scm:git:https://github.com/typetools/checker-framework.git'
-      developerConnection = 'scm:git:ssh://git@github.com/typetools/checker-framework.git'
+      url = "https://github.com/typetools/checker-framework.git"
+      connection = "scm:git:https://github.com/typetools/checker-framework.git"
+      developerConnection = "scm:git:ssh://git@github.com/typetools/checker-framework.git"
     }
   }
 }
 
-tasks.register('printJavaVersion') {
+tasks.register("printJavaVersion") {
   description = "Prints the Java version used to run Gradle."
   doLast {
     println "Java version used to run Gradle: ${System.getProperty('java.version')}"

@@ -1,7 +1,7 @@
-apply plugin: 'maven-publish'
-apply plugin: 'signing'
+apply plugin: "maven-publish"
+apply plugin: "signing"
 
-final isSnapshot = version.contains('SNAPSHOT')
+final isSnapshot = version.contains("SNAPSHOT")
 // https://github.com/johnrengelman/shadow/issues/586#issuecomment-708375599
 components.java.withVariantsFromConfiguration(configurations.shadowRuntimeElements) {
   skip()
@@ -10,12 +10,12 @@ publishing {
   repositories {
     maven {
       url = (isSnapshot
-          ? project.properties.getOrDefault('SNAPSHOT_REPOSITORY_URL', 'https://central.sonatype.com/repository/maven-snapshots/')
-          : project.properties.getOrDefault('RELEASE_REPOSITORY_URL', 'https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/')
+          ? project.properties.getOrDefault("SNAPSHOT_REPOSITORY_URL", "https://central.sonatype.com/repository/maven-snapshots/")
+          : project.properties.getOrDefault("RELEASE_REPOSITORY_URL", "https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/")
           )
       credentials {
-        username = project.properties.get('SONATYPE_NEXUS_USERNAME')
-        password = project.properties.get('SONATYPE_NEXUS_PASSWORD')
+        username = project.properties.get("SONATYPE_NEXUS_USERNAME")
+        password = project.properties.get("SONATYPE_NEXUS_PASSWORD")
       }
     }
   }
