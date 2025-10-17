@@ -149,6 +149,37 @@ spotlessPredeclare {
   }
 }
 
+subprojects { subProject ->
+  if(subProject.name.equals('checker')
+      || subProject.name.equals('annotation-file-utilities')
+      || subProject.name.equals('dataflow')
+      || subProject.name.equals('framework')){
+    apply plugin: 'com.gradleup.shadow'
+    shadowJar {
+      // If you add an external dependency, then do the following:
+      //  * On the master branch and on the modified branch, run:
+      //    ./gradlew assembleForJavac && jar tf checker/dist/checker.jar | grep -v '^annotated-jdk/' | sort > checker-jar-contents.txt
+      //  * Compare the files, and add relocate lines below.
+      //  * Repeat until no new classes appear (all are under org/checkerframework/).
+
+      // Relocate packages that might conflict with user's classpath.
+      relocate 'com.github.javaparser', 'org.checkerframework.com.github.javaparser'
+      relocate 'org.apache', 'org.checkerframework.org.apache'
+      relocate 'org.relaxng', 'org.checkerframework.org.relaxng'
+      relocate 'org.plumelib', 'org.checkerframework.org.plumelib'
+      relocate 'org.codehaus', 'org.checkerframework.org.codehaus'
+      relocate 'org.objectweb.asm', 'org.checkerframework.org.objectweb.asm'
+      relocate 'io.github.classgraph', 'org.checkerframework.io.github.classgraph'
+      relocate 'nonapi.io.github.classgraph', 'org.checkerframework.nonapi.io.github.classgraph'
+      // relocate 'sun', 'org.checkerframework.sun'
+      relocate 'com.google', 'org.checkerframework.com.google'
+      relocate 'plume', 'org.checkerframework.plume'
+
+      exclude '**/module-info.class'
+    }
+  }
+}
+
 allprojects { currentProj ->
 
   // Update releaseVersion in release.gradle.
@@ -160,7 +191,6 @@ allprojects { currentProj ->
 
   apply plugin: 'java'
   apply plugin: 'eclipse'
-  apply plugin: 'com.gradleup.shadow'
   apply plugin: 'de.undercouch.download'
   apply plugin: 'net.ltgt.errorprone'
 
@@ -946,29 +976,6 @@ subprojects {
       // So long as Guava only uses annotations from checker-qual, excluding it should not cause problems.
       exclude group: 'org.checkerframework'
     }
-  }
-
-  shadowJar {
-    // If you add an external dependency, then do the following:
-    //  * On the master branch and on the modified branch, run:
-    //    ./gradlew assembleForJavac && jar tf checker/dist/checker.jar | grep -v '^annotated-jdk/' | sort > checker-jar-contents.txt
-    //  * Compare the files, and add relocate lines below.
-    //  * Repeat until no new classes appear (all are under org/checkerframework/).
-
-    // Relocate packages that might conflict with user's classpath.
-    relocate 'com.github.javaparser', 'org.checkerframework.com.github.javaparser'
-    relocate 'org.apache', 'org.checkerframework.org.apache'
-    relocate 'org.relaxng', 'org.checkerframework.org.relaxng'
-    relocate 'org.plumelib', 'org.checkerframework.org.plumelib'
-    relocate 'org.codehaus', 'org.checkerframework.org.codehaus'
-    relocate 'org.objectweb.asm', 'org.checkerframework.org.objectweb.asm'
-    relocate 'io.github.classgraph', 'org.checkerframework.io.github.classgraph'
-    relocate 'nonapi.io.github.classgraph', 'org.checkerframework.nonapi.io.github.classgraph'
-    // relocate 'sun', 'org.checkerframework.sun'
-    relocate 'com.google', 'org.checkerframework.com.google'
-    relocate 'plume', 'org.checkerframework.plume'
-
-    exclude '**/module-info.class'
   }
 
   if (!project.name.startsWith('checker-qual-android')) {
