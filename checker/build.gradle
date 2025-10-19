@@ -516,7 +516,7 @@ void copyNonannotatedToAnnotatedDirectory(String testdir) {
     into(file("tests/${testdir}/annotated"))
     filter { String line ->
       (line.contains("// :: error:")
-          // Don"t remove unchecked cast warnings, because they"re genuinely expected in some all-systems
+          // Don't remove unchecked cast warnings, because they're genuinely expected in some all-systems
           // tests, such as GenericsCasts.java.
           || (line.contains("// :: warning:") && !line.contains("// :: warning: [unchecked]")))
           ? null : line

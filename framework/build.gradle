@@ -81,7 +81,7 @@ tasks.register("copyAndMinimizeAnnotatedJdkFiles", JavaExec) {
   description = "Copy annotated JDK files to ${outputDir}. Removes private and package-private methods, method bodies, comments, etc. from the annotated JDK"
   group = "Build"
   dependsOn(":framework:compileStubifierJava")
-  // we need the next two dependencies because we run JavaStubifier using this project's runtimeClasspath,
+  // we need the next two dependencies because we run JavaStubifier using this project"s runtimeClasspath,
   // which refers to the jars for these other projects
   dependsOn(":javacutil:jar")
   dependsOn(":dataflow:jar")
@@ -151,7 +151,7 @@ tasks.register("allJavadocJar", Jar) {
 }
 
 shadowJar {
-  description = "Creates the 'fat' framework.jar in dist"
+  description = "Creates the \"fat\" framework.jar in dist"
   destinationDirectory = file("${projectDir}/dist")
   archiveFileName = "framework.jar"
   manifest {
