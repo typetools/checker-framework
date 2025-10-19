@@ -197,8 +197,8 @@ if (skipDelombok) {
 
     doLast {
       if (!skipDelombok) {
-        def collection =(files(configurations.testCompileClasspath))
-        ant.taskdef(name: "delombok", classname: "lombok.delombok.ant.Tasks$Delombok",
+        def collection = files(configurations.testCompileClasspath)
+        ant.taskdef(name: "delombok", classname: "lombok.delombok.ant.Tasks\$Delombok",
         classpath: collection.asPath)
         ant.delombok(from: srcJava, to: srcDelomboked, classpath: collection.asPath)
       }
