@@ -81,8 +81,8 @@ tasks.register("copyAndMinimizeAnnotatedJdkFiles", JavaExec) {
   description = "Copy annotated JDK files to ${outputDir}. Removes private and package-private methods, method bodies, comments, etc. from the annotated JDK"
   group = "Build"
   dependsOn(":framework:compileStubifierJava")
-  // we need the next two dependencies because we run JavaStubifier using this project"s runtimeClasspath,
-  // which refers to the jars for these other projects
+  // We need the next two dependencies because we run JavaStubifier using this
+  // project's runtimeClasspath, which refers to the jars for these other projects.
   dependsOn(":javacutil:jar")
   dependsOn(":dataflow:jar")
 
