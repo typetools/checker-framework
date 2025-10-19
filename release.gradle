@@ -50,7 +50,8 @@ tasks.register("updateVersionNumbersAFU", Copy) {
 
 tasks.register("updateVersionNumbersInDocs", Copy) {
   // See documentation above.
-  into = layout.buildDirectory.file("updateVersionNumbers/docs/")
+  into(layout.buildDirectory.file("updateVersionNumbers/docs/"))
+
   from("docs/") {
     include("annotation-file-utilities/annotation-file-utilities.html",
         "checker-framework-quick-start.html",
