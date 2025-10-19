@@ -4,13 +4,13 @@ buildscript {
   }
 }
 
-rootProject.name = 'checker-framework'
-include 'checker'
-include 'javacutil'
-include 'dataflow'
-include 'framework'
-include 'checker-qual'
-include 'checker-qual-android'
-include 'checker-util'
-include 'framework-test'
-include 'annotation-file-utilities'
+rootProject.name = "checker-framework"
+include("checker")
+include("javacutil")
+include("dataflow")
+include("framework")
+include("checker-qual")
+include("checker-qual-android")
+include("checker-util")
+include("framework-test")
+include("annotation-file-utilities")
