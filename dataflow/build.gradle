@@ -8,11 +8,11 @@ dependencies {
   api project(":checker-qual")
 
   // Node implements org.plumelib.util.UniqueId, so this dependency must be "api".
-  api "org.plumelib:plume-util:${versions.plumeUtil}"
+  api "org.plumelib:plume-util:${plumeUtilVersion}"
 
-  implementation "org.plumelib:hashmap-util:${versions.hashmapUtil}"
+  implementation "org.plumelib:hashmap-util:${hashmapUtilVersion}"
 
-  testImplementation "junit:junit:4.13.2"
+  testImplementation "junit:junit:${junitVersion}"
 
   // External dependencies:
   // If you add an external dependency, you must shadow its packages both in the dataflow-shaded
