@@ -3,12 +3,12 @@ sourceSets {
 }
 
 dependencies {
-  implementation "junit:junit:${junitVersion}"
-  implementation project(":javacutil")
-  implementation project(":checker-qual")
+  implementation("junit:junit:${junitVersion}")
+  implementation(project(":javacutil"))
+  implementation(project(":checker-qual"))
 
-  implementation "org.plumelib:plume-util:${plumeUtilVersion}"
-  testImplementation project(":framework")
+  implementation("org.plumelib:plume-util:${plumeUtilVersion}")
+  testImplementation(project(":framework"))
 }
 
 jar.archiveBaseName = "framework-test"
@@ -18,7 +18,7 @@ apply from: rootProject.file("gradle-mvn-push.gradle")
 /** Adds information to the publication for uploading to Maven repositories. */
 final frameworkTest(publication) {
   sharedPublicationConfiguration(publication)
-  publication.from components.java
+  publication.from(components.java)
   publication.pom {
     name = "Checker Framework Testing Library"
     description = String.join(System.lineSeparator(),
@@ -37,11 +37,11 @@ final frameworkTest(publication) {
 publishing {
   publications {
     frameworkTest(MavenPublication) {
-      frameworkTest it
+      frameworkTest(it)
     }
   }
 }
 
 signing {
-  sign publishing.publications.frameworkTest
+  sign(publishing.publications.frameworkTest)
 }

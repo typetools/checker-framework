@@ -3,9 +3,9 @@ evaluationDependsOn(":checker-qual")
 tasks.register("copySources", Copy) {
   description = "Copy checker-qual source to checker-qual-android"
   includeEmptyDirs = false
-  from files(project(":checker-qual").sourceSets.main.java)
-  include "**/*.java"
-  exclude "**/SignednessUtilExtra.java"
+  from(files(project(":checker-qual").sourceSets.main.java))
+  include("**/*.java")
+  exclude("**/SignednessUtilExtra.java")
 
   // Types annotated with runtime annotations are always kept in the main dex by the default Android Gradle plugin.
   // Using the standard Checker Framework annotations can lead to main dex overflows;
@@ -13,7 +13,7 @@ tasks.register("copySources", Copy) {
   // By contrast, class-retention annotations are stripped out before packaging by all build systems as a convention.
   filter { line -> line.replaceAll("RetentionPolicy.RUNTIME", "RetentionPolicy.CLASS") }
 
-  into file(layout.buildDirectory.dir("generated/sources/main/java"))
+  into(file(layout.buildDirectory.dir("generated/sources/main/java")))
 
   filePermissions {
     user {
@@ -31,7 +31,7 @@ tasks.register("copySources", Copy) {
 
   doFirst {
     // Delete the directory in case a previously copied file should no longer be in checker-qual
-    delete file(layout.buildDirectory.dir("generated/sources/main/java"))
+    delete(file(layout.buildDirectory.dir("generated/sources/main/java")))
   }
 }
 
@@ -48,7 +48,7 @@ apply from: rootProject.file("gradle-mvn-push.gradle")
 /** Adds information to the publication for uploading to Maven repositories. */
 final checkerQualAndroidPom(publication) {
   sharedPublicationConfiguration(publication)
-  publication.from components.java
+  publication.from(components.java)
   publication.pom {
     name = "Checker Qual Android"
     description =
@@ -74,10 +74,10 @@ final checkerQualAndroidPom(publication) {
 publishing {
   publications {
     checkerQualAndroid(MavenPublication) {
-      checkerQualAndroidPom it
+      checkerQualAndroidPom(it)
     }
   }
 }
 signing {
-  sign publishing.publications.checkerQualAndroid
+  sign(publishing.publications.checkerQualAndroid)
 }

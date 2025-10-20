@@ -1,21 +1,21 @@
 plugins {
   // https://plugins.gradle.org/plugin/com.gradleup.shadow
-  id "com.gradleup.shadow" version "9.0.2"
+  id("com.gradleup.shadow").version("9.0.2")
   // https://plugins.gradle.org/plugin/de.undercouch.download
-  id "de.undercouch.download" version "5.6.0"
-  id "java"
+  id("de.undercouch.download").version("5.6.0")
+  id("java")
   // https://github.com/tbroyer/gradle-errorprone-plugin
-  id "net.ltgt.errorprone" version "4.3.0"
+  id("net.ltgt.errorprone").version("4.3.0")
   // https://docs.gradle.org/current/userguide/eclipse_plugin.html
-  id "eclipse"
+  id("eclipse")
 
-  id "groovy" // needed for formatting Gradle files
+  id("groovy") // needed for formatting Gradle files
   // Code formatting; defines targets "spotlessApply" and "spotlessCheck".
   // https://github.com/diffplug/spotless/tags ; see tags starting "gradle/"
   // Only works on JDK 11+ (even including the plugin crashes Gradle on JDK 8);
   // shell scripts in checker/bin-devel/ ensure spotless isn't called unless
   // the JDK is 17 or later.
-  id "com.diffplug.spotless" version "8.0.0"
+  id("com.diffplug.spotless").version("8.0.0")
 }
 apply from: rootProject.file("release.gradle")
 
@@ -69,11 +69,11 @@ ext {
   parentDir = file("${rootDir}/../").absolutePath
   afuManualDir = "docs/annotation-file-utilities/"
 
-  gitScriptsHome = "${project(':checker').projectDir}/bin-devel/.git-scripts"
+  gitScriptsHome = "${project(":checker").projectDir}/bin-devel/.git-scripts"
   plumeBibHome = "${projectDir}/docs/manual/plume-bib"
-  plumeScriptsHome = "${project(':checker').projectDir}/bin-devel/.plume-scripts"
-  htmlToolsHome = "${project(':checker').projectDir}/bin-devel/.html-tools"
-  doLikeJavacHome = "${project(':checker').projectDir}/bin/.do-like-javac"
+  plumeScriptsHome = "${project(":checker").projectDir}/bin-devel/.plume-scripts"
+  htmlToolsHome = "${project(":checker").projectDir}/bin-devel/.html-tools"
+  doLikeJavacHome = "${project(":checker").projectDir}/bin/.do-like-javac"
 
   javadocMemberLevel = JavadocMemberLevel.PROTECTED
 
@@ -83,7 +83,7 @@ ext {
 }
 
 tasks.register("setLocalRepo", Exec) {
-  commandLine "git", "worktree", "list"
+  commandLine("git", "worktree", "list")
   standardOutput = new ByteArrayOutputStream()
 
   doLast {
@@ -96,9 +96,9 @@ tasks.register("setLocalRepo", Exec) {
 tasks.register("installGitHooks", Copy) {
   dependsOn("setLocalRepo")
   description = "Copies git hooks to .git directory"
-  from files("checker/bin-devel/git.post-merge", "checker/bin-devel/git.pre-commit")
-  rename("git\\.(.*)", '$1')
-  into localRepo + "/hooks"
+  from(files("checker/bin-devel/git.post-merge", "checker/bin-devel/git.pre-commit"))
+  rename("git\\.(.*)", "\$1")
+  into(localRepo + "/hooks")
 }
 
 spotless {
@@ -174,13 +174,13 @@ allprojects { currentProj ->
   }
 
   dependencies {
-    errorprone "com.google.errorprone:error_prone_core:${errorproneVersion}"
+    errorprone("com.google.errorprone:error_prone_core:${errorproneVersion}")
 
-    javacJar "com.google.errorprone:javac:9+181-r4173-1"
+    javacJar("com.google.errorprone:javac:9+181-r4173-1")
 
-    errorproneJavac "com.google.errorprone:javac:9+181-r4173-1"
+    errorproneJavac("com.google.errorprone:javac:9+181-r4173-1")
 
-    allProjects subprojects
+    allProjects(subprojects)
   }
 
   eclipse.classpath {
@@ -188,10 +188,10 @@ allprojects { currentProj ->
     file.whenMerged { cp ->
       cp.entries.forEach { cpe ->
         if (cpe instanceof org.gradle.plugins.ide.eclipse.model.SourceFolder) {
-          cpe.output = cpe.output.replace "bin/", "build/classes/java/"
+          cpe.output = cpe.output.replace("bin/", "build/classes/java/")
         }
         if (cpe instanceof org.gradle.plugins.ide.eclipse.model.Output) {
-          cpe.path = cpe.path.replace "bin/", "build/"
+          cpe.path = cpe.path.replace("bin/", "build/")
         }
       }
     }
@@ -277,8 +277,8 @@ allprojects { currentProj ->
 
     format "misc", {
       // define the files to apply `misc` to
-      target "*.md", "*.tex", ".gitignore"
-      targetExclude doNotFormat
+      target("*.md", "*.tex", ".gitignore")
+      targetExclude(doNotFormat)
       // define the steps to apply to those files
       leadingTabsToSpaces(2)
       trimTrailingWhitespace()
@@ -287,8 +287,8 @@ allprojects { currentProj ->
 
     format "make", {
       // define the files to apply `make` to
-      target "Makefile"
-      targetExclude doNotFormat
+      target("Makefile")
+      targetExclude(doNotFormat)
       // define the steps to apply to those files
       trimTrailingWhitespace()
       endWithNewline() // Don't want to end empty files with a newline
@@ -308,12 +308,12 @@ allprojects { currentProj ->
             // Not .ajava files because formatting would remove import statements.
           ]
         }
-        target targets
+        target(targets)
       } else {
         // not the root project; format all .java files in the sub-project
-        target "**/*.java"
+        target("**/*.java")
       }
-      targetExclude doNotFormat
+      targetExclude(doNotFormat)
 
       if (project.hasProperty("eisopFormatting")) {
         googleJavaFormat(googleJavaFormatVersion).aosp()
@@ -327,8 +327,8 @@ allprojects { currentProj ->
     // Only define a groovyGradle task on the root project, for simplicity in setting the target pattern
     if (currentProj == currentProj.rootProject) {
       groovyGradle {
-        target "**/*.gradle"
-        targetExclude doNotFormat
+        target("**/*.gradle")
+        targetExclude(doNotFormat)
         greclipse()  // which formatter Spotless should use to format .gradle files.
         if (project.hasProperty("eisopFormatting")) {
           leadingTabsToSpaces(4)
@@ -340,7 +340,7 @@ allprojects { currentProj ->
       }
 
       groovy {
-        target "buildSrc/**/*.groovy"
+        target("buildSrc/**/*.groovy")
         importOrder()
 
         // removes semicolons at the end of lines
@@ -362,10 +362,10 @@ allprojects { currentProj ->
       doLast {
         project.tasks.forEach { task ->
           if (task.name.contains("spotless")) {
-            println "Inputs for task \"${task.name}\":"
+            println("Inputs for task \"${task.name}\":")
 
             task.inputs.files.each { inputFile ->
-              println "  Input: $inputFile"
+              println("  Input: $inputFile")
             }
           }
         }
@@ -403,7 +403,7 @@ allprojects { currentProj ->
           options.memberLevel = javadocMemberLevel
         }
         classpath += configurations.named("checkerFatJar").get().asFileTree
-        options.taglets "org.checkerframework.taglet.ManualTaglet"
+        options.taglets("org.checkerframework.taglet.ManualTaglet")
         options.tagletPath(project(":framework-test").sourceSets.taglet.output.classesDirs.getFiles() as File[])
 
         // This file is looked for by Javadoc.
@@ -557,7 +557,7 @@ allprojects { currentProj ->
           "-Xep:NonOverridingEquals:OFF",
           // Suggests using a class that's in Error Prone itself, not in any library for clients.
           // It requires "import com.google.errorprone.util.ASTHelpers;", and (in build.gradle)
-          //   implementation "com.google.errorprone:error_prone_core:${errorproneVersion}"
+          //   implementation("com.google.errorprone:error_prone_core:${errorproneVersion}")
           // Adding that line in build.gradle causes a javac crash when running the Checker Framework.
           "-Xep:ASTHelpersSuggestions:OFF",
           // Removing "public" from private class members loses information about the abstraction.
@@ -579,7 +579,7 @@ tasks.register("version") {
   description = "Print Checker Framework version"
   group = "Documentation"
   doLast {
-    println version
+    println(version)
   }
 }
 
@@ -600,10 +600,10 @@ def createCheckTypeTask(projectName, taskName, checker, args = []) {
     // Always run the task.
     outputs.upToDateWhen { false }
     source = project("${projectName}").sourceSets.main.java
-    classpath = files(project("${projectName}").compileJava.classpath, project(":checker-qual").sourceSets.main.output)
+    classpath =(files(project("${projectName}").compileJava.classpath, project(":checker-qual").sourceSets.main.output))
     destinationDirectory = file("${buildDir}")
 
-    options.annotationProcessorPath = files(project(":checker").tasks.shadowJar.archiveFile)
+    options.annotationProcessorPath =(files(project(":checker").tasks.shadowJar.archiveFile))
     options.compilerArgs += [
       "-processor",
       "${checker}",
@@ -629,7 +629,7 @@ tasks.register("htmlValidate", Exec) {
   description = "Validate that HTML files are well-formed"
   group = "Format"
   // This is the Nu Html Checker (v.Nu): https://github.com/validator/validator
-  executable "html5validator"
+  executable = "html5validator"
   args = [
     "--ignore",
     "/api/",
@@ -641,18 +641,18 @@ tasks.register("htmlValidate", Exec) {
 }
 
 tasks.register("addFavicon", Exec) {
-  dependsOn "allJavadoc"
+  dependsOn("allJavadoc")
 
   doFirst {
     copy {
-      from "docs/logo/Checkmark/CFCheckmark_favicon.png"
+      from("docs/logo/Checkmark/CFCheckmark_favicon.png")
       rename("CFCheckmark_favicon.png", "favicon-checkerframework.png")
-      into "${rootDir}/docs/api"
+      into("${rootDir}/docs/api")
     }
   }
 
-  workingDir "${rootDir}/docs/api"
-  executable "${htmlToolsHome}/html-add-favicon"
+  workingDir = "${rootDir}/docs/api"
+  executable = "${htmlToolsHome}/html-add-favicon"
   args += [
     ".",
     "favicon-checkerframework.png"
@@ -692,7 +692,7 @@ tasks.register("allJavadoc", Javadoc) {
   // disable interpreting module-info.java files until all sub-modules support them
   modularity.inferModulePath = false
 
-  finalizedBy "addFavicon"
+  finalizedBy("addFavicon")
 
   doFirst {
     source(
@@ -709,19 +709,19 @@ tasks.register("zip", Zip) {
   dependsOn("buildAll")
   archiveFileName = "checker-framework-${version}.zip"
   destinationDirectory = layout.buildDirectory
-  into "checker-framework-${releaseVersion}"
+  into("checker-framework-${releaseVersion}")
 
   from(layout.projectDirectory) {
-    exclude "api/**",
+    exclude("api/**",
         "checker/bin/README",
         "checker/dist/*.asc",
         "docs/tutorial/tests/**",
         "docs/tutorial/src/**",
         "docs/tutorial/test/**",
         "docs/tutorial/Makefile",
-        "docs/tutorial/README"
+        "docs/tutorial/README")
 
-    include "README.html",
+    include("README.html",
         "LICENSE.txt",
         "annotation-file-utilities/bin/**",
         "annotation-file-utilities/dist/**",
@@ -754,34 +754,34 @@ tasks.register("zip", Zip) {
         "docs/examples/MavenExample/pom.xml",
         "docs/examples/MavenExample/README",
         "docs/examples/MavenExample/src/main/java/org/checkerframework/example/MavenExample.java",
-        "docs/tutorial/**"
+        "docs/tutorial/**")
   }
 
   from("dataflow/manual/checker-framework-dataflow-manual.pdf") {
-    into "docs/manual/"
+    into("docs/manual/")
   }
 
   from("docs/logo/Logo/CFLogo.png") {
-    into "docs/manual/"
+    into("docs/manual/")
   }
 
   from("docs/logo/Logo/CFLogo.png") {
-    into "docs/tutorial/"
+    into("docs/tutorial/")
   }
 
   from("docs/logo/Logo/CFLogo.png") {
-    into "docs/tutorial/webpages"
+    into("docs/tutorial/webpages")
   }
 }
 
 tasks.register("cleanCfManual", Exec) {
   description = "Clean the manual"
-  commandLine "make", "-C", "docs/manual", "clean"
+  commandLine("make", "-C", "docs/manual", "clean")
 }
 
 tasks.register("cleanAfuManual", Exec) {
   description = "Clean the manual"
-  commandLine "make", "-C", "${afuManualDir}", "clean"
+  commandLine("make", "-C", "${afuManualDir}", "clean")
 }
 
 tasks.register("cleanManual") {
@@ -791,33 +791,33 @@ tasks.register("cleanManual") {
 clean.dependsOn(cleanManual)
 clean {
   delete(file("${rootDir}/docs/api"))
-  delete "${afuManualDir}/annotation-file-format.aux"
-  delete "${afuManualDir}/annotation-file-format.blg"
-  delete "${afuManualDir}/annotation-file-format.dvi"
-  delete "${afuManualDir}/annotation-file-format.haux"
-  delete "${afuManualDir}/annotation-file-format.html"
-  delete "${afuManualDir}/annotation-file-format.htoc"
-  delete "${afuManualDir}/annotation-file-format.log"
-  delete "${afuManualDir}/annotation-file-format.pdf"
-  delete "${afuManualDir}/annotation-file-format.toc"
-  delete "${afuManualDir}/corresp.png"
-  delete "${afuManualDir}/dataflow.png"
-  delete "${afuManualDir}/nocast.png"
-  delete "${afuManualDir}/typecast.png"
+  delete("${afuManualDir}/annotation-file-format.aux")
+  delete("${afuManualDir}/annotation-file-format.blg")
+  delete("${afuManualDir}/annotation-file-format.dvi")
+  delete("${afuManualDir}/annotation-file-format.haux")
+  delete("${afuManualDir}/annotation-file-format.html")
+  delete("${afuManualDir}/annotation-file-format.htoc")
+  delete("${afuManualDir}/annotation-file-format.log")
+  delete("${afuManualDir}/annotation-file-format.pdf")
+  delete("${afuManualDir}/annotation-file-format.toc")
+  delete("${afuManualDir}/corresp.png")
+  delete("${afuManualDir}/dataflow.png")
+  delete("${afuManualDir}/nocast.png")
+  delete("${afuManualDir}/typecast.png")
 }
 
 configurations {
   requireJavadoc
 }
 dependencies {
-  requireJavadoc "org.plumelib:require-javadoc:2.0.0"
+  requireJavadoc("org.plumelib:require-javadoc:2.0.0")
 }
 tasks.register("requireJavadoc", JavaExec) {
   description = "Ensures that Javadoc documentation exists in source code."
   group = "Documentation"
   mainClass = "org.plumelib.javadoc.RequireJavadoc"
   classpath = configurations.requireJavadoc
-  args "--exclude=module-info.java", "checker/src/main/java", "checker-qual/src/main/java", "checker-util/src/main/java", "dataflow/src/main/java", "framework/src/main/java", "framework-test/src/main/java", "javacutil/src/main/java"
+  args("--exclude=module-info.java", "checker/src/main/java", "checker-qual/src/main/java", "checker-util/src/main/java", "dataflow/src/main/java", "framework/src/main/java", "framework-test/src/main/java", "javacutil/src/main/java")
   jvmArgs += [
     "--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
     "--add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED",
@@ -869,14 +869,14 @@ tasks.register("makeCfManual", Exec) {
   dependsOn("allJavadoc")
   description = "Build the Checker Framework manual"
   // Don't make all because it will re-run allJavadoc which causes problems when building the release.
-  commandLine "make", "-C", "docs/manual/", "manual.pdf", "manual.html"
+  commandLine("make", "-C", "docs/manual/", "manual.pdf", "manual.html")
 }
 
 tasks.register("makeAfuManual", Exec) {
   description = "Make documentation: annotation-file-format.{html,pdf}."
 
-  executable "make"
-  args "-C", "${afuManualDir}"
+  executable = "make"
+  args("-C", "${afuManualDir}")
 }
 
 
@@ -919,20 +919,20 @@ tasks.register("getDoLikeJavac", CloneTask) {
 tasks.register("pythonIsInstalled", Exec) {
   description = "Check that the python3 executable is installed."
   executable = "python3"
-  args "--version"
+  args("--version")
 }
 
 tasks.register("docTags", Exec) {
   group = "Emacs"
-  commandLine "make", "-C", "docs/manual/", "tags"
+  commandLine("make", "-C", "docs/manual/", "tags")
 }
 
 tasks.register("tags", Exec) {
-  dependsOn docTags
+  dependsOn(docTags)
   description = "Create Emacs TAGS table"
   group = "Emacs"
   // running this task will also run the tags task in the subprojects, which is defined later in this file.
-  commandLine "etags", "-i", "annotation-file-utilities/TAGS", "-i", "checker/TAGS", "-i", "checker-qual/TAGS", "-i", "checker-util/TAGS", "-i", "dataflow/TAGS", "-i", "framework/TAGS", "-i", "framework-test/TAGS", "-i", "javacutil/TAGS", "-i", "docs/manual/TAGS"
+  commandLine("etags", "-i", "annotation-file-utilities/TAGS", "-i", "checker/TAGS", "-i", "checker-qual/TAGS", "-i", "checker-util/TAGS", "-i", "dataflow/TAGS", "-i", "framework/TAGS", "-i", "framework-test/TAGS", "-i", "javacutil/TAGS", "-i", "docs/manual/TAGS")
 }
 
 subprojects {
@@ -942,7 +942,7 @@ subprojects {
 
   dependencies {
     // TODO: it's a bug that annotatedlib:guava requires the error_prone_annotations dependency.
-    annotatedGuava "com.google.errorprone:error_prone_annotations:${errorproneVersion}"
+    annotatedGuava("com.google.errorprone:error_prone_annotations:${errorproneVersion}")
     annotatedGuava("org.checkerframework.annotatedlib:guava:33.1.0.2-jre") {
       // So long as Guava only uses annotations from checker-qual, excluding it should not cause problems.
       exclude group: "org.checkerframework"
@@ -957,26 +957,26 @@ subprojects {
     //  * Repeat until no new classes appear (all are under org/checkerframework/).
 
     // Relocate packages that might conflict with user's classpath.
-    relocate "com.github.javaparser", "org.checkerframework.com.github.javaparser"
-    relocate "org.apache", "org.checkerframework.org.apache"
-    relocate "org.relaxng", "org.checkerframework.org.relaxng"
-    relocate "org.plumelib", "org.checkerframework.org.plumelib"
-    relocate "org.codehaus", "org.checkerframework.org.codehaus"
-    relocate "org.objectweb.asm", "org.checkerframework.org.objectweb.asm"
-    relocate "io.github.classgraph", "org.checkerframework.io.github.classgraph"
-    relocate "nonapi.io.github.classgraph", "org.checkerframework.nonapi.io.github.classgraph"
-    // relocate "sun", "org.checkerframework.sun"
-    relocate "com.google", "org.checkerframework.com.google"
-    relocate "plume", "org.checkerframework.plume"
+    relocate("com.github.javaparser", "org.checkerframework.com.github.javaparser")
+    relocate("org.apache", "org.checkerframework.org.apache")
+    relocate("org.relaxng", "org.checkerframework.org.relaxng")
+    relocate("org.plumelib", "org.checkerframework.org.plumelib")
+    relocate("org.codehaus", "org.checkerframework.org.codehaus")
+    relocate("org.objectweb.asm", "org.checkerframework.org.objectweb.asm")
+    relocate("io.github.classgraph", "org.checkerframework.io.github.classgraph")
+    relocate("nonapi.io.github.classgraph", "org.checkerframework.nonapi.io.github.classgraph")
+    // relocate("sun", "org.checkerframework.sun")
+    relocate("com.google", "org.checkerframework.com.google")
+    relocate("plume", "org.checkerframework.plume")
 
-    exclude "**/module-info.class"
+    exclude("**/module-info.class")
   }
 
   if (!project.name.startsWith("checker-qual-android")) {
     tasks.register("tags", Exec) {
       description = "Create Emacs TAGS table"
       // `ctags -e -f TAGS` used to work in place of `etags`, but apparently no longer.
-      commandLine "bash", "-c", "find . \\( -name build -o -name jtreg -o -name tests \\) -prune -o -name '*.java' -print | sort-directory-order | xargs etags"
+      commandLine("bash", "-c", "find . \\( -name build -o -name jtreg -o -name tests \\) -prune -o -name '*.java' -print | sort-directory-order | xargs etags")
     }
   }
 
@@ -993,11 +993,11 @@ subprojects {
       includeEmptyDirs = false
       if (archiveFileName.get().startsWith("checker-qual") || archiveFileName.get().startsWith("checker-util")) {
         metaInf {
-          from "./LICENSE.txt"
+          from("./LICENSE.txt")
         }
       } else {
         metaInf {
-          from "${rootDir}/LICENSE.txt"
+          from("${rootDir}/LICENSE.txt")
         }
       }
       manifest {
@@ -1016,7 +1016,7 @@ subprojects {
 
     // Tasks such as `checkInterning` and `checkResourceLeak` run various checkers on all the main source sets.
     // These pass and are run by the `typecheck` task.
-    // When you add one here, also update a dependsOn item for the "typecheck" task.
+    // When you add one here, also update a dependsOn(item for the "typecheck" task.)
     createCheckTypeTask(project.name, "Formatter",
         "org.checkerframework.checker.formatter.FormatterChecker")
     createCheckTypeTask(project.name, "Interning",
@@ -1084,7 +1084,7 @@ subprojects {
         String jtregOutput = "${buildDir}/jtreg"
         String name = "all"
         String tests = "."
-        executable "jtreg"
+        executable = "jtreg"
         args = [
           "-dir:${projectDir}/jtreg",
           "-workDir:${jtregOutput}/${name}/work",
@@ -1135,7 +1135,7 @@ subprojects {
       String junitClassName = file.name.replaceAll(".java", "")
       tasks.register("${junitClassName}", Test) {
         description = "Run ${junitClassName} tests."
-        include "**/${name}.class"
+        include("**/${name}.class")
         testClassesDirs = testing.suites.test.sources.output.classesDirs
         classpath = testing.suites.test.sources.runtimeClasspath
       }
@@ -1182,7 +1182,7 @@ subprojects {
 
         // Show the found unexpected diagnostics and expected diagnostics not found.
         exceptionFormat = "full"
-        events "failed"
+        events("failed")
 
         // Don't show the uninteresting stack traces from the exceptions.
         showStackTraces = false
@@ -1338,8 +1338,8 @@ final sharedPublicationConfiguration(publication) {
 tasks.register("printJavaVersion") {
   description = "Prints the Java version used to run Gradle."
   doLast {
-    println "Java version used to run Gradle: ${System.getProperty('java.version')}"
+    println("Java version used to run Gradle: ${System.getProperty("java.version")}")
     def currentJvm = org.gradle.internal.jvm.Jvm.current()
-    println currentJvm
+    println(currentJvm)
   }
 }
