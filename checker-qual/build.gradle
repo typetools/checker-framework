@@ -1,12 +1,12 @@
 plugins {
-  id "java-library"
-  id("biz.aQute.bnd.builder") version "7.1.0"
+  id("java-library")
+  id("biz.aQute.bnd.builder").version("7.1.0")
 }
 
 sourceSets {
   main {
     java {
-      exclude "module-info.java"
+      exclude("module-info.java")
     }
   }
   module_info {
@@ -19,8 +19,8 @@ sourceSets {
 jar {
   doLast {
     copy {
-      from archiveFile
-      into layout.projectDirectory.file("../checker/dist")
+      from(archiveFile)
+      into(layout.projectDirectory.file("../checker/dist"))
       rename { String fileName ->
         // remove version number on checker-qual.jar
         fileName.replace(fileName, "checker-qual.jar")
@@ -37,7 +37,7 @@ tasks.register("compileJava9", JavaCompile) {
 }
 
 compileJava {
-  dependsOn compileJava9
+  dependsOn(compileJava9)
 }
 
 javadoc {
@@ -55,7 +55,7 @@ apply from: rootProject.file("gradle-mvn-push.gradle")
 /** Adds information to the publication for uploading to Maven repositories. */
 final checkerQualPom(publication) {
   sharedPublicationConfiguration(publication)
-  publication.from components.java
+  publication.from(components.java)
   publication.pom {
     name = "Checker Qual"
     description = String.join(System.lineSeparator(),
@@ -74,11 +74,11 @@ final checkerQualPom(publication) {
 publishing {
   publications {
     checkerQual(MavenPublication) {
-      checkerQualPom it
+      checkerQualPom(it)
     }
   }
 }
 
 signing {
-  sign publishing.publications.checkerQual
+  sign(publishing.publications.checkerQual)
 }

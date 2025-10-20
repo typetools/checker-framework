@@ -1,5 +1,5 @@
 plugins {
-  id "java-library"
+  id("java-library")
 }
 
 ext {
@@ -31,39 +31,39 @@ configurations {
 }
 
 def stubifierJar = tasks.register("stubifierJar", Jar) {
-  from sourceSets.stubifier.output
+  from(sourceSets.stubifier.output)
   archiveClassifier.set("stubifier")
 }
 
 dependencies {
-  api project(":javacutil")
-  api project(":dataflow")
-  api "org.checkerframework:stubparser:3.26.4"
-  stubifierImplementation "org.checkerframework:stubparser:3.26.4"
+  api(project(":javacutil"))
+  api(project(":dataflow"))
+  api("org.checkerframework:stubparser:3.26.4")
+  stubifierImplementation("org.checkerframework:stubparser:3.26.4")
   // This should be implementation sourceSets.stubifier.output, but that cause a failure in shadowJar.
   // This work around is from here: https://github.com/GradleUp/shadow/issues/1606#issuecomment-3164731141
-  implementation files(stubifierJar)
-  api project(":annotation-file-utilities")
-  api project(":checker-qual")
+  implementation(files(stubifierJar))
+  api(project(":annotation-file-utilities"))
+  api(project(":checker-qual"))
 
   // External dependencies:
   // If you add an external dependency, you must shadow its packages.
   // See the comment in ../build.gradle in the shadowJar block.
-  implementation "org.plumelib:hashmap-util:${versions.hashmapUtil}"
-  implementation "org.plumelib:plume-util:${versions.plumeUtil}"
-  implementation "org.plumelib:reflection-util:${versions.reflectionUtil}"
-  implementation "io.github.classgraph:classgraph:4.8.184"
+  implementation("org.plumelib:hashmap-util:${hashmapUtilVersion}")
+  implementation("org.plumelib:plume-util:${plumeUtilVersion}")
+  implementation("org.plumelib:reflection-util:${reflectionUtilVersion}")
+  implementation("io.github.classgraph:classgraph:4.8.184")
 
-  testImplementation "junit:junit:4.13.2"
-  testImplementation project(":framework-test")
-  testImplementation sourceSets.testannotations.output
+  testImplementation("junit:junit:${junitVersion}")
+  testImplementation(project(":framework-test"))
+  testImplementation(sourceSets.testannotations.output)
 
   // AutoValue support in Returns Receiver Checker
-  testImplementation "com.google.auto.value:auto-value-annotations:${versions.autoValue}"
-  testImplementation "com.google.auto.value:auto-value:${versions.autoValue}"
+  testImplementation("com.google.auto.value:auto-value-annotations:${autoValueVersion}")
+  testImplementation("com.google.auto.value:auto-value:${autoValueVersion}")
 
   // Lombok support in Returns Receiver Checker
-  testImplementation "org.projectlombok:lombok:${versions.lombok}"
+  testImplementation("org.projectlombok:lombok:${lombokVersion}")
 }
 
 tasks.register("cloneTypetoolsJdk", CloneTask) {
@@ -75,16 +75,16 @@ tasks.register("cloneTypetoolsJdk", CloneTask) {
 
 
 tasks.register("copyAndMinimizeAnnotatedJdkFiles", JavaExec) {
-  dependsOn cloneTypetoolsJdk
+  dependsOn(cloneTypetoolsJdk)
   def inputDir = "${annotatedJdkHome}/src"
   def outputDir = "${buildDir}/generated/resources/annotated-jdk/"
   description = "Copy annotated JDK files to ${outputDir}. Removes private and package-private methods, method bodies, comments, etc. from the annotated JDK"
   group = "Build"
-  dependsOn ":framework:compileStubifierJava"
-  // we need the next two dependencies because we run JavaStubifier using this project's runtimeClasspath,
-  // which refers to the jars for these other projects
-  dependsOn ":javacutil:jar"
-  dependsOn ":dataflow:jar"
+  dependsOn(":framework:compileStubifierJava")
+  // We need the next two dependencies because we run JavaStubifier using this
+  // project's runtimeClasspath, which refers to the jars for these other projects.
+  dependsOn(":javacutil:jar")
+  dependsOn(":dataflow:jar")
 
   doFirst {
     FileTree tree = fileTree(dir: inputDir)
@@ -107,20 +107,20 @@ tasks.register("copyAndMinimizeAnnotatedJdkFiles", JavaExec) {
       from(annotatedJdkHome)
       into(outputDir)
       for (String filename : annotatedForFiles) {
-        include filename.substring(jdkDirStringSize)
+        include(filename.substring(jdkDirStringSize))
       }
     }
   }
 
-  inputs.dir file(inputDir)
-  outputs.dir file(outputDir)
+  inputs.dir(file(inputDir))
+  outputs.dir(file(outputDir))
 
   classpath = sourceSets.stubifier.runtimeClasspath
   standardOutput = System.out
   errorOutput = System.err
 
   mainClass = "org.checkerframework.framework.stubifier.JavaStubifier"
-  args outputDir
+  args(outputDir)
 }
 sourcesJar.dependsOn(copyAndMinimizeAnnotatedJdkFiles)
 processResources.dependsOn(copyAndMinimizeAnnotatedJdkFiles)
@@ -160,14 +160,14 @@ shadowJar {
 }
 
 tasks.register("loaderTests", Exec) {
-  dependsOn "shadowJar"
+  dependsOn("shadowJar")
   description = "Run tests for the annotation class loader"
   group = "Verification"
   dependsOn(compileTestJava)
   // TODO: this dependency on checker is a bit ugly.
-  dependsOn project(":checker-qual").tasks.jar
-  dependsOn project(":checker").tasks.assemble
-  commandLine "make", "-C", "tests/annotationclassloader/", "all"
+  dependsOn(project(":checker-qual").tasks.jar)
+  dependsOn(project(":checker").tasks.assemble)
+  commandLine("make", "-C", "tests/annotationclassloader/", "all")
 }
 
 clean {
@@ -178,7 +178,7 @@ clean {
 
 if (skipDelombok) {
   test {
-    exclude "**/ReturnsReceiverLombokTest.java"
+    exclude("**/ReturnsReceiverLombokTest.java")
   }
 } else {
   tasks.register("delombok") {
@@ -187,18 +187,18 @@ if (skipDelombok) {
     def srcDelomboked = "tests/returnsreceiverdelomboked"
     def srcJava = "tests/returnsreceiverlombok"
 
-    inputs.files file(srcJava)
-    outputs.dir file(srcDelomboked)
+    inputs.files(file(srcJava))
+    outputs.dir(file(srcDelomboked))
 
     // This dependency is required to ensure the checker-qual jar exists,
     // to prevent lombok from emitting "cannot find symbol" errors for @This
     // annotations in the test input code.
-    dependsOn project(":checker-qual").tasks.jar
+    dependsOn(project(":checker-qual").tasks.jar)
 
     doLast {
       if (!skipDelombok) {
         def collection = files(configurations.testCompileClasspath)
-        ant.taskdef(name: "delombok", classname: 'lombok.delombok.ant.Tasks$Delombok',
+        ant.taskdef(name: "delombok", classname: "lombok.delombok.ant.Tasks\$Delombok",
         classpath: collection.asPath)
         ant.delombok(from: srcJava, to: srcDelomboked, classpath: collection.asPath)
       }

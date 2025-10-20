@@ -1,6 +1,6 @@
 plugins {
-  id "java-library"
-  id "base"
+  id("java-library")
+  id("base")
 }
 
 
@@ -18,18 +18,18 @@ java {
 
 dependencies {
   // Annotations in checker-qual.jar are used, but no checkers are (currently) run on the code.
-  compileOnly project(":checker-qual")
+  compileOnly(project(":checker-qual"))
 
-  implementation "org.plumelib:options:2.0.3"
-  implementation "org.plumelib:plume-util:1.11.0"
-  implementation "org.plumelib:reflection-util:1.1.5"
+  implementation("org.plumelib:options:2.0.3")
+  implementation("org.plumelib:plume-util:${plumeUtilVersion}")
+  implementation("org.plumelib:reflection-util:${reflectionUtilVersion}")
   implementation("org.checkerframework.annotatedlib:guava:33.1.0.2-jre") {
     // So long as Guava only uses annotations from checker-qual, excluding it should not cause problems.
     exclude group: "org.checkerframework"
   }
-  implementation "org.ow2.asm:asm:9.8"
-  testImplementation "junit:junit:4.13.2"
-  testImplementation project(":checker-qual")
+  implementation("org.ow2.asm:asm:9.8")
+  testImplementation("junit:junit:${junitVersion}")
+  testImplementation(project(":checker-qual"))
 }
 
 
@@ -39,9 +39,9 @@ shadowJar {
   archiveFileName = "annotation-file-utilities-all.jar"
   // Don't include any class from the Checker Framework.
   // This should just be checker-qual.
-  exclude "org/checkerframework/checker/**"
-  exclude "org/checkerframework/framework/**"
-  exclude "org/checkerframework/dataflow/**"
+  exclude("org/checkerframework/checker/**")
+  exclude("org/checkerframework/framework/**")
+  exclude("org/checkerframework/dataflow/**")
 }
 
 // Shadowing Test Sources and Dependencies
@@ -51,23 +51,23 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import java.nio.file.Files
 
 tasks.register("skinnyJar", ShadowJar) {
-  dependsOn compileJava
+  dependsOn(compileJava)
   description = "Builds annotation-file-utilities.jar with only scene-lib and annotation-file-utilities classes."
   includeEmptyDirs = false
   destinationDirectory = file("${projectDir}/dist")
   archiveFileName = "annotation-file-utilities.jar"
-  include "org/checkerframework/afu/scenelib/**/*.class"
-  include "org/checkerframework/afu/annotator/**/*.class"
+  include("org/checkerframework/afu/scenelib/**/*.class")
+  include("org/checkerframework/afu/annotator/**/*.class")
 }
 
 tasks.register("testExample", JavaExec) {
-  dependsOn compileTestJava
+  dependsOn(compileTestJava)
   description = "Run the scene-lib example test."
 
   String outputDir = "${layout.buildDirectory.get()}/example-test/"
   String resourceDir = "${projectDir}/src/test/resources/annotations/tests/executable/"
 
-  classpath = files(sourceSets.test.java.classesDirectory)
+  classpath(files(sourceSets.test.java.classesDirectory))
   classpath += sourceSets.test.compileClasspath
   mainClass = "org.checkerframework.afu.scenelib.test.executable.Example"
 
@@ -100,17 +100,17 @@ tasks.register("testExample", JavaExec) {
 }
 
 tasks.register("testAnnotator", Exec) {
-  dependsOn shadowJar
+  dependsOn(shadowJar)
   description = "Run the annotator test."
   group = "Verification"
-  workingDir "${projectDir}/tests/"
-  executable "make"
+  workingDir = "${projectDir}/tests/"
+  executable = "make"
 }
 
 tasks.register("cleanTestAnnotator", Exec) {
   description = "Clean the annotator test."
-  workingDir "tests/"
-  executable "make"
+  workingDir = "tests/"
+  executable = "make"
   args("clean")
 }
 
@@ -121,8 +121,8 @@ clean {
 
 tasks.register("htmlValidate", Exec) {
   description = "Validate that HTML files are well-formed."
-  workingDir "../"
-  executable "html5validator"
+  workingDir = "../"
+  executable = "html5validator"
   args = [
     // The --ignore command-line argument applies to everything until the next
     // command-line argument; that is, everything listed here is ignored.
@@ -136,8 +136,8 @@ tasks.register("htmlValidate", Exec) {
   ]
 }
 
-test.dependsOn testExample
-test.dependsOn testAnnotator
+test.dependsOn(testExample)
+test.dependsOn(testAnnotator)
 
 tasks.register("updateUserOptions") {
   dependsOn(
@@ -147,12 +147,12 @@ tasks.register("updateUserOptions") {
 }
 
 tasks.register("updateUserOptionsJavadoc", Javadoc) {
-  dependsOn "assemble"
+  dependsOn("assemble")
   description = "Updates documentation of command-line arguments in Javadoc."
 
   // Include only sources from annotation-file-utilities, not from scene-lib.
   source = fileTree(dir: "src", include: "**/*.java")
-  exclude "org.checkerframework.afu.scenelib.io.classfile/**"
+  exclude("org.checkerframework.afu.scenelib.io.classfile/**")
   classpath = project.sourceSets.main.compileClasspath + project.sourceSets.main.runtimeClasspath
   options.memberLevel = JavadocMemberLevel.PRIVATE
   options.docletpath = project.sourceSets.main.runtimeClasspath as List
@@ -166,12 +166,12 @@ tasks.register("updateUserOptionsJavadoc", Javadoc) {
 }
 
 tasks.register("updateUserOptionsHtml", Javadoc) {
-  dependsOn "assemble"
+  dependsOn("assemble")
   description = "Updates documentation of command-line arguments in the manual."
 
   // Include only sources from annotation-file-utilities, not from scene-lib.
   source = fileTree(dir: "src", include: "**/*.java")
-  exclude "org.checkerframework.afu.scenelib.io.classfile/**"
+  exclude("org.checkerframework.afu.scenelib.io.classfile/**")
   classpath = project.sourceSets.main.compileClasspath + project.sourceSets.main.runtimeClasspath
   options.memberLevel = JavadocMemberLevel.PRIVATE
   options.docletpath = project.sourceSets.main.runtimeClasspath as List
@@ -185,6 +185,6 @@ tasks.register("updateUserOptionsHtml", Javadoc) {
 }
 
 artifacts {
-  archives shadowJar
-  archives skinnyJar
+  archives(shadowJar)
+  archives(skinnyJar)
 }
