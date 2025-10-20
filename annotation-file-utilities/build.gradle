@@ -21,8 +21,8 @@ dependencies {
   compileOnly project(":checker-qual")
 
   implementation "org.plumelib:options:2.0.3"
-  implementation "org.plumelib:plume-util:1.11.0"
-  implementation "org.plumelib:reflection-util:1.1.5"
+  implementation "org.plumelib:plume-util:${plumeUtilVersion}"
+  implementation "org.plumelib:reflection-util:${reflectionUtilVersion}"
   implementation("org.checkerframework.annotatedlib:guava:33.1.0.2-jre") {
     // So long as Guava only uses annotations from checker-qual, excluding it should not cause problems.
     exclude group: "org.checkerframework"
