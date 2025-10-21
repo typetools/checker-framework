@@ -1,19 +1,19 @@
-evaluationDependsOn(':checker-qual')
+evaluationDependsOn(":checker-qual")
 
-tasks.register('copySources', Copy) {
-  description = 'Copy checker-qual source to checker-qual-android'
+tasks.register("copySources", Copy) {
+  description = "Copy checker-qual source to checker-qual-android"
   includeEmptyDirs = false
-  from files(project(':checker-qual').sourceSets.main.java)
-  include '**/*.java'
-  exclude '**/SignednessUtilExtra.java'
+  from(files(project(":checker-qual").sourceSets.main.java))
+  include("**/*.java")
+  exclude("**/SignednessUtilExtra.java")
 
   // Types annotated with runtime annotations are always kept in the main dex by the default Android Gradle plugin.
   // Using the standard Checker Framework annotations can lead to main dex overflows;
   // users of the Checker Framework may find themselves unable to build their Android apps.
   // By contrast, class-retention annotations are stripped out before packaging by all build systems as a convention.
-  filter { line -> line.replaceAll('RetentionPolicy.RUNTIME', 'RetentionPolicy.CLASS') }
+  filter { line -> line.replaceAll("RetentionPolicy.RUNTIME", "RetentionPolicy.CLASS") }
 
-  into file(layout.buildDirectory.dir("generated/sources/main/java"))
+  into(file(layout.buildDirectory.dir("generated/sources/main/java")))
 
   filePermissions {
     user {
@@ -31,7 +31,7 @@ tasks.register('copySources', Copy) {
 
   doFirst {
     // Delete the directory in case a previously copied file should no longer be in checker-qual
-    delete file(layout.buildDirectory.dir("generated/sources/main/java"))
+    delete(file(layout.buildDirectory.dir("generated/sources/main/java")))
   }
 }
 
@@ -43,29 +43,29 @@ sourceSets {
   }
 }
 
-apply from: rootProject.file('gradle-mvn-push.gradle')
+apply from: rootProject.file("gradle-mvn-push.gradle")
 
 /** Adds information to the publication for uploading to Maven repositories. */
 final checkerQualAndroidPom(publication) {
   sharedPublicationConfiguration(publication)
-  publication.from components.java
+  publication.from(components.java)
   publication.pom {
-    name = 'Checker Qual Android'
+    name = "Checker Qual Android"
     description =
         String.join(System.lineSeparator(),
-        'checker-qual-android contains annotations (type qualifiers) that a programmer',
-        'writes to specify Java code for type-checking by the Checker Framework.',
-        '',
-        'The checker-qual-android artifact is identical to the checker-qual',
-        'artifact, except that in checker-qual-android annotations have classfile',
-        'retention.  The default Android Gradle plugin retains types annotated with',
-        'runtime annotations in the main dex, but strips out class-retention',
-        'annotations.')
+        "checker-qual-android contains annotations (type qualifiers) that a programmer",
+        "writes to specify Java code for type-checking by the Checker Framework.",
+        "",
+        "The checker-qual-android artifact is identical to the checker-qual",
+        "artifact, except that in checker-qual-android annotations have classfile",
+        "retention.  The default Android Gradle plugin retains types annotated with",
+        "runtime annotations in the main dex, but strips out class-retention",
+        "annotations.")
     licenses {
       license {
-        name = 'The MIT License'
-        url = 'http://opensource.org/licenses/MIT'
-        distribution = 'repo'
+        name = "The MIT License"
+        url = "http://opensource.org/licenses/MIT"
+        distribution = "repo"
       }
     }
   }
@@ -74,10 +74,10 @@ final checkerQualAndroidPom(publication) {
 publishing {
   publications {
     checkerQualAndroid(MavenPublication) {
-      checkerQualAndroidPom it
+      checkerQualAndroidPom(it)
     }
   }
 }
 signing {
-  sign publishing.publications.checkerQualAndroid
+  sign(publishing.publications.checkerQualAndroid)
 }
