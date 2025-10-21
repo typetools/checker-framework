@@ -253,6 +253,8 @@ Here is a good way to proceed.
   text than in an implementation.
   Section~\ref{creating-documenting-a-checker} gives a suggested structure
   for the manual chapter, which will help you avoid omitting any parts.
+  If your checker is in a clone of the Checker Framework, don't forget to
+  add a \LaTeX\ \<\textbackslash{}include> directive to \<manual.tex>.
   Get feedback from someone else at this point to ensure that your manual
   is comprehensible.
 
@@ -269,6 +271,7 @@ Here is a good way to proceed.
 \label{creating-tips-implement-qualifiers}
   Implement the type qualifiers and hierarchy
   (Section~\ref{creating-typequals}).
+  Compile your changes.
 
   Write simple test cases that consist of only assignments,
   to test your type hierarchy.  For instance, if
@@ -276,17 +279,35 @@ Here is a good way to proceed.
   \<@NonNegative>, then you could write a test case such as:
 
 \begin{Verbatim}
+import org.checkerframework.checker.mychecker.qual.UnknownSign;
+import org.checkerframework.checker.mychecker.qual.NonNegative;
+
+class TestHierarchy {
   void testHierarchy(@UnknownSign int us, @NonNegative int nn) {
     @UnknownSign int a = us;
     @UnknownSign int b = nn;
     // :: error: (assignment)
-    @NonNegative int c = us;  // expected error on this line
+    @NonNegative int c = us; // expected error on this line
     @NonNegative int d = nn;
   }
+}
 \end{Verbatim}
 
+  If you are working an a clone of the Checker Framework, put the above
+  test case in file \<checker/tests/\emph{mycheckername}/TestHierarchy.java>.
+
   Type-check your test files using the Subtyping Checker
-  (\chapterpageref{subtyping-checker}).
+  (\chapterpageref{subtyping-checker}), using a command like
+
+\begin{small}
+\begin{Verbatim}
+javacheck \
+  -processor org.checkerframework.common.subtyping.SubtypingChecker \
+  -Aquals=org.checkerframework.checker.mycheckername.qual.MyTopQual,org.checkerframework.checker.mycheckername.qual.MyBottomQual \
+  TestHierarchy.java
+\end{Verbatim}
+\end{small}
+
 
 \item
 \label{creating-tips-implement-checker}
