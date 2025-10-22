@@ -322,26 +322,41 @@ javacheck \
   javac -processor mypackage.MyChecker File1.java File2.java ...
 \end{Verbatim}
 
+  If the default qualifier is not the top qualifier, you may see \<warning:
+  (inconsistent.constructor.type)>.  If the checker should never issue such
+  an error (because a newly-constructed object can be correctly viewed as
+  any type at all), then copy \<TaintingVisitor.java> into your checker,
+  changing ``Tainting''.
+
 \item
 \label{creating-tips-test-infrastructure}
-  Test infrastructure.
+  Create test infrastructure.
   If your checker source code is in a clone of the Checker Framework
   repository, integrate your checker with the Checker Framework's Gradle
   targets for testing (Section~\ref{creating-testing-framework}).  This
   will make it much more convenient to run tests, and to ensure that they
   are passing, as your work proceeds.
 
+  If there are errors in the ``all-systems'' tests, don't worry about them
+  until after you have annotated the JDK\@.  However, specifying
+  \<@RelevantJavaTypes> (Section~\ref{creating-relevant-java-types}) may
+  eliminate some of those errors, especially if the default qualifier is
+  not the top qualifier.
+
 \item
   Annotate parts of the JDK, if relevant
   (Section~\ref{creating-a-checker-annotated-jdk}).
+  You will clone the \href{https://github.com/typetools/jdk}{Checker
+  Framework JDK}, naming it \<jdk> in a sibling directory of
+  \<checker-framework> (that is, they have the same parent).
 
   Write test cases for a few of the annotated JDK methods to ensure
   that the annotations are being properly read by your checker.
 
 \item
   Implement type rules, if any (Section~\ref{creating-extending-visitor}).
-  (Some type systems need JDK annotations but don't have any additional
-  type rules.)
+  Some type systems need JDK annotations but don't have any additional
+  type rules.
 
   Before implementing type rules (or any other code in your type-checker),
   read the Javadoc to familiarize yourself with the utility routines in the
@@ -369,6 +384,7 @@ javacheck \
 
 \item
   Implement type introduction rules, if any (Section~\ref{creating-type-introduction}).
+  Some type systems need JDK annotations but don't have any type introduction rules.
 
   Test your type introduction rules.
   For example, if your type system sets the qualifier for manifest literal
@@ -386,6 +402,8 @@ javacheck \
 \item
   Optionally, implement dataflow refinement rules
   (Section~\ref{creating-dataflow}).
+  Dataflow refinement rules are only possible for a type system that
+  supports a run-time test (Section~\ref{type-refinement-runtime-tests}).
 
   Test them if you wrote any.
   For instance, if after an arithmetic comparison, your type system infers
@@ -604,7 +622,7 @@ hierarchy.
   import java.lang.annotation.Target;
   import org.checkerframework.framework.qual.PolymorphicQualifier;
 
-  @PolymorphicQualifier
+  @PolymorphicQualifier(Nullable.class)
   @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
   public @interface PolyNull {}
 \end{Verbatim}
@@ -1961,9 +1979,9 @@ uses the JDK\@.  You have two options:
   \url{https://github.com/typetools/jdk}.
 
   If your checker is written in a fork of
-  \url{https://github.com/typetools/jdk},
-  then use the same fork name (GitHub organization) and branch name;
-  this is necessary so that the CI jobs use the right annotated JDK.
+  \url{https://github.com/typetools/jdk}, then the checker and the JDK must
+  use the same fork name (GitHub organization) and branch name; this is
+  necessary so that the CI jobs use the right annotated JDK.
 
   Clone the JDK and the Checker Framework in the same place; that is, your
   working copy of the JDK (a \<jdk> directory) should be a sibling of your
@@ -1981,6 +1999,11 @@ uses the JDK\@.  You have two options:
     If you are only annotating fields and method signatures (but not
     ensuring that method bodies type-check), then you don't need to suppress
     warnings, because the JDK is not type-checked.
+  \item
+    Double-check your work.
+    If you forget to import an annotation, or you misspell it in the
+    \<import> statement or at some use, it will be \emph{silently ignored},
+    which is frustrating.
   \end{itemize}
 
 \item
