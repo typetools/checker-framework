@@ -44,6 +44,6 @@ public class CollectionOwnershipAnalysis
 
   @Override
   public CFValue createAbstractValue(AnnotationMirrorSet annotations, TypeMirror underlyingType) {
-    return defaultCreateAbstractValue(this, annotations, underlyingType);
+    return getCfValue(this, annotations, underlyingType);
   }
 }

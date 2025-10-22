@@ -1960,7 +1960,10 @@ public class MustCallConsistencyAnalyzer {
 
     if (!(lhsNode instanceof FieldAccessNode)) {
       throw new TypeSystemError(
-          "checkReassignmentToField: non-field node " + node + " of class " + node.getClass());
+          "checkReassignmentToOwningField: non-field node "
+              + node
+              + " of class "
+              + node.getClass());
     }
 
     FieldAccessNode lhs = (FieldAccessNode) lhsNode;

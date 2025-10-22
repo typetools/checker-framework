@@ -108,11 +108,11 @@ public abstract class AbstractCFGVisualizer<
     Set<Block> visited = new LinkedHashSet<>();
     StringBuilder sbGraph = new StringBuilder();
     Queue<Block> workList = new ArrayDeque<>();
-    Block cur = entry;
+    workList.add(entry);
     visited.add(entry);
-    while (cur != null) {
+    while (!workList.isEmpty()) {
+      Block cur = workList.remove();
       handleSuccessorsHelper(cur, visited, workList, sbGraph);
-      cur = workList.poll();
     }
     sbGraph.append(lineSeparator);
     sbGraph.append(visualizeNodes(visited, cfg, analysis));

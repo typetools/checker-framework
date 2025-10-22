@@ -1,41 +1,41 @@
 plugins {
-  id 'java-library'
+  id("java-library")
 }
 
 dependencies {
-  api project(':checker-qual')
+  api(project(":checker-qual"))
   // Don't add implementation dependencies; checker-util.jar should have no dependencies.
 
-  testImplementation 'junit:junit:4.13.2'
+  testImplementation("junit:junit:${junitVersion}")
 }
 
 jar {
   doLast {
     copy {
-      from archiveFile
-      into layout.projectDirectory.file('../checker/dist')
+      from(archiveFile)
+      into(layout.projectDirectory.file("../checker/dist"))
       rename { String fileName ->
         // remove version number on checker-util.jar
-        fileName.replace(fileName, 'checker-util.jar')
+        fileName.replace(fileName, "checker-util.jar")
       }
     }
   }
 }
 
-apply from: rootProject.file('gradle-mvn-push.gradle')
+apply from: rootProject.file("gradle-mvn-push.gradle")
 
 /** Adds information to the publication for uploading to Maven repositories. */
 final checkerUtilPom(publication) {
   sharedPublicationConfiguration(publication)
-  publication.from components.java
+  publication.from(components.java)
   publication.pom {
-    name = 'Checker Util'
-    description = 'checker-util contains utility classes for programmers to use at run time.'
+    name = "Checker Util"
+    description = "checker-util contains utility classes for programmers to use at run time."
     licenses {
       license {
-        name = 'The MIT License'
-        url = 'http://opensource.org/licenses/MIT'
-        distribution = 'repo'
+        name = "The MIT License"
+        url = "http://opensource.org/licenses/MIT"
+        distribution = "repo"
       }
     }
   }
@@ -44,11 +44,11 @@ final checkerUtilPom(publication) {
 publishing {
   publications {
     checkerUtil(MavenPublication) {
-      checkerUtilPom it
+      checkerUtilPom(it)
     }
   }
 }
 
 signing {
-  sign publishing.publications.checkerUtil
+  sign(publishing.publications.checkerUtil)
 }

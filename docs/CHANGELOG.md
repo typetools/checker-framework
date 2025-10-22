@@ -1,11 +1,17 @@
 <!-- markdownlint-disable no-missing-space-atx -->
 
-Version 3.51.2 (2025-11-01)
+Version 3.52.0 (2025-11-01)
 ---------------------------
 
 **User-visible changes:**
 
 **Implementation details:**
+
+In `CFAbstractAnalysis`, renamed `defaultCreateAbstractValue` to `getCfValue`
+
+In `GenericAnnotatedTypeFactory`:
+* renamed `performFlowAnalysis` to `performFlowAnalysisForClass`
+* renamed `checkAndPerformFlowAnalysis` to `performFlowAnalysisForClassOnce`
 
 **Closed issues:**
 
