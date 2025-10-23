@@ -1522,8 +1522,7 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
-   * A helper method for {@link #performFlowAnalysisForClass(ClassTree)} that analyzes {@code
-   * method} and all lambdas contained within it.
+   * Analyzes {@code method} and all lambdas contained within it.
    *
    * @param classTree class tree containing {@code method}
    * @param method method to analyze
@@ -1538,7 +1537,7 @@ public abstract class GenericAnnotatedTypeFactory<
       List<FieldInitialValue<Value>> fieldValues,
       @Nullable Store capturedStore) {
     // The list contains one element for each `return` statement in the lambda (the map key).
-    Map<LambdaExpressionTree, List<AnnotationMirrorSet>> lambdaResultTypeMap = new HashMap<>();
+    Map<LambdaExpressionTree, List<AnnotationMirrorSet>> lambdaToResultTypes = new HashMap<>();
     Map<LambdaExpressionTree, ControlFlowGraph> lambdaToCFG = new HashMap<>();
     ControlFlowGraph methodCFG = null;
 
@@ -1584,17 +1583,17 @@ public abstract class GenericAnnotatedTypeFactory<
             CollectionsPlume.mapList(
                 tree -> getAnnotatedType(tree).getPrimaryAnnotations(),
                 TreeUtils.getReturnedExpressions(lambda));
-        List<AnnotationMirrorSet> prevReturnedExpressionAnnos = lambdaResultTypeMap.get(lambda);
+        List<AnnotationMirrorSet> prevReturnedExpressionAnnos = lambdaToResultTypes.get(lambda);
         if (prevReturnedExpressionAnnos == null
             || !prevReturnedExpressionAnnos.equals(returnedExpressionAnnos)) {
           anyLambdaResultChanged = true;
         }
-        lambdaResultTypeMap.put(lambda, returnedExpressionAnnos);
+        lambdaToResultTypes.put(lambda, returnedExpressionAnnos);
       }
 
       if (containsAllVoidLambdas(lambdaToCFG.keySet()) || !anyLambdaResultChanged) {
         classQueue.addAll(classQueueInMethod);
-        break;
+        break; // Done with this method.
       } else {
         if (fromExpressionTreeCache != null) {
           // If one cache is not null, then neither are the others.
