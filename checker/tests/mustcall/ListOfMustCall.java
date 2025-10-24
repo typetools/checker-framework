@@ -12,8 +12,6 @@ import org.checkerframework.checker.mustcall.qual.*;
 @InheritableMustCall("a")
 class ListOfMustCall {
   static void test(ListOfMustCall lm) {
-    // :: error: type.argument
-    // :: error: type.arguments.not.inferred
     List<ListOfMustCall> l = new ArrayList<>();
     // add(E e) takes an object of the type argument's type
     l.add(lm);
@@ -22,8 +20,6 @@ class ListOfMustCall {
   }
 
   static void test2(ListOfMustCall lm) {
-    // :: error: type.argument
-    // :: error: type.arguments.not.inferred
     List<@MustCall("a") ListOfMustCall> l = new ArrayList<>();
     l.add(lm);
     l.remove(lm);
