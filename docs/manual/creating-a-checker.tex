@@ -349,6 +349,10 @@ javacheck \
   You will clone the \href{https://github.com/typetools/jdk}{Checker
   Framework JDK}, naming it \<jdk> in a sibling directory of
   \<checker-framework> (that is, they have the same parent).
+  Most changes will consist of adding an \<import> statement, plus uses of
+  qualifiers, in Java files under \<src/java.base/share/classes/>.
+  Also follow the instructions in section ``Qualifier definitions'' of file
+  \<README.md>.
 
   Write test cases for a few of the annotated JDK methods to ensure
   that the annotations are being properly read by your checker.
