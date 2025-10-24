@@ -1609,10 +1609,10 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
-   * Returns true if all the lambdas in {@code lambdas} have a void return type.
+   * Returns true if every lambda in {@code lambdas} has a void return type; otherwise false.
    *
    * @param lambdas lambdas that are all contained within the same method
-   * @return true if all the lambdas in {@code lambdas} have a void return type
+   * @return true if no lambda has a non-void return type
    */
   private boolean containsAllVoidLambdas(Set<LambdaExpressionTree> lambdas) {
     for (LambdaExpressionTree lambda : lambdas) {
