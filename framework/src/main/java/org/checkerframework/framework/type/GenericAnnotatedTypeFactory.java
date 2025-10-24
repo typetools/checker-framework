@@ -1527,8 +1527,8 @@ public abstract class GenericAnnotatedTypeFactory<
    * @param classTree class tree containing {@code method}
    * @param method method to analyze
    * @param classQueue classes found within {@code method} are added to this queue
-   * @param fieldValues values of fields to be used
-   * @param capturedStore the input Store to use for captured variables, e.g. in a lambda
+   * @param fieldValues the abstract values for all fields of the same class
+   * @param capturedStore the input Store to use
    */
   private void performFlowAnalysisForMethod(
       ClassTree classTree,
@@ -1540,11 +1540,13 @@ public abstract class GenericAnnotatedTypeFactory<
     Map<LambdaExpressionTree, List<AnnotationMirrorSet>> lambdaToResultTypes = new HashMap<>();
     Map<LambdaExpressionTree, ControlFlowGraph> lambdaToCFG = new HashMap<>();
     ControlFlowGraph methodCFG = null;
+    MethodTree methodTree = method.getMethod();
 
     boolean isConstructor = TreeUtils.isConstructor(method.getMethod());
 
     // Analyze `method` and all lambdas contained in `method` until the type of the lambda result
     // expressions do not change.
+    boolean firstIteration = true;
     while (true) {
       Queue<IPair<ClassTree, @Nullable Store>> classQueueInMethod = new ArrayDeque<>();
       Queue<IPair<LambdaExpressionTree, @Nullable Store>> lambdaQueueInMethod = new ArrayDeque<>();
@@ -1559,18 +1561,15 @@ public abstract class GenericAnnotatedTypeFactory<
               /* updateInitializationStore= */ false,
               /* isStatic= */ false,
               capturedStore);
-
       boolean anyLambdaResultChanged = false;
       while (!lambdaQueueInMethod.isEmpty()) {
         IPair<LambdaExpressionTree, @Nullable Store> lambdaPair = lambdaQueueInMethod.remove();
         LambdaExpressionTree lambda = lambdaPair.first;
-        MethodTree mt =
-            (MethodTree) TreePathUtil.enclosingOfKind(getPath(lambda), Tree.Kind.METHOD);
         ControlFlowGraph cfgLambda =
             analyze(
                 classQueueInMethod,
                 lambdaQueueInMethod,
-                new CFGLambda(lambda, classTree, mt),
+                new CFGLambda(lambda, classTree, methodTree),
                 fieldValues,
                 lambdaToCFG.get(lambda),
                 /* isInitializationCode= */ false,
@@ -1591,7 +1590,8 @@ public abstract class GenericAnnotatedTypeFactory<
         lambdaToResultTypes.put(lambda, returnedExpressionAnnos);
       }
 
-      if (containsAllVoidLambdas(lambdaToCFG.keySet()) || !anyLambdaResultChanged) {
+      if (!anyLambdaResultChanged
+          || (firstIteration && containsAllVoidLambdas(lambdaToCFG.keySet()))) {
         classQueue.addAll(classQueueInMethod);
         break; // Done with this method.
       } else {
@@ -1601,6 +1601,7 @@ public abstract class GenericAnnotatedTypeFactory<
           fromMemberTreeCache.clear();
           fromTypeTreeCache.clear();
         }
+        firstIteration = false;
       }
     }
     postAnalyze(methodCFG);
