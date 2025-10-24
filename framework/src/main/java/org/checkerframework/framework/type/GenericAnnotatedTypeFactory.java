@@ -1482,7 +1482,7 @@ public abstract class GenericAnnotatedTypeFactory<
         // TODO: at this point, we don't have any information about
         // fields of superclasses.
         for (CFGMethod method : methods) {
-          performFlowAnalysisForMethod(classTree, method, classQueue, fieldValues, capturedStore);
+          performFlowAnalysisForMethod(ct, method, classQueue, fieldValues, capturedStore);
         }
 
         while (!lambdaQueue.isEmpty()) {
@@ -1494,7 +1494,7 @@ public abstract class GenericAnnotatedTypeFactory<
               analyze(
                   classQueue,
                   lambdaQueue,
-                  new CFGLambda(lambdaPair.first, classTree, mt),
+                  new CFGLambda(lambdaPair.first, ct, mt),
                   fieldValues,
                   null,
                   false,
