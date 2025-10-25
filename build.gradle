@@ -199,7 +199,7 @@ allprojects { currentProj ->
     allProjects
 
     // Exclude checker-qual dependency added by Error Prone to avoid a circular dependency.
-    annotationProcessor.exclude group: "org.checkerframework", module: "checker-qual"
+    annotationProcessor.exclude("org.checkerframework:checker-qual")
 
     // This is to be used to add errorprone to the processorpath of the compile task.  The errorprone
     // configuration can't be used directly because it is marked unresolvable by the errorprone plugin.
