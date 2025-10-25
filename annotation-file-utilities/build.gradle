@@ -184,7 +184,7 @@ tasks.register("updateUserOptionsHtml", Javadoc) {
   title = ""
 }
 
-artifacts {
-  archives(shadowJar)
-  archives(skinnyJar)
+tasks.named("assemble") {
+  dependsOn(shadowJar)
+  dependsOn(skinnyJar)
 }
