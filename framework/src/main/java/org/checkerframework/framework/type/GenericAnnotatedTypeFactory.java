@@ -1536,7 +1536,8 @@ public abstract class GenericAnnotatedTypeFactory<
       Queue<IPair<ClassTree, @Nullable Store>> classQueue,
       List<FieldInitialValue<Value>> fieldValues,
       @Nullable Store capturedStore) {
-    // The list contains one element for each `return` statement in the lambda (the map key).
+    // Each value is a list containing one element for each `return` statement in the lambda (which
+    // is the map key).
     Map<LambdaExpressionTree, List<AnnotationMirrorSet>> lambdaToResultTypes = new HashMap<>();
     Map<LambdaExpressionTree, ControlFlowGraph> lambdaToCFG = new HashMap<>();
     ControlFlowGraph methodCFG = null;
