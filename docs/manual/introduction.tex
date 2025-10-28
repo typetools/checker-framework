@@ -513,16 +513,16 @@ then update your buildfile to use the \<org.checkerframework.annotatedlib>
 group.  For example, in \<build.gradle>, change
 
 \begin{Verbatim}
-  api group: 'org.apache.bcel', name: 'bcel', version: '6.3.1'
-  api group: 'commons-io', name: 'commans-io', version: '2.8'
+  api("org.apache.bcel:bcel:6.3.1")
+  api("commons-io:commons-io:2.8")
 \end{Verbatim}
 
 \noindent
 to
 
 \begin{Verbatim}
-  api group: 'org.checkerframework.annotatedlib', name: 'bcel', version: '6.3.1'
-  api group: 'org.checkerframework.annotatedlib', name: 'commons-io', version: '2.8.0.1'
+  api("org.checkerframework.annotatedlib:bcel:6.3.1")
+  api("org.checkerframework.annotatedlib:commons-io:2.8.0.1")
 \end{Verbatim}
 
 \noindent
