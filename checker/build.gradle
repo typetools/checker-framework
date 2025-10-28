@@ -192,13 +192,15 @@ shadowJar {
   }
 }
 
+tasks.named("assemble") {
+  dependsOn(shadowJar)
+  dependsOn(checkerJar)
+}
+
 artifacts {
   // Don't add this here or else the Javadoc and the sources jar is built during the assemble task.
   // archives(allJavadocJar)
-  //archives(allSourcesJar)
-  archives(shadowJar)
-  archives(checkerJar)
-
+  // archives(allSourcesJar)
   fatJar(shadowJar)
 }
 
