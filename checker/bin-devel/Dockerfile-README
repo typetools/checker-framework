@@ -1,5 +1,5 @@
 This directory contains Dockerfiles to create new Docker images for
-running Checker Framework tests reproducibly.
+running tests reproducibly.
 
 The rest of this file explains how to build new Docker images.
 
@@ -32,7 +32,6 @@ To remove most everything, including build cache objects:
 Create the Docker image:
 
 # Alias to create the Docker image, in an empty directory, and upload to Docker Hub.
-# Run from a terminal, NOT from Emacs, because it produces vast amounts of output.
 DOCKERTESTING=""
 # When DOCKERTESTING is enabled, also edit any file containing the string "mdernst/".
 # DOCKERTESTING="-testing"
@@ -43,10 +42,6 @@ function create_upload_docker_image {
   JDKVER=$3
   IMAGENAME=$DPROJECT-$OS-$JDKVER$DOCKERTESTING
   DOCKERIMAGE="mdernst/$IMAGENAME"
-  if [ -n "$INSIDE_EMACS" ]; then
-    echo "Do not run within Emacs"
-    return 1
-  fi
   DOCKERDIR=dockerdir-$IMAGENAME
   (rm -rf $DOCKERDIR && \
   mkdir -p $DOCKERDIR && \
