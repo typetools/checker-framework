@@ -413,11 +413,6 @@ public class NullnessVisitor
 
   @Override
   public Void visitInstanceOf(InstanceOfTree tree, Void p) {
-    // We directly return without calling super.visitInstanceOf() because the default implementation
-    // issues an incorrect instanceof.unsafe warning.
-    // Therefore, we manually scan the expression and check the reference type separately
-    // to ensure proper nullness analysis in this visitor.
-    super.scan(tree.getExpression(), p);
     // The "reference type" is the type after "instanceof".
     Tree refTypeTree = tree.getType();
     if (refTypeTree != null) {
@@ -433,6 +428,8 @@ public class NullnessVisitor
       }
     }
     // Don't call super because it will issue an incorrect instanceof.unsafe warning.
+    // Instead, just scan the part before "instanceof".
+    super.scan(tree.getExpression(), p);
     return null;
   }
 
