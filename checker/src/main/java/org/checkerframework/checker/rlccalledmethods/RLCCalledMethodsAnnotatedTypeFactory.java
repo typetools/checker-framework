@@ -2,7 +2,9 @@ package org.checkerframework.checker.rlccalledmethods;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
@@ -13,6 +15,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Queue;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -48,6 +51,7 @@ import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.framework.flow.CFAbstractAnalysis.FieldInitialValue;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -57,6 +61,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
+import org.plumelib.util.IPair;
 
 /**
  * The type factory for the RLCCalledMethodsChecker. The main difference between this and the Called
@@ -187,6 +192,56 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
    */
   public AnnotationMirror createCalledMethods(String... val) {
     return createAccumulatorAnnotation(Arrays.asList(val));
+  }
+
+  @Override
+  protected ControlFlowGraph analyze(
+      Queue<IPair<ClassTree, @Nullable AccumulationStore>> classQueue,
+      Queue<IPair<LambdaExpressionTree, @Nullable AccumulationStore>> lambdaQueue,
+      UnderlyingAST ast,
+      List<FieldInitialValue<AccumulationValue>> fieldValues,
+      @Nullable ControlFlowGraph cfg,
+      boolean isInitializationCode,
+      boolean updateInitializationStore,
+      boolean isStatic,
+      @Nullable AccumulationStore capturedStore) {
+    // This is a workaround for a bug that I tried and failed to fix.
+    // See checker/tests/resourceleak/RLLambda.java.
+    // This code really belongs in postAnalyze, but this code only works correctly when called after
+    // a method is analyzed the first time and before any containing lambdas are analyzed.
+    // This workaround means there could be false positives when the type of a method invocation
+    // depends on dataflow in a lambda.
+
+    if (cfg != null) {
+      // The cfg is not null, so the analysis has been run before.  Don't rerun it.
+      return cfg;
+    }
+    cfg =
+        super.analyze(
+            classQueue,
+            lambdaQueue,
+            ast,
+            fieldValues,
+            cfg,
+            isInitializationCode,
+            updateInitializationStore,
+            isStatic,
+            capturedStore);
+    assert root != null : "@AssumeAssertion(nullness): at this point root is always nonnull";
+    rlc.setRoot(root);
+    MustCallConsistencyAnalyzer mustCallConsistencyAnalyzer = new MustCallConsistencyAnalyzer(rlc);
+    mustCallConsistencyAnalyzer.analyze(cfg);
+
+    // Inferring owning annotations for @Owning fields/parameters, @EnsuresCalledMethods for
+    // finalizer methods and @InheritableMustCall annotations for the class declarations.
+    if (getWholeProgramInference() != null) {
+      if (cfg.getUnderlyingAST().getKind() == UnderlyingAST.Kind.METHOD) {
+        MustCallInference.runMustCallInference(this, cfg, mustCallConsistencyAnalyzer);
+      }
+    }
+
+    tempVarToTree.clear();
+    return cfg;
   }
 
   @Override

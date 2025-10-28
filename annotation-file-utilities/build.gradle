@@ -27,7 +27,7 @@ dependencies {
     // So long as Guava only uses annotations from checker-qual, excluding it should not cause problems.
     exclude group: "org.checkerframework"
   }
-  implementation("org.ow2.asm:asm:9.8")
+  implementation("org.ow2.asm:asm:9.9")
   testImplementation("junit:junit:${junitVersion}")
   testImplementation(project(":checker-qual"))
 }
@@ -184,7 +184,7 @@ tasks.register("updateUserOptionsHtml", Javadoc) {
   title = ""
 }
 
-artifacts {
-  archives(shadowJar)
-  archives(skinnyJar)
+tasks.named("assemble") {
+  dependsOn(shadowJar)
+  dependsOn(skinnyJar)
 }
