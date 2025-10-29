@@ -428,6 +428,8 @@ public class NullnessVisitor
       }
     }
     // Don't call super because it will issue an incorrect instanceof.unsafe warning.
+    // Instead, just scan the part before "instanceof".
+    super.scan(tree.getExpression(), p);
     return null;
   }
 
