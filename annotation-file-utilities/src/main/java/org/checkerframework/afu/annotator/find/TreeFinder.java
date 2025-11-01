@@ -606,7 +606,7 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
     private int getDimsSize(JCExpression tree) {
       if (tree instanceof JCNewArray) {
         JCNewArray na = (JCNewArray) tree;
-        if (na.dims.size() != 0) {
+        if (!na.dims.isEmpty()) {
           // when not all dims are given, na.dims.size() gives wrong answer
           return arrayLevels(na.type);
         }
@@ -646,9 +646,9 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
       ASTRecord rec = ASTIndex.indexOf(tree).get(node);
       ASTPath astPath = ins.getCriteria().getASTPath();
       String childSelector = null;
-      // Invariant:  na.dims.size() == 0  or  na.elems == null  (but not both)
-      // If na.dims.size() != 0, na.elemtype is non-null.
-      // If na.dims.size() == 0, na.elemtype may be null or non-null.
+      // Invariant:  na.dims.isEmpty()  or  na.elems == null  (but not both)
+      // If !na.dims.isEmpty(), na.elemtype is non-null.
+      // If na.dims.isEmpty(), na.elemtype may be null or non-null.
       int dimsSize = getDimsSize(na);
       int dim = galc == null ? 0 : galc.getLocation().size();
 
@@ -775,7 +775,7 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
           }
           return getBaseTypePosition(na.elemtype);
         }
-        if (na.dims.size() != 0) {
+        if (!na.dims.isEmpty()) {
           int startPos = na.getStartPosition();
           int endPos = na.getEndPosition(tree.endPositions);
           int pos = getNthInstanceInRange('[', startPos, endPos, dim + 1);
@@ -907,7 +907,7 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
     public Integer visitClass(ClassTree node, Void p) {
       JCClassDecl cd = (JCClassDecl) node;
       int result = -1;
-      if (cd.mods != null && (cd.mods.flags != 0 || cd.mods.annotations.size() > 0)) {
+      if (cd.mods != null && (cd.mods.flags != 0 || !cd.mods.annotations.isEmpty())) {
         result = cd.mods.getPreferredPosition();
       }
       if (result < 0) {
@@ -1814,7 +1814,7 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
         receiver.getInnerTypeInsertions(), type, receiver.getCriteria().getASTPath());
 
     // If the method doesn't have parameters, don't add a comma.
-    receiver.setAddComma(method.getParameters().size() > 0);
+    receiver.setAddComma(!method.getParameters().isEmpty());
   }
 
   private void addNewType(NewInsertion neu, NewArrayTree newArray) {

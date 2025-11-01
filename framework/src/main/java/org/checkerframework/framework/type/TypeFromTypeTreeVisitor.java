@@ -149,8 +149,8 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
    * <p>Sets each wildcard type argument's bound from typeArgs to the corresponding type parameter
    * from typeParams.
    *
-   * <p>If typeArgs.size() == 0 the method does nothing and returns. Otherwise, typeArgs.size() has
-   * to be equal to typeParams.size().
+   * <p>If typeArgs.isEmpty() the method does nothing and returns. Otherwise, typeArgs.size() has to
+   * be equal to typeParams.size().
    *
    * <p>For each wildcard type argument and corresponding type parameter, sets the
    * WildcardType.bound field to the corresponding type parameter, if and only if the owners of the

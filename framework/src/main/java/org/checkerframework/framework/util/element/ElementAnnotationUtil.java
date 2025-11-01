@@ -551,7 +551,7 @@ public class ElementAnnotationUtil {
       List<TypeAnnotationPosition.TypePathEntry> location,
       TypeCompound anno)
       throws UnexpectedAnnotationLocationException {
-    if (location.size() >= 1
+    if (!location.isEmpty()
         && location.get(0).tag == TypeAnnotationPosition.TypePathEntryKind.ARRAY) {
       AnnotatedTypeMirror comptype = type.getComponentType();
       return getTypeAtLocation(comptype, tail(location), anno, true);
@@ -581,7 +581,7 @@ public class ElementAnnotationUtil {
   private static AnnotatedTypeMirror getLocationTypeAIT(
       AnnotatedIntersectionType type, List<TypeAnnotationPosition.TypePathEntry> location)
       throws UnexpectedAnnotationLocationException {
-    if (location.size() >= 1
+    if (!location.isEmpty()
         && location.get(0).tag == TypeAnnotationPosition.TypePathEntryKind.TYPE_ARGUMENT) {
       AnnotatedTypeMirror bound = type.getBounds().get(location.get(0).arg);
       return getTypeAtLocation(bound, tail(location));

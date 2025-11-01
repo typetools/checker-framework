@@ -402,7 +402,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
     List<? extends Tree> boundTrees = typeParameterTree.getBounds();
     if (boundTrees.size() == 1) {
       scan(typeParameter.getUpperBound(), boundTrees.get(0));
-    } else if (boundTrees.size() == 0) {
+    } else if (boundTrees.isEmpty()) {
       // The upper bound is implicitly Object
       scan(typeParameter.getUpperBound(), typeParameterTree);
     } else {

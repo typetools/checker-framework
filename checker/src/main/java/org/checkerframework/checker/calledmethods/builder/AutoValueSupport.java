@@ -66,7 +66,7 @@ public class AutoValueSupport implements BuilderFrameworkSupport {
     if (superclass.getKind() != TypeKind.NONE
         && ElementUtils.hasAnnotation(
             TypesUtils.getTypeElement(superclass), getAutoValuePackageName() + ".AutoValue.Builder")
-        && element.getParameters().size() > 0) {
+        && !element.getParameters().isEmpty()) {
       handleToBuilderType(
           type,
           superclass,

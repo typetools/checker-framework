@@ -31,7 +31,7 @@ public final class ArrayAFT extends AnnotationFieldType {
     }
     Collection<?> asCollection = (Collection<?>) o;
     if (elementType == null) {
-      return (asCollection.size() == 0);
+      return asCollection.isEmpty();
     }
     for (Object elt : asCollection) {
       if (!elementType.isValidValue(elt)) {
