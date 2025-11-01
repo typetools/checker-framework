@@ -23,7 +23,7 @@ IS_CI="$("$SCRIPT_DIR"/is-ci.sh)"
 export IS_CI
 if [ -n "$IS_CI" ]; then
   # CircleCI fails, for the Daikon job only, if "-Dorg.gradle.daemon=false" is removed.
-  export GRADLE_OPTS="${GRADLE_OPTS} -Dorg.gradle.daemon=false -Dorg.gradle.console=plain -Xmx4g"
+  export GRADLE_OPTS="${GRADLE_OPTS} -Dorg.gradle.daemon=false -Dorg.gradle.console=plain -Xmx6g"
 fi
 
 export SHELLOPTS
@@ -88,7 +88,6 @@ fi
 if [ -n "${JAVA21_HOME:-}" ] && [ -x "${JAVA21_HOME}/bin/java" ]; then
   export JAVA_HOME="${JAVA21_HOME}"
 fi
-## Compile
 
 # Download Gradle and dependencies, retrying in case of network problems.
 # Under CircleCI, the `timeout` command seems to hang forever.
