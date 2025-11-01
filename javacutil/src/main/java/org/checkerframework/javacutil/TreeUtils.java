@@ -1302,7 +1302,7 @@ public final class TreeUtils {
       int params,
       ProcessingEnvironment env) {
     List<ExecutableElement> methods = getMethods(typeName, methodName, params, env);
-    if (methods.size() == 0) {
+    if (methods.isEmpty()) {
       return null;
     } else if (methods.size() == 1) {
       return methods.get(0);
