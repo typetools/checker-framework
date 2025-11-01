@@ -146,7 +146,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     if (acNode != null) {
       // Right-hand side of assignment is an array creation expression
       List<Node> nodeList = acNode.getDimensions();
-      if (nodeList.size() < 1) {
+      if (nodeList.isEmpty()) {
         return result;
       }
       Node dim = acNode.getDimension(0);

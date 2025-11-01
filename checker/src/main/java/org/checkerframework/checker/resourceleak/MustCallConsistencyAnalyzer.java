@@ -2093,7 +2093,7 @@ public class MustCallConsistencyAnalyzer {
         //        the block.
         CFStore mcStore;
         AccumulationStore cmStore;
-        if (currentBlockNodes.size() == 0 /* currentBlock is special or conditional */) {
+        if (currentBlockNodes.isEmpty() /* currentBlock is special or conditional */) {
           cmStore = getStoreForEdgeFromEmptyBlock(currentBlock, successor); // 1. (CM)
           // For the Must Call Checker, we currently apply a less precise handling and do
           // not get the store for the specific CFG edge from currentBlock to successor.

@@ -257,7 +257,7 @@ public final class Annotation {
       sb.append('(');
       fieldType.format(sb, fieldValues.get("value"));
       sb.append(')');
-    } else if (fieldValues.size() > 0) {
+    } else if (!fieldValues.isEmpty()) {
       sb.append('(');
       boolean notfirst = false;
       for (Entry<String, Object> field : fieldValues.entrySet()) {
