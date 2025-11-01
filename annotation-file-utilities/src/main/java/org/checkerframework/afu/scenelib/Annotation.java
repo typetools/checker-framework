@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import org.checkerframework.afu.scenelib.el.AnnotationDef;
 import org.checkerframework.afu.scenelib.field.AnnotationFieldType;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
 /**
  * A very simple annotation representation constructed with a map of field names to values. See the
@@ -253,7 +254,8 @@ public final class Annotation {
     sb.append("@");
     sb.append(def.name);
     if (fieldValues.size() == 1 && fieldValues.containsKey("value")) {
-      AnnotationFieldType fieldType = def.fieldTypes.get("value");
+      @SuppressWarnings("nullness:assignment") // same keyset
+      @NonNull AnnotationFieldType fieldType = def.fieldTypes.get("value");
       sb.append('(');
       fieldType.format(sb, fieldValues.get("value"));
       sb.append(')');
