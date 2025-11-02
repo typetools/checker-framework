@@ -254,6 +254,7 @@ public final class Annotation {
     sb.append("@");
     sb.append(def.name);
     if (fieldValues.size() == 1 && fieldValues.containsKey("value")) {
+      @SuppressWarnings("nullness:assignment") // just checked containsKey
       @NonNull Object fieldValue = fieldValues.get("value");
       @SuppressWarnings("nullness:assignment") // same keyset
       @NonNull AnnotationFieldType fieldType = def.fieldTypes.get("value");
