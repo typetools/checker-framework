@@ -11,7 +11,7 @@ public class LocalMultipleManyMethodsShifted {
     myList.add(myList);
     myList.remove(myList);
 
-    if (myList.size() != 0) {
+    if (myList.size() != 0) { // equivalent to !myList.isEmpty()
       @java.lang.C Set localVar = null;
       foo(localVar);
       System.out.println(localVar);
@@ -26,7 +26,7 @@ public class LocalMultipleManyMethodsShifted {
   public void foo(Object[] o) {
     List myList = null;
 
-    if (myList.size() != 0) {
+    if (myList.size() != 0) { // equivalent to !myList.isEmpty()
       @java.lang.D Set localVar = null;
       myList.add(localVar);
     } else {
