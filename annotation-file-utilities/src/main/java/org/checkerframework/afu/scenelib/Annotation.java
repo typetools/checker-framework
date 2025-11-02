@@ -254,10 +254,11 @@ public final class Annotation {
     sb.append("@");
     sb.append(def.name);
     if (fieldValues.size() == 1 && fieldValues.containsKey("value")) {
+      @NonNull Object fieldValue = fieldValues.get("value");
       @SuppressWarnings("nullness:assignment") // same keyset
       @NonNull AnnotationFieldType fieldType = def.fieldTypes.get("value");
       sb.append('(');
-      fieldType.format(sb, fieldValues.get("value"));
+      fieldType.format(sb, fieldValue);
       sb.append(')');
     } else if (!fieldValues.isEmpty()) {
       sb.append('(');
