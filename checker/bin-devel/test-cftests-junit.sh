@@ -14,4 +14,15 @@ source "$SCRIPT_DIR"/clone-related.sh
 # separately seems to avoid some out-of-memory errors.
 ./gradlew assemble --warning-mode=all
 ./gradlew compileTestJava testClasses --warning-mode=all
-./gradlew test --warning-mode=all
+
+## Split "test" into its parts (up to date as of 2025-11-02).
+# ./gradlew test --warning-mode=all
+./gradlew :checker-qual-android:test --warning-mode=all
+./gradlew :checker-qual:test --warning-mode=all
+./gradlew :javacutil:test --warning-mode=all
+./gradlew :test --warning-mode=all
+./gradlew :annotation-file-utilities:test --warning-mode=all
+./gradlew :checker-util:test --warning-mode=all
+./gradlew :dataflow:test --warning-mode=all
+./gradlew :framework-test:test --warning-mode=all
+./gradlew :framework:test --warning-mode=all
