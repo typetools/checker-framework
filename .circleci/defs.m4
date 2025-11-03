@@ -39,14 +39,14 @@ define([junit_jobs], [dnl
   junit_part1_jdk$1:
 circleci_boilerplate($1,)
       - run:
-          name: test-cftests-junit_part1.sh
-          command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-cftests-junit_part1.sh
+          name: test-cftests-junit-part1.sh
+          command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-cftests-junit-part1.sh
           no_output_timeout: "30m"
   junit_part2_jdk$1:
 circleci_boilerplate($1,)
       - run:
-          name: test-cftests-junit_part2.sh
-          command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-cftests-junit_part2.sh
+          name: test-cftests-junit-part2.sh
+          command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-cftests-junit-part2.sh
           no_output_timeout: "30m"
 ])dnl
 dnl
