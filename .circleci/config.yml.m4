@@ -26,7 +26,8 @@ workflows:
     jobs:
       - canary_jobs:
           requires:
-            - junit_jdk[]canary_version
+            - junit_part1_jdk[]canary_version
+            - junit_part2_jdk[]canary_version
             - nonjunit_jdk[]canary_version
             - typecheck_part1_jdk[]canary_version
             - typecheck_part2_jdk[]canary_version

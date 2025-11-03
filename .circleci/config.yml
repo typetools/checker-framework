@@ -509,7 +509,8 @@ workflows:
     jobs:
       - canary_jobs:
           requires:
-            - junit_jdk25
+            - junit_part1_jdk25
+            - junit_part2_jdk25
             - nonjunit_jdk25
             - typecheck_part1_jdk25
             - typecheck_part2_jdk25
