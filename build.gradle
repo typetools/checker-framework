@@ -408,7 +408,7 @@ allprojects { currentProj ->
 
   test {
     minHeapSize = "256m" // initial heap size
-    maxHeapSize = "6g" // maximum heap size
+    maxHeapSize = "4g" // maximum heap size
   }
 
   configurations {
@@ -636,7 +636,7 @@ def createCheckTypeTask(projectName, taskName, checker, args = []) {
       "-AwarnRedundantAnnotations",
     ]
     options.compilerArgs += args
-    options.forkOptions.jvmArgs += ["-Xmx6g"]
+    options.forkOptions.jvmArgs += ["-Xmx4g"]
 
     options.fork = true
     options.forkOptions.jvmArgs += compilerArgsForRunningCF
