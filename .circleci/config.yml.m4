@@ -33,10 +33,14 @@ workflows:
             - misc_jdk[]canary_version
             - misc_jdk[]latest_version
 
-job_dependences(11, junit)
-job_dependences(17, junit)
-job_dependences(21, junit)
-job_dependences(25, junit)
+job_dependences(11, junit_part1)
+job_dependences(11, junit_part2)
+job_dependences(17, junit_part1)
+job_dependences(17, junit_part2)
+job_dependences(21, junit_part1)
+job_dependences(21, junit_part2)
+job_dependences(25, junit_part1)
+job_dependences(25, junit_part2)
 job_dependences(canary_version, nonjunit)
 job_dependences(11, misc)
 job_dependences(17, misc)

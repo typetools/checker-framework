@@ -1,7 +1,7 @@
-junit_job(11)
-junit_job(17)
-junit_job(21)
-junit_job(25)
+junit_jobs(11)
+junit_jobs(17)
+junit_jobs(21)
+junit_jobs(25)
 
 nonjunit_job(canary_version)
 

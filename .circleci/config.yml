@@ -9,7 +9,7 @@ jobs:
   # Only proceed to other jobs if canary_jobs passes.
   canary_jobs:
     docker:
-      - image: 'cimg/base:2025.11'
+      - image: 'cimg/base:2025.10'
     resource_class: small
     environment:
       CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
@@ -17,7 +17,7 @@ jobs:
     steps:
       - run: /bin/true
 
-  junit_jdk11:
+  junit_part1_jdk11:
     docker:
       - image: 'mdernst/cf-ubuntu-jdk11'
     resource_class: large
@@ -36,11 +36,33 @@ jobs:
           paths:
             - .git
       - run:
-          name: test-cftests-junit.sh
-          command: export ORG_GRADLE_PROJECT_jdkTestVersion=11 && ./checker/bin-devel/test-cftests-junit.sh
+          name: test-cftests-junit_part1.sh
+          command: export ORG_GRADLE_PROJECT_jdkTestVersion=11 && ./checker/bin-devel/test-cftests-junit_part1.sh
+          no_output_timeout: "30m"
+  junit_part2_jdk11:
+    docker:
+      - image: 'mdernst/cf-ubuntu-jdk11'
+    resource_class: large
+    environment:
+      CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
+      TERM: dumb
+    steps:
+      - restore_cache:
+          keys:
+            - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
+            - 'source-v1-{{ .Branch }}-'
+            - source-v1-
+      - checkout
+      - save_cache:
+          key: *source-cache
+          paths:
+            - .git
+      - run:
+          name: test-cftests-junit_part2.sh
+          command: export ORG_GRADLE_PROJECT_jdkTestVersion=11 && ./checker/bin-devel/test-cftests-junit_part2.sh
           no_output_timeout: "30m"
 
-  junit_jdk17:
+  junit_part1_jdk17:
     docker:
       - image: 'mdernst/cf-ubuntu-jdk17'
     resource_class: large
@@ -59,11 +81,33 @@ jobs:
           paths:
             - .git
       - run:
-          name: test-cftests-junit.sh
-          command: export ORG_GRADLE_PROJECT_jdkTestVersion=17 && ./checker/bin-devel/test-cftests-junit.sh
+          name: test-cftests-junit_part1.sh
+          command: export ORG_GRADLE_PROJECT_jdkTestVersion=17 && ./checker/bin-devel/test-cftests-junit_part1.sh
+          no_output_timeout: "30m"
+  junit_part2_jdk17:
+    docker:
+      - image: 'mdernst/cf-ubuntu-jdk17'
+    resource_class: large
+    environment:
+      CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
+      TERM: dumb
+    steps:
+      - restore_cache:
+          keys:
+            - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
+            - 'source-v1-{{ .Branch }}-'
+            - source-v1-
+      - checkout
+      - save_cache:
+          key: *source-cache
+          paths:
+            - .git
+      - run:
+          name: test-cftests-junit_part2.sh
+          command: export ORG_GRADLE_PROJECT_jdkTestVersion=17 && ./checker/bin-devel/test-cftests-junit_part2.sh
           no_output_timeout: "30m"
 
-  junit_jdk21:
+  junit_part1_jdk21:
     docker:
       - image: 'mdernst/cf-ubuntu-jdk21'
     resource_class: large
@@ -82,11 +126,33 @@ jobs:
           paths:
             - .git
       - run:
-          name: test-cftests-junit.sh
-          command: export ORG_GRADLE_PROJECT_jdkTestVersion=21 && ./checker/bin-devel/test-cftests-junit.sh
+          name: test-cftests-junit_part1.sh
+          command: export ORG_GRADLE_PROJECT_jdkTestVersion=21 && ./checker/bin-devel/test-cftests-junit_part1.sh
+          no_output_timeout: "30m"
+  junit_part2_jdk21:
+    docker:
+      - image: 'mdernst/cf-ubuntu-jdk21'
+    resource_class: large
+    environment:
+      CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
+      TERM: dumb
+    steps:
+      - restore_cache:
+          keys:
+            - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
+            - 'source-v1-{{ .Branch }}-'
+            - source-v1-
+      - checkout
+      - save_cache:
+          key: *source-cache
+          paths:
+            - .git
+      - run:
+          name: test-cftests-junit_part2.sh
+          command: export ORG_GRADLE_PROJECT_jdkTestVersion=21 && ./checker/bin-devel/test-cftests-junit_part2.sh
           no_output_timeout: "30m"
 
-  junit_jdk25:
+  junit_part1_jdk25:
     docker:
       - image: 'mdernst/cf-ubuntu-jdk25'
     resource_class: large
@@ -105,8 +171,30 @@ jobs:
           paths:
             - .git
       - run:
-          name: test-cftests-junit.sh
-          command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-cftests-junit.sh
+          name: test-cftests-junit_part1.sh
+          command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-cftests-junit_part1.sh
+          no_output_timeout: "30m"
+  junit_part2_jdk25:
+    docker:
+      - image: 'mdernst/cf-ubuntu-jdk25'
+    resource_class: large
+    environment:
+      CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
+      TERM: dumb
+    steps:
+      - restore_cache:
+          keys:
+            - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
+            - 'source-v1-{{ .Branch }}-'
+            - source-v1-
+      - checkout
+      - save_cache:
+          key: *source-cache
+          paths:
+            - .git
+      - run:
+          name: test-cftests-junit_part2.sh
+          command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-cftests-junit_part2.sh
           no_output_timeout: "30m"
 
 
@@ -428,22 +516,38 @@ workflows:
             - misc_jdk25
             - misc_jdk25
 
-      - junit_jdk11:
+      - junit_part1_jdk11:
           requires:
             - canary_jobs
-            - junit_jdk25
+            - junit_part1_jdk25
 
-      - junit_jdk17:
+      - junit_part2_jdk11:
           requires:
             - canary_jobs
-            - junit_jdk25
+            - junit_part2_jdk25
 
-      - junit_jdk21:
+      - junit_part1_jdk17:
           requires:
             - canary_jobs
-            - junit_jdk25
+            - junit_part1_jdk25
 
-      - junit_jdk25
+      - junit_part2_jdk17:
+          requires:
+            - canary_jobs
+            - junit_part2_jdk25
+
+      - junit_part1_jdk21:
+          requires:
+            - canary_jobs
+            - junit_part1_jdk25
+
+      - junit_part2_jdk21:
+          requires:
+            - canary_jobs
+            - junit_part2_jdk25
+
+      - junit_part1_jdk25
+      - junit_part2_jdk25
       - nonjunit_jdk25
       - misc_jdk11:
           requires:
