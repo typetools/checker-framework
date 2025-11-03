@@ -244,7 +244,7 @@ public class GenericArrayLocationCriterion implements Criterion {
 
     List<TypePathEntry> locationRemaining = new ArrayList<>(location);
 
-    while (locationRemaining.size() != 0) {
+    while (!locationRemaining.isEmpty()) {
       // annotating an inner type
       leaf = pathRemaining.getLeaf();
       if ((leaf instanceof NewArrayTree) && containsOnlyArray(locationRemaining)) {
@@ -301,7 +301,7 @@ public class GenericArrayLocationCriterion implements Criterion {
           && leaf.getKind() == Tree.Kind.UNBOUNDED_WILDCARD) {
         // Check if the leaf is an unbounded wildcard instead of the parent, since unbounded
         // wildcard has no members so it can't be the parent of anything.
-        if (locationRemaining.size() == 0) {
+        if (locationRemaining.isEmpty()) {
           return false;
         }
 
@@ -448,7 +448,7 @@ public class GenericArrayLocationCriterion implements Criterion {
         // System.out.printf("parent instanceof ArrayTypeTree: %s loc=%d%n",
         //                   parent, loc);
         Tree elt = ((ArrayTypeTree) parent).getType();
-        while (locationRemaining.size() > 0
+        while (!locationRemaining.isEmpty()
             && locationRemaining.get(locationRemaining.size() - 1).step == TypePath.ARRAY_ELEMENT) {
           if (!(elt instanceof ArrayTypeTree)) {
             if (debug) {

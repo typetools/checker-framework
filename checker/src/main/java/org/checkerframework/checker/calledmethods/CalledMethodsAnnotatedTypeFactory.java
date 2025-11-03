@@ -246,7 +246,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
       MethodInvocationTree filterTreeAsMethodInvocation = (MethodInvocationTree) filterTree;
       String filterMethodName = TreeUtils.methodName(filterTreeAsMethodInvocation).toString();
       if (filterMethodName.contentEquals("withName")
-          && filterTreeAsMethodInvocation.getArguments().size() >= 1) {
+          && !filterTreeAsMethodInvocation.getArguments().isEmpty()) {
         Tree withNameArgTree = filterTreeAsMethodInvocation.getArguments().get(0);
         String withNameArg = ValueCheckerUtils.getExactStringValue(withNameArgTree, valueATF);
         return filterKindToMethodName(withNameArg);
