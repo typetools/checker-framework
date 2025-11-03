@@ -11,14 +11,11 @@ Copyright (c) 2012 University of Washington
 from __future__ import annotations
 
 import os
-import os.path
 import pathlib
 import re
 import shlex
 import shutil
 import subprocess
-import urllib.error
-import urllib.parse
 import urllib.request
 from pathlib import Path
 
