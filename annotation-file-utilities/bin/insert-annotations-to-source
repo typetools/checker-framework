@@ -52,7 +52,7 @@ if [ "$DEBUG" = "1" ]; then
   echo "CLASSPATH=${CLASSPATH}"
   # Keep this in sync with the actual command below.
   # shellcheck disable=SC2181 disable=SC2086
-  echo about to run: java -ea -Xmx6g ${BOOTCLASSPATH} ${JDK_OPENS} -classpath "${JAVAC_JAR}:${ANNOTATION_FILE_UTILS}:${CLASSPATH}" org.checkerframework.afu.annotator.Main "$@"
+  echo about to run: java -ea -Xmx4g ${BOOTCLASSPATH} ${JDK_OPENS} -classpath "${JAVAC_JAR}:${ANNOTATION_FILE_UTILS}:${CLASSPATH}" org.checkerframework.afu.annotator.Main "$@"
   echo "--- end of insert-annotations-to-source debugging output"
   # echo "--- start of input files"
   # for file in "$@"; do
@@ -66,4 +66,4 @@ fi
 
 # Augment, don't replace, CLASSPATH, so as to find user files.
 # shellcheck disable=SC2181 disable=SC2086 # ${BOOTCLASSPATH} and ${JDK_OPENS} might be empty and must not be quoted.
-java -ea -Xmx6g ${BOOTCLASSPATH} ${JDK_OPENS} -classpath "${JAVAC_JAR}:${ANNOTATION_FILE_UTILS}:${CLASSPATH}" org.checkerframework.afu.annotator.Main "$@"
+java -ea -Xmx4g ${BOOTCLASSPATH} ${JDK_OPENS} -classpath "${JAVAC_JAR}:${ANNOTATION_FILE_UTILS}:${CLASSPATH}" org.checkerframework.afu.annotator.Main "$@"
