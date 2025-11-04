@@ -5,14 +5,14 @@ all: annotation-file-format.pdf annotation-file-format.html
 figures:
 	${MAKE} -C figures
 
+export BIBINPUTS = $BIBINPUTS:.:../manual/plume-bib
+
 annotation-file-format.pdf: plume-bib figures
-	latexmk annotation-file-format.tex
+	latexmk -bibtex -pdf annotation-file-format.tex
 
 annotation-file-format.html: annotation-file-format.pdf
 	hevea -fix -exec xxdate.exe urlhref.hva annotation-file-format.tex
 
-
-export BIBINPUTS = $BIBINPUTS:.:plume-bib
 plume-bib:
 	cd ../.. && ./gradlew getPlumeBib
 

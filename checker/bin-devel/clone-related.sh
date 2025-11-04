@@ -88,7 +88,6 @@ fi
 if [ -n "${JAVA21_HOME:-}" ] && [ -x "${JAVA21_HOME}/bin/java" ]; then
   export JAVA_HOME="${JAVA21_HOME}"
 fi
-## Compile
 
 # Download Gradle and dependencies, retrying in case of network problems.
 # Under CircleCI, the `timeout` command seems to hang forever.
