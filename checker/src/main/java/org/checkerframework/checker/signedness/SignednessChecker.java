@@ -25,7 +25,7 @@ import org.checkerframework.framework.source.SourceChecker;
   int.class,
   long.class,
 })
-@StubFiles({"junit-assertions.astub"})
+@StubFiles({"jdk.astub", "junit-assertions.astub"})
 public class SignednessChecker extends BaseTypeChecker {
 
   /** Creates a new SignednessChecker. */

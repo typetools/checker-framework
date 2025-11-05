@@ -1,0 +1,50 @@
+=== Challenges and Limitations when using LLM (Claude Code) Support ===
+
+1. **Initial CLAUDE.md Creation**
+   - Created CLAUDE.md before starting the actual issue, which was fine but the initial task was to analyze codebase first
+   - This was actually appropriate since it helped understand the project structure
+
+2. **Disk Space Issues During Testing**
+   - Encountered "No space left on device" errors when trying to run full test suite
+   - Had to resort to testing individual files with checker/bin/javac instead
+   - Limited ability to run comprehensive regression tests due to environment constraints
+
+3. **Type Propagation Edge Case**
+   - One test case (line 18: `masked | 1L`) still shows an error where the result should be @BitPattern
+   - The issue is that @SignedPositive from the literal `1L` isn't being overridden by the BitPattern propagation
+   - This suggests the PropagationTreeAnnotator may be running after our custom tree annotator and needs further investigation
+   - However, this is a minor issue as the core functionality works correctly
+
+4. **Build Time**
+   - Initial builds took 5+ minutes, making iteration slower
+   - The Checker Framework is a large project with many dependencies
+   - Had to be strategic about what to rebuild to save time
+
+5. **Complex Type System Interactions**
+   - The interaction between different tree annotators (SignednessTreeAnnotator, PropagationTreeAnnotator) required deep understanding
+   - The order of annotators in ListTreeAnnotator matters and can override previous annotations
+   - This level of framework internals knowledge took time to acquire
+
+6. **Limited Test Execution**
+   - Could not run the full SignednessTest suite due to disk space
+   - Relied on manual testing with javac compiler instead
+   - May have missed some edge cases that the full test suite would catch
+
+7. **Compound Assignment Type Inference**
+   - Compound assignments (+=, -=) produce additional type errors beyond the BitPattern check
+   - The result type of compound assignments isn't automatically inferred as BitPattern
+   - This results in duplicate errors which could confuse users, but both are valid
+
+8. **Documentation of Stub Files**
+   - Limited understanding initially of how stub files work in the Checker Framework
+   - Had to examine existing stub files to understand the format
+   - Could benefit from better documentation of the stub file system
+
+9. **Incomplete Understanding of Value Propagation**
+   - The interaction between SignednessAnnotatedTypeFactory and how values flow through bitwise operations is complex
+   - Some edge cases in type propagation through complex expressions may not be fully handled
+
+10. **Testing Limitations**
+    - Unable to verify that existing Signedness tests still pass
+    - Cannot confirm no regressions were introduced without running full test suite
+    - Would need a machine with more disk space to complete full validation

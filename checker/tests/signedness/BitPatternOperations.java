@@ -1,5 +1,3 @@
-// @skip-test
-
 import org.checkerframework.checker.signedness.qual.BitPattern;
 
 public class BitPatternOperations {

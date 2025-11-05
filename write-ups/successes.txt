@@ -1,0 +1,51 @@
+=== Successes when using LLM (Claude Code) Support ===
+
+1. **Rapid Codebase Understanding**
+   - Claude quickly analyzed the existing Checker Framework architecture by reading multiple source files
+   - Identified the type hierarchy structure and relationships between qualifiers without manual documentation
+   - Understood the pattern of how existing checkers were implemented by examining SignednessChecker
+
+2. **Accurate Type System Implementation**
+   - Successfully created the @BitPattern annotation with correct @SubtypeOf hierarchy
+   - Properly positioned BitPattern in the type lattice (subtype of UnknownSignedness, supertype of SignednessBottom)
+   - Correctly identified that SignednessBottom needed to be updated to be a subtype of both SignedPositive and BitPattern
+
+3. **Comprehensive Visitor Pattern Implementation**
+   - Added appropriate checks in SignednessVisitor for all required operations:
+     * Binary operations (arithmetic vs bitwise)
+     * Compound assignments
+     * Unary increment/decrement operations
+     * String concatenation
+   - Correctly ordered the checks to prioritize BitPattern over Unsigned in error reporting
+
+4. **Tree Annotator Enhancement**
+   - Extended SignednessTreeAnnotator to propagate @BitPattern through bitwise operations (&, |, ^, ~)
+   - Added visitUnary to handle bitwise complement operator
+   - Properly handled shift operations to preserve BitPattern annotations
+
+5. **Error Message Integration**
+   - Added all necessary error messages to messages.properties with consistent formatting
+   - Error messages follow the existing pattern and provide clear information about violations
+
+6. **JDK Stub File Creation**
+   - Created jdk.astub with correct annotations for Double and Float bit conversion methods
+   - Properly registered the stub file in SignednessChecker's @StubFiles annotation
+
+7. **Build System Navigation**
+   - Successfully used Gradle to compile and test changes
+   - Understood the multi-module project structure (checker-qual, checker, framework, etc.)
+   - Built incrementally to catch errors early
+
+8. **Debugging and Iteration**
+   - When the initial implementation had a type hierarchy error (multiple bottoms), Claude quickly identified the issue
+   - Fixed the hierarchy by updating SignednessBottom's @SubtypeOf annotation
+   - Tested iteratively and adjusted the implementation based on compiler feedback
+
+9. **Test-Driven Verification**
+   - Used the existing BitPatternOperations.java test file to validate the implementation
+   - Confirmed that all expected errors were being correctly reported
+   - Verified that allowed operations (bitwise) work without errors
+
+10. **Documentation Quality**
+    - Created clear Javadoc for the @BitPattern annotation explaining its purpose and usage
+    - Documented the restrictions on operations in both code comments and annotations
