@@ -1,0 +1,15 @@
+package java.lang;
+
+import org.checkerframework.checker.signedness.qual.BitPattern;
+
+class Double {
+    @BitPattern long doubleToLongBits(double value);
+    @BitPattern long doubleToRawLongBits(double value);
+    double longBitsToDouble(@BitPattern long bits);
+}
+
+class Float {
+    @BitPattern int floatToIntBits(float value);
+    @BitPattern int floatToRawIntBits(float value);
+    float intBitsToFloat(@BitPattern int bits);
+}

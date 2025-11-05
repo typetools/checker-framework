@@ -1,0 +1,3 @@
+At first, the LLM struggled to navigate across the massive codebase. I gave it a concise summary of the task at hand, the desired behavior, and what file(s) should probably be altered and how tests should be run.
+
+The LLM also repeatedly made changes that resulted in failed builds, but was able to fix these pretty quickly.

@@ -1,0 +1,5 @@
+Going back and forth with an LLM within this codebase helped me better understand the codebase, the issue highlighted, and the task at hand. I asked cursor questions to gain a better understanding.
+
+There were a few times where the changes made by the LLM resulting in failed builds. Instead of asking it to fix the errors, I asked why the build failed in the first place. This helped the LLM find and fix issues with more success than simply telling it to fix issues itself (in my experience).
+
+Cursor was also far faster than I could have been at navigating the codebase, knowing what files needed to be edited, and where in these files the edits should have taken place.
