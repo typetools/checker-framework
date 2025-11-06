@@ -233,11 +233,6 @@ public class KeyForAnnotatedTypeFactory
     return NodeUtils.isMethodInvocation(node, mapPut, getProcessingEnv());
   }
 
-  /** Returns true if the node is an invocation of Map.keySet. */
-  boolean isMapKeySet(Node node) {
-    return NodeUtils.isMethodInvocation(node, mapKeySet, getProcessingEnv());
-  }
-
   /** Returns false. Redundancy in the KeyFor hierarchy is not worth warning about. */
   @Override
   public boolean shouldWarnIfStubRedundantWithBytecode() {
