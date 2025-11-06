@@ -9,10 +9,12 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.KeyForBottom;
 import org.checkerframework.checker.nullness.qual.PolyKeyFor;
@@ -27,6 +29,7 @@ import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
@@ -64,6 +67,10 @@ public class KeyForAnnotatedTypeFactory
   /** The Map.put method. */
   private final ExecutableElement mapPut =
       TreeUtils.getMethod("java.util.Map", "put", 2, processingEnv);
+
+  /** The Map.keySet method. */
+  private final ExecutableElement mapKeySet =
+      TreeUtils.getMethod("java.util.Map", "keySet", 0, processingEnv);
 
   /** The KeyFor.value field/element. */
   protected final ExecutableElement keyForValueElement =
@@ -226,6 +233,11 @@ public class KeyForAnnotatedTypeFactory
     return NodeUtils.isMethodInvocation(node, mapPut, getProcessingEnv());
   }
 
+  /** Returns true if the node is an invocation of Map.keySet. */
+  boolean isMapKeySet(Node node) {
+    return NodeUtils.isMethodInvocation(node, mapKeySet, getProcessingEnv());
+  }
+
   /** Returns false. Redundancy in the KeyFor hierarchy is not worth warning about. */
   @Override
   public boolean shouldWarnIfStubRedundantWithBytecode() {
@@ -235,6 +247,88 @@ public class KeyForAnnotatedTypeFactory
   @Override
   protected DependentTypesHelper createDependentTypesHelper() {
     return new KeyForDependentTypesHelper(this);
+  }
+
+  /**
+   * Override to merge KeyFor annotations from Map receiver's type arguments into keySet() return
+   * type.
+   */
+  @Override
+  protected void addComputedTypeAnnotations(Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {
+    super.addComputedTypeAnnotations(tree, type, iUseFlow);
+
+    // Handle keySet() method invocations: merge KeyFor annotations from Map receiver's type
+    // arguments into the return type's type arguments
+    if (tree instanceof MethodInvocationTree) {
+      MethodInvocationTree methodInvocation = (MethodInvocationTree) tree;
+      if (TreeUtils.isMethodInvocation(methodInvocation, mapKeySet, getProcessingEnv())) {
+        if (type.getKind() == TypeKind.DECLARED) {
+          AnnotatedDeclaredType keySetReturnType = (AnnotatedDeclaredType) type;
+          ExpressionTree receiver = TreeUtils.getReceiverTree(methodInvocation);
+          if (receiver != null) {
+            AnnotatedTypeMirror receiverType = getAnnotatedType(receiver);
+            if (receiverType.getKind() == TypeKind.DECLARED) {
+              AnnotatedDeclaredType receiverDeclaredType = (AnnotatedDeclaredType) receiverType;
+              mergeKeyForFromMapReceiverIntoKeySetReturn(receiverDeclaredType, keySetReturnType);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * Merges KeyFor annotations from the Map receiver's first type argument (key type) into the Set's
+   * first type argument (element type) in the keySet() return type.
+   *
+   * @param mapReceiverType the type of the Map receiver (e.g., Map&lt;@KeyFor("m") String,
+   *     Integer&gt;)
+   * @param keySetReturnType the return type of keySet() (e.g., Set&lt;@KeyFor("mapVar") String&gt;)
+   */
+  private void mergeKeyForFromMapReceiverIntoKeySetReturn(
+      AnnotatedDeclaredType mapReceiverType, AnnotatedDeclaredType keySetReturnType) {
+    // Get the Map's first type argument (the key type)
+    List<AnnotatedTypeMirror> mapTypeArgs = mapReceiverType.getTypeArguments();
+    if (mapTypeArgs.isEmpty()) {
+      return;
+    }
+    AnnotatedTypeMirror mapKeyType = mapTypeArgs.get(0);
+
+    // Get the Set's first type argument (the element type)
+    List<AnnotatedTypeMirror> setTypeArgs = keySetReturnType.getTypeArguments();
+    if (setTypeArgs.isEmpty()) {
+      return;
+    }
+    AnnotatedTypeMirror setElementType = setTypeArgs.get(0);
+
+    // Extract KeyFor annotation from the Map's key type
+    AnnotationMirror mapKeyKeyFor = mapKeyType.getEffectiveAnnotation(KeyFor.class);
+    if (mapKeyKeyFor == null) {
+      return;
+    }
+
+    // Get the KeyFor values from the Map's key type
+    List<String> mapKeyForValues =
+        AnnotationUtils.getElementValueArray(mapKeyKeyFor, keyForValueElement, String.class);
+
+    // Extract KeyFor annotation from the Set's element type
+    AnnotationMirror setElementKeyFor = setElementType.getEffectiveAnnotation(KeyFor.class);
+
+    // Collect all KeyFor values
+    Set<String> mergedKeyForValues = new LinkedHashSet<>(mapKeyForValues);
+
+    // Add existing KeyFor values from the Set's element type
+    if (setElementKeyFor != null) {
+      List<String> setKeyForValues =
+          AnnotationUtils.getElementValueArray(setElementKeyFor, keyForValueElement, String.class);
+      mergedKeyForValues.addAll(setKeyForValues);
+    }
+
+    // Create a new KeyFor annotation with merged values
+    if (!mergedKeyForValues.isEmpty()) {
+      AnnotationMirror mergedKeyFor = createKeyForAnnotationMirrorWithValue(mergedKeyForValues);
+      setElementType.replaceAnnotation(mergedKeyFor);
+    }
   }
 
   /**
