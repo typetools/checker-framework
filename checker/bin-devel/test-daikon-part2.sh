@@ -14,7 +14,6 @@ source "$SCRIPT_DIR"/clone-related.sh
 echo "running \"./gradlew assembleForJavac\" for checker-framework"
 ./gradlew assembleForJavac -Dorg.gradle.internal.http.socketTimeout=60000 -Dorg.gradle.internal.http.connectionTimeout=60000
 
-# daikon-typecheck: 15 minutes
 "$SCRIPT_DIR/.git-scripts/git-clone-related" codespecs daikon
 cd ../daikon
 git log | head -n 5

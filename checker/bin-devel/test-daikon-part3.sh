@@ -20,7 +20,7 @@ git log | head -n 5
 make --jobs="$(getconf _NPROCESSORS_ONLN)" compile
 if [ "$TRAVIS" = "true" ]; then
   # Travis kills a job if it runs 10 minutes without output
-  time make JAVACHECK_EXTRA_ARGS=-Afilenames -C java --jobs="$(getconf _NPROCESSORS_ONLN)" typecheck-part1
+  time make JAVACHECK_EXTRA_ARGS=-Afilenames -C java --jobs="$(getconf _NPROCESSORS_ONLN)" typecheck-part3
 else
-  time make -C java --jobs="$(getconf _NPROCESSORS_ONLN)" typecheck-part1
+  time make -C java --jobs="$(getconf _NPROCESSORS_ONLN)" typecheck-part3
 fi
