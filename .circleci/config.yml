@@ -386,7 +386,7 @@ jobs:
           name: test-daikon-part3.sh
           command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-daikon-part3.sh
           no_output_timeout: "30m"
-]
+
 
   ## I'm not sure why the guava_jdk11 job is failing (it's due to Error Prone).
   guava_jdk25:

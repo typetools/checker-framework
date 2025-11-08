@@ -112,7 +112,7 @@ circleci_boilerplate($1,)
           name: test-daikon-part3.sh
           command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-daikon-part3.sh
           no_output_timeout: "30m"
-]])dnl
+])dnl
 dnl
 define([guava_job], [dnl
   guava_jdk$1:
