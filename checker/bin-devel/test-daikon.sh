@@ -19,7 +19,7 @@ cd ../daikon
 git log | head -n 5
 
 # Under CI, there are two CPUs, but limit to 1 to avoid out-of-memory error.
-if [ -n "$CIRCLECI" ] || [ -n "$AZURE_HTTP_USER_AGENT" ]; then
+if [ -n "$("$CHECKERFRAMEWORK"/checker/bin-devel/is-ci.sh)" ]; then
   num_jobs=1
 else
   num_jobs="$(nproc || sysctl -n hw.ncpu || getconf _NPROCESSORS_ONLN || echo 1)"
