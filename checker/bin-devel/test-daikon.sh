@@ -17,10 +17,18 @@ echo "running \"./gradlew assembleForJavac\" for checker-framework"
 "$SCRIPT_DIR/.git-scripts/git-clone-related" codespecs daikon
 cd ../daikon
 git log | head -n 5
-make --jobs="$(getconf _NPROCESSORS_ONLN)" compile
+
+# Under CI, there are two CPUs, but limit to 1 to avoid out-of-memory error.
+if [ -n "$("$CHECKERFRAMEWORK"/checker/bin-devel/is-ci.sh)" ]; then
+  num_jobs=1
+else
+  num_jobs="$(nproc || sysctl -n hw.ncpu || getconf _NPROCESSORS_ONLN || echo 1)"
+fi
+
+make --jobs="${num_jobs}" compile
 if [ "$TRAVIS" = "true" ]; then
   # Travis kills a job if it runs 10 minutes without output
-  time make JAVACHECK_EXTRA_ARGS=-Afilenames -C java --jobs="$(getconf _NPROCESSORS_ONLN)" typecheck
+  time make JAVACHECK_EXTRA_ARGS=-Afilenames -C java --jobs="${num_jobs}" typecheck
 else
-  time make -C java --jobs="$(getconf _NPROCESSORS_ONLN)" typecheck
+  time make -C java --jobs="${num_jobs}" typecheck
 fi
