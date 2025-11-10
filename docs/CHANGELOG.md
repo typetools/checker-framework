@@ -20,7 +20,6 @@ In `GenericAnnotatedTypeFactory`:
 * renamed `checkAndPerformFlowAnalysis` to `performFlowAnalysisForClassOnce`
 
 **Closed issues:**
-
 \#6629, #7341, #7346.
 
 ## Version 3.51.1 (2025-10-01)
@@ -711,7 +710,6 @@ Expose CFG APIs to allow inserting jumps and throws.
 ## Version 3.22.1 (June 1, 2022)
 
 **Closed issues:**
-
 \#58, #5136, #5138, #5142, #5143.
 
 ## Version 3.22.0 (May 2, 2022)
@@ -2019,7 +2017,6 @@ Simplified the instructions for running the Checker Framework with Gradle.
 The Checker Framework Eclipse plugin is no longer released nor supported.
 
 **Closed issues:**
-
 \#65, #66, #100, #108, #175, #184, #190, #194, #209, #239, #260, #270, #274,
 \#293, #302, #303, #306, #321, #325, #341, #356, #360, #361, #371, #383, #385,
 \#391, #397, #398, #410, #423, #424, #431, #430, #432, #548, #1131, #1148,
@@ -2321,7 +2318,6 @@ Tool changes:
    script that performs type inference.
 
 **Closed issues:**
-
 \#69, #86, #199, #299, #329, #421, #428, #557, #564, #573, #579, #665, #668,
 \#669, #670, #671.
 
