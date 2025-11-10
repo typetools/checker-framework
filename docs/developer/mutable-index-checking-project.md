@@ -1,9 +1,6 @@
-= Index checking for mutable length data structures
-:toc:
-:toclevels: 4
+# Index checking for mutable length data structures
 
-
-The https://checkerframework.org/manual/#index-checker[Index Checker] is
+The <https://checkerframework.org/manual/#index-checker[Index> Checker] is
 currently restricted to fixed-size data structures. A fixed-size data
 structure is one whose length cannot be changed once it is created, such
 as arrays and ``String``s. This limitation prevents the Index Checker from
@@ -33,8 +30,7 @@ but improving the checker to precisely handle it.  For example, the current
 Index Checker effectively forbids all mutable-length data structures, such
 as ``List``s.
 
-
-== Focus on side effects: permit mutation, but invalidate flow facts when a list might be modified
+## Focus on side effects: permit mutation, but invalidate flow facts when a list might be modified
 
 It is essential to invalidate some flow facts when a mutation may occur.
 (And to forbid mutation when prohibited by a a programmer-written annotation.)
@@ -53,15 +49,16 @@ therefore will result in many false positive alarms, so it is an
 impractical solution. However, it is sound, which is most important.
 Subsequent steps will improve its precision.
 
-. Only invalidate _some_ Index Checker qualifiers when a side effect may
+. Only invalidate *some* Index Checker qualifiers when a side effect may
 occur -- namely, those relating to mutable-length data structures. This
 requires determining which indexable datatypes have mutable lengths,
 which can be hard-coded for the collection classes in the JDK.
 
-. Implement the link:https://rawgit.com/mernst/checker-framework/refs/heads/index-checker-mutable-project/docs/developer/new-contributor-projects.html#SideEffectsOnly[`@SideEffectsOnly`] annotation.
+. Implement the link:<https://rawgit.com/mernst/checker-framework/refs/heads/index-checker-mutable-project/docs/developer/new-contributor-projects.html#SideEffectsOnly[`@SideEffectsOnly`>] annotation.
 Suppose that a method is called that only side-effects variable `a` of
 type `T` and variable `b` of type `U`. Then the Index Checker needs to
 invalidate:
+
 * qualifiers on all expressions of type `T` or `U` (and their supertypes
 and subtypes). The Index Checker should retain qualifiers on types that are
 unrelated to `T` and `U`.
@@ -81,12 +78,12 @@ methods is called.
 +
 This proposal offers a way for users to extend the guarantees of the Index
 Checker to their own data structures. The `@BackedBy` annotation is useful
-_while checking the implementation of `ArrayList`_, because it allows the
+*while checking the implementation of `ArrayList`*, because it allows the
 checker to issue a warning if there exists a method that modifies the
 length of the underlying data structure (i.e., `elementData` in the case of
 ArrayList) that does not have a corresponding annotation indicating that it
 modifies the length of the data structure being analyzed. In other words,
-`@BackedBy` is useful for specifying and verifying the _implementations_ of
+`@BackedBy` is useful for specifying and verifying the *implementations* of
 data structures, rather than uses.  This should not be worked on until
 the type-checker is functional.  `@BackedBy` would need to be written on
 the implementation of `ArrayList` if we were to type-check it.
@@ -102,7 +99,7 @@ structure. It can perhaps be used.
 effect to expressions `a` and `b`, it is only necessary to invalidate
 Index Checker qualifiers related to expressions that may be aliased to
 `a` or `b`. One possible pointer analysis is that of
-https://github.com/plast-lab/doop-mirror[Doop].
+<https://github.com/plast-lab/doop-mirror[Doop>].
 +
 A significant downside to this approach is that it is a whole-program
 analysis rather than a modular one. A modular analysis works
@@ -116,7 +113,7 @@ If an expression is may-aliased to `a`, then its type should become the
 LUB of its old type and ``a``'s new type. Adjusting the types of
 dependently-typed variables is a bit more complicated.
 
-== Forbid problematic mutation: only permit lists to grow
+## Forbid problematic mutation: only permit lists to grow
 
 If an index is valid for a given collection, then the index is also valid
 for a bigger collection.  Adding to a collection does not invalidate any existing indices.
@@ -127,13 +124,14 @@ As a first step, limit the guarantees provided by the checker only to
 non-shrinking collections.  (Just as they are currently limited to
 collections whose size never changes.)
 
+### Qualifier hierarchy
 
-=== Qualifier hierarchy
-
-[%hardbreaks]
 This is the qualifier hierarchy:
+
+``` text
 @BottomGrowShrink <: @GrowOnly <: @UnshrinkableRef
 @BottomGrowShrink <: @UncheckedShrinkable <: @Shrinkable <: @UnshrinkableRef
+```
 
 * A `@GrowOnly` reference to a collection states that as long as that reference exists,
 the size of the collection will not decrease (elements cannot be removed, but can be added).
@@ -166,15 +164,13 @@ will have indices checked.
 When annotating a library, do not use `@UncheckedShrinkable` and `@GrowOnly`.
 TODO: why not use `@GrowOnly`?
 
-
-=== Implementation strategy for `@Shrinkable` and `@UncheckedShrinkable`
+### Implementation strategy for `@Shrinkable` and `@UncheckedShrinkable`
 
 One approach is to implement `@Shrinkable` and `@UncheckedShrinkable`.
 Another approach is to initially implement only `@UncheckedShrinkable` (and
 probably also treat `@UnshrinkableRef` as unchecked).
 
-
-=== Library annotations
+### Library annotations
 
 As is typical, JDK annotations are trusted, not checked.
 
@@ -186,8 +182,7 @@ Checking indices of a mutable collection type (such as `List`) in the Java libra
 * Methods that can remove from the collection must use the Shrinkable annotation. Missing annotation would create unsoundness.
 * Methods that allocate and return a new list could also use the Shrinkable annotation.
 
-
-=== Annotating application code
+### Annotating application code
 
 In application code, each allocation of a list should be by default `@UncheckedShrinkable`.
 If all lists are `@UncheckedShrinkable`, it would ideally result in no warnings reported.
@@ -196,29 +191,26 @@ Then, collections that are intended to be grow-only should be annotated `@GrowOn
 Now, the Index Checker starts providing value by checking that the accesses are not out of bounds.
 Some types within the application might need to be annotated `@UnshrinkableRef` to accept both kinds of collections.
 
+### Advanced features
 
-=== Advanced features
+Also see [mutable-index-checking-advanced.md](advanced features).
 
-Also see xref:mutable-index-checking-advanced.adoc[advanced features].
+### Alternate qualifier hierarchies
 
-
-=== Alternate qualifier hierarchies
-
-[NOTE]
-====
 Here are alternative, unacceptable qualifier hierarchy designs.
 
 In this hierarchy, any `@GrowOnly` can be cast to `@Shrinkable` and have `remove()` called on it:
-----
-bottom <: @GrowOnly <: @Shrinkable
-----
-In this hierarchy, any `@Shrinkable` can be cast to `@GrowOnly`, then
-an alias of the it can be modified.
-----
-bottom <: @Shrinkable <: @GrowOnly
-----
-====
 
+```text
+bottom <: @GrowOnly <: @Shrinkable
+```
+
+In this hierarchy, any `@Shrinkable` can be cast to `@GrowOnly`, then
+an alias of it can be modified:
+
+```text
+bottom <: @Shrinkable <: @GrowOnly
+```
 
 // LocalWords:  toc toclevels myList indexable SideEffectsOnly BackedBy Doop
 // LocalWords:  ChangesLength LengthOf LTELengthOf hardbreaks GrowOnly

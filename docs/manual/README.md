@@ -1,4 +1,6 @@
-On a standard Ubuntu 14.10 system, you will need to install some
+# Daikon manual
+
+On a standard Ubuntu system, you will need to install some
 additional packages to build the manual.  See the "Building from source"
 section of the manual for that list.
 
