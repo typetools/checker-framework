@@ -63,7 +63,7 @@ dependencies {
   // For the Resource Leak Checker's support for JavaEE.
   testImplementation("javax.servlet:javax.servlet-api:4.0.1")
   // For the Resource Leak Checker's support for IOUtils.
-  testImplementation("commons-io:commons-io:2.20.0")
+  testImplementation("commons-io:commons-io:2.21.0")
   // To test for an obscure crash in CFG construction for try-with-resources;
   // see https://github.com/typetools/checker-framework/issues/6396
   testImplementation("org.apache.spark:spark-sql_2.12:3.3.2")
