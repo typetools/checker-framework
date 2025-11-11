@@ -195,7 +195,7 @@ Some types within the application might need to be annotated `@UnshrinkableRef` 
 
 ### Advanced features
 
-Also see [mutable-index-checking-advanced.md](advanced features).
+Also see [advanced features](mutable-index-checking-advanced.md).
 
 ### Alternate qualifier hierarchies
 
