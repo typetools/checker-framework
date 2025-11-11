@@ -54,7 +54,7 @@ occur -- namely, those relating to mutable-length data structures. This
 requires determining which indexable datatypes have mutable lengths,
 which can be hard-coded for the collection classes in the JDK.
 
-. Implement the link:<https://rawgit.com/mernst/checker-framework/refs/heads/index-checker-mutable-project/docs/developer/new-contributor-projects.html#SideEffectsOnly[`@SideEffectsOnly`>] annotation.
+. Implement the [`@SideEffectsOnly`](https://rawgit.com/mernst/checker-framework/refs/heads/index-checker-mutable-project/docs/developer/new-contributor-projects.html#SideEffectsOnly) annotation.
 Suppose that a method is called that only side-effects variable `a` of
 type `T` and variable `b` of type `U`. Then the Index Checker needs to
 invalidate:
