@@ -54,6 +54,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 ENV JAVA21_HOME=/usr/lib/jvm/java-21-openjdk-amd64
 
 RUN export DEBIAN_FRONTEND=noninteractive \
-&& apt autoremove \
-&& apt clean \
+&& apt -y autoremove \
+&& apt -y clean \
 && rm -rf /var/lib/apt/lists/*
+

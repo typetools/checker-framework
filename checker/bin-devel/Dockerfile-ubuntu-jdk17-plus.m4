@@ -15,7 +15,4 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 && update-java-alternatives -s java-1.17.0-openjdk-amd64
 ENV JAVA17_HOME=/usr/lib/jvm/java-17-openjdk-amd64
 
-RUN export DEBIAN_FRONTEND=noninteractive \
-&& apt autoremove \
-&& apt clean \
-&& rm -rf /var/lib/apt/lists/*
+include(`Dockerfile-contents-apt-clean.m4')
