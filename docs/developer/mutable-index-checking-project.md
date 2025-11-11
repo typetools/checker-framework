@@ -99,7 +99,7 @@ structure. It can perhaps be used.
 effect to expressions `a` and `b`, it is only necessary to invalidate
 Index Checker qualifiers related to expressions that may be aliased to
 `a` or `b`. One possible pointer analysis is that of
-<https://github.com/plast-lab/doop-mirror[Doop>].
+[Doop](https://github.com/plast-lab/doop-mirror).
 +
 A significant downside to this approach is that it is a whole-program
 analysis rather than a modular one. A modular analysis works
