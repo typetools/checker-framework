@@ -1,7 +1,6 @@
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt -qqy update \
 && apt -y install \
-  asciidoctor \
   autoconf \
   devscripts \
   dia \

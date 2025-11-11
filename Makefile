@@ -61,7 +61,6 @@ ifneq ($(SH_SCRIPTS),)
 endif
 
 showvars:
-	@echo "ASCIIDOC_FILES=${ASCIIDOC_FILES}"
 	@echo "PYTHON_FILES=${PYTHON_FILES}"
 	@echo "SH_SCRIPTS=${SH_SCRIPTS}"
 	@echo "BASH_SCRIPTS=${BASH_SCRIPTS}"
