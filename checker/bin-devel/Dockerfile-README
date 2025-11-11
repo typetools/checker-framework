@@ -73,6 +73,7 @@ echo "success"
 
 ## This version might be faster with an SSD.  It might not be with a spinning disk.
 # These first few need not be uploaded, just created and locally cached.
+# Don't run this under Emacs.
 (create_upload_docker_image cf ubuntu jdkbase && \
 create_upload_docker_image cf ubuntu jdkplus) &
 (create_upload_docker_image cf ubunturolling jdkbase && \
