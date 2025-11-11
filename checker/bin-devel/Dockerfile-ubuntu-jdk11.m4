@@ -13,7 +13,4 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 && update-java-alternatives -s java-1.11.0-openjdk-amd64
 ENV JAVA11_HOME=/usr/lib/jvm/java-11-openjdk-amd64
 
-RUN export DEBIAN_FRONTEND=noninteractive \
-&& apt autoremove \
-&& apt clean \
-&& rm -rf /var/lib/apt/lists/*
+include(`Dockerfile-contents-apt-clean.m4')
