@@ -33,7 +33,7 @@ as `List`s.
 ## Focus on side effects: permit mutation, but invalidate flow facts when a list might be modified
 
 It is essential to invalidate some flow facts when a mutation may occur.
-(And to forbid mutation when prohibited by a a programmer-written annotation.)
+(And to forbid mutation when prohibited by a programmer-written annotation.)
 It is a goal to invalidate as few flow facts as possible, while still retaining soundness.
 
 When an `int` is mutated, then no change is needed:  use the Index
