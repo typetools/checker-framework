@@ -15,7 +15,4 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 && update-java-alternatives -s java-1.25.0-openjdk-amd64
 ENV JAVA25_HOME=/usr/lib/jvm/java-25-openjdk-amd64
 
-RUN export DEBIAN_FRONTEND=noninteractive \
-&& apt autoremove \
-&& apt clean \
-&& rm -rf /var/lib/apt/lists/*
+include(`Dockerfile-contents-apt-clean.m4')
