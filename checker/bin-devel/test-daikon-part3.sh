@@ -28,7 +28,7 @@ fi
 make --jobs="${num_jobs}" compile
 if [ "$TRAVIS" = "true" ]; then
   # Travis kills a job if it runs 10 minutes without output
-  time make JAVACHECK_EXTRA_ARGS=-Afilenames -C java --jobs="${num_jobs}" typecheck-part2
+  time make JAVACHECK_EXTRA_ARGS=-Afilenames -C java --jobs="${num_jobs}" typecheck-part3
 else
-  time make -C java --jobs="${num_jobs}" typecheck-part2
+  time make -C java --jobs="${num_jobs}" typecheck-part3
 fi

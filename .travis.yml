@@ -34,6 +34,8 @@ env:
     - GROUP=daikon-part1 JDKVER=jdk17
     - GROUP=daikon-part2 JDKVER=jdk11
     - GROUP=daikon-part2 JDKVER=jdk17
+    - GROUP=daikon-part3 JDKVER=jdk11
+    - GROUP=daikon-part3 JDKVER=jdk17
     - GROUP=guava-formatter JDKVER=jdk11
     - GROUP=guava-formatter JDKVER=jdk17
     - GROUP=guava-index JDKVER=jdk11
