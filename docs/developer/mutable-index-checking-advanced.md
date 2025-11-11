@@ -58,9 +58,9 @@ The methods add, remove, and non-mutating methods, can all use one annotation
 sizeOfListOnEntry + n".
 Then we could have:
 
- * add: `@EnsuresRelativeMinLen(list, 1)`
- * get: `@EnsuresRelativeMinLen(list, 0)`
- * remove: `@EnsuresRelativeMinLen(list, -1)`
+* add: `@EnsuresRelativeMinLen(list, 1)`
+* get: `@EnsuresRelativeMinLen(list, 0)`
+* remove: `@EnsuresRelativeMinLen(list, -1)`
 
 An unrestricted method would -- implementation details aside -- be
 `@EnsuresRelativeMinLen(list, -infinity)`.

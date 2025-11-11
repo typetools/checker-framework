@@ -1,11 +1,11 @@
 # Index checking for mutable length data structures
 
-The <https://checkerframework.org/manual/#index-checker[Index> Checker] is
+The [Index Checker](https://checkerframework.org/manual/#index-checker) is
 currently restricted to fixed-size data structures. A fixed-size data
 structure is one whose length cannot be changed once it is created, such
-as arrays and ``String``s. This limitation prevents the Index Checker from
+as arrays and `String`s. This limitation prevents the Index Checker from
 verifying indexing operations on mutable-size data structures, like
-``List``s, that have `add()` or `remove()` methods. Since these kind of
+``List`s, that have`add()` or `remove()` methods. Since these kind of
 collections are common in practice, this is a severe limitation for the
 Index Checker.
 
@@ -28,7 +28,7 @@ problem can focus on the aliasing problem or the mutation problem.  Solving
 the problem could involve forbidding certain code, or permitting the code
 but improving the checker to precisely handle it.  For example, the current
 Index Checker effectively forbids all mutable-length data structures, such
-as ``List``s.
+as `List`s.
 
 ## Focus on side effects: permit mutation, but invalidate flow facts when a list might be modified
 
@@ -43,77 +43,77 @@ mutated.
 Here are some steps toward invalidating fewer flow facts.
 
 1. Invalidate all Index Checker qualifiers whenever a side effect may
-  occur (for example, at every call to a method that might have side
-  effects). This is imprecise (it loses refined type information) and
-  therefore will result in many false positive alarms, so it is an
-  impractical solution. However, it is sound, which is most important.
-  Subsequent steps will improve its precision.
+   occur (for example, at every call to a method that might have side
+   effects). This is imprecise (it loses refined type information) and
+   therefore will result in many false positive alarms, so it is an
+   impractical solution. However, it is sound, which is most important.
+   Subsequent steps will improve its precision.
 
 2. Only invalidate *some* Index Checker qualifiers when a side effect may
-  occur -- namely, those relating to mutable-length data structures. This
-  requires determining which indexable datatypes have mutable lengths,
-  which can be hard-coded for the collection classes in the JDK.
+   occur -- namely, those relating to mutable-length data structures. This
+   requires determining which indexable datatypes have mutable lengths,
+   which can be hard-coded for the collection classes in the JDK.
 
 3. Implement the
-  [`@SideEffectsOnly`](https://rawgit.com/mernst/checker-framework/refs/heads/index-checker-mutable-project/docs/developer/new-contributor-projects.html#SideEffectsOnly)
-  annotation.
-  Suppose that a method is called that only side-effects variable `a` of type
-  `T` and variable `b` of type `U`. Then the Index Checker needs to
-  invalidate:
+   [`@SideEffectsOnly`](https://rawgit.com/mernst/checker-framework/refs/heads/index-checker-mutable-project/docs/developer/new-contributor-projects.html#SideEffectsOnly)
+   annotation.
+   Suppose that a method is called that only side-effects variable `a` of type
+   `T` and variable `b` of type `U`. Then the Index Checker needs to
+   invalidate:
 
-  * qualifiers on all expressions of type `T` or `U` (and their supertypes
-    and subtypes). The Index Checker should retain qualifiers on types that
-    are unrelated to `T` and `U`.
-  * dependent type qualifiers that mention any expression of type `T` or
-    `U`.
+    * qualifiers on all expressions of type `T` or `U` (and their supertypes
+      and subtypes). The Index Checker should retain qualifiers on types that
+      are unrelated to `T` and `U`.
+    * dependent type qualifiers that mention any expression of type `T` or
+      `U`.
 
 4. Devise and implement a new annotation (e.g., `@BackedBy`) that connects
-  the length of a data structure to the length of its backing data
-  structure. For example, an annotation on `ArrayList` could tell the checker
-  which field of the `ArrayList` class is the backing array. Then, make it an
-  error if any method of a class with such an annotation re-assigns the
-  backing array unless it has a new annotation (e.g., `@ChangesLength`). This
-  annotation could apply recursively, to allow data structures that are
-  themselves backed by mutable-length data structures. Only invalidate facts
-  about a mutable length data structure when one of its `@ChangesLength`
-  methods is called.
+   the length of a data structure to the length of its backing data
+   structure. For example, an annotation on `ArrayList` could tell the checker
+   which field of the `ArrayList` class is the backing array. Then, make it an
+   error if any method of a class with such an annotation re-assigns the
+   backing array unless it has a new annotation (e.g., `@ChangesLength`). This
+   annotation could apply recursively, to allow data structures that are
+   themselves backed by mutable-length data structures. Only invalidate facts
+   about a mutable length data structure when one of its `@ChangesLength`
+   methods is called.
 
-  This proposal offers a way for users to extend the guarantees of the Index
-  Checker to their own data structures. The `@BackedBy` annotation is useful
-  *while checking the implementation of `ArrayList`*, because it allows the
-  checker to issue a warning if there exists a method that modifies the
-  length of the underlying data structure (i.e., `elementData` in the case of
-  ArrayList) that does not have a corresponding annotation indicating that it
-  modifies the length of the data structure being analyzed. In other words,
-  `@BackedBy` is useful for specifying and verifying the *implementations* of
-  data structures, rather than uses.  This should not be worked on until
-  the type-checker is functional.  `@BackedBy` would need to be written on
-  the implementation of `ArrayList` if we were to type-check it.
-  But the main purpose of `@BackedBy` is to allow developers who write their
-  own data structures to also enroll them into the Index Checker in a sound
-  way.
+   This proposal offers a way for users to extend the guarantees of the Index
+   Checker to their own data structures. The `@BackedBy` annotation is useful
+   *while checking the implementation of `ArrayList`*, because it allows the
+   checker to issue a warning if there exists a method that modifies the
+   length of the underlying data structure (i.e., `elementData` in the case of
+   ArrayList) that does not have a corresponding annotation indicating that it
+   modifies the length of the data structure being analyzed. In other words,
+   `@BackedBy` is useful for specifying and verifying the *implementations* of
+   data structures, rather than uses.  This should not be worked on until
+   the type-checker is functional.  `@BackedBy` would need to be written on
+   the implementation of `ArrayList` if we were to type-check it.
+   But the main purpose of `@BackedBy` is to allow developers who write their
+   own data structures to also enroll them into the Index Checker in a sound
+   way.
 
 5. The `@LengthOf` annotation is currently an alias for `@LTELengthOf`.
-  But its definition is a value that indicates the size of a data
-  structure. It can perhaps be used.
+   But its definition is a value that indicates the size of a data
+   structure. It can perhaps be used.
 
 6. Run a pointer analysis before type-checking. Now, at a possible side
-  effect to expressions `a` and `b`, it is only necessary to invalidate
-  Index Checker qualifiers related to expressions that may be aliased to
-  `a` or `b`. One possible pointer analysis is that of
-  [Doop](https://github.com/plast-lab/doop-mirror).
+   effect to expressions `a` and `b`, it is only necessary to invalidate
+   Index Checker qualifiers related to expressions that may be aliased to
+   `a` or `b`. One possible pointer analysis is that of
+   [Doop](https://github.com/plast-lab/doop-mirror).
 
-  A significant downside to this approach is that it is a whole-program
-  analysis rather than a modular one. A modular analysis works
-  method-by-method. A whole-program analysis requires that the entire
-  program is present to be analyzed, and it is slow.
+   A significant downside to this approach is that it is a whole-program
+   analysis rather than a modular one. A modular analysis works
+   method-by-method. A whole-program analysis requires that the entire
+   program is present to be analyzed, and it is slow.
 
 7. Modify rather than discarding the Index Checker qualifiers on
-  possibly-aliased data structures. If an expression is must-aliased to
-  `a`, then its type should be updated in exactly the way that ``a``'s is.
-  If an expression is may-aliased to `a`, then its type should become the
-  LUB of its old type and ``a``'s new type. Adjusting the types of
-  dependently-typed variables is a bit more complicated.
+   possibly-aliased data structures. If an expression is must-aliased to
+   `a`, then its type should be updated in exactly the way that `a`'s is.
+   If an expression is may-aliased to `a`, then its type should become the
+   LUB of its old type and `a`'s new type. Adjusting the types of
+   dependently-typed variables is a bit more complicated.
 
 ## Forbid problematic mutation: only permit lists to grow
 
@@ -136,22 +136,22 @@ This is the qualifier hierarchy:
 ```
 
 * A `@GrowOnly` reference to a collection states that as long as that reference exists,
-the size of the collection will not decrease (elements cannot be removed, but can be added).
-Calling `remove()`, `clear()`, etc. is forbidden, and no alias can remove
-elements, either.
-The expression is not aliased to any `@Shrinkable` list.
-Any valid index remains valid (unless the index is changed), regardless of
-changes to any list.
-This is the default type.
+  the size of the collection will not decrease (elements cannot be removed, but can be added).
+  Calling `remove()`, `clear()`, etc. is forbidden, and no alias can remove
+  elements, either.
+  The expression is not aliased to any `@Shrinkable` list.
+  Any valid index remains valid (unless the index is changed), regardless of
+  changes to any list.
+  This is the default type.
 * A `@Shrinkable` reference to a collection allows removing elements
-from the collection using methods such as `remove()` and `clear()`.
-An alias to the collection may also shrink the collection.
+  from the collection using methods such as `remove()` and `clear()`.
+  An alias to the collection may also shrink the collection.
 * `@UnshrinkableRef`: calling `remove()`, `clear()`, etc. is forbidden.
-A `@UnshrinkableRef` reference to the collection cannot be used to remove elements,
-but admits the possibility to remove elements from the collection using another reference to it.
+  A `@UnshrinkableRef` reference to the collection cannot be used to remove elements,
+  but admits the possibility to remove elements from the collection using another reference to it.
 * The annotation `@UncheckedShrinkable` is like `@Shrinkable`,
-but is used to opt out of index checking.
-The checker behaves as if all indices are valid for this collection.
+  but is used to opt out of index checking.
+  The checker behaves as if all indices are valid for this collection.
 
 Unless a reference is `@GrowOnly` or `@UncheckedShrinkable`,
 the checker has to invalidate all `@IndexFor` qualifiers for it
