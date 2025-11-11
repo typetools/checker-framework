@@ -5,8 +5,8 @@ currently restricted to fixed-size data structures. A fixed-size data
 structure is one whose length cannot be changed once it is created, such
 as arrays and `String`s. This limitation prevents the Index Checker from
 verifying indexing operations on mutable-size data structures, like
-``List`s, that have`add()` or `remove()` methods. Since these kind of
-collections are common in practice, this is a severe limitation for the
+``List`s, that have`add()` or `remove()` methods. Since this kind of
+collection is common in practice, this is a severe limitation for the
 Index Checker.
 
 The fundamental problem is the combination of *mutation* (side effects) and
