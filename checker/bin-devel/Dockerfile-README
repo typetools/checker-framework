@@ -79,21 +79,25 @@ create_upload_docker_image cf ubuntu jdkplus) &
 (create_upload_docker_image cf ubunturolling jdkbase && \
 create_upload_docker_image cf ubunturolling jdkplus) &
 sleep 1
-wait
-(create_upload_docker_image cf ubuntu jdk11 && \
-create_upload_docker_image cf ubuntu jdk11-plus) &
-(create_upload_docker_image cf ubuntu jdk17 && \
-create_upload_docker_image cf ubuntu jdk17-plus) &
-(create_upload_docker_image cf ubuntu jdk21 && \
-create_upload_docker_image cf ubuntu jdk21-plus) &
-(create_upload_docker_image cf ubuntu jdk24 && \
-create_upload_docker_image cf ubuntu jdk24-plus) &
-(create_upload_docker_image cf ubuntu jdk25 && \
-create_upload_docker_image cf ubuntu jdk25-plus) &
-sleep 1
-wait && \
-git push && \
-echo "success"
+if wait ; then
+  (create_upload_docker_image cf ubuntu jdk11 && \
+  create_upload_docker_image cf ubuntu jdk11-plus) &
+  (create_upload_docker_image cf ubuntu jdk17 && \
+  create_upload_docker_image cf ubuntu jdk17-plus) &
+  (create_upload_docker_image cf ubuntu jdk21 && \
+  create_upload_docker_image cf ubuntu jdk21-plus) &
+  (create_upload_docker_image cf ubuntu jdk24 && \
+  create_upload_docker_image cf ubuntu jdk24-plus) &
+  (create_upload_docker_image cf ubuntu jdk25 && \
+  create_upload_docker_image cf ubuntu jdk25-plus) &
+  sleep 1
+  wait && \
+  git push && \
+  echo "success"
+else
+  echo "failure"
+  false
+fi
 
 
 
