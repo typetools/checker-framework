@@ -63,8 +63,6 @@ create_upload_docker_image cf ubuntu jdk11-plus) && \
 create_upload_docker_image cf ubuntu jdk17-plus) && \
 (create_upload_docker_image cf ubuntu jdk21 && \
 create_upload_docker_image cf ubuntu jdk21-plus) && \
-(create_upload_docker_image cf ubuntu jdk24 && \
-create_upload_docker_image cf ubuntu jdk24-plus) && \
 (create_upload_docker_image cf ubuntu jdk25 && \
 create_upload_docker_image cf ubuntu jdk25-plus) && \
 git push && \
@@ -86,8 +84,6 @@ if wait ; then
   create_upload_docker_image cf ubuntu jdk17-plus) &
   (create_upload_docker_image cf ubuntu jdk21 && \
   create_upload_docker_image cf ubuntu jdk21-plus) &
-  (create_upload_docker_image cf ubuntu jdk24 && \
-  create_upload_docker_image cf ubuntu jdk24-plus) &
   (create_upload_docker_image cf ubuntu jdk25 && \
   create_upload_docker_image cf ubuntu jdk25-plus) &
   sleep 1
