@@ -42,77 +42,78 @@ mutated.
 
 Here are some steps toward invalidating fewer flow facts.
 
-. Invalidate all Index Checker qualifiers whenever a side effect may
-occur (for example, at every call to a method that might have side
-effects). This is imprecise (it loses refined type information) and
-therefore will result in many false positive alarms, so it is an
-impractical solution. However, it is sound, which is most important.
-Subsequent steps will improve its precision.
+1. Invalidate all Index Checker qualifiers whenever a side effect may
+  occur (for example, at every call to a method that might have side
+  effects). This is imprecise (it loses refined type information) and
+  therefore will result in many false positive alarms, so it is an
+  impractical solution. However, it is sound, which is most important.
+  Subsequent steps will improve its precision.
 
-. Only invalidate *some* Index Checker qualifiers when a side effect may
-occur -- namely, those relating to mutable-length data structures. This
-requires determining which indexable datatypes have mutable lengths,
-which can be hard-coded for the collection classes in the JDK.
+2. Only invalidate *some* Index Checker qualifiers when a side effect may
+  occur -- namely, those relating to mutable-length data structures. This
+  requires determining which indexable datatypes have mutable lengths,
+  which can be hard-coded for the collection classes in the JDK.
 
-. Implement the
-[`@SideEffectsOnly`](https://rawgit.com/mernst/checker-framework/refs/heads/index-checker-mutable-project/docs/developer/new-contributor-projects.html#SideEffectsOnly)
-annotation.  Suppose that a method is called that only side-effects
-variable `a` of type `T` and variable `b` of type `U`. Then the Index
-Checker needs to invalidate:
+3. Implement the
+  [`@SideEffectsOnly`](https://rawgit.com/mernst/checker-framework/refs/heads/index-checker-mutable-project/docs/developer/new-contributor-projects.html#SideEffectsOnly)
+  annotation.
+  Suppose that a method is called that only side-effects variable `a` of type
+  `T` and variable `b` of type `U`. Then the Index Checker needs to
+  invalidate:
 
-* qualifiers on all expressions of type `T` or `U` (and their supertypes
-and subtypes). The Index Checker should retain qualifiers on types that are
-unrelated to `T` and `U`.
-* dependent type qualifiers that mention any expression of type `T` or
-`U`.
+  * qualifiers on all expressions of type `T` or `U` (and their supertypes
+    and subtypes). The Index Checker should retain qualifiers on types that
+    are unrelated to `T` and `U`.
+  * dependent type qualifiers that mention any expression of type `T` or
+    `U`.
 
-. Devise and implement a new annotation (e.g., `@BackedBy`) that connects
-the length of a data structure to the length of its backing data
-structure. For example, an annotation on `ArrayList` could tell the checker
-which field of the `ArrayList` class is the backing array. Then, make it an
-error if any method of a class with such an annotation re-assigns the
-backing array unless it has a new annotation (e.g., `@ChangesLength`). This
-annotation could apply recursively, to allow data structures that are
-themselves backed by mutable-length data structures. Only invalidate facts
-about a mutable length data structure when one of its `@ChangesLength`
-methods is called.
-+
-This proposal offers a way for users to extend the guarantees of the Index
-Checker to their own data structures. The `@BackedBy` annotation is useful
-*while checking the implementation of `ArrayList`*, because it allows the
-checker to issue a warning if there exists a method that modifies the
-length of the underlying data structure (i.e., `elementData` in the case of
-ArrayList) that does not have a corresponding annotation indicating that it
-modifies the length of the data structure being analyzed. In other words,
-`@BackedBy` is useful for specifying and verifying the *implementations* of
-data structures, rather than uses.  This should not be worked on until
-the type-checker is functional.  `@BackedBy` would need to be written on
-the implementation of `ArrayList` if we were to type-check it.
-But the main purpose of `@BackedBy` is to allow developers who write their
-own data structures to also enroll them into the Index Checker in a sound
-way.
+4. Devise and implement a new annotation (e.g., `@BackedBy`) that connects
+  the length of a data structure to the length of its backing data
+  structure. For example, an annotation on `ArrayList` could tell the checker
+  which field of the `ArrayList` class is the backing array. Then, make it an
+  error if any method of a class with such an annotation re-assigns the
+  backing array unless it has a new annotation (e.g., `@ChangesLength`). This
+  annotation could apply recursively, to allow data structures that are
+  themselves backed by mutable-length data structures. Only invalidate facts
+  about a mutable length data structure when one of its `@ChangesLength`
+  methods is called.
 
-. The `@LengthOf` annotation is currently an alias for `@LTELengthOf`.
-But its definition is a value that indicates the size of a data
-structure. It can perhaps be used.
+  This proposal offers a way for users to extend the guarantees of the Index
+  Checker to their own data structures. The `@BackedBy` annotation is useful
+  *while checking the implementation of `ArrayList`*, because it allows the
+  checker to issue a warning if there exists a method that modifies the
+  length of the underlying data structure (i.e., `elementData` in the case of
+  ArrayList) that does not have a corresponding annotation indicating that it
+  modifies the length of the data structure being analyzed. In other words,
+  `@BackedBy` is useful for specifying and verifying the *implementations* of
+  data structures, rather than uses.  This should not be worked on until
+  the type-checker is functional.  `@BackedBy` would need to be written on
+  the implementation of `ArrayList` if we were to type-check it.
+  But the main purpose of `@BackedBy` is to allow developers who write their
+  own data structures to also enroll them into the Index Checker in a sound
+  way.
 
-. Run a pointer analysis before type-checking. Now, at a possible side
-effect to expressions `a` and `b`, it is only necessary to invalidate
-Index Checker qualifiers related to expressions that may be aliased to
-`a` or `b`. One possible pointer analysis is that of
-<https://github.com/plast-lab/doop-mirror[Doop>].
-+
-A significant downside to this approach is that it is a whole-program
-analysis rather than a modular one. A modular analysis works
-method-by-method. A whole-program analysis requires that the entire
-program is present to be analyzed, and it is slow.
+5. The `@LengthOf` annotation is currently an alias for `@LTELengthOf`.
+  But its definition is a value that indicates the size of a data
+  structure. It can perhaps be used.
 
-. Modify rather than discarding the Index Checker qualifiers on
-possibly-aliased data structures. If an expression is must-aliased to
-`a`, then its type should be updated in exactly the way that ``a``'s is.
-If an expression is may-aliased to `a`, then its type should become the
-LUB of its old type and ``a``'s new type. Adjusting the types of
-dependently-typed variables is a bit more complicated.
+6. Run a pointer analysis before type-checking. Now, at a possible side
+  effect to expressions `a` and `b`, it is only necessary to invalidate
+  Index Checker qualifiers related to expressions that may be aliased to
+  `a` or `b`. One possible pointer analysis is that of
+  [Doop](https://github.com/plast-lab/doop-mirror).
+
+  A significant downside to this approach is that it is a whole-program
+  analysis rather than a modular one. A modular analysis works
+  method-by-method. A whole-program analysis requires that the entire
+  program is present to be analyzed, and it is slow.
+
+7. Modify rather than discarding the Index Checker qualifiers on
+  possibly-aliased data structures. If an expression is must-aliased to
+  `a`, then its type should be updated in exactly the way that ``a``'s is.
+  If an expression is may-aliased to `a`, then its type should become the
+  LUB of its old type and ``a``'s new type. Adjusting the types of
+  dependently-typed variables is a bit more complicated.
 
 ## Forbid problematic mutation: only permit lists to grow
 
