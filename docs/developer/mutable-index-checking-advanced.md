@@ -56,8 +56,12 @@ If it comes to defining method effect annotations, considering the above point
 The methods add, remove, and non-mutating methods, can all use one annotation
 `@EnsuresRelativeMinLen(list, n)`, with the meaning "sizeOfListOnReturn >=
 sizeOfListOnEntry + n".
-Then we could have add: `@EnsuresRelativeMinLen(list, 1)`, get:
-`@EnsuresRelativeMinLen(list, 0)`, remove: `@EnsuresRelativeMinLen(list, -1)`.
+Then we could have:
+
+ * add: `@EnsuresRelativeMinLen(list, 1)`
+ * get: `@EnsuresRelativeMinLen(list, 0)`
+ * remove: `@EnsuresRelativeMinLen(list, -1)`
+
 An unrestricted method would -- implementation details aside -- be
 `@EnsuresRelativeMinLen(list, -infinity)`.
 
