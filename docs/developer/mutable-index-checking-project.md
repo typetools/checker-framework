@@ -5,7 +5,7 @@ currently restricted to fixed-size data structures. A fixed-size data
 structure is one whose length cannot be changed once it is created, such
 as arrays and `String`s. This limitation prevents the Index Checker from
 verifying indexing operations on mutable-size data structures, like
-``List`s, that have`add()` or `remove()` methods. Since this kind of
+`List`s, that have `add()` or `remove()` methods. Since this kind of
 collection is common in practice, this is a severe limitation for the
 Index Checker.
 
@@ -195,7 +195,7 @@ Some types within the application might need to be annotated `@UnshrinkableRef` 
 
 ### Advanced features
 
-Also see [mutable-index-checking-advanced.md](advanced features).
+Also see [advanced features](mutable-index-checking-advanced.md).
 
 ### Alternate qualifier hierarchies
 
