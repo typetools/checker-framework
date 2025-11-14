@@ -1,6 +1,6 @@
 plugins {
   id("java-library")
-  id("biz.aQute.bnd.builder").version("7.1.0")
+  alias(libs.plugins.biz.aqute.bnd.builder)
 }
 
 sourceSets {
