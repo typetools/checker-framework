@@ -26,6 +26,7 @@ sourcesJar {
 
 
 configurations {
+  implementation.extendsFrom(stubifierImplementation)
   implementation.extendsFrom(annotatedGuava)
 }
 
@@ -37,7 +38,8 @@ def stubifierJar = tasks.register("stubifierJar", Jar) {
 dependencies {
   api(project(":javacutil"))
   api(project(":dataflow"))
-  api("org.checkerframework:stubparser:3.27.1")
+  api("org.checkerframework:stubparser:${stubparserVersion}")
+  stubifierImplementation("org.checkerframework:stubparser:${stubparserVersion}")
   // This should be implementation sourceSets.stubifier.output, but that cause a failure in shadowJar.
   // This work around is from here: https://github.com/GradleUp/shadow/issues/1606#issuecomment-3164731141
   implementation(files(stubifierJar))
