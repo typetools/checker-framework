@@ -25,15 +25,9 @@ class EnhancedFor {
     }
   }
 
-  // :: error: type.argument
   void test3(List<Socket> list) {
-    // This error is issued because `s` is a local variable, and
-    // the foreach loop under the hood assigns the result of a call
-    // to Iterator#next into it (which is owning by default, because it's
-    // a method return type). Both this error and the type.argument error
-    // above can be suppressed by writing @MustCall on the Socket type, as in
-    // test4 below (but note that this will make call sites difficult to verify).
-    // :: error: (required.method.not.called)
+    // Iterator#next returns @NotOwning: iterators do not own their elements; ownership
+    // stays with the host collection associated with the iterator.
     for (Socket s : list) {}
   }
 
