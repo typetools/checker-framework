@@ -9,7 +9,7 @@ jobs:
   # Only proceed to other jobs if canary_jobs passes.
   canary_jobs:
     docker:
-      - image: 'cimg/base:2025.10'
+      - image: 'cimg/base:2025.11'
     resource_class: small
     environment:
       CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
@@ -364,6 +364,28 @@ jobs:
           name: test-daikon-part2.sh
           command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-daikon-part2.sh
           no_output_timeout: "30m"
+  daikon_part3_jdk25:
+    docker:
+      - image: 'mdernst/cf-ubuntu-jdk25'
+    resource_class: large
+    environment:
+      CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
+      TERM: dumb
+    steps:
+      - restore_cache:
+          keys:
+            - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
+            - 'source-v1-{{ .Branch }}-'
+            - source-v1-
+      - checkout
+      - save_cache:
+          key: *source-cache
+          paths:
+            - .git
+      - run:
+          name: test-daikon-part3.sh
+          command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-daikon-part3.sh
+          no_output_timeout: "30m"
 
 
   ## I'm not sure why the guava_jdk11 job is failing (it's due to Error Prone).
@@ -477,6 +499,10 @@ workflows:
             - canary_jobs
 
       - daikon_part2_jdk25:
+          requires:
+            - canary_jobs
+
+      - daikon_part3_jdk25:
           requires:
             - canary_jobs
 

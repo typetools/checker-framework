@@ -160,14 +160,22 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
       AnnotatedWildcardType wildcard,
       AnnotatedTypeVariable typeParam,
       Set<? extends AnnotationMirror> tops) {
-    applyAnnosFromBound(wildcard.getSuperBound(), typeParam.getLowerBound(), tops);
+    AnnotatedTypeMirror typeParamBound = typeParam.getLowerBound();
+    while (typeParamBound.getKind() == TypeKind.TYPEVAR) {
+      typeParamBound = ((AnnotatedTypeVariable) typeParamBound).getLowerBound();
+    }
+    applyAnnosFromBound(wildcard.getSuperBound(), typeParamBound, tops);
   }
 
   private void propagateExtendsBound(
       AnnotatedWildcardType wildcard,
       AnnotatedTypeVariable typeParam,
       Set<? extends AnnotationMirror> tops) {
-    applyAnnosFromBound(wildcard.getExtendsBound(), typeParam.getUpperBound(), tops);
+    AnnotatedTypeMirror typeParamBound = typeParam.getUpperBound();
+    while (typeParamBound.getKind() == TypeKind.TYPEVAR) {
+      typeParamBound = ((AnnotatedTypeVariable) typeParamBound).getUpperBound();
+    }
+    applyAnnosFromBound(wildcard.getExtendsBound(), typeParamBound, tops);
   }
 
   /**
@@ -181,8 +189,7 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
     // Type variables do not need primary annotations.
     // The type variable will have annotations placed on its
     // bounds via its declaration or defaulting rules
-    if (wildcardBound.getKind() == TypeKind.TYPEVAR
-        || typeParamBound.getKind() == TypeKind.TYPEVAR) {
+    if (wildcardBound.getKind() == TypeKind.TYPEVAR) {
       return;
     }
 

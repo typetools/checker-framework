@@ -685,7 +685,7 @@ public class IndexFileSpecification {
       sb.append("@");
       sb.append(a.def.name);
 
-      if (a.fieldValues.size() == 0) {
+      if (a.fieldValues.isEmpty()) {
         // nothing to do
       } else {
         sb.append("(");

@@ -38,8 +38,8 @@ def stubifierJar = tasks.register("stubifierJar", Jar) {
 dependencies {
   api(project(":javacutil"))
   api(project(":dataflow"))
-  api("org.checkerframework:stubparser:3.26.4")
-  stubifierImplementation("org.checkerframework:stubparser:3.26.4")
+  api("org.checkerframework:stubparser:3.27.1")
+  stubifierImplementation("org.checkerframework:stubparser:3.27.1")
   // This should be implementation sourceSets.stubifier.output, but that cause a failure in shadowJar.
   // This work around is from here: https://github.com/GradleUp/shadow/issues/1606#issuecomment-3164731141
   implementation(files(stubifierJar))

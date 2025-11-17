@@ -428,6 +428,8 @@ public class NullnessVisitor
       }
     }
     // Don't call super because it will issue an incorrect instanceof.unsafe warning.
+    // Instead, just scan the part before "instanceof".
+    super.scan(tree.getExpression(), p);
     return null;
   }
 
@@ -555,7 +557,7 @@ public class NullnessVisitor
    */
   /*package-private*/ static @Nullable String literalFirstArgument(MethodInvocationTree tree) {
     List<? extends ExpressionTree> args = tree.getArguments();
-    assert args.size() > 0;
+    assert !args.isEmpty();
     ExpressionTree arg = args.get(0);
     if (arg.getKind() == Tree.Kind.STRING_LITERAL) {
       String literal = (String) ((LiteralTree) arg).getValue();

@@ -94,7 +94,6 @@ circleci_boilerplate($1,)
 ])])dnl
 dnl
 define([daikon_job], [dnl
-ifelse($1,canary_version, [dnl
   daikon_part1_jdk$1:
 circleci_boilerplate($1,)
       - run:
@@ -107,14 +106,12 @@ circleci_boilerplate($1,)
           name: test-daikon-part2.sh
           command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-daikon-part2.sh
           no_output_timeout: "30m"
-], [dnl
-  daikon_jdk$1:
+  daikon_part3_jdk$1:
 circleci_boilerplate($1,)
       - run:
-          name: test-daikon.sh
-          command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-daikon.sh
+          name: test-daikon-part3.sh
+          command: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-daikon-part3.sh
           no_output_timeout: "30m"
-])dnl
 ])dnl
 dnl
 define([guava_job], [dnl

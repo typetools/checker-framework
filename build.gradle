@@ -60,7 +60,7 @@ ext {
   // If you update this line, also update JAVA_HOME in docs/developer/release/release_vars.py.
   boolean jdk21Compiler = project.getProperties().getOrDefault("useJdk21Compiler", false)
   compilerJdkVersion = jdk21Compiler ? 21 : testJdkVersion
-  compilerRunsOnJava17orHigher = compilerJdkVersion >= 17
+  compilerRunsOnJava21orHigher = compilerJdkVersion >= 21
 
   // As of 2025-04-28 (Lombok 1.18.38), delombok supports JDK 24-ea but not
   // JDK 24 proper; see https://projectlombok.org/changelog .
@@ -543,7 +543,7 @@ allprojects { currentProj ->
         // Error Prone must be available in the annotation processor path
         options.annotationProcessorPath = configurations.errorProneAnnotationProcessor
         // Enable Error Prone
-        options.errorprone.enabled = compilerRunsOnJava17orHigher
+        options.errorprone.enabled = compilerRunsOnJava21orHigher
         options.errorprone.disableWarningsInGeneratedCode = true
         options.errorprone.errorproneArgs = [
           // Many compiler classes are interned.
@@ -636,7 +636,7 @@ def createCheckTypeTask(projectName, taskName, checker, args = []) {
       "-AwarnRedundantAnnotations",
     ]
     options.compilerArgs += args
-    options.forkOptions.jvmArgs += ["-Xmx6g"]
+    options.forkOptions.jvmArgs += ["-Xmx4g"]
 
     options.fork = true
     options.forkOptions.jvmArgs += compilerArgsForRunningCF

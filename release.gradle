@@ -9,7 +9,7 @@ ext {
   //   * any new checkers have been added, or
   //   * backward-incompatible changes have been made to APIs or elsewhere.
   // To make a snapshot release, version should end in "-SNAPSHOT", then: ./gradlew publish
-  releaseVersion = "3.51.2-SNAPSHOT"
+  releaseVersion = "3.52.1-SNAPSHOT"
 
   releaseVersionRegex = "\\d\\.\\d+\\.\\d+(?:\\.\\d)?"
 

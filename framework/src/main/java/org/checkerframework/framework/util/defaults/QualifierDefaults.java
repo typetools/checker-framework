@@ -51,7 +51,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.MapsP;
 import org.plumelib.util.StringsPlume;
 
 /**
@@ -106,8 +106,7 @@ public class QualifierDefaults {
   private static final int CACHE_SIZE = 300;
 
   /** Mapping from an Element to the bound type. */
-  protected final Map<Element, BoundType> elementToBoundType =
-      CollectionsPlume.createLruCache(CACHE_SIZE);
+  protected final Map<Element, BoundType> elementToBoundType = MapsP.createLruCache(CACHE_SIZE);
 
   /**
    * Defaults that apply for a certain Element. On the one hand this is used for caching (an earlier

@@ -533,7 +533,7 @@ public final class IndexFileWriter {
       List<?> l = (List<?>) o;
       sb.append("{");
       if (aaft.elementType == null) {
-        if (l.size() != 0) {
+        if (!l.isEmpty()) {
           throw new AssertionError("nonempty array of unknown type");
         }
       } else {
