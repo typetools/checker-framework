@@ -4,6 +4,8 @@
 
 **User-visible changes:**
 
+Added `Opt.ifPresentOrElse()` method.
+
 **Implementation details:**
 
 **Closed issues:**
