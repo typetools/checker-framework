@@ -39,6 +39,7 @@ import org.checkerframework.checker.mustcall.qual.NotOwning;
 import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer;
+import org.checkerframework.checker.resourceleak.MustCallInference;
 import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
 import org.checkerframework.checker.resourceleak.ResourceLeakUtils;
 import org.checkerframework.common.accumulation.AccumulationStore;
@@ -46,6 +47,7 @@ import org.checkerframework.common.accumulation.AccumulationValue;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
+import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
@@ -229,7 +231,8 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
             capturedStore);
     assert root != null : "@AssumeAssertion(nullness): at this point root is always nonnull";
     rlc.setRoot(root);
-    MustCallConsistencyAnalyzer mustCallConsistencyAnalyzer = new MustCallConsistencyAnalyzer(rlc);
+    MustCallConsistencyAnalyzer mustCallConsistencyAnalyzer =
+        new MustCallConsistencyAnalyzer(rlc, false);
     mustCallConsistencyAnalyzer.analyze(cfg);
 
     // Inferring owning annotations for @Owning fields/parameters, @EnsuresCalledMethods for
