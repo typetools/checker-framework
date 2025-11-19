@@ -7,7 +7,7 @@ LABEL org.opencontainers.image.authors="Michael Ernst <mernst@cs.washington.edu>
 
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt -qqy update \
-&& apt install -y locales \
+&& apt -qqy install locales \
 && rm -rf /var/lib/apt/lists/* \
 && locale-gen "en_US.UTF-8"
 ENV LANG=en_US.UTF-8 \
@@ -17,7 +17,7 @@ ENV LANG=en_US.UTF-8 \
 # Always install JDK 21 to compile the code, even if tests run under a different JDK.
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt -qqy update \
-&& apt -y install \
+&& apt -qqy install \
   openjdk-21-jdk
 ENV JAVA21_HOME=/usr/lib/jvm/java-21-openjdk-amd64
 
@@ -25,7 +25,7 @@ ENV JAVA21_HOME=/usr/lib/jvm/java-21-openjdk-amd64
 
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt -qqy update \
-&& apt -y install \
+&& apt -qqy install \
   ant \
   cpp \
   git \
