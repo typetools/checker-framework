@@ -15,6 +15,10 @@ import org.checkerframework.framework.qual.StubFiles;
 @StubFiles({"bcel.astub", "javac.astub", "javaparser.astub"})
 public final class SignatureChecker extends BaseTypeChecker {
 
+  /** Create a SignatureChecker. */
+  public SignatureChecker() {}
+
+  /** {@inheritDoc} */
   // This method is needed only under MacOS, perhaps as a result of the
   // broken Apple Java distribution.
   public SignatureAnnotatedTypeFactory createFactory(CompilationUnitTree root) {
