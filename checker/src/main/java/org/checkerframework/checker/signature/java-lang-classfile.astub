@@ -9,3 +9,13 @@ package java.lang.classfile.constantpool;
 interface ClassEntry {
   @InternalForm String asInternalName();
 }
+
+interface Utf8Entry {
+  @PolySignature String stringValue(@PolySignature Utf8Entry this);
+}
+
+package java.lang.classfile.instruction;
+
+interface InvokeInstruction {
+  @Identifier Utf8Entry name();
+}
