@@ -1,8 +1,0 @@
-import org.checkerframework.checker.signature.qual.*;
-
-package org.apache.bcel.generic;
-
-class FieldGenOrMethodGen {
-  public @Identifier String getName();
-  public void setName(@Identifier String name);
-}

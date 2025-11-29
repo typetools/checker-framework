@@ -12,7 +12,7 @@ import org.checkerframework.framework.qual.StubFiles;
 // Don't use @RelevantJavaTypes.  Any object can be annotated, which should propagate through its
 // toString().
 // @RelevantJavaTypes(CharSequence.class)
-@StubFiles({"bcel.astub", "javac.astub", "javaparser.astub"})
+@StubFiles({"java-lang-classfile.astub", "javac.astub", "javaparser.astub"})
 public final class SignatureChecker extends BaseTypeChecker {
 
   /** Create a SignatureChecker. */
