@@ -141,8 +141,8 @@ public class CFGTranslationPhaseThree {
   })
   protected static void mergeConsecutiveBlocks(Set<Block> blocks) {
 
-    // This transformation removes blocks from the CFG.  If those blocks appear in `worklist`
-    // then we might visit a block AFTER it has been removed and its nodes have been moved
+    // This transformation removes blocks from the CFG.
+    // We might process a block AFTER it has been removed and its nodes have been moved
     // somewhere else.  When this happens the correct behavior is to just skip the removed
     // block; to do so, we need to remember which blocks have been removed.
     Set<Block> removedBlocks = new HashSet<>();
