@@ -2,7 +2,7 @@
 // be pulled into it, which will create the java.lang.classfile files.  Then, these annotations can
 // be transferred to the corresponding files in it.
 
-import org.checkerframework.checker.signature.qual.*;
+import org.checkerframework.checker.nullness.qual.*;
 
 package java.lang.classfile;
 
