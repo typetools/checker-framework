@@ -725,24 +725,37 @@ You may need to log out and log back in for the setting to take effect.
 because it is missing a package, try the commands there and report a bug
 in this manual.)
 
-% Keep this up to date with ../../checker/bin-devel/Dockerfile-ubuntu-jdk17-plus
+% Keep this in sync with ../../checker/bin-devel/Dockerfile-ubuntu-jdk25-plus
 
 \begin{Verbatim}
-sudo apt-get -qqy update
-sudo apt-get -qqy install \
- openjdk-17-jdk \
- ant cpp git gradle jq jtreg7 libcurl3-gnutls \
- make maven pipx python3-requests python3-setuptools unzip wget \
- autoconf devscripts dia hevea imagemagick junit jtreg7 latexmk \
- librsvg2-bin libasound2-dev libcups2-dev libfontconfig1-dev \
- libx11-dev libxext-dev libxrender-dev libxrandr-dev libxtst-dev libxt-dev \
- pdf2svg rsync shellcheck \
- texlive-font-utils texlive-fonts-recommended \
- texlive-latex-base texlive-latex-extra texlive-latex-recommended
+sudo apt -qqy update
+sudo apt -qqy install locales \
+  openjdk-21-jdk
+export JAVA21_HOME=/usr/lib/jvm/java-21-openjdk-amd64
+sudo apt -qqy install \
+  ant cpp git jq jtreg7 libcurl3-gnutls \
+  make maven python3-requests python3-setuptools unzip wget \
+  autoconf devscripts dia graphviz hevea imagemagick junit latexmk \
+  librsvg2-bin libasound2-dev libcups2-dev libfontconfig1-dev \
+  libx11-dev libxext-dev libxrender-dev libxrandr-dev libxtst-dev libxt-dev \
+  pdf2svg rsync shellcheck shfmt \
+  texlive-font-utils texlive-fonts-recommended \
+  texlive-latex-base texlive-latex-extra texlive-latex-recommended
+sudo apt -qqy install \
+  pipx
 pipx install black
 pipx install flake8
 pipx install html5validator
+pipx install mypy
+pipx install ruff
 pipx ensurepath
+sudo apt -y install \
+  npm
+npm install markdownlint-cli2 --global
+sudo apt -y install \
+  openjdk-25-jdk \
+&& update-java-alternatives -s java-1.25.0-openjdk-amd64
+export JAVA25_HOME=/usr/lib/jvm/java-25-openjdk-amd64
 \end{Verbatim}
 
   You may have to answer questions about which time zone your computer is in.

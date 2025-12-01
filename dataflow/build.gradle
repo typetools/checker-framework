@@ -35,9 +35,7 @@ def createDataflowShaded(shadedPkgName) {
     group = "Build"
     dependsOn(compileJava)
     includeEmptyDirs = false
-    base {
-      archivesName = "dataflow-${shadedPkgName}"
-    }
+    archiveBaseName  = "dataflow-${shadedPkgName}"
     dependencies {
       exclude(project(":checker-qual"))
     }
