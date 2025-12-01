@@ -4,6 +4,12 @@
 
 import org.checkerframework.checker.signature.qual.*;
 
+package java.lang.classfile.attribute;
+
+interface SignatureAttribute {
+  @MethodDescriptor Utf8Entry signature();
+}
+
 package java.lang.classfile.constantpool;
 
 interface ClassEntry {
@@ -17,5 +23,9 @@ interface Utf8Entry {
 package java.lang.classfile.instruction;
 
 interface InvokeInstruction {
+  @Identifier Utf8Entry name();
+}
+
+interface LocalVariable {
   @Identifier Utf8Entry name();
 }
