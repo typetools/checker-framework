@@ -10,7 +10,7 @@ include(`Dockerfile-contents-ubuntu-plus.m4')
 
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt -qqy update \
-&& apt -y install \
+&& apt -qqy install \
   openjdk-25-jdk \
 && update-java-alternatives -s java-1.25.0-openjdk-amd64
 ENV JAVA25_HOME=/usr/lib/jvm/java-25-openjdk-amd64
