@@ -62,8 +62,8 @@ def createDataflowShaded(shadedPkgName) {
 // Creates a new shaded dataflow artifact.  To add a new one, add a new method call below, and add
 // the new jar to publishing and signing blocks.
 createDataflowShaded("shaded")
-createDataflowShaded("errorprone")
 createDataflowShaded("nullaway")
+createDataflowShaded("errorprone")
 
 tasks.register("manual", Exec) {
   description = "Build the manual"
