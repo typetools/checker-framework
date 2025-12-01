@@ -109,6 +109,9 @@ public class NullnessAnnotatedTypeFactory
   /** The Arrays.copyOf() methods that operate on arrays of references. */
   private final List<ExecutableElement> copyOfMethods;
 
+  /** The Arrays.copyOfRange() methods that operate on arrays of references. */
+  private final List<ExecutableElement> copyOfRangeMethods;
+
   /** Cache for the nullness annotations. */
   protected final Set<Class<? extends Annotation>> nullnessAnnos;
 
@@ -412,6 +415,11 @@ public class NullnessAnnotatedTypeFactory
         Arrays.asList(
             TreeUtils.getMethod("java.util.Arrays", "copyOf", processingEnv, "T[]", "int"),
             TreeUtils.getMethod("java.util.Arrays", "copyOf", 3, processingEnv));
+    copyOfRangeMethods =
+        Arrays.asList(
+            TreeUtils.getMethod(
+                "java.util.Arrays", "copyOfRange", processingEnv, "T[]", "int", "int"),
+            TreeUtils.getMethod("java.util.Arrays", "copyOfRange", 4, processingEnv));
 
     postInit();
 
@@ -709,22 +717,25 @@ public class NullnessAnnotatedTypeFactory
 
     @Override
     public Void visitMethodInvocation(MethodInvocationTree tree, AnnotatedTypeMirror type) {
+      List<? extends ExpressionTree> args = tree.getArguments();
+      ExpressionTree lengthArg = null; // non-null iff `tree` is an invocation of `copyOf*`
       if (TreeUtils.isMethodInvocation(tree, copyOfMethods, processingEnv)) {
-        List<? extends ExpressionTree> args = tree.getArguments();
-        ExpressionTree lengthArg = args.get(1);
-        if (TreeUtils.isArrayLengthAccess(lengthArg)) {
-          // TODO: This syntactic test may not be not correct if the array expression has
-          // a side effect that affects the array length.  This code could require that
-          // the expression has no method calls, assignments, etc.
-          ExpressionTree arrayArg = args.get(0);
-          if (TreeUtils.sameTree(arrayArg, ((MemberSelectTree) lengthArg).getExpression())) {
-            AnnotatedArrayType arrayArgType = (AnnotatedArrayType) getAnnotatedType(arrayArg);
-            AnnotatedTypeMirror arrayArgComponentType = arrayArgType.getComponentType();
-            // Maybe this call is only necessary if argNullness is @NonNull.
-            ((AnnotatedArrayType) type)
-                .getComponentType()
-                .replaceAnnotations(arrayArgComponentType.getPrimaryAnnotations());
-          }
+        lengthArg = args.get(1);
+      } else if (TreeUtils.isMethodInvocation(tree, copyOfRangeMethods, processingEnv)) {
+        lengthArg = args.get(2);
+      }
+      if (lengthArg != null && TreeUtils.isArrayLengthAccess(lengthArg)) {
+        // TODO: This syntactic test may not be not correct if the array expression has
+        // a side effect that affects the array length.  This test could require that
+        // the expression has no method calls, assignments, etc.
+        ExpressionTree arrayArg = args.get(0);
+        if (TreeUtils.sameTree(arrayArg, ((MemberSelectTree) lengthArg).getExpression())) {
+          AnnotatedArrayType arrayArgType = (AnnotatedArrayType) getAnnotatedType(arrayArg);
+          AnnotatedTypeMirror arrayArgComponentType = arrayArgType.getComponentType();
+          // Maybe this call is only necessary if argNullness is @NonNull.
+          ((AnnotatedArrayType) type)
+              .getComponentType()
+              .replaceAnnotations(arrayArgComponentType.getPrimaryAnnotations());
         }
       }
       return super.visitMethodInvocation(tree, type);
