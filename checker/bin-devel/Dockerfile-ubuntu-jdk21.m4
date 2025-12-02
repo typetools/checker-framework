@@ -8,7 +8,7 @@ include(`Dockerfile-contents-ubuntu-base.m4')
 
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt -qqy update \
-&& apt -y install \
+&& apt -qqy install \
   openjdk-21-jdk \
 && update-java-alternatives -s java-1.21.0-openjdk-amd64
 ENV JAVA21_HOME=/usr/lib/jvm/java-21-openjdk-amd64

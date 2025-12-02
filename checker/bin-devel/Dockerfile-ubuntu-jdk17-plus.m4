@@ -10,7 +10,7 @@ include(`Dockerfile-contents-ubuntu-plus.m4')
 
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt -qqy update \
-&& apt -y install \
+&& apt -qqy install \
   openjdk-17-jdk \
 && update-java-alternatives -s java-1.17.0-openjdk-amd64
 ENV JAVA17_HOME=/usr/lib/jvm/java-17-openjdk-amd64

@@ -73,7 +73,24 @@ public final class Opt {
     }
   }
 
-  // TODO: Add ifPresentOrElse.
+  /**
+   * If primary is non-null, invoke the specified consumer with the value, otherwise invoke the
+   * empty action.
+   *
+   * @param <T> the type of the argument
+   * @param primary the nullable value
+   * @param action the consumer to be executed if primary is non-null
+   * @param emptyAction the action to be executed if primary is null
+   * @see java.util.Optional#ifPresentOrElse(Consumer, Runnable)
+   */
+  public static <T> void ifPresentOrElse(
+      T primary, Consumer<@NonNull ? super @NonNull T> action, Runnable emptyAction) {
+    if (primary != null) {
+      action.accept(primary);
+    } else {
+      emptyAction.run();
+    }
+  }
 
   /**
    * If primary is non-null, and its value matches the given predicate, return the value. If primary
