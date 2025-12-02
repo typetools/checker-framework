@@ -3,7 +3,7 @@ plugins {
   id("base")
   // https://github.com/n0mer/gradle-git-properties
   // Generates file build/resources/main/git.properties when the `classes` task runs.
-  id("com.gorylenko.gradle-git-properties").version("2.5.4")
+  alias(libs.plugins.com.gorylenko.gradle.git.properties)
 }
 
 sourceSets {
@@ -42,33 +42,33 @@ dependencies {
   // If you add an external dependency, you must shadow its packages.
   // See the comment in ../build.gradle in the shadowJar block.
 
-  implementation("org.plumelib:reflection-util:${reflectionUtilVersion}")
-  implementation("org.plumelib:plume-util:${plumeUtilVersion}")
+  implementation(libs.reflection.util)
+  implementation(libs.plume.util)
 
   // Dependencies added to "shadow" appear as dependencies in Maven Central.
   shadow(project(":checker-qual"))
   shadow(project(":checker-util"))
 
   // Called Methods Checker AutoValue + Lombok support
-  testImplementation("com.google.auto.value:auto-value-annotations:${autoValueVersion}")
-  testImplementation("com.google.auto.value:auto-value:${autoValueVersion}")
-  testImplementation("com.ryanharter.auto.value:auto-value-parcel:0.2.9")
-  testImplementation("org.projectlombok:lombok:${lombokVersion}")
+  testImplementation(libs.auto.value.annotations)
+  testImplementation(libs.auto.value)
+  testImplementation(libs.auto.value.parcel)
+  testImplementation(libs.lombok)
 
   // Called Methods Checker support for detecting misuses of AWS APIs
-  testImplementation("com.amazonaws:aws-java-sdk-ec2")
-  testImplementation("com.amazonaws:aws-java-sdk-kms")
+  testImplementation(libs.aws.java.sdk.ec2)
+  testImplementation(libs.aws.java.sdk.kms)
   // The AWS SDK is used for testing the Called Methods Checker.
-  testImplementation(platform("com.amazonaws:aws-java-sdk-bom:1.12.794"))
+  testImplementation(platform(libs.aws.java.sdk.bom))
   // For the Resource Leak Checker's support for JavaEE.
-  testImplementation("javax.servlet:javax.servlet-api:4.0.1")
+  testImplementation(libs.javax.servlet.api)
   // For the Resource Leak Checker's support for IOUtils.
-  testImplementation("commons-io:commons-io:2.21.0")
+  testImplementation(libs.commons.io)
   // To test for an obscure crash in CFG construction for try-with-resources;
   // see https://github.com/typetools/checker-framework/issues/6396
-  testImplementation("org.apache.spark:spark-sql_2.12:3.3.2")
+  testImplementation(libs.spark.sql)
 
-  testImplementation("junit:junit:${junitVersion}")
+  testImplementation(libs.junit)
   testImplementation(project(":framework-test"))
   testImplementation(sourceSets.testannotations.output)
 
