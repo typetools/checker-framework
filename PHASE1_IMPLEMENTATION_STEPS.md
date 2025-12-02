@@ -23,7 +23,7 @@
      ```java
      /** True if the -AsarifOutput command-line argument was passed. */
      private boolean sarifOutputEnabled = false;
-     
+
      /** Path to SARIF output file. */
      private @Nullable String sarifOutputPath = null;
      ```
@@ -39,7 +39,7 @@
          throw new UserError("Must supply an argument to -AsarifOutput");
        }
        // TODO: 临时日志输出，验证选项是否生效
-       message(Diagnostic.Kind.NOTE, 
+       message(Diagnostic.Kind.NOTE,
                "SARIF output enabled: " + sarifOutputPath);
      }
      ```
@@ -83,25 +83,25 @@ javac -processor NullnessChecker -AsarifOutput=test.sarif Test.java
    - 创建基本类结构：
      ```java
      package org.checkerframework.framework.report;
-     
+
      import javax.annotation.processing.ProcessingEnvironment;
-     
+
      /**
       * Generates SARIF report files from checker diagnostics.
-      * 
+      *
       * <p>This is a POC implementation for Phase 1.
       */
      public class SarifReportGenerator {
-         
+
          private final ProcessingEnvironment processingEnv;
-         
+
          public SarifReportGenerator(ProcessingEnvironment processingEnv) {
              this.processingEnv = processingEnv;
          }
-         
+
          /**
           * Add a diagnostic result to the report.
-          * 
+          *
           * @param kind the diagnostic kind
           * @param message the message text
           * @param messageKey the message key (rule ID)
@@ -113,10 +113,10 @@ javac -processor NullnessChecker -AsarifOutput=test.sarif Test.java
              // TODO: Phase 1 - 暂时不实现，只记录日志
              System.out.println("[SARIF] Would add result: " + messageKey + " - " + message);
          }
-         
+
          /**
           * Write the SARIF report to file.
-          * 
+          *
           * @param outputPath the output file path
           */
          public void writeReport(String outputPath) {
@@ -141,7 +141,7 @@ javac -processor NullnessChecker -AsarifOutput=test.sarif Test.java
          throw new UserError("Must supply an argument to -AsarifOutput");
        }
        sarifReportGenerator = new SarifReportGenerator(processingEnv);
-       message(Diagnostic.Kind.NOTE, 
+       message(Diagnostic.Kind.NOTE,
                "SARIF report generator initialized: " + sarifOutputPath);
      }
      ```
@@ -211,12 +211,12 @@ javac -processor NullnessChecker -AsarifOutput=test.sarif Test.java
                                              .withStartLine(10)
                                              .withStartColumn(5))))))
              ));
-         
+
          // 写入 JSON 文件
          ObjectMapper mapper = new ObjectMapper();
          Path path = Paths.get(outputPath);
          mapper.writerWithDefaultPrettyPrinter().writeValue(path.toFile(), sarifLog);
-         
+
          System.out.println("[SARIF] Mock report written to: " + outputPath);
      }
      ```
@@ -231,18 +231,18 @@ javac -processor NullnessChecker -AsarifOutput=test.sarif Test.java
        for (SourceChecker checker : getSubcheckers()) {
          checker.typeProcessingOver();
        }
-       
+
        // Phase 1: 生成 SARIF 报告（仅在根 checker）
        if (parentChecker == null && sarifReportGenerator != null) {
          try {
            sarifReportGenerator.writeReport(sarifOutputPath);
            message(Diagnostic.Kind.NOTE, "SARIF report written to: " + sarifOutputPath);
          } catch (IOException e) {
-           message(Diagnostic.Kind.WARNING, 
+           message(Diagnostic.Kind.WARNING,
                    "Failed to write SARIF report: " + e.getMessage());
          }
        }
-       
+
        super.typeProcessingOver();
      }
      ```
@@ -333,7 +333,7 @@ javac -processor NullnessChecker -AsarifOutput=test.sarif Test.java
              kind, message, source, this, trace, messageKey);
          messageStore.add(checkerMessage);
        }
-       
+
        // Phase 1: 收集消息到 SARIF（如果启用）
        if (sarifReportGenerator != null && parentChecker == null) {
          // 暂时使用 "unknown" 作为 messageKey
@@ -352,7 +352,7 @@ javac -processor NullnessChecker -AsarifOutput=test.sarif Test.java
              String messageKey) {
          // Phase 1: 只收集，不处理
          // 暂时只记录日志，验证消息是否被收集
-         System.out.println("[SARIF] Collected: " + messageKey + " - " + 
+         System.out.println("[SARIF] Collected: " + messageKey + " - " +
                            kind + " - " + message.substring(0, Math.min(50, message.length())));
      }
      ```
@@ -391,7 +391,7 @@ javac -processor NullnessChecker -AsarifOutput=test.sarif Test.java
      import java.util.HashMap;
      import java.util.List;
      import java.util.Map;
-     
+
      // 在类中添加字段
      private final List<Result> results = new ArrayList<>();
      private final Map<String, Artifact> artifacts = new HashMap<>();
@@ -403,18 +403,18 @@ javac -processor NullnessChecker -AsarifOutput=test.sarif Test.java
              String message,
              String messageKey) {
          // Phase 1: 只收集 ERROR 和 WARNING
-         if (kind != javax.tools.Diagnostic.Kind.ERROR 
+         if (kind != javax.tools.Diagnostic.Kind.ERROR
              && kind != javax.tools.Diagnostic.Kind.MANDATORY_WARNING) {
              return;
          }
-         
+
          // 创建 Result 对象
          String level = kind == javax.tools.Diagnostic.Kind.ERROR ? "error" : "warning";
          Result result = new Result()
              .withRuleId(messageKey)
              .withLevel(level)
              .withMessage(new Message().withText(message));
-         
+
          results.add(result);
      }
      ```
@@ -428,24 +428,24 @@ javac -processor NullnessChecker -AsarifOutput=test.sarif Test.java
          ToolComponent driver = new ToolComponent()
              .withName("Checker Framework")
              .withVersion(getCheckerVersion());  // 需要实现这个方法
-         
+
          // 创建 Run
          Run run = new Run()
              .withTool(new Tool().withDriver(driver))
              .withResults(results)
              .withArtifacts(new ArrayList<>(artifacts.values()));
-         
+
          // 创建 SarifLog
          SarifLog sarifLog = new SarifLog()
              .withVersion("2.1.0")
              .withRuns(Collections.singletonList(run));
-         
+
          // 写入文件
          ObjectMapper mapper = new ObjectMapper();
          Path path = Paths.get(outputPath);
          mapper.writerWithDefaultPrettyPrinter().writeValue(path.toFile(), sarifLog);
      }
-     
+
      private String getCheckerVersion() {
          // Phase 1: 简化版本，返回固定值
          return "3.51.2-SNAPSHOT";
@@ -524,7 +524,7 @@ javac -processor NullnessChecker -AsarifOutput=test.sarif Test.java
              kind, message, source, this, trace, messageKey);
          messageStore.add(checkerMessage);
        }
-       
+
        // 收集消息到 SARIF
        if (sarifReportGenerator != null && parentChecker == null) {
          sarifReportGenerator.addResult(kind, message, messageKey);
@@ -617,16 +617,16 @@ cat test.sarif | jq '.runs[0].results[].ruleId'
      ```java
      // 获取文件 URI
      String fileUri = getFileUri(root);
-     
+
      // 获取位置信息（行号、列号）
      Region region = getRegion(source, root);
-     
+
      // 创建 Location
      Location location = new Location()
          .withPhysicalLocation(new PhysicalLocation()
              .withArtifactLocation(new ArtifactLocation().withUri(fileUri))
              .withRegion(region));
-     
+
      // 创建 Result
      String level = kind == javax.tools.Diagnostic.Kind.ERROR ? "error" : "warning";
      Result result = new Result()
@@ -634,7 +634,7 @@ cat test.sarif | jq '.runs[0].results[].ruleId'
          .withLevel(level)
          .withMessage(new Message().withText(message))
          .withLocations(Collections.singletonList(location));
-     
+
      results.add(result);
      ```
 
@@ -650,25 +650,25 @@ cat test.sarif | jq '.runs[0].results[].ruleId'
              return "file:///unknown";
          }
      }
-     
+
      private Region getRegion(Tree source, CompilationUnitTree root) {
          Trees trees = Trees.instance(processingEnv);
          SourcePositions sourcePositions = trees.getSourcePositions();
-         
+
          long startPos = sourcePositions.getStartPosition(root, source);
          long endPos = sourcePositions.getEndPosition(root, source);
-         
+
          if (startPos == -1 || endPos == -1) {
              // 无法获取位置，返回默认值
              return new Region().withStartLine(1).withStartColumn(1);
          }
-         
+
          // 计算行号和列号（简化版本）
          // Phase 1: 使用简单的行号计算
          String sourceText = root.getSourceFile().getCharContent(true).toString();
          int lineNumber = 1;
          int columnNumber = 1;
-         
+
          for (int i = 0; i < startPos && i < sourceText.length(); i++) {
              if (sourceText.charAt(i) == '\n') {
                  lineNumber++;
@@ -677,7 +677,7 @@ cat test.sarif | jq '.runs[0].results[].ruleId'
                  columnNumber++;
              }
          }
-         
+
          return new Region()
              .withStartLine(lineNumber)
              .withStartColumn(columnNumber)
@@ -746,16 +746,16 @@ cat test.sarif | jq '.runs[0].results[].ruleId'
          try {
              // 读取文件内容
              String content = root.getSourceFile().getCharContent(true).toString();
-             
+
              // 创建 ArtifactContent
              ArtifactContent artifactContent = new ArtifactContent()
                  .withText(content);
-             
+
              // 创建 Artifact
              Artifact artifact = new Artifact()
                  .withLocation(new ArtifactLocation().withUri(fileUri))
                  .withContents(artifactContent);
-             
+
              artifacts.put(fileUri, artifact);
          } catch (Exception e) {
              // Phase 1: 如果读取失败，创建不包含内容的 artifact

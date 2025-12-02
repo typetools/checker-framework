@@ -91,29 +91,29 @@ public class SarifReportGenerator {
     private final List<Result> results = new ArrayList<>();
     private final Map<String, Artifact> artifacts = new HashMap<>();
     private final ProcessingEnvironment processingEnv;
-    
+
     // 添加消息到报告（简化版：只收集 ERROR 和 WARNING）
-    public void addResult(Diagnostic.Kind kind, String message, 
-                         Tree source, CompilationUnitTree root, 
+    public void addResult(Diagnostic.Kind kind, String message,
+                         Tree source, CompilationUnitTree root,
                          SourceChecker checker, String messageKey) {
         // 只处理 ERROR 和 WARNING
         if (kind != Diagnostic.Kind.ERROR && kind != Diagnostic.Kind.MANDATORY_WARNING) {
             return;
         }
-        
+
         // 创建 Result 对象
         Result result = new Result()
             .withRuleId(messageKey)
             .withLevel(kind == Diagnostic.Kind.ERROR ? "error" : "warning")
             .withMessage(new Message().withText(message))
             .withLocations(Arrays.asList(createLocation(source, root)));
-        
+
         results.add(result);
-        
+
         // 记录文件信息
         addArtifact(root);
     }
-    
+
     // 生成并写入 SARIF 文件
     public void writeReport(Path outputPath) throws IOException {
         SarifLog sarifLog = new SarifLog()
@@ -124,18 +124,18 @@ public class SarifReportGenerator {
                     .withArtifacts(new ArrayList<>(artifacts.values()))
                     .withResults(results)
             ));
-        
+
         // 使用 Jackson 序列化为 JSON
         ObjectMapper mapper = new ObjectMapper();
         mapper.writerWithDefaultPrettyPrinter().writeValue(outputPath.toFile(), sarifLog);
     }
-    
+
     // 创建位置信息
     private Location createLocation(Tree source, CompilationUnitTree root);
-    
+
     // 添加文件信息（包含源代码内容）
     private void addArtifact(CompilationUnitTree root);
-    
+
     // 创建工具信息
     private Tool createTool();
 }
@@ -158,7 +158,7 @@ protected void printOrStoreMessage(
     Tree source,
     CompilationUnitTree root) {
   // ... 现有代码 ...
-  
+
   // 新增：收集到 SARIF
   if (sarifReportGenerator != null) {
     sarifReportGenerator.addResult(kind, message, source, root, this, messageKey);
@@ -182,7 +182,7 @@ protected void printOrStoreMessage(
 ```java
 public void initChecker() {
   // ... 现有代码 ...
-  
+
   // 初始化 SARIF 报告生成器
   if (hasOption("sarifOutput")) {
     String outputPath = getOption("sarifOutput");
@@ -203,7 +203,7 @@ public void typeProcessingOver() {
   for (SourceChecker checker : getSubcheckers()) {
     checker.typeProcessingOver();
   }
-  
+
   // 生成 SARIF 报告（仅在根 checker）
   if (parentChecker == null && sarifReportGenerator != null) {
     String outputPath = getOption("sarifOutput");
@@ -213,7 +213,7 @@ public void typeProcessingOver() {
       logBugInCF(new BugInCF("Failed to write SARIF report", e));
     }
   }
-  
+
   super.typeProcessingOver();
 }
 ```

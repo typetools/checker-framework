@@ -435,7 +435,6 @@ import org.plumelib.util.UtilPlume;
   // Use "-AconvertTypeArgInferenceCrashToWarning=false" to turn this option off and allow type
   // argument inference crashes to crash the type checker.
   "convertTypeArgInferenceCrashToWarning",
-
   "sarifOutput"
 })
 public abstract class SourceChecker extends AbstractTypeProcessor implements OptionConfiguration {
@@ -1087,8 +1086,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         sarifReportGenerator.writeReport(sarifOutputPath);
         message(Diagnostic.Kind.NOTE, "SARIF report written to: " + sarifOutputPath);
       } catch (IOException e) {
-        message(Diagnostic.Kind.WARNING,
-            "Failed to write SARIF report: " + e.getMessage());
+        message(Diagnostic.Kind.WARNING, "Failed to write SARIF report: " + e.getMessage());
       }
     }
 
@@ -1518,7 +1516,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     if (source instanceof Element) {
       messager.printMessage(kind, messageText, (Element) source);
     } else if (source instanceof Tree) {
-      printOrStoreMessage(kind, messageText, (Tree) source, currentRoot,messageKey);
+      printOrStoreMessage(kind, messageText, (Tree) source, currentRoot, messageKey);
     } else {
       throw new BugInCF("invalid position source of class " + source.getClass() + ": " + source);
     }
@@ -1601,13 +1599,18 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @param root the compilation unit
    */
   protected void printOrStoreMessage(
-      javax.tools.Diagnostic.Kind kind, String message, Tree source, CompilationUnitTree root, String messageKey) {
+      javax.tools.Diagnostic.Kind kind,
+      String message,
+      Tree source,
+      CompilationUnitTree root,
+      String messageKey) {
     assert this.currentRoot == root;
     StackTraceElement[] trace = Thread.currentThread().getStackTrace();
     if (messageStore == null) {
-      printOrStoreMessage(kind, message, source, root, trace,messageKey);
+      printOrStoreMessage(kind, message, source, root, trace, messageKey);
     } else {
-      CheckerMessage checkerMessage = new CheckerMessage(kind, message, source, this, trace,messageKey);
+      CheckerMessage checkerMessage =
+          new CheckerMessage(kind, message, source, this, trace, messageKey);
       messageStore.add(checkerMessage);
     }
     // Use root checker's sarifReportGenerator so all subcheckers share the same instance
