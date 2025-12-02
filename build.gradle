@@ -81,9 +81,6 @@ ext {
   // The local git repository, typically in the .git directory, but not for worktrees.
   // This value is always overwritten, but Gradle needs the variable to be initialized.
   localRepo = ".git"
-
-  // This is passed to Spotless and not used as a dependency, so it's here and not in libs.versions.toml
-  googleJavaFormatVersion="1.30.0"
 }
 
 tasks.register("setLocalRepo", Exec) {
@@ -126,7 +123,7 @@ spotlessPredeclare {
   //     > Could not create task ":spotlessJava'.
   //        > Add a step with [com.google.googlejavaformat:google-java-format:1.15.0] into the `spotlessPredeclare` block in the root project.
   java {
-    googleJavaFormat(googleJavaFormatVersion)
+    googleJavaFormat(libs.google.java.format.get().version)
   }
   groovyGradle {
     greclipse()
@@ -213,9 +210,9 @@ allprojects { currentProj ->
   dependencies {
     errorprone(libs.error.prone.core)
 
-    javacJar("com.google.errorprone:javac:9+181-r4173-1")
+    javacJar(libs.javac)
 
-    errorproneJavac("com.google.errorprone:javac:9+181-r4173-1")
+    errorproneJavac(libs.javac)
 
     allProjects(subprojects)
   }
@@ -353,10 +350,10 @@ allprojects { currentProj ->
       targetExclude(doNotFormat)
 
       if (project.hasProperty("eisopFormatting")) {
-        googleJavaFormat(googleJavaFormatVersion).aosp()
+        googleJavaFormat(libs.google.java.format.get().version).aosp()
         importOrder("com", "jdk", "lib", "lombok", "org", "java", "javax")
       } else {
-        googleJavaFormat(googleJavaFormatVersion) // the formatter to apply to Java files
+        googleJavaFormat(libs.google.java.format.get().version) // the formatter to apply to Java files
       }
       formatAnnotations()
     }

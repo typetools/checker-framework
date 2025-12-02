@@ -67,3 +67,5 @@ hashmap-util = "org.plumelib:hashmap-util:0.0.1"
 stubparser = "org.checkerframework:stubparser:3.27.1"
 
 classgraph = "io.github.classgraph:classgraph:4.8.184"
+
+google-java-format = "com.google.googlejavaformat:google-java-format:1.30.0"
