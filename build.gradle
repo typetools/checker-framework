@@ -81,6 +81,9 @@ ext {
   // The local git repository, typically in the .git directory, but not for worktrees.
   // This value is always overwritten, but Gradle needs the variable to be initialized.
   localRepo = ".git"
+
+  // This is passed to Spotless and not used as a dependency, so it's here and not in libs.versions.toml
+  googleJavaFormatVersion="1.30.0"
 }
 
 tasks.register("setLocalRepo", Exec) {
