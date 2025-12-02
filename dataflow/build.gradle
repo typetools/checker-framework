@@ -39,6 +39,9 @@ def createDataflowShaded(shadedPkgName) {
     dependencies {
       exclude(project(":checker-qual"))
     }
+    // Without this line, when running ./gradle publishToMavenLocal, the dataflow-nullaway jar ends
+    // up with org.checkerframework.shaded packages instead of org.checkerframework.nullaway.
+    outputs.upToDateWhen { false }
     // Without this line, the Maven artifact will have the classifier "all".
     archiveClassifier.set("")
 
