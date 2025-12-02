@@ -1,0 +1,25 @@
+{
+  "version" : "2.1.0",
+  "runs" : [ {
+    "tool" : {
+      "driver" : {
+        "name" : "Checker Framework",
+        "version" : "3.51.2-SNAPSHOT"
+      }
+    },
+    "artifacts" : [ ],
+    "results" : [ {
+      "ruleId" : "assignment",
+      "level" : "error",
+      "message" : {
+        "text" : "[assignment] incompatible types in assignment.\nfound   : Set<@KeyFor(\"sharedCounts1\") String>\nrequired: Set<@KeyFor({\"sharedBooks\", \"sharedCounts1\"}) String>"
+      }
+    }, {
+      "ruleId" : "assignment",
+      "level" : "error",
+      "message" : {
+        "text" : "[assignment] incompatible types in assignment.\nfound   : Set<@KeyFor(\"sharedCounts2\") String>\nrequired: Set<@KeyFor({\"sharedBooks\", \"sharedCounts2\"}) String>"
+      }
+    } ]
+  } ]
+}

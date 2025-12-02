@@ -53,6 +53,8 @@ dependencies {
   implementation("org.plumelib:plume-util:${plumeUtilVersion}")
   implementation("org.plumelib:reflection-util:${reflectionUtilVersion}")
   implementation("io.github.classgraph:classgraph:4.8.184")
+  implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.0'
+  implementation 'com.contrastsecurity:java-sarif:2.0'
 
   testImplementation("junit:junit:${junitVersion}")
   testImplementation(project(":framework-test"))
