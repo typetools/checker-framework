@@ -1616,7 +1616,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     // Use root checker's sarifReportGenerator so all subcheckers share the same instance
     SourceChecker rootChecker = getRootChecker();
     if (rootChecker.sarifReportGenerator != null) {
-      rootChecker.sarifReportGenerator.addResult(kind, message, messageKey);
+      rootChecker.sarifReportGenerator.addResult(kind, message, messageKey, source, root);
     }
   }
 
