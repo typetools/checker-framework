@@ -77,6 +77,7 @@ import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.ArraySet;
 import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.MapsP;
 
 /** AnnotatedTypeFactory for the Value type system. */
 public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
@@ -415,8 +416,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   private Set<Class<? extends Annotation>> computeFieldInvariantDeclarationAnnotations() {
     // include FieldInvariant so that @MinLenBottom can be used.
     Set<Class<? extends Annotation>> superResult = super.getFieldInvariantDeclarationAnnotations();
-    Set<Class<? extends Annotation>> set =
-        new HashSet<>(CollectionsPlume.mapCapacity(superResult.size() + 1));
+    Set<Class<? extends Annotation>> set = new HashSet<>(MapsP.mapCapacity(superResult.size() + 1));
     set.addAll(superResult);
     set.add(MinLenFieldInvariant.class);
     return set;

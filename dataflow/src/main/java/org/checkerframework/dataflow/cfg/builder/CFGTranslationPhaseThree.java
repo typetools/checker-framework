@@ -52,16 +52,17 @@ public class CFGTranslationPhaseThree {
    */
   @SuppressWarnings("nullness") // TODO: successors
   public static ControlFlowGraph process(ControlFlowGraph cfg) {
-    Set<Block> worklist = cfg.getAllBlocks();
+    Set<Block> blocks = cfg.getAllBlocks();
+    Set<Block> removedBlocks = new HashSet<>();
 
     // note: this method has to be careful when relinking basic blocks
     // to not forget to adjust the predecessors, too
 
     // fix predecessor lists by removing any unreachable predecessors
-    for (Block c : worklist) {
+    for (Block c : blocks) {
       BlockImpl cur = (BlockImpl) c;
       for (Block pred : cur.getPredecessors()) {
-        if (!worklist.contains(pred)) {
+        if (!blocks.contains(pred)) {
           cur.removePredecessor((BlockImpl) pred);
         }
       }
@@ -69,7 +70,7 @@ public class CFGTranslationPhaseThree {
 
     // remove empty blocks
     Set<Block> dontVisit = new HashSet<>();
-    for (Block cur : worklist) {
+    for (Block cur : blocks) {
       if (dontVisit.contains(cur)) {
         continue;
       }
@@ -90,6 +91,7 @@ public class CFGTranslationPhaseThree {
             succ.removePredecessor(block);
             p.setSuccessor(succ);
           }
+          removedBlocks.addAll(emptyBlocks);
         }
       }
     }
@@ -123,29 +125,29 @@ public class CFGTranslationPhaseThree {
     }
     */
 
-    mergeConsecutiveBlocks(cfg);
+    blocks.removeAll(removedBlocks);
+    mergeConsecutiveBlocks(blocks);
     return cfg;
   }
 
   /**
    * Simplify the CFG by merging consecutive single-successor blocks.
    *
-   * @param cfg the control flow graph
+   * @param blocks the set of blocks to process
    */
   @SuppressWarnings({
     "interning:not.interned", // CFG node comparisons
     "nullness" // TODO: successors
   })
-  protected static void mergeConsecutiveBlocks(ControlFlowGraph cfg) {
-    Set<Block> worklist = cfg.getAllBlocks();
+  protected static void mergeConsecutiveBlocks(Set<Block> blocks) {
 
-    // This transformation removes blocks from the CFG.  If those blocks appear in `worklist`
-    // then we might visit a block AFTER it has been removed and its nodes have been moved
+    // This transformation removes blocks from the CFG.
+    // We might process a block AFTER it has been removed and its nodes have been moved
     // somewhere else.  When this happens the correct behavior is to just skip the removed
     // block; to do so, we need to remember which blocks have been removed.
     Set<Block> removedBlocks = new HashSet<>();
 
-    for (Block cur : worklist) {
+    for (Block cur : blocks) {
       // Skip this block if it was already merged into another.
       if (removedBlocks.contains(cur)) {
         continue;

@@ -38,6 +38,7 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.MapsP;
 
 /** AnnotatedTypeFactory for the MethodVal Checker. */
 public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
@@ -325,8 +326,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       }
 
       Set<MethodSignature> methodSigs =
-          new HashSet<>(
-              CollectionsPlume.mapCapacity(methodNames.size() * classNames.size() * params.size()));
+          new HashSet<>(MapsP.mapCapacity(methodNames.size() * classNames.size() * params.size()));
       // The possible method signatures are the Cartesian product of all
       // found class, method, and parameter lengths.
       for (String methodName : methodNames) {

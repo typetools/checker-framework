@@ -1,0 +1,71 @@
+#
+# Markdownlint configuration
+#
+
+# Disable some built-in rules
+config:
+  no-multiple-blanks: false
+  line-length: false
+  no-trailing-punctuation:
+    punctuation: ".,;:"
+  ## TODO: replace by the below
+  no-inline-html: false
+  # no-inline-html:
+  #   allowed_elements:
+  #     - details
+  #     - kbd
+  #     - sub
+  #     - span
+  #     - summary
+  single-title:
+    front_matter_title: ""
+  table-pipe-style: false
+  # I can't get this style setting to be respected.  Bug in markdownlint??
+  #   style: "leading_and_trailing"
+
+# # Include a custom rule package
+# customRules:
+#   - markdownlint-rule-extended-ascii
+
+# Fix any fixable errors
+fix: true
+
+# # Define a custom front matter pattern
+# frontMatter: "<head>[^]*<\/head>"
+
+# Ignore files referenced by .gitignore (only valid at root)
+gitignore: true
+
+# # Define glob expressions to use (only valid at root)
+# globs:
+#   - "!*bout.md"
+
+# # Define glob expressions to ignore
+# ignores:
+#   - "ignore*.md"
+
+# # Use a plugin to recognize math
+# markdownItPlugins:
+#   -
+#     - "markdown-it-emoji/dist/light.cjs.js"
+
+# Additional paths to resolve module locations from
+modulePaths:
+  - "./modules"
+
+# Disable banner message on stdout (only valid at root)
+noBanner: true
+
+# # Disable inline config comments
+# noInlineConfig: true
+
+# Disable progress on stdout (only valid at root)
+noProgress: true
+
+# Use a specific formatter (only valid at root)
+outputFormatters:
+  -
+    - markdownlint-cli2-formatter-default
+
+# # Show found files on stdout (only valid at root)
+# showFound: true
