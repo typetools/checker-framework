@@ -8,11 +8,11 @@ dependencies {
   api(project(":checker-qual"))
 
   // Node implements org.plumelib.util.UniqueId, so this dependency must be "api".
-  api("org.plumelib:plume-util:${plumeUtilVersion}")
+  api(libs.plume.util)
 
-  implementation("org.plumelib:hashmap-util:${hashmapUtilVersion}")
+  implementation(libs.hashmap.util)
 
-  testImplementation("junit:junit:${junitVersion}")
+  testImplementation(libs.junit)
 
   // External dependencies:
   // If you add an external dependency, you must shadow its packages both in the dataflow-shaded
@@ -39,6 +39,9 @@ def createDataflowShaded(shadedPkgName) {
     dependencies {
       exclude(project(":checker-qual"))
     }
+    // Without this line, when running ./gradle publishToMavenLocal, the dataflow-nullaway jar ends
+    // up with org.checkerframework.shaded packages instead of org.checkerframework.nullaway.
+    outputs.upToDateWhen { false }
     // Without this line, the Maven artifact will have the classifier "all".
     archiveClassifier.set("")
 
