@@ -8,7 +8,7 @@ net-ltgt-errorprone = { id = "net.ltgt.errorprone", version = "4.3.0" }
 
 com-diffplug-spotless = { id = "com.diffplug.spotless", version = "8.0.0" }
 
-com-gorylenko-gradle-git-properties = { id = "com.gorylenko.gradle-git-properties", version = "2.5.3" }
+com-gorylenko-gradle-git-properties = { id = "com.gorylenko.gradle-git-properties", version = "2.5.4" }
 
 biz-aqute-bnd-builder = { id = "biz.aQute.bnd.builder", version = "7.1.0" }
 
