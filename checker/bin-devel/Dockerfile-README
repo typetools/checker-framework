@@ -47,8 +47,8 @@ function create_upload_docker_image {
   mkdir -p $DOCKERDIR && \
   cd $DOCKERDIR && \
   \cp -pf ../Dockerfile-$OS-$JDKVER Dockerfile && \
-  docker -l warn build -t $DOCKERIMAGE . && \
-  docker -l warn push $DOCKERIMAGE && \
+  docker -l warn build --rm=false --progress=plain -t $DOCKERIMAGE . && \
+  docker -l warn push --quiet $DOCKERIMAGE && \
   cd .. &&
   rm -rf $DOCKERDIR && \
   echo "***** Success in $DOCKERIMAGE *****") || \
