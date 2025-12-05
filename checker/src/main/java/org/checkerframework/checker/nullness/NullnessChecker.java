@@ -34,7 +34,7 @@ import org.checkerframework.framework.source.SupportedLintOptions;
   NullnessChecker.LINT_PERMITCLEARPROPERTY,
 })
 @SupportedOptions({"assumeKeyFor", "invocationPreservesArgumentNullness"})
-@StubFiles({"junit-assertions.astub", "log4j.astub"})
+@StubFiles({"java-lang-classfile.astub", "junit-assertions.astub", "log4j.astub"})
 public class NullnessChecker extends InitializationChecker {
 
   /** Should we be strict about initialization of {@link MonotonicNonNull} variables? */

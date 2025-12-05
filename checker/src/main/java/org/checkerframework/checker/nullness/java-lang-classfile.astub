@@ -1,0 +1,11 @@
+// This file is temporary.  It is needed because the annotated JDK is from JDK 17.  JDK 25 needs to
+// be pulled into it, which will create the java.lang.classfile files.  Then, these annotations can
+// be transferred to the corresponding files in it.
+
+import org.checkerframework.checker.nullness.qual.*;
+
+package java.lang.classfile;
+
+interface CodeBuilder {
+  @NonNull Label newLabel();
+}

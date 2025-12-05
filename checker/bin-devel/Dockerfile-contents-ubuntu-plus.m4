@@ -1,6 +1,6 @@
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt -qqy update \
-&& apt -y install \
+&& apt -qqy install \
   autoconf \
   devscripts \
   dia \
@@ -28,7 +28,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 # So, install into /usr/local/bin which is already on every user's path.
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt -qqy update \
-&& apt -y install \
+&& apt -qqy install \
   pipx \
 && PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install black \
 && PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install flake8 \
@@ -38,7 +38,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt -qqy update \
-&& apt -y install \
+&& apt -qqy install \
   npm
 
 RUN export DEBIAN_FRONTEND=noninteractive \

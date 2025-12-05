@@ -13,7 +13,7 @@ LABEL org.opencontainers.image.authors="Michael Ernst <mernst@cs.washington.edu>
 
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt -qqy update \
-&& apt install -y locales \
+&& apt -qqy install locales \
 && rm -rf /var/lib/apt/lists/* \
 && locale-gen "en_US.UTF-8"
 ENV LANG=en_US.UTF-8 \
@@ -23,7 +23,7 @@ ENV LANG=en_US.UTF-8 \
 # Always install JDK 21 to compile the code, even if tests run under a different JDK.
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt -qqy update \
-&& apt -y install \
+&& apt -qqy install \
   openjdk-21-jdk
 ENV JAVA21_HOME=/usr/lib/jvm/java-21-openjdk-amd64
 
@@ -31,7 +31,7 @@ ENV JAVA21_HOME=/usr/lib/jvm/java-21-openjdk-amd64
 
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt -qqy update \
-&& apt -y install \
+&& apt -qqy install \
   ant \
   cpp \
   git \
@@ -48,7 +48,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt -qqy update \
-&& apt -y install \
+&& apt -qqy install \
   autoconf \
   devscripts \
   dia \
@@ -76,7 +76,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 # So, install into /usr/local/bin which is already on every user's path.
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt -qqy update \
-&& apt -y install \
+&& apt -qqy install \
   pipx \
 && PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install black \
 && PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install flake8 \
@@ -86,7 +86,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt -qqy update \
-&& apt -y install \
+&& apt -qqy install \
   npm
 
 RUN export DEBIAN_FRONTEND=noninteractive \
@@ -95,7 +95,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt -qqy update \
-&& apt -y install \
+&& apt -qqy install \
   openjdk-17-jdk \
 && update-java-alternatives -s java-1.17.0-openjdk-amd64
 ENV JAVA17_HOME=/usr/lib/jvm/java-17-openjdk-amd64

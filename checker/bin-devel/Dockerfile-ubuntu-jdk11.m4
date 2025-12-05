@@ -8,7 +8,7 @@ include(`Dockerfile-contents-ubuntu-base.m4')
 
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt -qqy update \
-&& apt -y install \
+&& apt -qqy install \
   openjdk-11-jdk \
 && update-java-alternatives -s java-1.11.0-openjdk-amd64
 ENV JAVA11_HOME=/usr/lib/jvm/java-11-openjdk-amd64

@@ -38,8 +38,8 @@ def stubifierJar = tasks.register("stubifierJar", Jar) {
 dependencies {
   api(project(":javacutil"))
   api(project(":dataflow"))
-  api("org.checkerframework:stubparser:3.27.1")
-  stubifierImplementation("org.checkerframework:stubparser:3.27.1")
+  api(libs.stubparser)
+  stubifierImplementation(libs.stubparser)
   // This should be implementation sourceSets.stubifier.output, but that cause a failure in shadowJar.
   // This work around is from here: https://github.com/GradleUp/shadow/issues/1606#issuecomment-3164731141
   implementation(files(stubifierJar))
@@ -49,21 +49,21 @@ dependencies {
   // External dependencies:
   // If you add an external dependency, you must shadow its packages.
   // See the comment in ../build.gradle in the shadowJar block.
-  implementation("org.plumelib:hashmap-util:${hashmapUtilVersion}")
-  implementation("org.plumelib:plume-util:${plumeUtilVersion}")
-  implementation("org.plumelib:reflection-util:${reflectionUtilVersion}")
-  implementation("io.github.classgraph:classgraph:4.8.184")
+  implementation(libs.hashmap.util)
+  implementation(libs.plume.util)
+  implementation(libs.reflection.util)
+  implementation(libs.classgraph)
 
-  testImplementation("junit:junit:${junitVersion}")
+  testImplementation(libs.junit)
   testImplementation(project(":framework-test"))
   testImplementation(sourceSets.testannotations.output)
 
   // AutoValue support in Returns Receiver Checker
-  testImplementation("com.google.auto.value:auto-value-annotations:${autoValueVersion}")
-  testImplementation("com.google.auto.value:auto-value:${autoValueVersion}")
+  testImplementation(libs.auto.value.annotations)
+  testImplementation(libs.auto.value)
 
   // Lombok support in Returns Receiver Checker
-  testImplementation("org.projectlombok:lombok:${lombokVersion}")
+  testImplementation(libs.lombok)
 }
 
 tasks.register("cloneTypetoolsJdk", CloneTask) {
