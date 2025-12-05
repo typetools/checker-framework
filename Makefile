@@ -23,10 +23,6 @@ style-check: python-style-check
 PYTHON_FILES:=$(wildcard **/*.py) $(shell grep -r -l --exclude-dir=.do-like-javac --exclude-dir=.git --exclude-dir=.html-tools --exclude-dir=.plume-scripts --exclude-dir=.venv --exclude='*.py' --exclude='#*' --exclude='*~' --exclude='*.tar' --exclude=gradlew --exclude=lcb_runner '^\#! \?\(/bin/\|/usr/bin/\|/usr/bin/env \)python')
 python-style-fix:
 ifneq (${PYTHON_FILES},)
-	echo ${PATH}
-	ls -al /root/.local/bin
-	whereis uvx
-	which uvx
 #	@uvx ruff --version
 	@uvx ruff format ${PYTHON_FILES}
 	@uvx ruff check ${PYTHON_FILES} --fix
@@ -34,10 +30,13 @@ endif
 python-style-check:
 ifneq (${PYTHON_FILES},)
 	echo ${PATH}
-	ls -al /root/.local/bin
 	whereis uvx
+	ls -al /
+	ls -al /root
+	ls -al /root/.local
+	ls -al /root/.local/bin
 	which uvx
-#	@uvx ruff --version
+	uvx ruff --version
 	@uvx ruff format --check ${PYTHON_FILES}
 	@uvx ruff check ${PYTHON_FILES}
 endif
