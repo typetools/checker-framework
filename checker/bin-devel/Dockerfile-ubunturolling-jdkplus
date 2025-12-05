@@ -70,14 +70,15 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   texlive-latex-recommended
 
 RUN export DEBIAN_FRONTEND=noninteractive \
-&& wget -qO- https://astral.sh/uv/install.sh | sh
-ENV PATH="/root/.local/bin:$PATH"
-
-RUN export DEBIAN_FRONTEND=noninteractive \
 && apt -qqy update \
 && apt -qqy install \
   npm
 
 RUN export DEBIAN_FRONTEND=noninteractive \
 && npm install markdownlint-cli2 --global
+
+RUN export DEBIAN_FRONTEND=noninteractive \
+&& wget -qO- https://astral.sh/uv/install.sh | sh \
+&& chmod +x /root/.local/bin/uv /root/.local/bin/uvx
+ENV PATH="/root/.local/bin:$PATH"
 
