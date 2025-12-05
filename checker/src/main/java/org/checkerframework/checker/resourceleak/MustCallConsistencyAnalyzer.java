@@ -2551,7 +2551,7 @@ public class MustCallConsistencyAnalyzer {
         // immediately.
         throw new InvalidLoopBodyAnalysisException("Block with no incoming store.");
       } else {
-        throw new BugInCF("block with no outgoing incoming store: " + successor);
+        throw new BugInCF("block with no incoming store: " + successor);
       }
     }
 
