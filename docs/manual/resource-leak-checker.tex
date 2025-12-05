@@ -652,7 +652,7 @@ What the checker effectively verifies is that any resource collection is properl
 Towards that end, the Resource Leak Checker tracks every allocated resource collection in two ways:
 
 \begin{itemize}
-  \item at most one owning reference for each underlying resource collection is tracked via an ownership type system. This owning reference may arbitrarily mutate the collection. All other references are considered not owning and are restricted - for example, they can't be used to add or remove elements to and from the collection, respectively.
+  \item at most one owning reference for each underlying resource collection is tracked via an ownership type system. This owning reference may arbitrarily mutate the collection. All other references are considered not owning and are restricted - for example, they can't be used to add elements to or remove elements from the collection.
   \item a complementary dataflow analysis tracks an obligation for each allocated resource collection. The obligation can be passed on to method parameters, fields, or return values for example, just like the ownership. The difference is that while the type system tracks at most one owner per resource collection allowed to mutate it without restriction, the dataflow analysis tracks at least one obligation per resource collection to ensure it is definitely fulfilled.
 \end{itemize}
 
@@ -732,7 +732,7 @@ void m(@OwningCollection Iterable<Socket> sockets) {
     try {
       s.close();
     } catch (Exception e) {
-      System.out.println(e.stackTrace());
+      System.out.println(e.printStackTrace());
     }
   }
   // `sockets` is @OwningCollectionWithoutObligation again
