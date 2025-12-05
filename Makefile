@@ -24,12 +24,14 @@ PYTHON_FILES:=$(wildcard **/*.py) $(shell grep -r -l --exclude-dir=.do-like-java
 python-style-fix:
 ifneq (${PYTHON_FILES},)
 #	@uvx ruff --version
+	which uvx
 	@uvx ruff format ${PYTHON_FILES}
 	@uvx ruff check ${PYTHON_FILES} --fix
 endif
 python-style-check:
 ifneq (${PYTHON_FILES},)
 #	@uvx ruff --version
+	which uvx
 	@uvx ruff format --check ${PYTHON_FILES}
 	@uvx ruff check ${PYTHON_FILES}
 endif
