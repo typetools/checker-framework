@@ -80,7 +80,9 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 
 RUN export DEBIAN_FRONTEND=noninteractive \
 && wget -qO- https://astral.sh/uv/install.sh | sh \
-&& chmod +x /root/.local/bin/uv /root/.local/bin/uvx
+&& find /root -exec chmod +r {} \; \
+&& find /root -type d -exec chmod +x {} \; \
+&& find /root/.local/bin -type f -exec chmod +x {} \;
 ENV PATH="/root/.local/bin:$PATH"
 
 
