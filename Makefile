@@ -24,6 +24,8 @@ PYTHON_FILES:=$(wildcard **/*.py) $(shell grep -r -l --exclude-dir=.do-like-java
 python-style-fix:
 ifneq (${PYTHON_FILES},)
 	echo ${PATH}
+	ls -al /root/.local/bin
+	whereis uvx
 	which uvx
 #	@uvx ruff --version
 	@uvx ruff format ${PYTHON_FILES}
@@ -33,6 +35,8 @@ python-style-check:
 ifneq (${PYTHON_FILES},)
 	echo ${PATH}
 	which uvx
+	ls -al /root/.local/bin
+	whereis uvx
 #	@uvx ruff --version
 	@uvx ruff format --check ${PYTHON_FILES}
 	@uvx ruff check ${PYTHON_FILES}
