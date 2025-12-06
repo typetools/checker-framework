@@ -6,20 +6,20 @@ requires-python = ">=3.10"
 name = "checker-framework"
 version = "0.1.0"
 source = { virtual = "." }
-dependencies = [
-    { name = "html5validator" },
-]
 
 [package.dev-dependencies]
 dev = [
+    { name = "html5validator" },
     { name = "ty" },
 ]
 
 [package.metadata]
-requires-dist = [{ name = "html5validator", specifier = ">=0.4.2" }]
 
 [package.metadata.requires-dev]
-dev = [{ name = "ty", specifier = ">=0.0.1a31" }]
+dev = [
+    { name = "html5validator", specifier = ">=0.4.2" },
+    { name = "ty", specifier = ">=0.0.1a31" },
+]
 
 [[package]]
 name = "html5validator"
