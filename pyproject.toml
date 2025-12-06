@@ -8,5 +8,6 @@ dependencies = []
 
 [dependency-groups]
 dev = [
+    "html5validator>=0.4.2",
     "ty>=0.0.1a31",
 ]
