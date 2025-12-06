@@ -29,6 +29,7 @@ ENV JAVA21_HOME=/usr/lib/jvm/java-21-openjdk-amd64
 
 # Known good combinations of JTReg and the JDK appear at https://builds.shipilev.net/jtreg/ .
 
+# Dependencies for building and running the Checker Framework.
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt -qqy update \
 && apt -qqy install \
@@ -46,11 +47,12 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   wget
 
 
+# Install the JDK.
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt -qqy update \
 && apt -qqy install \
   openjdk-17-jdk \
-&& update-java-alternatives -s java-1.17.0-openjdk-amd64
+&& update-java-alternatives --set java-1.17.0-openjdk-amd64
 ENV JAVA17_HOME=/usr/lib/jvm/java-17-openjdk-amd64
 
 RUN export DEBIAN_FRONTEND=noninteractive \
