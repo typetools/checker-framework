@@ -771,7 +771,7 @@ apt -qqy install \
 
 # Install uv (manages Python dependencies).
 curl -LsSf https://astral.sh/uv/install.sh | sh
-ENV PATH=$USER/.local/bin:$PATH
+export PATH=$USER/.local/bin:$PATH
 
 # Install markdownlint.
 sudo apt -y install \
