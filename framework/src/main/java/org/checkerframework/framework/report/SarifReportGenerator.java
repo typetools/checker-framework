@@ -1,7 +1,5 @@
 package org.checkerframework.framework.report;
 
-import com.contrastsecurity.sarif.Artifact;
-import com.contrastsecurity.sarif.ArtifactContent;
 import com.contrastsecurity.sarif.ArtifactLocation;
 import com.contrastsecurity.sarif.Location;
 import com.contrastsecurity.sarif.Message;
@@ -25,10 +23,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.tools.Diagnostic;
