@@ -19,7 +19,11 @@ import subprocess
 import urllib.request
 from pathlib import Path
 
-from release_vars import execute, execute_output, execute_status
+from release_vars import (  # ty: ignore # TODO: limitation in ty
+    execute,
+    execute_output,
+    execute_status,
+)
 
 # =========================================================================================
 # Parse Args Utils # TODO: Perhaps use argparse module

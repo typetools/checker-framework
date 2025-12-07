@@ -1,3 +1,4 @@
+# Dependencies for developing the Checker Framework.
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt -qqy update \
 && apt -qqy install \
@@ -22,6 +23,12 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   texlive-latex-extra \
   texlive-latex-recommended
 
+# Install uv (manages Python dependencies).
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+ENV PATH=/root/.local/bin:$PATH
+
+## TODO: Remove this block (after clients have had time to pull), since we use `uv` instead.
+# Old Python dependencies (to remove).
 # `pipx ensurepath` only adds to the path in newly-started shells.
 # BUT, setting the path for the current user is not enough.
 # Azure creates a new user and runs jobs as it.
@@ -36,10 +43,10 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 && PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install mypy \
 && PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install ruff
 
+# Install markdownlint.
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt -qqy update \
 && apt -qqy install \
   npm
-
 RUN export DEBIAN_FRONTEND=noninteractive \
 && npm install markdownlint-cli2 --global
