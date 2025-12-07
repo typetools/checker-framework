@@ -68,10 +68,6 @@ public class KeyForAnnotatedTypeFactory
   private final ExecutableElement mapPut =
       TreeUtils.getMethod("java.util.Map", "put", 2, processingEnv);
 
-  /** The Map.keySet method. */
-  private final ExecutableElement mapKeySet =
-      TreeUtils.getMethod("java.util.Map", "keySet", 0, processingEnv);
-
   /** The KeyFor.value field/element. */
   protected final ExecutableElement keyForValueElement =
       TreeUtils.getMethod(KeyFor.class, "value", 0, processingEnv);
@@ -244,87 +240,60 @@ public class KeyForAnnotatedTypeFactory
     return new KeyForDependentTypesHelper(this);
   }
 
-  /**
-   * Override to merge KeyFor annotations from Map receiver's type arguments into keySet() return
-   * type.
-   */
-  @Override
-  protected void addComputedTypeAnnotations(Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {
-    super.addComputedTypeAnnotations(tree, type, iUseFlow);
 
-    // Handle keySet() method invocations: merge KeyFor annotations from Map receiver's type
-    // arguments into the return type's type arguments
-    if (tree instanceof MethodInvocationTree) {
-      MethodInvocationTree methodInvocation = (MethodInvocationTree) tree;
-      if (TreeUtils.isMethodInvocation(methodInvocation, mapKeySet, getProcessingEnv())) {
-        if (type.getKind() == TypeKind.DECLARED) {
-          AnnotatedDeclaredType keySetReturnType = (AnnotatedDeclaredType) type;
-          ExpressionTree receiver = TreeUtils.getReceiverTree(methodInvocation);
-          if (receiver != null) {
-            AnnotatedTypeMirror receiverType = getAnnotatedType(receiver);
-            if (receiverType.getKind() == TypeKind.DECLARED) {
-              AnnotatedDeclaredType receiverDeclaredType = (AnnotatedDeclaredType) receiverType;
-              mergeKeyForFromMapReceiverIntoKeySetReturn(receiverDeclaredType, keySetReturnType);
-            }
-          }
-        }
-      }
-    }
-  }
-
-  /**
-   * Merges KeyFor annotations from the Map receiver's first type argument (key type) into the Set's
-   * first type argument (element type) in the keySet() return type.
-   *
-   * @param mapReceiverType the type of the Map receiver (e.g., Map&lt;@KeyFor("m") String,
-   *     Integer&gt;)
-   * @param keySetReturnType the return type of keySet() (e.g., Set&lt;@KeyFor("mapVar") String&gt;)
-   */
-  private void mergeKeyForFromMapReceiverIntoKeySetReturn(
-      AnnotatedDeclaredType mapReceiverType, AnnotatedDeclaredType keySetReturnType) {
-    // Get the Map's first type argument (the key type)
-    List<AnnotatedTypeMirror> mapTypeArgs = mapReceiverType.getTypeArguments();
-    if (mapTypeArgs.isEmpty()) {
-      return;
-    }
-    AnnotatedTypeMirror mapKeyType = mapTypeArgs.get(0);
-
-    // Get the Set's first type argument (the element type)
-    List<AnnotatedTypeMirror> setTypeArgs = keySetReturnType.getTypeArguments();
-    if (setTypeArgs.isEmpty()) {
-      return;
-    }
-    AnnotatedTypeMirror setElementType = setTypeArgs.get(0);
-
-    // Extract KeyFor annotation from the Map's key type
-    AnnotationMirror mapKeyKeyFor = mapKeyType.getEffectiveAnnotation(KeyFor.class);
-    if (mapKeyKeyFor == null) {
-      return;
-    }
-
-    // Get the KeyFor values from the Map's key type
-    List<String> mapKeyForValues =
-        AnnotationUtils.getElementValueArray(mapKeyKeyFor, keyForValueElement, String.class);
-
-    // Extract KeyFor annotation from the Set's element type
-    AnnotationMirror setElementKeyFor = setElementType.getEffectiveAnnotation(KeyFor.class);
-
-    // Collect all KeyFor values
-    Set<String> mergedKeyForValues = new LinkedHashSet<>(mapKeyForValues);
-
-    // Add existing KeyFor values from the Set's element type
-    if (setElementKeyFor != null) {
-      List<String> setKeyForValues =
-          AnnotationUtils.getElementValueArray(setElementKeyFor, keyForValueElement, String.class);
-      mergedKeyForValues.addAll(setKeyForValues);
-    }
-
-    // Create a new KeyFor annotation with merged values
-    if (!mergedKeyForValues.isEmpty()) {
-      AnnotationMirror mergedKeyFor = createKeyForAnnotationMirrorWithValue(mergedKeyForValues);
-      setElementType.replaceAnnotation(mergedKeyFor);
-    }
-  }
+//  /**
+//   * Merges KeyFor annotations from the Map receiver's first type argument (key type) into the Set's
+//   * first type argument (element type) in the keySet() return type.
+//   *
+//   * @param mapReceiverType the type of the Map receiver (e.g., Map&lt;@KeyFor("m") String,
+//   *     Integer&gt;)
+//   * @param keySetReturnType the return type of keySet() (e.g., Set&lt;@KeyFor("mapVar") String&gt;)
+//   */
+//  private void mergeKeyForFromMapReceiverIntoKeySetReturn(
+//      AnnotatedDeclaredType mapReceiverType, AnnotatedDeclaredType keySetReturnType) {
+//    // Get the Map's first type argument (the key type)
+//    List<AnnotatedTypeMirror> mapTypeArgs = mapReceiverType.getTypeArguments();
+//    if (mapTypeArgs.isEmpty()) {
+//      return;
+//    }
+//    AnnotatedTypeMirror mapKeyType = mapTypeArgs.get(0);
+//
+//    // Get the Set's first type argument (the element type)
+//    List<AnnotatedTypeMirror> setTypeArgs = keySetReturnType.getTypeArguments();
+//    if (setTypeArgs.isEmpty()) {
+//      return;
+//    }
+//    AnnotatedTypeMirror setElementType = setTypeArgs.get(0);
+//
+//    // Extract KeyFor annotation from the Map's key type
+//    AnnotationMirror mapKeyKeyFor = mapKeyType.getEffectiveAnnotation(KeyFor.class);
+//    if (mapKeyKeyFor == null) {
+//      return;
+//    }
+//
+//    // Get the KeyFor values from the Map's key type
+//    List<String> mapKeyForValues =
+//        AnnotationUtils.getElementValueArray(mapKeyKeyFor, keyForValueElement, String.class);
+//
+//    // Extract KeyFor annotation from the Set's element type
+//    AnnotationMirror setElementKeyFor = setElementType.getEffectiveAnnotation(KeyFor.class);
+//
+//    // Collect all KeyFor values
+//    Set<String> mergedKeyForValues = new LinkedHashSet<>(mapKeyForValues);
+//
+//    // Add existing KeyFor values from the Set's element type
+//    if (setElementKeyFor != null) {
+//      List<String> setKeyForValues =
+//          AnnotationUtils.getElementValueArray(setElementKeyFor, keyForValueElement, String.class);
+//      mergedKeyForValues.addAll(setKeyForValues);
+//    }
+//
+//    // Create a new KeyFor annotation with merged values
+//    if (!mergedKeyForValues.isEmpty()) {
+//      AnnotationMirror mergedKeyFor = qualHierarchy.greatestLowerBoundQualifiers(mapKeyKeyFor, setElementKeyFor);
+//      setElementType.replaceAnnotation(mergedKeyFor);
+//    }
+//  }
 
   /**
    * Converts KeyFor annotations with errors into {@code @UnknownKeyFor} in the type of method
