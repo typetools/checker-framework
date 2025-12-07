@@ -1082,6 +1082,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     }
 
     if (parentChecker == null && sarifReportGenerator != null) {
+      assert sarifOutputPath != null;
       try {
         sarifReportGenerator.writeReport(sarifOutputPath);
         message(Diagnostic.Kind.NOTE, "SARIF report written to: " + sarifOutputPath);

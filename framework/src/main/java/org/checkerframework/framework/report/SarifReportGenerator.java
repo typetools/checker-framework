@@ -1,7 +1,18 @@
 package org.checkerframework.framework.report;
 
-import com.contrastsecurity.sarif.*;
+import com.contrastsecurity.sarif.Artifact;
+import com.contrastsecurity.sarif.ArtifactContent;
+import com.contrastsecurity.sarif.ArtifactLocation;
+import com.contrastsecurity.sarif.Location;
+import com.contrastsecurity.sarif.Message;
+import com.contrastsecurity.sarif.PhysicalLocation;
+import com.contrastsecurity.sarif.Region;
+import com.contrastsecurity.sarif.Result;
 import com.contrastsecurity.sarif.Result.Level;
+import com.contrastsecurity.sarif.Run;
+import com.contrastsecurity.sarif.SarifSchema210;
+import com.contrastsecurity.sarif.Tool;
+import com.contrastsecurity.sarif.ToolComponent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.LineMap;
@@ -50,7 +61,7 @@ public class SarifReportGenerator {
     try {
       java.io.File file = new java.io.File(root.getSourceFile().getName());
       return file.toURI().toString();
-    } catch (Exception e) {
+    } catch (IllegalArgumentException | SecurityException e) {
       return "file:///unknown";
     }
   }
@@ -71,7 +82,7 @@ public class SarifReportGenerator {
     long endPos = sourcePositions.getEndPosition(root, source);
 
     if (startPos == Diagnostic.NOPOS || endPos == Diagnostic.NOPOS) {
-      return new Region().withStartLine(1).withStartColumn(1);
+      return new Region().withStartLine(1).withStartColumn(1).withEndLine(1).withEndColumn(1);
     }
 
     LineMap lineMap = root.getLineMap();
@@ -102,7 +113,7 @@ public class SarifReportGenerator {
       String content = root.getSourceFile().getCharContent(true).toString();
       artifact.withContents(new ArtifactContent().withText(content));
       artifacts.put(fileUri, artifact);
-    } catch (Exception e) {
+    } catch (IOException e) {
       artifacts.put(fileUri, artifact);
     }
   }
