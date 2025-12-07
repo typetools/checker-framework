@@ -45,7 +45,6 @@ public class SarifReportGenerator {
 
   private final ProcessingEnvironment processingEnv;
   private final List<Result> results = new ArrayList<>();
-  private final Map<String, Artifact> artifacts = new HashMap<>();
 
   public SarifReportGenerator(ProcessingEnvironment processingEnv) {
     this.processingEnv = processingEnv;
@@ -59,8 +58,7 @@ public class SarifReportGenerator {
    */
   private String getFileUri(CompilationUnitTree root) {
     try {
-      java.io.File file = new java.io.File(root.getSourceFile().getName());
-      return file.toURI().toString();
+      return root.getSourceFile().toUri().toString();
     } catch (IllegalArgumentException | SecurityException e) {
       return "file:///unknown";
     }
@@ -99,26 +97,6 @@ public class SarifReportGenerator {
   }
 
   /**
-   * Adds a source file artifact to the report.
-   *
-   * <p>If the file content can be read, it is included in the artifact. Otherwise, only the file
-   * location is recorded.
-   *
-   * @param root the compilation unit
-   * @param fileUri the file URI
-   */
-  private void addArtifact(CompilationUnitTree root, String fileUri) {
-    Artifact artifact = new Artifact().withLocation(new ArtifactLocation().withUri(fileUri));
-    try {
-      String content = root.getSourceFile().getCharContent(true).toString();
-      artifact.withContents(new ArtifactContent().withText(content));
-      artifacts.put(fileUri, artifact);
-    } catch (IOException e) {
-      artifacts.put(fileUri, artifact);
-    }
-  }
-
-  /**
    * Add a diagnostic result to the report.
    *
    * <p>Only ERROR and MANDATORY_WARNING diagnostics are collected. Other diagnostic kinds (NOTE,
@@ -142,9 +120,6 @@ public class SarifReportGenerator {
       return;
     }
     String fileUri = getFileUri(root);
-    if (!artifacts.containsKey(fileUri)) {
-      addArtifact(root, fileUri);
-    }
 
     Region region = getRegion(source, root);
 
@@ -205,8 +180,7 @@ public class SarifReportGenerator {
                                     new ToolComponent()
                                         .withName("Checker Framework")
                                         .withVersion(getCheckerVersion())))
-                        .withResults(results)
-                        .withArtifacts(new HashSet<>(artifacts.values()))));
+                        .withResults(results)));
 
     // Write SARIF log to JSON file
     ObjectMapper mapper = new ObjectMapper();
