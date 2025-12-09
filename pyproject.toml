@@ -1,14 +1,13 @@
 [project]
-name = "checker-framework-branch-master"
+name = "checker-framework"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = [
-    "html5validator>=0.4.2",
-]
+dependencies = []
 
 [dependency-groups]
 dev = [
+    "html5validator>=0.4.2",
     "ty>=0.0.1a31",
 ]

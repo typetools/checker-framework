@@ -1,3 +1,4 @@
+# Dependencies for developing the Checker Framework.
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt -qqy update \
 && apt -qqy install \
@@ -26,7 +27,6 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 && apt -qqy update \
 && apt -qqy install \
   npm
-
 RUN export DEBIAN_FRONTEND=noninteractive \
 && npm install markdownlint-cli2 --global
 

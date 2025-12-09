@@ -119,23 +119,6 @@ clean {
   delete("dist/annotation-file-utilities.jar", "dist/annotation-file-utilities-all.jar", "annotation-tools.zip")
 }
 
-tasks.register("htmlValidate", Exec) {
-  description = "Validate that HTML files are well-formed."
-  workingDir = "../"
-  executable = "html5validator"
-  args = [
-    // The --ignore command-line argument applies to everything until the next
-    // command-line argument; that is, everything listed here is ignored.
-    "--ignore",
-    "/annotation-file-utilities/annotation-file-format.html",
-    "/api/",
-    "/build/",
-    "/javadoc/",
-    "/plume-bib/",
-    "/scene-lib/javadoc/"
-  ]
-}
-
 test.dependsOn(testExample)
 test.dependsOn(testAnnotator)
 

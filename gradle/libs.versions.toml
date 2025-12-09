@@ -1,6 +1,6 @@
 [plugins]
 
-com-gradleup-shadow = { id = "com.gradleup.shadow", version = "9.2.2" }
+com-gradleup-shadow = { id = "com.gradleup.shadow", version = "9.3.0" }
 
 de-undercouch-download = { id = "de.undercouch.download", version = "5.6.0" }
 
@@ -68,4 +68,4 @@ stubparser = "org.checkerframework:stubparser:3.27.1"
 
 classgraph = "io.github.classgraph:classgraph:4.8.184"
 
-google-java-format = "com.google.googlejavaformat:google-java-format:1.32.0"
+google-java-format = "com.google.googlejavaformat:google-java-format:1.33.0"
