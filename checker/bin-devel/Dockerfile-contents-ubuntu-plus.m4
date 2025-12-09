@@ -32,7 +32,8 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 
 RUN export DEBIAN_FRONTEND=noninteractive \
 && wget -qO- https://astral.sh/uv/install.sh | sh \
-&& find /root -exec chmod +r {} \; \
-&& find /root -type d -exec chmod +x {} \; \
+&& chmod +rx /root \
+&& find /root/.local -exec chmod +r {} \; \
+&& find /root/.local -type d -exec chmod +x {} \; \
 && find /root/.local/bin -type f -exec chmod +x {} \;
 ENV PATH="/root/.local/bin:$PATH"
