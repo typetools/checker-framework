@@ -78,6 +78,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 RUN export DEBIAN_FRONTEND=noninteractive \
 && npm install markdownlint-cli2 --global
 
+# Install uv (manages Python dependencies).
 RUN export DEBIAN_FRONTEND=noninteractive \
 && wget -qO- https://astral.sh/uv/install.sh | sh \
 && chmod +rx /root \
