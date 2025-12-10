@@ -28,9 +28,9 @@ import java.nio.file.Paths;
 import java.util.Optional;
 
 /**
- * Process Java source files in a directory to produce, in-place, minimal stub files.
+ * Rewrites Java source files into minimal stub files.
  *
- * <p>To process a file means to remove:
+ * <p>To convert a file into a stub file means to remove:
  *
  * <ol>
  *   <li>everything that is private or package-private,
