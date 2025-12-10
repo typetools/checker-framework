@@ -6,7 +6,7 @@
 FROM ubuntu
 include(`Dockerfile-contents-ubuntu-base.m4')
 
-include(`Dockerfile-contents-ubuntu-plus.m4')
+include(`Dockerfile-contents-ubuntu-plus.m4')dnl
 
 # Install the JDK.
 RUN export DEBIAN_FRONTEND=noninteractive \
