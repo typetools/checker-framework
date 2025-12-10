@@ -412,10 +412,9 @@ library annotations.
 The \refqualclass{framework/qual}{AnnotatedFor} annotation, written on a
 class, indicates that the class has been annotated for certain type
 systems.
-You may write \<@AnnotatedFor> on a class that contains no annotations, if
-you examined the source code and verified that all appropriate annotations
-are present --- that is, if the default is appropriate for every type in
-the class.
+You may write \<@AnnotatedFor> on a class that contains no explicit
+annotations from the given type system, if the defaulting rules already
+give appropriate qualifiers for every type in the class.
 
 For example, \<@AnnotatedFor(\ttlcb"nullness", "regex"\ttrcb)> means that
 the programmer has written annotations for the Nullness and Regular
