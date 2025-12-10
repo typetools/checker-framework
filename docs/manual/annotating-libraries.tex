@@ -378,10 +378,12 @@ Here are two concerns you may have when partially annotating a library:
 
 \begin{sloppypar}
 When compiling a library that is not fully annotated, use command-line
-argument \<-AuseConservativeDefaultsForUncheckedCode=source,bytecode>.  This causes
-the checker to apply defaults normally for classes with a relevant \<@AnnotatedFor>
-annotation.  For classes without \<@AnnotatedFor>, the checker uses
-conservative defaults
+argument \<-AuseConservativeDefaultsForUncheckedCode=source,bytecode>.
+This has the following effect.
+For classes with \<@AnnotatedFor> for the current checker,
+the checker applies defaults normally.
+For classes without \<@AnnotatedFor> for the current checker,
+the checker uses conservative defaults
 (see Section~\ref{defaults-classfile}) for any type use with no explicit
 user-written annotation, \emph{and} the checker issues no warnings.
 \end{sloppypar}
