@@ -782,7 +782,7 @@ describes other meta-annotations used to specify default annotations.
 Sometimes, a checker is only relevant to certain Java types.
 The \refqualclass{framework/qual}{RelevantJavaTypes}
 annotation on the checker class indicates that its qualifiers may only be
-written on those types and their supertypes.
+written on those types, their subtypes, and their supertypes.
 
 As an example of relevant types, the \ahrefloc{formatter-checker}{Format
 String Checker} is relevant only to \<CharSequence> and its subtypes such
@@ -806,9 +806,9 @@ treats the \<char> and \<Character> types as
 
 \subsubsectionAndLabel{Relevant types and supertypes}{creating-relevant-java-types-supertypes}
 
-If a type is relevant, so are all its supertypes including Object.
-The reason for this is to prevent qualifiers from being lost via an
-assignment to a supertype.  For example, in this code:
+If a type is relevant, so are all its supertypes including \<Object>.
+This prevents qualifiers from being lost via an assignment to a supertype.
+For example, in this code:
 
 \begin{Verbatim}
 @SomeAnn MyClass x = ...;
