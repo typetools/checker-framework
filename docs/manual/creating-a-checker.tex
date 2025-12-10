@@ -770,8 +770,10 @@ qualifier file.  For instance, \code{int value() default 0;} would make
 \code{value} default to zero. Alternatively, the procedural method
 described above can be used.
 
-The default qualifier applies to most, but not all, unannotated types, Section~\ref{climb-to-top}
-other defaulting rules are automatically added to every checker. Also, Section~\ref{defaults}
+The default qualifier applies to most, but not all, unannotated types.
+Section~\ref{climb-to-top} describes
+other defaulting rules that are automatically added to every checker.
+Also, Section~\ref{defaults}
 describes other meta-annotations used to specify default annotations.
 
 
@@ -780,7 +782,7 @@ describes other meta-annotations used to specify default annotations.
 Sometimes, a checker is only relevant to certain Java types.
 The \refqualclass{framework/qual}{RelevantJavaTypes}
 annotation on the checker class indicates that its qualifiers may only be
-written on those types and no others.
+written on those types and their supertypes.
 
 As an example of relevant types, the \ahrefloc{formatter-checker}{Format
 String Checker} is relevant only to \<CharSequence> and its subtypes such
@@ -791,16 +793,15 @@ As another example, the Index Checker and the Signedness Checker are only
 relevant to integral numeric types.  You cannot write
 \refqualclass{checker/index/qual}{Positive} on a \<List> or a \<float>.
 
-All irrelevant types are defaulted to
-the top annotation and this annotation cannot be changed.
+If a user writes an annotation on an irrelevant type, the Checker Framework
+issues an \<anno.on.irrelevant> error.
+
+Irrelevant types are ordinarily defaulted to the top annotation.
 A checker designer may change the default, and it may differ from type to type.  For
 example, the Signedness Checker treats all types that are not numeric
 integral types as \refqualclass{checker/signedness/qual}{Signed}, but
 treats the \<char> and \<Character> types as
 \refqualclass{checker/signedness/qual}{Unsigned}.
-
-If a user writes an annotation on an irrelevant type, the Checker Framework
-issues an \<anno.on.irrelevant> error.
 
 
 \subsubsectionAndLabel{Relevant types and supertypes}{creating-relevant-java-types-supertypes}

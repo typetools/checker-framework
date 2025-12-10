@@ -571,10 +571,13 @@ is implicitly the bottom annotation: \code {@NonNull}.
 
 The defaulting rules presented so far apply to source code that is read by
 the compiler.  When the compiler reads a \<.class> file, different
-defaulting rules apply.
+defaulting rules apply.  The rules are the same regardless of whether the
+\<.class> file is from your own codebase or from a library, including the
+JDK\@.
 
-If the checker \emph{was run} during the compiler execution that created the
-\<.class> file,
+If the \<.class> file was compiled \emph{using} the checker (that is,
+if the checker was run during the compiler execution that created
+the \<.class> file),
 %% This caveat is true, but it's a distraction at this point in the manual.
 %% Also, not having a top and a bottom qualifier is an uncommon case.
 % (and the qualifier hierarchy has both a top and a bottom
@@ -583,17 +586,20 @@ then there is no need for
 defaults:  the \<.class> file has an explicit qualifier at each type use.
 (Furthermore, unless warnings were suppressed, those qualifiers are
 guaranteed to be correct.)
-When you are performing pluggable type-checking,
-it is best if the compiler only reads such \<.class> files.
-Section~\ref{compiling-libraries} discusses how to create annotated
-libraries.
+%% True, but it distracts from the point of this section.
+% When you are performing pluggable type-checking,
+% it is best if the compiler only reads such \<.class> files.
+% Section~\ref{compiling-libraries} discusses how to create annotated
+% libraries.
 %% True, but not relevant to the point of this paragraph.
 % , even if the library source code is only partially annotated.
 
-The rest of this section discusses the situation when
-the checker \emph{was not run} during the compiler execution that created the
-\<.class> file.  The \<.class> file contains only the type qualifiers
-that the programmer wrote explicitly.  (Furthermore, there is no guarantee
+The rest of this section discusses the situation when the \<.class> file
+was \emph{not} compiled using the checker (that is, the checker was not run
+during the compiler execution that created the \<.class> file).
+The \<.class> file contains only the type qualifiers
+that the programmer wrote explicitly --- possibly none.
+(Furthermore, there is no guarantee
 that these qualifiers are correct, since they have not been checked.)
 Each checker decides what qualifier to use
 where the programmer did not write an annotation.
@@ -656,11 +662,12 @@ For example, an unannotated method
 in a classfile would be interpreted as
 
 \begin{Verbatim}
-  @Top String concatenate(@Bottom String p1, @Bottom String p2)
+  @MyTopQualifier String concatenate(@MyBottomQualifier String p1, @MyBottomQualifier String p2)
 \end{Verbatim}
 
 \noindent
-for an appropriate value of \<@Top> and \<@Bottom>.
+where \<@MyTopQualifier> is the top qualifier in the hierarchy and
+\<@MyBottomQualifier> is the bottom qualifier in the hierarchy.
 
 These choices are conservative.  They are likely to cause many
 false-positive type-checking errors, which will help you to know which

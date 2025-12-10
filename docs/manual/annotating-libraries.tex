@@ -394,17 +394,20 @@ For example, an unannotated method
 
 \noindent
 in a class \emph{with} a relevant \<@AnnotatedFor> is defaulted normally.
+
 In a class \emph{without} a relevant \<@AnnotatedFor>, it is interpreted as
 
 \begin{Verbatim}
-  @Top String concatenate(@Bottom String p1, @Bottom String p2)
+  @MyTopQualifier String concatenate(@MyBottomQualifier String p1, @MyBottomQualifier String p2)
 \end{Verbatim}
 
 \noindent
-for an appropriate value of \<@Top> and \<@Bottom>.  These choices are
-conservative.  They are likely to cause many false-positive type-checking
-errors in client code, which will help you to know which library methods
-need annotations.  You can then write those library annotations.
+where \<@MyTopQualifier> is the top qualifier in the hierarchy and
+\<@MyBottomQualifier> is the bottom qualifier in the hierarchy.
+These choices are conservative.  They are likely to cause many
+false-positive type-checking errors in client code, which will help you to
+know which library methods need annotations.  You can then write those
+library annotations.
 
 The \refqualclass{framework/qual}{AnnotatedFor} annotation, written on a
 class, indicates that the class has been annotated for certain type
@@ -416,8 +419,10 @@ the class.
 
 For example, \<@AnnotatedFor(\ttlcb"nullness", "regex"\ttrcb)> means that
 the programmer has written annotations for the Nullness and Regular
-Expression type systems.  It has no effect when running other type systems
-on the annotated class.
+Expression type systems.
+For any type system other than Nullness or Regex, that \<@AnnotatedFor>
+annotation has no effect nothing --- the checker treats the class as
+unannotated for that type system.
 The argument to \refqualclass{framework/qual}{AnnotatedFor} is not an
 annotation name, but a checker name.
 
