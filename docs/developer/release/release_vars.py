@@ -167,7 +167,7 @@ PATH = os.environ["JAVA_HOME"] + "/bin:" + os.environ["PATH"]
 PATH = PATH + ":/usr/bin"
 PATH = PATH + ":" + str(PLUME_SCRIPTS)
 PATH = PATH + ":" + str(CHECKLINK)
-PATH = PATH + ":/homes/gws/mernst/.local/bin"  # for html5validator
+PATH = PATH + ":/homes/gws/mernst/.local/bin"  # for uv
 PATH = PATH + ":."
 os.environ["PATH"] = PATH
 
@@ -179,7 +179,7 @@ TOOLS = [
     "latex",
     "mvn",
     "git",
-    "html5validator",
+    "uv",
     "dot",
     EDITOR,
 ]
