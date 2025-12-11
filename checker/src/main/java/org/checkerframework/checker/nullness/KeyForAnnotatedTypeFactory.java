@@ -9,12 +9,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.KeyForBottom;
 import org.checkerframework.checker.nullness.qual.PolyKeyFor;
@@ -29,7 +27,6 @@ import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
@@ -239,61 +236,6 @@ public class KeyForAnnotatedTypeFactory
   protected DependentTypesHelper createDependentTypesHelper() {
     return new KeyForDependentTypesHelper(this);
   }
-
-
-//  /**
-//   * Merges KeyFor annotations from the Map receiver's first type argument (key type) into the Set's
-//   * first type argument (element type) in the keySet() return type.
-//   *
-//   * @param mapReceiverType the type of the Map receiver (e.g., Map&lt;@KeyFor("m") String,
-//   *     Integer&gt;)
-//   * @param keySetReturnType the return type of keySet() (e.g., Set&lt;@KeyFor("mapVar") String&gt;)
-//   */
-//  private void mergeKeyForFromMapReceiverIntoKeySetReturn(
-//      AnnotatedDeclaredType mapReceiverType, AnnotatedDeclaredType keySetReturnType) {
-//    // Get the Map's first type argument (the key type)
-//    List<AnnotatedTypeMirror> mapTypeArgs = mapReceiverType.getTypeArguments();
-//    if (mapTypeArgs.isEmpty()) {
-//      return;
-//    }
-//    AnnotatedTypeMirror mapKeyType = mapTypeArgs.get(0);
-//
-//    // Get the Set's first type argument (the element type)
-//    List<AnnotatedTypeMirror> setTypeArgs = keySetReturnType.getTypeArguments();
-//    if (setTypeArgs.isEmpty()) {
-//      return;
-//    }
-//    AnnotatedTypeMirror setElementType = setTypeArgs.get(0);
-//
-//    // Extract KeyFor annotation from the Map's key type
-//    AnnotationMirror mapKeyKeyFor = mapKeyType.getEffectiveAnnotation(KeyFor.class);
-//    if (mapKeyKeyFor == null) {
-//      return;
-//    }
-//
-//    // Get the KeyFor values from the Map's key type
-//    List<String> mapKeyForValues =
-//        AnnotationUtils.getElementValueArray(mapKeyKeyFor, keyForValueElement, String.class);
-//
-//    // Extract KeyFor annotation from the Set's element type
-//    AnnotationMirror setElementKeyFor = setElementType.getEffectiveAnnotation(KeyFor.class);
-//
-//    // Collect all KeyFor values
-//    Set<String> mergedKeyForValues = new LinkedHashSet<>(mapKeyForValues);
-//
-//    // Add existing KeyFor values from the Set's element type
-//    if (setElementKeyFor != null) {
-//      List<String> setKeyForValues =
-//          AnnotationUtils.getElementValueArray(setElementKeyFor, keyForValueElement, String.class);
-//      mergedKeyForValues.addAll(setKeyForValues);
-//    }
-//
-//    // Create a new KeyFor annotation with merged values
-//    if (!mergedKeyForValues.isEmpty()) {
-//      AnnotationMirror mergedKeyFor = qualHierarchy.greatestLowerBoundQualifiers(mapKeyKeyFor, setElementKeyFor);
-//      setElementType.replaceAnnotation(mergedKeyFor);
-//    }
-//  }
 
   /**
    * Converts KeyFor annotations with errors into {@code @UnknownKeyFor} in the type of method

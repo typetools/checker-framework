@@ -1746,7 +1746,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       logGat("fromExpression(%s) => [cached] %s%n", tree, fromExpressionTreeCache.get(tree));
       return fromExpressionTreeCache.get(tree).deepCopy();
     }
-    if(tree instanceof JCMethodInvocation) {
+    if (tree instanceof JCMethodInvocation) {
       System.out.println("debugger");
     }
     AnnotatedTypeMirror result = TypeFromTree.fromExpression(this, tree);
@@ -1757,9 +1757,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         && !(tree instanceof NewClassTree)
         && !(tree instanceof NewArrayTree)
         && !(tree instanceof ConditionalExpressionTree)) {
-        if(tree instanceof JCMethodInvocation) {
-          System.out.println("debugger");
-        }
+      if (tree instanceof JCMethodInvocation) {
+        System.out.println("debugger");
+      }
       fromExpressionTreeCache.put(tree, result.deepCopy());
     }
     logGat("fromExpression(%s) => %s%n", tree, result);
