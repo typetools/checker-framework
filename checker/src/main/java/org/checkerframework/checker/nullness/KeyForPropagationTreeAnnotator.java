@@ -110,6 +110,9 @@ public class KeyForPropagationTreeAnnotator extends TreeAnnotator {
     return super.visitNewClass(tree, type);
   }
 
+  /**
+   * When visiting Map.keySet() calls, merge the map's key @KeyFor into the returned Set element.
+   */
   @Override
   public Void visitMethodInvocation(MethodInvocationTree tree, AnnotatedTypeMirror type) {
     if (isCallToKeyset(tree) && type.getKind() == TypeKind.DECLARED) {
@@ -131,6 +134,7 @@ public class KeyForPropagationTreeAnnotator extends TreeAnnotator {
     return super.visitMethodInvocation(tree, type);
   }
 
+  /** Merge KeyFor annotations from a Map receiver's key type into a keySet return type.(#2358) */
   private void mergeKeyForFromMapReceiverIntoKeySetReturn(
       AnnotatedDeclaredType mapReceiverType,
       AnnotatedDeclaredType keySetReturnType,
