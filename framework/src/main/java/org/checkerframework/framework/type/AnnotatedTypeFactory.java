@@ -1745,7 +1745,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       logGat("fromExpression(%s) => [cached] %s%n", tree, fromExpressionTreeCache.get(tree));
       return fromExpressionTreeCache.get(tree).deepCopy();
     }
+
     AnnotatedTypeMirror result = TypeFromTree.fromExpression(this, tree);
+
     if (shouldCache
         // Don't cache the type of some expressions, because incorrect annotations would be
         // cached during dataflow analysis. See Issue #602.
