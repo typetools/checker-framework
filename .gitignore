@@ -279,6 +279,8 @@ annotation-file-utilities/figures/*.pdf
 annotation-file-utilities/figures/*.png
 annotation-file-utilities/*.png
 
-.plume-scripts/
+# For style checking.
+.plume-scripts
+.markdownlint-cli2.yaml
 .pymarkdown
 .ruff.toml
