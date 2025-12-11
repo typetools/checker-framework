@@ -31,7 +31,7 @@ import org.checkerframework.javacutil.TreeUtils;
  * Set<String> keySet = m.keySet();
  * }</pre>
  *
- * <p>2. If a variable declaration contains type arguments with an @KeyFor annotation and its
+ * 2. If a variable declaration contains type arguments with an @KeyFor annotation and its
  * initializer is a new class tree with corresponding type arguments that have an @UknownKeyFor
  * primary annotation, we transfer from the LHS to RHS. e.g.,
  *
@@ -40,11 +40,11 @@ import org.checkerframework.javacutil.TreeUtils;
  * List<@KeyFor("m") String> keys = new ArrayList<String>();
  * }</pre>
  *
- * <p>3. IMPORTANT NOTE: The following case must be (and is) handled in KeyForAnnotatedTypeFactory.
- * In BaseTypeVisitor we check to make sure that the constructor called in a NewClassTree is
- * actually compatible with the annotations placed on the NewClassTree. This requires that, prior to
- * this check we also propagate the annotations to this constructor in constructorFromUse so that
- * the constructor call matches the type given to the NewClassTree.
+ * 3. IMPORTANT NOTE: The following case must be (and is) handled in KeyForAnnotatedTypeFactory. In
+ * BaseTypeVisitor we check to make sure that the constructor called in a NewClassTree is actually
+ * compatible with the annotations placed on the NewClassTree. This requires that, prior to this
+ * check we also propagate the annotations to this constructor in constructorFromUse so that the
+ * constructor call matches the type given to the NewClassTree.
  *
  * @see
  *     org.checkerframework.checker.nullness.KeyForAnnotatedTypeFactory#constructorFromUse(com.sun.source.tree.NewClassTree)
@@ -52,7 +52,6 @@ import org.checkerframework.javacutil.TreeUtils;
  *     AnnotatedDeclaredType then this class does nothing.
  */
 public class KeyForPropagationTreeAnnotator extends TreeAnnotator {
-
   private final KeyForPropagator keyForPropagator;
   private final ExecutableElement keySetMethod;
 

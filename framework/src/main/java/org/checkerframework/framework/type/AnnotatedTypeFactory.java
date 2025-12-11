@@ -29,7 +29,6 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
-import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.util.Options;
 import java.io.BufferedReader;
 import java.io.File;
@@ -1746,9 +1745,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       logGat("fromExpression(%s) => [cached] %s%n", tree, fromExpressionTreeCache.get(tree));
       return fromExpressionTreeCache.get(tree).deepCopy();
     }
-    if (tree instanceof JCMethodInvocation) {
-      System.out.println("debugger");
-    }
     AnnotatedTypeMirror result = TypeFromTree.fromExpression(this, tree);
 
     if (shouldCache
@@ -1757,9 +1753,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         && !(tree instanceof NewClassTree)
         && !(tree instanceof NewArrayTree)
         && !(tree instanceof ConditionalExpressionTree)) {
-      if (tree instanceof JCMethodInvocation) {
-        System.out.println("debugger");
-      }
       fromExpressionTreeCache.put(tree, result.deepCopy());
     }
     logGat("fromExpression(%s) => %s%n", tree, result);
