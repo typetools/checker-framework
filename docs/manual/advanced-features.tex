@@ -569,18 +569,15 @@ is implicitly the bottom annotation: \code {@NonNull}.
 
 \subsectionAndLabel{Default qualifiers for \<.class> files (library defaults)}{defaults-classfile}
 
-(\emph{Note:} Currently, the conservative library defaults presented in this section
-are off by default and can be turned on by supplying the \<-AuseConservativeDefaultsForUncheckedCode=bytecode>
-command-line option.  In a future release, they will be turned on
-by default and it will be possible to turn them off by supplying a
-\<-AuseConservativeDefaultsForUncheckedCode=-bytecode> command-line option.)
-
 The defaulting rules presented so far apply to source code that is read by
 the compiler.  When the compiler reads a \<.class> file, different
-defaulting rules apply.
+defaulting rules apply.  The rules are the same regardless of whether the
+\<.class> file is from your own codebase or from a library, including the
+JDK\@.
 
-If the checker was run during the compiler execution that created the
-\<.class> file,
+If the \<.class> file was compiled \emph{using} the checker (that is,
+if the checker was run during the compiler execution that created
+the \<.class> file),
 %% This caveat is true, but it's a distraction at this point in the manual.
 %% Also, not having a top and a bottom qualifier is an uncommon case.
 % (and the qualifier hierarchy has both a top and a bottom
@@ -589,35 +586,35 @@ then there is no need for
 defaults:  the \<.class> file has an explicit qualifier at each type use.
 (Furthermore, unless warnings were suppressed, those qualifiers are
 guaranteed to be correct.)
-When you are performing pluggable type-checking,
-it is best to ensure that the compiler only reads such \<.class> files.
-Section~\ref{compiling-libraries} discusses how to create annotated
-libraries.
+%% True, but it distracts from the point of this section.
+% When you are performing pluggable type-checking,
+% it is best if the compiler only reads such \<.class> files.
+% Section~\ref{compiling-libraries} discusses how to create annotated
+% libraries.
 %% True, but not relevant to the point of this paragraph.
 % , even if the library source code is only partially annotated.
 
-If the checker was not run during the compiler execution that created the
-\<.class> file, then the \<.class> file contains only the type qualifiers
-that the programmer wrote explicitly.  (Furthermore, there is no guarantee
+The rest of this section discusses the situation when the \<.class> file
+was \emph{not} compiled using the checker (that is, the checker was not run
+during the compiler execution that created the \<.class> file).
+The \<.class> file contains only the type qualifiers
+that the programmer wrote explicitly --- possibly none.
+(Furthermore, there is no guarantee
 that these qualifiers are correct, since they have not been checked.)
-In this case, each checker decides what qualifier to use for the
-locations where the programmer did not write an annotation.  Unless otherwise noted, the
-choice is:
+Each checker decides what qualifier to use
+where the programmer did not write an annotation.
+
+% In the future, we would like to change the default behavior from
+%  -AuseConservativeDefaultsForUncheckedCode=-bytecode (as it is currently)
+%  to -AuseConservativeDefaultsForUncheckedCode=bytecode.
 
 \begin{itemize}
-\item
-  For method parameters and lower bounds, use the bottom qualifier (see
-  Section~\ref{creating-bottom-qualifier}).
-\item
-  For method return values, fields, and upper bounds, use the top qualifier (see
-  Section~\ref{creating-top-qualifier}).
-\end{itemize}
+\item With \<-AuseConservativeDefaultsForUncheckedCode=-bytecode>:
+(This is also the behavior if
+\<-AuseConservativeDefaultsForUncheckedCode> is not supplied or is supplied
+without ``bytecode'' in its argument.)
 
-These choices are conservative.  They are likely to cause many
-false-positive type-checking errors, which will help you to know which
-library methods need annotations.  You can then write those library
-annotations (see Chapter~\ref{annotating-libraries}) or alternately
-suppress the warnings (see Chapter~\ref{suppressing-warnings}).
+The source code defaulting rules are used.
 
 For example, an unannotated method
 
@@ -629,13 +626,60 @@ For example, an unannotated method
 in a classfile would be interpreted as
 
 \begin{Verbatim}
-  @Top String concatenate(@Bottom String p1, @Bottom String p2)
+  @Default String concatenate(@Default String p1, @Default String p2)
 \end{Verbatim}
 
-There is no single possible default that is sound for fields.  In the rare
-circumstance that there is a mutable public field in an unannotated
-library, the Checker Framework may fail to warn about code that can
-misbehave at run time.
+\noindent
+for an appropriate value of \<@Default>.  (The default might be different for
+return types and parameter types, depending on how the checker is written.)
+
+These defaulting rules are unsafe:  the default might be different than
+what the library author intended, so the Checker Framework may not warn
+about some misuses of the library.  (This includes both misuse by passing
+in a bad value and misuse by using a returned value incorrectly.)  However,
+this unsafe default can be useful because it permits you to focus on errors
+within the codebase before you have annotated the libraries it uses.
+
+
+\item With \<-AuseConservativeDefaultsForUncheckedCode=bytecode>:
+
+\begin{itemize}
+\item
+  For method parameters and lower bounds, use the bottom qualifier (see
+  Section~\ref{creating-bottom-qualifier}).
+\item
+  For method return values, fields, and upper bounds, use the top qualifier (see
+  Section~\ref{creating-top-qualifier}).
+\end{itemize}
+
+For example, an unannotated method
+
+\begin{Verbatim}
+  String concatenate(String p1, String p2)
+\end{Verbatim}
+
+\noindent
+in a classfile would be interpreted as
+
+\begin{Verbatim}
+  @MyTopQualifier String concatenate(@MyBottomQualifier String p1, @MyBottomQualifier String p2)
+\end{Verbatim}
+
+\noindent
+where \<@MyTopQualifier> is the top qualifier in the hierarchy and
+\<@MyBottomQualifier> is the bottom qualifier in the hierarchy.
+
+These choices are conservative.  They are likely to cause many
+false-positive type-checking errors, which will help you to know which
+library methods need annotations.  You can then write those library
+annotations (see Chapter~\ref{annotating-libraries}) or alternately
+suppress the warnings (see Chapter~\ref{suppressing-warnings}).
+
+There is one case in which these choices are not conservative.  Fields
+default to the top qualifier, so any assignment into a field is permitted.
+If an unannotated library has a mutable public field (which would be poor
+code style), the Checker Framework won't warn about incorrect assignments
+to the field.
 
 %% TODO: The following rule is preferable to the current safe behavior.
 %% However, we have not yet figured out how to implement separate handling
@@ -646,17 +690,7 @@ misbehave at run time.
 %% TODO: should give rules for other locations, such as type parameters
 %% (which should behave like fields), bounds, etc.
 
-% If you supply the command-line option
-% \<-AunsafeDefaultsForUnannotatedBytecode>,
-% then the checker does defaulting for unannotated bytecode like it does for
-% annotated source code.  In other words, when a type use in a \<.class> file
-% has no explicit annotation, it is defaulted using the same rules as for the
-% corresponding source code location.  You should only use this command-line
-% option as temporary measure, because it is unsafe:  the checker might issue
-% no warnings even though the code could violate the type guarantee at run
-% time.  However, it can be useful when you are first annotating a codebase,
-% to help you focus on errors within the codebase before you have annotated
-% external libraries.
+\end{itemize}
 
 
 \sectionAndLabel{Annotations on constructors}{annotations-on-constructors}
@@ -1645,7 +1679,7 @@ class @Marsupial-Animal {
 % LocalWords:  computeValue arg myInt Anno Im InheritedAnnotation package2
 % LocalWords:  AcheckPurityAnnotations AassumeSideEffectFree iMplicit m2
 % LocalWords:  AassumeAssertionsAreEnabled myArray vals propkey forName
-% LocalWords:  fenum i18n RequiresQualifier EnsuresQualifier ClassName
+% LocalWords:  fenum i18n RequiresQualifier EnsuresQualifier ClassName sql
 % LocalWords:  EnsuresQualifierIf AsuppressWarnings AinvariantArrays asts
 % LocalWords:  formatter ocals nstanceof plicit ounds wildcard's da
 % LocalWords:  wildcards guieffect AassumeAssertionsAreDisabled readLine
