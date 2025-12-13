@@ -714,7 +714,7 @@ public class AnnotationFileParser {
   }
 
   /**
-   * Parse a stub file that is a part of the annotated JDK and side-effects the {@code stubAnnos}
+   * Parses a stub file that is a part of the annotated JDK and side-effects the {@code stubAnnos}
    * argument.
    *
    * @param filename name of stub file, used only for diagnostic messages

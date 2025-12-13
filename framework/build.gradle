@@ -78,7 +78,7 @@ tasks.register("copyAndMinimizeAnnotatedJdkFiles", JavaExec) {
   dependsOn(cloneTypetoolsJdk)
   def inputDir = "${annotatedJdkHome}/src"
   def outputDir = "${buildDir}/generated/resources/annotated-jdk/"
-  description = "Copy annotated JDK files to ${outputDir}. Removes private and package-private methods, method bodies, comments, etc. from the annotated JDK"
+  description = "Copy annotated JDK files to ${outputDir}.  Converts each JDK source .java file into a stub file, though its extension remains '.java'.  Removes private and package-private methods, method bodies, comments, etc. from the annotated JDK."
   group = "Build"
   dependsOn(":framework:compileStubifierJava")
   // We need the next two dependencies because we run JavaStubifier using this
