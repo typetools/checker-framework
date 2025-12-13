@@ -870,16 +870,20 @@ Java records are type-checked.  Thanks to Neil Brown.
 Method renamings and signature changes (old methods are removed) in `GenericAnnotatedTypeFactory`:
 
 <!-- markdownlint-disable line-length -->
+
 * `getPreconditionAnnotation(VariableElement, AnnotatedTypeMirror)` => `getPreconditionAnnotations(String, AnnotatedTypeMirror, AnnotatedTypeMirror)`
 * `getPostconditionAnnotation(VariableElement, AnnotatedTypeMirror, List<AnnotationMirror>)` => `getPostconditionAnnotations(String, AnnotatedTypeMirror, AnnotatedTypeMirror, List<AnnotationMirror>)`
 * `getPreOrPostconditionAnnotation(VariableElement, AnnotatedTypeMirror, Analysis.BeforeOrAfter, List<AnnotationMirror>)` => `getPreOrPostconditionAnnotations(String, AnnotatedTypeMirror, AnnotatedTypeMirror, Analysis.BeforeOrAfter, List<AnnotationMirror>)`
 * `requiresOrEnsuresQualifierAnno(VariableElement, AnnotationMirror, Analysis.BeforeOrAfter)` => `createRequiresOrEnsuresQualifier(String, AnnotationMirror, AnnotatedTypeMirror, Analysis.BeforeOrAfter, List<AnnotationMirror>)`
+
 <!-- markdownlint-enable line-length -->
 
 Method renamings and signature changes (old method is removed) in `WholeProgramInferenceStorage`:
 
 <!-- markdownlint-disable line-length -->
+
 * `getPreOrPostconditionsForField(Analysis.BeforeOrAfter, ExecutableElement, VariableElement, AnnotatedTypeFactory)` =>  `getPreOrPostconditions(Analysis.BeforeOrAfter, ExecutableElement, String, AnnotatedTypeMirror, AnnotatedTypeFactory)`
+
 <!-- markdownlint-enable line-length -->
 
 Method renamings:
@@ -1477,10 +1481,8 @@ authors must update their overriding implementations.
 
 Renamed methods:
 
-* GenericAnnotatedTypeFactory#addAnnotationsFromDefaultQualifierForUse =>
-  #addAnnotationsFromDefaultForType
-* BaseTypeValidator#shouldCheckTopLevelDeclaredType =>
-  #shouldCheckTopLevelDeclaredOrPrimitiveType
+* GenericAnnotatedTypeFactory#addAnnotationsFromDefaultQualifierForUse => #addAnnotationsFromDefaultForType
+* BaseTypeValidator#shouldCheckTopLevelDeclaredType => #shouldCheckTopLevelDeclaredOrPrimitiveType
 
 Removed org.checkerframework.framework.test.FrameworkPer(Directory/File)Test classes.
 Use CheckerFrameworkPer(Directory/File)Test instead.

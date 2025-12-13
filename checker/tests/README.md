@@ -42,10 +42,12 @@ file to be checked is `AssertNonNullTest.java` in directory
 `org.checkerframework.checker.nullness.NullnessChecker`.
 
 <!-- markdownlint-disable line-length -->
+
 ```sh
   cd $CHECKERFRAMEWORK
   ./gradlew assembleForJavac && checker/bin/javac -processor org.checkerframework.checker.nullness.NullnessChecker -implicit:class checker/tests/nullness/AssertNonNullTest.java
 ```
+
 <!-- markdownlint-enable line-length -->
 
 where the specific checker and command-line arguments are often clear from
