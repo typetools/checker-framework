@@ -135,8 +135,8 @@ public class KeyForPropagationTreeAnnotator extends TreeAnnotator {
   }
 
   /**
-   * Merge {@code @KeyFor} annotations from a Map receiver's key type
-   * into a {@code keySet()} return type. (#2358)
+   * Merge {@code @KeyFor} annotations from a Map receiver's key type into a {@code keySet()} return
+   * type. (#2358)
    *
    * @param mapReceiverType the annotated type of the Map receiver
    * @param keySetReturnType the annotated type of the Set returned by {@code Map.keySet()}
