@@ -199,6 +199,8 @@ public class KeyForPropagationTreeAnnotator extends TreeAnnotator {
       // a new annotation with the merged values in case there are additional values)
       mergedKeyFor = factory.createKeyForAnnotationMirrorWithValue(mergedKeyForValues);
     }
-    setElementType.replaceAnnotation(mergedKeyFor);
+    if (mergedKeyFor != null) {
+      setElementType.replaceAnnotation(mergedKeyFor);
+    }
   }
 }
