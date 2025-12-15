@@ -1,6 +1,7 @@
 # Checker Framework changelog (release history)
 
 <!-- markdownlint-disable no-duplicate-heading -->
+<!-- pyml disable no-duplicate-heading -->
 
 ## Version 3.52.2 (2026-01-03)
 
