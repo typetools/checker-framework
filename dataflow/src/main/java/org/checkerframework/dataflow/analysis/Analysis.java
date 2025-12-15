@@ -173,7 +173,9 @@ public interface Analysis<
    * analysis is running.
    *
    * @param tree a tree
-   * @param analysisCaches caches of analysis results
+   * @param analysisCaches caches of analysis results. If it is not null, this method uses and
+   *     updates it. It is a map from a TransferInput for a Block to a map. The inner map is from
+   *     from a node within the block to a TransferResult.
    * @return the store immediately before a given {@link Tree}
    */
   default @Nullable S getStoreBefore(
@@ -195,7 +197,9 @@ public interface Analysis<
    * the analysis is running.
    *
    * @param nodes a set of nodes
-   * @param analysisCaches caches of analysis results
+   * @param analysisCaches caches of analysis results. If it is not null, this method uses and
+   *     updates it. It is a map from a TransferInput for a Block to a map. The inner map is from
+   *     from a node within the block to a TransferResult.
    * @return the store immediately before the nodes
    */
   default @Nullable S getStoreBefore(
@@ -222,7 +226,9 @@ public interface Analysis<
    * analysis is running.
    *
    * @param node a node whose pre-store to return
-   * @param analysisCaches caches of analysis results
+   * @param analysisCaches caches of analysis results. If it is not null, this method uses and
+   *     updates it. It is a map from a TransferInput for a Block to a map. The inner map is from
+   *     from a node within the block to a TransferResult.
    * @return the store immediately before {@code node}
    */
   default @Nullable S getStoreBefore(
@@ -245,7 +251,9 @@ public interface Analysis<
    * analysis is running.
    *
    * @param tree a tree
-   * @param analysisCaches caches of analysis results
+   * @param analysisCaches caches of analysis results. If it is not null, this method uses and
+   *     updates it. It is a map from a TransferInput for a Block to a map. The inner map is from
+   *     from a node within the block to a TransferResult.
    * @return the store immediately after a given tree
    */
   default @Nullable S getStoreAfter(
@@ -267,7 +275,9 @@ public interface Analysis<
    * the analysis is running.
    *
    * @param nodes the nodes whose post-stores to LUB
-   * @param analysisCaches caches of analysis results
+   * @param analysisCaches caches of analysis results. If it is not null, this method uses and
+   *     updates it. It is a map from a TransferInput for a Block to a map. The inner map is from
+   *     from a node within the block to a TransferResult.
    * @return the LUB of the stores store immediately after {@code nodes}
    */
   default @Nullable S getStoreAfter(
@@ -294,7 +304,9 @@ public interface Analysis<
    * analysis is running.
    *
    * @param node node after which the store is returned
-   * @param analysisCaches caches of analysis results
+   * @param analysisCaches caches of analysis results. If it is not null, this method uses and
+   *     updates it. It is a map from a TransferInput for a Block to a map. The inner map is from
+   *     from a node within the block to a TransferResult.
    * @return the store immediately after a given {@link Node}
    */
   default @Nullable S getStoreAfter(

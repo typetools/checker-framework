@@ -1188,11 +1188,7 @@ public abstract class GenericAnnotatedTypeFactory<
     if (!analysis.isRunning()) {
       return flowResult.getStoreBefore(tree);
     }
-    Set<Node> nodes = analysis.getNodesForTree(tree);
-    if (nodes != null) {
-      return analysis.getStoreBefore(nodes, flowResultAnalysisCaches);
-    }
-    return flowResult.getStoreBefore(tree);
+    return analysis.getStoreBefore(tree, flowResultAnalysisCaches);
   }
 
   /**
@@ -1241,11 +1237,7 @@ public abstract class GenericAnnotatedTypeFactory<
     if (!analysis.isRunning()) {
       return flowResult.getStoreAfter(tree);
     }
-    Set<Node> nodes = analysis.getNodesForTree(tree);
-    if (nodes != null) {
-      return analysis.getStoreAfter(nodes, flowResultAnalysisCaches);
-    }
-    return flowResult.getStoreAfter(tree);
+    return analysis.getStoreAfter(tree, flowResultAnalysisCaches);
   }
 
   /**
