@@ -1161,8 +1161,9 @@ Changes to JavaExpression parsing:
 
 Changes to JavaExpressionContext:
 
-* New method JavaExpressionContext#buildContextForMethodDeclaration(MethodTree, SourceChecker)
-   replaces all overloads of buildContextForMethodDeclaration.
+* New method
+  JavaExpressionContext#buildContextForMethodDeclaration(MethodTree, SourceChecker)
+  replaces all overloads of buildContextForMethodDeclaration.
 
 Parsing a Java expression no longer requires the formal parameters
 `AnnotationProvider provider` or `boolean allowNonDeterministic`.  Methods
@@ -1410,8 +1411,10 @@ org.codehaus.commons.nullanalysis.NotNull,
 org.codehaus.commons.nullanalysis.Nullable, and
 org.jspecify.annotations.Nullable.
 
-The Signature Checker supports annotations @CanonicalName and @CanonicalNameOrEmpty.
-The Signature Checker treats jdk.jfr.Unsigned as an alias for its own @Unsigned annotation.
+The Signature Checker supports annotations `@CanonicalName` and
+`@CanonicalNameOrEmpty`.
+The Signature Checker treats `jdk.jfr.Unsigned` as an alias for its own
+`@Unsigned` annotation.
 
 The shorthand syntax for the -processor command-line argument applies to
 utility checkers, such as the Constant Value Checker.
@@ -2764,122 +2767,125 @@ Renamed AbstractBasicAnnotatedTypeFactory to GenericAnnotatedTypeFactory
 ## Version 1.7.0 (23 October 2013)
 
 Format String Checker:
-  This new type-checker ensures that format methods, such as
-  System.out.printf, are invoked with correct arguments.
+This new type-checker ensures that format methods, such as
+System.out.printf, are invoked with correct arguments.
 
 Renamed the Basic Checker to the Subtyping Checker.
 
 Reimplemented the dataflow analysis that performs flow-sensitive type
-  refinement.  This fixes many bugs, improves precision, and adds features.
-  Many more Java expressions can be written as annotation arguments.
+refinement.  This fixes many bugs, improves precision, and adds features.
+Many more Java expressions can be written as annotation arguments.
 
 Initialization Checker:
-  This new abstract type-checker verifies initialization properties.  It
-  needs to be combined with another type system whose proper initialization
-  should be checked.  This is the new default initialzation checker for the
-  Nullness Checker.  It is based on the "Freedom Before Commitment" approach.
+This new abstract type-checker verifies initialization properties.  It
+needs to be combined with another type system whose proper initialization
+should be checked.  This is the new default initialzation checker for the
+Nullness Checker.  It is based on the "Freedom Before Commitment" approach.
 
 Renamed method annotations used by the Nullness Checker:
-  @AssertNonNullAfter => @EnsuresNonNull
-  @NonNullOnEntry => @RequiresNonNull
-  @AssertNonNullIfTrue(...) => @IfMethodReturnsFalseEnsuresNonNull
-  @AssertNonNullIfFalse(...) => @IfMethodReturnsFalseEnsuresNonNull
-  @LazyNonNull => @MonotonicNonNull
-  @AssertParametersNonNull => [no replacement]
+* @AssertNonNullAfter => @EnsuresNonNull
+* @NonNullOnEntry => @RequiresNonNull
+* @AssertNonNullIfTrue(...) => @IfMethodReturnsFalseEnsuresNonNull
+* @AssertNonNullIfFalse(...) => @IfMethodReturnsFalseEnsuresNonNull
+* @LazyNonNull => @MonotonicNonNull
+* @AssertParametersNonNull => [no replacement]
 Removed annotations used by the Nullness Checker:
-  @AssertParametersNonNull
+* @AssertParametersNonNull
 Renamed type annotations used by the Initialization Checker:
-  @NonRaw => @Initialized
-  @Raw => @UnknownInitialization
-  new annotation @UnderInitialization
+* @NonRaw => @Initialized
+* @Raw => @UnknownInitialization
+* new annotation @UnderInitialization
 The old Initialization Checker (that uses @Raw and @NonRaw) can be invoked
-  by invoking the NullnessRawnessChecker rather than the NullnessChecker.
+by invoking the NullnessRawnessChecker rather than the NullnessChecker.
 
 Purity (side effect) analysis uses new annotations @SideEffectFree,
-  @Deterministic, and @TerminatesExecution; @Pure means both @SideEffectFree
-  and @Deterministic.
+@Deterministic, and @TerminatesExecution; @Pure means both @SideEffectFree
+and @Deterministic.
 
 Pre- and postconditions about type qualifiers are available for any type system
-  through @RequiresQualifier, @EnsuresQualifier and @EnsuresQualifierIf.  The
-  contract annotations for the Nullness Checker (e.g. @EnsuresNonNull) are now
-  only a special case of these general purpose annotations.
-  The meta-annotations @PreconditionAnnotation, @PostconditionAnnotation, and
-  @ConditionalPostconditionAnnotation can be used to create more special-case
-  annotations for other type systems.
+through @RequiresQualifier, @EnsuresQualifier and @EnsuresQualifierIf.  The
+contract annotations for the Nullness Checker (e.g. @EnsuresNonNull) are now
+only a special case of these general purpose annotations.
+The meta-annotations @PreconditionAnnotation, @PostconditionAnnotation, and
+@ConditionalPostconditionAnnotation can be used to create more special-case
+annotations for other type systems.
 
 Renamed assertion comment string used by all checkers:
-  @SuppressWarnings => @AssumeAssertion
+* @SuppressWarnings => @AssumeAssertion
 
 To use an assert statement to suppress warnings, the assertion message must
-  include the string "@AssumeAssertion(warningkey)".  Previously, just the
-  warning key sufficed, but the string @SuppressWarnings(warningkey) was
-  recommended.
+include the string "@AssumeAssertion(warningkey)".  Previously, just the
+warning key sufficed, but the string @SuppressWarnings(warningkey) was
+recommended.
 
 New command-line options:
-  -AonlyDefs and -AonlyUses complement existing -AskipDefs and -AskipUses
-  -AsuppressWarnings Suppress warnings matching the given key
-  -AassumeSideEffectFree Unsoundly assume that every method is side-effect-free
-  -AignoreRawTypeArguments Ignore subtype tests for type arguments that
-    were inferred for a raw type
-  -AenablePurity Check the bodies of methods marked as pure
-    (@SideEffectFree or @Deterministic)
-  -AsuggestPureMethods Suggest methods that could be marked as pure
-  -AassumeAssertionsAreEnabled, -AassumeAssertionsAreDisabled Whether to
-    assume that assertions are enabled or disabled
-  -AconcurrentSemantics Whether to assume concurrent semantics
-  -Anocheckjdk Don't err if no annotated JDK can be found
-  -Aflowdotdir Create an image of the control flow graph
-  -AinvariantArrays replaces -Alint=arrays:invariant
-  -AcheckCastElementType replaces -Alint=cast:strict
+
+* -AonlyDefs and -AonlyUses complement existing -AskipDefs and -AskipUses
+* -AsuppressWarnings Suppress warnings matching the given key
+* -AassumeSideEffectFree Unsoundly assume that every method is side-effect-free
+* -AignoreRawTypeArguments Ignore subtype tests for type arguments that
+  were inferred for a raw type
+* -AenablePurity Check the bodies of methods marked as pure
+  (@SideEffectFree or @Deterministic)
+* -AsuggestPureMethods Suggest methods that could be marked as pure
+* -AassumeAssertionsAreEnabled, -AassumeAssertionsAreDisabled Whether to
+  assume that assertions are enabled or disabled
+* -AconcurrentSemantics Whether to assume concurrent semantics
+* -Anocheckjdk Don't err if no annotated JDK can be found
+* -Aflowdotdir Create an image of the control flow graph
+* -AinvariantArrays replaces -Alint=arrays:invariant
+* -AcheckCastElementType replaces -Alint=cast:strict
 
 Manual:
-  New manual section about array types.
-  New FAQ entries:  "Which checker should I start with?", "How can I handle
-    typestate, or phases of my program with different data properties?",
-    "What is the meaning of a type qualifier at a class declaration?"
-  Reorganized FAQ chapter into sections.
-  Many other improvements.
+* New manual section about array types.
+* New FAQ entries:  "Which checker should I start with?", "How can I handle
+*   typestate, or phases of my program with different data properties?",
+*   "What is the meaning of a type qualifier at a class declaration?"
+* Reorganized FAQ chapter into sections.
+* Many other improvements.
 
 ## Version 1.6.7 (28 August 2013)
 
 User-visible framework improvements:
-  Improve the error message produced by -Adetailedmsgtext
+* Improve the error message produced by -Adetailedmsgtext
 
 Bug fixes:
-  Fix issue #245: anonymous classes were skipped by default
+* Fix issue #245: anonymous classes were skipped by default
 
 ## Version 1.6.6 (01 August 2013)
 
 Documentation:
-  The Checker Framework manual has been improved.  Changes include:
+* The Checker Framework manual has been improved.  Changes include:
 more troubleshooting tips to the Checker Framework manual, an improved
 discussion on qualifier bounds, more examples, improved formatting, and more.
-  An FAQ entry has been added to discuss JSR305.
-  Minor clarifications have been added to the Checker Framework tutorial.
+* An FAQ entry has been added to discuss JSR305.
+* Minor clarifications have been added to the Checker Framework tutorial.
 
 ## Version 1.6.5 (01 July 2013)
 
 User-visible framework improvements:
-  Stub files now support static imports.
+* Stub files now support static imports.
 
 Maven plugin:
-  Maven plugin will now issue a warning rather than quit when zero checkers
+* Maven plugin will now issue a warning rather than quit when zero checkers
   are specified in a project's pom.xml.
 
 Documentation:
-  Improved the Maven plugin instructions in the Checker Framework manual.
-  Added documentation for the -XDTA:noannotationsincomments compiler flag.
+* Improved the Maven plugin instructions in the Checker Framework manual.
+* Added documentation for the -XDTA:noannotationsincomments compiler flag.
 
 Internal framework improvements:
-  Improved Maven-plugin developer documentation.
+* Improved Maven-plugin developer documentation.
 
 ## Version 1.6.4 (01 June 2013)
 
 User-visible framework improvements:
-  StubGenerator now generates stubs that can be read by the StubParser.
+
+* StubGenerator now generates stubs that can be read by the StubParser.
 
 Maven plugin:
-  The Maven plugin no longer requires the Maven project's output directory to
+
+* The Maven plugin no longer requires the Maven project's output directory to
   exist in order to run the Checker Framework.  However, if you ask the Checker
   Framework to generate class files then the output directory will be created.
 
@@ -2893,21 +2899,24 @@ Documentation:
 ## Version 1.6.3 (01 May 2013)
 
 Eclipse plugin bug fixes:
-  The javac argument files used by the Eclipse plugin now properly escape file
+* The javac argument files used by the Eclipse plugin now properly escape file
   paths.  Windows users should no longer encounter errors about missing built-in
   checkers.
 
 Documentation:
-  Add FAQ "What is the meaning of an annotation after a type?"
+* Add FAQ "What is the meaning of an annotation after a type?"
 
 ## Version 1.6.2 (04 Apr 2013)
 
 Eclipse plugin:
-  The "Additional compiler parameters" text field has now been replaced by a
+
+* The "Additional compiler parameters" text field has now been replaced by a
   list.  Parameters in this list may be activated/deactivated via checkbox.
 
 Eclipse plugin bug fixes:
-   Classpaths and source files should now be correctly quoted when they contain spaces.
+
+* Classpaths and source files should now be correctly quoted when they contain
+  spaces.
 
 Internal framework improvements:
 
@@ -2970,7 +2979,7 @@ Adapt to underlying jsr308-langtools changes.
 * JDK 7 is now required.  The Checker Framework does not build or run on JDK 6.
 
 Documentation:
-  A new tutorial is available at <https://checkerframework.org/tutorial/>
+* A new tutorial is available at <https://checkerframework.org/tutorial/>
 
 ## Version 1.5.0 (14 Jan 2013)
 
@@ -2987,32 +2996,32 @@ User-visible framework improvements:
 * All jar files now reside in checker-framework/checkers/binary/.
 
 Maven plugin:
-  Individual pom files (and artifacts in the Maven repository) for all
+* Individual pom files (and artifacts in the Maven repository) for all
     Checker Framework jar files.
-  Avoid too-long command lines on Windows.
-  See the Maven section of the manual for more details.
+* Avoid too-long command lines on Windows.
+* See the Maven section of the manual for more details.
 
 Eclipse plugin:
-  Avoid too-long command lines on Windows.
-  Other bug fixes and interface improvements.
+* Avoid too-long command lines on Windows.
+* Other bug fixes and interface improvements.
 
 Other framework improvements:
-  New -Adetailedmsgtext command-line option, intended for use by IDE plugins.
+* New -Adetailedmsgtext command-line option, intended for use by IDE plugins.
 
 ## Version 1.4.4 (1 Dec 2012)
 
 Internal framework improvements:
-  Add shutdown hook mechanism and use it for -AresourceStats resource
+* Add shutdown hook mechanism and use it for -AresourceStats resource
     statistics flag.
-  Add -AstubWarnIfNotFound and -AstubDebug options to improve
+* Add -AstubWarnIfNotFound and -AstubDebug options to improve
     warnings and debug information from the stub file parsing.
-  Ignore case when comparing error suppression keys.
-  Support the bottom type as subtype of any wildcard type.
+* Ignore case when comparing error suppression keys.
+* Support the bottom type as subtype of any wildcard type.
 
 Tool Integration Changes
-  The Maven plugin id has been changed to reflect standard Maven
+* The Maven plugin id has been changed to reflect standard Maven
     naming conventions.
-  Eclipse and Maven plugin version numbers will now
+* Eclipse and Maven plugin version numbers will now
     track the Checker Framework version numbers.
 
 Bug fixes.
@@ -3020,18 +3029,19 @@ Bug fixes.
 ## Version 1.4.3 (1 Nov 2012)
 
 Clarify license:
-  The Checker Framework is licensed under the GPL2.  More permissive
+* The Checker Framework is licensed under the GPL2.  More permissive
     licenses apply to annotations, tool plugins (Maven, Eclipse),
     external libraries included with the Checker Framework, and examples in
     the Checker Framework Manual.
-  Replaced all third-party annotations by cleanroom implementations, to
+* Replaced all third-party annotations by cleanroom implementations, to
     avoid any potential problems or confusion with licensing.
 
 Aliased annotations:
-  Clarified that there is no need to rewrite your program.  The Checker
+* Clarified that there is no need to rewrite your program.  The Checker
     Framework recognizes dozens of annotations used by other tools.
 
 Improved documentation of Units Checker and Gradle Integration.
+
 Improved developer documentation of Eclipse and Maven plugins.
 
 Bug fixes.
@@ -3039,10 +3049,10 @@ Bug fixes.
 ## Version 1.4.2 (16 Oct 2012)
 
 External tool support:
-  Eclipse plug-in now works properly, due to many fixes
+* Eclipse plug-in now works properly, due to many fixes
 
 Regex Checker:
-  New CheckedPatternSyntaxException added to RegexUtil
+* New CheckedPatternSyntaxException added to RegexUtil
 
 Support new foreign annotations:
   org.eclipse.jdt.annotation.Nullable
@@ -3050,84 +3060,84 @@ Support new foreign annotations:
 
 New FAQ: "What is a receiver?"
 
-Make annotations use 1-based numbering for formal parameters:
-  Previously, due to a bug the annotations used 0-based numbering.
-  This change means that you need to rewrite annotations in the following ways:
+Make annotations use 1-based numbering for formal parameters.
+Previously, due to a bug the annotations used 0-based numbering.
+This change means that you need to rewrite annotations in the following ways:
 
-   ```rewrites
-   @KeyFor("#3")  =>  @KeyFor("#4")
-   @AssertNonNullIfTrue("#0")  =>  @AssertNonNullIfTrue("#1")
-   @AssertNonNullIfTrue({"#0", "#1"})  =>  @AssertNonNullIfTrue({"#1", "#2"})
-   @AssertNonNullAfter("get(#2)")  =>  @AssertNonNullAfter("get(#3)")
-   ```
+ ```rewrites
+ @KeyFor("#3")  =>  @KeyFor("#4")
+ @AssertNonNullIfTrue("#0")  =>  @AssertNonNullIfTrue("#1")
+ @AssertNonNullIfTrue({"#0", "#1"})  =>  @AssertNonNullIfTrue({"#1", "#2"})
+ @AssertNonNullAfter("get(#2)")  =>  @AssertNonNullAfter("get(#3)")
+ ```
 
-  This command:
+This command:
 
-  ```sh
-    find . -type f -print | xargs perl -pi -e 's/("#)([0-9])(")/$1.($2+1).$3/eg'
-  ```
+```sh
+  find . -type f -print | xargs perl -pi -e 's/("#)([0-9])(")/$1.($2+1).$3/eg'
+```
 
-  handles the first two cases, which account for most uses.  You would need
-  to handle any annotations like the last two cases in a different way,
-  such as by running
+handles the first two cases, which account for most uses.  You would need
+to handle any annotations like the last two cases in a different way,
+such as by running
 
-  ```sh
-    grep -r -n -E '\("[^"]+#[0-9][^A-Za-z]|\("#[0-9][^"]' .
-  ```
+```sh
+  grep -r -n -E '\("[^"]+#[0-9][^A-Za-z]|\("#[0-9][^"]' .
+```
 
-  and making manual changes to the matching lines.  (It is possible to
-  provide a command that handles all cases, but it would be more likely to
-  make undesired changes.)
-  Whenever making automated changes, it is wise to save a copy of your
-  codebase, then compare it to the modified version so you can undo any
-  undesired changes.  Also, avoid running the automated command over version
-  control files such as your .hg, .git, .svn, or CVS directory.
+and making manual changes to the matching lines.  (It is possible to
+provide a command that handles all cases, but it would be more likely to
+make undesired changes.)
+Whenever making automated changes, it is wise to save a copy of your
+codebase, then compare it to the modified version so you can undo any
+undesired changes.  Also, avoid running the automated command over version
+control files such as your .hg, .git, .svn, or CVS directory.
 
 ## Version 1.4.1 (29 Sep 2012)
 
 User-visible framework improvements:
-  Support stub files contained in .jar files.
-  Support aliasing for declaration annotations.
-  Updated the Maven plugin.
+* Support stub files contained in .jar files.
+* Support aliasing for declaration annotations.
+* Updated the Maven plugin.
 
 Code refactoring:
-  Make AnnotationUtils and AnnotatedTypes into stateless utility classes.
+* Make AnnotationUtils and AnnotatedTypes into stateless utility classes.
     Instead, provide the necessary parameters for particular methods.
-  Make class AnnotationBuilder independent of AnnotationUtils.
-  Remove the ProcessingEnvironment from AnnotatedTypeMirror, which was
+* Make class AnnotationBuilder independent of AnnotationUtils.
+* Remove the ProcessingEnvironment from AnnotatedTypeMirror, which was
     hardly used and can be replaced easily.
-  Used more consistent naming for a few more fields.
-  Moved AnnotatedTypes from package checkers.types to checkers.utils.
+* Used more consistent naming for a few more fields.
+* Moved AnnotatedTypes from package checkers.types to checkers.utils.
     this required making a few methods in AnnotatedTypeFactory public,
     which might require changes in downstream code.
 
 Internal framework improvements:
-  Fixed Issues #136, #139, #142, #156.
-  Bug fixes and documentation improvements.
+* Fixed Issues #136, #139, #142, #156.
+* Bug fixes and documentation improvements.
 
 ## Version 1.4.0 (11 Sep 2012)
 
 User-visible framework improvements:
-  Defaulting:
+* Defaulting:
     @DefaultQualifier annotations now use a Class instead of a String,
       preventing simple typo errors.
     @DefaultLocation extended with more constants.
     TreeAnnotator propagates the least-upper-bound of the operands of
       binary/compound operations, instead of taking the default qualifier.
-  Stub files now ignore the return type, allowing for files automatically
+* Stub files now ignore the return type, allowing for files automatically
     generated from other formats.
-  Type factories and type hierarchies:
+* Type factories and type hierarchies:
     Simplify AnnotatedTypeFactory constructors.
     Add a GeneralAnnotatedTypeFactory that supports multiple type systems.
     Improvements to QualifierHierarchy construction.
-  Type-checking improvements:
+* Type-checking improvements:
     Propagate annotations from the sub-expression of a cast to its result.
     Better handling of assignment context and improved inference of
       array creation expressions.
-  Optional stricter checking of casts to array and generic types using
+* Optional stricter checking of casts to array and generic types using
     the new -Alint=cast:strict flag.
     This will become the default in the future.
-  Code reorganization:
+* Code reorganization:
     SourceChecker.initChecker no longer has a ProcessingEnvironment
       parameter. The environment can now be accessed using the standard
       processingEnv field (instead of the previous env field).
@@ -3136,41 +3146,41 @@ User-visible framework improvements:
     Move isAssignable from the BaseTypeChecker to the BaseTypeVisitor; now
       the Checker only consists of factories and logic is contained in the
       Visitor.
-  Warning and error messages:
+* Warning and error messages:
     Issue a warning if an unsupported -Alint option is provided.
     Improved error messages.
-  Maven plugin now works.
+* Maven plugin now works.
 
 Nullness Checker:
-  Only allow creation of (implicitly) non-null objects.
-  Optionally forbid creation of arrays with @NonNull component type,
+* Only allow creation of (implicitly) non-null objects.
+* Optionally forbid creation of arrays with @NonNull component type,
     when flag -Alint=arrays:forbidnonnullcomponents is supplied.
     This will become the default in the future.
 
 Internal framework improvements:
-  Enable assertion checking.
-  Improve handling of annotated type variables.
-  Assignment context is now a type, not a tree.
-  Fix all compiler warnings.
+* Enable assertion checking.
+* Improve handling of annotated type variables.
+* Assignment context is now a type, not a tree.
+* Fix all compiler warnings.
 
 ## Version 1.3.1 (21 Jul 2012)
 
 Installation:
-  Clarify installation instructions for Windows.  Remove javac.bat, which
-  worked for running distributed checkers but not for creating new checkers.
+* Clarify installation instructions for Windows.  Remove javac.bat, which
+* worked for running distributed checkers but not for creating new checkers.
 
 User-visible framework improvements:
-  Implement @PolyAll qualifier to vary over multiple type systems.
-  The Checker Framework is unsound due to Java's covariant array subtyping.
+* Implement @PolyAll qualifier to vary over multiple type systems.
+* The Checker Framework is unsound due to Java's covariant array subtyping.
     You can enable invariant array subtyping (for qualifiers only, not for
     base Java types) with the command-line option -Alint=arrays:invariant.
     This will become the default in the future.
 
 Internal framework improvements:
-  Improve defaulting for multiple qualifier hierarchies.
-  Big refactoring of how qualifier hierarchies are built up.
-  Improvements to error handling output for unexpected exceptions.
-  Bug fixes and documentation improvements.
+* Improve defaulting for multiple qualifier hierarchies.
+* Big refactoring of how qualifier hierarchies are built up.
+* Improvements to error handling output for unexpected exceptions.
+* Bug fixes and documentation improvements.
 
 ## Version 1.3.0 (3 Jul 2012)
 
@@ -3185,55 +3195,55 @@ Annotation syntax changes, as mandated by the latest Type Annotations
   This is useful for the new receiver syntax and for import statements.
 
 Framework improvements:
-  Adapt to annotation storage changes in jsr308-langtools 1.3.0.
-  Move type validation methods from the BaseTypeChecker to BaseTypeVisitor.
+* Adapt to annotation storage changes in jsr308-langtools 1.3.0.
+* Move type validation methods from the BaseTypeChecker to BaseTypeVisitor.
 
 ## Version 1.2.7 (14 May 2012)
 
 Regex Checker:
-  Add basic support for the concatenation of two non-regular expressions
+* Add basic support for the concatenation of two non-regular expressions
     that produce a valid regular expression.
-  Support "isRegex" in flow inference.
+* Support "isRegex" in flow inference.
 
 Framework improvements:
-  New @StubFiles annotation declaratively adds stub files to a checker.
+* New @StubFiles annotation declaratively adds stub files to a checker.
 
 Internal bug fixes:
-  Respect skipDefs and skipUses in NullnessFlow.
-  Support package annotations in stub files.
-  Better support for enums in annotation attributes.
-  Cleanups to how implicit receivers are determined.
+* Respect skipDefs and skipUses in NullnessFlow.
+* Support package annotations in stub files.
+* Better support for enums in annotation attributes.
+* Cleanups to how implicit receivers are determined.
 
 ## Version 1.2.6 (18 Mar 2012)
 
 Nullness Checker:
-  Correctly handle unboxing in more contexts (if, switch (Issue 129),
+* Correctly handle unboxing in more contexts (if, switch (Issue 129),
     while loops, ...)
 
 Regex Checker:
-  Add capturing groups parameter to Regex qualifier.
+* Add capturing groups parameter to Regex qualifier.
     Count groups in String literals and String concatenation.
     Verify group number to method calls that take a capturing group
       number.
     Update RegexUtil methods to take optional groups parameter.
     Modify regex qualifier hierarchy to support groups parameter.
-  Add special case for Pattern.compile when called with Pattern.LITERAL flag.
+* Add special case for Pattern.compile when called with Pattern.LITERAL flag.
 
 Internal bug fixes:
-  Improve flow's support of annotations with parameters.
-  Fix generics corner cases (Issues #131, #132, #133, #135).
-  Support type annotations in annotations and type-check annotations.
-  Improve reflective look-up of visitors and factories.
-  Small cleanups.
+* Improve flow's support of annotations with parameters.
+* Fix generics corner cases (Issues #131, #132, #133, #135).
+* Support type annotations in annotations and type-check annotations.
+* Improve reflective look-up of visitors and factories.
+* Small cleanups.
 
 ## Version 1.2.5.1 (06 Feb 2012)
 
 Nullness Checker:
-  Correct the annotations on ThreadLocal and InheritableThreadLocal.
+* Correct the annotations on ThreadLocal and InheritableThreadLocal.
 
 Internal bug fixes:
-  Expand release tests.
-  Compile release with JDK 6 to work on both JDK 6 and JDK 7.
+* Expand release tests.
+* Compile release with JDK 6 to work on both JDK 6 and JDK 7.
 
 ## Version 1.2.5 (3 Feb 2012)
 
@@ -3247,24 +3257,24 @@ New -Aignorejdkastub option makes the checker not load the jdk.astub
 file. Files from the "stubs" option are still loaded.
 
 Regex Checker:
-  Support concatenation of PolyRegex strings.
-  Improve examples of use of RegexUtil methods.
+* Support concatenation of PolyRegex strings.
+* Improve examples of use of RegexUtil methods.
 
 Signature Checker:
-  Add new @ClassGetName annotation, for a 4th string representation of a
+* Add new @ClassGetName annotation, for a 4th string representation of a
     class that is used by the JDK.  Add supporting annotations to make the
     type hierarchy a complete lattice.
-  Add PolySignature annotation.
+* Add PolySignature annotation.
 
 Internal bug fixes:
-  Improve method type argument inference.
-  Handle type variables whose upper bound is a type variable.
-  Fix bug in least upper bound computation for anonymous classes.
-  Improve handling of annotations inherited from superclasses.
-  Fix design problem with Nullness Checker and primitive types.
-  Ensure that overriding methods respect pre- and postconditions.
-  Correctly resolve references to an enclosing this.
-  Improve handling of Java source that contains compilation errors.
+* Improve method type argument inference.
+* Handle type variables whose upper bound is a type variable.
+* Fix bug in least upper bound computation for anonymous classes.
+* Improve handling of annotations inherited from superclasses.
+* Fix design problem with Nullness Checker and primitive types.
+* Ensure that overriding methods respect pre- and postconditions.
+* Correctly resolve references to an enclosing this.
+* Improve handling of Java source that contains compilation errors.
 
 ## Version 1.2.4 (15 Dec 2011)
 
