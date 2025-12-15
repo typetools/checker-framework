@@ -279,8 +279,5 @@ annotation-file-utilities/figures/*.pdf
 annotation-file-utilities/figures/*.png
 annotation-file-utilities/*.png
 
-# For style checking.
+# Obtained via Git
 .plume-scripts
-.markdownlint-cli2.yaml
-.pymarkdown
-.ruff.toml

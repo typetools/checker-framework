@@ -70,7 +70,8 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   texlive-fonts-recommended \
   texlive-latex-base \
   texlive-latex-extra \
-  texlive-latex-recommended
+  texlive-latex-recommended \
+  yamllint
 
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt -qqy update \
