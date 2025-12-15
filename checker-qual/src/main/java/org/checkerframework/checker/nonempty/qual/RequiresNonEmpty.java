@@ -2,6 +2,7 @@ package org.checkerframework.checker.nonempty.qual;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -62,11 +63,12 @@ import org.checkerframework.framework.qual.PreconditionAnnotation;
  * This annotation should not be used for formal parameters (instead, give them a {@code @NonEmpty}
  * type). The {@code @RequiresNonEmpty} annotation is intended for non-parameter expressions, such
  * as field accesses or method calls.
- *
- * @checker_framework.manual #non-empty-checker Non-Empty Checker
  */
+// Reinstate when the Non-Empty Checker is publicized.
+//  * @checker_framework.manual #non-empty-checker Non-Empty Checker
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
+@Repeatable(RequiresNonEmpty.List.class)
 @Target({ElementType.METHOD, ElementType.PARAMETER})
 @PreconditionAnnotation(qualifier = NonEmpty.class)
 public @interface RequiresNonEmpty {
@@ -85,6 +87,9 @@ public @interface RequiresNonEmpty {
    * <p>Programmers generally do not need to write this. It is created by Java when a programmer
    * writes more than one {@link RequiresNonEmpty} annotation at the same location.
    */
+  @Documented
+  @Retention(RetentionPolicy.RUNTIME)
+  @Target({ElementType.METHOD, ElementType.PARAMETER})
   @interface List {
     /**
      * Returns the repeatable annotations.

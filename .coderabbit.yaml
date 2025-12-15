@@ -4,19 +4,34 @@ language: "en-US"
 
 reviews:
   profile: "assertive"
-  high_level_summary: true
-  collapse_walkthrough: true
-  poem: false
+  high_level_summary: false
   review_status: false
+  collapse_walkthrough: true
+  changed_files_summary: false
+  sequence_diagrams: false
+  estimate_code_review_effort: false
+  in_progress_fortune: false
+  poem: false
   path_filters:
     - "!**/build/**"
     - "!**/out/**"
     - "!**/.gradle/**"
     - "!**/.idea/**"
     - "!**/node_modules/**"
-  ignore_title_keywords:
-    - "wip"
-    - "draft"
+  auto_review:
+    ignore_title_keywords:
+      - "wip"
+      - "draft"
+    ignore_usernames:
+      - "dependabot"
+      - "dependabot[bot]"
+      - "mend"
+      - "app/renovate"
+  pre_merge_checks:
+    title:
+      mode: "off"
+    description:
+      mode: "off"
 
 chat:
   art: false

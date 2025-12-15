@@ -1,5 +1,5 @@
 plugins {
-  id 'java-library'
+  id("java-library")
 }
 
 configurations {
@@ -7,13 +7,13 @@ configurations {
 }
 
 dependencies {
-  implementation project(':checker-qual')
+  implementation(project(":checker-qual"))
 
   // This is used by org.checkerframework.javacutil.TypesUtils.isImmutableTypeInJdk.
   // https://mvnrepository.com/artifact/org.plumelib/plume-util
-  implementation "org.plumelib:hashmap-util:${versions.hashmapUtil}"
-  implementation "org.plumelib:plume-util:${versions.plumeUtil}"
-  implementation "org.plumelib:reflection-util:${versions.reflectionUtil}"
+  implementation(libs.hashmap.util)
+  implementation(libs.plume.util)
+  implementation(libs.reflection.util)
 
   // External dependencies:
   // If you add an external dependency, you must shadow its packages both in checker.jar and
@@ -23,20 +23,20 @@ dependencies {
   //   * in ../dataflow/build.gradle in the createDataflowShaded task.
 }
 
-apply from: rootProject.file('gradle-mvn-push.gradle')
+apply from: rootProject.file("gradle-mvn-push.gradle")
 
 final javacUtilPom(publication) {
   sharedPublicationConfiguration(publication)
-  publication.from components.java
+  publication.from(components.java)
 
   publication.pom {
-    name = 'Javacutil'
-    description = 'javacutil contains utility classes for the javac compiler.'
+    name = "Javacutil"
+    description = "javacutil contains utility classes for the javac compiler."
     licenses {
       license {
-        name = 'GNU General Public License, version 2 (GPL2), with the classpath exception'
-        url = 'http://www.gnu.org/software/classpath/license.html'
-        distribution = 'repo'
+        name = "GNU General Public License, version 2 (GPL2), with the classpath exception"
+        url = "http://www.gnu.org/software/classpath/license.html"
+        distribution = "repo"
       }
     }
   }
@@ -45,11 +45,11 @@ final javacUtilPom(publication) {
 publishing {
   publications {
     javacUtil(MavenPublication) {
-      javacUtilPom it
+      javacUtilPom(it)
     }
   }
 }
 
 signing {
-  sign publishing.publications.javacUtil
+  sign(publishing.publications.javacUtil)
 }

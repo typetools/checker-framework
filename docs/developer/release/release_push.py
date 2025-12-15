@@ -8,7 +8,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from release_utils import (
+from release_utils import (  # ty: ignore # TODO: limitation in ty
     continue_or_exit,
     current_distribution_by_website,
     delete_directory,
@@ -25,7 +25,7 @@ from release_utils import (
     set_umask,
     version_number_to_array,
 )
-from release_vars import (
+from release_vars import (  # ty: ignore # TODO: limitation in ty
     CF_VERSION,
     CHECKER_FRAMEWORK,
     CHECKER_LIVE_API_DIR,
@@ -42,7 +42,10 @@ from release_vars import (
     TMP_DIR,
     execute,
 )
-from sanity_checks import javac_sanity_check, maven_sanity_check
+from sanity_checks import (  # ty: ignore # TODO: limitation in ty
+    javac_sanity_check,
+    maven_sanity_check,
+)
 
 
 def check_release_version(previous_release: str, new_release: str) -> None:
@@ -90,7 +93,7 @@ def copy_release_dir(
     # rsync copies the files in the source directory to the destination directory
     # rather than a subdirectory of the destination directory.
     cmd = (
-        "rsync --no-group --omit-dir-times --recursive --links --quiet"
+        "rsync --no-p --no-group --omit-dir-times --recursive --links --quiet"
         f" {source_location}/ {dest_location}"
     )
     execute(cmd)
@@ -108,7 +111,7 @@ def promote_release(path_to_releases: Path, release_version: str) -> None:
     from_dir = Path(path_to_releases) / release_version
     to_dir = Path(path_to_releases) / ".."
     # Trailing slash is crucial.
-    cmd = f"rsync -aJ --no-group --omit-dir-times {from_dir}/ {to_dir}"
+    cmd = f"rsync -aJ --no-perms --no-group --omit-dir-times {from_dir}/ {to_dir}"
     execute(cmd)
 
 
@@ -392,7 +395,7 @@ def main(argv: list[str]) -> None:
     print_step("Push Step 5: Stage Maven artifacts in Central")  # SEMIAUTO
 
     print_step("Step 5a: Stage the artifacts at Maven Central.")
-    if (not test_mode) or prompt_yes_no("Stage Maven artifacts in Maven Central?", not test_mode):
+    if prompt_yes_no("Stage Maven artifacts in Maven Central?", True):
         stage_maven_artifacts_in_maven_central()
 
         print_step("Step 5b: Close staged artifacts at Maven Central.")
@@ -501,13 +504,13 @@ def main(argv: list[str]) -> None:
     if test_mode:
         msg = (
             "Test Mode: You are in test_mode.  Please 'DROP' the artifacts. "
-            "To drop, log into https://central.sonatype.com/publishing/deployments using your "
+            "To drop, log into https://central.sonatype.com/publishing using your "
             "Sonatype credentials and click 'Drop'"
         )
     else:
         msg = (
             "Please 'Publish' the artifacts.\n"
-            "First log into https://central.sonatype.com/publishing/deployments using your "
+            "First log into https://central.sonatype.com/publishing using your "
             "Sonatype credentials. Find the deployment labled "
             "'org.checkerframework (via OSSRH Staging API)' "
             "and click on the Publish button next to it.\n"

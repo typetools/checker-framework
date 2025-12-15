@@ -1,0 +1,71 @@
+[plugins]
+
+com-gradleup-shadow = { id = "com.gradleup.shadow", version = "9.3.0" }
+
+de-undercouch-download = { id = "de.undercouch.download", version = "5.6.0" }
+
+net-ltgt-errorprone = { id = "net.ltgt.errorprone", version = "4.3.0" }
+
+com-diffplug-spotless = { id = "com.diffplug.spotless", version = "8.1.0" }
+
+com-gorylenko-gradle-git-properties = { id = "com.gorylenko.gradle-git-properties", version = "2.5.4" }
+
+biz-aqute-bnd-builder = { id = "biz.aQute.bnd.builder", version = "7.1.0" }
+
+[versions]
+
+junit-junit = "4.13.2"
+
+[libraries]
+
+# If you update errorproneVersion:
+#  * Temporarily comment out "-Werror" in build.gradle files.
+#  * Repeatedly run `./gradlew clean compileJava` and fix all errors.
+#  * Uncomment "-Werror".
+error-prone-core = "com.google.errorprone:error_prone_core:2.45.0"
+
+javac = "com.google.errorprone:javac:9+181-r4173-1"
+
+require-javadoc = "org.plumelib:require-javadoc:2.0.0"
+
+error-prone-annotations = "com.google.errorprone:error_prone_annotations:2.45.0"
+
+guava = "org.checkerframework.annotatedlib:guava:33.1.0.2-jre"
+
+options = "org.plumelib:options:2.0.3"
+
+plume-util = "org.plumelib:plume-util:1.12.3"
+
+reflection-util = "org.plumelib:reflection-util:1.1.5"
+
+asm = "org.ow2.asm:asm:9.9"
+
+junit = { group = "junit", name = "junit", version.ref = "junit-junit" }
+
+auto-value-annotations = "com.google.auto.value:auto-value-annotations:1.11.1"
+
+auto-value = "com.google.auto.value:auto-value:1.11.1"
+
+auto-value-parcel = "com.ryanharter.auto.value:auto-value-parcel:0.2.9"
+
+lombok = "org.projectlombok:lombok:1.18.42"
+
+aws-java-sdk-ec2 = { module = "com.amazonaws:aws-java-sdk-ec2" }
+
+aws-java-sdk-kms = { module = "com.amazonaws:aws-java-sdk-kms" }
+
+aws-java-sdk-bom = "com.amazonaws:aws-java-sdk-bom:1.12.794"
+
+javax-servlet-api = "javax.servlet:javax.servlet-api:4.0.1"
+
+commons-io = "commons-io:commons-io:2.21.0"
+
+spark-sql = "org.apache.spark:spark-sql_2.12:3.3.2"
+
+hashmap-util = "org.plumelib:hashmap-util:0.0.1"
+
+stubparser = "org.checkerframework:stubparser:3.27.1"
+
+classgraph = "io.github.classgraph:classgraph:4.8.184"
+
+google-java-format = "com.google.googlejavaformat:google-java-format:1.33.0"

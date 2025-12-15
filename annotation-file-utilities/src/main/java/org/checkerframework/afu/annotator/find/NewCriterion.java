@@ -18,7 +18,7 @@ public class NewCriterion implements Criterion {
   private final RelativeLocation loc;
 
   public NewCriterion(String methodName, RelativeLocation loc) {
-    this.methodName = methodName.substring(0, methodName.lastIndexOf(")") + 1);
+    this.methodName = methodName.substring(0, methodName.lastIndexOf(')') + 1);
 
     if (!(methodName.startsWith("init for field")
         || methodName.startsWith("static init number")

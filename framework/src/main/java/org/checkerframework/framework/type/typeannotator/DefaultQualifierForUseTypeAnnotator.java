@@ -17,7 +17,7 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.MapsP;
 
 /**
  * Implements support for {@link DefaultQualifierForUse} and {@link NoDefaultQualifierForUse}. Adds
@@ -61,8 +61,7 @@ public class DefaultQualifierForUseTypeAnnotator extends TypeAnnotator {
    * Cache of elements to the set of annotations that should be applied to unannotated uses of the
    * element.
    */
-  protected final Map<Element, AnnotationMirrorSet> elementToDefaults =
-      CollectionsPlume.createLruCache(100);
+  protected final Map<Element, AnnotationMirrorSet> elementToDefaults = MapsP.createLruCache(100);
 
   /** Clears all caches. */
   public void clearCache() {

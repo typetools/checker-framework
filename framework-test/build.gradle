@@ -1,36 +1,34 @@
-import org.gradle.internal.jvm.Jvm
-
 sourceSets {
   taglet
 }
 
 dependencies {
-  implementation  group: 'junit', name: 'junit', version: '4.13.2'
-  implementation project(':javacutil')
-  implementation project(':checker-qual')
+  implementation(libs.junit)
+  implementation(project(":javacutil"))
+  implementation(project(":checker-qual"))
 
-  implementation "org.plumelib:plume-util:${versions.plumeUtil}"
-  testImplementation project(':framework')
+  implementation(libs.plume.util)
+  testImplementation(project(":framework"))
 }
 
-jar.archiveBaseName = 'framework-test'
+jar.archiveBaseName = "framework-test"
 
-apply from: rootProject.file('gradle-mvn-push.gradle')
+apply from: rootProject.file("gradle-mvn-push.gradle")
 
 /** Adds information to the publication for uploading to Maven repositories. */
 final frameworkTest(publication) {
   sharedPublicationConfiguration(publication)
-  publication.from components.java
+  publication.from(components.java)
   publication.pom {
-    name = 'Checker Framework Testing Library'
+    name = "Checker Framework Testing Library"
     description = String.join(System.lineSeparator(),
-        'framework-test contains utility classes for testing type-checkers' +
-        'that are built on the Checker Framework.')
+        "framework-test contains utility classes for testing type-checkers" +
+        "that are built on the Checker Framework.")
     licenses {
       license {
-        name = 'GNU General Public License, version 2 (GPL2), with the classpath exception'
-        url = 'http://www.gnu.org/software/classpath/license.html'
-        distribution = 'repo'
+        name = "GNU General Public License, version 2 (GPL2), with the classpath exception"
+        url = "http://www.gnu.org/software/classpath/license.html"
+        distribution = "repo"
       }
     }
   }
@@ -39,11 +37,11 @@ final frameworkTest(publication) {
 publishing {
   publications {
     frameworkTest(MavenPublication) {
-      frameworkTest it
+      frameworkTest(it)
     }
   }
 }
 
 signing {
-  sign publishing.publications.frameworkTest
+  sign(publishing.publications.frameworkTest)
 }
