@@ -8,7 +8,7 @@ JAVA?=java
 JAVAC?=javac
 
 ANNCAT ?= ../../bin/anncat
-JAVAVERSION = $(shell $(JAVA) -version 2>&1)
+JAVAVERSION := $(shell $(JAVA) -version 2>&1)
 
 #Switch the lines below to deactivate this test
 all: clean results
@@ -29,7 +29,7 @@ clean:
 
 # Step 1: Compile the source with annotations.
 out1:
-	mkdir out1
+	mkdir -p out1
 	${JAVAC} -d out1 source-ann/AnnotationTest.java || (\rm -rf out1 && false)
 
 # Step 2: Convert the annotated class file to an annotation file.

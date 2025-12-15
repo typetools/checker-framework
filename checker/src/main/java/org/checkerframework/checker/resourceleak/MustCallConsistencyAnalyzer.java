@@ -1129,8 +1129,8 @@ public class MustCallConsistencyAnalyzer {
       return;
     }
     // Use the temporary variable for the rhs if it exists.
-    Node rhs = NodeUtils.removeCasts(assignmentNode.getExpression());
-    rhs = getTempVarOrNode(rhs);
+    Node rhsExpr = NodeUtils.removeCasts(assignmentNode.getExpression());
+    Node rhs = getTempVarOrNode(rhsExpr);
 
     // Ownership transfer to @Owning field.
     if (lhsElement.getKind() == ElementKind.FIELD) {
@@ -1138,7 +1138,7 @@ public class MustCallConsistencyAnalyzer {
       // Check that the must-call obligations of the lhs have been satisfied, if the field is
       // non-final and owning.
       if (isOwningField && cmAtf.canCreateObligations() && !ElementUtils.isFinal(lhsElement)) {
-        checkReassignmentToField(obligations, assignmentNode);
+        checkReassignmentToOwningField(obligations, assignmentNode);
       }
 
       // Remove Obligations from local variables, now that the owning field is responsible.
@@ -1438,13 +1438,16 @@ public class MustCallConsistencyAnalyzer {
    * @param obligations current tracked Obligations
    * @param node an assignment to a non-final, owning field
    */
-  private void checkReassignmentToField(Set<Obligation> obligations, AssignmentNode node) {
+  private void checkReassignmentToOwningField(Set<Obligation> obligations, AssignmentNode node) {
 
     Node lhsNode = node.getTarget();
 
     if (!(lhsNode instanceof FieldAccessNode)) {
       throw new TypeSystemError(
-          "checkReassignmentToField: non-field node " + node + " of class " + node.getClass());
+          "checkReassignmentToOwningField: non-field node "
+              + node
+              + " of class "
+              + node.getClass());
     }
 
     FieldAccessNode lhs = (FieldAccessNode) lhsNode;
@@ -2090,7 +2093,7 @@ public class MustCallConsistencyAnalyzer {
         //        the block.
         CFStore mcStore;
         AccumulationStore cmStore;
-        if (currentBlockNodes.size() == 0 /* currentBlock is special or conditional */) {
+        if (currentBlockNodes.isEmpty() /* currentBlock is special or conditional */) {
           cmStore = getStoreForEdgeFromEmptyBlock(currentBlock, successor); // 1. (CM)
           // For the Must Call Checker, we currently apply a less precise handling and do
           // not get the store for the specific CFG edge from currentBlock to successor.
@@ -2181,7 +2184,7 @@ public class MustCallConsistencyAnalyzer {
    * Returns true if {@code alias.reference} is definitely in-scope in the successor store: that is,
    * there is a value for it in {@code successorStore}.
    *
-   * @param successorStore the regular store of the successor block
+   * @param successorStore the regular CalledMethods store of the successor block
    * @param alias the resource alias to check
    * @return true if the variable is definitely in scope for the purposes of the consistency
    *     checking algorithm in the successor block from which the store came

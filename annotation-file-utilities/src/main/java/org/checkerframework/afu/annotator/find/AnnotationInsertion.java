@@ -148,7 +148,7 @@ public class AnnotationInsertion extends Insertion {
     // annotation always starts with "@", so annotation name begins at index 1
     int nameBegin = 1;
 
-    int nameEnd = fullyQualifiedAnnotationText.indexOf("(");
+    int nameEnd = fullyQualifiedAnnotationText.indexOf('(');
     // If no argument (no parenthesis in string representation), use whole annotation
     if (nameEnd == -1) {
       nameEnd = fullyQualifiedAnnotationText.length();

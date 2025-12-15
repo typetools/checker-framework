@@ -1,16 +1,16 @@
 buildscript {
-  if (JavaVersion.current() == JavaVersion.VERSION_1_8) {
-    throw new Error("The Checker Framework can't be built with Java 8.")
+  if (JavaVersion.current() < JavaVersion.VERSION_21) {
+    throw new Error("The Checker Framework must be built with Java 21+.")
   }
 }
 
-rootProject.name = 'checker-framework'
-include 'checker'
-include 'javacutil'
-include 'dataflow'
-include 'framework'
-include 'checker-qual'
-include 'checker-qual-android'
-include 'checker-util'
-include 'framework-test'
-include 'annotation-file-utilities'
+rootProject.name = "checker-framework"
+include("checker")
+include("javacutil")
+include("dataflow")
+include("framework")
+include("checker-qual")
+include("checker-qual-android")
+include("checker-util")
+include("framework-test")
+include("annotation-file-utilities")

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <title>Projects for new contributors</title>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- This link works on the web, but not from the file system. -->
   <link rel="icon" type="image/png" href="favicon-checkerframework.png">
 </head>
@@ -33,7 +33,7 @@
   <li><a href="#annotate-library">Annotate a library</a>
     <ul>
       <li><a href="#choose-a-library">Choosing a library to annotate</a></li>
-      <li><a href="#case-study-jdk24">JDK 24 library</a></li>
+      <li><a href="#case-study-jdk25">JDK 25 library</a></li>
       <li><a href="#case-study-nullness-guava">Guava library</a></li>
     </ul></li>
   <li><a href="#create-new-type-system">Create a new type system</a>
@@ -640,7 +640,7 @@ Checker Framework needs an annotated version of the library.
 
 <p>
 The Checker Framework comes with a
-few <a href="https://search.maven.org/search?q=annotatedlib">annotated
+few <a href="https://central.sonatype.com/search?q=annotatedlib">annotated
 libraries</a>.  Increasing this number will make the Checker Framework even
 more useful, and easier to use.
 </p>
@@ -693,7 +693,7 @@ Alternately, you can
 
 <p>
   You should choose a library that is
-  not <a href="https://search.maven.org/search?q=org.checkerframework.annotatedlib">already
+  not <a href="https://central.sonatype.com/search?q=org.checkerframework.annotatedlib">already
     annotated</a>.  There are two exceptions to this.
 </p>
 <ul>
@@ -712,13 +712,13 @@ Alternately, you can
 </ul>
 
 
-<h2 id="case-study-jdk24">JDK 24 library</h2>
+<h2 id="case-study-jdk25">JDK 25 library</h2>
 
 <p>
   The Checker Framework ships with extensive annotations for the JDK.
   These annotations are useful in type-checking any program, since all
   programs use the JDK to some extent.  The JDK annotations need to be
-  updated from JDK 21 to JDK 24.  In particular, any new methods and
+  updated from JDK 21 to JDK 25.  In particular, any new methods and
   classes that have been recently introduced have no annotations.  They
   need to be annotated.
 </p>

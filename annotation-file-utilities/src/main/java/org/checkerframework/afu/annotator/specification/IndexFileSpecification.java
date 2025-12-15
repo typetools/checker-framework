@@ -88,7 +88,7 @@ public class IndexFileSpecification {
       // defKeys, it means that the unqualified name is ambiguous and
       // thus should always be qualified.
       for (String key : defKeys) {
-        int ix = Math.max(key.lastIndexOf("."), key.lastIndexOf("$"));
+        int ix = Math.max(key.lastIndexOf('.'), key.lastIndexOf('$'));
         if (ix >= 0) {
           String name = key.substring(ix + 1);
           // containsKey() would give wrong result here
@@ -685,7 +685,7 @@ public class IndexFileSpecification {
       sb.append("@");
       sb.append(a.def.name);
 
-      if (a.fieldValues.size() == 0) {
+      if (a.fieldValues.isEmpty()) {
         // nothing to do
       } else {
         sb.append("(");

@@ -11,18 +11,19 @@ Copyright (c) 2012 University of Washington
 from __future__ import annotations
 
 import os
-import os.path
 import pathlib
 import re
 import shlex
 import shutil
 import subprocess
-import urllib.error
-import urllib.parse
 import urllib.request
 from pathlib import Path
 
-from release_vars import execute, execute_output, execute_status
+from release_vars import (  # ty: ignore # TODO: limitation in ty
+    execute,
+    execute_output,
+    execute_status,
+)
 
 # =========================================================================================
 # Parse Args Utils # TODO: Perhaps use argparse module
