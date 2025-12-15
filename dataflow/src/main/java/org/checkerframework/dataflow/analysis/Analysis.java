@@ -3,6 +3,7 @@ package org.checkerframework.dataflow.analysis;
 import com.sun.source.tree.Tree;
 import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.Set;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.block.Block;
@@ -107,6 +108,23 @@ public interface Analysis<
   @Nullable T getTransferFunction();
 
   /**
+   * Returns all current node values. This method is used by the default implementations of {@link
+   * #getStoreBefore(Tree, Map)} and {@link #getStoreAfter(Tree, Map)}.
+   *
+   * @return the current node values
+   */
+  IdentityHashMap<Node, V> getNodeValues();
+
+  /**
+   * Returns the set of {@link Node}s for a given {@link Tree}. Returns null for trees that don't
+   * produce a value.
+   *
+   * @param tree the given tree
+   * @return the set of corresponding nodes to the given tree
+   */
+  @Nullable Set<Node> getNodesForTree(Tree tree);
+
+  /**
    * Returns the transfer input of a given {@link Block} b.
    *
    * @param b a given Block
@@ -149,4 +167,148 @@ public interface Analysis<
    * @return the exceptional exit store
    */
   @Nullable S getExceptionalExitStore();
+
+  /**
+   * Returns the store immediately before a given {@link Tree}. Only intended for use while the
+   * analysis is running.
+   *
+   * @param tree a tree
+   * @param analysisCaches caches of analysis results
+   * @return the store immediately before a given {@link Tree}
+   */
+  default @Nullable S getStoreBefore(
+      Tree tree,
+      @Nullable Map<TransferInput<V, S>, IdentityHashMap<Node, TransferResult<V, S>>>
+          analysisCaches) {
+    if (!isRunning()) {
+      return null;
+    }
+    Set<Node> nodes = getNodesForTree(tree);
+    if (nodes == null) {
+      return null;
+    }
+    return getStoreBefore(nodes, analysisCaches);
+  }
+
+  /**
+   * Returns the store immediately before a given set of {@link Node}s. Only intended for use while
+   * the analysis is running.
+   *
+   * @param nodes a set of nodes
+   * @param analysisCaches caches of analysis results
+   * @return the store immediately before the nodes
+   */
+  default @Nullable S getStoreBefore(
+      Set<Node> nodes,
+      @Nullable Map<TransferInput<V, S>, IdentityHashMap<Node, TransferResult<V, S>>>
+          analysisCaches) {
+    if (!isRunning()) {
+      return null;
+    }
+    S merge = null;
+    for (Node aNode : nodes) {
+      S s = getStoreBefore(aNode, analysisCaches);
+      if (merge == null) {
+        merge = s;
+      } else if (s != null) {
+        merge = merge.leastUpperBound(s);
+      }
+    }
+    return merge;
+  }
+
+  /**
+   * Returns the store immediately before a given {@link Node}. Only intended for use while the
+   * analysis is running.
+   *
+   * @param node a node whose pre-store to return
+   * @param analysisCaches caches of analysis results
+   * @return the store immediately before {@code node}
+   */
+  default @Nullable S getStoreBefore(
+      Node node,
+      @Nullable Map<TransferInput<V, S>, IdentityHashMap<Node, TransferResult<V, S>>>
+          analysisCaches) {
+    if (!isRunning()) {
+      return null;
+    }
+    TransferInput<V, S> prevStore = getInput(node.getBlock());
+    if (prevStore == null) {
+      return null;
+    }
+    return runAnalysisFor(
+        node, Analysis.BeforeOrAfter.BEFORE, prevStore, getNodeValues(), analysisCaches);
+  }
+
+  /**
+   * Returns the store immediately after a given {@link Tree}. Only intended for use while the
+   * analysis is running.
+   *
+   * @param tree a tree
+   * @param analysisCaches caches of analysis results
+   * @return the store immediately after a given tree
+   */
+  default @Nullable S getStoreAfter(
+      Tree tree,
+      @Nullable Map<TransferInput<V, S>, IdentityHashMap<Node, TransferResult<V, S>>>
+          analysisCaches) {
+    if (!isRunning()) {
+      return null;
+    }
+    Set<Node> nodes = getNodesForTree(tree);
+    if (nodes == null) {
+      return null;
+    }
+    return getStoreAfter(nodes, analysisCaches);
+  }
+
+  /**
+   * Returns the store immediately after a given set of {@link Node}s. Only intended for use while
+   * the analysis is running.
+   *
+   * @param nodes the nodes whose post-stores to LUB
+   * @param analysisCaches caches of analysis results
+   * @return the LUB of the stores store immediately after {@code nodes}
+   */
+  default @Nullable S getStoreAfter(
+      Set<Node> nodes,
+      @Nullable Map<TransferInput<V, S>, IdentityHashMap<Node, TransferResult<V, S>>>
+          analysisCaches) {
+    if (!isRunning()) {
+      return null;
+    }
+    S merge = null;
+    for (Node node : nodes) {
+      S s = getStoreAfter(node, analysisCaches);
+      if (merge == null) {
+        merge = s;
+      } else if (s != null) {
+        merge = merge.leastUpperBound(s);
+      }
+    }
+    return merge;
+  }
+
+  /**
+   * Returns the store immediately after a given {@link Node}. Only intended for use while the
+   * analysis is running.
+   *
+   * @param node node after which the store is returned
+   * @param analysisCaches caches of analysis results
+   * @return the store immediately after a given {@link Node}
+   */
+  default @Nullable S getStoreAfter(
+      Node node,
+      @Nullable Map<TransferInput<V, S>, IdentityHashMap<Node, TransferResult<V, S>>>
+          analysisCaches) {
+    if (!isRunning()) {
+      return null;
+    }
+    TransferInput<V, S> transferInput = getInput(node.getBlock());
+    if (transferInput == null) {
+      return null;
+    }
+    return AnalysisResult.runAnalysisFor(
+        node, Analysis.BeforeOrAfter.AFTER, transferInput, getNodeValues(), analysisCaches);
+  }
 }

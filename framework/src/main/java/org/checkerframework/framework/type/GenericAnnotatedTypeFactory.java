@@ -1190,10 +1190,9 @@ public abstract class GenericAnnotatedTypeFactory<
     }
     Set<Node> nodes = analysis.getNodesForTree(tree);
     if (nodes != null) {
-      return getStoreBefore(nodes);
-    } else {
-      return flowResult.getStoreBefore(tree);
+      return analysis.getStoreBefore(nodes, flowResultAnalysisCaches);
     }
+    return flowResult.getStoreBefore(tree);
   }
 
   /**
@@ -1202,9 +1201,12 @@ public abstract class GenericAnnotatedTypeFactory<
    * @return the store immediately before a given Set of {@link Node}s
    */
   public Store getStoreBefore(Set<Node> nodes) {
+    if (analysis.isRunning()) {
+      return analysis.getStoreBefore(nodes, flowResultAnalysisCaches);
+    }
     Store merge = null;
     for (Node aNode : nodes) {
-      Store s = getStoreBefore(aNode);
+      Store s = flowResult.getStoreBefore(aNode);
       if (merge == null) {
         merge = s;
       } else if (s != null) {
@@ -1221,21 +1223,10 @@ public abstract class GenericAnnotatedTypeFactory<
    * @return the store immediately before {@code node}
    */
   public @Nullable Store getStoreBefore(Node node) {
-    if (!analysis.isRunning()) {
-      return flowResult.getStoreBefore(node);
+    if (analysis.isRunning()) {
+      return analysis.getStoreBefore(node, flowResultAnalysisCaches);
     }
-    TransferInput<Value, Store> prevStore = analysis.getInput(node.getBlock());
-    if (prevStore == null) {
-      return null;
-    }
-    Store store =
-        AnalysisResult.runAnalysisFor(
-            node,
-            Analysis.BeforeOrAfter.BEFORE,
-            prevStore,
-            analysis.getNodeValues(),
-            flowResultAnalysisCaches);
-    return store;
+    return flowResult.getStoreBefore(node);
   }
 
   /**
@@ -1251,7 +1242,10 @@ public abstract class GenericAnnotatedTypeFactory<
       return flowResult.getStoreAfter(tree);
     }
     Set<Node> nodes = analysis.getNodesForTree(tree);
-    return getStoreAfter(nodes);
+    if (nodes != null) {
+      return analysis.getStoreAfter(nodes, flowResultAnalysisCaches);
+    }
+    return flowResult.getStoreAfter(tree);
   }
 
   /**
@@ -1261,9 +1255,12 @@ public abstract class GenericAnnotatedTypeFactory<
    * @return the LUB of the stores store immediately after {@code nodes}
    */
   public Store getStoreAfter(Set<Node> nodes) {
+    if (analysis.isRunning()) {
+      return analysis.getStoreAfter(nodes, flowResultAnalysisCaches);
+    }
     Store merge = null;
     for (Node node : nodes) {
-      Store s = getStoreAfter(node);
+      Store s = flowResult.getStoreAfter(node);
       if (merge == null) {
         merge = s;
       } else if (s != null) {
@@ -1280,17 +1277,10 @@ public abstract class GenericAnnotatedTypeFactory<
    * @return the store immediately after a given {@link Node}
    */
   public Store getStoreAfter(Node node) {
-    if (!analysis.isRunning()) {
-      return flowResult.getStoreAfter(node);
+    if (analysis.isRunning()) {
+      return analysis.getStoreAfter(node, flowResultAnalysisCaches);
     }
-    Store res =
-        AnalysisResult.runAnalysisFor(
-            node,
-            Analysis.BeforeOrAfter.AFTER,
-            analysis.getInput(node.getBlock()),
-            analysis.getNodeValues(),
-            flowResultAnalysisCaches);
-    return res;
+    return flowResult.getStoreAfter(node);
   }
 
   /**

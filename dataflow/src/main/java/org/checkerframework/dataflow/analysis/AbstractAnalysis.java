@@ -215,6 +215,7 @@ public abstract class AbstractAnalysis<
    *
    * @return {@link #nodeValues}
    */
+  @Override
   public IdentityHashMap<Node, V> getNodeValues() {
     return nodeValues;
   }
@@ -269,6 +270,7 @@ public abstract class AbstractAnalysis<
    * @param t the given tree
    * @return the set of corresponding nodes to the given tree
    */
+  @Override
   public @Nullable Set<Node> getNodesForTree(Tree t) {
     if (cfg == null) {
       return null;
