@@ -1,7 +1,3 @@
-
-
-
-
 version: 2.1
 
 jobs:
@@ -9,7 +5,7 @@ jobs:
   # Only proceed to other jobs if canary_jobs passes.
   canary_jobs:
     docker:
-      - image: 'cimg/base:2025.12'
+      - image: 'cimg/base:2025.10'
     resource_class: small
     environment:
       CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
@@ -109,7 +105,6 @@ jobs:
           command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-cftests-junit.sh
           no_output_timeout: "30m"
 
-
   nonjunit_jdk25:
     docker:
       - image: 'mdernst/cf-ubuntu-jdk25'
@@ -131,7 +126,6 @@ jobs:
       - run:
           name: test-cftests-nonjunit.sh
           command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-cftests-nonjunit.sh
-
 
   # Sometimes one of the invocations of wpi-many in `./gradlew wpiManyTest`
   # takes much longer to complete than normal, and this Azure job times out.
@@ -180,7 +174,6 @@ jobs:
       - run:
           name: test-cftests-inference-part2.sh
           command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-cftests-inference-part2.sh
-
 
   misc_jdk11:
     docker:
@@ -274,7 +267,6 @@ jobs:
           name: test-misc.sh
           command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-misc.sh
 
-
   # Split into part1 and part2 only for the typecheck job that "canary_jobs" depends on.
   typecheck_part1_jdk25:
     docker:
@@ -318,7 +310,6 @@ jobs:
       - run:
           name: test-typecheck-part2.sh
           command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-typecheck-part2.sh
-
 
   daikon_part1_jdk25:
     docker:
@@ -387,7 +378,6 @@ jobs:
           command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-daikon-part3.sh
           no_output_timeout: "30m"
 
-
   ## I'm not sure why the guava_jdk11 job is failing (it's due to Error Prone).
   guava_jdk25:
     docker:
@@ -412,7 +402,6 @@ jobs:
           command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-guava.sh
           no_output_timeout: "50m"
 
-
   plume_lib_jdk25:
     docker:
       - image: 'mdernst/cf-ubuntu-jdk25'
@@ -434,7 +423,6 @@ jobs:
       - run:
           name: test-plume-lib.sh
           command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-plume-lib.sh
-
 
 # The "workflows" section determines which jobs run and what other jobs they depend on.
 # For an explanation of the dependence logic, see ../.azure/azure-pipelines.yml .
@@ -513,5 +501,3 @@ workflows:
       - plume_lib_jdk25:
           requires:
             - canary_jobs
-
-
