@@ -59,7 +59,9 @@ import org.checkerframework.framework.util.JavaParserUtil;
 import org.plumelib.util.FilesPlume;
 import org.plumelib.util.MapsP;
 
-/** This program inserts annotations from an ajava file into a Java file. See {@link #main}. */
+/**
+ * This program reads an ajava file and inserts its annotations in a Java file. See {@link #main}.
+ */
 public class InsertAjavaAnnotations {
   /** Element utilities. */
   private final Elements elements;

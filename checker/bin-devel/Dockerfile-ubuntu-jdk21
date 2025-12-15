@@ -46,7 +46,6 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   unzip \
   wget
 
-
 # Install the JDK.
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt -qqy update \

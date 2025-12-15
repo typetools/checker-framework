@@ -14,8 +14,10 @@ To run the tests, do
 To run a single test, do something like:
 
 <!-- markdownlint-disable line-length -->
+
 ```sh
   cd $CHECKERFRAMEWORK/framework/tests/framework
   (cd $CHECKERFRAMEWORK && ./gradlew assemble :framework:compileTestJava) && javacheck -processor org.checkerframework.framework.testchecker.util.H1H2Checker -cp $CHECKERFRAMEWORK/framework/build/classes/java/test/
 ```
+
 <!-- markdownlint-enable line-length -->
