@@ -644,21 +644,6 @@ def createCheckTypeTask(projectName, taskName, checker, args = []) {
   }
 }
 
-tasks.register("htmlValidate", Exec) {
-  description = "Validate that HTML files are well-formed"
-  group = "Format"
-  // This is the Nu Html Checker (v.Nu): https://github.com/validator/validator
-  executable = "html5validator"
-  args = [
-    "--ignore",
-    "/api/",
-    "/build/",
-    "/docs/manual/manual.html",
-    "/docs/manual/plume-bib/docs/index.html",
-    "/checker/jdk/nullness/src/java/lang/ref/package.html"
-  ]
-}
-
 tasks.register("addFavicon", Exec) {
   dependsOn("allJavadoc")
 

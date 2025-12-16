@@ -6,13 +6,14 @@
 FROM ubuntu
 include(`Dockerfile-contents-ubuntu-base.m4')
 
-include(`Dockerfile-contents-ubuntu-plus.m4')
+include(`Dockerfile-contents-ubuntu-plus.m4')dnl
 
+# Install the JDK.
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt -qqy update \
 && apt -qqy install \
   openjdk-21-jdk \
-&& update-java-alternatives -s java-1.21.0-openjdk-amd64
+&& update-java-alternatives --set java-1.21.0-openjdk-amd64
 ENV JAVA21_HOME=/usr/lib/jvm/java-21-openjdk-amd64
 
 include(`Dockerfile-contents-apt-clean.m4')

@@ -1,14 +1,14 @@
 [plugins]
 
-com-gradleup-shadow = { id = "com.gradleup.shadow", version = "9.2.2" }
+com-gradleup-shadow = { id = "com.gradleup.shadow", version = "9.3.0" }
 
 de-undercouch-download = { id = "de.undercouch.download", version = "5.6.0" }
 
 net-ltgt-errorprone = { id = "net.ltgt.errorprone", version = "4.3.0" }
 
-com-diffplug-spotless = { id = "com.diffplug.spotless", version = "8.0.0" }
+com-diffplug-spotless = { id = "com.diffplug.spotless", version = "8.1.0" }
 
-com-gorylenko-gradle-git-properties = { id = "com.gorylenko.gradle-git-properties", version = "2.5.3" }
+com-gorylenko-gradle-git-properties = { id = "com.gorylenko.gradle-git-properties", version = "2.5.4" }
 
 biz-aqute-bnd-builder = { id = "biz.aQute.bnd.builder", version = "7.1.0" }
 
@@ -68,4 +68,4 @@ stubparser = "org.checkerframework:stubparser:3.27.1"
 
 classgraph = "io.github.classgraph:classgraph:4.8.184"
 
-google-java-format = "com.google.googlejavaformat:google-java-format:1.30.0"
+google-java-format = "com.google.googlejavaformat:google-java-format:1.33.0"
