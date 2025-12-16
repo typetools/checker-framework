@@ -53,9 +53,10 @@
       <li><a href="#eisop-features">EISOP features</a></li>
       <li><a href="#explain-errors">Explaining error messages</a></li>
       <li><a href="#improve-errors">Improving error messages</a></li>
-      <li><a href="#javaparser-to-javac-parse">Replace JavaParser by javac</a>
+      <li><a href="#javaparser-to-javac-parse">Replace JavaParser by javac's parser</a>
         <ul>
-          <li><a href="#javaparser-ajava">Replace JavaParser for ajava files</a></li>
+          <li><a href="#javacparse-ajava">Replace JavaParser for ajava files</a></li>
+          <li><a href="#javacparse-annotated-jdk">Replace JavaParser for the annotated JDK</a></li>
           <li><a href="#javaparser-stub">Replace JavaParser for stub files</a></li>
           <li><a href="#java-expression-parser">Eliminate the JavaExpression class</a></li>
         </ul></li>
@@ -1362,7 +1363,7 @@ some distinct challenges:
 </ul>
 
 
-<h2 id="javaparser-to-javac-parse">Replace JavaParser by javac</h2>
+<h2 id="javaparser-to-javac-parse">Replace JavaParser by javac's parser</h2>
 
 <p>
 The Checker Framework uses JavaParser to parse Java code.  However,
@@ -1372,36 +1373,116 @@ Framework users cannot
 run <a href="https://checkerframework.org/manual/#whole-program-inference">whole-program
 inference</a>, or
 write <a href="https://checkerframework.org/manual/#stub">stub files</a>,
-for projects that use Java 24 features &mdash; because JavaParser cannot
-yet parse Java 24 files.
+for projects that use Java 24 or later features &mdash; because JavaParser cannot
+yet parse such files.
 </p>
 
 <p>
 A better Java parser exists:  the one in javac!  The goal of this project
-is to replace every use of JavaParser by a use of javac's parser.
+is to replace every use of JavaParser by a use of javac's parser.  Each use
+of JavaParser will be replaced by a use of the
+the <a href="https://github.com/plume-lib/javac-parse">javac-parse</a>
+library, which invokes javac's parser.
 </p>
 
 <p>
-Here are two uses of JavaParser in the Checker Framework (plus a third
-project related to Java parsing).  Replacing each of them is a different
-project.  The projects are listed from easiest to hardest.
+Here are independent subprojects.  They should be done in the order listed.
 </p>
 
 
-<h3 id="javaparser-ajava">Replace JavaParser for ajava files</h3>
+<h3 id="javacparse-ajava">Replace JavaParser for ajava files</h3>
 
 <p>
 The Checker Framework
 uses <a href="https://checkerframework.org/manual/#ajava-files">ajava</a>
 files to specify types for unannotated libraries, notably in
 <a href="https://checkerframework.org/manual/#whole-program-inference">whole-program
-inference</a>.  Every <code>.ajava</code> file is a
-legal <code>.java</code> file, so it should be straightforward to use
-javac's parser instead of JavaParser to read ajava files and query their contents.
+inference</a>.  Using javac's parser will
+fix <a href="https://github.com/typetools/checker-framework/issues/7016">issue
+#7016</a>.
 </p>
 
+<p>
+Every <code>.ajava</code> file is a
+legal <code>.java</code> file, so it should be straightforward to use
+javac's parser instead of JavaParser to read ajava files and query their contents.
+There is a lot of code to change, but each change should be simple.
+</p>
+
+<p>
+  <code>.ajava</code> file parsing is done in
+  package <a href="https://checkerframework.org/api/org/checkerframework/framework/ajava/package-summary.html"><code>org.checkerframework.framework.ajava</code></a>.
+  Currently,
+  the <a href="https://checkerframework.org/api/org/checkerframework/framework/ajava/package-summary.html"><code>org.checkerframework.framework.ajava</code></a>
+  package
+  is used by <a href="https://checkerframework.org/api/org/checkerframework/common/basetype/BaseTypeVisitor.html"><code>BaseTypeVisitor</code></a>,
+ <a href="https://checkerframework.org/api/org/checkerframework/common/wholeprograminference/WholeProgramInferenceJavaParserStorage.html"><code>WholeProgramInferenceJavaParserStorage</code></a>,
+ and
+ <a href="https://checkerframework.org/api/org/checkerframework/framework/stub/AnnotationFileParser.html"><code>AnnotationFileParser</code></a>.
+</p>
+
+<p>The concrete tasks are:</p>
+<ul>
+  <li>For each class in
+  <a href="https://checkerframework.org/api/org/checkerframework/framework/ajava/package-summary.html"><code>org.checkerframework.framework.ajava</code></a>,
+  create a new version that uses
+  the <a href="https://github.com/plume-lib/javac-parse">javac-parse</a>
+  library instead of JavaParser.
+
+  For example,
+  <a href="https://checkerframework.org/api/org/checkerframework/framework/ajava/AnnotationEqualityVisitor.html"><code>AnnotationEqualityVisitor</code></a>
+  operates over two JavaParser trees, and you need to create a variant that
+  operates over two javac trees.
+  </li>
+  <li>
+    Convert as many clients as possible to use the new classes.
+  </li>
+  <li>
+    After all tests pass, remove as many old classes as possible.
+  </li>
+</ul>
 
 
+<h3 id="javacparse-annotated-jdk">Replace JavaParser for the annotated JDK</h3>
+
+<p>
+  The Checker Framework distribution contains a minimized copy of the
+  annotated JDK, where each file has been changed from a .java file to a
+  stub file.  This process is performed by
+  class <code>JavaStubifier</code>.  These stub files are not readable by
+  javac's parser (see the <a href="#javaparser-stub">next subproject</a>
+  for an explanation).  To use javac's parser, the distributed annotated
+  JDK must contain legal Java files.
+</p>
+
+<p>
+  This subproject has these goals:
+</p>
+<ul>
+  <li>Create an <code>Ajavaifier</code> program that is a modified version
+  of <code>JavaStubifier</code>.  <code>Ajavaifier</code> differs in two
+  ways.
+    <ul>
+      <li>It parses the original annotated JDK using javac's parser
+        (via <a href="https://github.com/plume-lib/javac-parse">javac-parse</a>)
+        rather than using JavaParser.
+      </li>
+      <li>
+        It produces minimized ajava files rather than producing stub files.
+        These will be slightly larger than the current stub files.  For
+        example, method bodies in the input will be replaced by <code>{ throw
+          new Error(); }</code> rather than by <code>;</code>.
+      </li>
+    </ul>
+  </li>
+  <li>
+    Change routines that parse the annotated JDK to use javac's parser
+    instead of JavaParser.  For instance, replace uses
+    of <code>parseJdkFileAsStub()</code> (which uses JavaParser) by uses of
+    a new routine named
+    <code>parseJdkFile()</code> that uses javac's parser.
+  </li>
+</ul>
 
 
 <h3 id="javaparser-stub">Replace JavaParser for stub files</h3>
@@ -1899,9 +1980,9 @@ thought about the problem nor tried to solve it.
  -->
 <!--  LocalWords:  unrefinement JavaParserUtil parseExpression StubParser
  -->
-<!--  LocalWords:  expressionWithParameterNames currentSourceVersion '
+<!--  LocalWords:  expressionWithParameterNames currentSourceVersion ' '
  -->
 <!--  LocalWords:  AnnotationFileParser EnsuresCalledMethods CalledMethods
  -->
-<!--  LocalWords:  Specimin
+<!--  LocalWords:  Specimin subprojects
  -->
