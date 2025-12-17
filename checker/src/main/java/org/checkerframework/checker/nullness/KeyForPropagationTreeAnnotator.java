@@ -111,7 +111,10 @@ public class KeyForPropagationTreeAnnotator extends TreeAnnotator {
   }
 
   /**
-   * When visiting Map.keySet() calls, merge the map's key @KeyFor into the returned Set element.
+   * When visiting {@code Map.keySet()} calls, merge the map's key {@code @KeyFor} into the returned
+   * Set element.
+   *
+   * <p>{@inheritDoc}
    */
   @Override
   public Void visitMethodInvocation(MethodInvocationTree tree, AnnotatedTypeMirror type) {
