@@ -3,11 +3,11 @@ sourceSets {
 }
 
 dependencies {
-  implementation("junit:junit:${junitVersion}")
+  implementation(libs.junit)
   implementation(project(":javacutil"))
   implementation(project(":checker-qual"))
 
-  implementation("org.plumelib:plume-util:${plumeUtilVersion}")
+  implementation(libs.plume.util)
   testImplementation(project(":framework"))
 }
 

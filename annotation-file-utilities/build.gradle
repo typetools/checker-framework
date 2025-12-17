@@ -20,15 +20,15 @@ dependencies {
   // Annotations in checker-qual.jar are used, but no checkers are (currently) run on the code.
   compileOnly(project(":checker-qual"))
 
-  implementation("org.plumelib:options:2.0.3")
-  implementation("org.plumelib:plume-util:${plumeUtilVersion}")
-  implementation("org.plumelib:reflection-util:${reflectionUtilVersion}")
-  implementation("org.checkerframework.annotatedlib:guava:33.1.0.2-jre") {
+  implementation(libs.options)
+  implementation(libs.plume.util)
+  implementation(libs.reflection.util)
+  implementation(libs.guava) {
     // So long as Guava only uses annotations from checker-qual, excluding it should not cause problems.
     exclude group: "org.checkerframework"
   }
-  implementation("org.ow2.asm:asm:9.9")
-  testImplementation("junit:junit:${junitVersion}")
+  implementation(libs.asm)
+  testImplementation(libs.junit)
   testImplementation(project(":checker-qual"))
 }
 
@@ -117,23 +117,6 @@ tasks.register("cleanTestAnnotator", Exec) {
 clean {
   dependsOn(cleanTestAnnotator)
   delete("dist/annotation-file-utilities.jar", "dist/annotation-file-utilities-all.jar", "annotation-tools.zip")
-}
-
-tasks.register("htmlValidate", Exec) {
-  description = "Validate that HTML files are well-formed."
-  workingDir = "../"
-  executable = "html5validator"
-  args = [
-    // The --ignore command-line argument applies to everything until the next
-    // command-line argument; that is, everything listed here is ignored.
-    "--ignore",
-    "/annotation-file-utilities/annotation-file-format.html",
-    "/api/",
-    "/build/",
-    "/javadoc/",
-    "/plume-bib/",
-    "/scene-lib/javadoc/"
-  ]
 }
 
 test.dependsOn(testExample)
