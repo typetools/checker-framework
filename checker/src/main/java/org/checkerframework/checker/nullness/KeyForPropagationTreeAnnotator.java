@@ -122,9 +122,7 @@ public class KeyForPropagationTreeAnnotator extends TreeAnnotator {
       AnnotatedDeclaredType keySetReturnType = (AnnotatedDeclaredType) type;
 
       AnnotatedTypeMirror receiverType = atypeFactory.getReceiverType(tree);
-      if (receiverType != null
-          && receiverType.getKind() == TypeKind.DECLARED
-          && !keySetReturnType.getTypeArguments().isEmpty()) {
+      if (receiverType != null) {
         AnnotatedDeclaredType receiverDeclaredType = (AnnotatedDeclaredType) receiverType;
         mergeKeyForFromMapReceiverIntoKeySetReturn(
             receiverDeclaredType, keySetReturnType, (KeyForAnnotatedTypeFactory) atypeFactory);
