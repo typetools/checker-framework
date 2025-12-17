@@ -111,7 +111,7 @@ public class KeyForPropagationTreeAnnotator extends TreeAnnotator {
   }
 
   /**
-   * When visiting {@code Map.keySet()} calls, merge the map's key {@code @KeyFor} into the returned
+   * When visiting {@code Map.keySet()} calls, merge the map key's {@code @KeyFor} into the returned
    * Set element.
    *
    * <p>{@inheritDoc}
@@ -121,7 +121,6 @@ public class KeyForPropagationTreeAnnotator extends TreeAnnotator {
     if (isCallToKeyset(tree) && type.getKind() == TypeKind.DECLARED) {
       AnnotatedDeclaredType keySetReturnType = (AnnotatedDeclaredType) type;
 
-      // Get the receiver type
       AnnotatedTypeMirror receiverType = atypeFactory.getReceiverType(tree);
       if (receiverType != null
           && receiverType.getKind() == TypeKind.DECLARED
