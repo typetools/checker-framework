@@ -1198,6 +1198,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * @param nodes the nodes
    * @return the store immediately before a given Set of {@link Node}s
    */
+  @Deprecated // 2025-12-18
   public Store getStoreBefore(Set<Node> nodes) {
     if (analysis.isRunning()) {
       return analysis.getStoreBefore(nodes, flowResultAnalysisCaches);
@@ -1248,6 +1249,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * @param nodes the nodes whose post-stores to LUB
    * @return the LUB of the stores store immediately after {@code nodes}
    */
+  @Deprecated // 2025-12-18
   public Store getStoreAfter(Set<Node> nodes) {
     if (analysis.isRunning()) {
       return analysis.getStoreAfter(nodes, flowResultAnalysisCaches);
