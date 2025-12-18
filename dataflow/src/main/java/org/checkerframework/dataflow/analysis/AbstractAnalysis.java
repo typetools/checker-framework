@@ -377,7 +377,7 @@ public abstract class AbstractAnalysis<
     if (transferInput == null) {
       return null;
     }
-    return AnalysisResult.runAnalysisFor(
+    return runAnalysisFor(
         node, Analysis.BeforeOrAfter.AFTER, transferInput, getNodeValues(), analysisCaches);
   }
 
