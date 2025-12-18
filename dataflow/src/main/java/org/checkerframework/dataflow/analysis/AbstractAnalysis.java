@@ -226,7 +226,8 @@ public abstract class AbstractAnalysis<
       @Nullable Map<TransferInput<V, S>, IdentityHashMap<Node, TransferResult<V, S>>>
           analysisCaches) {
     if (!isRunning()) {
-      return null;
+      throw new BugInCF(
+          "AbstractAnalysis::getStoreBefore() should only be called when the analysis is running.");
     }
     Set<Node> nodes = getNodesForTree(tree);
     if (nodes == null) {
@@ -250,7 +251,8 @@ public abstract class AbstractAnalysis<
       @Nullable Map<TransferInput<V, S>, IdentityHashMap<Node, TransferResult<V, S>>>
           analysisCaches) {
     if (!isRunning()) {
-      return null;
+      throw new BugInCF(
+          "AbstractAnalysis::getStoreBefore() should only be called when the analysis is running.");
     }
     S merge = null;
     for (Node aNode : nodes) {
@@ -279,9 +281,14 @@ public abstract class AbstractAnalysis<
       @Nullable Map<TransferInput<V, S>, IdentityHashMap<Node, TransferResult<V, S>>>
           analysisCaches) {
     if (!isRunning()) {
+      throw new BugInCF(
+          "AbstractAnalysis::getStoreBefore() should only be called when the analysis is running.");
+    }
+    Block block = node.getBlock();
+    if (block == null) {
       return null;
     }
-    TransferInput<V, S> prevStore = getInput(node.getBlock());
+    TransferInput<V, S> prevStore = getInput(block);
     if (prevStore == null) {
       return null;
     }
@@ -304,7 +311,8 @@ public abstract class AbstractAnalysis<
       @Nullable Map<TransferInput<V, S>, IdentityHashMap<Node, TransferResult<V, S>>>
           analysisCaches) {
     if (!isRunning()) {
-      return null;
+      throw new BugInCF(
+          "AbstractAnalysis::getStoreAfter() should only be called when the analysis is running.");
     }
     Set<Node> nodes = getNodesForTree(tree);
     if (nodes == null) {
@@ -328,7 +336,8 @@ public abstract class AbstractAnalysis<
       @Nullable Map<TransferInput<V, S>, IdentityHashMap<Node, TransferResult<V, S>>>
           analysisCaches) {
     if (!isRunning()) {
-      return null;
+      throw new BugInCF(
+          "AbstractAnalysis::getStoreAfter() should only be called when the analysis is running.");
     }
     S merge = null;
     for (Node node : nodes) {
@@ -357,7 +366,8 @@ public abstract class AbstractAnalysis<
       @Nullable Map<TransferInput<V, S>, IdentityHashMap<Node, TransferResult<V, S>>>
           analysisCaches) {
     if (!isRunning()) {
-      return null;
+      throw new BugInCF(
+          "AbstractAnalysis::getStoreAfter() should only be called when the analysis is running.");
     }
     TransferInput<V, S> transferInput = getInput(node.getBlock());
     if (transferInput == null) {

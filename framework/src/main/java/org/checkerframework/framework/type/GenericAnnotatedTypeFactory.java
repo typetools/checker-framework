@@ -1182,6 +1182,7 @@ public abstract class GenericAnnotatedTypeFactory<
   /**
    * Returns the store immediately before a given {@link Tree}.
    *
+   * @param tree the tree
    * @return the store immediately before a given {@link Tree}
    */
   public Store getStoreBefore(Tree tree) {
@@ -1194,6 +1195,7 @@ public abstract class GenericAnnotatedTypeFactory<
   /**
    * Returns the store immediately before a given Set of {@link Node}s.
    *
+   * @param nodes the nodes
    * @return the store immediately before a given Set of {@link Node}s
    */
   public Store getStoreBefore(Set<Node> nodes) {
