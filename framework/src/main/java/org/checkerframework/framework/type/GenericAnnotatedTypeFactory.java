@@ -1186,10 +1186,10 @@ public abstract class GenericAnnotatedTypeFactory<
    * @return the store immediately before a given {@link Tree}
    */
   public Store getStoreBefore(Tree tree) {
-    if (!analysis.isRunning()) {
-      return flowResult.getStoreBefore(tree);
+    if (analysis.isRunning()) {
+      return analysis.getStoreBefore(tree, flowResultAnalysisCaches);
     }
-    return analysis.getStoreBefore(tree, flowResultAnalysisCaches);
+    return flowResult.getStoreBefore(tree);
   }
 
   /**
@@ -1236,10 +1236,10 @@ public abstract class GenericAnnotatedTypeFactory<
    * @return the store immediately after a given tree
    */
   public @Nullable Store getStoreAfter(Tree tree) {
-    if (!analysis.isRunning()) {
-      return flowResult.getStoreAfter(tree);
+    if (analysis.isRunning()) {
+      return analysis.getStoreAfter(tree, flowResultAnalysisCaches);
     }
-    return analysis.getStoreAfter(tree, flowResultAnalysisCaches);
+    return flowResult.getStoreAfter(tree);
   }
 
   /**
