@@ -369,7 +369,11 @@ public abstract class AbstractAnalysis<
       throw new BugInCF(
           "AbstractAnalysis::getStoreAfter() should only be called when the analysis is running.");
     }
-    TransferInput<V, S> transferInput = getInput(node.getBlock());
+    Block block = node.getBlock();
+    if (block == null) {
+      return null;
+    }
+    TransferInput<V, S> transferInput = getInput(block);
     if (transferInput == null) {
       return null;
     }
