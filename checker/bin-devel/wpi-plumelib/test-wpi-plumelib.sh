@@ -89,7 +89,7 @@ test_wpi_plume_lib() {
   if ! cmp --quiet expected.txt actual.txt; then
     echo "Comparing $EXPECTED_FILE $ACTUAL_FILE in $(pwd)"
     diff -u expected.txt actual.txt
-    if [ -n "$("$CHECKERFRAMEWORK"/checker/bin-devel/is-ci.sh)" ]; then
+    if [ -n "$("$CHECKERFRAMEWORK"/.plume-lib/is-ci.sh)" ]; then
       # Running under continuous integration.  Output files that may be useful for debugging.
       echo "TESTDIR = ${TESTDIR}"
       echo "project = ${project}"
