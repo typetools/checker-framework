@@ -29,7 +29,7 @@ with tempfile.NamedTemporaryFile(mode="w+", delete=False) as tmp:
             supertypes = match.group(1).strip()
             # print(f"supertypes = {supertypes}")
             if supertypes:
-                typename = Path(Path(filename).stem).name
+                typename = Path(filename).stem
                 for supertype in supertypes.split(","):
                     supertype = supertype.strip()
                     # print(f"supertype: {supertype}")
