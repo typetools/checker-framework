@@ -20,23 +20,22 @@ with tempfile.NamedTemporaryFile(mode="w+", delete=False) as tmp:
     tmp.write("rankdir=BT\n")
 
     for filename in Path.cwd().glob("*.java"):
-        with Path(filename).open() as file:
-            typename = Path(Path(filename).stem).name
-            # print(filename)
-            data = file.read()
-            # print(data)
-            match = subtypeof_pattern.search(data)
-            if match is not None:
-                # print(match)
-                supertypes = match.group(1).strip()
-                # print(f"supertypes = {supertypes}")
-                if supertypes:
-                    for supertype in supertypes.split(","):
-                        supertype = supertype.strip()
-                        # print(f"supertype: {supertype}")
-                        assert supertype.endswith(".class")
-                        supertype = supertype[0:-6]
-                        tmp.write(f"{typename} -> {supertype}\n")
+        # print(filename)
+        data = Path(filename).read_text()
+        # print(data)
+        match = subtypeof_pattern.search(data)
+        if match:
+            # print(match)
+            supertypes = match.group(1).strip()
+            # print(f"supertypes = {supertypes}")
+            if supertypes:
+                typename = Path(filename).stem
+                for supertype in supertypes.split(","):
+                    supertype = supertype.strip()
+                    # print(f"supertype: {supertype}")
+                    assert supertype.endswith(".class")
+                    supertype = supertype.removesuffix(".class")
+                    tmp.write(f"{typename} -> {supertype}\n")
 
     tmp.write("}\n")
 
