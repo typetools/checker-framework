@@ -24,7 +24,7 @@ with tempfile.NamedTemporaryFile(mode="w+", delete=False) as tmp:
         data = Path(filename).read_text()
         # print(data)
         match = subtypeof_pattern.search(data)
-        if match is not None:
+        if match:
             # print(match)
             supertypes = match.group(1).strip()
             # print(f"supertypes = {supertypes}")
@@ -34,7 +34,7 @@ with tempfile.NamedTemporaryFile(mode="w+", delete=False) as tmp:
                     supertype = supertype.strip()
                     # print(f"supertype: {supertype}")
                     assert supertype.endswith(".class")
-                    supertype = supertype[0:-6]
+                    supertype = supertype.removesuffix(".class")
                     tmp.write(f"{typename} -> {supertype}\n")
 
     tmp.write("}\n")
