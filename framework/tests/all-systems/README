@@ -4,10 +4,12 @@ They exercise tricky Java coding patterns that should be handled
 correctly.
 
 If a new type system correctly issues an error or a warning for one of these
-tests, then you can either suppress the warning or add annotations to fix the error. In either case,
-only add annotations without otherwise altering the code. Rewriting the code may cause the test to no
-longer test the specific syntax intented to. If suppressing the warning, the use the
-most specific SuppressWarnings string possible, for example "keyfor:return".  Write the
+tests, then you can either add annotations to fix the error or suppress the
+warning.  In either case, do not alter the code itself. Rewriting the code
+may cause the test to no longer test the specific syntax intended to.
+
+If suppressing the warning, use the most specific SuppressWarnings string
+possible, for example "keyfor:return".  Write the
 @SuppressWarnings annotation such that the scope is as limited as possible, but
 do not alter the code.  Write a comment on the warning suppression explaining
 why the error is expected. Add the test with the expected error to the type
