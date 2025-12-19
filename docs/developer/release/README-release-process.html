@@ -4,10 +4,10 @@
   <link rel="icon" type="image/png" href="../../manual/favicon-checkerframework.png">
   <meta charset="utf-8">
   <title>Checker Framework release process</title>
-  <script type="text/javascript" src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+  <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
   <link href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet"/>
-  <script type="text/javascript" src="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
-  <style type="text/css">
+  <script src="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+  <style>
     .page-header {
     padding-left: 10px;
     margin-left: 10px;
@@ -425,10 +425,15 @@ git config --global user.email you@example.com</pre>
 
     <h3 id="file_layout">File Layout</h3>
     <table class="table table-bordered file_layout_table">
-      <tr><th colspan="2">Release Directory <span class="glyphicon glyphicon-folder-open" style="float:right;"></span></th></tr>
+      <tr>
+        <th colspan="2">Release Directory <span class="glyphicon glyphicon-folder-open" style="float:right;"></span></th>
+        <th></th>
+        <th></th>
+      </tr>
       <tr>
         <td colspan="2" class="top_file">/scratch/$USER/cf-release</td>
         <td>Contains repositories and scripts to perform a release</td>
+        <td></td>
       </tr>
       <tr>
         <td></td>
@@ -466,11 +471,16 @@ git config --global user.email you@example.com</pre>
     </table>
 
     <table class="table table-bordered file_layout_table">
-      <tr><th colspan="2">Live Website Directory <span class="glyphicon glyphicon-folder-open" style="float:right;"></span></th></tr>
+      <tr>
+        <th colspan="2">Live Website Directory <span class="glyphicon glyphicon-folder-open" style="float:right;"></span></th>
+        <th></th>
+        <th></th>
+      </tr>
 
       <tr>
         <td colspan="2" class="top_file">/cse/www2/types</td>
         <td>The file system location of the website: <br/><a href="https://checkerframework.org/">https://checkerframework.org/</a>.</td>
+        <td></td>
       </tr>
       <tr>
         <td></td>
@@ -482,11 +492,16 @@ git config --global user.email you@example.com</pre>
     </table>
 
     <table class="table table-bordered file_layout_table">
-      <tr><th colspan="2">Staging (Development) Website Directory <span class="glyphicon glyphicon-folder-open" style="float:right;"></span></th></tr>
+      <tr>
+        <th colspan="2">Staging (Development) Website Directory <span class="glyphicon glyphicon-folder-open" style="float:right;"></span></th>
+        <th></th>
+        <th></th>
+      </tr>
 
       <tr>
         <td colspan="2" class="top_file">/cse/www2/types/dev</td>
         <td>The file system location of the development staging website: <br/><a href="https://checkerframework.org/dev/">https://checkerframework.org/dev</a>.</td>
+        <td></td>
       </tr>
       <tr>
         <td></td>

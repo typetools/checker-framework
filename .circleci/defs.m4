@@ -1,6 +1,6 @@
 changequote
 changequote(`[',`]')dnl
-ifelse([The built-in "dnl" macro means "discard to next line".],)dnl
+ifelse([The built-in "dnl" macro means "discard to next line".])dnl
 dnl
 ifelse([This macro takes 1-3 arguments: the JDK version and optionally a docker
 image name suffix like "-plus", and a checkout method "full".])dnl
