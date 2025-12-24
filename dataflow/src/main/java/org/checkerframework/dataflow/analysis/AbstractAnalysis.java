@@ -219,7 +219,8 @@ public abstract class AbstractAnalysis<
    * @param analysisCaches caches of analysis results. If it is not null, this method uses and
    *     updates it. It is a map from a TransferInput for a Block to a map. The inner map is from a
    *     node within the block to a TransferResult.
-   * @return the store immediately before a given {@link Tree}
+   * @return the store immediately before a given {@link Tree}, or null if the tree does not
+   *     correspond to any nodes
    */
   public @Nullable S getStoreBefore(
       Tree tree,
@@ -253,7 +254,7 @@ public abstract class AbstractAnalysis<
    * @param analysisCaches caches of analysis results. If it is not null, this method uses and
    *     updates it. It is a map from a TransferInput for a Block to a map. The inner map is from a
    *     node within the block to a TransferResult.
-   * @return the store immediately before {@code node}
+   * @return the store immediately before {@code node}, or null if the node is not in a block
    */
   public @Nullable S getStoreBefore(
       Node node,
@@ -283,7 +284,8 @@ public abstract class AbstractAnalysis<
    * @param analysisCaches caches of analysis results. If it is not null, this method uses and
    *     updates it. It is a map from a TransferInput for a Block to a map. The inner map is from a
    *     node within the block to a TransferResult.
-   * @return the store immediately after a given tree
+   * @return the store immediately after a given tree, or null if the tree does not correspond to
+   *     any nodes
    */
   public @Nullable S getStoreAfter(
       Tree tree,
@@ -317,7 +319,7 @@ public abstract class AbstractAnalysis<
    * @param analysisCaches caches of analysis results. If it is not null, this method uses and
    *     updates it. It is a map from a TransferInput for a Block to a map. The inner map is from a
    *     node within the block to a TransferResult.
-   * @return the store immediately after a given {@link Node}
+   * @return the store immediately after a given {@link Node}, or null if the node is not in a block
    */
   public @Nullable S getStoreAfter(
       Node node,
