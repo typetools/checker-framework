@@ -212,8 +212,9 @@ public abstract class AbstractAnalysis<
   }
 
   /**
-   * Returns the store immediately before a given {@link Tree}. Only intended for use while the
-   * analysis is running.
+   * Computes and returns a merged store valid immediately before the nodes corresponding to a given
+   * {@link Tree}. If multiple nodes correspond to the tree, this method aggregates their pre-stores
+   * using {@link Store#leastUpperBound}. Only intended for use while the analysis is running.
    *
    * @param tree a tree
    * @param analysisCaches caches of analysis results. If it is not null, this method uses and
@@ -277,8 +278,10 @@ public abstract class AbstractAnalysis<
   }
 
   /**
-   * Returns the store immediately after a given {@link Tree}. Only intended for use while the
-   * analysis is running.
+   * Computes and returns a merged store valid immediately after the nodes corresponding to a given
+   * {@link Tree}. If multiple nodes correspond to the tree, this method aggregates their
+   * post-stores using {@link Store#leastUpperBound}. Only intended for use while the analysis is
+   * running.
    *
    * @param tree a tree
    * @param analysisCaches caches of analysis results. If it is not null, this method uses and
