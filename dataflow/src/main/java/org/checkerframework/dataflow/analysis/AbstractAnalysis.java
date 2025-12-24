@@ -269,12 +269,12 @@ public abstract class AbstractAnalysis<
     if (block == null) {
       return null;
     }
-    TransferInput<V, S> prevStore = getInput(block);
-    if (prevStore == null) {
+    TransferInput<V, S> transferInput = getInput(block);
+    if (transferInput == null) {
       return null;
     }
     return runAnalysisFor(
-        node, Analysis.BeforeOrAfter.BEFORE, prevStore, getNodeValues(), analysisCaches);
+        node, Analysis.BeforeOrAfter.BEFORE, transferInput, getNodeValues(), analysisCaches);
   }
 
   /**
