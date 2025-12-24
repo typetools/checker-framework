@@ -1193,29 +1193,6 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
-   * Returns the store immediately before a given Set of {@link Node}s.
-   *
-   * @param nodes the nodes
-   * @return the store immediately before a given Set of {@link Node}s
-   */
-  @Deprecated // 2025-12-18
-  public Store getStoreBefore(Set<Node> nodes) {
-    if (analysis.isRunning()) {
-      return analysis.getStoreBefore(nodes, flowResultAnalysisCaches);
-    }
-    Store merge = null;
-    for (Node aNode : nodes) {
-      Store s = flowResult.getStoreBefore(aNode);
-      if (merge == null) {
-        merge = s;
-      } else if (s != null) {
-        merge = merge.leastUpperBound(s);
-      }
-    }
-    return merge;
-  }
-
-  /**
    * Returns the store immediately before a given node.
    *
    * @param node a node whose pre-store to return
@@ -1241,29 +1218,6 @@ public abstract class GenericAnnotatedTypeFactory<
       return analysis.getStoreAfter(tree, flowResultAnalysisCaches);
     }
     return flowResult.getStoreAfter(tree);
-  }
-
-  /**
-   * Returns the store immediately after a given set of nodes.
-   *
-   * @param nodes the nodes whose post-stores to LUB
-   * @return the LUB of the stores store immediately after {@code nodes}
-   */
-  @Deprecated // 2025-12-18
-  public Store getStoreAfter(Set<Node> nodes) {
-    if (analysis.isRunning()) {
-      return analysis.getStoreAfter(nodes, flowResultAnalysisCaches);
-    }
-    Store merge = null;
-    for (Node node : nodes) {
-      Store s = flowResult.getStoreAfter(node);
-      if (merge == null) {
-        merge = s;
-      } else if (s != null) {
-        merge = merge.leastUpperBound(s);
-      }
-    }
-    return merge;
   }
 
   /**

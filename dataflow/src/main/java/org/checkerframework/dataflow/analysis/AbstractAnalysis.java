@@ -233,27 +233,6 @@ public abstract class AbstractAnalysis<
     if (nodes == null) {
       return null;
     }
-    return getStoreBefore(nodes, analysisCaches);
-  }
-
-  /**
-   * Returns the store immediately before a given set of {@link Node}s. Only intended for use while
-   * the analysis is running.
-   *
-   * @param nodes a set of nodes
-   * @param analysisCaches caches of analysis results. If it is not null, this method uses and
-   *     updates it. It is a map from a TransferInput for a Block to a map. The inner map is from a
-   *     node within the block to a TransferResult.
-   * @return the store immediately before the nodes
-   */
-  public @Nullable S getStoreBefore(
-      Set<Node> nodes,
-      @Nullable Map<TransferInput<V, S>, IdentityHashMap<Node, TransferResult<V, S>>>
-          analysisCaches) {
-    if (!isRunning()) {
-      throw new BugInCF(
-          "AbstractAnalysis::getStoreBefore() should only be called when the analysis is running.");
-    }
     S merge = null;
     for (Node aNode : nodes) {
       S s = getStoreBefore(aNode, analysisCaches);
@@ -317,27 +296,6 @@ public abstract class AbstractAnalysis<
     Set<Node> nodes = getNodesForTree(tree);
     if (nodes == null) {
       return null;
-    }
-    return getStoreAfter(nodes, analysisCaches);
-  }
-
-  /**
-   * Returns the store immediately after a given set of {@link Node}s. Only intended for use while
-   * the analysis is running.
-   *
-   * @param nodes the nodes whose post-stores to LUB
-   * @param analysisCaches caches of analysis results. If it is not null, this method uses and
-   *     updates it. It is a map from a TransferInput for a Block to a map. The inner map is from a
-   *     node within the block to a TransferResult.
-   * @return the LUB of the stores store immediately after {@code nodes}
-   */
-  public @Nullable S getStoreAfter(
-      Set<Node> nodes,
-      @Nullable Map<TransferInput<V, S>, IdentityHashMap<Node, TransferResult<V, S>>>
-          analysisCaches) {
-    if (!isRunning()) {
-      throw new BugInCF(
-          "AbstractAnalysis::getStoreAfter() should only be called when the analysis is running.");
     }
     S merge = null;
     for (Node node : nodes) {
