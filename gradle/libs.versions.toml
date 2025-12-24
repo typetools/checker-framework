@@ -38,7 +38,7 @@ plume-util = "org.plumelib:plume-util:1.12.3"
 
 reflection-util = "org.plumelib:reflection-util:1.1.5"
 
-asm = "org.ow2.asm:asm:9.9"
+asm = "org.ow2.asm:asm:9.9.1"
 
 junit = { group = "junit", name = "junit", version.ref = "junit-junit" }
 
