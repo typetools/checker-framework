@@ -1185,7 +1185,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * @param tree the tree
    * @return the store immediately before a given {@link Tree}
    */
-  public Store getStoreBefore(Tree tree) {
+  public @Nullable Store getStoreBefore(Tree tree) {
     if (analysis.isRunning()) {
       return analysis.getStoreBefore(tree, flowResultAnalysisCaches);
     }
