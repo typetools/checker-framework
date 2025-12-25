@@ -218,8 +218,8 @@ public abstract class AbstractAnalysis<
    *
    * @param tree a tree
    * @param analysisCaches caches of analysis results. If it is not null, this method uses and
-   *     updates it. It is a map from a TransferInput for a Block to a map. The inner map is from a
-   *     node within the block to a TransferResult.
+   *     updates it. It is a map from a TransferInput for a Block to an inner map. The inner map is
+   *     from a node within the block to a TransferResult.
    * @return the store immediately before a given {@link Tree}, or null if the tree does not
    *     correspond to any nodes
    */
@@ -253,8 +253,8 @@ public abstract class AbstractAnalysis<
    *
    * @param node a node whose pre-store to return
    * @param analysisCaches caches of analysis results. If it is not null, this method uses and
-   *     updates it. It is a map from a TransferInput for a Block to a map. The inner map is from a
-   *     node within the block to a TransferResult.
+   *     updates it. It is a map from a TransferInput for a Block to an inner map. The inner map is
+   *     from a node within the block to a TransferResult.
    * @return the store immediately before {@code node}, or null if the node is not in a block
    */
   public @Nullable S getStoreBefore(
