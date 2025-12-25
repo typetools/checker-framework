@@ -440,6 +440,7 @@ allprojects { currentProj ->
         classpath += configurations.named("checkerFatJar").get().asFileTree
         options.taglets("org.checkerframework.taglet.ManualTaglet")
         options.tagletPath(project(":framework-test").sourceSets.taglet.output.classesDirs.getFiles() as File[])
+        options.noTimestamp = true
 
         // This file is looked for by Javadoc.
         file("${destinationDir}/resources/fonts/").mkdirs()
