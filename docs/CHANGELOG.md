@@ -3,11 +3,16 @@
 <!-- markdownlint-disable no-duplicate-heading -->
 <!-- pyml disable no-duplicate-heading -->
 
-## Version 3.52.2 (2026-01-03)
+## Version 3.53.0 (2026-01-05)
 
 ### User-visible changes
 
 ### Implementation details
+
+In `AbstractAnalysis`, added `getStoreBefore(Tree)`, `getStoreBefore(Node)`,
+`getStoreAfter(Tree)`, and `getStoreAfter(Node)`.
+
+In `GenericAnnotatedTypeFactory`, removed `getStoreBefore(Set<Node>)` and `getStoreAfter(Set<Node>)`.
 
 ### Closed issues
 
