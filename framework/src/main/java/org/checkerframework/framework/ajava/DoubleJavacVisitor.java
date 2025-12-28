@@ -39,8 +39,8 @@ import java.util.List;
  * defaultPairAction. Subclasses override defaultPairAction to perform comparisons or other
  * processing.
  *
- * <p>Unlike JavaParser ASTs, javac trees may contain additional wrapper nodes such as parentheses or
- * expression statements. To keep traversal aligned, this class normalizes certain wrapper nodes
+ * <p>Unlike JavaParser ASTs, javac trees may contain additional wrapper nodes such as parentheses
+ * or expression statements. To keep traversal aligned, this class normalizes certain wrapper nodes
  * before dispatching to visit methods.
  *
  * <p>To use this class, extend it, override defaultPairAction, and begin traversal by calling scan
@@ -88,10 +88,11 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
    *
    * <p>1. Handles the case where both trees are null by doing nothing.
    *
-   * <p>2. Treats exactly one null as an error, because it indicates the trees are no longer aligned.
+   * <p>2. Treats exactly one null as an error, because it indicates the trees are no longer
+   * aligned.
    *
-   * <p>3. Normalizes wrapper nodes (such as parentheses and expression statements) so that logically
-   * corresponding constructs in the two trees align.
+   * <p>3. Normalizes wrapper nodes (such as parentheses and expression statements) so that
+   * logically corresponding constructs in the two trees align.
    *
    * <p>4. Verifies that the normalized trees have the same kind, then dispatches to the appropriate
    * visit method via accept.
@@ -127,9 +128,9 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
   /**
    * Scans two trees that are optional children.
    *
-   * <p>This helper is used at call sites where a child is permitted to be absent. If both trees
-   * are null, this method does nothing. If exactly one is null, this is treated as an error
-   * because it indicates the two trees are not aligned.
+   * <p>This helper is used at call sites where a child is permitted to be absent. If both trees are
+   * null, this method does nothing. If exactly one is null, this is treated as an error because it
+   * indicates the two trees are not aligned.
    *
    * @param tree1 the first tree, or null
    * @param tree2 the second tree, or null
@@ -305,9 +306,6 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
     scanList(tree1.getImplementsClause(), tree2cls.getImplementsClause());
     scanList(tree1.getPermitsClause(), tree2cls.getPermitsClause());
 
-    // Record components are empty for non-records.
-    scanList(tree1.get(), tree2cls.getRecordComponents());
-
     scanList(tree1.getMembers(), tree2cls.getMembers());
     return null;
   }
@@ -341,7 +339,8 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
 
   /**
    * Visits a variable declaration (field, local, parameter) and scans its modifiers, type,
-   * initializer, and (for record components) accessor-like details are handled by the enclosing node.
+   * initializer, and (for record components) accessor-like details are handled by the enclosing
+   * node.
    *
    * @param tree1 variable tree from the first AST
    * @param tree2 variable tree from the second AST
@@ -544,7 +543,8 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
    * Visits an expression statement and scans its expression.
    *
    * <p>This method may be redundant when normalize unwraps expression statements, but keeping it is
-   * harmless and makes traversal robust when callers invoke scan directly on an ExpressionStatementTree.
+   * harmless and makes traversal robust when callers invoke scan directly on an
+   * ExpressionStatementTree.
    *
    * @param tree1 expression statement from the first AST
    * @param tree2 expression statement from the second AST
