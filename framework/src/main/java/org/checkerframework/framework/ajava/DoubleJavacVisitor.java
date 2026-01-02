@@ -15,10 +15,8 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.PackageTree;
 import com.sun.source.tree.ParameterizedTypeTree;
-import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.PrimitiveTypeTree;
 import com.sun.source.tree.ReturnTree;
-import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TryTree;
@@ -27,6 +25,7 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WildcardTree;
 import com.sun.source.util.SimpleTreeVisitor;
 import java.util.List;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * A visitor that visits two javac ASTs simultaneously that almost match.
@@ -46,7 +45,6 @@ import java.util.List;
  * <p>To use this class, extend it, override defaultPairAction, and begin traversal by calling scan
  * on the two root trees.
  */
-@SuppressWarnings("optional:method.invocation")
 public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
 
   /** Create a DoubleJavacVisitor. */
@@ -62,7 +60,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
    * @param tree1 the first tree in the matched pair
    * @param tree2 the second tree in the matched pair
    */
-  public abstract void defaultPairAction(Tree tree1, Tree tree2);
+  protected abstract void defaultPairAction(Tree tree1, Tree tree2);
 
   /**
    * The fallback visitor method used when no specific visitXxx override exists for a tree kind.
@@ -91,16 +89,13 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
    * <p>2. Treats exactly one null as an error, because it indicates the trees are no longer
    * aligned.
    *
-   * <p>3. Normalizes wrapper nodes (such as parentheses and expression statements) so that
-   * logically corresponding constructs in the two trees align.
-   *
-   * <p>4. Verifies that the normalized trees have the same kind, then dispatches to the appropriate
-   * visit method via accept.
+   * <p>3. Verifies that the trees have the same kind, then dispatches to the appropriate visit
+   * method via accept.
    *
    * @param tree1 the first tree to scan, or null
    * @param tree2 the second tree to scan, or null
    */
-  public final void scan(Tree tree1, Tree tree2) {
+  public final void scan(@Nullable Tree tree1, @Nullable Tree tree2) {
     if (tree1 == null && tree2 == null) {
       return;
     }
@@ -112,17 +107,17 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
               this.getClass().getCanonicalName(), tree1, tree2));
     }
 
-    Tree t1 = normalize(tree1);
-    Tree t2 = normalize(tree2);
-
-    if (t1.getKind() != t2.getKind()) {
+    // If we later discover javac introduces wrappers that desynchronize traversal (e.g.
+    // parentheses),
+    // we can re-introduce a normalization step here.
+    if (tree1.getKind() != tree2.getKind()) {
       throw new Error(
           String.format(
               "%s.scan: mismatched kinds: %s vs %s",
-              this.getClass().getCanonicalName(), t1.getKind(), t2.getKind()));
+              this.getClass().getCanonicalName(), tree1.getKind(), tree2.getKind()));
     }
 
-    t1.accept(this, t2);
+    tree1.accept(this, tree2);
   }
 
   /**
@@ -135,7 +130,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
    * @param tree1 the first tree, or null
    * @param tree2 the second tree, or null
    */
-  public final void scanOpt(Tree tree1, Tree tree2) {
+  public final void scanOpt(@Nullable Tree tree1, @Nullable Tree tree2) {
     if (tree1 == null && tree2 == null) {
       return;
     }
@@ -180,58 +175,6 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
     for (int i = 0; i < list1.size(); i++) {
       scan(list1.get(i), list2.get(i));
     }
-  }
-
-  /**
-   * Normalizes a tree by removing wrapper nodes that should not affect structural matching.
-   *
-   * <p>javac may introduce wrapper nodes such as parenthesized expressions or expression statements
-   * depending on context. These wrappers are removed so that corresponding logical constructs in
-   * the two trees align during traversal.
-   *
-   * <p>Normalization is applied repeatedly until the tree stops changing, so nested wrappers are
-   * fully removed.
-   *
-   * @param tree a non-null tree
-   * @return a normalized tree
-   */
-  protected Tree normalize(Tree tree) {
-    Tree t = tree;
-    while (true) {
-      Tree next = unwrapExpressionStatement(unwrapParentheses(t));
-      if (next == t) {
-        return t;
-      }
-      t = next;
-    }
-  }
-
-  /**
-   * If the given tree is a parenthesized expression, returns the enclosed expression. Otherwise,
-   * returns the tree unchanged.
-   *
-   * @param tree a non-null tree
-   * @return the unwrapped tree
-   */
-  protected Tree unwrapParentheses(Tree tree) {
-    if (tree instanceof ParenthesizedTree) {
-      return ((ParenthesizedTree) tree).getExpression();
-    }
-    return tree;
-  }
-
-  /**
-   * If the given tree is an expression statement, returns the underlying expression. Otherwise,
-   * returns the tree unchanged.
-   *
-   * @param tree a non-null tree
-   * @return the unwrapped tree
-   */
-  protected Tree unwrapExpressionStatement(Tree tree) {
-    if (tree instanceof ExpressionStatementTree) {
-      return ((ExpressionStatementTree) tree).getExpression();
-    }
-    return tree;
   }
 
   /**
@@ -533,9 +476,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
     BlockTree tree2b = (BlockTree) tree2;
     defaultPairAction(tree1, tree2b);
 
-    List<? extends StatementTree> s1 = tree1.getStatements();
-    List<? extends StatementTree> s2 = tree2b.getStatements();
-    scanList(s1, s2);
+    scanList(tree1.getStatements(), tree2b.getStatements());
     return null;
   }
 
