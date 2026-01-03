@@ -375,7 +375,10 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     }
 
     if (outside.getKind() == TypeKind.WILDCARD) {
+      // This is all cases except bullet 6, "T <= T".
       AnnotatedWildcardType outsideWildcard = (AnnotatedWildcardType) outside;
+
+      // Add a placeholder in case of recursion, to prevent infinite regress.
       areEqualVisitHistory.put(inside, outside, currentTop, true);
       boolean result =
           isContainedWithinBounds(
@@ -386,7 +389,12 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
       areEqualVisitHistory.put(inside, outside, currentTop, result);
       return result;
     } else if (TypesUtils.isCapturedTypeVariable(outside.getUnderlyingType())) {
+      // Sometimes the wildcard has been captured too early, so treat the captured type
+      // variable as wildcard.
+      // This is all cases except bullet 6, "T <= T".
       AnnotatedTypeVariable outsideTypeVar = (AnnotatedTypeVariable) outside;
+
+      // Add a placeholder in case of recursion, to prevent infinite regress.
       areEqualVisitHistory.put(inside, outside, currentTop, true);
       boolean result =
           isContainedWithinBounds(
@@ -406,25 +414,19 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
       return isSubtype(inside, outside, currentTop);
     }
 
-    // In invariant positions (e.g., Map keys), type arguments must be exactly equal,
-    // including nullness qualifiers. Only fall back to capture conversion if the direct
-    // equality check crashes (rare JDK/visitor bugs). This preserves existing robustness
-    // without introducing unsoundness in normal cases.
     try {
       return areEqualInHierarchy(inside, outside);
     } catch (Exception e) {
-      AnnotatedTypeMirror capturedOutside =
-          checker.getTypeFactory().applyCaptureConversion(outside);
-
-      Boolean prev = areEqualVisitHistory.get(inside, capturedOutside, currentTop);
-      if (prev != null) {
-        return prev;
-      }
-
-      boolean result = areEqualInHierarchy(inside, capturedOutside);
-      areEqualVisitHistory.put(inside, capturedOutside, currentTop, result);
-      return result;
+      // Ignore exception and try capturing.
+      // See https://github.com/typetools/checker-framework/issues/6867.
+      // https://bugs.openjdk.org/browse/JDK-8054309
     }
+    AnnotatedTypeMirror capturedOutside = outside.atypeFactory.applyCaptureConversion(outside);
+    previousResult = areEqualVisitHistory.get(inside, capturedOutside, currentTop);
+    if (previousResult != null) {
+      return previousResult;
+    }
+    return areEqualInHierarchy(inside, capturedOutside);
   }
 
   /**
