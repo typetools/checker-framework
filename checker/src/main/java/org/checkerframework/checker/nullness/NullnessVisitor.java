@@ -68,7 +68,8 @@ import org.checkerframework.javacutil.TypesUtils;
 public class NullnessVisitor
     extends InitializationVisitor<NullnessAnnotatedTypeFactory, NullnessValue, NullnessStore> {
   // Error message keys
-  // private static final @CompilerMessageKey String ASSIGNMENT_TYPE_INCOMPATIBLE = "assignment";
+  // private static final @CompilerMessageKey String ASSIGNMENT_TYPE_INCOMPATIBLE
+  // = "assignment";
   private static final @CompilerMessageKey String UNBOXING_OF_NULLABLE = "unboxing.of.nullable";
   private static final @CompilerMessageKey String LOCKING_NULLABLE = "locking.nullable";
   private static final @CompilerMessageKey String THROWING_NULLABLE = "throwing.nullable";
@@ -140,7 +141,8 @@ public class NullnessVisitor
 
   @Override
   public boolean isValidUse(AnnotatedPrimitiveType type, Tree tree) {
-    // The Nullness Checker issues a more comprehensible "nullness.on.primitive" error rather
+    // The Nullness Checker issues a more comprehensible "nullness.on.primitive"
+    // error rather
     // than the "annotations.on.use" error this method would issue.
     return true;
   }
@@ -152,10 +154,13 @@ public class NullnessVisitor
       @CompilerMessageKey String errorKey,
       Object... extraArgs) {
 
-    // Allow a MonotonicNonNull field to be initialized to null at its declaration, in a
-    // constructor, or in an initializer block.  (The latter two are, strictly speaking, unsound
-    // because the constructor or initializer block might have previously set the field to a
-    // non-null value.  Maybe add an option to disable that behavior.)
+    // Allow a MonotonicNonNull field to be initialized to null at its declaration,
+    // in a
+    // constructor, or in an initializer block. (The latter two are, strictly
+    // speaking, unsound
+    // because the constructor or initializer block might have previously set the
+    // field to a
+    // non-null value. Maybe add an option to disable that behavior.)
     Element elem = initializedElement(varTree);
     if (elem != null
         && atypeFactory.fromElement(elem).hasEffectiveAnnotation(MONOTONIC_NONNULL)
@@ -184,9 +189,10 @@ public class NullnessVisitor
         MemberSelectTree mst = (MemberSelectTree) varTree;
         ExpressionTree receiver = mst.getExpression();
         // This recognizes "this.fieldname = ..." but not "MyClass.fieldname = ..." or
-        // "MyClass.this.fieldname = ...".  The latter forms are probably rare in a
+        // "MyClass.this.fieldname = ...". The latter forms are probably rare in a
         // constructor.
-        // Note that this method should return non-null only for fields of this class, not
+        // Note that this method should return non-null only for fields of this class,
+        // not
         // fields of any other class, including outer classes.
         if (!(receiver instanceof IdentifierTree)
             || !((IdentifierTree) receiver).getName().contentEquals("this")) {
@@ -212,9 +218,12 @@ public class NullnessVisitor
       ExpressionTree valueExp,
       @CompilerMessageKey String errorKey,
       Object... extraArgs) {
-    // Use the valueExp as the context because data flow will have a value for that tree.  It
-    // might not have a value for the var tree.  This is sound because if data flow has
-    // determined @PolyNull is @Nullable at the RHS, then it is also @Nullable for the LHS.
+    // Use the valueExp as the context because data flow will have a value for that
+    // tree. It
+    // might not have a value for the var tree. This is sound because if data flow
+    // has
+    // determined @PolyNull is @Nullable at the RHS, then it is also @Nullable for
+    // the LHS.
     atypeFactory.replacePolyQualifier(varType, valueExp);
     return super.commonAssignmentCheck(varType, valueExp, errorKey, extraArgs);
   }
@@ -382,9 +391,12 @@ public class NullnessVisitor
     // See also
     // org.checkerframework.dataflow.cfg.builder.CFGBuilder.CFGTranslationPhaseOne.visitAssert
 
-    // In cases where neither assumeAssertionsAreEnabled nor assumeAssertionsAreDisabled are
-    // turned on and @AssumeAssertions is not used, checkForNullability is still called since
-    // the CFGBuilder will have generated one branch for which asserts are assumed to be
+    // In cases where neither assumeAssertionsAreEnabled nor
+    // assumeAssertionsAreDisabled are
+    // turned on and @AssumeAssertions is not used, checkForNullability is still
+    // called since
+    // the CFGBuilder will have generated one branch for which asserts are assumed
+    // to be
     // enabled.
 
     boolean doVisitAssert;
@@ -427,7 +439,8 @@ public class NullnessVisitor
         }
       }
     }
-    // Don't call super because it will issue an incorrect instanceof.unsafe warning.
+    // Don't call super because it will issue an incorrect instanceof.unsafe
+    // warning.
     // Instead, just scan the part before "instanceof".
     super.scan(tree.getExpression(), p);
     return null;
@@ -555,7 +568,7 @@ public class NullnessVisitor
    * @param tree a method invocation whose first formal parameter is of String type
    * @return the first argument if it is a literal, otherwise null
    */
-  /*package-private*/ static @Nullable String literalFirstArgument(MethodInvocationTree tree) {
+  /* package-private */ static @Nullable String literalFirstArgument(MethodInvocationTree tree) {
     List<? extends ExpressionTree> args = tree.getArguments();
     assert !args.isEmpty();
     ExpressionTree arg = args.get(0);
@@ -683,7 +696,8 @@ public class NullnessVisitor
       return isPrimitive(tree.getLeftOperand()) != isPrimitive(tree.getRightOperand());
     } else {
       // All BinaryTree's are of type String, a primitive type or the reference type
-      // equivalent of a primitive type. Furthermore, Strings don't have a primitive type, and
+      // equivalent of a primitive type. Furthermore, Strings don't have a primitive
+      // type, and
       // therefore only BinaryTrees that aren't String can cause unboxing.
       return !isString(tree);
     }
@@ -772,6 +786,33 @@ public class NullnessVisitor
   @Override
   public Void visitConditionalExpression(ConditionalExpressionTree tree, Void p) {
     checkForNullability(tree.getCondition(), CONDITION_NULLABLE);
+    // If the overall conditional expression has a primitive Java type but one or both
+    // operand expressions are reference types, then unboxing will occur as part of
+    // evaluating the conditional.  In that case, check the operand(s) for possible
+    // nullness (unboxing.of.nullable).
+    AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(tree);
+    // Only check for unboxing when javac has chosen a primitive underlying type
+    // for the conditional expression, but one or both operands are non-primitive.
+    if (type.getKind().isPrimitive()) {
+      ExpressionTree trueExpr = tree.getTrueExpression();
+      ExpressionTree falseExpr = tree.getFalseExpression();
+      boolean trueNeedsUnboxing = !TypesUtils.isPrimitive(TreeUtils.typeOf(trueExpr));
+      boolean falseNeedsUnboxing = !TypesUtils.isPrimitive(TreeUtils.typeOf(falseExpr));
+
+      if (trueNeedsUnboxing) {
+        if (!checkForNullability(trueExpr, UNBOXING_OF_NULLABLE)) {
+          // If we reported an unboxing.of.nullable error for the true arm, stop
+          // further checking to avoid cascading errors.
+          return null;
+        }
+      }
+      if (falseNeedsUnboxing) {
+        if (!checkForNullability(falseExpr, UNBOXING_OF_NULLABLE)) {
+          return null;
+        }
+      }
+    }
+
     return super.visitConditionalExpression(tree, p);
   }
 
@@ -781,19 +822,24 @@ public class NullnessVisitor
     List<? extends AnnotationTree> annoTrees = param.getModifiers().getAnnotations();
     Tree paramType = param.getType();
     if (atypeFactory.containsNullnessAnnotation(annoTrees, paramType)) {
-      // This is a warning rather than an error because writing `@Nullable` could make sense
-      // if the catch block re-assigns the variable to null.  (That would be bad style.)
+      // This is a warning rather than an error because writing `@Nullable` could make
+      // sense
+      // if the catch block re-assigns the variable to null. (That would be bad
+      // style.)
       checker.reportWarning(param, "nullness.on.exception.parameter");
     }
 
     // Don't call super.
-    // BasetypeVisitor forces annotations on exception parameters to be top, but because
-    // exceptions can never be null, the Nullness Checker does not require this check.
+    // BasetypeVisitor forces annotations on exception parameters to be top, but
+    // because
+    // exceptions can never be null, the Nullness Checker does not require this
+    // check.
   }
 
   @Override
   public Void visitAnnotation(AnnotationTree tree, Void p) {
-    // All annotation arguments are non-null and initialized, so no need to check them.
+    // All annotation arguments are non-null and initialized, so no need to check
+    // them.
     return null;
   }
 
