@@ -238,8 +238,13 @@ public class NullnessVisitor
       // when the value can be cast to the variable's raw type (conservative check).
       TypeMirror varUnderlying = varD.getUnderlyingType();
       TypeMirror valUnderlying = valD.getUnderlyingType();
-      if (types.isSameType(types.erasure(varUnderlying), types.erasure(valUnderlying))
-          || types.isSubtype(valUnderlying, varUnderlying)) {
+    // Only apply this additional nullness invariant-type-argument check when the
+    // erased declared types are identical and neither side is a raw type. Using a
+    // looser subtype check caused false positives for assignments where the
+    // declared types differ (but are related by subtyping) or for raw types.
+    if (types.isSameType(types.erasure(varUnderlying), types.erasure(valUnderlying))
+      && !varD.isUnderlyingTypeRaw()
+      && !valD.isUnderlyingTypeRaw()) {
         List<? extends AnnotatedTypeMirror> varArgs = varD.getTypeArguments();
         List<? extends AnnotatedTypeMirror> valArgs = valD.getTypeArguments();
         int n = Math.min(varArgs.size(), valArgs.size());
