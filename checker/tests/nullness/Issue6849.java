@@ -10,7 +10,7 @@ public class Issue6849 {
   public static void main(String[] args) {
     List<@Nullable Integer> lst = new LinkedList<>();
     lst.add(null);
-    int y = ((true) ? Issue6849.<@Nullable Integer>m(lst) : 10);
     // :: error: (unboxing.of.nullable)
+    int y = ((true) ? Issue6849.<@Nullable Integer>m(lst) : 10);
   }
 }
