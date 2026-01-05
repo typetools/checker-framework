@@ -60,10 +60,10 @@ Three choices for creating your own checker are:
 \item
   Copy and then modify a different existing checker --- whether
   one distributed with the Checker Framework or a third-party one.
-  You can get tangled up if you don't fully understand
+  A problem with this strategy is that you can get tangled up if you don't fully understand
   the subtleties of the existing checker that you are modifying.
   Usually, it is easier to follow the instructions in this chapter.
-  (If you are going to copy a checker, one good choice to copy and modify
+  (If you are going to copy a checker despite the dangers, one good choice to copy and modify
   is the Regex Checker (\chapterpageref{regex-checker}).  A bad choice is
   the Nullness Checker (\chapterpageref{nullness-checker}),
   which is more sophisticated than anything you want to start out building.)
@@ -253,6 +253,8 @@ Here is a good way to proceed.
   text than in an implementation.
   Section~\ref{creating-documenting-a-checker} gives a suggested structure
   for the manual chapter, which will help you avoid omitting any parts.
+  If your checker is in a clone of the Checker Framework, don't forget to
+  add a \LaTeX\ \<\textbackslash{}include> directive to \<manual.tex>.
   Get feedback from someone else at this point to ensure that your manual
   is comprehensible.
 
@@ -269,6 +271,7 @@ Here is a good way to proceed.
 \label{creating-tips-implement-qualifiers}
   Implement the type qualifiers and hierarchy
   (Section~\ref{creating-typequals}).
+  Compile your changes.
 
   Write simple test cases that consist of only assignments,
   to test your type hierarchy.  For instance, if
@@ -276,17 +279,35 @@ Here is a good way to proceed.
   \<@NonNegative>, then you could write a test case such as:
 
 \begin{Verbatim}
+import org.checkerframework.checker.mychecker.qual.UnknownSign;
+import org.checkerframework.checker.mychecker.qual.NonNegative;
+
+class TestHierarchy {
   void testHierarchy(@UnknownSign int us, @NonNegative int nn) {
     @UnknownSign int a = us;
     @UnknownSign int b = nn;
     // :: error: (assignment)
-    @NonNegative int c = us;  // expected error on this line
+    @NonNegative int c = us; // expected error on this line
     @NonNegative int d = nn;
   }
+}
 \end{Verbatim}
 
+  If you are working in a clone of the Checker Framework, put the above
+  test case in file \<checker/tests/\emph{mycheckername}/TestHierarchy.java>.
+
   Type-check your test files using the Subtyping Checker
-  (\chapterpageref{subtyping-checker}).
+  (\chapterpageref{subtyping-checker}), using a command like
+
+\begin{small}
+\begin{Verbatim}
+javacheck \
+  -processor org.checkerframework.common.subtyping.SubtypingChecker \
+  -Aquals=org.checkerframework.checker.mycheckername.qual.MyTopQual,org.checkerframework.checker.mycheckername.qual.MyBottomQual \
+  TestHierarchy.java
+\end{Verbatim}
+\end{small}
+
 
 \item
 \label{creating-tips-implement-checker}
@@ -301,26 +322,49 @@ Here is a good way to proceed.
   javac -processor mypackage.MyChecker File1.java File2.java ...
 \end{Verbatim}
 
+  If the default qualifier is not the top qualifier, you may see \<warning:
+  (inconsistent.constructor.type)>.  If the checker should never issue such
+  an error (because a newly-constructed object can be correctly viewed as
+  any type at all), then copy \<TaintingVisitor.java> into your checker,
+  changing ``Tainting''.
+
 \item
 \label{creating-tips-test-infrastructure}
-  Test infrastructure.
+  Create test infrastructure.
   If your checker source code is in a clone of the Checker Framework
   repository, integrate your checker with the Checker Framework's Gradle
   targets for testing (Section~\ref{creating-testing-framework}).  This
   will make it much more convenient to run tests, and to ensure that they
   are passing, as your work proceeds.
 
+  If there are errors in the ``all-systems'' tests, don't worry about them
+  until after you have annotated the JDK\@.  However, specifying
+  \<@RelevantJavaTypes> (Section~\ref{creating-relevant-java-types}) may
+  eliminate some of those errors, especially if the default qualifier is
+  not the top qualifier.
+
 \item
   Annotate parts of the JDK, if relevant
   (Section~\ref{creating-a-checker-annotated-jdk}).
+  You will clone the \href{https://github.com/typetools/jdk}{Checker
+  Framework JDK}, naming it \<jdk> in a sibling directory of
+  \<checker-framework> (that is, they have the same parent).
+  Most changes will consist of adding an \<import> statement, plus uses of
+  qualifiers, in Java files under \<src/java.base/share/classes/>.
+  Also follow the instructions in section ``Qualifier definitions'' of file
+  \<README.md>.
 
   Write test cases for a few of the annotated JDK methods to ensure
   that the annotations are being properly read by your checker.
 
+  If there are errors in the Checker Framework's ``all-systems'' tests, you can
+  suppress them if they are expected. See \<framework/tests/all-systems/README>
+  for more information.
+
 \item
   Implement type rules, if any (Section~\ref{creating-extending-visitor}).
-  (Some type systems need JDK annotations but don't have any additional
-  type rules.)
+  Some type systems need JDK annotations but don't have any additional
+  type rules.
 
   Before implementing type rules (or any other code in your type-checker),
   read the Javadoc to familiarize yourself with the utility routines in the
@@ -348,6 +392,7 @@ Here is a good way to proceed.
 
 \item
   Implement type introduction rules, if any (Section~\ref{creating-type-introduction}).
+  Some type systems need JDK annotations but don't have any type introduction rules.
 
   Test your type introduction rules.
   For example, if your type system sets the qualifier for manifest literal
@@ -365,6 +410,8 @@ Here is a good way to proceed.
 \item
   Optionally, implement dataflow refinement rules
   (Section~\ref{creating-dataflow}).
+  Dataflow refinement rules are only possible for a type system that
+  supports a run-time test (Section~\ref{type-refinement-runtime-tests}).
 
   Test them if you wrote any.
   For instance, if after an arithmetic comparison, your type system infers
@@ -583,7 +630,7 @@ hierarchy.
   import java.lang.annotation.Target;
   import org.checkerframework.framework.qual.PolymorphicQualifier;
 
-  @PolymorphicQualifier
+  @PolymorphicQualifier(Nullable.class)
   @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
   public @interface PolyNull {}
 \end{Verbatim}
@@ -724,28 +771,19 @@ qualifier file.  For instance, \code{int value() default 0;} would make
 \code{value} default to zero. Alternatively, the procedural method
 described above can be used.
 
-The default qualifier applies to most, but not all, unannotated types, Section~\ref{climb-to-top}
-other defaulting rules are automatically added to every checker. Also, Section~\ref{defaults}
+The default qualifier applies to most, but not all, unannotated types.
+Section~\ref{climb-to-top} describes
+other defaulting rules that are automatically added to every checker.
+Also, Section~\ref{defaults}
 describes other meta-annotations used to specify default annotations.
+
 
 \subsectionAndLabel{Relevant Java types}{creating-relevant-java-types}
 
 Sometimes, a checker is only relevant to certain Java types.
 The \refqualclass{framework/qual}{RelevantJavaTypes}
 annotation on the checker class indicates that its qualifiers may only be
-written on those types and no others.  All irrelevant types are defaulted to
-the top annotation and this annotation cannot be changed.
-
-If a type is relevant, so are all its supertypes including Object.
-The reason for this is to prevent qualifiers from being lost via an
-assignment to a supertype.  For example, in this code, \<x> and \<z> have
-the same type qualifiers if \<@SomeAnn> is relevant to \<MyClass>:
-
-\begin{Verbatim}
-@SomeAnn MyClass x = ...;
-Object y = x;
-MyClass z = (MyClass) y;
-\end{Verbatim}
+written on those types, their subtypes, and their supertypes.
 
 As an example of relevant types, the \ahrefloc{formatter-checker}{Format
 String Checker} is relevant only to \<CharSequence> and its subtypes such
@@ -756,15 +794,22 @@ As another example, the Index Checker and the Signedness Checker are only
 relevant to integral numeric types.  You cannot write
 \refqualclass{checker/index/qual}{Positive} on a \<List> or a \<float>.
 
-A checker may change the default, and it may differ from type to type.  For
+If a user writes an annotation on an irrelevant type, the Checker Framework
+issues an \<anno.on.irrelevant> error.
+
+Irrelevant types are ordinarily defaulted to the top annotation.
+A checker designer may change the default, and it may differ from type to type.  For
 example, the Signedness Checker treats all types that are not numeric
 integral types as \refqualclass{checker/signedness/qual}{Signed}, but
 treats the \<char> and \<Character> types as
 \refqualclass{checker/signedness/qual}{Unsigned}.
 
-Every annotation that is applicable to a non-primitive type is also
-applicable to all supertypes including \<Object>.  That ensures that in
-code like this:
+
+\subsubsectionAndLabel{Relevant types and supertypes}{creating-relevant-java-types-supertypes}
+
+If a type is relevant, so are all its supertypes including \<Object>.
+This prevents qualifiers from being lost via an assignment to a supertype.
+For example, in this code:
 
 \begin{Verbatim}
 @SomeAnn MyClass x = ...;
@@ -1940,9 +1985,9 @@ uses the JDK\@.  You have two options:
   \url{https://github.com/typetools/jdk}.
 
   If your checker is written in a fork of
-  \url{https://github.com/typetools/jdk},
-  then use the same fork name (GitHub organization) and branch name;
-  this is necessary so that the CI jobs use the right annotated JDK.
+  \url{https://github.com/typetools/jdk}, then the checker and the JDK must
+  use the same fork name (GitHub organization) and branch name; this is
+  necessary so that the CI jobs use the right annotated JDK.
 
   Clone the JDK and the Checker Framework in the same place; that is, your
   working copy of the JDK (a \<jdk> directory) should be a sibling of your
@@ -1960,6 +2005,11 @@ uses the JDK\@.  You have two options:
     If you are only annotating fields and method signatures (but not
     ensuring that method bodies type-check), then you don't need to suppress
     warnings, because the JDK is not type-checked.
+  \item
+    Double-check your work.
+    If you forget to import an annotation, or you misspell it in the
+    \<import> statement or at some use, it will be \emph{silently ignored},
+    which is frustrating.
   \end{itemize}
 
 \item
@@ -2056,7 +2106,7 @@ This prevents the message from being elevated to an error by \code{-Werror}.
 \item \code{-AdumpOnErrors}: Outputs a stack trace when reporting errors or warnings.
 
 \item \code{-AexceptionLineSeparator}: Controls what line separator is used when printing exceptions.
-This is useful when tools, such as Maven, only display the first line of exception messsages. For
+This is useful when tools, such as Maven, only display the first line of exception messages. For
 example, \code{-AexceptionLineSeparator="    "}.
 
 \end{itemize}
@@ -2680,7 +2730,7 @@ without warnings or errors.
 % LocalWords:  QualifierHierarchy QualifierRoot createQualifierHierarchy util
 % LocalWords:  createTypeHierarchy ImplicitFor treeClasses TypeMirror Anno
 % LocalWords:  LiteralTree ExpressionTree typeClasses addComputedTypeAnnotations nullable
-% LocalWords:  createSupportedTypeQualifiers FooChecker nullness KeyFor
+% LocalWords:  createSupportedTypeQualifiers FooChecker nullness KeyFor md
 % LocalWords:  FooVisitor FooAnnotatedTypeFactory basicstyle InterningVisitor
 % LocalWords:  InterningAnnotatedTypeFactory QualifierDefaults TypeKind getKind
 % LocalWords:  setAbsoluteDefaults PolymorphicQualifier TreeVisitor subnodes
@@ -2743,4 +2793,10 @@ without warnings or errors.
 % LocalWords:  UnionType subpackage distributable DefaultFor FormatMethod
 % LocalWords:  AnoWarnMemoryConstraints JCDiagnostic DiagnosticPosition
 % LocalWords:  LineMap SomeAnn getTypeFactoryOfSubcheckerOrNull traceback
-% LocalWords:  pids jstack ctrl
+% LocalWords:  pids jstack ctrl mycheckername TaintingVisitor FBCBottom
+% LocalWords:  getSupportedCheckers SignednessChecker ValueChecker isRegex
+% LocalWords:  getOptions OptionalChecker treeannotators visitBinary
+% LocalWords:  visitCompoundAssignment UpperBoundAnnotatedTypeFactory
+% LocalWords:  RegexAnnotatedTypeFactory UnitsAnnotatedTypeFactory
+% LocalWords:  sideEffectsUnrefineAliases postInit AexceptionLineSeparator
+% LocalWords:  DOTCFGVisualizer StringCFGVisualizer

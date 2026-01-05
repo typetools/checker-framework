@@ -296,6 +296,18 @@ public class AnnotationFileParser {
 
     /** Maps fully qualified record name to information in the stub file. */
     public final Map<String, RecordStub> records = new HashMap<>();
+
+    @Override
+    public String toString() {
+      return String.join(
+          System.lineSeparator() + "  ",
+          "AnnotationFileAnnotations{",
+          "atypes=" + atypes.toString(),
+          "declAnnos=" + declAnnos.toString(),
+          "fakeOverrides=" + fakeOverrides.toString(),
+          "records=" + records.toString(),
+          "}");
+    }
   }
 
   /** Information about a record from a stub file. */
@@ -702,7 +714,7 @@ public class AnnotationFileParser {
   }
 
   /**
-   * Parse a stub file that is a part of the annotated JDK and side-effects the {@code stubAnnos}
+   * Parses a stub file that is a part of the annotated JDK and side-effects the {@code stubAnnos}
    * argument.
    *
    * @param filename name of stub file, used only for diagnostic messages
@@ -731,7 +743,7 @@ public class AnnotationFileParser {
   }
 
   /**
-   * Delegate to the Stub Parser to parse the annotation file to an AST, and save it in {@link
+   * Delegate to the Stub Parser to parse the annotation file to an AST, and save it in field {@link
    * #stubUnit}. Also sets {@link #allAnnotations}. Does not copy annotations out of {@link
    * #stubUnit}; that is done by the {@code process*} methods.
    *

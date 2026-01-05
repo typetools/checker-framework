@@ -20,7 +20,7 @@ public class LocalMultipleManyMethods {
   public void foo(Object[] o) {
     List myList = null;
 
-    if (myList.size() != 0) {
+    if (myList.size() != 0) { // equivalent to !myList.isEmpty()
       Set localVar = null;
       myList.add(localVar);
     } else {

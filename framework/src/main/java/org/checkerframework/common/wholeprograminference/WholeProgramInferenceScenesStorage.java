@@ -53,8 +53,8 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.UserError;
-import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.IPair;
+import org.plumelib.util.MapsP;
 
 /**
  * This class stores annotations using scenelib objects.
@@ -976,7 +976,7 @@ public class WholeProgramInferenceScenesStorage
       IPair<String, TypeUseLocation> key = IPair.of(firstKey, defLoc);
       Set<String> annosIgnored = annosToIgnore.get(key);
       if (annosIgnored == null) {
-        annosIgnored = new HashSet<>(CollectionsPlume.mapCapacity(1));
+        annosIgnored = new HashSet<>(MapsP.mapCapacity(1));
         annosToIgnore.put(key, annosIgnored);
       }
       annosIgnored.add(anno.def().toString());

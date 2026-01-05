@@ -1,7 +1,7 @@
+# Dependencies for developing the Checker Framework.
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt -qqy update \
-&& apt -y install \
-  asciidoctor \
+&& apt -qqy install \
   autoconf \
   devscripts \
   dia \
@@ -21,18 +21,21 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   texlive-fonts-recommended \
   texlive-latex-base \
   texlive-latex-extra \
-  texlive-latex-recommended
+  texlive-latex-recommended \
+  yamllint
 
-# `pipx ensurepath` only adds to the path in newly-started shells.
-# BUT, setting the path for the current user is not enough.
-# Azure creates a new user and runs jobs as it.
-# So, install into /usr/local/bin which is already on every user's path.
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt -qqy update \
-&& apt -y install \
-  pipx \
-&& PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install black \
-&& PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install flake8 \
-&& PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install html5validator \
-&& PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install mypy \
-&& PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install ruff
+&& apt -qqy install \
+  npm
+RUN export DEBIAN_FRONTEND=noninteractive \
+&& npm install markdownlint-cli2 --global
+
+# Install uv (manages Python dependencies).
+RUN export DEBIAN_FRONTEND=noninteractive \
+&& wget -qO- https://astral.sh/uv/install.sh | sh \
+&& chmod +rx /root \
+&& find /root/.local -exec chmod +r {} \; \
+&& find /root/.local -type d -exec chmod +x {} \; \
+&& find /root/.local/bin -type f -exec chmod +x {} \;
+ENV PATH="/root/.local/bin:$PATH"

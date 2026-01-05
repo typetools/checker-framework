@@ -49,6 +49,7 @@ job_dependences_not_in_canary(canary_version, inference_part1)
 job_dependences_not_in_canary(canary_version, inference_part2)
 job_dependences_not_in_canary(canary_version, daikon_part1)
 job_dependences_not_in_canary(canary_version, daikon_part2)
+job_dependences_not_in_canary(canary_version, daikon_part3)
 job_dependences_not_in_canary(canary_version, guava)
 job_dependences_not_in_canary(canary_version, plume_lib)
 

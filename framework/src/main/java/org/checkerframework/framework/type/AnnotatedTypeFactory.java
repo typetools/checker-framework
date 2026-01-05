@@ -146,6 +146,7 @@ import org.checkerframework.javacutil.trees.DetachedVarSymbol;
 import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.IPair;
 import org.plumelib.util.ImmutableTypes;
+import org.plumelib.util.MapsP;
 import org.plumelib.util.StringsPlume;
 import org.plumelib.util.SystemPlume;
 
@@ -596,14 +597,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     this.shouldCache = !checker.hasOption("atfDoNotCache");
     if (shouldCache) {
       int cacheSize = getCacheSize();
-      this.classAndMethodTreeCache = CollectionsPlume.createLruCache(cacheSize);
-      this.fromExpressionTreeCache = CollectionsPlume.createLruCache(cacheSize);
-      this.fromMemberTreeCache = CollectionsPlume.createLruCache(cacheSize);
-      this.fromTypeTreeCache = CollectionsPlume.createLruCache(cacheSize);
-      this.elementCache = CollectionsPlume.createLruCache(cacheSize);
-      this.elementToTreeCache = CollectionsPlume.createLruCache(cacheSize);
+      this.classAndMethodTreeCache = MapsP.createLruCache(cacheSize);
+      this.fromExpressionTreeCache = MapsP.createLruCache(cacheSize);
+      this.fromMemberTreeCache = MapsP.createLruCache(cacheSize);
+      this.fromTypeTreeCache = MapsP.createLruCache(cacheSize);
+      this.elementCache = MapsP.createLruCache(cacheSize);
+      this.elementToTreeCache = MapsP.createLruCache(cacheSize);
       this.annotationClassNames =
-          Collections.synchronizedMap(CollectionsPlume.createLruCache(ANNOTATION_CACHE_SIZE));
+          Collections.synchronizedMap(MapsP.createLruCache(ANNOTATION_CACHE_SIZE));
     } else {
       this.classAndMethodTreeCache = null;
       this.fromExpressionTreeCache = null;
@@ -1345,9 +1346,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       return DEFAULT_CACHE_SIZE;
     }
     try {
-      return Integer.valueOf(option);
+      int parsed = Integer.parseInt(option);
+      if (parsed <= 0) {
+        throw new UserError("atfCacheSize must be a positive integer: " + option);
+      }
+      return parsed;
     } catch (NumberFormatException ex) {
-      throw new UserError("atfCacheSize was not an integer: " + option);
+      throw new UserError("atfCacheSize must be a positive integer: " + option);
     }
   }
 
