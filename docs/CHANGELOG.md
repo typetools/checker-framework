@@ -5,8 +5,6 @@
 
 ## Version 3.53.0 (2026-01-05)
 
-### User-visible changes
-
 ### Implementation details
 
 In `AbstractAnalysis`, added `getStoreBefore(Tree)`, `getStoreBefore(Node)`,
@@ -15,6 +13,8 @@ In `AbstractAnalysis`, added `getStoreBefore(Tree)`, `getStoreBefore(Node)`,
 In `GenericAnnotatedTypeFactory`, removed `getStoreBefore(Set<Node>)` and `getStoreAfter(Set<Node>)`.
 
 ### Closed issues
+
+\#2358.
 
 ## Version 3.52.1 (2025-12-02)
 
