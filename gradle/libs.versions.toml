@@ -54,7 +54,7 @@ aws-java-sdk-ec2 = { module = "com.amazonaws:aws-java-sdk-ec2" }
 
 aws-java-sdk-kms = { module = "com.amazonaws:aws-java-sdk-kms" }
 
-aws-java-sdk-bom = "com.amazonaws:aws-java-sdk-bom:1.12.794"
+aws-java-sdk-bom = "com.amazonaws:aws-java-sdk-bom:1.12.797"
 
 javax-servlet-api = "javax.servlet:javax.servlet-api:4.0.1"
 
