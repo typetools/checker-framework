@@ -28,22 +28,14 @@ import java.util.List;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
- * A visitor that visits two javac ASTs simultaneously that almost match.
+ * A visitor that traverses two javac ASTs simultaneously that are expected to represent the same
+ * source file.
  *
- * <p>This class is the javac-tree analogue of DoubleJavaParserVisitor. It is used when two javac
- * trees represent the same source file, except for differences that are permitted between a Java
- * file and its corresponding ajava file.
+ * <p>The two trees should be structurally identical, except for differences in annotations between
+ * the Java file and its corresponding {@code .ajava} file.
  *
- * <p>The visitor walks both trees in lockstep. For each matched pair of trees, the visitor invokes
- * defaultPairAction. Subclasses override defaultPairAction to perform comparisons or other
- * processing.
- *
- * <p>Unlike JavaParser ASTs, javac trees may contain additional wrapper nodes such as parentheses
- * or expression statements. To keep traversal aligned, this class normalizes certain wrapper nodes
- * before dispatching to visit methods.
- *
- * <p>To use this class, extend it, override defaultPairAction, and begin traversal by calling scan
- * on the two root trees.
+ * <p>To use this class, extend it and override {@link #defaultPairAction(Tree, Tree)}. This method
+ * is called on each matched pair of nodes.
  */
 public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
 
