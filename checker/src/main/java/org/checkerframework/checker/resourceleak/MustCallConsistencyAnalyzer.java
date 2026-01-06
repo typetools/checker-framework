@@ -1699,7 +1699,8 @@ public class MustCallConsistencyAnalyzer {
       if (member instanceof VariableTree) {
         VariableTree decl = (VariableTree) member;
         VariableElement declElement = TreeUtils.elementFromDeclaration(decl);
-        if (field == declElement
+        if (declElement != null
+            && field.equals(declElement)
             && decl.getInitializer() != null
             && decl.getInitializer().getKind() != Tree.Kind.NULL_LITERAL) {
           return false;
@@ -1721,7 +1722,7 @@ public class MustCallConsistencyAnalyzer {
               public Void visitAssignment(AssignmentTree assignmentTree, Void unused) {
                 ExpressionTree lhs = assignmentTree.getVariable();
                 Element lhsElement = TreeUtils.elementFromTree(lhs);
-                if (field == lhsElement) {
+                if (lhsElement != null && field.equals(lhsElement)) {
                   isInitialized.set(true);
                   return null;
                 }
