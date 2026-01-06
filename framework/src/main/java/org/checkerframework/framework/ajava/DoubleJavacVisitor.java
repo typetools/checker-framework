@@ -99,9 +99,6 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
               this.getClass().getCanonicalName(), tree1, tree2));
     }
 
-    // If we later discover javac introduces wrappers that desynchronize traversal (e.g.
-    // parentheses),
-    // we can re-introduce a normalization step here.
     if (tree1.getKind() != tree2.getKind()) {
       throw new Error(
           String.format(
@@ -474,10 +471,6 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
 
   /**
    * Visits an expression statement and scans its expression.
-   *
-   * <p>This method may be redundant when normalize unwraps expression statements, but keeping it is
-   * harmless and makes traversal robust when callers invoke scan directly on an
-   * ExpressionStatementTree.
    *
    * @param tree1 expression statement from the first AST
    * @param tree2 expression statement from the second AST
