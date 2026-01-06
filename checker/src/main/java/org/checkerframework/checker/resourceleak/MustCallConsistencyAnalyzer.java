@@ -54,6 +54,7 @@ import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.checkerframework.checker.mustcall.qual.MustCallAlias;
 import org.checkerframework.checker.mustcall.qual.NotOwning;
 import org.checkerframework.checker.mustcall.qual.Owning;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsAnalysis;
 import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsAnnotatedTypeFactory;
@@ -1524,17 +1525,20 @@ public class MustCallConsistencyAnalyzer {
     } else if (TreeUtils.isConstructor(enclosingMethodTree)) {
       // If this assignment the first write to the private field in this constructor,
       // then do not throw non-final owning field reassignment error.
-      Element enclosingClassElement =
-          TreeUtils.elementFromDeclaration(enclosingMethodTree).getEnclosingElement();
-      if (ElementUtils.isTypeElement(enclosingClassElement)) {
-        Element receiverElement = TypesUtils.getTypeElement(receiver.getType());
-        if (Objects.equals(enclosingClassElement, receiverElement)) {
-          VariableElement lhsElement = lhs.getElement();
-          if (lhsElement.getModifiers().contains(Modifier.PRIVATE)
-              && isFirstWriteToFieldInConstructor(
-                  node.getTree(), lhsElement, enclosingMethodTree)) {
-            // Safe; first assignment in constructor.
-            return;
+      ExecutableElement elementFromDeclaration =
+          TreeUtils.elementFromDeclaration(enclosingMethodTree);
+      if (elementFromDeclaration != null) {
+        Element enclosingClassElement = elementFromDeclaration.getEnclosingElement();
+        if (ElementUtils.isTypeElement(enclosingClassElement)) {
+          Element receiverElement = TypesUtils.getTypeElement(receiver.getType());
+          if (Objects.equals(enclosingClassElement, receiverElement)) {
+            VariableElement lhsElement = lhs.getElement();
+            if (lhsElement.getModifiers().contains(Modifier.PRIVATE)
+                && isFirstWriteToFieldInConstructor(
+                    node.getTree(), lhsElement, enclosingMethodTree)) {
+              // Safe; first assignment in constructor.
+              return;
+            }
           }
         }
       }
@@ -1674,15 +1678,22 @@ public class MustCallConsistencyAnalyzer {
    *       super(...)}).
    * </ul>
    *
-   * @param assignment the actual assignment tree being analyzed, which is a statement in
+   * @param assignment the actual assignment tree being analyzed, which is a statement in the body
+   *     of {@code constructor}
    * @param field the field being assigned
-   * @param constructor the constructor where the assignment appears {@code constructor}
+   * @param constructor the constructor where the assignment appears
    * @return true if this assignment is the first write during construction
    */
   private boolean isFirstWriteToFieldInConstructor(
-      @FindDistinct Tree assignment, VariableElement field, MethodTree constructor) {
+      @FindDistinct Tree assignment, @NonNull VariableElement field, MethodTree constructor) {
     TreePath constructorPath = cmAtf.getPath(constructor);
+    if (constructorPath == null) {
+      return false;
+    }
     ClassTree classTree = TreePathUtil.enclosingClass(constructorPath);
+    if (classTree == null) {
+      return false;
+    }
 
     for (Tree member : classTree.getMembers()) {
       // (1) Disallow non-null inline initializer on the same field declaration.

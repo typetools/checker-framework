@@ -22,6 +22,7 @@ class MethodCallBeforeAssignment {
   }
 
   public MethodCallBeforeAssignment(int call_method_on_rhs_of_assignment) throws Exception {
+    // Method call on RHS of first assignment in ctor — distinct path under test
     s = helper();
   }
 
