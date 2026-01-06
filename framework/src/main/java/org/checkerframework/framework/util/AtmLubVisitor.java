@@ -340,13 +340,28 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
     TypeMirror typeMirror2 = type2.getUnderlyingType();
 
     for (AnnotationMirror lower1 : type1LowerBoundAnnos) {
+      if (lower1 == null) {
+        // Defensive: AnnotationMirrorSet may (incorrectly) contain null entries. Skip them to
+        // avoid passing null to QualifierHierarchy/AnnotationUtils which expect non-null
+        // AnnotationMirrors.
+        continue;
+      }
       AnnotationMirror top = qualHierarchy.getTopAnnotation(lower1);
 
       // Can't just call isSubtype because it will return false if bounds have
       // different annotations on component types
       AnnotationMirror lower2 = qualHierarchy.findAnnotationInHierarchy(type2LowerBoundAnnos, top);
+      if (lower2 == null) {
+        // No matching annotation in the same hierarchy for type2; skip this hierarchy.
+        continue;
+      }
       AnnotationMirror upper1 = type1.getEffectiveAnnotationInHierarchy(lower1);
       AnnotationMirror upper2 = type2.getEffectiveAnnotationInHierarchy(lower1);
+      if (upper1 == null || upper2 == null) {
+        // If effective annotations are missing for either side, skip this hierarchy to avoid
+        // passing null into QualifierHierarchy methods which assume non-null AnnotationMirrors.
+        continue;
+      }
 
       if (qualHierarchy.isSubtypeShallow(upper2, typeMirror2, upper1, typeMirror1)
           && qualHierarchy.isSubtypeShallow(upper1, typeMirror1, upper2, typeMirror2)
