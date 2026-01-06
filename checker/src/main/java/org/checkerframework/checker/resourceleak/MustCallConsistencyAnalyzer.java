@@ -54,7 +54,6 @@ import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.checkerframework.checker.mustcall.qual.MustCallAlias;
 import org.checkerframework.checker.mustcall.qual.NotOwning;
 import org.checkerframework.checker.mustcall.qual.Owning;
-import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsAnalysis;
 import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsAnnotatedTypeFactory;
@@ -1685,7 +1684,7 @@ public class MustCallConsistencyAnalyzer {
    * @return true if this assignment is the first write during construction
    */
   private boolean isFirstWriteToFieldInConstructor(
-      @FindDistinct Tree assignment, @NonNull VariableElement field, MethodTree constructor) {
+      @FindDistinct Tree assignment, VariableElement field, MethodTree constructor) {
     TreePath constructorPath = cmAtf.getPath(constructor);
     if (constructorPath == null) {
       return false;
@@ -1700,7 +1699,7 @@ public class MustCallConsistencyAnalyzer {
       if (member instanceof VariableTree) {
         VariableTree decl = (VariableTree) member;
         VariableElement declElement = TreeUtils.elementFromDeclaration(decl);
-        if (field.equals(declElement)
+        if (field == declElement
             && decl.getInitializer() != null
             && decl.getInitializer().getKind() != Tree.Kind.NULL_LITERAL) {
           return false;
@@ -1722,7 +1721,7 @@ public class MustCallConsistencyAnalyzer {
               public Void visitAssignment(AssignmentTree assignmentTree, Void unused) {
                 ExpressionTree lhs = assignmentTree.getVariable();
                 Element lhsElement = TreeUtils.elementFromTree(lhs);
-                if (field.equals(lhsElement)) {
+                if (field == lhsElement) {
                   isInitialized.set(true);
                   return null;
                 }
@@ -2735,7 +2734,8 @@ public class MustCallConsistencyAnalyzer {
    * <p>This performs a single AST traversal in source order and is deliberately conservative: it
    * does not reason about control flow or path feasibility.
    */
-  private static final class ConstructorFirstWriteScanner extends TreeScanner<Boolean, Void> {
+  private static final class ConstructorFirstWriteScanner
+      extends TreeScanner<@Nullable Boolean, Void> {
 
     /** The assignment under test within the constructor. */
     private final Tree assignment;
@@ -2773,7 +2773,7 @@ public class MustCallConsistencyAnalyzer {
      *     assignment or a method call with side-effect is found, or {@code null} if neither is
      *     encountered
      */
-    static Boolean scan(
+    static @Nullable Boolean scan(
         StatementTree root,
         Tree assignment,
         VariableElement field,
@@ -2815,7 +2815,7 @@ public class MustCallConsistencyAnalyzer {
     }
 
     @Override
-    public Boolean reduce(Boolean r1, Boolean r2) {
+    public @Nullable Boolean reduce(Boolean r1, Boolean r2) {
       // Return the first decisive result. FALSE dominates (unsafe earlier write/call), then TRUE
       // (reached target safely), null means inconclusive so far.
       if (Boolean.FALSE.equals(r1) || Boolean.FALSE.equals(r2)) {
