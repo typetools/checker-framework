@@ -7,8 +7,8 @@ from __future__ import annotations
 
 import datetime
 import os
-import shutil
 import sys
+from distutils.dir_util import copy_tree
 from pathlib import Path
 
 from release_utils import (  # ty: ignore # TODO: limitation in ty
@@ -216,7 +216,7 @@ def build_checker_framework_release(
 
     dev_website_relative_dir = Path(DEV_SITE_DIR) / "releases" / version
     print(f"Copying from: {dev_website_relative_dir}\n  to: {DEV_SITE_DIR}")
-    shutil.copytree(str(dev_website_relative_dir), str(DEV_SITE_DIR))
+    copy_tree(str(dev_website_relative_dir), str(DEV_SITE_DIR))
 
 
 def commit_to_interm_projects(cf_version: str) -> None:
