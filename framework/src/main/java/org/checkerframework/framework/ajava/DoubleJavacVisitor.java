@@ -26,6 +26,7 @@ import com.sun.source.tree.WildcardTree;
 import com.sun.source.util.SimpleTreeVisitor;
 import java.util.List;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.javacutil.BugInCF;
 
 /**
  * A visitor that traverses two javac ASTs simultaneously that are expected to represent the same
@@ -93,14 +94,14 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
     }
 
     if (tree1 == null || tree2 == null) {
-      throw new Error(
+      throw new BugInCF(
           String.format(
               "%s.scan: one tree is null: tree1=%s tree2=%s",
               this.getClass().getCanonicalName(), tree1, tree2));
     }
 
     if (tree1.getKind() != tree2.getKind()) {
-      throw new Error(
+      throw new BugInCF(
           String.format(
               "%s.scan: mismatched kinds: %s vs %s",
               this.getClass().getCanonicalName(), tree1.getKind(), tree2.getKind()));
@@ -124,7 +125,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
       return;
     }
     if (tree1 == null || tree2 == null) {
-      throw new Error(
+      throw new BugInCF(
           String.format(
               "%s.scanOpt: one tree is null: tree1=%s tree2=%s",
               this.getClass().getCanonicalName(), tree1, tree2));
@@ -156,7 +157,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
    */
   public final void scanList(List<? extends Tree> list1, List<? extends Tree> list2) {
     if (list1.size() != list2.size()) {
-      throw new Error(
+      throw new BugInCF(
           String.format(
               "%s.scanList(%s [size %d], %s [size %d])",
               this.getClass().getCanonicalName(), list1, list1.size(), list2, list2.size()));
