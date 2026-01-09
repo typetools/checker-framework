@@ -588,9 +588,6 @@ allprojects { currentProj ->
           // https://github.com/google/error-prone/issues/436
           "-Werror",
         ]
-        if (JavaVersion.current() == JavaVersion.VERSION_21) {
-          options.compilerArgs << "-XDaddTypeAnnotationsToSymbol=true"
-        }
       } else {
         options.errorprone.enabled = false
       }
