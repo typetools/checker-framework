@@ -718,45 +718,73 @@ You may need to log out and log back in for the setting to take effect.
 \item[Ubuntu]
   Run the following commands, which should be the same as those in
   \<checker/bin-devel/Dockerfile-ubuntu-jdk\emph{XX}-plus>, where \emph{XX}
-  is a JDK version such as 8, 11, 17, etc.:
+  is a JDK version such as 8, 11, 17, 21, 25, etc.:
 
 (This list should be the same as in
-\<checker/bin-devel/Dockerfile-ubuntu-jdk17-plus>; if your build fails
+\<checker/bin-devel/Dockerfile-ubuntu-jdk25-plus>; if your build fails
 because it is missing a package, try the commands there and report a bug
 in this manual.)
 
 % Keep this in sync with ../../checker/bin-devel/Dockerfile-ubuntu-jdk25-plus
+% ... but before diffing with that, diff with
+%   ../../checker/bin-devel/Dockerfile-contents-ubuntu-base.m4
+%   ../../checker/bin-devel/Dockerfile-contents-ubuntu-plus.m4
 
 \begin{Verbatim}
 sudo apt -qqy update
-sudo apt -qqy install locales \
-  openjdk-21-jdk
-export JAVA21_HOME=/usr/lib/jvm/java-21-openjdk-amd64
+# Dependencies for building and running the Checker Framework.
 sudo apt -qqy install \
-  ant cpp git jq jtreg7 libcurl3-gnutls \
-  make maven python3-requests python3-setuptools unzip wget \
-  autoconf devscripts dia graphviz hevea imagemagick junit latexmk \
-  librsvg2-bin libasound2-dev libcups2-dev libfontconfig1-dev \
+  ant \
+  cpp \
+  git \
+  jq \
+  jtreg7 \
+  libcurl3-gnutls \
+  make \
+  maven \
+  python3-requests \
+  python3-setuptools \
+  unzip \
+  wget
+# Dependencies for developing the Checker Framework.
+apt -qqy install \
+  autoconf \
+  devscripts \
+  dia \
+  graphviz \
+  hevea \
+  imagemagick \
+  junit \
+  latexmk \
+  librsvg2-bin \
+  libasound2-dev libcups2-dev libfontconfig1-dev \
   libx11-dev libxext-dev libxrender-dev libxrandr-dev libxtst-dev libxt-dev \
-  pdf2svg rsync shellcheck shfmt \
-  texlive-font-utils texlive-fonts-recommended \
-  texlive-latex-base texlive-latex-extra texlive-latex-recommended
-sudo apt -qqy install \
-  pipx
-pipx install black
-pipx install flake8
-pipx install html5validator
-pipx install mypy
-pipx install ruff
-pipx ensurepath
+  pdf2svg \
+  rsync \
+  shellcheck \
+  shfmt \
+  texlive-font-utils \
+  texlive-fonts-recommended \
+  texlive-latex-base \
+  texlive-latex-extra \
+  texlive-latex-recommended
+
+# Install uv (manages Python dependencies).
+curl -LsSf https://astral.sh/uv/install.sh | sh
+export PATH=$USER/.local/bin:$PATH
+
+# Install markdownlint.
 sudo apt -y install \
   npm
-npm install markdownlint-cli2 --global
-sudo apt -y install \
+sudo npm install markdownlint-cli2 --global
+
+# Install the JDK.
+sudo apt -qqy install \
   openjdk-25-jdk \
-&& update-java-alternatives -s java-1.25.0-openjdk-amd64
+&& update-java-alternatives --set java-1.25.0-openjdk-amd64
 export JAVA25_HOME=/usr/lib/jvm/java-25-openjdk-amd64
 \end{Verbatim}
+
 
   You may have to answer questions about which time zone your computer is in.
 

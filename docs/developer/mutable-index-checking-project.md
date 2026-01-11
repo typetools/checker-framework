@@ -61,11 +61,11 @@ Here are some steps toward invalidating fewer flow facts.
    `T` and variable `b` of type `U`. Then the Index Checker needs to
    invalidate:
 
-    * qualifiers on all expressions of type `T` or `U` (and their supertypes
-      and subtypes). The Index Checker should retain qualifiers on types that
-      are unrelated to `T` and `U`.
-    * dependent type qualifiers that mention any expression of type `T` or
-      `U`.
+   * qualifiers on all expressions of type `T` or `U` (and their supertypes
+     and subtypes). The Index Checker should retain qualifiers on types that
+     are unrelated to `T` and `U`.
+   * dependent type qualifiers that mention any expression of type `T` or
+     `U`.
 
 4. Devise and implement a new annotation (e.g., `@BackedBy`) that connects
    the length of a data structure to the length of its backing data

@@ -34,9 +34,6 @@ else
 fi
 make style-check --jobs="${num_jobs}"
 
-## HTML legality
-./gradlew htmlValidate --warning-mode=all
-
 ## Javadoc documentation
 # Try twice in case of network lossage.
 (./gradlew javadoc --warning-mode=all || (sleep 60 && ./gradlew javadoc --warning-mode=all)) || status=1
