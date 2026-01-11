@@ -732,7 +732,7 @@ void m(@OwningCollection Iterable<Socket> sockets) {
     try {
       s.close();
     } catch (Exception e) {
-      System.out.println(e.printStackTrace());
+      e.printStackTrace();
     }
   }
   // `sockets` is @OwningCollectionWithoutObligation again
