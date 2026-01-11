@@ -378,32 +378,54 @@ Here are two concerns you may have when partially annotating a library:
 
 \begin{sloppypar}
 When compiling a library that is not fully annotated, use command-line
-argument \<-AuseConservativeDefaultsForUncheckedCode=source,bytecode>.  This causes
-the checker to behave normally for classes with a relevant \<@AnnotatedFor>
-annotation.  For classes without \<@AnnotatedFor>, the checker uses
-conservative defaults
+argument \<-AuseConservativeDefaultsForUncheckedCode=source,bytecode>.
+This has the following effect.
+For classes with \<@AnnotatedFor> for the current checker,
+the checker applies defaults normally.
+For classes without \<@AnnotatedFor> for the current checker,
+the checker uses conservative defaults
 (see Section~\ref{defaults-classfile}) for any type use with no explicit
 user-written annotation, \emph{and} the checker issues no warnings.
 \end{sloppypar}
 
+For example, an unannotated method
+
+\begin{Verbatim}
+  String concatenate(String p1, String p2)
+\end{Verbatim}
+
+\noindent
+in a class \emph{with} a relevant \<@AnnotatedFor> is defaulted normally.
+
+In a class \emph{without} a relevant \<@AnnotatedFor>, it is interpreted as
+
+\begin{Verbatim}
+  @MyTopQualifier String concatenate(@MyBottomQualifier String p1, @MyBottomQualifier String p2)
+\end{Verbatim}
+
+\noindent
+where \<@MyTopQualifier> is the top qualifier in the hierarchy and
+\<@MyBottomQualifier> is the bottom qualifier in the hierarchy.
+These choices are conservative.  They are likely to cause many
+false-positive type-checking errors in client code, which will help you to
+know which library methods need annotations.  You can then write those
+library annotations.
+
 The \refqualclass{framework/qual}{AnnotatedFor} annotation, written on a
 class, indicates that the class has been annotated for certain type
-systems.  For example, \<@AnnotatedFor(\ttlcb"nullness", "regex"\ttrcb)> means that
+systems.
+You may write \<@AnnotatedFor> on a class that contains no explicit
+annotations from the given type system, if the defaulting rules already
+give appropriate qualifiers for every type in the class.
+
+For example, \<@AnnotatedFor(\ttlcb"nullness", "regex"\ttrcb)> means that
 the programmer has written annotations for the Nullness and Regular
-Expression type systems.  If one of those two type-checkers is run,
-the \<-AuseConservativeDefaultsForUncheckedCode=source,bytecode> command-line argument
-has no effect and this class is treated normally:
-unannotated types are defaulted using normal source-code
-defaults and type-checking warnings are issued.
-\refqualclass{framework/qual}{AnnotatedFor}'s arguments are any string that
-may be passed to the \<-processor> command-line argument:  the
-fully-qualified class name for the checker, or a shorthand for built-in
-checkers (see Section~\ref{shorthand-for-checkers}).
+Expression type systems.
+For any type system other than Nullness or Regex, that \<@AnnotatedFor>
+annotation has no effect --- the checker treats the class as
+unannotated for that type system.
 The argument to \refqualclass{framework/qual}{AnnotatedFor} is not an
 annotation name, but a checker name.
-Writing \<@AnnotatedFor> on a class doesn't necessarily mean that you wrote
-any annotations, but that you examined the source code and verified
-that all appropriate annotations are present.
 
 \begin{sloppypar}
 Whenever you compile a class using the Checker Framework, including when

@@ -3119,7 +3119,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       handleArtificialTree(lengthSelect);
       FieldAccessNode lengthAccessNode = new FieldAccessNode(lengthSelect, arrayNode1);
       lengthAccessNode.setInSource(false);
-      extendWithNode(lengthAccessNode);
+      extendWithNodeWithException(lengthAccessNode, nullPointerExceptionType);
 
       BinaryTree lessThan = treeBuilder.buildLessThan(indexUse1, lengthSelect);
       handleArtificialTree(lessThan);
@@ -3154,7 +3154,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       extendWithNode(arrayAccessNode);
       AssignmentNode arrayAccessAssignNode =
           translateAssignment(variable, new LocalVariableNode(variable), arrayAccessNode);
-      extendWithNodeWithException(arrayAccessNode, nullPointerExceptionType);
       // translateAssignment() scans variable and creates new nodes, so set the expression
       // there, too.
       Node arrayAccessAssignNodeExpr = arrayAccessAssignNode.getExpression();

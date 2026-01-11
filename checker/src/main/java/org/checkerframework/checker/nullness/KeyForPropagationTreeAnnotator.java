@@ -1,15 +1,22 @@
 package org.checkerframework.checker.nullness;
 
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.VariableTree;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.nullness.KeyForPropagator.PropagationDirection;
+import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -101,5 +108,96 @@ public class KeyForPropagationTreeAnnotator extends TreeAnnotator {
   public Void visitNewClass(NewClassTree tree, AnnotatedTypeMirror type) {
     keyForPropagator.propagateNewClassTree(tree, type, (KeyForAnnotatedTypeFactory) atypeFactory);
     return super.visitNewClass(tree, type);
+  }
+
+  /**
+   * When visiting {@code Map.keySet()} calls, merge the map key's {@code @KeyFor} into the returned
+   * Set element.
+   *
+   * <p>{@inheritDoc}
+   */
+  @Override
+  public Void visitMethodInvocation(MethodInvocationTree tree, AnnotatedTypeMirror type) {
+    if (isCallToKeyset(tree) && type.getKind() == TypeKind.DECLARED) {
+      AnnotatedDeclaredType keySetReturnType = (AnnotatedDeclaredType) type;
+
+      AnnotatedTypeMirror receiverType = atypeFactory.getReceiverType(tree);
+      if (receiverType != null) {
+        AnnotatedDeclaredType receiverDeclaredType = (AnnotatedDeclaredType) receiverType;
+        mergeKeyForFromMapReceiverIntoKeySetReturn(
+            receiverDeclaredType, keySetReturnType, (KeyForAnnotatedTypeFactory) atypeFactory);
+      }
+    }
+    return super.visitMethodInvocation(tree, type);
+  }
+
+  /**
+   * Merge {@code @KeyFor} annotations from a Map receiver's key type into a {@code keySet()} return
+   * type.
+   *
+   * @param mapReceiverType the annotated type of the Map receiver
+   * @param keySetReturnType the annotated type of the Set returned by {@code Map.keySet()}
+   * @param factory the {@link KeyForAnnotatedTypeFactory} used to create and merge annotations
+   */
+  private void mergeKeyForFromMapReceiverIntoKeySetReturn(
+      AnnotatedDeclaredType mapReceiverType,
+      AnnotatedDeclaredType keySetReturnType,
+      KeyForAnnotatedTypeFactory factory) {
+    // Get the Map's first type argument (the key type).
+    List<AnnotatedTypeMirror> mapTypeArgs = mapReceiverType.getTypeArguments();
+    if (mapTypeArgs.isEmpty()) {
+      return;
+    }
+    AnnotatedTypeMirror mapKeyType = mapTypeArgs.get(0);
+
+    // Get the Set's first type argument (the element type).
+    List<AnnotatedTypeMirror> setTypeArgs = keySetReturnType.getTypeArguments();
+    if (setTypeArgs.isEmpty()) {
+      return;
+    }
+    AnnotatedTypeMirror setElementType = setTypeArgs.get(0);
+
+    // Extract KeyFor annotation from the Map's key type.
+    AnnotationMirror mapKeyKeyFor = mapKeyType.getEffectiveAnnotation(KeyFor.class);
+    if (mapKeyKeyFor == null) {
+      return;
+    }
+
+    // Get the KeyFor values from the Map's key type.
+    List<String> mapKeyForValues =
+        AnnotationUtils.getElementValueArray(
+            mapKeyKeyFor, factory.keyForValueElement, String.class);
+
+    // Extract KeyFor annotation from the Set's element type.
+    AnnotationMirror setElementKeyFor = setElementType.getEffectiveAnnotation(KeyFor.class);
+
+    // Collect all KeyFor values.
+    Set<String> mergedKeyForValues = new LinkedHashSet<>(mapKeyForValues);
+
+    if (setElementKeyFor != null) {
+      mergedKeyForValues.addAll(
+          AnnotationUtils.getElementValueArray(
+              setElementKeyFor, factory.keyForValueElement, String.class));
+    }
+
+    // Create a new KeyFor annotation with merged values.
+    if (mergedKeyForValues.isEmpty()) {
+      return;
+    }
+    AnnotationMirror mergedKeyFor;
+    if (setElementKeyFor != null) {
+      // Use greatestLowerBoundQualifiers to merge the annotations.
+      mergedKeyFor =
+          factory
+              .getQualifierHierarchy()
+              .greatestLowerBoundQualifiers(mapKeyKeyFor, setElementKeyFor);
+    } else {
+      // If setElementKeyFor is null, just use the mapKeyKeyFor (but we still need to create
+      // a new annotation with the merged values in case there are additional values).
+      mergedKeyFor = factory.createKeyForAnnotationMirrorWithValue(mergedKeyForValues);
+    }
+    if (mergedKeyFor != null) {
+      setElementType.replaceAnnotation(mergedKeyFor);
+    }
   }
 }
