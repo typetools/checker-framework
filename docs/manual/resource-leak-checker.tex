@@ -957,49 +957,6 @@ If the enclosing class is not intended to take responsibility for the resource c
 \subsectionAndLabel{JDK Method Signatures}{resource-leak-collections-jdk-methods}
 [[TODO: Add a table with a number of collection/iterable methods and their collection ownership annotations]]
 
-
-% The Resource Leak Checker cannot verify code that stores a collection of
-% resources in a generic collection (e.g., \<java.util.List>) and then
-% resolves the obligations of each element of the collection at once (e.g.,
-% by iterating over the \<List>).  In the future, the checker will support
-% this.  The remainder of this section explains the implementation issues;
-% most users can skip it.
-
-% The first implementation issue is that \<@Owning> and \<@NotOwning> are
-% declaration annotations rather than type qualifiers, so they cannot be
-% written on type arguments. It is possible under the current design to have
-% an \code{@Owning List<Socket>}, but not a \code{List<@Owning Socket>}.
-% It would be better to make \<@Owning> a type annotation, but this is a
-% challenging design problem.
-
-% The second implementation issue is the defaulting rule for \<@MustCall> on
-% type variable upper bounds.  Currently, this default is \<@MustCall(\{\})>,
-% which prevents many false positives in code with type variables that makes
-% no use of resources --- an important design principle.
-% However, this defaulting rule does have an unfortunate consequence: it is
-% an error to write \code{List<Socket>} or any other type with a concrete
-% type argument where the type argument itself isn't \<@MustCall(\{\})>. A programmer who
-% needs to write such a type while using the Resource Leak Checker has a few
-% choices, all of which have some downsides:
-
-% \begin{itemize}
-% \item Write \code{List<? extends Socket>}. This rejects calls to \<add()>
-% or other methods that require an instance of the type variable, but it
-% preserves some of the behavior (e.g., calls to \<remove()> are permitted).
-% This is the best choice most of the time if the \<List> is not intended to
-% be owning.
-% \item Write \code{List<@MustCall Socket>}. This makes it an error to
-% add a Socket to the list, since the type of the Socket is
-% \<@MustCall("close")> but the list requires \<@MustCall()>.
-% \item Suppress one or more warnings.
-% \end{itemize}
-
-% The recommended way to use the Resource Leak Checker in this situation is
-% to rewrite the code to avoid a \<List> of owning resources. If rewriting is
-% not possible, the programmer will probably need to suppress a warning and
-% then verify the code using a method other than the Resource Leak Checker.
-
-
 \sectionAndLabel{Further reading}{resource-leak-checker-references}
 
 The paper ``Lightweight and Modular Resource Leak
