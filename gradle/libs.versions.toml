@@ -22,7 +22,7 @@ junit-junit = "4.13.2"
 #  * Temporarily comment out "-Werror" in build.gradle files.
 #  * Repeatedly run `./gradlew clean compileJava` and fix all errors.
 #  * Uncomment "-Werror".
-error-prone-core = "com.google.errorprone:error_prone_core:2.45.0"
+error-prone-core = "com.google.errorprone:error_prone_core:2.46.0"
 
 javac = "com.google.errorprone:javac:9+181-r4173-1"
 
