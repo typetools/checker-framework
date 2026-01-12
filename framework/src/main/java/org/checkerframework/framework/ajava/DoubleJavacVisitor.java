@@ -29,14 +29,12 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.BugInCF;
 
 /**
- * A visitor that traverses two javac ASTs simultaneously that are expected to represent the same
- * source file.
+ * A visitor that traverses two javac ASTs simultaneously. The two trees should be structurally
+ * identical.
  *
- * <p>The two trees should be structurally identical, except for differences in annotations between
- * the Java file and its corresponding {@code .ajava} file.
- *
- * <p>To use this class, extend it and override {@link #defaultPairAction(Tree, Tree)}. This method
- * is called on each matched pair of nodes.
+ * <p>To subclass this class, override {@link #defaultPairAction(Tree, Tree)} and override {@code
+ * visitXxx} methods for the tree kinds you care about and call scan, scanOpt, and scanList to
+ * continue traversal.
  */
 public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
 
@@ -59,8 +57,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
    * The fallback visitor method used when no specific visitXxx override exists for a tree kind.
    *
    * <p>This implementation calls defaultPairAction and does not automatically recurse into
-   * children. Subclasses are expected to override visitXxx methods for the tree kinds they care
-   * about and call scan, scanOpt, and scanList to continue traversal.
+   * children.
    *
    * @param tree1 the visited tree from the first AST
    * @param tree2 the corresponding tree from the second AST
