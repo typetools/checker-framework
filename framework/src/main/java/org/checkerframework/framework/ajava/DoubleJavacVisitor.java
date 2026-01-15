@@ -39,7 +39,7 @@ import org.checkerframework.javacutil.BugInCF;
 public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
 
   /** Create a DoubleJavacVisitor. */
-  public DoubleJavacVisitor() {}
+  protected DoubleJavacVisitor() {}
 
   /**
    * Default action performed on all matched pairs of trees.
