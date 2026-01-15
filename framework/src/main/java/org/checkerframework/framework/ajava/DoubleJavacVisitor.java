@@ -34,8 +34,7 @@ import org.checkerframework.javacutil.BugInCF;
  *
  * <p>To subclass this class, override {@link #defaultPairAction(Tree, Tree)}. Also perhaps override
  * {@code visitXyz} methods. Each {@code visitXyz} override should perform some computation and then
- * call {@link #scan}, {@link #scanOpt}, or {@link #scanList} on each field of its arguments to
- * continue traversal.
+ * call {@link #scan} or {@link #scanList} on each field of its arguments to continue traversal.
  *
  * <p>WARNING: This class behaves differently than its superclass {@link SimpleTreeVisitor}. In
  * {@link SimpleTreeVisitor}, the {@code visitXyz} methods by default do no recursion. In this
@@ -117,29 +116,6 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
   }
 
   /**
-   * Scans two trees that are optional children.
-   *
-   * <p>This helper is used at call sites where a child is permitted to be absent. If both trees are
-   * null, this method does nothing. If exactly one is null, this is treated as an error because it
-   * indicates the two trees are not aligned.
-   *
-   * @param tree1 the first tree, or null
-   * @param tree2 the second tree, or null
-   */
-  public final void scanOpt(@Nullable Tree tree1, @Nullable Tree tree2) {
-    if (tree1 == null && tree2 == null) {
-      return;
-    }
-    if (tree1 == null || tree2 == null) {
-      throw new BugInCF(
-          String.format(
-              "%s.scanOpt: one tree is null: tree1=%s tree2=%s",
-              this.getClass().getCanonicalName(), tree1, tree2));
-    }
-    scan(tree1, tree2);
-  }
-
-  /**
    * Scans two expression trees in lockstep.
    *
    * <p>This helper exists mainly to document intent at call sites where the children being scanned
@@ -186,8 +162,8 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
     CompilationUnitTree tree2cu = (CompilationUnitTree) tree2;
     defaultPairAction(tree1, tree2cu);
 
-    scanOpt(tree1.getModule(), tree2cu.getModule());
-    scanOpt(tree1.getPackage(), tree2cu.getPackage());
+    scan(tree1.getModule(), tree2cu.getModule());
+    scan(tree1.getPackage(), tree2cu.getPackage());
 
     scanList(tree1.getImports(), tree2cu.getImports());
     scanList(tree1.getTypeDecls(), tree2cu.getTypeDecls());
@@ -207,7 +183,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
     defaultPairAction(tree1, tree2pkg);
 
     scanList(tree1.getAnnotations(), tree2pkg.getAnnotations());
-    scanOpt(tree1.getPackageName(), tree2pkg.getPackageName());
+    scan(tree1.getPackageName(), tree2pkg.getPackageName());
     return null;
   }
 
@@ -242,7 +218,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
 
     scan(tree1.getModifiers(), tree2cls.getModifiers());
     scanList(tree1.getTypeParameters(), tree2cls.getTypeParameters());
-    scanOpt(tree1.getExtendsClause(), tree2cls.getExtendsClause());
+    scan(tree1.getExtendsClause(), tree2cls.getExtendsClause());
     scanList(tree1.getImplementsClause(), tree2cls.getImplementsClause());
     scanList(tree1.getPermitsClause(), tree2cls.getPermitsClause());
 
@@ -266,14 +242,14 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
     scan(tree1.getModifiers(), tree2m.getModifiers());
     scanList(tree1.getTypeParameters(), tree2m.getTypeParameters());
 
-    scanOpt(tree1.getReturnType(), tree2m.getReturnType());
-    scanOpt(tree1.getReceiverParameter(), tree2m.getReceiverParameter());
+    scan(tree1.getReturnType(), tree2m.getReturnType());
+    scan(tree1.getReceiverParameter(), tree2m.getReceiverParameter());
 
     scanList(tree1.getParameters(), tree2m.getParameters());
     scanList(tree1.getThrows(), tree2m.getThrows());
 
-    scanOpt(tree1.getDefaultValue(), tree2m.getDefaultValue());
-    scanOpt(tree1.getBody(), tree2m.getBody());
+    scan(tree1.getDefaultValue(), tree2m.getDefaultValue());
+    scan(tree1.getBody(), tree2m.getBody());
     return null;
   }
 
@@ -292,8 +268,8 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
     defaultPairAction(tree1, tree2v);
 
     scan(tree1.getModifiers(), tree2v.getModifiers());
-    scanOpt(tree1.getType(), tree2v.getType());
-    scanOpt(tree1.getInitializer(), tree2v.getInitializer());
+    scan(tree1.getType(), tree2v.getType());
+    scan(tree1.getInitializer(), tree2v.getInitializer());
     return null;
   }
 
@@ -427,7 +403,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
     WildcardTree tree2w = (WildcardTree) tree2;
     defaultPairAction(tree1, tree2w);
 
-    scanOpt(tree1.getBound(), tree2w.getBound());
+    scan(tree1.getBound(), tree2w.getBound());
     return null;
   }
 
@@ -505,7 +481,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
     ReturnTree tree2r = (ReturnTree) tree2;
     defaultPairAction(tree1, tree2r);
 
-    scanOpt(tree1.getExpression(), tree2r.getExpression());
+    scan(tree1.getExpression(), tree2r.getExpression());
     return null;
   }
 
@@ -540,7 +516,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
     scanList(tree1.getResources(), tree2t.getResources());
     scan(tree1.getBlock(), tree2t.getBlock());
     scanList(tree1.getCatches(), tree2t.getCatches());
-    scanOpt(tree1.getFinallyBlock(), tree2t.getFinallyBlock());
+    scan(tree1.getFinallyBlock(), tree2t.getFinallyBlock());
     return null;
   }
 }
