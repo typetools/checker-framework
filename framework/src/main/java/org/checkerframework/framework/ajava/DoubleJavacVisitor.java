@@ -30,11 +30,17 @@ import org.checkerframework.javacutil.BugInCF;
 
 /**
  * A visitor that traverses two javac ASTs simultaneously. The two trees should be structurally
- * identical.
+ * identical. The main entry point is {@link #scan}.
  *
- * <p>To subclass this class, override {@link #defaultPairAction(Tree, Tree)} and override {@code
- * visitXxx} methods for the tree kinds you care about and call {@link #scan}, {@link #scanOpt}, and
- * {@link #scanList} to continue traversal.
+ * <p>To subclass this class, override {@link #defaultPairAction(Tree, Tree)}. Also perhaps override
+ * {@code visitXyz} methods. Each {@code visitXyz} override should perform some computation and then
+ * call {@link #scan}, {@link #scanOpt}, or {@link #scanList} on each field of its arguments to
+ * continue traversal.
+ *
+ * <p>WARNING: This class behaves differently than its superclass {@link SimpleTreeVisitor}. In
+ * {@link SimpleTreeVisitor}, the {@code visitXyz} methods by default do no recursion. In this
+ * class, the {@code visitXyz} methods recurse into their children by default. Additionally, the
+ * {@code scan*} methods in this class play the same role as the {@link Tree#accept} method.
  */
 public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
 
@@ -46,7 +52,8 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
    *
    * <p>This method is called for every visited pair, including node kinds that do not have a
    * dedicated visit method override in a subclass. Subclasses typically implement structural or
-   * annotation comparisons here, and then use visit methods to drive recursive traversal.
+   * annotation comparisons here, and then use {@code visitXyz} methods to drive recursive
+   * traversal.
    *
    * @param tree1 the first tree in the matched pair
    * @param tree2 the second tree in the matched pair
@@ -54,13 +61,14 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
   protected abstract void defaultPairAction(Tree tree1, Tree tree2);
 
   /**
-   * The fallback visitor method used when no specific visitXxx override exists for a tree kind.
+   * The fallback visitor method used when a subclass of {@code DoubleJavacVisitor} has not
+   * overridden a specific {@code visitXyz} method.
    *
-   * <p>This implementation calls defaultPairAction and does not automatically recurse into
+   * <p>This implementation calls {@link defaultPairAction} and does not automatically recurse into
    * children.
    *
-   * @param tree1 the visited tree from the first AST
-   * @param tree2 the corresponding tree from the second AST
+   * @param tree1 the first tree
+   * @param tree2 the second tree
    * @return null
    */
   @Override
@@ -69,18 +77,15 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
     return null;
   }
 
+  //
+  // Scan methods
+  //
+
   /**
-   * Scans two trees in lockstep.
+   * Scans two trees in lockstep. This is the main entry point for paired traversal.
    *
-   * <p>This is the main entry point for paired traversal. It:
-   *
-   * <p>1. Handles the case where both trees are null by doing nothing.
-   *
-   * <p>2. Treats exactly one null as an error, because it indicates the trees are no longer
-   * aligned.
-   *
-   * <p>3. Verifies that the trees have the same kind, then dispatches to the appropriate visit
-   * method via accept.
+   * <p>The two arguments must both be null or both have the same kind. This method dispatches to
+   * the appropriate {@code visitXyz} method.
    *
    * @param tree1 the first tree to scan, or null
    * @param tree2 the second tree to scan, or null
@@ -90,20 +95,24 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
       return;
     }
 
+    Tree.Kind kind1 = tree1 == null ? null : tree1.getKind();
+    Tree.Kind kind2 = tree2 == null ? null : tree2.getKind();
+
     if (tree1 == null || tree2 == null) {
       throw new BugInCF(
           String.format(
-              "%s.scan: one tree is null: tree1=%s tree2=%s",
-              this.getClass().getCanonicalName(), tree1, tree2));
+              "%s.scan: one tree is null: tree1=%s [%s] tree2=%s [%s]",
+              this.getClass().getCanonicalName(), tree1, kind1, tree2, kind2));
     }
 
     if (tree1.getKind() != tree2.getKind()) {
       throw new BugInCF(
           String.format(
-              "%s.scan: mismatched kinds: %s vs %s",
-              this.getClass().getCanonicalName(), tree1.getKind(), tree2.getKind()));
+              "%s.scan: mismatched kinds: %s [%s] vs %s [%s]",
+              this.getClass().getCanonicalName(), tree1, kind1, tree2, kind2));
     }
 
+    // `accept` will call the appropriate `visitXyz` method.
     tree1.accept(this, tree2);
   }
 
@@ -134,7 +143,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
    * Scans two expression trees in lockstep.
    *
    * <p>This helper exists mainly to document intent at call sites where the children being scanned
-   * are expressions. The implementation delegates to scan.
+   * are expressions. The implementation delegates to {@link #scan}.
    *
    * @param expr1 the first expression tree
    * @param expr2 the second expression tree
@@ -145,9 +154,6 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
 
   /**
    * Given two lists of trees with the same size, scans corresponding elements in order.
-   *
-   * <p>This method assumes that the two lists represent parallel AST structures. A size mismatch
-   * indicates that traversal has become desynchronized and is treated as an error.
    *
    * @param list1 the first list of trees
    * @param list2 the second list of trees
@@ -164,11 +170,15 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
     }
   }
 
+  //
+  // Visitor methods
+  //
+
   /**
    * Visits a compilation unit (top-level file node) and scans its main children.
    *
-   * @param tree1 compilation unit from the first AST
-   * @param tree2 compilation unit from the second AST
+   * @param tree1 compilation unit tree from the first AST
+   * @param tree2 compilation unit tree from the second AST
    * @return null
    */
   @Override
