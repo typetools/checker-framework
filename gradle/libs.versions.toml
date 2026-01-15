@@ -10,7 +10,7 @@ com-diffplug-spotless = { id = "com.diffplug.spotless", version = "8.1.0" }
 
 com-gorylenko-gradle-git-properties = { id = "com.gorylenko.gradle-git-properties", version = "2.5.4" }
 
-biz-aqute-bnd-builder = { id = "biz.aQute.bnd.builder", version = "7.2.0" }
+biz-aqute-bnd-builder = { id = "biz.aQute.bnd.builder", version = "7.2.1" }
 
 [versions]
 
