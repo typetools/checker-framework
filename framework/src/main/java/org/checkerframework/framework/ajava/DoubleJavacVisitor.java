@@ -33,8 +33,8 @@ import org.checkerframework.javacutil.BugInCF;
  * identical.
  *
  * <p>To subclass this class, override {@link #defaultPairAction(Tree, Tree)} and override {@code
- * visitXxx} methods for the tree kinds you care about and call scan, scanOpt, and scanList to
- * continue traversal.
+ * visitXxx} methods for the tree kinds you care about and call {@link #scan}, {@link #scanOpt}, and
+ * {@link #scanList} to continue traversal.
  */
 public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
 
