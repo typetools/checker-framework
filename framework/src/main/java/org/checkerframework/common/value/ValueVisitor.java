@@ -409,6 +409,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
     // When a double is cast to float, precision loss may occur, but this is expected
     // IEEE 754 behavior and should not be flagged as an unsafe cast if the result
     // is the correctly-rounded representation.
+    // When a float is cast to double, no precision is lost, so it is always safe.
     if (castTypeKind != null
         && exprTypeKind != null
         && TypeKindUtils.isFloatingPoint(castTypeKind)
@@ -421,7 +422,14 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
       if (castAnnos.size() == 1 && exprAnnos.size() == 1) {
         AnnotationMirror castAnno = castAnnos.first();
         AnnotationMirror exprAnno = exprAnnos.first();
-        if (castTypeKind == TypeKind.FLOAT && exprTypeKind == TypeKind.DOUBLE) {
+        boolean castAnnoIsDoubleVal =
+            AnnotationUtils.areSameByName(castAnno, ValueAnnotatedTypeFactory.DOUBLEVAL_NAME);
+        boolean exprAnnoIsDoubleVal =
+            AnnotationUtils.areSameByName(exprAnno, ValueAnnotatedTypeFactory.DOUBLEVAL_NAME);
+        if (castAnnoIsDoubleVal
+            && exprAnnoIsDoubleVal
+            && castTypeKind == TypeKind.FLOAT
+            && exprTypeKind == TypeKind.DOUBLE) {
           List<Double> castValues = atypeFactory.getDoubleValues(castAnno);
           List<Double> exprValues = atypeFactory.getDoubleValues(exprAnno);
           if (castValues != null && exprValues != null && castValues.size() == exprValues.size()) {
