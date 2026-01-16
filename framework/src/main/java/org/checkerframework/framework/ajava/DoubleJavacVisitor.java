@@ -33,20 +33,28 @@ import org.checkerframework.javacutil.BugInCF;
  * structurally identical (modulo differences such as annotations between a Java file and its
  * corresponding {@code .ajava} file).
  *
+ * <p>In some use cases (for example, comparing a Java file and its corresponding {@code .ajava}
+ * file), annotations may legitimately differ between the two ASTs. This visitor does not attempt to
+ * infer equivalence in the presence of such differences. Instead, it enforces structural alignment
+ * during traversal, and annotation differences are tolerated only at call sites that use {@link
+ * #scanAnnotations(List, List)}; all other lists are compared strictly via {@link #scanList}.
+ *
  * <p>The main entry point is {@link #scan}. Given two corresponding trees, {@code scan} checks
  * basic structural invariants and then invokes {@link Tree#accept}, which dispatches to the
  * appropriate {@code visitXyz} method based on the runtime kind of the first tree.
  *
  * <p>To use this class, extend it and override {@link #defaultAction(Tree, Tree)}. Subclasses may
  * also override {@code visitXyz} methods for the tree kinds they care about. Each {@code visitXyz}
- * method is responsible for explicitly continuing traversal by calling {@link #scan} or {@link
- * #scanList} on corresponding child trees.
+ * method is responsible for explicitly continuing traversal by calling {@link #scan}, {@link
+ * #scanList}, or (when annotation mismatches are permitted) {@link #scanAnnotations} on
+ * corresponding child trees.
  *
  * <p><b>WARNING:</b> This class intentionally does <em>not</em> behave like {@link
  * com.sun.source.util.TreeScanner}. Although it subclasses {@link SimpleTreeVisitor}, recursion is
  * <em>not</em> automatic. The {@code visitXyz} methods in this class recurse only when they
- * explicitly call {@link #scan} or {@link #scanList}. This design is necessary to ensure that
- * traversal of the two trees remains synchronized and that mismatches are detected immediately.
+ * explicitly call {@link #scan}, {@link #scanList}, or {@link #scanAnnotations}. This design is
+ * necessary to ensure that traversal of the two trees remains synchronized and that mismatches are
+ * detected immediately.
  *
  * <p><b>Structural limitations:</b> This visitor enforces that the two trees have the same overall
  * shape and corresponding child structure, but it does not guarantee that they represent identical
@@ -67,12 +75,12 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
   protected DoubleJavacVisitor() {}
 
   /**
-   * Fallback visitor method invoked when a subclass of {@code DoubleJavacVisitor} does not override
-   * a specific {@code visitXyz} method for the current tree kind.
+   * Action hook that subclasses can override to process a matched pair of trees. Also, the fallback
+   * action invoked when no {@code visitXyz} method is overridden for the current tree kind.
    *
-   * <p>This method is called for every matched pair of trees, regardless of whether the tree kind
-   * has an explicit {@code visitXyz} implementation. It is intended as the primary hook for
-   * subclasses to perform work on a pair of corresponding nodes.
+   * <p>This method is invoked during traversal for a matched pair of trees when the corresponding
+   * {@code visitXyz} method is not overridden by a subclass, or when a {@code visitXyz} method
+   * explicitly delegates to {@code defaultAction}.
    *
    * <p><b>Important:</b> This method does <em>not</em> recurse into child nodes. Traversal proceeds
    * only through {@code visitXyz} methods that explicitly call {@link #scan} or {@link #scanList}.
@@ -154,11 +162,24 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
    * <p>A size mismatch indicates that paired traversal has become desynchronized and is treated as
    * a bug in the caller.
    *
-   * @param list1 the first list of trees
-   * @param list2 the second list of trees
-   * @throws BugInCF if the two lists have different sizes
+   * <p>The two list arguments must either both be null or both be non-null. (Empty lists are
+   * permitted.)
+   *
+   * @param list1 the first list of trees, or null
+   * @param list2 the second list of trees, or null
+   * @throws BugInCF if exactly one list is null or if the two lists have different sizes
    */
-  public final void scanList(List<? extends Tree> list1, List<? extends Tree> list2) {
+  public final void scanList(
+      @Nullable List<? extends Tree> list1, @Nullable List<? extends Tree> list2) {
+    if (list1 == null && list2 == null) {
+      return;
+    }
+    if (list1 == null || list2 == null) {
+      throw new BugInCF(
+          String.format(
+              "%s.scanList: one list is null: list1=%s list2=%s",
+              this.getClass().getCanonicalName(), list1, list2));
+    }
     if (list1.size() != list2.size()) {
       throw new BugInCF(
           String.format(
@@ -167,6 +188,41 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
     }
     for (int i = 0; i < list1.size(); i++) {
       scan(list1.get(i), list2.get(i));
+    }
+  }
+
+  /**
+   * Scans corresponding annotation trees while permitting annotation-list mismatches.
+   *
+   * <p>This helper exists to support comparisons between a Java source file and its corresponding
+   * {@code .ajava} file, where additional annotations may legitimately appear. The two annotation
+   * lists are traversed in lockstep up to the minimum of their sizes; any extra annotations in
+   * either list are intentionally ignored.
+   *
+   * <p>If both lists are {@code null}, this method does nothing. If exactly one list is {@code
+   * null}, paired traversal has become desynchronized and this is treated as a bug in the caller.
+   *
+   * @param anns1 the annotation list from the first AST, or {@code null}
+   * @param anns2 the annotation list from the second AST, or {@code null}
+   * @throws BugInCF if exactly one of the two lists is {@code null}
+   */
+  public final void scanAnnotations(
+      @Nullable List<? extends AnnotationTree> anns1,
+      @Nullable List<? extends AnnotationTree> anns2) {
+
+    if (anns1 == null && anns2 == null) {
+      return;
+    }
+    if (anns1 == null || anns2 == null) {
+      throw new BugInCF(
+          String.format(
+              "%s.scanAnnotations: one list is null: anns1=%s anns2=%s",
+              this.getClass().getCanonicalName(), anns1, anns2));
+    }
+
+    int n = Math.min(anns1.size(), anns2.size());
+    for (int i = 0; i < n; i++) {
+      scan(anns1.get(i), anns2.get(i));
     }
   }
 
@@ -206,7 +262,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
     PackageTree tree2pkg = (PackageTree) tree2;
     defaultAction(tree1, tree2pkg);
 
-    scanList(tree1.getAnnotations(), tree2pkg.getAnnotations());
+    scanAnnotations(tree1.getAnnotations(), tree2pkg.getAnnotations());
     scan(tree1.getPackageName(), tree2pkg.getPackageName());
     return null;
   }
@@ -309,7 +365,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
     ModifiersTree tree2m = (ModifiersTree) tree2;
     defaultAction(tree1, tree2m);
 
-    scanList(tree1.getAnnotations(), tree2m.getAnnotations());
+    scanAnnotations(tree1.getAnnotations(), tree2m.getAnnotations());
     return null;
   }
 
@@ -347,7 +403,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
     AnnotatedTypeTree tree2t = (AnnotatedTypeTree) tree2;
     defaultAction(tree1, tree2t);
 
-    scanList(tree1.getAnnotations(), tree2t.getAnnotations());
+    scanAnnotations(tree1.getAnnotations(), tree2t.getAnnotations());
     scan(tree1.getUnderlyingType(), tree2t.getUnderlyingType());
     return null;
   }
@@ -411,7 +467,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
     TypeParameterTree tree2tp = (TypeParameterTree) tree2;
     defaultAction(tree1, tree2tp);
 
-    scanList(tree1.getAnnotations(), tree2tp.getAnnotations());
+    scanAnnotations(tree1.getAnnotations(), tree2tp.getAnnotations());
     scanList(tree1.getBounds(), tree2tp.getBounds());
     return null;
   }
