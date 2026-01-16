@@ -95,10 +95,10 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
   //
 
   /**
-   * Scans two trees in lockstep. This is the main entry point for paired traversal.
+   * Traverses two corresponding trees together.
    *
-   * <p>The two arguments must both be null or both have the same kind. This method dispatches to
-   * the appropriate {@code visitXyz} method.
+   * <p>This method checks that both trees are either null or have the same {@link Tree.Kind}, then
+   * dispatches to the appropriate {@code visitXyz} method to continue paired traversal.
    *
    * @param tree1 the first tree to scan, or null
    * @param tree2 the second tree to scan, or null
@@ -130,23 +130,33 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
   }
 
   /**
-   * Scans two expression trees in lockstep.
+   * Traverses two corresponding expression trees together.
    *
-   * <p>This helper exists mainly to document intent at call sites where the children being scanned
-   * are expressions. The implementation delegates to {@link #scan}.
+   * <p>This method exists to document intent at call sites where the children being traversed are
+   * known to be expressions. It performs no additional checks beyond those in {@link #scan} and
+   * simply delegates to that method.
    *
-   * @param expr1 the first expression tree
-   * @param expr2 the second expression tree
+   * @param expr1 the first expression tree, or null
+   * @param expr2 the second expression tree, or null
    */
   public final void scanExpr(@Nullable ExpressionTree expr1, @Nullable ExpressionTree expr2) {
     scan(expr1, expr2);
   }
 
   /**
-   * Given two lists of trees with the same size, scans corresponding elements in order.
+   * Traverses two lists of trees in lockstep by scanning corresponding elements.
+   *
+   * <p>This method assumes that {@code list1} and {@code list2} represent parallel AST structures:
+   * they must have the same size, and each element at index {@code i} in {@code list1} must
+   * correspond to the element at index {@code i} in {@code list2}. For each index, this method
+   * invokes {@link #scan(Tree, Tree)} on the paired elements.
+   *
+   * <p>A size mismatch indicates that paired traversal has become desynchronized and is treated as
+   * a bug in the caller.
    *
    * @param list1 the first list of trees
    * @param list2 the second list of trees
+   * @throws BugInCF if the two lists have different sizes
    */
   public final void scanList(List<? extends Tree> list1, List<? extends Tree> list2) {
     if (list1.size() != list2.size()) {
