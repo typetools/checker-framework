@@ -29,17 +29,37 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.BugInCF;
 
 /**
- * A visitor that traverses two javac ASTs simultaneously. The two trees should be structurally
- * identical. The main entry point is {@link #scan}.
+ * A visitor that traverses two javac ASTs simultaneously. The two trees are expected to be
+ * structurally identical (modulo differences such as annotations between a Java file and its
+ * corresponding {@code .ajava} file).
  *
- * <p>To subclass this class, override {@link #defaultPairAction(Tree, Tree)}. Also perhaps override
- * {@code visitXyz} methods. Each {@code visitXyz} override should perform some computation and then
- * call {@link #scan} or {@link #scanList} on each field of its arguments to continue traversal.
+ * <p>The main entry point is {@link #scan}. Given two corresponding trees, {@code scan} checks
+ * basic structural invariants and then invokes {@link Tree#accept}, which dispatches to the
+ * appropriate {@code visitXyz} method based on the runtime kind of the first tree.
  *
- * <p>WARNING: This class behaves differently than its superclass {@link SimpleTreeVisitor}. In
- * {@link SimpleTreeVisitor}, the {@code visitXyz} methods by default do no recursion. In this
- * class, the {@code visitXyz} methods recurse into their children by default. Additionally, the
- * {@code scan*} methods in this class play the same role as the {@link Tree#accept} method.
+ * <p>To use this class, extend it and override {@link #defaultAction(Tree, Tree)}. Subclasses may
+ * also override {@code visitXyz} methods for the tree kinds they care about. Each {@code visitXyz}
+ * method is responsible for explicitly continuing traversal by calling {@link #scan} or {@link
+ * #scanList} on corresponding child trees.
+ *
+ * <p><b>WARNING:</b> This class intentionally does <em>not</em> behave like {@link
+ * com.sun.source.util.TreeScanner}. Although it subclasses {@link SimpleTreeVisitor}, recursion is
+ * <em>not</em> automatic. The {@code visitXyz} methods in this class recurse only when they
+ * explicitly call {@link #scan} or {@link #scanList}. This design is necessary to ensure that
+ * traversal of the two trees remains synchronized and that mismatches are detected immediately.
+ *
+ * <p><b>Structural limitations:</b> This visitor enforces that the two trees have the same overall
+ * shape and corresponding child structure, but it does not guarantee that they represent identical
+ * source code in all respects. For example, when visiting wildcard types, this visitor compares
+ * only the bound (if present) and does not check whether the wildcard is {@code extends} or {@code
+ * super}. It also does not reason about semantic equivalence of expressions, and it treats the
+ * order of structurally significant lists (such as members or imports) as significant. Such
+ * differences are currently permitted and must be handled by subclasses if stricter equivalence is
+ * required.
+ *
+ * <p>The standard {@code accept} methods cannot be used directly to traverse both trees, because
+ * javac visitors are designed to traverse a single tree. This class therefore uses {@code accept}
+ * only for dispatch, and drives paired traversal explicitly via {@link #scan}.
  */
 public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
 
@@ -47,34 +67,28 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
   protected DoubleJavacVisitor() {}
 
   /**
-   * Default action performed on all matched pairs of trees.
+   * Fallback visitor method invoked when a subclass of {@code DoubleJavacVisitor} does not override
+   * a specific {@code visitXyz} method for the current tree kind.
    *
-   * <p>This method is called for every visited pair, including node kinds that do not have a
-   * dedicated visit method override in a subclass. Subclasses typically implement structural or
-   * annotation comparisons here, and then use {@code visitXyz} methods to drive recursive
-   * traversal.
+   * <p>This method is called for every matched pair of trees, regardless of whether the tree kind
+   * has an explicit {@code visitXyz} implementation. It is intended as the primary hook for
+   * subclasses to perform work on a pair of corresponding nodes.
+   *
+   * <p><b>Important:</b> This method does <em>not</em> recurse into child nodes. Traversal proceeds
+   * only through {@code visitXyz} methods that explicitly call {@link #scan} or {@link #scanList}.
+   * For any tree kind that is not handled by a {@code visitXyz} method in this class or in a
+   * subclass, only {@code defaultAction} is executed and the subtree rooted at that node is not
+   * visited.
+   *
+   * <p>This design ensures that paired traversal of the two ASTs remains explicit and synchronized,
+   * and avoids accidental descent into mismatched or unsupported tree structures.
    *
    * @param tree1 the first tree in the matched pair
    * @param tree2 the second tree in the matched pair
-   */
-  protected abstract void defaultPairAction(Tree tree1, Tree tree2);
-
-  /**
-   * The fallback visitor method used when a subclass of {@code DoubleJavacVisitor} has not
-   * overridden a specific {@code visitXyz} method.
-   *
-   * <p>This implementation calls {@link defaultPairAction} and does not automatically recurse into
-   * children.
-   *
-   * @param tree1 the first tree
-   * @param tree2 the second tree
    * @return null
    */
   @Override
-  protected Void defaultAction(Tree tree1, Tree tree2) {
-    defaultPairAction(tree1, tree2);
-    return null;
-  }
+  protected abstract Void defaultAction(Tree tree1, Tree tree2);
 
   //
   // Scan methods
@@ -124,7 +138,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
    * @param expr1 the first expression tree
    * @param expr2 the second expression tree
    */
-  public final void scanExpr(ExpressionTree expr1, ExpressionTree expr2) {
+  public final void scanExpr(@Nullable ExpressionTree expr1, @Nullable ExpressionTree expr2) {
     scan(expr1, expr2);
   }
 
@@ -158,9 +172,9 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
    * @return null
    */
   @Override
-  public final Void visitCompilationUnit(CompilationUnitTree tree1, Tree tree2) {
+  public Void visitCompilationUnit(CompilationUnitTree tree1, Tree tree2) {
     CompilationUnitTree tree2cu = (CompilationUnitTree) tree2;
-    defaultPairAction(tree1, tree2cu);
+    defaultAction(tree1, tree2cu);
 
     scan(tree1.getModule(), tree2cu.getModule());
     scan(tree1.getPackage(), tree2cu.getPackage());
@@ -178,9 +192,9 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
    * @return null
    */
   @Override
-  public final Void visitPackage(PackageTree tree1, Tree tree2) {
+  public Void visitPackage(PackageTree tree1, Tree tree2) {
     PackageTree tree2pkg = (PackageTree) tree2;
-    defaultPairAction(tree1, tree2pkg);
+    defaultAction(tree1, tree2pkg);
 
     scanList(tree1.getAnnotations(), tree2pkg.getAnnotations());
     scan(tree1.getPackageName(), tree2pkg.getPackageName());
@@ -195,9 +209,9 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
    * @return null
    */
   @Override
-  public final Void visitImport(ImportTree tree1, Tree tree2) {
+  public Void visitImport(ImportTree tree1, Tree tree2) {
     ImportTree tree2imp = (ImportTree) tree2;
-    defaultPairAction(tree1, tree2imp);
+    defaultAction(tree1, tree2imp);
 
     scan(tree1.getQualifiedIdentifier(), tree2imp.getQualifiedIdentifier());
     return null;
@@ -214,7 +228,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
   @Override
   public Void visitClass(ClassTree tree1, Tree tree2) {
     ClassTree tree2cls = (ClassTree) tree2;
-    defaultPairAction(tree1, tree2cls);
+    defaultAction(tree1, tree2cls);
 
     scan(tree1.getModifiers(), tree2cls.getModifiers());
     scanList(tree1.getTypeParameters(), tree2cls.getTypeParameters());
@@ -237,7 +251,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
   @Override
   public Void visitMethod(MethodTree tree1, Tree tree2) {
     MethodTree tree2m = (MethodTree) tree2;
-    defaultPairAction(tree1, tree2m);
+    defaultAction(tree1, tree2m);
 
     scan(tree1.getModifiers(), tree2m.getModifiers());
     scanList(tree1.getTypeParameters(), tree2m.getTypeParameters());
@@ -265,7 +279,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
   @Override
   public Void visitVariable(VariableTree tree1, Tree tree2) {
     VariableTree tree2v = (VariableTree) tree2;
-    defaultPairAction(tree1, tree2v);
+    defaultAction(tree1, tree2v);
 
     scan(tree1.getModifiers(), tree2v.getModifiers());
     scan(tree1.getType(), tree2v.getType());
@@ -283,7 +297,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
   @Override
   public Void visitModifiers(ModifiersTree tree1, Tree tree2) {
     ModifiersTree tree2m = (ModifiersTree) tree2;
-    defaultPairAction(tree1, tree2m);
+    defaultAction(tree1, tree2m);
 
     scanList(tree1.getAnnotations(), tree2m.getAnnotations());
     return null;
@@ -299,7 +313,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
   @Override
   public Void visitAnnotation(AnnotationTree tree1, Tree tree2) {
     AnnotationTree tree2a = (AnnotationTree) tree2;
-    defaultPairAction(tree1, tree2a);
+    defaultAction(tree1, tree2a);
 
     scan(tree1.getAnnotationType(), tree2a.getAnnotationType());
     scanList(tree1.getArguments(), tree2a.getArguments());
@@ -307,11 +321,12 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
   }
 
   /**
-   * Visits an annotated type and scans the underlying type.
+   * Visits an annotated type and scans both its type-use annotations and its underlying type.
    *
-   * <p>The annotations themselves are represented as AnnotationTree children in javac's AST. They
-   * will be visited when scanning tree1.getAnnotations() if you add that here. If you want full
-   * annotation coverage at the type level, keep the scanList call below.
+   * <p>In javac's AST, annotations on a type (e.g., {@code @A String}) are represented as {@link
+   * AnnotationTree} nodes returned by {@link AnnotatedTypeTree#getAnnotations()}. This method scans
+   * those annotations and then scans the underlying type via {@link
+   * AnnotatedTypeTree#getUnderlyingType()}.
    *
    * @param tree1 annotated type tree from the first AST
    * @param tree2 annotated type tree from the second AST
@@ -320,7 +335,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
   @Override
   public Void visitAnnotatedType(AnnotatedTypeTree tree1, Tree tree2) {
     AnnotatedTypeTree tree2t = (AnnotatedTypeTree) tree2;
-    defaultPairAction(tree1, tree2t);
+    defaultAction(tree1, tree2t);
 
     scanList(tree1.getAnnotations(), tree2t.getAnnotations());
     scan(tree1.getUnderlyingType(), tree2t.getUnderlyingType());
@@ -337,7 +352,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
   @Override
   public Void visitParameterizedType(ParameterizedTypeTree tree1, Tree tree2) {
     ParameterizedTypeTree tree2p = (ParameterizedTypeTree) tree2;
-    defaultPairAction(tree1, tree2p);
+    defaultAction(tree1, tree2p);
 
     scan(tree1.getType(), tree2p.getType());
     scanList(tree1.getTypeArguments(), tree2p.getTypeArguments());
@@ -354,7 +369,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
   @Override
   public Void visitArrayType(ArrayTypeTree tree1, Tree tree2) {
     ArrayTypeTree tree2a = (ArrayTypeTree) tree2;
-    defaultPairAction(tree1, tree2a);
+    defaultAction(tree1, tree2a);
 
     scan(tree1.getType(), tree2a.getType());
     return null;
@@ -370,7 +385,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
   @Override
   public Void visitPrimitiveType(PrimitiveTypeTree tree1, Tree tree2) {
     PrimitiveTypeTree tree2p = (PrimitiveTypeTree) tree2;
-    defaultPairAction(tree1, tree2p);
+    defaultAction(tree1, tree2p);
     return null;
   }
 
@@ -384,7 +399,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
   @Override
   public Void visitTypeParameter(TypeParameterTree tree1, Tree tree2) {
     TypeParameterTree tree2tp = (TypeParameterTree) tree2;
-    defaultPairAction(tree1, tree2tp);
+    defaultAction(tree1, tree2tp);
 
     scanList(tree1.getAnnotations(), tree2tp.getAnnotations());
     scanList(tree1.getBounds(), tree2tp.getBounds());
@@ -394,6 +409,9 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
   /**
    * Visits a wildcard type and scans its bound (extends or super), if present.
    *
+   * <p>This method does not check whether the wildcard uses {@code extends} or {@code super}; only
+   * the bound tree is compared.
+   *
    * @param tree1 wildcard tree from the first AST
    * @param tree2 wildcard tree from the second AST
    * @return null
@@ -401,7 +419,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
   @Override
   public Void visitWildcard(WildcardTree tree1, Tree tree2) {
     WildcardTree tree2w = (WildcardTree) tree2;
-    defaultPairAction(tree1, tree2w);
+    defaultAction(tree1, tree2w);
 
     scan(tree1.getBound(), tree2w.getBound());
     return null;
@@ -417,7 +435,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
   @Override
   public Void visitIdentifier(IdentifierTree tree1, Tree tree2) {
     IdentifierTree tree2i = (IdentifierTree) tree2;
-    defaultPairAction(tree1, tree2i);
+    defaultAction(tree1, tree2i);
     return null;
   }
 
@@ -431,7 +449,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
   @Override
   public Void visitMemberSelect(MemberSelectTree tree1, Tree tree2) {
     MemberSelectTree tree2ms = (MemberSelectTree) tree2;
-    defaultPairAction(tree1, tree2ms);
+    defaultAction(tree1, tree2ms);
 
     scanExpr(tree1.getExpression(), tree2ms.getExpression());
     return null;
@@ -447,7 +465,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
   @Override
   public Void visitBlock(BlockTree tree1, Tree tree2) {
     BlockTree tree2b = (BlockTree) tree2;
-    defaultPairAction(tree1, tree2b);
+    defaultAction(tree1, tree2b);
 
     scanList(tree1.getStatements(), tree2b.getStatements());
     return null;
@@ -463,7 +481,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
   @Override
   public Void visitExpressionStatement(ExpressionStatementTree tree1, Tree tree2) {
     ExpressionStatementTree tree2es = (ExpressionStatementTree) tree2;
-    defaultPairAction(tree1, tree2es);
+    defaultAction(tree1, tree2es);
 
     scanExpr(tree1.getExpression(), tree2es.getExpression());
     return null;
@@ -479,7 +497,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
   @Override
   public Void visitReturn(ReturnTree tree1, Tree tree2) {
     ReturnTree tree2r = (ReturnTree) tree2;
-    defaultPairAction(tree1, tree2r);
+    defaultAction(tree1, tree2r);
 
     scan(tree1.getExpression(), tree2r.getExpression());
     return null;
@@ -495,7 +513,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
   @Override
   public Void visitThrow(ThrowTree tree1, Tree tree2) {
     ThrowTree tree2t = (ThrowTree) tree2;
-    defaultPairAction(tree1, tree2t);
+    defaultAction(tree1, tree2t);
 
     scanExpr(tree1.getExpression(), tree2t.getExpression());
     return null;
@@ -511,7 +529,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
   @Override
   public Void visitTry(TryTree tree1, Tree tree2) {
     TryTree tree2t = (TryTree) tree2;
-    defaultPairAction(tree1, tree2t);
+    defaultAction(tree1, tree2t);
 
     scanList(tree1.getResources(), tree2t.getResources());
     scan(tree1.getBlock(), tree2t.getBlock());
