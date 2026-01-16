@@ -405,6 +405,46 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
       }
     }
 
+    // Handle floating-point type casts (double -> float).
+    // When a double is cast to float, precision loss may occur, but this is expected
+    // IEEE 754 behavior and should not be flagged as an unsafe cast if the result
+    // is the correctly-rounded representation.
+    if (castTypeKind != null
+        && exprTypeKind != null
+        && TypeKindUtils.isFloatingPoint(castTypeKind)
+        && TypeKindUtils.isFloatingPoint(exprTypeKind)) {
+      AnnotationMirrorSet castAnnos = castType.getPrimaryAnnotations();
+      AnnotationMirrorSet exprAnnos = exprType.getPrimaryAnnotations();
+      if (castAnnos.equals(exprAnnos)) {
+        return true;
+      }
+      if (castAnnos.size() == 1 && exprAnnos.size() == 1) {
+        AnnotationMirror castAnno = castAnnos.first();
+        AnnotationMirror exprAnno = exprAnnos.first();
+        if (castTypeKind == TypeKind.FLOAT && exprTypeKind == TypeKind.DOUBLE) {
+          List<Double> castValues = atypeFactory.getDoubleValues(castAnno);
+          List<Double> exprValues = atypeFactory.getDoubleValues(exprAnno);
+          if (castValues != null && exprValues != null && castValues.size() == exprValues.size()) {
+            boolean allMatch = true;
+            for (int i = 0; i < exprValues.size(); i++) {
+              double exprVal = exprValues.get(i);
+              double castVal = castValues.get(i);
+              if (Double.compare(castVal, (double) (float) exprVal) != 0) {
+                allMatch = false;
+                break;
+              }
+            }
+            if (allMatch) {
+              return true;
+            }
+          }
+        }
+        if (castTypeKind == TypeKind.DOUBLE && exprTypeKind == TypeKind.FLOAT) {
+          return true;
+        }
+      }
+    }
+
     return super.isTypeCastSafe(castType, exprType);
   }
 
