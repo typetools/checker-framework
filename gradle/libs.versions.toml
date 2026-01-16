@@ -1,6 +1,6 @@
 [plugins]
 
-com-gradleup-shadow = { id = "com.gradleup.shadow", version = "9.3.0" }
+com-gradleup-shadow = { id = "com.gradleup.shadow", version = "9.3.1" }
 
 de-undercouch-download = { id = "de.undercouch.download", version = "5.6.0" }
 
@@ -10,7 +10,7 @@ com-diffplug-spotless = { id = "com.diffplug.spotless", version = "8.1.0" }
 
 com-gorylenko-gradle-git-properties = { id = "com.gorylenko.gradle-git-properties", version = "2.5.4" }
 
-biz-aqute-bnd-builder = { id = "biz.aQute.bnd.builder", version = "7.2.0" }
+biz-aqute-bnd-builder = { id = "biz.aQute.bnd.builder", version = "7.2.1" }
 
 [versions]
 
