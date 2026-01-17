@@ -422,7 +422,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
   }
 
   /**
-   * Visits a member select expression and scans the selected expression.
+   * Visits a member select expression and scans the receiver expression.
    *
    * @param tree1 member select tree from the first AST
    * @param tree2 member select tree from the second AST
@@ -470,7 +470,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
   }
 
   /**
-   * Visits a return statement and scans its returned expression, if present.
+   * Visits a return statement and scans its expression, if present.
    *
    * @param tree1 return tree from the first AST
    * @param tree2 return tree from the second AST
