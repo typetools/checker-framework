@@ -405,7 +405,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
       }
     }
 
-    // Handle floating-point type casts (double -> float).
+    // Handle floating-point type casts (double <-> float).
     // When a double is cast to float, precision loss may occur, but this is expected
     // IEEE 754 behavior and should not be flagged as an unsafe cast if the result
     // is the correctly-rounded representation.
@@ -447,7 +447,10 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
             }
           }
         }
-        if (castTypeKind == TypeKind.DOUBLE && exprTypeKind == TypeKind.FLOAT) {
+        if (castAnnoIsDoubleVal
+            && exprAnnoIsDoubleVal
+            && castTypeKind == TypeKind.DOUBLE
+            && exprTypeKind == TypeKind.FLOAT) {
           return true;
         }
       }
