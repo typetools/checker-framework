@@ -65,6 +65,10 @@ import org.checkerframework.javacutil.BugInCF;
  * differences are currently permitted and must be handled by subclasses if stricter equivalence is
  * required.
  *
+ * <p>Additionally, record components are not traversed explicitly. The javac tree API used by this
+ * class does not expose record components in all supported JDK versions, so record-specific
+ * structure and annotations may be skipped.
+ *
  * <p>The standard {@code accept} methods cannot be used directly to traverse both trees, because
  * javac visitors are designed to traverse a single tree. This class therefore uses {@code accept}
  * only for dispatch, and drives paired traversal explicitly via {@link #scan}.
@@ -285,7 +289,11 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
 
   /**
    * Visits a class-like declaration and scans its modifiers, type parameters, superclass,
-   * interfaces, members, and (when present) record components.
+   * interfaces, permits clause, and members.
+   *
+   * <p><b>Note:</b> Record components are not traversed explicitly by this method. On some JDK
+   * versions, the javac tree API does not expose record components via {@code ClassTree}, so
+   * record-specific structure and annotations may be skipped.
    *
    * @param tree1 class tree from the first AST
    * @param tree2 class tree from the second AST
