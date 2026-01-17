@@ -13,7 +13,6 @@ public class StartsEndsWith {
 
   String propertyName(String methodName) {
     if (methodName.startsWith(prefix)) {
-      @SuppressWarnings("index") // BUG: https://github.com/typetools/checker-framework/issues/5201
       String result = methodName.substring(prefix.length());
       return result;
     } else {
@@ -26,6 +25,35 @@ public class StartsEndsWith {
   static void refineStartsConditional(String str, String prefix) {
     if (prefix.length() > 10 && str.startsWith(prefix)) {
       @MinLen(11) String s11 = str;
+    }
+  }
+
+  // Test for endsWith - refinement establishes suffix.length() <= methodName.length(),
+  // but the checker cannot verify the complex arithmetic in substring(0, length - length).
+  // This is a known limitation of the upper bound analysis.
+  String removeSuffix(String methodName, String suffix) {
+    if (methodName.endsWith(suffix)) {
+      // :: error: (argument)
+      String result = methodName.substring(0, methodName.length() - suffix.length());
+      return result;
+    } else {
+      return null;
+    }
+  }
+
+  // Negative test: should warn outside startsWith check
+  void negativeTest(String methodName) {
+    // :: error: (argument)
+    String result = methodName.substring(prefix.length());
+  }
+
+  // Negative test: should warn in else branch only
+  void negativeTestElseBranch(String methodName) {
+    if (methodName.startsWith(prefix)) {
+      String result = methodName.substring(prefix.length());
+    } else {
+      // :: error: (argument)
+      String result = methodName.substring(prefix.length());
     }
   }
 }

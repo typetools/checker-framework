@@ -1,11 +1,13 @@
 package org.checkerframework.checker.index.upperbound;
 
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.index.IndexAbstractTransfer;
@@ -46,6 +48,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * Contains the transfer functions for the upper bound type system, a part of the Index Checker.
@@ -113,6 +116,15 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
   /** The int TypeMirror. */
   private final TypeMirror intTM;
 
+  /** String.startsWith(String) method. */
+  private final ExecutableElement startsWithMethod;
+
+  /** String.endsWith(String) method. */
+  private final ExecutableElement endsWithMethod;
+
+  /** String.length() method. */
+  private final ExecutableElement stringLengthMethod;
+
   /**
    * Creates a new UpperBoundTransfer.
    *
@@ -122,6 +134,14 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     super(analysis);
     atypeFactory = (UpperBoundAnnotatedTypeFactory) analysis.getTypeFactory();
     intTM = atypeFactory.types.getPrimitiveType(TypeKind.INT);
+
+    // Cache method lookups for startsWith/endsWith refinement
+    startsWithMethod =
+        TreeUtils.getMethod("java.lang.String", "startsWith", 1, atypeFactory.getProcessingEnv());
+    endsWithMethod =
+        TreeUtils.getMethod("java.lang.String", "endsWith", 1, atypeFactory.getProcessingEnv());
+    stringLengthMethod =
+        TreeUtils.getMethod("java.lang.String", "length", 0, atypeFactory.getProcessingEnv());
   }
 
   /**
@@ -729,6 +749,54 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
       }
     }
     return super.visitMethodInvocation(n, in);
+  }
+
+  /**
+   * For String.startsWith(String) and String.endsWith(String), refine the type of argument.length()
+   * to be @LTEqLengthOf(receiver) in the then-branch.
+   *
+   * <p>When receiver.startsWith(argument) returns true, we know that receiver.length() >=
+   * argument.length(). This means argument.length() is a valid index for receiver.substring().
+   */
+  @Override
+  protected void processConditionalPostconditions(
+      MethodInvocationNode n,
+      ExecutableElement methodElement,
+      ExpressionTree tree,
+      CFStore thenStore,
+      CFStore elseStore) {
+
+    super.processConditionalPostconditions(n, methodElement, tree, thenStore, elseStore);
+
+    // For String.startsWith(String) and String.endsWith(String), refine the type of
+    // argument.length() to be @LTEqLengthOf(receiver) in the then-branch.
+    if (methodElement.equals(startsWithMethod) || methodElement.equals(endsWithMethod)) {
+
+      Node receiverNode = n.getTarget().getReceiver();
+      Node argumentNode = n.getArgument(0);
+
+      JavaExpression receiverExpr = JavaExpression.fromNode(receiverNode);
+      JavaExpression argumentExpr = JavaExpression.fromNode(argumentNode);
+
+      if (!receiverExpr.containsUnknown() && !argumentExpr.containsUnknown()) {
+        // Create @LTEqLengthOf(receiver).
+        // In the UBQualifier representation, offset=-1 means "less than or equal to length"
+        // because LTLengthOf with offset=0 means "< length", so offset=-1 means "<= length".
+        String receiverString = receiverExpr.toString();
+        LessThanLengthOf lteqReceiver =
+            (LessThanLengthOf) UBQualifier.createUBQualifier(receiverString, "-1");
+
+        // Create a MethodCall expression for argument.length()
+        MethodCall argLengthExpr =
+            new MethodCall(intTM, stringLengthMethod, argumentExpr, Collections.emptyList());
+
+        // Insert the refined type into thenStore when the expression is insertable
+        if (CFAbstractStore.canInsertJavaExpression(argLengthExpr)) {
+          AnnotationMirror anno = atypeFactory.convertUBQualifierToAnnotation(lteqReceiver);
+          thenStore.insertValue(argLengthExpr, anno);
+        }
+      }
+    }
   }
 
   /**
