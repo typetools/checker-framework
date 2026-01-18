@@ -782,17 +782,16 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
 
       if (!receiverExpr.containsUnknown() && !argumentExpr.containsUnknown()) {
         // Create @LTEqLengthOf(receiver).
-        // In the UBQualifier representation, offset=-1 means "less than or equal to length"
-        // because LTLengthOf with offset=0 means "< length", so offset=-1 means "<= length".
+        // LTLengthOf with offset=0 means "< length", so offset=-1 means "<= length".
         String receiverString = receiverExpr.toString();
         LessThanLengthOf lteqReceiver =
             (LessThanLengthOf) UBQualifier.createUBQualifier(receiverString, "-1");
 
-        // Create a MethodCall expression for argument.length()
+        // Create a MethodCall expression for argument.length().
         MethodCall argLengthExpr =
             new MethodCall(intTM, stringLengthMethod, argumentExpr, Collections.emptyList());
 
-        // Insert the refined type into thenStore when the expression is insertable
+        // Insert the refined type into thenStore when the expression is insertable.
         if (CFAbstractStore.canInsertJavaExpression(argLengthExpr)) {
           AnnotationMirror anno = atypeFactory.convertUBQualifierToAnnotation(lteqReceiver);
           thenStore.insertValue(argLengthExpr, anno);
