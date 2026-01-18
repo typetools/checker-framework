@@ -73,7 +73,7 @@ public class DOTCFGVisualizer<
               + " provide it in args when calling DOTCFGVisualizer.init(args).");
     }
     if (this.outDir.isEmpty()) {
-      throw new UserError("The outdir argument was empty. Provide a non-empty directory path.");
+      throw new UserError("The --outdir argument was empty. Provide a non-empty directory path.");
     }
     this.checkerName = (String) args.get("checkerName");
     this.generated = new HashMap<>();
