@@ -135,7 +135,6 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     atypeFactory = (UpperBoundAnnotatedTypeFactory) analysis.getTypeFactory();
     intTM = atypeFactory.types.getPrimitiveType(TypeKind.INT);
 
-    // Cache method lookups for startsWith/endsWith refinement
     startsWithMethod =
         TreeUtils.getMethod("java.lang.String", "startsWith", 1, atypeFactory.getProcessingEnv());
     endsWithMethod =
@@ -752,11 +751,14 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
   }
 
   /**
-   * For String.startsWith(String) and String.endsWith(String), refine the type of argument.length()
-   * to be @LTEqLengthOf(receiver) in the then-branch.
+   * {@inheritDoc}
    *
-   * <p>When receiver.startsWith(argument) returns true, we know that receiver.length() >=
-   * argument.length(). This means argument.length() is a valid index for receiver.substring().
+   * <p>For {@code String.startsWith(String)} and {@code String.endsWith(String)}, refine the type
+   * of argument.length() to be {@code @LTEqLengthOf(receiver)} in the then-branch.
+   *
+   * <p>When {@code receiver.startsWith(argument)} evaluates to true, we know that {@code
+   * receiver.length() >= argument.length()}. This means {@code argument.length()} is a valid index
+   * for {@code receiver.substring()}.
    */
   @Override
   protected void processConditionalPostconditions(

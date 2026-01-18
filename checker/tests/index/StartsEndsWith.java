@@ -11,12 +11,27 @@ public class StartsEndsWith {
     this.prefix = prefix;
   }
 
+  String expectedError(String methodName) {
+    // :: error: (argument)
+    return methodName.substring(prefix.length());
+  }
+
   String propertyName(String methodName) {
     if (methodName.startsWith(prefix)) {
+      return methodName.substring(prefix.length());
+    } else {
+      // :: error: (argument)
+      return methodName.substring(prefix.length());
+    }
+  }
+
+  String propertyNameNot(String methodName) {
+    if (!methodName.startsWith(prefix)) {
+      // :: error: (argument)
+      return methodName.substring(prefix.length());
+    } else {
       String result = methodName.substring(prefix.length());
       return result;
-    } else {
-      return null;
     }
   }
 
@@ -28,32 +43,15 @@ public class StartsEndsWith {
     }
   }
 
-  // Test for endsWith - refinement establishes suffix.length() <= methodName.length(),
-  // but the checker cannot verify the complex arithmetic in substring(0, length - length).
-  // This is a known limitation of the upper bound analysis.
   String removeSuffix(String methodName, String suffix) {
     if (methodName.endsWith(suffix)) {
+      // TODO: Refinement establishes suffix.length() <= methodName.length(), but
+      // the checker cannot (yet) verify the complex arithmetic in substring(0, length - length).
       // :: error: (argument)
       String result = methodName.substring(0, methodName.length() - suffix.length());
       return result;
     } else {
       return null;
-    }
-  }
-
-  // Negative test: should warn outside startsWith check
-  void negativeTest(String methodName) {
-    // :: error: (argument)
-    String result = methodName.substring(prefix.length());
-  }
-
-  // Negative test: should warn in else branch only
-  void negativeTestElseBranch(String methodName) {
-    if (methodName.startsWith(prefix)) {
-      String result = methodName.substring(prefix.length());
-    } else {
-      // :: error: (argument)
-      String result = methodName.substring(prefix.length());
     }
   }
 }
