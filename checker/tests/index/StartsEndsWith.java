@@ -1,5 +1,4 @@
-// Tests string length refinement after startsWith or endsWith return true
-// https://github.com/kelloggm/checker-framework/issues/56
+// Tests string length refinement after startsWith() or endsWith() returns true.
 
 import org.checkerframework.common.value.qual.MinLen;
 
@@ -16,7 +15,7 @@ public class StartsEndsWith {
     return methodName.substring(prefix.length());
   }
 
-  String propertyName(String methodName) {
+  String startsWithTest(String methodName) {
     if (methodName.startsWith(prefix)) {
       return methodName.substring(prefix.length());
     } else {
@@ -25,8 +24,27 @@ public class StartsEndsWith {
     }
   }
 
-  String propertyNameNot(String methodName) {
+  String notStartsWithTest(String methodName) {
     if (!methodName.startsWith(prefix)) {
+      // :: error: (argument)
+      return methodName.substring(prefix.length());
+    } else {
+      String result = methodName.substring(prefix.length());
+      return result;
+    }
+  }
+
+  String endsWithTest(String methodName) {
+    if (methodName.endsWith(prefix)) {
+      return methodName.substring(prefix.length());
+    } else {
+      // :: error: (argument)
+      return methodName.substring(prefix.length());
+    }
+  }
+
+  String notEndsWithTest(String methodName) {
+    if (!methodName.endsWith(prefix)) {
       // :: error: (argument)
       return methodName.substring(prefix.length());
     } else {
@@ -54,8 +72,4 @@ public class StartsEndsWith {
       return null;
     }
   }
-}
-
-class StartsEndsWithExternal {
-  public static final String staticFinalField = "str";
 }
