@@ -214,53 +214,53 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
   /**
    * Visits a compilation unit (which represents a Java file) and scans its main children.
    *
-   * @param tree1 compilation unit tree from the first AST
+   * @param ctree1 compilation unit tree from the first AST
    * @param tree2 compilation unit tree from the second AST
    * @return null
    */
   @Override
-  public Void visitCompilationUnit(CompilationUnitTree tree1, Tree tree2) {
-    CompilationUnitTree tree2cu = (CompilationUnitTree) tree2;
-    defaultAction(tree1, tree2cu);
+  public Void visitCompilationUnit(CompilationUnitTree ctree1, Tree tree2) {
+    CompilationUnitTree ctree2 = (CompilationUnitTree) tree2;
+    defaultAction(ctree1, ctree2);
 
-    scan(tree1.getModule(), tree2cu.getModule());
-    scan(tree1.getPackage(), tree2cu.getPackage());
+    scan(ctree1.getModule(), ctree2.getModule());
+    scan(ctree1.getPackage(), ctree2.getPackage());
 
-    scanList(tree1.getImports(), tree2cu.getImports());
-    scanList(tree1.getTypeDecls(), tree2cu.getTypeDecls());
+    scanList(ctree1.getImports(), ctree2.getImports());
+    scanList(ctree1.getTypeDecls(), ctree2.getTypeDecls());
     return null;
   }
 
   /**
    * Visits a package declaration and scans its annotations and name.
    *
-   * @param tree1 package tree from the first AST
+   * @param ptree1 package tree from the first AST
    * @param tree2 package tree from the second AST
    * @return null
    */
   @Override
-  public Void visitPackage(PackageTree tree1, Tree tree2) {
-    PackageTree tree2pkg = (PackageTree) tree2;
-    defaultAction(tree1, tree2pkg);
+  public Void visitPackage(PackageTree ptree1, Tree tree2) {
+    PackageTree ptree2 = (PackageTree) tree2;
+    defaultAction(ptree1, ptree2);
 
-    scanAnnotations(tree1.getAnnotations(), tree2pkg.getAnnotations());
-    scan(tree1.getPackageName(), tree2pkg.getPackageName());
+    scanAnnotations(ptree1.getAnnotations(), ptree2.getAnnotations());
+    scan(ptree1.getPackageName(), ptree2.getPackageName());
     return null;
   }
 
   /**
    * Visits an import declaration and scans its qualified identifier.
    *
-   * @param tree1 import tree from the first AST
+   * @param itree1 import tree from the first AST
    * @param tree2 import tree from the second AST
    * @return null
    */
   @Override
-  public Void visitImport(ImportTree tree1, Tree tree2) {
-    ImportTree tree2imp = (ImportTree) tree2;
-    defaultAction(tree1, tree2imp);
+  public Void visitImport(ImportTree itree1, Tree tree2) {
+    ImportTree itree2 = (ImportTree) tree2;
+    defaultAction(itree1, itree2);
 
-    scan(tree1.getQualifiedIdentifier(), tree2imp.getQualifiedIdentifier());
+    scan(itree1.getQualifiedIdentifier(), itree2.getQualifiedIdentifier());
     return null;
   }
 
@@ -269,25 +269,25 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
    * interfaces, permits clause, and members.
    *
    * <p><b>Note:</b> Record components are not traversed explicitly by this method. On some JDK
-   * versions, the javac tree API does not expose record components via {@code ClassTree}, so
+   * versions, the javac tree API does not expose record components via {@link ClassTree}, so
    * record-specific structure and annotations may be skipped.
    *
-   * @param tree1 class tree from the first AST
+   * @param ctree1 class tree from the first AST
    * @param tree2 class tree from the second AST
    * @return null
    */
   @Override
-  public Void visitClass(ClassTree tree1, Tree tree2) {
-    ClassTree tree2cls = (ClassTree) tree2;
-    defaultAction(tree1, tree2cls);
+  public Void visitClass(ClassTree ctree1, Tree tree2) {
+    ClassTree ctree2 = (ClassTree) tree2;
+    defaultAction(ctree1, ctree2);
 
-    scan(tree1.getModifiers(), tree2cls.getModifiers());
-    scanList(tree1.getTypeParameters(), tree2cls.getTypeParameters());
-    scan(tree1.getExtendsClause(), tree2cls.getExtendsClause());
-    scanList(tree1.getImplementsClause(), tree2cls.getImplementsClause());
-    scanList(tree1.getPermitsClause(), tree2cls.getPermitsClause());
+    scan(ctree1.getModifiers(), ctree2.getModifiers());
+    scanList(ctree1.getTypeParameters(), ctree2.getTypeParameters());
+    scan(ctree1.getExtendsClause(), ctree2.getExtendsClause());
+    scanList(ctree1.getImplementsClause(), ctree2.getImplementsClause());
+    scanList(ctree1.getPermitsClause(), ctree2.getPermitsClause());
 
-    scanList(tree1.getMembers(), tree2cls.getMembers());
+    scanList(ctree1.getMembers(), ctree2.getMembers());
     return null;
   }
 
@@ -295,26 +295,26 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
    * Visits a method or constructor declaration and scans modifiers, type parameters, return type,
    * receiver parameter, formal parameters, throws clause, and body.
    *
-   * @param tree1 method tree from the first AST
+   * @param mtree1 method tree from the first AST
    * @param tree2 method tree from the second AST
    * @return null
    */
   @Override
-  public Void visitMethod(MethodTree tree1, Tree tree2) {
-    MethodTree tree2m = (MethodTree) tree2;
-    defaultAction(tree1, tree2m);
+  public Void visitMethod(MethodTree mtree1, Tree tree2) {
+    MethodTree mtree2 = (MethodTree) tree2;
+    defaultAction(mtree1, mtree2);
 
-    scan(tree1.getModifiers(), tree2m.getModifiers());
-    scanList(tree1.getTypeParameters(), tree2m.getTypeParameters());
+    scan(mtree1.getModifiers(), mtree2.getModifiers());
+    scanList(mtree1.getTypeParameters(), mtree2.getTypeParameters());
 
-    scan(tree1.getReturnType(), tree2m.getReturnType());
-    scan(tree1.getReceiverParameter(), tree2m.getReceiverParameter());
+    scan(mtree1.getReturnType(), mtree2.getReturnType());
+    scan(mtree1.getReceiverParameter(), mtree2.getReceiverParameter());
 
-    scanList(tree1.getParameters(), tree2m.getParameters());
-    scanList(tree1.getThrows(), tree2m.getThrows());
+    scanList(mtree1.getParameters(), mtree2.getParameters());
+    scanList(mtree1.getThrows(), mtree2.getThrows());
 
-    scan(tree1.getDefaultValue(), tree2m.getDefaultValue());
-    scan(tree1.getBody(), tree2m.getBody());
+    scan(mtree1.getDefaultValue(), mtree2.getDefaultValue());
+    scan(mtree1.getBody(), mtree2.getBody());
     return null;
   }
 
@@ -323,51 +323,51 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
    * initializer, and (for record components) accessor-like details are handled by the enclosing
    * node.
    *
-   * @param tree1 variable tree from the first AST
+   * @param vtree1 variable tree from the first AST
    * @param tree2 variable tree from the second AST
    * @return null
    */
   @Override
-  public Void visitVariable(VariableTree tree1, Tree tree2) {
-    VariableTree tree2v = (VariableTree) tree2;
-    defaultAction(tree1, tree2v);
+  public Void visitVariable(VariableTree vtree1, Tree tree2) {
+    VariableTree vtree2 = (VariableTree) tree2;
+    defaultAction(vtree1, vtree2);
 
-    scan(tree1.getModifiers(), tree2v.getModifiers());
-    scan(tree1.getType(), tree2v.getType());
-    scan(tree1.getInitializer(), tree2v.getInitializer());
+    scan(vtree1.getModifiers(), vtree2.getModifiers());
+    scan(vtree1.getType(), vtree2.getType());
+    scan(vtree1.getInitializer(), vtree2.getInitializer());
     return null;
   }
 
   /**
    * Visits a modifiers node and scans annotations.
    *
-   * @param tree1 modifiers tree from the first AST
+   * @param mtree1 modifiers tree from the first AST
    * @param tree2 modifiers tree from the second AST
    * @return null
    */
   @Override
-  public Void visitModifiers(ModifiersTree tree1, Tree tree2) {
-    ModifiersTree tree2m = (ModifiersTree) tree2;
-    defaultAction(tree1, tree2m);
+  public Void visitModifiers(ModifiersTree mtree1, Tree tree2) {
+    ModifiersTree mtree2 = (ModifiersTree) tree2;
+    defaultAction(mtree1, mtree2);
 
-    scanAnnotations(tree1.getAnnotations(), tree2m.getAnnotations());
+    scanAnnotations(mtree1.getAnnotations(), mtree2.getAnnotations());
     return null;
   }
 
   /**
    * Visits an annotation node and scans its argument expressions.
    *
-   * @param tree1 annotation tree from the first AST
+   * @param atree1 annotation tree from the first AST
    * @param tree2 annotation tree from the second AST
    * @return null
    */
   @Override
-  public Void visitAnnotation(AnnotationTree tree1, Tree tree2) {
-    AnnotationTree tree2a = (AnnotationTree) tree2;
-    defaultAction(tree1, tree2a);
+  public Void visitAnnotation(AnnotationTree atree1, Tree tree2) {
+    AnnotationTree atree2 = (AnnotationTree) tree2;
+    defaultAction(atree1, atree2);
 
-    scan(tree1.getAnnotationType(), tree2a.getAnnotationType());
-    scanList(tree1.getArguments(), tree2a.getArguments());
+    scan(atree1.getAnnotationType(), atree2.getAnnotationType());
+    scanList(atree1.getArguments(), atree2.getArguments());
     return null;
   }
 
@@ -379,81 +379,81 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
    * those annotations and then scans the underlying type via {@link
    * AnnotatedTypeTree#getUnderlyingType()}.
    *
-   * @param tree1 annotated type tree from the first AST
+   * @param atree1 annotated type tree from the first AST
    * @param tree2 annotated type tree from the second AST
    * @return null
    */
   @Override
-  public Void visitAnnotatedType(AnnotatedTypeTree tree1, Tree tree2) {
-    AnnotatedTypeTree tree2t = (AnnotatedTypeTree) tree2;
-    defaultAction(tree1, tree2t);
+  public Void visitAnnotatedType(AnnotatedTypeTree atree1, Tree tree2) {
+    AnnotatedTypeTree ttree2 = (AnnotatedTypeTree) tree2;
+    defaultAction(atree1, ttree2);
 
-    scanAnnotations(tree1.getAnnotations(), tree2t.getAnnotations());
-    scan(tree1.getUnderlyingType(), tree2t.getUnderlyingType());
+    scanAnnotations(atree1.getAnnotations(), ttree2.getAnnotations());
+    scan(atree1.getUnderlyingType(), ttree2.getUnderlyingType());
     return null;
   }
 
   /**
    * Visits a parameterized type and scans the base type and type arguments.
    *
-   * @param tree1 parameterized type tree from the first AST
+   * @param ptree1 parameterized type tree from the first AST
    * @param tree2 parameterized type tree from the second AST
    * @return null
    */
   @Override
-  public Void visitParameterizedType(ParameterizedTypeTree tree1, Tree tree2) {
-    ParameterizedTypeTree tree2p = (ParameterizedTypeTree) tree2;
-    defaultAction(tree1, tree2p);
+  public Void visitParameterizedType(ParameterizedTypeTree ptree1, Tree tree2) {
+    ParameterizedTypeTree ptree2 = (ParameterizedTypeTree) tree2;
+    defaultAction(ptree1, ptree2);
 
-    scan(tree1.getType(), tree2p.getType());
-    scanList(tree1.getTypeArguments(), tree2p.getTypeArguments());
+    scan(ptree1.getType(), ptree2.getType());
+    scanList(ptree1.getTypeArguments(), ptree2.getTypeArguments());
     return null;
   }
 
   /**
    * Visits an array type and scans the component type.
    *
-   * @param tree1 array type tree from the first AST
+   * @param atree1 array type tree from the first AST
    * @param tree2 array type tree from the second AST
    * @return null
    */
   @Override
-  public Void visitArrayType(ArrayTypeTree tree1, Tree tree2) {
-    ArrayTypeTree tree2a = (ArrayTypeTree) tree2;
-    defaultAction(tree1, tree2a);
+  public Void visitArrayType(ArrayTypeTree atree1, Tree tree2) {
+    ArrayTypeTree atree2 = (ArrayTypeTree) tree2;
+    defaultAction(atree1, atree2);
 
-    scan(tree1.getType(), tree2a.getType());
+    scan(atree1.getType(), atree2.getType());
     return null;
   }
 
   /**
    * Visits a primitive type.
    *
-   * @param tree1 primitive type tree from the first AST
+   * @param ptree1 primitive type tree from the first AST
    * @param tree2 primitive type tree from the second AST
    * @return null
    */
   @Override
-  public Void visitPrimitiveType(PrimitiveTypeTree tree1, Tree tree2) {
-    PrimitiveTypeTree tree2p = (PrimitiveTypeTree) tree2;
-    defaultAction(tree1, tree2p);
+  public Void visitPrimitiveType(PrimitiveTypeTree ptree1, Tree tree2) {
+    PrimitiveTypeTree ptree2 = (PrimitiveTypeTree) tree2;
+    defaultAction(ptree1, ptree2);
     return null;
   }
 
   /**
    * Visits a type parameter and scans its bounds and annotations on the parameter itself.
    *
-   * @param tree1 type parameter tree from the first AST
+   * @param ttree1 type parameter tree from the first AST
    * @param tree2 type parameter tree from the second AST
    * @return null
    */
   @Override
-  public Void visitTypeParameter(TypeParameterTree tree1, Tree tree2) {
-    TypeParameterTree tree2tp = (TypeParameterTree) tree2;
-    defaultAction(tree1, tree2tp);
+  public Void visitTypeParameter(TypeParameterTree ttree1, Tree tree2) {
+    TypeParameterTree ttree2 = (TypeParameterTree) tree2;
+    defaultAction(ttree1, ttree2);
 
-    scanAnnotations(tree1.getAnnotations(), tree2tp.getAnnotations());
-    scanList(tree1.getBounds(), tree2tp.getBounds());
+    scanAnnotations(ttree1.getAnnotations(), ttree2.getAnnotations());
+    scanList(ttree1.getBounds(), ttree2.getBounds());
     return null;
   }
 
@@ -463,129 +463,129 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
    * <p>This method does not check whether the wildcard uses {@code extends} or {@code super}; only
    * the bound tree is compared.
    *
-   * @param tree1 wildcard tree from the first AST
+   * @param wtree1 wildcard tree from the first AST
    * @param tree2 wildcard tree from the second AST
    * @return null
    */
   @Override
-  public Void visitWildcard(WildcardTree tree1, Tree tree2) {
-    WildcardTree tree2w = (WildcardTree) tree2;
-    defaultAction(tree1, tree2w);
+  public Void visitWildcard(WildcardTree wtree1, Tree tree2) {
+    WildcardTree wtree2 = (WildcardTree) tree2;
+    defaultAction(wtree1, wtree2);
 
-    scan(tree1.getBound(), tree2w.getBound());
+    scan(wtree1.getBound(), wtree2.getBound());
     return null;
   }
 
   /**
    * Visits an identifier.
    *
-   * @param tree1 identifier tree from the first AST
+   * @param itree1 identifier tree from the first AST
    * @param tree2 identifier tree from the second AST
    * @return null
    */
   @Override
-  public Void visitIdentifier(IdentifierTree tree1, Tree tree2) {
-    IdentifierTree tree2i = (IdentifierTree) tree2;
-    defaultAction(tree1, tree2i);
+  public Void visitIdentifier(IdentifierTree itree1, Tree tree2) {
+    IdentifierTree itree2 = (IdentifierTree) tree2;
+    defaultAction(itree1, itree2);
     return null;
   }
 
   /**
    * Visits a member select expression and scans the receiver expression.
    *
-   * @param tree1 member select tree from the first AST
+   * @param mtree1 member select tree from the first AST
    * @param tree2 member select tree from the second AST
    * @return null
    */
   @Override
-  public Void visitMemberSelect(MemberSelectTree tree1, Tree tree2) {
-    MemberSelectTree tree2ms = (MemberSelectTree) tree2;
-    defaultAction(tree1, tree2ms);
+  public Void visitMemberSelect(MemberSelectTree mtree1, Tree tree2) {
+    MemberSelectTree mtree2 = (MemberSelectTree) tree2;
+    defaultAction(mtree1, mtree2);
 
-    scanExpr(tree1.getExpression(), tree2ms.getExpression());
+    scanExpr(mtree1.getExpression(), mtree2.getExpression());
     return null;
   }
 
   /**
    * Visits a block and scans its statements.
    *
-   * @param tree1 block tree from the first AST
+   * @param btree1 block tree from the first AST
    * @param tree2 block tree from the second AST
    * @return null
    */
   @Override
-  public Void visitBlock(BlockTree tree1, Tree tree2) {
-    BlockTree tree2b = (BlockTree) tree2;
-    defaultAction(tree1, tree2b);
+  public Void visitBlock(BlockTree btree1, Tree tree2) {
+    BlockTree btree2 = (BlockTree) tree2;
+    defaultAction(btree1, btree2);
 
-    scanList(tree1.getStatements(), tree2b.getStatements());
+    scanList(btree1.getStatements(), btree2.getStatements());
     return null;
   }
 
   /**
    * Visits an expression statement and scans its expression.
    *
-   * @param tree1 expression statement from the first AST
+   * @param etree1 expression statement from the first AST
    * @param tree2 expression statement from the second AST
    * @return null
    */
   @Override
-  public Void visitExpressionStatement(ExpressionStatementTree tree1, Tree tree2) {
-    ExpressionStatementTree tree2es = (ExpressionStatementTree) tree2;
-    defaultAction(tree1, tree2es);
+  public Void visitExpressionStatement(ExpressionStatementTree etree1, Tree tree2) {
+    ExpressionStatementTree etree2 = (ExpressionStatementTree) tree2;
+    defaultAction(etree1, etree2);
 
-    scanExpr(tree1.getExpression(), tree2es.getExpression());
+    scanExpr(etree1.getExpression(), etree2.getExpression());
     return null;
   }
 
   /**
    * Visits a return statement and scans its expression, if present.
    *
-   * @param tree1 return tree from the first AST
+   * @param rtree1 return tree from the first AST
    * @param tree2 return tree from the second AST
    * @return null
    */
   @Override
-  public Void visitReturn(ReturnTree tree1, Tree tree2) {
-    ReturnTree tree2r = (ReturnTree) tree2;
-    defaultAction(tree1, tree2r);
+  public Void visitReturn(ReturnTree rtree1, Tree tree2) {
+    ReturnTree rtree2 = (ReturnTree) tree2;
+    defaultAction(rtree1, rtree2);
 
-    scan(tree1.getExpression(), tree2r.getExpression());
+    scan(rtree1.getExpression(), rtree2.getExpression());
     return null;
   }
 
   /**
    * Visits a throw statement and scans its thrown expression.
    *
-   * @param tree1 throw tree from the first AST
+   * @param ttree1 throw tree from the first AST
    * @param tree2 throw tree from the second AST
    * @return null
    */
   @Override
-  public Void visitThrow(ThrowTree tree1, Tree tree2) {
-    ThrowTree tree2t = (ThrowTree) tree2;
-    defaultAction(tree1, tree2t);
+  public Void visitThrow(ThrowTree ttree1, Tree tree2) {
+    ThrowTree ttree2 = (ThrowTree) tree2;
+    defaultAction(ttree1, ttree2);
 
-    scanExpr(tree1.getExpression(), tree2t.getExpression());
+    scanExpr(ttree1.getExpression(), ttree2.getExpression());
     return null;
   }
 
   /**
    * Visits a try statement and scans resources, blocks, and catch/finally structures.
    *
-   * @param tree1 try tree from the first AST
+   * @param ttree1 try tree from the first AST
    * @param tree2 try tree from the second AST
    * @return null
    */
   @Override
-  public Void visitTry(TryTree tree1, Tree tree2) {
-    TryTree tree2t = (TryTree) tree2;
-    defaultAction(tree1, tree2t);
+  public Void visitTry(TryTree ttree1, Tree tree2) {
+    TryTree ttree2 = (TryTree) tree2;
+    defaultAction(ttree1, ttree2);
 
-    scanList(tree1.getResources(), tree2t.getResources());
-    scan(tree1.getBlock(), tree2t.getBlock());
-    scanList(tree1.getCatches(), tree2t.getCatches());
-    scan(tree1.getFinallyBlock(), tree2t.getFinallyBlock());
+    scanList(ttree1.getResources(), ttree2.getResources());
+    scan(ttree1.getBlock(), ttree2.getBlock());
+    scanList(ttree1.getCatches(), ttree2.getCatches());
+    scan(ttree1.getFinallyBlock(), ttree2.getFinallyBlock());
     return null;
   }
 }
