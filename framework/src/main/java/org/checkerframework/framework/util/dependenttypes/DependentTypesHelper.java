@@ -756,6 +756,72 @@ public class DependentTypesHelper {
   }
 
   /**
+   * Filters dependent type annotations in {@code type}, removing those that reference local
+   * variables not currently in scope.
+   *
+   * <p>When a local variable goes out of scope, any dependent type annotation that references that
+   * variable becomes invalid and should be dropped. This method checks each expression in dependent
+   * type annotations and drops expressions that reference local variables not in {@code
+   * inScopeLocalVars}.
+   *
+   * @param type the type whose annotations may be filtered; is side-effected by this method
+   * @param inScopeLocalVars the set of local variables currently in scope
+   * @param path the tree path for expression parsing context; may be null
+   */
+  public void filterAnnotationsForOutOfScopeVars(
+      AnnotatedTypeMirror type, Set<LocalVariable> inScopeLocalVars, TreePath path) {
+    if (!hasDependentType(type)) {
+      return;
+    }
+
+    if (path == null) {
+      return;
+    }
+
+    StringToJavaExpression stringToJavaExpr =
+        expression -> {
+          // Check if this should be passed through unchanged
+          if (shouldPassThroughExpression(expression)) {
+            return new PassThroughExpression(objectTM, expression);
+          }
+
+          JavaExpression javaExpr;
+          try {
+            javaExpr = StringToJavaExpression.atPath(expression, path, factory.getChecker());
+          } catch (JavaExpressionParseException ex) {
+            // If the expression can't be parsed (e.g., references out-of-scope variable),
+            // drop it rather than converting to an error annotation
+            return null;
+          }
+
+          // Check if the expression references any local variable not in scope
+          JavaExpressionConverter jec =
+              new JavaExpressionConverter() {
+                @Override
+                protected JavaExpression visitLocalVariable(LocalVariable localVarExpr, Void p) {
+                  // Check if this local variable is a method parameter
+                  if (localVarExpr.getElement().getKind() == ElementKind.PARAMETER) {
+                    return localVarExpr; // Parameters are always in scope
+                  }
+                  // Check if the local variable is in scope
+                  if (!inScopeLocalVars.contains(localVarExpr)) {
+                    throw new FoundLocalVarException();
+                  }
+                  return localVarExpr;
+                }
+              };
+
+          try {
+            return jec.convert(javaExpr);
+          } catch (FoundLocalVarException ex) {
+            return null; // Drop this expression - variable is out of scope
+          }
+        };
+
+    convertAnnotatedTypeMirror(stringToJavaExpr, type);
+  }
+
+  /**
    * Calls {@link #convertAnnotationMirror(StringToJavaExpression, AnnotationMirror)} on each
    * annotation mirror on type with {@code stringToJavaExpr}. And replaces the annotation with the
    * one created by {@code convertAnnotationMirror}, if it's not null. If it is null, the original
