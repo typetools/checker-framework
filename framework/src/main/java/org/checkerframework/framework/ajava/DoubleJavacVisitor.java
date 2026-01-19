@@ -29,50 +29,38 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.BugInCF;
 
 /**
- * A visitor that traverses two javac ASTs simultaneously. The two trees are expected to be
- * structurally identical (modulo differences such as annotations between a Java file and its
- * corresponding {@code .ajava} file).
+ * A visitor that traverses two javac ASTs simultaneously. The two trees must be structurally
+ * identical (modulo differences, such as annotations and explicit receiver parameters, between a
+ * Java file and its corresponding {@code .ajava} file).
  *
- * <p>In some use cases (for example, comparing a Java file and its corresponding {@code .ajava}
- * file), annotations may legitimately differ between the two ASTs. This visitor does not attempt to
- * infer equivalence in the presence of such differences. Instead, it enforces structural alignment
- * during traversal, and annotation differences are tolerated only at call sites that use {@link
- * #scanAnnotations(List, List)}; all other lists are compared strictly via {@link #scanList}.
+ * <p>This visitor warns about some but not all violations of structural equivalence. For example,
+ * when visiting wildcard types, this visitor compares only the bound (if present) and does not
+ * check whether the wildcard is {@code extends} or {@code super}. As another example, this visitor
+ * does not ensure that the field names are the same in a field access.
  *
  * <p>The main entry point is {@link #scan}. Given two corresponding trees, {@code scan} checks
- * basic structural invariants and then invokes {@link Tree#accept}, which dispatches to the
- * appropriate {@code visitXyz} method based on the runtime kind of the first tree.
+ * invokes {@link Tree#accept}, which dispatches to the appropriate {@code visitXyz} method based on
+ * the run-time kind of the first tree.
  *
  * <p>To use this class, extend it and override {@link #defaultAction(Tree, Tree)}. Subclasses may
  * also override {@code visitXyz} methods for the tree kinds they care about. Each {@code visitXyz}
- * method is responsible for explicitly continuing traversal by calling {@link #scan}, {@link
+ * method is responsible for continuing traversal by <b>explicitly calling</b> {@link #scan}, {@link
  * #scanList}, or (when annotation mismatches are permitted) {@link #scanAnnotations} on
  * corresponding child trees.
- *
- * <p><b>WARNING:</b> This class intentionally does <em>not</em> behave like {@link
- * com.sun.source.util.TreeScanner}. Although it subclasses {@link SimpleTreeVisitor}, recursion is
- * <em>not</em> automatic. The {@code visitXyz} methods in this class recurse only when they
- * explicitly call {@link #scan}, {@link #scanList}, or {@link #scanAnnotations}. This design is
- * necessary to ensure that traversal of the two trees remains synchronized and that mismatches are
- * detected immediately.
- *
- * <p><b>Structural limitations:</b> This visitor enforces that the two trees have the same overall
- * shape and corresponding child structure, but it does not guarantee that they represent identical
- * source code in all respects. For example, when visiting wildcard types, this visitor compares
- * only the bound (if present) and does not check whether the wildcard is {@code extends} or {@code
- * super}. It also does not reason about semantic equivalence of expressions, and it treats the
- * order of structurally significant lists (such as members or imports) as significant. Such
- * differences are currently permitted and must be handled by subclasses if stricter equivalence is
- * required.
  *
  * <p>Additionally, record components are not traversed explicitly. The javac tree API used by this
  * class does not expose record components in all supported JDK versions, so record-specific
  * structure and annotations may be skipped.
  *
- * <p>The standard {@code accept} methods cannot be used directly to traverse both trees, because
- * javac visitors are designed to traverse a single tree. This class therefore uses {@code accept}
- * only for dispatch, and drives paired traversal explicitly via {@link #scan}.
+ * <p>The standard {@link Tree#accept} method cannot be used directly to traverse both trees,
+ * because javac visitors are designed to traverse a single tree. This class therefore uses {@code
+ * accept} only for dispatch, and drives paired traversal explicitly via {@link #scan}.
  */
+// WARNING: This class intentionally does *not* behave like
+// `com.sun.source.util.TreeScanner`. Although it subclasses `SimpleTreeVisitor`, recursion is *not*
+// automatic. The `visitXyz` methods in this class recurse only when they explicitly call `scan()`,
+// `scanList()`, or `scanAnnotations()`. This design is necessary to ensure that traversal of the
+// two trees remains synchronized and that mismatches are detected immediately.
 public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
 
   /** Create a DoubleJavacVisitor. */
