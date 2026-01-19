@@ -38,9 +38,9 @@ import org.checkerframework.javacutil.BugInCF;
  * check whether the wildcard is {@code extends} or {@code super}. As another example, this visitor
  * does not ensure that the field names are the same in a field access.
  *
- * <p>The main entry point is {@link #scan}. Given two corresponding trees, {@code scan} checks
- * invokes {@link Tree#accept}, which dispatches to the appropriate {@code visitXyz} method based on
- * the run-time kind of the first tree.
+ * <p>The main entry point is {@link #scan}. Given two corresponding trees, {@code scan} invokes
+ * {@link Tree#accept}, which dispatches to the appropriate {@code visitXyz} method based on the
+ * run-time kind of the first tree.
  *
  * <p>To use this class, extend it and override {@link #defaultAction(Tree, Tree)}. Subclasses may
  * also override {@code visitXyz} methods for the tree kinds they care about. Each {@code visitXyz}
@@ -142,22 +142,15 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
   }
 
   /**
-   * Traverses two lists of trees in lockstep by scanning corresponding elements.
+   * Traverses two lists of trees in lockstep by scanning corresponding elements. For each pair of
+   * corresponding elements index, this method invokes {@link #scan(Tree, Tree)}.
    *
-   * <p>This method assumes that {@code list1} and {@code list2} represent parallel AST structures:
-   * they must have the same size, and each element at index {@code i} in {@code list1} must
-   * correspond to the element at index {@code i} in {@code list2}. For each index, this method
-   * invokes {@link #scan(Tree, Tree)} on the paired elements.
-   *
-   * <p>A size mismatch indicates that paired traversal has become desynchronized and is treated as
-   * a bug in the caller.
-   *
-   * <p>The two list arguments must either both be null or both be non-null. (Empty lists are
-   * permitted.)
+   * <p>The two list arguments must either both be null or both be non-null and have the same
+   * length. Corresponding elements of {@code list1} and {@code list2} must have the same AST
+   * structure.
    *
    * @param list1 the first list of trees, or null
    * @param list2 the second list of trees, or null
-   * @throws BugInCF if exactly one list is null or if the two lists have different sizes
    */
   public final void scanList(
       @Nullable List<? extends Tree> list1, @Nullable List<? extends Tree> list2) {
@@ -184,17 +177,15 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
   /**
    * Scans corresponding annotation trees while permitting annotation-list mismatches.
    *
+   * <p>The two list arguments must either both be null or both be non-null.
+   *
    * <p>This helper exists to support comparisons between a Java source file and its corresponding
    * {@code .ajava} file, where additional annotations may legitimately appear. The two annotation
    * lists are traversed in lockstep up to the minimum of their sizes; any extra annotations in
    * either list are intentionally ignored.
    *
-   * <p>If both lists are {@code null}, this method does nothing. If exactly one list is {@code
-   * null}, paired traversal has become desynchronized and this is treated as a bug in the caller.
-   *
    * @param anns1 the annotation list from the first AST, or {@code null}
    * @param anns2 the annotation list from the second AST, or {@code null}
-   * @throws BugInCF if exactly one of the two lists is {@code null}
    */
   public final void scanAnnotations(
       @Nullable List<? extends AnnotationTree> anns1,
@@ -221,7 +212,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
   //
 
   /**
-   * Visits a compilation unit (top-level file node) and scans its main children.
+   * Visits a compilation unit (which represents a Java file) and scans its main children.
    *
    * @param tree1 compilation unit tree from the first AST
    * @param tree2 compilation unit tree from the second AST
