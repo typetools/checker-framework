@@ -73,14 +73,10 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
    * action invoked when no {@code visitXyz} method is overridden for the current tree kind.
    *
    * <p>This method is invoked during traversal for a matched pair of trees when the corresponding
-   * {@code visitXyz} method is not overridden by a subclass, or when a {@code visitXyz} method
-   * explicitly delegates to {@code defaultAction}.
+   * {@code visitXyz} method is not overridden by a subclass.
    *
    * <p><b>Important:</b> This method does <em>not</em> recurse into child nodes. Traversal proceeds
    * only through {@code visitXyz} methods that explicitly call {@link #scan} or {@link #scanList}.
-   * For any tree kind that is not handled by a {@code visitXyz} method in this class or in a
-   * subclass, only {@code defaultAction} is executed and the subtree rooted at that node is not
-   * visited.
    *
    * <p>This design ensures that paired traversal of the two ASTs remains explicit and synchronized,
    * and avoids accidental descent into mismatched or unsupported tree structures.
@@ -97,10 +93,10 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
   //
 
   /**
-   * Traverses two corresponding trees together.
+   * Traverses two corresponding trees together by dispatching to the appropriate {@code visitXyz}
+   * method.
    *
-   * <p>This method checks that both trees are either null or have the same {@link Tree.Kind}, then
-   * dispatches to the appropriate {@code visitXyz} method to continue paired traversal.
+   * <p>Both trees must be null, or both trees must have the same {@link Tree.Kind}.
    *
    * @param tree1 the first tree to scan, or null
    * @param tree2 the second tree to scan, or null
@@ -123,7 +119,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
     if (tree1.getKind() != tree2.getKind()) {
       throw new BugInCF(
           String.format(
-              "%s.scan: mismatched kinds: %s [%s] vs %s [%s]",
+              "%s.scan: mismatched kinds: tree1=%s [%s] tree2=%s [%s]",
               this.getClass().getCanonicalName(), tree1, kind1, tree2, kind2));
     }
 
