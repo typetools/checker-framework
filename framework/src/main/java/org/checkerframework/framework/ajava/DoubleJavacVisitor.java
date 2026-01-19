@@ -53,8 +53,8 @@ import org.checkerframework.javacutil.BugInCF;
  * structure and annotations may be skipped.
  *
  * <p>The standard {@link Tree#accept} method cannot be used directly to traverse both trees,
- * because javac visitors are designed to traverse a single tree. This class therefore uses {@code
- * accept} only for dispatch, and drives paired traversal explicitly via {@link #scan}.
+ * because javac visitors are designed to traverse a single tree. This class therefore uses {@link
+ * Tree#accept} only for dispatch, and drives paired traversal explicitly via {@link #scan}.
  */
 // WARNING: This class intentionally does *not* behave like
 // `com.sun.source.util.TreeScanner`. Although it subclasses `SimpleTreeVisitor`, recursion is *not*
