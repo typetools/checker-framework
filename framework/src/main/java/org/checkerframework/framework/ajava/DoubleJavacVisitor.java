@@ -48,19 +48,21 @@ import org.checkerframework.javacutil.BugInCF;
  * #scanList}, or (when annotation mismatches are permitted) {@link #scanAnnotations} on
  * corresponding child trees.
  *
- * <p>Additionally, record components are not traversed explicitly. The javac tree API used by this
- * class does not expose record components in all supported JDK versions, so record-specific
- * structure and annotations may be skipped.
+ * <p><b>WARNING:</b> This class intentionally does <em>not</em> behave like {@link
+ * com.sun.source.util.TreeScanner}. Although it subclasses {@link SimpleTreeVisitor}, recursion is
+ * <em>not</em> automatic. The {@code visitXyz} methods in this class recurse only when they
+ * explicitly call {@link #scan}, {@link #scanList}, or {@link #scanAnnotations}. This design is
+ * necessary to ensure that traversal of the two trees remains synchronized and that mismatches are
+ * detected immediately.
  *
  * <p>The standard {@link Tree#accept} method cannot be used directly to traverse both trees,
  * because javac visitors are designed to traverse a single tree. This class therefore uses {@link
  * Tree#accept} only for dispatch, and drives paired traversal explicitly via {@link #scan}.
+ *
+ * <p>Additionally, record components are not traversed explicitly. The javac tree API used by this
+ * class does not expose record components in all supported JDK versions, so record-specific
+ * structure and annotations may be skipped.
  */
-// WARNING: This class intentionally does *not* behave like
-// `com.sun.source.util.TreeScanner`. Although it subclasses `SimpleTreeVisitor`, recursion is *not*
-// automatic. The `visitXyz` methods in this class recurse only when they explicitly call `scan()`,
-// `scanList()`, or `scanAnnotations()`. This design is necessary to ensure that traversal of the
-// two trees remains synchronized and that mismatches are detected immediately.
 public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
 
   /** Create a DoubleJavacVisitor. */
