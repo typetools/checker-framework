@@ -50,14 +50,14 @@ import org.checkerframework.javacutil.BugInCF;
  *
  * <p><b>WARNING:</b> This class intentionally does <em>not</em> behave like {@link
  * com.sun.source.util.TreeScanner}. Although it subclasses {@link SimpleTreeVisitor}, recursion is
- * <em>not</em> automatic. The {@code visitXyz} methods in this class recurse only when they
- * explicitly call {@link #scan}, {@link #scanList}, or {@link #scanAnnotations}. This design is
- * necessary to ensure that traversal of the two trees remains synchronized and that mismatches are
- * detected immediately.
+ * <em>not</em> automatic. To recurse, the {@code visitXyz} methods in this class and any subclass
+ * must explicitly call {@link #scan}, {@link #scanList}, or {@link #scanAnnotations}.
  *
- * <p>The standard {@link Tree#accept} method cannot be used directly to traverse both trees,
- * because javac visitors are designed to traverse a single tree. This class therefore uses {@link
- * Tree#accept} only for dispatch, and drives paired traversal explicitly via {@link #scan}.
+ * <p>This design is necessary to ensure that traversal of the two trees remains synchronized and
+ * that mismatches are detected immediately. The standard {@link Tree#accept} method cannot be used
+ * directly to traverse both trees, because javac visitors are designed to traverse a single tree.
+ * This class therefore uses {@link Tree#accept} only for dispatch, and drives paired traversal
+ * explicitly via {@link #scan}.
  *
  * <p>Additionally, record components are not traversed explicitly. The javac tree API used by this
  * class does not expose record components in all supported JDK versions, so record-specific
