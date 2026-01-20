@@ -780,11 +780,6 @@ public class DependentTypesHelper {
 
     StringToJavaExpression stringToJavaExpr =
         expression -> {
-          // Check if this should be passed through unchanged
-          if (shouldPassThroughExpression(expression)) {
-            return new PassThroughExpression(objectTM, expression);
-          }
-
           JavaExpression javaExpr;
           try {
             javaExpr = StringToJavaExpression.atPath(expression, path, factory.getChecker());
