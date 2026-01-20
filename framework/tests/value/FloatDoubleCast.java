@@ -35,4 +35,24 @@ public class FloatDoubleCast {
     // Cast type {1.0, 2.0, 3.0} contains all values of expression {1.0f}
     @DoubleVal({1.0, 2.0, 3.0}) double d = (double) f;
   }
+
+  // ============ Special values (NaN, infinity) ============
+
+  // NaN handling
+  void specialValuesNaN() {
+    @DoubleVal({Double.NaN}) double nan = Double.NaN;
+    @DoubleVal({Float.NaN}) float fnan = (float) nan;
+  }
+
+  // Positive infinity
+  void specialValuesPositiveInfinity() {
+    @DoubleVal({Double.POSITIVE_INFINITY}) double inf = Double.POSITIVE_INFINITY;
+    @DoubleVal({Float.POSITIVE_INFINITY}) float finf = (float) inf;
+  }
+
+  // Negative infinity
+  void specialValuesNegativeInfinity() {
+    @DoubleVal({Double.NEGATIVE_INFINITY}) double ninf = Double.NEGATIVE_INFINITY;
+    @DoubleVal({Float.NEGATIVE_INFINITY}) float fninf = (float) ninf;
+  }
 }
