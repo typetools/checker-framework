@@ -769,7 +769,7 @@ public class DependentTypesHelper {
    * @param path the tree path for expression parsing context; may be null
    */
   public void filterAnnotationsForOutOfScopeVars(
-      AnnotatedTypeMirror type, Set<LocalVariable> inScopeLocalVars, TreePath path) {
+      AnnotatedTypeMirror type, Set<LocalVariable> inScopeLocalVars, @Nullable TreePath path) {
     if (!hasDependentType(type)) {
       return;
     }
