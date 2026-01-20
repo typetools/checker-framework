@@ -789,9 +789,11 @@ public class DependentTypesHelper {
           try {
             javaExpr = StringToJavaExpression.atPath(expression, path, factory.getChecker());
           } catch (JavaExpressionParseException ex) {
-            // If the expression can't be parsed (e.g., references out-of-scope variable),
-            // drop it rather than converting to an error annotation
-            return null;
+            // If the expression can't be parsed, keep it unchanged. The expression might reference
+            // a variable being declared (e.g., @KeyFor("a") where a is the variable itself),
+            // or might use syntax we don't need to filter. Only drop expressions when we confirm
+            // they reference out-of-scope local variables via FoundLocalVarException below.
+            return new PassThroughExpression(objectTM, expression);
           }
 
           // Check if the expression references any local variable not in scope
