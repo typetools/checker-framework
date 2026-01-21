@@ -169,7 +169,7 @@ subprojects { subProject ->
 
 allprojects { currentProj ->
 
-  // Update releaseVersion in release.gradle.
+  // To update the version number, change releaseVersion in file release.gradle.
   version = releaseVersion
 
   tasks.withType(JavaCompile).configureEach {

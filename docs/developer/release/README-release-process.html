@@ -265,7 +265,7 @@ TreeAnnotator
       and your user token key in <code>SONATYPE_NEXUS_PASSWORD</code>.
     </li>
     <li>
-      Ensure that the version number in <code>checker-framework/build.gradle</code> (in <code>allprojects { version ... }</code>) ends in <code>-SNAPSHOT</code>.
+      Ensure that <code>releaseVersion</code> in <code>checker-framework/release.gradle</code> ends in <code>-SNAPSHOT</code>.
     </li>
     <li>
       Run <code>./gradlew publish</code> in <code>checker-framework</code>.
