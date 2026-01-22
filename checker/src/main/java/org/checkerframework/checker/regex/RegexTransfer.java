@@ -160,13 +160,17 @@ public class RegexTransfer extends CFTransfer {
     // Look for: mat.groupCount() == constant
     // Make mat be @Regex(constant)
     TransferResult<CFValue, CFStore> res = super.visitEqualTo(n, in);
-    return handleMatcherGroupCount(n.getLeftOperand(), n.getRightOperand(), false, res);
+    Node leftOperand = n.getLeftOperand();
+    Node rightOperand = n.getRightOperand();
+    TransferResult<CFValue, CFStore> intermediateResult =
+        handleMatcherGroupCount(leftOperand, rightOperand, false, res);
+    return handleMatcherGroupCount(rightOperand, leftOperand, false, intermediateResult);
   }
 
   /**
    * Handle one of {@code m.groupCount() > const}, {@code m.groupCount() >= const}, or {@code
    * m.groupCount() == const}. Annotate the matcher as {@code @Regex(const)} or (if the operation is
-   * {@code >=}) as {@code @Regex(const+1)}.
+   * {@code >}) as {@code @Regex(const+1)}.
    *
    * @param possibleMatcher the Node that might be a call of Matcher.groupCount()
    * @param possibleConstant the Node that might be a constant
