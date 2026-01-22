@@ -409,7 +409,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
   }
 
   /**
-   * Issue a warning if {@code IntRange(from=x, to=y)} has {@code x>y}. Note that additional checks
+   * Issue an error if {@code IntRange(from=x, to=y)} has {@code x>y}. Note that additional checks
    * are performed in {@link #visitAnnotation(AnnotationTree, Void)}.
    *
    * <p>{@inheritDoc}
