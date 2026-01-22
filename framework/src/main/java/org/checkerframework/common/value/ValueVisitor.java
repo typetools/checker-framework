@@ -31,7 +31,6 @@ import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
-import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -338,22 +337,22 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
   protected boolean isTypeCastSafe(AnnotatedTypeMirror castType, AnnotatedTypeMirror exprType) {
     TypeKind castTypeKind = TypeKindUtils.primitiveOrBoxedToTypeKind(castType.getUnderlyingType());
     TypeKind exprTypeKind = TypeKindUtils.primitiveOrBoxedToTypeKind(exprType.getUnderlyingType());
-    if (castTypeKind != null
-        && exprTypeKind != null
-        && TypeKindUtils.isIntegral(castTypeKind)
-        && TypeKindUtils.isIntegral(exprTypeKind)) {
-      AnnotationMirrorSet castAnnos = castType.getPrimaryAnnotations();
-      AnnotationMirrorSet exprAnnos = exprType.getPrimaryAnnotations();
-      if (castAnnos.equals(exprAnnos)) {
-        return true;
-      }
-      assert castAnnos.size() == 1;
-      assert exprAnnos.size() == 1;
-      AnnotationMirror castAnno = castAnnos.first();
-      AnnotationMirror exprAnno = exprAnnos.first();
-      boolean castAnnoIsIntVal = atypeFactory.areSameByClass(castAnno, IntVal.class);
-      boolean exprAnnoIsIntVal = atypeFactory.areSameByClass(exprAnno, IntVal.class);
-      if (castAnnoIsIntVal && exprAnnoIsIntVal) {
+
+    if (castTypeKind == null || exprTypeKind == null) {
+      return super.isTypeCastSafe(castType, exprType);
+    }
+
+    // The cast is from a numeric type and is to a numeric type.
+
+    AnnotationMirror castAnno = castType.getPrimaryAnnotation();
+    AnnotationMirror exprAnno = exprType.getPrimaryAnnotation();
+    if (castAnno.equals(exprAnno)) {
+      return true;
+    }
+
+    if (TypeKindUtils.isIntegral(castTypeKind) && TypeKindUtils.isIntegral(exprTypeKind)) {
+      if (atypeFactory.areSameByClass(castAnno, IntVal.class)
+          && atypeFactory.areSameByClass(exprAnno, IntVal.class)) {
         List<Long> castValues = atypeFactory.getIntValues(castAnno);
         List<Long> exprValues = atypeFactory.getIntValues(exprAnno);
         if (castValues.size() == 1 && exprValues.size() == 1) {
