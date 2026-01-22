@@ -1761,7 +1761,7 @@ public class MustCallConsistencyAnalyzer {
     //     (other than a super(...) ctor call) -> return false
     List<? extends StatementTree> stmts = constructor.getBody().getStatements();
     for (StatementTree st : stmts) {
-      Boolean scanResult = ConstructorFirstWriteScanner.scan(st, assignment, field, cmAtf);
+      Boolean scanResult = ConstructorFirstWriteScanner.isFirstWrite(st, assignment, field, cmAtf);
       if (scanResult != null) {
         return scanResult;
       }
@@ -2731,7 +2731,7 @@ public class MustCallConsistencyAnalyzer {
   /**
    * Visitor that determines whether a given assignment in a constructor is definitely the first
    * write to its field before any earlier assignment or side-effecting call. The entry point is
-   * {@link #isfirstWrite}.
+   * {@link #isFirstWrite}.
    *
    * <p>This performs a single AST traversal in source order and is deliberately conservative: it
    * does not reason about control flow or path feasibility.
