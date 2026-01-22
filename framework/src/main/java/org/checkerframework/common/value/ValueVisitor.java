@@ -371,33 +371,33 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
           switch (castTypeKind) {
             case BYTE:
               {
-                TreeSet<Byte> castValuesTree =
+                TreeSet<Byte> castValuesSet =
                     new TreeSet<Byte>(CollectionsPlume.mapList(Number::byteValue, castValues));
-                TreeSet<Byte> exprValuesTree =
+                TreeSet<Byte> exprValuesSet =
                     new TreeSet<Byte>(CollectionsPlume.mapList(Number::byteValue, exprValues));
-                return CollectionsPlume.sortedSetContainsAll(castValuesTree, exprValuesTree);
+                return CollectionsPlume.sortedSetContainsAll(castValuesSet, exprValuesSet);
               }
             case INT:
               {
-                TreeSet<Integer> castValuesTree =
+                TreeSet<Integer> castValuesSet =
                     new TreeSet<Integer>(CollectionsPlume.mapList(Number::intValue, castValues));
-                TreeSet<Integer> exprValuesTree =
+                TreeSet<Integer> exprValuesSet =
                     new TreeSet<Integer>(CollectionsPlume.mapList(Number::intValue, exprValues));
-                return CollectionsPlume.sortedSetContainsAll(castValuesTree, exprValuesTree);
+                return CollectionsPlume.sortedSetContainsAll(castValuesSet, exprValuesSet);
               }
             case SHORT:
               {
-                TreeSet<Short> castValuesTree =
+                TreeSet<Short> castValuesSet =
                     new TreeSet<Short>(CollectionsPlume.mapList(Number::shortValue, castValues));
-                TreeSet<Short> exprValuesTree =
+                TreeSet<Short> exprValuesSet =
                     new TreeSet<Short>(CollectionsPlume.mapList(Number::shortValue, exprValues));
-                return CollectionsPlume.sortedSetContainsAll(castValuesTree, exprValuesTree);
+                return CollectionsPlume.sortedSetContainsAll(castValuesSet, exprValuesSet);
               }
             default:
               {
-                TreeSet<Long> castValuesTree = new TreeSet<>(castValues);
-                TreeSet<Long> exprValuesTree = new TreeSet<>(exprValues);
-                return CollectionsPlume.sortedSetContainsAll(castValuesTree, exprValuesTree);
+                TreeSet<Long> castValuesSet = new TreeSet<>(castValues);
+                TreeSet<Long> exprValuesSet = new TreeSet<>(exprValues);
+                return CollectionsPlume.sortedSetContainsAll(castValuesSet, exprValuesSet);
               }
           }
         }
