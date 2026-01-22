@@ -6,51 +6,112 @@ import org.checkerframework.common.value.qual.*;
 
 public class FloatDoubleCast {
 
-  // ============ double to float casts ============
+  // ============ float to float casts ============
 
-  // Expression {1.0} -> after cast {1.0f}: Should be safe (contained in {1.0f})
-  void doubleToFloatBasic() {
-    @DoubleVal({1.0}) double d = 1.0;
-    @DoubleVal({1.0f}) float f = (float) d;
+  void floatToFloatBasic() {
+    @DoubleVal({1.0}) float f = 1.0f;
+    @DoubleVal({1.0}) float f2 = (float) f;
   }
 
-  // KEY TEST: Cast type can contain MORE values (superset) - should be safe
-  // This demonstrates the fix: containment check allows supersets
+  void floatToFloatSuperset(@DoubleVal({1.0}) float f) {
+    @DoubleVal({1.0, 2.0, 3.0}) float f2 = (float) f;
+  }
+
+  void floatToFloatSubset(@DoubleVal({1.0, 2.0, 3.0}) float f) {
+    // :: error: (assignment)
+    @DoubleVal({1.0}) float f2 = (float) f;
+  }
+
+  void floatToFloatPrecision() {
+    @DoubleVal({3.1415927f}) float f1 = 3.1415927f;
+    @DoubleVal({3.1415927f}) float f2 = (float) f1;
+  }
+
+  void floatToFloatUnannotated1(@DoubleVal({1.0}) float f1) {
+    float f2 = f1;
+  }
+
+  void floatToFloatUnannotated2(float f1) {
+    // :: error: (assignment)
+    @DoubleVal({1.0}) float f2 = f1;
+  }
+
+  // ============ double to float casts ============
+
+  void doubleToFloatBasic() {
+    @DoubleVal({1.0}) double d = 1.0;
+    @DoubleVal({1.0}) float f = (float) d;
+  }
+
   void doubleToFloatSuperset(@DoubleVal({1.0}) double d) {
-    // Cast type {1.0f, 2.0f} contains all values from cast result (1.0f)
-    @DoubleVal({1.0f, 2.0f}) float f = (float) d;
+    @DoubleVal({1.0, 2.0}) float f = (float) d;
+  }
+
+  void doubleToFloatSubset(@DoubleVal({1.0, 2.0}) double d) {
+    // :: error: (assignment)
+    @DoubleVal({1.0}) float f = (float) d;
+  }
+
+  void doubleToFloatOutOfRange() {
+    @DoubleVal({1e40}) double d = 1e40;
+    @DoubleVal({Float.POSITIVE_INFINITY}) float f = (float) d;
+  }
+
+  void doubleToFloatReducedPrecision1() {
+    @DoubleVal({4.9E-324}) double d = Double.MIN_VALUE;
+    @DoubleVal({0}) float f = (float) d;
+  }
+
+  void doubleToFloatReducedPrecision2() {
+    @DoubleVal({3.141592653589793}) double d = Math.PI;
+    @DoubleVal({3.1415927410125732}) float f = (float) d;
+    @DoubleVal({3.1415927f}) float f2 = (float) d;
   }
 
   // ============ float to double casts ============
 
-  // Expression {1.0f} -> after cast becomes {1.0}: Should be safe
   void floatToDoubleBasic() {
-    @DoubleVal({1.0f}) float f = 1.0f;
+    @DoubleVal({1.0}) float f = 1.0f;
     @DoubleVal({1.0}) double d = (double) f;
   }
 
-  // KEY TEST: Cast type can contain MORE values (superset) - should be safe
-  // This demonstrates the fix: float-to-double now uses containment check
-  void floatToDoubleSuperset(@DoubleVal({1.0f}) float f) {
-    // Cast type {1.0, 2.0, 3.0} contains all values of expression {1.0f}
+  void floatToDoubleSuperset(@DoubleVal({1.0}) float f) {
     @DoubleVal({1.0, 2.0, 3.0}) double d = (double) f;
+  }
+
+  void floatToDoubleSubset(@DoubleVal({1.0, 2.0, 3.0}) float f) {
+    // :: error: (assignment)
+    @DoubleVal({1.0}) double d = (double) f;
+  }
+
+  // ============ double to double casts ============
+
+  void doubleToDoubleBasic() {
+    @DoubleVal({1.0}) double d1 = 1.0;
+    @DoubleVal({1.0}) double d = (double) d1;
+  }
+
+  void doubleToDoubleSuperset(@DoubleVal({1.0}) double d1) {
+    @DoubleVal({1.0, 2.0, 3.0}) double d = (double) d1;
+  }
+
+  void doubleToDoubleSubset(@DoubleVal({1.0, 2.0, 3.0}) double d1) {
+    // :: error: (assignment)
+    @DoubleVal({1.0}) double d = (double) d1;
   }
 
   // ============ Special values (NaN, infinity) ============
 
-  // NaN handling
   void specialValuesNaN() {
     @DoubleVal({Double.NaN}) double nan = Double.NaN;
     @DoubleVal({Float.NaN}) float fnan = (float) nan;
   }
 
-  // Positive infinity
   void specialValuesPositiveInfinity() {
     @DoubleVal({Double.POSITIVE_INFINITY}) double inf = Double.POSITIVE_INFINITY;
     @DoubleVal({Float.POSITIVE_INFINITY}) float finf = (float) inf;
   }
 
-  // Negative infinity
   void specialValuesNegativeInfinity() {
     @DoubleVal({Double.NEGATIVE_INFINITY}) double ninf = Double.NEGATIVE_INFINITY;
     @DoubleVal({Float.NEGATIVE_INFINITY}) float fninf = (float) ninf;
