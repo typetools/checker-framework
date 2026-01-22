@@ -1522,7 +1522,7 @@ public class MustCallConsistencyAnalyzer {
         }
       }
     } else if (TreeUtils.isConstructor(enclosingMethodTree)) {
-      // If this assignment the first write to the private field in this constructor,
+      // If this assignment is the first write to the private field in this constructor,
       // then do not throw non-final owning field reassignment error.
       ExecutableElement elementFromDeclaration =
           TreeUtils.elementFromDeclaration(enclosingMethodTree);
@@ -2729,8 +2729,9 @@ public class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Visitor that determines whether a given assignment in a constructor is the first write to its
-   * field before any earlier assignment or side-effecting call.
+   * Visitor that determines whether a given assignment in a constructor is definitely the first
+   * write to its field before any earlier assignment or side-effecting call. The entry point is
+   * {@link #isfirstWrite}.
    *
    * <p>This performs a single AST traversal in source order and is deliberately conservative: it
    * does not reason about control flow or path feasibility.
@@ -2764,17 +2765,22 @@ public class MustCallConsistencyAnalyzer {
     }
 
     /**
-     * Runs the scan for a single top-level constructor statement.
+     * Determines whether the given assignment is definitely the first write to its field in the
+     * constructor.
+     *
+     * <p>This method is conservative. It returns {@code true} if the given assignment is definitely
+     * the first one. It returns false if any method call with a possible side effect is called
+     * earlier, without analyzing the called method.
      *
      * @param root the statement to scan
      * @param assignment the target assignment
      * @param field the field being checked
      * @param cmAtf the factory for side-effect reasoning
-     * @return {@code true} if the assignment is the first write, {@code false} if a prior
-     *     assignment or a method call with side-effect is found, or {@code null} if neither is
+     * @return {@code true} if the assignment is the first write, {@code false} if there is a prior
+     *     assignment or a (possibly side-effecting) method call, or {@code null} if neither is
      *     encountered
      */
-    static @Nullable Boolean scan(
+    static @Nullable Boolean isFirstWrite(
         StatementTree root,
         Tree assignment,
         VariableElement field,
@@ -2808,7 +2814,7 @@ public class MustCallConsistencyAnalyzer {
     @Override
     public Boolean visitNewClass(NewClassTree node, Void p) {
       // An object creation with side effects can modify constructor fields (e.g., via Helper(this),
-      // where `this` can be modified in Helper’s constructor).
+      // where `this` can be modified in Helper's constructor).
       if (cmAtf.isSideEffectFree(TreeUtils.elementFromUse(node))) {
         return super.visitNewClass(node, p);
       }
