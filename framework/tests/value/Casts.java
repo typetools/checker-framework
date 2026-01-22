@@ -12,7 +12,6 @@ public class Casts {
   final float f = 1e-14f;
   final double d = 1e-15;
 
-  /* TODO.
   void testCastWithNoAnnotations() {
     byte b1 = (byte) b;
     byte b2 = (byte) c;
@@ -70,7 +69,6 @@ public class Casts {
     double d6 = (double) f;
     double d7 = (double) d;
   }
-  */
 
   public void intCastTest1(@IntVal({0, 1}) int input) {
     @IntVal({0, 1}) int c = (int) input;
