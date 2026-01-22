@@ -413,56 +413,47 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
         && exprTypeKind != null
         && TypeKindUtils.isFloatingPoint(castTypeKind)
         && TypeKindUtils.isFloatingPoint(exprTypeKind)) {
-      AnnotationMirrorSet castAnnos = castType.getPrimaryAnnotations();
-      AnnotationMirrorSet exprAnnos = exprType.getPrimaryAnnotations();
-      if (castAnnos.equals(exprAnnos)) {
-        return true;
-      }
-      if (castAnnos.size() == 1 && exprAnnos.size() == 1) {
-        AnnotationMirror castAnno = castAnnos.first();
-        AnnotationMirror exprAnno = exprAnnos.first();
-        boolean castAnnoIsDoubleVal =
-            AnnotationUtils.areSameByName(castAnno, ValueAnnotatedTypeFactory.DOUBLEVAL_NAME);
-        boolean exprAnnoIsDoubleVal =
-            AnnotationUtils.areSameByName(exprAnno, ValueAnnotatedTypeFactory.DOUBLEVAL_NAME);
-        if (castAnnoIsDoubleVal
-            && exprAnnoIsDoubleVal
-            && castTypeKind == TypeKind.FLOAT
-            && exprTypeKind == TypeKind.DOUBLE) {
-          List<Double> castValues = atypeFactory.getDoubleValues(castAnno);
-          List<Double> exprValues = atypeFactory.getDoubleValues(exprAnno);
-          if (castValues != null && exprValues != null) {
-            // The cast type must contain all the values of the expression type (after rounding).
-            // Convert expression values to what they would be after float cast, then check
-            // containment.
-            TreeSet<Double> castValuesSet = new TreeSet<>(castValues);
-            boolean allContained = true;
-            for (double exprVal : exprValues) {
-              double roundedVal = (double) (float) exprVal;
-              if (!castValuesSet.contains(roundedVal)) {
-                allContained = false;
-                break;
-              }
-            }
-            if (allContained) {
-              return true;
+      boolean castAnnoIsDoubleVal =
+          AnnotationUtils.areSameByName(castAnno, ValueAnnotatedTypeFactory.DOUBLEVAL_NAME);
+      boolean exprAnnoIsDoubleVal =
+          AnnotationUtils.areSameByName(exprAnno, ValueAnnotatedTypeFactory.DOUBLEVAL_NAME);
+      if (castAnnoIsDoubleVal
+          && exprAnnoIsDoubleVal
+          && castTypeKind == TypeKind.FLOAT
+          && exprTypeKind == TypeKind.DOUBLE) {
+        List<Double> castValues = atypeFactory.getDoubleValues(castAnno);
+        List<Double> exprValues = atypeFactory.getDoubleValues(exprAnno);
+        if (castValues != null && exprValues != null) {
+          // The cast type must contain all the values of the expression type (after rounding).
+          // Convert expression values to what they would be after float cast, then check
+          // containment.
+          TreeSet<Double> castValuesSet = new TreeSet<>(castValues);
+          boolean allContained = true;
+          for (double exprVal : exprValues) {
+            double roundedVal = (double) (float) exprVal;
+            if (!castValuesSet.contains(roundedVal)) {
+              allContained = false;
+              break;
             }
           }
+          if (allContained) {
+            return true;
+          }
         }
-        if (castAnnoIsDoubleVal
-            && exprAnnoIsDoubleVal
-            && castTypeKind == TypeKind.DOUBLE
-            && exprTypeKind == TypeKind.FLOAT) {
-          List<Double> castValues = atypeFactory.getDoubleValues(castAnno);
-          List<Double> exprValues = atypeFactory.getDoubleValues(exprAnno);
-          if (castValues != null && exprValues != null) {
-            // The cast type must contain all the values of the expression type.
-            // Float-to-double is lossless, so just check containment directly.
-            TreeSet<Double> castValuesSet = new TreeSet<>(castValues);
-            TreeSet<Double> exprValuesSet = new TreeSet<>(exprValues);
-            if (castValuesSet.containsAll(exprValuesSet)) {
-              return true;
-            }
+      }
+      if (castAnnoIsDoubleVal
+          && exprAnnoIsDoubleVal
+          && castTypeKind == TypeKind.DOUBLE
+          && exprTypeKind == TypeKind.FLOAT) {
+        List<Double> castValues = atypeFactory.getDoubleValues(castAnno);
+        List<Double> exprValues = atypeFactory.getDoubleValues(exprAnno);
+        if (castValues != null && exprValues != null) {
+          // The cast type must contain all the values of the expression type.
+          // Float-to-double is lossless, so just check containment directly.
+          TreeSet<Double> castValuesSet = new TreeSet<>(castValues);
+          TreeSet<Double> exprValuesSet = new TreeSet<>(exprValues);
+          if (castValuesSet.containsAll(exprValuesSet)) {
+            return true;
           }
         }
       }
