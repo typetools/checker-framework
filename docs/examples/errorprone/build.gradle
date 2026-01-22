@@ -4,12 +4,11 @@
 
 plugins {
   id("java")
-  id("net.ltgt.errorprone").version("4.1.0")
+  id("net.ltgt.errorprone").version("4.4.0")
   // Checker Framework pluggable type-checking
-  id("org.checkerframework").version("0.6.49")
+  id("org.checkerframework").version("1.0.0-SNAPSHOT")
 }
 
-apply plugin: "org.checkerframework"
 
 dependencies {
   // Must use at least version 2.4.0 of Error Prone.
@@ -18,7 +17,7 @@ dependencies {
   } else if (JavaVersion.current() == JavaVersion.VERSION_11) {
     errorprone("com.google.errorprone:error_prone_core:2.31.0")
   } else {
-    errorprone("com.google.errorprone:error_prone_core:2.38.0")
+    errorprone("com.google.errorprone:error_prone_core:2.46.0")
   }
 }
 
@@ -27,6 +26,7 @@ repositories {
 }
 
 checkerFramework {
+  version = "local"
   checkers = [
     "org.checkerframework.checker.nullness.NullnessChecker",
   ]
