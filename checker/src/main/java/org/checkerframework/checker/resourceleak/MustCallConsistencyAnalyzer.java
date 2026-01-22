@@ -1528,16 +1528,14 @@ public class MustCallConsistencyAnalyzer {
           TreeUtils.elementFromDeclaration(enclosingMethodTree);
       if (elementFromDeclaration != null) {
         Element enclosingClassElement = elementFromDeclaration.getEnclosingElement();
-        if (ElementUtils.isTypeElement(enclosingClassElement)) {
-          Element receiverElement = TypesUtils.getTypeElement(receiver.getType());
-          if (Objects.equals(enclosingClassElement, receiverElement)) {
-            VariableElement lhsElement = lhs.getElement();
-            if (lhsElement.getModifiers().contains(Modifier.PRIVATE)
-                && isFirstWriteToFieldInConstructor(
-                    node.getTree(), lhsElement, enclosingMethodTree)) {
-              // Safe; first assignment in constructor.
-              return;
-            }
+        Element receiverElement = TypesUtils.getTypeElement(receiver.getType());
+        if (Objects.equals(enclosingClassElement, receiverElement)) {
+          VariableElement lhsElement = lhs.getElement();
+          if (lhsElement.getModifiers().contains(Modifier.PRIVATE)
+              && isFirstWriteToFieldInConstructor(
+                  node.getTree(), lhsElement, enclosingMethodTree)) {
+            // Safe; first assignment in constructor.
+            return;
           }
         }
       }
