@@ -4,7 +4,7 @@
 
 import org.checkerframework.common.value.qual.*;
 
-public class FloatDoubleCast {
+public class CastsFloatDouble {
 
   // ============ float to float casts ============
 

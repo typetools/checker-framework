@@ -4,16 +4,6 @@ import org.checkerframework.common.value.qual.IntVal;
 
 public class Casts {
 
-  /*
-  final byte b = 65;
-  final char c = 'A';
-  final short s = 22222;
-  final int i = 1234567890;
-  final long l = 1234567890;
-  final float f = 1e-14f;
-  final double d = 1e-15;
-  */
-
   byte b;
   char c;
   short s;
