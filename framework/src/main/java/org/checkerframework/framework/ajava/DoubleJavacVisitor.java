@@ -38,10 +38,6 @@ import org.checkerframework.javacutil.BugInCF;
  * paired recursion explicitly by calling {@link #scan(Tree, Tree)} and {@link #scanList(List,
  * List)} on corresponding child trees.
  *
- * <p>The entry point is {@link #scan(Tree, Tree)}. Given two corresponding trees, {@code scan}
- * performs basic structural checks and then calls {@link Tree#accept} on the first tree to dispatch
- * to the appropriate {@code visitXyz} method.
- *
  * <p>To use this class, extend it and override {@link #defaultAction(Tree, Tree)} to perform work
  * for each matched pair of trees. Subclasses may also override specific {@code visitXyz} methods to
  * customize behavior, but do not need to override root methods such as {@code visitCompilationUnit}
@@ -165,7 +161,8 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
   //
 
   /**
-   * Visits a compilation unit (which represents a Java file) and scans its main children.
+   * Visits a compilation unit (which represents a Java file) and scans its module, package,
+   * imports, and top-level type declarations.
    *
    * @param ctree1 compilation unit tree from the first AST
    * @param tree2 compilation unit tree from the second AST
@@ -185,7 +182,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
   }
 
   /**
-   * Visits a package declaration and scans its annotations and name.
+   * Visits a package declaration and scans its name.
    *
    * @param ptree1 package tree from the first AST
    * @param tree2 package tree from the second AST
