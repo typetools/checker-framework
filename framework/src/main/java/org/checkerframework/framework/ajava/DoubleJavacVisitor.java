@@ -253,7 +253,10 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
     scanList(mtree1.getTypeParameters(), mtree2.getTypeParameters());
 
     scan(mtree1.getReturnType(), mtree2.getReturnType());
-    scan(mtree1.getReceiverParameter(), mtree2.getReceiverParameter());
+    // Receiver parameters may differ between .java and .ajava.
+    if (mtree1.getReceiverParameter() != null && mtree2.getReceiverParameter() != null) {
+      scan(mtree1.getReceiverParameter(), mtree2.getReceiverParameter());
+    }
 
     scanList(mtree1.getParameters(), mtree2.getParameters());
     scanList(mtree1.getThrows(), mtree2.getThrows());
