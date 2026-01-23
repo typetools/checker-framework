@@ -1,7 +1,6 @@
 package org.checkerframework.framework.ajava;
 
 import com.sun.source.tree.AnnotatedTypeTree;
-import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayTypeTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
@@ -33,35 +32,29 @@ import org.checkerframework.javacutil.BugInCF;
  * identical (modulo differences, such as annotations and explicit receiver parameters, between a
  * Java file and its corresponding {@code .ajava} file).
  *
- * <p>This visitor warns about some but not all violations of structural equivalence. For example,
- * when visiting wildcard types, this visitor compares only the bound (if present) and does not
- * check whether the wildcard is {@code extends} or {@code super}. As another example, this visitor
- * does not ensure that the field names are the same in a field access.
+ * <p>The entry point is {@link #scan(Tree, Tree)}. Given two corresponding trees, {@code scan}
+ * performs basic structural checks and then calls {@link Tree#accept} on the first tree to dispatch
+ * to the appropriate {@code visitXyz} method. The {@code visitXyz} methods in this base class drive
+ * paired recursion explicitly by calling {@link #scan(Tree, Tree)} and {@link #scanList(List,
+ * List)} on corresponding child trees.
  *
- * <p>The main entry point is {@link #scan}. Given two corresponding trees, {@code scan} invokes
- * {@link Tree#accept}, which dispatches to the appropriate {@code visitXyz} method based on the
- * run-time kind of the first tree.
+ * <p>The entry point is {@link #scan(Tree, Tree)}. Given two corresponding trees, {@code scan}
+ * performs basic structural checks and then calls {@link Tree#accept} on the first tree to dispatch
+ * to the appropriate {@code visitXyz} method.
  *
- * <p>To use this class, extend it and override {@link #defaultAction(Tree, Tree)}. Subclasses may
- * also override {@code visitXyz} methods for the tree kinds they care about. Each {@code visitXyz}
- * method is responsible for continuing traversal by <b>explicitly calling</b> {@link #scan}, {@link
- * #scanList}, or (when annotation mismatches are permitted) {@link #scanAnnotations} on
- * corresponding child trees.
+ * <p>To use this class, extend it and override {@link #defaultAction(Tree, Tree)} to perform work
+ * for each matched pair of trees. Subclasses may also override specific {@code visitXyz} methods to
+ * customize behavior, but do not need to override root methods such as {@code visitCompilationUnit}
+ * or {@code visitClass} unless they want to change traversal.
  *
  * <p><b>WARNING:</b> This class intentionally does <em>not</em> behave like {@link
  * com.sun.source.util.TreeScanner}. Although it subclasses {@link SimpleTreeVisitor}, recursion is
  * <em>not</em> automatic. To recurse, the {@code visitXyz} methods in this class and any subclass
- * must explicitly call {@link #scan}, {@link #scanList}, or {@link #scanAnnotations}.
+ * must explicitly call {@link #scan} or {@link #scanList}. This makes recursion explicit and keeps
+ * all paired-tree structural checks in {@link #scan(Tree, Tree)} rather than at every call site.
  *
- * <p>This design is necessary to ensure that traversal of the two trees remains synchronized and
- * that mismatches are detected immediately. The standard {@link Tree#accept} method cannot be used
- * directly to traverse both trees, because javac visitors are designed to traverse a single tree.
- * This class therefore uses {@link Tree#accept} only for dispatch, and drives paired traversal
- * explicitly via {@link #scan}.
- *
- * <p>Additionally, record components are not traversed explicitly. The javac tree API used by this
- * class does not expose record components in all supported JDK versions, so record-specific
- * structure and annotations may be skipped.
+ * <p>This base visitor does not compare or traverse annotation lists, since annotations may
+ * legitimately differ between a Java file and its corresponding {@code .ajava} file.
  */
 public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
 
@@ -69,17 +62,10 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
   protected DoubleJavacVisitor() {}
 
   /**
-   * Action hook that subclasses can override to process a matched pair of trees. Also, the fallback
-   * action invoked when no {@code visitXyz} method is overridden for the current tree kind.
+   * Default action performed on all pairs of nodes from matching ASTs.
    *
-   * <p>This method is invoked during traversal for a matched pair of trees when the corresponding
-   * {@code visitXyz} method is not overridden by a subclass.
-   *
-   * <p><b>Important:</b> This method does <em>not</em> recurse into child nodes. Traversal proceeds
-   * only through {@code visitXyz} methods that explicitly call {@link #scan} or {@link #scanList}.
-   *
-   * <p>This design ensures that paired traversal of the two ASTs remains explicit and synchronized,
-   * and avoids accidental descent into mismatched or unsupported tree structures.
+   * <p>This method is called by each {@code visitXyz} method in this class before scanning child
+   * trees. It does not itself recurse; recursion is driven by the {@code visitXyz} methods.
    *
    * @param tree1 the first tree in the matched pair
    * @param tree2 the second tree in the matched pair
@@ -174,39 +160,6 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
     }
   }
 
-  /**
-   * Scans corresponding annotation trees while permitting annotation-list mismatches.
-   *
-   * <p>The two list arguments must either both be null or both be non-null.
-   *
-   * <p>This helper exists to support comparisons between a Java source file and its corresponding
-   * {@code .ajava} file, where additional annotations may legitimately appear. The two annotation
-   * lists are traversed in lockstep up to the minimum of their sizes; any extra annotations in
-   * either list are intentionally ignored.
-   *
-   * @param anns1 the annotation list from the first AST, or {@code null}
-   * @param anns2 the annotation list from the second AST, or {@code null}
-   */
-  public final void scanAnnotations(
-      @Nullable List<? extends AnnotationTree> anns1,
-      @Nullable List<? extends AnnotationTree> anns2) {
-
-    if (anns1 == null && anns2 == null) {
-      return;
-    }
-    if (anns1 == null || anns2 == null) {
-      throw new BugInCF(
-          String.format(
-              "%s.scanAnnotations: one list is null: anns1=%s anns2=%s",
-              this.getClass().getCanonicalName(), anns1, anns2));
-    }
-
-    int n = Math.min(anns1.size(), anns2.size());
-    for (int i = 0; i < n; i++) {
-      scan(anns1.get(i), anns2.get(i));
-    }
-  }
-
   //
   // Visitor methods
   //
@@ -243,7 +196,6 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
     PackageTree ptree2 = (PackageTree) tree2;
     defaultAction(ptree1, ptree2);
 
-    scanAnnotations(ptree1.getAnnotations(), ptree2.getAnnotations());
     scan(ptree1.getPackageName(), ptree2.getPackageName());
     return null;
   }
@@ -267,10 +219,6 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
   /**
    * Visits a class-like declaration and scans its modifiers, type parameters, superclass,
    * interfaces, permits clause, and members.
-   *
-   * <p><b>Note:</b> Record components are not traversed explicitly by this method. On some JDK
-   * versions, the javac tree API does not expose record components via {@link ClassTree}, so
-   * record-specific structure and annotations may be skipped.
    *
    * @param ctree1 class tree from the first AST
    * @param tree2 class tree from the second AST
@@ -320,8 +268,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
 
   /**
    * Visits a variable declaration (field, local, parameter) and scans its modifiers, type,
-   * initializer, and (for record components) accessor-like details are handled by the enclosing
-   * node.
+   * initializer.
    *
    * @param vtree1 variable tree from the first AST
    * @param tree2 variable tree from the second AST
@@ -339,7 +286,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
   }
 
   /**
-   * Visits a modifiers node and scans annotations.
+   * Visits a modifiers node.
    *
    * @param mtree1 modifiers tree from the first AST
    * @param tree2 modifiers tree from the second AST
@@ -349,35 +296,14 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
   public Void visitModifiers(ModifiersTree mtree1, Tree tree2) {
     ModifiersTree mtree2 = (ModifiersTree) tree2;
     defaultAction(mtree1, mtree2);
-
-    scanAnnotations(mtree1.getAnnotations(), mtree2.getAnnotations());
-    return null;
-  }
-
-  /**
-   * Visits an annotation node and scans its argument expressions.
-   *
-   * @param atree1 annotation tree from the first AST
-   * @param tree2 annotation tree from the second AST
-   * @return null
-   */
-  @Override
-  public Void visitAnnotation(AnnotationTree atree1, Tree tree2) {
-    AnnotationTree atree2 = (AnnotationTree) tree2;
-    defaultAction(atree1, atree2);
-
-    scan(atree1.getAnnotationType(), atree2.getAnnotationType());
-    scanList(atree1.getArguments(), atree2.getArguments());
     return null;
   }
 
   /**
    * Visits an annotated type and scans both its type-use annotations and its underlying type.
    *
-   * <p>In javac's AST, annotations on a type (e.g., {@code @A String}) are represented as {@link
-   * AnnotationTree} nodes returned by {@link AnnotatedTypeTree#getAnnotations()}. This method scans
-   * those annotations and then scans the underlying type via {@link
-   * AnnotatedTypeTree#getUnderlyingType()}.
+   * <p>Type-use annotations may legitimately differ between a Java file and its corresponding
+   * {@code .ajava} file, so this visitor does not compare or traverse the annotation list here.
    *
    * @param atree1 annotated type tree from the first AST
    * @param tree2 annotated type tree from the second AST
@@ -388,7 +314,6 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
     AnnotatedTypeTree ttree2 = (AnnotatedTypeTree) tree2;
     defaultAction(atree1, ttree2);
 
-    scanAnnotations(atree1.getAnnotations(), ttree2.getAnnotations());
     scan(atree1.getUnderlyingType(), ttree2.getUnderlyingType());
     return null;
   }
@@ -441,7 +366,11 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
   }
 
   /**
-   * Visits a type parameter and scans its bounds and annotations on the parameter itself.
+   * Visits a type parameter and scans its bounds.
+   *
+   * <p>Annotations on the type parameter may legitimately differ between a Java file and its
+   * corresponding {@code .ajava} file, so this visitor does not compare or traverse the annotation
+   * list here.
    *
    * @param ttree1 type parameter tree from the first AST
    * @param tree2 type parameter tree from the second AST
@@ -452,7 +381,6 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
     TypeParameterTree ttree2 = (TypeParameterTree) tree2;
     defaultAction(ttree1, ttree2);
 
-    scanAnnotations(ttree1.getAnnotations(), ttree2.getAnnotations());
     scanList(ttree1.getBounds(), ttree2.getBounds());
     return null;
   }
