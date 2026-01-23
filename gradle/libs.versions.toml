@@ -6,7 +6,7 @@ de-undercouch-download = { id = "de.undercouch.download", version = "5.6.0" }
 
 net-ltgt-errorprone = { id = "net.ltgt.errorprone", version = "4.4.0" }
 
-com-diffplug-spotless = { id = "com.diffplug.spotless", version = "8.1.0" }
+com-diffplug-spotless = { id = "com.diffplug.spotless", version = "8.2.0" }
 
 com-gorylenko-gradle-git-properties = { id = "com.gorylenko.gradle-git-properties", version = "2.5.4" }
 
