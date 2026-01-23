@@ -408,13 +408,10 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
   }
 
   /**
-   * Overridden to issue errors at the appropriate place if an {@code IntRange} or {@code
-   * ArrayLenRange} annotation has {@code from > to}. {@code from > to} either indicates a user
-   * error when writing an annotation or an error in the checker's implementation, as {@code from}
-   * should always be {@code <= to}. Note that additional checks are performed in {@link
-   * #visitAnnotation(AnnotationTree, Void)}.
+   * Issue an error if {@code IntRange(from=x, to=y)} has {@code x>y}. Note that additional checks
+   * are performed in {@link #visitAnnotation(AnnotationTree, Void)}.
    *
-   * @see #visitAnnotation(AnnotationTree, Void)
+   * <p>{@inheritDoc}
    */
   @Override
   public boolean validateType(Tree tree, AnnotatedTypeMirror type) {
