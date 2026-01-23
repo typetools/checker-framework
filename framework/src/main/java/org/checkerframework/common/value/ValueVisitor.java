@@ -404,6 +404,47 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
       }
     }
 
+    // Handle floating-point type casts (double <-> float).
+    // When a double is cast to float, precision loss may occur, but this is expected
+    // IEEE 754 behavior and should not be flagged as an unsafe cast if the result
+    // is the correctly-rounded representation.
+    // When a float is cast to double, no precision is lost, so it is always safe.
+    if (castTypeKind != null
+        && exprTypeKind != null
+        && TypeKindUtils.isFloatingPoint(castTypeKind)
+        && TypeKindUtils.isFloatingPoint(exprTypeKind)) {
+      if (AnnotationUtils.areSameByName(castAnno, ValueAnnotatedTypeFactory.DOUBLEVAL_NAME)
+          && AnnotationUtils.areSameByName(exprAnno, ValueAnnotatedTypeFactory.DOUBLEVAL_NAME)) {
+
+        if (castTypeKind == TypeKind.FLOAT && exprTypeKind == TypeKind.DOUBLE) {
+          List<Double> castValues = atypeFactory.getDoubleValues(castAnno);
+          List<Double> exprValues = atypeFactory.getDoubleValues(exprAnno);
+          if (castValues != null && exprValues != null) {
+            // The cast type must contain all the values of the expression type (after rounding).
+            // Convert expression values to what they would be after float cast, then check
+            // containment.
+            TreeSet<Float> castValuesSet =
+                new TreeSet<Float>(CollectionsPlume.mapList(Number::floatValue, castValues));
+            TreeSet<Float> exprValuesSet =
+                new TreeSet<Float>(CollectionsPlume.mapList(Number::floatValue, exprValues));
+            return CollectionsPlume.sortedSetContainsAll(castValuesSet, exprValuesSet);
+          }
+        }
+
+        if (castTypeKind == TypeKind.DOUBLE && exprTypeKind == TypeKind.FLOAT) {
+          List<Double> castValues = atypeFactory.getDoubleValues(castAnno);
+          List<Double> exprValues = atypeFactory.getDoubleValues(exprAnno);
+          if (castValues != null && exprValues != null) {
+            // The cast type must contain all the values of the expression type.
+            // Float-to-double is lossless, so just check containment directly.
+            TreeSet<Double> castValuesSet = new TreeSet<>(castValues);
+            TreeSet<Double> exprValuesSet = new TreeSet<>(exprValues);
+            return CollectionsPlume.sortedSetContainsAll(castValuesSet, exprValuesSet);
+          }
+        }
+      }
+    }
+
     return super.isTypeCastSafe(castType, exprType);
   }
 
