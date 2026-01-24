@@ -31,7 +31,6 @@ import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
-import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -338,22 +337,22 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
   protected boolean isTypeCastSafe(AnnotatedTypeMirror castType, AnnotatedTypeMirror exprType) {
     TypeKind castTypeKind = TypeKindUtils.primitiveOrBoxedToTypeKind(castType.getUnderlyingType());
     TypeKind exprTypeKind = TypeKindUtils.primitiveOrBoxedToTypeKind(exprType.getUnderlyingType());
-    if (castTypeKind != null
-        && exprTypeKind != null
-        && TypeKindUtils.isIntegral(castTypeKind)
-        && TypeKindUtils.isIntegral(exprTypeKind)) {
-      AnnotationMirrorSet castAnnos = castType.getPrimaryAnnotations();
-      AnnotationMirrorSet exprAnnos = exprType.getPrimaryAnnotations();
-      if (castAnnos.equals(exprAnnos)) {
-        return true;
-      }
-      assert castAnnos.size() == 1;
-      assert exprAnnos.size() == 1;
-      AnnotationMirror castAnno = castAnnos.first();
-      AnnotationMirror exprAnno = exprAnnos.first();
-      boolean castAnnoIsIntVal = atypeFactory.areSameByClass(castAnno, IntVal.class);
-      boolean exprAnnoIsIntVal = atypeFactory.areSameByClass(exprAnno, IntVal.class);
-      if (castAnnoIsIntVal && exprAnnoIsIntVal) {
+
+    if (castTypeKind == null || exprTypeKind == null) {
+      return super.isTypeCastSafe(castType, exprType);
+    }
+
+    // The cast is from a numeric type and is to a numeric type.
+
+    AnnotationMirror castAnno = castType.getPrimaryAnnotation();
+    AnnotationMirror exprAnno = exprType.getPrimaryAnnotation();
+    if (castAnno.equals(exprAnno)) {
+      return true;
+    }
+
+    if (TypeKindUtils.isIntegral(castTypeKind) && TypeKindUtils.isIntegral(exprTypeKind)) {
+      if (atypeFactory.areSameByClass(castAnno, IntVal.class)
+          && atypeFactory.areSameByClass(exprAnno, IntVal.class)) {
         List<Long> castValues = atypeFactory.getIntValues(castAnno);
         List<Long> exprValues = atypeFactory.getIntValues(exprAnno);
         if (castValues.size() == 1 && exprValues.size() == 1) {
@@ -372,34 +371,75 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
           switch (castTypeKind) {
             case BYTE:
               {
-                TreeSet<Byte> castValuesTree =
+                TreeSet<Byte> castValuesSet =
                     new TreeSet<Byte>(CollectionsPlume.mapList(Number::byteValue, castValues));
-                TreeSet<Byte> exprValuesTree =
+                TreeSet<Byte> exprValuesSet =
                     new TreeSet<Byte>(CollectionsPlume.mapList(Number::byteValue, exprValues));
-                return CollectionsPlume.sortedSetContainsAll(castValuesTree, exprValuesTree);
+                return CollectionsPlume.sortedSetContainsAll(castValuesSet, exprValuesSet);
               }
             case INT:
               {
-                TreeSet<Integer> castValuesTree =
+                TreeSet<Integer> castValuesSet =
                     new TreeSet<Integer>(CollectionsPlume.mapList(Number::intValue, castValues));
-                TreeSet<Integer> exprValuesTree =
+                TreeSet<Integer> exprValuesSet =
                     new TreeSet<Integer>(CollectionsPlume.mapList(Number::intValue, exprValues));
-                return CollectionsPlume.sortedSetContainsAll(castValuesTree, exprValuesTree);
+                return CollectionsPlume.sortedSetContainsAll(castValuesSet, exprValuesSet);
               }
             case SHORT:
               {
-                TreeSet<Short> castValuesTree =
+                TreeSet<Short> castValuesSet =
                     new TreeSet<Short>(CollectionsPlume.mapList(Number::shortValue, castValues));
-                TreeSet<Short> exprValuesTree =
+                TreeSet<Short> exprValuesSet =
                     new TreeSet<Short>(CollectionsPlume.mapList(Number::shortValue, exprValues));
-                return CollectionsPlume.sortedSetContainsAll(castValuesTree, exprValuesTree);
+                return CollectionsPlume.sortedSetContainsAll(castValuesSet, exprValuesSet);
               }
             default:
               {
-                TreeSet<Long> castValuesTree = new TreeSet<>(castValues);
-                TreeSet<Long> exprValuesTree = new TreeSet<>(exprValues);
-                return CollectionsPlume.sortedSetContainsAll(castValuesTree, exprValuesTree);
+                TreeSet<Long> castValuesSet = new TreeSet<>(castValues);
+                TreeSet<Long> exprValuesSet = new TreeSet<>(exprValues);
+                return CollectionsPlume.sortedSetContainsAll(castValuesSet, exprValuesSet);
               }
+          }
+        }
+      }
+    }
+
+    // Handle floating-point type casts (double <-> float).
+    // When a double is cast to float, precision loss may occur, but this is expected
+    // IEEE 754 behavior and should not be flagged as an unsafe cast if the result
+    // is the correctly-rounded representation.
+    // When a float is cast to double, no precision is lost, so it is always safe.
+    if (castTypeKind != null
+        && exprTypeKind != null
+        && TypeKindUtils.isFloatingPoint(castTypeKind)
+        && TypeKindUtils.isFloatingPoint(exprTypeKind)) {
+      if (AnnotationUtils.areSameByName(castAnno, ValueAnnotatedTypeFactory.DOUBLEVAL_NAME)
+          && AnnotationUtils.areSameByName(exprAnno, ValueAnnotatedTypeFactory.DOUBLEVAL_NAME)) {
+
+        if (castTypeKind == TypeKind.FLOAT && exprTypeKind == TypeKind.DOUBLE) {
+          List<Double> castValues = atypeFactory.getDoubleValues(castAnno);
+          List<Double> exprValues = atypeFactory.getDoubleValues(exprAnno);
+          if (castValues != null && exprValues != null) {
+            // The cast type must contain all the values of the expression type (after rounding).
+            // Convert expression values to what they would be after float cast, then check
+            // containment.
+            TreeSet<Float> castValuesSet =
+                new TreeSet<Float>(CollectionsPlume.mapList(Number::floatValue, castValues));
+            TreeSet<Float> exprValuesSet =
+                new TreeSet<Float>(CollectionsPlume.mapList(Number::floatValue, exprValues));
+            return CollectionsPlume.sortedSetContainsAll(castValuesSet, exprValuesSet);
+          }
+        }
+
+        if (castTypeKind == TypeKind.DOUBLE && exprTypeKind == TypeKind.FLOAT) {
+          List<Double> castValues = atypeFactory.getDoubleValues(castAnno);
+          List<Double> exprValues = atypeFactory.getDoubleValues(exprAnno);
+          if (castValues != null && exprValues != null) {
+            // The cast type must contain all the values of the expression type.
+            // Float-to-double is lossless, so just check containment directly.
+            TreeSet<Double> castValuesSet = new TreeSet<>(castValues);
+            TreeSet<Double> exprValuesSet = new TreeSet<>(exprValues);
+            return CollectionsPlume.sortedSetContainsAll(castValuesSet, exprValuesSet);
           }
         }
       }
@@ -409,13 +449,10 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
   }
 
   /**
-   * Overridden to issue errors at the appropriate place if an {@code IntRange} or {@code
-   * ArrayLenRange} annotation has {@code from > to}. {@code from > to} either indicates a user
-   * error when writing an annotation or an error in the checker's implementation, as {@code from}
-   * should always be {@code <= to}. Note that additional checks are performed in {@link
-   * #visitAnnotation(AnnotationTree, Void)}.
+   * Issue an error if {@code IntRange(from=x, to=y)} has {@code x>y}. Note that additional checks
+   * are performed in {@link #visitAnnotation(AnnotationTree, Void)}.
    *
-   * @see #visitAnnotation(AnnotationTree, Void)
+   * <p>{@inheritDoc}
    */
   @Override
   public boolean validateType(Tree tree, AnnotatedTypeMirror type) {
