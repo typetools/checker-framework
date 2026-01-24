@@ -1,5 +1,6 @@
 package org.checkerframework.framework.flow;
 
+import com.sun.source.tree.Tree;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -30,6 +31,7 @@ import org.checkerframework.dataflow.cfg.visualize.StringCFGVisualizer;
 import org.checkerframework.dataflow.expression.ArrayAccess;
 import org.checkerframework.dataflow.expression.ClassName;
 import org.checkerframework.dataflow.expression.FieldAccess;
+import org.checkerframework.dataflow.expression.IteratedCollectionElement;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.MethodCall;
@@ -72,6 +74,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
   /** Information collected about local variables (including method parameters). */
   protected final Map<LocalVariable, V> localVariableValues;
+
+  /** Information collected about iterated collection elements. */
+  protected final Map<IteratedCollectionElement, V> iteratedCollectionElements;
 
   /** Information collected about the current object. */
   protected V thisValue;
@@ -143,6 +148,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   protected CFAbstractStore(CFAbstractAnalysis<V, S, ?> analysis, boolean sequentialSemantics) {
     this.analysis = analysis;
     this.localVariableValues = new HashMap<>();
+    this.iteratedCollectionElements = new HashMap<>();
     this.thisValue = null;
     this.fieldValues = new HashMap<>();
     this.methodCallExpressions = new HashMap<>();
@@ -163,6 +169,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   protected CFAbstractStore(CFAbstractStore<V, S> other) {
     this.analysis = other.analysis;
     this.localVariableValues = new HashMap<>(other.localVariableValues);
+    this.iteratedCollectionElements = new HashMap<>(other.iteratedCollectionElements);
     this.thisValue = other.thisValue;
     this.fieldValues = new HashMap<>(other.fieldValues);
     this.methodCallExpressions = new HashMap<>(other.methodCallExpressions);
@@ -503,6 +510,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         || expr instanceof ThisReference
         || expr instanceof SuperReference
         || expr instanceof LocalVariable
+        || expr instanceof IteratedCollectionElement
         || expr instanceof MethodCall
         || expr instanceof ArrayAccess
         || expr instanceof ClassName) {
@@ -637,6 +645,13 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       if (newValue != null) {
         localVariableValues.put(localVar, newValue);
       }
+    } else if (expr instanceof IteratedCollectionElement) {
+      IteratedCollectionElement collectionElt = (IteratedCollectionElement) expr;
+      V oldValue = iteratedCollectionElements.get(collectionElt);
+      V newValue = merger.apply(oldValue, value);
+      if (newValue != null) {
+        iteratedCollectionElements.put(collectionElt, newValue);
+      }
     } else if (expr instanceof FieldAccess) {
       FieldAccess fieldAcc = (FieldAccess) expr;
       // Only store information about final fields (where the receiver is
@@ -767,6 +782,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     if (expr instanceof LocalVariable) {
       LocalVariable localVar = (LocalVariable) expr;
       localVariableValues.remove(localVar);
+    } else if (expr instanceof IteratedCollectionElement) {
+      IteratedCollectionElement collectionElt = (IteratedCollectionElement) expr;
+      iteratedCollectionElements.remove(collectionElt);
     } else if (expr instanceof FieldAccess) {
       FieldAccess fieldAcc = (FieldAccess) expr;
       fieldValues.remove(fieldAcc);
@@ -787,6 +805,23 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   }
 
   /**
+   * Returns the {@link IteratedCollectionElement} associated with the given node or tree.
+   *
+   * @param node CFG node for which the associated {@link IteratedCollectionElement} is sought
+   * @param tree AST tree for which the associated {@link IteratedCollectionElement} is sought
+   * @return the {@link IteratedCollectionElement} associated with the given node or tree
+   */
+  @SuppressWarnings("interning:not.interned") // we want to check reference equality
+  public @Nullable IteratedCollectionElement getIteratedCollectionElement(Node node, Tree tree) {
+    for (IteratedCollectionElement ice : iteratedCollectionElements.keySet()) {
+      if (ice.tree == tree || ice.node == node || ice.tree.equals(tree) || ice.node.equals(node)) {
+        return ice;
+      }
+    }
+    return null;
+  }
+
+  /**
    * Returns the current abstract value of a Java expression, or {@code null} if no information is
    * available.
    *
@@ -797,6 +832,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     if (expr instanceof LocalVariable) {
       LocalVariable localVar = (LocalVariable) expr;
       return localVariableValues.get(localVar);
+    } else if (expr instanceof IteratedCollectionElement) {
+      IteratedCollectionElement collectionElt = (IteratedCollectionElement) expr;
+      return iteratedCollectionElements.get(collectionElt);
     } else if (expr instanceof ThisReference || expr instanceof SuperReference) {
       return thisValue;
     } else if (expr instanceof FieldAccess) {
@@ -1195,6 +1233,18 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       }
     }
 
+    for (Map.Entry<IteratedCollectionElement, V> e : other.iteratedCollectionElements.entrySet()) {
+      IteratedCollectionElement ice = e.getKey();
+      V thisVal = iteratedCollectionElements.get(ice);
+      if (thisVal != null) {
+        V otherVal = e.getValue();
+        V mergedVal = upperBoundOfValues(otherVal, thisVal, shouldWiden);
+        if (mergedVal != null) {
+          newStore.iteratedCollectionElements.put(ice, mergedVal);
+        }
+      }
+    }
+
     // information about the current object
     {
       V otherVal = other.thisValue;
@@ -1273,6 +1323,13 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     for (Map.Entry<LocalVariable, V> e : other.localVariableValues.entrySet()) {
       LocalVariable key = e.getKey();
       V value = localVariableValues.get(key);
+      if (value == null || !value.equals(e.getValue())) {
+        return false;
+      }
+    }
+    for (Map.Entry<IteratedCollectionElement, V> e : other.iteratedCollectionElements.entrySet()) {
+      IteratedCollectionElement key = e.getKey();
+      V value = iteratedCollectionElements.get(key);
       if (value == null || !value.equals(e.getValue())) {
         return false;
       }
@@ -1359,6 +1416,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     StringJoiner res = new StringJoiner(viz.getSeparator());
     for (LocalVariable lv : ToStringComparator.sorted(localVariableValues.keySet())) {
       res.add(viz.visualizeStoreLocalVar(lv, localVariableValues.get(lv)));
+    }
+    for (IteratedCollectionElement ice :
+        ToStringComparator.sorted(iteratedCollectionElements.keySet())) {
+      res.add(viz.visualizeStoreIteratedCollectionElt(ice, iteratedCollectionElements.get(ice)));
     }
     if (thisValue != null) {
       res.add(viz.visualizeStoreThisVal(thisValue));
