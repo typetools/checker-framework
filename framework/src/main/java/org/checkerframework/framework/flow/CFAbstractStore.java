@@ -2,11 +2,13 @@ package org.checkerframework.framework.flow;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.StringJoiner;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BinaryOperator;
@@ -1139,6 +1141,17 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   public @Nullable V getValue(LocalVariableNode n) {
     VariableElement el = n.getElement();
     return localVariableValues.get(new LocalVariable(el));
+  }
+
+  /**
+   * Returns the set of local variables currently tracked in this store.
+   *
+   * <p>Clients should not side-effect the returned value, which is aliased to internal state.
+   *
+   * @return the set of local variables currently in scope
+   */
+  public Set<LocalVariable> getLocalVariables() {
+    return Collections.unmodifiableSet(localVariableValues.keySet());
   }
 
   /* --------------------------------------------------------- */
