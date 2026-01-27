@@ -12,7 +12,7 @@ The framework supports two primary use cases:
 
 ## System Architecture
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────────┐
 │                        User Application                         │
 │              (Java code with type annotations)                  │
@@ -73,7 +73,8 @@ The framework supports two primary use cases:
 The heart of the Checker Framework, providing infrastructure for building custom type checkers.
 
 **Package Structure:**
-```
+
+```text
 org/checkerframework/framework/
 ├── type/                     # Type system infrastructure
 │   ├── AnnotatedTypeMirror   # Representation of types with annotations
@@ -110,7 +111,8 @@ org/checkerframework/framework/
 Production-ready type checkers for common programming patterns and bug classes.
 
 **Major Checkers:**
-```
+
+```text
 org/checkerframework/checker/
 ├── nullness/              # Null pointer dereference prevention
 │   ├── NullnessChecker    # Main checker for @NonNull/@Nullable
@@ -160,7 +162,8 @@ org/checkerframework/checker/
 Provides control flow graph construction and dataflow analysis infrastructure.
 
 **Package Structure:**
-```
+
+```text
 org/checkerframework/dataflow/
 ├── cfg/                      # Control Flow Graph
 │   ├── ControlFlowGraph      # CFG representation
@@ -194,7 +197,8 @@ org/checkerframework/dataflow/
 Wrapper utilities that simplify interaction with javac's complex internal APIs.
 
 **Package Structure:**
-```
+
+```text
 org/checkerframework/javacutil/
 ├── TreeUtils              # Utilities for com.sun.source.tree.* (AST)
 ├── ElementUtils           # Utilities for javax.lang.model.element.* (symbols)
@@ -568,11 +572,11 @@ The framework uses its own checkers during development:
 
 ## References
 
-- **Website**: https://checkerframework.org
-- **GitHub**: https://github.com/typetools/checker-framework
-- **Manual**: https://checkerframework.org/manual/
-- **Developer Manual**: https://checkerframework.org/manual/developer-manual.html
-- **Academic Papers**: Listed at https://checkerframework.org/papers/
+- **Website**: [checkerframework.org](https://checkerframework.org)
+- **GitHub**: [typetools/checker-framework](https://github.com/typetools/checker-framework)
+- **Manual**: [checkerframework.org/manual](https://checkerframework.org/manual/)
+- **Developer Manual**: [developer manual](https://checkerframework.org/manual/developer-manual.html)
+- **Academic Papers**: [checkerframework.org/papers](https://checkerframework.org/papers/)
 
 ---
 
