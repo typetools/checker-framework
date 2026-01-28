@@ -226,6 +226,7 @@ Lightweight library containing only annotations, suitable for runtime dependenci
 - **No implementation code** - zero runtime overhead
 
 **Usage:**
+
 ```xml
 <dependency>
   <groupId>org.checkerframework</groupId>
@@ -246,6 +247,7 @@ Tools for working with annotations outside source code.
 - **Command-line Tools**: `insert-annotations`, `extract-annotations`, etc.
 
 **Binaries:**
+
 ```
 bin/
 ├── insert-annotations         # Insert from .jaif to source
@@ -260,6 +262,7 @@ bin/
 ### 1. Compiler Plugin (Annotation Processor)
 
 **Gradle:**
+
 ```gradle
 dependencies {
     checkerFramework 'org.checkerframework:checker:3.53.0'
@@ -273,6 +276,7 @@ tasks.withType(JavaCompile) {
 ```
 
 **Maven:**
+
 ```xml
 <plugin>
   <groupId>org.apache.maven.plugins</groupId>
@@ -294,6 +298,7 @@ tasks.withType(JavaCompile) {
 ```
 
 **Command Line:**
+
 ```bash
 javac -processor org.checkerframework.checker.nullness.NullnessChecker MyFile.java
 ```
@@ -335,7 +340,9 @@ Automatically infer type annotations for entire codebases:
 ## Key Design Patterns
 
 ### 1. Visitor Pattern
+
 All type checking uses the Visitor pattern to traverse Java AST:
+
 ```java
 public class NullnessVisitor extends BaseTypeVisitor<NullnessAnnotatedTypeFactory> {
     @Override
@@ -348,13 +355,17 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessAnnotatedTypeFactor
 ```
 
 ### 2. Factory Pattern
+
 Type creation centralized in AnnotatedTypeFactory:
+
 ```java
 AnnotatedTypeMirror type = factory.getAnnotatedType(tree);
 ```
 
 ### 3. Transfer Functions
+
 Dataflow analysis uses transfer functions to model statement effects:
+
 ```java
 public class NullnessTransfer extends CFAbstractTransfer<...> {
     @Override
@@ -365,8 +376,10 @@ public class NullnessTransfer extends CFAbstractTransfer<...> {
 ```
 
 ### 4. Qualifier Hierarchy
+
 Type qualifiers organized in subtype lattice:
-```
+
+```text
            @Nullable
                |
            @NonNull
@@ -379,6 +392,7 @@ Type qualifiers organized in subtype lattice:
 ### Creating a Custom Checker (Minimal Example)
 
 **1. Define Qualifiers:**
+
 ```java
 @SubtypeOf({}) // Top of hierarchy
 public @interface Tainted {}
@@ -388,11 +402,13 @@ public @interface Untainted {}
 ```
 
 **2. Create Checker:**
+
 ```java
 public class TaintingChecker extends BaseTypeChecker {}
 ```
 
 **3. (Optional) Custom Type Factory:**
+
 ```java
 public class TaintingAnnotatedTypeFactory 
     extends GenericAnnotatedTypeFactory<...> {
@@ -401,6 +417,7 @@ public class TaintingAnnotatedTypeFactory
 ```
 
 **4. (Optional) Custom Visitor:**
+
 ```java
 public class TaintingVisitor extends BaseTypeVisitor<...> {
     // Custom validation rules
@@ -420,7 +437,7 @@ public class TaintingVisitor extends BaseTypeVisitor<...> {
 
 ### Compilation with Type Checking
 
-```
+```text
 Source Code (.java)
         ↓
   javac Parser → AST
@@ -462,11 +479,13 @@ void example(@Nullable String s) {
 ## Performance Considerations
 
 ### Compilation Time Impact
+
 - **Typical overhead**: 10-50% increase in compilation time
 - **Factors**: Number of checkers, codebase size, annotation density
 - **Optimization**: Use incremental compilation, cache CFG/dataflow results
 
 ### Scaling Strategies
+
 1. **Incremental checking**: Only check changed files
 2. **Parallel checking**: Run multiple checkers in parallel (if independent)
 3. **Selective checking**: Check only critical modules in CI
@@ -477,7 +496,8 @@ void example(@Nullable String s) {
 ## Testing Infrastructure
 
 ### Test Framework
-```
+
+```text
 */tests/
 ├── *.java          # Test input files with type annotations
 ├── *.out           # Expected javac output (errors/warnings)
@@ -485,6 +505,7 @@ void example(@Nullable String s) {
 ```
 
 ### Running Tests
+
 ```bash
 ./gradlew :checker:test              # All checker tests
 ./gradlew :framework:test            # Framework tests
@@ -493,6 +514,7 @@ void example(@Nullable String s) {
 ```
 
 ### Test Categories
+
 - **Unit tests**: Individual components (type factories, utilities)
 - **Integration tests**: Full checker runs on sample code
 - **Regression tests**: Previously fixed bugs
@@ -518,6 +540,7 @@ void example(@Nullable String s) {
 **Technology**: Gradle 8+ with Kotlin DSL support
 
 **Key Gradle Tasks:**
+
 ```bash
 ./gradlew build              # Build all modules
 ./gradlew checker:build      # Build checker module
@@ -547,12 +570,14 @@ void example(@Nullable String s) {
 ## Security & Quality
 
 ### Static Analysis on Checker Framework Itself
+
 The framework uses its own checkers during development:
 - Nullness Checker: Prevent null pointer exceptions
 - Lock Checker: Ensure thread safety
 - Initialization Checker: Prevent uninitialized reads
 
 ### Code Quality Tools
+
 - **Spotless**: Code formatting (Google Java Style)
 - **Error Prone**: Additional static analysis
 - **JaCoCo**: Code coverage measurement
