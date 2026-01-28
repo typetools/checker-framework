@@ -248,7 +248,7 @@ Tools for working with annotations outside source code.
 
 **Binaries:**
 
-```
+```text
 bin/
 ├── insert-annotations         # Insert from .jaif to source
 ├── extract-annotations        # Extract from class files
