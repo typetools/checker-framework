@@ -643,7 +643,7 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
       dbug.debug("TypePositionFinder.visitNewArray%n");
       JCNewArray na = (JCNewArray) node;
       GenericArrayLocationCriterion galc = ins.getCriteria().getGenericArrayLocation();
-      ASTRecord rec = ASTIndex.indexOf(tree).get(node);
+      ASTRecord rec = astRecord(node);
       ASTPath astPath = ins.getCriteria().getASTPath();
       String childSelector = null;
       // Invariant:  na.dims.isEmpty()  or  na.elems == null  (but not both)
@@ -1371,8 +1371,7 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
       // in the source tree.  For example, a receiver annotation
       // matches on the method and inserts on the (possibly newly
       // created) receiver.
-      Map<Tree, ASTRecord> astIndex = ASTIndex.indexOf(tree);
-      ASTRecord insertRecord = astIndex.get(node);
+      ASTRecord insertRecord = astRecord(node);
       dbug.debug("TreeFinder.scan: node=%s%n  criteria=%s%n", node, i.getCriteria());
 
       if (TreePathUtil.hasClassKind(node)
