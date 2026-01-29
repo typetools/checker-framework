@@ -401,7 +401,7 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
           }
         }
         if (i == null) {
-          i = jcnode.getEndPosition(tree.endPositions);
+          i = getEndPosition(jcnode, tree);
         }
       } else if (parent instanceof NewClassTree) {
         dbug.debug("TypePositionFinder.visitIdentifier: recognized class%n");
