@@ -257,8 +257,12 @@ public class TreePathUtil {
   }
 
   /**
-   * Returns the end position of the tree, see {@link
+   * Returns the end position of the given tree, see {@link
    * SourcePositions#getEndPosition(CompilationUnitTree, Tree)}.
+   *
+   * @param tree an AST node
+   * @param unit the compilation unit that contains {@code tree}
+   * @return the end position of the given tree
    */
   public static int getEndPosition(Tree tree, CompilationUnitTree unit) {
     try {
@@ -269,9 +273,14 @@ public class TreePathUtil {
     }
   }
 
+  /** The {@link MethodHandle} for retrieving the end position of a {@link JCTree}. */
   private static final MethodHandle GET_END_POS_HANDLE = getEndPosMethodHandle();
 
-  /** Gets the {@link MethodHandle} for retrieving the end position of a {@link JCTree}. */
+  /**
+   * Returns the {@link MethodHandle} for retrieving the end position of a {@link JCTree}.
+   *
+   * @return the {@link MethodHandle} for retrieving the end position of a {@link JCTree}.
+   */
   private static MethodHandle getEndPosMethodHandle() {
     MethodHandles.Lookup lookup = MethodHandles.lookup();
     try {
