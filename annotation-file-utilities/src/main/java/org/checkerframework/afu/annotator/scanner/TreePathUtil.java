@@ -265,6 +265,7 @@ public class TreePathUtil {
    * @return the end position of the given tree
    */
   public static int getEndPosition(Tree tree, CompilationUnitTree unit) {
+    // This method has no `throws` clause, because of the `try` block.
     try {
       return (int) GET_END_POS_HANDLE.invokeExact((JCTree) tree, (JCTree.JCCompilationUnit) unit);
     } catch (Throwable e) {
