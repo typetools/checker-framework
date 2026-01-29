@@ -2,51 +2,7 @@
 # Make will silently continue if that file does not exist.
 -include Makefile.user
 
-# To regenerate this list, run:
-# ../../checker/bin-devel/.plume-scripts/latex-process-inputs -makefilelist manual.tex
-TEX_FILES = \
-manual.tex \
-manual-style.tex \
-introduction.tex \
-nullness-checker.tex \
-map-key-checker.tex \
-optional-checker.tex \
-interning-checker.tex \
-lock-checker.tex \
-index-checker.tex \
-called-methods-checker.tex \
-fenum-checker.tex \
-tainting-checker.tex \
-sql-quotes-checker.tex \
-regex-checker.tex \
-formatter-checker.tex \
-i18n-format-checker.tex \
-propkey-checker.tex \
-signature-checker.tex \
-guieffect-checker.tex \
-units-checker.tex \
-signedness-checker.tex \
-purity-checker.tex \
-constant-value-checker.tex \
-returns-receiver-checker.tex \
-reflection-checker.tex \
-reflection-inference-rules.tex \
-initialized-fields-checker.tex \
-aliasing-checker.tex \
-subtyping-checker.tex \
-external-checkers.tex \
-typestate-checker.tex \
-generics.tex \
-advanced-features.tex \
-warnings.tex \
-inference.tex \
-annotating-libraries.tex \
-creating-a-checker.tex \
-accumulation-checker.tex \
-external-tools.tex \
-faq.tex \
-troubleshooting.tex \
-contributors.tex
+TEX_FILES = $(shell cat .tex-files)
 
 all: manual.pdf manual.html ../api
 
@@ -82,9 +38,15 @@ manual.html: manual.pdf CFLogo.png favicon-checkerframework.png
 
 .PHONY: contributors.tex
 contributors.tex:
-# Update git-scripts even if it is already cloned
+# Update git-scripts even if it is already cloned.
 	cd ../.. && (./gradlew --stacktrace getGitScripts || (sleep 60 && ./gradlew --stacktrace getGitScripts))
-	../../checker/bin-devel/.git-scripts/git-authors --latex --punctuation > contributors.tex
+	../../checker/bin-devel/.git-scripts/git-authors --latex --punctuation > $@
+
+.PHONY: .tex-files
+.tex-files:
+# Update plume-scripts even if it is already cloned.
+	cd ../.. && (./gradlew --stacktrace getPlumeScripts || (sleep 60 && ./gradlew --stacktrace getPlumeScripts))
+	../../checker/bin-devel/.plume-scripts/latex-process-inputs -list manual.tex > $@
 
 ../api:
 	cd ../.. && ./gradlew allJavadoc
