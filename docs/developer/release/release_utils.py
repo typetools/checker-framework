@@ -290,7 +290,7 @@ def update_repo(path: Path, bareflag: bool) -> None:
 def commit_tag_and_push(version: str, path: Path, tag_prefix: str) -> None:
     """Commit the changes made for this release, add a tag, and push these changes."""
     # Remove the pre-commit hook because it can cause errors.
-    execute(f"rm -f .git/hooks/pre-commit", working_dir=path)
+    execute("rm -f .git/hooks/pre-commit", working_dir=path)
 
     # Do nothing (instead of erring) if there is nothing to commit.
     if execute_status("git diff-index --quiet HEAD", working_dir=path) != 0:
