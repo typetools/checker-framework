@@ -876,25 +876,9 @@ The methodology is:
 </ol>
 
 <p>
-Here is a possible design, as a pluggable type system.
-</p>
-<pre>
-  @Unmodifiable
-       |
-  @Modifiable
-</pre>
-<p>
-In other words, the <code>@Unmodifiable</code> type qualifier is a
-supertype of <code>@Modifiable</code>.  This means that a <code>@Modifiable
-    List</code> can be used where an <code>@Unmodifiable List</code> is
-expected, but not vice versa.
-</p>
-
-<p>
-  <code>@Modifable</code> is the default, and
-  methods such
+Methods such
 as <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Arrays.html#asList(T...)">Arrays.asList</a>
 and <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Collections.html#emptyList()">Collections.emptyList</a>
-must be annotated to return the less-capable supertype.
+must be annotated to return a less-capable type.
 </p>
 -->
