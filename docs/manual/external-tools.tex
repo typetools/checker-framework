@@ -1328,7 +1328,7 @@ In this example, a nullness checker is run:
   <target depends="-init-ap-cmdline-properties" if="ap.supported.internal"
         name="-init-macrodef-javac-with-processors">
     <echo message = "${checkerframework}"/>
-    <macrodef name="javac" uri="https://www.netbeans.org/ns/j2se-project/3">
+    <macrodef name="javac" uri="http://www.netbeans.org/ns/j2se-project/3">
         <attribute default="${src.dir}" name="srcdir"/>
         <attribute default="${build.classes.dir}" name="destdir"/>
         <attribute default="${javac.classpath}" name="classpath"/>
