@@ -825,11 +825,7 @@ differences from the real Nullness checker:
 -->
 
 <!-- Yuki Yang is taking on this project. -->
-<!--
 <h2 id="track-unsupported-operations">Warn about unsupported operations</h2>
-
-<!-- This project is duplicated in the highlight section and in the Checker
- Framework's new-contributor-projects.html. -->
 
 <p>
 In Java, some objects do not fully implement their interface; they
@@ -881,4 +877,3 @@ as <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/ut
 and <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Collections.html#emptyList()">Collections.emptyList</a>
 must be annotated to return a less-capable type.
 </p>
--->
