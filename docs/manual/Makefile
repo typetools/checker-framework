@@ -2,61 +2,15 @@
 # Make will silently continue if that file does not exist.
 -include Makefile.user
 
-# To regenerate this list, run:
-# ../../checker/bin-devel/.plume-scripts/latex-process-inputs -makefilelist manual.tex
-TEX_FILES = \
-manual.tex \
-manual-style.tex \
-introduction.tex \
-nullness-checker.tex \
-map-key-checker.tex \
-optional-checker.tex \
-interning-checker.tex \
-called-methods-checker.tex \
-resource-leak-checker.tex \
-fenum-checker.tex \
-lock-checker.tex \
-index-checker.tex \
-tainting-checker.tex \
-sql-quotes-checker.tex \
-regex-checker.tex \
-formatter-checker.tex \
-i18n-format-checker.tex \
-propkey-checker.tex \
-signature-checker.tex \
-guieffect-checker.tex \
-units-checker.tex \
-signedness-checker.tex \
-purity-checker.tex \
-constant-value-checker.tex \
-returns-receiver-checker.tex \
-reflection-checker.tex \
-reflection-inference-rules.tex \
-initialized-fields-checker.tex \
-aliasing-checker.tex \
-must-call-checker.tex \
-subtyping-checker.tex \
-external-checkers.tex \
-typestate-checker.tex \
-generics.tex \
-advanced-features.tex \
-warnings.tex \
-inference.tex \
-annotating-libraries.tex \
-creating-a-checker.tex \
-accumulation-checker.tex \
-external-tools.tex \
-faq.tex \
-troubleshooting.tex \
-contributors.tex
-
 all: manual.pdf manual.html ../api
 
 .PHONY: figures-all
 figures-all:
 	${MAKE} -C figures all
 
-manual.pdf: ${TEX_FILES} plume-bib figures-all check-labels
+manual.pdf: *.tex plume-bib figures-all check-labels
+# It is not harmful to run `latexmk` needlessly because it does its own dependency check,
+# which depends on file contents, not timestamp.
 	latexmk -silent -pdf -interaction=nonstopmode manual.tex || latexmk -gg -pdf -interaction=nonstopmode manual.tex
 
 html: manual.html
@@ -82,11 +36,12 @@ manual.html: manual.pdf CFLogo.png favicon-checkerframework.png
 ../../checker/bin-devel/.plume-scripts:
 	cd ../.. && ./gradlew getPlumeScripts
 
+# Because `contributors.tex` is .PHONY, any target that depends on it is always remade.
 .PHONY: contributors.tex
 contributors.tex:
-# Update git-scripts even if it is already cloned
+# Update git-scripts even if it is already cloned.
 	cd ../.. && (./gradlew --stacktrace getGitScripts || (sleep 60 && ./gradlew --stacktrace getGitScripts))
-	../../checker/bin-devel/.git-scripts/git-authors --latex --punctuation > contributors.tex
+	../../checker/bin-devel/.git-scripts/git-authors --latex --punctuation > $@
 
 ../api:
 	cd ../.. && ./gradlew allJavadoc
@@ -133,5 +88,9 @@ checklink-via-http: manual.html
 
 .PHONY: tags
 tags: TAGS
-TAGS: ${TEX_FILES}
-	etags ${TEX_FILES}
+# This target always runs because contributors.tex is always updated.
+TAGS: *.tex ../../checker/bin-devel/.plume-scripts
+# Update plume-scripts even if it is already cloned.
+	cd ../.. && (./gradlew --stacktrace getPlumeScripts || (sleep 60 && ./gradlew --stacktrace getPlumeScripts))
+# This is better than using "*.tex" because this command puts the files in the appropriate order.
+	etags $(shell ../../checker/bin-devel/.plume-scripts/latex-process-inputs -list manual.tex)
