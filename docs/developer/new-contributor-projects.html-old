@@ -823,3 +823,62 @@ differences from the real Nullness checker:
   use the Lookup program that has been used in previous case studies.
 </p>
 -->
+
+<!-- Yuki Yang is taking on this project. -->
+<!--
+<h2 id="track-unsupported-operations">Warn about unsupported operations</h2>
+
+<!-- This project is duplicated in the highlight section and in the Checker
+ Framework's new-contributor-projects.html. -->
+
+<p>
+In Java, some objects do not fully implement their interface; they
+throw <code>UnsupportedOperationException</code> for some operations.  One
+example is <a href="https://docs.oracle.com/en/java/javase/11/core/creating-immutable-lists-sets-and-maps.html">unmodifiable collections</a>.  They throw the exception when a
+mutating operation is called, such
+as <code>add</code>, <code>addAll</code>, <code>put</code>, <code>remove</code>,
+etc.
+</p>
+
+<p>
+The goal of this project is to
+design a compile-time verification tool to track which operations might not be supported.
+This tool will issue a warning whenever
+an <code>UnsupportedOperationException</code> might occur at run time.
+This helps programmers to avoid run-time exceptions (crashes) in their Java programs.
+</p>
+
+<p>
+The research questions include:
+</p>
+<ul>
+  <li>Is it is possible to build a verification tool to prevent <code>UnsupportedOperationException</code>?  What design is effective?
+  </li>
+  <li>How difficult is such a tool to use, in terms of programmer effort and number of false alarms?
+  </li>
+  <li>Are potential <code>UnsupportedOperationException</code> exceptions
+  pervasive in Java programs?  Is it possible to eliminate them?
+  </li>
+</ul>
+
+<p>
+The methodology is:
+</p>
+<ol>
+  <li>design a static (compile-time) analysis
+  </li>
+  <li>implement it
+  </li>
+  <li>evaluate it on open-source projects
+  </li>
+  <li>report bugs in the projects, and improve the tool
+  </li>
+</ol>
+
+<p>
+Methods such
+as <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Arrays.html#asList(T...)">Arrays.asList</a>
+and <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Collections.html#emptyList()">Collections.emptyList</a>
+must be annotated to return a less-capable type.
+</p>
+-->
