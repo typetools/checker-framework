@@ -1,5 +1,4 @@
-// Tests string length refinement after startsWith or endsWith return true
-// https://github.com/kelloggm/checker-framework/issues/56
+// Tests string length refinement after startsWith() or endsWith() returns true.
 
 import org.checkerframework.common.value.qual.MinLen;
 
@@ -11,13 +10,46 @@ public class StartsEndsWith {
     this.prefix = prefix;
   }
 
-  String propertyName(String methodName) {
+  String expectedError(String methodName) {
+    // :: error: (argument)
+    return methodName.substring(prefix.length());
+  }
+
+  String startsWithTest(String methodName) {
     if (methodName.startsWith(prefix)) {
-      @SuppressWarnings("index") // BUG: https://github.com/typetools/checker-framework/issues/5201
+      return methodName.substring(prefix.length());
+    } else {
+      // :: error: (argument)
+      return methodName.substring(prefix.length());
+    }
+  }
+
+  String notStartsWithTest(String methodName) {
+    if (!methodName.startsWith(prefix)) {
+      // :: error: (argument)
+      return methodName.substring(prefix.length());
+    } else {
       String result = methodName.substring(prefix.length());
       return result;
+    }
+  }
+
+  String endsWithTest(String methodName) {
+    if (methodName.endsWith(prefix)) {
+      return methodName.substring(prefix.length());
     } else {
-      return null;
+      // :: error: (argument)
+      return methodName.substring(prefix.length());
+    }
+  }
+
+  String notEndsWithTest(String methodName) {
+    if (!methodName.endsWith(prefix)) {
+      // :: error: (argument)
+      return methodName.substring(prefix.length());
+    } else {
+      String result = methodName.substring(prefix.length());
+      return result;
     }
   }
 
@@ -28,8 +60,16 @@ public class StartsEndsWith {
       @MinLen(11) String s11 = str;
     }
   }
-}
 
-class StartsEndsWithExternal {
-  public static final String staticFinalField = "str";
+  String removeSuffix(String methodName, String suffix) {
+    if (methodName.endsWith(suffix)) {
+      // TODO: Refinement establishes suffix.length() <= methodName.length(), but
+      // the checker cannot (yet) verify the complex arithmetic in substring(0, length - length).
+      // :: error: (argument)
+      String result = methodName.substring(0, methodName.length() - suffix.length());
+      return result;
+    } else {
+      return null;
+    }
+  }
 }
