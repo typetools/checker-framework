@@ -55,7 +55,7 @@ Here are some steps toward invalidating fewer flow facts.
    which can be hard-coded for the collection classes in the JDK.
 
 3. Implement the
-   [`@SideEffectsOnly`](https://rawgit.com/mernst/checker-framework/refs/heads/index-checker-mutable-project/docs/developer/new-contributor-projects.html#SideEffectsOnly)
+   [`@SideEffectsOnly`](https://checkerframework.org/manual/new-contributor-projects.html#SideEffectsOnly)
    annotation.
    Suppose that a method is called that only side-effects variable `a` of type
    `T` and variable `b` of type `U`. Then the Index Checker needs to
