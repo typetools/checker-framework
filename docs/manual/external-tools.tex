@@ -503,8 +503,6 @@ other than \<\${HOME}/checker-framework-\ReleaseVersion{}/>.
 %   beginning of your path variable.  Also set a \code{CHECKERFRAMEWORK} variable.
 % \end{sloppypar}
 %
-% % Instructions stolen from http://www.webreference.com/js/tips/020429.html
-%
 % To set an environment variable, you have two options:  make the change
 % temporarily or permanently.
 % \begin{itemize}
@@ -937,9 +935,9 @@ Checker Framework on that.  The
 
 \subsectionAndLabel{Maven Projects using Lombok}{lombok-maven}
 
-\href{http://anthonywhitford.com/lombok.maven/lombok-maven-plugin/}{Lombok Maven Plugin}
+\href{https://anthonywhitford.com/lombok.maven/lombok-maven-plugin/}{Lombok Maven Plugin}
 can be used to delombok source code for Maven projects. The
-\href{http://anthonywhitford.com/lombok.maven/lombok-maven-plugin/faq.html#alt-src-setup}
+\href{https://anthonywhitford.com/lombok.maven/lombok-maven-plugin/faq.html#alt-src-setup}
 {Lombok Maven Plugin FAQ} discusses how to configure the plugin when code
 using Lombok is mixed with standard Java code. Once the Lombok Maven plugin
 is configured correctly, the Checker Framework Maven configuration can be added
@@ -1330,7 +1328,7 @@ In this example, a nullness checker is run:
   <target depends="-init-ap-cmdline-properties" if="ap.supported.internal"
         name="-init-macrodef-javac-with-processors">
     <echo message = "${checkerframework}"/>
-    <macrodef name="javac" uri="http://www.netbeans.org/ns/j2se-project/3">
+    <macrodef name="javac" uri="https://www.netbeans.org/ns/j2se-project/3">
         <attribute default="${src.dir}" name="srcdir"/>
         <attribute default="${build.classes.dir}" name="destdir"/>
         <attribute default="${javac.classpath}" name="classpath"/>
