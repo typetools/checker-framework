@@ -581,7 +581,7 @@ including both IDEs (such as an Eclipse plug-in) and build tools
   project's support for build systems and IDEs.  For instance, you might
   make <a href="https://github.com/coala/coala">coala</a> support the
   Checker Framework, or you might adapt the tool integration provided
-  by <a href="http://errorprone.info/">Error Prone</a>.
+  by <a href="https://errorprone.info/">Error Prone</a>.
 </p>
 
 
@@ -618,7 +618,7 @@ size. The challenge lies in efficient enumeration of all programs and
 avoiding redundant checks, and in knowing the expected outcome of the
 tests.  This approach is related to bounded exhaustive
 testing and model checking; for a reference, see
-[Efficient Software Model Checking of Soundness of Type Systems](http://www.eecs.umich.edu/~bchandra/publications/oopsla08.pdf).
+[Efficient Software Model Checking of Soundness of Type Systems](https://www.eecs.umich.edu/~bchandra/publications/oopsla08.pdf).
 </p>
 
 
