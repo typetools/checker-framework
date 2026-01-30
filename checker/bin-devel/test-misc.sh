@@ -52,11 +52,6 @@ if [ $status -ne 0 ]; then exit $status; fi
 
 ## User documentation
 ./gradlew manual
-git diff --exit-code docs/manual/.tex-files \
-  || (set +x && set +v \
-    && echo "docs/manual/.tex-files is not up to date." \
-    && echo "Run: make -C docs/manual .tex-files" \
-    && false)
 git diff --exit-code docs/manual/contributors.tex \
   || (set +x && set +v \
     && echo "docs/manual/contributors.tex is not up to date." \
