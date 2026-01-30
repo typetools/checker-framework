@@ -9,7 +9,8 @@ figures-all:
 	${MAKE} -C figures all
 
 manual.pdf: *.tex plume-bib figures-all check-labels
-# It is not harmful to run `latexmk` needlessly because it does its own dependency check.
+# It is not harmful to run `latexmk` needlessly because it does its own dependency check,
+# which depends on file contents, not timestamp.
 	latexmk -silent -pdf -interaction=nonstopmode manual.tex || latexmk -gg -pdf -interaction=nonstopmode manual.tex
 
 html: manual.html
@@ -35,12 +36,12 @@ manual.html: manual.pdf CFLogo.png favicon-checkerframework.png
 ../../checker/bin-devel/.plume-scripts:
 	cd ../.. && ./gradlew getPlumeScripts
 
+# Because `contributors.tex` is .PHONY, any target that depends on it is always remade.
 .PHONY: contributors.tex
 contributors.tex:
 # Update git-scripts even if it is already cloned.
 	cd ../.. && (./gradlew --stacktrace getGitScripts || (sleep 60 && ./gradlew --stacktrace getGitScripts))
-	../../checker/bin-devel/.git-scripts/git-authors --latex --punctuation > $@-new
-	if cmp -s "$@" "$@-new"; then rm -f "$@-new"; else mv -f "$@-new" "$@"; fi
+	../../checker/bin-devel/.git-scripts/git-authors --latex --punctuation > $@
 
 ../api:
 	cd ../.. && ./gradlew allJavadoc
@@ -91,5 +92,5 @@ tags: TAGS
 TAGS: *.tex ../../checker/bin-devel/.plume-scripts
 # Update plume-scripts even if it is already cloned.
 	cd ../.. && (./gradlew --stacktrace getPlumeScripts || (sleep 60 && ./gradlew --stacktrace getPlumeScripts))
-# This command puts the files in the appropriate order.
+# This is better than using "*.tex" because this command puts the files in the appropriate order.
 	etags $(shell ../../checker/bin-devel/.plume-scripts/latex-process-inputs -list manual.tex)
