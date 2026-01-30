@@ -2,15 +2,14 @@
 # Make will silently continue if that file does not exist.
 -include Makefile.user
 
-TEX_FILES = $(shell cat .tex-files)
-
 all: manual.pdf manual.html ../api
 
 .PHONY: figures-all
 figures-all:
 	${MAKE} -C figures all
 
-manual.pdf: ${TEX_FILES} plume-bib figures-all check-labels
+manual.pdf: *.tex plume-bib figures-all check-labels
+# It is not harmful to run `latexmk` needlessly because it does its own dependency check.
 	latexmk -silent -pdf -interaction=nonstopmode manual.tex || latexmk -gg -pdf -interaction=nonstopmode manual.tex
 
 html: manual.html
@@ -40,13 +39,8 @@ manual.html: manual.pdf CFLogo.png favicon-checkerframework.png
 contributors.tex:
 # Update git-scripts even if it is already cloned.
 	cd ../.. && (./gradlew --stacktrace getGitScripts || (sleep 60 && ./gradlew --stacktrace getGitScripts))
-	../../checker/bin-devel/.git-scripts/git-authors --latex --punctuation > $@
-
-.PHONY: .tex-files
-.tex-files:
-# Update plume-scripts even if it is already cloned.
-	cd ../.. && (./gradlew --stacktrace getPlumeScripts || (sleep 60 && ./gradlew --stacktrace getPlumeScripts))
-	../../checker/bin-devel/.plume-scripts/latex-process-inputs -list manual.tex > $@
+	../../checker/bin-devel/.git-scripts/git-authors --latex --punctuation > $@-new
+	if cmp -s "$@" "$@-new"; then rm -f "$@-new"; else mv -f "$@-new" "$@"; fi
 
 ../api:
 	cd ../.. && ./gradlew allJavadoc
@@ -93,5 +87,9 @@ checklink-via-http: manual.html
 
 .PHONY: tags
 tags: TAGS
-TAGS: ${TEX_FILES}
-	etags ${TEX_FILES}
+# This target always runs because contributors.tex is always updated.
+TAGS: *.tex ../../checker/bin-devel/.plume-scripts
+# Update plume-scripts even if it is already cloned.
+	cd ../.. && (./gradlew --stacktrace getPlumeScripts || (sleep 60 && ./gradlew --stacktrace getPlumeScripts))
+# This command puts the files in the appropriate order.
+	etags $(shell ../../checker/bin-devel/.plume-scripts/latex-process-inputs -list manual.tex)
