@@ -4174,7 +4174,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         return true;
       }
       if (subTypeVars.size() != superTypeVars.size()) {
-        // Different number of type parameters is handled elsewhere (javac), so skip here.
         return true;
       }
 
@@ -4183,10 +4182,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         AnnotatedTypeVariable subVar = subTypeVars.get(i);
         AnnotatedTypeVariable superVar = superTypeVars.get(i);
 
-        // Use the same containment test used for return type type variables: the
-        // overriding type variable's upper bound must be a subtype of the overridden's
-        // upper bound, and the overridden's lower bound must be a subtype of the
-        // overriding's lower bound.
         boolean ok = testTypevarContainment(subVar, superVar);
         if (!ok) {
           FoundRequired pair = FoundRequired.of(subVar, superVar);
