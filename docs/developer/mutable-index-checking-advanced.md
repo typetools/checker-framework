@@ -4,7 +4,7 @@
 
 If we know, by some means of alias tracking, that a reference to a collection is
 unique and used only in one place,
-then it may be safely converted both ways between `@GrowOnly` and CanShrink.
+then it may be safely converted both ways between `@GrowOnly` and `@CanShrink`.
 This allows to "freeze" and "unfreeze" the collection for a while.
 That may be quite a common thing, so it could enable checking more code.
 On the other hand, satisfying the necessary uniqueness conditions might be difficult.
