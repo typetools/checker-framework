@@ -183,7 +183,7 @@ public class SystemUtil {
     }
 
     // Since Java 9, from a version string like "11.0.1" or "11-ea" or "11u25", extract "11".
-    // The format is described at http://openjdk.org/jeps/223 .
+    // The format is described at https://openjdk.org/jeps/223 .
     Pattern newVersionPattern = Pattern.compile("^(\\d+).*$");
     Matcher newVersionMatcher = newVersionPattern.matcher(version);
     if (newVersionMatcher.matches()) {

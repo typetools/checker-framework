@@ -2448,7 +2448,7 @@ Documentation improvements:
 Tool changes:
 
 * The Checker Framework Live Demo webpage lets you try the Checker
-  Framework without installing it:  <http://eisop.uwaterloo.ca/live/>
+  Framework without installing it:  <https://eisop.uwaterloo.ca/live/>
 
 * New command-line arguments -Acfgviz and -Averbosecfg enable better
   debugging of the control-flow-graph generation step of type-checking.
@@ -3716,7 +3716,7 @@ Many bug fixes
 Eclipse support:
   Removed the obsolete Eclipse plug-in from repository.  The new one uses a
   different repository
-  (<http://code.google.com/a/eclipselabs.org/p/checker-plugin/>) but a user
+  (<https://code.google.com/a/eclipselabs.org/p/checker-plugin/>) but a user
   obtains it from the same URL as before:
   <https://checkerframework.org/eclipse/>
 

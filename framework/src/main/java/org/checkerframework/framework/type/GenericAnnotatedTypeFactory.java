@@ -2428,7 +2428,7 @@ public abstract class GenericAnnotatedTypeFactory<
     // Index 0 is the visualizer class name and can be ignored.
     for (int i = 1; i < opts.size(); ++i) {
       String opt = opts.get(i);
-      String[] split = opt.split("=");
+      String[] split = opt.split("=", -1);
       switch (split.length) {
         case 1:
           res.put(split[0], true);

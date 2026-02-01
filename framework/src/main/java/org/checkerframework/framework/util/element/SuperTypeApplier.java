@@ -31,7 +31,7 @@ public class SuperTypeApplier extends IndexedElementAnnotationApplier {
       // -1 represents the (implicit) extends clause class.
       // 0 and greater represent the implements clause interfaces.
       // For details see the JSR 308 specification:
-      // http://types.cs.washington.edu/jsr308/specification/java-annotation-design.html#class-file%3Aext%3Ari%3Aextends
+      // https://types.cs.washington.edu/jsr308/specification/java-annotation-design.html#class-file%3Aext%3Ari%3Aextends
       int typeIndex = i - 1;
       new SuperTypeApplier(supertype, subtypeElement, typeIndex).extractAndApply();
     }
