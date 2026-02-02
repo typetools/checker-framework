@@ -1,4 +1,4 @@
-// Test case for issue #2334: http://tinyurl.com/cfissue/2334
+// Test case for issue #2334: https://tinyurl.com/cfissue/2334
 
 import org.checkerframework.checker.index.qual.NonNegative;
 
