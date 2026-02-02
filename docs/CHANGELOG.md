@@ -3,6 +3,16 @@
 <!-- markdownlint-disable no-duplicate-heading -->
 <!-- pyml disable no-duplicate-heading -->
 
+## Version 3.54.0 (2026-03-03)
+
+### User-visible changes
+
+Removed long-deprecated `-Alint=forbidnonnullarraycomponents`.
+
+### Implementation details
+
+### Closed issues
+
 ## Version 3.53.1 (2026-02-01)
 
 ### User-visible changes
