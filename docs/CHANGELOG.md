@@ -13,13 +13,11 @@ Removed long-deprecated `-Alint=forbidnonnullarraycomponents`.
 
 ### Closed issues
 
-## Version 3.53.1 (2026-02-01)
-
-### User-visible changes
-
-### Implementation details
+## Version 3.53.1 (2026-02-02)
 
 ### Closed issues
+
+\#4858, #6141, #6620, #7360, #7388.
 
 ## Version 3.53.0 (2026-01-06)
 
