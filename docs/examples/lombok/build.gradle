@@ -4,9 +4,9 @@
 
 plugins {
   id("java")
-  id("io.freefair.lombok").version("8.12.1")
+  id("io.freefair.lombok").version("9.2.0")
   // Checker Framework pluggable type-checking
-  id("org.checkerframework").version("1.0.0-SNAPSHOT")
+  id("org.checkerframework").version("1.0.0")
 }
 //lombok {
 //  version = "1.18.30"

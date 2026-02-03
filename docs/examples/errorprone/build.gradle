@@ -4,9 +4,9 @@
 
 plugins {
   id("java")
-  id("net.ltgt.errorprone").version("4.4.0")
+  id("net.ltgt.errorprone").version("5.0.0")
   // Checker Framework pluggable type-checking
-  id("org.checkerframework").version("1.0.0-SNAPSHOT")
+  id("org.checkerframework").version("1.0.0")
 }
 
 
