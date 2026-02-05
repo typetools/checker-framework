@@ -3,13 +3,21 @@
 <!-- markdownlint-disable no-duplicate-heading -->
 <!-- pyml disable no-duplicate-heading -->
 
-## Version 3.53.1 (2026-02-01)
+## Version 3.54.0 (2026-03-03)
 
 ### User-visible changes
+
+Removed long-deprecated `-Alint=forbidnonnullarraycomponents`.
 
 ### Implementation details
 
 ### Closed issues
+
+## Version 3.53.1 (2026-02-02)
+
+### Closed issues
+
+\#4858, #6141, #6620, #7360, #7388.
 
 ## Version 3.53.0 (2026-01-06)
 
@@ -2448,7 +2456,7 @@ Documentation improvements:
 Tool changes:
 
 * The Checker Framework Live Demo webpage lets you try the Checker
-  Framework without installing it:  <http://eisop.uwaterloo.ca/live/>
+  Framework without installing it:  <https://eisop.uwaterloo.ca/live/>
 
 * New command-line arguments -Acfgviz and -Averbosecfg enable better
   debugging of the control-flow-graph generation step of type-checking.
@@ -3716,7 +3724,7 @@ Many bug fixes
 Eclipse support:
   Removed the obsolete Eclipse plug-in from repository.  The new one uses a
   different repository
-  (<http://code.google.com/a/eclipselabs.org/p/checker-plugin/>) but a user
+  (<https://code.google.com/a/eclipselabs.org/p/checker-plugin/>) but a user
   obtains it from the same URL as before:
   <https://checkerframework.org/eclipse/>
 

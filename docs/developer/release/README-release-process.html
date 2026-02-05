@@ -4,9 +4,9 @@
   <link rel="icon" type="image/png" href="../../manual/favicon-checkerframework.png">
   <meta charset="utf-8">
   <title>Checker Framework release process</title>
-  <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
-  <link href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet"/>
-  <script src="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+  <script src="https://code.jquery.com/jquery-1.11.0.min.js"></script>
+  <link href="https://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet"/>
+  <script src="https://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
   <style>
     .page-header {
     padding-left: 10px;
@@ -265,7 +265,7 @@ TreeAnnotator
       and your user token key in <code>SONATYPE_NEXUS_PASSWORD</code>.
     </li>
     <li>
-      Ensure that the version number in <code>checker-framework/build.gradle</code> (in <code>allprojects { version ... }</code>) ends in <code>-SNAPSHOT</code>.
+      Ensure that <code>releaseVersion</code> in <code>checker-framework/release.gradle</code> ends in <code>-SNAPSHOT</code>.
     </li>
     <li>
       Run <code>./gradlew publish</code> in <code>checker-framework</code>.
@@ -353,10 +353,10 @@ configurations.all({
       <td>3.</td>
       <td><strong>Sign up for a Sonatype Account</strong><br/>
         You will likely want to do this a few days in advance.
-        Directions can be found <a href="http://central.sonatype.org/pages/ossrh-guide.html">here</a>.
+        Directions can be found <a href="https://central.sonatype.org/pages/ossrh-guide.html">here</a>.
         Remember to be asked to be added to the org.checkerframework repository by creating
         a ticket (see the note
-        <a href="http://central.sonatype.org/pages/ossrh-guide.html#create-a-ticket-with-sonatype">here</a>).
+        <a href="https://central.sonatype.org/pages/ossrh-guide.html#create-a-ticket-with-sonatype">here</a>).
         If after signing up for a Sonatype JIRA account you are not able to sign in to
         <a href="https://issues.sonatype.org">https://issues.sonatype.org</a>
         to create a ticket, there may be a configuration problem with your account. In that case, sign up for a

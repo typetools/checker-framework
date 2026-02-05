@@ -4,7 +4,7 @@ package org.checkerframework.checker.units.qual;
  * SI prefixes.
  *
  * <p>From <a
- * href="https://en.wikipedia.org/wiki/SI_prefix">http://en.wikipedia.org/wiki/SI_prefix</a>:
+ * href="https://en.wikipedia.org/wiki/SI_prefix">https://en.wikipedia.org/wiki/SI_prefix</a>:
  *
  * <pre>
  * yotta   Y   1000^8     10^24    1000000000000000000000000   Septillion      Quadrillion     1991
