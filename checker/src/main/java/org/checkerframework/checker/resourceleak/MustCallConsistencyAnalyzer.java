@@ -2905,7 +2905,7 @@ public class MustCallConsistencyAnalyzer {
       FirstWriteScanResult r =
           new ConstructorFirstWriteScanner(targetAssignment, field, cmAtf).scan(root, null);
       // TreeScanner may return null if the subtree contains no relevant nodes.
-      return r == null ? FirstWriteScanResult.FOUND : r;
+      return r == null ? FirstWriteScanResult.NOT_FOUND : r;
     }
 
     @Override
