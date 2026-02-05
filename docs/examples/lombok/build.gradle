@@ -6,11 +6,8 @@ plugins {
   id("java")
   id("io.freefair.lombok").version("9.2.0")
   // Checker Framework pluggable type-checking
-  id("org.checkerframework").version("1.0.0")
+  id("org.checkerframework").version("1.0.2")
 }
-//lombok {
-//  version = "1.18.30"
-//}
 
 repositories {
   mavenCentral()
