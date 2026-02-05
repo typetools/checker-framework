@@ -1703,7 +1703,9 @@ public class MustCallConsistencyAnalyzer {
       if (member instanceof VariableTree) {
         VariableTree decl = (VariableTree) member;
         VariableElement declElement = TreeUtils.elementFromDeclaration(decl);
-        if (field == declElement
+        @SuppressWarnings("interning:not.interned")
+        boolean isSameField = field == declElement;
+        if (isSameField
             && decl.getInitializer() != null
             && decl.getInitializer().getKind() != Tree.Kind.NULL_LITERAL) {
           return false;
@@ -1725,7 +1727,9 @@ public class MustCallConsistencyAnalyzer {
               public Void visitAssignment(AssignmentTree assignmentTree, Void unused) {
                 ExpressionTree lhs = assignmentTree.getVariable();
                 Element lhsElement = TreeUtils.elementFromTree(lhs);
-                if (field == lhsElement) {
+                @SuppressWarnings("interning:not.interned")
+                boolean isSameField = field == lhsElement;
+                if (isSameField) {
                   isInitialized.set(true);
                   return null;
                 }
@@ -2911,7 +2915,9 @@ public class MustCallConsistencyAnalyzer {
         // Found an assignment to the same field:
         //   - current assignment → first write → FOUND
         //   - earlier assignment → not first → REJECT
-        return node == targetAssignment ? FirstWriteScanResult.FOUND : FirstWriteScanResult.REJECT;
+        @SuppressWarnings("interning:not.interned")
+        boolean isTarget = node == targetAssignment;
+        return isTarget ? FirstWriteScanResult.FOUND : FirstWriteScanResult.REJECT;
       }
       return super.visitAssignment(node, p);
     }
