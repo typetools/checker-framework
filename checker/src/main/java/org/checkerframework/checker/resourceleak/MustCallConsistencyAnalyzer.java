@@ -1745,6 +1745,15 @@ public class MustCallConsistencyAnalyzer {
                 }
                 return super.visitMethodInvocation(node, unused);
               }
+
+              @Override
+              public Void visitNewClass(NewClassTree node, Void unused) {
+                if (!cmAtf.isSideEffectFree(TreeUtils.elementFromUse(node))) {
+                  isInitialized.set(true);
+                  return null;
+                }
+                return super.visitNewClass(node, unused);
+              }
             },
             null);
         if (isInitialized.get()) {
