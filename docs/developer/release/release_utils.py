@@ -163,7 +163,7 @@ def continue_or_exit(msg: str) -> None:
 # Version Utils
 
 
-# From http://stackoverflow.com/a/1714190/173852, but doesn't strip trailing zeroes
+# From https://stackoverflow.com/a/1714190/173852, but doesn't strip trailing zeroes
 def version_number_to_array(version_num: str) -> list[int]:
     """Given a version number, return an array of the elements, as integers.
 
@@ -289,6 +289,9 @@ def update_repo(path: Path, bareflag: bool) -> None:
 
 def commit_tag_and_push(version: str, path: Path, tag_prefix: str) -> None:
     """Commit the changes made for this release, add a tag, and push these changes."""
+    # Remove the pre-commit hook because it can cause errors.
+    execute("rm -f .git/hooks/pre-commit", working_dir=path)
+
     # Do nothing (instead of erring) if there is nothing to commit.
     if execute_status("git diff-index --quiet HEAD", working_dir=path) != 0:
         execute(f'git commit -a -m "new release {version}"', working_dir=path)
@@ -589,7 +592,7 @@ We have released a new version of the Checker Framework.
 The Checker Framework lets you create and/or run pluggable type checkers, in order to detect and prevent bugs in your code.
 
 You can find documentation and download links at:
-http://CheckerFramework.org/
+https://CheckerFramework.org/
 
 Changes for Checker Framework version {version}:
 
