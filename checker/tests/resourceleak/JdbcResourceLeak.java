@@ -55,6 +55,14 @@ class JdbcResourceLeak {
         Statement stmt = conn.createStatement();
         ResultSet rs = stmt.executeQuery("SELECT 1");
         rs.close();
-      // :: error: (required.method.not.called)
+        // :: error: (required.method.not.called)
     }
+
+    void nestedResultSetNotClosed(Connection conn) throws SQLException {
+        Statement stmt = conn.createStatement();
+        ResultSet rs = stmt.executeQuery("SELECT 1");
+        stmt.close();
+        // :: error: (required.method.not.called)
+    }
+
 }
