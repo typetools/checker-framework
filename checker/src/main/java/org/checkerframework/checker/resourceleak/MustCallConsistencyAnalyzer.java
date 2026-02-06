@@ -2748,7 +2748,7 @@ public class MustCallConsistencyAnalyzer {
    * @param cmAtf the factory used for side-effect reasoning
    * @return {@link FirstWriteScanResult#FOUND} if {@code targetAssignment} is reached before any
    *     disqualifying event; {@link FirstWriteScanResult#REJECT} if a disqualifying event or
-   *     unsupported statement form is encountered first; otherwise @link
+   *     unsupported statement form is encountered first; otherwise {@link
    *     FirstWriteScanResult#NOT_FOUND} if the target assignment does not occur in the scanned
    *     region
    */
@@ -2774,6 +2774,19 @@ public class MustCallConsistencyAnalyzer {
                 ((ExpressionStatementTree) stmt).getExpression(), targetAssignment, field, cmAtf);
         if (res != FirstWriteScanResult.NOT_FOUND) {
           return res;
+        }
+        continue;
+      }
+
+      if (stmt instanceof VariableTree) {
+        VariableTree vt = (VariableTree) stmt;
+        ExpressionTree init = vt.getInitializer();
+        if (init != null) {
+          FirstWriteScanResult res =
+              ConstructorFirstWriteScanner.isFirstWrite(init, targetAssignment, field, cmAtf);
+          if (res != FirstWriteScanResult.NOT_FOUND) {
+            return res;
+          }
         }
         continue;
       }
