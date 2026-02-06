@@ -35,8 +35,8 @@ class RowSetResourceLeak {
     void cachedRowSetToResultSetNotClosed() throws SQLException {
         CachedRowSet crs = new CachedRowSetImpl();
         ResultSet rs = crs.toResultSet();
-        // :: error: (required.method.not.called)
         crs.close();
+      // :: error: (required.method.not.called)
     }
 
     void cachedRowSetToResultSetBothClosed() throws SQLException {
