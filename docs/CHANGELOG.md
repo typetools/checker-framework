@@ -7,7 +7,10 @@
 
 ### User-visible changes
 
-Removed long-deprecated `-Alint=forbidnonnullarraycomponents`.
+Command-line arguments:
+
+* Added `-AinferOutputDirectory`.
+* Removed long-deprecated `-Alint=forbidnonnullarraycomponents`.
 
 ### Implementation details
 

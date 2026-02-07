@@ -693,6 +693,11 @@ Type-checking modes:  enable/disable functionality
   Using \<-Ainfer=stubs> produces \<.astub> files.
   Using \<-Ainfer=ajava> produces \<.ajava> files.
   You must also supply \<-Awarns>, or the inference output may be incomplete.
+\item \<-AinferOutputDirectory>
+  The directory into which to write inference output (e.g., \<.ajava>
+  files).  It defaults to \<build/whole-program-inference>, but when using
+  a build system (e.g., gradle), the default may be relative to a build
+  system directory rather than the project root directory.
 \item \<-AinferOutputOriginal>
   When outputting \<.ajava> files when running with \<-Ainfer=ajava>,
   also output a copy of the original file with no inferred annotations,

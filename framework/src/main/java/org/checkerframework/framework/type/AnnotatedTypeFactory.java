@@ -619,7 +619,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     this.annotationFormatter = createAnnotationFormatter();
     this.typeInformationPresenter = createTypeInformationPresenter();
 
-    if (checker.hasOption("infer")) {
+    if (!checker.hasOption("infer")) {
+      wholeProgramInference = null;
+    } else {
       checkInvalidOptionsInferSignatures();
       String inferArg = checker.getOption("infer");
       // No argument means "jaifs", for (temporary) backwards compatibility.
@@ -643,6 +645,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                   + " should be one of: -Ainfer=jaifs, -Ainfer=stubs, -Ainfer=ajava");
       }
       boolean showWpiFailedInferences = checker.hasOption("showWpiFailedInferences");
+      String inferOutputDirectory =
+          checker.getOption("inferOutputDirectory", "build/whole-program-inference");
       boolean inferOutputOriginal = checker.hasOption("inferOutputOriginal");
       if (inferOutputOriginal && wpiOutputFormat != WholeProgramInference.OutputFormat.AJAVA) {
         checker.message(
@@ -653,20 +657,21 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         wholeProgramInference =
             new WholeProgramInferenceImplementation<AnnotatedTypeMirror>(
                 this,
-                new WholeProgramInferenceJavaParserStorage(this, inferOutputOriginal),
+                new WholeProgramInferenceJavaParserStorage(
+                    this, inferOutputDirectory, inferOutputOriginal),
                 showWpiFailedInferences);
       } else {
         wholeProgramInference =
             new WholeProgramInferenceImplementation<ATypeElement>(
-                this, new WholeProgramInferenceScenesStorage(this), showWpiFailedInferences);
+                this,
+                new WholeProgramInferenceScenesStorage(this, inferOutputDirectory),
+                showWpiFailedInferences);
       }
       if (!checker.hasOption("warns")) {
         // Without -Awarns, the inference output may be incomplete, because javac halts
         // after issuing an error.
         checker.message(Diagnostic.Kind.ERROR, "Do not supply -Ainfer without -Awarns");
       }
-    } else {
-      wholeProgramInference = null;
     }
     ignoreRawTypeArguments = checker.getBooleanOption("ignoreRawTypeArguments", true);
 
@@ -1458,6 +1463,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * <p>The default implementation uses this to store the defaulted AnnotatedTypeMirrors and
    * inherited declaration annotations back into the corresponding Elements. Subclasses might want
    * to override this method if storing defaulted types is not desirable.
+   *
+   * @param tree the class to postprocess
    */
   public void postProcessClassTree(ClassTree tree) {
     TypesIntoElements.store(processingEnv, this, tree);
