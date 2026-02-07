@@ -405,6 +405,9 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         AnnotatedTypeVariable typeVar,
         AnnotationMirror top,
         boolean canCombinedSetBeMissingAnnos) {
+      if (typeVar == null) {
+        return annotation;
+      }
 
       AnnotationMirror upperBound = typeVar.getEffectiveAnnotationInHierarchy(top);
       TypeMirror upperBoundTM = typeVar.getUpperBound().getUnderlyingType();
@@ -591,6 +594,9 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         AnnotatedTypeVariable typeVar,
         AnnotationMirror top,
         boolean canCombinedSetBeMissingAnnos) {
+      if (typeVar == null) {
+        return annotation;
+      }
       TypeMirror typeVarTM = typeVar.getUnderlyingType();
       if (canCombinedSetBeMissingAnnos) {
         // anno is the primary annotation on the use of a type variable. typeVar is a use of
@@ -700,6 +706,9 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         AnnotatedTypeVariable typeVar,
         AnnotationMirror top,
         boolean canCombinedSetBeMissingAnnos) {
+      if (typeVar == null) {
+        return annotation;
+      }
       TypeMirror typeVarTM = typeVar.getUnderlyingType();
       if (canCombinedSetBeMissingAnnos) {
         // anno is the primary annotation on the use of a type variable. typeVar is a use of
