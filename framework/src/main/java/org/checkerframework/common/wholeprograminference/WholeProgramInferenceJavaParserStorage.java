@@ -1028,6 +1028,7 @@ public class WholeProgramInferenceJavaParserStorage
     atypeFactory.wpiPrepareMethodForWriting(methodAnnos, inSupertypes, inSubtypes);
   }
 
+  @SuppressWarnings("optionalimpl:prefer.map.and.orelse") // false positive (`resolve()` takes args)
   @Override
   public void writeResultsToFile(OutputFormat outputFormat, BaseTypeChecker checker) {
     if (outputFormat != OutputFormat.AJAVA) {
