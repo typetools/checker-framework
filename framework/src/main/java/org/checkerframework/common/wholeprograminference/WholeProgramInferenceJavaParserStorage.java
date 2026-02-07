@@ -1063,7 +1063,7 @@ public class WholeProgramInferenceJavaParserStorage
       try {
         Files.createDirectories(packageDir);
       } catch (IOException e) {
-        throw new UserError("Cannot create " + packageDir.toAbsolutePath());
+        throw new UserError("Cannot create " + packageDir.toAbsolutePath(), e);
       }
 
       String name = new File(path).getName();

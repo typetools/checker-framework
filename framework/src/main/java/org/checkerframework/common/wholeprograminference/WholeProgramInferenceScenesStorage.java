@@ -496,7 +496,7 @@ public class WholeProgramInferenceScenesStorage
    * @return the path to the .jaif file
    */
   protected String getJaifPath(String className) {
-    String jaifPath = inferOutputDirectory + className + ".jaif";
+    String jaifPath = inferOutputDirectory.resolve(className + ".jaif").toString();
     return jaifPath;
   }
 
