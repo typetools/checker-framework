@@ -30,11 +30,11 @@ import org.checkerframework.javacutil.BugInCF;
 /**
  * A visitor that traverses two javac ASTs simultaneously. The two trees must be structurally
  * identical (modulo differences, such as annotations and explicit receiver parameters, between a
- * Java file and its corresponding {@code .ajava} file).
+ * Java file and its corresponding {@code .ajava} file). For example, modifiers must be in the same
+ * order in the two files.
  *
- * <p>The entry point is {@link #scan(Tree, Tree)}. Given two corresponding trees, {@code scan}
- * performs basic structural checks and then calls {@link Tree#accept} on the first tree to dispatch
- * to the appropriate {@code visitXyz} method. The {@code visitXyz} methods in this base class drive
+ * <p>The entry point is {@link #scan(Tree, Tree)}, which eventually calls a {@code visitXyz}
+ * method. The {@code visitXyz} methods in this base class call {@link #defaultAction}, then drive
  * paired recursion explicitly by calling {@link #scan(Tree, Tree)} and {@link #scanList(List,
  * List)} on corresponding child trees.
  *
@@ -58,7 +58,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
   protected DoubleJavacVisitor() {}
 
   /**
-   * Default action performed on all pairs of nodes from matching ASTs.
+   * Default action performed on each pair of nodes from matching ASTs.
    *
    * <p>This method is called by each {@code visitXyz} method in this class before scanning child
    * trees. It does not itself recurse; recursion is driven by the {@code visitXyz} methods.
@@ -88,15 +88,15 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
       return;
     }
 
-    Tree.Kind kind1 = tree1 == null ? null : tree1.getKind();
-    Tree.Kind kind2 = tree2 == null ? null : tree2.getKind();
-
     if (tree1 == null || tree2 == null) {
       throw new BugInCF(
           String.format(
               "%s.scan: one tree is null: tree1=%s [%s] tree2=%s [%s]",
               this.getClass().getCanonicalName(), tree1, kind1, tree2, kind2));
     }
+
+    Tree.Kind kind1 = tree1 == null ? null : tree1.getKind();
+    Tree.Kind kind2 = tree2 == null ? null : tree2.getKind();
 
     if (tree1.getKind() != tree2.getKind()) {
       throw new BugInCF(
@@ -253,7 +253,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
     scanList(mtree1.getTypeParameters(), mtree2.getTypeParameters());
 
     scan(mtree1.getReturnType(), mtree2.getReturnType());
-    // Receiver parameters may differ between .java and .ajava.
+    // Receiver parameters may be absent in .java and present in .ajava.
     if (mtree1.getReceiverParameter() != null && mtree2.getReceiverParameter() != null) {
       scan(mtree1.getReceiverParameter(), mtree2.getReceiverParameter());
     }
@@ -303,7 +303,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
    * Visits an annotated type and scans both its type-use annotations and its underlying type.
    *
    * <p>Type-use annotations may legitimately differ between a Java file and its corresponding
-   * {@code .ajava} file, so this visitor does not compare or traverse the annotation list here.
+   * {@code .ajava} file, so this visitor does not compare or traverse the annotation list.
    *
    * @param atree1 annotated type tree from the first AST
    * @param tree2 annotated type tree from the second AST
@@ -311,10 +311,10 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
    */
   @Override
   public Void visitAnnotatedType(AnnotatedTypeTree atree1, Tree tree2) {
-    AnnotatedTypeTree ttree2 = (AnnotatedTypeTree) tree2;
-    defaultAction(atree1, ttree2);
+    AnnotatedTypeTree atree2 = (AnnotatedTypeTree) tree2;
+    defaultAction(atree1, atree2);
 
-    scan(atree1.getUnderlyingType(), ttree2.getUnderlyingType());
+    scan(atree1.getUnderlyingType(), atree2.getUnderlyingType());
     return null;
   }
 
@@ -370,7 +370,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
    *
    * <p>Annotations on the type parameter may legitimately differ between a Java file and its
    * corresponding {@code .ajava} file, so this visitor does not compare or traverse the annotation
-   * list here.
+   * list.
    *
    * @param ttree1 type parameter tree from the first AST
    * @param tree2 type parameter tree from the second AST
@@ -483,7 +483,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
   }
 
   /**
-   * Visits a throw statement and scans its thrown expression.
+   * Visits a throw statement and scans its expression.
    *
    * @param ttree1 throw tree from the first AST
    * @param tree2 throw tree from the second AST
