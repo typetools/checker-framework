@@ -1671,8 +1671,8 @@ public class MustCallConsistencyAnalyzer {
    * <ul>
    *   <li>(1) The field has no non-null inline initializer at its declaration.
    *   <li>(2) The field is not assigned in any instance initializer block.
-   *   <li>(3) A conservative AST scan of the constructor body does not encounter an earlier write
-   *       to the same field or a disqualifying side effect before reaching the target assignment.
+   *   <li>(3) An AST scan of the constructor body does not encounter an earlier write to the same
+   *       field or a disqualifying side effect before reaching the target assignment.
    * </ul>
    *
    * <p>Design note: This is an AST-only check and does not reason about control flow or path
