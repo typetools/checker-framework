@@ -47,7 +47,8 @@ import org.checkerframework.javacutil.BugInCF;
  * com.sun.source.util.TreeScanner}. Although it subclasses {@link SimpleTreeVisitor}, recursion is
  * <em>not</em> automatic. To recurse, the {@code visitXyz} methods in this class and any subclass
  * must explicitly call {@link #scan} or {@link #scanList}. This makes recursion explicit and keeps
- * all paired-tree structural checks in {@link #scan(Tree, Tree)} rather than at every call site.
+ * all paired-tree structural checks in {@link #scan(Tree, Tree)} rather than duplicating them in
+ * every {@code visitXyz} method.
  *
  * <p>This base visitor does not compare or traverse annotation lists, since annotations may
  * legitimately differ between a Java file and its corresponding {@code .ajava} file.
@@ -300,7 +301,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
   }
 
   /**
-   * Visits an annotated type and scans both its type-use annotations and its underlying type.
+   * Visits an annotated type and scans its underlying type.
    *
    * <p>Type-use annotations may legitimately differ between a Java file and its corresponding
    * {@code .ajava} file, so this visitor does not compare or traverse the annotation list.
