@@ -88,15 +88,15 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
       return;
     }
 
+    Tree.Kind kind1 = tree1 == null ? null : tree1.getKind();
+    Tree.Kind kind2 = tree2 == null ? null : tree2.getKind();
+
     if (tree1 == null || tree2 == null) {
       throw new BugInCF(
           String.format(
               "%s.scan: one tree is null: tree1=%s [%s] tree2=%s [%s]",
               this.getClass().getCanonicalName(), tree1, kind1, tree2, kind2));
     }
-
-    Tree.Kind kind1 = tree1 == null ? null : tree1.getKind();
-    Tree.Kind kind2 = tree2 == null ? null : tree2.getKind();
 
     if (tree1.getKind() != tree2.getKind()) {
       throw new BugInCF(
