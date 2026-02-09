@@ -2711,8 +2711,7 @@ public class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Scans statements in source order under a conservative "straight-line initialization prefix"
-   * policy.
+   * Scans statements in source order.
    *
    * <p>Definition: the straight-line initialization prefix is the sequence of statements from the
    * start of a block up to (and including) the target assignment, where each statement is one that
@@ -2743,10 +2742,9 @@ public class MustCallConsistencyAnalyzer {
    * @param field the field potentially written by assignments in {@code stmts}
    * @param cmAtf the factory used for side-effect reasoning
    * @return {@link FirstWriteScanResult#FOUND} if {@code targetAssignment} is reached before any
-   *     disqualifying event; {@link FirstWriteScanResult#REJECT} if a disqualifying event or
-   *     unsupported statement form is encountered first; otherwise {@link
-   *     FirstWriteScanResult#NOT_FOUND} if the target assignment does not occur in the scanned
-   *     region
+   *     disqualifying event; {@link FirstWriteScanResult#REJECT} if a potential assignment is
+   *     encountered first; otherwise {@link FirstWriteScanResult#NOT_FOUND} if the target
+   *     assignment does not occur in the scanned region
    */
   private static FirstWriteScanResult scanStraightLinePrefix(
       List<? extends StatementTree> stmts,
