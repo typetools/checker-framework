@@ -1012,6 +1012,9 @@ tasks.register("wpiPlumeLibTest", Exec) {
   dependsOn(assembleForJavac)
   dependsOn(":getDoLikeJavac")
 
+  // wpi (really dljc) is unmaintained, errs with: ModuleNotFoundError: No module named 'distutils'
+  enabled = false
+
   // This test must always be re-run when requested.
   outputs.upToDateWhen { false }
 
