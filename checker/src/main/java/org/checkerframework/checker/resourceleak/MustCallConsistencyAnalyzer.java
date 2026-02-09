@@ -1688,7 +1688,7 @@ public class MustCallConsistencyAnalyzer {
    * @return true if this assignment is the first write during construction
    */
   private boolean isFirstWriteToFieldInConstructor(
-      @FindDistinct Tree assignment, VariableElement field, MethodTree constructor) {
+      @FindDistinct Tree assignment, @FindDistinct VariableElement field, MethodTree constructor) {
     TreePath constructorPath = cmAtf.getPath(constructor);
     if (constructorPath == null) {
       return false;
@@ -1703,9 +1703,7 @@ public class MustCallConsistencyAnalyzer {
       if (member instanceof VariableTree) {
         VariableTree decl = (VariableTree) member;
         VariableElement declElement = TreeUtils.elementFromDeclaration(decl);
-        @SuppressWarnings("interning:not.interned")
-        boolean isSameField = field == declElement;
-        if (isSameField
+        if (field == declElement
             && decl.getInitializer() != null
             && decl.getInitializer().getKind() != Tree.Kind.NULL_LITERAL) {
           return false;
@@ -1727,9 +1725,7 @@ public class MustCallConsistencyAnalyzer {
               public Void visitAssignment(AssignmentTree assignmentTree, Void unused) {
                 ExpressionTree lhs = assignmentTree.getVariable();
                 Element lhsElement = TreeUtils.elementFromTree(lhs);
-                @SuppressWarnings("interning:not.interned")
-                boolean isSameField = field == lhsElement;
-                if (isSameField) {
+                if (field == lhsElement) {
                   isInitialized.set(true);
                   return null;
                 }
