@@ -57,11 +57,11 @@ git diff --exit-code docs/manual/contributors.tex \
     && echo "docs/manual/contributors.tex is not up to date." \
     && echo "If the above suggestion is appropriate, run: make -C docs/manual contributors.tex" \
     && echo "If the suggestion contains a username rather than a human name, then do all the following:" \
-    && echo "  * Update your git configuration by running:  git config --global user.name \"YOURFULLNAME\"" \
-    && echo "  * Add your name to your GitHub account profile at https://github.com/settings/profile" \
-    && echo "  * Make a pull request to add your GitHub ID to" \
-    && echo "    https://github.com/plume-lib/git-scripts/blob/master/git-authors.sed" \
-    && echo "    and remake contributors.tex after that pull request is merged." \
+    && echo "* Update your git configuration by running:  git config --global user.name \"YOURFULLNAME\"" \
+    && echo "* Add your name to your GitHub account profile at https://github.com/settings/profile" \
+    && echo "* Make a pull request to add your GitHub ID to" \
+    && echo "  https://github.com/plume-lib/git-scripts/blob/master/git-authors.sed" \
+    && echo "* After that pull request is merged, run: make -C docs/manual contributors.tex" \
     && false)
 
 ## Listing tasks should succeed; this helps ensure importing Checker Framework into IDEs like IntelliJ works.
