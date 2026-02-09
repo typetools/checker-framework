@@ -73,7 +73,7 @@ test_wpi_plume_lib() {
   java -cp "$CHECKERFRAMEWORK/checker/dist/checker.jar" org.checkerframework.framework.stub.RemoveAnnotationsForInference . || exit 1
   # The project may not build after running RemoveAnnotationsForInference, because some casts
   # may become redundant and javac -Xlint:all yields "warning: [cast] redundant cast to ...".
-  "$CHECKERFRAMEWORK"/checker/bin-devel/.plume-scripts/preplace -- "-Xlint:" "-Xlint:-cast," build.gradle
+  "$CHECKERFRAMEWORK"/.plume-scripts/preplace -- "-Xlint:" "-Xlint:-cast," build.gradle
 
   echo "test-wpi-plumelib.sh for ${project} about to call wpi.sh at $(date)."
   "$CHECKERFRAMEWORK/checker/bin/wpi.sh" -b "-PskipCheckerFramework" -- --checker "$checkers"
