@@ -882,6 +882,9 @@ tasks.register("wpiManyTest", Exec) {
   // This test must always be re-run when requested.
   outputs.upToDateWhen { false }
 
+  // wpi (really dljc) is unmaintained, errs with: ModuleNotFoundError: No module named 'distutils'
+  enabled = false
+
   def projectDir = project.projectDir
 
   environment("CHECKERFRAMEWORK", "${projectDir}/..")
@@ -1008,9 +1011,6 @@ tasks.register("wpiPlumeLibTest", Exec) {
   group = "Verification"
   dependsOn(assembleForJavac)
   dependsOn(":getDoLikeJavac")
-
-  // wpi (really dljc) is unmaintained, errs with: ModuleNotFoundError: No module named 'distutils'
-  enabled = false
 
   // This test must always be re-run when requested.
   outputs.upToDateWhen { false }
