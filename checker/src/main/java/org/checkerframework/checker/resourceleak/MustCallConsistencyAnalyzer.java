@@ -1659,7 +1659,7 @@ public class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Returns true if the given assignment is the first write to a field on its path in the
+   * Returns true if the given assignment is the first write to {@code field} on its path in the
    * constructor. This method is conservative: it returns {@code false} unless it can prove that the
    * write is the first. This check runs only for non-final fields because the Java compiler already
    * forbids reassignment of final fields.
@@ -1675,9 +1675,9 @@ public class MustCallConsistencyAnalyzer {
    *       super(...)}).
    * </ul>
    *
-   * @param assignment the actual assignment tree being analyzed, which is a statement in the body
-   *     of {@code constructor}
-   * @param field the field being assigned
+   * @param assignment the assignment tree being analyzed, which is a statement in the body of
+   *     {@code constructor}
+   * @param field the field being assigned; its type is non-primitive
    * @param constructor the constructor where the assignment appears
    * @return true if this assignment is the first write during construction
    */
@@ -2793,7 +2793,7 @@ public class MustCallConsistencyAnalyzer {
         // Found an assignment to the same field:
         //   - current assignment → first write → true
         //   - earlier assignment → not first → false
-        return node.equals(assignment) ? Boolean.TRUE : Boolean.FALSE;
+        return node == assignment;
       }
       return super.visitAssignment(node, p);
     }
