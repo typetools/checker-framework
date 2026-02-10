@@ -389,8 +389,8 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
   /**
    * Visits a wildcard type and scans its bound (extends or super), if present.
    *
-   * <p>This method does not check whether the wildcard uses {@code extends} or {@code super}; only
-   * the bound tree is compared.
+   * <p>The wildcard direction ({@code extends} vs. {@code super}) is enforced by {@link #scan(Tree,
+   * Tree)}, which checks that both trees have the same {@link Tree.Kind}.
    *
    * @param wtree1 wildcard tree from the first AST
    * @param tree2 wildcard tree from the second AST
