@@ -218,8 +218,8 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
    * Visits a class-like declaration and scans its modifiers, type parameters, superclass,
    * interfaces, permits clause, and members.
    *
-   * <p>Record components ({@link Class#getRecordComponents}) are not currently scanned because that
-   * method is not available before JDK 16, and this project targets Java 8.
+   * <p>Record components ({@code ClassTree#getRecordComponents}) are not currently scanned because
+   * that method is not available before JDK 16, and this project targets Java 8.
    *
    * @param ctree1 class tree from the first AST
    * @param tree2 class tree from the second AST
