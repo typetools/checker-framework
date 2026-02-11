@@ -8,7 +8,7 @@ net-ltgt-errorprone = { id = "net.ltgt.errorprone", version = "4.4.0" }
 
 com-diffplug-spotless = { id = "com.diffplug.spotless", version = "8.2.1" }
 
-com-gorylenko-gradle-git-properties = { id = "com.gorylenko.gradle-git-properties", version = "2.5.4" }
+com-gorylenko-gradle-git-properties = { id = "com.gorylenko.gradle-git-properties", version = "2.5.6" }
 
 biz-aqute-bnd-builder = { id = "biz.aQute.bnd.builder", version = "7.2.1" }
 
@@ -22,13 +22,13 @@ junit-junit = "4.13.2"
 #  * Temporarily comment out "-Werror" in build.gradle files.
 #  * Repeatedly run `./gradlew clean compileJava` and fix all errors.
 #  * Uncomment "-Werror".
-error-prone-core = "com.google.errorprone:error_prone_core:2.46.0"
+error-prone-core = "com.google.errorprone:error_prone_core:2.47.0"
 
 javac = "com.google.errorprone:javac:9+181-r4173-1"
 
 require-javadoc = "org.plumelib:require-javadoc:2.0.0"
 
-error-prone-annotations = "com.google.errorprone:error_prone_annotations:2.46.0"
+error-prone-annotations = "com.google.errorprone:error_prone_annotations:2.47.0"
 
 guava = "org.checkerframework.annotatedlib:guava:33.1.0.2-jre"
 
@@ -68,4 +68,4 @@ stubparser = "org.checkerframework:stubparser:3.27.1"
 
 classgraph = "io.github.classgraph:classgraph:4.8.184"
 
-google-java-format = "com.google.googlejavaformat:google-java-format:1.33.0"
+google-java-format = "com.google.googlejavaformat:google-java-format:1.34.1"
