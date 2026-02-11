@@ -92,7 +92,7 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
    * String representation of regular expression matching a comment in Java code. The part before
    * {@code |} matches a single-line comment, and the part after matches a multi-line comment, which
    * breaks down as follows (adapted from <a
-   * href="http://perldoc.perl.org/perlfaq6.html#How-do-I-use-a-regular-expression-to-strip-C-style-comments-from-a-file%3f">Perl
+   * href="https://perldoc.perl.org/perlfaq6.html#How-do-I-use-a-regular-expression-to-strip-C-style-comments-from-a-file%3f">Perl
    * FAQ</a>):
    *
    * <pre>

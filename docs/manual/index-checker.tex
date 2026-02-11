@@ -870,13 +870,13 @@ a sequence might shrink.
 @GrowOnly List<String> list = new @GrowOnly ArrayList<>();
 \end{Verbatim}
 
-\item[\refqualclass{checker/index/qual}{Shrinkable}]
+\item[\refqualclass{checker/index/qual}{CanShrink}]
   The length of the sequence may be increased or decreased, via methods such as
   \<add()>, \<remove()>, and \<clear()>.
 
-\item[\refqualclass{checker/index/qual}{UncheckedShrinkable}]
+\item[\refqualclass{checker/index/qual}{UncheckedCanShrink}]
   For the purposes of the Grow-Only Checker, this is treated exactly like
-  \<@Shrinkable>. It indicates that the collection can shrink. (Its special
+  \<@CanShrink>. It indicates that the collection can shrink. (Its special
   properties related to opting out of index checking are not relevant to the
   GrowOnly Checker).
 
@@ -912,4 +912,4 @@ an earlier version.
 %%  LocalWords:  Substring substringindex substring SubstringIndexFor
 %%  LocalWords:  SubstringIndexBottom SubstringIndexUnknown LessThanBottom
 %%  LocalWords:  LessThanUnknown typecheck typechecks system'' GrowOnly
-%%  LocalWords:  UpperBoundLiteral UnshrinkableRef UncheckedShrinkable
+%%  LocalWords:  UpperBoundLiteral UnshrinkableRef UncheckedCanShrink

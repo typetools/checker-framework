@@ -1,4 +1,4 @@
-// Test case for issue #2367: http://tinyurl.com/cfissue/2367
+// Test case for issue #2367: https://tinyurl.com/cfissue/2367
 
 public class Issue2367 {
 

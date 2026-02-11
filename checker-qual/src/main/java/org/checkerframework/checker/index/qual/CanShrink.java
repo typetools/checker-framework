@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * An expression of type {@code @Shrinkable} may be used to remove elements, e.g., by calling {@code
+ * An expression of type {@code @CanShrink} may be used to remove elements, e.g., by calling {@code
  * remove()} or {@code clear()} on it.
  */
 // Reinstate when lists are supported:
@@ -17,4 +17,4 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf({UnshrinkableRef.class})
-public @interface Shrinkable {}
+public @interface CanShrink {}
