@@ -1,10 +1,11 @@
-apply plugin: 'groovy'
-
+plugins{
+  id("groovy")
+}
 repositories {
   mavenCentral()
 }
 dependencies {
   implementation("org.eclipse.jgit:org.eclipse.jgit:7.5.0.202512021534-r")
-  implementation("org.apache.groovy:groovy-all:5.0.4")
+  implementation(localGroovy())
   implementation(gradleApi())
 }

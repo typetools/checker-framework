@@ -10,11 +10,11 @@ import org.gradle.process.ExecOperations
 /**
  * Custom class that clones or updates a given Git repository.
  */
-abstract class CloneTask extends DefaultTask {
+abstract class MatchForkBranchTask extends DefaultTask {
   private ExecOperations execOperations
 
   @Inject
-  CloneTask(ExecOperations execOperations) {
+  MatchForkBranchTask(ExecOperations execOperations) {
     this.execOperations = execOperations
   }
 
@@ -80,6 +80,7 @@ abstract class CloneTask extends DefaultTask {
       e.printStackTrace()
     }
   }
+
   boolean forkExists(org, reponame) {
     return "https://github.com/${org}/${reponame}.git"
   }
