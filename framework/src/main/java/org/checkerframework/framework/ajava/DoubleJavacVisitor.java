@@ -233,7 +233,9 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
     scanList(ctree1.getTypeParameters(), ctree2.getTypeParameters());
     scan(ctree1.getExtendsClause(), ctree2.getExtendsClause());
     scanList(ctree1.getImplementsClause(), ctree2.getImplementsClause());
-    scanList(ctree1.getPermitsClause(), ctree2.getPermitsClause());
+    scanList(
+        TreeUtilsAfterJava11.ClassTreeUtils.getPermitsClause(ctree1),
+        TreeUtilsAfterJava11.ClassTreeUtils.getPermitsClause(ctree2));
 
     // Record components are only available on JDK 16+; access via reflection.
     scanList(

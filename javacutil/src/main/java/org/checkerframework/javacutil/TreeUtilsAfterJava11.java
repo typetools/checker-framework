@@ -67,8 +67,29 @@ public class TreeUtilsAfterJava11 {
       throw new AssertionError("Cannot be instantiated.");
     }
 
+    /** The {@code ClassTree.getPermitsClause} method for Java 17 and higher; null otherwise. */
+    private static @Nullable Method GET_PERMITS_CLAUSE = null;
+
     /** The {@code ClassTree.getRecordComponents} method for Java 16 and higher; null otherwise. */
     private static @Nullable Method GET_RECORD_COMPONENTS = null;
+
+    /**
+     * Returns the permits clause of {@code classTree}. Returns an empty list if the class is not a
+     * sealed class or if the JDK version does not support sealed classes.
+     *
+     * @param classTree the class tree whose permits clause is returned
+     * @return the permits clause of {@code classTree}, or an empty list
+     */
+    @SuppressWarnings("unchecked")
+    public static List<? extends Tree> getPermitsClause(ClassTree classTree) {
+      if (sourceVersionNumber < 17) {
+        return Collections.emptyList();
+      }
+      if (GET_PERMITS_CLAUSE == null) {
+        GET_PERMITS_CLAUSE = getMethod(ClassTree.class, "getPermitsClause");
+      }
+      return (List<? extends Tree>) invokeNonNullResult(GET_PERMITS_CLAUSE, classTree);
+    }
 
     /**
      * Returns the record components of {@code classTree}. Returns an empty list if the class is not
