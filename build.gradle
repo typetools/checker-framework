@@ -212,8 +212,6 @@ allprojects { currentProj ->
 
     javacJar(libs.javac)
 
-    errorproneJavac(libs.javac)
-
     allProjects(subprojects)
   }
 

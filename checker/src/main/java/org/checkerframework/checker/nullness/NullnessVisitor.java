@@ -282,9 +282,7 @@ public class NullnessVisitor
         && !isNewArrayAllZeroDims(tree)
         && !isNewArrayInToArray(tree)
         && !TypesUtils.isPrimitive(componentType.getUnderlyingType())
-        && (checker.getLintOption("soundArrayCreationNullness", false)
-            // temporary, for backward compatibility
-            || checker.getLintOption("forbidnonnullarraycomponents", false))) {
+        && checker.getLintOption("soundArrayCreationNullness", false)) {
       checker.reportError(
           tree, "new.array", componentType.getPrimaryAnnotations(), type.toString());
     }
