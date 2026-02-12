@@ -332,6 +332,7 @@ allprojects { currentProj ->
         def targets = [
           "docs/examples",
           "docs/tutorial",
+          "buildSrc"
         ]
         targets = targets.collectMany {
           [
