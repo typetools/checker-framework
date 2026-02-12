@@ -29,16 +29,30 @@ public abstract class MatchForkBranchTask extends DefaultTask {
   }
 
   public void cloneAndUpdate(String url, File directory) {
-    String[] fb = findForkBranch(new File(directory, ".git"));
-    if (fb != null) {
-      DefaultGroovyMethods.printf(this, "Fork: %s, Branch: %s%n", new Object[] {fb[0], fb[1]});
-      if (forkExists(fb[0], "jdk")) {
-        DefaultGroovyMethods.println(this, "found");
-      }
+    File jdkDir = new File(directory.getParentFile(), "jdk");
+    if (!jdkDir.exists()) {
+      // clone
+      // TODO Implement.
+      return;
     }
+
+    ForkBranch fbCf = findForkBranch(new File(directory, ".git"));
+
+    ForkBranch fbJdk = findForkBranch(new File(jdkDir, ".git"));
+    if (fbCf == null || fbJdk == null || fbCf == fbJdk) {
+      return;
+    }
+
+    if (!forkExists(fbCf.fork, "jdk")) {
+      // TODO: Should this check that the JDK is typetools/master?
+      return;
+    }
+    System.out.println("found");
   }
 
-  public String[] findForkBranch(File gitDir) {
+  public record ForkBranch(String fork, String branch) {}
+
+  public ForkBranch findForkBranch(File gitDir) {
     try {
       Repository repository =
           new FileRepositoryBuilder().setGitDir(gitDir).readEnvironment().findGitDir().build();
@@ -75,11 +89,12 @@ public abstract class MatchForkBranchTask extends DefaultTask {
             fork = remoteUrl.substring("git@github.com:".length(), remoteUrl.indexOf("/"));
           } else {
             // https://github.com/mernst/checker-framework.git
+            @SuppressWarnings("deprecation")
             URL url = new URL(remoteUrl);
             String path = url.getPath();
             fork = path.split("/")[1];
           }
-          return new String[] {fork, remoteBranchSimpleName};
+          return new ForkBranch(fork, branchName);
         }
       }
 
