@@ -2,55 +2,77 @@ import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Collection;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.eclipse.jgit.api.LsRemoteCommand;
 import org.eclipse.jgit.lib.Config;
 import org.eclipse.jgit.lib.ConfigConstants;
 import org.eclipse.jgit.lib.Constants;
+import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.provider.Property;
-import org.gradle.api.tasks.Input;
-import org.gradle.api.tasks.OutputDirectory;
+import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.TaskAction;
 
 /** Custom class that clones or updates a given Git repository. */
 public abstract class MatchForkBranchTask extends DefaultTask {
 
-  @Input
-  public abstract Property<String> getUrl();
-
-  @OutputDirectory
+  @Internal
   public abstract Property<File> getDirectory();
 
   @TaskAction
   public void run() {
-    cloneAndUpdate(getUrl().get(), getDirectory().get());
+    File cfDir = getDirectory().get();
+    File jdkDir = new File(cfDir.getParentFile(), "jdk");
+    if (jdkDir.exists()) {
+      checkBranchFork(cfDir, jdkDir);
+      CloneTask.update(jdkDir);
+    } else {
+      ForkBranch fbCf = findForkBranch(new File(cfDir, ".git"));
+      String url = getGitHubUrl(fbCf.fork, "jdk");
+      CloneTask.cloneAndUpdate(url, fbCf.branch, jdkDir);
+    }
   }
 
-  public void cloneAndUpdate(String url, File directory) {
-    File jdkDir = new File(directory.getParentFile(), "jdk");
-    if (!jdkDir.exists()) {
-      // clone
-      // TODO Implement.
-      return;
-    }
-
-    ForkBranch fbCf = findForkBranch(new File(directory, ".git"));
-
+  public void checkBranchFork(File cfDif, File jdkDir) {
+    ForkBranch fbCf = findForkBranch(new File(cfDif, ".git"));
     ForkBranch fbJdk = findForkBranch(new File(jdkDir, ".git"));
-    if (fbCf == null || fbJdk == null || fbCf == fbJdk) {
+    if (fbCf.equals(fbJdk)) {
+      // Either CF or JDK is not a clone, or the CF and JDK are using the same fork and branch.
       return;
     }
-
     if (!forkExists(fbCf.fork, "jdk")) {
-      // TODO: Should this check that the JDK is typetools/master?
+      // There is no jdk fork that is the same as CF.
       return;
     }
-    System.out.println("found");
+    if (doesRemoteBranchExist(fbCf.fork, "jdk", fbCf.branch)) {
+      throw new RuntimeException(
+          String.format(
+              "Please checkout the corresponding JDK branch. Fork: %s Branch: %s.",
+              getGitHubUrl(fbCf.fork, "jdk"), fbCf.branch));
+    }
   }
 
-  public record ForkBranch(String fork, String branch) {}
+  public record ForkBranch(String fork, String branch) {
+
+    @Override
+    public boolean equals(Object o) {
+      if (!(o instanceof ForkBranch that)) {
+        return false;
+      }
+
+      return fork.equals(that.fork) && branch.equals(that.branch);
+    }
+
+    @Override
+    public int hashCode() {
+      int result = fork.hashCode();
+      result = 31 * result + branch.hashCode();
+      return result;
+    }
+  }
 
   public ForkBranch findForkBranch(File gitDir) {
     try {
@@ -59,7 +81,7 @@ public abstract class MatchForkBranchTask extends DefaultTask {
 
       String branchName = repository.getBranch();
       if (branchName == null) {
-        return null;
+        return new ForkBranch("typetools", "master");
       }
 
       Config config = repository.getConfig();
@@ -103,16 +125,15 @@ public abstract class MatchForkBranchTask extends DefaultTask {
       e.printStackTrace();
     }
 
-    return null;
+    return new ForkBranch("typetools", "master");
   }
 
   public boolean forkExists(final String org, final String reponame) {
-    return urlExists(
-        "https://github.com/"
-            + DefaultGroovyMethods.invokeMethod(String.class, "valueOf", new Object[] {org})
-            + "/"
-            + DefaultGroovyMethods.invokeMethod(String.class, "valueOf", new Object[] {reponame})
-            + ".git");
+    return urlExists(getGitHubUrl(org, reponame));
+  }
+
+  static String getGitHubUrl(String org, String repo) {
+    return String.format("https://github.com/%s/%s", org, repo);
   }
 
   public boolean urlExists(String urlAddress) {
@@ -133,5 +154,31 @@ public abstract class MatchForkBranchTask extends DefaultTask {
       // Catches connection issues, invalid protocols, or non-existent domains
       return false;
     }
+  }
+
+  public static boolean doesRemoteBranchExist(String org, String repo, String branchName) {
+    // JGit uses the full internal Git reference name, which for a branch is
+    // "refs/heads/<branchName>"
+    String fullBranchName = Constants.R_HEADS + branchName;
+
+    try {
+      LsRemoteCommand lsRemoteCommand = new LsRemoteCommand(null);
+
+      // Execute the ls-remote command to get all references from the remote
+      Collection<Ref> remoteRefs = lsRemoteCommand.setRemote(getGitHubUrl(org, repo)).call();
+
+      // Iterate through the results to find the specific branch
+      for (Ref ref : remoteRefs) {
+        if (ref.getName().equals(fullBranchName)) {
+          return true;
+        }
+      }
+
+    } catch (Exception e) {
+      // Handle exceptions like network issues, authentication failures, etc.
+      System.err.println("Error checking remote branch existence: " + e.getMessage());
+    }
+
+    return false;
   }
 }

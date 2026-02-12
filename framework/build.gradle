@@ -66,18 +66,9 @@ dependencies {
   testImplementation(libs.lombok)
 }
 
-tasks.register("cloneTypetoolsJdk", Exec) {
+tasks.register("cloneTypetoolsJdk", MatchForkBranchTask) {
   description = "Obtain or update the annotated JDK."
-  dependsOn(":getGitScripts")
-  workingDir(getRootDir())
-  executable("${gitScriptsHome}/git-clone-related")
-  args("typetools", "jdk")
-}
-
-tasks.register("testClone", MatchForkBranchTask) {
-  url.set("https://github.com/typetools/jdk.git")
   directory.set(getRootDir())
-  outputs.upToDateWhen { false }
 }
 
 tasks.register("copyAndMinimizeAnnotatedJdkFiles", JavaExec) {
