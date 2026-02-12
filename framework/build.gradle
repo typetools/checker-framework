@@ -73,6 +73,11 @@ tasks.register("cloneTypetoolsJdk", Exec) {
   executable("${gitScriptsHome}/git-clone-related")
   args("typetools", "jdk")
 }
+tasks.register("testClone", MatchForkBranchTask) {
+  url.set("https://github.com/typetools/jdk.git")
+  directory.set(file("/Users/smillst/tmp/checker-framework"))
+  outputs.upToDateWhen { false }
+}
 
 tasks.register("copyAndMinimizeAnnotatedJdkFiles", JavaExec) {
   dependsOn(cloneTypetoolsJdk)

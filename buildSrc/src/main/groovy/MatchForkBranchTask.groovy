@@ -1,6 +1,11 @@
 import javax.inject.Inject
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.api.errors.GitAPIException
+import org.eclipse.jgit.lib.Config
+import org.eclipse.jgit.lib.ConfigConstants
+import org.eclipse.jgit.lib.Constants
+import org.eclipse.jgit.lib.Repository
+import org.eclipse.jgit.storage.file.FileRepositoryBuilder
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.OutputDirectory
@@ -30,56 +35,73 @@ abstract class MatchForkBranchTask extends DefaultTask {
   }
 
   void cloneAndUpdate(String url, File directory) {
-    // Gradle creates the directory if it does not exist, so check to see if the director has a .git directory.
-    if (new File(directory, ".git").exists()) {
-      update(directory)
-    } else {
-      try {
-        clone(url, directory, true)
-      } catch (Throwable t) {
-        println "Exception while cloning ${url}"
-        t.printStackTrace()
-      }
-      if (!new File(directory, ".git").exists()) {
-        println "Cloning failed, will try again in 1 minute: clone(${url}, ${directory}, true)"
-        sleep(60000) // wait 1 minute, then try again
-        clone(urlS, getDirectory(), false)
-      }
+    def fb = findForkBranch(new File(directory, ".git"))
+    if(fb != null) {
+      printf("Fork: %s, Branch: %s%n", fb[0], fb[1])
     }
   }
-  /**
-   * Quietly clones the given git repository, {@code url}, to {@directory} at a depth of 1.
-   * @param url git repository to clone
-   * @param directory where to clone
-   * @param ignoreError whether to fail the build if the clone command fails
-   */
-  void clone(url, directory, ignoreError) {
 
+
+  String[] findForkBranch( gitDir) {
     try {
-      Git git = Git.cloneRepository()
-          .setURI(url)
-          .setDirectory(directory)
-          .setTimeout(60) // TODO: What units is this?
-          .setDepth(1)
-          .call()
-      System.out.println("Cloning successful.")
-      // Remember to close the Git object when finished
-      git.close()
+      Repository repository = new FileRepositoryBuilder()
+          .setGitDir(gitDir)
+          .readEnvironment() // Scan environment GIT_* variables
+          .findGitDir() // Call findGitDir() to retrieve the repository's git directory
+          .build()
+
+
+      String branchName = repository.getBranch()
+      if (branchName == null) {
+        return null
+      }
+
+      Config config = repository.getConfig()
+
+      // Get the remote name (e.g., "origin")
+      String remoteName = config.getString(
+          ConfigConstants.CONFIG_BRANCH_SECTION,
+          branchName,
+          ConfigConstants.CONFIG_KEY_REMOTE
+          )
+
+      // Get the merge branch name (e.g., "refs/heads/master")
+      String mergeBranchName = config.getString(
+          ConfigConstants.CONFIG_BRANCH_SECTION,
+          branchName,
+          ConfigConstants.CONFIG_KEY_MERGE
+          )
+
+
+      if (remoteName != null && mergeBranchName != null) {
+        // The mergeBranchName is typically "refs/heads/<branch_name>",
+        // but the remote tracking branch name is often represented as remoteName/simpleBranchName
+        String remoteBranchSimpleName = mergeBranchName.substring(Constants.R_HEADS.length())
+
+        // Get the URL for the "origin" remote (used for fetching and pushing by default)
+        String remoteUrl = config.getString("remote", remoteName, "url")
+
+        if (remoteUrl != null && !remoteUrl.isEmpty()) {
+          String fork
+          if(remoteUrl.startsWith("git@github.com:")) {
+            // git@github.com:typetools/checker-framework.git
+            fork = remoteUrl.substring("git@github.com:".length(), remoteUrl.indexOf('/'))
+          } else {
+            // https://github.com/mernst/checker-framework.git
+            URL url = new URL(remoteUrl)
+            String path = url.getPath()
+            fork = path.split('/')[1]
+          }
+          return [fork, remoteBranchSimpleName]
+        }
+      }
     } catch (GitAPIException e) {
       System.err.println("Error cloning repository: " + e.getMessage())
       e.printStackTrace()
     }
+    return null
   }
-  void update( directory) {
-    try {
-      Git git = Git.open(directory)
-      git.pull().call()
-      git.close()
-    } catch (GitAPIException e) {
-      System.err.println("Error cloning repository: " + e.getMessage())
-      e.printStackTrace()
-    }
-  }
+
 
   boolean forkExists(org, reponame) {
     return "https://github.com/${org}/${reponame}.git"
