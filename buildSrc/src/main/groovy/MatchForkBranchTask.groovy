@@ -38,6 +38,9 @@ abstract class MatchForkBranchTask extends DefaultTask {
     def fb = findForkBranch(new File(directory, ".git"))
     if(fb != null) {
       printf("Fork: %s, Branch: %s%n", fb[0], fb[1])
+      if(forkExists(fb[0], "jdk")) {
+        println("found")
+      }
     }
   }
 
@@ -59,18 +62,10 @@ abstract class MatchForkBranchTask extends DefaultTask {
       Config config = repository.getConfig()
 
       // Get the remote name (e.g., "origin")
-      String remoteName = config.getString(
-          ConfigConstants.CONFIG_BRANCH_SECTION,
-          branchName,
-          ConfigConstants.CONFIG_KEY_REMOTE
-          )
+      String remoteName = config.getString(ConfigConstants.CONFIG_BRANCH_SECTION, branchName, ConfigConstants.CONFIG_KEY_REMOTE)
 
       // Get the merge branch name (e.g., "refs/heads/master")
-      String mergeBranchName = config.getString(
-          ConfigConstants.CONFIG_BRANCH_SECTION,
-          branchName,
-          ConfigConstants.CONFIG_KEY_MERGE
-          )
+      String mergeBranchName = config.getString(ConfigConstants.CONFIG_BRANCH_SECTION, branchName, ConfigConstants.CONFIG_KEY_MERGE)
 
 
       if (remoteName != null && mergeBranchName != null) {
@@ -104,7 +99,7 @@ abstract class MatchForkBranchTask extends DefaultTask {
 
 
   boolean forkExists(org, reponame) {
-    return "https://github.com/${org}/${reponame}.git"
+    return urlExists("https://github.com/${org}/${reponame}.git")
   }
   boolean urlExists(String urlAddress) {
     try {
