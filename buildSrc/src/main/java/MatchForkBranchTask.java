@@ -1,8 +1,10 @@
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.util.Collection;
+import java.util.Objects;
 import javax.annotation.Nullable;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.eclipse.jgit.api.LsRemoteCommand;
@@ -66,11 +68,11 @@ public abstract class MatchForkBranchTask extends DefaultTask {
 
     @Override
     public boolean equals(Object o) {
-      if (!(o instanceof ForkBranch(String fork1, String branch1))) {
+      if (!(o instanceof ForkBranch other)) {
         return false;
       }
 
-      return fork.equals(fork1) && branch.equals(branch1);
+      return Objects.equals(fork, other.fork) && Objects.equals(branch, other.branch);
     }
 
     @Override
@@ -118,8 +120,7 @@ public abstract class MatchForkBranchTask extends DefaultTask {
             fork = remoteUrl.substring("git@github.com:".length(), remoteUrl.indexOf("/"));
           } else {
             // https://github.com/mernst/checker-framework.git
-            @SuppressWarnings("deprecation")
-            URL url = new URL(remoteUrl);
+            URL url = URI.create(remoteUrl).toURL();
             String path = url.getPath();
             fork = path.split("/")[1];
           }
@@ -145,7 +146,7 @@ public abstract class MatchForkBranchTask extends DefaultTask {
 
   public boolean urlExists(String urlAddress) {
     try {
-      URL url = new URL(urlAddress);
+      URL url = URI.create(urlAddress).toURL();
       HttpURLConnection connection =
           DefaultGroovyMethods.asType(url.openConnection(), HttpURLConnection.class);
       // Set request method to HEAD to only fetch headers and reduce load
