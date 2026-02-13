@@ -60,11 +60,11 @@ public abstract class MatchForkBranchTask extends DefaultTask {
 
     @Override
     public boolean equals(Object o) {
-      if (!(o instanceof ForkBranch that)) {
+      if (!(o instanceof ForkBranch(String fork1, String branch1))) {
         return false;
       }
 
-      return fork.equals(that.fork) && branch.equals(that.branch);
+      return fork.equals(fork1) && branch.equals(branch1);
     }
 
     @Override
@@ -85,6 +85,8 @@ public abstract class MatchForkBranchTask extends DefaultTask {
         System.out.println("Branch not found: " + gitDir.getPath());
         return new ForkBranch("typetools", "master");
       }
+
+      System.out.printf("Branch found: %s, Path: %s%n", branchName, gitDir.getPath());
 
       Config config = repository.getConfig();
 
