@@ -39,6 +39,7 @@ public abstract class MatchForkBranchTask extends DefaultTask {
   public void checkBranchFork(File cfDif, File jdkDir) {
     ForkBranch fbCf = findForkBranch(new File(cfDif, ".git"));
     ForkBranch fbJdk = findForkBranch(new File(jdkDir, ".git"));
+    System.out.printf("CF: %s JDK: %s%n", fbCf, fbJdk);
     if (fbCf.equals(fbJdk)) {
       // Either CF or JDK is not a clone, or the CF and JDK are using the same fork and branch.
       return;
@@ -81,6 +82,7 @@ public abstract class MatchForkBranchTask extends DefaultTask {
 
       String branchName = repository.getBranch();
       if (branchName == null) {
+        System.out.println("Branch not found: " + gitDir.getPath());
         return new ForkBranch("typetools", "master");
       }
 
