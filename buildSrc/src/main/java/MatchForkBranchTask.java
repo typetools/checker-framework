@@ -3,6 +3,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Collection;
+import javax.annotation.Nullable;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.eclipse.jgit.api.LsRemoteCommand;
 import org.eclipse.jgit.lib.Config;
@@ -31,8 +32,13 @@ public abstract class MatchForkBranchTask extends DefaultTask {
       CloneTask.update(jdkDir);
     } else {
       ForkBranch fbCf = findForkBranch(new File(cfDir, ".git"));
-      String url = getGitHubUrl(fbCf.fork, "jdk");
-      CloneTask.cloneAndUpdate(url, fbCf.branch, jdkDir);
+      if (fbCf != null) {
+        String url = getGitHubUrl(fbCf.fork, "jdk");
+        CloneTask.cloneAndUpdate(url, fbCf.branch, jdkDir);
+      } else {
+        String url = getGitHubUrl("typetools", "jdk");
+        CloneTask.cloneAndUpdate(url, "master", jdkDir);
+      }
     }
   }
 
@@ -40,7 +46,7 @@ public abstract class MatchForkBranchTask extends DefaultTask {
     ForkBranch fbCf = findForkBranch(new File(cfDif, ".git"));
     ForkBranch fbJdk = findForkBranch(new File(jdkDir, ".git"));
     System.out.printf("CF: %s JDK: %s%n", fbCf, fbJdk);
-    if (fbCf.equals(fbJdk)) {
+    if (fbCf == null || fbJdk == null || fbCf.equals(fbJdk)) {
       // Either CF or JDK is not a clone, or the CF and JDK are using the same fork and branch.
       return;
     }
@@ -75,18 +81,15 @@ public abstract class MatchForkBranchTask extends DefaultTask {
     }
   }
 
-  public ForkBranch findForkBranch(File gitDir) {
+  public @Nullable ForkBranch findForkBranch(File gitDir) {
     try {
       Repository repository =
           new FileRepositoryBuilder().setGitDir(gitDir).readEnvironment().findGitDir().build();
 
       String branchName = repository.getBranch();
       if (branchName == null) {
-        System.out.println("Branch not found: " + gitDir.getPath());
-        return new ForkBranch("typetools", "master");
+        return null;
       }
-
-      System.out.printf("Branch found: %s, Path: %s%n", branchName, gitDir.getPath());
 
       Config config = repository.getConfig();
 
@@ -129,7 +132,7 @@ public abstract class MatchForkBranchTask extends DefaultTask {
       e.printStackTrace();
     }
 
-    return new ForkBranch("typetools", "master");
+    return null;
   }
 
   public boolean forkExists(final String org, final String reponame) {
