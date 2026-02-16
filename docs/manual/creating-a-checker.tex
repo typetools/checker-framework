@@ -2,9 +2,9 @@
 \chapterAndLabel{How to create a new checker}{creating-a-checker}
 \label{writing-a-checker} % for old links; don't use any more!
 
-\newcommand{\TreeAPIBase}{https://docs.oracle.com/en/java/javase/17/docs/api/jdk.compiler/com/sun/source}
+\newcommand{\TreeAPIBase}{https://docs.oracle.com/en/java/javase/25/docs/api/jdk.compiler/com/sun/source}
 \newcommand{\refTreeclass}[2]{\href{\TreeAPIBase{}/#1/#2.html?is-external=true}{\<#2>}}
-\newcommand{\ModelAPIBase}{https://docs.oracle.com/en/java/javase/17/docs/api/java.compiler/javax/lang/model}
+\newcommand{\ModelAPIBase}{https://docs.oracle.com/en/java/javase/25/docs/api/java.compiler/javax/lang/model}
 \newcommand{\refModelclass}[2]{\href{\ModelAPIBase{}/#1/#2.html?is-external=true}{\<#2>}}
 
 This chapter describes how to create a checker
@@ -1258,7 +1258,7 @@ Put them in a file \<\emph{MyChecker}Visitor.java> that extends
 BaseTypeVisitor performs type-checking at each node of a
 source file's AST\@.  It uses the visitor design pattern to traverse
 Java syntax trees as provided by Oracle's
-\href{https://docs.oracle.com/en/java/javase/17/docs/api/jdk.compiler/module-summary.html}{jdk.compiler
+\href{https://docs.oracle.com/en/java/javase/25/docs/api/jdk.compiler/module-summary.html}{jdk.compiler
 API},
 and it issues a warning (by calling
 \refmethodterse{framework/source}{SourceChecker}{reportError}{(java.lang.Object,java.lang.String,java.lang.Object...)}
