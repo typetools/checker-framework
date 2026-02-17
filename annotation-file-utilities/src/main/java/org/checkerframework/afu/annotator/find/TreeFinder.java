@@ -72,6 +72,7 @@ import org.checkerframework.afu.scenelib.io.ASTRecord;
 import org.checkerframework.afu.scenelib.io.DebugWriter;
 import org.checkerframework.afu.scenelib.type.DeclaredType;
 import org.checkerframework.afu.scenelib.type.Type;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.objectweb.asm.TypePath;
 import org.plumelib.util.IPair;
 
