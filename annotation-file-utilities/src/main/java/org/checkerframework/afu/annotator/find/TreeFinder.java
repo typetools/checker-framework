@@ -671,7 +671,7 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
     public IPair<ASTRecord, Integer> visitIdentifier(IdentifierTree node, Insertion ins) {
       dbug.debug("TypePositionFinder.visitIdentifier(%s)%n", node);
       // for arrays, need to indent inside array, not right before type
-      ASTRecord rec = ASTIndex.indexOf(tree).get(node);
+      @NonNull ASTRecord rec = ASTIndex.indexOf(tree).get(node);
       ASTPath astPath = ins.getCriteria().getASTPath();
       Tree parent = parent(node);
       Integer i = null;
@@ -880,7 +880,7 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
       }
       assert result >= 0 || cd.name.isEmpty()
           : String.format("%d %d %d%n", cd.getStartPosition(), cd.getPreferredPosition(), cd.pos);
-      return result < 0 ? null : result;
+      return result;
     }
 
     // When a method is visited, it is visited for the declaration itself.
