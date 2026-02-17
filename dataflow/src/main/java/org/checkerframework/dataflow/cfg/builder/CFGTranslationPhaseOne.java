@@ -1954,12 +1954,14 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           Node operNode;
           if (kind == Tree.Kind.MULTIPLY_ASSIGNMENT) {
             operNode = new NumericalMultiplicationNode(operTree, targetRHS, value);
+            extendWithNode(operNode);
           } else if (kind == Tree.Kind.DIVIDE_ASSIGNMENT) {
             if (TypesUtils.isIntegralPrimitive(exprType)) {
               operNode = new IntegerDivisionNode(operTree, targetRHS, value);
               extendWithNodeWithException(operNode, arithmeticExceptionType);
             } else {
               operNode = new FloatingDivisionNode(operTree, targetRHS, value);
+              extendWithNode(operNode);
             }
           } else {
             assert kind == Tree.Kind.REMAINDER_ASSIGNMENT;
@@ -1968,9 +1970,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
               extendWithNodeWithException(operNode, arithmeticExceptionType);
             } else {
               operNode = new FloatingRemainderNode(operTree, targetRHS, value);
+              extendWithNode(operNode);
             }
           }
-          extendWithNode(operNode);
 
           TypeMirror castType = TypeAnnotationUtils.unannotatedType(leftType);
           TypeCastTree castTree = treeBuilder.buildTypeCast(castType, operTree);
@@ -2167,6 +2169,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
             if (TypesUtils.isIntegralPrimitive(exprType)) {
               r = new IntegerDivisionNode(tree, left, right);
               extendWithNodeWithException(r, arithmeticExceptionType);
+              return r;
             } else {
               r = new FloatingDivisionNode(tree, left, right);
             }
@@ -2175,6 +2178,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
             if (TypesUtils.isIntegralPrimitive(exprType)) {
               r = new IntegerRemainderNode(tree, left, right);
               extendWithNodeWithException(r, arithmeticExceptionType);
+              return r;
             } else {
               r = new FloatingRemainderNode(tree, left, right);
             }
