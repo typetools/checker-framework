@@ -6,18 +6,13 @@ repositories {
 }
 
 java {
-  java {
-    sourceCompatibility = '17'
-    targetCompatibility = '17'
-  }
+  sourceCompatibility = '17'
+  targetCompatibility = '17'
 }
 
 dependencies {
   implementation("org.eclipse.jgit:org.eclipse.jgit:7.5.0.202512021534-r")
   implementation(localGroovy())
   implementation(gradleApi())
-  //  implementation group: 'org.eclipse.jgit', name: 'org.eclipse.jgit.ssh.jsch', version: "7.5.0.202512021534-r"
   implementation("org.eclipse.jgit:org.eclipse.jgit.ssh.jsch:7.5.0.202512021534-r")
-  //  implementation("org.eclipse.jgit:org.eclipse.jgit.gpg.bc:7.5.0.202512021534-r")
-  //  implementation("org.eclipse.jgit:org.eclipse.jgit.ssh.apache:7.5.0.202512021534-r")
 }

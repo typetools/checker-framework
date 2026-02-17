@@ -4,10 +4,7 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
 import java.util.Collection;
-import java.util.Objects;
-import javax.annotation.Nullable;
 import javax.inject.Inject;
-import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.eclipse.jgit.api.LsRemoteCommand;
 import org.eclipse.jgit.lib.Config;
 import org.eclipse.jgit.lib.ConfigConstants;
@@ -97,24 +94,7 @@ public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
     }
   }
 
-  public record ForkBranch(String fork, String branch) {
-
-    @Override
-    public boolean equals(Object o) {
-      if (!(o instanceof ForkBranch other)) {
-        return false;
-      }
-
-      return Objects.equals(fork, other.fork) && Objects.equals(branch, other.branch);
-    }
-
-    @Override
-    public int hashCode() {
-      int result = fork.hashCode();
-      result = 31 * result + branch.hashCode();
-      return result;
-    }
-  }
+  public record ForkBranch(String fork, String branch) {}
 
   /**
    * Find the fork and branch of the remote tracking branch that is currently checked out in {@code
@@ -124,7 +104,7 @@ public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
    * @param gitDir a git directory
    * @return the fork and branch of {@code gitDir} or null if there is no remote branch.
    */
-  private @Nullable ForkBranch findForkBranch(File gitDir) {
+  private ForkBranch findForkBranch(File gitDir) {
     try (Repository repository =
         new FileRepositoryBuilder().setGitDir(gitDir).readEnvironment().findGitDir().build()) {
 
@@ -167,7 +147,7 @@ public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
       }
 
     } catch (IOException e) {
-      System.err.println("Error cloning repository: " + e.getMessage());
+      System.err.println("Error finding branch: " + e.getMessage());
     }
 
     return null;
@@ -202,22 +182,20 @@ public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
    * @return true if {@code urlAddress} exists
    */
   private boolean urlExists(String urlAddress) {
+    HttpURLConnection connection = null;
     try {
-      URL url = URI.create(urlAddress).toURL();
-      HttpURLConnection connection =
-          DefaultGroovyMethods.asType(url.openConnection(), HttpURLConnection.class);
-      // Set request method to HEAD to only fetch headers and reduce load
+      connection = (HttpURLConnection) URI.create(urlAddress).toURL().openConnection();
       connection.setRequestMethod("HEAD");
-      // Optional: set a reasonable timeout
-      connection.setConnectTimeout(5000); // 5 seconds
-      connection.setReadTimeout(5000); // 5 seconds
 
       int responseCode = connection.getResponseCode();
-      // 200 series codes indicate success (200 OK, 204 No Content, etc.)
-      return (responseCode >= 200 && responseCode < 300);
+      return HttpURLConnection.HTTP_OK == responseCode;
     } catch (Exception e) {
-      // Catches connection issues, invalid protocols, or non-existent domains
       return false;
+    } finally {
+      if (connection != null) {
+        connection.disconnect();
+        ;
+      }
     }
   }
 

@@ -27,17 +27,20 @@ public abstract class InsertAnnotationsToSource extends DefaultTask {
 
   @TaskAction
   public void doTaskAction() {
-    String jaifsDir = getTestDir() + "/inference-output";
-    final FileCollection jaifs =
+    String testDir = getTestDir().get();
+    String jaifsDir = testDir + "/inference-output";
+    FileCollection jaifs =
         getProject().fileTree(jaifsDir).filter(file -> file.getName().matches(".*\\.jaif"));
     if (jaifs.isEmpty()) {
       throw new GradleException("no .jaif files found in ${jaifsDir}");
     }
-    final FileCollection javas =
-        getProject().fileTree(jaifsDir).filter(file -> file.getName().matches(".*\\.java"));
-    ;
+    FileCollection javas =
+        getProject()
+            .fileTree(testDir + "/annotated")
+            .filter(file -> file.getName().matches(".*\\.java"));
+
     if (javas.isEmpty()) {
-      throw new GradleException("no .java files found in ${javasDir}");
+      throw new GradleException("no .java files found in " + jaifsDir);
     }
 
     execOperations.exec(

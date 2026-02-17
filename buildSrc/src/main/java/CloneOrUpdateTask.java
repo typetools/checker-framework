@@ -5,6 +5,7 @@ import org.eclipse.jgit.api.CloneCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.gradle.api.DefaultTask;
+import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.OutputDirectory;
@@ -28,7 +29,7 @@ public abstract class CloneOrUpdateTask extends DefaultTask {
    * @return directory into which to clone or if it exists to pull in new changes
    */
   @OutputDirectory
-  public abstract Property<File> getDirectory();
+  public abstract DirectoryProperty getDirectory();
 
   /** Used to run exec commands. */
   private ExecOperations execOperations;
@@ -41,7 +42,7 @@ public abstract class CloneOrUpdateTask extends DefaultTask {
   @TaskAction
   public void doTaskAction() throws InterruptedException {
     String url = getUrl().get();
-    File directory = getDirectory().get();
+    File directory = getDirectory().get().getAsFile();
 
     // Gradle creates the directory if it does not exist, so check to see if the director has a .git
     // directory.
@@ -65,7 +66,7 @@ public abstract class CloneOrUpdateTask extends DefaultTask {
       System.out.printf(
           "Cloning failed, will try again in 1 minute: clone(%s, %s, true)", url, directory);
       try {
-        Thread.sleep(6000); // wait 1 minute, then try again
+        Thread.sleep(60000); // wait 1 minute, then try again
       } catch (InterruptedException e) {
         throw new RuntimeException(e);
       }
@@ -81,21 +82,14 @@ public abstract class CloneOrUpdateTask extends DefaultTask {
    * @param directory where to clone
    * @param ignoreError whether to fail the build if the clone command fails
    */
-  public static void clone(String url, String branch, Object directory, Boolean ignoreError) {
-    try {
-      CloneCommand cloneCommand =
-          Git.cloneRepository()
-              .setURI(url)
-              .setDirectory((File) directory)
-              .setTimeout(60)
-              .setDepth(1);
-      if (branch != null) {
-        cloneCommand.setBranch(branch);
-      }
-      Git git = cloneCommand.call();
+  public static void clone(String url, String branch, File directory, boolean ignoreError) {
+    CloneCommand cloneCommand =
+        Git.cloneRepository().setURI(url).setDirectory(directory).setTimeout(60).setDepth(1);
+    if (branch != null) {
+      cloneCommand.setBranch(branch);
+    }
+    try (Git git = cloneCommand.call()) {
       System.out.println("Cloning successful.");
-      // Remember to close the Git object when finished
-      git.close();
     } catch (GitAPIException e) {
       System.err.println("Error cloning repository: " + e.getMessage());
       if (ignoreError) {
