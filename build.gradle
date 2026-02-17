@@ -886,31 +886,31 @@ tasks.register("manual") {
   dependsOn("makeCfManual", "makeAfuManual", ":dataflow:manual")
 }
 
-tasks.register("getPlumeBib", CloneTask) {
+tasks.register("getPlumeBib", CloneOrUpdateTask) {
   url.set("https://github.com/mernst/plume-bib.git")
   directory.set(file(plumeBibHome))
   outputs.upToDateWhen { false }
 }
 
-tasks.register("getGitScripts", CloneTask) {
+tasks.register("getGitScripts", CloneOrUpdateTask) {
   url.set("https://github.com/plume-lib/git-scripts.git")
   directory.set(file(gitScriptsHome))
   outputs.upToDateWhen { false }
 }
 
-tasks.register("getPlumeScripts", CloneTask) {
+tasks.register("getPlumeScripts", CloneOrUpdateTask) {
   url.set("https://github.com/plume-lib/plume-scripts.git")
   directory.set(file(plumeScriptsHome))
   outputs.upToDateWhen { false }
 }
 
-tasks.register("getHtmlTools", CloneTask) {
+tasks.register("getHtmlTools", CloneOrUpdateTask) {
   url.set("https://github.com/plume-lib/html-tools.git")
   directory.set(file(htmlToolsHome))
   outputs.upToDateWhen { false }
 }
 
-tasks.register("getDoLikeJavac", CloneTask) {
+tasks.register("getDoLikeJavac", CloneOrUpdateTask) {
   url.set("https://github.com/kelloggm/do-like-javac.git")
   directory.set(file(doLikeJavacHome))
   outputs.upToDateWhen { false }

@@ -66,9 +66,9 @@ dependencies {
   testImplementation(libs.lombok)
 }
 
-tasks.register("cloneTypetoolsJdk", MatchForkBranchTask) {
+tasks.register("cloneTypetoolsJdk", CloneOrUpdateRelatedTask) {
   description = "Obtain or update the annotated JDK."
-  directory.set(getRootDir())
+  relatedRepo = "jdk"
 }
 
 tasks.register("copyAndMinimizeAnnotatedJdkFiles", JavaExec) {
