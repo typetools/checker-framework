@@ -40,6 +40,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.formatter.qual.FormatMethod;
@@ -63,6 +64,7 @@ import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TreeUtilsAfterJava11.SwitchExpressionUtils;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.ArraysPlume;
 
 /** The visitor for the nullness type-system. */
 public class NullnessVisitor
@@ -227,6 +229,46 @@ public class NullnessVisitor
       Tree valueTree,
       @CompilerMessageKey String errorKey,
       Object... extraArgs) {
+    if (varType.getKind() == TypeKind.DECLARED && valueType.getKind() == TypeKind.DECLARED) {
+      AnnotatedTypeMirror.AnnotatedDeclaredType varD =
+          (AnnotatedTypeMirror.AnnotatedDeclaredType) varType;
+      AnnotatedTypeMirror.AnnotatedDeclaredType valD =
+          (AnnotatedTypeMirror.AnnotatedDeclaredType) valueType;
+      // Only check when the underlying declared types (erased) are the same or
+      // when the value can be cast to the variable's raw type (conservative check).
+      TypeMirror varUnderlying = varD.getUnderlyingType();
+      TypeMirror valUnderlying = valD.getUnderlyingType();
+    // Only apply this additional nullness invariant-type-argument check when the
+    // erased declared types are identical and neither side is a raw type. Using a
+    // looser subtype check caused false positives for assignments where the
+    // declared types differ (but are related by subtyping) or for raw types.
+    if (types.isSameType(types.erasure(varUnderlying), types.erasure(valUnderlying))
+      && !varD.isUnderlyingTypeRaw()
+      && !valD.isUnderlyingTypeRaw()) {
+        List<? extends AnnotatedTypeMirror> varArgs = varD.getTypeArguments();
+        List<? extends AnnotatedTypeMirror> valArgs = valD.getTypeArguments();
+        int n = Math.min(varArgs.size(), valArgs.size());
+        for (int i = 0; i < n; i++) {
+          AnnotatedTypeMirror va = varArgs.get(i);
+          AnnotatedTypeMirror aa = valArgs.get(i);
+          // If the variable's type argument is not a wildcard (i.e., invariant position)
+          // and the value's corresponding argument may be nullable while the variable's
+          // is not, report an assignment error.
+          if (va.getKind() != TypeKind.WILDCARD
+              && !aa.hasEffectiveAnnotation(NONNULL)
+              && aa.hasEffectiveAnnotation(NULLABLE)
+              && va.hasEffectiveAnnotation(NONNULL)) {
+            String valueTypeString = valueType.toString();
+            String varTypeString = varType.toString();
+            checker.reportError(
+                valueTree,
+                errorKey,
+                ArraysPlume.concatenate(extraArgs, valueTypeString, varTypeString));
+            return false;
+          }
+        }
+      }
+    }
     if (TypesUtils.isPrimitive(varType.getUnderlyingType())
         && !TypesUtils.isPrimitive(valueType.getUnderlyingType())) {
       boolean succeed = checkForNullability(valueType, valueTree, UNBOXING_OF_NULLABLE);
