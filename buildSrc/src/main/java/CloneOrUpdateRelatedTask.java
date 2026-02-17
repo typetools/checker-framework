@@ -122,10 +122,6 @@ public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
               ConfigConstants.CONFIG_BRANCH_SECTION, branchName, ConfigConstants.CONFIG_KEY_MERGE);
 
       if (remoteName != null && mergeBranchName != null) {
-        // The mergeBranchName is typically "refs/heads/<branch_name>",
-        // but the remote tracking branch name is often represented as remoteName/simpleBranchName
-        String remoteBranchSimpleName = mergeBranchName.substring(Constants.R_HEADS.length());
-
         // Get the URL for the "origin" remote (used for fetching and pushing by default)
         String remoteUrl = config.getString("remote", remoteName, "url");
 
@@ -194,7 +190,6 @@ public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
     } finally {
       if (connection != null) {
         connection.disconnect();
-        ;
       }
     }
   }

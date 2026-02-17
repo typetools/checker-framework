@@ -40,7 +40,7 @@ public abstract class CloneOrUpdateTask extends DefaultTask {
   }
 
   @TaskAction
-  public void doTaskAction() throws InterruptedException {
+  public void doTaskAction() {
     String url = getUrl().get();
     File directory = getDirectory().get().getAsFile();
 

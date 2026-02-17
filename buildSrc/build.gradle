@@ -12,7 +12,6 @@ java {
 
 dependencies {
   implementation("org.eclipse.jgit:org.eclipse.jgit:7.5.0.202512021534-r")
-  implementation(localGroovy())
-  implementation(gradleApi())
   implementation("org.eclipse.jgit:org.eclipse.jgit.ssh.jsch:7.5.0.202512021534-r")
+  implementation(gradleApi())
 }
