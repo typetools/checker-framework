@@ -220,6 +220,9 @@ import org.plumelib.util.UtilPlume;
   // "-Ainfer=stubs" or "-Ainfer=jaifs".
   "infer",
 
+  // The directory into which to write whole-program inference results.
+  "inferOutputDirectory",
+
   // Whether to output a copy of each file for which annotations were inferred, formatted
   // as an ajava file. Can only be used with -Ainfer=ajava
   "inferOutputOriginal",

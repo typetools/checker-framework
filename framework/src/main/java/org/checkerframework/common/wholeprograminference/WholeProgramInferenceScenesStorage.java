@@ -7,6 +7,7 @@ import com.sun.tools.javac.code.Symbol.VarSymbol;
 import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Target;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -66,19 +67,12 @@ import org.plumelib.util.MapsP;
  * if using {@link OutputFormat#STUB}.
  *
  * <p>This class populates the initial Scenes by reading existing .jaif files on the {@link
- * #JAIF_FILES_PATH} directory (regardless of output format). Having more information in those
+ * #inferOutputDirectory} directory (regardless of output format). Having more information in those
  * initial .jaif files means that the precision achieved by the whole-program inference analysis
  * will be better. {@link #writeScenes} rewrites the initial .jaif files and may create new ones.
  */
 public class WholeProgramInferenceScenesStorage
     implements WholeProgramInferenceStorage<ATypeElement> {
-
-  /**
-   * Directory where .jaif files will be written to and read from. This directory is relative to
-   * where the CF's javac command is executed.
-   */
-  public static final String JAIF_FILES_PATH =
-      "build" + File.separator + "whole-program-inference" + File.separator;
 
   /** The type factory associated with this WholeProgramInferenceScenesStorage. */
   protected final AnnotatedTypeFactory atypeFactory;
@@ -97,13 +91,13 @@ public class WholeProgramInferenceScenesStorage
    */
   private final boolean ignoreNullAssignments;
 
-  /** Maps .jaif file paths (Strings) to Scenes. Relative to JAIF_FILES_PATH. */
+  /** Maps .jaif file paths (Strings) to Scenes. Relative to inferOutputDirectory. */
   public final Map<String, ASceneWrapper> scenes = new HashMap<>();
 
   /**
    * Scenes that were modified since the last time all Scenes were written into .jaif files. Each
-   * String element of this set is a path (relative to JAIF_FILES_PATH) to the .jaif file of the
-   * corresponding Scene in the set. It is obtained by passing a class name as argument to the
+   * String element of this set is a path (relative to inferOutputDirectory) to the .jaif file of
+   * the corresponding Scene in the set. It is obtained by passing a class name as argument to the
    * {@link #getJaifPath} method.
    *
    * <p>Modifying a Scene means adding (or changing) a type annotation for a field, method return
@@ -134,16 +128,22 @@ public class WholeProgramInferenceScenesStorage
    */
   private final Map<String, AnnotatedTypeMirror> postconditionsToDeclaredTypes = new HashMap<>();
 
+  /** The directory for reading and writing .jaif files. */
+  private final Path inferOutputDirectory;
+
   /**
    * Default constructor.
    *
    * @param atypeFactory the type factory associated with this WholeProgramInferenceScenesStorage
+   * @param inferOutputDirectory the directory into which to write whole program inference files
    */
-  public WholeProgramInferenceScenesStorage(AnnotatedTypeFactory atypeFactory) {
+  public WholeProgramInferenceScenesStorage(
+      AnnotatedTypeFactory atypeFactory, String inferOutputDirectory) {
     this.atypeFactory = atypeFactory;
     boolean isNullness =
         atypeFactory.getClass().getSimpleName().equals("NullnessAnnotatedTypeFactory");
     this.ignoreNullAssignments = !isNullness;
+    this.inferOutputDirectory = Path.of(inferOutputDirectory);
   }
 
   @Override
@@ -478,7 +478,7 @@ public class WholeProgramInferenceScenesStorage
    */
   public void writeScenes(OutputFormat outputFormat, BaseTypeChecker checker) {
     // Create WPI directory if it doesn't exist already.
-    File jaifDir = new File(JAIF_FILES_PATH);
+    File jaifDir = inferOutputDirectory.toFile();
     if (!jaifDir.exists()) {
       jaifDir.mkdirs();
     }
@@ -496,7 +496,7 @@ public class WholeProgramInferenceScenesStorage
    * @return the path to the .jaif file
    */
   protected String getJaifPath(String className) {
-    String jaifPath = JAIF_FILES_PATH + className + ".jaif";
+    String jaifPath = inferOutputDirectory.resolve(className + ".jaif").toString();
     return jaifPath;
   }
 
