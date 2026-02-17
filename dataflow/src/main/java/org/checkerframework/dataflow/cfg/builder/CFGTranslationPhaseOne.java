@@ -588,90 +588,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     }
   }
 
-  /**
-   * Visit a AnyPatternTree.
-   *
-   * @param anyPatternTree an AnyPatternTree, typed as Tree so the Checker Framework compiles under
-   *     JDK 21 and earlier
-   * @param unused an unused parameter
-   * @return the result of visiting the tree
-   */
-  private Node visitAnyPattern22(Tree anyPatternTree, Void unused) {
-    AnyPatternNode anyPatternNode =
-        new AnyPatternNode(TreeUtils.typeOf(anyPatternTree), anyPatternTree);
-    extendWithNode(anyPatternNode);
-    return anyPatternNode;
-  }
-
-  /**
-   * Visit a SwitchExpressionTree.
-   *
-   * @param yieldTree a YieldTree, typed as Tree to be backward-compatible
-   * @param p parameter
-   * @return the result of visiting the switch expression tree
-   */
-  public Node visitYield17(Tree yieldTree, Void p) {
-    ExpressionTree resultExpression = YieldUtils.getValue(yieldTree);
-    switchBuilder.buildSwitchExpressionResult(resultExpression);
-    return null;
-  }
-
-  /**
-   * Visit a SwitchExpressionTree.
-   *
-   * @param switchExpressionTree a SwitchExpressionTree, typed as Tree to be backward-compatible
-   * @param p parameter
-   * @return the result of visiting the switch expression tree
-   */
-  public Node visitSwitchExpression17(Tree switchExpressionTree, Void p) {
-    SwitchBuilder oldSwitchBuilder = switchBuilder;
-    switchBuilder = new SwitchBuilder(switchExpressionTree);
-    Node result = switchBuilder.build();
-    switchBuilder = oldSwitchBuilder;
-    return result;
-  }
-
-  /**
-   * Visit a BindingPatternTree.
-   *
-   * @param bindingPatternTree a BindingPatternTree, typed as Tree to be backward-compatible
-   * @param p parameter
-   * @return the result of visiting the binding pattern tree
-   */
-  public Node visitBindingPattern17(Tree bindingPatternTree, Void p) {
-    ClassTree enclosingClass = TreePathUtil.enclosingClass(getCurrentPath());
-    TypeElement classElem = TreeUtils.elementFromDeclaration(enclosingClass);
-    Node receiver = new ImplicitThisNode(classElem.asType());
-    VariableTree varTree = BindingPatternUtils.getVariable(bindingPatternTree);
-    VariableDeclarationNode variableDeclarationNode = new VariableDeclarationNode(varTree);
-    extendWithNode(variableDeclarationNode);
-    LocalVariableNode varNode = new LocalVariableNode(varTree, receiver);
-    extendWithNode(varNode);
-    return varNode;
-  }
-
-  /**
-   * Visit a DeconstructionPatternTree.
-   *
-   * @param deconstructionPatternTree a DeconstructionPatternTree, typed as Tree so the Checker
-   *     Framework compiles under JDK 20 and earlier
-   * @param p an unused parameter
-   * @return the result of visiting the tree
-   */
-  public Node visitDeconstructionPattern21(Tree deconstructionPatternTree, Void p) {
-    List<? extends Tree> nestedPatternTrees =
-        DeconstructionPatternUtils.getNestedPatterns(deconstructionPatternTree);
-    List<Node> nestedPatterns = new ArrayList<>(nestedPatternTrees.size());
-    for (Tree pattern : nestedPatternTrees) {
-      nestedPatterns.add(scan(pattern, p));
-    }
-    DeconstructorPatternNode dcpN =
-        new DeconstructorPatternNode(
-            TreeUtils.typeOf(deconstructionPatternTree), deconstructionPatternTree, nestedPatterns);
-    extendWithNode(dcpN);
-    return dcpN;
-  }
-
   /* --------------------------------------------------------- */
   /* Nodes and Labels Management */
   /* --------------------------------------------------------- */
@@ -2466,6 +2382,21 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     }
   }
 
+  /**
+   * Visit a SwitchExpressionTree.
+   *
+   * @param switchExpressionTree a SwitchExpressionTree, typed as Tree to be backward-compatible
+   * @param p parameter
+   * @return the result of visiting the switch expression tree
+   */
+  public Node visitSwitchExpression17(Tree switchExpressionTree, Void p) {
+    SwitchBuilder oldSwitchBuilder = switchBuilder;
+    switchBuilder = new SwitchBuilder(switchExpressionTree);
+    Node result = switchBuilder.build();
+    switchBuilder = oldSwitchBuilder;
+    return result;
+  }
+
   @Override
   public Node visitCase(CaseTree tree, Void p) {
     // This assertion assumes that `case` appears only within a switch statement,
@@ -4256,6 +4187,62 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     return instanceOfNode;
   }
 
+  /**
+   * Visit a AnyPatternTree.
+   *
+   * @param anyPatternTree an AnyPatternTree, typed as Tree so the Checker Framework compiles under
+   *     JDK 21 and earlier
+   * @param unused an unused parameter
+   * @return the result of visiting the tree
+   */
+  private Node visitAnyPattern22(Tree anyPatternTree, Void unused) {
+    AnyPatternNode anyPatternNode =
+        new AnyPatternNode(TreeUtils.typeOf(anyPatternTree), anyPatternTree);
+    extendWithNode(anyPatternNode);
+    return anyPatternNode;
+  }
+
+  /**
+   * Visit a BindingPatternTree.
+   *
+   * @param bindingPatternTree a BindingPatternTree, typed as Tree to be backward-compatible
+   * @param p parameter
+   * @return the result of visiting the binding pattern tree
+   */
+  public Node visitBindingPattern17(Tree bindingPatternTree, Void p) {
+    ClassTree enclosingClass = TreePathUtil.enclosingClass(getCurrentPath());
+    TypeElement classElem = TreeUtils.elementFromDeclaration(enclosingClass);
+    Node receiver = new ImplicitThisNode(classElem.asType());
+    VariableTree varTree = BindingPatternUtils.getVariable(bindingPatternTree);
+    VariableDeclarationNode variableDeclarationNode = new VariableDeclarationNode(varTree);
+    extendWithNode(variableDeclarationNode);
+    LocalVariableNode varNode = new LocalVariableNode(varTree, receiver);
+    extendWithNode(varNode);
+    return varNode;
+  }
+
+  /**
+   * Visit a DeconstructionPatternTree.
+   *
+   * @param deconstructionPatternTree a DeconstructionPatternTree, typed as Tree so the Checker
+   *     Framework compiles under JDK 20 and earlier
+   * @param p an unused parameter
+   * @return the result of visiting the tree
+   */
+  public Node visitDeconstructionPattern21(Tree deconstructionPatternTree, Void p) {
+    List<? extends Tree> nestedPatternTrees =
+        DeconstructionPatternUtils.getNestedPatterns(deconstructionPatternTree);
+    List<Node> nestedPatterns = new ArrayList<>(nestedPatternTrees.size());
+    for (Tree pattern : nestedPatternTrees) {
+      nestedPatterns.add(scan(pattern, p));
+    }
+    DeconstructorPatternNode dcpN =
+        new DeconstructorPatternNode(
+            TreeUtils.typeOf(deconstructionPatternTree), deconstructionPatternTree, nestedPatterns);
+    extendWithNode(dcpN);
+    return dcpN;
+  }
+
   @Override
   public Node visitArrayAccess(ArrayAccessTree tree, Void p) {
     Node array = scan(tree.getExpression(), p);
@@ -4483,5 +4470,18 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       return null;
     }
     return element.asType();
+  }
+
+  /**
+   * Visit a SwitchExpressionTree.
+   *
+   * @param yieldTree a YieldTree, typed as Tree to be backward-compatible
+   * @param p parameter
+   * @return the result of visiting the switch expression tree
+   */
+  public Node visitYield17(Tree yieldTree, Void p) {
+    ExpressionTree resultExpression = YieldUtils.getValue(yieldTree);
+    switchBuilder.buildSwitchExpressionResult(resultExpression);
+    return null;
   }
 }
