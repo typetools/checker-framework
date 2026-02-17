@@ -23,6 +23,7 @@ import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeSystemError;
 import org.plumelib.util.IPair;
 
 /**
@@ -121,6 +122,7 @@ public class ContractsFromMethod {
   private <T extends Contract> Set<T> getContractsOfKind(
       ExecutableElement executableElement, Contract.Kind kind, Class<T> clazz) {
     Set<T> result = new LinkedHashSet<>();
+
     // Check for a single framework-defined contract annotation.
     // The result is RequiresQualifier, EnsuresQualifier, EnsuresQualifierIf, or null.
     AnnotationMirror frameworkContractAnno =
@@ -142,6 +144,27 @@ public class ContractsFromMethod {
       }
     }
 
+    // At this point, `result` contains only framework-defined contract annotations.
+    Set<AnnotationMirror> tops = factory.getQualifierHierarchy().getTopAnnotations();
+    for (T contract : result) {
+      AnnotationMirror anno = contract.annotation;
+      if (AnnotationUtils.containsSame(tops, anno)) {
+        // TODO: issue a warning on the annotation itself rather than on the method declaration.
+        // This requires iterating over the annotation trees on the method declaration to determine
+        // which one led tho the given AnnotationMirror.
+        if (executableElement != null) {
+          String methodString = " on method " + executableElement.getSimpleName();
+          factory
+              .getChecker()
+              .reportWarning(
+                  executableElement,
+                  "contracts.toptype",
+                  anno,
+                  contract.contractAnnotation + methodString);
+        }
+      }
+    }
+
     // Check for type-system specific annotations.  These are the annotations that are
     // meta-annotated by `kind.metaAnnotation`, which is PreconditionAnnotation,
     // PostconditionAnnotation, or ConditionalPostconditionAnnotation.
@@ -157,6 +180,17 @@ public class ContractsFromMethod {
       if (enforcedQualifier == null) {
         continue;
       }
+      if (AnnotationUtils.containsSame(tops, enforcedQualifier)) {
+        // TODO: Unfortunately, TypeSystemError does not permit giving a tree at which to issue the
+        // error.  Obtain the file and line number from the tree, and print them here.
+        // TODO: Issue a warning on the annotation itself rather than on the method declaration.
+        // This requires iterating over the annotation trees on the method declaration to determine
+        // which one led tho the given AnnotationMirror.
+        throw new TypeSystemError(
+            "Contract annotation %s on method %s uses the top qualifier %s, which has no effect.",
+            contractAnno, executableElement.getSimpleName(), enforcedQualifier);
+      }
+
       List<String> expressions = factory.getContractExpressions(kind, anno);
       Collections.sort(expressions);
       Boolean ensuresQualifierIfResult = factory.getEnsuresQualifierIfResult(kind, anno);

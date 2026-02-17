@@ -11,6 +11,7 @@ class PreconditionFieldNotInStore {
   @org.checkerframework.framework.qual.RequiresQualifier(
       expression = {"this.filename"},
       qualifier = org.checkerframework.checker.nullness.qual.Nullable.class)
+  // :: warning: (contracts.toptype)
   @org.checkerframework.checker.nullness.qual.NonNull String getIndentString() {
     return "indentString";
   }
