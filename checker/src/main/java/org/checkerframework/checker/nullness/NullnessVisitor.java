@@ -770,6 +770,33 @@ public class NullnessVisitor
   @Override
   public Void visitConditionalExpression(ConditionalExpressionTree tree, Void p) {
     checkForNullability(tree.getCondition(), CONDITION_NULLABLE);
+    // If the overall conditional expression has a primitive Java type but one or both
+    // operand expressions are reference types, then unboxing will occur as part of
+    // evaluating the conditional.  In that case, check the operand(s) for possible
+    // nullness (unboxing.of.nullable).
+    AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(tree);
+    // Only check for unboxing when javac has chosen a primitive underlying type
+    // for the conditional expression, but one or both operands are non-primitive.
+    if (type.getKind().isPrimitive()) {
+      ExpressionTree trueExpr = tree.getTrueExpression();
+      ExpressionTree falseExpr = tree.getFalseExpression();
+      boolean trueNeedsUnboxing = !TypesUtils.isPrimitive(TreeUtils.typeOf(trueExpr));
+      boolean falseNeedsUnboxing = !TypesUtils.isPrimitive(TreeUtils.typeOf(falseExpr));
+
+      if (trueNeedsUnboxing) {
+        if (!checkForNullability(trueExpr, UNBOXING_OF_NULLABLE)) {
+          // If we reported an unboxing.of.nullable error for the true arm, stop
+          // further checking to avoid cascading errors.
+          return null;
+        }
+      }
+      if (falseNeedsUnboxing) {
+        if (!checkForNullability(falseExpr, UNBOXING_OF_NULLABLE)) {
+          return null;
+        }
+      }
+    }
+
     return super.visitConditionalExpression(tree, p);
   }
 
