@@ -12,6 +12,7 @@ import java.util.LinkedHashMap;
  * @param <K> the type of keys
  * @param <V> the type of values
  */
+@SuppressWarnings("resourceleak:required.method.not.known") // Not relevant to resources
 public class LinkedHashKeyedSet<K, V> extends AbstractSet<V> implements KeyedSet<K, V> {
   /** Produces a key for a value. */
   private final Keyer<? extends K, ? super V> keyer;

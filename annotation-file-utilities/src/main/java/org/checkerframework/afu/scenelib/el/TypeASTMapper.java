@@ -22,6 +22,7 @@ import org.objectweb.asm.TypePath;
  *
  * @param <N> common supertype of the AST nodes
  */
+@SuppressWarnings("resourceleak:required.method.not.known") // Not relevant to resources
 public abstract class TypeASTMapper<N> {
   /** Constructs a {@link TypeASTMapper}. A {@link TypeASTMapper} stores no state. */
   protected TypeASTMapper() {}

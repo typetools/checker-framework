@@ -8,6 +8,7 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.VariableElement;
+import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.visualize.CFGVisualizer;
 import org.checkerframework.dataflow.expression.ClassName;
@@ -28,10 +29,14 @@ import org.plumelib.util.ToStringComparator;
  * A store that extends {@code CFAbstractStore} and additionally tracks which fields of the 'self'
  * reference have been initialized.
  *
+ * @param <V> the type of values in the abstract store
+ * @param <S> the type of the abstract store
  * @see InitializationTransfer
  */
-public class InitializationStore<V extends CFAbstractValue<V>, S extends InitializationStore<V, S>>
-    extends CFAbstractStore<V, S> {
+public class InitializationStore<
+        V extends CFAbstractValue<@MustCall({}) V>,
+        S extends InitializationStore<@MustCall({}) V, @MustCall({}) S>>
+    extends CFAbstractStore<@MustCall({}) V, @MustCall({}) S> {
 
   /** The set of fields that are initialized. */
   protected final Set<VariableElement> initializedFields;
