@@ -59,7 +59,7 @@ public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
       ForkBranch fbCf = findForkBranch(new File(cfDir, ".git"));
       if (fbCf == null
           || !forkExists(fbCf.fork, relatedRepo)
-          || doesRemoteBranchExist(fbCf.fork, relatedRepo, fbCf.branch)) {
+          || !doesRemoteBranchExist(fbCf.fork, relatedRepo, fbCf.branch)) {
         fbCf = new ForkBranch(defaultOrg, defaultBranch);
       }
       String url = getGitHubUrl(fbCf.fork, relatedRepo);
