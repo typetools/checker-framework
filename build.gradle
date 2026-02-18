@@ -646,6 +646,7 @@ def createCheckTypeTask(projectName, taskName, checker, args = []) {
 
 tasks.register("addFavicon", Exec) {
   dependsOn("allJavadoc")
+  dependsOn("getHtmlTools")
 
   doFirst {
     copy {
