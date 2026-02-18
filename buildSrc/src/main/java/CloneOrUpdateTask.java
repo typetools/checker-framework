@@ -44,11 +44,12 @@ public abstract class CloneOrUpdateTask extends DefaultTask {
     String url = getUrl().get();
     File directory = getDirectory().get().getAsFile();
 
-    // Gradle creates the directory if it does not exist, so check to see if the director has a .git
-    // directory.
+    // Gradle creates the directory if it does not exist, so check to see if the directory has a
+    // .git directory.
     if (new File(directory, ".git").exists()) {
       update(directory, execOperations);
     } else {
+      cloneRetryOnce(url, null, directory);
     }
   }
 
