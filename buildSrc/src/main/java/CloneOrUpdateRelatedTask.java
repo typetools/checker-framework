@@ -218,7 +218,11 @@ public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
     try {
       // Execute the ls-remote command to get all references from the remote
       Collection<Ref> remoteRefs =
-          new LsRemoteCommand(null).setRemote(getGitHubUrl(org, repo)).setTimeout(60).call();
+          new LsRemoteCommand(null)
+              .setRemote(getGitHubUrl(org, repo))
+              .setTimeout(60)
+              .setHeads(true)
+              .call();
       for (Ref ref : remoteRefs) {
         if (ref.getName().equals(fullBranchName)) {
           return true;
