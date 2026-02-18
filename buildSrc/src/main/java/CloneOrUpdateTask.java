@@ -64,7 +64,7 @@ public abstract class CloneOrUpdateTask extends DefaultTask {
     clone(url, branch, directory, true);
     if (!new File(directory, ".git").exists()) {
       System.out.printf(
-          "Cloning failed, will try again in 1 minute: clone(%s, %s, true)", url, directory);
+          "Cloning failed, will try again in 1 minute: clone(%s, %s, true)%n", url, directory);
       try {
         Thread.sleep(60000); // wait 1 minute, then try again
       } catch (InterruptedException e) {
