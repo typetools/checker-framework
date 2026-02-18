@@ -26,10 +26,10 @@ import org.gradle.process.ExecOperations;
 public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
 
   /** The GitHub origination to use to clone the related repository if one is not found. */
-  String defaultOrg = "typetools";
+  private static final String defaultOrg = "typetools";
 
   /** The branch to use to clone the related repository if one is not found. */
-  String defaultBranch = "master";
+  private static final String defaultBranch = "master";
 
   /**
    * Returns the name of the related repository.
@@ -57,7 +57,7 @@ public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
       CloneOrUpdateTask.update(relatedRepoDir, execOperations);
     } else {
       ForkBranch fbCf = findForkBranch(new File(cfDir, ".git"));
-      if (fbCf == null) {
+      if (fbCf == null || !forkExists(fbCf.fork, relatedRepo)) {
         fbCf = new ForkBranch(defaultOrg, defaultBranch);
       }
       String url = getGitHubUrl(fbCf.fork, relatedRepo);
@@ -128,6 +128,9 @@ public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
         if (remoteUrl != null && !remoteUrl.isEmpty()) {
           String fork;
           if (remoteUrl.startsWith("git@github.com:")) {
+            if (!remoteUrl.contains("/")) {
+              return null;
+            }
             // Urls like:
             // git@github.com:typetools/checker-framework.git
             fork = remoteUrl.substring("git@github.com:".length(), remoteUrl.indexOf("/"));
@@ -136,6 +139,9 @@ public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
             // https://github.com/mernst/checker-framework.git
             URL url = URI.create(remoteUrl).toURL();
             String path = url.getPath();
+            if (!path.contains("/")) {
+              return null;
+            }
             fork = path.split("/")[1];
           }
           return new ForkBranch(fork, branchName);
@@ -153,7 +159,7 @@ public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
    * Returns true if "https://github.com/{@code org}/{@code repo}" exists
    *
    * @param org a GitHub organization
-   * @param repo a repository in the {@org}.
+   * @param repo a repository in the {@code org}.
    * @return true if "https://github.com/{@code org}/{@code repo}" exists
    */
   private boolean forkExists(final String org, final String repo) {

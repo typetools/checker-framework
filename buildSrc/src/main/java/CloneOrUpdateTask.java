@@ -49,7 +49,6 @@ public abstract class CloneOrUpdateTask extends DefaultTask {
     if (new File(directory, ".git").exists()) {
       update(directory, execOperations);
     } else {
-      cloneRetryOnce(url, null, directory);
     }
   }
 
@@ -75,7 +74,7 @@ public abstract class CloneOrUpdateTask extends DefaultTask {
   }
 
   /**
-   * Quietly clones the given git repository, {@code url}, to {@directory} at a depth of 1.
+   * Quietly clones the given git repository, {@code url}, to {@code directory} at a depth of 1.
    *
    * @param url git repository to clone
    * @param branch if non-null, which branch to use.
@@ -100,7 +99,7 @@ public abstract class CloneOrUpdateTask extends DefaultTask {
   }
 
   /**
-   * Updates the git repository are {@code repo}.
+   * Updates the git repository at {@code directory}.
    *
    * @param directory where the repository to update is
    * @param execOperations used to run exec commands
