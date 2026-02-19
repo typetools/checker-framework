@@ -59,7 +59,7 @@ public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
       ForkBranch fbCf = findForkBranch(new File(cfDir, ".git"));
       if (fbCf == null
           || !forkExists(fbCf.fork, relatedRepo)
-          || !doesRemoteBranchExist(fbCf.fork, relatedRepo, fbCf.branch)) {
+          || !remoteBranchExists(fbCf.fork, relatedRepo, fbCf.branch)) {
         fbCf = new ForkBranch(DEFAULT_ORG, DEFAULT_BRANCH);
       }
       String url = getGitHubUrl(fbCf.fork, relatedRepo);
@@ -88,7 +88,7 @@ public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
       // There is no related fork that is the same as the CF fork.
       return;
     }
-    if (doesRemoteBranchExist(fbCf.fork, relatedRepo, fbCf.branch)) {
+    if (remoteBranchExists(fbCf.fork, relatedRepo, fbCf.branch)) {
       throw new RuntimeException(
           String.format(
               "Please checkout the corresponding %s branch. Fork: %s Branch: %s.",
@@ -101,10 +101,10 @@ public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
   /**
    * Find the fork and branch of the remote tracking branch that is currently checked out in {@code
    * gitDir}. If the branch checked out at {@code gitDir} does not have a remote tracking branch,
-   * then {@code null} is returned.
+   * returns {@code null}.
    *
    * @param gitDir a git directory
-   * @return the fork and branch of {@code gitDir} or null if there is no remote branch.
+   * @return the fork and branch of {@code gitDir} or null if there is no remote branch
    */
   private ForkBranch findForkBranch(File gitDir) {
     try (Repository repository =
@@ -124,7 +124,7 @@ public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
               ConfigConstants.CONFIG_BRANCH_SECTION, branchName, ConfigConstants.CONFIG_KEY_MERGE);
 
       if (remoteName != null && mergeBranchName != null) {
-        // Get the URL for the "origin" remote (used for fetching and pushing by default)
+        // Get the URL for the "origin" remote (used for fetching and pushing by default).
         String remoteUrl = config.getString("remote", remoteName, "url");
 
         if (remoteUrl != null && !remoteUrl.isEmpty()) {
@@ -133,11 +133,11 @@ public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
             if (!remoteUrl.contains("/")) {
               return null;
             }
-            // URLs like:
+            // `remoteUrl` has the form:
             // git@github.com:typetools/checker-framework.git
             fork = remoteUrl.substring("git@github.com:".length(), remoteUrl.indexOf("/"));
           } else {
-            // URLs like:
+            // `remoteUrl` has the form:
             // https://github.com/mernst/checker-framework.git
             URL url = URI.create(remoteUrl).toURL();
             String path = url.getPath();
@@ -209,11 +209,12 @@ public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
    * @param org a GitHub organization
    * @param repo a repository in {@code org}
    * @param branchName a name of a branch
-   * @return true if the {@code branchName} exists on "https://github.com/{@code org}/{@code repo}"
+   * @return true if branch {@code branchName} exists on "https://github.com/{@code org}/{@code
+   *     repo}"
    */
-  private static boolean doesRemoteBranchExist(String org, String repo, String branchName) {
+  private static boolean remoteBranchExists(String org, String repo, String branchName) {
     // JGit uses the full internal Git reference name, which for a branch is
-    // "refs/heads/<branchName>"
+    // "refs/heads/<branchName>".
     String fullBranchName = Constants.R_HEADS + branchName;
 
     try {
