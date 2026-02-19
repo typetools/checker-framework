@@ -934,7 +934,7 @@ tasks.register("tags", Exec) {
   description = "Create Emacs TAGS table"
   group = "Emacs"
   // running this task will also run the tags task in the subprojects, which is defined later in this file.
-  commandLine("etags", "-i", "annotation-file-utilities/TAGS", "-i", "checker/TAGS", "-i", "checker-qual/TAGS", "-i", "checker-util/TAGS", "-i", "dataflow/TAGS", "-i", "framework/TAGS", "-i", "framework-test/TAGS", "-i", "javacutil/TAGS", "-i", "docs/manual/TAGS")
+  commandLine("etags", "-i", "annotation-file-utilities/TAGS", "-i", "buildSrc/TAGS", "-i", "checker/TAGS", "-i", "checker-qual/TAGS", "-i", "checker-util/TAGS", "-i", "dataflow/TAGS", "-i", "framework/TAGS", "-i", "framework-test/TAGS", "-i", "javacutil/TAGS", "-i", "docs/manual/TAGS")
 }
 
 subprojects {

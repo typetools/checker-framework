@@ -53,7 +53,7 @@ public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
     File cfDir = getProject().getRootDir();
     File relatedRepoDir = new File(cfDir.getParentFile(), relatedRepo);
     if (relatedRepoDir.exists()) {
-      checkBranchFork(relatedRepoDir);
+      checkForkBranch(relatedRepoDir);
       CloneOrUpdateTask.update(relatedRepoDir, execOperations);
     } else {
       ForkBranch fbCf = findForkBranch(new File(cfDir, ".git"));
@@ -68,11 +68,11 @@ public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
   }
 
   /**
-   * Check that the {@code relatedRepo} is checked out to the same fork/branch as {@code cfDir}.
+   * Check that the {@code relatedRepo} is checked out to the same fork and branch as {@code cfDir}.
    *
    * @param relatedRepoDir a related repository
    */
-  private void checkBranchFork(File relatedRepoDir) {
+  private void checkForkBranch(File relatedRepoDir) {
     File cfDir = getProject().getRootDir();
 
     String relatedRepo = getRelatedRepo().get();
