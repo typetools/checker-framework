@@ -4,7 +4,8 @@
 all default: style-check
 
 # Code style; defines `style-check` and `style-fix`.
-ifeq (,$(wildcard .plume-scripts))
-dummy := $(shell git clone --depth=1 -q https://github.com/plume-lib/plume-scripts.git .plume-scripts)
+PLUME_SCRIPTS := checker/bin-devel/.plume-scripts
+ifeq (,$(wildcard ${PLUME_SCRIPTS}))
+dummy := $(shell git clone --depth=1 -q https://github.com/plume-lib/plume-scripts.git ${PLUME_SCRIPTS})
 endif
-include .plume-scripts/code-style.mak
+include ${PLUME_SCRIPTS}/code-style.mak
