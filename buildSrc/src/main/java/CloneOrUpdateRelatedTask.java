@@ -150,7 +150,7 @@ public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
         }
       }
 
-    } catch (IOException e) {
+    } catch (IOException | IllegalArgumentException e) {
       System.err.println("Error finding branch: " + e.getMessage());
     }
 
