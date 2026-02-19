@@ -25,7 +25,7 @@ import org.gradle.process.ExecOperations;
  */
 public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
 
-  /** The GitHub origination to use to clone the related repository if one is not found. */
+  /** The GitHub organization to use to clone the related repository if one is not found. */
   private static final String defaultOrg = "typetools";
 
   /** The branch to use to clone the related repository if one is not found. */
@@ -70,7 +70,7 @@ public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
   /**
    * Check that the {@code relatedRepo} is checked out to the same fork/branch as {@code cfDir}.
    *
-   * @param relatedRepoDir a related repo
+   * @param relatedRepoDir a related repository
    */
   private void checkBranchFork(File relatedRepoDir) {
     File cfDir = getProject().getRootDir();
@@ -133,11 +133,11 @@ public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
             if (!remoteUrl.contains("/")) {
               return null;
             }
-            // Urls like:
+            // URLs like:
             // git@github.com:typetools/checker-framework.git
             fork = remoteUrl.substring("git@github.com:".length(), remoteUrl.indexOf("/"));
           } else {
-            // Urls like:
+            // URLs like:
             // https://github.com/mernst/checker-framework.git
             URL url = URI.create(remoteUrl).toURL();
             String path = url.getPath();
@@ -169,11 +169,11 @@ public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
   }
 
   /**
-   * Returns the GitHub url formated as "https://github.com/{@code org}/{@code repo}"
+   * Returns the GitHub URL formatted as "https://github.com/{@code org}/{@code repo}"
    *
    * @param org a GitHub organization
-   * @param repo a repository in the {@org}
-   * @return the GitHub url formated as "https://github.com/{@code org}/{@code repo}"
+   * @param repo a repository in {@code org}
+   * @return the GitHub URL formatted as "https://github.com/{@code org}/{@code repo}"
    */
   private static String getGitHubUrl(String org, String repo) {
     return String.format("https://github.com/%s/%s", org, repo);
@@ -182,7 +182,7 @@ public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
   /**
    * Returns true if {@code urlAddress} exists.
    *
-   * @param urlAddress a url
+   * @param urlAddress a URL
    * @return true if {@code urlAddress} exists
    */
   private boolean urlExists(String urlAddress) {
@@ -203,10 +203,11 @@ public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
   }
 
   /**
-   * Returns true if the {@code branchName} exist on "https://github.com/{@code org}/{@code repo}".
+   * Returns true if branch {@code branchName} exists on "https://github.com/{@code org}/{@code
+   * repo}".
    *
    * @param org a GitHub organization
-   * @param repo a repository in the {@code org}.
+   * @param repo a repository in {@code org}
    * @param branchName a name of a branch
    * @return true if the {@code branchName} exists on "https://github.com/{@code org}/{@code repo}
    */

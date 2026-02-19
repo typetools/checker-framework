@@ -18,7 +18,7 @@ public abstract class CloneOrUpdateTask extends DefaultTask {
   /**
    * The URL to clone or update.
    *
-   * @return url to clone or update.
+   * @return the URL to clone or update.
    */
   @Input
   public abstract Property<String> getUrl();
@@ -56,7 +56,7 @@ public abstract class CloneOrUpdateTask extends DefaultTask {
   /**
    * Clones the repository at {@code url}. If the clone fails, sleep 1 minute then retry clone.
    *
-   * @param url repository url
+   * @param url repository URL
    * @param branch if non-null, which branch to use.
    * @param directory where to clone
    */
