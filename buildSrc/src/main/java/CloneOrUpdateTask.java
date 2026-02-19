@@ -32,7 +32,7 @@ public abstract class CloneOrUpdateTask extends DefaultTask {
   public abstract DirectoryProperty getDirectory();
 
   /** Used to run exec commands. */
-  private ExecOperations execOperations;
+  private final ExecOperations execOperations;
 
   @Inject
   public CloneOrUpdateTask(ExecOperations execOperations) {
