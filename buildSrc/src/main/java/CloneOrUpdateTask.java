@@ -24,9 +24,9 @@ public abstract class CloneOrUpdateTask extends DefaultTask {
   public abstract Property<String> getUrl();
 
   /**
-   * Directory into which to clone or if it exists to pull in new changes.
+   * Directory for the clone.
    *
-   * @return directory into which to clone or if it exists to pull in new changes
+   * @return directory for the clone
    */
   @OutputDirectory
   public abstract DirectoryProperty getDirectory();
@@ -44,8 +44,6 @@ public abstract class CloneOrUpdateTask extends DefaultTask {
     String url = getUrl().get();
     File directory = getDirectory().get().getAsFile();
 
-    // Gradle creates the directory if it does not exist, so check to see if the directory has a
-    // .git directory.
     if (new File(directory, ".git").exists()) {
       update(directory, execOperations);
     } else {
@@ -57,7 +55,7 @@ public abstract class CloneOrUpdateTask extends DefaultTask {
    * Clones the repository at {@code url}. If the clone fails, sleep 1 minute then retry clone.
    *
    * @param url repository URL
-   * @param branch if non-null, which branch to use.
+   * @param branch if non-null, which branch to use
    * @param directory where to clone
    */
   public static void cloneRetryOnce(String url, String branch, File directory) {

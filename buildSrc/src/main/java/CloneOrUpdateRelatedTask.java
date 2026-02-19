@@ -19,9 +19,9 @@ import org.gradle.api.tasks.TaskAction;
 import org.gradle.process.ExecOperations;
 
 /**
- * Custom task that clones or updates a related repository. If the related repository has already
- * been cloned, then this task checks that the cloned repository is checked out to the same branch
- * and fork as this one.
+ * Custom task that clones a related repository. If the related repository has already been cloned,
+ * then this task updates (pulls) it and checks that the cloned repository is checked out to the
+ * same branch and fork as this one.
  */
 public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
 
