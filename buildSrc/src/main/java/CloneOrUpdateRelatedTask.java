@@ -26,10 +26,10 @@ import org.gradle.process.ExecOperations;
 public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
 
   /** The GitHub organization to use to clone the related repository if one is not found. */
-  private static final String defaultOrg = "typetools";
+  private static final String DEFAULT_ORG = "typetools";
 
   /** The branch to use to clone the related repository if one is not found. */
-  private static final String defaultBranch = "master";
+  private static final String DEFAULT_BRANCH = "master";
 
   /**
    * Returns the name of the related repository.
@@ -60,7 +60,7 @@ public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
       if (fbCf == null
           || !forkExists(fbCf.fork, relatedRepo)
           || !doesRemoteBranchExist(fbCf.fork, relatedRepo, fbCf.branch)) {
-        fbCf = new ForkBranch(defaultOrg, defaultBranch);
+        fbCf = new ForkBranch(DEFAULT_ORG, DEFAULT_BRANCH);
       }
       String url = getGitHubUrl(fbCf.fork, relatedRepo);
       CloneOrUpdateTask.cloneRetryOnce(url, fbCf.branch, relatedRepoDir);
@@ -209,7 +209,7 @@ public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
    * @param org a GitHub organization
    * @param repo a repository in {@code org}
    * @param branchName a name of a branch
-   * @return true if the {@code branchName} exists on "https://github.com/{@code org}/{@code repo}
+   * @return true if the {@code branchName} exists on "https://github.com/{@code org}/{@code repo}"
    */
   private static boolean doesRemoteBranchExist(String org, String repo, String branchName) {
     // JGit uses the full internal Git reference name, which for a branch is

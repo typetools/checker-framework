@@ -106,10 +106,8 @@ public abstract class CloneOrUpdateTask extends DefaultTask {
    * @param execOperations used to run exec commands
    */
   public static void update(File directory, ExecOperations execOperations) {
-    try {
-      Git git = Git.open(directory);
+    try (Git git = Git.open(directory)) {
       git.pull().call();
-      git.close();
     } catch (GitAPIException e) {
       //       If the repository remote is configured using ssh, i.e.,
       // git@github.com:typetools/checker-framework.git,
@@ -117,13 +115,18 @@ public abstract class CloneOrUpdateTask extends DefaultTask {
       //       org.eclipse.jgit.api.errors.TransportException: git@github.com:smillst/jdk.git:
       // invalid privatekey: ...
       //       So fall back to running git pull on the command line.
-      execOperations.exec(
-          execSpec -> {
-            execSpec.workingDir(directory);
-            execSpec.executable("git");
-            execSpec.args("pull", "-q");
-            execSpec.setIgnoreExitValue(true);
-          });
+      org.gradle.process.ExecResult execResult =
+          execOperations.exec(
+              execSpec -> {
+                execSpec.workingDir(directory);
+                execSpec.executable("git");
+                execSpec.args("pull", "-q");
+                execSpec.setIgnoreExitValue(true);
+              });
+      if (execResult.getExitValue() != 0) {
+        throw new org.gradle.api.GradleException(
+            "git pull failed in " + directory + " with exit code " + execResult.getExitValue());
+      }
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
