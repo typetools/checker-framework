@@ -38,7 +38,7 @@ make style-check --jobs="${num_jobs}"
 # Try twice in case of network lossage.
 (./gradlew javadoc --warning-mode=all || (sleep 60 && ./gradlew javadoc --warning-mode=all)) || status=1
 ./gradlew javadocPrivate --warning-mode=all || status=1
-./gradlew buildSrc:javadoc --warning-mode=all
+./gradlew buildSrc:javadoc --warning-mode=all || status=1
 # For refactorings that touch a lot of code that you don't understand, create
 # top-level file SKIP-REQUIRE-JAVADOC.  Delete it after the pull request is merged.
 if [ -f SKIP-REQUIRE-JAVADOC ]; then
