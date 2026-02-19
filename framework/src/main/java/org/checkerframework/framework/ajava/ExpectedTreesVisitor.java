@@ -64,18 +64,18 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
   }
 
   @Override
-  public Void visitAnnotation(AnnotationTree tree, Void p) {
-    // Skip annotations because ajava files are not required to have the same annotations as
-    // their corresponding Java files.
-    return null;
-  }
+  public Void visitImport(ImportTree tree, Void p) {
+    // Javac stores an import like a.* as a member select, but JavaParser just stores "a", so
+    // don't add the member select in that case.
+    if (tree.getQualifiedIdentifier() instanceof MemberSelectTree) {
+      MemberSelectTree memberSelect = (MemberSelectTree) tree.getQualifiedIdentifier();
+      if (memberSelect.getIdentifier().contentEquals("*")) {
+        memberSelect.getExpression().accept(this, p);
+        return null;
+      }
+    }
 
-  @Override
-  public Void visitBindingPattern17(Tree tree, Void p) {
-    super.visitBindingPattern17(tree, p);
-    // JavaParser doesn't have a node for the VariableTree.
-    trees.remove(BindingPatternUtils.getVariable(tree));
-    return null;
+    return super.visitImport(tree, p);
   }
 
   @Override
@@ -163,30 +163,72 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
   }
 
   @Override
-  public Void visitExpressionStatement(ExpressionStatementTree tree, Void p) {
-    // Javac inserts calls to super() at the start of constructors with no this or super call.
-    // These don't have matching JavaParser nodes.
-    if (JointJavacJavaParserVisitor.isDefaultSuperConstructorCall(tree)) {
+  public Void visitMethod(MethodTree tree, Void p) {
+    // Synthetic default constructors don't have matching JavaParser nodes. Conservatively skip
+    // nullary (no-argument) constructor calls, even if they may not be synthetic.
+    if (JointJavacJavaParserVisitor.isNoArgumentConstructor(tree)) {
       return null;
     }
 
-    // Whereas synthetic constructors should be skipped, regular super() and this() should still
-    // be added. JavaParser has no expression statement surrounding these, so remove the
-    // expression statement itself.
-    Void result = super.visitExpressionStatement(tree, p);
-    if (tree.getExpression() instanceof MethodInvocationTree) {
-      MethodInvocationTree invocation = (MethodInvocationTree) tree.getExpression();
-      if (invocation.getMethodSelect() instanceof IdentifierTree) {
-        IdentifierTree identifier = (IdentifierTree) invocation.getMethodSelect();
-        if (identifier.getName().contentEquals("this")
-            || identifier.getName().contentEquals("super")) {
-          trees.remove(tree);
-          trees.remove(identifier);
+    Void result = super.visitMethod(tree, p);
+    // A varargs parameter like String... is converted to String[], where the array type doesn't
+    // have a corresponding JavaParser AST node. Conservatively skip the array type (but not the
+    // component type) if it's the last argument.
+    if (!tree.getParameters().isEmpty()) {
+      VariableTree last = tree.getParameters().get(tree.getParameters().size() - 1);
+      if (last.getType() instanceof ArrayTypeTree) {
+        trees.remove(last.getType());
+      }
+
+      if (last.getType() instanceof AnnotatedTypeTree) {
+        AnnotatedTypeTree annotatedType = (AnnotatedTypeTree) last.getType();
+        if (annotatedType.getUnderlyingType() instanceof ArrayTypeTree) {
+          trees.remove(annotatedType);
+          trees.remove(annotatedType.getUnderlyingType());
         }
       }
     }
 
     return result;
+  }
+
+  @Override
+  public Void visitVariable(VariableTree tree, Void p) {
+    // Javac expands the keyword "var" in a variable declaration to its inferred type.
+    // JavaParser has a special "var" construct, so they won't match. If a javac type was
+    // generated this way, then it won't have a position in source code so in that case we don't
+    // add it.
+    if (TreeUtils.isVariableTreeDeclaredUsingVar(tree)) {
+      return null;
+    }
+
+    return super.visitVariable(tree, p);
+  }
+
+  @Override
+  public Void visitEmptyStatement(EmptyStatementTree tree, Void p) {
+    // JavaParser doesn't seem to include completely-empty classes.
+    // See https://github.com/typetools/checker-framework/issues/6570
+    // for a discussion of our motivation for excluding empty statements.
+    // Also, empty statements don't have semantics, so it's okay if there
+    // are arbitraily-many extra empty statements in one of the inputs.
+    return null;
+  }
+
+  @Override
+  public Void visitDoWhileLoop(DoWhileLoopTree tree, Void p) {
+    super.visitDoWhileLoop(tree, p);
+    // javac surrounds while loop conditions in a ParenthesizedTree but JavaParser does not.
+    trees.remove(tree.getCondition());
+    return null;
+  }
+
+  @Override
+  public Void visitWhileLoop(WhileLoopTree tree, Void p) {
+    super.visitWhileLoop(tree, p);
+    // javac surrounds while loop conditions in a ParenthesizedTree but JavaParser does not.
+    trees.remove(tree.getCondition());
+    return null;
   }
 
   @Override
@@ -240,43 +282,25 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
   }
 
   @Override
-  public Void visitImport(ImportTree tree, Void p) {
-    // Javac stores an import like a.* as a member select, but JavaParser just stores "a", so
-    // don't add the member select in that case.
-    if (tree.getQualifiedIdentifier() instanceof MemberSelectTree) {
-      MemberSelectTree memberSelect = (MemberSelectTree) tree.getQualifiedIdentifier();
-      if (memberSelect.getIdentifier().contentEquals("*")) {
-        memberSelect.getExpression().accept(this, p);
-        return null;
-      }
-    }
-
-    return super.visitImport(tree, p);
-  }
-
-  @Override
-  public Void visitMethod(MethodTree tree, Void p) {
-    // Synthetic default constructors don't have matching JavaParser nodes. Conservatively skip
-    // nullary (no-argument) constructor calls, even if they may not be synthetic.
-    if (JointJavacJavaParserVisitor.isNoArgumentConstructor(tree)) {
+  public Void visitExpressionStatement(ExpressionStatementTree tree, Void p) {
+    // Javac inserts calls to super() at the start of constructors with no this or super call.
+    // These don't have matching JavaParser nodes.
+    if (JointJavacJavaParserVisitor.isDefaultSuperConstructorCall(tree)) {
       return null;
     }
 
-    Void result = super.visitMethod(tree, p);
-    // A varargs parameter like String... is converted to String[], where the array type doesn't
-    // have a corresponding JavaParser AST node. Conservatively skip the array type (but not the
-    // component type) if it's the last argument.
-    if (!tree.getParameters().isEmpty()) {
-      VariableTree last = tree.getParameters().get(tree.getParameters().size() - 1);
-      if (last.getType() instanceof ArrayTypeTree) {
-        trees.remove(last.getType());
-      }
-
-      if (last.getType() instanceof AnnotatedTypeTree) {
-        AnnotatedTypeTree annotatedType = (AnnotatedTypeTree) last.getType();
-        if (annotatedType.getUnderlyingType() instanceof ArrayTypeTree) {
-          trees.remove(annotatedType);
-          trees.remove(annotatedType.getUnderlyingType());
+    // Whereas synthetic constructors should be skipped, regular super() and this() should still
+    // be added. JavaParser has no expression statement surrounding these, so remove the
+    // expression statement itself.
+    Void result = super.visitExpressionStatement(tree, p);
+    if (tree.getExpression() instanceof MethodInvocationTree) {
+      MethodInvocationTree invocation = (MethodInvocationTree) tree.getExpression();
+      if (invocation.getMethodSelect() instanceof IdentifierTree) {
+        IdentifierTree identifier = (IdentifierTree) invocation.getMethodSelect();
+        if (identifier.getName().contentEquals("this")
+            || identifier.getName().contentEquals("super")) {
+          trees.remove(tree);
+          trees.remove(identifier);
         }
       }
     }
@@ -294,18 +318,6 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
     }
 
     return result;
-  }
-
-  @Override
-  public Void visitModifiers(ModifiersTree tree, Void p) {
-    // Don't add ModifierTrees or children because they have no corresponding JavaParser node.
-    return null;
-  }
-
-  @Override
-  public Void visitNewArray(NewArrayTree tree, Void p) {
-    // Skip array initialization because it's not implemented yet.
-    return null;
   }
 
   @Override
@@ -351,6 +363,12 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
   }
 
   @Override
+  public Void visitNewArray(NewArrayTree tree, Void p) {
+    // Skip array initialization because it's not implemented yet.
+    return null;
+  }
+
+  @Override
   public Void visitLambdaExpression(LambdaExpressionTree tree, Void p) {
     for (VariableTree parameter : tree.getParameters()) {
       // Programmers may omit parameter types for lambda expressions. When not specified,
@@ -366,32 +384,24 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
   }
 
   @Override
-  public Void visitWhileLoop(WhileLoopTree tree, Void p) {
-    super.visitWhileLoop(tree, p);
-    // javac surrounds while loop conditions in a ParenthesizedTree but JavaParser does not.
-    trees.remove(tree.getCondition());
+  public Void visitBindingPattern17(Tree tree, Void p) {
+    super.visitBindingPattern17(tree, p);
+    // JavaParser doesn't have a node for the VariableTree.
+    trees.remove(BindingPatternUtils.getVariable(tree));
     return null;
   }
 
   @Override
-  public Void visitDoWhileLoop(DoWhileLoopTree tree, Void p) {
-    super.visitDoWhileLoop(tree, p);
-    // javac surrounds while loop conditions in a ParenthesizedTree but JavaParser does not.
-    trees.remove(tree.getCondition());
+  public Void visitModifiers(ModifiersTree tree, Void p) {
+    // Don't add ModifierTrees or children because they have no corresponding JavaParser node.
     return null;
   }
 
   @Override
-  public Void visitVariable(VariableTree tree, Void p) {
-    // Javac expands the keyword "var" in a variable declaration to its inferred type.
-    // JavaParser has a special "var" construct, so they won't match. If a javac type was
-    // generated this way, then it won't have a position in source code so in that case we don't
-    // add it.
-    if (TreeUtils.isVariableTreeDeclaredUsingVar(tree)) {
-      return null;
-    }
-
-    return super.visitVariable(tree, p);
+  public Void visitAnnotation(AnnotationTree tree, Void p) {
+    // Skip annotations because ajava files are not required to have the same annotations as
+    // their corresponding Java files.
+    return null;
   }
 
   @Override
@@ -399,16 +409,6 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
     // JavaParser does not parse yields correctly:
     // https://github.com/javaparser/javaparser/issues/3364
     // So skip yields.
-    return null;
-  }
-
-  @Override
-  public Void visitEmptyStatement(EmptyStatementTree tree, Void p) {
-    // JavaParser doesn't seem to include completely-empty classes.
-    // See https://github.com/typetools/checker-framework/issues/6570
-    // for a discussion of our motivation for excluding empty statements.
-    // Also, empty statements don't have semantics, so it's okay if there
-    // are arbitraily-many extra empty statements in one of the inputs.
     return null;
   }
 }
