@@ -8,7 +8,7 @@ import org.gradle.process.ExecOperations
 
 
 abstract class InsertAnnotationsToSource extends DefaultTask {
-  private ExecOperations execOperations
+  private final ExecOperations execOperations
 
   @Inject
   InsertAnnotationsToSource(ExecOperations execOperations) {
