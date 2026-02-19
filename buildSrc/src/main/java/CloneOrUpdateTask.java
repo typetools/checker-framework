@@ -34,11 +34,17 @@ public abstract class CloneOrUpdateTask extends DefaultTask {
   /** Used to run exec commands. */
   private final ExecOperations execOperations;
 
+  /**
+   * Constructor.
+   *
+   * @param execOperations Used to run exec commands
+   */
   @Inject
   public CloneOrUpdateTask(ExecOperations execOperations) {
     this.execOperations = execOperations;
   }
 
+  /** Clones or updates a repo. */
   @TaskAction
   public void doTaskAction() {
     String url = getUrl().get();

@@ -42,11 +42,17 @@ public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
   /** Used to run exec commands. */
   private final ExecOperations execOperations;
 
+  /**
+   * Constructor.
+   *
+   * @param execOperations Used to run exec commands
+   */
   @Inject
   public CloneOrUpdateRelatedTask(ExecOperations execOperations) {
     this.execOperations = execOperations;
   }
 
+  /** Clones or updates a related reop. */
   @TaskAction
   public void doTaskAction() {
     String relatedRepo = getRelatedRepo().get();
@@ -96,6 +102,12 @@ public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
     }
   }
 
+  /**
+   * A pair of {@code fork} and {@code branch}
+   *
+   * @param fork a fork, that's an organization in GitHub
+   * @param branch a branch of the fork.
+   */
   public record ForkBranch(String fork, String branch) {}
 
   /**

@@ -9,6 +9,10 @@ java {
   sourceCompatibility = '17'
   targetCompatibility = '17'
 }
+tasks.withType(Javadoc) {
+  // This makes Javadoc warnings errors, so that Javadoc comments are required on all elements.
+  options.addBooleanOption('Werror', true)
+}
 
 dependencies {
   implementation("org.eclipse.jgit:org.eclipse.jgit:7.5.0.202512021534-r")
