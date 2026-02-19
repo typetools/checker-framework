@@ -52,7 +52,7 @@ public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
     this.execOperations = execOperations;
   }
 
-  /** Clones or updates a related reop. */
+  /** Clones or updates a related repp. */
   @TaskAction
   public void doTaskAction() {
     String relatedRepo = getRelatedRepo().get();
