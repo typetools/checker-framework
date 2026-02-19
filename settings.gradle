@@ -6,7 +6,6 @@ buildscript {
 
 rootProject.name = "checker-framework"
 include("annotation-file-utilities")
-include("buildSrc")
 include("checker")
 include("checker-qual")
 include("checker-qual-android")

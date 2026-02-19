@@ -125,7 +125,8 @@ public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
 
       if (remoteName != null && mergeBranchName != null) {
         // Get the URL for the "origin" remote (used for fetching and pushing by default).
-        String remoteUrl = config.getString(ConfigConstants.CONFIG_REMOTE_SECTION, remoteName, "url");
+        String remoteUrl =
+            config.getString(ConfigConstants.CONFIG_REMOTE_SECTION, remoteName, "url");
 
         if (remoteUrl != null && !remoteUrl.isEmpty()) {
           String fork;
