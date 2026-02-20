@@ -541,7 +541,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
   }
 
   /**
-   * Visits a case clause and scans its labels (or expression on older JDKs), statements, and body.
+   * Visits a case clause and scans its labels, guard expression (JDK 21+), statements, and body.
    * Uses {@link TreeUtilsAfterJava11.CaseUtils} to handle JDK 12+ and 21+ API differences.
    *
    * @param ctree1 case tree from the first AST
@@ -556,6 +556,20 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
     scanList(
         TreeUtilsAfterJava11.CaseUtils.getLabels(ctree1),
         TreeUtilsAfterJava11.CaseUtils.getLabels(ctree2));
+
+    scanExpr(
+        TreeUtilsAfterJava11.CaseUtils.getGuard(ctree1),
+        TreeUtilsAfterJava11.CaseUtils.getGuard(ctree2));
+
+    if (TreeUtilsAfterJava11.CaseUtils.isCaseRule(ctree1)
+        != TreeUtilsAfterJava11.CaseUtils.isCaseRule(ctree2)) {
+      throw new BugInCF(
+          String.format(
+              "%s.visitCase: mismatched case forms: tree1 isCaseRule=%s tree2 isCaseRule=%s",
+              this.getClass().getCanonicalName(),
+              TreeUtilsAfterJava11.CaseUtils.isCaseRule(ctree1),
+              TreeUtilsAfterJava11.CaseUtils.isCaseRule(ctree2)));
+    }
 
     if (TreeUtilsAfterJava11.CaseUtils.isCaseRule(ctree1)) {
       scan(
