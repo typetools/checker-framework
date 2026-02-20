@@ -24,6 +24,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;
+import org.checkerframework.checker.collectionownership.CollectionOwnershipAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.qual.InheritableMustCall;
 import org.checkerframework.checker.mustcall.qual.MustCallAlias;
 import org.checkerframework.checker.mustcall.qual.NotOwning;
@@ -307,7 +308,9 @@ public class MustCallInference {
    * {@literal @InheritableMustCall} annotations to the enclosing class.
    */
   private void addMemberAndClassAnnotations() {
-    WholeProgramInference wpi = resourceLeakAtf.getWholeProgramInference();
+    CollectionOwnershipAnnotatedTypeFactory coAtf =
+        ResourceLeakUtils.getCollectionOwnershipAnnotatedTypeFactory(resourceLeakAtf);
+    WholeProgramInference wpi = coAtf.getWholeProgramInference();
     assert wpi != null : "MustCallInference is running without WPI.";
     for (VariableElement fieldElt : getOwningFields()) {
       wpi.addFieldDeclarationAnnotation(fieldElt, OWNING);

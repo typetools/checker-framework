@@ -5,6 +5,8 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import javax.lang.model.type.TypeVariable;
+import org.checkerframework.checker.collectionownership.qual.NotOwningCollection;
+import org.checkerframework.checker.mustcall.qual.NotOwning;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -25,7 +27,7 @@ public class Theta extends LinkedHashMap<TypeVariable, Variable> {
    * @return the type variable in the key set that is {@link TypesUtils#areSame(TypeVariable,
    *     TypeVariable)} as {@code typeVariable}
    */
-  private TypeVariable getTypeVariable(TypeVariable typeVariable) {
+  private TypeVariable getTypeVariable(@NotOwningCollection Theta this, TypeVariable typeVariable) {
     for (TypeVariable key : keySet()) {
       if (TypesUtils.areSame(key, typeVariable)) {
         return key;
@@ -43,7 +45,7 @@ public class Theta extends LinkedHashMap<TypeVariable, Variable> {
   }
 
   @Override
-  public Variable get(Object key) {
+  public @NotOwning Variable get(Object key) {
     if (key instanceof TypeVariable) {
       return super.get(getTypeVariable((TypeVariable) key));
     }

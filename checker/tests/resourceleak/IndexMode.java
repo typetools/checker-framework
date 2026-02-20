@@ -38,9 +38,9 @@ public class IndexMode {
 
   // This copy of getMode() adds an explicit `@MustCall` annotation to the String and to
   // the local variable. This version currently works as expected, unlike getMode2().
+  // Since Map#get returns @NotOwning, this reports no error.
   public static Object getMode2a(Map<String, @MustCall("hashCode") String> indexOptions) {
     try {
-      // :: error: required.method.not.called
       @MustCall("hashCode") String literalOption = indexOptions.get("is_literal");
     } catch (Exception e) {
     }
@@ -51,7 +51,7 @@ public class IndexMode {
   // This copy of getMode() adds an explicit `@MustCall` annotation to the String and removes
   // the try-catch.
   public static Object getMode3(Map<String, @MustCall("hashCode") String> indexOptions) {
-    // :: error: required.method.not.called
+    // Since Map#get returns @NotOwning, this reports no error.
     String literalOption = indexOptions.get("is_literal");
     return null;
   }
@@ -59,7 +59,7 @@ public class IndexMode {
   // This copy of getMode() adds an explicit `@MustCall` annotation to the String, removes
   // the try-catch, and makes the return type void.
   public static void getMode4(Map<String, @MustCall("hashCode") String> indexOptions) {
-    // :: error: required.method.not.called
+    // Since Map#get returns @NotOwning, this reports no error.
     String literalOption = indexOptions.get("is_literal");
   }
 
@@ -69,11 +69,10 @@ public class IndexMode {
   }
 
   // This variant uses an InputStream (which has a MustCall type by default) as the
-  // value type in the map.
-  // :: error: type.argument
+  // value type in the map. The values are permitted to have any @MustCall type.
   public static Object getModeIS(Map<String, InputStream> indexOptions) {
     try {
-      // :: error: required.method.not.called
+      // Since Map#get returns @NotOwning, this reports no error.
       InputStream literalOption = indexOptions.get("is_literal");
     } catch (Exception e) {
     }

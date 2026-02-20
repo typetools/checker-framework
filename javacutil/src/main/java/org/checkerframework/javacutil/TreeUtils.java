@@ -170,6 +170,16 @@ public final class TreeUtils {
   }
 
   /**
+   * Checks if the method invocation is a call to hasNext.
+   *
+   * @param tree a tree defining a method invocation
+   * @return true iff tree describes a call to hasNext
+   */
+  public static boolean isHasNextCall(MethodInvocationTree tree) {
+    return isNamedMethodCall("hasNext", tree) && tree.getArguments().isEmpty();
+  }
+
+  /**
    * Checks if the method invocation is a call to super.
    *
    * @param tree a tree defining a method invocation
@@ -1709,6 +1719,36 @@ public final class TreeUtils {
       }
     }
     return false;
+  }
+
+  /**
+   * If the given tree is a call to "get", this method returns the expression tree of the first
+   * argument and null else.
+   *
+   * <p>Assuming it's a call to List.get(), this will be the iterator variable. For example, if the
+   * tree is {@code Collection.get(i)}, the method returns {@code i}.
+   *
+   * @param tree the tree to check
+   * @return ExpressionTree of {@code idx} if tree is {@code Collection.get(idx)} and null else
+   */
+  public static @Nullable ExpressionTree getIdxForGetCall(Tree tree) {
+    if ((tree instanceof MethodInvocationTree)
+        && isNamedMethodCall("get", (MethodInvocationTree) tree)) {
+      return ((MethodInvocationTree) tree).getArguments().get(0);
+    }
+    return null;
+  }
+
+  /**
+   * Returns true if the given tree is of the form object.size().
+   *
+   * @param tree the tree to check
+   * @return true if the given tree is of the form object.size()
+   */
+  public static boolean isSizeAccess(Tree tree) {
+    return (tree instanceof MethodInvocationTree)
+        && isNamedMethodCall("size", (MethodInvocationTree) tree)
+        && ((MethodInvocationTree) tree).getArguments().isEmpty();
   }
 
   /**
