@@ -4,8 +4,10 @@
 all default: style-check
 
 # Code style; defines `style-check` and `style-fix`.
-PLUME_SCRIPTS := checker/bin-devel/.plume-scripts
-ifeq (,$(wildcard ${PLUME_SCRIPTS}))
-dummy := $(shell git clone --depth=1 -q https://github.com/plume-lib/plume-scripts.git ${PLUME_SCRIPTS})
+ifeq (,$(wildcard .plume-scripts))
+ifeq (,$(wildcard checker/bin-devel/.plume-scripts))
+dummy := $(shell ./gradlew -q getPlumeScripts)
 endif
-include ${PLUME_SCRIPTS}/code-style.mak
+dummy := $(shell ln -s checker/bin-devel/.plume-scripts .plume-scripts)
+endif
+include .plume-scripts/code-style.mak
