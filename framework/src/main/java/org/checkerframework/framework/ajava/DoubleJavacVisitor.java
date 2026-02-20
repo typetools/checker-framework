@@ -7,7 +7,6 @@ import com.sun.source.tree.ArrayTypeTree;
 import com.sun.source.tree.AssertTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
-import com.sun.source.tree.BindingPatternTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.BreakTree;
 import com.sun.source.tree.CaseTree;
@@ -16,10 +15,7 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ConditionalExpressionTree;
-import com.sun.source.tree.ConstantCaseLabelTree;
 import com.sun.source.tree.ContinueTree;
-import com.sun.source.tree.DeconstructionPatternTree;
-import com.sun.source.tree.DefaultCaseLabelTree;
 import com.sun.source.tree.DoWhileLoopTree;
 import com.sun.source.tree.EmptyStatementTree;
 import com.sun.source.tree.EnhancedForLoopTree;
@@ -48,12 +44,10 @@ import com.sun.source.tree.OpensTree;
 import com.sun.source.tree.PackageTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.ParenthesizedTree;
-import com.sun.source.tree.PatternCaseLabelTree;
 import com.sun.source.tree.PrimitiveTypeTree;
 import com.sun.source.tree.ProvidesTree;
 import com.sun.source.tree.RequiresTree;
 import com.sun.source.tree.ReturnTree;
-import com.sun.source.tree.SwitchExpressionTree;
 import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.ThrowTree;
@@ -67,7 +61,6 @@ import com.sun.source.tree.UsesTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.tree.WildcardTree;
-import com.sun.source.tree.YieldTree;
 import com.sun.source.util.SimpleTreeVisitor;
 import java.util.List;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -153,8 +146,81 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
               this.getClass().getCanonicalName(), tree1, kind1, tree2, kind2));
     }
 
+    // For tree types added after JDK 11, the tree classes do not exist at compile time,
+    // so we cannot override the visitXyz methods directly.  Handle them via reflection.
+    if (visitReflective(tree1, tree2)) {
+      return;
+    }
+
     // `accept` will call the appropriate `visitXyz` method.
     tree1.accept(this, tree2);
+  }
+
+  /**
+   * Handles tree types that were added after JDK 11 and therefore cannot be referenced directly.
+   * Calls {@link #defaultAction} and scans child trees using {@link TreeUtilsAfterJava11} helpers.
+   *
+   * @param tree1 the first tree
+   * @param tree2 the second tree
+   * @return true if the tree kind was handled, false otherwise
+   */
+  private boolean visitReflective(Tree tree1, Tree tree2) {
+    switch (tree1.getKind().name()) {
+      case "YIELD":
+        defaultAction(tree1, tree2);
+        scanExpr(
+            TreeUtilsAfterJava11.YieldUtils.getValue(tree1),
+            TreeUtilsAfterJava11.YieldUtils.getValue(tree2));
+        return true;
+
+      case "SWITCH_EXPRESSION":
+        defaultAction(tree1, tree2);
+        scanExpr(
+            TreeUtilsAfterJava11.SwitchExpressionUtils.getExpression(tree1),
+            TreeUtilsAfterJava11.SwitchExpressionUtils.getExpression(tree2));
+        scanList(
+            TreeUtilsAfterJava11.SwitchExpressionUtils.getCases(tree1),
+            TreeUtilsAfterJava11.SwitchExpressionUtils.getCases(tree2));
+        return true;
+
+      case "BINDING_PATTERN":
+        defaultAction(tree1, tree2);
+        scan(
+            TreeUtilsAfterJava11.BindingPatternUtils.getVariable(tree1),
+            TreeUtilsAfterJava11.BindingPatternUtils.getVariable(tree2));
+        return true;
+
+      case "DEFAULT_CASE_LABEL":
+        defaultAction(tree1, tree2);
+        return true;
+
+      case "CONSTANT_CASE_LABEL":
+        defaultAction(tree1, tree2);
+        scanExpr(
+            TreeUtilsAfterJava11.ConstantCaseLabelUtils.getConstantExpression(tree1),
+            TreeUtilsAfterJava11.ConstantCaseLabelUtils.getConstantExpression(tree2));
+        return true;
+
+      case "PATTERN_CASE_LABEL":
+        defaultAction(tree1, tree2);
+        scan(
+            TreeUtilsAfterJava11.PatternCaseLabelUtils.getPattern(tree1),
+            TreeUtilsAfterJava11.PatternCaseLabelUtils.getPattern(tree2));
+        return true;
+
+      case "DECONSTRUCTION_PATTERN":
+        defaultAction(tree1, tree2);
+        scan(
+            TreeUtilsAfterJava11.DeconstructionPatternUtils.getDeconstructor(tree1),
+            TreeUtilsAfterJava11.DeconstructionPatternUtils.getDeconstructor(tree2));
+        scanList(
+            TreeUtilsAfterJava11.DeconstructionPatternUtils.getNestedPatterns(tree1),
+            TreeUtilsAfterJava11.DeconstructionPatternUtils.getNestedPatterns(tree2));
+        return true;
+
+      default:
+        return false;
+    }
   }
 
   /**
@@ -1264,118 +1330,6 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
   @Override
   public Void visitOther(Tree tree1, Tree tree2) {
     defaultAction(tree1, tree2);
-    return null;
-  }
-
-  /**
-   * Visits a yield statement and scans its value expression.
-   *
-   * @param ytree1 yield tree from the first AST
-   * @param tree2 yield tree from the second AST
-   * @return null
-   */
-  @Override
-  public Void visitYield(YieldTree ytree1, Tree tree2) {
-    YieldTree ytree2 = (YieldTree) tree2;
-    defaultAction(ytree1, ytree2);
-
-    scanExpr(ytree1.getValue(), ytree2.getValue());
-    return null;
-  }
-
-  /**
-   * Visits a switch expression and scans its selector expression and cases.
-   *
-   * @param stree1 switch expression tree from the first AST
-   * @param tree2 switch expression tree from the second AST
-   * @return null
-   */
-  @Override
-  public Void visitSwitchExpression(SwitchExpressionTree stree1, Tree tree2) {
-    SwitchExpressionTree stree2 = (SwitchExpressionTree) tree2;
-    defaultAction(stree1, stree2);
-
-    scanExpr(stree1.getExpression(), stree2.getExpression());
-    scanList(stree1.getCases(), stree2.getCases());
-    return null;
-  }
-
-  /**
-   * Visits a binding pattern and scans its variable.
-   *
-   * @param btree1 binding pattern tree from the first AST
-   * @param tree2 binding pattern tree from the second AST
-   * @return null
-   */
-  @Override
-  public Void visitBindingPattern(BindingPatternTree btree1, Tree tree2) {
-    BindingPatternTree btree2 = (BindingPatternTree) tree2;
-    defaultAction(btree1, btree2);
-
-    scan(btree1.getVariable(), btree2.getVariable());
-    return null;
-  }
-
-  /**
-   * Visits a default case label.
-   *
-   * @param dtree1 default case label tree from the first AST
-   * @param tree2 default case label tree from the second AST
-   * @return null
-   */
-  @Override
-  public Void visitDefaultCaseLabel(DefaultCaseLabelTree dtree1, Tree tree2) {
-    DefaultCaseLabelTree dtree2 = (DefaultCaseLabelTree) tree2;
-    defaultAction(dtree1, dtree2);
-    return null;
-  }
-
-  /**
-   * Visits a constant case label and scans its constant expression.
-   *
-   * @param ctree1 constant case label tree from the first AST
-   * @param tree2 constant case label tree from the second AST
-   * @return null
-   */
-  @Override
-  public Void visitConstantCaseLabel(ConstantCaseLabelTree ctree1, Tree tree2) {
-    ConstantCaseLabelTree ctree2 = (ConstantCaseLabelTree) tree2;
-    defaultAction(ctree1, ctree2);
-
-    scanExpr(ctree1.getConstantExpression(), ctree2.getConstantExpression());
-    return null;
-  }
-
-  /**
-   * Visits a pattern case label and scans its pattern.
-   *
-   * @param ptree1 pattern case label tree from the first AST
-   * @param tree2 pattern case label tree from the second AST
-   * @return null
-   */
-  @Override
-  public Void visitPatternCaseLabel(PatternCaseLabelTree ptree1, Tree tree2) {
-    PatternCaseLabelTree ptree2 = (PatternCaseLabelTree) tree2;
-    defaultAction(ptree1, ptree2);
-
-    scan(ptree1.getPattern(), ptree2.getPattern());
-    return null;
-  }
-
-  /**
-   * Visits a deconstruction pattern and scans its deconstructor and nested patterns.
-   *
-   * @param dtree1 deconstruction pattern tree from the first AST
-   * @param tree2 deconstruction pattern tree from the second AST
-   * @return null
-   */
-  @Override
-  public Void visitDeconstructionPattern(DeconstructionPatternTree dtree1, Tree tree2) {
-    DeconstructionPatternTree dtree2 = (DeconstructionPatternTree) tree2;
-    defaultAction(dtree1, dtree2);
-
-    scan(dtree1.getDeconstructor(), dtree2.getDeconstructor());
-    scanList(dtree1.getNestedPatterns(), dtree2.getNestedPatterns());
     return null;
   }
 }
