@@ -12,7 +12,8 @@ Removed long-deprecated `-Alint=forbidnonnullarraycomponents`.
 ### Implementation details
 
 In `AnnotationClassLoader`:
-* renamed `hasWellDefinedTargetMetaAnnotation()` to `isTypeQualifierAnnotation()`
+
+* Renamed `hasWellDefinedTargetMetaAnnotation()` to `isTypeQualifierAnnotation()`.
 
 ### Closed issues
 
