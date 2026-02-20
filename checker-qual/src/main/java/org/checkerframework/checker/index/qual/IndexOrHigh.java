@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
  * sequence's length.
  *
  * <p>The <a
- * href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Arrays.html#binarySearch(java.lang.Object%5B%5D,int,int,java.lang.Object)">
+ * href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/Arrays.html#binarySearch(java.lang.Object%5B%5D,int,int,java.lang.Object)">
  * {@code Arrays.binarySearch}</a> method is declared as
  *
  * <pre>{@code
@@ -33,6 +33,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface IndexOrHigh {
-  /** Sequences that the annotated expression is a valid index for or is equal to the lengeth of. */
+  /** Sequences that the annotated expression is a valid index for or is equal to the length of. */
   String[] value();
 }
