@@ -1180,9 +1180,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
-   * Loads all annotations contained in the qual directory of a checker via reflection; if a
-   * polymorphic type qualifier exists, and an explicit array of annotations to the set of
-   * annotation classes.
+   * Loads, via reflection, all bundled qualifiers. A bundled qualifier is one that is shipped with
+   * the Checker Framework, in the qual directory of a checker. Returns the bundled annotations and
+   * the annotations passed as arguments.
    *
    * <p>This method can be called in the overridden versions of {@link
    * #createSupportedTypeQualifiers()} in each checker.
@@ -1198,14 +1198,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
-   * Instantiates the AnnotationClassLoader and loads all annotations contained in the qual
-   * directory of a checker via reflection, and has the option to include an explicitly stated list
-   * of annotations (eg ones found in a different directory than qual).
+   * Instantiates the AnnotationClassLoader and loads, by reflection, all bundled annotations --
+   * those contained in the qual directory of a checker. Also includes the annotations passed as
+   * arguments (e.g., ones found in a different directory than qual).
    *
-   * <p>The annotations that are automatically loaded must have the {@link
-   * java.lang.annotation.Target Target} meta-annotation with the value of {@link
-   * ElementType#TYPE_USE} (and optionally {@link ElementType#TYPE_PARAMETER}). If it has other
-   * {@link ElementType} values, it won't be loaded. Other annotation classes must be explicitly
+   * <p>Only type qualifier annotations are loaded (as defined by {@link
+   * AnnotationClassLoader#isTypeQualifierAnnotation}). Other annotation classes must be explicitly
    * listed even if they are in the same directory as the checker's qual directory.
    *
    * @param explicitlyListedAnnotations a set of explicitly listed annotation classes to be added to
