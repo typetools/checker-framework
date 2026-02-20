@@ -380,14 +380,19 @@ public class NullnessVisitor
     // See also
     // org.checkerframework.dataflow.cfg.builder.CFGBuilder.CFGTranslationPhaseOne.visitAssert
 
+    // If the assertion contains "@AssumeAssertion", then this visitor skips over the assertion
+    // (never issues a warning about it), but the refinement (which was established when the CFG was
+    // built) still takes effect.
+
     // In cases where neither assumeAssertionsAreEnabled nor assumeAssertionsAreDisabled are
     // turned on and @AssumeAssertions is not used, checkForNullability is still called since
     // the CFGBuilder will have generated one branch for which asserts are assumed to be
     // enabled.
 
+    boolean assumeAssertionActivated =
+        CFCFGBuilder.assumeAssertionsActivatedForAssertTree(checker, tree);
     boolean doVisitAssert;
-    if (assumeAssertionsAreEnabled
-        || CFCFGBuilder.assumeAssertionsActivatedForAssertTree(checker, tree)) {
+    if (assumeAssertionsAreEnabled || assumeAssertionActivated) {
       doVisitAssert = true;
     } else if (assumeAssertionsAreDisabled) {
       doVisitAssert = false;
@@ -396,6 +401,8 @@ public class NullnessVisitor
     }
 
     if (doVisitAssert) {
+      // TODO: If assumeAssertionActivated and the condition is non-null, issue
+      // "unneeded.suppression" instead.
       checkForNullability(tree.getCondition(), CONDITION_NULLABLE);
       return super.visitAssert(tree, p);
     }
