@@ -14,7 +14,8 @@ Removed long-deprecated `-Alint=forbidnonnullarraycomponents`.
 In `AnnotationClassLoader`:
 
 * Renamed `hasWellDefinedTargetMetaAnnotation()` to `isTypeQualifierAnnotation()`.
-
+  The method now also returns `true` for annotations bearing `@InvisibleQualifier` or
+  `@SubtypeOf`, in addition to the existing `@Target(TYPE_USE)` check.
 ### Closed issues
 
 ## Version 3.53.1 (2026-02-02)
