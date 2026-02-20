@@ -37,6 +37,8 @@ import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.checker.signature.qual.Identifier;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.framework.qual.InvisibleQualifier;
+import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -572,10 +574,10 @@ public class AnnotationClassLoader implements Closeable {
 
   /**
    * Gets the set of annotation classes in the qual directory of a checker shipped with the Checker
-   * Framework. Note that the returned set from this method is mutable. This method is intended to
-   * be called within {@link AnnotatedTypeFactory#createSupportedTypeQualifiers()
-   * createSupportedTypeQualifiers()} (or its helper methods) to help define the set of supported
-   * qualifiers.
+   * Framework. Note that the returned set from this method is mutable, but is the same set on every
+   * call. This method is intended to be called within {@link
+   * AnnotatedTypeFactory#createSupportedTypeQualifiers() createSupportedTypeQualifiers()} (or its
+   * helper methods) to help define the set of supported qualifiers.
    *
    * @see AnnotatedTypeFactory#createSupportedTypeQualifiers()
    * @return a mutable set of the loaded bundled annotation classes
@@ -752,8 +754,7 @@ public class AnnotationClassLoader implements Closeable {
               + " and your classpath is correct.");
     }
 
-    // If the freshly loaded class is not an annotation, then issue error if required and then
-    // return null
+    // If the freshly loaded class is not an annotation, then return null (or issue error).
     if (!cls.isAnnotation()) {
       if (issueError) {
         throw new UserError(
@@ -768,7 +769,7 @@ public class AnnotationClassLoader implements Closeable {
     Class<? extends Annotation> annoClass = cls.asSubclass(Annotation.class);
     // Check the loaded annotation to see if it has a @Target meta-annotation with the required
     // ElementType values
-    if (hasWellDefinedTargetMetaAnnotation(annoClass)) {
+    if (isTypeQualifierAnnotation(annoClass)) {
       // If so, return the loaded annotation if it is supported by a checker
       return isSupportedAnnotationClass(annoClass) ? annoClass : null;
     } else if (issueError) {
@@ -791,7 +792,7 @@ public class AnnotationClassLoader implements Closeable {
   }
 
   /**
-   * Loads a set of annotations indicated by their names.
+   * Given annotation names, return the corresponding {@code Class}es.
    *
    * @param annoNames a set of binary names for annotation classes
    * @return a set of loaded annotation classes
@@ -815,8 +816,16 @@ public class AnnotationClassLoader implements Closeable {
   }
 
   /**
-   * Returns true if a particular annotation class has the {@link Target} meta-annotation and has
-   * the required {@link ElementType} values.
+   * Returns true if the given annotation class is a type qualifier. Returns true if any of the
+   * following are true:
+   *
+   * <ul>
+   *   <li>The annotation has the {@link java.lang.annotation.Target Target} meta-annotation with
+   *       the value of {@link ElementType#TYPE_USE} (and optionally {@link
+   *       ElementType#TYPE_PARAMETER}).
+   *   <li>The annotation has the {@link InvisibleQualifier} meta-annotation.
+   *   <li>The annotation has the {@link SubtypeOf} meta-annotation.
+   * </ul>
    *
    * <p>A subclass may override this method to load annotations that are not intended to be
    * annotated in source code. E.g.: {@code SubtypingChecker} overrides this method to load {@code
@@ -825,10 +834,23 @@ public class AnnotationClassLoader implements Closeable {
    * @param annoClass an annotation class
    * @return true if the annotation is well defined, false if it isn't
    */
-  protected boolean hasWellDefinedTargetMetaAnnotation(Class<? extends Annotation> annoClass) {
-    return annoClass.getAnnotation(Target.class) != null
-        && AnnotationUtils.hasTypeQualifierElementTypes(
-            annoClass.getAnnotation(Target.class).value(), annoClass);
+  protected boolean isTypeQualifierAnnotation(Class<? extends Annotation> annoClass) {
+    Target targetMetaAnno = annoClass.getAnnotation(Target.class);
+    if (targetMetaAnno != null
+        && AnnotationUtils.hasTypeQualifierElementTypes(targetMetaAnno.value(), annoClass)) {
+      return true;
+    }
+    // Some type qualifiers have an empty `@Target` meta-annotation, to prevent programmers from
+    // writing them.  `@InvisibleQualifier` and `@SubtypeOf` also indicate a type qualifier.
+    Annotation invisibleQualifierMetaAnno = annoClass.getAnnotation(InvisibleQualifier.class);
+    if (invisibleQualifierMetaAnno != null) {
+      return true;
+    }
+    Annotation subtypeOfMetaAnno = annoClass.getAnnotation(SubtypeOf.class);
+    if (subtypeOfMetaAnno != null) {
+      return true;
+    }
+    return false;
   }
 
   /**
