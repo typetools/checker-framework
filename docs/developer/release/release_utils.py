@@ -88,7 +88,7 @@ def prompt_yes_no(msg: str, default: bool = False) -> bool:
 
     result = prompt_w_default(msg, default_str, "^(Yes|yes|No|no)$")
 
-    return result == "yes" or result == "Yes"
+    return result in {"yes", "Yes"}
 
 
 def prompt_yn(msg: str) -> bool:
@@ -98,7 +98,7 @@ def prompt_yn(msg: str) -> bool:
         true if the answer was y, false otherwise.
     """
     y_or_n = "z"
-    while y_or_n != "y" and y_or_n != "n":
+    while y_or_n not in {"y", "n"}:
         print(msg + " [y|n]")
         y_or_n = input().lower()
 
@@ -155,7 +155,7 @@ def continue_or_exit(msg: str) -> None:
     continue_script = prompt_w_default(
         msg + " Continue ('no' will exit the script)?", "yes", "^(Yes|yes|No|no)$"
     )
-    if continue_script == "no" or continue_script == "No":
+    if continue_script in {"no", "No"}:
         raise Exception("User elected NOT to continue at prompt: " + msg)
 
 
