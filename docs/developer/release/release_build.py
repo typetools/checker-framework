@@ -188,7 +188,7 @@ def build_checker_framework_release(
     # Check that updating versions didn't overlook anything.
     print("Here are occurrences of the old version number, " + old_cf_version + ":")
     grep_cmd = f"grep -n -r --exclude-dir=build --exclude-dir=.git -F {old_cf_version}"
-    #
+
     execute_status(grep_cmd, CHECKER_FRAMEWORK)
     continue_or_exit(
         "If any occurrence is not acceptable, then stop the release, update target"
