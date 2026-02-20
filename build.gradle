@@ -332,6 +332,7 @@ allprojects { currentProj ->
         def targets = [
           "docs/examples",
           "docs/tutorial",
+          "buildSrc"
         ]
         targets = targets.collectMany {
           [
@@ -645,6 +646,7 @@ def createCheckTypeTask(projectName, taskName, checker, args = []) {
 
 tasks.register("addFavicon", Exec) {
   dependsOn("allJavadoc")
+  dependsOn("getHtmlTools")
 
   doFirst {
     copy {
@@ -885,31 +887,31 @@ tasks.register("manual") {
   dependsOn("makeCfManual", "makeAfuManual", ":dataflow:manual")
 }
 
-tasks.register("getPlumeBib", CloneTask) {
+tasks.register("getPlumeBib", CloneOrUpdateTask) {
   url.set("https://github.com/mernst/plume-bib.git")
   directory.set(file(plumeBibHome))
   outputs.upToDateWhen { false }
 }
 
-tasks.register("getGitScripts", CloneTask) {
+tasks.register("getGitScripts", CloneOrUpdateTask) {
   url.set("https://github.com/plume-lib/git-scripts.git")
   directory.set(file(gitScriptsHome))
   outputs.upToDateWhen { false }
 }
 
-tasks.register("getPlumeScripts", CloneTask) {
+tasks.register("getPlumeScripts", CloneOrUpdateTask) {
   url.set("https://github.com/plume-lib/plume-scripts.git")
   directory.set(file(plumeScriptsHome))
   outputs.upToDateWhen { false }
 }
 
-tasks.register("getHtmlTools", CloneTask) {
+tasks.register("getHtmlTools", CloneOrUpdateTask) {
   url.set("https://github.com/plume-lib/html-tools.git")
   directory.set(file(htmlToolsHome))
   outputs.upToDateWhen { false }
 }
 
-tasks.register("getDoLikeJavac", CloneTask) {
+tasks.register("getDoLikeJavac", CloneOrUpdateTask) {
   url.set("https://github.com/kelloggm/do-like-javac.git")
   directory.set(file(doLikeJavacHome))
   outputs.upToDateWhen { false }
@@ -932,7 +934,7 @@ tasks.register("tags", Exec) {
   description = "Create Emacs TAGS table"
   group = "Emacs"
   // running this task will also run the tags task in the subprojects, which is defined later in this file.
-  commandLine("etags", "-i", "annotation-file-utilities/TAGS", "-i", "checker/TAGS", "-i", "checker-qual/TAGS", "-i", "checker-util/TAGS", "-i", "dataflow/TAGS", "-i", "framework/TAGS", "-i", "framework-test/TAGS", "-i", "javacutil/TAGS", "-i", "docs/manual/TAGS")
+  commandLine("etags", "-i", "annotation-file-utilities/TAGS", "-i", "buildSrc/TAGS", "-i", "checker/TAGS", "-i", "checker-qual/TAGS", "-i", "checker-util/TAGS", "-i", "dataflow/TAGS", "-i", "framework/TAGS", "-i", "framework-test/TAGS", "-i", "javacutil/TAGS", "-i", "docs/manual/TAGS")
 }
 
 subprojects {
