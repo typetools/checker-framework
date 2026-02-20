@@ -827,12 +827,8 @@ public class AnnotationClassLoader implements Closeable {
    *   <li>The annotation has the {@link SubtypeOf} meta-annotation.
    * </ul>
    *
-   * <p>A subclass may override this method to load annotations that are not intended to be
-   * annotated in source code. E.g.: {@code SubtypingChecker} overrides this method to load {@code
-   * Unqualified}.
-   *
    * @param annoClass an annotation class
-   * @return true if the annotation is well defined, false if it isn't
+   * @return true if the annotation is a type qualifier, false if it isn't
    */
   protected boolean isTypeQualifierAnnotation(Class<? extends Annotation> annoClass) {
     Target targetMetaAnno = annoClass.getAnnotation(Target.class);
