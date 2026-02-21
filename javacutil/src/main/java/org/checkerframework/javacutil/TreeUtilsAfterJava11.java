@@ -62,7 +62,7 @@ public class TreeUtilsAfterJava11 {
   /** Utility methods for accessing {@code ClassTree} methods added after Java 11. */
   public static class ClassTreeUtils {
 
-    /** Don't use. */
+    /** Do not instantiate ClassTreeUtils. */
     private ClassTreeUtils() {
       throw new AssertionError("Cannot be instantiated.");
     }

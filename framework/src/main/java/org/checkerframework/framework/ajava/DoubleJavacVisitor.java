@@ -66,6 +66,7 @@ import java.util.List;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtilsAfterJava11;
+import org.checkerframework.javacutil.UserError;
 
 /**
  * A visitor that traverses two javac ASTs simultaneously. The two trees must be structurally
@@ -112,6 +113,66 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
   protected abstract Void defaultAction(Tree tree1, Tree tree2);
 
   //
+  // Assertion methods
+  //
+
+  /**
+   * Both trees must be null, or both trees must have the same {@link Tree.Kind}.
+   *
+   * @param tree1 the first tree to scan, or null
+   * @param tree2 the second tree to scan, or null
+   */
+  public final void assertSameKind(@Nullable Tree tree1, @Nullable Tree tree2) {
+
+    if (tree1 == null && tree2 == null) {
+      return;
+    }
+
+    Tree.Kind kind1 = tree1 == null ? null : tree1.getKind();
+    Tree.Kind kind2 = tree2 == null ? null : tree2.getKind();
+
+    if (tree1 == null || tree2 == null) {
+      throw new UserError(
+          String.format(
+              "%s.scan: one tree is null: tree1=%s [%s] tree2=%s [%s]",
+              this.getClass().getCanonicalName(), tree1, kind1, tree2, kind2));
+    }
+
+    if (tree1.getKind() != tree2.getKind()) {
+      throw new UserError(
+          String.format(
+              "%s.scan: mismatched kinds: tree1=%s [%s] tree2=%s [%s]",
+              this.getClass().getCanonicalName(), tree1, kind1, tree2, kind2));
+    }
+  }
+
+  /**
+   * The two list arguments must either both be null or both be non-null and have the same length.
+   * Corresponding elements of {@code list1} and {@code list2} must have the same AST structure.
+   *
+   * @param list1 the first list of trees, or null
+   * @param list2 the second list of trees, or null
+   */
+  public final void assertSameLength(
+      @Nullable List<? extends Tree> list1, @Nullable List<? extends Tree> list2) {
+    if (list1 == null && list2 == null) {
+      return;
+    }
+    if (list1 == null || list2 == null) {
+      throw new UserError(
+          String.format(
+              "%s.scanList: one list is null: list1=%s list2=%s",
+              this.getClass().getCanonicalName(), list1, list2));
+    }
+    if (list1.size() != list2.size()) {
+      throw new UserError(
+          String.format(
+              "%s.scanList: different sizes: (%s [size %d], %s [size %d]",
+              this.getClass().getCanonicalName(), list1, list1.size(), list2, list2.size()));
+    }
+  }
+
+  //
   // Scan methods
   //
 
@@ -125,25 +186,10 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
    * @param tree2 the second tree to scan, or null
    */
   public final void scan(@Nullable Tree tree1, @Nullable Tree tree2) {
+    assertSameKind(tree1, tree2);
+
     if (tree1 == null && tree2 == null) {
       return;
-    }
-
-    Tree.Kind kind1 = tree1 == null ? null : tree1.getKind();
-    Tree.Kind kind2 = tree2 == null ? null : tree2.getKind();
-
-    if (tree1 == null || tree2 == null) {
-      throw new BugInCF(
-          String.format(
-              "%s.scan: one tree is null: tree1=%s [%s] tree2=%s [%s]",
-              this.getClass().getCanonicalName(), tree1, kind1, tree2, kind2));
-    }
-
-    if (tree1.getKind() != tree2.getKind()) {
-      throw new BugInCF(
-          String.format(
-              "%s.scan: mismatched kinds: tree1=%s [%s] tree2=%s [%s]",
-              this.getClass().getCanonicalName(), tree1, kind1, tree2, kind2));
     }
 
     // For tree types added after JDK 11, the tree classes do not exist at compile time,
@@ -155,6 +201,43 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
     // `accept` will call the appropriate `visitXyz` method.
     tree1.accept(this, tree2);
   }
+
+  /**
+   * Traverses two corresponding expression trees together.
+   *
+   * <p>This method exists to document intent at call sites where the children being traversed are
+   * known to be expressions. It performs no additional checks beyond those in {@link #scan} and
+   * simply delegates to that method.
+   *
+   * @param expr1 the first expression tree, or null
+   * @param expr2 the second expression tree, or null
+   */
+  public final void scanExpr(@Nullable ExpressionTree expr1, @Nullable ExpressionTree expr2) {
+    scan(expr1, expr2);
+  }
+
+  /**
+   * Traverses two lists of trees in lockstep by scanning corresponding elements. For each pair of
+   * corresponding elements index, this method invokes {@link #scan(Tree, Tree)}.
+   *
+   * <p>The two list arguments must either both be null or both be non-null and have the same
+   * length. Corresponding elements of {@code list1} and {@code list2} must have the same AST
+   * structure.
+   *
+   * @param list1 the first list of trees, or null
+   * @param list2 the second list of trees, or null
+   */
+  public final void scanList(
+      @Nullable List<? extends Tree> list1, @Nullable List<? extends Tree> list2) {
+    assertSameLength(list1, list2);
+    for (int i = 0; i < list1.size(); i++) {
+      scan(list1.get(i), list2.get(i));
+    }
+  }
+
+  //
+  // Visitor methods, in the same order as SimpleTreeVisitor.
+  //
 
   /**
    * Handles tree types that were added after JDK 11 and therefore cannot be referenced directly.
@@ -222,57 +305,6 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
         return false;
     }
   }
-
-  /**
-   * Traverses two corresponding expression trees together.
-   *
-   * <p>This method exists to document intent at call sites where the children being traversed are
-   * known to be expressions. It performs no additional checks beyond those in {@link #scan} and
-   * simply delegates to that method.
-   *
-   * @param expr1 the first expression tree, or null
-   * @param expr2 the second expression tree, or null
-   */
-  public final void scanExpr(@Nullable ExpressionTree expr1, @Nullable ExpressionTree expr2) {
-    scan(expr1, expr2);
-  }
-
-  /**
-   * Traverses two lists of trees in lockstep by scanning corresponding elements. For each pair of
-   * corresponding elements index, this method invokes {@link #scan(Tree, Tree)}.
-   *
-   * <p>The two list arguments must either both be null or both be non-null and have the same
-   * length. Corresponding elements of {@code list1} and {@code list2} must have the same AST
-   * structure.
-   *
-   * @param list1 the first list of trees, or null
-   * @param list2 the second list of trees, or null
-   */
-  public final void scanList(
-      @Nullable List<? extends Tree> list1, @Nullable List<? extends Tree> list2) {
-    if (list1 == null && list2 == null) {
-      return;
-    }
-    if (list1 == null || list2 == null) {
-      throw new BugInCF(
-          String.format(
-              "%s.scanList: one list is null: list1=%s list2=%s",
-              this.getClass().getCanonicalName(), list1, list2));
-    }
-    if (list1.size() != list2.size()) {
-      throw new BugInCF(
-          String.format(
-              "%s.scanList(%s [size %d], %s [size %d])",
-              this.getClass().getCanonicalName(), list1, list1.size(), list2, list2.size()));
-    }
-    for (int i = 0; i < list1.size(); i++) {
-      scan(list1.get(i), list2.get(i));
-    }
-  }
-
-  //
-  // Visitor methods — in the same order as SimpleTreeVisitor.
-  //
 
   /**
    * Visits a compilation unit (which represents a Java file) and scans its module, package,
@@ -810,8 +842,9 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
   /**
    * Visits a new array expression and scans its type, dimensions, and initializers.
    *
-   * <p>Array-level annotations may legitimately differ between a Java file and its corresponding
-   * {@code .ajava} file, so this visitor does not compare or traverse the annotation lists.
+   * <p>Type annotations on an array level may legitimately differ between a Java file and its
+   * corresponding {@code .ajava} file, so this visitor does not compare or traverse the annotation
+   * lists.
    *
    * @param ntree1 new array tree from the first AST
    * @param tree2 new array tree from the second AST
