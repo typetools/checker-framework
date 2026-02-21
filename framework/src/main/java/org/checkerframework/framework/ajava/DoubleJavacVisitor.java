@@ -596,9 +596,11 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
         != TreeUtilsAfterJava11.CaseUtils.isCaseRule(ctree2)) {
       throw new UserError(
           String.format(
-              "%s.visitCase: mismatched case forms: tree1 isCaseRule=%s tree2 isCaseRule=%s",
+              "%s.visitCase: mismatched case forms: tree1=%s isCaseRule=%s tree2=%s isCaseRule=%s",
               this.getClass().getCanonicalName(),
+              ctree1,
               TreeUtilsAfterJava11.CaseUtils.isCaseRule(ctree1),
+              ctree2,
               TreeUtilsAfterJava11.CaseUtils.isCaseRule(ctree2)));
     }
 
