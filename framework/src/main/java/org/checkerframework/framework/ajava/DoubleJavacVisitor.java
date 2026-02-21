@@ -64,7 +64,6 @@ import com.sun.source.tree.WildcardTree;
 import com.sun.source.util.SimpleTreeVisitor;
 import java.util.List;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtilsAfterJava11;
 import org.checkerframework.javacutil.UserError;
 
@@ -595,7 +594,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
 
     if (TreeUtilsAfterJava11.CaseUtils.isCaseRule(ctree1)
         != TreeUtilsAfterJava11.CaseUtils.isCaseRule(ctree2)) {
-      throw new BugInCF(
+      throw new UserError(
           String.format(
               "%s.visitCase: mismatched case forms: tree1 isCaseRule=%s tree2 isCaseRule=%s",
               this.getClass().getCanonicalName(),
