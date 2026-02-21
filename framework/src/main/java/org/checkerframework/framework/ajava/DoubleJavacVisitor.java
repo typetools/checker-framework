@@ -162,7 +162,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
     }
     if (list1.size() != list2.size()) {
       throw new UserError(
-          "%s: different size lists: (%s [size %d], %s [size %d]",
+          "%s: different size lists: %s (size %d), %s (size %d)",
           this.getClass().getCanonicalName(), list1, list1.size(), list2, list2.size());
     }
   }
