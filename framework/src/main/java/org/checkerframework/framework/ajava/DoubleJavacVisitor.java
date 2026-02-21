@@ -132,16 +132,14 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
 
     if (tree1 == null || tree2 == null) {
       throw new UserError(
-          String.format(
-              "%s.scan: one tree is null: tree1=%s [%s] tree2=%s [%s]",
-              this.getClass().getCanonicalName(), tree1, kind1, tree2, kind2));
+          "%s.scan: one tree is null: tree1=%s [%s] tree2=%s [%s]",
+          this.getClass().getCanonicalName(), tree1, kind1, tree2, kind2);
     }
 
     if (tree1.getKind() != tree2.getKind()) {
       throw new UserError(
-          String.format(
-              "%s.scan: mismatched kinds: tree1=%s [%s] tree2=%s [%s]",
-              this.getClass().getCanonicalName(), tree1, kind1, tree2, kind2));
+          "%s.scan: mismatched kinds: tree1=%s [%s] tree2=%s [%s]",
+          this.getClass().getCanonicalName(), tree1, kind1, tree2, kind2);
     }
   }
 
@@ -159,15 +157,13 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
     }
     if (list1 == null || list2 == null) {
       throw new UserError(
-          String.format(
-              "%s.scanList: one list is null: list1=%s list2=%s",
-              this.getClass().getCanonicalName(), list1, list2));
+          "%s: one list is null: list1=%s list2=%s",
+          this.getClass().getCanonicalName(), list1, list2);
     }
     if (list1.size() != list2.size()) {
       throw new UserError(
-          String.format(
-              "%s.scanList: different sizes: (%s [size %d], %s [size %d]",
-              this.getClass().getCanonicalName(), list1, list1.size(), list2, list2.size()));
+          "%s: different size lists: (%s [size %d], %s [size %d]",
+          this.getClass().getCanonicalName(), list1, list1.size(), list2, list2.size());
     }
   }
 
@@ -229,6 +225,9 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
   public final void scanList(
       @Nullable List<? extends Tree> list1, @Nullable List<? extends Tree> list2) {
     assertSameLength(list1, list2);
+    if (list1 == null && list2 == null) {
+      return;
+    }
     for (int i = 0; i < list1.size(); i++) {
       scan(list1.get(i), list2.get(i));
     }
