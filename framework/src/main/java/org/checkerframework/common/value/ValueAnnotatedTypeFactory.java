@@ -1169,7 +1169,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * annotation. It is treated everywhere as an IntRange annotation, but is not checked when it
    * appears as the left-hand side of an assignment (because the Lower Bound Checker will check it).
    *
-   * @return the {@link IntRangeFromGTENegativeOne}
+   * @return the {@link IntRangeFromGTENegativeOne} annotation
    */
   private AnnotationMirror createIntRangeFromGTENegativeOne() {
     AnnotationBuilder builder =
