@@ -132,13 +132,13 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
 
     if (tree1 == null || tree2 == null) {
       throw new UserError(
-          "%s.scan: one tree is null: tree1=%s [%s] tree2=%s [%s]",
+          "%s: one tree is null: tree1=%s [%s] tree2=%s [%s]",
           this.getClass().getCanonicalName(), tree1, kind1, tree2, kind2);
     }
 
     if (tree1.getKind() != tree2.getKind()) {
       throw new UserError(
-          "%s.scan: mismatched kinds: tree1=%s [%s] tree2=%s [%s]",
+          "%s: mismatched kinds: tree1=%s [%s] tree2=%s [%s]",
           this.getClass().getCanonicalName(), tree1, kind1, tree2, kind2);
     }
   }
