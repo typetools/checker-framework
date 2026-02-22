@@ -291,7 +291,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
 
       case "DECONSTRUCTION_PATTERN":
         defaultAction(tree1, tree2);
-        scan(
+        scanExpr(
             TreeUtilsAfterJava11.DeconstructionPatternUtils.getDeconstructor(tree1),
             TreeUtilsAfterJava11.DeconstructionPatternUtils.getDeconstructor(tree2));
         scanList(
@@ -763,7 +763,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
     ReturnTree rtree2 = (ReturnTree) tree2;
     defaultAction(rtree1, rtree2);
 
-    scan(rtree1.getExpression(), rtree2.getExpression());
+    scanExpr(rtree1.getExpression(), rtree2.getExpression());
     return null;
   }
 
@@ -1263,7 +1263,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
     ModuleTree mtree2 = (ModuleTree) tree2;
     defaultAction(mtree1, mtree2);
 
-    scan(mtree1.getName(), mtree2.getName());
+    scanExpr(mtree1.getName(), mtree2.getName());
     scanList(mtree1.getDirectives(), mtree2.getDirectives());
     return null;
   }
