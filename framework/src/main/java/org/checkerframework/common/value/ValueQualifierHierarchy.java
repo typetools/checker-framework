@@ -27,21 +27,6 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
   /**
    * Creates a ValueQualifierHierarchy from the given classes.
    *
-   * @param atypeFactory a ValueAnnotatedTypeFactory
-   * @param qualifierClasses classes of annotations that are the qualifiers for this hierarchy
-   * @deprecated use {@link #ValueQualifierHierarchy(Collection, ValueAnnotatedTypeFactory)} which
-   *     has the arguments in the other order
-   */
-  @Deprecated // 2023-05-23
-  ValueQualifierHierarchy(
-      ValueAnnotatedTypeFactory atypeFactory,
-      Collection<Class<? extends Annotation>> qualifierClasses) {
-    this(qualifierClasses, atypeFactory);
-  }
-
-  /**
-   * Creates a ValueQualifierHierarchy from the given classes.
-   *
    * @param qualifierClasses classes of annotations that are the qualifiers for this hierarchy
    * @param atypeFactory the associated type factory
    */

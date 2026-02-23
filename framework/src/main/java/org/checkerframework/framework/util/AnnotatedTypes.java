@@ -1016,31 +1016,6 @@ public class AnnotatedTypes {
   }
 
   /**
-   * Returns the method parameters for the invoked method, with the same number of arguments passed
-   * in the methodInvocation tree.
-   *
-   * <p>If the invoked method is not a vararg method or it is a vararg method but the invocation
-   * passes an array to the vararg parameter, it would simply return the method parameters.
-   *
-   * <p>Otherwise, it would return the list of parameters as if the vararg is expanded to match the
-   * size of the passed arguments.
-   *
-   * @param atypeFactory the type factory to use for fetching annotated types
-   * @param method the method's type
-   * @param args the arguments to the method invocation
-   * @return the types that the method invocation arguments need to be subtype of
-   * @deprecated Use {@link #adaptParameters(AnnotatedTypeFactory, AnnotatedExecutableType, List,
-   *     Tree)} instead
-   */
-  @Deprecated // 2022-04-21
-  public static List<AnnotatedTypeMirror> expandVarArgsParameters(
-      AnnotatedTypeFactory atypeFactory,
-      AnnotatedExecutableType method,
-      List<? extends ExpressionTree> args) {
-    return adaptParameters(atypeFactory, method, args, null);
-  }
-
-  /**
    * Returns the method parameters for the invoked method (or constructor), with the same number of
    * arguments as passed to the invocation tree.
    *
@@ -1603,18 +1578,6 @@ public class AnnotatedTypes {
   }
 
   /**
-   * Returns true if wildcard type is explicitly super bounded.
-   *
-   * @param wildcardType the wildcard type to test
-   * @return true if wildcard type is explicitly super bounded
-   * @deprecated Use {@link #hasExplicitSuperBound(AnnotatedTypeMirror)}
-   */
-  @Deprecated // 2023-02-28
-  public static boolean isExplicitlySuperBounded(AnnotatedWildcardType wildcardType) {
-    return hasExplicitSuperBound(wildcardType);
-  }
-
-  /**
    * Returns true if wildcard type has an explicit super bound.
    *
    * @param wildcard the wildcard type to test
@@ -1622,18 +1585,6 @@ public class AnnotatedTypes {
    */
   public static boolean hasExplicitSuperBound(AnnotatedTypeMirror wildcard) {
     return TypesUtils.hasExplicitSuperBound(wildcard.getUnderlyingType());
-  }
-
-  /**
-   * Returns true if wildcard type is explicitly extends bounded.
-   *
-   * @param wildcardType the wildcard type to test
-   * @return true if wildcard type is explicitly extends bounded
-   * @deprecated Use {@link #hasExplicitExtendsBound(AnnotatedTypeMirror)}.
-   */
-  @Deprecated // 2023-02-28
-  public static boolean isExplicitlyExtendsBounded(AnnotatedWildcardType wildcardType) {
-    return hasExplicitExtendsBound(wildcardType);
   }
 
   /**
