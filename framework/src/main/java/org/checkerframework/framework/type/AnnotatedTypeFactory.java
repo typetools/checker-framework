@@ -3516,7 +3516,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * in the aliased annotation's place.
    *
    * @param a the qualifier to check for an alias
-   * @return the canonical annotation, or null if none exists
+   * @return the canonical annotation, or the given annotation
    */
   public AnnotationMirror canonicalAnnotation(AnnotationMirror a) {
     TypeElement elem = (TypeElement) a.getAnnotationType().asElement();
