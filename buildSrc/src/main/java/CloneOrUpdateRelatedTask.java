@@ -3,7 +3,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
-import java.util.Collection;
+import java.util.Map;
 import javax.inject.Inject;
 import org.eclipse.jgit.api.LsRemoteCommand;
 import org.eclipse.jgit.lib.Config;
@@ -52,7 +52,7 @@ public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
     this.execOperations = execOperations;
   }
 
-  /** Clones or updates a related repp. */
+  /** Clones or updates a related repo. */
   @TaskAction
   public void doTaskAction() {
     String relatedRepo = getRelatedRepo().get();
@@ -232,18 +232,13 @@ public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
 
     try {
       // Execute the ls-remote command to get all references from the remote
-      Collection<Ref> remoteRefs =
+      Map<String, Ref> remoteRefs =
           new LsRemoteCommand(null)
               .setRemote(getGitHubUrl(org, repo))
               .setTimeout(60)
               .setHeads(true)
-              .call();
-      for (Ref ref : remoteRefs) {
-        if (ref.getName().equals(fullBranchName)) {
-          return true;
-        }
-      }
-
+              .callAsMap();
+      return remoteRefs.containsKey(fullBranchName);
     } catch (Exception e) {
       System.err.println("Error checking remote branch existence: " + e.getMessage());
     }
