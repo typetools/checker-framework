@@ -278,17 +278,17 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
     }
     annotation = atypeFactory.canonicalAnnotation(annotation);
     if (!atypeFactory.isSupportedQualifier(annotation)) {
-      // This can happen if annotation is unrelated to this AnnotatedTypeMirror.
+      // This can happen if the annotation is unrelated to this AnnotatedTypeMirror.
       return null;
     }
-    if (atypeFactory.isSupportedQualifier(annotation)) {
-      QualifierHierarchy qualHierarchy = atypeFactory.getQualifierHierarchy();
-      AnnotationMirror anno =
-          qualHierarchy.findAnnotationInSameHierarchy(primaryAnnotations, annotation);
-      if (anno != null) {
-        return anno;
-      }
+
+    QualifierHierarchy qualHierarchy = atypeFactory.getQualifierHierarchy();
+    AnnotationMirror anno =
+        qualHierarchy.findAnnotationInSameHierarchy(primaryAnnotations, annotation);
+    if (anno != null) {
+      return anno;
     }
+
     return null;
   }
 
