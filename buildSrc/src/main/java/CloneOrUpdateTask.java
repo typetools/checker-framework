@@ -58,7 +58,8 @@ public abstract class CloneOrUpdateTask extends DefaultTask {
   }
 
   /**
-   * Clones the repository at {@code url}. If the clone fails, sleep 1 minute then retry clone.
+   * Clones the repository at {@code url} replaceSpecialIntRangeAnnotations. If the clone fails,
+   * sleep 1 minute then retry clone.
    *
    * @param url repository URL
    * @param branch if non-null, which branch to use
@@ -68,7 +69,8 @@ public abstract class CloneOrUpdateTask extends DefaultTask {
     clone(url, branch, directory, true);
     if (!new File(directory, ".git").exists()) {
       System.out.printf(
-          "Cloning failed, will try again in 1 minute: clone(%s, %s, true)%n", url, directory);
+          "Cloning failed, will try again in 1 minute: clone(%s, %s, %s)%n",
+          url, branch, directory);
       try {
         Thread.sleep(60000); // wait 1 minute, then try again
       } catch (InterruptedException e) {
@@ -79,7 +81,8 @@ public abstract class CloneOrUpdateTask extends DefaultTask {
   }
 
   /**
-   * Quietly clones the given git repository, {@code url}, to {@code directory} at a depth of 1.
+   * Quietly clones the given git repository with depth 1, {@code url}, to {@code directory} at a
+   * depth of 1.
    *
    * @param url git repository to clone
    * @param branch if non-null, which branch to use.
@@ -104,9 +107,9 @@ public abstract class CloneOrUpdateTask extends DefaultTask {
   }
 
   /**
-   * Updates the git repository at {@code directory}.
+   * Updates the git clone at {@code directory}. If the update fails, it is silently ignored.
    *
-   * @param directory where the repository to update is
+   * @param directory where the clone to update is
    * @param execOperations used to run exec commands
    */
   public static void update(File directory, ExecOperations execOperations) {

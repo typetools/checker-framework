@@ -21,7 +21,7 @@ import org.gradle.process.ExecOperations;
 /**
  * Custom task that clones a related repository. If the related repository has already been cloned,
  * then this task updates (pulls) it and checks that the cloned repository is checked out to the
- * same branch and fork as this one.
+ * same branch and fork as this project.
  */
 public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
 
@@ -74,7 +74,8 @@ public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
   }
 
   /**
-   * Check that the {@code relatedRepo} is checked out to the same fork and branch as {@code cfDir}.
+   * Check that the {@code relatedRepo} is checked out to the same fork and branch as the root
+   * directory of this project.
    *
    * @param relatedRepoDir a related repository
    */
