@@ -1221,6 +1221,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     Set<Class<? extends Annotation>> annotations = loader.getBundledAnnotationClasses();
 
+    // This works because this method (`loadTypeAnnotationsFromQualDir`) is called in `postInit()`,
+    // but `addAliasedTypeAnnotation` is called before `postInit()`.
     annotations.removeIf(this::isAliasedTypeAnnotation);
 
     // Add in all explicitly listed qualifiers.
@@ -3402,6 +3404,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * are not preserved when the canonical annotation to use is constructed from the alias. If you
    * want the elements to be copied over as well, use {@link #addAliasedTypeAnnotation(Class, Class,
    * boolean, String...)}.
+   *
+   * <p>This method must be called before {@link #postInit}.
    *
    * @param aliasClass the class of the aliased annotation
    * @param canonicalAnno the canonical annotation
