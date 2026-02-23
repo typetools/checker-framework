@@ -721,7 +721,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   /**
    * Requires that supportedQuals is non-null and non-empty and each element is a type qualifier.
    * That is, no element has a {@code @Target} meta-annotation that contains something besides
-   * TYPE_USE or TYPE_PARAMETER. (@Target({}) is allowed.) @
+   * TYPE_USE or TYPE_PARAMETER. ({@code @Target({})} is allowed.)
    *
    * @throws BugInCF If supportedQuals is empty or contaions a non-type qualifier
    */
@@ -1188,7 +1188,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * #createSupportedTypeQualifiers()} in each checker.
    *
    * @param explicitlyListedAnnotations a varargs array of explicitly listed annotation classes to
-   *     be added to the returned set. For example, it is used frequently to add Bottom qualifiers.
+   *     be added to the returned set
    * @return a mutable set of the loaded and listed annotation classes
    */
   @SafeVarargs
@@ -1223,7 +1223,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     Set<Class<? extends Annotation>> annotations = loader.getBundledAnnotationClasses();
 
-    // add in all explicitly Listed qualifiers
+    // Add in all explicitly listed qualifiers.
     if (explicitlyListedAnnotations != null) {
       annotations.addAll(Arrays.asList(explicitlyListedAnnotations));
     }

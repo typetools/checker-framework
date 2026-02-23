@@ -19,7 +19,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({})
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf(LockPossiblyHeld.class) // This is the bottom type in this hierarchy
 @InvisibleQualifier
 public @interface LockHeld {}

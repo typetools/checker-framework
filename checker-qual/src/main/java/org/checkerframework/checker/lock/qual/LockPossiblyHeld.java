@@ -23,7 +23,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({})
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @InvisibleQualifier
 @SubtypeOf({})
 @DefaultQualifierInHierarchy
