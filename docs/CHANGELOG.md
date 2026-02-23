@@ -11,6 +11,8 @@ Removed long-deprecated `-Alint=forbidnonnullarraycomponents`.
 
 ### Implementation details
 
+In `AnnotatedTypeFactory`, `canonicalAnnotation()` returns a non-null value.
+
 ### Closed issues
 
 ## Version 3.53.1 (2026-02-02)

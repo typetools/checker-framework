@@ -277,18 +277,15 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
     if (primaryAnnotations.isEmpty()) {
       return null;
     }
-    AnnotationMirror canonical = annotation;
-    if (!atypeFactory.isSupportedQualifier(canonical)) {
-      canonical = atypeFactory.canonicalAnnotation(annotation);
-      if (canonical == null) {
-        // This can happen if annotation is unrelated to this AnnotatedTypeMirror.
-        return null;
-      }
+    annotation = atypeFactory.canonicalAnnotation(annotation);
+    if (!atypeFactory.isSupportedQualifier(annotation)) {
+      // This can happen if annotation is unrelated to this AnnotatedTypeMirror.
+      return null;
     }
-    if (atypeFactory.isSupportedQualifier(canonical)) {
+    if (atypeFactory.isSupportedQualifier(annotation)) {
       QualifierHierarchy qualHierarchy = atypeFactory.getQualifierHierarchy();
       AnnotationMirror anno =
-          qualHierarchy.findAnnotationInSameHierarchy(primaryAnnotations, canonical);
+          qualHierarchy.findAnnotationInSameHierarchy(primaryAnnotations, annotation);
       if (anno != null) {
         return anno;
       }
@@ -307,14 +304,11 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    * @return an annotation from the same hierarchy as {@code annotation} if present
    */
   public @Nullable AnnotationMirror getEffectiveAnnotationInHierarchy(AnnotationMirror annotation) {
-    AnnotationMirror canonical = annotation;
-    if (!atypeFactory.isSupportedQualifier(canonical)) {
-      canonical = atypeFactory.canonicalAnnotation(annotation);
-    }
-    if (atypeFactory.isSupportedQualifier(canonical)) {
+    annotation = atypeFactory.canonicalAnnotation(annotation);
+    if (atypeFactory.isSupportedQualifier(annotation)) {
       QualifierHierarchy qualHierarchy = this.atypeFactory.getQualifierHierarchy();
       AnnotationMirror anno =
-          qualHierarchy.findAnnotationInSameHierarchy(getEffectiveAnnotations(), canonical);
+          qualHierarchy.findAnnotationInSameHierarchy(getEffectiveAnnotations(), annotation);
       if (anno != null) {
         return anno;
       }
@@ -641,13 +635,9 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
     if (annotation == null) {
       throw new BugInCF("AnnotatedTypeMirror.addAnnotation: null argument.");
     }
+    annotation = atypeFactory.canonicalAnnotation(annotation);
     if (atypeFactory.isSupportedQualifier(annotation)) {
       this.primaryAnnotations.add(annotation);
-    } else {
-      AnnotationMirror canonical = atypeFactory.canonicalAnnotation(annotation);
-      if (atypeFactory.isSupportedQualifier(canonical)) {
-        addAnnotation(canonical);
-      }
     }
   }
 

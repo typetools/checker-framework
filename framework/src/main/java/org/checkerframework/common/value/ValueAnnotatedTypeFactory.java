@@ -309,6 +309,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   @Override
   public AnnotationMirror canonicalAnnotation(AnnotationMirror anno) {
+    // TODO: This old code is probably buggy.  It will be fixed in the future.
     if (AnnotationUtils.areSameByName(anno, MINLEN_NAME)) {
       int from = getMinLenValue(anno);
       return createArrayLenRangeAnnotation(from, Integer.MAX_VALUE);
