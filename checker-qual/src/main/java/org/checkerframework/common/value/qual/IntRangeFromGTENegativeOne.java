@@ -14,7 +14,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
  *
  * <p>IntRangeFromGTENegativeOne annotations derived from GTENegativeOne annotations are used to
  * create IntRange annotations, but IntRangeFromGTENegativeOne annotations are not checked when they
- * appear on the left hand side of expressions. Therefore, the Index Checker MUST be run on any code
+ * appear on the left-hand side of expressions. Therefore, the Index Checker MUST be run on any code
  * with @GTENegativeOne annotations on the left-hand side of expressions, since the Value Checker
  * will derive information from them but not check them.
  *

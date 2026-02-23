@@ -96,12 +96,12 @@ public class SameLenTransfer extends CFTransfer {
         Node lengthNodeReceiver = getLengthReceiver(lengthNode);
 
         if (lengthNodeReceiver != null) {
-          // "new T[a.length]" or "new T[s.length()]" is the right hand side of the
+          // "new T[a.length]" or "new T[s.length()]" is the right-hand side of the
           // assignment.
           // lengthNode is known to be "lengthNodeReceiver.length" or
           // "lengthNodeReceiver.length()"
 
-          // targetRec is the receiver for the left hand side of the assignment.
+          // targetRec is the receiver for the left-hand side of the assignment.
           JavaExpression targetRec = JavaExpression.fromNode(recNode);
           JavaExpression otherRec = JavaExpression.fromNode(lengthNodeReceiver);
 
