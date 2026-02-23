@@ -45,9 +45,9 @@ for PACKAGE in "${PACKAGES[@]}"; do
   "$SCRIPT_DIR/.git-scripts/git-clone-related" plume-lib "${PACKAGE}" "${PACKAGEDIR}"
   # Uses "compileJava" target instead of "assemble" to avoid the javadoc error "Error fetching URL:
   # https://docs.oracle.com/en/java/javase/25/docs/api/" due to network problems.
-  echo "About to call ./gradlew -PcfLocal compileJava"
+  echo "About to call ./gradlew -PcfVersion=local compileJava"
   # Try twice in case of network lossage.
-  (cd "${PACKAGEDIR}" && (./gradlew -PcfLocal compileJava || (sleep 60 && ./gradlew -PcfLocal compileJava))) || failing_packages="${failing_packages} ${PACKAGE}"
+  (cd "${PACKAGEDIR}" && (./gradlew -PcfVersion=local compileJava || (sleep 60 && ./gradlew -PcfVersion=local compileJava))) || failing_packages="${failing_packages} ${PACKAGE}"
 done
 
 if [ -n "${failing_packages}" ]; then

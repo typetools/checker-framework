@@ -48,6 +48,7 @@ with tempfile.NamedTemporaryFile(mode="w+", delete=False) as tmp:
         ["dot", "-Tpdf", tmp.name, "-o", "type-hierarchy.pdf"],
         capture_output=True,  # Python >= 3.7 only
         text=True,  # Python >= 3.7 only
+        check=True,
     )
 
     Path.unlink(Path(tmp.name))

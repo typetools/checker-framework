@@ -903,7 +903,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
   /**
    * Update the information in the store by considering a field assignment with target {@code n},
-   * where the right hand side has the abstract value {@code val}.
+   * where the right-hand side has the abstract value {@code val}.
    *
    * @param val the abstract value of the value assigned to {@code n} (or {@code null} if the
    *     abstract value is not known)

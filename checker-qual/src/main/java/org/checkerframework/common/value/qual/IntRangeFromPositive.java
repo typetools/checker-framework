@@ -13,10 +13,10 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * annotation.
  *
  * <p>IntRangeFromPositive annotations derived from Positive annotations are used to create IntRange
- * annotations, but IntRangeFromPositive annotations are not checked when they appear on the left
- * hand side of expressions. Therefore, the Index Checker MUST be run on any code with @Positive
- * annotations on the left-hand side of expressions, since the Value Checker will derive information
- * from them but not check them.
+ * annotations, but IntRangeFromPositive annotations are not checked when they appear on the
+ * left-hand side of expressions. Therefore, the Index Checker MUST be run on any code
+ * with @Positive annotations on the left-hand side of expressions, since the Value Checker will
+ * derive information from them but not check them.
  *
  * <p>It is an error to write this annotation directly. {@code @Positive} or {@code IntRange(from =
  * 1, to = Integer.MAX_VALUE)} should always be written instead. This annotation is not retained in
