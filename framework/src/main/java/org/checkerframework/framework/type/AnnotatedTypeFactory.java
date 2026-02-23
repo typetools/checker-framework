@@ -1143,7 +1143,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * <p>To support a different set of annotations than those in the {@literal qual} subdirectory, or
    * that have other {@code ElementType} values, see examples below.
    *
-   * <p>In total, there are 5 ways to indicate annotations that are supported by a checker:
+   * <p>In total, there are 3 ways to indicate annotations that are supported by a checker:
    *
    * <ol>
    *   <li>Only support annotations located in a checker's {@literal qual} directory:
@@ -1155,22 +1155,27 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *       #createSupportedTypeQualifiers()} by calling {@link #getBundledTypeQualifiers(Class...)}
    *       with a varargs parameter list of the other annotations. Code example:
    *       <pre>
-   * {@code @Override protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-   *      return getBundledTypeQualifiers(Regex.class, PartialRegex.class, RegexBottom.class, UnknownRegex.class);
-   *  } }
+   * {@code @Override
+   * protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
+   *   return getBundledTypeQualifiers(
+   *     // These annotations are in the Called Methods Checker, not the Resource Leak Checker.
+   *     CalledMethods.class, CalledMethodsBottom.class, CalledMethodsPredicate.class);
+   * } }
    * </pre>
-   *   <li>Supporting only annotations that are explicitly listed: Override {@link
+   *   <li>Support only annotations that are explicitly listed. This is common when a single
+   *       directory holds qualifiers for multiple qualifier hierarchies. Override {@link
    *       #createSupportedTypeQualifiers()} and return a mutable set of the supported annotations.
    *       Code example:
    *       <pre>
-   * {@code @Override protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-   *      return new HashSet<Class<? extends Annotation>>(
-   *              Arrays.asList(A.class, B.class));
-   *  } }
+   * {@code @Override
+   * protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
+   *   return new HashSet<Class<? extends Annotation>>(
+   *       Arrays.asList(A.class, B.class));
+   * } }
    * </pre>
    *       The set of qualifiers returned by {@link #createSupportedTypeQualifiers()} must be a
    *       fresh, mutable set. The methods {@link #getBundledTypeQualifiers(Class...)} must return a
-   *       fresh, mutable set
+   *       fresh, mutable set.
    * </ol>
    *
    * @return the type qualifiers supported this processor, or an empty set if none
