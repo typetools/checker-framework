@@ -1140,8 +1140,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /**
    * Creates the special {@link IntRangeFromPositive} annotation, which is only used as an alias for
    * the Index Checker's {@link org.checkerframework.checker.index.qual.Positive} annotation. It is
-   * treated everywhere as an IntRange annotation, but is not checked when it appears as the left
-   * hand side of an assignment (because the Lower Bound Checker will check it).
+   * treated everywhere as an IntRange annotation, but is not checked when it appears as the
+   * left-hand side of an assignment (because the Lower Bound Checker will check it).
+   *
+   * @return the {@link IntRangeFromPositive} annotation
    */
   private AnnotationMirror createIntRangeFromPositive() {
     AnnotationBuilder builder = new AnnotationBuilder(processingEnv, IntRangeFromPositive.class);
@@ -1152,7 +1154,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * Creates the special {@link IntRangeFromNonNegative} annotation, which is only used as an alias
    * for the Index Checker's {@link org.checkerframework.checker.index.qual.NonNegative} annotation.
    * It is treated everywhere as an IntRange annotation, but is not checked when it appears as the
-   * left hand side of an assignment (because the Lower Bound Checker will check it).
+   * left-hand side of an assignment (because the Lower Bound Checker will check it).
+   *
+   * @return the {@link IntRangeFromNonNegative} annotation
    */
   private AnnotationMirror createIntRangeFromNonNegative() {
     AnnotationBuilder builder = new AnnotationBuilder(processingEnv, IntRangeFromNonNegative.class);
@@ -1163,7 +1167,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * Creates the special {@link IntRangeFromGTENegativeOne} annotation, which is only used as an
    * alias for the Index Checker's {@link org.checkerframework.checker.index.qual.GTENegativeOne}
    * annotation. It is treated everywhere as an IntRange annotation, but is not checked when it
-   * appears as the left hand side of an assignment (because the Lower Bound Checker will check it).
+   * appears as the left-hand side of an assignment (because the Lower Bound Checker will check it).
+   *
+   * @return the {@link IntRangeFromGTENegativeOne} annotation
    */
   private AnnotationMirror createIntRangeFromGTENegativeOne() {
     AnnotationBuilder builder =

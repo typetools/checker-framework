@@ -461,7 +461,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
     return true;
   }
 
-  /* Returns the new value of the left hand side after processing the arrays named in the lhs.
+  /* Returns the new value of the left-hand side after processing the arrays named in the lhs.
    * Iff varLtlQual includes LTL(lhsSeq),
    * lhsSeq has HSS, and expQual includes LTL(a, -from), then the LTL(lhsSeq) will be removed from varLtlQual
    */

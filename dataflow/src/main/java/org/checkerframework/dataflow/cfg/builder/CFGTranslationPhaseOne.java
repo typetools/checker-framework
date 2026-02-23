@@ -1134,8 +1134,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @return true if this conversion requires narrowing to succeed
    */
   protected boolean conversionRequiresNarrowing(TypeMirror varType, Node node) {
-    // Narrowing is restricted to cases where the left hand side is byte, char, short or Byte,
-    // Char, Short and the right hand side is a constant.
+    // Narrowing is restricted to cases where the left-hand side is byte, char, short or Byte,
+    // Char, Short and the right-hand side is a constant.
     TypeMirror unboxedVarType =
         TypesUtils.isBoxedPrimitive(varType) ? types.unboxedType(varType) : varType;
     TypeKind unboxedVarKind = unboxedVarType.getKind();
