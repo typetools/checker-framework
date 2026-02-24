@@ -1478,7 +1478,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     if (this.processingEnv.getOptions() != null /*nnbug*/
         && this.processingEnv.getOptions().containsKey("onelinemsg")) {
       // Use a virgule (/), as indicates a line break in poetry.
-      messageText.replace(System.lineSeparator(), " / ");
+      messageText = messageText.replace(System.lineSeparator(), " / ");
     }
 
     if (source instanceof Element) {
