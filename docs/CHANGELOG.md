@@ -20,6 +20,10 @@ In `AnnotationClassLoader`:
   The method now returns `true` for annotations bearing `@InvisibleQualifier`
   or `@SubtypeOf`, in addition to the existing `@Target(TYPE_USE)` check.
 
+In `TestDiagnostic`:
+* Renamed field `message` to `key`.
+* Added new field `message` for the full message without the key.
+
 Removed classes and methods that have been deprecated for more than two years.
 
 ### Closed issues

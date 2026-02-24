@@ -137,11 +137,10 @@ public class TypecheckResult {
     Set<TestDiagnostic> actualDiagnostics =
         TestDiagnosticUtils.fromJavaxDiagnosticList(result.getDiagnostics(), true);
 
-    Set<TestDiagnostic> unexpectedDiagnostics = new LinkedHashSet<>();
-    unexpectedDiagnostics.addAll(actualDiagnostics);
+    Set<TestDiagnostic> unexpectedDiagnostics = new LinkedHashSet<>(actualDiagnostics);
     unexpectedDiagnostics.removeAll(expectedDiagnostics);
 
-    List<TestDiagnostic> missingDiagnostics = new ArrayList<>(expectedDiagnostics);
+    Set<TestDiagnostic> missingDiagnostics = new LinkedHashSet<>(expectedDiagnostics);
     missingDiagnostics.removeAll(actualDiagnostics);
 
     return new TypecheckResult(

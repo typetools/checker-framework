@@ -12,6 +12,7 @@ import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.javacutil.BugInCF;
 import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.IPair;
 
@@ -20,7 +21,7 @@ public class TestDiagnosticUtils {
 
   /** How the diagnostics appear in Java source files. */
   public static final String DIAGNOSTIC_IN_JAVA_REGEX =
-      "\\s*(error|fixable-error|warning|fixable-warning|other):\\s*(\\(?.*\\)?)\\s*";
+      "\\s*(error|fixable-error|warning|fixable-warning|other):\\s*(.*)\\s*";
 
   /** How the diagnostics appear in Java source files. */
   public static final Pattern DIAGNOSTIC_IN_JAVA_PATTERN =
@@ -64,8 +65,8 @@ public class TestDiagnosticUtils {
   }
 
   /**
-   * Instantiate the diagnostic from a string that would appear in a Java file, e.g.: "error:
-   * (message)"
+   * Instantiate the diagnostic from a string that would appear in a Java test file, e.g.: "error:
+   * (error-message-key)"
    *
    * @param filename the file containing the diagnostic (and the error)
    * @param lineNumber the line number of the line immediately below the diagnostic comment in the
@@ -93,9 +94,11 @@ public class TestDiagnosticUtils {
     // However, diagnostic.toString() may contain "[unchecked]" even though getMessage() does
     // not.
     // Since we want to match the error messages reported by javac exactly, we must parse.
-    IPair<String, String> trimmed = formatJavaxToolString(diagnosticString, noMsgText);
+    IPair<String, String> messageAndFilename = messageAndFilename(diagnosticString, noMsgText);
+    String message = messageAndFilename.first;
+    String filename = messageAndFilename.second;
     return fromPatternMatching(
-        DIAGNOSTIC_PATTERN, DIAGNOSTIC_WARNING_PATTERN, trimmed.second, null, trimmed.first);
+        DIAGNOSTIC_PATTERN, DIAGNOSTIC_WARNING_PATTERN, filename, null, message);
   }
 
   /**
@@ -115,17 +118,19 @@ public class TestDiagnosticUtils {
         lineNumber,
         DiagnosticKind.JSpecify,
         stringFromJavaFile,
+        null,
         /* isFixable= */ false,
         /* omitParentheses= */ true);
   }
 
   /**
-   * Instantiate the diagnostic via pattern-matching against patterns.
+   * Instantiate the diagnostic via pattern-matching against the given patterns.
    *
    * @param diagnosticPattern a pattern that matches any diagnostic
    * @param warningPattern a pattern that matches a warning diagnostic
    * @param filename the file name
-   * @param lineNumber the line number
+   * @param lineNumber the line number. Either this is non-null, or the pattern's first matching
+   *     group is the line number.
    * @param diagnosticString the string to parse
    * @return a diagnostic parsed from the given string
    */
@@ -137,6 +142,7 @@ public class TestDiagnosticUtils {
       @Nullable Long lineNumber,
       String diagnosticString) {
     final DiagnosticKind kind;
+    final String key;
     final String message;
     final boolean isFixable;
     final boolean noParentheses;
@@ -150,16 +156,41 @@ public class TestDiagnosticUtils {
 
     Matcher diagnosticMatcher = diagnosticPattern.matcher(diagnosticString);
     if (diagnosticMatcher.matches()) {
-      IPair<DiagnosticKind, Boolean> categoryToFixable =
-          parseCategoryString(diagnosticMatcher.group(1 + capturingGroupOffset));
-      kind = categoryToFixable.first;
-      isFixable = categoryToFixable.second;
+
+      IPair<DiagnosticKind, Boolean> categoryAndFixable =
+          categoryAndFixable(diagnosticMatcher.group(1 + capturingGroupOffset));
+      kind = categoryAndFixable.first;
+      isFixable = categoryAndFixable.second;
       String msg = diagnosticMatcher.group(2 + capturingGroupOffset).trim();
-      noParentheses = msg.equals("") || msg.charAt(0) != '(' || msg.charAt(msg.length() - 1) != ')';
-      message = noParentheses ? msg : msg.substring(1, msg.length() - 1);
+
+      char firstChar = msg.isEmpty() ? ' ' : msg.charAt(0);
+      noParentheses = firstChar != '(' && firstChar != '[';
+      if (noParentheses) {
+        key = msg;
+        message = null;
+      } else {
+        char lastChar = msg.charAt(msg.length() - 1);
+        if ((firstChar == '(' && lastChar == ')') || (firstChar == ']' && lastChar == ']')) {
+          key = msg.substring(1, msg.length() - 1);
+          message = null;
+        } else {
+          char closeDelimiter = firstChar == '(' ? ')' : ']';
+          int closeDelimiterPos = msg.indexOf(closeDelimiter);
+          if (closeDelimiterPos == -1) {
+            throw new BugInCF(
+                "No closing delimiter '%s' found in %s", closeDelimiter, diagnosticString);
+          }
+          key = msg.substring(1, closeDelimiterPos);
+          message = msg.substring(closeDelimiterPos).trim();
+        }
+      }
 
       if (lineNumber == null) {
-        lineNo = Long.parseLong(diagnosticMatcher.group(1));
+        try {
+          lineNo = Long.parseLong(diagnosticMatcher.group(1));
+        } catch (NumberFormatException e) {
+          // do nothing
+        }
       }
 
     } else {
@@ -167,17 +198,23 @@ public class TestDiagnosticUtils {
       if (warningMatcher.matches()) {
         kind = DiagnosticKind.Warning;
         isFixable = false;
-        message = warningMatcher.group(1 + capturingGroupOffset);
+        key = warningMatcher.group(1 + capturingGroupOffset);
+        message = null;
         noParentheses = true;
 
         if (lineNumber == null) {
-          lineNo = Long.parseLong(diagnosticMatcher.group(1));
+          try {
+            lineNo = Long.parseLong(diagnosticMatcher.group(1));
+          } catch (NumberFormatException e) {
+            // do nothing
+          }
         }
 
       } else if (diagnosticString.startsWith("warning:")) {
         kind = DiagnosticKind.Warning;
         isFixable = false;
-        message = diagnosticString.substring("warning:".length()).trim();
+        key = diagnosticString.substring("warning:".length()).trim();
+        message = null;
         noParentheses = true;
         if (lineNumber != null) {
           lineNo = lineNumber;
@@ -188,7 +225,8 @@ public class TestDiagnosticUtils {
       } else {
         kind = DiagnosticKind.Other;
         isFixable = false;
-        message = diagnosticString;
+        key = diagnosticString;
+        message = null;
         noParentheses = true;
 
         // this should only happen if we are parsing a Java Diagnostic from the compiler
@@ -198,7 +236,7 @@ public class TestDiagnosticUtils {
         }
       }
     }
-    return new TestDiagnostic(filename, lineNo, kind, message, isFixable, noParentheses);
+    return new TestDiagnostic(filename, lineNo, kind, key, message, isFixable, noParentheses);
   }
 
   /**
@@ -209,7 +247,7 @@ public class TestDiagnosticUtils {
    * @param noMsgText true if to do work; if false, this returns a pair of (argument, "")
    * @return the diagnostic, split into message and filename
    */
-  public static IPair<String, String> formatJavaxToolString(String original, boolean noMsgText) {
+  public static IPair<String, String> messageAndFilename(String original, boolean noMsgText) {
     String trimmed = original;
     String filename = "";
     if (noMsgText) {
@@ -249,8 +287,11 @@ public class TestDiagnosticUtils {
   /**
    * Given a category string that may be prepended with "fixable-", return the category enum that
    * corresponds with the category and whether or not it is a isFixable error
+   *
+   * @param category a category string that may be prepended with "fixable-"
+   * @return a pair of the category and whether it was prepended with "fixable-"
    */
-  private static IPair<DiagnosticKind, Boolean> parseCategoryString(String category) {
+  private static IPair<DiagnosticKind, Boolean> categoryAndFixable(String category) {
     String fixable = "fixable-";
     boolean isFixable = category.startsWith(fixable);
     if (isFixable) {
@@ -350,6 +391,7 @@ public class TestDiagnosticUtils {
               lineNumber,
               DiagnosticKind.Error,
               "Use \"// ::\", not \"//::\"",
+              null,
               false,
               true);
       return new TestDiagnosticLine(
