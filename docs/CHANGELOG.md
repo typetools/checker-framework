@@ -13,6 +13,12 @@ Removed long-deprecated `-Alint=forbidnonnullarraycomponents`.
 
 In `AnnotatedTypeFactory`, `canonicalAnnotation()` returns a non-null value.
 
+In `AnnotationClassLoader`:
+
+* Renamed `hasWellDefinedTargetMetaAnnotation()` to `isTypeQualifierAnnotation()`.
+  The method now returns `true` for annotations bearing `@InvisibleQualifier`
+  or `@SubtypeOf`, in addition to the existing `@Target(TYPE_USE)` check.
+
 Removed classes and methods that have been deprecated for more than two years.
 
 ### Closed issues
