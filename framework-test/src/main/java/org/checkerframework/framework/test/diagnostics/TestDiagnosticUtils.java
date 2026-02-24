@@ -188,8 +188,8 @@ public class TestDiagnosticUtils {
       if (lineNumber == null) {
         try {
           lineNo = Long.parseLong(diagnosticMatcher.group(1));
-        } catch (NumberFormatException e) {
-          // do nothing
+        } catch (IllegalStateException | NumberFormatException e) {
+          // `lineNo` defaults to -1, so there is nothing to do.
         }
       }
 
@@ -204,9 +204,9 @@ public class TestDiagnosticUtils {
 
         if (lineNumber == null) {
           try {
-            lineNo = Long.parseLong(diagnosticMatcher.group(1));
-          } catch (NumberFormatException e) {
-            // do nothing
+            lineNo = Long.parseLong(warningMatcher.group(1));
+          } catch (IllegalStateException | NumberFormatException e) {
+            // `lineNo` defaults to -1, so there is nothing to do.
           }
         }
 
