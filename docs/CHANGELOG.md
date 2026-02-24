@@ -14,6 +14,12 @@ This is useful when using a tool that only shows the first line of the error.
 
 ### Implementation details
 
+In `AnnotationClassLoader`:
+
+* Renamed `hasWellDefinedTargetMetaAnnotation()` to `isTypeQualifierAnnotation()`.
+  The method now returns `true` for annotations bearing `@InvisibleQualifier`
+  or `@SubtypeOf`, in addition to the existing `@Target(TYPE_USE)` check.
+
 Removed classes and methods that have been deprecated for more than two years.
 
 ### Closed issues
