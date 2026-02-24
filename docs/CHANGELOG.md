@@ -9,6 +9,9 @@
 
 Removed long-deprecated `-Alint=forbidnonnullarraycomponents`.
 
+New command-line argument `-Aonelinemsg` puts error messages on a single line.
+This is useful when using a tool that only shows the first line of the error.
+
 ### Implementation details
 
 Removed classes and methods that have been deprecated for more than two years.
