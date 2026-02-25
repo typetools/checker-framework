@@ -563,6 +563,11 @@ their source code.
 The Javadoc of every type qualifier should include a precise English
 description and an example use of the qualifier.
 
+In source code, declaration qualifiers are written on their own line, and
+type qualifiers are written on the same line as the type they apply to.
+Section~\ref{faq-type-annotation-formatting} explains how to configure
+tools to format type annotations properly.
+
 
 \subsectionAndLabel{Declaratively defining the qualifier hierarchy}{creating-declarative-hierarchy}
 
@@ -1419,7 +1424,8 @@ which is the Checker Framework's representation of an annotated type.
   \refclass{framework/type/typeannotator}{TypeAnnotator},
   typically as a private inner class of your \<AnnotatedTypeFactory>.
   There is a method of \<TypeAnnotator> for every kind of type, and the
-  visitor has access to only the type.  In your subclass of
+  visitor has access to only the type (including base type and
+  qualifiers).  In your subclass of
   \<AnnotatedTypeFactory>, override \<createTypeAnnotator> to return a
   \<ListTypeAnnotator> containing that annotator, as in
 
@@ -1431,7 +1437,7 @@ which is the Checker Framework's representation of an annotated type.
 \end{Verbatim}
 
   \noindent
-  (or put your TypeAnnotator last).
+  (or put your TypeAnnotator last, depending on the behavior you want).
 
 \item
   Create a subclass of \refclass{framework/type}{AnnotatedTypeFactory} and

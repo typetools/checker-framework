@@ -20,7 +20,7 @@ public class TestDiagnosticUtils {
 
   /** How the diagnostics appear in Java source files. */
   public static final String DIAGNOSTIC_IN_JAVA_REGEX =
-      "\\s*(error|fixable-error|warning|fixable-warning|other):\\s*(\\(?.*\\)?)\\s*";
+      "\\s*(error|fixable-error|warning|fixable-warning|other):\\s*(.*)\\s*";
 
   /** How the diagnostics appear in Java source files. */
   public static final Pattern DIAGNOSTIC_IN_JAVA_PATTERN =

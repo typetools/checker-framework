@@ -9,7 +9,6 @@ import org.checkerframework.checker.fenum.qual.Fenum;
 import org.checkerframework.checker.fenum.qual.FenumBottom;
 import org.checkerframework.checker.fenum.qual.FenumTop;
 import org.checkerframework.checker.fenum.qual.FenumUnqualified;
-import org.checkerframework.checker.fenum.qual.PolyFenum;
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -61,13 +60,7 @@ public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   @Override
   protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
     // Load everything in qual directory, and top, bottom, unqualified, and fake enum
-    Set<Class<? extends Annotation>> qualSet =
-        getBundledTypeQualifiers(
-            FenumTop.class,
-            Fenum.class,
-            FenumUnqualified.class,
-            FenumBottom.class,
-            PolyFenum.class);
+    Set<Class<? extends Annotation>> qualSet = getBundledTypeQualifiers();
 
     // Load externally defined quals given in the -Aquals and/or -AqualDirs options
 

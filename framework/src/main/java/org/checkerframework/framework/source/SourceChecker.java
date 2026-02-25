@@ -1464,7 +1464,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       messageText = prefix + (fmtString == null ? "" : String.format(fmtString, args));
     } catch (Exception e) {
       throw new BugInCF(
-          "Invalid format string: \"" + fmtString + "\" args: " + Arrays.toString(args), e);
+          String.format(
+              "Invalid format string or number of args for %s: \"%s\" args: %s",
+              messageKey, fmtString, Arrays.toString(args)),
+          e);
     }
 
     if (kind == Diagnostic.Kind.ERROR && warns) {
@@ -2481,7 +2484,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         for (String prefix : prefixes) {
           if (suppressWarningsString.equals(prefix)
               || (suppressWarningsString.startsWith(prefix + ":")
-                  && !suppressWarningsString.equals(prefix + ":unneeded.suppression"))) {
+                  && !suppressWarningsString.equals(prefix + ":" + UNNEEDED_SUPPRESSION_KEY))) {
             reportUnneededSuppression(tree, suppressWarningsString);
             break; // Don't report the same warning string more than once.
           }
