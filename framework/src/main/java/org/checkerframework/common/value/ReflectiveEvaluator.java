@@ -295,7 +295,8 @@ public class ReflectiveEvaluator {
 
     } catch (ClassNotFoundException | UnsupportedClassVersionError | NoClassDefFoundError e) {
       if (reportWarnings) {
-        checker.reportWarning(tree, "class.find.failed", classname, e.getClass(), e.getMessage());
+        checker.reportWarning(
+            tree, "class.find.failed", classname, e.getClass() + ": " + e.getMessage());
       }
       return null;
     } catch (Throwable e) {
