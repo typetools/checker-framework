@@ -26,7 +26,7 @@ public class Marks3a {
   String customerNameByID_acceptable(List<Customer> custList, int custID) {
     Optional<Customer> opt = custList.stream().filter(c -> c.getID() == custID).findFirst();
 
-    // Not valid to report a map.and.orelse warning here
+    // :: warning: (prefer.map.and.orelse)
     String s = opt.isPresent() ? opt.get().getNameImpure() : "UNKNOWN";
 
     // :: warning: (prefer.map.and.orelse)
