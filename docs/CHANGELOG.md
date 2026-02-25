@@ -9,7 +9,12 @@
 
 Removed long-deprecated `-Alint=forbidnonnullarraycomponents`.
 
+New command-line argument `-Aonelinemsg` puts error messages on a single line.
+This is useful when using a tool that only shows the first line of the error.
+
 ### Implementation details
+
+In `AnnotatedTypeFactory`, `canonicalAnnotation()` returns a non-null value.
 
 In `AnnotationClassLoader`:
 

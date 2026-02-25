@@ -563,6 +563,11 @@ their source code.
 The Javadoc of every type qualifier should include a precise English
 description and an example use of the qualifier.
 
+In source code, declaration qualifiers are written on their own line, and
+type qualifiers are written on the same line as the type they apply to.
+Section~\ref{faq-type-annotation-formatting} explains how to configure
+tools to format type annotations properly.
+
 
 \subsectionAndLabel{Declaratively defining the qualifier hierarchy}{creating-declarative-hierarchy}
 
@@ -2093,6 +2098,10 @@ usually not shown.
 rather than full message text when reporting errors or warnings.  This is
 used by the Checker Framework's own tests, so they do not need to be
 changed if the English message is updated.
+
+\item \code{-Aonelinemsg}: print each error message on a single line, with
+logical lines separated by ``/''.  This is useful when using a tool that
+only shows the first line of the error.
 
 \item \code{-AnoPrintErrorStack}: don't print a stack trace when an
 internal Checker Framework error occurs.  Setting this option is rare.  You
