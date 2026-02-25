@@ -202,7 +202,7 @@ public class ReflectiveEvaluator {
       return method;
     } catch (ClassNotFoundException | UnsupportedClassVersionError | NoClassDefFoundError e) {
       if (reportWarnings) {
-        checker.reportWarning(tree, "class.find.failed", ele.getEnclosingElement());
+        checker.reportWarning(tree, "class.find.failed", ele.getEnclosingElement(), e.getMessage());
       }
       return null;
 
@@ -295,8 +295,7 @@ public class ReflectiveEvaluator {
 
     } catch (ClassNotFoundException | UnsupportedClassVersionError | NoClassDefFoundError e) {
       if (reportWarnings) {
-        checker.reportWarning(
-            tree, "class.find.failed", classname, e.getClass() + ": " + e.getMessage());
+        checker.reportWarning(tree, "class.find.failed", classname, e.getClass(), e.getMessage());
       }
       return null;
     } catch (Throwable e) {
