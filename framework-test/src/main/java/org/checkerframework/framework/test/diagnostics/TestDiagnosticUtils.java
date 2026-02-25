@@ -181,7 +181,7 @@ public class TestDiagnosticUtils {
                 "No closing delimiter '%s' found in %s", closeDelimiter, diagnosticString);
           }
           key = msg.substring(1, closeDelimiterPos);
-          message = msg.substring(closeDelimiterPos).trim();
+          message = msg.substring(closeDelimiterPos + 1).trim();
         }
       }
 
