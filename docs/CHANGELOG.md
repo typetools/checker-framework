@@ -25,7 +25,7 @@ In `AnnotationClassLoader`:
 In `TestDiagnostic`:
 
 * Renamed field `message` to `key`.
-* Added new field `message` for the full message without the key.
+* Added new nullable field `message` for the full message without the key.
 
 Removed classes and methods that have been deprecated for more than two years.
 
