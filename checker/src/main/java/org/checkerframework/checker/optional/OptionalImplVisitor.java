@@ -51,6 +51,7 @@ import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -510,7 +511,13 @@ public class OptionalImplVisitor
       methodString = methodString.substring(0, dotPos) + "::" + methodString.substring(dotPos + 1);
     }
 
-    checker.reportWarning(tree, messageKey, isPresentReceiver, methodString);
+    if (messageKey.equals("prefer.map.and.orelse")) {
+      checker.reportWarning(tree, messageKey, isPresentReceiver, methodString, "FOO");
+    } else if (messageKey.equals("prefer.ifpresent")) {
+      checker.reportWarning(tree, messageKey, isPresentReceiver, methodString);
+    } else {
+      throw new BugInCF("Bad message key \"%s\"", messageKey);
+    }
   }
 
   @Override
