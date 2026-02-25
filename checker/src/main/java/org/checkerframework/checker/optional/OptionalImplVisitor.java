@@ -288,7 +288,7 @@ public class OptionalImplVisitor
 
     ExpressionTree getReceiver = TreeUtils.getReceiverTree(trueReceiver);
     ExpressionTree receiver = isPresentCall.second;
-    if (sameExpression(receiver, getReceiver) /* && isPure*/) {
+    if (sameExpression(receiver, getReceiver)) {
       ExecutableElement ele = TreeUtils.elementFromUse((MethodInvocationTree) trueExpr);
       checker.reportWarning(
           tree,
@@ -475,7 +475,7 @@ public class OptionalImplVisitor
    * @param invok the entire method invocation statement or the initializer of an assignment
    * @param isPresentCall the pair comprising a boolean (indicating whether the expression is a call
    *     to {@code Optional.isPresent} or to {@code Optional.isEmpty}) and its receiver
-   * @param messageKey the message key, either "prefer.ifPresent" or "prefer.map"
+   * @param messageKey the message key, either "prefer.ifpresent" or "prefer.map"
    */
   private void checkConditionalStatementIsPresentGetCall(
       IfTree tree,
