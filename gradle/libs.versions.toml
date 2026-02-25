@@ -60,7 +60,7 @@ javax-servlet-api = "javax.servlet:javax.servlet-api:4.0.1"
 
 commons-io = "commons-io:commons-io:2.21.0"
 
-spark-sql = "org.apache.spark:spark-sql_2.12:3.3.2"
+spark-sql = "org.apache.spark:spark-sql_2.12:3.4.4"
 
 hashmap-util = "org.plumelib:hashmap-util:0.0.1"
 
