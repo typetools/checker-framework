@@ -241,7 +241,7 @@ public class TestDiagnosticUtils {
 
   /** Matches an absolute filename (with delimiters). */
   // TODO: This only handles Unix paths, not Windows paths.
-  static Pattern filenamePattern = Pattern.compile(" (?:/[^: ]*/)([^/: ]+\\.[a-z]+):");
+  static final Pattern filenamePattern = Pattern.compile(" (?:/[^: ]*/)([^/: ]+\\.[a-z]+):");
 
   /**
    * Given a javax diagnostic, return a pair of (trimmed, filename), where "trimmed" is the first
