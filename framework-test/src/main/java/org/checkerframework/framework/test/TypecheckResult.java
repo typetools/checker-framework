@@ -34,6 +34,15 @@ public class TypecheckResult {
   /** The diagnostics that were issued but were not expected. */
   private final Collection<TestDiagnostic> unexpectedDiagnostics;
 
+  /**
+   * Creates a TypecheckResult.
+   *
+   * @param configuration The test configuration.
+   * @param compilationResult The compilation result.
+   * @param expectedDiagnostics the expected diagnostics
+   * @param missingDiagnostics the diagnostics that were expected but were not issued
+   * @param unexpectedDiagnostics the diagnostics that were issued but were not expected
+   */
   protected TypecheckResult(
       TestConfiguration configuration,
       CompilationResult compilationResult,
@@ -47,30 +56,65 @@ public class TypecheckResult {
     this.unexpectedDiagnostics = unexpectedDiagnostics;
   }
 
+  /**
+   * Returns the test configuration.
+   *
+   * @return the test configuration
+   */
   public TestConfiguration getConfiguration() {
     return configuration;
   }
 
+  /**
+   * Returns the compilation result.
+   *
+   * @return the compilation result
+   */
   public CompilationResult getCompilationResult() {
     return compilationResult;
   }
 
+  /**
+   * Returns the actual diagnostics.
+   *
+   * @return the actual diagnostics
+   */
   public Collection<Diagnostic<? extends JavaFileObject>> getActualDiagnostics() {
     return compilationResult.getDiagnostics();
   }
 
+  /**
+   * Returns the expected diagnostics.
+   *
+   * @return the expected diagnostics
+   */
   public Collection<TestDiagnostic> getExpectedDiagnostics() {
     return expectedDiagnostics;
   }
 
+  /**
+   * Returns true if the test failed.
+   *
+   * @return true if the test failed
+   */
   public boolean didTestFail() {
     return !unexpectedDiagnostics.isEmpty() || !missingDiagnostics.isEmpty();
   }
 
+  /**
+   * Returns the diagnostics that were expected but were not issued.
+   *
+   * @return the diagnostics that were expected but were not issued
+   */
   public Collection<TestDiagnostic> getMissingDiagnostics() {
     return missingDiagnostics;
   }
 
+  /**
+   * Returns the diagnostics that were issued but were not expected.
+   *
+   * @return the diagnostics that were issued but were not expected
+   */
   public Collection<TestDiagnostic> getUnexpectedDiagnostics() {
     return unexpectedDiagnostics;
   }
