@@ -259,7 +259,7 @@ public class TestDiagnosticUtils {
 
         int extensionPos = trimmed.indexOf(".java:");
         if (extensionPos != -1) {
-          int basenameStart = trimmed.lastIndexOf(File.separator);
+          int basenameStart = trimmed.lastIndexOf(File.separator, extensionPos);
           filename = trimmed.substring(basenameStart + 1, extensionPos + 5).trim();
           trimmed = trimmed.substring(extensionPos + 5).trim();
         }

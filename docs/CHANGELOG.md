@@ -21,6 +21,7 @@ In `AnnotationClassLoader`:
   or `@SubtypeOf`, in addition to the existing `@Target(TYPE_USE)` check.
 
 In `TestDiagnostic`:
+
 * Renamed field `message` to `key`.
 * Added new field `message` for the full message without the key.
 

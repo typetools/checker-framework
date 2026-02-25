@@ -37,7 +37,7 @@ public class TestDiagnostic {
       long lineNumber,
       DiagnosticKind kind,
       String key,
-      String message,
+      @Nullable String message,
       boolean isFixable,
       boolean omitParentheses) {
     this.filename = filename;
