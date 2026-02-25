@@ -329,27 +329,6 @@ public class ElementUtils {
   }
 
   /**
-   * Returns a user-friendly name for the given method. Does not return {@code "<init>"} or {@code
-   * "<clinit>"} as ExecutableElement.getSimpleName() does.
-   *
-   * @param element a method declaration
-   * @return a user-friendly name for the method
-   * @deprecated use {@link #getSimpleDescription}
-   */
-  @Deprecated // 2023-06-01
-  public static CharSequence getSimpleNameOrDescription(ExecutableElement element) {
-    Name result = element.getSimpleName();
-    switch (result.toString()) {
-      case "<init>":
-        return element.getEnclosingElement().getSimpleName();
-      case "<clinit>":
-        return "class initializer";
-      default:
-        return result;
-    }
-  }
-
-  /**
    * Returns a user-friendly name for the given method, which includes the name of the enclosing
    * type. Does not return {@code "<init>"} or {@code "<clinit>"} as
    * ExecutableElement.getSimpleName() does.
@@ -807,18 +786,6 @@ public class ElementUtils {
    *
    * @param element the element to test
    * @return true, iff the given kind is a class kind
-   * @deprecated use {@link #isTypeElement}
-   */
-  @Deprecated // 2020-12-11
-  public static boolean isClassElement(Element element) {
-    return isTypeElement(element);
-  }
-
-  /**
-   * Is the given element kind a type, i.e., a class, enum, interface, or annotation type.
-   *
-   * @param element the element to test
-   * @return true, iff the given kind is a class kind
    */
   public static boolean isTypeElement(Element element) {
     return typeElementKinds().contains(element.getKind());
@@ -831,7 +798,7 @@ public class ElementUtils {
    * @return true if the argument is a type declaration
    */
   public static boolean isTypeDeclaration(Element elt) {
-    return isClassElement(elt) || elt.getKind() == ElementKind.TYPE_PARAMETER;
+    return isTypeElement(elt) || elt.getKind() == ElementKind.TYPE_PARAMETER;
   }
 
   /** The set of kinds that represent local variables. */
