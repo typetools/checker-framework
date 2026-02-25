@@ -1354,8 +1354,8 @@ The popular
 tool formats type annotations incorrectly, with type annotations on their
 own line instead of on the same line with the type they modify.  (Actually,
 you can see from method \ahref{https://github.com/google/google-java-format/blob/master/core/src/main/java/com/google/googlejavaformat/java/JavaInputAstVisitor.java}{\<JavaInputAstVisitor>}\<.typeAnnotations()> that
-it handles two \<@Nullable> annotations correctly, but all other type
-annotations incorrectly!  This would be fixed by merging
+it handles two of the many \<@Nullable> \<@NonNull> annotations correctly,
+but all other type annotations incorrectly!  This would be fixed by merging
 \ahref{https://github.com/google/google-java-format/pull/802}{pull request
   \#802}.)
 Until this bug in google-java-format is fixed, you have these options:
@@ -1373,6 +1373,29 @@ Until this bug in google-java-format is fixed, you have these options:
 %   \href{https://github.com/palantir/palantir-java-format}{palantir-java-format},
 %   which is a variant of google-java-format that fixes the bug (among other
 %   differences from google-java-format).
+\end{itemize}
+
+If you define a new type qualifier --- for example, because you are using the
+Subtyping Checker (Chapter~\ref{subtyping-checker}) or Fake Enum Checker
+(Chapter~\ref{fenum-checker}), or because you have created a new checker
+(Chapter~\ref{creating-a-checker}) --- then the above tools will format
+your new type qualifiers incorrectly, like declaration qualifiers.  Here is
+how to fix the formatting.
+
+\begin{itemize}
+\item
+  For \ahref{https://github.com/diffplug/spotless}{Spotless}, change your
+  configuration to indicate the new type qualifiers.  If you use the
+  \ahref{https://github.com/diffplug/spotless/tree/main/plugin-gradle}{Spotless
+  plugin for Gradle}, edit your \<build.gradle> file to change
+  \<formatAnnotations()> to (for example)
+  \<formatAnnotations().addTypeAnnotation("Growable").addTypeAnnotation("Modifiable")...>.
+\item
+  For
+  \ahref{https://github.com/plume-lib/run-google-java-format}{run-google-java-format},
+  make a pull request to change variable \<type\_annotations> in file
+  \ahref{https://github.com/plume-lib/run-google-java-format/blob/master/fixup-google-java-format.py}{fixup-google-java-format.py}.
+%% Write text about palantir-java-format when it is uncommented in the list above.
 \end{itemize}
 
 

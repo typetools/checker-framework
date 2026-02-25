@@ -11,6 +11,8 @@ Removed long-deprecated `-Alint=forbidnonnullarraycomponents`.
 
 ### Implementation details
 
+In `AnnotatedTypeFactory`, `canonicalAnnotation()` returns a non-null value.
+
 In `AnnotationClassLoader`:
 
 * Renamed `hasWellDefinedTargetMetaAnnotation()` to `isTypeQualifierAnnotation()`.
