@@ -2,6 +2,7 @@ package org.checkerframework.checker.test.junit;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
@@ -53,11 +54,11 @@ public class NullnessJSpecifySamplesTest extends CheckerFrameworkPerDirectoryTes
     // The "all*" variables are a copy that contains everything.
     // This method removes from the non-all* variables.
     // These are JSpecify diagnostics.
-    List<TestDiagnostic> missingDiagnostics = testResult.getMissingDiagnostics();
+    Collection<TestDiagnostic> missingDiagnostics = testResult.getMissingDiagnostics();
     List<TestDiagnostic> allMissingDiagnostics =
         Collections.unmodifiableList(new ArrayList<>(missingDiagnostics));
     // These are Checker Framework diagnostics.
-    List<TestDiagnostic> unexpectedDiagnostics = testResult.getUnexpectedDiagnostics();
+    Collection<TestDiagnostic> unexpectedDiagnostics = testResult.getUnexpectedDiagnostics();
     List<TestDiagnostic> allUnexpectedDiagnostics =
         Collections.unmodifiableList(new ArrayList<>(unexpectedDiagnostics));
 
