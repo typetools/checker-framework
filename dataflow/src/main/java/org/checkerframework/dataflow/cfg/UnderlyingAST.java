@@ -181,32 +181,9 @@ public abstract class UnderlyingAST implements UniqueId {
      * Returns the enclosing method of the lambda.
      *
      * @return the enclosing method of the lambda, or {@code null} if there is no enclosing method
-     * @deprecated use #getEnclosingMethod()
-     */
-    @Deprecated // 2022-01-23
-    public @Nullable MethodTree getMethod() {
-      return enclosingMethod;
-    }
-
-    /**
-     * Returns the enclosing method of the lambda.
-     *
-     * @return the enclosing method of the lambda, or {@code null} if there is no enclosing method
      */
     public @Nullable MethodTree getEnclosingMethod() {
       return enclosingMethod;
-    }
-
-    /**
-     * Returns the name of the enclosing method of the lambda.
-     *
-     * @return the name of the enclosing method of the lambda, or {@code null} if there is no
-     *     enclosing method
-     * @deprecated use #getEnclosingMethodName()
-     */
-    @Deprecated // 2022-01-23
-    public @Nullable String getMethodName() {
-      return enclosingMethod == null ? null : enclosingMethod.getName().toString();
     }
 
     /**
