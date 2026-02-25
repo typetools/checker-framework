@@ -20,16 +20,17 @@ import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.StringsPlume;
 
 /**
- * {@link PropagationTypeAnnotator} adds qualifiers to types where the qualifier to add should be
+ * {@link PropagationTypeAnnotator} adds qualifiers to types, where the qualifier to add should be
  * transferred from one or more other types.
  *
  * <p>At the moment, the only function PropagationTypeAnnotator provides, is the propagation of
  * generic type parameter annotations to unannotated wildcards with missing bounds annotations.
  *
+ * <p>PropagationTypeAnnotator traverses trees deeply by default.
+ *
  * @see
  *     #visitWildcard(org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType,
  *     Object)
- *     <p>PropagationTypeAnnotator traverses trees deeply by default.
  */
 public class PropagationTypeAnnotator extends TypeAnnotator {
 

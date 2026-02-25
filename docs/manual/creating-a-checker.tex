@@ -1419,7 +1419,8 @@ which is the Checker Framework's representation of an annotated type.
   \refclass{framework/type/typeannotator}{TypeAnnotator},
   typically as a private inner class of your \<AnnotatedTypeFactory>.
   There is a method of \<TypeAnnotator> for every kind of type, and the
-  visitor has access to only the type.  In your subclass of
+  visitor has access to only the type (including base type and
+  qualifiers).  In your subclass of
   \<AnnotatedTypeFactory>, override \<createTypeAnnotator> to return a
   \<ListTypeAnnotator> containing that annotator, as in
 
@@ -1431,7 +1432,7 @@ which is the Checker Framework's representation of an annotated type.
 \end{Verbatim}
 
   \noindent
-  (or put your TypeAnnotator last).
+  (or put your TypeAnnotator last, depending on the behavior you want).
 
 \item
   Create a subclass of \refclass{framework/type}{AnnotatedTypeFactory} and

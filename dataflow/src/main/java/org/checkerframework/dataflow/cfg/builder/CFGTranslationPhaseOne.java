@@ -1134,8 +1134,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @return true if this conversion requires narrowing to succeed
    */
   protected boolean conversionRequiresNarrowing(TypeMirror varType, Node node) {
-    // Narrowing is restricted to cases where the left hand side is byte, char, short or Byte,
-    // Char, Short and the right hand side is a constant.
+    // Narrowing is restricted to cases where the left-hand side is byte, char, short or Byte,
+    // Char, Short and the right-hand side is a constant.
     TypeMirror unboxedVarType =
         TypesUtils.isBoxedPrimitive(varType) ? types.unboxedType(varType) : varType;
     TypeKind unboxedVarKind = unboxedVarType.getKind();
@@ -3091,13 +3091,13 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     // see JLS 14.10
 
-    // If assertions are enabled, then we can just translate the assertion.
+    // If assertions are enabled, then we can just translate the assertion into CFG nodes.
     if (assumeAssertionsEnabled || assumeAssertionsEnabledFor(tree)) {
       translateAssertWithAssertionsEnabled(tree);
       return null;
     }
 
-    // If assertions are disabled, then nothing is executed.
+    // If assertions are disabled, then don't produce any CFG nodes.
     if (assumeAssertionsDisabled) {
       return null;
     }
@@ -3151,7 +3151,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
   /**
    * Translates an assertion statement to the correct CFG nodes. The translation assumes that
-   * assertions are enabled.
+   * assertions are enabled (or the assertion contains "@AssumeAssertion" in its message).
+   *
+   * @param tree an assertion
    */
   protected void translateAssertWithAssertionsEnabled(AssertTree tree) {
 

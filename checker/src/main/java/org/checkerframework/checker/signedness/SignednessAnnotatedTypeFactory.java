@@ -141,7 +141,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
-   * True when the AnnotatedTypeMirror currently being computed is the left hand side of an
+   * True when the AnnotatedTypeMirror currently being computed is the left-hand side of an
    * assignment or pseudo-assignment.
    *
    * @see #addComputedTypeAnnotations(Tree, AnnotatedTypeMirror, boolean)

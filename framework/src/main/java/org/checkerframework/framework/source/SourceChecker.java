@@ -2481,7 +2481,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         for (String prefix : prefixes) {
           if (suppressWarningsString.equals(prefix)
               || (suppressWarningsString.startsWith(prefix + ":")
-                  && !suppressWarningsString.equals(prefix + ":unneeded.suppression"))) {
+                  && !suppressWarningsString.equals(prefix + ":" + UNNEEDED_SUPPRESSION_KEY))) {
             reportUnneededSuppression(tree, suppressWarningsString);
             break; // Don't report the same warning string more than once.
           }
