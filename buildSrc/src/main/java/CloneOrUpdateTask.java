@@ -58,8 +58,7 @@ public abstract class CloneOrUpdateTask extends DefaultTask {
   }
 
   /**
-   * Clones the repository at {@code url} replaceSpecialIntRangeAnnotations. If the clone fails,
-   * sleep 1 minute then retry clone.
+   * Clones the repository at {@code url}. If the clone fails, sleep 1 minute then retry clone.
    *
    * @param url repository URL
    * @param branch if non-null, which branch to use
