@@ -1469,7 +1469,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     } catch (Exception e) {
       throw new BugInCF(
           String.format(
-              "Invalid format string for %s: \"%s\" args: %s",
+              "Invalid format string or number of args for %s: \"%s\" args: %s",
               messageKey, fmtString, Arrays.toString(args)),
           e);
     }
