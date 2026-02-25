@@ -81,8 +81,7 @@ public abstract class CloneOrUpdateTask extends DefaultTask {
   }
 
   /**
-   * Quietly clones the given git repository with depth 1, {@code url}, to {@code directory} at a
-   * depth of 1.
+   * Quietly clones the given git repository with depth 1, {@code url}, to {@code directory}.
    *
    * @param url git repository to clone
    * @param branch if non-null, which branch to use.
@@ -107,7 +106,7 @@ public abstract class CloneOrUpdateTask extends DefaultTask {
   }
 
   /**
-   * Updates the git clone at {@code directory}. If the update fails, it is silently ignored.
+   * Updates the git clone at {@code directory}.
    *
    * @param directory where the clone to update is
    * @param execOperations used to run exec commands

@@ -9,7 +9,7 @@ java {
   sourceCompatibility = '17'
   targetCompatibility = '17'
 }
-tasks.withType(Javadoc) {
+tasks.withType(Javadoc).configureEach {
   // This makes Javadoc warnings errors, so that Javadoc comments are required on all elements.
   options.addBooleanOption('Werror', true)
 }

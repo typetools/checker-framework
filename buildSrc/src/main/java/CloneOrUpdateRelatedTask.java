@@ -16,6 +16,7 @@ import org.gradle.api.DefaultTask;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.TaskAction;
+import org.gradle.api.tasks.UntrackedTask;
 import org.gradle.process.ExecOperations;
 
 /**
@@ -25,6 +26,7 @@ import org.gradle.process.ExecOperations;
  * <p>Sometimes, two GitHub repositories are related: you need clones of both of them. When run from
  * a clone of one, this clones the other, attempting to find a matching org and branch.
  */
+@UntrackedTask(because = "Always try to update.")
 public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
 
   /**
@@ -32,7 +34,7 @@ public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
    */
   private static final String DEFAULT_ORG = "typetools";
 
-  /** The branch to use to clone the related repository if a matching org is not found */
+  /** The branch to use to clone the related repository if a matching branch is not found */
   private static final String DEFAULT_BRANCH = "master";
 
   /**
