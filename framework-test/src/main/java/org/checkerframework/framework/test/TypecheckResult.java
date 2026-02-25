@@ -1,6 +1,7 @@
 package org.checkerframework.framework.test;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -16,19 +17,29 @@ import org.plumelib.util.StringsPlume;
  * TestConfiguration.
  */
 public class TypecheckResult {
+  /** The test configuration. */
   private final TestConfiguration configuration;
-  private final CompilationResult compilationResult;
-  private final List<TestDiagnostic> expectedDiagnostics;
 
-  private final List<TestDiagnostic> missingDiagnostics;
-  private final List<TestDiagnostic> unexpectedDiagnostics;
+  /** The compilation result. */
+  private final CompilationResult compilationResult;
+
+  // In Java 21, can declare the next three fields as SequencedCollection.
+
+  /** The expected diagnostics. */
+  private final Collection<TestDiagnostic> expectedDiagnostics;
+
+  /** The diagnostics that were expected but were not issued. */
+  private final Collection<TestDiagnostic> missingDiagnostics;
+
+  /** The diagnostics that were issued but were not expected. */
+  private final Collection<TestDiagnostic> unexpectedDiagnostics;
 
   protected TypecheckResult(
       TestConfiguration configuration,
       CompilationResult compilationResult,
-      List<TestDiagnostic> expectedDiagnostics,
-      List<TestDiagnostic> missingDiagnostics,
-      List<TestDiagnostic> unexpectedDiagnostics) {
+      Collection<TestDiagnostic> expectedDiagnostics,
+      Collection<TestDiagnostic> missingDiagnostics,
+      Collection<TestDiagnostic> unexpectedDiagnostics) {
     this.configuration = configuration;
     this.compilationResult = compilationResult;
     this.expectedDiagnostics = expectedDiagnostics;
@@ -44,11 +55,11 @@ public class TypecheckResult {
     return compilationResult;
   }
 
-  public List<Diagnostic<? extends JavaFileObject>> getActualDiagnostics() {
+  public Collection<Diagnostic<? extends JavaFileObject>> getActualDiagnostics() {
     return compilationResult.getDiagnostics();
   }
 
-  public List<TestDiagnostic> getExpectedDiagnostics() {
+  public Collection<TestDiagnostic> getExpectedDiagnostics() {
     return expectedDiagnostics;
   }
 
@@ -56,11 +67,11 @@ public class TypecheckResult {
     return !unexpectedDiagnostics.isEmpty() || !missingDiagnostics.isEmpty();
   }
 
-  public List<TestDiagnostic> getMissingDiagnostics() {
+  public Collection<TestDiagnostic> getMissingDiagnostics() {
     return missingDiagnostics;
   }
 
-  public List<TestDiagnostic> getUnexpectedDiagnostics() {
+  public Collection<TestDiagnostic> getUnexpectedDiagnostics() {
     return unexpectedDiagnostics;
   }
 
@@ -130,7 +141,7 @@ public class TypecheckResult {
   public static TypecheckResult fromCompilationResults(
       TestConfiguration configuration,
       CompilationResult result,
-      List<TestDiagnostic> expectedDiagnostics) {
+      Collection<TestDiagnostic> expectedDiagnostics) {
 
     // We are passing `true` as the `noMsgText` argument because "-Anomsgtext"
     // is always added to the non-JVM options in `TypecheckExecutor.compile`.
@@ -144,10 +155,6 @@ public class TypecheckResult {
     missingDiagnostics.removeAll(actualDiagnostics);
 
     return new TypecheckResult(
-        configuration,
-        result,
-        expectedDiagnostics,
-        missingDiagnostics,
-        new ArrayList<>(unexpectedDiagnostics));
+        configuration, result, expectedDiagnostics, missingDiagnostics, unexpectedDiagnostics);
   }
 }
