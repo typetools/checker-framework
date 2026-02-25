@@ -503,9 +503,7 @@ public class OptionalImplVisitor
       methodString = methodString.substring(0, dotPos) + "::" + methodString.substring(dotPos + 1);
     } else {
       Element ele = TreeUtils.elementFromUse(method);
-      if (ele != null) {
-        methodString = ElementUtils.getQualifiedClassName(ele) + "::" + methodString;
-      }
+      methodString = ElementUtils.getQualifiedClassName(ele) + "::" + methodString;
     }
 
     checker.reportWarning(tree, messageKey, isPresentReceiver, methodString);
