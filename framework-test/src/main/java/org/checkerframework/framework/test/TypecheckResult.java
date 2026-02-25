@@ -95,7 +95,7 @@ public class TypecheckResult {
   /**
    * Returns true if the test failed.
    *
-   * @return ture if the test failed
+   * @return true if the test failed
    */
   public boolean didTestFail() {
     return !unexpectedDiagnostics.isEmpty() || !missingDiagnostics.isEmpty();
