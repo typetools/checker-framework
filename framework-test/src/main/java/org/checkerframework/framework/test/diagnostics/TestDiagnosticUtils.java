@@ -159,7 +159,11 @@ public class TestDiagnosticUtils {
       message = noParentheses ? msg : msg.substring(1, msg.length() - 1);
 
       if (lineNumber == null) {
-        lineNo = Long.parseLong(diagnosticMatcher.group(1));
+        try {
+          lineNo = Long.parseLong(diagnosticMatcher.group(1));
+        } catch (NumberFormatException e) {
+          // `lineNo` defaults to -1, so there is nothing to do.
+        }
       }
 
     } else {
@@ -171,7 +175,11 @@ public class TestDiagnosticUtils {
         noParentheses = true;
 
         if (lineNumber == null) {
-          lineNo = Long.parseLong(diagnosticMatcher.group(1));
+          try {
+            lineNo = Long.parseLong(warningMatcher.group(1));
+          } catch (NumberFormatException e) {
+            // `lineNo` defaults to -1, so there is nothing to do.
+          }
         }
 
       } else if (diagnosticString.startsWith("warning:")) {
