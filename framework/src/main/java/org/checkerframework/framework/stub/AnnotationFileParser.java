@@ -652,7 +652,7 @@ public class AnnotationFileParser {
   }
 
   /**
-   * The main entry point. Parse a stub file and side-effects the {@code annotationFileAnnos}
+   * The main entry point. Parses a stub file and side-effects the {@code annotationFileAnnos}
    * argument.
    *
    * @param filename name of stub file, used only for diagnostic messages

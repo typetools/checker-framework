@@ -194,22 +194,6 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     }
   }
 
-  /**
-   * Returns true if the given method is side-effect-free as far as the current store is concerned.
-   * In some cases, a store for a checker allows for other mechanisms to specify whether a method is
-   * side-effect-free. For example, unannotated methods may be considered side-effect-free by
-   * default.
-   *
-   * @param atypeFactory the type factory used to retrieve annotations on the method element
-   * @param method the method element
-   * @return true if the method is side-effect-free
-   * @deprecated use {@link org.checkerframework.javacutil.AnnotationProvider#isSideEffectFree}
-   */
-  @Deprecated // 2022-09-27
-  protected boolean isSideEffectFree(AnnotatedTypeFactory atypeFactory, ExecutableElement method) {
-    return atypeFactory.isSideEffectFree(method);
-  }
-
   /* --------------------------------------------------------- */
   /* Handling of fields */
   /* --------------------------------------------------------- */
