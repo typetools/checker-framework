@@ -229,8 +229,8 @@ public class TestDiagnosticUtils {
         message = null;
         noParentheses = true;
 
-        // this should only happen if we are parsing a Java Diagnostic from the compiler
-        // that we did do not handle
+        // This should only happen if we are parsing a Java Diagnostic from the compiler
+        // that we did do not handle.
         if (lineNumber == null) {
           lineNo = -1;
         }
@@ -238,6 +238,9 @@ public class TestDiagnosticUtils {
     }
     return new TestDiagnostic(filename, lineNo, kind, key, message, isFixable, noParentheses);
   }
+
+  /** Matches an absolute filename (with delimiters). */
+  static Pattern filenamePattern = Pattern.compile(" (?:/[^: ]*/)([^/: ]+\\.[a-z]+):");
 
   /**
    * Given a javax diagnostic, return a pair of (trimmed, filename), where "trimmed" is the first
@@ -252,6 +255,8 @@ public class TestDiagnosticUtils {
     String filename = "";
     if (noMsgText) {
       if (!retainAllLines(trimmed)) {
+
+        // Retain only the first line.
         int lineSepPos = trimmed.indexOf(System.lineSeparator());
         if (lineSepPos != -1) {
           trimmed = trimmed.substring(0, lineSepPos);
@@ -262,6 +267,13 @@ public class TestDiagnosticUtils {
           int basenameStart = trimmed.lastIndexOf(File.separator, extensionPos);
           filename = trimmed.substring(basenameStart + 1, extensionPos + 5).trim();
           trimmed = trimmed.substring(extensionPos + 5).trim();
+        }
+
+        // Retain only the file basename, without directories, when embedded in message.
+        Matcher m = filenamePattern.matcher(trimmed);
+        if (m.find()) {
+          trimmed =
+              trimmed.substring(0, m.start()) + " " + m.group(1) + ":" + trimmed.substring(m.end());
         }
       }
     }
