@@ -14,6 +14,8 @@ This is useful when using a tool that only shows the first line of the error.
 
 ### Implementation details
 
+In `AnnotatedTypeFactory`, `canonicalAnnotation()` returns a non-null value.
+
 In `AnnotationClassLoader`:
 
 * Renamed `hasWellDefinedTargetMetaAnnotation()` to `isTypeQualifierAnnotation()`.
