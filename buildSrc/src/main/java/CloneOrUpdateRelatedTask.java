@@ -19,22 +19,26 @@ import org.gradle.api.tasks.TaskAction;
 import org.gradle.process.ExecOperations;
 
 /**
- * Custom task that clones a related repository. If the related repository has already been cloned,
- * then this task updates (pulls) it and checks that the cloned repository is checked out to the
- * same branch and fork as this project.
+ * A task that clones a repository that is related to this one, or pulls it if it has already been
+ * cloned.
+ *
+ * <p>Sometimes, two GitHub repositories are related: you need clones of both of them. When run from
+ * a clone of one, this clones the other, attempting to find a matching org and branch.
  */
 public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
 
-  /** The GitHub organization to use to clone the related repository if one is not found. */
+  /**
+   * The GitHub organization to use to clone the related repository if a matching org is not found.
+   */
   private static final String DEFAULT_ORG = "typetools";
 
-  /** The branch to use to clone the related repository if one is not found. */
+  /** The branch to use to clone the related repository if a matching org is not found */
   private static final String DEFAULT_BRANCH = "master";
 
   /**
-   * Returns the name of the related repository.
+   * Returns the repository name without the organization.
    *
-   * @return the name of the related repository
+   * @return the repository name without the organization
    */
   @Input
   public abstract Property<String> getRelatedRepo();
@@ -55,112 +59,123 @@ public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
   /** Clones or updates a related repo. */
   @TaskAction
   public void doTaskAction() {
-    String relatedRepo = getRelatedRepo().get();
+    String relatedRepoName = getRelatedRepo().get();
     File cfDir = getProject().getRootDir();
-    File relatedRepoDir = new File(cfDir.getParentFile(), relatedRepo);
+    File relatedRepoDir = new File(cfDir.getParentFile(), relatedRepoName);
     if (relatedRepoDir.exists()) {
-      checkForkBranch(relatedRepoDir);
+      checkOrgBranch(relatedRepoDir);
       CloneOrUpdateTask.update(relatedRepoDir, execOperations);
     } else {
-      ForkBranch fbCf = findForkBranch(new File(cfDir, ".git"));
+      OrgBranch fbCf = findOrgBranch(new File(cfDir, ".git"));
       if (fbCf == null
-          || !forkExists(fbCf.fork, relatedRepo)
-          || !remoteBranchExists(fbCf.fork, relatedRepo, fbCf.branch)) {
-        fbCf = new ForkBranch(DEFAULT_ORG, DEFAULT_BRANCH);
+          || !orgExists(fbCf.org, relatedRepoName)
+          || !remoteBranchExists(fbCf.org, relatedRepoName, fbCf.branch)) {
+        fbCf = new OrgBranch(DEFAULT_ORG, DEFAULT_BRANCH);
       }
-      String url = getGitHubUrl(fbCf.fork, relatedRepo);
+      String url = getGitHubUrl(fbCf.org, relatedRepoName);
       CloneOrUpdateTask.cloneRetryOnce(url, fbCf.branch, relatedRepoDir);
     }
   }
 
   /**
-   * Check that the {@code relatedRepo} is checked out to the same fork and branch as the root
+   * Check that the {@code relatedRepo} is checked out to the same org and branch as the root
    * directory of this project.
    *
    * @param relatedRepoDir a related repository
    */
-  private void checkForkBranch(File relatedRepoDir) {
+  private void checkOrgBranch(File relatedRepoDir) {
     File cfDir = getProject().getRootDir();
 
-    String relatedRepo = getRelatedRepo().get();
-    ForkBranch fbCf = findForkBranch(new File(cfDir, ".git"));
-    ForkBranch fbRelated = findForkBranch(new File(relatedRepoDir, ".git"));
+    String relatedRepoName = getRelatedRepo().get();
+    OrgBranch fbCf = findOrgBranch(new File(cfDir, ".git"));
+    OrgBranch fbRelated = findOrgBranch(new File(relatedRepoDir, ".git"));
 
     if (fbCf == null || fbRelated == null || fbCf.equals(fbRelated)) {
-      // Either CF or related is not a clone, or the CF and related are using the same fork and
+      // Either CF or related is not a clone, or the CF and related are using the same org and
       // branch.
       return;
     }
-    if (!forkExists(fbCf.fork, relatedRepo)) {
-      // There is no related fork that is the same as the CF fork.
+    if (!orgExists(fbCf.org, relatedRepoName)) {
+      // There is no related org that is the same as the CF org.
       return;
     }
-    if (remoteBranchExists(fbCf.fork, relatedRepo, fbCf.branch)) {
+    if (remoteBranchExists(fbCf.org, relatedRepoName, fbCf.branch)) {
       throw new RuntimeException(
           String.format(
-              "Please checkout the corresponding %s branch. Fork: %s Branch: %s.",
-              relatedRepo, getGitHubUrl(fbCf.fork, relatedRepo), fbCf.branch));
+              "Please checkout the corresponding %s branch. URL: %s Branch: %s.",
+              relatedRepoName, getGitHubUrl(fbCf.org, relatedRepoName), fbCf.branch));
     }
   }
 
   /**
-   * A pair of {@code fork} and {@code branch}
+   * A pair of {@code org} and {@code branch}
    *
-   * @param fork a fork, that's an organization in GitHub
-   * @param branch a branch of the fork.
+   * @param org an org, that's an organization in GitHub
+   * @param branch a branch of the org.
    */
-  public record ForkBranch(String fork, String branch) {}
+  public record OrgBranch(String org, String branch) {}
 
   /**
-   * Find the fork and branch of the remote tracking branch that is currently checked out in {@code
+   * Find the org and branch of the remote tracking branch that is currently checked out in {@code
    * gitDir}. If the branch checked out at {@code gitDir} does not have a remote tracking branch,
    * returns {@code null}.
    *
    * @param gitDir a git directory
-   * @return the fork and branch of {@code gitDir} or null if there is no remote branch
+   * @return the org and branch of {@code gitDir} or null if there is no remote branch
    */
-  private ForkBranch findForkBranch(File gitDir) {
+  private OrgBranch findOrgBranch(File gitDir) {
     try (Repository repository =
         new FileRepositoryBuilder().setGitDir(gitDir).readEnvironment().findGitDir().build()) {
 
-      String branchName = repository.getBranch();
-      if (branchName == null) {
+      String currentBranchName = repository.getBranch();
+      if (currentBranchName == null) {
         return null;
       }
 
       Config config = repository.getConfig();
-      String remoteName =
-          config.getString(
-              ConfigConstants.CONFIG_BRANCH_SECTION, branchName, ConfigConstants.CONFIG_KEY_REMOTE);
-      String mergeBranchName =
-          config.getString(
-              ConfigConstants.CONFIG_BRANCH_SECTION, branchName, ConfigConstants.CONFIG_KEY_MERGE);
 
-      if (remoteName != null && mergeBranchName != null) {
-        // Get the URL for the "origin" remote (used for fetching and pushing by default).
+      // The "name" of the remote repository that the current branch is tracking. (This is a name
+      // given to the repo by the user when configuring a remote repo.)
+      String remoteRepoName =
+          config.getString(
+              ConfigConstants.CONFIG_BRANCH_SECTION,
+              currentBranchName,
+              ConfigConstants.CONFIG_KEY_REMOTE);
+
+      // The full name of the branch that the current branch is tracking of the form
+      // "refs/heads/branchname".
+      String remoteBranchFullName =
+          config.getString(
+              ConfigConstants.CONFIG_BRANCH_SECTION,
+              currentBranchName,
+              ConfigConstants.CONFIG_KEY_MERGE);
+
+      if (remoteRepoName != null && remoteBranchFullName != null) {
         String remoteUrl =
-            config.getString(ConfigConstants.CONFIG_REMOTE_SECTION, remoteName, "url");
+            config.getString(ConfigConstants.CONFIG_REMOTE_SECTION, remoteRepoName, "url");
 
         if (remoteUrl != null && !remoteUrl.isEmpty()) {
-          String fork;
+          String org;
           if (remoteUrl.startsWith("git@github.com:")) {
             if (!remoteUrl.contains("/")) {
+              System.err.println("Unexpected URL format " + remoteUrl);
               return null;
             }
             // `remoteUrl` has the form:
             // git@github.com:typetools/checker-framework.git
-            fork = remoteUrl.substring("git@github.com:".length(), remoteUrl.indexOf("/"));
+            org = remoteUrl.substring("git@github.com:".length(), remoteUrl.indexOf("/"));
           } else {
             // `remoteUrl` has the form:
             // https://github.com/mernst/checker-framework.git
             URL url = URI.create(remoteUrl).toURL();
             String path = url.getPath();
             if (!path.contains("/")) {
+              System.err.println("Unexpected URL format " + remoteUrl);
               return null;
             }
-            fork = path.split("/")[1];
+            org = path.split("/")[1];
           }
-          return new ForkBranch(fork, branchName);
+          return new OrgBranch(org, currentBranchName);
         }
       }
 
@@ -172,25 +187,25 @@ public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
   }
 
   /**
-   * Returns true if "https://github.com/{@code org}/{@code repo}" exists
+   * Returns true if "https://github.com/{@code org}/{@code repoName}" exists
    *
    * @param org a GitHub organization
-   * @param repo a repository in the {@code org}.
-   * @return true if "https://github.com/{@code org}/{@code repo}" exists
+   * @param repoName a repository in the {@code org}.
+   * @return true if "https://github.com/{@code org}/{@code repoName}" exists
    */
-  private boolean forkExists(final String org, final String repo) {
-    return urlExists(getGitHubUrl(org, repo));
+  private boolean orgExists(final String org, final String repoName) {
+    return urlExists(getGitHubUrl(org, repoName));
   }
 
   /**
-   * Returns the GitHub URL formatted as "https://github.com/{@code org}/{@code repo}"
+   * Returns the GitHub URL formatted as "https://github.com/{@code org}/{@code repoName}"
    *
    * @param org a GitHub organization
-   * @param repo a repository in {@code org}
-   * @return the GitHub URL formatted as "https://github.com/{@code org}/{@code repo}"
+   * @param repoName a repository in {@code org}
+   * @return the GitHub URL formatted as "https://github.com/{@code org}/{@code repoName}"
    */
-  private static String getGitHubUrl(String org, String repo) {
-    return String.format("https://github.com/%s/%s", org, repo);
+  private static String getGitHubUrl(String org, String repoName) {
+    return String.format("https://github.com/%s/%s", org, repoName);
   }
 
   /**
@@ -218,15 +233,15 @@ public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
 
   /**
    * Returns true if branch {@code branchName} exists on "https://github.com/{@code org}/{@code
-   * repo}".
+   * repoName}".
    *
    * @param org a GitHub organization
-   * @param repo a repository in {@code org}
+   * @param repoName a repository in {@code org}
    * @param branchName a name of a branch
    * @return true if branch {@code branchName} exists on "https://github.com/{@code org}/{@code
-   *     repo}"
+   *     repoName}"
    */
-  private static boolean remoteBranchExists(String org, String repo, String branchName) {
+  private static boolean remoteBranchExists(String org, String repoName, String branchName) {
     // JGit uses the full internal Git reference name, which for a branch is
     // "refs/heads/<branchName>".
     String fullBranchName = Constants.R_HEADS + branchName;
@@ -235,7 +250,7 @@ public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
       // Execute the ls-remote command to get all references from the remote
       Map<String, Ref> remoteRefs =
           new LsRemoteCommand(null)
-              .setRemote(getGitHubUrl(org, repo))
+              .setRemote(getGitHubUrl(org, repoName))
               .setTimeout(60)
               .setHeads(true)
               .callAsMap();
