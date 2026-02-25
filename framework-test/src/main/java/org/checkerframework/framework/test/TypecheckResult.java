@@ -39,7 +39,7 @@ public class TypecheckResult {
    *
    * @param configuration The test configuration.
    * @param compilationResult The compilation result.
-   * @param the expected diagnostics
+   * @param expectedDiagnostics the expected diagnostics
    * @param missingDiagnostics the diagnostics that were expected but were not issued
    * @param unexpectedDiagnostics the diagnostics that were issued but were not expected
    */
@@ -75,9 +75,9 @@ public class TypecheckResult {
   }
 
   /**
-   * Returns the expected diagnostics.
+   * Returns the actual diagnostics.
    *
-   * @return the expected diagnostics
+   * @return the actual diagnostics
    */
   public Collection<Diagnostic<? extends JavaFileObject>> getActualDiagnostics() {
     return compilationResult.getDiagnostics();
