@@ -1464,8 +1464,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       messageText = prefix + (fmtString == null ? "" : String.format(fmtString, args));
     } catch (Exception e) {
       throw new BugInCF(
-          "Invalid format string for %s: \"%s\" args: %s",
-          messageKey, fmtString, Arrays.toString(args), e);
+          String.format(
+              "Invalid format string for %s: \"%s\" args: %s",
+              messageKey, fmtString, Arrays.toString(args)),
+          e);
     }
 
     if (kind == Diagnostic.Kind.ERROR && warns) {
