@@ -240,6 +240,7 @@ public class TestDiagnosticUtils {
   }
 
   /** Matches an absolute filename (with delimiters). */
+  // TODO: This only handles Unix paths, not Windows paths.
   static Pattern filenamePattern = Pattern.compile(" (?:/[^: ]*/)([^/: ]+\\.[a-z]+):");
 
   /**
