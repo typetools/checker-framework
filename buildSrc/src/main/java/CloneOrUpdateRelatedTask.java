@@ -62,7 +62,7 @@ public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
     String relatedRepoName = getRelatedRepo().get();
     File cfDir = getProject().getRootDir();
     File relatedRepoDir = new File(cfDir.getParentFile(), relatedRepoName);
-    if (relatedRepoDir.exists()) {
+    if (relatedRepoDir.exists() && new File(relatedRepoDir, ".git").exists()) {
       checkOrgBranch(relatedRepoDir);
       CloneOrUpdateTask.update(relatedRepoDir, execOperations);
     } else {
@@ -175,7 +175,7 @@ public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
             }
             org = path.split("/")[1];
           }
-          return new OrgBranch(org, currentBranchName);
+          return new OrgBranch(org, remoteBranchFullName.substring(Constants.R_HEADS.length()));
         }
       }
 

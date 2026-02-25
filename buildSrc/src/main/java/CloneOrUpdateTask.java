@@ -73,6 +73,7 @@ public abstract class CloneOrUpdateTask extends DefaultTask {
       try {
         Thread.sleep(60000); // wait 1 minute, then try again
       } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
         throw new RuntimeException(e);
       }
       clone(url, branch, directory, false);
