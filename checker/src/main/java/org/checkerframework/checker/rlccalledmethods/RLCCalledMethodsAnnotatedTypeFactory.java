@@ -11,10 +11,14 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import java.lang.annotation.Annotation;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
@@ -153,6 +157,27 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
             loopUpdateBlock,
             loopConditionalBlock,
             collectionEltNode));
+  }
+
+  public static void addPotentiallyFulfillingLoop(
+      ExpressionTree collectionTree,
+      Tree collectionElementTree,
+      Tree condition,
+      Block loopBodyEntryBlock,
+      Block loopUpdateBlock,
+      ConditionalBlock loopConditionalBlock,
+      Node collectionEltNode,
+      boolean pendingCfg) {
+    potentiallyFulfillingLoops.add(
+        new PotentiallyFulfillingLoop(
+            collectionTree,
+            collectionElementTree,
+            condition,
+            loopBodyEntryBlock,
+            loopUpdateBlock,
+            loopConditionalBlock,
+            collectionEltNode,
+            pendingCfg));
   }
 
   /**
@@ -689,13 +714,15 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
     public final Block loopBodyEntryBlock;
 
     /** cfg {@code Block} containing the loop update. */
-    public final Block loopUpdateBlock;
+    public Block loopUpdateBlock;
 
     /** cfg conditional {@link Block} following loop condition. */
     public final ConditionalBlock loopConditionalBlock;
 
     /** cfg {@code Node} for the collection element iterated over. */
     public final Node collectionElementNode;
+
+    public boolean pendingCfg = false;
 
     /**
      * Constructs a new {@code PotentiallyFulfillingLoop}
@@ -724,6 +751,34 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
       this.loopUpdateBlock = loopUpdateBlock;
       this.loopConditionalBlock = loopConditionalBlock;
       this.collectionElementNode = collectionEltNode;
+    }
+
+    public PotentiallyFulfillingLoop(
+        ExpressionTree collectionTree,
+        Tree collectionElementTree,
+        Tree condition,
+        Block loopBodyEntryBlock,
+        Block loopUpdateBlock,
+        ConditionalBlock loopConditionalBlock,
+        Node collectionEltNode,
+        boolean pendingCfg) {
+      this.collectionTree = collectionTree;
+      this.collectionElementTree = collectionElementTree;
+      this.condition = condition;
+      this.calledMethods = new HashSet<>();
+      this.loopBodyEntryBlock = loopBodyEntryBlock;
+      this.loopUpdateBlock = loopUpdateBlock;
+      this.loopConditionalBlock = loopConditionalBlock;
+      this.collectionElementNode = collectionEltNode;
+      this.pendingCfg = pendingCfg;
+    }
+
+    public boolean isResolved() {
+      return !pendingCfg
+          && loopBodyEntryBlock != null
+          && loopUpdateBlock != null
+          && loopConditionalBlock != null
+          && collectionElementNode != null;
     }
 
     /**
@@ -762,6 +817,8 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
     MustCallConsistencyAnalyzer mustCallConsistencyAnalyzer =
         new MustCallConsistencyAnalyzer(ResourceLeakUtils.getResourceLeakChecker(this), true);
 
+    resolvePendingWhileLoopUpdateBlocks(cfg);
+
     // traverse the cfg to find enhanced-for-loops over collections and perform a
     // loop-body-analysis.
     // since this runs before the consistency analysis, we unfortunately have to traverse the cfg
@@ -786,5 +843,153 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
     }
 
     super.postAnalyze(cfg);
+  }
+
+  public void resolvePendingWhileLoopUpdateBlocks(ControlFlowGraph cfg) {
+    Block entry = cfg.getEntryBlock();
+    Set<Block> blocks = reachableFrom(entry, 500);
+
+    Map<Block, Set<Block>> dom = computeDominators(entry, blocks);
+    List<Edge> backEdges = findBackEdges(blocks, dom);
+
+    for (PotentiallyFulfillingLoop loop : getPotentiallyFulfillingLoops()) {
+      if (!loop.pendingCfg) continue;
+      if (loop.loopConditionalBlock == null || loop.loopBodyEntryBlock == null) continue;
+
+      Block header = chooseHeaderForLoop(loop, backEdges, blocks);
+      if (header != null) {
+        loop.loopUpdateBlock = header; // back-edge target = loop "header"
+        loop.pendingCfg = false;
+      }
+    }
+  }
+
+  private @Nullable Block chooseHeaderForLoop(
+      PotentiallyFulfillingLoop loop, List<Edge> backEdges, Set<Block> blocks) {
+
+    Block bodyEntry = loop.loopBodyEntryBlock;
+    Block condBlock = loop.loopConditionalBlock;
+
+    Block bestHeader = null;
+    int bestSize = Integer.MAX_VALUE;
+
+    for (Edge e : backEdges) {
+      // e.v is header candidate (dominates e.u)
+      Set<Block> natural = naturalLoop(e.u, e.v, blocks, 100000);
+
+      // Must contain this while’s body entry and conditional block
+      if (!natural.contains(bodyEntry)) continue;
+      if (!natural.contains(condBlock)) continue;
+
+      // Prefer tightest loop (helps nested-loop disambiguation)
+      if (natural.size() < bestSize) {
+        bestSize = natural.size();
+        bestHeader = e.v;
+      }
+    }
+
+    return bestHeader;
+  }
+
+  // ----- Dominators / natural-loop machinery -----
+
+  private static final class Edge {
+    final Block u, v; // u -> v
+
+    Edge(Block u, Block v) {
+      this.u = u;
+      this.v = v;
+    }
+  }
+
+  private Set<Block> reachableFrom(Block entry, int budget) {
+    Set<Block> seen = new HashSet<>();
+    ArrayDeque<Block> q = new ArrayDeque<>();
+    q.add(entry);
+    seen.add(entry);
+
+    while (!q.isEmpty() && budget-- > 0) {
+      Block b = q.remove();
+      for (Block s : b.getSuccessors()) {
+        if (s != null && seen.add(s)) {
+          q.add(s);
+        }
+      }
+    }
+    return seen;
+  }
+
+  private Map<Block, Set<Block>> computeDominators(Block entry, Set<Block> blocks) {
+    Map<Block, Set<Block>> dom = new HashMap<>();
+
+    for (Block b : blocks) {
+      if (b == entry) {
+        dom.put(b, new HashSet<>(Collections.singleton(entry)));
+      } else {
+        dom.put(b, new HashSet<>(blocks)); // TOP
+      }
+    }
+
+    boolean changed;
+    do {
+      changed = false;
+      for (Block b : blocks) {
+        if (b == entry) continue;
+
+        Set<Block> newDom = null;
+        for (Block p : b.getPredecessors()) {
+          if (p == null || !blocks.contains(p)) continue;
+          Set<Block> pDom = dom.get(p);
+          if (pDom == null) continue;
+          if (newDom == null) newDom = new HashSet<>(pDom);
+          else newDom.retainAll(pDom);
+        }
+
+        if (newDom == null) newDom = new HashSet<>();
+        newDom.add(b);
+
+        if (!newDom.equals(dom.get(b))) {
+          dom.put(b, newDom);
+          changed = true;
+        }
+      }
+    } while (changed);
+
+    return dom;
+  }
+
+  private List<Edge> findBackEdges(Set<Block> blocks, Map<Block, Set<Block>> dom) {
+    List<Edge> backs = new ArrayList<>();
+    for (Block u : blocks) {
+      for (Block v : u.getSuccessors()) {
+        if (v == null || !blocks.contains(v)) continue;
+        Set<Block> domU = dom.get(u);
+        if (domU != null && domU.contains(v)) {
+          // v dominates u => back edge u -> v
+          backs.add(new Edge(u, v));
+        }
+      }
+    }
+    return backs;
+  }
+
+  private Set<Block> naturalLoop(Block u, Block v, Set<Block> blocks, int budget) {
+    // Standard natural-loop: start from backedge u->v
+    Set<Block> loop = new HashSet<>();
+    ArrayDeque<Block> stack = new ArrayDeque<>();
+
+    loop.add(v);
+    if (loop.add(u)) stack.push(u);
+
+    while (!stack.isEmpty() && budget-- > 0) {
+      Block x = stack.pop();
+      for (Block p : x.getPredecessors()) {
+        if (p == null || !blocks.contains(p)) continue;
+        if (loop.add(p) && p != v) {
+          stack.push(p);
+        }
+      }
+    }
+    return loop;
   }
 }

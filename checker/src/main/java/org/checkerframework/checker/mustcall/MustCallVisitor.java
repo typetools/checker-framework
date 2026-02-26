@@ -20,9 +20,12 @@ import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.util.TreeScanner;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -32,6 +35,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.mustcall.qual.InheritableMustCall;
 import org.checkerframework.checker.mustcall.qual.MustCall;
@@ -46,6 +50,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
+import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
 import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlock;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -372,6 +377,472 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
     return super.visitForLoop(tree, p);
   }
 
+  // ///////////////////////////////////////////////////////////////////////////
+  // AST-only while-loop matching
+  //
+  // We only pattern-match on AST here and record a "pendingCfg" loop.
+  // Later, when CFG exists, we resolve loopUpdateBlock/bodyEntry/conditional/etc.
+  // ///////////////////////////////////////////////////////////////////////////
+  @Override
+  public Void visitWhileLoop(WhileLoopTree tree, Void p) {
+    detectCollectionObligationFulfillingWhileLoop(tree);
+    return super.visitWhileLoop(tree, p);
+  }
+
+  /** Condition-kind -> allowed extraction methods. */
+  private static final class WhileSpec {
+    final Set<String> extractMethods;
+
+    WhileSpec(Set<String> extractMethods) {
+      this.extractMethods = extractMethods;
+    }
+  }
+
+  // Iterator: while (it.hasNext()) { ... it.next() ... }
+  private static final WhileSpec ITERATOR_SPEC = new WhileSpec(Collections.singleton("next"));
+
+  // Queue/Deque/Stack: while (!c.isEmpty()) { ... c.poll()/pop/removeFirst/... ... }
+  // Also size() > 0 / 0 < size()
+  private static final WhileSpec NONEMPTY_SPEC =
+      new WhileSpec(
+          new HashSet<>(
+              Arrays.asList(
+                  // Queue/Deque (null-returning)
+                  "poll",
+                  "pollFirst",
+                  "pollLast",
+                  // Deque (throws on empty, but guarded by condition)
+                  "remove",
+                  "removeFirst",
+                  "removeLast",
+                  // Stack
+                  "pop"
+                  // If you want more later, add "getFirst"/"getLast" only if you also
+                  // guard soundness (they don't remove elements)
+                  )));
+
+  private static final class WhileHeaderMatch {
+    final ExpressionTree collectionTree; // the owning collection expression to mark
+    final @Nullable Name collectionVarNameForBailout; // for writes/bailouts
+    final Name headerVar; // iterator var (it) OR collection var (q)
+    final WhileSpec spec;
+
+    WhileHeaderMatch(
+        ExpressionTree collectionTree,
+        @Nullable Name collectionVarNameForBailout,
+        Name headerVar,
+        WhileSpec spec) {
+      this.collectionTree = collectionTree;
+      this.collectionVarNameForBailout = collectionVarNameForBailout;
+      this.headerVar = headerVar;
+      this.spec = spec;
+    }
+  }
+
+  private void detectCollectionObligationFulfillingWhileLoop(WhileLoopTree tree) {
+    // 1) Match header
+    ExpressionTree condNoParens = TreeUtils.withoutParens(tree.getCondition());
+    WhileHeaderMatch header = matchWhileHeader(condNoParens);
+    if (header == null) {
+      return;
+    }
+
+    // 2) Extract body statements
+    List<? extends StatementTree> bodyStmts;
+    if (tree.getStatement() instanceof BlockTree) {
+      bodyStmts = ((BlockTree) tree.getStatement()).getStatements();
+    } else if (tree.getStatement() != null) {
+      bodyStmts = Collections.singletonList(tree.getStatement());
+    } else {
+      return;
+    }
+
+    // 3) Find exactly one extraction call in the body (soundness)
+    BodyExtraction extraction =
+        findSingleExtractionInWhileBody(
+            bodyStmts,
+            header.headerVar,
+            header.collectionVarNameForBailout,
+            header.spec.extractMethods);
+    if (extraction == null) {
+      return;
+    }
+
+    // Resolve CFG-local metadata *now* (except loopUpdateBlock).
+    Block condBlock = firstBlockForTree(condNoParens);
+    if (condBlock == null) {
+      return;
+    }
+
+    // Find the ConditionalBlock that branches on the while condition.
+    ConditionalBlock cblock = findConditionalSuccessor(condBlock);
+    if (cblock == null) {
+      // condition often lives in ExceptionBlocks; try walking up preds and retry
+      Block peeled = peelExceptionBlocksToPred(condBlock, 50);
+      if (peeled != null) {
+        cblock = findConditionalSuccessor(peeled);
+        condBlock = peeled;
+      }
+    }
+    if (cblock == null) {
+      return;
+    }
+
+    Block loopBodyEntryBlock = cblock.getThenSuccessor();
+
+    // Node for the extraction call tree (it.next()/q.poll()/s.pop()).
+    Node elementNode = anyNodeForTree(extraction.extractionCall);
+    if (elementNode == null) {
+      return;
+    }
+
+    // 4) Record a "pendingCfg" potentially fulfilling loop.
+    //
+    // We store:
+    //   - collectionTree (resources / q / s)
+    //   - collectionElementTree (it.next() / q.poll() / s.pop())
+    //   - condition tree (the while condition)
+    //
+    // We leave CFG fields null and mark pendingCfg=true.
+    RLCCalledMethodsAnnotatedTypeFactory.addPotentiallyFulfillingLoop(
+        header.collectionTree,
+        extraction.extractionCall, // IMPORTANT: element is the extraction call tree
+        condNoParens,
+        /* loopBodyEntryBlock */ loopBodyEntryBlock,
+        /* loopUpdateBlock */ null,
+        /* conditionalBlock */ cblock,
+        /* collectionElementNode */ elementNode,
+        /* pendingCfg */ true);
+  }
+
+  private @Nullable Block firstBlockForTree(Tree t) {
+    Set<Node> nodes = atypeFactory.getNodesForTree(t);
+    if (nodes == null || nodes.isEmpty()) return null;
+    for (Node n : nodes) {
+      Block b = n.getBlock();
+      if (b != null) return b;
+    }
+    return null;
+  }
+
+  private @Nullable Node anyNodeForTree(Tree t) {
+    Set<Node> nodes = atypeFactory.getNodesForTree(t);
+    if (nodes == null || nodes.isEmpty()) return null;
+    return nodes.iterator().next();
+  }
+
+  private @Nullable ConditionalBlock findConditionalSuccessor(Block b) {
+    for (Block succ : b.getSuccessors()) {
+      if (succ instanceof ConditionalBlock) return (ConditionalBlock) succ;
+    }
+    if (b instanceof SingleSuccessorBlock) {
+      Block succ = ((SingleSuccessorBlock) b).getSuccessor();
+      if (succ instanceof ConditionalBlock) return (ConditionalBlock) succ;
+    }
+    return null;
+  }
+
+  private @Nullable Block peelExceptionBlocksToPred(Block b, int budget) {
+    Block cur = b;
+    while (budget-- > 0 && cur instanceof ExceptionBlock) {
+      Set<Block> preds = cur.getPredecessors();
+      if (preds.size() != 1) break;
+      Block p = preds.iterator().next();
+      if (p == null) break;
+      cur = p;
+    }
+    return cur;
+  }
+
+  private @Nullable WhileHeaderMatch matchWhileHeader(ExpressionTree cond) {
+    // Case A: while (it.hasNext())
+    if (cond instanceof MethodInvocationTree) {
+      MethodInvocationTree mit = (MethodInvocationTree) cond;
+      if (TreeUtils.isHasNextCall(mit)) {
+        ExpressionTree recv = receiverOfInvocation(mit);
+        Name itName = getNameFromExpressionTree(recv);
+        if (itName == null) {
+          return null;
+        }
+        ExpressionTree colExpr = recoverCollectionFromIteratorReceiver(recv);
+        if (colExpr == null) {
+          return null;
+        }
+        Name colName = getNameFromExpressionTree(colExpr);
+        return new WhileHeaderMatch(colExpr, colName, itName, ITERATOR_SPEC);
+      }
+    }
+
+    // Case B1: while (!c.isEmpty())
+    if (cond instanceof UnaryTree && cond.getKind() == Tree.Kind.LOGICAL_COMPLEMENT) {
+      ExpressionTree inner = TreeUtils.withoutParens(((UnaryTree) cond).getExpression());
+      WhileHeaderMatch m = matchNonEmptyFromExpr(inner);
+      if (m != null) return m;
+    }
+
+    // Case B2: while (c.size() > 0) or while (0 < c.size())
+    if (cond instanceof BinaryTree) {
+      WhileHeaderMatch m = matchNonEmptyFromSize((BinaryTree) cond);
+      if (m != null) return m;
+    }
+
+    return null;
+  }
+
+  private @Nullable WhileHeaderMatch matchNonEmptyFromExpr(ExpressionTree inner) {
+    if (!(inner instanceof MethodInvocationTree)) {
+      return null;
+    }
+    MethodInvocationTree mit = (MethodInvocationTree) inner;
+    if (!isIsEmptyCall(mit)) {
+      return null;
+    }
+    ExpressionTree recv = receiverOfInvocation(mit);
+    if (recv == null) return null;
+
+    Name varName = getNameFromExpressionTree(recv);
+    if (varName == null) return null;
+
+    Element recvElt = TreeUtils.elementFromTree(recv);
+    if (!ResourceLeakUtils.isCollection(recvElt, atypeFactory)) {
+      return null;
+    }
+
+    ExpressionTree colTree = collectionTreeFromExpression(recv);
+    if (colTree == null) return null;
+
+    return new WhileHeaderMatch(colTree, varName, varName, NONEMPTY_SPEC);
+  }
+
+  private @Nullable WhileHeaderMatch matchNonEmptyFromSize(BinaryTree bt) {
+    Tree.Kind k = bt.getKind();
+    if (k != Tree.Kind.GREATER_THAN && k != Tree.Kind.LESS_THAN) {
+      return null;
+    }
+
+    ExpressionTree left = TreeUtils.withoutParens(bt.getLeftOperand());
+    ExpressionTree right = TreeUtils.withoutParens(bt.getRightOperand());
+
+    // Normalize: accept "c.size() > 0" or "0 < c.size()"
+    MethodInvocationTree sizeCall = null;
+    LiteralTree zero = null;
+
+    if (k == Tree.Kind.GREATER_THAN) {
+      // left must be size(), right must be 0
+      if (left instanceof MethodInvocationTree && right instanceof LiteralTree) {
+        sizeCall = (MethodInvocationTree) left;
+        zero = (LiteralTree) right;
+      }
+    } else { // LESS_THAN
+      // left must be 0, right must be size()
+      if (left instanceof LiteralTree && right instanceof MethodInvocationTree) {
+        zero = (LiteralTree) left;
+        sizeCall = (MethodInvocationTree) right;
+      }
+    }
+
+    if (sizeCall == null
+        || !(zero.getValue() instanceof Integer)
+        || (Integer) zero.getValue() != 0) {
+      return null;
+    }
+    if (!TreeUtils.isSizeAccess(sizeCall)) {
+      return null;
+    }
+
+    ExpressionTree recv = receiverOfInvocation(sizeCall);
+    if (recv == null) return null;
+
+    Name varName = getNameFromExpressionTree(recv);
+    if (varName == null) return null;
+
+    Element recvElt = TreeUtils.elementFromTree(recv);
+    if (!ResourceLeakUtils.isCollection(recvElt, atypeFactory)) {
+      return null;
+    }
+
+    ExpressionTree colTree = collectionTreeFromExpression(recv);
+    if (colTree == null) return null;
+
+    return new WhileHeaderMatch(colTree, varName, varName, NONEMPTY_SPEC);
+  }
+
+  private boolean isIsEmptyCall(MethodInvocationTree mit) {
+    ExpressionTree sel = mit.getMethodSelect();
+    if (!(sel instanceof MemberSelectTree)) {
+      return false;
+    }
+    MemberSelectTree ms = (MemberSelectTree) sel;
+    return ms.getIdentifier().contentEquals("isEmpty") && mit.getArguments().isEmpty();
+  }
+
+  private @Nullable ExpressionTree receiverOfInvocation(MethodInvocationTree mit) {
+    ExpressionTree sel = mit.getMethodSelect();
+    if (sel instanceof MemberSelectTree) {
+      return ((MemberSelectTree) sel).getExpression();
+    }
+    return null;
+  }
+
+  /** Recover "col" from: Iterator<T> it = col.iterator(); while (it.hasNext()) { ... } */
+  private @Nullable ExpressionTree recoverCollectionFromIteratorReceiver(ExpressionTree itExpr) {
+    if (itExpr == null) return null;
+
+    Element itElt = TreeUtils.elementFromTree(itExpr);
+    if (!(itElt instanceof VariableElement)) return null;
+
+    // Only recover from local variable declaration with initializer "col.iterator()"
+    if (itElt.getKind() != ElementKind.LOCAL_VARIABLE) {
+      return null;
+    }
+
+    Tree decl = atypeFactory.declarationFromElement(itElt);
+    if (!(decl instanceof VariableTree)) return null;
+
+    ExpressionTree init = ((VariableTree) decl).getInitializer();
+    if (!(init instanceof MethodInvocationTree)) return null;
+
+    MethodInvocationTree initCall = (MethodInvocationTree) init;
+    ExpressionTree sel = initCall.getMethodSelect();
+    if (!(sel instanceof MemberSelectTree)) return null;
+
+    MemberSelectTree ms = (MemberSelectTree) sel;
+    if (!ms.getIdentifier().contentEquals("iterator") || !initCall.getArguments().isEmpty()) {
+      return null;
+    }
+
+    ExpressionTree colExpr = ms.getExpression();
+    Element colElt = TreeUtils.elementFromTree(colExpr);
+    if (!ResourceLeakUtils.isCollection(colElt, atypeFactory)) {
+      return null;
+    }
+
+    return collectionTreeFromExpression(colExpr);
+  }
+
+  private static final class BodyExtraction {
+    final MethodInvocationTree extractionCall; // it.next()/q.poll()/s.pop()
+
+    BodyExtraction(MethodInvocationTree extractionCall) {
+      this.extractionCall = extractionCall;
+    }
+  }
+
+  /**
+   * Finds exactly one extraction in the loop body. If 0 or >1 extractions occur, returns null
+   * (conservative/sound).
+   *
+   * <p>Also rejects break/return and writes to iterator/collection vars.
+   */
+  private @Nullable BodyExtraction findSingleExtractionInWhileBody(
+      List<? extends StatementTree> statements,
+      Name headerVar,
+      @Nullable Name collectionVarName,
+      Set<String> allowedExtractMethods) {
+
+    AtomicBoolean illegal = new AtomicBoolean(false);
+    final MethodInvocationTree[] extraction = new MethodInvocationTree[] {null};
+    final int[] extractionCount = new int[] {0};
+
+    TreeScanner<Void, Void> scanner =
+        new TreeScanner<Void, Void>() {
+
+          private void markWriteIfTargetsHeaderOrCollection(ExpressionTree lhs) {
+            Name assigned = getNameFromExpressionTree(lhs);
+            if (assigned != null) {
+              if (assigned == headerVar) illegal.set(true);
+              if (collectionVarName != null && assigned == collectionVarName) illegal.set(true);
+            }
+          }
+
+          private void recordExtractionIfAny(ExpressionTree expr) {
+            expr = TreeUtils.withoutParens(expr);
+            if (!(expr instanceof MethodInvocationTree)) return;
+
+            MethodInvocationTree mit = (MethodInvocationTree) expr;
+            if (!isExtractionCallOnHeaderVar(mit, headerVar, allowedExtractMethods)) return;
+
+            extractionCount[0]++;
+            if (extractionCount[0] > 1) {
+              illegal.set(true);
+              return;
+            }
+            extraction[0] = mit;
+          }
+
+          @Override
+          public Void visitBreak(BreakTree node, Void p) {
+            illegal.set(true);
+            return super.visitBreak(node, p);
+          }
+
+          @Override
+          public Void visitReturn(ReturnTree node, Void p) {
+            illegal.set(true);
+            return super.visitReturn(node, p);
+          }
+
+          @Override
+          public Void visitCompoundAssignment(CompoundAssignmentTree node, Void p) {
+            markWriteIfTargetsHeaderOrCollection(node.getVariable());
+            return super.visitCompoundAssignment(node, p);
+          }
+
+          @Override
+          public Void visitAssignment(AssignmentTree node, Void p) {
+            markWriteIfTargetsHeaderOrCollection(node.getVariable());
+            recordExtractionIfAny(node.getExpression()); // r = it.next()
+            return super.visitAssignment(node, p);
+          }
+
+          @Override
+          public Void visitVariable(VariableTree vt, Void p) {
+            ExpressionTree init = vt.getInitializer();
+            if (init != null) recordExtractionIfAny(init); // T r = it.next()
+            return super.visitVariable(vt, p);
+          }
+
+          @Override
+          public Void visitMethodInvocation(MethodInvocationTree mit, Void p) {
+            // Direct use: it.next().close() => receiver is it.next()
+            ExpressionTree sel = mit.getMethodSelect();
+            if (sel instanceof MemberSelectTree) {
+              ExpressionTree recv = ((MemberSelectTree) sel).getExpression();
+              recordExtractionIfAny(recv);
+            }
+            return super.visitMethodInvocation(mit, p);
+          }
+        };
+
+    for (StatementTree st : statements) {
+      scanner.scan(st, null);
+      if (illegal.get()) break;
+    }
+
+    if (illegal.get() || extraction[0] == null || extractionCount[0] != 1) {
+      return null;
+    }
+    return new BodyExtraction(extraction[0]);
+  }
+
+  private boolean isExtractionCallOnHeaderVar(
+      MethodInvocationTree mit, Name headerVar, Set<String> allowedExtractMethods) {
+    ExpressionTree sel = mit.getMethodSelect();
+    if (!(sel instanceof MemberSelectTree)) {
+      return false;
+    }
+    MemberSelectTree ms = (MemberSelectTree) sel;
+    String methodName = ms.getIdentifier().toString();
+    if (!allowedExtractMethods.contains(methodName)) {
+      return false;
+    }
+    if (!mit.getArguments().isEmpty()) {
+      return false;
+    }
+    Name recv = getNameFromExpressionTree(ms.getExpression());
+    return recv != null && recv == headerVar;
+  }
+
   /**
    * Marks the for-loop if it potentially fulfills collection obligations of a collection.
    *
@@ -619,9 +1090,14 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
       case IDENTIFIER:
         return ((IdentifierTree) expr).getName();
       case MEMBER_SELECT:
-        Element elt = TreeUtils.elementFromUse((MemberSelectTree) expr);
-        if (elt.getKind() == ElementKind.METHOD || elt.getKind() == ElementKind.FIELD) {
-          return getNameFromExpressionTree(((MemberSelectTree) expr).getExpression());
+        MemberSelectTree mst = (MemberSelectTree) expr;
+        Element elt = TreeUtils.elementFromUse(mst);
+        if (elt.getKind() == ElementKind.FIELD) {
+          // this.files  ==> "files"  (NOT "this")
+          return mst.getIdentifier();
+        } else if (elt.getKind() == ElementKind.METHOD) {
+          // resources.size ==> "resources"
+          return getNameFromExpressionTree(mst.getExpression());
         } else {
           return null;
         }
@@ -665,9 +1141,12 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
       case IDENTIFIER:
         return expr;
       case MEMBER_SELECT:
-        Element elt = TreeUtils.elementFromUse((MemberSelectTree) expr);
+        MemberSelectTree mst = (MemberSelectTree) expr;
+        Element elt = TreeUtils.elementFromUse(mst);
         if (elt.getKind() == ElementKind.METHOD) {
           return ((MemberSelectTree) expr).getExpression();
+        } else if (elt.getKind() == ElementKind.FIELD) {
+          return expr;
         } else {
           return null;
         }

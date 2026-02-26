@@ -97,6 +97,7 @@ class LoopBodyAnalysisTests {
         r.flush();
       }
     }
+    checkArgIsOCWO(resources);
   }
 
   void nullableElementHelper(@OwningCollection List<Resource> resources) {

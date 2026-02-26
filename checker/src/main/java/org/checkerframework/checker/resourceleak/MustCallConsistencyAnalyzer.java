@@ -1902,6 +1902,13 @@ public class MustCallConsistencyAnalyzer {
       CollectionOwnershipType lhsCoType =
           coAtf.getCoType(removeCastsAndGetTmpVarIfPresent(lhs), coStore);
       if (lhsCoType == null) {
+        if (TreeUtils.isConstructor(enclosingMethodTree)) {
+          // If its in the constructor, it may be the first assignment to the field.
+          // TODO: after PR #7050 is merged, use that logic here to determine if first assignment.
+          return;
+        }
+        // TODO: instead of throwing an exception here, we should probably treat it as Owning
+        // collection and issue an error below to be sound.
         throw new BugInCF(
             "Expression " + lhs + " cannot be found in CollectionOwnership store " + coStore);
       } else if (lhsCoType == CollectionOwnershipType.OwningCollectionBottom
@@ -3502,6 +3509,8 @@ public class MustCallConsistencyAnalyzer {
     visited.add(loopBodyEntry);
     Set<String> calledMethodsInLoop = null;
 
+    Set<Block> loopRegion = computeLoopRegion(loopBodyEntryBlock, loopUpdateBlock);
+
     // main loop: propagate obligations block-by-block
     while (!worklist.isEmpty()) {
       BlockWithObligations current = worklist.remove();
@@ -3518,6 +3527,10 @@ public class MustCallConsistencyAnalyzer {
 
         @SuppressWarnings("interning:not.interned")
         boolean isLastBlockOfBody = successorAndExceptionType.first == loopUpdateBlock;
+        boolean staysInLoop = loopRegion.contains(successorAndExceptionType.first);
+        if (!isLastBlockOfBody && !staysInLoop) {
+          return;
+        }
         if (isLastBlockOfBody) {
           Set<String> calledMethodsAfterBlock =
               analyzeTypeOfCollectionElement(
@@ -3554,6 +3567,73 @@ public class MustCallConsistencyAnalyzer {
       potentiallyFulfillingLoop.addCalledMethods(calledMethodsInLoop);
       CollectionOwnershipAnnotatedTypeFactory.markFulfillingLoop(potentiallyFulfillingLoop);
     }
+  }
+
+  private Set<Block> computeLoopRegion(Block entry, Block update) {
+    // Forward reachability (using getSuccessorsExceptIgnoredExceptions),
+    // and build the reverse graph *for the same filtered edges*.
+    Set<Block> forward = new HashSet<>();
+    Map<Block, Set<Block>> allowedPreds = new HashMap<>();
+
+    Deque<Block> wl = new ArrayDeque<>();
+    wl.add(entry);
+    forward.add(entry);
+
+    while (!wl.isEmpty()) {
+      Block b = wl.removeFirst();
+
+      for (IPair<Block, @Nullable TypeMirror> succ : getSuccessorsExceptIgnoredExceptions(b)) {
+        Block s = succ.first;
+        if (s == null) {
+          continue;
+        }
+
+        // Record filtered predecessor relation for backward traversal.
+        allowedPreds.computeIfAbsent(s, k -> new LinkedHashSet<>()).add(b);
+
+        // We allow edges *to* update, but we do not expand beyond update.
+        if (s == update) {
+          continue;
+        }
+
+        if (forward.add(s)) {
+          wl.addLast(s);
+        }
+      }
+    }
+
+    // If update isn't even reachable from entry under the filtered edge relation,
+    // region is empty (nothing meaningful to certify).
+    if (!forward.contains(update) && !allowedPreds.containsKey(update)) {
+      return Collections.emptySet();
+    }
+
+    // Backward reachability to update, but ONLY using the filtered reverse edges we built.
+    Set<Block> forwardPlus = new HashSet<>(forward);
+    forwardPlus.add(update);
+
+    Set<Block> canReachUpdate = new HashSet<>();
+    Deque<Block> bwl = new ArrayDeque<>();
+    bwl.add(update);
+    canReachUpdate.add(update);
+
+    while (!bwl.isEmpty()) {
+      Block b = bwl.removeFirst();
+
+      for (Block pred : allowedPreds.getOrDefault(b, Collections.emptySet())) {
+        if (!forwardPlus.contains(pred)) {
+          continue;
+        }
+        if (canReachUpdate.add(pred)) {
+          bwl.addLast(pred);
+        }
+      }
+    }
+
+    // Region = forward ∩ canReachUpdate, excluding update itself.
+    forward.retainAll(canReachUpdate);
+    forward.remove(update);
+    return forward;
   }
 
   /**
@@ -3614,6 +3694,7 @@ public class MustCallConsistencyAnalyzer {
     }
 
     // add the called methods of possible aliases of the collection element
+    boolean hasAnyLiveAlias = false;
     for (ResourceAlias alias : collectionElementObligation.resourceAliases) {
       AccumulationValue cmValOfAlias = store.getValue(alias.reference);
       if (cmValOfAlias == null) {
@@ -3621,12 +3702,17 @@ public class MustCallConsistencyAnalyzer {
       }
       List<String> calledMethods = getCalledMethods(cmValOfAlias);
       if (calledMethods != null) {
+        hasAnyLiveAlias = true;
         if (calledMethodsAfterThisBlock == null) {
           calledMethodsAfterThisBlock = new HashSet<>(calledMethods);
         } else {
           calledMethodsAfterThisBlock.addAll(calledMethods);
         }
       }
+    }
+    if (!hasAnyLiveAlias) {
+      // all aliases are dead; called methods is bottom
+      return null;
     }
 
     return calledMethodsAfterThisBlock;
@@ -3655,7 +3741,7 @@ public class MustCallConsistencyAnalyzer {
         }
       }
     }
-    return new ArrayList<>();
+    return null;
   }
 
   /**
