@@ -28,6 +28,7 @@ import java.util.Optional;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
@@ -51,6 +52,7 @@ import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -283,23 +285,16 @@ public class OptionalImplVisitor
     if (!isCallToGet(trueReceiver)) {
       return;
     }
+
     ExpressionTree getReceiver = TreeUtils.getReceiverTree(trueReceiver);
-
     ExpressionTree receiver = isPresentCall.second;
-    ExecutableElement ele = TreeUtils.elementFromUse((MethodInvocationTree) trueExpr);
-    boolean isPure =
-        PurityUtils.isDeterministic(atypeFactory, ele)
-            && PurityUtils.isSideEffectFree(atypeFactory, ele);
-
-    if (sameExpression(receiver, getReceiver) && isPure) {
-
+    if (sameExpression(receiver, getReceiver)) {
+      ExecutableElement ele = TreeUtils.elementFromUse((MethodInvocationTree) trueExpr);
       checker.reportWarning(
           tree,
           "prefer.map.and.orelse",
           receiver,
-          // The literal "ENCLOSINGCLASS::" is gross.
-          // TODO: add this to the error message.
-          // ElementUtils.getQualifiedClassName(ele);
+          ElementUtils.getQualifiedClassName(ele),
           ele.getSimpleName(),
           falseExpr);
     }
@@ -402,7 +397,7 @@ public class OptionalImplVisitor
       ExpressionTree initializer = ((VariableTree) thenStmt).getInitializer();
       if (initializer instanceof MethodInvocationTree) {
         checkConditionalStatementIsPresentGetCall(
-            tree, (MethodInvocationTree) initializer, isPresentCall, "prefer.map.and.orelse");
+            tree, (MethodInvocationTree) initializer, isPresentCall, "prefer.map");
         return;
       }
     }
@@ -456,9 +451,7 @@ public class OptionalImplVisitor
             tree,
             "prefer.map.and.orelse",
             trueAssignment.getVariable(),
-            // The literal "ENCLOSINGCLASS::" is gross.
-            // TODO: add this to the error message.
-            // ElementUtils.getQualifiedClassName(ele);
+            ElementUtils.getQualifiedClassName(ele),
             ele.getSimpleName(),
             falseAssignment.getExpression());
       }
@@ -482,7 +475,7 @@ public class OptionalImplVisitor
    * @param invok the entire method invocation statement or the initializer of an assignment
    * @param isPresentCall the pair comprising a boolean (indicating whether the expression is a call
    *     to {@code Optional.isPresent} or to {@code Optional.isEmpty}) and its receiver
-   * @param messageKey the message key, either "prefer.ifPresent" or "prefer.map.and.orelse"
+   * @param messageKey the message key, either "prefer.ifpresent" or "prefer.map"
    */
   private void checkConditionalStatementIsPresentGetCall(
       IfTree tree,
@@ -508,6 +501,9 @@ public class OptionalImplVisitor
     int dotPos = methodString.lastIndexOf('.');
     if (dotPos != -1) {
       methodString = methodString.substring(0, dotPos) + "::" + methodString.substring(dotPos + 1);
+    } else {
+      Element ele = TreeUtils.elementFromUse(method);
+      methodString = ElementUtils.getQualifiedClassName(ele) + "::" + methodString;
     }
 
     checker.reportWarning(tree, messageKey, isPresentReceiver, methodString);

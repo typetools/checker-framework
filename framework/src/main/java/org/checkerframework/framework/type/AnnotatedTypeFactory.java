@@ -619,7 +619,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     this.annotationFormatter = createAnnotationFormatter();
     this.typeInformationPresenter = createTypeInformationPresenter();
 
-    if (checker.hasOption("infer")) {
+    if (!checker.hasOption("infer")) {
+      wholeProgramInference = null;
+    } else {
       checkInvalidOptionsInferSignatures();
       String inferArg = checker.getOption("infer");
       // No argument means "jaifs", for (temporary) backwards compatibility.
@@ -643,6 +645,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                   + " should be one of: -Ainfer=jaifs, -Ainfer=stubs, -Ainfer=ajava");
       }
       boolean showWpiFailedInferences = checker.hasOption("showWpiFailedInferences");
+      String inferOutputDirectory =
+          checker.getOption("inferOutputDirectory", "build/whole-program-inference");
       boolean inferOutputOriginal = checker.hasOption("inferOutputOriginal");
       if (inferOutputOriginal && wpiOutputFormat != WholeProgramInference.OutputFormat.AJAVA) {
         checker.message(
@@ -653,20 +657,21 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         wholeProgramInference =
             new WholeProgramInferenceImplementation<AnnotatedTypeMirror>(
                 this,
-                new WholeProgramInferenceJavaParserStorage(this, inferOutputOriginal),
+                new WholeProgramInferenceJavaParserStorage(
+                    this, inferOutputDirectory, inferOutputOriginal),
                 showWpiFailedInferences);
       } else {
         wholeProgramInference =
             new WholeProgramInferenceImplementation<ATypeElement>(
-                this, new WholeProgramInferenceScenesStorage(this), showWpiFailedInferences);
+                this,
+                new WholeProgramInferenceScenesStorage(this, inferOutputDirectory),
+                showWpiFailedInferences);
       }
       if (!checker.hasOption("warns")) {
         // Without -Awarns, the inference output may be incomplete, because javac halts
         // after issuing an error.
         checker.message(Diagnostic.Kind.ERROR, "Do not supply -Ainfer without -Awarns");
       }
-    } else {
-      wholeProgramInference = null;
     }
     ignoreRawTypeArguments = checker.getBooleanOption("ignoreRawTypeArguments", true);
 
@@ -1226,6 +1231,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     Set<Class<? extends Annotation>> annotations = loader.getBundledAnnotationClasses();
 
+    // This works because this method (`loadTypeAnnotationsFromQualDir`) is called in `postInit()`,
+    // but `addAliasedTypeAnnotation` is called before `postInit()`.
+    annotations.removeIf(this::isAliasedTypeAnnotation);
+
     // Add in all explicitly listed qualifiers.
     if (explicitlyListedAnnotations != null) {
       annotations.addAll(Arrays.asList(explicitlyListedAnnotations));
@@ -1461,6 +1470,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * <p>The default implementation uses this to store the defaulted AnnotatedTypeMirrors and
    * inherited declaration annotations back into the corresponding Elements. Subclasses might want
    * to override this method if storing defaulted types is not desirable.
+   *
+   * @param tree the class to postprocess
    */
   public void postProcessClassTree(ClassTree tree) {
     TypesIntoElements.store(processingEnv, this, tree);
@@ -3406,6 +3417,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * want the elements to be copied over as well, use {@link #addAliasedTypeAnnotation(Class, Class,
    * boolean, String...)}.
    *
+   * <p>This method must be called before {@link #postInit}.
+   *
    * @param aliasClass the class of the aliased annotation
    * @param canonicalAnno the canonical annotation
    */
@@ -3538,6 +3551,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     } else {
       return alias.canonical;
     }
+  }
+
+  /**
+   * Returns true if the given annotation class is an alias for some other annotation.
+   *
+   * @param annoClass an annotation class
+   * @return true if the given annotation class is an alias for some other annotation
+   */
+  public boolean isAliasedTypeAnnotation(Class<?> annoClass) {
+    return aliases.containsKey(annoClass.getCanonicalName());
   }
 
   /**
