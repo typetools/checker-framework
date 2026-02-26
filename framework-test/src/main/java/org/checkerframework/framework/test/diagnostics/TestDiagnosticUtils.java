@@ -170,7 +170,7 @@ public class TestDiagnosticUtils {
         message = null;
       } else {
         char lastChar = msg.charAt(msg.length() - 1);
-        if ((firstChar == '(' && lastChar == ')') || (firstChar == ']' && lastChar == ']')) {
+        if ((firstChar == '(' && lastChar == ')') || (firstChar == '[' && lastChar == ']')) {
           key = msg.substring(1, msg.length() - 1);
           message = null;
         } else {
