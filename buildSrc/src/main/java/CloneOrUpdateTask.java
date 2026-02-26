@@ -106,7 +106,8 @@ public abstract class CloneOrUpdateTask extends DefaultTask {
   }
 
   /**
-   * Updates the git clone at {@code directory}.
+   * Updates the git clone at {@code directory}. If the update fails, then a warning is printed, but
+   * no exception is thrown.
    *
    * @param directory where the clone to update is
    * @param execOperations used to run exec commands
@@ -130,11 +131,11 @@ public abstract class CloneOrUpdateTask extends DefaultTask {
                 execSpec.setIgnoreExitValue(true);
               });
       if (execResult.getExitValue() != 0) {
-        throw new org.gradle.api.GradleException(
+        System.out.println(
             "git pull failed in " + directory + " with exit code " + execResult.getExitValue());
       }
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      System.out.println("git pull failed in " + directory);
     }
   }
 }
