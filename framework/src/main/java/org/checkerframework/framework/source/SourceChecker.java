@@ -324,9 +324,13 @@ import org.plumelib.util.UtilPlume;
   // constraints.
   "noWarnMemoryConstraints",
 
-  // Only output error code, useful for testing framework
+  // Only output the error message key, useful for testing the framework.
   // org.checkerframework.framework.source.SourceChecker.message(Kind, Object, String, Object...)
   "nomsgtext",
+
+  // Convert newlines to " / ", so error messages fit on one line.
+  // org.checkerframework.framework.source.SourceChecker.message(Kind, Object, String, Object...)
+  "onelinemsg",
 
   // Controls the line separator output in Checker Framework exceptions.
   // org.checkerframework.framework.source.SourceChecker.logBug
@@ -1475,6 +1479,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
 
     if (kind == Diagnostic.Kind.ERROR && warns) {
       kind = Diagnostic.Kind.MANDATORY_WARNING;
+    }
+
+    if (this.processingEnv.getOptions() != null /*nnbug*/
+        && this.processingEnv.getOptions().containsKey("onelinemsg")) {
+      // Use a virgule (/), as indicates a line break in poetry.
+      messageText = messageText.replace(System.lineSeparator(), " / ");
     }
 
     if (source instanceof Element) {

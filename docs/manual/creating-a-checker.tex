@@ -2099,6 +2099,10 @@ rather than full message text when reporting errors or warnings.  This is
 used by the Checker Framework's own tests, so they do not need to be
 changed if the English message is updated.
 
+\item \code{-Aonelinemsg}: print each error message on a single line, with
+logical lines separated by ``/''.  This is useful when using a tool that
+only shows the first line of the error.
+
 \item \code{-AnoPrintErrorStack}: don't print a stack trace when an
 internal Checker Framework error occurs.  Setting this option is rare.  You
 should only do it if you have discovered a bug in a checker, you have
