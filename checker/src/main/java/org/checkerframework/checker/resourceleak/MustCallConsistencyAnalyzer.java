@@ -844,8 +844,43 @@ public class MustCallConsistencyAnalyzer {
               checkEnclosingMethodIsCreatesMustCallFor(receiverNode, enclosingMethodTree);
             }
           }
+          // consume the inserted elements obligation
+          consumeInsertedArgumentObligationIfSingleElementInsert(obligations, node);
           break;
         default:
+      }
+    }
+  }
+
+  /**
+   * Models consumption of the inserted element's obligation by the receiver collection for
+   * {@code @CreatesCollectionObligation} calls on owning receivers.
+   *
+   * <p>Heuristic: "inserted thing" is the last argument. We only consume when the inserted thing is
+   * NOT itself a resource collection (i.e., avoid bulk ops).
+   */
+  private void consumeInsertedArgumentObligationIfSingleElementInsert(
+      Set<Obligation> obligations, MethodInvocationNode node) {
+    List<Node> args = node.getArguments();
+    if (args.isEmpty()) {
+      return;
+    }
+    Node inserted = removeCastsAndGetTmpVarIfPresent(args.get(args.size() - 1));
+    if (inserted.getTree() != null && coAtf.isResourceCollection(inserted.getTree())) {
+      // Bulk op (addAll/putAll etc).
+      return;
+    }
+
+    // Remove any tracked obligations for the inserted value from the caller context:
+    // responsibility is now represented by the collection obligation.
+    if (inserted instanceof LocalVariableNode) {
+      removeObligationsContainingVar(obligations, (LocalVariableNode) inserted);
+      return;
+    }
+    if (inserted.getTree() != null) {
+      Set<Obligation> toRemove = getObligationsForVar(obligations, inserted.getTree());
+      for (Obligation o : toRemove) {
+        obligations.remove(o);
       }
     }
   }

@@ -110,7 +110,8 @@ class OwningCollectionFieldTyping {
   void tryTransferringFieldOwnershipAssignment() {
     // try to steal ownership
     List<Resource> ownershipStealer = ocField;
-    // :: error: method.invocation
+    // :: error: illegal.collection.mutator.owning.insert.into.notowning
+    // :: error: required.method.not.called
     ownershipStealer.add(new Resource());
   }
 
