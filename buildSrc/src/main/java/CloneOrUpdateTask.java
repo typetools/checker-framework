@@ -135,7 +135,7 @@ public abstract class CloneOrUpdateTask extends DefaultTask {
             "git pull failed in " + directory + " with exit code " + execResult.getExitValue());
       }
     } catch (IOException e) {
-      System.out.println("git pull failed in " + directory);
+      System.out.println("git pull failed in " + directory + " because " + e.getMessage());
     }
   }
 }
