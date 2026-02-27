@@ -22,6 +22,10 @@ import org.gradle.process.ExecOperations;
  *
  * <p>Sometimes, two GitHub repositories are related: you need clones of both of them. When run from
  * a clone of one, this clones the other, attempting to find a matching org and branch.
+ *
+ * <p>This is a reimplementation of the <a
+ * href="https://github.com/plume-lib/git-scripts/blob/main/git-clone-related">git-clone-related</a>
+ * script.
  */
 @UntrackedTask(because = "Always try to update.")
 public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
@@ -46,7 +50,7 @@ public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
   private final ExecOperations execOperations;
 
   /**
-   * Constructor.
+   * Creates a new CloneOrUpdateRelatedTask.
    *
    * @param execOperations Used to run exec commands
    */
@@ -65,13 +69,13 @@ public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
       checkOrgBranch(relatedRepoDir);
       CloneOrUpdateTask.update(relatedRepoDir, execOperations);
     } else {
-      OrgBranch fbCf = findOrgBranch(new File(cfDir, ".git"));
+      OrgBranch fbCf = getOrgBranch(new File(cfDir, ".git"));
       if (fbCf == null
           || !orgExists(fbCf.org, relatedRepoName)
           || !remoteBranchExists(fbCf.org, relatedRepoName, fbCf.branch)) {
         fbCf = new OrgBranch(DEFAULT_ORG, DEFAULT_BRANCH);
       }
-      String url = getGitHubUrl(fbCf.org, relatedRepoName);
+      String url = getGitHubHttpsUrl(fbCf.org, relatedRepoName);
       CloneOrUpdateTask.cloneRetryOnce(url, fbCf.branch, relatedRepoDir);
     }
   }
@@ -86,8 +90,8 @@ public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
     File cfDir = getProject().getRootDir();
 
     String relatedRepoName = getRelatedRepo().get();
-    OrgBranch fbCf = findOrgBranch(new File(cfDir, ".git"));
-    OrgBranch fbRelated = findOrgBranch(new File(relatedRepoDir, ".git"));
+    OrgBranch fbCf = getOrgBranch(new File(cfDir, ".git"));
+    OrgBranch fbRelated = getOrgBranch(new File(relatedRepoDir, ".git"));
 
     if (fbCf == null || fbRelated == null || fbCf.equals(fbRelated)) {
       // Either CF or related is not a clone, or the CF and related are using the same org and
@@ -95,22 +99,22 @@ public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
       return;
     }
     if (!orgExists(fbCf.org, relatedRepoName)) {
-      // There is no related org that is the same as the CF org.
+      // There is no related repo that is in the same org as the CF clone.
       return;
     }
     if (remoteBranchExists(fbCf.org, relatedRepoName, fbCf.branch)) {
       throw new RuntimeException(
           String.format(
               "Please checkout the corresponding %s branch. URL: %s Branch: %s.",
-              relatedRepoName, getGitHubUrl(fbCf.org, relatedRepoName), fbCf.branch));
+              relatedRepoName, getGitHubHttpsUrl(fbCf.org, relatedRepoName), fbCf.branch));
     }
   }
 
   /**
    * A pair of {@code org} and {@code branch}
    *
-   * @param org an org, that's an organization in GitHub
-   * @param branch a branch of the org.
+   * @param org a GitHub organization name
+   * @param branch a branch name
    */
   public record OrgBranch(String org, String branch) {}
 
@@ -122,7 +126,7 @@ public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
    * @param gitDir a .git directory
    * @return the org and branch of {@code gitDir} or null if there is no remote branch
    */
-  private OrgBranch findOrgBranch(File gitDir) {
+  private OrgBranch getOrgBranch(File gitDir) {
     try (Repository repository =
         new FileRepositoryBuilder().setGitDir(gitDir).readEnvironment().findGitDir().build()) {
 
@@ -149,61 +153,70 @@ public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
               currentBranchName,
               ConfigConstants.CONFIG_KEY_MERGE);
 
-      if (remoteRepoName != null && remoteBranchFullName != null) {
-        String remoteUrl =
-            config.getString(ConfigConstants.CONFIG_REMOTE_SECTION, remoteRepoName, "url");
-
-        if (remoteUrl != null && !remoteUrl.isEmpty()) {
-          String org;
-          if (remoteUrl.startsWith("git@github.com:")) {
-            if (!remoteUrl.contains("/")) {
-              System.err.println("Unexpected URL format " + remoteUrl);
-              return null;
-            }
-            // `remoteUrl` has the form:
-            // git@github.com:typetools/checker-framework.git
-            org = remoteUrl.substring("git@github.com:".length(), remoteUrl.indexOf("/"));
-          } else {
-            // `remoteUrl` has the form:
-            // https://github.com/mernst/checker-framework.git
-            URL url = URI.create(remoteUrl).toURL();
-            String path = url.getPath();
-            if (!path.contains("/")) {
-              System.err.println("Unexpected URL format " + remoteUrl);
-              return null;
-            }
-            org = path.split("/")[1];
-          }
-          return new OrgBranch(org, remoteBranchFullName.substring(Constants.R_HEADS.length()));
-        }
+      if (remoteRepoName == null || remoteBranchFullName == null) {
+        return null;
       }
+
+      String remoteUrl =
+          config.getString(ConfigConstants.CONFIG_REMOTE_SECTION, remoteRepoName, "url");
+
+      if (remoteUrl == null || remoteUrl.isEmpty()) {
+        return null;
+      }
+
+      String org;
+      if (remoteUrl.startsWith("git@github.com:")) {
+        // `remoteUrl` has the form:
+        // git@github.com:typetools/checker-framework.git
+        int slashPos = remoteUrl.indexOf("/");
+        if (slashPos == -1) {
+          System.err.println("Unexpected URL format " + remoteUrl);
+          return null;
+        }
+        org = remoteUrl.substring("git@github.com:".length(), slashPos);
+      } else if (remoteUrl.startsWith("https://github.com/")) {
+        // `remoteUrl` has the form:
+        // https://github.com/mernst/checker-framework.git
+        URL url = URI.create(remoteUrl).toURL();
+        String path = url.getPath();
+        // The path has the form:
+        // /mernst/checker-framework.git
+        if (!path.contains("/")) {
+          System.err.println("Unexpected URL format " + remoteUrl);
+          return null;
+        }
+        org = path.split("/")[1];
+      } else {
+        System.err.println("Unexpected URL format " + remoteUrl);
+        return null;
+      }
+      return new OrgBranch(org, remoteBranchFullName.substring(Constants.R_HEADS.length()));
 
     } catch (IOException | IllegalArgumentException e) {
       System.err.println("Error finding branch: " + e.getMessage());
+      return null;
     }
-
-    return null;
   }
 
   /**
-   * Returns true if "https://github.com/{@code org}/{@code repoName}" exists
+   * Returns true if "https://github.com/{@code org}/{@code repoName}" exists.
    *
    * @param org a GitHub organization
-   * @param repoName a repository in the {@code org}.
+   * @param repoName a repository name
    * @return true if "https://github.com/{@code org}/{@code repoName}" exists
    */
   private boolean orgExists(final String org, final String repoName) {
-    return urlExists(getGitHubUrl(org, repoName));
+    return urlExists(getGitHubHttpsUrl(org, repoName));
   }
 
   /**
-   * Returns the GitHub URL formatted as "https://github.com/{@code org}/{@code repoName}"
+   * Returns the GitHub URL formatted as "https://github.com/{@code org}/{@code repoName}".
    *
    * @param org a GitHub organization
    * @param repoName a repository in {@code org}
    * @return the GitHub URL formatted as "https://github.com/{@code org}/{@code repoName}"
    */
-  private static String getGitHubUrl(String org, String repoName) {
+  private static String getGitHubHttpsUrl(String org, String repoName) {
     return String.format("https://github.com/%s/%s", org, repoName);
   }
 

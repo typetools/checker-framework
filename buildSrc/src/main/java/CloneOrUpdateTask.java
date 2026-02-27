@@ -12,7 +12,7 @@ import org.gradle.api.tasks.OutputDirectory;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.process.ExecOperations;
 
-/** Custom class that clones or updates a given Git repository. */
+/** A task that clones or updates a given Git repository. */
 public abstract class CloneOrUpdateTask extends DefaultTask {
 
   /**
@@ -35,9 +35,9 @@ public abstract class CloneOrUpdateTask extends DefaultTask {
   private final ExecOperations execOperations;
 
   /**
-   * Constructor.
+   * Creates a new CloneOrUpdateTask.
    *
-   * @param execOperations Used to run exec commands
+   * @param execOperations used to run exec commands
    */
   @Inject
   public CloneOrUpdateTask(ExecOperations execOperations) {
@@ -81,12 +81,12 @@ public abstract class CloneOrUpdateTask extends DefaultTask {
   }
 
   /**
-   * Quietly clones the given git repository with depth 1, {@code url}, to {@code directory}.
+   * Quietly clones the git repository at {@code url}, to {@code directory}, with depth 1.
    *
    * @param url git repository to clone
-   * @param branch if non-null, which branch to use.
+   * @param branch if non-null, which branch to use
    * @param directory where to clone
-   * @param ignoreError whether to fail the build if the clone command fails
+   * @param ignoreError if true, don't fail the build if the clone command fails
    */
   public static void clone(String url, String branch, File directory, boolean ignoreError) {
     CloneCommand cloneCommand =
@@ -97,7 +97,7 @@ public abstract class CloneOrUpdateTask extends DefaultTask {
     try (Git git = cloneCommand.call()) {
       System.out.println("Cloning successful.");
     } catch (GitAPIException e) {
-      System.err.println("Error cloning repository: " + e.getMessage());
+      System.err.println("Error cloning repository " + url + ": " + e.getMessage());
       if (ignoreError) {
         return;
       }
@@ -116,7 +116,7 @@ public abstract class CloneOrUpdateTask extends DefaultTask {
     try (Git git = Git.open(directory)) {
       git.pull().call();
     } catch (GitAPIException e) {
-      //       If the repository remote is configured using ssh, i.e.,
+      //       If the repository remote is configured using ssh, e.g.,
       // git@github.com:typetools/checker-framework.git,
       //       then the above may get permission problems such as:
       //       org.eclipse.jgit.api.errors.TransportException: git@github.com:smillst/jdk.git:
