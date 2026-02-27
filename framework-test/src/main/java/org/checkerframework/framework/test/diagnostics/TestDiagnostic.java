@@ -17,7 +17,7 @@ public class TestDiagnostic {
   private final DiagnosticKind kind;
 
   /**
-   * An error key or full error message that usually appears between parentheses in diagnostic
+   * An error key or full error message that usually appears between square brackets in diagnostic
    * messages.
    */
   private final String key;
@@ -28,9 +28,6 @@ public class TestDiagnostic {
   /** Returns true if this diagnostic should no longer be reported after whole program inference. */
   private final boolean isFixable;
 
-  /** True if the toString representation should omit the parentheses around the message key. */
-  private final boolean omitParentheses;
-
   /** Basic constructor that sets the immutable fields of this diagnostic. */
   public TestDiagnostic(
       String filename,
@@ -38,15 +35,13 @@ public class TestDiagnostic {
       DiagnosticKind kind,
       String key,
       @Nullable String message,
-      boolean isFixable,
-      boolean omitParentheses) {
+      boolean isFixable) {
     this.filename = filename;
     this.lineNumber = lineNumber;
     this.kind = kind;
     this.key = key;
     this.message = message;
     this.isFixable = isFixable;
-    this.omitParentheses = omitParentheses;
   }
 
   public String getFilename() {
@@ -84,17 +79,7 @@ public class TestDiagnostic {
   }
 
   /**
-   * Returns true if the printed representation should omit parentheses around the message key.
-   *
-   * @return true if the printed representation should omit parentheses around the message key
-   */
-  public boolean shouldOmitParentheses() {
-    return omitParentheses;
-  }
-
-  /**
-   * Equality is compared without fields {@code message}, {@code isFixable}, and {@code
-   * omitParentheses}.
+   * Equality is compared without fields {@code message} and {@code isFixable}.
    *
    * @return true if this and otherObj are equal according to filename, lineNumber, kind, and
    *     message key
@@ -125,7 +110,7 @@ public class TestDiagnostic {
   @Override
   public String toString() {
     String loc = filename + ":" + lineNumber + ": ";
-    String key = omitParentheses ? this.key : "(" + this.key + ")";
+    String key = "(" + this.key + ")";
     String msg = message == null ? "" : " " + message;
     if (kind == DiagnosticKind.JSpecify) {
       return loc + key;

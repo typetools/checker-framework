@@ -119,8 +119,7 @@ public class TestDiagnosticUtils {
         DiagnosticKind.JSpecify,
         stringFromJavaFile,
         null,
-        /* isFixable= */ false,
-        /* omitParentheses= */ true);
+        /* isFixable= */ false);
   }
 
   /**
@@ -145,7 +144,6 @@ public class TestDiagnosticUtils {
     final String key;
     final String message;
     final boolean isFixable;
-    final boolean noParentheses;
     long lineNo = -1;
     int capturingGroupOffset = 1;
 
@@ -164,25 +162,24 @@ public class TestDiagnosticUtils {
       String msg = diagnosticMatcher.group(2 + capturingGroupOffset).trim();
 
       char firstChar = msg.isEmpty() ? ' ' : msg.charAt(0);
-      noParentheses = firstChar != '(' && firstChar != '[';
-      if (noParentheses) {
-        key = msg;
-        message = null;
-      } else {
-        char lastChar = msg.charAt(msg.length() - 1);
-        if ((firstChar == '(' && lastChar == ')') || (firstChar == '[' && lastChar == ']')) {
-          key = msg.substring(1, msg.length() - 1);
+      if (firstChar == '(' || firstChar == '[') {
+        char closeDelimiter = firstChar == '(' ? ')' : ']';
+        int closeDelimiterPos = msg.indexOf(closeDelimiter);
+        int msgLength = msg.length();
+        if (closeDelimiterPos == msgLength - 1) {
+          key = msg.substring(1, msgLength - 1);
           message = null;
-        } else {
-          char closeDelimiter = firstChar == '(' ? ')' : ']';
-          int closeDelimiterPos = msg.indexOf(closeDelimiter);
-          if (closeDelimiterPos == -1) {
-            throw new BugInCF(
-                "No closing delimiter '%s' found in %s", closeDelimiter, diagnosticString);
-          }
+        } else if (closeDelimiterPos != -1) {
           key = msg.substring(1, closeDelimiterPos);
           message = msg.substring(closeDelimiterPos + 1).trim();
+        } else {
+          throw new BugInCF(
+              "No closing delimiter '%s' found in %s", closeDelimiter, diagnosticString);
         }
+      } else {
+        // The message does not start with "(" or "[".
+        key = msg;
+        message = null;
       }
 
       if (lineNumber == null) {
@@ -200,7 +197,6 @@ public class TestDiagnosticUtils {
         isFixable = false;
         key = warningMatcher.group(1 + capturingGroupOffset);
         message = null;
-        noParentheses = true;
 
         if (lineNumber == null) {
           try {
@@ -215,7 +211,6 @@ public class TestDiagnosticUtils {
         isFixable = false;
         key = diagnosticString.substring("warning:".length()).trim();
         message = null;
-        noParentheses = true;
         if (lineNumber != null) {
           lineNo = lineNumber;
         } else {
@@ -227,7 +222,6 @@ public class TestDiagnosticUtils {
         isFixable = false;
         key = diagnosticString;
         message = null;
-        noParentheses = true;
 
         // This should only happen if we are parsing a Java Diagnostic from the compiler
         // that we did do not handle.
@@ -236,7 +230,7 @@ public class TestDiagnosticUtils {
         }
       }
     }
-    return new TestDiagnostic(filename, lineNo, kind, key, message, isFixable, noParentheses);
+    return new TestDiagnostic(filename, lineNo, kind, key, message, isFixable);
   }
 
   /** Matches an absolute filename (with delimiters). */
@@ -405,8 +399,7 @@ public class TestDiagnosticUtils {
               DiagnosticKind.Error,
               "Use \"// ::\", not \"//::\"",
               null,
-              false,
-              true);
+              false);
       return new TestDiagnosticLine(
           filename, lineNumber, line, Collections.singletonList(diagnostic));
     } else if (trimmedLine.startsWith("// jspecify_")) {
