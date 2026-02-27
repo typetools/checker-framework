@@ -12,8 +12,13 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  */
 public class TestDiagnostic {
 
+  /** The file to which the diagnostic applies. */
   private final String filename;
+
+  /** The line number to which the diagnostic applies. */
   private final long lineNumber;
+
+  /** The kind of diagnostic. */
   private final DiagnosticKind kind;
 
   /**
@@ -25,10 +30,20 @@ public class TestDiagnostic {
   /** The full error message, without the key. Null if the key is the whole message. */
   private final @Nullable String message;
 
-  /** Returns true if this diagnostic should no longer be reported after whole program inference. */
+  /** True if this diagnostic should no longer be reported after whole-program inference. */
   private final boolean isFixable;
 
-  /** Basic constructor that sets the immutable fields of this diagnostic. */
+  /**
+   * Basic constructor that sets the immutable fields of this diagnostic.
+   *
+   * @param filename the file to which the diagnostic applies
+   * @param lineNumber the line number to which the diagnostic applies
+   * @param kind kind of diagnostic
+   * @param key an error key or full error message
+   * @param message the full error message, without the key; null if the key is the whole message
+   * @param isFixable true if this diagnostic should no longer be reported after whole-program
+   *     inference
+   */
   public TestDiagnostic(
       String filename,
       long lineNumber,
@@ -74,6 +89,11 @@ public class TestDiagnostic {
     return message;
   }
 
+  /**
+   * Returns true if this diagnostic should no longer be reported after whole-program inference.
+   *
+   * @return true if this diagnostic should no longer be reported after whole-program inference
+   */
   public boolean isFixable() {
     return isFixable;
   }
