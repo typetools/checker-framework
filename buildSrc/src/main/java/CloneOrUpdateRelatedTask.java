@@ -102,7 +102,7 @@ public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
       return;
     }
     if (!orgExists(fbCf.org, relatedRepoName)) {
-      // There is no related org that is the same as the CF org.
+      // There is no related repo that is in the same org as the CF clone.
       return;
     }
     if (remoteBranchExists(fbCf.org, relatedRepoName, fbCf.branch)) {
