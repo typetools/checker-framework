@@ -101,7 +101,7 @@ public class KeyForPropagator {
     TypeElement supertypeElement = (TypeElement) supertype.getUnderlyingType().asElement();
     Types types = typeFactory.getProcessingEnv().getTypeUtils();
 
-    // Note: The right hand side of this or expression will cover raw types
+    // Note: The right-hand side of this or expression will cover raw types
     if (subtype.getTypeArguments().isEmpty()) {
       return;
     } // else

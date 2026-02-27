@@ -7,9 +7,25 @@
 
 ### User-visible changes
 
-Removed long-deprecated `-Alint=forbidnonnullarraycomponents`.
+Command-line arguments:
+
+* Added `-AinferOutputDirectory`.
+* Removed long-deprecated `-Alint=forbidnonnullarraycomponents`.
+
+New command-line argument `-Aonelinemsg` puts error messages on a single line.
+This is useful when using a tool that only shows the first line of the error.
 
 ### Implementation details
+
+In `AnnotatedTypeFactory`, `canonicalAnnotation()` returns a non-null value.
+
+In `AnnotationClassLoader`:
+
+* Renamed `hasWellDefinedTargetMetaAnnotation()` to `isTypeQualifierAnnotation()`.
+  The method now returns `true` for annotations bearing `@InvisibleQualifier`
+  or `@SubtypeOf`, in addition to the existing `@Target(TYPE_USE)` check.
+
+Removed classes and methods that have been deprecated for more than two years.
 
 ### Closed issues
 

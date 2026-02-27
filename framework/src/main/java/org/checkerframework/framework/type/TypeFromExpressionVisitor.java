@@ -280,7 +280,7 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
           AnnotatedTypes.asMemberOf(f.types, f, typeOfReceiver, elt);
       TreePath path = f.getPath(tree);
 
-      // Only capture the type if this is not the left hand side of an assignment.
+      // Only capture the type if this is not the left-hand side of an assignment.
       if (path != null && path.getParentPath().getLeaf() instanceof AssignmentTree) {
         AssignmentTree assignmentTree = (AssignmentTree) path.getParentPath().getLeaf();
         @SuppressWarnings("interning:not.interned") // Looking for exact object.

@@ -118,7 +118,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
 
   /**
    * Replaces any {@code IntRangeFromX} annotations with {@code @UnknownVal}. This is used to
-   * prevent these annotations from being required on the left hand side of assignments.
+   * prevent these annotations from being required on the left-hand side of assignments.
    *
    * @param varType an annotated type mirror that may contain IntRangeFromX annotations, which will
    *     be used on the lhs of an assignment or pseudo-assignment

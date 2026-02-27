@@ -1,3 +1,4 @@
+import java.util.List;
 import java.util.Optional;
 import org.checkerframework.dataflow.qual.Pure;
 
@@ -31,14 +32,33 @@ public class Marks3c {
     return Optional.ofNullable(new Customer());
   }
 
-  void main(Optional<Customer> optCustomer) {
+  String customerNameByID1(Optional<Customer> opt) {
+    // better: return opt.map(Customer::getName).orElse("UNKNOWN");
     // :: warning: (prefer.map.and.orelse)
+    return opt.isPresent() ? opt.get().getName() : "UNKNOWN";
+  }
+
+  String customerNameByID2(List<Customer> custList, int custID) {
+    Optional<Customer> opt = custList.stream().filter(c -> c.getID() == custID).findFirst();
+    // better: return opt.map(Customer::getName).orElse("UNKNOWN");
+    // :: warning: (prefer.map.and.orelse)
+    return opt.isPresent() ? opt.get().getName() : "UNKNOWN";
+  }
+
+  void main(Optional<Customer> optCustomer) {
+    // :: warning: (prefer.map)
     if (optCustomer.isPresent()) {
       Customer c = identity(optCustomer.get());
     } else {
     }
 
-    // :: warning: (prefer.map.and.orelse)
+    if (optCustomer.isPresent()) {
+      Customer c = identity(optCustomer.get());
+    } else {
+      System.out.println("hello world");
+    }
+
+    // :: warning: (prefer.map)
     if (!optCustomer.isPresent()) {
     } else {
       Customer c = identity(optCustomer.get());
@@ -47,15 +67,15 @@ public class Marks3c {
 
   void m1() {
     if (getOptCustomerImpure().isPresent()) {
-      // Fine, calling `getOptCustomerImpure()` once instead of twice may not be
-      // semantics-preserving
+      // No "prefer.map.and.orelse" warning because calling `getOptCustomerImpure()` once
+      // instead of twice may not be semantics-preserving.
       Customer c = identity(getOptCustomerImpure().get());
     } else {
     }
   }
 
   void m2() {
-    // :: warning: (prefer.map.and.orelse)
+    // :: warning: (prefer.map)
     if (getOptCustomerPure().isPresent()) {
       Customer c = identity(getOptCustomerPure().get());
     } else {
