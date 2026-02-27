@@ -3,13 +3,10 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
-import java.util.Map;
 import javax.inject.Inject;
-import org.eclipse.jgit.api.LsRemoteCommand;
 import org.eclipse.jgit.lib.Config;
 import org.eclipse.jgit.lib.ConfigConstants;
 import org.eclipse.jgit.lib.Constants;
-import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.gradle.api.DefaultTask;
@@ -122,7 +119,7 @@ public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
    * gitDir}. If the branch checked out at {@code gitDir} does not have a remote tracking branch,
    * returns {@code null}.
    *
-   * @param gitDir a git directory
+   * @param gitDir a .git directory
    * @return the org and branch of {@code gitDir} or null if there is no remote branch
    */
   private OrgBranch findOrgBranch(File gitDir) {
@@ -216,7 +213,7 @@ public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
    * @param urlAddress a URL
    * @return true if {@code urlAddress} exists
    */
-  private boolean urlExists(String urlAddress) {
+  private static boolean urlExists(String urlAddress) {
     HttpURLConnection connection = null;
     try {
       connection = (HttpURLConnection) URI.create(urlAddress).toURL().openConnection();
@@ -244,23 +241,7 @@ public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
    *     repoName}"
    */
   private static boolean remoteBranchExists(String org, String repoName, String branchName) {
-    // JGit uses the full internal Git reference name, which for a branch is
-    // "refs/heads/<branchName>".
-    String fullBranchName = Constants.R_HEADS + branchName;
-
-    try {
-      // Execute the ls-remote command to get all references from the remote
-      Map<String, Ref> remoteRefs =
-          new LsRemoteCommand(null)
-              .setRemote(getGitHubUrl(org, repoName))
-              .setTimeout(60)
-              .setHeads(true)
-              .callAsMap();
-      return remoteRefs.containsKey(fullBranchName);
-    } catch (Exception e) {
-      System.err.println("Error checking remote branch existence: " + e.getMessage());
-    }
-
-    return false;
+    return urlExists(
+        String.format("https://api.github.com/repos/%s/%s/branches/%s", org, repoName, branchName));
   }
 }
