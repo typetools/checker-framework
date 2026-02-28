@@ -1449,7 +1449,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       return;
     }
 
-    String defaultFormat = "(" + messageKey + ")";
+    String defaultFormat = "[" + messageKey + "]";
     String prefix;
     String fmtString;
     if (this.processingEnv.getOptions() != null /*nnbug*/
