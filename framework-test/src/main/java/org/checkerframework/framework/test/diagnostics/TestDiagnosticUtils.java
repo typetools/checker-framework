@@ -86,7 +86,7 @@ public class TestDiagnosticUtils {
 
   /**
    * Instantiate a diagnostic from output produced by the Java compiler. The resulting diagnostic is
-   * never fixable and always has parentheses.
+   * never fixable and always has square brackets.
    */
   public static TestDiagnostic fromJavaxToolsDiagnostic(
       String diagnosticString, boolean noMsgText) {

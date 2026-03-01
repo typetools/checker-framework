@@ -1681,7 +1681,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    *
    * @param source the object from which to obtain source position information; may be an Element, a
    *     Tree, or null
-   * @param defaultFormat the message key, in parentheses
+   * @param defaultFormat the message key, in square brackets
    * @param args arguments for interpolation in the string corresponding to the given message key
    * @return the first part of the message format output by {@code -Adetailedmsgtext}
    */
