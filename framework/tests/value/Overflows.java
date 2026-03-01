@@ -5,20 +5,20 @@ public class Overflows {
   static void bytes() {
     byte max = Byte.MAX_VALUE;
     @IntVal(-128) byte maxPlus1 = (byte) (max + 1);
-    // :: error: (assignment)
+    // :: error: [assignment]
     @IntVal(-128) short maxPlus1Short = (short) (max + 1);
   }
 
   static void chars() {
     char max = Character.MAX_VALUE;
-    // :: warning: (cast.unsafe)
+    // :: warning: [cast.unsafe]
     @IntVal(0) char maxPlus1 = (char) (max + 1);
   }
 
   static void shorts() {
     short max = Short.MAX_VALUE;
     @IntVal(-32768) short maxPlus1 = (short) (max + 1);
-    // :: error: (assignment)
+    // :: error: [assignment]
     @IntVal(-32768) int maxPlus1Int = (int) (max + 1);
   }
 

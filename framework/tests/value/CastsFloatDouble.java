@@ -18,7 +18,7 @@ public class CastsFloatDouble {
   }
 
   void floatToFloatSubset(@DoubleVal({1.0, 2.0, 3.0}) float f) {
-    // :: error: (assignment)
+    // :: error: [assignment]
     @DoubleVal({1.0}) float f2 = (float) f;
   }
 
@@ -32,7 +32,7 @@ public class CastsFloatDouble {
   }
 
   void floatToFloatUnannotated2(float f1) {
-    // :: error: (assignment)
+    // :: error: [assignment]
     @DoubleVal({1.0}) float f2 = f1;
   }
 
@@ -48,7 +48,7 @@ public class CastsFloatDouble {
   }
 
   void doubleToFloatSubset(@DoubleVal({1.0, 2.0}) double d) {
-    // :: error: (assignment)
+    // :: error: [assignment]
     @DoubleVal({1.0}) float f = (float) d;
   }
 
@@ -80,7 +80,7 @@ public class CastsFloatDouble {
   }
 
   void floatToDoubleSubset(@DoubleVal({1.0, 2.0, 3.0}) float f) {
-    // :: error: (assignment)
+    // :: error: [assignment]
     @DoubleVal({1.0}) double d = (double) f;
   }
 
@@ -96,7 +96,7 @@ public class CastsFloatDouble {
   }
 
   void doubleToDoubleSubset(@DoubleVal({1.0, 2.0, 3.0}) double d1) {
-    // :: error: (assignment)
+    // :: error: [assignment]
     @DoubleVal({1.0}) double d = (double) d1;
   }
 

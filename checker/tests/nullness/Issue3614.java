@@ -31,7 +31,7 @@ public class Issue3614 {
   }
 
   public static @PolyNull Boolean not2(@PolyNull Boolean b) {
-    // :: error: (unboxing.of.nullable)
+    // :: error: [unboxing.of.nullable]
     return (b == null) ? b : !b;
   }
 
@@ -78,7 +78,7 @@ public class Issue3614 {
   }
 
   public static @PolyNull Integer plus1Err(@PolyNull Integer b0, @PolyNull Integer b1) {
-    // :: error: (return) :: error: (unboxing.of.nullable)
+    // :: error: [return] :: error: [unboxing.of.nullable]
     return (b0 == null) ? null : (b0 + b1);
   }
 
@@ -86,7 +86,7 @@ public class Issue3614 {
     if (b0 == null) {
       return null;
     } else {
-      // :: error: (unboxing.of.nullable)
+      // :: error: [unboxing.of.nullable]
       return b0 + b1;
     }
   }
@@ -95,7 +95,7 @@ public class Issue3614 {
     if (a == null) {
       return null;
     }
-    // :: error: (unboxing.of.nullable)
+    // :: error: [unboxing.of.nullable]
     return a + b;
   }
 

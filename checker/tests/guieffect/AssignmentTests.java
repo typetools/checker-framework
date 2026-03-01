@@ -25,12 +25,12 @@ public class AssignmentTests {
   }
 
   public void testBody5(@UI P ui, @AlwaysSafe P safe, @PolyUI P poly) {
-    // :: error: (assignment)
+    // :: error: [assignment]
     safe = ui;
   }
 
   public void testBody6(@UI P ui, @AlwaysSafe P safe, @PolyUI P poly) {
-    // :: error: (assignment)
+    // :: error: [assignment]
     safe = poly;
   }
 
@@ -43,7 +43,7 @@ public class AssignmentTests {
   }
 
   public void testBody9(@UI P ui, @AlwaysSafe P safe, @PolyUI P poly) {
-    // :: error: (assignment)
+    // :: error: [assignment]
     poly = ui;
   }
 }

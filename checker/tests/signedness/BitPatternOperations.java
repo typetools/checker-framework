@@ -23,21 +23,21 @@ public class BitPatternOperations {
   }
 
   void forbiddenUses(@BitPattern long bits, @BitPattern int pattern) {
-    // :: error: (operation.bitpattern)
+    // :: error: [operation.bitpattern]
     long sum = bits + 1L;
-    // :: error: (operation.bitpattern)
+    // :: error: [operation.bitpattern]
     long difference = 2L - bits;
-    // :: error: (operation.bitpattern)
+    // :: error: [operation.bitpattern]
     int product = pattern * 3;
-    // :: error: (compound.assignment.bitpattern)
+    // :: error: [compound.assignment.bitpattern]
     bits += 4L;
-    // :: error: (compound.assignment.bitpattern)
+    // :: error: [compound.assignment.bitpattern]
     pattern -= 1;
-    // :: error: (unary.bitpattern)
+    // :: error: [unary.bitpattern]
     bits++;
-    // :: error: (unary.bitpattern)
+    // :: error: [unary.bitpattern]
     --pattern;
-    // :: error: (bitpattern.concat)
+    // :: error: [bitpattern.concat]
     String s = bits + "";
   }
 }

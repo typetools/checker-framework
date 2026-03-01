@@ -85,8 +85,8 @@ def javac_sanity_check(checker_framework_website: str, release_version: str) -> 
         "Javac sanity check",
         nullness_output,
         [
-            "NullnessExampleWithWarnings.java:23: error: (assignment)",
-            "NullnessExampleWithWarnings.java:33: error: (argument)",
+            "NullnessExampleWithWarnings.java:23: error: [assignment]",
+            "NullnessExampleWithWarnings.java:33: error: [argument]",
         ],
     )
 
@@ -99,8 +99,8 @@ def javac_sanity_check(checker_framework_website: str, release_version: str) -> 
         "Javac Shorthand Sanity Check",
         nullness_shorthand_output,
         [
-            "NullnessExampleWithWarnings.java:23: error: (assignment)",
-            "NullnessExampleWithWarnings.java:33: error: (argument)",
+            "NullnessExampleWithWarnings.java:23: error: [assignment]",
+            "NullnessExampleWithWarnings.java:33: error: [argument]",
         ],
     )
 

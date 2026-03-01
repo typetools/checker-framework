@@ -11,7 +11,7 @@ public class StartsEndsWith {
   }
 
   String expectedError(String methodName) {
-    // :: error: (argument)
+    // :: error: [argument]
     return methodName.substring(prefix.length());
   }
 
@@ -19,14 +19,14 @@ public class StartsEndsWith {
     if (methodName.startsWith(prefix)) {
       return methodName.substring(prefix.length());
     } else {
-      // :: error: (argument)
+      // :: error: [argument]
       return methodName.substring(prefix.length());
     }
   }
 
   String notStartsWithTest(String methodName) {
     if (!methodName.startsWith(prefix)) {
-      // :: error: (argument)
+      // :: error: [argument]
       return methodName.substring(prefix.length());
     } else {
       String result = methodName.substring(prefix.length());
@@ -38,14 +38,14 @@ public class StartsEndsWith {
     if (methodName.endsWith(prefix)) {
       return methodName.substring(prefix.length());
     } else {
-      // :: error: (argument)
+      // :: error: [argument]
       return methodName.substring(prefix.length());
     }
   }
 
   String notEndsWithTest(String methodName) {
     if (!methodName.endsWith(prefix)) {
-      // :: error: (argument)
+      // :: error: [argument]
       return methodName.substring(prefix.length());
     } else {
       String result = methodName.substring(prefix.length());
@@ -65,7 +65,7 @@ public class StartsEndsWith {
     if (methodName.endsWith(suffix)) {
       // TODO: Refinement establishes suffix.length() <= methodName.length(), but
       // the checker cannot (yet) verify the complex arithmetic in substring(0, length - length).
-      // :: error: (argument)
+      // :: error: [argument]
       String result = methodName.substring(0, methodName.length() - suffix.length());
       return result;
     } else {

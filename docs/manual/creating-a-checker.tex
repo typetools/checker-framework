@@ -286,7 +286,7 @@ class TestHierarchy {
   void testHierarchy(@UnknownSign int us, @NonNegative int nn) {
     @UnknownSign int a = us;
     @UnknownSign int b = nn;
-    // :: error: (assignment)
+    // :: error: [assignment]
     @NonNegative int c = us; // expected error on this line
     @NonNegative int d = nn;
   }
@@ -2056,7 +2056,7 @@ errors and warnings (if any) a checker should emit.  An example is
 class MyNullnessTest {
   void method() {
     Object nullable = null;
-    // :: error: (dereference.of.nullable)
+    // :: error: [dereference.of.nullable]
     nullable.toString();
   }
 }
