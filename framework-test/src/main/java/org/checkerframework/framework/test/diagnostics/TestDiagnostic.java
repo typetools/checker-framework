@@ -130,7 +130,7 @@ public class TestDiagnostic {
   @Override
   public String toString() {
     String loc = filename + ":" + lineNumber + ": ";
-    String key = "(" + this.key + ")";
+    String key = "[" + this.key + "]";
     String msg = message == null ? "" : " " + message;
     if (kind == DiagnosticKind.JSpecify) {
       return loc + key;
