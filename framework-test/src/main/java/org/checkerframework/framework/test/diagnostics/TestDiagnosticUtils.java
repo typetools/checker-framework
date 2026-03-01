@@ -88,13 +88,12 @@ public class TestDiagnosticUtils {
    * Instantiate a diagnostic from output produced by the Java compiler. The resulting diagnostic is
    * never fixable and always has square brackets.
    */
-  public static TestDiagnostic fromJavaxToolsDiagnostic(
-      String diagnosticString, boolean noMsgText) {
+  public static TestDiagnostic fromJavaxToolsDiagnostic(String diagnosticString) {
     // It would be nice not to parse this from the diagnostic string.
     // However, diagnostic.toString() may contain "[unchecked]" even though getMessage() does
     // not.
     // Since we want to match the error messages reported by javac exactly, we must parse.
-    IPair<String, String> messageAndFilename = messageAndFilename(diagnosticString, noMsgText);
+    IPair<String, String> messageAndFilename = messageAndFilename(diagnosticString);
     String message = messageAndFilename.first;
     String filename = messageAndFilename.second;
     return fromPatternMatching(
@@ -242,34 +241,31 @@ public class TestDiagnosticUtils {
    * line of the message, without the leading filename.
    *
    * @param original a javax diagnostic
-   * @param noMsgText true if to do work; if false, this returns a pair of (argument, "")
    * @return the diagnostic, split into message and filename
    */
-  public static IPair<String, String> messageAndFilename(String original, boolean noMsgText) {
+  public static IPair<String, String> messageAndFilename(String original) {
     String trimmed = original;
     String filename = "";
-    if (noMsgText) {
-      if (!retainAllLines(trimmed)) {
+    if (!retainAllLines(trimmed)) {
 
-        // Retain only the first line.
-        int lineSepPos = trimmed.indexOf(System.lineSeparator());
-        if (lineSepPos != -1) {
-          trimmed = trimmed.substring(0, lineSepPos);
-        }
+      // Retain only the first line.
+      int lineSepPos = trimmed.indexOf(System.lineSeparator());
+      if (lineSepPos != -1) {
+        trimmed = trimmed.substring(0, lineSepPos);
+      }
 
-        int extensionPos = trimmed.indexOf(".java:");
-        if (extensionPos != -1) {
-          int basenameStart = trimmed.lastIndexOf(File.separator, extensionPos);
-          filename = trimmed.substring(basenameStart + 1, extensionPos + 5).trim();
-          trimmed = trimmed.substring(extensionPos + 5).trim();
-        }
+      int extensionPos = trimmed.indexOf(".java:");
+      if (extensionPos != -1) {
+        int basenameStart = trimmed.lastIndexOf(File.separator, extensionPos);
+        filename = trimmed.substring(basenameStart + 1, extensionPos + 5).trim();
+        trimmed = trimmed.substring(extensionPos + 5).trim();
+      }
 
-        // Retain only the file basename, without directories, when embedded in message.
-        Matcher m = filenamePattern.matcher(trimmed);
-        if (m.find()) {
-          trimmed =
-              trimmed.substring(0, m.start()) + " " + m.group(1) + ":" + trimmed.substring(m.end());
-        }
+      // Retain only the file basename, without directories, when embedded in message.
+      Matcher m = filenamePattern.matcher(trimmed);
+      if (m.find()) {
+        trimmed =
+            trimmed.substring(0, m.start()) + " " + m.group(1) + ":" + trimmed.substring(m.end());
       }
     }
 
@@ -427,7 +423,7 @@ public class TestDiagnosticUtils {
   }
 
   public static Set<TestDiagnostic> fromJavaxDiagnosticList(
-      List<Diagnostic<? extends JavaFileObject>> javaxDiagnostics, boolean noMsgText) {
+      List<Diagnostic<? extends JavaFileObject>> javaxDiagnostics) {
     Set<TestDiagnostic> diagnostics = new LinkedHashSet<>(javaxDiagnostics.size());
 
     for (Diagnostic<? extends JavaFileObject> diagnostic : javaxDiagnostics) {
@@ -443,7 +439,7 @@ public class TestDiagnosticUtils {
         continue;
       }
 
-      diagnostics.add(TestDiagnosticUtils.fromJavaxToolsDiagnostic(diagnosticString, noMsgText));
+      diagnostics.add(TestDiagnosticUtils.fromJavaxToolsDiagnostic(diagnosticString));
     }
 
     return diagnostics;
