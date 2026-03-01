@@ -87,6 +87,9 @@ public class TestDiagnosticUtils {
   /**
    * Instantiate a diagnostic from output produced by the Java compiler. The resulting diagnostic is
    * never fixable and always has square brackets.
+   *
+   * @param diagnosticString a diagnostic produced by the Java compiler
+   * @return a TestDiagnostic for the string
    */
   public static TestDiagnostic fromJavaxToolsDiagnostic(String diagnosticString) {
     // It would be nice not to parse this from the diagnostic string.
@@ -422,6 +425,12 @@ public class TestDiagnosticUtils {
         "", diagnostic.getLineNumber(), diagnosticLine, Arrays.asList(diagnostic));
   }
 
+  /**
+   * Convert Java compiler output into a set of {@code TestDiagnostic}s.
+   *
+   * @param javaxDiagnostics output of the Java compiler
+   * @return a set of {@code TestDiagnostic}s
+   */
   public static Set<TestDiagnostic> fromJavaxDiagnosticList(
       List<Diagnostic<? extends JavaFileObject>> javaxDiagnostics) {
     Set<TestDiagnostic> diagnostics = new LinkedHashSet<>(javaxDiagnostics.size());
