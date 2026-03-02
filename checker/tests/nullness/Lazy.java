@@ -32,26 +32,26 @@ public class Lazy {
   void test2() {}
 
   void test3() {
-    // :: error: (dereference.of.nullable)
+    // :: error: [dereference.of.nullable]
     g.toLowerCase();
   }
 
   void test4() {
-    // :: error: (assignment)
+    // :: error: [assignment]
     g = null;
-    // :: error: (monotonic)
+    // :: error: [monotonic]
     g = g2;
   }
 
   void _test3() {
-    // :: error: (dereference.of.nullable)
+    // :: error: [dereference.of.nullable]
     _g.toLowerCase();
   }
 
   void _test4() {
-    // :: error: (assignment)
+    // :: error: [assignment]
     _g = null;
-    // :: error: (monotonic)
+    // :: error: [monotonic]
     _g = _g2;
   }
 }

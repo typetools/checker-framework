@@ -15,6 +15,9 @@ Command-line arguments:
 New command-line argument `-Aonelinemsg` puts error messages on a single line.
 This is useful when using a tool that only shows the first line of the error.
 
+The command-line argument `-Anomsgtext` surrounds the error key with brackets
+instead of parenthesis. This matches Java error messages.
+
 ### Implementation details
 
 In `AnnotatedTypeFactory`, `canonicalAnnotation()` returns a non-null value.
@@ -24,6 +27,11 @@ In `AnnotationClassLoader`:
 * Renamed `hasWellDefinedTargetMetaAnnotation()` to `isTypeQualifierAnnotation()`.
   The method now returns `true` for annotations bearing `@InvisibleQualifier`
   or `@SubtypeOf`, in addition to the existing `@Target(TYPE_USE)` check.
+
+In `TestDiagnostic`:
+
+* Renamed field `message` to `key`.
+* Added new nullable field `message` for the full message without the key.
 
 Removed classes and methods that have been deprecated for more than two years.
 
