@@ -31,8 +31,8 @@ ifelse($1,canary_version,,[    dependsOn:
     steps:
       - checkout: self
         fetchDepth: 25
-      - bash: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-cftests-junit-part1.sh
-        displayName: test-cftests-junit-part1.sh
+      - bash: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-cftests-junit.sh part1
+        displayName: test-cftests-junit.sh part1
   - job: junit_part2_jdk$1
 ifelse($1,canary_version,,[    dependsOn:
       - canary_jobs
@@ -45,8 +45,8 @@ ifelse($1,canary_version,,[    dependsOn:
     steps:
       - checkout: self
         fetchDepth: 25
-      - bash: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-cftests-junit-part2.sh
-        displayName: test-cftests-junit-part2.sh])dnl
+      - bash: export ORG_GRADLE_PROJECT_jdkTestVersion=$1 && ./checker/bin-devel/test-cftests-junit.sh part2
+        displayName: test-cftests-junit.sh part2])dnl
 dnl
 define([nonjunit_job], [dnl
   - job: nonjunit_jdk$1

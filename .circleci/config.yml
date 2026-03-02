@@ -5,7 +5,7 @@ jobs:
   # Only proceed to other jobs if canary_jobs passes.
   canary_jobs:
     docker:
-      - image: 'cimg/base:2026.02'
+      - image: 'cimg/base:2025.10'
     resource_class: small
     environment:
       CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
@@ -32,8 +32,8 @@ jobs:
           paths:
             - .git
       - run:
-          name: test-cftests-junit-part1.sh
-          command: export ORG_GRADLE_PROJECT_jdkTestVersion=11 && ./checker/bin-devel/test-cftests-junit-part1.sh
+          name: test-cftests-junit.sh part1
+          command: export ORG_GRADLE_PROJECT_jdkTestVersion=11 && ./checker/bin-devel/test-cftests-junit.sh part1
           no_output_timeout: "30m"
   junit_part2_jdk11:
     docker:
@@ -54,8 +54,8 @@ jobs:
           paths:
             - .git
       - run:
-          name: test-cftests-junit-part2.sh
-          command: export ORG_GRADLE_PROJECT_jdkTestVersion=11 && ./checker/bin-devel/test-cftests-junit-part2.sh
+          name: test-cftests-junit.sh part2
+          command: export ORG_GRADLE_PROJECT_jdkTestVersion=11 && ./checker/bin-devel/test-cftests-junit.sh part2
           no_output_timeout: "30m"
 
   junit_part1_jdk17:
@@ -77,8 +77,8 @@ jobs:
           paths:
             - .git
       - run:
-          name: test-cftests-junit-part1.sh
-          command: export ORG_GRADLE_PROJECT_jdkTestVersion=17 && ./checker/bin-devel/test-cftests-junit-part1.sh
+          name: test-cftests-junit.sh part1
+          command: export ORG_GRADLE_PROJECT_jdkTestVersion=17 && ./checker/bin-devel/test-cftests-junit.sh part1
           no_output_timeout: "30m"
   junit_part2_jdk17:
     docker:
@@ -99,8 +99,8 @@ jobs:
           paths:
             - .git
       - run:
-          name: test-cftests-junit-part2.sh
-          command: export ORG_GRADLE_PROJECT_jdkTestVersion=17 && ./checker/bin-devel/test-cftests-junit-part2.sh
+          name: test-cftests-junit.sh part2
+          command: export ORG_GRADLE_PROJECT_jdkTestVersion=17 && ./checker/bin-devel/test-cftests-junit.sh part2
           no_output_timeout: "30m"
 
   junit_part1_jdk21:
@@ -122,8 +122,8 @@ jobs:
           paths:
             - .git
       - run:
-          name: test-cftests-junit-part1.sh
-          command: export ORG_GRADLE_PROJECT_jdkTestVersion=21 && ./checker/bin-devel/test-cftests-junit-part1.sh
+          name: test-cftests-junit.sh part1
+          command: export ORG_GRADLE_PROJECT_jdkTestVersion=21 && ./checker/bin-devel/test-cftests-junit.sh part1
           no_output_timeout: "30m"
   junit_part2_jdk21:
     docker:
@@ -144,8 +144,8 @@ jobs:
           paths:
             - .git
       - run:
-          name: test-cftests-junit-part2.sh
-          command: export ORG_GRADLE_PROJECT_jdkTestVersion=21 && ./checker/bin-devel/test-cftests-junit-part2.sh
+          name: test-cftests-junit.sh part2
+          command: export ORG_GRADLE_PROJECT_jdkTestVersion=21 && ./checker/bin-devel/test-cftests-junit.sh part2
           no_output_timeout: "30m"
 
   junit_part1_jdk25:
@@ -167,8 +167,8 @@ jobs:
           paths:
             - .git
       - run:
-          name: test-cftests-junit-part1.sh
-          command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-cftests-junit-part1.sh
+          name: test-cftests-junit.sh part1
+          command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-cftests-junit.sh part1
           no_output_timeout: "30m"
   junit_part2_jdk25:
     docker:
@@ -189,8 +189,8 @@ jobs:
           paths:
             - .git
       - run:
-          name: test-cftests-junit-part2.sh
-          command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-cftests-junit-part2.sh
+          name: test-cftests-junit.sh part2
+          command: export ORG_GRADLE_PROJECT_jdkTestVersion=25 && ./checker/bin-devel/test-cftests-junit.sh part2
           no_output_timeout: "30m"
 
   nonjunit_jdk25:
