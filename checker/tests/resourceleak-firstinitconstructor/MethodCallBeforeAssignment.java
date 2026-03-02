@@ -11,13 +11,13 @@ class MethodCallBeforeAssignment {
 
   public MethodCallBeforeAssignment() throws Exception {
     doSomething(); // Method call before assignment — suppressor should bail
-    // :: error: (required.method.not.called)
+    // :: error: [required.method.not.called]
     s = new FileInputStream("test.txt");
   }
 
   public MethodCallBeforeAssignment(boolean its_a_constructor_call) throws Exception {
     new C(this);
-    // :: error: (required.method.not.called)
+    // :: error: [required.method.not.called]
     s = new FileInputStream("test.txt");
   }
 
@@ -26,16 +26,16 @@ class MethodCallBeforeAssignment {
     s = helper();
   }
 
-  // :: error: (missing.creates.mustcall.for)
+  // :: error: [missing.creates.mustcall.for]
   public void setS() throws Exception {
-    // :: error: (required.method.not.called)
+    // :: error: [required.method.not.called]
     this.s = new FileInputStream("test.txt");
   }
 
   @Owning
-  // :: error: (missing.creates.mustcall.for)
+  // :: error: [missing.creates.mustcall.for]
   FileInputStream helper() throws Exception {
-    // :: error: (required.method.not.called)
+    // :: error: [required.method.not.called]
     s = new FileInputStream("test.txt");
     return new FileInputStream("test.txt");
   }
@@ -44,9 +44,9 @@ class MethodCallBeforeAssignment {
     System.out.println("placeholder");
   }
 
-  // :: error: (missing.creates.mustcall.for)
+  // :: error: [missing.creates.mustcall.for]
   public void open() throws Exception {
-    // :: error: (required.method.not.called)
+    // :: error: [required.method.not.called]
     s = new FileInputStream("test.txt");
   }
 

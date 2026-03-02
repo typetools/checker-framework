@@ -19,10 +19,10 @@ class FirstAssignmentInConditional {
   public FirstAssignmentInConditional(boolean b) {
     try {
       if (b) {
-        // ::error: (required.method.not.called)
+        // ::error: [required.method.not.called]
         s = new FileInputStream("test1.txt"); // false positive: first write in this branch
       } else {
-        // ::error: (required.method.not.called)
+        // ::error: [required.method.not.called]
         s = new FileInputStream("test2.txt"); // false positive: first write in this branch
       }
     } catch (Exception e) {
@@ -33,18 +33,18 @@ class FirstAssignmentInConditional {
     try {
       if (b1) {
         if (b2) {
-          // ::error: (required.method.not.called)
+          // ::error: [required.method.not.called]
           s = new FileInputStream("test1.txt"); // false positive
         } else {
-          // ::error: (required.method.not.called)
+          // ::error: [required.method.not.called]
           s = new FileInputStream("test2.txt"); // false positive
         }
       } else {
         if (b2) {
-          // ::error: (required.method.not.called)
+          // ::error: [required.method.not.called]
           s = new FileInputStream("test1.txt"); // false positive
         } else {
-          // ::error: (required.method.not.called)
+          // ::error: [required.method.not.called]
           s = new FileInputStream("test2.txt"); // false positive
         }
       }

@@ -16,10 +16,10 @@ class ExplicitNullInitializer {
     }
   }
 
-  // :: error: (missing.creates.mustcall.for)
+  // :: error: [missing.creates.mustcall.for]
   public void open() {
     try {
-      // :: error: (required.method.not.called)
+      // :: error: [required.method.not.called]
       s = new FileInputStream("test.txt");
     } catch (Exception e) {
     }

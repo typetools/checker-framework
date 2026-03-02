@@ -13,10 +13,10 @@ class InstanceInitializerBlockLeak2 {
     assignF();
   }
 
-  // :: error: (missing.creates.mustcall.for)
+  // :: error: [missing.creates.mustcall.for]
   void assignF() {
     try {
-      // :: error: (required.method.not.called)
+      // :: error: [required.method.not.called]
       f = new FileInputStream("file.txt");
     } catch (Exception e) {
     }
@@ -24,16 +24,16 @@ class InstanceInitializerBlockLeak2 {
 
   public InstanceInitializerBlockLeak2() {
     try {
-      // :: error: (required.method.not.called)
+      // :: error: [required.method.not.called]
       f = new FileInputStream("file.txt");
     } catch (Exception e) {
     }
   }
 
-  // :: error: (missing.creates.mustcall.for)
+  // :: error: [missing.creates.mustcall.for]
   public void open() {
     try {
-      // :: error: (required.method.not.called)
+      // :: error: [required.method.not.called]
       f = new FileInputStream("file.txt");
     } catch (Exception e) {
     }

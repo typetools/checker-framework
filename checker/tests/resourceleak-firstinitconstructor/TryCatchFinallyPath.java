@@ -17,7 +17,7 @@ class TryCatchFinallyPath {
   TryCatchFinallyPath(boolean fail) {
     try {
       if (!fail) {
-        // ::error: (required.method.not.called)
+        // ::error: [required.method.not.called]
         s = a; // falsely reported: a CFG-aware analysis would not warn here
       } else {
         throw new RuntimeException();
@@ -25,7 +25,7 @@ class TryCatchFinallyPath {
     } catch (Exception e) {
       s = b; // OK on failing path
     } finally {
-      // ::error: (required.method.not.called)
+      // ::error: [required.method.not.called]
       s = c; // correct warning: later write regardless of path
     }
   }

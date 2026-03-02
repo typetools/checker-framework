@@ -27,14 +27,14 @@ class FirstAssignmentInConstructorBlock {
     {
       s = s2;
     }
-    // :: error: (required.method.not.called)
+    // :: error: [required.method.not.called]
     s = s2;
   }
 
   public FirstAssignmentInConstructorBlock(float f) {
     s = s2;
     {
-      // :: error: (required.method.not.called)
+      // :: error: [required.method.not.called]
       s = s2;
     }
   }
@@ -43,22 +43,22 @@ class FirstAssignmentInConstructorBlock {
     {
       s = s3;
     }
-    // :: error: (required.method.not.called)
+    // :: error: [required.method.not.called]
     s = s2;
   }
 
   public FirstAssignmentInConstructorBlock(char c) {
     s = s2;
     {
-      // :: error: (required.method.not.called)
+      // :: error: [required.method.not.called]
       s = s3;
     }
   }
 
-  // :: error: (missing.creates.mustcall.for)
+  // :: error: [missing.creates.mustcall.for]
   public void open() {
     try {
-      // :: error: (required.method.not.called)
+      // :: error: [required.method.not.called]
       s = new FileInputStream("test.txt");
     } catch (Exception e) {
     }

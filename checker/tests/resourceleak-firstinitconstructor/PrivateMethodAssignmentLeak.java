@@ -13,19 +13,19 @@ class PrivateMethodAssignmentLeak {
     init();
   }
 
-  // :: error: (missing.creates.mustcall.for)
+  // :: error: [missing.creates.mustcall.for]
   private void init() {
     try {
-      // :: error: (required.method.not.called)
+      // :: error: [required.method.not.called]
       f = new FileInputStream("file.txt");
     } catch (Exception e) {
     }
   }
 
-  // :: error: (missing.creates.mustcall.for)
+  // :: error: [missing.creates.mustcall.for]
   public void open() {
     try {
-      // :: error: (required.method.not.called)
+      // :: error: [required.method.not.called]
       f = new FileInputStream("file.txt");
     } catch (Exception e) {
     }

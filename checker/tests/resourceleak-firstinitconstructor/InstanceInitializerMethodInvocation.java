@@ -15,26 +15,26 @@ class InstanceInitializerMethodInvocation {
 
   public InstanceInitializerMethodInvocation() {
     try {
-      // :: error: (required.method.not.called)
+      // :: error: [required.method.not.called]
       f = new FileInputStream("file.txt");
     } catch (Exception e) {
     }
   }
 
-  // :: error: (missing.creates.mustcall.for)
+  // :: error: [missing.creates.mustcall.for]
   void init() {
     try {
-      // :: error: (required.method.not.called)
+      // :: error: [required.method.not.called]
       f = new FileInputStream("file.txt");
     } catch (Exception e) {
       // ignore
     }
   }
 
-  // :: error: (missing.creates.mustcall.for)
+  // :: error: [missing.creates.mustcall.for]
   public void open() {
     try {
-      // :: error: (required.method.not.called)
+      // :: error: [required.method.not.called]
       f = new FileInputStream("file.txt");
     } catch (Exception e) {
     }
