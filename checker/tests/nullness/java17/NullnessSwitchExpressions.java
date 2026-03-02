@@ -21,7 +21,7 @@ public class NullnessSwitchExpressions {
           default -> throw new IllegalStateException("Invalid day: " + day);
         };
 
-    // :: error: (dereference.of.nullable)
+    // :: error: [dereference.of.nullable]
     o.toString();
   }
 
@@ -57,7 +57,7 @@ public class NullnessSwitchExpressions {
           default -> throw new IllegalStateException("Invalid day: " + day);
         };
 
-    // :: error: (dereference.of.nullable)
+    // :: error: [dereference.of.nullable]
     o.toString();
   }
 }

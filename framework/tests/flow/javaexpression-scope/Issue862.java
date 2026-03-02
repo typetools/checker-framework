@@ -7,7 +7,7 @@ import pkg2.Class2;
 
 public class Issue862 {
   void illegalUse(Class2 class2) {
-    // :: error: (contracts.precondition)
+    // :: error: [contracts.precondition]
     class2.requiresOdd();
   }
 

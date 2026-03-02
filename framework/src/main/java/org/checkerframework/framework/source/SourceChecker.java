@@ -220,6 +220,9 @@ import org.plumelib.util.UtilPlume;
   // "-Ainfer=stubs" or "-Ainfer=jaifs".
   "infer",
 
+  // The directory into which to write whole-program inference results.
+  "inferOutputDirectory",
+
   // Whether to output a copy of each file for which annotations were inferred, formatted
   // as an ajava file. Can only be used with -Ainfer=ajava
   "inferOutputOriginal",
@@ -321,9 +324,13 @@ import org.plumelib.util.UtilPlume;
   // constraints.
   "noWarnMemoryConstraints",
 
-  // Only output error code, useful for testing framework
+  // Only output the error message key, useful for testing the framework.
   // org.checkerframework.framework.source.SourceChecker.message(Kind, Object, String, Object...)
   "nomsgtext",
+
+  // Convert newlines to " / ", so error messages fit on one line.
+  // org.checkerframework.framework.source.SourceChecker.message(Kind, Object, String, Object...)
+  "onelinemsg",
 
   // Controls the line separator output in Checker Framework exceptions.
   // org.checkerframework.framework.source.SourceChecker.logBug
@@ -1442,7 +1449,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       return;
     }
 
-    String defaultFormat = "(" + messageKey + ")";
+    String defaultFormat = "[" + messageKey + "]";
     String prefix;
     String fmtString;
     if (this.processingEnv.getOptions() != null /*nnbug*/
@@ -1464,11 +1471,20 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       messageText = prefix + (fmtString == null ? "" : String.format(fmtString, args));
     } catch (Exception e) {
       throw new BugInCF(
-          "Invalid format string: \"" + fmtString + "\" args: " + Arrays.toString(args), e);
+          String.format(
+              "Invalid format string or number of args for %s: \"%s\" args: %s",
+              messageKey, fmtString, Arrays.toString(args)),
+          e);
     }
 
     if (kind == Diagnostic.Kind.ERROR && warns) {
       kind = Diagnostic.Kind.MANDATORY_WARNING;
+    }
+
+    if (this.processingEnv.getOptions() != null /*nnbug*/
+        && this.processingEnv.getOptions().containsKey("onelinemsg")) {
+      // Use a virgule (/), as indicates a line break in poetry.
+      messageText = messageText.replace(System.lineSeparator(), " / ");
     }
 
     if (source instanceof Element) {
@@ -1665,7 +1681,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    *
    * @param source the object from which to obtain source position information; may be an Element, a
    *     Tree, or null
-   * @param defaultFormat the message key, in parentheses
+   * @param defaultFormat the message key, in square brackets
    * @param args arguments for interpolation in the string corresponding to the given message key
    * @return the first part of the message format output by {@code -Adetailedmsgtext}
    */
@@ -2481,7 +2497,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         for (String prefix : prefixes) {
           if (suppressWarningsString.equals(prefix)
               || (suppressWarningsString.startsWith(prefix + ":")
-                  && !suppressWarningsString.equals(prefix + ":unneeded.suppression"))) {
+                  && !suppressWarningsString.equals(prefix + ":" + UNNEEDED_SUPPRESSION_KEY))) {
             reportUnneededSuppression(tree, suppressWarningsString);
             break; // Don't report the same warning string more than once.
           }

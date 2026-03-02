@@ -444,7 +444,7 @@ public class OffsetEquation {
    * Creates an offset equation from the Node.
    *
    * <p>If node is an addition or subtracted node, then this method is called recursively on the
-   * left and right hand nodes and the two equations are added/subtracted to each other depending on
+   * left and right-hand nodes and the two equations are added/subtracted to each other depending on
    * the value of op.
    *
    * <p>Otherwise the return equation is created by converting the node to a {@link

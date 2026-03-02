@@ -15,7 +15,7 @@ abstract class FinallyThrowsException {
   public @Owning Closeable test1() throws IOException {
     // Resource leak: the allocated resource is lost when the exception is thrown
     try {
-      // :: error: (required.method.not.called)
+      // :: error: [required.method.not.called]
       return alloc();
     } finally {
       throw new IOException();
@@ -34,7 +34,7 @@ abstract class FinallyThrowsException {
   public @Owning Closeable test3() throws IOException {
     // Resource leak: the allocated resource is lost if x.close() throws
     try (Closeable x = alloc()) {
-      // :: error: (required.method.not.called)
+      // :: error: [required.method.not.called]
       return alloc();
     }
   }
@@ -77,7 +77,7 @@ abstract class FinallyThrowsException {
   // exception.  The cause of the false positive is the same control-flow merge described in
   // IfBranch.test1(), although the merge is more subtle: both returns have an edge to the
   // implicit `finally { x.close(); }` of the try-with-resources block.
-  // :: error: (required.method.not.called)
+  // :: error: [required.method.not.called]
   public @Owning @Nullable Closeable test7(@Owning Closeable r1) throws IOException {
     try (Closeable x = alloc()) {
       if (choice()) {
@@ -122,10 +122,10 @@ abstract class FinallyThrowsException {
   // This exhibits one false positive on r1 (see test7) and one true positive on r2 (see test3).
   // The true positive might be very surprising because the same code is resource-leak-free when
   // it does not appear under try-with-resources (see test8).
-  // :: error: (required.method.not.called)
+  // :: error: [required.method.not.called]
   public @Owning Closeable test9(@Owning Closeable r1) throws IOException {
     try (Closeable x = alloc()) {
-      // :: error: (required.method.not.called)
+      // :: error: [required.method.not.called]
       Closeable r2 = alloc();
       if (r2 == null) {
         return r1;

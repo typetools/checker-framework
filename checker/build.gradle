@@ -465,7 +465,7 @@ tasks.register("ainferTestCheckerGenerateAjava", Test) {
   doLast {
     copyNonannotatedToAnnotatedDirectory("ainfer-testchecker")
 
-    // AinferTestCheckerAjavaValidationTest fails with "warning: (purity.methodref)", whenever
+    // AinferTestCheckerAjavaValidationTest fails with "warning: [purity.methodref]", whenever
     // there is a user-defined generic interface, and a variable of that type is assigned a
     // method reference.
     delete("tests/ainfer-testchecker/annotated/all-systems/java8/memberref/Issue946.java")
@@ -882,6 +882,9 @@ tasks.register("wpiManyTest", Exec) {
   // This test must always be re-run when requested.
   outputs.upToDateWhen { false }
 
+  // wpi (really dljc) is unmaintained, errs with: ModuleNotFoundError: No module named 'distutils'
+  enabled = false
+
   def projectDir = project.projectDir
 
   environment("CHECKERFRAMEWORK", "${projectDir}/..")
@@ -1008,6 +1011,9 @@ tasks.register("wpiPlumeLibTest", Exec) {
   group = "Verification"
   dependsOn(assembleForJavac)
   dependsOn(":getDoLikeJavac")
+
+  // wpi (really dljc) is unmaintained, errs with: ModuleNotFoundError: No module named 'distutils'
+  enabled = false
 
   // This test must always be re-run when requested.
   outputs.upToDateWhen { false }

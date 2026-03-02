@@ -32,7 +32,7 @@ public class I18nFormatForTest {
     b("{0, number", new Date(12));
     b("{0, number}{1}", 1, "A");
     b("{0}", "a string");
-    // :: error: (argument)
+    // :: error: [argument]
     b("{0, number}", "a string");
 
     // :: error: (i18nformat.formatfor)
@@ -50,7 +50,7 @@ public class I18nFormatForTest {
     i("{0}", "a string");
 
     j("{0}");
-    // :: error: (argument)
+    // :: error: [argument]
     j("{0, number}");
   }
 
@@ -71,7 +71,7 @@ public class I18nFormatForTest {
   }
 
   // @I18nFormatFor needs to be annotated to a string.
-  // :: error: (anno.on.irrelevant)
+  // :: error: [anno.on.irrelevant]
   static void e(@I18nFormatFor("#2") int f, Object... args) {}
 
   // The parameter type is not necessary to an array of objects

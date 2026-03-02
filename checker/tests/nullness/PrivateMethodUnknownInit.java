@@ -7,7 +7,7 @@ public class PrivateMethodUnknownInit {
   public PrivateMethodUnknownInit() {
     x = 1;
     m1();
-    // :: error: (method.invocation)
+    // :: error: [method.invocation]
     m2();
   }
 

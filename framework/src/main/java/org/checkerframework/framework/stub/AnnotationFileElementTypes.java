@@ -141,7 +141,7 @@ public class AnnotationFileElementTypes {
    *   <li>jdk.astub in the same directory as the checker, if it exists and ignorejdkastub option is
    *       not supplied
    *   <li>If parsing annotated JDK as stub files, all package-info.java files under the jdk/
-   *       directory
+   *       directory. (The JDK source code files will be parsed later, on demand.)
    *   <li>Stub files listed in @StubFiles annotation on the checker; must be in same directory as
    *       the checker
    *   <li>Stub files returned by {@link BaseTypeChecker#getExtraStubFiles} (treated like those

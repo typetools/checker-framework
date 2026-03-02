@@ -274,15 +274,11 @@ public class ContractsFromMethod {
       anno = builder.build();
     }
 
+    anno = factory.canonicalAnnotation(anno);
     if (factory.isSupportedQualifier(anno)) {
       return anno;
     } else {
-      AnnotationMirror aliasedAnno = factory.canonicalAnnotation(anno);
-      if (factory.isSupportedQualifier(aliasedAnno)) {
-        return aliasedAnno;
-      } else {
-        return null;
-      }
+      return null;
     }
   }
 
