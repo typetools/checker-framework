@@ -9,7 +9,7 @@ public class ToArrayNullness {
 
   void listToArrayObject() {
     for (@Nullable Object o : nullableList.toArray()) {}
-    // :: error: (enhancedfor)
+    // :: error: [enhancedfor]
     for (@NonNull Object o : nullableList.toArray()) {}
 
     for (@Nullable Object o : nonnullList.toArray()) {}
@@ -18,12 +18,12 @@ public class ToArrayNullness {
 
   void listToArrayE() {
     for (@Nullable String o : nullableList.toArray(new @Nullable String[0])) {}
-    // :: error: (enhancedfor)
+    // :: error: [enhancedfor]
     for (@NonNull String o : nullableList.toArray(new @Nullable String[0])) {}
-    // TODOINVARR:: error: (argument)
+    // TODOINVARR:: error: [argument]
     for (@Nullable String o : nullableList.toArray(new @NonNull String[0])) {}
-    // TODOINVARR:: error: (argument)
-    // :: error: (enhancedfor)
+    // TODOINVARR:: error: [argument]
+    // :: error: [enhancedfor]
     for (@NonNull String o : nullableList.toArray(new @NonNull String[0])) {}
 
     for (@Nullable String o : nonnullList.toArray(new String[0])) {}
@@ -39,7 +39,7 @@ public class ToArrayNullness {
 
   void colToArrayObject() {
     for (@Nullable Object o : nullableCol.toArray()) {}
-    // :: error: (enhancedfor)
+    // :: error: [enhancedfor]
     for (@NonNull Object o : nullableCol.toArray()) {}
 
     for (@Nullable Object o : nonnullCol.toArray()) {}
@@ -48,12 +48,12 @@ public class ToArrayNullness {
 
   void colToArrayE() {
     for (@Nullable String o : nullableCol.toArray(new @Nullable String[0])) {}
-    // :: error: (enhancedfor)
+    // :: error: [enhancedfor]
     for (@NonNull String o : nullableCol.toArray(new @Nullable String[0])) {}
-    // TODOINVARR:: error: (argument)
+    // TODOINVARR:: error: [argument]
     for (@Nullable String o : nullableCol.toArray(new @NonNull String[0])) {}
-    // TODOINVARR:: error: (argument)
-    // :: error: (enhancedfor)
+    // TODOINVARR:: error: [argument]
+    // :: error: [enhancedfor]
     for (@NonNull String o : nullableCol.toArray(new @NonNull String[0])) {}
 
     for (@Nullable String o : nonnullCol.toArray(new String[0])) {}
@@ -72,31 +72,31 @@ public class ToArrayNullness {
     for (@Nullable String o : nonnullCol.toArray(new String[nonnullCol.size()])) {}
     for (@NonNull String o : nonnullCol.toArray(new String[nonnullCol.size()])) {}
 
-    // :: warning: (toarray.nullable.elements.mismatched.size)
+    // :: warning: [toarray.nullable.elements.mismatched.size]
     for (@Nullable String o : nonnullCol.toArray(new @Nullable String[] {null})) {}
-    // :: error: (enhancedfor) :: warning: (toarray.nullable.elements.mismatched.size)
+    // :: error: [enhancedfor] :: warning: [toarray.nullable.elements.mismatched.size]
     for (@NonNull String o : nonnullCol.toArray(new @Nullable String[] {null})) {}
     // Size 1 is too big for an empty array. Complain. TODO: Could allow as result is Nullable.
-    // :: error: (new.array) :: warning: (toarray.nullable.elements.mismatched.size)
+    // :: error: [new.array] :: warning: [toarray.nullable.elements.mismatched.size]
     for (@Nullable String o : nonnullCol.toArray(new String[1])) {}
-    // :: error: (enhancedfor) :: error: (new.array) :: warning:
+    // :: error: [enhancedfor] :: error: [new.array] :: warning:
     // (toarray.nullable.elements.mismatched.size)
     for (@NonNull String o : nonnullCol.toArray(new String[1])) {}
     // Array too big -> complain. TODO: Could allow as result is Nullable.
-    // :: error: (new.array) :: warning: (toarray.nullable.elements.mismatched.size)
+    // :: error: [new.array] :: warning: [toarray.nullable.elements.mismatched.size]
     for (@Nullable String o : nonnullCol.toArray(new String[nonnullCol.size() + 1])) {}
     // Array too big -> complain.
-    // :: error: (enhancedfor) :: error: (new.array) :: warning:
+    // :: error: [enhancedfor] :: error: [new.array] :: warning:
     // (toarray.nullable.elements.mismatched.size)
     for (@NonNull String o : nonnullCol.toArray(new String[nonnullCol.size() + 1])) {}
 
     // cannot handle the following cases for now
     // new array not size 0 or .size -> complain about cration. TODO: Could allow as result is
     // Nullable.
-    // :: error: (new.array) :: warning: (toarray.nullable.elements.mismatched.size)
+    // :: error: [new.array] :: warning: [toarray.nullable.elements.mismatched.size]
     for (@Nullable String o : nonnullCol.toArray(new String[nonnullCol.size() - 1])) {}
     // New array not size 0 or .size -> complain about creation.
-    // :: error: (enhancedfor) :: error: (new.array) :: warning:
+    // :: error: [enhancedfor] :: error: [new.array] :: warning:
     // (toarray.nullable.elements.mismatched.size)
     for (@NonNull String o : nonnullCol.toArray(new String[nonnullCol.size() - 1])) {}
   }

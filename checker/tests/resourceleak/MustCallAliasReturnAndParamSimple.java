@@ -15,7 +15,7 @@ public class MustCallAliasReturnAndParamSimple {
     return this;
   }
 
-  // :: warning: (mustcallalias.method.return.and.param)
+  // :: warning: [mustcallalias.method.return.and.param]
   @MustCallAlias MustCallAliasReturnAndParamSimple someIncorrectlyAnnotatedFluentMethod(
       MustCallAliasReturnAndParamSimple this) {
     return this;
@@ -39,14 +39,14 @@ public class MustCallAliasReturnAndParamSimple {
     return new MustCallAliasReturnAndParamSimple(is, false);
   }
 
-  // :: warning: (mustcallalias.method.return.and.param)
+  // :: warning: [mustcallalias.method.return.and.param]
   public static MustCallAliasReturnAndParamSimple mcaneFactory2(@MustCallAlias InputStream is)
       throws Exception {
-    // :: error: (return)
+    // :: error: [return]
     return new MustCallAliasReturnAndParamSimple(is, false);
   }
 
-  // :: warning: (mustcallalias.method.return.and.param)
+  // :: warning: [mustcallalias.method.return.and.param]
   public static @MustCallAlias MustCallAliasReturnAndParamSimple mcaneFactory3(InputStream is)
       throws Exception {
     return new MustCallAliasReturnAndParamSimple(is, false);

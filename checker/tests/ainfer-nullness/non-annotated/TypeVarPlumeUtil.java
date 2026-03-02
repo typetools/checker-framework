@@ -13,7 +13,7 @@ public class TypeVarPlumeUtil<V extends Object> {
   }
 
   public V mergeNullable(@Nullable V value) {
-    // :: warning: (return)
+    // :: warning: [return]
     return value;
   }
 }

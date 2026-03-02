@@ -11,7 +11,7 @@ public class HasFormat {
       MessageFormat.format(format, "S", 1);
       // :: warning: (i18nformat.missing.arguments)
       MessageFormat.format(format, "S");
-      // :: error: (argument)
+      // :: error: [argument]
       MessageFormat.format(format, "S", "S");
       // :: warning: (i18nformat.excess.arguments)
       MessageFormat.format(format, "S", 1, 2);
@@ -51,7 +51,7 @@ public class HasFormat {
 
   void tes5(String format) {
     if (I18nFormatUtil.hasFormat(format, I18nConversionCategory.NUMBER)) {
-      // :: error: (argument)
+      // :: error: [argument]
       MessageFormat.format(format, "S");
       MessageFormat.format(format, 1);
     } else {
