@@ -1,0 +1,21 @@
+{
+  "enabledPlugins": {
+    "rust-analyzer-lsp@claude-plugins-official": true
+  },
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:checkerframework.org)",
+      "Bash(mkdir:*)",
+      "Bash(./gradlew:*)",
+      "Bash(java:*)",
+      "Bash(javac:*)",
+      "Bash(javap:*)",
+      "Bash(ls)",
+      "Bash(timeout 300 ./gradlew:*)",
+      "Edit(./**)",
+      "Bash(./x.py check:*)",
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

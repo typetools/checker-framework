@@ -1,3 +1,5 @@
+# ainferrunners
+
 This package contains the test runners for testing the `-Ainfer` command-line
 argument.
 They are in a separate package so that they don't run by default; they should

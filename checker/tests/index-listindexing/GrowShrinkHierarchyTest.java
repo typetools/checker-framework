@@ -1,7 +1,7 @@
 import org.checkerframework.checker.index.qual.BottomGrowShrink;
+import org.checkerframework.checker.index.qual.CanShrink;
 import org.checkerframework.checker.index.qual.GrowOnly;
-import org.checkerframework.checker.index.qual.Shrinkable;
-import org.checkerframework.checker.index.qual.UncheckedShrinkable;
+import org.checkerframework.checker.index.qual.UncheckedCanShrink;
 import org.checkerframework.checker.index.qual.UnshrinkableRef;
 
 /**
@@ -17,22 +17,22 @@ public class GrowShrinkHierarchyTest {
    * @param unshrinkableRef A reference that cannot be used to shrink the collection. This is the
    *     top type.
    * @param growOnly A reference that can only be used to grow the collection.
-   * @param shrinkable A reference that can be used to shrink the collection.
-   * @param uncheckedShrinkable A shrinkable reference that is no longer index-safe.
+   * @param canShrink A reference that can be used to shrink the collection.
+   * @param uncheckedCanShrink A canShrink reference that is no longer index-safe.
    * @param bottom The bottom type, which is a subtype of all others.
    */
   void testHierarchy(
       @UnshrinkableRef Object unshrinkableRef,
       @GrowOnly Object growOnly,
-      @Shrinkable Object shrinkable,
-      @UncheckedShrinkable Object uncheckedShrinkable,
+      @CanShrink Object canShrink,
+      @UncheckedCanShrink Object uncheckedCanShrink,
       @BottomGrowShrink Object bottom) {
 
     // Assignments to @UnshrinkableRef (Top type)
     @UnshrinkableRef Object a1 = unshrinkableRef;
     @UnshrinkableRef Object a2 = growOnly;
-    @UnshrinkableRef Object a3 = shrinkable;
-    @UnshrinkableRef Object a4 = uncheckedShrinkable;
+    @UnshrinkableRef Object a3 = canShrink;
+    @UnshrinkableRef Object a4 = uncheckedCanShrink;
     @UnshrinkableRef Object a5 = bottom;
 
     // Assignments to @GrowOnly
@@ -40,29 +40,29 @@ public class GrowShrinkHierarchyTest {
     @GrowOnly Object b1 = unshrinkableRef; // ERROR: Supertype to subtype
     @GrowOnly Object b2 = growOnly;
     // :: error: (assignment)
-    @GrowOnly Object b3 = shrinkable; // ERROR: Sibling types
+    @GrowOnly Object b3 = canShrink; // ERROR: Sibling types
     // :: error: (assignment)
-    @GrowOnly Object b4 = uncheckedShrinkable; // ERROR: Sibling types
+    @GrowOnly Object b4 = uncheckedCanShrink; // ERROR: Sibling types
     @GrowOnly Object b5 = bottom;
 
-    // Assignments to @Shrinkable
+    // Assignments to @CanShrink
     // :: error: (assignment)
-    @Shrinkable Object c1 = unshrinkableRef; // ERROR: Supertype to subtype
+    @CanShrink Object c1 = unshrinkableRef; // ERROR: Supertype to subtype
     // :: error: (assignment)
-    @Shrinkable Object c2 = growOnly; // ERROR: Sibling types
-    @Shrinkable Object c3 = shrinkable;
-    @Shrinkable Object c4 = uncheckedShrinkable; // Subtype to supertype
-    @Shrinkable Object c5 = bottom;
+    @CanShrink Object c2 = growOnly; // ERROR: Sibling types
+    @CanShrink Object c3 = canShrink;
+    @CanShrink Object c4 = uncheckedCanShrink; // Subtype to supertype
+    @CanShrink Object c5 = bottom;
 
-    // Assignments to @UncheckedShrinkable
+    // Assignments to @UncheckedCanShrink
     // :: error: (assignment)
-    @UncheckedShrinkable Object d1 = unshrinkableRef; // ERROR: Supertype to subtype
+    @UncheckedCanShrink Object d1 = unshrinkableRef; // ERROR: Supertype to subtype
     // :: error: (assignment)
-    @UncheckedShrinkable Object d2 = growOnly; // ERROR: Sibling types
+    @UncheckedCanShrink Object d2 = growOnly; // ERROR: Sibling types
     // :: error: (assignment)
-    @UncheckedShrinkable Object d3 = shrinkable; // ERROR: Supertype to subtype
-    @UncheckedShrinkable Object d4 = uncheckedShrinkable;
-    @UncheckedShrinkable Object d5 = bottom;
+    @UncheckedCanShrink Object d3 = canShrink; // ERROR: Supertype to subtype
+    @UncheckedCanShrink Object d4 = uncheckedCanShrink;
+    @UncheckedCanShrink Object d5 = bottom;
 
     // Assignments to @BottomGrowShrink
     // :: error: (assignment)
@@ -70,9 +70,9 @@ public class GrowShrinkHierarchyTest {
     // :: error: (assignment)
     @BottomGrowShrink Object e2 = growOnly; // ERROR
     // :: error: (assignment)
-    @BottomGrowShrink Object e3 = shrinkable; // ERROR
+    @BottomGrowShrink Object e3 = canShrink; // ERROR
     // :: error: (assignment)
-    @BottomGrowShrink Object e4 = uncheckedShrinkable; // ERROR
+    @BottomGrowShrink Object e4 = uncheckedCanShrink; // ERROR
     @BottomGrowShrink Object e5 = bottom;
   }
 }

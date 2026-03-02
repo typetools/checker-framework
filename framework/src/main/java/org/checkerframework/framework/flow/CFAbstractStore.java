@@ -45,6 +45,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.IPair;
+import org.plumelib.util.MapsP;
 import org.plumelib.util.ToStringComparator;
 import org.plumelib.util.UniqueId;
 
@@ -191,22 +192,6 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     if (a != null) {
       thisValue = analysis.createSingleAnnotationValue(a, underlyingType);
     }
-  }
-
-  /**
-   * Returns true if the given method is side-effect-free as far as the current store is concerned.
-   * In some cases, a store for a checker allows for other mechanisms to specify whether a method is
-   * side-effect-free. For example, unannotated methods may be considered side-effect-free by
-   * default.
-   *
-   * @param atypeFactory the type factory used to retrieve annotations on the method element
-   * @param method the method element
-   * @return true if the method is side-effect-free
-   * @deprecated use {@link org.checkerframework.javacutil.AnnotationProvider#isSideEffectFree}
-   */
-  @Deprecated // 2022-09-27
-  protected boolean isSideEffectFree(AnnotatedTypeFactory atypeFactory, ExecutableElement method) {
-    return atypeFactory.isSideEffectFree(method);
   }
 
   /* --------------------------------------------------------- */
@@ -376,7 +361,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    */
   private void updateFieldValuesForMethodCall(
       GenericAnnotatedTypeFactory<V, S, ?, ?> atypeFactory) {
-    Map<FieldAccess, V> newFieldValues = new HashMap<>(CollectionsPlume.mapCapacity(fieldValues));
+    Map<FieldAccess, V> newFieldValues = new HashMap<>(MapsP.mapCapacity(fieldValues));
     for (Map.Entry<FieldAccess, V> e : fieldValues.entrySet()) {
       FieldAccess fieldAccess = e.getKey();
       V previousValue = e.getValue();
@@ -902,7 +887,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
   /**
    * Update the information in the store by considering a field assignment with target {@code n},
-   * where the right hand side has the abstract value {@code val}.
+   * where the right-hand side has the abstract value {@code val}.
    *
    * @param val the abstract value of the value assigned to {@code n} (or {@code null} if the
    *     abstract value is not known)

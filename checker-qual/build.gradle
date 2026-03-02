@@ -1,6 +1,6 @@
 plugins {
   id("java-library")
-  id("biz.aQute.bnd.builder").version("7.1.0")
+  alias(libs.plugins.biz.aqute.bnd.builder)
 }
 
 sourceSets {
@@ -64,7 +64,7 @@ final checkerQualPom(publication) {
     licenses {
       license {
         name = "The MIT License"
-        url = "http://opensource.org/licenses/MIT"
+        url = "https://opensource.org/licenses/MIT"
         distribution = "repo"
       }
     }

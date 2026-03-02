@@ -7,11 +7,11 @@ from __future__ import annotations
 
 import datetime
 import os
+import shutil
 import sys
-from distutils.dir_util import copy_tree
 from pathlib import Path
 
-from release_utils import (
+from release_utils import (  # ty: ignore # TODO: limitation in ty
     check_repo,
     check_tools,
     clone_from_scratch_or_update,
@@ -22,6 +22,7 @@ from release_utils import (
     delete_directory_if_exists,
     delete_if_exists,
     ensure_group_access,
+    ensure_user_access,
     has_command_line_option,
     increment_version,
     print_step,
@@ -30,7 +31,7 @@ from release_utils import (
     prompt_yes_no,
     set_umask,
 )
-from release_vars import (
+from release_vars import (  # ty: ignore # TODO: limitation in ty
     CF_VERSION,
     CHECKER_FRAMEWORK,
     CHECKLINK,
@@ -187,7 +188,7 @@ def build_checker_framework_release(
     # Check that updating versions didn't overlook anything.
     print("Here are occurrences of the old version number, " + old_cf_version + ":")
     grep_cmd = f"grep -n -r --exclude-dir=build --exclude-dir=.git -F {old_cf_version}"
-    #
+
     execute_status(grep_cmd, CHECKER_FRAMEWORK)
     continue_or_exit(
         "If any occurrence is not acceptable, then stop the release, update target"
@@ -216,7 +217,9 @@ def build_checker_framework_release(
 
     dev_website_relative_dir = Path(DEV_SITE_DIR) / "releases" / version
     print(f"Copying from: {dev_website_relative_dir}\n  to: {DEV_SITE_DIR}")
-    copy_tree(str(dev_website_relative_dir), str(DEV_SITE_DIR))
+    ensure_group_access(dev_website_relative_dir)
+    ensure_user_access(dev_website_relative_dir)
+    shutil.copytree(str(dev_website_relative_dir), str(DEV_SITE_DIR), dirs_exist_ok=True)
 
 
 def commit_to_interm_projects(cf_version: str) -> None:

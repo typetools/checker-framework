@@ -8,7 +8,7 @@ JAVA?=java
 JAVAC?=javac
 
 ANNCAT ?= ../../bin/anncat
-JAVAVERSION = $(shell $(JAVA) -version 2>&1)
+JAVAVERSION := $(shell $(JAVA) -version 2>&1)
 
 #Switch the lines below to deactivate this test
 all: clean results

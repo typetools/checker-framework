@@ -12,7 +12,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.afu.scenelib.Annotation;
 import org.checkerframework.afu.scenelib.util.coll.VivifyingMap;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.MapsP;
 
 /** An annotated class. */
 public class AClass extends ADeclaration {
@@ -176,31 +176,31 @@ public class AClass extends ADeclaration {
     }
     sb.append(linePrefix);
     sb.append("Bounds:" + System.lineSeparator());
-    CollectionsPlume.mapToStringMultiLine(sb, bounds, linePrefix + "  ");
+    MapsP.mapToStringMultiLine(sb, bounds, linePrefix + "  ");
     sb.append(linePrefix);
     sb.append("Extends/implements:" + System.lineSeparator());
-    CollectionsPlume.mapToStringMultiLine(sb, extendsImplements, linePrefix + "  ");
+    MapsP.mapToStringMultiLine(sb, extendsImplements, linePrefix + "  ");
     sb.append(linePrefix);
     sb.append("Fields:" + System.lineSeparator());
-    CollectionsPlume.mapToStringMultiLine(sb, fields, linePrefix + "  ");
+    MapsP.mapToStringMultiLine(sb, fields, linePrefix + "  ");
     sb.append(linePrefix);
     sb.append("Field Initializers:" + System.lineSeparator());
-    CollectionsPlume.mapToStringMultiLine(sb, fieldInits, linePrefix + "  ");
+    MapsP.mapToStringMultiLine(sb, fieldInits, linePrefix + "  ");
     sb.append(linePrefix);
     sb.append("Static Initializers:" + System.lineSeparator());
-    CollectionsPlume.mapToStringMultiLine(sb, staticInits, linePrefix + "  ");
+    MapsP.mapToStringMultiLine(sb, staticInits, linePrefix + "  ");
     sb.append(linePrefix);
     sb.append("Instance Initializers:" + System.lineSeparator());
-    CollectionsPlume.mapToStringMultiLine(sb, instanceInits, linePrefix + "  ");
+    MapsP.mapToStringMultiLine(sb, instanceInits, linePrefix + "  ");
     sb.append(linePrefix);
     sb.append("AST Typecasts:" + System.lineSeparator());
-    CollectionsPlume.mapToStringMultiLine(sb, insertTypecasts, linePrefix + "  ");
+    MapsP.mapToStringMultiLine(sb, insertTypecasts, linePrefix + "  ");
     sb.append(linePrefix);
     sb.append("AST Annotations:" + System.lineSeparator());
-    CollectionsPlume.mapToStringMultiLine(sb, insertAnnotations, linePrefix + "  ");
+    MapsP.mapToStringMultiLine(sb, insertAnnotations, linePrefix + "  ");
     sb.append(linePrefix);
     sb.append("Methods:" + System.lineSeparator());
-    CollectionsPlume.mapToStringMultiLine(sb, methods, linePrefix + "  ");
+    MapsP.mapToStringMultiLine(sb, methods, linePrefix + "  ");
     return sb.toString();
   }
 

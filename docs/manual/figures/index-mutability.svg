@@ -133,7 +133,7 @@
          x="599.99188"
          y="100.47356"
          font-size="21.167px"
-         id="tspan21">@UncheckedShrinkable</tspan></text>
+         id="tspan21">@UncheckedCanShrink</tspan></text>
   </g>
   <g
      transform="translate(232.33083,155.3513)"
@@ -158,7 +158,7 @@
          x="380"
          y="58"
          font-size="21.167px"
-         id="tspan7">@Shrinkable</tspan></text>
+         id="tspan7">@CanShrink</tspan></text>
   </g>
   <path
      d="M 487.87083,181.8613"

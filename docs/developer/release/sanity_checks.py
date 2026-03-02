@@ -13,7 +13,7 @@ import pathlib
 import zipfile
 from pathlib import Path
 
-from release_utils import (
+from release_utils import (  # ty: ignore # TODO: limitation in ty
     are_in_file,
     delete,
     delete_directory,
@@ -23,7 +23,7 @@ from release_utils import (
     insert_before_line,
     wget_file,
 )
-from release_vars import (
+from release_vars import (  # ty: ignore # TODO: limitation in ty
     CHECKER_FRAMEWORK,
     SANITY_DIR,
     execute,

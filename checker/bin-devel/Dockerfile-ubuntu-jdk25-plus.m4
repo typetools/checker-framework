@@ -6,16 +6,14 @@
 FROM ubuntu:rolling
 include(`Dockerfile-contents-ubuntu-base.m4')
 
-include(`Dockerfile-contents-ubuntu-plus.m4')
+include(`Dockerfile-contents-ubuntu-plus.m4')dnl
 
+# Install the JDK.
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt -qqy update \
-&& apt -y install \
+&& apt -qqy install \
   openjdk-25-jdk \
-&& update-java-alternatives -s java-1.25.0-openjdk-amd64
+&& update-java-alternatives --set java-1.25.0-openjdk-amd64
 ENV JAVA25_HOME=/usr/lib/jvm/java-25-openjdk-amd64
 
-RUN export DEBIAN_FRONTEND=noninteractive \
-&& apt autoremove \
-&& apt clean \
-&& rm -rf /var/lib/apt/lists/*
+include(`Dockerfile-contents-apt-clean.m4')

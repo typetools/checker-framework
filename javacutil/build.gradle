@@ -11,9 +11,9 @@ dependencies {
 
   // This is used by org.checkerframework.javacutil.TypesUtils.isImmutableTypeInJdk.
   // https://mvnrepository.com/artifact/org.plumelib/plume-util
-  implementation("org.plumelib:hashmap-util:${hashmapUtilVersion}")
-  implementation("org.plumelib:plume-util:${plumeUtilVersion}")
-  implementation("org.plumelib:reflection-util:${reflectionUtilVersion}")
+  implementation(libs.hashmap.util)
+  implementation(libs.plume.util)
+  implementation(libs.reflection.util)
 
   // External dependencies:
   // If you add an external dependency, you must shadow its packages both in checker.jar and
@@ -35,7 +35,7 @@ final javacUtilPom(publication) {
     licenses {
       license {
         name = "GNU General Public License, version 2 (GPL2), with the classpath exception"
-        url = "http://www.gnu.org/software/classpath/license.html"
+        url = "https://www.gnu.org/software/classpath/license.html"
         distribution = "repo"
       }
     }

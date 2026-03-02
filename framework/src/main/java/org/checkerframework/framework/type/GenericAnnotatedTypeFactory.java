@@ -125,6 +125,7 @@ import org.checkerframework.javacutil.UserError;
 import org.plumelib.reflection.Signatures;
 import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.IPair;
+import org.plumelib.util.MapsP;
 import org.plumelib.util.SystemPlume;
 
 /**
@@ -153,7 +154,10 @@ public abstract class GenericAnnotatedTypeFactory<
   /** To cache the supported monotonic type qualifiers. */
   private @MonotonicNonNull Set<Class<? extends Annotation>> supportedMonotonicQuals;
 
-  /** to annotate types based on the given tree */
+  /**
+   * Used to annotate types based on the given un-annotated types. The type may be for source code
+   * or bytecode.
+   */
   protected TypeAnnotator typeAnnotator;
 
   /** for use in addAnnotationsFromDefaultForType */
@@ -162,7 +166,7 @@ public abstract class GenericAnnotatedTypeFactory<
   /** for use in addAnnotationsFromDefaultForType */
   private DefaultForTypeAnnotator defaultForTypeAnnotator;
 
-  /** to annotate types based on the given un-annotated types */
+  /** Used to annotate types based on a given tree. */
   protected TreeAnnotator treeAnnotator;
 
   /** to handle any polymorphic types */
@@ -353,8 +357,8 @@ public abstract class GenericAnnotatedTypeFactory<
 
     if (shouldCache) {
       int cacheSize = getCacheSize();
-      flowResultAnalysisCaches = CollectionsPlume.createLruCache(cacheSize);
-      initializerCache = CollectionsPlume.createLruCache(cacheSize);
+      flowResultAnalysisCaches = MapsP.createLruCache(cacheSize);
+      initializerCache = MapsP.createLruCache(cacheSize);
     } else {
       flowResultAnalysisCaches = null;
       initializerCache = null;
@@ -369,8 +373,7 @@ public abstract class GenericAnnotatedTypeFactory<
       Types types = getChecker().getTypeUtils();
       Elements elements = getElementUtils();
       Class<?>[] classes = relevantJavaTypesAnno.value();
-      Set<TypeMirror> relevantJavaTypesTemp =
-          new HashSet<>(CollectionsPlume.mapCapacity(classes.length));
+      Set<TypeMirror> relevantJavaTypesTemp = new HashSet<>(MapsP.mapCapacity(classes.length));
       boolean arraysAreRelevantTemp = false;
       for (Class<?> clazz : classes) {
         if (clazz == Object[].class) {
@@ -1182,36 +1185,14 @@ public abstract class GenericAnnotatedTypeFactory<
   /**
    * Returns the store immediately before a given {@link Tree}.
    *
+   * @param tree the tree
    * @return the store immediately before a given {@link Tree}
    */
-  public Store getStoreBefore(Tree tree) {
-    if (!analysis.isRunning()) {
-      return flowResult.getStoreBefore(tree);
+  public @Nullable Store getStoreBefore(Tree tree) {
+    if (analysis.isRunning()) {
+      return analysis.getStoreBefore(tree, flowResultAnalysisCaches);
     }
-    Set<Node> nodes = analysis.getNodesForTree(tree);
-    if (nodes != null) {
-      return getStoreBefore(nodes);
-    } else {
-      return flowResult.getStoreBefore(tree);
-    }
-  }
-
-  /**
-   * Returns the store immediately before a given Set of {@link Node}s.
-   *
-   * @return the store immediately before a given Set of {@link Node}s
-   */
-  public Store getStoreBefore(Set<Node> nodes) {
-    Store merge = null;
-    for (Node aNode : nodes) {
-      Store s = getStoreBefore(aNode);
-      if (merge == null) {
-        merge = s;
-      } else if (s != null) {
-        merge = merge.leastUpperBound(s);
-      }
-    }
-    return merge;
+    return flowResult.getStoreBefore(tree);
   }
 
   /**
@@ -1221,21 +1202,10 @@ public abstract class GenericAnnotatedTypeFactory<
    * @return the store immediately before {@code node}
    */
   public @Nullable Store getStoreBefore(Node node) {
-    if (!analysis.isRunning()) {
-      return flowResult.getStoreBefore(node);
+    if (analysis.isRunning()) {
+      return analysis.getStoreBefore(node, flowResultAnalysisCaches);
     }
-    TransferInput<Value, Store> prevStore = analysis.getInput(node.getBlock());
-    if (prevStore == null) {
-      return null;
-    }
-    Store store =
-        AnalysisResult.runAnalysisFor(
-            node,
-            Analysis.BeforeOrAfter.BEFORE,
-            prevStore,
-            analysis.getNodeValues(),
-            flowResultAnalysisCaches);
-    return store;
+    return flowResult.getStoreBefore(node);
   }
 
   /**
@@ -1247,30 +1217,10 @@ public abstract class GenericAnnotatedTypeFactory<
    * @return the store immediately after a given tree
    */
   public @Nullable Store getStoreAfter(Tree tree) {
-    if (!analysis.isRunning()) {
-      return flowResult.getStoreAfter(tree);
+    if (analysis.isRunning()) {
+      return analysis.getStoreAfter(tree, flowResultAnalysisCaches);
     }
-    Set<Node> nodes = analysis.getNodesForTree(tree);
-    return getStoreAfter(nodes);
-  }
-
-  /**
-   * Returns the store immediately after a given set of nodes.
-   *
-   * @param nodes the nodes whose post-stores to LUB
-   * @return the LUB of the stores store immediately after {@code nodes}
-   */
-  public Store getStoreAfter(Set<Node> nodes) {
-    Store merge = null;
-    for (Node node : nodes) {
-      Store s = getStoreAfter(node);
-      if (merge == null) {
-        merge = s;
-      } else if (s != null) {
-        merge = merge.leastUpperBound(s);
-      }
-    }
-    return merge;
+    return flowResult.getStoreAfter(tree);
   }
 
   /**
@@ -1280,17 +1230,10 @@ public abstract class GenericAnnotatedTypeFactory<
    * @return the store immediately after a given {@link Node}
    */
   public Store getStoreAfter(Node node) {
-    if (!analysis.isRunning()) {
-      return flowResult.getStoreAfter(node);
+    if (analysis.isRunning()) {
+      return analysis.getStoreAfter(node, flowResultAnalysisCaches);
     }
-    Store res =
-        AnalysisResult.runAnalysisFor(
-            node,
-            Analysis.BeforeOrAfter.AFTER,
-            analysis.getInput(node.getBlock()),
-            analysis.getNodeValues(),
-            flowResultAnalysisCaches);
-    return res;
+    return flowResult.getStoreAfter(node);
   }
 
   /**
@@ -2466,11 +2409,11 @@ public abstract class GenericAnnotatedTypeFactory<
    * @return a map that represents the options
    */
   private Map<String, Object> processCFGVisualizerOption(List<String> opts) {
-    Map<String, Object> res = new HashMap<>(CollectionsPlume.mapCapacity(opts.size() - 1));
+    Map<String, Object> res = new HashMap<>(MapsP.mapCapacity(opts.size() - 1));
     // Index 0 is the visualizer class name and can be ignored.
     for (int i = 1; i < opts.size(); ++i) {
       String opt = opts.get(i);
-      String[] split = opt.split("=");
+      String[] split = opt.split("=", -1);
       switch (split.length) {
         case 1:
           res.put(split[0], true);
@@ -2555,7 +2498,7 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /** For each type, whether it is relevant. A cache to avoid repeated re-computation. */
-  private final Map<TypeMirror, Boolean> isRelevantCache = CollectionsPlume.createLruCache(300);
+  private final Map<TypeMirror, Boolean> isRelevantCache = MapsP.createLruCache(300);
 
   /**
    * Returns true if users can write type annotations from this type system directly on the given

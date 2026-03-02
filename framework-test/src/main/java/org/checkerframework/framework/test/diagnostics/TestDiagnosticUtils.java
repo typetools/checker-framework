@@ -20,7 +20,7 @@ public class TestDiagnosticUtils {
 
   /** How the diagnostics appear in Java source files. */
   public static final String DIAGNOSTIC_IN_JAVA_REGEX =
-      "\\s*(error|fixable-error|warning|fixable-warning|other):\\s*(\\(?.*\\)?)\\s*";
+      "\\s*(error|fixable-error|warning|fixable-warning|other):\\s*(.*)\\s*";
 
   /** How the diagnostics appear in Java source files. */
   public static final Pattern DIAGNOSTIC_IN_JAVA_PATTERN =
@@ -93,9 +93,11 @@ public class TestDiagnosticUtils {
     // However, diagnostic.toString() may contain "[unchecked]" even though getMessage() does
     // not.
     // Since we want to match the error messages reported by javac exactly, we must parse.
-    IPair<String, String> trimmed = formatJavaxToolString(diagnosticString, noMsgText);
+    IPair<String, String> messageAndFilename = messageAndFilename(diagnosticString, noMsgText);
+    String message = messageAndFilename.first;
+    String filename = messageAndFilename.second;
     return fromPatternMatching(
-        DIAGNOSTIC_PATTERN, DIAGNOSTIC_WARNING_PATTERN, trimmed.second, null, trimmed.first);
+        DIAGNOSTIC_PATTERN, DIAGNOSTIC_WARNING_PATTERN, filename, null, message);
   }
 
   /**
@@ -151,7 +153,7 @@ public class TestDiagnosticUtils {
     Matcher diagnosticMatcher = diagnosticPattern.matcher(diagnosticString);
     if (diagnosticMatcher.matches()) {
       IPair<DiagnosticKind, Boolean> categoryToFixable =
-          parseCategoryString(diagnosticMatcher.group(1 + capturingGroupOffset));
+          categoryAndFixable(diagnosticMatcher.group(1 + capturingGroupOffset));
       kind = categoryToFixable.first;
       isFixable = categoryToFixable.second;
       String msg = diagnosticMatcher.group(2 + capturingGroupOffset).trim();
@@ -159,7 +161,11 @@ public class TestDiagnosticUtils {
       message = noParentheses ? msg : msg.substring(1, msg.length() - 1);
 
       if (lineNumber == null) {
-        lineNo = Long.parseLong(diagnosticMatcher.group(1));
+        try {
+          lineNo = Long.parseLong(diagnosticMatcher.group(1));
+        } catch (NumberFormatException e) {
+          // `lineNo` defaults to -1, so there is nothing to do.
+        }
       }
 
     } else {
@@ -171,7 +177,11 @@ public class TestDiagnosticUtils {
         noParentheses = true;
 
         if (lineNumber == null) {
-          lineNo = Long.parseLong(diagnosticMatcher.group(1));
+          try {
+            lineNo = Long.parseLong(warningMatcher.group(1));
+          } catch (NumberFormatException e) {
+            // `lineNo` defaults to -1, so there is nothing to do.
+          }
         }
 
       } else if (diagnosticString.startsWith("warning:")) {
@@ -209,7 +219,7 @@ public class TestDiagnosticUtils {
    * @param noMsgText true if to do work; if false, this returns a pair of (argument, "")
    * @return the diagnostic, split into message and filename
    */
-  public static IPair<String, String> formatJavaxToolString(String original, boolean noMsgText) {
+  public static IPair<String, String> messageAndFilename(String original, boolean noMsgText) {
     String trimmed = original;
     String filename = "";
     if (noMsgText) {
@@ -249,8 +259,11 @@ public class TestDiagnosticUtils {
   /**
    * Given a category string that may be prepended with "fixable-", return the category enum that
    * corresponds with the category and whether or not it is a isFixable error
+   *
+   * @param category a category string that may be prepended with "fixable-"
+   * @return a pair of the category and whether it was prepended with "fixable-"
    */
-  private static IPair<DiagnosticKind, Boolean> parseCategoryString(String category) {
+  private static IPair<DiagnosticKind, Boolean> categoryAndFixable(String category) {
     String fixable = "fixable-";
     boolean isFixable = category.startsWith(fixable);
     if (isFixable) {

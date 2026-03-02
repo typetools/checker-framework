@@ -141,7 +141,7 @@ public class AnnotationFileElementTypes {
    *   <li>jdk.astub in the same directory as the checker, if it exists and ignorejdkastub option is
    *       not supplied
    *   <li>If parsing annotated JDK as stub files, all package-info.java files under the jdk/
-   *       directory
+   *       directory. (The JDK source code files will be parsed later, on demand.)
    *   <li>Stub files listed in @StubFiles annotation on the checker; must be in same directory as
    *       the checker
    *   <li>Stub files returned by {@link BaseTypeChecker#getExtraStubFiles} (treated like those
@@ -784,9 +784,9 @@ public class AnnotationFileElementTypes {
   }
 
   /**
-   * Returns a JarURLConnection to "/jdk*".
+   * Returns a JarURLConnection to "/annotated-jdk".
    *
-   * @return a JarURLConnection to "/jdk*"
+   * @return a JarURLConnection to "/annotated-jdk"
    */
   private JarURLConnection getJarURLConnectionToJdk() {
     URL resourceURL = factory.getClass().getResource("/annotated-jdk");
@@ -807,7 +807,7 @@ public class AnnotationFileElementTypes {
 
   /**
    * Walk through the JDK directory and create a mapping, {@link #remainingJdkStubFiles}, from file
-   * name to the class contained with in it. Also, parses all package-info.java files.
+   * name to the class contained within it. Also, parses all {@code package-info.java} files.
    */
   private void prepJdkStubs() {
     if (!shouldParseJdk) {
@@ -837,7 +837,7 @@ public class AnnotationFileElementTypes {
 
   /**
    * Walk through the JDK directory and create a mapping, {@link #remainingJdkStubFiles}, from file
-   * name to the class contained with in it. Also, parses all package-info.java files.
+   * name to the class contained within it. Also, parses all {@code package-info.java} files.
    *
    * @param jdkDirectory the URL pointing to the JDK directory
    */
@@ -892,7 +892,7 @@ public class AnnotationFileElementTypes {
 
   /**
    * Walk through the JDK directory and create a mapping, {@link #remainingJdkStubFilesJar}, from
-   * file name to the class contained with in it. Also, parses all package-info.java files.
+   * file name to the class contained within it. Also, parses all {@code package-info.java} files.
    *
    * @param jdkJarfile the URL pointing to the JDK jarfile
    */

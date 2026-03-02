@@ -2,9 +2,9 @@
 \chapterAndLabel{How to create a new checker}{creating-a-checker}
 \label{writing-a-checker} % for old links; don't use any more!
 
-\newcommand{\TreeAPIBase}{https://docs.oracle.com/en/java/javase/17/docs/api/jdk.compiler/com/sun/source}
+\newcommand{\TreeAPIBase}{https://docs.oracle.com/en/java/javase/25/docs/api/jdk.compiler/com/sun/source}
 \newcommand{\refTreeclass}[2]{\href{\TreeAPIBase{}/#1/#2.html?is-external=true}{\<#2>}}
-\newcommand{\ModelAPIBase}{https://docs.oracle.com/en/java/javase/17/docs/api/java.compiler/javax/lang/model}
+\newcommand{\ModelAPIBase}{https://docs.oracle.com/en/java/javase/25/docs/api/java.compiler/javax/lang/model}
 \newcommand{\refModelclass}[2]{\href{\ModelAPIBase{}/#1/#2.html?is-external=true}{\<#2>}}
 
 This chapter describes how to create a checker
@@ -60,10 +60,10 @@ Three choices for creating your own checker are:
 \item
   Copy and then modify a different existing checker --- whether
   one distributed with the Checker Framework or a third-party one.
-  You can get tangled up if you don't fully understand
+  A problem with this strategy is that you can get tangled up if you don't fully understand
   the subtleties of the existing checker that you are modifying.
   Usually, it is easier to follow the instructions in this chapter.
-  (If you are going to copy a checker, one good choice to copy and modify
+  (If you are going to copy a checker despite the dangers, one good choice to copy and modify
   is the Regex Checker (\chapterpageref{regex-checker}).  A bad choice is
   the Nullness Checker (\chapterpageref{nullness-checker}),
   which is more sophisticated than anything you want to start out building.)
@@ -357,6 +357,10 @@ javacheck \
   Write test cases for a few of the annotated JDK methods to ensure
   that the annotations are being properly read by your checker.
 
+  If there are errors in the Checker Framework's ``all-systems'' tests, you can
+  suppress them if they are expected. See \<framework/tests/all-systems/README>
+  for more information.
+
 \item
   Implement type rules, if any (Section~\ref{creating-extending-visitor}).
   Some type systems need JDK annotations but don't have any additional
@@ -558,6 +562,11 @@ Choose good names for the qualifiers, because users will write these in
 their source code.
 The Javadoc of every type qualifier should include a precise English
 description and an example use of the qualifier.
+
+In source code, declaration qualifiers are written on their own line, and
+type qualifiers are written on the same line as the type they apply to.
+Section~\ref{faq-type-annotation-formatting} explains how to configure
+tools to format type annotations properly.
 
 
 \subsectionAndLabel{Declaratively defining the qualifier hierarchy}{creating-declarative-hierarchy}
@@ -767,28 +776,19 @@ qualifier file.  For instance, \code{int value() default 0;} would make
 \code{value} default to zero. Alternatively, the procedural method
 described above can be used.
 
-The default qualifier applies to most, but not all, unannotated types, Section~\ref{climb-to-top}
-other defaulting rules are automatically added to every checker. Also, Section~\ref{defaults}
+The default qualifier applies to most, but not all, unannotated types.
+Section~\ref{climb-to-top} describes
+other defaulting rules that are automatically added to every checker.
+Also, Section~\ref{defaults}
 describes other meta-annotations used to specify default annotations.
+
 
 \subsectionAndLabel{Relevant Java types}{creating-relevant-java-types}
 
 Sometimes, a checker is only relevant to certain Java types.
 The \refqualclass{framework/qual}{RelevantJavaTypes}
 annotation on the checker class indicates that its qualifiers may only be
-written on those types and no others.  All irrelevant types are defaulted to
-the top annotation and this annotation cannot be changed.
-
-If a type is relevant, so are all its supertypes including Object.
-The reason for this is to prevent qualifiers from being lost via an
-assignment to a supertype.  For example, in this code, \<x> and \<z> have
-the same type qualifiers if \<@SomeAnn> is relevant to \<MyClass>:
-
-\begin{Verbatim}
-@SomeAnn MyClass x = ...;
-Object y = x;
-MyClass z = (MyClass) y;
-\end{Verbatim}
+written on those types, their subtypes, and their supertypes.
 
 As an example of relevant types, the \ahrefloc{formatter-checker}{Format
 String Checker} is relevant only to \<CharSequence> and its subtypes such
@@ -799,15 +799,22 @@ As another example, the Index Checker and the Signedness Checker are only
 relevant to integral numeric types.  You cannot write
 \refqualclass{checker/index/qual}{Positive} on a \<List> or a \<float>.
 
-A checker may change the default, and it may differ from type to type.  For
+If a user writes an annotation on an irrelevant type, the Checker Framework
+issues an \<anno.on.irrelevant> error.
+
+Irrelevant types are ordinarily defaulted to the top annotation.
+A checker designer may change the default, and it may differ from type to type.  For
 example, the Signedness Checker treats all types that are not numeric
 integral types as \refqualclass{checker/signedness/qual}{Signed}, but
 treats the \<char> and \<Character> types as
 \refqualclass{checker/signedness/qual}{Unsigned}.
 
-Every annotation that is applicable to a non-primitive type is also
-applicable to all supertypes including \<Object>.  That ensures that in
-code like this:
+
+\subsubsectionAndLabel{Relevant types and supertypes}{creating-relevant-java-types-supertypes}
+
+If a type is relevant, so are all its supertypes including \<Object>.
+This prevents qualifiers from being lost via an assignment to a supertype.
+For example, in this code:
 
 \begin{Verbatim}
 @SomeAnn MyClass x = ...;
@@ -1256,7 +1263,7 @@ Put them in a file \<\emph{MyChecker}Visitor.java> that extends
 BaseTypeVisitor performs type-checking at each node of a
 source file's AST\@.  It uses the visitor design pattern to traverse
 Java syntax trees as provided by Oracle's
-\href{https://docs.oracle.com/en/java/javase/17/docs/api/jdk.compiler/module-summary.html}{jdk.compiler
+\href{https://docs.oracle.com/en/java/javase/25/docs/api/jdk.compiler/module-summary.html}{jdk.compiler
 API},
 and it issues a warning (by calling
 \refmethodterse{framework/source}{SourceChecker}{reportError}{(java.lang.Object,java.lang.String,java.lang.Object...)}
@@ -1417,7 +1424,8 @@ which is the Checker Framework's representation of an annotated type.
   \refclass{framework/type/typeannotator}{TypeAnnotator},
   typically as a private inner class of your \<AnnotatedTypeFactory>.
   There is a method of \<TypeAnnotator> for every kind of type, and the
-  visitor has access to only the type.  In your subclass of
+  visitor has access to only the type (including base type and
+  qualifiers).  In your subclass of
   \<AnnotatedTypeFactory>, override \<createTypeAnnotator> to return a
   \<ListTypeAnnotator> containing that annotator, as in
 
@@ -1429,7 +1437,7 @@ which is the Checker Framework's representation of an annotated type.
 \end{Verbatim}
 
   \noindent
-  (or put your TypeAnnotator last).
+  (or put your TypeAnnotator last, depending on the behavior you want).
 
 \item
   Create a subclass of \refclass{framework/type}{AnnotatedTypeFactory} and
@@ -2091,6 +2099,10 @@ rather than full message text when reporting errors or warnings.  This is
 used by the Checker Framework's own tests, so they do not need to be
 changed if the English message is updated.
 
+\item \code{-Aonelinemsg}: print each error message on a single line, with
+logical lines separated by ``/''.  This is useful when using a tool that
+only shows the first line of the error.
+
 \item \code{-AnoPrintErrorStack}: don't print a stack trace when an
 internal Checker Framework error occurs.  Setting this option is rare.  You
 should only do it if you have discovered a bug in a checker, you have
@@ -2104,7 +2116,7 @@ This prevents the message from being elevated to an error by \code{-Werror}.
 \item \code{-AdumpOnErrors}: Outputs a stack trace when reporting errors or warnings.
 
 \item \code{-AexceptionLineSeparator}: Controls what line separator is used when printing exceptions.
-This is useful when tools, such as Maven, only display the first line of exception messsages. For
+This is useful when tools, such as Maven, only display the first line of exception messages. For
 example, \code{-AexceptionLineSeparator="    "}.
 
 \end{itemize}
@@ -2245,7 +2257,7 @@ for dotfile in *.dot; do dot -Tpdf -o "$dotfile.pdf" "$dotfile"; done
 \noindent
 where the first command creates file \<MyClass.dot> that
 represents the CFG, and the second command writes the CFG to a PDF file.
-The \<dot> program is part of \href{http://www.graphviz.org}{Graphviz}.
+The \<dot> program is part of \href{https://www.graphviz.org}{Graphviz}.
 
 In the output, conditional basic blocks are represented as octagons with
 two successors.  Special basic blocks are represented as ovals (e.g., the
@@ -2728,7 +2740,7 @@ without warnings or errors.
 % LocalWords:  QualifierHierarchy QualifierRoot createQualifierHierarchy util
 % LocalWords:  createTypeHierarchy ImplicitFor treeClasses TypeMirror Anno
 % LocalWords:  LiteralTree ExpressionTree typeClasses addComputedTypeAnnotations nullable
-% LocalWords:  createSupportedTypeQualifiers FooChecker nullness KeyFor
+% LocalWords:  createSupportedTypeQualifiers FooChecker nullness KeyFor md
 % LocalWords:  FooVisitor FooAnnotatedTypeFactory basicstyle InterningVisitor
 % LocalWords:  InterningAnnotatedTypeFactory QualifierDefaults TypeKind getKind
 % LocalWords:  setAbsoluteDefaults PolymorphicQualifier TreeVisitor subnodes
@@ -2791,4 +2803,10 @@ without warnings or errors.
 % LocalWords:  UnionType subpackage distributable DefaultFor FormatMethod
 % LocalWords:  AnoWarnMemoryConstraints JCDiagnostic DiagnosticPosition
 % LocalWords:  LineMap SomeAnn getTypeFactoryOfSubcheckerOrNull traceback
-% LocalWords:  pids jstack ctrl
+% LocalWords:  pids jstack ctrl mycheckername TaintingVisitor FBCBottom
+% LocalWords:  getSupportedCheckers SignednessChecker ValueChecker isRegex
+% LocalWords:  getOptions OptionalChecker treeannotators visitBinary
+% LocalWords:  visitCompoundAssignment UpperBoundAnnotatedTypeFactory
+% LocalWords:  RegexAnnotatedTypeFactory UnitsAnnotatedTypeFactory
+% LocalWords:  sideEffectsUnrefineAliases postInit AexceptionLineSeparator
+% LocalWords:  DOTCFGVisualizer StringCFGVisualizer

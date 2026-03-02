@@ -1,3 +1,5 @@
+# wpi-many tests
+
 The file `testin.txt` in this directory contains a list of github repositories
 that are used to test the `wpi-many.sh` script (stored in `checker/bin`). Each
 entry is a git URL and commit hash, separated by whitespace.

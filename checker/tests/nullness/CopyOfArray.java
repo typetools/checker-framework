@@ -10,4 +10,13 @@ public class CopyOfArray {
     Object[] copyInexact1 = Arrays.copyOf(args, i);
     @Nullable Object[] copyInexact2 = Arrays.copyOf(args, i);
   }
+
+  protected void makeCopyOfRange(Object[] args, int i) {
+    Object[] copyExact1 = Arrays.copyOfRange(args, 2, args.length);
+    @Nullable Object[] copyExact2 = Arrays.copyOfRange(args, 2, args.length);
+
+    // :: error: (assignment)
+    Object[] copyInexact1 = Arrays.copyOfRange(args, 2, i);
+    @Nullable Object[] copyInexact2 = Arrays.copyOfRange(args, 2, i);
+  }
 }
