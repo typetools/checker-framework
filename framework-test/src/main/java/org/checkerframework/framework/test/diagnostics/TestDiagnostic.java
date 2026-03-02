@@ -22,31 +22,41 @@ public class TestDiagnostic {
   private final DiagnosticKind kind;
 
   /**
-   * An error key or full error message that usually appears between parentheses in diagnostic
+   * An error key or full error message that usually appears between square brackets in diagnostic
    * messages.
    */
-  private final String message;
+  private final String key;
 
-  /** Returns true if this diagnostic should no longer be reported after whole program inference. */
+  /** The full error message, without the key. Null if the key is the whole message. */
+  private final @Nullable String message;
+
+  /** True if this diagnostic should no longer be reported after whole-program inference. */
   private final boolean isFixable;
 
-  /** True if the toString representation should omit the parentheses around the message. */
-  private final boolean omitParentheses;
-
-  /** Basic constructor that sets the immutable fields of this diagnostic. */
+  /**
+   * Basic constructor that sets the immutable fields of this diagnostic.
+   *
+   * @param filename the file to which the diagnostic applies
+   * @param lineNumber the line number to which the diagnostic applies
+   * @param kind kind of diagnostic
+   * @param key an error key or full error message
+   * @param message the full error message, without the key; null if the key is the whole message
+   * @param isFixable true if this diagnostic should no longer be reported after whole-program
+   *     inference
+   */
   public TestDiagnostic(
       String filename,
       long lineNumber,
       DiagnosticKind kind,
-      String message,
-      boolean isFixable,
-      boolean omitParentheses) {
+      String key,
+      @Nullable String message,
+      boolean isFixable) {
     this.filename = filename;
     this.lineNumber = lineNumber;
     this.kind = kind;
+    this.key = key;
     this.message = message;
     this.isFixable = isFixable;
-    this.omitParentheses = omitParentheses;
   }
 
   public String getFilename() {
@@ -61,28 +71,38 @@ public class TestDiagnostic {
     return kind;
   }
 
-  public String getMessage() {
+  /**
+   * Returns the error message key.
+   *
+   * @return the error message key
+   */
+  public String getKey() {
+    return key;
+  }
+
+  /**
+   * Returns the full error message, without the key.
+   *
+   * @return the full error message, without the key
+   */
+  public @Nullable String getMessage() {
     return message;
   }
 
+  /**
+   * Returns true if this diagnostic should no longer be reported after whole-program inference.
+   *
+   * @return true if this diagnostic should no longer be reported after whole-program inference
+   */
   public boolean isFixable() {
     return isFixable;
   }
 
   /**
-   * Returns true if the printed representation should omit parentheses around the message.
-   *
-   * @return true if the printed representation should omit parentheses around the message
-   */
-  public boolean shouldOmitParentheses() {
-    return omitParentheses;
-  }
-
-  /**
-   * Equality is compared without isFixable/omitParentheses.
+   * Equality is compared without fields {@code message} and {@code isFixable}.
    *
    * @return true if this and otherObj are equal according to filename, lineNumber, kind, and
-   *     message
+   *     message key
    */
   @Override
   public boolean equals(@Nullable Object otherObj) {
@@ -94,12 +114,12 @@ public class TestDiagnostic {
     return other.filename.equals(this.filename)
         && other.lineNumber == lineNumber
         && other.kind == this.kind
-        && other.message.equals(this.message);
+        && other.key.equals(this.key);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(filename, lineNumber, kind, message);
+    return Objects.hash(filename, lineNumber, kind, key);
   }
 
   /**
@@ -109,13 +129,14 @@ public class TestDiagnostic {
    */
   @Override
   public String toString() {
+    String loc = filename + ":" + lineNumber + ": ";
+    String key = "(" + this.key + ")";
+    String msg = message == null ? "" : " " + message;
     if (kind == DiagnosticKind.JSpecify) {
-      return filename + ":" + lineNumber + ": " + message;
+      return loc + key;
+    } else {
+      return loc + kind.parseString + ": " + key + msg;
     }
-    if (omitParentheses) {
-      return filename + ":" + lineNumber + ": " + kind.parseString + ": " + message;
-    }
-    return filename + ":" + lineNumber + ": " + kind.parseString + ": (" + message + ")";
   }
 
   /**
@@ -125,7 +146,7 @@ public class TestDiagnostic {
    */
   public String repr() {
     return String.format(
-        "[TestDiagnostic: filename=%s, lineNumber=%d, kind=%s, message=%s]",
-        filename, lineNumber, kind, message);
+        "[TestDiagnostic: filename=%s, lineNumber=%d, kind=%s, key=%s]",
+        filename, lineNumber, kind, key);
   }
 }
