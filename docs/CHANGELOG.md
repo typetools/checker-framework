@@ -3,7 +3,7 @@
 <!-- markdownlint-disable no-duplicate-heading -->
 <!-- pyml disable no-duplicate-heading -->
 
-## Version 3.54.0 (2026-03-03)
+## Version 3.54.0 (2026-03-02)
 
 ### User-visible changes
 
@@ -36,6 +36,8 @@ In `TestDiagnostic`:
 Removed classes and methods that have been deprecated for more than two years.
 
 ### Closed issues
+
+\#6874, #7471, #7475, #7486.
 
 ## Version 3.53.1 (2026-02-02)
 
