@@ -12,8 +12,13 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  */
 public class TestDiagnostic {
 
+  /** The file to which the diagnostic applies. */
   private final String filename;
+
+  /** The line number to which the diagnostic applies. */
   private final long lineNumber;
+
+  /** The kind of diagnostic. */
   private final DiagnosticKind kind;
 
   /**
