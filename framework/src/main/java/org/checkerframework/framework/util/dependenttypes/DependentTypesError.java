@@ -25,7 +25,7 @@ public class DependentTypesError {
 
   /** Regular expression for unparsing string representations of this class (gross). */
   private static final Pattern ERROR_PATTERN =
-      Pattern.compile("\\[error for expression: (.*); error: [.*]\\]");
+      Pattern.compile("\\[error for expression: (.*); error: (.*)\\]");
 
   /**
    * Returns true if the given expression string is an error. That is, whether it is a string that
