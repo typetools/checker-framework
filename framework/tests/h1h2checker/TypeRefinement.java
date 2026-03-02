@@ -12,7 +12,7 @@ public class TypeRefinement {
   // :: error: [h1h2checker.h1invalid.forbidden]
   @H1Invalid Object getH1Invalid() {
     // :: error: [h1h2checker.h1invalid.forbidden] :: warning:
-    // (cast.unsafe.constructor.invocation)
+    // [cast.unsafe.constructor.invocation]
     return new @H1Invalid Object();
   }
 }
