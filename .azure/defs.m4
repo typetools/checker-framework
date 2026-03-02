@@ -6,7 +6,8 @@ define([junit_job], [dnl
   - job: junit_jdk$1
 ifelse($1,canary_version,,[    dependsOn:
       - canary_jobs
-      - junit_jdk[]canary_version
+      - junit_part1_jdk[]canary_version
+      - junit_part2_jdk[]canary_version
 ])dnl
     pool:
       vmImage: 'ubuntu-latest'
