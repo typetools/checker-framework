@@ -34,19 +34,19 @@ public class Marks3c {
 
   String customerNameByID1(Optional<Customer> opt) {
     // better: return opt.map(Customer::getName).orElse("UNKNOWN");
-    // :: warning: (prefer.map.and.orelse)
+    // :: warning: [prefer.map.and.orelse]
     return opt.isPresent() ? opt.get().getName() : "UNKNOWN";
   }
 
   String customerNameByID2(List<Customer> custList, int custID) {
     Optional<Customer> opt = custList.stream().filter(c -> c.getID() == custID).findFirst();
     // better: return opt.map(Customer::getName).orElse("UNKNOWN");
-    // :: warning: (prefer.map.and.orelse)
+    // :: warning: [prefer.map.and.orelse]
     return opt.isPresent() ? opt.get().getName() : "UNKNOWN";
   }
 
   void main(Optional<Customer> optCustomer) {
-    // :: warning: (prefer.map)
+    // :: warning: [prefer.map]
     if (optCustomer.isPresent()) {
       Customer c = identity(optCustomer.get());
     } else {
@@ -58,7 +58,7 @@ public class Marks3c {
       System.out.println("hello world");
     }
 
-    // :: warning: (prefer.map)
+    // :: warning: [prefer.map]
     if (!optCustomer.isPresent()) {
     } else {
       Customer c = identity(optCustomer.get());
@@ -75,7 +75,7 @@ public class Marks3c {
   }
 
   void m2() {
-    // :: warning: (prefer.map)
+    // :: warning: [prefer.map]
     if (getOptCustomerPure().isPresent()) {
       Customer c = identity(getOptCustomerPure().get());
     } else {

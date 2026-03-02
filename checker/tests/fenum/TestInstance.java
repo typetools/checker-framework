@@ -14,22 +14,22 @@ public class TestInstance {
 class FenumUserTestInstance {
   @Fenum("A") Object state1 = new TestInstance().ACONST1;
 
-  // :: error: (assignment)
+  // :: error: [assignment]
   @Fenum("B") Object state2 = new TestInstance().ACONST1;
 
   void foo(TestInstance t) {
-    // :: error: (assignment)
+    // :: error: [assignment]
     state1 = new Object();
 
     state1 = t.ACONST2;
     state1 = t.ACONST3;
 
-    // :: error: (assignment)
+    // :: error: [assignment]
     state1 = t.BCONST1;
 
-    // :: error: (method.invocation)
+    // :: error: [method.invocation]
     state1.hashCode();
-    // :: error: (method.invocation)
+    // :: error: [method.invocation]
     t.ACONST1.hashCode();
 
     // sanity check: unqualified instantiation and call work.
@@ -38,7 +38,7 @@ class FenumUserTestInstance {
 
     if (t.ACONST1 == t.ACONST2) {}
 
-    // :: error: (binary)
+    // :: error: [binary]
     if (t.ACONST1 == t.BCONST2) {}
   }
 }

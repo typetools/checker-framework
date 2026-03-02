@@ -9,7 +9,7 @@ public class CombineFacts {
     a1[len] = 1;
 
     // This access should issue an error.
-    // :: error: (array.access.unsafe.high)
+    // :: error: [array.access.unsafe.high]
     a2[len] = 1;
   }
 }

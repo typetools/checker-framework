@@ -23,9 +23,9 @@ public record Issue6750(String type) {
   }
 
   void use() {
-    // :: error: (argument)
+    // :: error: [argument]
     needKeyFor("", getMap(String::toString));
-    // :: error: (expression.unparsable) :: error: (assignment)
+    // :: error: [expression.unparsable] :: error: [assignment]
     @KeyFor("getMap(String::toString)") String s = returnKeyFor(new HashMap<>(getMap(String::toString)));
   }
 
@@ -33,7 +33,7 @@ public record Issue6750(String type) {
     externals.stream().collect(Collectors.groupingBy(Issue6750::type)).entrySet().stream()
         .forEach(
             values -> {
-              // :: error: (assignment)
+              // :: error: [assignment]
               @KeyFor({}) String b = values.getKey();
             });
   }

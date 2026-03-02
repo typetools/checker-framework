@@ -15,6 +15,9 @@ Command-line arguments:
 New command-line argument `-Aonelinemsg` puts error messages on a single line.
 This is useful when using a tool that only shows the first line of the error.
 
+The command-line argument `-Anomsgtext` surrounds the error key with brackets
+instead of parenthesis. This matches Java error messages.
+
 ### Implementation details
 
 In `AnnotatedTypeFactory`, `canonicalAnnotation()` returns a non-null value.
