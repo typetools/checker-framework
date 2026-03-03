@@ -3,6 +3,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
+import java.util.Locale;
 import java.util.Objects;
 import javax.inject.Inject;
 import org.eclipse.jgit.lib.Config;
@@ -133,7 +134,7 @@ public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
 
     @Override
     public int hashCode() {
-      int result = Objects.hashCode(org);
+      int result = org == null ? 0 : org.toLowerCase(Locale.ROOT).hashCode();
       result = 31 * result + Objects.hashCode(branch);
       return result;
     }
