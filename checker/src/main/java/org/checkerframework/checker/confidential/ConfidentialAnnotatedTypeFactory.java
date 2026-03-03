@@ -65,6 +65,7 @@ public class ConfidentialAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    *
    * @param checker the confidential checker
    */
+  @SuppressWarnings("this-escape")
   public ConfidentialAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     this.NONCONFIDENTIAL = AnnotationBuilder.fromClass(getElementUtils(), NonConfidential.class);
