@@ -4,7 +4,7 @@ public class Issue261 {
   boolean b;
 
   class Flag<T> {
-    // :: error: (initialization.field.uninitialized)
+    // :: error: [initialization.field.uninitialized]
     T value;
   }
 

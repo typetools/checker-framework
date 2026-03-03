@@ -1,0 +1,474 @@
+\documentclass{article}
+\title{AFU v4 Design}
+\author{Dan Brown}
+
+\usepackage{graphics}
+\usepackage{verbatim}
+\newenvironment{code}{\footnotesize\verbatim}{\endverbatim\normalsize}
+\newenvironment{jcode}{\footnotesize\verbatim}{\endverbatim\normalsize}
+
+\begin{document}
+\maketitle
+
+\section{Design Considerations}
+
+The Annotation File Utilities (AFU) include programs for extracting
+annotations from Java class files and inserting annotations into Java
+source or class files, in accordance with the Java language and virtual
+machine specification.  This
+document uses AFU in the singular, in reference to the source
+insertion program except where otherwise noted.
+
+The AFU suffers from multiple design flaws that impede performance and
+maintainability, including:
+
+\begin{description}
+\item[Unstructured text modification.]  The AFU inserts
+annotations into source text instead of modifying syntax trees.
+The use of source positions rather than tree paths for indicating
+insertion placement has led to code that is fragile and hence difficult
+to maintain.
+\item[Non-uniform logic.]  There are two distinct ways to
+identify where to insert annotations into the source, each having its
+own distinct data structures and logic.  Consequently, it is possible to
+have inconsistent results for different representations of the same
+location.
+\item[Inefficient traversal.]  The search strategy is
+generate-and-test: it chooses an AST node in a preorder traversal and
+checks every insertion specification relevant to the class (or package)
+to determine whether it applies to the current node.  Furthermore, since
+the implementations of some tests contain recursive calls going up the
+path to the root, these tests can be repeated many times over for some
+nodes.
+\end{description}
+
+The proposed design is aimed at mitigating these problems.  It makes
+the traversal a single pass over the annotations, with limited
+re-visitation of AST nodes.  It reduces the chance for inconsistency
+between formats by finding the AST node that corresponds to a code
+location given in the scene before determining the insertion position.
+It modifies an AST data structure rather than the source itself,
+preserving formatting and commentary by incorporating non-leaf text
+(i.e.\ whitespace and comments) into the representation of the AST.
+
+\section{Current AFU}
+
+The current AFU source code (3.6.16 as of 11 June 2015) is organized
+into four packages (not counting the
+\texttt{scene\_lib} sub-project):
+\begin{itemize}
+\item  \texttt{org.checkerframework.afu.annotator}, containing the main class and a class
+representing source text;
+\item  \texttt{org.checkerframework.afu.annotator.find}, containing the classes that implement
+the core insertion logic;
+\item  \texttt{org.checkerframework.afu.annotator.scanner}, containing support classes for
+\texttt{org.checkerframework.afu.annotator.find};\ and
+\item  \texttt{org.checkerframework.afu.annotator.specification}, containing classes that
+manage intermediate representations of the insertions specified in a
+Java Annotation Index File (JAIF).
+\end{itemize}
+Should the proposed redesign be implemented, it is anticipated that the
+first will be simplified somewhat and modified to reflect changes in the
+other packages, the second will be radically simplified, the third will
+remain the same, and the fourth will be eliminated.
+
+The details of \texttt{org.checkerframework.afu.annotator.scanner}\ are not discussed here, since
+the proposed redesign will neither change them nor be influenced by
+them.  Of the classes in \texttt{org.checkerframework.afu.annotator.specification},\ only
+\texttt{IndexFileSpecification},\ which extracts \texttt{Insertion}s
+from \texttt{scene-lib}'s JAIF representation
+(\texttt{org.checkerframework.afu.scenelib.el.AScene}), is relevant to the redesign.
+
+By far the largest and most complex package is \texttt{org.checkerframework.afu.annotator.find}.
+The insertion logic is distributed among \texttt{TreeFinder} and
+numerous implementations of the \texttt{Criterion} and
+\texttt{Insertion} interfaces.  (A \texttt{Criterion} is a reified
+condition that provides a method
+\texttt{boolean isSatisfiedBy(TreePath path)},
+and an \texttt{Insertion} includes matching criteria, output parameters,
+and methods for generating the source text to be inserted.)
+
+A simplified outline of the basic flow of the program is as follows:
+
+\begin{enumerate}
+\item  Interpret each JAIF as a ``scene'' (\texttt{AScene}), then invoke
+the \texttt{parse} method in \texttt{IndexFileSpecification} to extract
+the indicated \texttt{Insertion}s from the scene.
+\item  Parse each Java source file to obtain a (type-checked) AST.
+\item  Create an empty map from (Integer) source positions to
+insertions.
+\item  For each node in the AST in pre-order:
+\begin{itemize}
+\item  For each extracted \texttt{Insertion} that is relevant to the
+immediately enclosing class (or package for compilation unit nodes):
+\begin{itemize}
+\item  If the path from the root to the current node satisfies every
+\texttt{Criterion} for the \texttt{Insertion}:
+\begin{enumerate}
+\item  Find the appropriate source position for the annotation.
+\item  Add a mapping from the position to the \texttt{Insertion} to the
+map.
+\item  Remove the insertion from the extracted set.
+\end{enumerate}
+\end{itemize}
+\end{itemize}
+\item  For each position-to-insertion mapping in descending order by
+position:
+\begin{itemize}
+\item  Generate insertion text and insert at indicated position.
+\end{itemize}
+\item  Emit modified source code.
+\end{enumerate}
+
+\section{Proposed Revisions}
+
+\begin{figure}[ht]
+\begin{center}
+\resizebox{\columnwidth}{!}{\includegraphics{dataflow.png}}
+\end{center}
+\caption{
+Data flow between components.  Boxes represent sources and sinks;
+ellipses represent Java objects.  Bold lines mark new classes and data
+paths, and dashed lines indicate current data flows to be bypassed.
+}
+\label{fig:dataflow}
+\end{figure}
+
+Figure~\ref{fig:dataflow} gives an overview of proposed changes to the
+flow of data between classes.  First, the current re-interpretation of
+the scene as a ``specification'' and subsequent extraction of
+\texttt{Criteria} will be eliminated, as the necessary information can
+be determined directly from the \texttt{Scene}.  Second, the source text
+will be incorporated into the augmented AST in a more convenient form,
+so there will no need to refer back to the source itself.
+
+The division of responsibilities among classes will remain largely the
+same, with the major differences corresponding to the changes in the
+data flow.  First, the annotation locations will be read from the
+\texttt{Scene} and mapped to the corresponding path in the (augmented)
+AST (if any).  Second, since \texttt{AAST} will incorporate the salient
+capabilities of \texttt{JCTree} and \texttt{Source}, it will cover the
+responsibilities of both classes.
+
+Many of the current supporting classes will be retained as they are.  In
+particular, the new AFU will continue to rely on javac's AST classes and
+parser, and \texttt{scene-lib} probably will need little or no
+modification.  The \texttt{org.checkerframework.afu.annotator.find} package will be radically
+simplified with the elimination of the \texttt{Criterion} and
+(possibly) \texttt{Insertion} hierarchies, as the insertion location
+within the AST can be determined directly from the \texttt{Scene}.
+
+The redesign can be broken down into two independent parts:
+\begin{description}
+\item{Path-based positioning.} Eliminate the \texttt{Criterion}
+hierarchy; determine the insertion location and the text to be inserted
+during (a single) scene traversal; let the scene traversal rather than
+an AST traversal be the outer loop.  Advantages: since insertion is
+based on the node rather than a numeric position, there is only one
+positioning logic (even if there are still two matching objects); an
+entire pass and a large amount of intermediate data are eliminated, thus
+improving time and space efficiency.
+\item{Tree transformation.}  Eliminate the \texttt{Insertion} hierarchy;
+instead of calculating numeric positions, apply a transformation to the
+appropriate subtree.  Advantage: the logic of tree transformation is
+both closer to the specification and easier to comprehend (and maintain)
+than the logic of finding numeric positions for inserting text by
+reverse order.
+\end{description}
+
+While these have no obvious technical disadvantages with respect to the
+existing AFU, the payoff must be weighed against the costs.  The current
+codebase is mostly stable at this point, so any increase in reliability
+will be small (though for verification software, a jump from, say,
+99.99\% to 99.9999\% correct makes an enormous difference).
+Fortunately, the AFU's extensive test suite will make it clear how
+quickly a revised implementation achieves the same level of reliability.
+
+\subsection{Path-based Positioning}
+
+The current AFU creates transforms the scene into a set of
+\texttt{Insertions}, each with its own \texttt{Criteria} (a collection
+of objects of various \texttt{Criterion} subclasses).  In doing so, it
+throws away information about hierarchical relationships that could be
+used to guide the search for matching locations in the code.
+
+\begin{figure}[ht]
+\begin{center}
+\resizebox{156pt}{!}{\includegraphics{corresp.png}}
+\end{center}
+\caption{
+Correspondence between scene and AST.
+}
+\label{fig:corresp}
+\end{figure}
+
+It makes more sense to traverse an AST in parallel (conceptually, not
+necessarily by different processors) with a scene that refers to it.
+For example, if a class specification (\texttt{AClass}) in a scene
+corresponds to a class node in an AST, each time one of the method
+specifications (\texttt{AMethod}) is visited, the corresponding method
+node (see Figure~\ref{fig:corresp}) should be visited as well to see
+whether any insertions under the \texttt{AMethod} apply to it.  This
+strategy not only obviates an additional pass but avoids much useless
+test repetition, as there is no need to test \emph{every} potential
+insertion against \emph{every} AST node encountered before the correct
+insertion site.  With this change, it becomes possible to generate
+\texttt{Insertion}s on the fly---or perhaps even to go ahead and insert
+text, though managing order dependencies would take some additional
+work.
+
+The main loop of the program thus will become a pre-order traversal of
+\texttt{AScene} rather than of \texttt{JCTree}, although the scene
+traversal will explore corresponding parts of the AST.  In other words:
+the process will be guided by the annotations to be inserted rather than
+by the shape of the AST.  Hence, each specified annotation will be
+visited exactly once.  The information currently used to create
+\texttt{Criteria} for the insertions can instead be used to directly
+determine the path (if any) in the AST to which the current scene
+element corresponds.
+
+\subsection{Tree Transformation}
+
+The current AFU finds numeric source positions in trees and inserts
+annotations directly into the source code.  The position-finding logic
+is therefore applied at a time other than insertion, introducing
+insertion order dependencies and making it harder to find the source of
+a bug.
+
+A new class hierarchy, the ``Augmented AST'' (\texttt{AAST}), will
+directly manage non-leaf text--that is, inter-leaf text (whitespace and
+comments) and intra-branch text (implicit or contained in branch node
+data members).  It will be an implementation of
+\texttt{com.sun.source.Tree} that provides needed bits from
+\texttt{com.sun.tools.javac.tree.JCTree} and defines a parallel subclass
+hierarchy.  AAST and subclasses provide methods to retrieve the
+inter-leaf text segments that precede and follow an AST node and
+printing methods that preserve the formatting of the source code.
+
+Non-leaf text will be stored in three types of locations in an AAST:
+\begin{enumerate}
+\item  Each leaf node will store any non-code text that immediately
+follows.
+\item  For branch nodes, for every implicit text segment or data member
+that is represented in the source code but not in a descendant node, the
+node will store any whitespace and comments that follow, unless the
+content is at the end of the node's text.
+\item  The computation unit node will store any text that precedes the
+beginning of the Java code.
+\end{enumerate}
+In this way, all text segment references occur exactly once in the AST,
+and annotations can be inserted at the front with no need to take
+preceding text into account.
+
+An annotation insertion will consist of a transformation of a tree node.
+If no additional code is to be generated, the transformation is simple:
+\begin{itemize}
+\item  For type annotations, the parent AST node of the element to be
+annotated adds the optional annotation node if it is absent, then adds
+the annotation to the annotation node.
+\item  For declaration annotations, the annotation is added onto the
+front of a declaration's list of modifiers.
+\end{itemize}
+Cases that involve code generation are more complex.
+Figures~\ref{fig:nocast} and \ref{fig:typecast} give an example (pre-
+and post-insertion, respectively) of a transformation that requires a
+typecast to be generated and inserted.  Note that previously existing
+non-leaf text segments remain unaltered.
+
+\begin{figure}[ht]
+\begin{center}
+\resizebox{261pt}{!}{\includegraphics{nocast.png}}
+\end{center}
+\caption{
+Augmented subgraph for \texttt{int i = 0}.  Text of leaf nodes and text
+representing elements of branch nodes are connected with solid arrows,
+and inter-leaf and inter-element text segments are connected with dashed
+arrows.  The text of the subgraph can be read from the lower frontier of
+the graph.  (Underscores represent spaces here.)
+}
+\label{fig:nocast}
+\end{figure}
+
+\begin{figure}[ht]
+\begin{center}
+\resizebox{\columnwidth}{!}{\includegraphics{typecast.png}}
+\end{center}
+\caption{
+Augmented subgraph for \texttt{int i = (@A int) 0}, the result of adding
+an annotated cast \texttt{(@A int)} to the previous figure's code.  With
+respect to the graph in the previous figure, \texttt{TypeCast} has taken
+\texttt{Literal}'s place in the tree, and \texttt{Literal} has become a
+child of \texttt{TypeCast} along with the newly inserted material.
+}
+\label{fig:typecast}
+\end{figure}
+
+The other major change will be in the output generation process, which
+will depend on the \texttt{AAST} rather than directly on the source.
+The \texttt{AAST}'s pretty-printer will perform an in-order traversal
+and emit the text of each leaf interleaved with the non-leaf text.
+
+\subsection{Algorithm Summary}
+
+\begin{enumerate}
+\item  Interpret each JAIF as a ``scene'' (\texttt{AScene}).
+\item  Parse each Java source file to obtain a (type-checked) AST.
+\item  For each AST:
+\begin{enumerate}
+\item  Transform the AST into an AAST.
+\item  For each annotated element in the scene in pre-order:
+\begin{itemize}
+\item  Try to find the AAST node to which the element corresponds.
+\item  If the node exists (or can be generated):
+\begin{itemize}
+\item  Transform the subtree rooted at the node to incorporate the
+annotation.
+\end{itemize}
+\end{itemize}
+\item  Pretty-print AAST.
+\end{enumerate}
+\end{enumerate}
+
+\section{Planning}
+
+There will be some time required for integrating the two parts if they
+are implemented separately.  In particular, doing tree transformation
+separately from path-based positioning means reifying transformations
+so they can be done in a second pass.  Hence it makes more sense to
+do path-based positioning on the way to doing tree transformation.
+
+Estimated times are as follows:
+\begin{itemize}
+\item  Path-based positioning: 2.5 weeks.
+\item  Tree transformation: 3 to 3.5 weeks if done after path-based
+positioning, 4 weeks otherwise.
+\end{itemize}
+Thus, doing the full job should take about six weeks.
+
+\appendix
+
+\section{API extensions (non-exhaustive)}
+
+\begin{jcode}
+public abstract class AAST extends com.sun.source.Tree {
+  /** Interleaves non-leaf text with text serialization of AAST. */
+  public void prettyPrint(java.io.Writer w) throws java.io.IOException;
+
+  /** Insert single annotation at given path. */
+  public insertAnnotation(TreePath path, Annotation anno);
+}
+
+// main loop
+AAST insertAnnotations(org.checkerframework.afu.scenelib.el.AScene scene, AAST aast);
+\end{jcode}
+
+\newpage
+\section{Excerpts from original API}\label{sec:exc}
+
+\begin{jcode}
+public interface Tree {
+    public enum Kind {  // MUCH larger in actual interface
+        /**
+         * Used for instances of {@link BinaryTree} representing
+         * addition or string concatenation {@code +}.
+         */
+        PLUS(BinaryTree.class),
+        /**
+         * Used for instances of {@link LiteralTree} representing
+         * an integral literal expression of type {@code int}.
+         */
+        INT_LITERAL(LiteralTree.class);
+    }
+    Kind getKind();
+    /**
+     * Accept method used to implement the visitor pattern.  The
+     * visitor pattern is used to implement operations on trees.
+     *
+     * @param <R> result type of this operation.
+     * @param <D> type of additional data.
+     */
+    <R,D> R accept(TreeVisitor<R,D> visitor, D data);
+}
+public interface ExpressionTree extends Tree {}
+public interface BinaryTree extends ExpressionTree {
+    ExpressionTree getLeftOperand();
+    ExpressionTree getRightOperand();
+}
+public interface LiteralTree extends ExpressionTree {
+    Object getValue();
+}
+
+public abstract class JCTree implements Tree {
+    public int getStartPosition() {
+        return TreeInfo.getStartPos(this);
+    }
+    public static abstract class JCExpression
+            extends JCTree implements ExpressionTree {}
+    public static class JCBinary extends JCExpression implements BinaryTree {
+        private Tag opcode;
+        public JCExpression lhs;
+        public JCExpression rhs;
+        public Symbol operator;
+        protected JCBinary(Tag opcode,
+                         JCExpression lhs,
+                         JCExpression rhs,
+                         Symbol operator) {
+            this.opcode = opcode;
+            this.lhs = lhs;
+            this.rhs = rhs;
+            this.operator = operator;
+        }
+        public Kind getKind() { return TreeInfo.tagToKind(getTag()); }
+        public JCExpression getLeftOperand() { return lhs; }
+        public JCExpression getRightOperand() { return rhs; }
+        public Symbol getOperator() { return operator; }
+        @Override
+        public <R,D> R accept(TreeVisitor<R,D> v, D d) {
+            return v.visitBinary(this, d);
+        }
+    }
+    public static class JCLiteral extends JCExpression implements LiteralTree {
+        public TypeTag typetag;
+        public Object value;
+        protected JCLiteral(TypeTag typetag, Object value) {
+            this.typetag = typetag;
+            this.value = value;
+        }
+        public Kind getKind() {
+            return typetag.getKindLiteral();
+        }
+        public Object getValue() {
+            switch (typetag) {
+                case BOOLEAN:
+                    int bi = (Integer) value;
+                    return (bi != 0);
+                case CHAR:
+                    int ci = (Integer) value;
+                    char c = (char) ci;
+                    if (c != ci)
+                        throw new AssertionError("bad value for char literal");
+                    return c;
+                default:
+                    return value;
+            }
+        }
+        @Override
+        public <R,D> R accept(TreeVisitor<R,D> v, D d) {
+            return v.visitLiteral(this, d);
+        }
+    }
+}
+\end{jcode}
+
+\end{document}
+
+
+%%  LocalWords:  AFU JAIF IndexFileSpecification TreeFinder boolean
+%%  LocalWords:  isSatisfiedBy TreePath AScene AAST JCTree javac's subtree
+%%  LocalWords:  AFU's AClass AMethod subgraph TypeCast prettyPrint anno
+%%  LocalWords:  insertAnnotation insertAnnotations aast BinaryTree opcode
+%%  LocalWords:  LiteralTree getKind TreeVisitor ExpressionTree getValue
+%%  LocalWords:  getLeftOperand getRightOperand getStartPosition TreeInfo
+%%  LocalWords:  getStartPos JCExpression JCBinary lhs rhs tagToKind ci
+%%  LocalWords:  getTag getOperator visitBinary JCLiteral TypeTag typetag
+%%  LocalWords:  getKindLiteral AssertionError visitLiteral

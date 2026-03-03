@@ -1,0 +1,26 @@
+package java.lang:
+annotation @UnderInitialization: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package java.lang:
+annotation @PolyRaw: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package java.lang:
+annotation @ThisUnderInitialization: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package org.checkerframework.afu.annotator.tests:
+class GenericCell:
+
+    field internalList:
+        type: @java.lang.ThisUnderInitialization
+        inner-type 3, 0: @java.lang.ThisUnderInitialization
+
+    method <init>(Ljava/util/List;)V:
+        parameter #0:
+            type: @java.lang.UnderInitialization
+            inner-type 3, 0: @java.lang.UnderInitialization
+
+    method getList()Ljava/util/List;:
+        return: @java.lang.PolyRaw
+            inner-type 3, 0: @java.lang.PolyRaw
+        receiver: @java.lang.PolyRaw
+

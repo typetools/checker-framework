@@ -8,11 +8,11 @@ public class PureTest {
   }
 
   public void test() {
-    // :: error: (assignment)
+    // :: error: [assignment]
     @NonNull Object l0 = puremethod(null);
 
     if (puremethod(null) == null) {
-      // :: error: (assignment)
+      // :: error: [assignment]
       @NonNull Object l1 = puremethod(null);
     }
 
@@ -21,12 +21,12 @@ public class PureTest {
     }
 
     if (puremethod("m") != null) {
-      // :: error: (assignment)
+      // :: error: [assignment]
       @NonNull Object l1 = puremethod(null);
     }
 
     if (puremethod("m") != null) {
-      // :: error: (assignment)
+      // :: error: [assignment]
       @NonNull Object l1 = puremethod("n");
     }
 
@@ -40,10 +40,10 @@ public class PureTest {
 
     x = new Object();
 
-    // :: error: (assignment)
+    // :: error: [assignment]
     @NonNull Object l3 = puremethod(x);
 
-    // :: error: (assignment)
+    // :: error: [assignment]
     @NonNull Object l4 = puremethod("n");
   }
 
@@ -67,7 +67,7 @@ public class PureTest {
     if (pt.getSuperclass() instanceof Object) {
       return;
     }
-    // :: error: (dereference.of.nullable)
+    // :: error: [dereference.of.nullable]
     pt.getSuperclass().toString();
   }
 
@@ -120,7 +120,7 @@ public class PureTest {
     } else {
       pt.setSuperclass(null);
     }
-    // :: error: (dereference.of.nullable)
+    // :: error: [dereference.of.nullable]
     pt.getSuperclass().toString();
   }
 

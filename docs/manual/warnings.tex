@@ -51,6 +51,8 @@ You can suppress warnings throughout the codebase by using the following mechani
 \item
   the \code{-AskipDefs} and \code{-AonlyDefs} command-line options (Section~\ref{askipdefs}),
 \item
+  the \code{-AskipFiles} and \code{-AonlyFiles} command-line options (Section~\ref{askipfiles}),
+\item
   the \code{-AuseConservativeDefaultsForUncheckedCode=source} command-line
   option (Section~\ref{compiling-libraries}),
 \item
@@ -138,10 +140,10 @@ MyFile.java:107: error: [dereference.of.nullable] dereference of possibly-null r
 You are allowed to use any substring of a message key, so long as the
 substring extends at each end to a period or an end of the key.  For
 example, to suppress a warning with message key
-\code{"assignment"}, you could use
-\<@SuppressWarnings("assignment")>,
-\<@SuppressWarnings("assignment.type")>,
-\<@SuppressWarnings("type.incompatible")>, or other variants.
+\code{"lock.expression.possibly.not.final"}, you could use
+\<@SuppressWarnings("lock.expression.possibly.not.final")>,
+\<@SuppressWarnings("lock.expression")>,
+\<@SuppressWarnings("not.final")>, or other variants.
 We recommend using
 the longest possible message key; a short message might suppress more
 warnings than you expect.
@@ -150,7 +152,7 @@ The checkername \<"allcheckers"> means all checkers.  Using this is not
 recommended, except for messages common to all checkers such as
 purity-related messages when using \<-AcheckPurityAnnotations>.  If you use
 \<"allcheckers">, you run some checker that does not issue any warnings,
-and you suply the \<-AwarnUnneededSuppressions> command-line argument, then
+and you supply the \<-AwarnUnneededSuppressions> command-line argument, then
 the Checker Framework will issue an \<unneeded.suppression>
 warning.
 
@@ -566,7 +568,8 @@ smaller scope, rather than using the \<-AsuppressWarnings> command-line option.
 You can suppress all errors and warnings at all \emph{uses} of a given
 class, or suppress all errors and warnings \emph{except} those at uses of a given
 class.  (The class itself is still type-checked, unless you also use
-the \code{-AskipDefs} or \code{-AonlyDefs} command-line option, see~\ref{askipdefs}).
+the \code{-AskipDefs}, \code{-AonlyDefs}, \code{-AskipFiles}, or \code{-AonlyFiles}
+command-line option, see~\ref{askipdefs}).
 You can also use these options to affect entire packages or directories/folders.
 
 Set the \code{-AskipUses} command-line option to a
@@ -575,6 +578,8 @@ should be suppressed.
 Or, set the \code{-AonlyUses} command-line option to a
 regular expression that matches fully-qualified class names (not file names) for which warnings and errors
 should be emitted; warnings about uses of all other classes will be suppressed.
+The regular expressions are unanchored, unless you anchor them yourself
+with ``\codesize\verb|^|'' and/or ``\codesize\verb|$|''.
 
 For example, suppose that you use
 ``{\codesize\verb|-AskipUses=^java\.|}'' on the command line
@@ -627,6 +632,10 @@ regular expression that matches fully-qualified class names (not file names) who
 definitions should be type-checked.
 (This is somewhat similar to NullAway's
 \<-XepOpt:NullAway:AnnotatedPackages> command-line argument.)
+(For file names, use \code{-AskipFiles} and \code{-AonlyFiles} instead; see
+Section~\ref{askipfiles}.)
+The regular expressions are unanchored, unless you anchor them yourself
+with ``\codesize\verb|^|'' and/or ``\codesize\verb|$|''.
 
 For example, if you use
 ``{\codesize\verb|-AskipDefs=^mypackage\.|}'' on the command line
@@ -652,6 +661,36 @@ A common scenario for using the arguments is when you are starting out by
 type-checking only part of a legacy codebase.  After you have verified the
 most important parts, you can incrementally check more classes until you
 are type-checking the whole thing.
+
+
+\sectionAndLabel{\code{-AskipFiles} and \code{-AonlyFiles} command-line options}{askipfiles}
+
+You can suppress all errors and warnings originating from classes that are
+located in a given file or directory/folder, or all those that are \emph{not} in a
+given file or directory/folder.
+
+Set the \code{-AskipFiles} command-line option to a
+regular expression that matches the path to files or directories/folders containing
+classes for which errors and warnings should be suppressed.
+Similarly, \code{-AonlyFiles} suppresses warnings everywhere
+\emph{except} in the given files.
+The regular expressions are unanchored, unless you anchor them yourself
+with ``\codesize\verb|^|'' and/or ``\codesize\verb|$|''.
+
+For example, if you use
+``{\codesize\verb|-AskipFiles=/build/generated/|}'' on the command line
+when invoking
+\code{javac}, then the definitions of classes located in any
+\codesize\verb|/build/generated| directory will not be checked.
+
+If you supply both \code{-AskipFiles} and \code{-AonlyFiles}, then
+\code{-AskipFiles} takes precedence.
+
+A common scenario for using this argument is when you want to exclude certain
+directories/folders (such as those containing generated or legacy code) from
+type-checking.
+Another scenario is when a file contains multiple top-level classes, only
+one of which has a name that corresponds to the file name.
 
 
 \sectionAndLabel{\code{-Alint} command-line option\label{lint-options}}{alint}

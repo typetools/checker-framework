@@ -1,6 +1,5 @@
 package org.checkerframework.checker.mustcall;
 
-import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.Tree;
@@ -155,8 +154,7 @@ public class MustCallTransfer extends CFTransfer {
     CFValue defaultTypeAsCFValue =
         analysis.createSingleAnnotationValue(defaultType, expr.getType());
     CFValue newValue = defaultTypeAsCFValue.leastUpperBound(value);
-    store.clearValue(expr);
-    store.insertValue(expr, newValue);
+    store.replaceValue(expr, newValue);
   }
 
   /**
@@ -290,8 +288,10 @@ public class MustCallTransfer extends CFTransfer {
     if (path == null) {
       enclosingElement = TreeUtils.elementFromUse(tree).getEnclosingElement();
     } else {
-      ClassTree classTree = TreePathUtil.enclosingClass(path);
-      enclosingElement = TreeUtils.elementFromDeclaration(classTree);
+      // Issue 6473
+      // Adjusts handling of nearest enclosing element for temporary variables.
+      // This approach ensures the correct enclosing element (method or class) is determined.
+      enclosingElement = TreePathUtil.findNearestEnclosingElement(path);
     }
     if (enclosingElement == null) {
       return null;

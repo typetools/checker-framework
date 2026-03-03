@@ -30,6 +30,7 @@ public class RawTypeTest {
           m2(c);
       }
 
+      @SuppressWarnings("removal") // AccessController in JDK 17
       public void m4() {
           AccessController.doPrivileged(new PrivilegedAction() {
               public Object run() {
@@ -95,7 +96,7 @@ public class RawTypeTest {
   }
 
   class C3 implements I2 {
-    // :: error: (override.param) :: error: (type.argument)
+    // :: error: [override.param] :: error: [type.argument]
     public void m(MyList<String> l) {}
   }
 

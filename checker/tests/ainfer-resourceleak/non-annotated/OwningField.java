@@ -12,7 +12,7 @@ class OwningField {
     final Foo f;
 
     FinalOwningField() {
-      // :: warning: (required.method.not.called)
+      // :: warning: [required.method.not.called]
       f = new Foo();
     }
 

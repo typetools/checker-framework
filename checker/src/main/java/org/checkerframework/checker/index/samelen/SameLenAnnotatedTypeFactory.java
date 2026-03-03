@@ -29,13 +29,13 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.expression.ArrayCreation;
 import org.checkerframework.dataflow.expression.ClassName;
 import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.JavaExpressionParseException;
 import org.checkerframework.dataflow.expression.ValueLiteral;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.ElementQualifierHierarchy;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.util.JavaExpressionParseUtil;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -86,9 +86,11 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       TreeUtils.getMethod(SameLen.class, "value", 0, processingEnv);
 
   /** Predicates about method calls. */
+  @SuppressWarnings("this-escape")
   private final IndexMethodIdentifier imf = new IndexMethodIdentifier(this);
 
   /** Create a new SameLenAnnotatedTypeFactory. */
+  @SuppressWarnings("this-escape")
   public SameLenAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
 
@@ -119,7 +121,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   public AnnotatedTypeMirror getAnnotatedTypeLhs(Tree tree) {
     AnnotatedTypeMirror atm = super.getAnnotatedTypeLhs(tree);
 
-    if (tree.getKind() == Tree.Kind.VARIABLE) {
+    if (tree instanceof VariableTree) {
       AnnotationMirror sameLenAnno = atm.getPrimaryAnnotation(SameLen.class);
       if (sameLenAnno != null) {
         JavaExpression je = JavaExpression.fromVariableTree((VariableTree) tree);
@@ -224,7 +226,8 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
           return createSameLen(exprs);
         }
       } else {
-        // If one of the annotations is top, the glb is the other annotation; otherwise bottom.
+        // If one of the annotations is top, the glb is the other annotation; otherwise
+        // bottom.
         if (areSameByClass(a1, SameLenUnknown.class)) {
           return a2;
         } else if (areSameByClass(a2, SameLenUnknown.class)) {
@@ -350,7 +353,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       sameLenAnno =
           getAnnotationFromJavaExpressionString(
               sequenceExpression, tree, currentPath, SameLen.class);
-    } catch (JavaExpressionParseUtil.JavaExpressionParseException e) {
+    } catch (JavaExpressionParseException e) {
       // ignore parse errors
       return Collections.emptyList();
     }
@@ -360,9 +363,9 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     return AnnotationUtils.getElementValueArray(sameLenAnno, sameLenValueElement, String.class);
   }
 
-  ///
-  /// Creating @SameLen annotations
-  ///
+  //
+  // Creating @SameLen annotations
+  //
 
   /**
    * Creates a @SameLen annotation whose values are the given strings.
@@ -373,7 +376,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    */
   public AnnotationMirror createSameLen(Collection<String> exprs) {
     AnnotationBuilder builder = new AnnotationBuilder(processingEnv, SameLen.class);
-    String[] exprArray = exprs.toArray(new String[exprs.size()]);
+    String[] exprArray = exprs.toArray(new String[0]);
     builder.setValue("value", exprArray);
     return builder.build();
   }

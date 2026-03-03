@@ -1,0 +1,33 @@
+package java.lang:
+annotation @A: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package java.lang:
+annotation @B: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package java.lang:
+annotation @C: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package java.lang:
+annotation @D: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package java.lang:
+annotation @E: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package org.checkerframework.afu.annotator.tests:
+class ComplexLocationOne:
+
+    field field:
+        type: @java.lang.A
+        inner-type 3, 0: @java.lang.B
+        inner-type 3, 0, 3, 0: @java.lang.C
+        inner-type 3, 0, 3, 1, 0, 0: @java.lang.D
+        inner-type 3, 0, 3, 1: @java.lang.E
+
+    field entries:
+        type:
+            inner-type 3, 0, 3, 0: @java.lang.A
+            inner-type 3, 0, 3, 1, 0, 0: @java.lang.B
+            inner-type 3, 0, 1, 0: @java.lang.C
+            inner-type 3, 0, 1, 0, 3, 0: @java.lang.D
+            inner-type 3, 0, 1, 0, 3, 1, 0, 0: @java.lang.E
+

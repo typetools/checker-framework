@@ -38,11 +38,11 @@ public class BasicLockTest {
     // The first way is more durable as cannot.dereference is tied specifically to
     // @GuardedByUnknown (and @GuardedByBottom, but it is unlikely to become the default for
     // return values on unannotated methods).
-    // :: error: (lock.not.held) :: error: (argument)
+    // :: error: [lock.not.held] :: error: [argument]
     myUnannotatedMethod(o1).field = someValue;
     // The second way is less durable because the default for fields is currently @GuardedBy({})
     // but could be changed to @GuardedByUnknown.
-    // :: error: (assignment) :: error: (argument)
+    // :: error: [assignment] :: error: [argument]
     p1 = myUnannotatedMethod(o1);
 
     // Now test that an unannotated method behaves as if it's annotated with @MayReleaseLocks
@@ -50,7 +50,7 @@ public class BasicLockTest {
     myAnnotatedMethod2();
     m.field = someValue;
     myUnannotatedMethod2();
-    // :: error: (lock.not.held)
+    // :: error: [lock.not.held]
     m.field = someValue;
   }
 
@@ -62,7 +62,7 @@ public class BasicLockTest {
   @MayReleaseLocks
   void testLocalVariables1() {
     MyClass o2 = new MyClass(), p2;
-    // :: error: (argument)
+    // :: error: [argument]
     p2 = myUnannotatedMethod(o2);
     MyClass o3 = new MyClass();
     myAnnotatedMethod(o3);
@@ -81,7 +81,7 @@ public class BasicLockTest {
     // Should behave as @MayReleaseLocks, and *should* reset @LockHeld assumption about local
     // variable lock.
     myUnannotatedMethod2();
-    // :: error: (lock.not.held)
+    // :: error: [lock.not.held]
     q.field = someValue;
   }
 
@@ -95,9 +95,9 @@ public class BasicLockTest {
     lock.lock();
     // Should behave as @MayReleaseLocks, and *should* reset @LockHeld assumption about local
     // variable lock.
-    // :: error: (argument)
+    // :: error: [argument]
     unannotatedReleaseLock(lock);
-    // :: error: (lock.not.held)
+    // :: error: [lock.not.held]
     q.field = someValue;
   }
 }

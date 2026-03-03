@@ -162,32 +162,30 @@ public class AnnotationFileParser {
   private CompilationUnitTree root;
 
   /**
-   * Whether to print warnings about types/members that were not found. The warning states that a
+   * If true, print warnings about types/members that were not found. The warning states that a
    * class/field in the file is not found on the user's real classpath. Since the file may contain
    * packages that are not on the classpath, this can be OK, so default to false.
    */
   private final boolean warnIfNotFound;
 
   /**
-   * Whether to ignore missing classes even when warnIfNotFound is set to true. This allows the
-   * files to contain classes not in the classpath (even if another class in the classpath has the
-   * same package), but still warn if members of the class (methods, fields) are missing. This
-   * option does nothing unless warnIfNotFound is also set.
+   * If true, ignore missing classes even when warnIfNotFound is set to true. This allows the files
+   * to contain classes not in the classpath (even if another class in the classpath has the same
+   * package), but still warn if members of the class (methods, fields) are missing. This option
+   * does nothing unless warnIfNotFound is also set.
    */
   private final boolean warnIfNotFoundIgnoresClasses;
 
-  /** Whether to print warnings about stub files that overwrite annotations from bytecode. */
+  /** If true, print warnings about stub files that overwrite annotations from bytecode. */
   private final boolean warnIfStubOverwritesBytecode;
 
-  /**
-   * Whether to print warnings about stub files that are redundant with annotations from bytecode.
-   */
+  /** If true, print warnings about stub files that are redundant with annotations from bytecode. */
   private final boolean warnIfStubRedundantWithBytecode;
 
   /** The diagnostic kind for stub file warnings: NOTE or WARNING. */
   private final Diagnostic.Kind stubWarnDiagnosticKind;
 
-  /** Whether to print verbose debugging messages. */
+  /** If true, print verbose debugging messages. */
   private final boolean debugAnnotationFileParser;
 
   /** The name of the file being processed; used only for diagnostic messages. */
@@ -195,7 +193,9 @@ public class AnnotationFileParser {
 
   /**
    * The AST of the parsed file that this class is processing. May be null if there was a problem
-   * parsing the file. (TODO: Should the Checker Framework just halt in that case?)
+   * parsing the file.
+   *
+   * <p>TODO: Should the Checker Framework just halt in that case?
    */
   // Not final in order to accommodate a default value.
   private @Nullable StubUnit stubUnit;
@@ -259,7 +259,7 @@ public class AnnotationFileParser {
   /** The line separator. */
   private static final String LINE_SEPARATOR = System.lineSeparator().intern();
 
-  /** Whether or not the {@code -AmergeStubsWithSource} command-line argument was passed. */
+  /** True if the {@code -AmergeStubsWithSource} command-line argument was passed. */
   private final boolean mergeStubsWithSource;
 
   /**
@@ -284,7 +284,7 @@ public class AnnotationFileParser {
      * than in the real files. So, map keys are the verbose element name, as returned by
      * ElementUtils.getQualifiedName.
      */
-    public final Map<String, AnnotationMirrorSet> declAnnos = new HashMap<>(1);
+    public final Map<String, AnnotationMirrorSet> declAnnos = new HashMap<>(4);
 
     /**
      * Map from a method element to all the fake overrides of it. Given a key {@code ee}, the fake
@@ -292,10 +292,22 @@ public class AnnotationFileParser {
      * {@code ee.getReceiverType()}.
      */
     public final Map<ExecutableElement, List<IPair<TypeMirror, AnnotatedTypeMirror>>>
-        fakeOverrides = new HashMap<>(1);
+        fakeOverrides = new HashMap<>(4);
 
     /** Maps fully qualified record name to information in the stub file. */
     public final Map<String, RecordStub> records = new HashMap<>();
+
+    @Override
+    public String toString() {
+      return String.join(
+          System.lineSeparator() + "  ",
+          "AnnotationFileAnnotations{",
+          "atypes=" + atypes.toString(),
+          "declAnnos=" + declAnnos.toString(),
+          "fakeOverrides=" + fakeOverrides.toString(),
+          "records=" + records.toString(),
+          "}");
+    }
   }
 
   /** Information about a record from a stub file. */
@@ -355,7 +367,7 @@ public class AnnotationFileParser {
      */
     private final AnnotationMirrorSet allAnnotations;
 
-    /** Whether this component has an accessor of exactly the same name in the stubs file. */
+    /** True if this component has an accessor of exactly the same name in the stubs file. */
     private boolean hasAccessorInStubs = false;
 
     /**
@@ -370,7 +382,7 @@ public class AnnotationFileParser {
     }
 
     /**
-     * Get the record component annotations that are applicable to the given element kind.
+     * Returns the record component annotations that are applicable to the given element kind.
      *
      * @param elementKind the element kind to apply to (e.g., FIELD, METHOD)
      * @return the set of annotations from the component that apply
@@ -389,7 +401,7 @@ public class AnnotationFileParser {
     }
 
     /**
-     * Returns whether there is an accessor in a stub file.
+     * Returns true if there is an accessor in a stub file.
      *
      * @return true if some stub file contains an accessor for this record component
      */
@@ -493,8 +505,8 @@ public class AnnotationFileParser {
   }
 
   /**
-   * Get all members of a Type that are importable in an annotation file. Currently these are values
-   * of enums, or compile time constants.
+   * Returns all members of a Type that are importable in an annotation file. Currently these are
+   * values of enums, or compile time constants.
    *
    * @param typeElement the type whose members to return
    * @return a list of fully-qualified member names
@@ -555,7 +567,7 @@ public class AnnotationFileParser {
               // Find compile time constant fields, or values of an enum
               putAllNew(result, annosInType(element));
               importedConstants.addAll(getImportableMembers(element));
-              addEnclosingTypesToImportedTypes(element);
+              addEnclosedTypesToImportedTypes(element);
             }
 
           } else {
@@ -563,7 +575,7 @@ public class AnnotationFileParser {
             PackageElement element = findPackage(imported, importDecl);
             if (element != null) {
               putAllNew(result, annosInPackage(element));
-              addEnclosingTypesToImportedTypes(element);
+              addEnclosedTypesToImportedTypes(element);
             }
           }
         } else {
@@ -626,17 +638,21 @@ public class AnnotationFileParser {
     return result;
   }
 
-  // If a member is imported, then consider every containing class to also be imported.
-  private void addEnclosingTypesToImportedTypes(Element element) {
+  /**
+   * Handle wildcard imports by adding, to {@link #importedTypes}, every enclosed type.
+   *
+   * @param element an element for a type or package
+   */
+  private void addEnclosedTypesToImportedTypes(Element element) {
     for (Element enclosedEle : element.getEnclosedElements()) {
-      if (enclosedEle.getKind().isClass()) {
+      if (enclosedEle.getKind().isClass() || enclosedEle.getKind().isInterface()) {
         importedTypes.put(enclosedEle.getSimpleName().toString(), (TypeElement) enclosedEle);
       }
     }
   }
 
   /**
-   * The main entry point. Parse a stub file and side-effects the {@code annotationFileAnnos}
+   * The main entry point. Parses a stub file and side-effects the {@code annotationFileAnnos}
    * argument.
    *
    * @param filename name of stub file, used only for diagnostic messages
@@ -698,7 +714,7 @@ public class AnnotationFileParser {
   }
 
   /**
-   * Parse a stub file that is a part of the annotated JDK and side-effects the {@code stubAnnos}
+   * Parses a stub file that is a part of the annotated JDK and side-effects the {@code stubAnnos}
    * argument.
    *
    * @param filename name of stub file, used only for diagnostic messages
@@ -727,7 +743,7 @@ public class AnnotationFileParser {
   }
 
   /**
-   * Delegate to the Stub Parser to parse the annotation file to an AST, and save it in {@link
+   * Delegate to the Stub Parser to parse the annotation file to an AST, and save it in field {@link
    * #stubUnit}. Also sets {@link #allAnnotations}. Does not copy annotations out of {@link
    * #stubUnit}; that is done by the {@code process*} methods.
    *
@@ -766,7 +782,8 @@ public class AnnotationFileParser {
 
   /**
    * Process {@link #stubUnit}, which is the AST produced by {@link #parseStubUnit}. Processing
-   * means copying annotations from Stub Parser data structures to {@code #annotationFileAnnos}.
+   * means copying annotations from Stub Parser data structures to argument {@code
+   * annotationFileAnnos}.
    *
    * @param annotationFileAnnos annotations from the file; side-effected by this method
    */
@@ -777,7 +794,7 @@ public class AnnotationFileParser {
   }
 
   /**
-   * Process the given StubUnit: copy its annotations to {@code #annotationFileAnnos}.
+   * Process the given StubUnit: copy its annotations to {@code this.annotationFileAnnos}.
    *
    * @param su the StubUnit to process
    */
@@ -906,8 +923,8 @@ public class AnnotationFileParser {
    * removed after processing the type's members. Otherwise, this method removes them.
    *
    * @param typeDecl the type declaration to process
-   * @param outerTypeName the name of the containing class, when processing a nested class;
-   *     otherwise null
+   * @param outerTypeName the name of the enclosing class, when processing a nested class; otherwise
+   *     null
    * @param classTree the tree corresponding to typeDecl if processing an ajava file, null otherwise
    * @return a list of types variables for {@code typeDecl}. Only non-null if processing an ajava
    *     file, in which case the contents should be removed from {@link #typeParameters} after
@@ -981,7 +998,8 @@ public class AnnotationFileParser {
       typeDeclTypeParameters = processType(typeDecl, typeElt);
       typeParameters.addAll(typeDeclTypeParameters);
     } else if (typeDecl instanceof ClassOrInterfaceDeclaration) {
-      // TODO: This test is never satisfied, because it is the opposite of that on the line above.
+      // TODO: This test is never satisfied, because it is the opposite of that on the line
+      // above.
       if (!(typeDecl instanceof ClassOrInterfaceDeclaration)) {
         warn(
             typeDecl,
@@ -1395,7 +1413,7 @@ public class AnnotationFileParser {
             param.getType(),
             param.getAnnotations(),
             param);
-        // The "VarArgsAnnotations" are those just before "...".
+        // The "VarargsAnnotations" are those just before "...".
         annotate(paramType, param.getVarArgsAnnotations(), param);
       } else {
         annotate(paramType, param.getType(), param.getAnnotations(), param);
@@ -1596,6 +1614,8 @@ public class AnnotationFileParser {
             atypeFactory.replaceAnnotations(typePar.getLowerBound(), typeVarUse.getLowerBound());
           }
         }
+        // Add back the primary annotations.
+        annotate(atype, primaryAnnotations, astNode);
         break;
       default:
         // No additional annotations to add.
@@ -1733,7 +1753,7 @@ public class AnnotationFileParser {
    * {@code elt} is a field declaration, the type annotation will be ignored.
    *
    * @param elt the element to be annotated
-   * @param annotations set of annotations that may be applicable to elt
+   * @param annotations the set of annotations that may be applicable to elt
    * @param astNode where to report errors
    */
   private void recordDeclAnnotation(
@@ -1816,8 +1836,8 @@ public class AnnotationFileParser {
       } else if (param.getTypeBound() != null && !param.getTypeBound().isEmpty()) {
         annotate(paramType.getLowerBound(), param.getAnnotations(), param);
         if (param.getTypeBound().size() == 1) {
-          // The additional declAnnos (third argument) is always null in this call to `annotate`,
-          // but the type bound (second argument) might have annotations.
+          // The additional declAnnos (third argument) is always null in this call to
+          // `annotate`, but the type bound (second argument) might have annotations.
           annotate(paramType.getUpperBound(), param.getTypeBound().get(0), null, param);
         } else {
           // param.getTypeBound().size() > 1
@@ -1835,13 +1855,14 @@ public class AnnotationFileParser {
             annotate(paramType.getUpperBound(), typeBoundsWithAnotations.get(0), null, param);
           } else {
             // TODO: add support for intersection types
-            // One problem is that `annotate()` removes any existing annotations from the same
-            // qualifier hierarchies, so paramType.getLowerBound() would end up with the annotations
-            // of only the last type bound.
+            // One problem is that `annotate()` removes any existing annotations from
+            // the same qualifier hierarchies, so paramType.getLowerBound() would end up
+            // with the annotations of only the last type bound.
 
             // String msg =
             //     String.format(
-            //         "annotateTypeParameters: multiple type bounds:  typeParameters=%s;  "
+            //         "annotateTypeParameters: multiple type bounds:
+            // typeParameters=%s;  "
             //             + "param #%d=%s;  bounds=%s;  decl=%s;  elt=%s (%s).",
             //         typeParameters,
             //         i,
@@ -2142,7 +2163,7 @@ public class AnnotationFileParser {
   }
 
   /**
-   * Return the annotated type corresponding to {@code type}, or null if none exists. More
+   * Returns the annotated type corresponding to {@code type}, or null if none exists. More
    * specifically, returns the element of {@code types} whose name matches {@code type}.
    *
    * @param type the type to search for
@@ -2391,8 +2412,8 @@ public class AnnotationFileParser {
   }
 
   /**
-   * Get the type element for the given fully-qualified type name. If none is found, issue a warning
-   * and return null.
+   * Returns the type element for the given fully-qualified type name. If none is found, issue a
+   * warning and return null.
    *
    * @param typeName a type name
    * @param msg a warning message to issue if the type element for {@code typeName} cannot be found
@@ -2569,9 +2590,9 @@ public class AnnotationFileParser {
       return convert(((LongLiteralExpr) expr).asNumber(), valueKind);
     } else if (expr instanceof UnaryExpr) {
       switch (expr.toString()) {
-          // Special-case the minimum values.  Separately parsing a "-" and a value
-          // doesn't correctly handle the minimum values, because the absolute value of
-          // the smallest member of an integral type is larger than the largest value.
+        // Special-case the minimum values.  Separately parsing a "-" and a value
+        // doesn't correctly handle the minimum values, because the absolute value of
+        // the smallest member of an integral type is larger than the largest value.
         case "-9223372036854775808L":
         case "-9223372036854775808l":
           return convert(Long.MIN_VALUE, valueKind, false);
@@ -2664,7 +2685,7 @@ public class AnnotationFileParser {
    *
    * @param number a Number value to be converted
    * @param expectedKind one of type {byte, short, int, long, char, float, double}
-   * @param negate whether to negate the value of the Number Object while converting
+   * @param negate if true, negate the value of the Number Object while converting
    * @return the converted Object
    */
   private Object convert(Number number, TypeKind expectedKind, boolean negate) {
@@ -2879,9 +2900,9 @@ public class AnnotationFileParser {
     return res;
   }
 
-  ///////////////////////////////////////////////////////////////////////////
-  /// Map utilities
-  ///
+  // ///////////////////////////////////////////////////////////////////////////
+  // Map utilities
+  //
 
   /**
    * Just like Map.put, but does not override any existing value in the map.
@@ -2973,9 +2994,9 @@ public class AnnotationFileParser {
     }
   }
 
-  ///////////////////////////////////////////////////////////////////////////
-  /// Issue warnings
-  ///
+  // ///////////////////////////////////////////////////////////////////////////
+  // Issue warnings
+  //
 
   /** The warnings that have been issued so far. */
   private static final Set<String> warnings = new HashSet<>();
@@ -2997,7 +3018,7 @@ public class AnnotationFileParser {
    *
    * @param astNode where to report errors
    * @param warning warning to print
-   * @param warnIfNotFound whether to print warnings about types/members that were not found
+   * @param warnIfNotFound if true, print warnings about types/members that were not found
    */
   private void stubWarnNotFound(NodeWithRange<?> astNode, String warning, boolean warnIfNotFound) {
     if (warnIfNotFound || debugAnnotationFileParser) {
@@ -3160,7 +3181,7 @@ public class AnnotationFileParser {
   }
 
   /**
-   * Return the prefix for a warning line: A file name, line number, and column number.
+   * Returns the prefix for a warning line: A file name, line number, and column number.
    *
    * @param astNode where to report errors
    * @return file name, line number, and column number
@@ -3191,9 +3212,9 @@ public class AnnotationFileParser {
     }
   }
 
-  ///////////////////////////////////////////////////////////////////////////
-  /// Parse state
-  ///
+  // ///////////////////////////////////////////////////////////////////////////
+  // Parse state
+  //
 
   /** Represents a class: its package name and name (including outer class names if any). */
   private static class FqName {

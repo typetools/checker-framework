@@ -42,3 +42,30 @@ ij_java_space_before_colon = true
 ij_java_ternary_operation_signs_on_next_line = true
 ij_java_use_single_class_imports = true
 ij_java_wrap_long_lines = true
+
+[*.sh]
+# like -i=2
+indent_style = space
+indent_size = 2
+
+# --language-variant
+shell_variant      = posix
+binary_next_line   = true
+# --case-indent
+switch_case_indent = true
+space_redirects    = true
+
+[*.bash]
+# like -i=2
+indent_style = space
+indent_size = 2
+
+# --language-variant
+shell_variant      = bash
+binary_next_line   = true
+# --case-indent
+switch_case_indent = true
+space_redirects    = true
+
+[**/.do-like-javac/**]
+ignore = true

@@ -13,7 +13,7 @@ public class SneakyDrop {
 
   public static void main(String[] args) throws Exception {
     Resource x = new Resource();
-    // :: error: type.argument
+    // :: error: [type.arguments.not.inferred]
     sneakyDrop(x);
   }
 
@@ -25,7 +25,7 @@ public class SneakyDrop {
     sneakyDrop2(x);
   }
 
-  // :: error: (required.method.not.called)
+  // :: error: [required.method.not.called]
   public static <T extends @MustCall("close") Object> void sneakyDrop3(@Owning T value) {}
 
   public static void main3(String[] args) throws Exception {
@@ -37,11 +37,11 @@ public class SneakyDrop {
 
   public static void main4(String[] args) throws Exception {
     Resource x = new Resource();
-    // :: error: type.argument
+    // :: error: [type.arguments.not.inferred]
     sneakyDrop4(x);
   }
 
-  // :: error: (required.method.not.called)
+  // :: error: [required.method.not.called]
   public static <T extends java.io.Closeable> void sneakyDrop5(@Owning T value) {}
 
   public static void main5(String[] args) throws Exception {

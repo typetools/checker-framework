@@ -75,6 +75,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
    * @param annotations the annotations in this abstract value
    * @param underlyingType the underlying (Java) type in this abstract value
    */
+  @SuppressWarnings("this-escape")
   protected CFAbstractValue(
       CFAbstractAnalysis<V, ?, ?> analysis,
       AnnotationMirrorSet annotations,
@@ -96,7 +97,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
    * Returns true if the set has an annotation from every hierarchy (or if it doesn't need to);
    * returns false if the set is missing an annotation from some hierarchy.
    *
-   * @param annos set of annotations
+   * @param annos a set of annotations
    * @param typeMirror where the annotations are written
    * @param atypeFactory the type factory
    * @return true if no annotations are missing
@@ -125,9 +126,9 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
   }
 
   /**
-   * Returns whether or not the set of annotations can be missing an annotation for any hierarchy.
+   * Returns true if the set of annotations can be missing an annotation for any hierarchy.
    *
-   * @return whether or not the set of annotations can be missing an annotation
+   * @return true if the set of annotations can be missing an annotation
    */
   public boolean canBeMissingAnnotations() {
     return canBeMissingAnnotations(underlyingType);
@@ -266,8 +267,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
       mostSpecifTypeMirror = this.getUnderlyingType();
     }
 
-    MostSpecificVisitor ms =
-        new MostSpecificVisitor(this.getUnderlyingType(), other.getUnderlyingType(), backup);
+    MostSpecificVisitor ms = new MostSpecificVisitor(backup);
     AnnotationMirrorSet mostSpecific =
         ms.combineSets(
             this.getUnderlyingType(),
@@ -292,11 +292,9 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     /**
      * Create a {@link MostSpecificVisitor}.
      *
-     * @param aTypeMirror type of the "a" value
-     * @param bTypeMirror type of the "b" value
      * @param backup value to use if no most specific value is found
      */
-    public MostSpecificVisitor(TypeMirror aTypeMirror, TypeMirror bTypeMirror, V backup) {
+    public MostSpecificVisitor(V backup) {
       if (backup != null) {
         this.backupAMSet = backup.getAnnotations();
         // this.backupTypeMirror = backup.getUnderlyingType();
@@ -752,8 +750,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
      * @param aSet a set of annotation mirrors
      * @param bTypeMirror the type mirror associated with {@code bSet}
      * @param bSet a set of annotation mirrors
-     * @param canCombinedSetBeMissingAnnos whether or not the combined set can be missing
-     *     annotations
+     * @param canCombinedSetBeMissingAnnos true if the combined set can be missing annotations
      * @return the combined sets
      */
     protected AnnotationMirrorSet combineSets(
@@ -820,7 +817,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
      * @param aAtv a type variable that does not have a primary annotation in {@code top} hierarchy
      * @param bAtv a type variable that does not have a primary annotation in {@code top} hierarchy
      * @param top the top annotation in the hierarchy
-     * @param canCombinedSetBeMissingAnnos whether or not
+     * @param canCombinedSetBeMissingAnnos true if TODO
      * @return the result of combining the two type variables, which may be null
      */
     protected abstract @Nullable AnnotationMirror combineTwoTypeVars(
@@ -837,7 +834,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
      * @param annotation an annotation
      * @param typeVar a type variable that does not have a primary annotation in the hierarchy
      * @param top the top annotation of the hierarchy
-     * @param canCombinedSetBeMissingAnnos whether or not
+     * @param canCombinedSetBeMissingAnnos true if TODO
      * @return the result of combining {@code annotation} with {@code typeVar}
      */
     protected abstract @Nullable AnnotationMirror combineAnnotationWithTypeVar(

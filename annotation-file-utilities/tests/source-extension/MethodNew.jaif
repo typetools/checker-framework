@@ -1,0 +1,15 @@
+package GUT.quals:
+annotation @Peer:
+annotation @Rep:
+
+package org.checkerframework.afu.annotator.tests:
+class MethodNew:
+method m(Ljava/lang/Object;)V:
+new *0: @GUT.quals.Peer
+
+package org.checkerframework.afu.annotator.tests:
+class MethodNew:
+method m()V:
+new *0: @GUT.quals.Rep
+
+

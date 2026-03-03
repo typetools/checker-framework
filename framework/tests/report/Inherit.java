@@ -1,4 +1,4 @@
-import org.checkerframework.common.util.report.qual.*;
+import org.checkerframework.common.util.count.report.qual.*;
 
 public class Inherit {
   @ReportInherit
@@ -6,9 +6,9 @@ public class Inherit {
 
   class B {}
 
-  // :: error: (inherit)
+  // :: error: [inherit]
   class C extends B implements A {}
 
-  // :: error: (inherit)
+  // :: error: [inherit]
   class D extends C {}
 }

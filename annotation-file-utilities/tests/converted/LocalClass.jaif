@@ -1,0 +1,88 @@
+package :
+annotation @A: @java.lang.annotation.Target(value={TYPE_USE})
+    int value
+
+package :
+class LocalClass:
+
+    field f:
+        insert-annotation Variable.type: @A(value=1)
+
+package :
+class LocalClass$1InnerLocalClass:
+
+    field f:
+        insert-annotation Variable.type: @A(value=2)
+
+package :
+class LocalClass$1:
+
+    field f:
+        insert-annotation Variable.type: @A(value=3)
+
+package :
+class LocalClass$1$Test:
+
+    field f:
+        insert-annotation Variable.type: @A(value=4)
+
+package :
+class LocalClass$1$Test$1:
+
+    field f:
+        insert-annotation Variable.type: @A(value=41)
+
+package :
+class LocalClass$1$Test$2:
+
+    field f:
+        insert-annotation Variable.type: @A(value=42)
+
+package :
+class LocalClass$2:
+
+    field f:
+        insert-annotation Variable.type: @A(value=31)
+
+package :
+class LocalClass$2InnerLocalClass:
+
+    field f:
+        insert-annotation Variable.type: @A(value=5)
+
+package :
+class LocalClass$2InnerLocalClass$Inner:
+
+    field f:
+        insert-annotation Variable.type: @A(value=6)
+
+package :
+class LocalClass$2InnerLocalClass$Inner$1:
+
+    field f:
+        insert-annotation Variable.type: @A(value=7)
+
+package :
+class LocalClass$2InnerLocalClass$Inner$2:
+
+    field f:
+        insert-annotation Variable.type: @A(value=71)
+
+package :
+class LocalClass$2InnerLocalClass$1OuterLocalClass:
+
+    field f:
+        insert-annotation Variable.type: @A(value=10)
+
+package :
+class LocalClass$1OuterLocalClass:
+
+    field f:
+        insert-annotation Variable.type: @A(value=8)
+
+package :
+class LocalClass$1OuterLocalClass$1InnerLocalClass:
+
+    field f:
+        insert-annotation Variable.type: @A(value=9)
+

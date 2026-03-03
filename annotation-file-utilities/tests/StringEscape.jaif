@@ -1,0 +1,11 @@
+package :
+annotation @Key:
+    String desc
+
+package org.checkerframework.afu.annotator.tests:
+class StringEscape:
+    method foo(Ljava/lang/String;)V:
+        return:
+        parameter #0:
+            type: @Key(desc="PartialRegex(\"\\\")")
+

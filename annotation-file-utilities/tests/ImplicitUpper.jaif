@@ -1,0 +1,16 @@
+package:
+annotation @A:
+package:
+annotation @B:
+
+class ExplicitUpper:
+bound 0 & 0: @A
+extends: @B
+
+class ImplicitUpper:
+bound 0 & 0: @A
+extends: @B
+
+class Monomorphic:
+    insert-annotation Class.bound -1: @B
+

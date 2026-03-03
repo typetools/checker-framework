@@ -11,9 +11,6 @@ public class Issue1098 {
   @SuppressWarnings("keyfor:type.argument")
   void use() {
     opt(Optional.empty(), null);
-    // TODO: false positive, because type argument inference does not account for @Covariant.
-    // See https://github.com/typetools/checker-framework/issues/979.
-    // :: error: (argument)
     cls(this.getClass(), null);
   }
 }

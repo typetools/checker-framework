@@ -48,6 +48,7 @@ import org.checkerframework.common.value.util.Range;
 import org.checkerframework.dataflow.expression.ArrayAccess;
 import org.checkerframework.dataflow.expression.ArrayCreation;
 import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.JavaExpressionParseException;
 import org.checkerframework.dataflow.expression.ValueLiteral;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
@@ -66,7 +67,6 @@ import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.FieldInvariants;
-import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -77,6 +77,7 @@ import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.ArraySet;
 import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.MapsP;
 
 /** AnnotatedTypeFactory for the Value type system. */
 public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
@@ -149,10 +150,12 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   public final AnnotationMirror POLY = AnnotationBuilder.fromClass(elements, PolyValue.class);
 
   /** The canonical @{@link BoolVal}(true) annotation. */
+  @SuppressWarnings("this-escape")
   public final AnnotationMirror BOOLEAN_TRUE =
       createBooleanAnnotation(Collections.singletonList(true));
 
   /** The canonical @{@link BoolVal}(false) annotation. */
+  @SuppressWarnings("this-escape")
   public final AnnotationMirror BOOLEAN_FALSE =
       createBooleanAnnotation(Collections.singletonList(false));
 
@@ -222,7 +225,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /** Helper class that holds references to special methods. */
   private final ValueMethodIdentifier methods;
 
-  @SuppressWarnings("StaticAssignmentInConstructor") // static Range.ignoreOverflow is gross
+  @SuppressWarnings({
+    "StaticAssignmentInConstructor", // static Range.ignoreOverflow is gross
+    "this-escape"
+  })
   public ValueAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
 
@@ -261,6 +267,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     addAliasedTypeAnnotation(
         "org.checkerframework.checker.index.qual.SubstringIndexFor",
         createIntRangeFromGTENegativeOne());
+    addAliasedTypeAnnotation("javax.annotation.Nonnegative", createIntRangeFromNonNegative());
 
     // PolyLength is syntactic sugar for both @PolySameLen and @PolyValue
     addAliasedTypeAnnotation("org.checkerframework.checker.index.qual.PolyLength", POLY);
@@ -302,6 +309,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   @Override
   public AnnotationMirror canonicalAnnotation(AnnotationMirror anno) {
+    // TODO: This old code is probably buggy.  It will be fixed in the future.
     if (AnnotationUtils.areSameByName(anno, MINLEN_NAME)) {
       int from = getMinLenValue(anno);
       return createArrayLenRangeAnnotation(from, Integer.MAX_VALUE);
@@ -351,7 +359,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     return new DefaultTypeHierarchy(
         checker,
         getQualifierHierarchy(),
-        checker.getBooleanOption("ignoreRawTypeArguments", true),
+        ignoreRawTypeArguments,
         checker.hasOption("invariantArrays")) {
       @Override
       public StructuralEqualityComparer createEqualityComparer() {
@@ -409,14 +417,14 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   private Set<Class<? extends Annotation>> computeFieldInvariantDeclarationAnnotations() {
     // include FieldInvariant so that @MinLenBottom can be used.
     Set<Class<? extends Annotation>> superResult = super.getFieldInvariantDeclarationAnnotations();
-    Set<Class<? extends Annotation>> set =
-        new HashSet<>(CollectionsPlume.mapCapacity(superResult.size() + 1));
+    Set<Class<? extends Annotation>> set = new HashSet<>(MapsP.mapCapacity(superResult.size() + 1));
     set.addAll(superResult);
     set.add(MinLenFieldInvariant.class);
     return set;
   }
 
   /** The classes of field invariant annotations. */
+  @SuppressWarnings("this-escape")
   private Set<Class<? extends Annotation>> fieldInvariantDeclarationAnnotations =
       computeFieldInvariantDeclarationAnnotations();
 
@@ -430,10 +438,14 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * number of possible values of the enum.
    */
   @Override
-  public ParameterizedExecutableType methodFromUse(
-      ExpressionTree tree, ExecutableElement methodElt, AnnotatedTypeMirror receiverType) {
+  protected ParameterizedExecutableType methodFromUse(
+      ExpressionTree tree,
+      ExecutableElement methodElt,
+      AnnotatedTypeMirror receiverType,
+      boolean inferTypeArgs) {
 
-    ParameterizedExecutableType superPair = super.methodFromUse(tree, methodElt, receiverType);
+    ParameterizedExecutableType superPair =
+        super.methodFromUse(tree, methodElt, receiverType, inferTypeArgs);
     if (ElementUtils.matchesElement(methodElt, "values")
         && methodElt.getEnclosingElement().getKind() == ElementKind.ENUM
         && ElementUtils.isStatic(methodElt)) {
@@ -636,7 +648,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /*package-private*/ AnnotationMirror convertSpecialIntRangeToStandardIntRange(
       AnnotationMirror anm, TypeKind primitiveKind) {
     long max = Long.MAX_VALUE;
-    if (TypesUtils.isIntegralPrimitive(primitiveKind)) {
+    if (TypeKindUtils.isIntegral(primitiveKind)) {
       Range maxRange = Range.create(primitiveKind);
       max = maxRange.to;
     }
@@ -785,7 +797,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     } else if (TypesUtils.getClassFromType(resultType) == char[].class) {
       List<String> stringVals =
           CollectionsPlume.mapList(
-              (Object o) -> {
+              o -> {
                 if (o instanceof char[]) {
                   return new String((char[]) o);
                 } else {
@@ -1129,8 +1141,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /**
    * Creates the special {@link IntRangeFromPositive} annotation, which is only used as an alias for
    * the Index Checker's {@link org.checkerframework.checker.index.qual.Positive} annotation. It is
-   * treated everywhere as an IntRange annotation, but is not checked when it appears as the left
-   * hand side of an assignment (because the Lower Bound Checker will check it).
+   * treated everywhere as an IntRange annotation, but is not checked when it appears as the
+   * left-hand side of an assignment (because the Lower Bound Checker will check it).
+   *
+   * @return the {@link IntRangeFromPositive} annotation
    */
   private AnnotationMirror createIntRangeFromPositive() {
     AnnotationBuilder builder = new AnnotationBuilder(processingEnv, IntRangeFromPositive.class);
@@ -1141,7 +1155,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * Creates the special {@link IntRangeFromNonNegative} annotation, which is only used as an alias
    * for the Index Checker's {@link org.checkerframework.checker.index.qual.NonNegative} annotation.
    * It is treated everywhere as an IntRange annotation, but is not checked when it appears as the
-   * left hand side of an assignment (because the Lower Bound Checker will check it).
+   * left-hand side of an assignment (because the Lower Bound Checker will check it).
+   *
+   * @return the {@link IntRangeFromNonNegative} annotation
    */
   private AnnotationMirror createIntRangeFromNonNegative() {
     AnnotationBuilder builder = new AnnotationBuilder(processingEnv, IntRangeFromNonNegative.class);
@@ -1152,7 +1168,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * Creates the special {@link IntRangeFromGTENegativeOne} annotation, which is only used as an
    * alias for the Index Checker's {@link org.checkerframework.checker.index.qual.GTENegativeOne}
    * annotation. It is treated everywhere as an IntRange annotation, but is not checked when it
-   * appears as the left hand side of an assignment (because the Lower Bound Checker will check it).
+   * appears as the left-hand side of an assignment (because the Lower Bound Checker will check it).
+   *
+   * @return the {@link IntRangeFromGTENegativeOne} annotation
    */
   private AnnotationMirror createIntRangeFromGTENegativeOne() {
     AnnotationBuilder builder =
@@ -1200,7 +1218,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       return BOTTOMVAL;
     }
     AnnotationBuilder builder = new AnnotationBuilder(processingEnv, MatchesRegex.class);
-    builder.setValue("value", regexes.toArray(new String[regexes.size()]));
+    builder.setValue("value", regexes.toArray(new String[0]));
     return builder.build();
   }
 
@@ -1218,7 +1236,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       return UNKNOWNVAL;
     }
     AnnotationBuilder builder = new AnnotationBuilder(processingEnv, DoesNotMatchRegex.class);
-    builder.setValue("value", regexes.toArray(new String[regexes.size()]));
+    builder.setValue("value", regexes.toArray(new String[0]));
     return builder.build();
   }
 

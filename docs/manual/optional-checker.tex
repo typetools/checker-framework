@@ -56,6 +56,8 @@ Optional Checker in the future.)
 
 \sectionAndLabel{How to run the Optional Checker}{optional-run-checker}
 
+The standard way to run the Optional Checker is one of these command lines:
+
 \begin{Verbatim}
 javac -processor optional MyFile.java ...
 javac -processor org.checkerframework.checker.optional.OptionalChecker MyFile.java ...
@@ -78,10 +80,6 @@ These qualifiers make up the Optional type system:
 \item[\refqualclass{checker/optional/qual}{Present}]
   The annotated \<Optional> container definitely contains a (non-null) value.
 
-\item[\refqualclass{checker/optional/qual}{OptionalBottom}]
-  The annotated expression evaluates to \<null> rather than to an \<Optional> container.
-  Programmers rarely write this annotation.
-
 \item[\refqualclass{checker/optional/qual}{PolyPresent}]
   indicates qualifier polymorphism.
   For a description of qualifier polymorphism, see
@@ -97,6 +95,33 @@ Figure~\ref{fig-optional-hierarchy}.
 \caption{The subtyping relationship of the Optional Checker's qualifiers.}
 \label{fig-optional-hierarchy}
 \end{figure}
+
+\subsectionAndLabel{Optional method annotations}{optional-method-annotations}
+
+The Optional Checker supports several annotations that specify method
+behavior.  These are declaration annotations, not type annotations:  they
+apply to the method itself rather than to some particular type.
+
+\begin{description}
+
+\item[\refqualclass{checker/optional/qual}{RequiresPresent}]
+  indicates a method precondition:  The annotated method expects the
+  specified expressions to be a present Optional when this
+  method is invoked. \<@RequiresPresent> is a useful annotation for a method
+  that requires a \<@MaybePresent> field to be \<@Present>.
+\item[\refqualclass{checker/optional/qual}{EnsuresPresent}]
+  indicates a method postcondition.
+  The successful return (i.e., a non-exceptional return) of the annotated
+  method results in the given Optional expression being present. See the Javadoc
+  for examples of its use.
+\item[\refqualclass{checker/optional/qual}{EnsuresPresentIf}]
+  indicates a method postcondition.  With \<@EnsuresPresent>, the given
+  Optional expression is present after the method returns.  With
+  \<@EnsuresPresentIf>, if the annotated
+  method returns the given boolean value (true or false), then the given
+  Optional expression is present. See the Javadoc for examples of their use.
+
+\end{description}
 
 
 \sectionAndLabel{What the Optional Checker guarantees}{optional-guarantees}
@@ -156,7 +181,7 @@ An example use is
     Optional<T> wrapWithOptional(...) { ... }
 
     void myMethod() {
-      @SuppressWarnings("optional") // with argument x, wrapWithOptional always returns a non-empty Optional
+      @SuppressWarnings("optional") // with argument x, wrapWithOptional always returns a present Optional
       @Present Optional<T> optX = wrapWithOptional(x);
     }
 \end{Verbatim}
@@ -191,7 +216,7 @@ The rest of this section discusses the \<castPresent> method.
 It is useful if you wish to suppress a warning within an expression.
 
 The Optional Checker considers both the return value, and also the
-argument, to be an instance of a non-empty Optional after the \<castPresent>
+argument, to be an instance of a present Optional after the \<castPresent>
 method call.
 The Optional Checker issues no warnings in any of the following
 code:
@@ -219,4 +244,6 @@ code:
   must be on the classpath at run time.
 
 %  LocalWords:  isPresent NoSuchElementException MaybePresent PolyPresent
-%%  LocalWords:  orElseThrow nullable
+%%  LocalWords:  orElseThrow nullable RequiresPresent EnsuresPresent util
+% LocalWords:  EnsuresPresentIf AssumeAssertion OptionalUtil castPresent
+% LocalWords:  AssertionError

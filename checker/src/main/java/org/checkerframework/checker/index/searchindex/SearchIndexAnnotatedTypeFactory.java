@@ -53,6 +53,7 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    *
    * @param checker the type-checker associated with this
    */
+  @SuppressWarnings("this-escape")
   public SearchIndexAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
 
@@ -139,8 +140,7 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       Set<String> combinedSet = new HashSet<>(getValueElement(a1));
       combinedSet.addAll(getValueElement(a2));
       // The list is backed by the given array.
-      List<String> combinedList =
-          Arrays.asList(combinedSet.toArray(new String[combinedSet.size()]));
+      List<String> combinedList = Arrays.asList(combinedSet.toArray(new String[0]));
 
       // NegativeIndexFor <: SearchIndexFor.
       if (areSameByClass(a1, NegativeIndexFor.class)

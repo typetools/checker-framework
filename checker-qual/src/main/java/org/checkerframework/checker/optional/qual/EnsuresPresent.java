@@ -9,10 +9,10 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
 import org.checkerframework.framework.qual.PostconditionAnnotation;
 
 /**
- * Indicates that the expression evaluates to a non-empty Optional, if the method terminates
+ * Indicates that the expression evaluates to a present Optional, if the method terminates
  * successfully.
  *
- * <p>This postcondition annotation is useful for methods that construct a non-empty Optional:
+ * <p>This postcondition annotation is useful for methods that construct a present Optional:
  *
  * <pre><code>
  *   {@literal @}EnsuresPresent("optStr")

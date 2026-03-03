@@ -13,7 +13,7 @@ public class Issue594<T> {
 
   // Should return @Nullable T
   private T getResult() {
-    // :: error: (return)
+    // :: error: [return]
     return result;
   }
 }

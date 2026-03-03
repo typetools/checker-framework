@@ -1,0 +1,7 @@
+package:
+annotation @A:
+
+class NestedConstructorResultAnno$InnerClass:
+
+    method <init>()V: @A
+        return:

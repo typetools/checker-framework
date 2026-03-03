@@ -28,8 +28,6 @@ import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.CollectionsPlume;
 
 /**
  * Finds the direct supertypes of an input AnnotatedTypeMirror. See <a
@@ -337,21 +335,6 @@ final class SupertypeFinder {
       for (Tree implemented : classTree.getImplementsClause()) {
         AnnotatedDeclaredType adt =
             (AnnotatedDeclaredType) atypeFactory.getAnnotatedTypeFromTypeTree(implemented);
-        if (adt.getTypeArguments().size() != adt.getUnderlyingType().getTypeArguments().size()
-            && classTree.getSimpleName().contentEquals("")) {
-          // classTree is an anonymous class with a diamond.
-          List<AnnotatedTypeMirror> args =
-              CollectionsPlume.mapList(
-                  (TypeParameterElement element) -> {
-                    AnnotatedTypeMirror arg =
-                        AnnotatedTypeMirror.createType(element.asType(), atypeFactory, false);
-                    // TODO: After #979 is fixed, calculate the correct type
-                    // using inference.
-                    return atypeFactory.getUninferredWildcardType((AnnotatedTypeVariable) arg);
-                  },
-                  TypesUtils.getTypeElement(adt.getUnderlyingType()).getTypeParameters());
-          adt.setTypeArguments(args);
-        }
         supertypes.add(adt);
       }
 

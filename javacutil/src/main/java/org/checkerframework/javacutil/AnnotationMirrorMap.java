@@ -1,6 +1,7 @@
 package org.checkerframework.javacutil;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Set;
@@ -8,6 +9,7 @@ import java.util.TreeMap;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.common.returnsreceiver.qual.This;
 import org.checkerframework.dataflow.qual.Pure;
 
 /**
@@ -27,8 +29,12 @@ import org.checkerframework.dataflow.qual.Pure;
 public class AnnotationMirrorMap<V> implements Map<@KeyFor("this") AnnotationMirror, V> {
 
   /** The actual map to which all work is delegated. */
-  private final NavigableMap<@KeyFor("this") AnnotationMirror, V> shadowMap =
+  // Not final because makeUnmodifiable() can reassign it.
+  private NavigableMap<@KeyFor("this") AnnotationMirror, V> shadowMap =
       new TreeMap<>(AnnotationUtils::compareAnnotationMirrors);
+
+  /** The canonical unmodifiable empty set. */
+  private static AnnotationMirrorMap<?> emptyMap = unmodifiableSet(Collections.emptyMap());
 
   /** Default constructor. */
   public AnnotationMirrorMap() {}
@@ -38,10 +44,45 @@ public class AnnotationMirrorMap<V> implements Map<@KeyFor("this") AnnotationMir
    *
    * @param copy a map whose contents should be copied to the newly created map
    */
-  @SuppressWarnings("nullness:method.invocation") // initialization in constructor
+  @SuppressWarnings({"this-escape", "nullness:method.invocation"}) // initialization in constructor
   public AnnotationMirrorMap(Map<AnnotationMirror, ? extends V> copy) {
     this();
     this.putAll(copy);
+  }
+
+  /**
+   * Returns an unmodifiable AnnotationMirrorSet with the given elements.
+   *
+   * @param annos the annotation mirrors that will constitute the new unmodifable set
+   * @return an unmodifiable AnnotationMirrorSet with the given elements
+   * @param <V> the type of the values in the map
+   */
+  public static <V> AnnotationMirrorMap<V> unmodifiableSet(
+      Map<AnnotationMirror, ? extends V> annos) {
+    AnnotationMirrorMap<V> result = new AnnotationMirrorMap<>(annos);
+    result.makeUnmodifiable();
+    return result;
+  }
+
+  /**
+   * Returns an empty set.
+   *
+   * @return an empty set
+   * @param <V> the type of the values in the map
+   */
+  @SuppressWarnings("unchecked")
+  public static <V> AnnotationMirrorMap<V> emptyMap() {
+    return (AnnotationMirrorMap<V>) emptyMap;
+  }
+
+  /**
+   * Make this set unmodifiable.
+   *
+   * @return this set
+   */
+  public @This AnnotationMirrorMap<V> makeUnmodifiable() {
+    shadowMap = Collections.unmodifiableNavigableMap(shadowMap);
+    return this;
   }
 
   @Override
@@ -146,7 +187,9 @@ public class AnnotationMirrorMap<V> implements Map<@KeyFor("this") AnnotationMir
     if (o == this) {
       return true;
     }
-    if (!(o instanceof AnnotationMirrorMap)) return false;
+    if (!(o instanceof AnnotationMirrorMap)) {
+      return false;
+    }
     AnnotationMirrorMap<?> m = (AnnotationMirrorMap) o;
     if (m.size() != size()) {
       return false;
@@ -157,9 +200,13 @@ public class AnnotationMirrorMap<V> implements Map<@KeyFor("this") AnnotationMir
         AnnotationMirror key = e.getKey();
         V value = e.getValue();
         if (value == null) {
-          if (!(m.get(key) == null && m.containsKey(key))) return false;
+          if (!(m.get(key) == null && m.containsKey(key))) {
+            return false;
+          }
         } else {
-          if (!value.equals(m.get(key))) return false;
+          if (!value.equals(m.get(key))) {
+            return false;
+          }
         }
       }
     } catch (ClassCastException | NullPointerException unused) {
@@ -172,7 +219,9 @@ public class AnnotationMirrorMap<V> implements Map<@KeyFor("this") AnnotationMir
   @Override
   public int hashCode() {
     int result = 0;
-    for (Entry<AnnotationMirror, V> entry : entrySet()) result += entry.hashCode();
+    for (Entry<AnnotationMirror, V> entry : entrySet()) {
+      result += entry.hashCode();
+    }
     return result;
   }
 }

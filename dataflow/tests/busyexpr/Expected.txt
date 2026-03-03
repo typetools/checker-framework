@@ -26,14 +26,14 @@
 
 2:
 Process order: 1
-AnalysisResult#1
+AnalysisResult#0
 Before:   busy expressions = none
 ~~~~~~~~~
 <entry>
 
 3:
 Process order: 2
-AnalysisResult#3
+AnalysisResult#0
 Before:   busy expressions = none
 ~~~~~~~~~
 a   [ VariableDeclaration ]
@@ -55,14 +55,14 @@ After:   busy expressions = (b >> a)
 
 4:
 Process order: 3
-AnalysisResult#5
+AnalysisResult#0
 Before:   busy expressions = (b >> a)
 ~~~~~~~~~
 ConditionalBlock: then: 8, else: 14
 
 8:
 Process order: 4
-AnalysisResult#7
+AnalysisResult#0
 Before:   busy expressions = (b >> a)
 ~~~~~~~~~
 x   [ LocalVariable ]
@@ -80,7 +80,7 @@ After:   busy expressions = none
 
 14:
 Process order: 8
-AnalysisResult#9
+AnalysisResult#0
 Before:   busy expressions = (b >> a)
 ~~~~~~~~~
 y   [ LocalVariable ]
@@ -104,7 +104,7 @@ After:   busy expressions = (a - b)
 
 9:
 Process order: 5
-AnalysisResult#11
+AnalysisResult#0
 Before:   busy expressions = none
 ~~~~~~~~~
 Test   [ ClassName ]
@@ -114,7 +114,7 @@ After:   busy expressions = none
 
 15:
 Process order: 9
-AnalysisResult#13
+AnalysisResult#0
 Before:   busy expressions = (a - b)
 ~~~~~~~~~
 (this).test((a - b))   [ MethodInvocation ]
@@ -124,7 +124,7 @@ After:   busy expressions = none
 
 11:
 Process order: 6
-AnalysisResult#15
+AnalysisResult#0
 Before:   busy expressions = (a - b)
 ~~~~~~~~~
 new Test((a - b))   [ ObjectCreation ]
@@ -134,14 +134,14 @@ After:   busy expressions = none
 
 1:
 Process order: 17
-AnalysisResult#17
+AnalysisResult#0
 Before:   busy expressions = none
 ~~~~~~~~~
 <exceptional-exit>
 
 16:
 Process order: 10
-AnalysisResult#19
+AnalysisResult#0
 Before:   busy expressions = none
 ~~~~~~~~~
 expression statement test(a - b)   [ ExpressionStatement ]
@@ -151,7 +151,7 @@ After:   busy expressions = none
 
 12:
 Process order: 7
-AnalysisResult#21
+AnalysisResult#0
 Before:   busy expressions = (a + b)
 ~~~~~~~~~
 expression statement new Test(a - b)   [ ExpressionStatement ]
@@ -167,7 +167,7 @@ After:   busy expressions = none
 
 17:
 Process order: 11
-AnalysisResult#23
+AnalysisResult#0
 Before:   busy expressions = none
 ~~~~~~~~~
 d   [ VariableDeclaration ]
@@ -182,7 +182,7 @@ After:   busy expressions = none
 
 18:
 Process order: 12
-AnalysisResult#25
+AnalysisResult#0
 Before:   busy expressions = (y / x)
 ~~~~~~~~~
 (y / x)   [ IntegerDivision ]
@@ -192,7 +192,7 @@ After:   busy expressions = (y / x)
 
 19:
 Process order: 13
-AnalysisResult#27
+AnalysisResult#0
 Before:   busy expressions = (y / x)
 ~~~~~~~~~
 (y / x)   [ IntegerDivision ]
@@ -205,7 +205,7 @@ After:   busy expressions = none
 
 21:
 Process order: 14
-AnalysisResult#29
+AnalysisResult#0
 Before:   busy expressions = none
 ~~~~~~~~~
 marker (start of catch block for ArithmeticException #0)   [ CatchMarker ]
@@ -221,7 +221,7 @@ After:   busy expressions = none
 
 23:
 Process order: 15
-AnalysisResult#31
+AnalysisResult#0
 Before:   busy expressions = none
 ~~~~~~~~~
 d   [ LocalVariable ]
@@ -232,7 +232,7 @@ After:   busy expressions = none
 
 0:
 Process order: 16
-AnalysisResult#33
+AnalysisResult#0
 Before:   busy expressions = none
 ~~~~~~~~~
 <exit>

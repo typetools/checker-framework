@@ -1,17 +1,15 @@
 #!/bin/bash
 
-echo Deprecated: use ./gradlew assemble instead.
 echo Entering checker/bin-devel/build.sh in "$(pwd)"
+echo checker/bin-devel/build.sh is deprecated: use ./gradlew assemble instead.
 
 # Fail the whole script if any command fails
 set -e
 
-SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-source "$SCRIPTDIR"/clone-related.sh
-# Download dependencies, trying a second time if there is a failure.
-(TERM=dumb timeout 300 ./gradlew --write-verification-metadata sha256 help --dry-run || \
-     (sleep 1m && ./gradlew --write-verification-metadata sha256 help --dry-run))
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
+source "$SCRIPT_DIR"/clone-related.sh
+
 echo "running \"./gradlew assemble\" for checker-framework"
-./gradlew assemble --console=plain -Dorg.gradle.internal.http.socketTimeout=60000 -Dorg.gradle.internal.http.connectionTimeout=60000
+./gradlew assemble -Dorg.gradle.internal.http.socketTimeout=60000 -Dorg.gradle.internal.http.connectionTimeout=60000
 
 echo Exiting checker/bin-devel/build.sh in "$(pwd)"

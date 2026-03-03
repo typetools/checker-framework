@@ -30,6 +30,8 @@ public class Issue3036 {
                 "keyTag", dsData1.getKeyTag(),
                 "digest", dsData1.getDigest());
 
+    // Any checker where string literals are not top will error here.
+    @SuppressWarnings("type.arguments.not.inferred")
     List<Map<String, ?>> dsData =
         getDsData().stream()
             .map(

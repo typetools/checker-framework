@@ -12,7 +12,7 @@ public class GenericAlias {
   public void test() {
     Set<@Odd Map<@Odd List<@Odd String>, @Odd String>> s = new SuperSetOne();
     @Odd Map<@Odd List<@Odd String>, @Odd String> mapA =
-        // :: warning: (cast.unsafe.constructor.invocation)
+        // :: warning: [cast.unsafe.constructor.invocation]
         new @Odd HashMap<@Odd List<@Odd String>, @Odd String>();
     s.add(mapA);
   }

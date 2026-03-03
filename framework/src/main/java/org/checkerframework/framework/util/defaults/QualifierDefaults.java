@@ -6,6 +6,7 @@ import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
@@ -50,7 +51,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.MapsP;
 import org.plumelib.util.StringsPlume;
 
 /**
@@ -66,9 +67,8 @@ public class QualifierDefaults {
   // TODO try to remove some dependencies (e.g. on factory)
 
   /**
-   * This field indicates whether or not a default should be applied to type vars located in the
-   * type being defaulted. This should only ever be true when the type variable is a local variable,
-   * non-component use, i.e.
+   * True if a default should be applied to type vars located in the type being defaulted. This
+   * should only ever be true when the type variable is a local variable, non-component use, i.e.
    *
    * <pre>{@code
    * <T> void method(@NOT_HERE T tIn) {
@@ -106,8 +106,7 @@ public class QualifierDefaults {
   private static final int CACHE_SIZE = 300;
 
   /** Mapping from an Element to the bound type. */
-  protected final Map<Element, BoundType> elementToBoundType =
-      CollectionsPlume.createLruCache(CACHE_SIZE);
+  protected final Map<Element, BoundType> elementToBoundType = MapsP.createLruCache(CACHE_SIZE);
 
   /**
    * Defaults that apply for a certain Element. On the one hand this is used for caching (an earlier
@@ -208,7 +207,7 @@ public class QualifierDefaults {
   /**
    * Check that a default with TypeUseLocation OTHERWISE or ALL is specified.
    *
-   * @return whether we found a Default with location OTHERWISE or ALL
+   * @return true if we found a Default with location OTHERWISE or ALL
    */
   public boolean hasDefaultsForCheckedCode() {
     for (Default def : checkedCodeDefaults) {
@@ -272,8 +271,11 @@ public class QualifierDefaults {
   }
 
   /**
-   * Sets the default annotations. A programmer may override this by writing the @DefaultQualifier
+   * Adds a default annotation. A programmer may override this by writing the @DefaultQualifier
    * annotation on an element.
+   *
+   * @param absoluteDefaultAnno the default annotation mirror
+   * @param location the type use location
    */
   public void addCheckedCodeDefault(
       AnnotationMirror absoluteDefaultAnno, TypeUseLocation location) {
@@ -472,7 +474,7 @@ public class QualifierDefaults {
               break;
             }
           }
-          if (prev != null && prev.getKind() == Tree.Kind.MODIFIERS) {
+          if (prev != null && prev instanceof ModifiersTree) {
             // Annotations are modifiers. We do not want to apply the local variable
             // default to annotations. Without this, test fenum/TestSwitch failed,
             // because the default for an argument became incompatible with the declared
@@ -521,7 +523,7 @@ public class QualifierDefaults {
       case IDENTIFIER:
         elt = TreeUtils.elementFromUse((IdentifierTree) tree);
         if (ElementUtils.isTypeDeclaration(elt)) {
-          // If the Idenitifer is a type, then use the scope of the tree.
+          // If the identifier is a type, then use the scope of the tree.
           elt = nearestEnclosingExceptLocal(tree);
         }
         break;
@@ -530,9 +532,9 @@ public class QualifierDefaults {
         elt = TreeUtils.elementFromUse((MethodInvocationTree) tree);
         break;
 
-        // TODO cases for array access, etc. -- every expression tree
-        // (The above probably means that we should use defaults in the
-        // scope of the declaration of the array.  Is that right?  -MDE)
+      // TODO cases for array access, etc. -- every expression tree
+      // (The above probably means that we should use defaults in the
+      // scope of the declaration of the array.  Is that right?  -MDE)
 
       default:
         // If no associated symbol was found, use the tree's (lexical) scope.
@@ -574,9 +576,7 @@ public class QualifierDefaults {
       return null;
     }
 
-    if (!atypeFactory.isSupportedQualifier(anno)) {
-      anno = atypeFactory.canonicalAnnotation(anno);
-    }
+    anno = atypeFactory.canonicalAnnotation(anno);
 
     if (atypeFactory.isSupportedQualifier(anno)) {
       TypeUseLocation[] locations =
@@ -675,6 +675,7 @@ public class QualifierDefaults {
         if (qualifiers == null) {
           qualifiers = new DefaultSet();
         }
+
         List<AnnotationMirror> values =
             AnnotationUtils.getElementValueArray(
                 dqListAnno, defaultQualifierListValueElement, AnnotationMirror.class);
@@ -710,11 +711,11 @@ public class QualifierDefaults {
   }
 
   /**
-   * Given an element, returns whether the conservative default should be applied for it. Handles
+   * Given an element, returns true if the conservative default should be applied for it. Handles
    * elements from bytecode or source code.
    *
    * @param annotationScope the element that the conservative default might apply to
-   * @return whether the conservative default applies to the given element
+   * @return true if the conservative default applies to the given element
    */
   public boolean applyConservativeDefaults(Element annotationScope) {
     if (annotationScope == null) {
@@ -1191,7 +1192,7 @@ public class QualifierDefaults {
       }
 
     } else {
-      if (typeParamDecl.getKind() == Tree.Kind.TYPE_PARAMETER) {
+      if (typeParamDecl instanceof TypeParameterTree) {
         TypeParameterTree tptree = (TypeParameterTree) typeParamDecl;
 
         List<? extends Tree> bnds = tptree.getBounds();

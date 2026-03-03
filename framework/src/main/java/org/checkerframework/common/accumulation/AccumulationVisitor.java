@@ -13,7 +13,7 @@ import org.checkerframework.javacutil.TreeUtils;
 public class AccumulationVisitor extends BaseTypeVisitor<AccumulationAnnotatedTypeFactory> {
 
   /**
-   * Constructor matching super.
+   * Creates an AccumulationVisitor.
    *
    * @param checker the checker
    */

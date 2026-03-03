@@ -1,0 +1,72 @@
+package org.checkerframework.afu.annotator.tests;
+
+public class InnerReceivers {
+
+  InnerReceivers i =
+      new InnerReceivers() {
+
+        void m() {}
+
+        class Inner {
+          void m(@A Inner this) {}
+
+          void m1(@B Inner this) {}
+        }
+      };
+
+  void m(@C InnerReceivers this) {}
+
+  void m1(@D InnerReceivers this) {}
+
+  void m2(org.checkerframework.afu.annotator.tests.@D1 InnerReceivers this) {}
+
+  class Inner1<Y, Z> {
+
+    void m(@E(0) InnerReceivers.@E(1) Inner1<@E(2) Y, @E(3) Z> this) {}
+
+    void m1(@F InnerReceivers.Inner1<Y, Z> this) {}
+
+    void m2(org.checkerframework.afu.annotator.tests.@F1 InnerReceivers.Inner1<Y, Z> this) {}
+
+    class Inner2 {
+
+      void m(@G(0) InnerReceivers.@G(1) Inner1<@G(2) Y, @G(3) Z>.@G(4) Inner2 this) {}
+
+      void m1(@H InnerReceivers.Inner1<Y, Z>.Inner2 this) {}
+    }
+  }
+
+  static class StaticInner1 {
+
+    void m(InnerReceivers.@I StaticInner1 this) {}
+
+    void m1(InnerReceivers.@J StaticInner1 this) {}
+
+    void m2(org.checkerframework.afu.annotator.tests.InnerReceivers.@K StaticInner1 this) {}
+  }
+
+  static class StaticInner3<Y, Z> {
+
+    void m(InnerReceivers.@I1(0) StaticInner3<@I1(1) Y, @I1(2) Z> this) {}
+
+    void m1(InnerReceivers.@J StaticInner3<Y, Z> this) {}
+
+    void m2(org.checkerframework.afu.annotator.tests.InnerReceivers.@K StaticInner3<Y, Z> this) {}
+  }
+}
+
+class Outer<K> {
+  static class StaticInner2 {
+
+    void m(Outer.@L StaticInner2 this) {}
+
+    void m1(Outer.@M StaticInner2 this) {}
+
+    void m2(org.checkerframework.afu.annotator.tests.Outer.@N StaticInner2 this) {}
+
+    static class StaticInner3 {
+
+      void m(Outer.StaticInner2.@O StaticInner3 this) {}
+    }
+  }
+}

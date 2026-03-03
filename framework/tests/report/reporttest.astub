@@ -1,10 +1,10 @@
-import org.checkerframework.common.util.report.qual.*;
+import org.checkerframework.common.util.count.report.qual.*;
 
 package java.lang;
 
 class Class<T> {
-      @ReportCall
-     Class<?> forName(String s);
+  @ReportCall
+  Class<?> forName(String s);
 }
 
 @ReportUse

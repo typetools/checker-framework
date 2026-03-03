@@ -232,8 +232,8 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
       AnnotatedWildcardType type1Wildcard = (AnnotatedWildcardType) type1AsLub;
       AnnotatedWildcardType type2Wildcard = (AnnotatedWildcardType) type2AsLub;
       AnnotatedWildcardType lubWildcard = (AnnotatedWildcardType) lub;
-      if (type1Wildcard.isUninferredTypeArgument() || type2Wildcard.isUninferredTypeArgument()) {
-        lubWildcard.setUninferredTypeArgument();
+      if (type1Wildcard.isTypeArgOfRawType() || type2Wildcard.isTypeArgOfRawType()) {
+        lubWildcard.setTypeArgOfRawType();
       }
       lubWildcard(
           type1Wildcard.getSuperBound(),

@@ -1,0 +1,14 @@
+package java.lang:
+annotation @Tainted: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package java.lang:
+annotation @UnderInitialization: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package org.checkerframework.afu.annotator.tests:
+class LocalMultiple:
+
+    method foo(Ljava/lang/Object;)V:
+        return:
+        insert-annotation Method.body, Block.statement 1, If.elseStatement, Block.statement 0, Variable.type: @java.lang.Tainted
+        insert-annotation Method.body, Block.statement 1, If.thenStatement, Block.statement 0, Variable.type: @java.lang.UnderInitialization
+

@@ -109,6 +109,9 @@ public class NullnessAnnotatedTypeFactory
   /** The Arrays.copyOf() methods that operate on arrays of references. */
   private final List<ExecutableElement> copyOfMethods;
 
+  /** The Arrays.copyOfRange() methods that operate on arrays of references. */
+  private final List<ExecutableElement> copyOfRangeMethods;
+
   /** Cache for the nullness annotations. */
   protected final Set<Class<? extends Annotation>> nullnessAnnos;
 
@@ -120,9 +123,16 @@ public class NullnessAnnotatedTypeFactory
   // ../../../../../../../../docs/manual/nullness-checker.tex
   // and make a pull request for variables NONNULL_ANNOTATIONS and BASE_COPYABLE_ANNOTATIONS in
   // https://github.com/rzwitserloot/lombok/blob/master/src/core/lombok/core/handlers/HandlerUtil.java .
+  // Avoid changes to the string constants by ShadowJar relocate by using "start".toString() +
+  // "rest".
+  // Keep the original string constant in a comment to allow searching for it.
   /** Aliases for {@code @Nonnull}. */
+  @SuppressWarnings({
+    "signature:argument", // Class names intentionally obfuscated
+    "signature:assignment" // Class names intentionally obfuscated
+  })
   private static final List<@FullyQualifiedName String> NONNULL_ALIASES =
-      Arrays.asList(
+      Arrays.<@FullyQualifiedName String>asList(
           // https://android.googlesource.com/platform/frameworks/base/+/master/core/java/android/annotation/NonNull.java
           // https://developer.android.com/reference/androidx/annotation/NonNull
           "android.annotation.NonNull",
@@ -138,9 +148,11 @@ public class NullnessAnnotatedTypeFactory
           // https://android.googlesource.com/platform/sdk/+/66fcecc/common/src/com/android/annotations/NonNull.java
           "com.android.annotations.NonNull",
           // https://github.com/firebase/firebase-android-sdk/blob/master/firebase-database/src/main/java/com/google/firebase/database/annotations/NotNull.java
-          "com.google.firebase.database.annotations.NotNull",
+          // "com.google.firebase.database.annotations.NotNull",
+          "com.go".toString() + "ogle.firebase.database.annotations.NotNull",
           // https://github.com/firebase/firebase-admin-java/blob/master/src/main/java/com/google/firebase/internal/NonNull.java
-          "com.google.firebase.internal.NonNull",
+          // "com.google.firebase.internal.NonNull",
+          "com.go".toString() + "ogle.firebase.internal.NonNull",
           // https://github.com/mongodb/mongo-java-driver/blob/master/driver-core/src/main/com/mongodb/lang/NonNull.java
           "com.mongodb.lang.NonNull",
           // https://github.com/eclipse-ee4j/jaxb-istack-commons/blob/master/istack-commons/runtime/src/main/java/com/sun/istack/NotNull.java
@@ -161,6 +173,8 @@ public class NullnessAnnotatedTypeFactory
           "io.reactivex.rxjava3.annotations.NonNull",
           // https://github.com/jakartaee/common-annotations-api/blob/master/api/src/main/java/jakarta/annotation/Nonnull.java
           "jakarta.annotation.Nonnull",
+          // https://jakarta.ee/specifications/bean-validation/3.0/apidocs/jakarta/validation/constraints/notnull
+          "jakarta.validation.constraints.NotNull",
           // https://jcp.org/en/jsr/detail?id=305; no documentation at
           // https://www.javadoc.io/doc/com.google.code.findbugs/jsr305/3.0.1/javax/annotation/Nonnull.html
           "javax.annotation.Nonnull",
@@ -180,6 +194,8 @@ public class NullnessAnnotatedTypeFactory
           // https://search.maven.org/artifact/org.checkerframework/checker-compat-qual/2.5.5/jar
           "org.checkerframework.checker.nullness.compatqual.NonNullDecl",
           "org.checkerframework.checker.nullness.compatqual.NonNullType",
+          // https://source.chromium.org/chromium/chromium/src/+/main:build/android/java/src/org/chromium/build/annotations/OptimizeAsNonNull.java
+          "org.chromium.build.annotations.OptimizeAsNonNull",
           // https://janino-compiler.github.io/janino/apidocs/org/codehaus/commons/nullanalysis/NotNull.html
           "org.codehaus.commons.nullanalysis.NotNull",
           // https://help.eclipse.org/neon/index.jsp?topic=/org.eclipse.jdt.doc.isv/reference/api/org/eclipse/jdt/annotation/NonNull.html
@@ -192,14 +208,14 @@ public class NullnessAnnotatedTypeFactory
           // https://github.com/JetBrains/intellij-community/blob/master/platform/annotations/java8/src/org/jetbrains/annotations/NotNull.java
           // https://www.jetbrains.com/help/idea/nullable-and-notnull-annotations.html
           "org.jetbrains.annotations.NotNull",
-          // http://svn.code.sf.net/p/jmlspecs/code/JMLAnnotations/trunk/src/org/jmlspecs/annotation/NonNull.java
+          // https://svn.code.sf.net/p/jmlspecs/code/JMLAnnotations/trunk/src/org/jmlspecs/annotation/NonNull.java
           "org.jmlspecs.annotation.NonNull",
           // https://github.com/jspecify/jspecify/blob/main/src/main/java/org/jspecify/annotations/NonNull.java
           "org.jspecify.annotations.NonNull",
           // 2022-11-17: Deprecated old package location, remove after some grace period
           // https://github.com/jspecify/jspecify/tree/main/src/main/java/org/jspecify/nullness
           "org.jspecify.nullness.NonNull",
-          // http://bits.netbeans.org/dev/javadoc/org-netbeans-api-annotations-common/org/netbeans/api/annotations/common/NonNull.html
+          // https://bits.netbeans.org/dev/javadoc/org-netbeans-api-annotations-common/org/netbeans/api/annotations/common/NonNull.html
           "org.netbeans.api.annotations.common.NonNull",
           // https://github.com/spring-projects/spring-framework/blob/master/spring-core/src/main/java/org/springframework/lang/NonNull.java
           "org.springframework.lang.NonNull",
@@ -210,8 +226,12 @@ public class NullnessAnnotatedTypeFactory
   // ../../../../../../../../docs/manual/nullness-checker.tex .
   // See more comments with NONNULL_ALIASES above.
   /** Aliases for {@code @Nullable}. */
+  @SuppressWarnings({
+    "signature:argument", // Class names intentionally obfuscated
+    "signature:assignment" // Class names intentionally obfuscated
+  })
   private static final List<@FullyQualifiedName String> NULLABLE_ALIASES =
-      Arrays.asList(
+      Arrays.<@FullyQualifiedName String>asList(
           // https://android.googlesource.com/platform/frameworks/base/+/master/core/java/android/annotation/Nullable.java
           // https://developer.android.com/reference/androidx/annotation/Nullable
           "android.annotation.Nullable",
@@ -229,15 +249,23 @@ public class NullnessAnnotatedTypeFactory
           // https://github.com/lpantano/java_seqbuster/blob/master/AdRec/src/adrec/com/beust/jcommander/internal/Nullable.java
           "com.beust.jcommander.internal.Nullable",
           // https://github.com/cloudendpoints/endpoints-java/blob/master/endpoints-framework/src/main/java/com/google/api/server/spi/config/Nullable.java
-          "com.google.api.server.spi.config.Nullable",
+          // "com.google.api.server.spi.config.Nullable",
+          "com.go".toString() + "ogle.api.server.spi.config.Nullable",
           // https://github.com/firebase/firebase-android-sdk/blob/master/firebase-database/src/main/java/com/google/firebase/database/annotations/Nullable.java
-          "com.google.firebase.database.annotations.Nullable",
+          // "com.google.firebase.database.annotations.Nullable",
+          "com.go".toString() + "ogle.firebase.database.annotations.Nullable",
           // https://github.com/firebase/firebase-admin-java/blob/master/src/main/java/com/google/firebase/internal/Nullable.java
-          "com.google.firebase.internal.Nullable",
+          // "com.google.firebase.internal.Nullable",
+          "com.go".toString() + "ogle.firebase.internal.Nullable",
           // https://gerrit.googlesource.com/gerrit/+/refs/heads/master/java/com/google/gerrit/common/Nullable.java
-          "com.google.gerrit.common.Nullable",
-          "com.google.protobuf.Internal.ProtoMethodAcceptsNullParameter",
-          "com.google.protobuf.Internal.ProtoMethodMayReturnNull",
+          // "com.google.gerrit.common.Nullable",
+          "com.go".toString() + "ogle.gerrit.common.Nullable",
+          //
+          // "com.google.protobuf.Internal.ProtoMethodAcceptsNullParameter",
+          "com.go".toString() + "ogle.protobuf.Internal.ProtoMethodAcceptsNullParameter",
+          //
+          // "com.google.protobuf.Internal.ProtoMethodMayReturnNull",
+          "com.go".toString() + "ogle.protobuf.Internal.ProtoMethodMayReturnNull",
           // https://github.com/mongodb/mongo-java-driver/blob/master/driver-core/src/main/com/mongodb/lang/Nullable.java
           "com.mongodb.lang.Nullable",
           // https://github.com/eclipse-ee4j/jaxb-istack-commons/blob/master/istack-commons/runtime/src/main/java/com/sun/istack/Nullable.java
@@ -287,14 +315,19 @@ public class NullnessAnnotatedTypeFactory
           // https://github.com/raphw/byte-buddy/blob/master/byte-buddy-dep/src/main/java/net/bytebuddy/utility/nullability/UnknownNull.java
           "net.bytebuddy.utility.nullability.UnknownNull",
           // https://github.com/apache/avro/blob/master/lang/java/avro/src/main/java/org/apache/avro/reflect/Nullable.java
-          "org.apache.avro.reflect.Nullable",
+          // "org.apache.avro.reflect.Nullable",
+          "org.apa".toString() + "che.avro.reflect.Nullable",
           // https://github.com/apache/cxf/blob/master/rt/frontend/jaxrs/src/main/java/org/apache/cxf/jaxrs/ext/Nullable.java
-          "org.apache.cxf.jaxrs.ext.Nullable",
+          // "org.apache.cxf.jaxrs.ext.Nullable",
+          "org.apa".toString() + "che.cxf.jaxrs.ext.Nullable",
           // https://github.com/gatein/gatein-shindig/blob/master/java/common/src/main/java/org/apache/shindig/common/Nullable.java
-          "org.apache.shindig.common.Nullable",
-          // https://search.maven.org/search?q=a:checker-compat-qual
+          // "org.apache.shindig.common.Nullable",
+          "org.apa".toString() + "che.shindig.common.Nullable",
+          // https://central.sonatype.com/search?q=checker-compat-qual
           "org.checkerframework.checker.nullness.compatqual.NullableDecl",
           "org.checkerframework.checker.nullness.compatqual.NullableType",
+          // https://source.chromium.org/chromium/chromium/src/+/main:build/android/java/src/org/chromium/build/annotations/Nullable.java
+          "org.chromium.build.annotations.Nullable",
           // https://janino-compiler.github.io/janino/apidocs/org/codehaus/commons/nullanalysis/Nullable.html
           "org.codehaus.commons.nullanalysis.Nullable",
           // https://help.eclipse.org/neon/index.jsp?topic=/org.eclipse.jdt.doc.isv/reference/api/org/eclipse/jdt/annotation/Nullable.html
@@ -307,7 +340,7 @@ public class NullnessAnnotatedTypeFactory
           "org.jetbrains.annotations.Nullable",
           // https://github.com/JetBrains/java-annotations/blob/master/java8/src/main/java/org/jetbrains/annotations/UnknownNullability.java
           "org.jetbrains.annotations.UnknownNullability",
-          // http://svn.code.sf.net/p/jmlspecs/code/JMLAnnotations/trunk/src/org/jmlspecs/annotation/Nullable.java
+          // https://svn.code.sf.net/p/jmlspecs/code/JMLAnnotations/trunk/src/org/jmlspecs/annotation/Nullable.java
           "org.jmlspecs.annotation.Nullable",
           // https://github.com/jspecify/jspecify/blob/main/src/main/java/org/jspecify/annotations/Nullable.java
           "org.jspecify.annotations.Nullable",
@@ -315,11 +348,11 @@ public class NullnessAnnotatedTypeFactory
           // https://github.com/jspecify/jspecify/tree/main/src/main/java/org/jspecify/nullness
           "org.jspecify.nullness.Nullable",
           "org.jspecify.nullness.NullnessUnspecified",
-          // http://bits.netbeans.org/dev/javadoc/org-netbeans-api-annotations-common/org/netbeans/api/annotations/common/CheckForNull.html
+          // https://bits.netbeans.org/dev/javadoc/org-netbeans-api-annotations-common/org/netbeans/api/annotations/common/CheckForNull.html
           "org.netbeans.api.annotations.common.CheckForNull",
-          // http://bits.netbeans.org/dev/javadoc/org-netbeans-api-annotations-common/org/netbeans/api/annotations/common/NullAllowed.html
+          // https://bits.netbeans.org/dev/javadoc/org-netbeans-api-annotations-common/org/netbeans/api/annotations/common/NullAllowed.html
           "org.netbeans.api.annotations.common.NullAllowed",
-          // http://bits.netbeans.org/dev/javadoc/org-netbeans-api-annotations-common/org/netbeans/api/annotations/common/NullUnknown.html
+          // https://bits.netbeans.org/dev/javadoc/org-netbeans-api-annotations-common/org/netbeans/api/annotations/common/NullUnknown.html
           "org.netbeans.api.annotations.common.NullUnknown",
           // https://github.com/spring-projects/spring-framework/blob/master/spring-core/src/main/java/org/springframework/lang/Nullable.java
           "org.springframework.lang.Nullable",
@@ -330,14 +363,21 @@ public class NullnessAnnotatedTypeFactory
   // ../../../../../../../../docs/manual/nullness-checker.tex .
   // See more comments with NONNULL_ALIASES above.
   /** Aliases for {@code @PolyNull}. */
+  @SuppressWarnings({
+    "signature:argument", // Class names intentionally obfuscated
+    "signature:assignment" // Class names intentionally obfuscated
+  })
   private static final List<@FullyQualifiedName String> POLYNULL_ALIASES =
-      Arrays.asList("com.google.protobuf.Internal.ProtoPassThroughNullness");
+      Arrays.<@FullyQualifiedName String>asList(
+          // "com.google.protobuf.Internal.ProtoPassThroughNullness",
+          "com.go".toString() + "ogle.protobuf.Internal.ProtoPassThroughNullness");
 
   /**
    * Creates a NullnessAnnotatedTypeFactory.
    *
    * @param checker the associated {@link NullnessChecker}
    */
+  @SuppressWarnings("this-escape")
   public NullnessAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
 
@@ -375,6 +415,11 @@ public class NullnessAnnotatedTypeFactory
         Arrays.asList(
             TreeUtils.getMethod("java.util.Arrays", "copyOf", processingEnv, "T[]", "int"),
             TreeUtils.getMethod("java.util.Arrays", "copyOf", 3, processingEnv));
+    copyOfRangeMethods =
+        Arrays.asList(
+            TreeUtils.getMethod(
+                "java.util.Arrays", "copyOfRange", processingEnv, "T[]", "int", "int"),
+            TreeUtils.getMethod("java.util.Arrays", "copyOfRange", 4, processingEnv));
 
     postInit();
 
@@ -468,8 +513,9 @@ public class NullnessAnnotatedTypeFactory
   }
 
   @Override
-  public ParameterizedExecutableType methodFromUse(MethodInvocationTree tree) {
-    ParameterizedExecutableType mType = super.methodFromUse(tree);
+  protected ParameterizedExecutableType methodFromUse(
+      MethodInvocationTree tree, boolean inferTypeArgs) {
+    ParameterizedExecutableType mType = super.methodFromUse(tree, inferTypeArgs);
     AnnotatedExecutableType method = mType.executableType;
 
     // Special cases for method invocations with specific arguments.
@@ -552,9 +598,8 @@ public class NullnessAnnotatedTypeFactory
   /**
    * Nullness doesn't call propagation on binary and unary because the result is always @Initialized
    * (the default qualifier).
-   *
-   * <p>Would this be valid to move into CommitmentTreeAnnotator.
    */
+  // Would this be valid to move into CommitmentTreeAnnotator?
   protected static class NullnessPropagationTreeAnnotator extends PropagationTreeAnnotator {
 
     /** Create the NullnessPropagationTreeAnnotator. */
@@ -672,22 +717,25 @@ public class NullnessAnnotatedTypeFactory
 
     @Override
     public Void visitMethodInvocation(MethodInvocationTree tree, AnnotatedTypeMirror type) {
+      List<? extends ExpressionTree> args = tree.getArguments();
+      ExpressionTree lengthArg = null; // non-null iff `tree` is an invocation of `copyOf*`
       if (TreeUtils.isMethodInvocation(tree, copyOfMethods, processingEnv)) {
-        List<? extends ExpressionTree> args = tree.getArguments();
-        ExpressionTree lengthArg = args.get(1);
-        if (TreeUtils.isArrayLengthAccess(lengthArg)) {
-          // TODO: This syntactic test may not be not correct if the array expression has
-          // a side effect that affects the array length.  This code could require that
-          // the expression has no method calls, assignments, etc.
-          ExpressionTree arrayArg = args.get(0);
-          if (TreeUtils.sameTree(arrayArg, ((MemberSelectTree) lengthArg).getExpression())) {
-            AnnotatedArrayType arrayArgType = (AnnotatedArrayType) getAnnotatedType(arrayArg);
-            AnnotatedTypeMirror arrayArgComponentType = arrayArgType.getComponentType();
-            // Maybe this call is only necessary if argNullness is @NonNull.
-            ((AnnotatedArrayType) type)
-                .getComponentType()
-                .replaceAnnotations(arrayArgComponentType.getPrimaryAnnotations());
-          }
+        lengthArg = args.get(1);
+      } else if (TreeUtils.isMethodInvocation(tree, copyOfRangeMethods, processingEnv)) {
+        lengthArg = args.get(2);
+      }
+      if (lengthArg != null && TreeUtils.isArrayLengthAccess(lengthArg)) {
+        // TODO: This syntactic test may not be not correct if the array expression has
+        // a side effect that affects the array length.  This test could require that
+        // the expression has no method calls, assignments, etc.
+        ExpressionTree arrayArg = args.get(0);
+        if (TreeUtils.sameTree(arrayArg, ((MemberSelectTree) lengthArg).getExpression())) {
+          AnnotatedArrayType arrayArgType = (AnnotatedArrayType) getAnnotatedType(arrayArg);
+          AnnotatedTypeMirror arrayArgComponentType = arrayArgType.getComponentType();
+          // Maybe this call is only necessary if argNullness is @NonNull.
+          ((AnnotatedArrayType) type)
+              .getComponentType()
+              .replaceAnnotations(arrayArgComponentType.getPrimaryAnnotations());
         }
       }
       return super.visitMethodInvocation(tree, type);
@@ -724,7 +772,7 @@ public class NullnessAnnotatedTypeFactory
    * <p>In other words, is the lower bound @NonNull?
    *
    * @param type of field that might have invariant annotation
-   * @return whether or not type has the invariant annotation
+   * @return true if type has the invariant annotation
    */
   @Override
   protected boolean hasFieldInvariantAnnotation(
@@ -861,10 +909,7 @@ public class NullnessAnnotatedTypeFactory
    * @return true if the given annotation is @NonNull or an alias for it
    */
   protected boolean isNonNullOrAlias(AnnotationMirror am) {
-    AnnotationMirror canonical = canonicalAnnotation(am);
-    if (canonical != null) {
-      am = canonical;
-    }
+    am = canonicalAnnotation(am);
     return AnnotationUtils.areSameByName(am, NONNULL);
   }
 
@@ -875,10 +920,7 @@ public class NullnessAnnotatedTypeFactory
    * @return true if the given annotation is @Nullable or an alias for it
    */
   protected boolean isNullableOrAlias(AnnotationMirror am) {
-    AnnotationMirror canonical = canonicalAnnotation(am);
-    if (canonical != null) {
-      am = canonical;
-    }
+    am = canonicalAnnotation(am);
     return AnnotationUtils.areSameByName(am, NULLABLE);
   }
 

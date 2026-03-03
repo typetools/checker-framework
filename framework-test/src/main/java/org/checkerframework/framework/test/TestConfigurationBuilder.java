@@ -42,7 +42,7 @@ public class TestConfigurationBuilder {
    * @param testSourceFiles the Java files that compose the test
    * @param processors the checkers or other annotation processors to run over the testSourceFiles
    * @param options the options to the compiler/processors
-   * @param shouldEmitDebugInfo whether or not debug information should be emitted
+   * @param shouldEmitDebugInfo true if debug information should be emitted
    * @return the builder that will create an immutable test configuration
    */
   public static TestConfigurationBuilder getDefaultConfigurationBuilder(
@@ -61,7 +61,6 @@ public class TestConfigurationBuilder {
             .addOption("-Xmaxerrs", "9999")
             .addOption("-g")
             .addOption("-Xlint:unchecked")
-            .addOption("-XDrawDiagnostics") // use short javac diagnostics
             .addSourceFiles(testSourceFiles);
 
     if (outputClassDirectory != null) {
@@ -85,12 +84,12 @@ public class TestConfigurationBuilder {
    * @param testFile a single test Java file to compile
    * @param processor a single checker to include in the processors field
    * @param options the options to the compiler/processors
-   * @param shouldEmitDebugInfo whether or not debug information should be emitted
+   * @param shouldEmitDebugInfo true if debug information should be emitted
    * @return a TestConfiguration with input parameters added plus the normal default options,
    *     compiler, and file manager used by Checker Framework tests
    */
   @SuppressWarnings(
-      "signature:argument" // for non-array non-primitive class, getName(): @BinaryName
+      "signature:cast.unsafe" // for non-array non-primitive class, getName(): @BinaryName
   )
   public static TestConfiguration buildDefaultConfiguration(
       String testSourcePath,
@@ -102,7 +101,7 @@ public class TestConfigurationBuilder {
         testSourcePath,
         Arrays.asList(testFile),
         Collections.emptyList(),
-        Arrays.asList(processor.getName()),
+        Arrays.asList((@BinaryName String) processor.getName()),
         options,
         shouldEmitDebugInfo);
   }
@@ -115,7 +114,7 @@ public class TestConfigurationBuilder {
    * @param testSourceFiles the Java files that compose the test
    * @param processors the checkers or other annotation processors to run over the testSourceFiles
    * @param options the options to the compiler/processors
-   * @param shouldEmitDebugInfo whether or not debug information should be emitted
+   * @param shouldEmitDebugInfo true if debug information should be emitted
    * @return a TestConfiguration with input parameters added plus the normal default options,
    *     compiler, and file manager used by Checker Framework tests
    */
@@ -143,7 +142,7 @@ public class TestConfigurationBuilder {
    * @param classpathExtra extra entries for the classpath, needed to compile the source files
    * @param processors the checkers or other annotation processors to run over the testSourceFiles
    * @param options the options to the compiler/processors
-   * @param shouldEmitDebugInfo whether or not debug information should be emitted
+   * @param shouldEmitDebugInfo true if debug information should be emitted
    * @return a TestConfiguration with input parameters added plus the normal default options,
    *     compiler, and file manager used by Checker Framework tests
    */
@@ -208,6 +207,7 @@ public class TestConfigurationBuilder {
    *
    * @param initialConfig initial configuration for the newly-created builder
    */
+  @SuppressWarnings("this-escape")
   public TestConfigurationBuilder(TestConfiguration initialConfig) {
     this.diagnosticFiles = new ArrayList<>(initialConfig.getDiagnosticFiles());
     this.testSourceFiles = new ArrayList<>(initialConfig.getTestSourceFiles());
@@ -229,7 +229,7 @@ public class TestConfigurationBuilder {
    *       addProcessor instead)
    * </ul>
    *
-   * @param requireProcessors whether or not to require that there is at least one processor
+   * @param requireProcessors if true, require that there is at least one processor
    * @return a list of errors found while validating this configuration
    */
   public List<String> validate(boolean requireProcessors) {
@@ -469,7 +469,7 @@ public class TestConfigurationBuilder {
   /**
    * Sets {@code this} to output debug info depending on the parameter.
    *
-   * @param shouldEmitDebugInfo whether to emit debug info
+   * @param shouldEmitDebugInfo if true, emit debug info
    * @return the current object {@code this}
    */
   public TestConfigurationBuilder setShouldEmitDebugInfo(boolean shouldEmitDebugInfo) {
@@ -496,8 +496,8 @@ public class TestConfigurationBuilder {
    * Creates a TestConfiguration using the settings in this builder. The settings are first
    * validated and a runtime exception is thrown if any errors are found
    *
-   * @param requireProcessors whether or not there should be at least 1 processor specified, see
-   *     method validate
+   * @param requireProcessors true if there should be at least 1 processor specified, see method
+   *     validate
    * @return a TestConfiguration using the settings in this builder
    */
   public TestConfiguration validateThenBuild(boolean requireProcessors) {

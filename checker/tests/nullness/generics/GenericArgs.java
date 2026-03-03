@@ -1,9 +1,10 @@
-import java.io.*;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
-import org.checkerframework.checker.nullness.qual.*;
-import org.checkerframework.dataflow.qual.*;
+import org.checkerframework.checker.nullness.qual.KeyForBottom;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
 
 @org.checkerframework.framework.qual.DefaultQualifier(Nullable.class)
 public class GenericArgs {
@@ -19,22 +20,22 @@ public class GenericArgs {
 
   static class X<@NonNull T extends @NonNull Object> {
     T value() {
-      // :: error: (return)
+      // :: error: [return]
       return null;
     }
   }
 
   public static void test2() {
-    // :: error: (type.argument)
+    // :: error: [type.argument]
     Object o = new X<Object>().value();
   }
 
   static <@NonNull Z extends @NonNull Object> void test3(Z z) {}
 
   void test4() {
-    // :: error: (type.argument)
+    // :: error: [type.argument]
     GenericArgs.<@Nullable Object>test3(null);
-    // :: error: (argument)
+    // :: error: [argument]
     GenericArgs.<@NonNull Object>test3(null);
   }
 
@@ -43,12 +44,12 @@ public class GenericArgs {
   }
 
   void test5() {
-    // :: error: (argument)
+    // :: error: [argument]
     new <@NonNull String>GenericConstructor(null);
   }
 
   void testRecursiveDeclarations() {
-    class MyComparator<@NonNull T extends @NonNull Comparable<T>>
+    class MyComparator<@NonNull @KeyForBottom T extends @NonNull Comparable<T>>
         implements Comparator<T @NonNull []> {
       @Pure
       public int compare(T[] a, T[] b) {
