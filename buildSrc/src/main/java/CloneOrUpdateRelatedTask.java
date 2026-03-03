@@ -9,10 +9,8 @@ import org.eclipse.jgit.lib.ConfigConstants;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
-import org.gradle.api.DefaultTask;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
-import org.gradle.api.tasks.TaskAction;
 import org.gradle.api.tasks.UntrackedTask;
 import org.gradle.process.ExecOperations;
 
@@ -28,7 +26,7 @@ import org.gradle.process.ExecOperations;
  * script.
  */
 @UntrackedTask(because = "Always try to update.")
-public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
+public abstract class CloneOrUpdateRelatedTask extends GitTask {
 
   /**
    * The GitHub organization to use to clone the related repository if a matching org is not found.
@@ -46,9 +44,6 @@ public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
   @Input
   public abstract Property<String> getRelatedRepo();
 
-  /** Used to run exec commands. */
-  private final ExecOperations execOperations;
-
   /**
    * Creates a new CloneOrUpdateRelatedTask.
    *
@@ -56,18 +51,18 @@ public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
    */
   @Inject
   public CloneOrUpdateRelatedTask(ExecOperations execOperations) {
-    this.execOperations = execOperations;
+    super(execOperations);
   }
 
   /** Clones or updates a related repo. */
-  @TaskAction
+  @Override
   public void doTaskAction() {
     String relatedRepoName = getRelatedRepo().get();
     File cfDir = getProject().getRootDir();
     File relatedRepoDir = new File(cfDir.getParentFile(), relatedRepoName);
     if (relatedRepoDir.exists() && new File(relatedRepoDir, ".git").exists()) {
       checkOrgBranch(relatedRepoDir);
-      CloneOrUpdateTask.update(relatedRepoDir, execOperations);
+      update(relatedRepoDir, execOperations);
     } else {
       OrgBranch fbCf = getOrgBranch(new File(cfDir, ".git"));
       if (fbCf == null
@@ -76,7 +71,7 @@ public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
         fbCf = new OrgBranch(DEFAULT_ORG, DEFAULT_BRANCH);
       }
       String url = getGitHubHttpsUrl(fbCf.org, relatedRepoName);
-      CloneOrUpdateTask.cloneRetryOnce(url, fbCf.branch, relatedRepoDir);
+      cloneRetryOnce(url, fbCf.branch, relatedRepoDir);
     }
   }
 
@@ -90,23 +85,27 @@ public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
     File cfDir = getProject().getRootDir();
 
     String relatedRepoName = getRelatedRepo().get();
-    OrgBranch fbCf = getOrgBranch(new File(cfDir, ".git"));
-    OrgBranch fbRelated = getOrgBranch(new File(relatedRepoDir, ".git"));
+    OrgBranch orgBranchCF = getOrgBranch(new File(cfDir, ".git"));
+    OrgBranch orgBranchRelated = getOrgBranch(new File(relatedRepoDir, ".git"));
 
-    if (fbCf == null || fbRelated == null || fbCf.equals(fbRelated)) {
+    getLogger().info("Checker Framework: {}, Related: {}", orgBranchCF, orgBranchRelated);
+
+    if (orgBranchCF == null || orgBranchRelated == null || orgBranchCF.equals(orgBranchRelated)) {
       // Either CF or related is not a clone, or the CF and related are using the same org and
       // branch.
       return;
     }
-    if (!orgExists(fbCf.org, relatedRepoName)) {
+    if (!orgExists(orgBranchCF.org, relatedRepoName)) {
       // There is no related repo that is in the same org as the CF clone.
       return;
     }
-    if (remoteBranchExists(fbCf.org, relatedRepoName, fbCf.branch)) {
+    if (remoteBranchExists(orgBranchCF.org, relatedRepoName, orgBranchCF.branch)) {
       throw new RuntimeException(
           String.format(
               "Please checkout the corresponding %s branch. URL: %s Branch: %s.",
-              relatedRepoName, getGitHubHttpsUrl(fbCf.org, relatedRepoName), fbCf.branch));
+              relatedRepoName,
+              getGitHubHttpsUrl(orgBranchCF.org, relatedRepoName),
+              orgBranchCF.branch));
     }
   }
 
