@@ -2053,7 +2053,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * <p>Though each checker is run on a whole compilation unit before the next checker is run, error
    * and warning messages are collected and sorted based on the location in the source file before
    * being printed. (See {@link #printOrStoreMessage(Diagnostic.Kind, String, Tree,
-   * CompilationUnitTree)}.)
+   * CompilationUnitTree, String)}.)
    *
    * <p>WARNING: Circular dependencies are not supported. (In other words, if checker A depends on
    * checker B, checker B cannot depend on checker A.) The Checker Framework does not check for
