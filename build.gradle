@@ -1270,6 +1270,23 @@ subprojects {
   }
 }
 
+tasks.register("junitPart1") {
+  description = "Run part 1 of the  Checker Framework Junit tests"
+  group = "Verification"
+  subprojects {
+    if(!it.name.contentEquals("checker")) {
+      dependsOn(it.tasks.named("test"))
+    }
+  }
+  dependsOn(":test")
+}
+
+tasks.register("junitPart2") {
+  description = "Run part 2 of the  Checker Framework Junit tests"
+  group = "Verification"
+  dependsOn(":checker:test")
+}
+
 // The `assembleForJavac` task is faster than the `assemble` task, if you only
 // care about running `javac`.
 // The assemble task also produces Javadoc jars, because its purpose is to build
