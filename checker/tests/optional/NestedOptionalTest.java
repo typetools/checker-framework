@@ -6,7 +6,7 @@ class NestedOptional {
   Object field;
 
   @SuppressWarnings("optional.parameter")
-  // :: warning: (optional.nesting)
+  // :: warning: [optional.nesting]
   Optional<String> bar(Optional<Optional<String>> optOptStr) {
     if (optOptStr.isPresent()) {
       return optOptStr.get();
@@ -16,16 +16,16 @@ class NestedOptional {
 
   void foo() {
     // Explicitly providing a type annotation triggers the error
-    // :: warning: (optional.nesting)
+    // :: warning: [optional.nesting]
     var x = Optional.of(Optional.of("foo")); // I expect an error here.
 
-    // :: warning: (optional.nesting)
+    // :: warning: [optional.nesting]
     bar(Optional.of(Optional.of("bar")));
 
-    // :: warning: (optional.nesting)
+    // :: warning: [optional.nesting]
     field = Optional.of(Optional.of("baz"));
 
-    // :: warning: (optional.collection)
+    // :: warning: [optional.collection]
     field = Optional.of(Collections.singleton("baz"));
   }
 }

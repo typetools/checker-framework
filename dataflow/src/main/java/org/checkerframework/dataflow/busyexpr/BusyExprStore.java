@@ -43,7 +43,7 @@ public class BusyExprStore implements Store<BusyExprStore> {
   }
 
   /**
-   * Return true if the expression contains variable var. Note that {@code .equals} is used in the
+   * Returns true if the expression contains variable var. Note that {@code .equals} is used in the
    * return statement to verify value equality, as the statement decides whether the two nodes have
    * the same value, not represent the same CFG node.
    *
@@ -71,7 +71,7 @@ public class BusyExprStore implements Store<BusyExprStore> {
   }
 
   /**
-   * Add expressions to the store, add sub-expressions to the store recursively
+   * Add expressions to the store, add sub-expressions to the store recursively.
    *
    * @param e the expression to be added
    */

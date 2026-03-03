@@ -123,7 +123,7 @@ public class NumberUtils {
   }
 
   /**
-   * Return a range that restricts the given range to the given type. That is, return the range
+   * Returns a range that restricts the given range to the given type. That is, return the range
    * resulting from casting a value with the given range.
    *
    * @param type the type for the cast; the result will be within it

@@ -15,7 +15,7 @@ public class InstanceOfCriterion implements Criterion {
   private final RelativeLocation loc;
 
   public InstanceOfCriterion(String methodName, RelativeLocation loc) {
-    this.methodName = methodName.substring(0, methodName.lastIndexOf(")") + 1);
+    this.methodName = methodName.substring(0, methodName.lastIndexOf(')') + 1);
     this.loc = loc;
   }
 

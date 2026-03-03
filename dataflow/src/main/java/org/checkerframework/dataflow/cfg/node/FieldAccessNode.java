@@ -100,9 +100,9 @@ public class FieldAccessNode extends Node {
   }
 
   /**
-   * Determine whether the field is static or not.
+   * Returns true if the field is static.
    *
-   * @return whether the field is static or not
+   * @return true if the field is static
    */
   public boolean isStatic() {
     return ElementUtils.isStatic(getElement());

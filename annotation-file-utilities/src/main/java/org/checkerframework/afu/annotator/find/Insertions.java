@@ -1101,7 +1101,7 @@ public class Insertions implements Iterable<Insertion> {
       };
 
   /**
-   * Return the outer class part of the argument; that is, the part before '$'. Return the argument
+   * Returns the outer class part of the argument; that is, the part before '$'. Return the argument
    * if it contains no '$'.
    */
   private static String outerClassName(String className) {
@@ -1114,7 +1114,7 @@ public class Insertions implements Iterable<Insertion> {
   }
 
   /**
-   * Return the inner class part of the argument; that is, the part after '$'. Return the empty
+   * Returns the inner class part of the argument; that is, the part after '$'. Return the empty
    * string if there is no '$'.
    */
   private static String innerClassName(String className) {

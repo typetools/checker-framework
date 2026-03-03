@@ -21,6 +21,7 @@ import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.JavaExpressionParseException;
 import org.checkerframework.dataflow.expression.Unknown;
 import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
@@ -32,7 +33,6 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.SubtypeIsSupersetQualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.util.JavaExpressionParseUtil;
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationBuilder;
@@ -167,7 +167,7 @@ public class KeyForAnnotatedTypeFactory
    *
    * @param mapExpression expression that has type Map
    * @param tree expression that might be a key for the map
-   * @return whether or not the expression is a key for the map
+   * @return true if the expression is a key for the map
    */
   public boolean isKeyForMap(String mapExpression, ExpressionTree tree) {
     // This test only has an effect if the Map Key Checker is being run on its own.  If the
@@ -289,7 +289,7 @@ public class KeyForAnnotatedTypeFactory
                     stringExpr, methodInvocationTree, factory.getChecker());
             Unknown unknown = result.containedOfClass(Unknown.class);
             if (unknown != null) {
-              throw JavaExpressionParseUtil.constructJavaExpressionParseError(
+              throw JavaExpressionParseException.construct(
                   result.toString(), "Expression " + unknown.toString() + " is unparsable.");
             }
             return result;

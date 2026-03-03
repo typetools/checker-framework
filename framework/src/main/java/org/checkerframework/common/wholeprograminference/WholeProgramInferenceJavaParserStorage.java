@@ -45,6 +45,8 @@ import java.io.Writer;
 import java.lang.annotation.Annotation;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -93,10 +95,12 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
+import org.checkerframework.javacutil.UserError;
 import org.plumelib.util.ArraySet;
 import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.DeepCopyable;
 import org.plumelib.util.IPair;
+import org.plumelib.util.MapsP;
 import org.plumelib.util.UtilPlume;
 
 /**
@@ -106,12 +110,6 @@ import org.plumelib.util.UtilPlume;
  */
 public class WholeProgramInferenceJavaParserStorage
     implements WholeProgramInferenceStorage<AnnotatedTypeMirror> {
-
-  /**
-   * Directory where .ajava files will be written to and read from. This directory is relative to
-   * where the javac command is executed.
-   */
-  public static final File AJAVA_FILES_PATH = new File("build", "whole-program-inference");
 
   /** The type factory associated with this. */
   protected final AnnotatedTypeFactory atypeFactory;
@@ -143,7 +141,10 @@ public class WholeProgramInferenceJavaParserStorage
   /** Maps from binary class name to the source file that contains it. */
   private Map<String, String> classToSource = new HashMap<>();
 
-  /** Whether the {@code -AinferOutputOriginal} option was supplied to the checker. */
+  /** The directory for writing inference output ({@code .ajava} files). */
+  private final Path inferOutputDirectory;
+
+  /** True if the {@code -AinferOutputOriginal} option was supplied to the checker. */
   private final boolean inferOutputOriginal;
 
   /**
@@ -177,12 +178,19 @@ public class WholeProgramInferenceJavaParserStorage
    * annotations.
    *
    * @param atypeFactory the associated type factory
-   * @param inferOutputOriginal whether the -AinferOutputOriginal option was supplied to the checker
+   * @param inferOutputDirectory the directory into which to write whole program inference files
+   * @param inferOutputOriginal true if the {@code -AinferOutputOriginal} option was supplied to the
+   *     checker
    */
   public WholeProgramInferenceJavaParserStorage(
-      AnnotatedTypeFactory atypeFactory, boolean inferOutputOriginal) {
+      AnnotatedTypeFactory atypeFactory, String inferOutputDirectory, boolean inferOutputOriginal) {
     this.atypeFactory = atypeFactory;
     this.elements = atypeFactory.getElementUtils();
+    try {
+      this.inferOutputDirectory = Path.of(inferOutputDirectory);
+    } catch (InvalidPathException e) {
+      throw new UserError("Invalid -AinferOutputDirectory path: " + inferOutputDirectory, e);
+    }
     this.inferOutputOriginal = inferOutputOriginal;
   }
 
@@ -271,7 +279,7 @@ public class WholeProgramInferenceJavaParserStorage
   }
 
   /**
-   * Get the annotations for a method or constructor.
+   * Returns the annotations for a method or constructor.
    *
    * @param methodElt the method or constructor
    * @return the annotations for a method or constructor
@@ -290,7 +298,7 @@ public class WholeProgramInferenceJavaParserStorage
   }
 
   /**
-   * Get the annotations for a field.
+   * Returns the annotations for a field.
    *
    * @param fieldElt a field
    * @return the annotations for a field
@@ -979,7 +987,7 @@ public class WholeProgramInferenceJavaParserStorage
   }
 
   /**
-   * Return all the CallableDeclarationAnnos for the given signature.
+   * Returns all the CallableDeclarationAnnos for the given signature.
    *
    * @param jvmSignature the JVM signature
    * @param typeNames a collection of type names
@@ -1026,15 +1034,17 @@ public class WholeProgramInferenceJavaParserStorage
     atypeFactory.wpiPrepareMethodForWriting(methodAnnos, inSupertypes, inSubtypes);
   }
 
+  @SuppressWarnings("optionalimpl:prefer.map.and.orelse") // false positive (`resolve()` takes args)
   @Override
   public void writeResultsToFile(OutputFormat outputFormat, BaseTypeChecker checker) {
     if (outputFormat != OutputFormat.AJAVA) {
       throw new BugInCF("WholeProgramInferenceJavaParser used with output format " + outputFormat);
     }
 
-    File outputDir = AJAVA_FILES_PATH;
-    if (!outputDir.exists()) {
-      outputDir.mkdirs();
+    try {
+      Files.createDirectories(inferOutputDirectory);
+    } catch (IOException e) {
+      throw new UserError("Cannot create " + inferOutputDirectory.toAbsolutePath(), e);
     }
 
     setSupertypesAndSubtypesModified();
@@ -1044,13 +1054,12 @@ public class WholeProgramInferenceJavaParserStorage
       // effects that we don't want to be persistent.
       CompilationUnitAnnos root = sourceToAnnos.get(path).deepCopy();
       wpiPrepareCompilationUnitForWriting(root);
-      File packageDir;
+      Path packageDir;
       if (!root.compilationUnit.getPackageDeclaration().isPresent()) {
-        packageDir = AJAVA_FILES_PATH;
+        packageDir = inferOutputDirectory;
       } else {
         packageDir =
-            new File(
-                AJAVA_FILES_PATH,
+            inferOutputDirectory.resolve(
                 root.compilationUnit
                     .getPackageDeclaration()
                     .get()
@@ -1058,8 +1067,10 @@ public class WholeProgramInferenceJavaParserStorage
                     .replaceAll("\\.", File.separator));
       }
 
-      if (!packageDir.exists()) {
-        packageDir.mkdirs();
+      try {
+        Files.createDirectories(packageDir);
+      } catch (IOException e) {
+        throw new UserError("Cannot create " + packageDir.toAbsolutePath(), e);
       }
 
       String name = new File(path).getName();
@@ -1068,11 +1079,11 @@ public class WholeProgramInferenceJavaParserStorage
       }
 
       String nameWithChecker = name + "-" + checker.getClass().getCanonicalName() + ".ajava";
-      File outputPath = new File(packageDir, nameWithChecker);
+      Path outputPath = packageDir.resolve(nameWithChecker);
       if (this.inferOutputOriginal) {
-        File outputPathNoCheckerName = new File(packageDir, name + ".ajava");
+        Path outputPathNoCheckerName = packageDir.resolve(name + ".ajava");
         // Avoid re-writing this file for each checker that was run.
-        if (Files.notExists(outputPathNoCheckerName.toPath())) {
+        if (Files.notExists(outputPathNoCheckerName)) {
           writeAjavaFile(outputPathNoCheckerName, root);
         }
       }
@@ -1089,13 +1100,13 @@ public class WholeProgramInferenceJavaParserStorage
    * @param outputPath the path to which the ajava file should be written
    * @param root the compilation unit to be written
    */
-  private void writeAjavaFile(File outputPath, CompilationUnitAnnos root) {
-    try (Writer writer = Files.newBufferedWriter(outputPath.toPath(), StandardCharsets.UTF_8)) {
+  private void writeAjavaFile(Path outputPath, CompilationUnitAnnos root) {
+    try (Writer writer = Files.newBufferedWriter(outputPath, StandardCharsets.UTF_8)) {
 
       // This commented implementation uses JavaParser's lexical preserving printing, which
       // writes the file such that its formatting is close to the original source file it was
-      // parsed from as possible. It is commented out because this feature is very buggy and
-      // crashes when adding annotations in certain locations.
+      // parsed from as possible. It is commented out because the JavaParser feature is very buggy
+      // and crashes when adding annotations in certain locations.
       // LexicalPreservingPrinter.print(root.declaration, writer);
 
       // Do not print invisible qualifiers, to avoid cluttering the output.
@@ -1157,7 +1168,8 @@ public class WholeProgramInferenceJavaParserStorage
             }
           };
 
-      writer.write(prettyPrinter.print(root.compilationUnit));
+      String fileContent = prettyPrinter.print(root.compilationUnit);
+      writer.write(fileContent);
     } catch (IOException e) {
       throw new BugInCF("Error while writing ajava file " + outputPath, e);
     }
@@ -1393,8 +1405,8 @@ public class WholeProgramInferenceJavaParserStorage
     @Override
     public ClassOrInterfaceAnnos deepCopy() {
       ClassOrInterfaceAnnos result = new ClassOrInterfaceAnnos(className, classDeclaration);
-      result.callableDeclarations = CollectionsPlume.deepCopyValues(callableDeclarations);
-      result.fields = CollectionsPlume.deepCopyValues(fields);
+      result.callableDeclarations = MapsP.deepCopyValues(callableDeclarations);
+      result.fields = MapsP.deepCopyValues(fields);
       result.enumConstants = UtilPlume.clone(enumConstants); // no deep copy: elements are strings
       if (classAnnotations != null) {
         result.classAnnotations = classAnnotations.deepCopy();
@@ -1918,7 +1930,7 @@ public class WholeProgramInferenceJavaParserStorage
     if (orig == null) {
       return null;
     }
-    Map<String, InferredDeclared> result = new HashMap<>(CollectionsPlume.mapCapacity(orig.size()));
+    Map<String, InferredDeclared> result = new HashMap<>(MapsP.mapCapacity(orig.size()));
     result.clear();
     for (Map.Entry<String, InferredDeclared> entry : orig.entrySet()) {
       String javaExpression = entry.getKey();

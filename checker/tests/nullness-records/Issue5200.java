@@ -17,7 +17,7 @@ class Test {
     if (foo.bar() != null && !foo.bar().isEmpty()) {
       System.out.println("ok");
     }
-    // :: error: (dereference.of.nullable)
+    // :: error: [dereference.of.nullable]
     if (foo.baz() != null && !foo.baz().isEmpty()) {
       System.out.println("not ok");
     }

@@ -16,22 +16,22 @@ public class DebugWriter {
       new PrintWriter(
           new BufferedWriter(new OutputStreamWriter(System.out, StandardCharsets.UTF_8)));
 
-  /** Whether this DebugWriter is enabled. */
+  /** True if this DebugWriter is enabled. */
   private boolean enabled;
 
   /**
    * Creates a new DebugWriter.
    *
-   * @param enabled whether this DebugWriter is enabled
+   * @param enabled true if this DebugWriter is enabled
    */
   public DebugWriter(boolean enabled) {
     this.enabled = enabled;
   }
 
   /**
-   * Returns whether this DebugWriter is enabled.
+   * Returns true if this DebugWriter is enabled.
    *
-   * @return whether this DebugWriter is enabled
+   * @return true if this DebugWriter is enabled
    */
   public boolean isEnabled() {
     return enabled;
@@ -40,7 +40,7 @@ public class DebugWriter {
   /**
    * Set the enabled status of this DebugWriter.
    *
-   * @param enabled whether this DebugWriter is enabled
+   * @param enabled true if this DebugWriter is enabled
    */
   public void setEnabled(boolean enabled) {
     this.enabled = enabled;

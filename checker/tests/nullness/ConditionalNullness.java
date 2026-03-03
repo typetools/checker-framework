@@ -8,7 +8,7 @@ public class ConditionalNullness {
       result = true)
   boolean checkNonNull() {
     // don't bother with the implementation
-    // :: error: (contracts.conditional.postcondition)
+    // :: error: [contracts.conditional.postcondition]
     return true;
   }
 
@@ -24,19 +24,19 @@ public class ConditionalNullness {
     if (checkNonNull()) {
       field.toString();
       method().toString();
-      // :: error: (dereference.of.nullable)
+      // :: error: [dereference.of.nullable]
       other.field.toString(); // error
-      // :: error: (dereference.of.nullable)
+      // :: error: [dereference.of.nullable]
       other.method().toString(); // error
     }
-    // :: error: (dereference.of.nullable)
+    // :: error: [dereference.of.nullable]
     method().toString(); // error
   }
 
   void testSelfWithoutCheck() {
-    // :: error: (dereference.of.nullable)
+    // :: error: [dereference.of.nullable]
     field.toString(); // error
-    // :: error: (dereference.of.nullable)
+    // :: error: [dereference.of.nullable]
     method().toString(); // error
   }
 
@@ -44,7 +44,7 @@ public class ConditionalNullness {
     if (checkNonNull()) {
       // nothing to do
     } else {
-      // :: error: (dereference.of.nullable)
+      // :: error: [dereference.of.nullable]
       field.toString(); // error
     }
     field.toString(); // error
@@ -55,26 +55,26 @@ public class ConditionalNullness {
     if (other.checkNonNull()) {
       other.field.toString();
       other.method().toString();
-      // :: error: (dereference.of.nullable)
+      // :: error: [dereference.of.nullable]
       field.toString(); // error
-      // :: error: (dereference.of.nullable)
+      // :: error: [dereference.of.nullable]
       method().toString(); // error
     }
-    // :: error: (dereference.of.nullable)
+    // :: error: [dereference.of.nullable]
     other.method().toString(); // error
-    // :: error: (dereference.of.nullable)
+    // :: error: [dereference.of.nullable]
     method().toString(); // error
   }
 
   void testOtherWithoutCheck() {
     ConditionalNullness other = new ConditionalNullness();
-    // :: error: (dereference.of.nullable)
+    // :: error: [dereference.of.nullable]
     other.field.toString(); // error
-    // :: error: (dereference.of.nullable)
+    // :: error: [dereference.of.nullable]
     other.method().toString(); // error
-    // :: error: (dereference.of.nullable)
+    // :: error: [dereference.of.nullable]
     field.toString(); // error
-    // :: error: (dereference.of.nullable)
+    // :: error: [dereference.of.nullable]
     method().toString(); // error
   }
 
@@ -83,14 +83,14 @@ public class ConditionalNullness {
     if (other.checkNonNull()) {
       // nothing to do
     } else {
-      // :: error: (dereference.of.nullable)
+      // :: error: [dereference.of.nullable]
       other.field.toString(); // error
-      // :: error: (dereference.of.nullable)
+      // :: error: [dereference.of.nullable]
       other.method().toString(); // error
-      // :: error: (dereference.of.nullable)
+      // :: error: [dereference.of.nullable]
       field.toString(); // error
     }
-    // :: error: (dereference.of.nullable)
+    // :: error: [dereference.of.nullable]
     field.toString(); // error
   }
 }

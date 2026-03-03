@@ -51,7 +51,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.MapsP;
 import org.plumelib.util.StringsPlume;
 
 /**
@@ -67,9 +67,8 @@ public class QualifierDefaults {
   // TODO try to remove some dependencies (e.g. on factory)
 
   /**
-   * This field indicates whether or not a default should be applied to type vars located in the
-   * type being defaulted. This should only ever be true when the type variable is a local variable,
-   * non-component use, i.e.
+   * True if a default should be applied to type vars located in the type being defaulted. This
+   * should only ever be true when the type variable is a local variable, non-component use, i.e.
    *
    * <pre>{@code
    * <T> void method(@NOT_HERE T tIn) {
@@ -107,8 +106,7 @@ public class QualifierDefaults {
   private static final int CACHE_SIZE = 300;
 
   /** Mapping from an Element to the bound type. */
-  protected final Map<Element, BoundType> elementToBoundType =
-      CollectionsPlume.createLruCache(CACHE_SIZE);
+  protected final Map<Element, BoundType> elementToBoundType = MapsP.createLruCache(CACHE_SIZE);
 
   /**
    * Defaults that apply for a certain Element. On the one hand this is used for caching (an earlier
@@ -209,7 +207,7 @@ public class QualifierDefaults {
   /**
    * Check that a default with TypeUseLocation OTHERWISE or ALL is specified.
    *
-   * @return whether we found a Default with location OTHERWISE or ALL
+   * @return true if we found a Default with location OTHERWISE or ALL
    */
   public boolean hasDefaultsForCheckedCode() {
     for (Default def : checkedCodeDefaults) {
@@ -578,9 +576,7 @@ public class QualifierDefaults {
       return null;
     }
 
-    if (!atypeFactory.isSupportedQualifier(anno)) {
-      anno = atypeFactory.canonicalAnnotation(anno);
-    }
+    anno = atypeFactory.canonicalAnnotation(anno);
 
     if (atypeFactory.isSupportedQualifier(anno)) {
       TypeUseLocation[] locations =
@@ -715,11 +711,11 @@ public class QualifierDefaults {
   }
 
   /**
-   * Given an element, returns whether the conservative default should be applied for it. Handles
+   * Given an element, returns true if the conservative default should be applied for it. Handles
    * elements from bytecode or source code.
    *
    * @param annotationScope the element that the conservative default might apply to
-   * @return whether the conservative default applies to the given element
+   * @return true if the conservative default applies to the given element
    */
   public boolean applyConservativeDefaults(Element annotationScope) {
     if (annotationScope == null) {

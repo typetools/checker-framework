@@ -149,8 +149,8 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
    * <p>Sets each wildcard type argument's bound from typeArgs to the corresponding type parameter
    * from typeParams.
    *
-   * <p>If typeArgs.size() == 0 the method does nothing and returns. Otherwise, typeArgs.size() has
-   * to be equal to typeParams.size().
+   * <p>If typeArgs.isEmpty() the method does nothing and returns. Otherwise, typeArgs.size() has to
+   * be equal to typeParams.size().
    *
    * <p>For each wildcard type argument and corresponding type parameter, sets the
    * WildcardType.bound field to the corresponding type parameter, if and only if the owners of the
@@ -260,7 +260,7 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
    * @param type type variable used to find declaration tree
    * @param f annotated type factory
    * @return the AnnotatedTypeVariable from the declaration of {@code type} or {@code type} if no
-   *     tree is found.
+   *     tree is found
    */
   private AnnotatedTypeVariable getTypeVariableFromDeclaration(
       AnnotatedTypeVariable type, AnnotatedTypeFactory f) {

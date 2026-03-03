@@ -6,12 +6,12 @@ public class MapMerge {
   public static void main(String[] args) {
     Map<String, String> map = new HashMap<>();
     map.put("k", "v");
-    // :: error: (dereference.of.nullable)
+    // :: error: [dereference.of.nullable]
     map.merge("k", "v", (a, b) -> null).toString();
   }
 
   void foo(Map<String, String> map) {
-    // :: error: (return)
+    // :: error: [return]
     merge(map, "k", "v", (a, b) -> null).toString();
   }
 

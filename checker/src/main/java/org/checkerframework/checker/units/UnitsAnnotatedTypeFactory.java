@@ -123,15 +123,15 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     String aname = AnnotationUtils.annotationName(anno);
 
     // See if we already have a map from this aliased annotation to its corresponding base unit
-    // annotation
-    if (aliasMap.containsKey(aname)) {
-      // if so return it
-      return aliasMap.get(aname);
+    // annotation.
+    AnnotationMirror result = aliasMap.get(aname);
+    if (result != null) {
+      // If so, return it.
+      return result;
     }
 
     boolean built = false;
-    AnnotationMirror result = null;
-    // if not, look for the UnitsMultiple meta annotations of this aliased annotation
+    // If not, look for the UnitsMultiple meta annotations of this aliased annotation.
     for (AnnotationMirror metaAnno : anno.getAnnotationType().asElement().getAnnotationMirrors()) {
       // see if the meta annotation is UnitsMultiple
       if (isUnitsMultiple(metaAnno)) {
@@ -306,7 +306,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
-   * Return the name of the given annotation, if it is meta-annotated with UnitsMultiple; otherwise
+   * Returns the name of the given annotation, if it is meta-annotated with UnitsMultiple; otherwise
    * return null.
    *
    * @param anno the annotation to examine
@@ -619,10 +619,6 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    @SuppressWarnings(
-        "nullness:return" // This class UnitsQualifierHierarchy is annotated for nullness,
-    // but the outer class UnitsAnnotatedTypeFactory is not, so the type of fields is @Nullable.
-    )
     protected AnnotationMirror greatestLowerBoundWithElements(
         AnnotationMirror a1,
         QualifierKind qualifierKind1,
@@ -682,7 +678,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Get the direct super qualifier for the given qualifier kind.
+     * Returns the direct super qualifier for the given qualifier kind.
      *
      * @param qualifierKind qualifier kind
      * @return direct super qualifier kind
@@ -693,7 +689,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return qualifierKind;
       }
       Set<QualifierKind> superQuals = new TreeSet<>(qualifierKind.getStrictSuperTypes());
-      while (superQuals.size() > 0) {
+      while (!superQuals.isEmpty()) {
         Set<QualifierKind> lowest = findLowestQualifiers(superQuals);
         if (lowest.size() == 1) {
           return lowest.iterator().next();

@@ -19,7 +19,7 @@ import org.plumelib.util.StringsPlume;
 public class ConditionalTransferResult<V extends AbstractValue<V>, S extends Store<S>>
     extends TransferResult<V, S> {
 
-  /** Whether the store changed. */
+  /** True if the store changed. */
   private final boolean storeChanged;
 
   /** The 'then' result store. */
@@ -44,7 +44,7 @@ public class ConditionalTransferResult<V extends AbstractValue<V>, S extends Sto
    * @param value the abstract value produced by the transfer function
    * @param thenStore 'then' result store
    * @param elseStore 'else' result store
-   * @param storeChanged whether the store changed
+   * @param storeChanged true if the store changed
    * @see #ConditionalTransferResult(AbstractValue, Store, Store, Map, boolean)
    */
   public ConditionalTransferResult(
@@ -100,7 +100,7 @@ public class ConditionalTransferResult<V extends AbstractValue<V>, S extends Sto
    * @param thenStore {@link #thenStore}
    * @param elseStore {@link #elseStore}
    * @param exceptionalStores {@link #exceptionalStores}
-   * @param storeChanged whether the store changed; see {@link
+   * @param storeChanged true if the store changed; see {@link
    *     org.checkerframework.dataflow.analysis.TransferResult#storeChanged}.
    */
   public ConditionalTransferResult(

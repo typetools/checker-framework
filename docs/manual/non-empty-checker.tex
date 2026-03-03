@@ -71,7 +71,7 @@ apply to the annotated method itself rather than to some particular type.
 
 \item[\refqualclass{checker/nonempty/qual}{RequiresNonEmpty}]
   indicates a method precondition.  The annotated method expects the
-  specified expresssion to be non-empty when the
+  specified expression to be non-empty when the
   method is invoked.  You could write \<@RequiresNonEmpty($f$)> when field
   \<$f$> is sometimes empty, but the annotated method requires
   \<$f$> to be non-empty.
@@ -149,7 +149,7 @@ array bounds and indices and warns about potential
 \<IndexOutOfBoundsException>s.
 
 The Non-Empty Checker does \emph{not} provide guarantees about proper use
-of \<Optional>, even though misuse can lead to the same execption,
+of \<Optional>, even though misuse can lead to the same exception,
 \<NoSuchElementException>.  Use the Optional Checker
 (\chapterpageref{optional-checker}) instead.
 

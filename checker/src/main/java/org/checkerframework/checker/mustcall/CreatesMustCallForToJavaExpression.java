@@ -11,9 +11,9 @@ import org.checkerframework.checker.mustcall.qual.CreatesMustCallFor;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.JavaExpressionParseException;
 import org.checkerframework.dataflow.expression.Unknown;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
-import org.checkerframework.framework.util.JavaExpressionParseUtil;
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -105,7 +105,7 @@ public class CreatesMustCallForToJavaExpression {
   }
 
   /**
-   * Returns the {@code CreatesMustCallFor} annotations on a method
+   * Returns the {@code CreatesMustCallFor} annotations on a method.
    *
    * @param method the method
    * @param atypeFactory the type factory to use for looking up annotations
@@ -172,7 +172,7 @@ public class CreatesMustCallForToJavaExpression {
         issueUnparseableError(tree, methodName, atypeFactory, targetStrWithoutAdaptation);
         return null;
       }
-    } catch (JavaExpressionParseUtil.JavaExpressionParseException e) {
+    } catch (JavaExpressionParseException e) {
       issueUnparseableError(tree, methodName, atypeFactory, targetStrWithoutAdaptation);
       return null;
     }

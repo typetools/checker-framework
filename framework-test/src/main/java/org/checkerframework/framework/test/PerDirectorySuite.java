@@ -35,7 +35,7 @@ import org.junit.runners.model.TestClass;
  */
 public class PerDirectorySuite extends RootedSuite {
 
-  /** Name */
+  /** Name. */
   @Retention(RetentionPolicy.RUNTIME)
   @Target(ElementType.METHOD)
   public @interface Name {}

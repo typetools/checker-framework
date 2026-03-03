@@ -607,7 +607,7 @@ public class InvocationTypeInference {
    *
    * @param expressionTree expression tree
    * @param formalParameterType the formal parameter type of the method invocation
-   * @return whether {@code expressionTree} is pertinent to applicability
+   * @return true if {@code expressionTree} is pertinent to applicability
    */
   private boolean notPertinentToApplicability(
       ExpressionTree expressionTree, AbstractType formalParameterType) {

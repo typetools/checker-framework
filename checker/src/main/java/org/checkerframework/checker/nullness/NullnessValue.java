@@ -16,7 +16,7 @@ import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * Behaves just like {@link CFValue}, but additionally tracks whether at this point {@link PolyNull}
- * is known to be {@link NonNull} or {@link Nullable} (or not known to be either)
+ * is known to be {@link NonNull} or {@link Nullable} (or not known to be either).
  */
 public class NullnessValue extends CFAbstractValue<NullnessValue> {
 
