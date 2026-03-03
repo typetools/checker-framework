@@ -14,7 +14,7 @@ public class EnsuresCalledMethodsIfSubclass {
   public static class SubclassWrong extends Parent {
     @Override
     public boolean method(Closeable x) throws IOException {
-      // ::error: (contracts.conditional.postcondition)
+      // ::error: [contracts.conditional.postcondition]
       return true;
     }
   }

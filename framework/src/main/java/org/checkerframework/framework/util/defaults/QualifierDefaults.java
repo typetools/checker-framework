@@ -576,9 +576,7 @@ public class QualifierDefaults {
       return null;
     }
 
-    if (!atypeFactory.isSupportedQualifier(anno)) {
-      anno = atypeFactory.canonicalAnnotation(anno);
-    }
+    anno = atypeFactory.canonicalAnnotation(anno);
 
     if (atypeFactory.isSupportedQualifier(anno)) {
       TypeUseLocation[] locations =

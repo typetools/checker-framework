@@ -12,7 +12,6 @@ import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
-import com.sun.source.tree.InstanceOfTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree.BodyKind;
 import com.sun.source.tree.LiteralTree;
@@ -99,12 +98,9 @@ import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.dataflow.qual.Pure;
-import org.checkerframework.javacutil.TreeUtilsAfterJava11.BindingPatternUtils;
 import org.checkerframework.javacutil.TreeUtilsAfterJava11.CaseUtils;
-import org.checkerframework.javacutil.TreeUtilsAfterJava11.InstanceOfUtils;
 import org.checkerframework.javacutil.TreeUtilsAfterJava11.JCVariableDeclUtils;
 import org.checkerframework.javacutil.TreeUtilsAfterJava11.SwitchExpressionUtils;
-import org.checkerframework.javacutil.TreeUtilsAfterJava11.YieldUtils;
 import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.UniqueIdMap;
 
@@ -1936,19 +1932,6 @@ public final class TreeUtils {
   }
 
   /**
-   * Determines the symbol for a constructor given an invocation via {@code new}.
-   *
-   * @see #elementFromUse(NewClassTree)
-   * @param tree the constructor invocation
-   * @return the {@link ExecutableElement} corresponding to the constructor call in {@code tree}
-   * @deprecated use elementFromUse instead
-   */
-  @Deprecated // 2022-09-12
-  public static ExecutableElement constructor(NewClassTree tree) {
-    return (ExecutableElement) ((JCNewClass) tree).constructor;
-  }
-
-  /**
    * The type of the lambda or method reference tree is a functional interface type. This method
    * returns the single abstract method declared by that functional interface. (The type of this
    * method is referred to as the function type.)
@@ -2352,59 +2335,6 @@ public final class TreeUtils {
   }
 
   /**
-   * Returns true if this is the default case for a switch statement or expression. (Also, returns
-   * true if {@code caseTree} is {@code case null, default:}.)
-   *
-   * @param caseTree a case tree
-   * @return true if {@code caseTree} is the default case for a switch statement or expression
-   * @deprecated use {@link CaseUtils#isDefaultCaseTree(CaseTree)}
-   */
-  @Deprecated // 2023-09-26
-  public static boolean isDefaultCaseTree(CaseTree caseTree) {
-    return CaseUtils.isDefaultCaseTree(caseTree);
-  }
-
-  /**
-   * Returns true if this is a case rule (as opposed to a case statement).
-   *
-   * @param caseTree a case tree
-   * @return true if {@code caseTree} is a case rule
-   * @deprecated use {@link CaseUtils#isCaseRule(CaseTree)}
-   */
-  @Deprecated // 2023-09-26
-  public static boolean isCaseRule(CaseTree caseTree) {
-    return CaseUtils.isCaseRule(caseTree);
-  }
-
-  /**
-   * Returns the list of expressions from a case expression. For the default case, this is empty.
-   * Otherwise, in JDK 11 and earlier, this is a singleton list. In JDK 12 onwards, there can be
-   * multiple expressions per case.
-   *
-   * @param caseTree the case expression to get the expressions from
-   * @return the list of expressions in the case
-   * @deprecated use {@link CaseUtils#getExpressions(CaseTree)}
-   */
-  @Deprecated // 2023-09-26
-  public static List<? extends ExpressionTree> caseTreeGetExpressions(CaseTree caseTree) {
-    return CaseUtils.getExpressions(caseTree);
-  }
-
-  /**
-   * Returns the body of the case statement if it is of the form {@code case <expression> ->
-   * <expression>}. This method should only be called if {@link CaseTree#getStatements()} returns
-   * null.
-   *
-   * @param caseTree the case expression to get the body from
-   * @return the body of the case tree
-   * @deprecated use {@link CaseUtils#getBody(CaseTree)}
-   */
-  @Deprecated // 2023-09-26
-  public static @Nullable Tree caseTreeGetBody(CaseTree caseTree) {
-    return CaseUtils.getBody(caseTree);
-  }
-
-  /**
    * Returns true if {@code tree} is a {@code BindingPatternTree}.
    *
    * @param tree a tree to check
@@ -2415,18 +2345,6 @@ public final class TreeUtils {
   }
 
   /**
-   * Returns the binding variable of {@code bindingPatternTree}.
-   *
-   * @param bindingPatternTree the BindingPatternTree whose binding variable is returned
-   * @return the binding variable of {@code bindingPatternTree}
-   * @deprecated use {@link BindingPatternUtils#getVariable(Tree)}
-   */
-  @Deprecated // 2023-09-26
-  public static VariableTree bindingPatternTreeGetVariable(Tree bindingPatternTree) {
-    return BindingPatternUtils.getVariable(bindingPatternTree);
-  }
-
-  /**
    * Returns true if {@code tree} is a {@code DeconstructionPatternTree}.
    *
    * @param tree a tree to check
@@ -2434,53 +2352,6 @@ public final class TreeUtils {
    */
   public static boolean isDeconstructionPatternTree(Tree tree) {
     return tree.getKind().name().contentEquals("DECONSTRUCTION_PATTERN");
-  }
-
-  /**
-   * Returns the pattern of {@code instanceOfTree} tree. Returns null if the instanceof does not
-   * have a pattern, including if the JDK version does not support instance-of patterns.
-   *
-   * @param instanceOfTree the {@link InstanceOfTree} whose pattern is returned
-   * @return the {@code PatternTree} of {@code instanceOfTree} or null if it doesn't exist
-   * @deprecated use {@link InstanceOfUtils#getPattern(InstanceOfTree)}
-   */
-  @Deprecated // 2023-09-26
-  public static @Nullable Tree instanceOfTreeGetPattern(InstanceOfTree instanceOfTree) {
-    return InstanceOfUtils.getPattern(instanceOfTree);
-  }
-
-  /**
-   * Returns the selector expression of {@code switchExpressionTree}. For example
-   *
-   * <pre>
-   *   switch ( <em>expression</em> ) { ... }
-   * </pre>
-   *
-   * @param switchExpressionTree the switch expression whose selector expression is returned
-   * @return the selector expression of {@code switchExpressionTree}
-   * @deprecated use {@link SwitchExpressionUtils#getExpression(Tree)}
-   */
-  @Deprecated // 2023-09-26
-  public static ExpressionTree switchExpressionTreeGetExpression(Tree switchExpressionTree) {
-    return SwitchExpressionUtils.getExpression(switchExpressionTree);
-  }
-
-  /**
-   * Returns the cases of {@code switchExpressionTree}. For example
-   *
-   * <pre>
-   *   switch ( <em>expression</em> ) {
-   *     <em>cases</em>
-   *   }
-   * </pre>
-   *
-   * @param switchExpressionTree the switch expression whose cases are returned
-   * @return the cases of {@code switchExpressionTree}
-   * @deprecated use {@link SwitchExpressionUtils#getCases(Tree)}
-   */
-  @Deprecated // 2023-09-26
-  public static List<? extends CaseTree> switchExpressionTreeGetCases(Tree switchExpressionTree) {
-    return SwitchExpressionUtils.getCases(switchExpressionTree);
   }
 
   /**
@@ -2569,18 +2440,6 @@ public final class TreeUtils {
     }
 
     return false;
-  }
-
-  /**
-   * Returns the value (expression) for {@code yieldTree}.
-   *
-   * @param yieldTree the yield tree
-   * @return the value (expression) for {@code yieldTree}
-   * @deprecated use {@link YieldUtils#getValue(Tree)}
-   */
-  @Deprecated // 2023-09-26
-  public static ExpressionTree yieldTreeGetValue(Tree yieldTree) {
-    return YieldUtils.getValue(yieldTree);
   }
 
   /**

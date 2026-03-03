@@ -8,13 +8,13 @@ public class InheritQualifierParameter {}
 
 class SubHasQualifierParameter extends InheritQualifierParameter {
   void test(@Untainted SubHasQualifierParameter arg) {
-    // :: error: (assignment)
+    // :: error: [assignment]
     @Tainted SubHasQualifierParameter local = arg;
   }
 }
 
 @NoQualifierParameter(Tainted.class)
-// :: error: (conflicting.qual.param)
+// :: error: [conflicting.qual.param]
 class SubHasQualifierParameter1 extends InheritQualifierParameter {}
 
 @NoQualifierParameter(Tainted.class)
@@ -27,5 +27,5 @@ class SubNoQualifierParameter extends InheritNoQualifierParameter {
 }
 
 @HasQualifierParameter(Tainted.class)
-// :: error: (conflicting.qual.param)
+// :: error: [conflicting.qual.param]
 @Tainted class SubNoQualifierParameter1 extends InheritNoQualifierParameter {}

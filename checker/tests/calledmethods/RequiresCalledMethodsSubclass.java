@@ -8,7 +8,7 @@ public class RequiresCalledMethodsSubclass {
     public void method(Closeable x) throws IOException {}
 
     public void caller(Closeable x) throws IOException {
-      // ::error: (contracts.precondition)
+      // ::error: [contracts.precondition]
       method(x);
     }
   }
