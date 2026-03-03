@@ -133,6 +133,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
    *
    * @param checker the checker associated with this type factory
    */
+  @SuppressWarnings("this-escape")
   public MustCallAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     TOP = AnnotationBuilder.fromClass(elements, MustCallUnknown.class);
@@ -149,8 +150,8 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   }
 
   @Override
-  public void setRoot(@Nullable CompilationUnitTree root) {
-    super.setRoot(root);
+  public void setRoot(@Nullable CompilationUnitTree newRoot) {
+    super.setRoot(newRoot);
     // TODO: This should probably be guarded by isSafeToClearSharedCFG from
     // GenericAnnotatedTypeFactory, but this works here because we know the Must Call Checker is
     // always the first subchecker that's sharing tempvars.
@@ -346,6 +347,15 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     return mustCallValueElement;
   }
 
+  /**
+   * Returns the {@link InheritableMustCall#value} element.
+   *
+   * @return the {@link InheritableMustCall#value} element
+   */
+  public ExecutableElement getInheritableMustCallValueElement() {
+    return inheritableMustCallValueElement;
+  }
+
   /** Support @InheritableMustCall meaning @MustCall on all subtype elements. */
   private class MustCallDefaultQualifierForUseTypeAnnotator
       extends DefaultQualifierForUseTypeAnnotator {
@@ -444,19 +454,21 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   }
 
   /**
-   * Fetches the store from the results of dataflow for {@code first}. If {@code afterFirstStore} is
-   * true, then the store after {@code first} is returned; if {@code afterFirstStore} is false, the
-   * store before {@code succ} is returned.
+   * Fetches the store from the results of dataflow for {@code firstBlock}. If {@code
+   * afterFirstStore} is true, then the store after {@code firstBlock} is returned; if {@code
+   * afterFirstStore} is false, the store before {@code succBlock} is returned.
    *
-   * @param afterFirstStore whether to use the store after the first block or the store before its
-   *     successor, succ
-   * @param first a block
-   * @param succ first's successor
+   * @param afterFirstStore if true, use the store after {@code firstBlock}; if false, use the store
+   *     before its successor, {@code succBlock}
+   * @param firstBlock a CFG block
+   * @param succBlock {@code firstBlock}'s successor
    * @return the appropriate CFStore, populated with MustCall annotations, from the results of
    *     running dataflow
    */
-  public CFStore getStoreForBlock(boolean afterFirstStore, Block first, Block succ) {
-    return afterFirstStore ? flowResult.getStoreAfter(first) : flowResult.getStoreBefore(succ);
+  public CFStore getStoreForBlock(boolean afterFirstStore, Block firstBlock, Block succBlock) {
+    return afterFirstStore
+        ? flowResult.getStoreAfter(firstBlock)
+        : flowResult.getStoreBefore(succBlock);
   }
 
   /**
@@ -525,7 +537,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   }
 
   /**
-   * Return the temporary variable for node, if it exists. See {@code #tempVars}.
+   * Returns the temporary variable for node, if it exists. See {@code #tempVars}.
    *
    * @param node a CFG node
    * @return the corresponding temporary variable, or null if there is not one

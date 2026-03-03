@@ -71,12 +71,11 @@ public class IndexOfNonNegative<E extends Object> extends AbstractSet<E> {
   @Override
   public void clear() {}
 
-  ///////////////////////////////////////////////////////////////////////////
-
+  // ///////////////////////////////////////////////////////////////////////////
   // iterators
 
   @Override
-  // :: error: (override.receiver)
+  // :: error: [override.receiver]
   public @PolyNonEmpty Iterator<E> iterator(@PolyNonEmpty IndexOfNonNegative<E> this) {
     throw new Error("");
   }

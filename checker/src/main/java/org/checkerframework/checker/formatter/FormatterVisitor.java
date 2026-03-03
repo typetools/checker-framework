@@ -42,7 +42,7 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
   }
 
   @Override
-  public void processMethodTree(MethodTree tree) {
+  public void processMethodTree(String className, MethodTree tree) {
     ExecutableElement methodElement = TreeUtils.elementFromDeclaration(tree);
     if (atypeFactory.getDeclAnnotation(methodElement, FormatMethod.class) != null) {
       int formatStringIndex = FormatterVisitor.formatStringIndex(methodElement);
@@ -50,7 +50,7 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
         checker.reportError(tree, "format.method", methodElement.getSimpleName());
       }
     }
-    super.processMethodTree(tree);
+    super.processMethodTree(className, tree);
   }
 
   @Override
@@ -127,10 +127,10 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
             if (!isWrappedFormatCall(fc, enclosingMethod)) {
               ftu.warning(invc, "format.indirect.arguments");
             }
-            // TODO:  If it is explict array construction, such as "new Object[] {
-            // ... }", then we could treat it like the VARARGS case, analyzing each
-            // argument.  "new array" is probably rare, in the varargs position.
-            // fall through
+          // TODO:  If it is explict array construction, such as "new Object[] {
+          // ... }", then we could treat it like the VARARGS case, analyzing each
+          // argument.  "new array" is probably rare, in the varargs position.
+          // fall through
           case NULLARRAY:
             for (ConversionCategory cat : formatCats) {
               if (cat == ConversionCategory.NULL) {
@@ -223,7 +223,7 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
     }
     while (paramIndex < params.size()) {
       ExpressionTree argTree = args.get(callIndex);
-      if (argTree.getKind() != Tree.Kind.IDENTIFIER) {
+      if (!(argTree instanceof IdentifierTree)) {
         return false;
       }
       VariableTree param = params.get(paramIndex);

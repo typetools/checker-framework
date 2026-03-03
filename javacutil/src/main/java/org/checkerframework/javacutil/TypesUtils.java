@@ -59,7 +59,7 @@ public final class TypesUtils {
     throw new AssertionError("Class TypesUtils cannot be instantiated.");
   }
 
-  /// Creating types
+  // Creating types
 
   /**
    * Returns the {@link TypeMirror} for a given {@link Class}.
@@ -102,7 +102,7 @@ public final class TypesUtils {
     return t.getArrayType(componentType);
   }
 
-  /// Creating a Class<?>
+  // Creating a Class<?>
 
   /**
    * Returns the {@link Class} for a given {@link TypeMirror}. Returns {@code Object.class} if it
@@ -157,7 +157,7 @@ public final class TypesUtils {
     }
   }
 
-  /// Getters
+  // Getters
 
   /**
    * Gets the fully qualified name for a provided type. It returns an empty name if type is an
@@ -268,7 +268,7 @@ public final class TypesUtils {
     return result;
   }
 
-  /// Equality
+  // Equality
 
   /**
    * Returns true iff the arguments are both the same declared types.
@@ -277,7 +277,7 @@ public final class TypesUtils {
    *
    * @param t1 the first type to test
    * @param t2 the second type to test
-   * @return whether the arguments are the same declared types
+   * @return true if the arguments are the same declared types
    */
   public static boolean areSameDeclaredTypes(Type.ClassType t1, Type.ClassType t2) {
     // Do a cheaper test first
@@ -292,7 +292,7 @@ public final class TypesUtils {
    *
    * @param left a type
    * @param right a type
-   * @return whether the arguments are the same primitive type
+   * @return true if the arguments are the same primitive type
    */
   public static boolean areSamePrimitiveTypes(TypeMirror left, TypeMirror right) {
     if (!isPrimitive(left) || !isPrimitive(right)) {
@@ -302,7 +302,7 @@ public final class TypesUtils {
     return (left.getKind() == right.getKind());
   }
 
-  /// Predicates
+  // Predicates
 
   /**
    * Checks if the type represents a java.lang.Object declared type.
@@ -374,7 +374,7 @@ public final class TypesUtils {
    *
    * @param type the type
    * @param qualifiedNames fully-qualified type names to check for
-   * @return type iff type represents a declared type whose fully-qualified name is one of the given
+   * @return true iff type represents a declared type whose fully-qualified name is one of the given
    *     names
    */
   public static boolean isDeclaredOfName(TypeMirror type, Collection<String> qualifiedNames) {
@@ -406,7 +406,7 @@ public final class TypesUtils {
   }
 
   /**
-   * Return true if this is an immutable type in the JDK.
+   * Returns true if this is an immutable type in the JDK.
    *
    * <p>This does not use immutability annotations and always returns false for user-defined
    * classes.
@@ -438,7 +438,7 @@ public final class TypesUtils {
   /**
    * Returns true iff the argument is an anonymous type.
    *
-   * @return whether the argument is an anonymous type
+   * @return true if the argument is an anonymous type
    */
   public static boolean isAnonymous(TypeMirror type) {
     return (type instanceof DeclaredType)
@@ -450,7 +450,7 @@ public final class TypesUtils {
    * Returns true iff the argument is a primitive type.
    *
    * @param type a type
-   * @return whether the argument is a primitive type
+   * @return true if the argument is a primitive type
    */
   public static boolean isPrimitive(TypeMirror type) {
     switch (type.getKind()) {
@@ -539,33 +539,14 @@ public final class TypesUtils {
    * Returns true iff the argument is an integral primitive type.
    *
    * @param type a type
-   * @return whether the argument is an integral primitive type
+   * @return true if the argument is an integral primitive type
    */
   public static boolean isIntegralPrimitive(TypeMirror type) {
-    return isIntegralPrimitive(type.getKind());
+    return TypeKindUtils.isIntegral(type.getKind());
   }
 
   /**
-   * Returns true iff the argument is an integral primitive type.
-   *
-   * @param typeKind a type kind
-   * @return whether the argument is an integral primitive type
-   */
-  public static boolean isIntegralPrimitive(TypeKind typeKind) {
-    switch (typeKind) {
-      case BYTE:
-      case CHAR:
-      case INT:
-      case LONG:
-      case SHORT:
-        return true;
-      default:
-        return false;
-    }
-  }
-
-  /**
-   * Return true if the argument TypeMirror is a (possibly boxed) integral type.
+   * Returns true if the argument TypeMirror is a (possibly boxed) integral type.
    *
    * @param type the type to inspect
    * @return true if type is an integral type
@@ -573,6 +554,28 @@ public final class TypesUtils {
   public static boolean isIntegralPrimitiveOrBoxed(TypeMirror type) {
     TypeKind kind = TypeKindUtils.primitiveOrBoxedToTypeKind(type);
     return kind != null && TypeKindUtils.isIntegral(kind);
+  }
+
+  /**
+   * Returns true iff the argument is an integral primitive type.
+   *
+   * @param type a type
+   * @return true if the argument is an integral primitive type
+   */
+  public static boolean isIntegralNumericPrimitive(TypeMirror type) {
+    return TypeKindUtils.isIntegralNumeric(type.getKind());
+  }
+
+  /**
+   * Returns true if the argument TypeMirror is a (possibly boxed) integral type, excluding char and
+   * Character which do not print as numbers.
+   *
+   * @param type the type to inspect
+   * @return true if type is an integral numeric type
+   */
+  public static boolean isIntegralNumericOrBoxed(TypeMirror type) {
+    TypeKind kind = TypeKindUtils.primitiveOrBoxedToTypeKind(type);
+    return kind != null && TypeKindUtils.isIntegralNumeric(kind);
   }
 
   /**
@@ -616,7 +619,7 @@ public final class TypesUtils {
    * Returns true iff the argument is a boxed floating point type.
    *
    * @param type type to test
-   * @return whether the argument is a boxed floating point type
+   * @return true if the argument is a boxed floating point type
    */
   public static boolean isBoxedFloating(TypeMirror type) {
     if (type.getKind() != TypeKind.DECLARED) {
@@ -631,7 +634,7 @@ public final class TypesUtils {
    * Returns true iff the argument is a primitive floating point type.
    *
    * @param type type mirror
-   * @return whether the argument is a primitive floating point type
+   * @return true if the argument is a primitive floating point type
    */
   public static boolean isFloatingPrimitive(TypeMirror type) {
     switch (type.getKind()) {
@@ -644,7 +647,7 @@ public final class TypesUtils {
   }
 
   /**
-   * Return true if the argument TypeMirror is a (possibly boxed) floating point type.
+   * Returns true if the argument TypeMirror is a (possibly boxed) floating point type.
    *
    * @param type the type to inspect
    * @return true if type is a floating point type
@@ -655,7 +658,7 @@ public final class TypesUtils {
   }
 
   /**
-   * Returns whether a TypeMirror represents a class type.
+   * Returns true if a TypeMirror represents a class type.
    *
    * @param type a type that might be a class type
    * @return true if {@code} is a class type
@@ -665,11 +668,11 @@ public final class TypesUtils {
   }
 
   /**
-   * Returns whether or not {@code type} is a functional interface type (as defined in JLS 9.8).
+   * Returns true if {@code type} is a functional interface type (as defined in JLS 9.8).
    *
    * @param type possible functional interface type
    * @param env the processing environment
-   * @return whether or not {@code type} is a functional interface type (as defined in JLS 9.8)
+   * @return true if {@code type} is a functional interface type (as defined in JLS 9.8)
    */
   public static boolean isFunctionalInterface(TypeMirror type, ProcessingEnvironment env) {
     Context ctx = ((JavacProcessingEnvironment) env).getContext();
@@ -713,7 +716,7 @@ public final class TypesUtils {
     return e.getKind() != TypeKind.NONE;
   }
 
-  /// Type variables and wildcards
+  // Type variables and wildcards
 
   /**
    * If the argument is a bounded TypeVariable or WildcardType, return its non-variable,
@@ -747,8 +750,8 @@ public final class TypesUtils {
   }
 
   /**
-   * Get the type parameter for this wildcard from the underlying type's bound field. This field is
-   * sometimes null, in that case this method will return null.
+   * Returns the type parameter for this wildcard from the underlying type's bound field. This field
+   * is sometimes null, in that case this method will return null.
    *
    * @param wildcard wildcard type
    * @return the TypeParameterElement the wildcard is an argument to, {@code null} otherwise
@@ -758,8 +761,8 @@ public final class TypesUtils {
   }
 
   /**
-   * Get the type parameter for this wildcard from the underlying type's bound field. This field is
-   * sometimes null, in that case this method will return null.
+   * Returns the type parameter for this wildcard from the underlying type's bound field. This field
+   * is sometimes null, in that case this method will return null.
    *
    * @param wildcard wildcard type
    * @return the TypeParameterElement the wildcard is an argument to, {@code null} otherwise
@@ -977,7 +980,7 @@ public final class TypesUtils {
     return null;
   }
 
-  /// Least upper bound and greatest lower bound
+  // Least upper bound and greatest lower bound
 
   /**
    * Returns the least upper bound of two {@link TypeMirror}s, ignoring any annotations on the
@@ -1146,7 +1149,7 @@ public final class TypesUtils {
     return com.sun.tools.javac.util.List.from(typeList);
   }
 
-  /// Substitutions
+  // Substitutions
 
   /**
    * Returns the return type of a method, given the receiver of the method call.
@@ -1417,10 +1420,10 @@ public final class TypesUtils {
   }
 
   /**
-   * Return whether or not {@code type} is raw.
+   * Returns true if {@code type} is raw.
    *
    * @param type the type to check
-   * @return whether or not {@code type} is raw
+   * @return true if {@code type} is raw
    */
   public static boolean isRaw(TypeMirror type) {
     if (type.getKind() != TypeKind.DECLARED) {
@@ -1468,7 +1471,7 @@ public final class TypesUtils {
   }
 
   /**
-   * Return true if {@code typeMirror} is a declared type that has at least one wildcard as a type
+   * Returns true if {@code typeMirror} is a declared type that has at least one wildcard as a type
    * argument.
    *
    * @param typeMirror type to check

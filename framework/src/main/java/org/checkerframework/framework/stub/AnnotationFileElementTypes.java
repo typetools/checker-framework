@@ -64,8 +64,7 @@ public class AnnotationFileElementTypes {
   private final AnnotationFileAnnotations annotationFileAnnos;
 
   /**
-   * Whether or not a file is currently being parsed. (If one is being parsed, don't try to parse
-   * another.)
+   * True if a file is currently being parsed. (If one is being parsed, don't try to parse another.)
    */
   private boolean parsing;
 
@@ -142,7 +141,7 @@ public class AnnotationFileElementTypes {
    *   <li>jdk.astub in the same directory as the checker, if it exists and ignorejdkastub option is
    *       not supplied
    *   <li>If parsing annotated JDK as stub files, all package-info.java files under the jdk/
-   *       directory
+   *       directory. (The JDK source code files will be parsed later, on demand.)
    *   <li>Stub files listed in @StubFiles annotation on the checker; must be in same directory as
    *       the checker
    *   <li>Stub files returned by {@link BaseTypeChecker#getExtraStubFiles} (treated like those
@@ -452,9 +451,13 @@ public class AnnotationFileElementTypes {
   public @Nullable AnnotationMirrorSet getDeclAnnotations(Element elt) {
     if (stubDebug) {
       if (isParsing()) {
-        System.out.printf("AFET.getDeclAnnotations(%s [%s])%n", elt, elt.getClass());
+        System.out.printf(
+            "AFET.getDeclAnnotations(%s [%s]): isParsing() => true, returning emptySet.%n",
+            elt, elt.getClass());
       } else {
-        System.out.printf("AFET.getDeclAnnotations(%s [%s]) IS NOT PARSING%n", elt, elt.getClass());
+        System.out.printf(
+            "AFET.getDeclAnnotations(%s [%s]): isParsing() => false, proceeding.%n",
+            elt, elt.getClass());
       }
     }
 
@@ -660,9 +663,9 @@ public class AnnotationFileElementTypes {
         fakeReceiverType, candidates, applicableClasses, applicableInterfaces);
   }
 
-  ///
-  /// End of public methods, private helper methods follow
-  ///
+  //
+  // End of public methods, private helper methods follow
+  //
 
   /**
    * Parses the outermost enclosing class of {@code e} if it is in the annotated JDK and it has not
@@ -781,9 +784,9 @@ public class AnnotationFileElementTypes {
   }
 
   /**
-   * Returns a JarURLConnection to "/jdk*".
+   * Returns a JarURLConnection to "/annotated-jdk".
    *
-   * @return a JarURLConnection to "/jdk*"
+   * @return a JarURLConnection to "/annotated-jdk"
    */
   private JarURLConnection getJarURLConnectionToJdk() {
     URL resourceURL = factory.getClass().getResource("/annotated-jdk");
@@ -804,7 +807,7 @@ public class AnnotationFileElementTypes {
 
   /**
    * Walk through the JDK directory and create a mapping, {@link #remainingJdkStubFiles}, from file
-   * name to the class contained with in it. Also, parses all package-info.java files.
+   * name to the class contained within it. Also, parses all {@code package-info.java} files.
    */
   private void prepJdkStubs() {
     if (!shouldParseJdk) {
@@ -834,7 +837,7 @@ public class AnnotationFileElementTypes {
 
   /**
    * Walk through the JDK directory and create a mapping, {@link #remainingJdkStubFiles}, from file
-   * name to the class contained with in it. Also, parses all package-info.java files.
+   * name to the class contained within it. Also, parses all {@code package-info.java} files.
    *
    * @param jdkDirectory the URL pointing to the JDK directory
    */
@@ -889,7 +892,7 @@ public class AnnotationFileElementTypes {
 
   /**
    * Walk through the JDK directory and create a mapping, {@link #remainingJdkStubFilesJar}, from
-   * file name to the class contained with in it. Also, parses all package-info.java files.
+   * file name to the class contained within it. Also, parses all {@code package-info.java} files.
    *
    * @param jdkJarfile the URL pointing to the JDK jarfile
    */

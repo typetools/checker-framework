@@ -25,7 +25,7 @@ import org.checkerframework.checker.calledmethods.qual.CalledMethodsBottom;
 import org.checkerframework.checker.calledmethods.qual.CalledMethodsPredicate;
 import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;
 import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethodsOnException;
-import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethodsVarArgs;
+import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethodsVarargs;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.accumulation.AccumulationAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -57,7 +57,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
   private final Collection<BuilderFrameworkSupport> builderFrameworkSupports;
 
   /**
-   * Whether to use the Value Checker as a subchecker to reduce false positives when analyzing calls
+   * If true, use the Value Checker as a subchecker to reduce false positives when analyzing calls
    * to the AWS SDK. Defaults to false. Controlled by the command-line option {@code
    * -AuseValueChecker}.
    */
@@ -67,6 +67,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
    * The {@link java.util.Collections#singletonList} method. It is treated specially by {@link
    * #adjustMethodNameUsingValueChecker}.
    */
+  @SuppressWarnings("this-escape")
   private final ExecutableElement collectionsSingletonList =
       TreeUtils.getMethod("java.util.Collections", "singletonList", 1, getProcessingEnv());
 
@@ -74,9 +75,9 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
   /*package-private*/ final ExecutableElement calledMethodsValueElement =
       TreeUtils.getMethod(CalledMethods.class, "value", 0, processingEnv);
 
-  /** The {@link EnsuresCalledMethodsVarArgs#value} element/argument. */
-  /*package-private*/ final ExecutableElement ensuresCalledMethodsVarArgsValueElement =
-      TreeUtils.getMethod(EnsuresCalledMethodsVarArgs.class, "value", 0, processingEnv);
+  /** The {@link EnsuresCalledMethodsVarargs#value} element/argument. */
+  /*package-private*/ final ExecutableElement ensuresCalledMethodsVarargsValueElement =
+      TreeUtils.getMethod(EnsuresCalledMethodsVarargs.class, "value", 0, processingEnv);
 
   /** The {@link EnsuresCalledMethodsOnException#value} element/argument. */
   /*package-private*/ final ExecutableElement ensuresCalledMethodsOnExceptionValueElement =
@@ -95,6 +96,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
    *
    * @param checker the checker
    */
+  @SuppressWarnings("this-escape")
   public CalledMethodsAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker, CalledMethods.class, CalledMethodsBottom.class, CalledMethodsPredicate.class);
 
@@ -239,12 +241,12 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
   // This cannot return a Name because filterKindToMethodName cannot.
   private @Nullable String filterTreeToMethodName(
       Tree filterTree, ValueAnnotatedTypeFactory valueATF) {
-    while (filterTree != null && filterTree.getKind() == Tree.Kind.METHOD_INVOCATION) {
+    while (filterTree != null && filterTree instanceof MethodInvocationTree) {
 
       MethodInvocationTree filterTreeAsMethodInvocation = (MethodInvocationTree) filterTree;
       String filterMethodName = TreeUtils.methodName(filterTreeAsMethodInvocation).toString();
       if (filterMethodName.contentEquals("withName")
-          && filterTreeAsMethodInvocation.getArguments().size() >= 1) {
+          && !filterTreeAsMethodInvocation.getArguments().isEmpty()) {
         Tree withNameArgTree = filterTreeAsMethodInvocation.getArguments().get(0);
         String withNameArg = ValueCheckerUtils.getExactStringValue(withNameArgTree, valueATF);
         return filterKindToMethodName(withNameArg);
@@ -258,7 +260,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
     if (filterTree == null) {
       return null;
     }
-    if (filterTree.getKind() == Tree.Kind.NEW_CLASS) {
+    if (filterTree instanceof NewClassTree) {
       ExpressionTree constructorArg = ((NewClassTree) filterTree).getArguments().get(0);
       String filterKindName = ValueCheckerUtils.getExactStringValue(constructorArg, valueATF);
       if (filterKindName != null) {
@@ -293,7 +295,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
    * At a fluent method call (which returns {@code this}), add the method to the type of the return
    * value.
    */
-  private class CalledMethodsTreeAnnotator extends AccumulationTreeAnnotator {
+  private class CalledMethodsTreeAnnotator extends TreeAnnotator {
     /**
      * Creates an instance of this tree annotator for the given type factory.
      *
@@ -338,7 +340,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
   private class CalledMethodsTypeAnnotator extends TypeAnnotator {
 
     /**
-     * Constructor matching super.
+     * Creates a CalledMethodsTypeAnnotator.
      *
      * @param atypeFactory the type factory
      */
@@ -402,12 +404,12 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
   }
 
   /**
-   * Get the called methods specified by the given {@link CalledMethods} annotation.
+   * Returns the called methods specified by the given {@link CalledMethods} annotation.
    *
    * @param calledMethodsAnnotation the annotation
    * @return the called methods
    */
-  protected List<String> getCalledMethods(AnnotationMirror calledMethodsAnnotation) {
+  public List<String> getCalledMethods(AnnotationMirror calledMethodsAnnotation) {
     return AnnotationUtils.getElementValueArray(
         calledMethodsAnnotation, calledMethodsValueElement, String.class, Collections.emptyList());
   }
@@ -475,7 +477,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
   }
 
   /**
-   * Get the exceptional postconditions for the given method from the {@link
+   * Returns the exceptional postconditions for the given method from the {@link
    * EnsuresCalledMethodsOnException} annotations on it.
    *
    * @param methodOrConstructor the method to examine
@@ -497,7 +499,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
 
   /**
    * Helper for {@link #getExceptionalPostconditions(ExecutableElement)} that parses a {@link
-   * EnsuresCalledMethodsOnException.List} annotation and stores the results in <code>out</code>.
+   * EnsuresCalledMethodsOnException.List} annotation and stores the results in {@code out}.
    *
    * @param annotation the annotation
    * @param out the output collection
@@ -522,7 +524,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
 
   /**
    * Helper for {@link #getExceptionalPostconditions(ExecutableElement)} that parses a {@link
-   * EnsuresCalledMethodsOnException} annotation and stores the results in <code>out</code>.
+   * EnsuresCalledMethodsOnException} annotation and stores the results in {@code out}.
    *
    * @param annotation the annotation
    * @param out the output collection

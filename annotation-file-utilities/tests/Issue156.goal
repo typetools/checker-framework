@@ -1,0 +1,8 @@
+class Issue156 {
+  void main() {
+    @qual.Inner(text="m", number=0)
+    int x = 10;
+    @qual.Outer(innerArray={@qual.Inner(text="m", number=0), @qual.Inner(text="s", number=0)})
+    int y = 20;
+  }
+}

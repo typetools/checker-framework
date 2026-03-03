@@ -27,7 +27,7 @@ public class CheckerFrameworkBuilder {
 
   public static void testOldCalledMethodsBad(
       @org.checkerframework.checker.calledmethods.qual.CalledMethods({"y"}) CheckerFrameworkBuilderBuilder pb) {
-    // :: error: (finalizer.invocation)
+    // :: error: [finalizer.invocation]
     pb.build(); // pb requires y, z
   }
 
@@ -37,7 +37,7 @@ public class CheckerFrameworkBuilder {
 
   public static void testOldRRBad() {
     CheckerFrameworkBuilder b =
-        // :: error: (finalizer.invocation)
+        // :: error: [finalizer.invocation]
         CheckerFrameworkBuilder.builder().z(6).build(); // also needs to call y
   }
 
@@ -187,7 +187,8 @@ public class CheckerFrameworkBuilder {
 
   @org.checkerframework.dataflow.qual.SideEffectFree
   @java.lang.SuppressWarnings("all")
-  public static CheckerFrameworkBuilder.@org.checkerframework.common.aliasing.qual.Unique CheckerFrameworkBuilderBuilder builder() {
+  public static CheckerFrameworkBuilder.@org.checkerframework.common.aliasing.qual.Unique CheckerFrameworkBuilderBuilder
+      builder() {
     return new CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder();
   }
 }

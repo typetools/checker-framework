@@ -14,7 +14,7 @@ public final class TypeKindUtils {
   }
 
   /**
-   * Return true if the argument is one of INT, SHORT, BYTE, CHAR, LONG.
+   * Returns true if the argument is one of INT, SHORT, BYTE, CHAR, LONG.
    *
    * @param typeKind the TypeKind to inspect
    * @return true if typeKind is a primitive integral type kind
@@ -33,7 +33,26 @@ public final class TypeKindUtils {
   }
 
   /**
-   * Return true if the argument is one of FLOAT, DOUBLE.
+   * Returns true if the argument is one of INT, SHORT, BYTE, LONG.
+   *
+   * @param typeKind the TypeKind to inspect
+   * @return true if typeKind is a primitive integral type kind, excluding CHAR which does not print
+   *     as an integer
+   */
+  public static boolean isIntegralNumeric(TypeKind typeKind) {
+    switch (typeKind) {
+      case INT:
+      case SHORT:
+      case BYTE:
+      case LONG:
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  /**
+   * Returns true if the argument is one of FLOAT, DOUBLE.
    *
    * @param typeKind the TypeKind to inspect
    * @return true if typeKind is a primitive floating point type kind
@@ -172,7 +191,7 @@ public final class TypeKindUtils {
   }
 
   /**
-   * Return the type of primitive conversion between {@code from} and {@code to}.
+   * Returns the type of primitive conversion between {@code from} and {@code to}.
    *
    * <p>The narrowing conversions include both short to char and char to short.
    *

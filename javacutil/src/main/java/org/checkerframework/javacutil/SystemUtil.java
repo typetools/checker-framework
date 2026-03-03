@@ -170,11 +170,8 @@ public class SystemUtil {
    * exist on JDK 8.
    *
    * @return the major version of the Java runtime
-   * @deprecated use field {@link #jreVersion} instead
    */
-  @Deprecated // 2022-07-14 not for removal, just to make private (and then it won't be
-  // deprecated)
-  public static int getJreVersion() {
+  private static int getJreVersion() {
     String version = System.getProperty("java.version");
 
     // Up to Java 8, from a version string like "1.8.whatever", extract "8".
@@ -183,7 +180,7 @@ public class SystemUtil {
     }
 
     // Since Java 9, from a version string like "11.0.1" or "11-ea" or "11u25", extract "11".
-    // The format is described at http://openjdk.org/jeps/223 .
+    // The format is described at https://openjdk.org/jeps/223 .
     Pattern newVersionPattern = Pattern.compile("^(\\d+).*$");
     Matcher newVersionMatcher = newVersionPattern.matcher(version);
     if (newVersionMatcher.matches()) {

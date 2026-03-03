@@ -14,8 +14,10 @@ public class I18nFormat {
     // :: warning: (i18nformat.excess.arguments)
     MessageFormat.format("'{0, number}'", new Date(12));
 
+    // Using {44444} here would yield: "invalid format string 44444 exceeds
+    // the ArgumentIndex implementation limit".  The hard limit is 10000.
     // :: warning: (i18nformat.missing.arguments)
-    MessageFormat.format("''{0, time, short}''{1}{2, time} {33, number}{44444}'{''''", 0);
+    MessageFormat.format("''{0, time, short}''{1}{2, time} {33, number}{4444}'{''''", 0);
 
     // :: warning: (i18nformat.missing.arguments)
     MessageFormat.format("{0, number}{1, number}", 1);
@@ -33,18 +35,18 @@ public class I18nFormat {
     MessageFormat.format("{0}", 1);
     MessageFormat.format("{0}", new Date());
 
-    // :: error: (argument)
+    // :: error: [argument]
     MessageFormat.format("{0, number}", "S");
     MessageFormat.format("{0, number}", 1);
-    // :: error: (argument)
+    // :: error: [argument]
     MessageFormat.format("{0, number}", new Date());
 
-    // :: error: (argument)
+    // :: error: [argument]
     MessageFormat.format("{0, time}", "S");
     MessageFormat.format("{0, time}", 1);
     MessageFormat.format("{0, time}", new Date());
 
-    // :: error: (argument)
+    // :: error: [argument]
     MessageFormat.format("{0, date}", "S");
     MessageFormat.format("{0, date}", 1);
     MessageFormat.format("{0, date}", new Date());

@@ -718,32 +718,73 @@ You may need to log out and log back in for the setting to take effect.
 \item[Ubuntu]
   Run the following commands, which should be the same as those in
   \<checker/bin-devel/Dockerfile-ubuntu-jdk\emph{XX}-plus>, where \emph{XX}
-  is a JDK version such as 8, 11, 17, etc.:
+  is a JDK version such as 8, 11, 17, 21, 25, etc.:
 
 (This list should be the same as in
-\<checker/bin-devel/Dockerfile-ubuntu-jdk17-plus>; if your build fails
+\<checker/bin-devel/Dockerfile-ubuntu-jdk25-plus>; if your build fails
 because it is missing a package, try the commands there and report a bug
 in this manual.)
 
-% Keep this up to date with ../../checker/bin-devel/Dockerfile-ubuntu-jdk17-plus
+% Keep this in sync with ../../checker/bin-devel/Dockerfile-ubuntu-jdk25-plus
+% ... but before diffing with that, diff with
+%   ../../checker/bin-devel/Dockerfile-contents-ubuntu-base.m4
+%   ../../checker/bin-devel/Dockerfile-contents-ubuntu-plus.m4
 
 \begin{Verbatim}
-sudo apt-get -qqy update
-sudo apt-get -qqy install \
- openjdk-17-jdk \
- ant cpp git gradle jq jtreg7 libcurl3-gnutls \
- make maven pipx python3-requests python3-setuptools unzip wget \
- autoconf devscripts dia hevea imagemagick junit jtreg7 latexmk \
- librsvg2-bin libasound2-dev libcups2-dev libfontconfig1-dev \
- libx11-dev libxext-dev libxrender-dev libxrandr-dev libxtst-dev libxt-dev \
- pdf2svg rsync shellcheck \
- texlive-font-utils texlive-fonts-recommended \
- texlive-latex-base texlive-latex-extra texlive-latex-recommended
-pipx install black
-pipx install flake8
-pipx install html5validator
-pipx ensurepath
+sudo apt -qqy update
+# Dependencies for building and running the Checker Framework.
+sudo apt -qqy install \
+  ant \
+  cpp \
+  git \
+  jq \
+  jtreg7 \
+  libcurl3-gnutls \
+  make \
+  maven \
+  python3-requests \
+  python3-setuptools \
+  unzip \
+  wget
+# Dependencies for developing the Checker Framework.
+apt -qqy install \
+  autoconf \
+  devscripts \
+  dia \
+  graphviz \
+  hevea \
+  imagemagick \
+  junit \
+  latexmk \
+  librsvg2-bin \
+  libasound2-dev libcups2-dev libfontconfig1-dev \
+  libx11-dev libxext-dev libxrender-dev libxrandr-dev libxtst-dev libxt-dev \
+  pdf2svg \
+  rsync \
+  shellcheck \
+  shfmt \
+  texlive-font-utils \
+  texlive-fonts-recommended \
+  texlive-latex-base \
+  texlive-latex-extra \
+  texlive-latex-recommended
+
+# Install uv (manages Python dependencies).
+curl -LsSf https://astral.sh/uv/install.sh | sh
+export PATH=$USER/.local/bin:$PATH
+
+# Install markdownlint.
+sudo apt -y install \
+  npm
+sudo npm install markdownlint-cli2 --global
+
+# Install the JDK.
+sudo apt -qqy install \
+  openjdk-25-jdk \
+&& update-java-alternatives --set java-1.25.0-openjdk-amd64
+export JAVA25_HOME=/usr/lib/jvm/java-25-openjdk-amd64
 \end{Verbatim}
+
 
   You may have to answer questions about which time zone your computer is in.
 
@@ -761,38 +802,43 @@ In a startup file, write:
 \end{smaller}
 %END LATEX
 
-\item[Mac OS]
+\item[macOS]
   If you employ \href{https://brew.sh}{homebrew} to install packages, run
   the following commands:
 
 \begin{Verbatim}
 brew update
 brew install git graphviz ant hevea maven librsvg unzip make
-brew tap homebrew/cask-versions
 brew install --cask temurin17
 brew install --cask mactex
 \end{Verbatim}
+
+Note: Running \<brew install --cask temurin17> is only necessary if you do not
+already have a JDK that is compatible with the Checker Framework installed.
 
 Make a \<latex> directory and copy \<hevea.sty> file into it.
 (\url{https://hevea.inria.fr/} gives the current version number.)
 
 \begin{Verbatim}
 mkdir -p $HOME/Library/texmf/tex/latex
-cp -p /usr/local/Cellar/hevea/2.36/lib/hevea/hevea.sty $HOME/Library/texmf/tex/latex/
+cp -p /opt/homebrew/Cellar/hevea/2.36/lib/hevea/hevea.sty $HOME/Library/texmf/tex/latex/
 \end{Verbatim}
 
 Note: If copy permission is denied, try \<sudo>.
 
-In a startup file, write:
+If \<echo \$JAVA\_HOME> outputs nothing (that is, if the \<JAVA\_HOME>
+environment variable is not set), then write the following
+in a startup file:
 
 \begin{Verbatim}
-export JAVA_HOME=$(/usr/libexec/java_home -v 17)
+export JAVA_HOME=$(/usr/libexec/java_home -v XX)
 \end{Verbatim}
 or
 \begin{Verbatim}
-export JAVA_HOME=/Library/Java/JavaVirtualMachines/adoptopenjdk-17.jdk/Contents/Home/
+export JAVA_HOME=/Library/Java/JavaVirtualMachines/adoptopenjdk-XX.jdk/Contents/Home/
 \end{Verbatim}
 
+In the command, \emph{XX} is a JDK version such as 17, 21, 24, etc.
 
 \item[Windows]
   To build on Windows 10 or later,
@@ -931,19 +977,27 @@ Install Docker on your local computer, then perform commands like the
 following to get a shell within Docker:
 
 \begin{Verbatim}
-docker pull mdernst/cf-ubuntu-jdk17
-docker run -it mdernst/cf-ubuntu-jdk17 /bin/bash
+docker pull mdernst/cf-ubuntu-jdk21
+docker run -it mdernst/cf-ubuntu-jdk21 /bin/bash
 \end{Verbatim}
 
 Then, you can run arbitrary commands, including those that appear in the
-CI configuration files.
+CI configuration files.  For example:
+
+\begin{Verbatim}
+git clone --filter=blob:none -b docker-ubuntu-24-10 https://github.com/mernst/checker-framework.git
+cd checker-framework
+export CHECKERFRAMEWORK=$(pwd)
+alias javacheck='$CHECKERFRAMEWORK/checker/bin/javac'
+export NO_WRITE_VERIFICATION_METADATA=true
+checker/bin-devel/test-cftests-junit.sh
+\end{Verbatim}
 
 
 \subsectionAndLabel{Related repositories}{building-related-repositories}
 
 Building the Checker Framework depends on other repositories, such as
-\href{https://github.com/typetools/annotation-tools/}{Annotation Tools} and
-\href{https://github.com/typetools/stubparser/}{Stub Parser}.
+\href{https://github.com/typetools/jdk/}{Annotated JDK}.
 You need to have compatible versions of each.
 
 After you \<git pull> in one of the repositories, you should do so in the

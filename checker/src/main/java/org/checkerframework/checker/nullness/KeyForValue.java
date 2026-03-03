@@ -13,7 +13,7 @@ import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.MapsP;
 
 /**
  * KeyForValue holds additional information about which maps this value is a key for. This extra
@@ -135,7 +135,7 @@ public class KeyForValue extends CFAbstractValue<KeyForValue> {
       return;
     }
     if (keyForMaps == null) {
-      keyForMaps = new LinkedHashSet<>(CollectionsPlume.mapCapacity(newKeyForMaps.size()));
+      keyForMaps = new LinkedHashSet<>(MapsP.mapCapacity(newKeyForMaps.size()));
     }
     keyForMaps.addAll(newKeyForMaps);
   }

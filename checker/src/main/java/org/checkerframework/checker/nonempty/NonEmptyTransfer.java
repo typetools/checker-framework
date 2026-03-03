@@ -23,7 +23,6 @@ import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
-import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -158,7 +157,7 @@ public class NonEmptyTransfer extends CFTransfer {
    * Refine the transfer result's store, given the left- and right-hand side of an equality check
    * comparing container sizes.
    *
-   * @param in transfer input used to get the types of subnodes of {@code lhs} and {@code rhs}.
+   * @param in transfer input used to get the types of subnodes of {@code lhs} and {@code rhs}
    * @param lhs a node that may be a method invocation of {@link java.util.Collection size()} or
    *     {@link java.util.Map size()}
    * @param rhs a node that may be a method invocation of {@link java.util.Collection size()} or
@@ -181,15 +180,15 @@ public class NonEmptyTransfer extends CFTransfer {
   /**
    * Returns true if the receiver of {@code methodAccessNode} is non-empty according to {@code in}.
    *
-   * @param in used to get the type of {@code methodAccessNode}.
+   * @param in used to get the type of {@code methodAccessNode}
    * @param methodAccessNode method access
-   * @return true if the receiver of {@code methodAccessNode} is non-empty according to {@code in}.
+   * @return true if the receiver of {@code methodAccessNode} is non-empty according to {@code in}
    */
   private boolean isAccessOfNonEmptyCollection(
       TransferInput<CFValue, CFStore> in, MethodInvocationNode methodAccessNode) {
     Node receiver = methodAccessNode.getTarget().getReceiver();
 
-    return AnnotationUtils.containsSameByClass(
+    return aTypeFactory.containsSameByClass(
         in.getValueOfSubNode(receiver).getAnnotations(), NonEmpty.class);
   }
 
@@ -327,8 +326,8 @@ public class NonEmptyTransfer extends CFTransfer {
   }
 
   /**
-   * Return true if the given node is an invocation of {@link java.util.Collection#size()} or {@link
-   * java.util.Map#size()}.
+   * Returns true if the given node is an invocation of {@link java.util.Collection#size()} or
+   * {@link java.util.Map#size()}.
    *
    * @param possibleSizeAccess a node that may be a method call to the {@code size()} method in the
    *     {@link java.util.Collection} or {@link java.util.Map} types
@@ -340,7 +339,7 @@ public class NonEmptyTransfer extends CFTransfer {
   }
 
   /**
-   * Return the receiver as a {@link JavaExpression} given a method invocation node.
+   * Returns the receiver as a {@link JavaExpression} given a method invocation node.
    *
    * @param node a method invocation
    * @return the receiver as a {@link JavaExpression}

@@ -1,0 +1,6 @@
+package:
+annotation @X:
+
+class NewPackage:
+method <init>()V:
+new *0: @X

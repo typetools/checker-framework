@@ -28,7 +28,7 @@ abstract class OwnershipWithExceptions {
   static class ManualExample2 {
     void example(String myHost, int myPort) throws Exception {
       // Error: `s` is not closed on all paths
-      // ::error: (required.method.not.called)
+      // ::error: [required.method.not.called]
       Socket s = new Socket(myHost, myPort);
 
       // `closeSocket` does not have to close `s` when it throws IOException.
@@ -56,7 +56,7 @@ abstract class OwnershipWithExceptions {
     throw new IOException();
   }
 
-  // :: error: (required.method.not.called)
+  // :: error: [required.method.not.called]
   void transferAndIgnoreExceptionWithoutClosing(@Owning Closeable zzz) {
     try {
       transfer(zzz);
@@ -81,12 +81,12 @@ abstract class OwnershipWithExceptions {
   // the called method throws.  So, this is not correct: if transfer(resource)
   // throws an exception, it leaks the resource.
   void noExceptionHandling() throws IOException {
-    // ::error: (required.method.not.called)
+    // ::error: [required.method.not.called]
     Closeable resource = alloc();
-    // ::error: (assignment)
+    // ::error: [assignment]
     @CalledMethods("close") Closeable a = resource;
     transfer(resource);
-    // ::error: (assignment)
+    // ::error: [assignment]
     @CalledMethods("close") Closeable b = resource;
   }
 
@@ -98,7 +98,7 @@ abstract class OwnershipWithExceptions {
       // Field assignments in constructors are special.  When the constructor
       // exits by exception, the field becomes permanently inaccessible, and
       // therefore the allocated resource is leaked.
-      // :: error: (required.method.not.called)
+      // :: error: [required.method.not.called]
       resource = alloc();
       if (arbitraryChoice()) {
         throw new IOException();
@@ -154,7 +154,7 @@ abstract class OwnershipWithExceptions {
     @EnsuresCalledMethods(
         value = "this.resource",
         methods = {"close"})
-    // ::error: (contracts.exceptional.postcondition)
+    // ::error: [contracts.exceptional.postcondition]
     public void close() throws IOException {
       throw new IOException();
     }
@@ -172,7 +172,7 @@ abstract class OwnershipWithExceptions {
       // Field assignments in constructors are special.  When the constructor
       // exits by exception, the field becomes permanently inaccessible, and
       // therefore the allocated resource is leaked.
-      // :: error: (required.method.not.called)
+      // :: error: [required.method.not.called]
       resource = alloc();
       if (arbitraryChoice()) {
         throw new IOException();
@@ -229,7 +229,7 @@ abstract class OwnershipWithExceptions {
     @EnsuresCalledMethods(
         value = {"this.resource", "this.unused"},
         methods = {"close"})
-    // ::error: (contracts.exceptional.postcondition)
+    // ::error: [contracts.exceptional.postcondition]
     public void close() throws IOException {
       if (unused != null) unused.close();
       if (resource != null) resource.close();

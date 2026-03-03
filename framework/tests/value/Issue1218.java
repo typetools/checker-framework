@@ -41,9 +41,9 @@ public class Issue1218 {
   final <T> void anys(T @MinLen(3) ... anys) {}
 
   void testMethodCall() {
-    // :: error: (varargs)
+    // :: error: [varargs]
     strs();
-    // :: error: (varargs)
+    // :: error: [varargs]
     strs("");
     strs("", "");
     // type of arg should be @UnknownVal String @BottomVal []
@@ -53,16 +53,16 @@ public class Issue1218 {
     String[] args1 = {""};
     String[] args2 = {"", ""};
 
-    // :: error: (argument)
+    // :: error: [argument]
     strs(args0);
-    // :: error: (argument)
+    // :: error: [argument]
     strs(args1);
     strs(args2);
 
     ints(1, 2);
-    // :: error: (argument)
+    // :: error: [argument]
     ints(0, 0, 0);
-    // :: error: (varargs)
+    // :: error: [varargs]
     ints(3);
     // type of arg should be @IntVal(1) int @BottomVal []
     ints((@IntVal(1) int[]) null);
@@ -72,9 +72,9 @@ public class Issue1218 {
   // works if the type is a specific enum; see the test file Enums.java for an example.
   @SuppressWarnings("type.argument")
   void testMethodCallTypeInferred() {
-    // :: error: (varargs)
+    // :: error: [varargs]
     enums();
-    // :: error: (varargs)
+    // :: error: [varargs]
     enums(MyEnum.A);
     enums(MyEnum.A, MyEnum.B);
     enums(MyEnum.A, MyEnum.B, MyEnum.C);
@@ -83,20 +83,20 @@ public class Issue1218 {
   <T extends Comparable<T> & Serializable> void testMethodCallTypeInferredIntersection() {
     T t = null;
 
-    // :: error: (varargs)
+    // :: error: [varargs]
     anys(1, 1.0);
-    // :: error: (varargs)
+    // :: error: [varargs]
     anys(1, "");
     anys(1, 1.0, "");
-    // :: error: (varargs)
+    // :: error: [varargs]
     anys(1, t);
     anys(1, t, "");
   }
 
   void testConstructorCall() {
-    // :: error: (varargs)
+    // :: error: [varargs]
     new ForString();
-    // :: error: (varargs)
+    // :: error: [varargs]
     new ForString("");
     new ForString("", "");
     // type of arg should be @UnknownVal String @BottomVal []
@@ -106,23 +106,23 @@ public class Issue1218 {
     String[] args1 = {""};
     String[] args2 = {"", ""};
 
-    // :: error: (argument)
+    // :: error: [argument]
     new ForString(args0);
-    // :: error: (argument)
+    // :: error: [argument]
     new ForString(args1);
     new ForString(args2);
 
     new ForInt(1, 2);
-    // :: error: (argument)
+    // :: error: [argument]
     new ForInt(0, 0, 0);
-    // :: error: (varargs)
+    // :: error: [varargs]
     new ForInt(3);
     // type of arg should be @IntVal(1) int @BottomVal []
     ints((@IntVal(1) int[]) null);
   }
 
   void testConstructorCallTypeInferred() {
-    // :: error: (varargs)
+    // :: error: [varargs]
     new ForEnum<>(MyEnum.A);
     new ForEnum<>(MyEnum.A, MyEnum.B);
     new ForEnum<>(MyEnum.A, MyEnum.B, MyEnum.C);
@@ -132,12 +132,12 @@ public class Issue1218 {
   <T extends Comparable<T> & Serializable> void testConstructorCallTypeInferredIntersection() {
     T t = null;
 
-    // :: error: (varargs)
+    // :: error: [varargs]
     new ForAny<>(1, 1.0);
-    // :: error: (varargs)
+    // :: error: [varargs]
     new ForAny<>(1, "");
     new ForAny<>(1, 1.0, "");
-    // :: error: (varargs)
+    // :: error: [varargs]
     new ForAny<>(1, t);
     new ForAny<>(1, t, "");
   }

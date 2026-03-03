@@ -1,0 +1,17 @@
+package java.lang:
+annotation @Tainted: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package org.checkerframework.afu.annotator.tests:
+class TypeParamMethod:
+
+    method foo(Ljava/lang/Object;)V:
+        typeparam 0: @java.lang.Tainted
+
+    method foo2(Lannotator/tests/Date;)V:
+        typeparam 0: @java.lang.Tainted
+
+    method foo(Ljava/lang/Object;Ljava/lang/Object;)V:
+        typeparam 1: @java.lang.Tainted
+
+    method foo2(Ljava/util/Date;Ljava/util/Date;)V:
+        typeparam 1: @java.lang.Tainted

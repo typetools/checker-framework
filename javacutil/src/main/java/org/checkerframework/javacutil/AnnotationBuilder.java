@@ -259,7 +259,7 @@ public class AnnotationBuilder {
     return result;
   }
 
-  /** Whether or not {@link #build()} has been called. */
+  /** True if {@link #build()} has been called. */
   private boolean wasBuilt = false;
 
   private void assertNotBuilt() {

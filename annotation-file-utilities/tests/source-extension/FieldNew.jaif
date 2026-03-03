@@ -1,0 +1,14 @@
+package GUT.quals:
+annotation @Peer:
+annotation @Rep:
+
+package org.checkerframework.afu.annotator.tests:
+class FieldNew:
+field f:
+type: @GUT.quals.Peer
+
+package org.checkerframework.afu.annotator.tests:
+class FieldNew:
+field f:
+new *0: @GUT.quals.Rep
+

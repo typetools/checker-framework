@@ -1,0 +1,15 @@
+package GUT.quals:
+annotation @Rep:
+package GUT.quals:
+annotation @Peer:
+
+package:
+class WildcardsSuper:
+field f:
+type:
+inner-type 3, 0, 2, 0: @GUT.quals.Peer
+
+package:
+class WildcardsSuper:
+field f:
+type: @GUT.quals.Rep

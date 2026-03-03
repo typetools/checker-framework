@@ -1,0 +1,17 @@
+package java.lang:
+annotation @SuppressWarnings:
+    String value
+
+package java.lang:
+annotation @Deprecated:
+
+package org.checkerframework.afu.annotator.tests:
+class DuplicateAnnotation:
+
+    method m5()V: @java.lang.SuppressWarnings(value="E")
+        return:
+
+    method m6()V:
+        return:
+        insert-annotation Method.body, Block.statement 0, Variable.type: @java.lang.Deprecated
+

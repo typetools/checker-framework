@@ -377,9 +377,9 @@ public class TypeInformationPresenter {
     }
 
     @Override
-    public Void visitTypeParameter(TypeParameterTree tree, Void unused) {
-      reportTreeType(tree, factory.getAnnotatedTypeFromTypeTree(tree), MessageKind.DECLARED_TYPE);
-      return super.visitTypeParameter(tree, unused);
+    public Void visitMethod(MethodTree tree, Void unused) {
+      reportTreeType(tree, factory.getAnnotatedType(tree), MessageKind.DECLARED_TYPE);
+      return super.visitMethod(tree, unused);
     }
 
     @Override
@@ -392,12 +392,6 @@ public class TypeInformationPresenter {
               : factory.getAnnotatedType(tree);
       reportTreeType(tree, varType, MessageKind.DECLARED_TYPE);
       return super.visitVariable(tree, unused);
-    }
-
-    @Override
-    public Void visitMethod(MethodTree tree, Void unused) {
-      reportTreeType(tree, factory.getAnnotatedType(tree), MessageKind.DECLARED_TYPE);
-      return super.visitMethod(tree, unused);
     }
 
     @Override
@@ -512,6 +506,12 @@ public class TypeInformationPresenter {
     public Void visitLiteral(LiteralTree tree, Void unused) {
       reportTreeType(tree, factory.getAnnotatedType(tree));
       return super.visitLiteral(tree, unused);
+    }
+
+    @Override
+    public Void visitTypeParameter(TypeParameterTree tree, Void unused) {
+      reportTreeType(tree, factory.getAnnotatedTypeFromTypeTree(tree), MessageKind.DECLARED_TYPE);
+      return super.visitTypeParameter(tree, unused);
     }
   }
 }

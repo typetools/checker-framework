@@ -1,0 +1,25 @@
+package java.lang:
+annotation @C: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package java.lang:
+annotation @H: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package java.lang:
+annotation @B: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package java.lang:
+annotation @G: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package java.lang:
+annotation @A: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package org.checkerframework.afu.annotator.tests:
+class GenericMultiLevel:
+
+    field field:
+        insert-annotation Variable.type, ParameterizedType.typeArgument 0, ParameterizedType.typeArgument 0: @java.lang.C
+        insert-annotation Variable.type, ParameterizedType.typeArgument 1, ParameterizedType.typeArgument 0: @java.lang.H
+        insert-annotation Variable.type, ParameterizedType.typeArgument 0: @java.lang.B
+        insert-annotation Variable.type, ParameterizedType.typeArgument 1: @java.lang.G
+        insert-annotation Variable.type: @java.lang.A
+

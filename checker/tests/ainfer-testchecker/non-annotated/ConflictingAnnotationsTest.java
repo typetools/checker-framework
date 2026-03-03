@@ -16,7 +16,7 @@ public class ConflictingAnnotationsTest {
   }
 
   void test() {
-    // :: warning: (argument)
+    // :: warning: [argument]
     expectsAinferSibling1(getWPINamespaceAinferSibling1());
   }
 

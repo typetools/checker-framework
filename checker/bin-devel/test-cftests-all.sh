@@ -4,18 +4,16 @@
 # Per comments in ../../build.gradle, allTests = test + nonJunitTests + inferenceTests + typecheck .
 
 set -e
-set -o verbose
+# set -o verbose
 set -o xtrace
 export SHELLOPTS
 echo "SHELLOPTS=${SHELLOPTS}"
 
-export ORG_GRADLE_PROJECT_useJdk17Compiler=true
-SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-source "$SCRIPTDIR"/clone-related.sh
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
 
+source "$SCRIPT_DIR"/clone-related.sh
 
-
-./gradlew allTests --console=plain --warning-mode=all
+./gradlew allTests --warning-mode=all
 # Moved example-tests out of all tests because it fails in
-# the release script because the newest maven artifacts are not published yet.
-./gradlew :checker:exampleTests --console=plain --warning-mode=all
+# the release script because the newest Maven artifacts are not published yet.
+./gradlew :checker:exampleTests --warning-mode=all

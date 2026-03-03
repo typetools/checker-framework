@@ -68,9 +68,12 @@ public class DOTCFGVisualizer<
     super.init(args);
     this.outDir = (String) args.get("outdir");
     if (this.outDir == null) {
-      throw new BugInCF(
-          "outDir should never be null,"
-              + " provide it in args when calling DOTCFGVisualizer.init(args).");
+      throw new UserError(
+          "The outdir argument to -Acfgvis was missing. Provide a non-empty directory path.");
+    }
+    if (this.outDir.isEmpty()) {
+      throw new UserError(
+          "The outdir argument to -Acfgvis was empty. Provide a non-empty directory path.");
     }
     this.checkerName = (String) args.get("checkerName");
     this.generated = new HashMap<>();
@@ -86,7 +89,7 @@ public class DOTCFGVisualizer<
       ControlFlowGraph cfg, Block entry, @Nullable Analysis<V, S, T> analysis) {
     String dotGraph = visualizeGraph(cfg, entry, analysis);
 
-    Map<String, Object> vis = new HashMap<>(2);
+    Map<String, Object> vis = new HashMap<>(4);
     vis.put("dotGraph", dotGraph);
     return vis;
   }

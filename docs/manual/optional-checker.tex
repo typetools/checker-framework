@@ -56,6 +56,8 @@ Optional Checker in the future.)
 
 \sectionAndLabel{How to run the Optional Checker}{optional-run-checker}
 
+The standard way to run the Optional Checker is one of these command lines:
+
 \begin{Verbatim}
 javac -processor optional MyFile.java ...
 javac -processor org.checkerframework.checker.optional.OptionalChecker MyFile.java ...
@@ -77,10 +79,6 @@ These qualifiers make up the Optional type system:
 
 \item[\refqualclass{checker/optional/qual}{Present}]
   The annotated \<Optional> container definitely contains a (non-null) value.
-
-\item[\refqualclass{checker/optional/qual}{OptionalBottom}]
-  The annotated expression evaluates to \<null> rather than to an \<Optional> container.
-  Programmers rarely write this annotation.
 
 \item[\refqualclass{checker/optional/qual}{PolyPresent}]
   indicates qualifier polymorphism.
@@ -183,7 +181,7 @@ An example use is
     Optional<T> wrapWithOptional(...) { ... }
 
     void myMethod() {
-      @SuppressWarnings("optional") // with argument x, wrapWithOptional always returns a non-empty Optional
+      @SuppressWarnings("optional") // with argument x, wrapWithOptional always returns a present Optional
       @Present Optional<T> optX = wrapWithOptional(x);
     }
 \end{Verbatim}
@@ -218,7 +216,7 @@ The rest of this section discusses the \<castPresent> method.
 It is useful if you wish to suppress a warning within an expression.
 
 The Optional Checker considers both the return value, and also the
-argument, to be an instance of a non-empty Optional after the \<castPresent>
+argument, to be an instance of a present Optional after the \<castPresent>
 method call.
 The Optional Checker issues no warnings in any of the following
 code:
@@ -246,4 +244,6 @@ code:
   must be on the classpath at run time.
 
 %  LocalWords:  isPresent NoSuchElementException MaybePresent PolyPresent
-%%  LocalWords:  orElseThrow nullable
+%%  LocalWords:  orElseThrow nullable RequiresPresent EnsuresPresent util
+% LocalWords:  EnsuresPresentIf AssumeAssertion OptionalUtil castPresent
+% LocalWords:  AssertionError

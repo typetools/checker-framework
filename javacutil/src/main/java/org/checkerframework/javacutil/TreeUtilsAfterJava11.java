@@ -5,6 +5,7 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.InstanceOfTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
+import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -16,7 +17,7 @@ import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.dataflow.qual.Pure;
 
 /**
- * This class contains util methods for reflective accessing Tree classes and methods that were
+ * This class contains utility methods for reflectively accessing Tree classes and methods that were
  * added after Java 11.
  */
 public class TreeUtilsAfterJava11 {
@@ -145,9 +146,9 @@ public class TreeUtilsAfterJava11 {
     }
 
     /**
-     * Get the list of labels from a case expression. For {@code default}, this is empty. For {@code
-     * case null, default}, the list contains {@code null}. Otherwise, in JDK 11 and earlier, this
-     * is a list of a single expression tree. In JDK 12+, the list may have multiple expression
+     * Returns the list of labels from a case expression. For {@code default}, this is empty. For
+     * {@code case null, default}, the list contains {@code null}. Otherwise, in JDK 11 and earlier,
+     * this is a list of a single expression tree. In JDK 12+, the list may have multiple expression
      * trees. In JDK 21+, the list might contain a single pattern tree.
      *
      * @param caseTree the case expression to get the labels from
@@ -158,7 +159,7 @@ public class TreeUtilsAfterJava11 {
     }
 
     /**
-     * Get the list of labels from a case expression.
+     * Returns the list of labels from a case expression.
      *
      * <p>For JDKs before 21, if {@code caseTree} is the default case, then the returned list is
      * empty.
@@ -206,7 +207,7 @@ public class TreeUtilsAfterJava11 {
     }
 
     /**
-     * Get the list of expressions from a case expression. For the default case, this is empty.
+     * Returns the list of expressions from a case expression. For the default case, this is empty.
      * Otherwise, in JDK 11 and earlier, this is a singleton list. In JDK 12 onwards, there can be
      * multiple expressions per case.
      *
@@ -355,7 +356,7 @@ public class TreeUtilsAfterJava11 {
     private static @Nullable Method GET_PATTERN = null;
 
     /**
-     * Returns whether {@code tree} is a {@code PatternCaseLabelTree}.
+     * Returns true if {@code tree} is a {@code PatternCaseLabelTree}.
      *
      * @param tree a tree to check
      * @return true if {@code tree} is a {@code PatternCaseLabelTree}
@@ -462,6 +463,42 @@ public class TreeUtilsAfterJava11 {
         GET_VALUE = getMethod(yieldTreeClass, "getValue");
       }
       return (ExpressionTree) invokeNonNullResult(GET_VALUE, yieldTree);
+    }
+  }
+
+  /** Utility methods for accessing {@code JCVariableDecl} methods. */
+  public static class JCVariableDeclUtils {
+
+    /** Don't use. */
+    private JCVariableDeclUtils() {
+      throw new AssertionError("Cannot be instantiated.");
+    }
+
+    /**
+     * The {@code JCVariableDecl.declaredUsingVar} method for Java 16 and higher; null otherwise.
+     */
+    private static @Nullable Method DECLARED_USING_VAR = null;
+
+    /**
+     * For Java 17+, returns true if {@code variableTree} was declared using {@code var}. Otherwise,
+     * returns false.
+     *
+     * <p>Use {@link TreeUtils#isVariableTreeDeclaredUsingVar(VariableTree)} for a method that works
+     * on all versions of java.
+     *
+     * @param variableTree a variable tree
+     * @return true if {@code variableTree} was declared using {@code var} and using Java 17+
+     */
+    @Pure
+    public static boolean declaredUsingVar(JCVariableDecl variableTree) {
+      if (sourceVersionNumber < 16) {
+        return false;
+      }
+      if (DECLARED_USING_VAR == null) {
+        DECLARED_USING_VAR = getMethod(JCVariableDecl.class, "declaredUsingVar");
+      }
+      Boolean result = (Boolean) invoke(DECLARED_USING_VAR, variableTree);
+      return result != null ? result : false;
     }
   }
 

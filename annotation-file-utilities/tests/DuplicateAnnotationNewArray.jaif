@@ -1,0 +1,23 @@
+package :
+
+annotation @A:
+
+annotation @B:
+
+class NewArray2a:
+  method foo()V:
+    insert-annotation Method.body, Block.statement 0, Variable.initializer, NewArray.type 0: @A
+    insert-annotation Method.body, Block.statement 0, Variable.initializer, NewArray.type 1: @A
+  method <init>()V:
+
+class NewArray2b:
+  method foo()V:
+    insert-annotation Method.body, Block.statement 0, Variable.initializer, NewArray.type 0: @B
+    insert-annotation Method.body, Block.statement 0, Variable.initializer, NewArray.type 1: @B
+  method <init>()V:
+
+class NewArray2c:
+  method foo()V:
+    insert-annotation Method.body, Block.statement 0, Variable.initializer, NewArray.type 0: @A
+    insert-annotation Method.body, Block.statement 0, Variable.initializer, NewArray.type 1: @B
+  method <init>()V:

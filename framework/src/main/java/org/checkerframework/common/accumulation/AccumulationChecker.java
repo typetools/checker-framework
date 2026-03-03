@@ -5,6 +5,7 @@ import java.util.Set;
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.returnsreceiver.ReturnsReceiverChecker;
+import org.checkerframework.framework.source.SourceChecker;
 
 /**
  * An accumulation checker is one that accumulates some property: method calls, map keys, etc.
@@ -27,14 +28,15 @@ public abstract class AccumulationChecker extends BaseTypeChecker {
   private final EnumSet<AliasAnalysis> aliasAnalyses;
 
   /** Constructs a new AccumulationChecker. */
+  @SuppressWarnings("this-escape")
   protected AccumulationChecker() {
     super();
     this.aliasAnalyses = createAliasAnalyses();
   }
 
   @Override
-  protected Set<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
-    Set<Class<? extends BaseTypeChecker>> checkers = super.getImmediateSubcheckerClasses();
+  protected Set<Class<? extends SourceChecker>> getImmediateSubcheckerClasses() {
+    Set<Class<? extends SourceChecker>> checkers = super.getImmediateSubcheckerClasses();
     if (isEnabled(AliasAnalysis.RETURNS_RECEIVER)) {
       checkers.add(ReturnsReceiverChecker.class);
     }
@@ -55,7 +57,7 @@ public abstract class AccumulationChecker extends BaseTypeChecker {
   }
 
   /**
-   * Get the alias analyses that this checker should employ.
+   * Returns the alias analyses that this checker should employ.
    *
    * @return the alias analyses
    */
@@ -65,7 +67,7 @@ public abstract class AccumulationChecker extends BaseTypeChecker {
   }
 
   /**
-   * Check whether the given alias analysis is enabled by this particular accumulation checker.
+   * Returns true if the given alias analysis is enabled by this particular accumulation checker.
    *
    * @param aliasAnalysis the analysis to check
    * @return true iff the analysis is enabled

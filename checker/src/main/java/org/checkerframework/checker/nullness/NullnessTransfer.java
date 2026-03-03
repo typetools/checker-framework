@@ -222,9 +222,9 @@ public class NullnessTransfer
         }
       }
 
-      AnnotationMirrorSet secondAnnos =
-          secondValue != null ? secondValue.getAnnotations() : new AnnotationMirrorSet();
-      if (nullnessTypeFactory.containsSameByClass(secondAnnos, PolyNull.class)) {
+      if (secondValue != null
+          && nullnessTypeFactory.containsSameByClass(
+              secondValue.getAnnotations(), PolyNull.class)) {
         thenStore = thenStore == null ? res.getThenStore() : thenStore;
         elseStore = elseStore == null ? res.getElseStore() : elseStore;
         // TODO: methodTree is null for lambdas.  Handle that case.  See Issue3850.java.
@@ -430,7 +430,7 @@ public class NullnessTransfer
       }
       if (isKeyFor) {
         AnnotatedTypeMirror receiverType = nullnessTypeFactory.getReceiverType(n.getTree());
-        if (!hasNullableValueType(receiverType)) {
+        if (!isValueTypeNullable(receiverType)) {
           makeNonNull(result, n);
           refineToNonNull(result);
         }
@@ -446,7 +446,7 @@ public class NullnessTransfer
    * @param mapOrSubtype the Map type, or a subtype
    * @return true if mapType's value type is @Nullable
    */
-  private boolean hasNullableValueType(AnnotatedTypeMirror mapOrSubtype) {
+  private boolean isValueTypeNullable(AnnotatedTypeMirror mapOrSubtype) {
     AnnotatedDeclaredType mapType =
         AnnotatedTypes.asSuper(nullnessTypeFactory, mapOrSubtype, MAP_TYPE);
     int numTypeArguments = mapType.getTypeArguments().size();

@@ -93,14 +93,19 @@ public class FormatUtil {
    * @throws IllegalFormatException if the format string is invalid
    */
   public static void tryFormatSatisfiability(String format) throws IllegalFormatException {
-    @SuppressWarnings({
-      "unused", // called for side effect, to see if it throws an exception
-      "nullness:argument", // it's not documented, but String.format permits
-      // a null array, which it treats as matching any format string (null is supplied to each
-      // format specifier).
-      "formatter:format.string", // this is a test of format string validity
-    })
-    String unused = String.format(format, (Object[]) null);
+    try {
+      @SuppressWarnings({
+        "unused", // called for side effect, to see if it throws an exception
+        "nullness:argument", // it's not documented, but String.format permits
+        // a null array, which it treats as matching any format string (null is supplied to each
+        // format specifier).
+        "formatter:format.string", // this is a test of format string validity
+      })
+      String unused = String.format(format, (Object[]) null);
+    } catch (OutOfMemoryError e) {
+      throw new Error(
+          "OOM while calling String.format on (length " + format.length() + "): " + format);
+    }
   }
 
   /**
@@ -151,7 +156,7 @@ public class FormatUtil {
 
   /**
    * A regex that matches a format specifier. Its syntax is specified in the See <a
-   * href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Formatter.html#syntax">{@code
+   * href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/Formatter.html#syntax">{@code
    * Formatter} documentation</a>.
    *
    * <pre>
@@ -182,7 +187,7 @@ public class FormatUtil {
   private static @Regex(6) Pattern fsPattern = Pattern.compile(formatSpecifier);
 
   /**
-   * Return the index, in the argument list, of the value that will be formatted by the matched
+   * Returns the index, in the argument list, of the value that will be formatted by the matched
    * format specifier.
    *
    * @param m a matcher that matches a format specifier
@@ -222,10 +227,10 @@ public class FormatUtil {
   }
 
   /**
-   * Return the conversion character that is in the given format specifier.
+   * Returns the conversion character that is in the given format specifier.
    *
    * @param formatSpecifier a <a
-   *     href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Formatter.html#syntax">format
+   *     href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/Formatter.html#syntax">format
    *     specifier</a>
    * @return the conversion character that is in the given format specifier
    * @deprecated This method is public only for testing. Use private method {@code

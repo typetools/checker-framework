@@ -122,7 +122,7 @@ public class AnnotationConverter {
     switch (tm.getKind()) {
       case BOOLEAN:
         return BasicAFT.forType(boolean.class);
-        // Primitives
+      // Primitives
       case BYTE:
         return BasicAFT.forType(byte.class);
       case CHAR:

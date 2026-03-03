@@ -1,0 +1,29 @@
+package :
+annotation @X:
+
+package :
+class GenericArg:
+
+    method mp(Ljava/lang/Object;)V:
+        return:
+        insert-annotation Method.body, Block.statement 0, Variable.type: @X
+
+    method mr()LX;:
+        return:
+        insert-annotation Method.body, Block.statement 0, Variable.type: @X
+
+    method foo(Ljava/lang/Number;)V:
+        return:
+        insert-annotation Method.body, Block.statement 0, Variable.type: @X
+
+    method bar()LZ;:
+        return:
+        insert-annotation Method.body, Block.statement 0, Variable.type: @X
+
+package :
+class GenericArg$Tricky:
+
+    method argh(Ljava/lang/Object;)V:
+        return:
+        insert-annotation Method.body, Block.statement 0, Variable.type: @X
+

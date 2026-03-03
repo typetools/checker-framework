@@ -101,7 +101,7 @@ public class I18nFormatterVisitor extends BaseTypeVisitor<I18nFormatterAnnotated
             }
             break;
           case NULLARRAY:
-            // fall-through
+          // fall-through
           case ARRAY:
             for (I18nConversionCategory cat : formatCats) {
               if (cat == I18nConversionCategory.UNUSED) {
@@ -159,9 +159,9 @@ public class I18nFormatterVisitor extends BaseTypeVisitor<I18nFormatterAnnotated
       }
     }
 
-    /// TODO: What does "take precedence over" mean?  Both are issued, but the
-    /// "i18nformat.excess.arguments" appears first in the output.  Is this meant to not call
-    /// super.commonAssignmentCheck() if `result` is already false?
+    // TODO: What does "take precedence over" mean?  Both are issued, but the
+    // "i18nformat.excess.arguments" appears first in the output.  Is this meant to not call
+    // super.commonAssignmentCheck() if `result` is already false?
     // By calling super.commonAssignmentCheck() last, any "i18nformat.excess.arguments"
     // message issued for a given line of code will take precedence over the "assignment"
     // issued by super.commonAssignmentCheck().

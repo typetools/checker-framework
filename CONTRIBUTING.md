@@ -6,7 +6,6 @@ developers](https://checkerframework.org/manual/#credits), plus countless
 more people who have contributed bug reports and feature suggestions.  We
 couldn't do it without your help.
 
-
 ## Reporting bugs
 
 Please see the [bug
@@ -16,16 +15,15 @@ the Checker Framework manual.
 If the documentation is incorrect, incomplete, or confusing, that is a
 bug, and we want to fix it.  Please report it.
 
-
 ## Submitting changes
 
 Please see the [pull
 requests](https://checkerframework.org/manual/developer-manual.html#pull-requests)
 section of the Developer Manual.
 
-Submit changes to the annotated JDK at https://github.com/typetools/jdk/pulls .
+Submit changes to the annotated JDK at <https://github.com/typetools/jdk/pulls> .
 Annotations for other libraries can be contributed as stub files in this
-repository, in a fork of the library in https://github.com/typetools/, or
+repository, in a fork of the library in <https://github.com/typetools/>, or
 in the library's own repository.
 
 Do you want to contribute to the project, but you are not sure what issue
@@ -35,12 +33,10 @@ wanted"](https://github.com/typetools/checker-framework/issues?q=is%3Aissue+is%3
 label marks issues that require less deep knowledge and may be appropriate
 for a newcomer to the codebase.
 
-
 ## License
 
 By contributing, you agree that your contributions will be licensed under the
 existing [license](LICENSE.txt), usually GPL2 or MIT License.
-
 
 ## Code of conduct
 

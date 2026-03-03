@@ -82,6 +82,7 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    *
    * @param checker the checker to use
    */
+  @SuppressWarnings("this-escape")
   public InterningAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
 
@@ -242,11 +243,20 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       }
       return super.visitDeclared(t, p);
     }
+
+    @Override
+    public Void visitPrimitive(AnnotatedPrimitiveType t, Void p) {
+      // case 4: primitive types are interned
+      t.replaceAnnotation(INTERNED);
+      return super.visitPrimitive(t, p);
+    }
   }
 
   /**
    * Unbox type and replace any interning type annotations with @Interned since all primitives can
    * safely use ==. See case 4 in the class comments.
+   *
+   * <p>{@inheritDoc}
    */
   @Override
   public AnnotatedPrimitiveType getUnboxedType(AnnotatedDeclaredType type) {

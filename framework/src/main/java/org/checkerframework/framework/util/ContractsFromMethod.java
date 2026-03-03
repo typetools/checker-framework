@@ -106,7 +106,7 @@ public class ContractsFromMethod {
         Contract.ConditionalPostcondition.class);
   }
 
-  /// Helper methods
+  // Helper methods
 
   /**
    * Returns the contracts (of a particular kind) on method or constructor {@code
@@ -274,15 +274,11 @@ public class ContractsFromMethod {
       anno = builder.build();
     }
 
+    anno = factory.canonicalAnnotation(anno);
     if (factory.isSupportedQualifier(anno)) {
       return anno;
     } else {
-      AnnotationMirror aliasedAnno = factory.canonicalAnnotation(anno);
-      if (factory.isSupportedQualifier(aliasedAnno)) {
-        return aliasedAnno;
-      } else {
-        return null;
-      }
+      return null;
     }
   }
 

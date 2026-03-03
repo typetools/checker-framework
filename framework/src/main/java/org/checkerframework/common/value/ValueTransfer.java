@@ -260,7 +260,7 @@ public class ValueTransfer extends CFTransfer {
   }
 
   /**
-   * Get the unique possible boolean value from @BoolVal. Returns null if that is not the case
+   * Returns the unique possible boolean value from @BoolVal. Returns null if that is not the case
    * (including if the CFValue is not @BoolVal).
    *
    * @param value a CFValue
@@ -274,7 +274,7 @@ public class ValueTransfer extends CFTransfer {
   }
 
   /**
-   * Get possible boolean values for a node. Returns null if there is no estimate, because the
+   * Returns possible boolean values for a node. Returns null if there is no estimate, because the
    * node's value is not @BoolVal.
    *
    * @param subNode the node whose value to obtain
@@ -378,7 +378,7 @@ public class ValueTransfer extends CFTransfer {
    * @param node a node
    * @param val annotation mirror
    * @return the {@link Range} object corresponding to the annotation {@code val} casted to the type
-   *     of {@code node}.
+   *     of {@code node}
    */
   private Range getIntRangeFromAnnotation(Node node, AnnotationMirror val) {
     Range range;
@@ -630,8 +630,8 @@ public class ValueTransfer extends CFTransfer {
   }
 
   /**
-   * Checks whether or not the passed node is nullable. This superficial check assumes that every
-   * node is nullable unless it is a primitive, String literal, or compile-time constant.
+   * Returns true if the passed node is nullable. This superficial check assumes that every node is
+   * nullable unless it is a primitive, String literal, or compile-time constant.
    *
    * @return false if the node's run-time can't be null; true if the node's run-time value may be
    *     null, or if this method is not precise enough
@@ -771,7 +771,7 @@ public class ValueTransfer extends CFTransfer {
   }
 
   /**
-   * Get the refined annotation after a numerical binary operation.
+   * Returns the refined annotation after a numerical binary operation.
    *
    * @param leftNode the node that represents the left operand
    * @param rightNode the node that represents the right operand
@@ -1045,7 +1045,7 @@ public class ValueTransfer extends CFTransfer {
   }
 
   /**
-   * Get the refined annotation after a numerical unary operation.
+   * Returns the refined annotation after a numerical unary operation.
    *
    * @param operand the node that represents the operand
    * @param op the operator type
@@ -1524,9 +1524,18 @@ public class ValueTransfer extends CFTransfer {
     AND;
   }
 
-  private static final List<Boolean> ALL_BOOLEANS =
-      Arrays.asList(new Boolean[] {Boolean.TRUE, Boolean.FALSE});
+  /** An array containing all the boolean values: true and false. */
+  private static final List<Boolean> ALL_BOOLEANS = Arrays.asList(new Boolean[] {true, false});
 
+  /**
+   * Returns the possible values that the expression might evaluate to.
+   *
+   * @param leftNode the first argument
+   * @param rightNode the second argument
+   * @param op the boolean operator
+   * @param p the transfer input
+   * @return the possible values that the expression might evaluate to
+   */
   private List<Boolean> calculateConditionalOperator(
       Node leftNode, Node rightNode, ConditionalOperators op, TransferInput<CFValue, CFStore> p) {
     List<Boolean> lefts = getBooleanValues(leftNode, p);

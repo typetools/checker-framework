@@ -503,7 +503,7 @@ public final class SceneToStubWriter {
   }
 
   /**
-   * Return true if the given annotation is an internal JDK annotation, whose name includes '+'.
+   * Returns true if the given annotation is an internal JDK annotation, whose name includes '+'.
    *
    * @param annotationName the name of the annotation
    * @return true iff this is an internal JDK annotation
@@ -644,6 +644,7 @@ public final class SceneToStubWriter {
   /**
    * Prints a method declaration in stub file format (i.e., without a method body).
    *
+   * @param className the class that contains the method, for diagnostics only
    * @param aMethod the method to print
    * @param simplename the simple name of the enclosing class, for receiver parameters and
    *     constructor names
@@ -651,7 +652,9 @@ public final class SceneToStubWriter {
    * @param atf the type factory, for computing preconditions and postconditions
    * @param indentLevel the indent string
    */
+  @SuppressWarnings("UnusedVariable")
   private static void printMethodDeclaration(
+      String className,
       AMethod aMethod,
       String simplename,
       PrintWriter printWriter,
@@ -787,7 +790,7 @@ public final class SceneToStubWriter {
    *
    * @param classname the class name
    * @param aClass the representation of the class
-   * @return whether the class is printable, by the definition above
+   * @return true if the class is printable, by the definition above
    */
   private static boolean isPrintable(@BinaryName String classname, AClass aClass) {
     String basename = basenamePart(classname);
@@ -859,6 +862,7 @@ public final class SceneToStubWriter {
       printWriter.println();
       for (Map.Entry<String, AMethod> methodEntry : aClass.getMethods().entrySet()) {
         printMethodDeclaration(
+            aClass.className,
             methodEntry.getValue(),
             innermostClassname,
             printWriter,
@@ -872,7 +876,7 @@ public final class SceneToStubWriter {
   }
 
   /**
-   * Return a string containing n indents.
+   * Returns a string containing n indents.
    *
    * @param n the number of indents
    * @return a string containing that many indents

@@ -201,10 +201,10 @@ public class ElementAnnotationUtil {
     // otherwise the annotation applies to the lower bound only
     public final AnnotationMirrorSet possiblyBoth;
 
-    /** Whether or not wildcard has an explicit super bound. */
+    /** True if wildcard has an explicit super bound. */
     private final boolean isSuperBounded;
 
-    /** Whether or not wildcard has NO explicit bound whatsoever. */
+    /** True if wildcard has NO explicit bound whatsoever. */
     private final boolean isUnbounded;
 
     /**
@@ -383,8 +383,8 @@ public class ElementAnnotationUtil {
    * @param location a type path into type
    * @param anno an annotation to be applied to the inner types of a declared type if the declared
    *     type is itself a component type of an array
-   * @param isComponentTypeOfArray indicates whether the type under analysis is a component type of
-   *     some array type
+   * @param isComponentTypeOfArray true if the type under analysis is a component type of some array
+   *     type
    * @return the type specified by location
    */
   private static AnnotatedTypeMirror getTypeAtLocation(
@@ -431,8 +431,8 @@ public class ElementAnnotationUtil {
    * @param location a type path into type
    * @param anno an annotation to be applied to the inner types of the declared type if the declared
    *     type is itself a component type of an array
-   * @param isComponentTypeOfArray indicates whether the type under analysis is a component type of
-   *     some array type
+   * @param isComponentTypeOfArray true if the type under analysis is a component type of some array
+   *     type
    * @return the type specified by location
    */
   @SuppressWarnings("JdkObsolete") // error is issued on every operation, must suppress here
@@ -551,7 +551,7 @@ public class ElementAnnotationUtil {
       List<TypeAnnotationPosition.TypePathEntry> location,
       TypeCompound anno)
       throws UnexpectedAnnotationLocationException {
-    if (location.size() >= 1
+    if (!location.isEmpty()
         && location.get(0).tag == TypeAnnotationPosition.TypePathEntryKind.ARRAY) {
       AnnotatedTypeMirror comptype = type.getComponentType();
       return getTypeAtLocation(comptype, tail(location), anno, true);
@@ -581,7 +581,7 @@ public class ElementAnnotationUtil {
   private static AnnotatedTypeMirror getLocationTypeAIT(
       AnnotatedIntersectionType type, List<TypeAnnotationPosition.TypePathEntry> location)
       throws UnexpectedAnnotationLocationException {
-    if (location.size() >= 1
+    if (!location.isEmpty()
         && location.get(0).tag == TypeAnnotationPosition.TypePathEntryKind.TYPE_ARGUMENT) {
       AnnotatedTypeMirror bound = type.getBounds().get(location.get(0).arg);
       return getTypeAtLocation(bound, tail(location));

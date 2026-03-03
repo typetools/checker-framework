@@ -1,0 +1,36 @@
+package:
+annotation @Bla:
+annotation @A:
+annotation @B:
+annotation @C:
+annotation @D:
+annotation @E:
+annotation @F:
+annotation @G:
+annotation @H:
+annotation @I:
+annotation @J:
+
+class WildcardAnnoBound:
+bound 0 & 0:
+inner-type 3, 0, 2, 0: @Bla
+
+class WildcardAnnoBound:
+method <init>(LWildcardAnnoBound;Ljava/util/List;)V:
+parameter 0:
+type: @Bla
+
+class NoBound:
+bound 0 & 0: @A
+
+class Bounds:
+	typeparam 0: @A
+	typeparam 1: @J
+	bound 0 & 0: @B
+	bound 0 & 1: @C
+		inner-type 3, 0: @E
+		inner-type 3, 0, 0, 0: @D
+	bound 0 & 2: @F
+		inner-type 3, 0: @G
+		inner-type 3, 0, 2, 0: @H
+		inner-type 3, 1: @I

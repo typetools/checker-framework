@@ -24,6 +24,7 @@ public class NonEmptyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    *
    * @param checker the checker to use
    */
+  @SuppressWarnings("this-escape")
   public NonEmptyAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     this.sideEffectsUnrefineAliases = true;
