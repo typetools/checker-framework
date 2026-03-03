@@ -13,13 +13,13 @@ public class EisopIssue553 {
   public static void main(String[] args) {
     EisopIssue553 x = null;
     Object o = x.sfield;
-    // :: error: (dereference.of.nullable)
+    // :: error: [dereference.of.nullable]
     o = x.field;
     if (x.sfield == null) {
       return;
     }
     x.n(x.sfield);
-    // :: error: (dereference.of.nullable)
+    // :: error: [dereference.of.nullable]
     x.sfield.toString();
   }
 }

@@ -34,7 +34,7 @@ class ReplaceMustCallAliasAnnotation {
 
   void testOwningAnnotations() {
     Foo f1 = new Foo();
-    // :: warning: (required.method.not.called)
+    // :: warning: [required.method.not.called]
     Foo f2 = new Foo();
     TwoOwningFields t = new TwoOwningFields(f1, f2);
     t.a();

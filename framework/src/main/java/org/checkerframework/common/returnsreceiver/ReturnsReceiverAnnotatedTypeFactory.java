@@ -1,14 +1,10 @@
 package org.checkerframework.common.returnsreceiver;
 
-import java.lang.annotation.Annotation;
-import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ElementKind;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.common.returnsreceiver.qual.BottomThis;
 import org.checkerframework.common.returnsreceiver.qual.This;
-import org.checkerframework.common.returnsreceiver.qual.UnknownThis;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
@@ -35,11 +31,6 @@ public class ReturnsReceiverAnnotatedTypeFactory extends BaseAnnotatedTypeFactor
     super(checker);
     THIS_ANNOTATION = AnnotationBuilder.fromClass(elements, This.class);
     this.postInit();
-  }
-
-  @Override
-  protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-    return getBundledTypeQualifiers(BottomThis.class, UnknownThis.class, This.class);
   }
 
   @Override

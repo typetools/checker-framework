@@ -10,5 +10,6 @@ dependencies = []
 dev = [
     "html5validator>=0.4.2",
     "pymarkdownlnt>=0.9.33",
+    "requests>=2.32.5",
     "ty>=0.0.1a31",
 ]

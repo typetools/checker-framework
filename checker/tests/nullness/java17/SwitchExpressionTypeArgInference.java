@@ -9,8 +9,8 @@ public class SwitchExpressionTypeArgInference {
 
   void test1(int i, @Nullable String nullable) {
     @NonNull String s =
-        // :: error: (assignment)
-        // :: error: (type.arguments.not.inferred)
+        // :: error: [assignment]
+        // :: error: [type.arguments.not.inferred]
         method(
             switch (i) {
               case 0:

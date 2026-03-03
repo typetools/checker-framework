@@ -3,7 +3,7 @@
 public class AnonymousInit {
   Object o1 =
       new Object() {
-        // :: error: (initialization.field.uninitialized)
+        // :: error: [initialization.field.uninitialized]
         Object s;
 
         public String toString() {

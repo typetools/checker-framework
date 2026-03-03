@@ -36,42 +36,42 @@ public class GrowShrinkHierarchyTest {
     @UnshrinkableRef Object a5 = bottom;
 
     // Assignments to @GrowOnly
-    // :: error: (assignment)
+    // :: error: [assignment]
     @GrowOnly Object b1 = unshrinkableRef; // ERROR: Supertype to subtype
     @GrowOnly Object b2 = growOnly;
-    // :: error: (assignment)
+    // :: error: [assignment]
     @GrowOnly Object b3 = canShrink; // ERROR: Sibling types
-    // :: error: (assignment)
+    // :: error: [assignment]
     @GrowOnly Object b4 = uncheckedCanShrink; // ERROR: Sibling types
     @GrowOnly Object b5 = bottom;
 
     // Assignments to @CanShrink
-    // :: error: (assignment)
+    // :: error: [assignment]
     @CanShrink Object c1 = unshrinkableRef; // ERROR: Supertype to subtype
-    // :: error: (assignment)
+    // :: error: [assignment]
     @CanShrink Object c2 = growOnly; // ERROR: Sibling types
     @CanShrink Object c3 = canShrink;
     @CanShrink Object c4 = uncheckedCanShrink; // Subtype to supertype
     @CanShrink Object c5 = bottom;
 
     // Assignments to @UncheckedCanShrink
-    // :: error: (assignment)
+    // :: error: [assignment]
     @UncheckedCanShrink Object d1 = unshrinkableRef; // ERROR: Supertype to subtype
-    // :: error: (assignment)
+    // :: error: [assignment]
     @UncheckedCanShrink Object d2 = growOnly; // ERROR: Sibling types
-    // :: error: (assignment)
+    // :: error: [assignment]
     @UncheckedCanShrink Object d3 = canShrink; // ERROR: Supertype to subtype
     @UncheckedCanShrink Object d4 = uncheckedCanShrink;
     @UncheckedCanShrink Object d5 = bottom;
 
     // Assignments to @BottomGrowShrink
-    // :: error: (assignment)
+    // :: error: [assignment]
     @BottomGrowShrink Object e1 = unshrinkableRef; // ERROR
-    // :: error: (assignment)
+    // :: error: [assignment]
     @BottomGrowShrink Object e2 = growOnly; // ERROR
-    // :: error: (assignment)
+    // :: error: [assignment]
     @BottomGrowShrink Object e3 = canShrink; // ERROR
-    // :: error: (assignment)
+    // :: error: [assignment]
     @BottomGrowShrink Object e4 = uncheckedCanShrink; // ERROR
     @BottomGrowShrink Object e5 = bottom;
   }

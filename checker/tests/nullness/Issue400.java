@@ -3,9 +3,9 @@ import java.util.Collection;
 
 public class Issue400 {
   final class YYPair<T, V> {
-    // :: error: (initialization.field.uninitialized)
+    // :: error: [initialization.field.uninitialized]
     T first;
-    // :: error: (initialization.field.uninitialized)
+    // :: error: [initialization.field.uninitialized]
     V second;
   }
 

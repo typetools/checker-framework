@@ -15,7 +15,7 @@ public class GrowOnlyIteratorTest {
     list.add("test"); // Ensure list has content
     Iterator<String> iter = list.iterator();
     iter.next();
-    // :: error: (method.invocation)
+    // :: error: [method.invocation]
     iter.remove();
   }
 
@@ -34,7 +34,7 @@ public class GrowOnlyIteratorTest {
   }
 
   void testRemoveIf(@GrowOnly List<String> list) {
-    // :: error: (method.invocation)
+    // :: error: [method.invocation]
     list.removeIf(s -> s.length() > 5);
   }
 
@@ -43,13 +43,13 @@ public class GrowOnlyIteratorTest {
     toRemove.add("item1");
     toRemove.add("item2");
 
-    // :: error: (method.invocation)
+    // :: error: [method.invocation]
     list.removeAll(toRemove);
 
-    // :: error: (method.invocation)
+    // :: error: [method.invocation]
     list.retainAll(toRemove);
 
-    // :: error: (method.invocation)
+    // :: error: [method.invocation]
     list.clear();
   }
 
@@ -96,7 +96,7 @@ public class GrowOnlyIteratorTest {
     while (iter.hasNext()) {
       String item = iter.next();
       // But removal should not
-      // :: error: (method.invocation)
+      // :: error: [method.invocation]
       iter.remove();
     }
   }

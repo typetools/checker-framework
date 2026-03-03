@@ -654,7 +654,7 @@ the Checker Framework's new-contributor-projects.html . -->
 
 <p>
 Java 8 introduced the
-<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Optional.html"><code>Optional</code></a>
+<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/Optional.html"><code>Optional</code></a>
 class, a container that is either empty or contains a non-null value.
 It is intended to solve the problem of null
 pointer exceptions.  However, <code>Optional</code>
@@ -873,7 +873,7 @@ The methodology is:
 
 <p>
 Methods such
-as <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Arrays.html#asList(T...)">Arrays.asList</a>
-and <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Collections.html#emptyList()">Collections.emptyList</a>
+as <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/Arrays.html#asList(T...)">Arrays.asList</a>
+and <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/Collections.html#emptyList()">Collections.emptyList</a>
 must be annotated to return a less-capable type.
 </p>

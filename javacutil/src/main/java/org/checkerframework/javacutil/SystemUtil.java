@@ -170,11 +170,8 @@ public class SystemUtil {
    * exist on JDK 8.
    *
    * @return the major version of the Java runtime
-   * @deprecated use field {@link #jreVersion} instead
    */
-  @Deprecated // 2022-07-14 not for removal, just to make private (and then it won't be
-  // deprecated)
-  public static int getJreVersion() {
+  private static int getJreVersion() {
     String version = System.getProperty("java.version");
 
     // Up to Java 8, from a version string like "1.8.whatever", extract "8".

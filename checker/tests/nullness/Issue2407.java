@@ -8,16 +8,16 @@ public class Issue2407 {
   void setMessage(String message) {}
 
   @EnsuresNonNull("1")
-  // :: error: (flowexpr.parse.error)
+  // :: error: [flowexpr.parse.error]
   void method() {}
 
   @EnsuresNonNullIf(expression = "1", result = true)
-  // :: error: (flowexpr.parse.error)
+  // :: error: [flowexpr.parse.error]
   void method2() {}
 
   void main() {
     Issue2407 object = new Issue2407();
-    // :: error: (contracts.precondition)
+    // :: error: [contracts.precondition]
     object.setMessage(new Object() + "bar");
   }
 }

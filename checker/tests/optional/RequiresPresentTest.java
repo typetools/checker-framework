@@ -3,16 +3,16 @@ import org.checkerframework.checker.optional.qual.*;
 
 public class RequiresPresentTest {
 
-  // :: warning: (optional.field)
+  // :: warning: [optional.field]
   Optional<String> field1 = Optional.of("abc");
-  // :: warning: (optional.field)
+  // :: warning: [optional.field]
   Optional<String> field2 = Optional.empty();
 
   @RequiresPresent("field1")
   void method1() {
     field1.get().length(); // OK, field1 is known to be present (non-empty)
     this.field1.get().length(); // OK, field1 is known to be present (non-empty)
-    // :: error: (method.invocation)
+    // :: error: [method.invocation]
     field2.get().length(); // error, might throw NoSuchElementException
   }
 
@@ -26,18 +26,18 @@ public class RequiresPresentTest {
     field1 = Optional.of("abc");
     method1(); // OK, satisfied method precondition.
     field1 = Optional.empty();
-    // :: error: (contracts.precondition)
+    // :: error: [contracts.precondition]
     method1(); // error, does not satisfy method precondition.
   }
 
-  // :: warning: (optional.field)
+  // :: warning: [optional.field]
   protected Optional<String> field;
 
   @RequiresPresent("field")
   public void requiresPresentField() {}
 
   public void clientFail(RequiresPresentTest arg1) {
-    // :: error: (contracts.precondition)
+    // :: error: [contracts.precondition]
     arg1.requiresPresentField();
   }
 
@@ -66,7 +66,7 @@ public class RequiresPresentTest {
     method4(); // OK, both preconditions now hold at this point.
 
     field1 = Optional.empty();
-    // :: error: (contracts.precondition)
+    // :: error: [contracts.precondition]
     method4(); // error, field1 is no longer present.
   }
 }
