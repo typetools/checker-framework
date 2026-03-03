@@ -3,7 +3,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
-import java.util.Locale;
+import java.util.Objects;
 import javax.inject.Inject;
 import org.eclipse.jgit.lib.Config;
 import org.eclipse.jgit.lib.ConfigConstants;
@@ -104,7 +104,6 @@ public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
       return;
     }
     if (remoteBranchExists(fbCf.org, relatedRepoName, fbCf.branch)) {
-      System.out.printf("Checker: %s, JDK: %s.", fbCf, fbRelated);
       throw new RuntimeException(
           String.format(
               "Please checkout the corresponding %s branch. URL: %s Branch: %s.",
@@ -123,17 +122,19 @@ public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
 
     @Override
     public boolean equals(Object o) {
-      if (!(o instanceof OrgBranch orgBranch)) {
+      if (!(o instanceof OrgBranch other)) {
         return false;
       }
 
-      return org.equalsIgnoreCase(orgBranch.org) && branch.equals(orgBranch.branch);
+      boolean orgEqual =
+          org != null ? org.equalsIgnoreCase(other.org) : Objects.equals(org, other.org);
+      return orgEqual && Objects.equals(branch, other.branch);
     }
 
     @Override
     public int hashCode() {
-      int result = org.toLowerCase(Locale.ENGLISH).hashCode();
-      result = 31 * result + branch.hashCode();
+      int result = Objects.hashCode(org);
+      result = 31 * result + Objects.hashCode(branch);
       return result;
     }
   }
