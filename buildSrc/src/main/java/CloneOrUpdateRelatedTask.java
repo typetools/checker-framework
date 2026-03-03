@@ -170,7 +170,7 @@ public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
         // git@github.com:typetools/checker-framework.git
         int slashPos = remoteUrl.indexOf("/");
         if (slashPos == -1) {
-          System.err.println("Unexpected URL format " + remoteUrl);
+          getLogger().lifecycle("Unexpected URL format " + remoteUrl);
           return null;
         }
         org = remoteUrl.substring("git@github.com:".length(), slashPos);
@@ -182,18 +182,18 @@ public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
         // The path has the form:
         // /mernst/checker-framework.git
         if (!path.contains("/")) {
-          System.err.println("Unexpected URL format " + remoteUrl);
+          getLogger().lifecycle("Unexpected URL format " + remoteUrl);
           return null;
         }
         org = path.split("/")[1];
       } else {
-        System.err.println("Unexpected URL format " + remoteUrl);
+        getLogger().lifecycle("Unexpected URL format " + remoteUrl);
         return null;
       }
       return new OrgBranch(org, remoteBranchFullName.substring(Constants.R_HEADS.length()));
 
     } catch (IOException | IllegalArgumentException e) {
-      System.err.println("Error finding branch: " + e.getMessage());
+      getLogger().lifecycle("Error finding branch: " + e.getMessage());
       return null;
     }
   }
