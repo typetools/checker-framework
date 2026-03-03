@@ -31,7 +31,7 @@ class MustCallAliasParams {
   }
 
   void testMCAConstructor() {
-    // :: warning: (required.method.not.called)
+    // :: warning: [required.method.not.called]
     Foo f = new Foo();
     MCAConstructor mcac = new MCAConstructor(f);
     mcac.a();
@@ -65,7 +65,7 @@ class MustCallAliasParams {
   }
 
   void mCASuperCallTest() {
-    // :: warning: (required.method.not.called)
+    // :: warning: [required.method.not.called]
     Foo f = new Foo();
     MCASuperCall mcaSuperCall = new MCASuperCall(f);
     mcaSuperCall.a();
@@ -82,7 +82,7 @@ class MustCallAliasParams {
   }
 
   void mCAThisCallTest() {
-    // :: warning: (required.method.not.called)
+    // :: warning: [required.method.not.called]
     Foo f = new Foo();
     MCAThisCall mcaThisCall = new MCAThisCall(f, true);
     mcaThisCall.a();
@@ -94,7 +94,7 @@ class MustCallAliasParams {
     }
 
     void returnFooTest() {
-      // :: warning: (required.method.not.called)
+      // :: warning: [required.method.not.called]
       Foo f = new Foo();
       Foo foo = returnFoo(f);
       foo.a();
@@ -111,14 +111,14 @@ class MustCallAliasParams {
     }
 
     void testReturnAliasFoo2() {
-      // :: warning: (required.method.not.called)
+      // :: warning: [required.method.not.called]
       Foo foo = new Foo();
       MCASuperClass f = returnAliasFoo2(foo, 0);
       f.a();
     }
 
     void returnAliasFooTest() {
-      // :: warning: (required.method.not.called)
+      // :: warning: [required.method.not.called]
       Foo f = new Foo();
       Foo foo = returnAliasFoo(f);
       foo.a();
@@ -134,7 +134,7 @@ class MustCallAliasParams {
     }
 
     void returnFooAllPathsTest() {
-      // :: warning: (required.method.not.called)
+      // :: warning: [required.method.not.called]
       Foo f = new Foo();
       Foo foo = returnFooAllPaths(f);
       foo.a();

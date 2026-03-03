@@ -1,0 +1,23 @@
+package :
+annotation @Tainted: @java.lang.annotation.Retention(value=RUNTIME)
+
+package org.checkerframework.checker.nullness.qual:
+annotation @NonNull: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package :
+annotation @NonNull: @java.lang.annotation.Retention(value=RUNTIME)
+
+package foo:
+class Bar:
+
+    method getSomething(Ljava/lang/StringBuffer;)V:
+        return:
+        receiver: @Tainted
+        parameter #0:
+            type: @org.checkerframework.checker.nullness.qual.NonNull
+
+    method setSomething(Ljava/lang/String;)V:
+        return:
+        parameter #0: @NonNull
+            type: @org.checkerframework.checker.nullness.qual.NonNull
+

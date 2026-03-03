@@ -1,0 +1,29 @@
+package java.lang:
+annotation @A: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package java.lang:
+annotation @B: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package java.lang:
+annotation @C: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package java.lang:
+annotation @D: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package org.checkerframework.afu.annotator.tests:
+class LocalMultipleManyMethods:
+
+    method <init>()V:
+
+    method foo(Ljava/lang/Object;)V:
+        local 3 #13+8:
+            type: @java.lang.C
+        local 3 #26+8:
+            type: @java.lang.B
+
+    method foo([Ljava/lang/Object;)V:
+        local 3 #13+8:
+            type: @java.lang.A
+        local 3 #26+8:
+            type: @java.lang.D
+

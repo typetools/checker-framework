@@ -8,7 +8,6 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
 import java.util.Collection;
-import java.util.Set;
 import java.util.regex.Pattern;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
@@ -133,17 +132,11 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    *
    * @param checker the checker
    */
+  @SuppressWarnings("this-escape")
   public RegexAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
 
     this.postInit();
-  }
-
-  @Override
-  protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-    return getBundledTypeQualifiers(
-        Regex.class, PartialRegex.class,
-        RegexBottom.class, UnknownRegex.class);
   }
 
   @Override

@@ -1,0 +1,10 @@
+package java.lang:
+annotation @TestAnnotation:
+    Class value
+
+package org.checkerframework.afu.annotator.tests:
+class ClassAnnotationParameter:
+
+    method foo()V: @java.lang.TestAnnotation(value=java.lang.Object.class)
+        return:
+

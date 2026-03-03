@@ -82,6 +82,7 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    *
    * @param checker the checker to use
    */
+  @SuppressWarnings("this-escape")
   public InterningAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
 
@@ -254,6 +255,8 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /**
    * Unbox type and replace any interning type annotations with @Interned since all primitives can
    * safely use ==. See case 4 in the class comments.
+   *
+   * <p>{@inheritDoc}
    */
   @Override
   public AnnotatedPrimitiveType getUnboxedType(AnnotatedDeclaredType type) {

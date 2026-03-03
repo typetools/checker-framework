@@ -8,8 +8,6 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.PrimitiveTypeTree;
 import com.sun.source.tree.Tree;
-import java.lang.annotation.Annotation;
-import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -35,7 +33,6 @@ import org.checkerframework.checker.signature.qual.Identifier;
 import org.checkerframework.checker.signature.qual.IdentifierOrPrimitiveType;
 import org.checkerframework.checker.signature.qual.InternalForm;
 import org.checkerframework.checker.signature.qual.PrimitiveType;
-import org.checkerframework.checker.signature.qual.SignatureBottom;
 import org.checkerframework.checker.signature.qual.SignatureUnknown;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -113,15 +110,11 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    *
    * @param checker the type-checker associated with this type factory
    */
+  @SuppressWarnings("this-escape")
   public SignatureAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
 
     this.postInit();
-  }
-
-  @Override
-  protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-    return getBundledTypeQualifiers(SignatureUnknown.class, SignatureBottom.class);
   }
 
   @Override
@@ -297,7 +290,7 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
           ExpressionTree receiver = TreeUtils.getReceiverTree(tree);
           if (TreeUtils.isClassLiteral(receiver)) {
             ExpressionTree classExpr = ((MemberSelectTree) receiver).getExpression();
-            if (classExpr.getKind() == Tree.Kind.PRIMITIVE_TYPE) {
+            if (classExpr instanceof PrimitiveTypeTree) {
               if (((PrimitiveTypeTree) classExpr).getPrimitiveTypeKind() == TypeKind.VOID) {
                 // do nothing
               } else {

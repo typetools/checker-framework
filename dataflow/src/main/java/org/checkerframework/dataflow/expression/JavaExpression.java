@@ -58,8 +58,10 @@ import org.plumelib.util.CollectionsPlume;
 // There are no special subclasses (AST nodes) for "<self>".
 /**
  * This class represents a Java expression and its type. It does not represent all possible Java
- * expressions (for example, it does not represent a ternary conditional expression {@code ?:}; use
- * {@link org.checkerframework.dataflow.expression.Unknown} for unrepresentable expressions).
+ * expressions. For example, it does not represent a ternary conditional expression {@code ?:},
+ * because there is no CFG node for that expression (the expression is turned into multiple CFG
+ * nodes). Use {@link org.checkerframework.dataflow.expression.Unknown} for unrepresentable
+ * expressions).
  *
  * <p>This class's representation is like an AST: subparts are also expressions. For declared names
  * (fields, local variables, and methods), it also contains an Element.

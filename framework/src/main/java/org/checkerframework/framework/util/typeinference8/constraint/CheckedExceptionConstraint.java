@@ -3,7 +3,6 @@ package org.checkerframework.framework.util.typeinference8.constraint;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberReferenceTree;
-import com.sun.source.tree.Tree;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -40,19 +39,18 @@ public class CheckedExceptionConstraint extends TypeConstraint {
    * @param expression {@link com.sun.source.tree.LambdaExpressionTree} or {@link
    *     com.sun.source.tree.MemberReferenceTree} for this constraint
    * @param t a function type
-   * @param map The mapping from type variable to inference variable to use with this constraint
+   * @param map the mapping from type variable to inference variable to use with this constraint
    */
   public CheckedExceptionConstraint(ExpressionTree expression, AbstractType t, Theta map) {
     super("Checked exception for " + expression, t);
-    assert expression.getKind() == Tree.Kind.LAMBDA_EXPRESSION
-        || expression.getKind() == Tree.Kind.MEMBER_REFERENCE;
+    assert expression instanceof LambdaExpressionTree || expression instanceof MemberReferenceTree;
     this.expression = expression;
     this.map = map;
   }
 
   @Override
   public Kind getKind() {
-    return expression.getKind() == Tree.Kind.LAMBDA_EXPRESSION
+    return expression instanceof LambdaExpressionTree
         ? Kind.LAMBDA_EXCEPTION
         : Kind.METHOD_REF_EXCEPTION;
   }

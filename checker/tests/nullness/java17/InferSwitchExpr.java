@@ -20,13 +20,13 @@ public class InferSwitchExpr {
       case A -> {
         if (a) {
           if (b) {
-            // :: error: (type.arguments.not.inferred)
+            // :: error: [type.arguments.not.inferred]
             yield singletonList(null);
           }
-          // :: error: (type.arguments.not.inferred)
+          // :: error: [type.arguments.not.inferred]
           yield singletonList(null);
         }
-        // :: error: (type.arguments.not.inferred)
+        // :: error: [type.arguments.not.inferred]
         yield singletonList(null);
       }
       case B -> null;

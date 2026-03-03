@@ -30,6 +30,7 @@ public class JavaExpressionAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
    *
    * @param checker the checker
    */
+  @SuppressWarnings("this-escape")
   public JavaExpressionAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     TOP = AnnotationBuilder.fromClass(elements, FETop.class);

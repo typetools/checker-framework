@@ -1,0 +1,16 @@
+// @skip-test
+
+package :
+annotation @A:
+
+package :
+annotation @B:
+
+package :
+class ExplicitUpper:
+    insert-annotation Class.typeParameter 0, TypeParameter.bound 0: @A
+
+package :
+class ImplicitUpper:
+    insert-annotation Class.typeParameter 0, TypeParameter.bound 0: @B
+

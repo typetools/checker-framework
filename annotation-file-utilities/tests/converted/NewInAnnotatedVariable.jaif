@@ -1,0 +1,20 @@
+// @skip-test
+
+package :
+annotation @NonNull:
+
+package :
+class NewInAnnotatedVariable:
+
+    field b1:
+        insert-annotation Variable.initializer, NewClass.identifier: @NonNull
+
+    field b2:
+        insert-annotation Variable.initializer, NewClass.identifier, AnnotatedType.underlyingType: @NonNull
+
+    field b4:
+        insert-annotation Variable.type, ArrayType.type: @NonNull
+        insert-annotation Variable.initializer, NewArray.type 0: @NonNull
+        insert-annotation Variable.initializer, NewArray.type 1: @NonNull
+        insert-annotation Variable.type: @NonNull
+

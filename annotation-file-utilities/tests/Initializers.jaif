@@ -1,0 +1,29 @@
+package :
+annotation @X:
+
+package org.checkerframework.afu.annotator.tests:
+
+class Initializers:
+staticinit *0:
+new *0: @X
+
+class Initializers:
+staticinit *1:
+new *0: @X
+
+class Initializers:
+instanceinit *0:
+new *0: @X
+
+class Initializers:
+instanceinit *1:
+new *0: @X
+
+class Initializers$MyEnum:
+staticinit *0:
+new *0: @X
+
+class Initializers$MyEnum:
+instanceinit *0:
+new *0: @X
+

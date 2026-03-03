@@ -1,0 +1,9 @@
+package org.checkerframework.checker.tainting.qual:
+annotation @Tainted:
+
+package :
+class Abbreviation:
+    method <init>(Ljava/lang/Object;)V:
+        parameter 0:
+            type: @org.checkerframework.checker.tainting.qual.Tainted
+

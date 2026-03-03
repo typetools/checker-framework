@@ -5,61 +5,61 @@ import org.checkerframework.common.value.qual.*;
 
 public class Issue867 {
   void test1() {
-    @IntVal({0, 1}) int x = 0;
-    @IntVal(0) int zero = x++;
-    @IntVal(1) int one = x;
-    // :: error: (unary.increment)
-    x++;
+    @IntVal({0, 1}) int x1 = 0;
+    @IntVal(0) int zero = x1++;
+    @IntVal(1) int one = x1;
+    // :: error: [unary.increment]
+    x1++;
 
-    x = 1;
-    one = x--;
-    zero = x;
-    // :: error: (unary.decrement)
-    x--;
+    x1 = 1;
+    one = x1--;
+    zero = x1;
+    // :: error: [unary.decrement]
+    x1--;
   }
 
   void test2() {
-    @IntVal({0, 1, 2}) int x = 0;
-    @IntVal(1) int one = x++ + x++;
-    @IntVal(2) int two = x;
-    // :: error: (unary.increment)
-    x++;
+    @IntVal({0, 1, 2}) int x2 = 0;
+    @IntVal(1) int one = x2++ + x2++;
+    @IntVal(2) int two = x2;
+    // :: error: [unary.increment]
+    x2++;
 
-    x = 2;
-    @IntVal(3) int three = x-- + x--;
-    @IntVal(0) int zero = x;
-    // :: error: (unary.decrement)
-    x--;
+    x2 = 2;
+    @IntVal(3) int three = x2-- + x2--;
+    @IntVal(0) int zero = x2;
+    // :: error: [unary.decrement]
+    x2--;
   }
 
   void test3() {
-    @IntVal({0, 1, 2}) int x = 0;
-    @IntVal(2) int two = x++ + ++x;
-    two = x;
-    // :: error: (unary.increment)
-    x++;
+    @IntVal({0, 1, 2}) int x3 = 0;
+    @IntVal(2) int two = x3++ + ++x3;
+    two = x3;
+    // :: error: [unary.increment]
+    x3++;
 
-    x = 2;
-    two = x-- + --x;
-    @IntVal(0) int zero = x;
-    // :: error: (unary.decrement)
-    x--;
+    x3 = 2;
+    two = x3-- + --x3;
+    @IntVal(0) int zero = x3;
+    // :: error: [unary.decrement]
+    x3--;
   }
 
   void test4() {
-    @IntVal({0, 1}) int x = 0;
-    m0(x++);
-    // :: error: (argument)
-    m0(x);
-    // :: error: (unary.increment)
-    m1(x++);
+    @IntVal({0, 1}) int x4 = 0;
+    m0(x4++);
+    // :: error: [argument]
+    m0(x4);
+    // :: error: [unary.increment]
+    m1(x4++);
 
-    x = 1;
-    m1(x--);
-    // :: error: (argument)
-    m1(x);
-    // :: error: (unary.decrement)
-    m0(x--);
+    x4 = 1;
+    m1(x4--);
+    // :: error: [argument]
+    m1(x4);
+    // :: error: [unary.decrement]
+    m0(x4--);
   }
 
   void m0(@IntVal(0) int x) {}

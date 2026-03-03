@@ -114,7 +114,7 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
   /**
    * Makes a new CFValue with the same annotations as currentValue except that the annotation in the
    * LockPossiblyHeld hierarchy is set to LockPossiblyHeld. If currentValue is null, then a new
-   * value is created where the annotation set is LockPossiblyHeld and GuardedByUnknown
+   * value is created where the annotation set is LockPossiblyHeld and GuardedByUnknown.
    */
   private CFValue changeLockAnnoToTop(JavaExpression je, @Nullable CFValue currentValue) {
     if (currentValue == null) {

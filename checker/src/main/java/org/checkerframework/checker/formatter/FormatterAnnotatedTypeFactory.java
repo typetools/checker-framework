@@ -69,6 +69,7 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   protected final FormatterTreeUtil treeUtil = new FormatterTreeUtil(checker);
 
   /** Creates a FormatterAnnotatedTypeFactory. */
+  @SuppressWarnings("this-escape")
   public FormatterAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
 

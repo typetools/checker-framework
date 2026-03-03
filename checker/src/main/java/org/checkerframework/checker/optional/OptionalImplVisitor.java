@@ -7,6 +7,7 @@ import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IfTree;
+import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
@@ -27,6 +28,7 @@ import java.util.Optional;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
@@ -50,6 +52,7 @@ import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -275,30 +278,23 @@ public class OptionalImplVisitor
       falseExpr = tmp;
     }
 
-    if (trueExpr.getKind() != Tree.Kind.METHOD_INVOCATION) {
+    if (!(trueExpr instanceof MethodInvocationTree)) {
       return;
     }
     ExpressionTree trueReceiver = TreeUtils.getReceiverTree(trueExpr);
     if (!isCallToGet(trueReceiver)) {
       return;
     }
+
     ExpressionTree getReceiver = TreeUtils.getReceiverTree(trueReceiver);
-
     ExpressionTree receiver = isPresentCall.second;
-    ExecutableElement ele = TreeUtils.elementFromUse((MethodInvocationTree) trueExpr);
-    boolean isPure =
-        PurityUtils.isDeterministic(atypeFactory, ele)
-            && PurityUtils.isSideEffectFree(atypeFactory, ele);
-
-    if (sameExpression(receiver, getReceiver) && isPure) {
-
+    if (sameExpression(receiver, getReceiver)) {
+      ExecutableElement ele = TreeUtils.elementFromUse((MethodInvocationTree) trueExpr);
       checker.reportWarning(
           tree,
           "prefer.map.and.orelse",
           receiver,
-          // The literal "ENCLOSINGCLASS::" is gross.
-          // TODO: add this to the error message.
-          // ElementUtils.getQualifiedClassName(ele);
+          ElementUtils.getQualifiedClassName(ele),
           ele.getSimpleName(),
           falseExpr);
     }
@@ -367,6 +363,7 @@ public class OptionalImplVisitor
       return;
     }
 
+    // `thenStmt` may be null because it may be swapped with `elseStmt`, just below.
     StatementTree thenStmt = skipBlocks(tree.getThenStatement());
     StatementTree elseStmt = skipBlocks(tree.getElseStatement());
     if (!isPresentCall.first) {
@@ -391,26 +388,25 @@ public class OptionalImplVisitor
     }
 
     if (!(elseStmt == null
-        || (elseStmt.getKind() == Tree.Kind.BLOCK
-            && ((BlockTree) elseStmt).getStatements().isEmpty()))) {
+        || (elseStmt instanceof BlockTree && ((BlockTree) elseStmt).getStatements().isEmpty()))) {
       // else block is missing or is an empty block: "{}"
       return;
     }
 
-    if (thenStmt != null && thenStmt.getKind() == Tree.Kind.VARIABLE) {
+    if (thenStmt != null && thenStmt instanceof VariableTree) {
       ExpressionTree initializer = ((VariableTree) thenStmt).getInitializer();
-      if (initializer.getKind() == Tree.Kind.METHOD_INVOCATION) {
+      if (initializer instanceof MethodInvocationTree) {
         checkConditionalStatementIsPresentGetCall(
-            tree, (MethodInvocationTree) initializer, isPresentCall, "prefer.map.and.orelse");
+            tree, (MethodInvocationTree) initializer, isPresentCall, "prefer.map");
         return;
       }
     }
 
-    if (thenStmt.getKind() != Tree.Kind.EXPRESSION_STATEMENT) {
+    if (thenStmt == null || !(thenStmt instanceof ExpressionStatementTree)) {
       return;
     }
     ExpressionTree thenExpr = ((ExpressionStatementTree) thenStmt).getExpression();
-    if (thenExpr.getKind() != Tree.Kind.METHOD_INVOCATION) {
+    if (!(thenExpr instanceof MethodInvocationTree)) {
       return;
     }
     checkConditionalStatementIsPresentGetCall(
@@ -448,16 +444,14 @@ public class OptionalImplVisitor
     }
 
     if (sameExpression(trueAssignment.getVariable(), falseAssignment.getVariable())) {
-      if (trueAssignment.getExpression().getKind() == Kind.METHOD_INVOCATION) {
+      if (trueAssignment.getExpression() instanceof MethodInvocationTree) {
         ExecutableElement ele =
             TreeUtils.elementFromUse((MethodInvocationTree) trueAssignment.getExpression());
         checker.reportWarning(
             tree,
             "prefer.map.and.orelse",
             trueAssignment.getVariable(),
-            // The literal "ENCLOSINGCLASS::" is gross.
-            // TODO: add this to the error message.
-            // ElementUtils.getQualifiedClassName(ele);
+            ElementUtils.getQualifiedClassName(ele),
             ele.getSimpleName(),
             falseAssignment.getExpression());
       }
@@ -481,7 +475,7 @@ public class OptionalImplVisitor
    * @param invok the entire method invocation statement or the initializer of an assignment
    * @param isPresentCall the pair comprising a boolean (indicating whether the expression is a call
    *     to {@code Optional.isPresent} or to {@code Optional.isEmpty}) and its receiver
-   * @param messageKey the message key, either "prefer.ifPresent" or "prefer.map.and.orelse"
+   * @param messageKey the message key, either "prefer.ifpresent" or "prefer.map"
    */
   private void checkConditionalStatementIsPresentGetCall(
       IfTree tree,
@@ -504,9 +498,12 @@ public class OptionalImplVisitor
     ExpressionTree method = invok.getMethodSelect();
 
     String methodString = method.toString();
-    int dotPos = methodString.lastIndexOf(".");
+    int dotPos = methodString.lastIndexOf('.');
     if (dotPos != -1) {
       methodString = methodString.substring(0, dotPos) + "::" + methodString.substring(dotPos + 1);
+    } else {
+      Element ele = TreeUtils.elementFromUse(method);
+      methodString = ElementUtils.getQualifiedClassName(ele) + "::" + methodString;
     }
 
     checker.reportWarning(tree, messageKey, isPresentReceiver, methodString);
@@ -636,7 +633,7 @@ public class OptionalImplVisitor
    * <p>If an Optional value is compared with the null literal, it indicates that the programmer
    * expects it might have been assigned a null value (or no value at all) somewhere in the code.
    *
-   * @param tree a binary tree representing a binary operation.
+   * @param tree a binary tree representing a binary operation
    */
   private void handleCompareToNull(BinaryTree tree) {
     if (!isEqualityOperation(tree)) {
@@ -706,7 +703,7 @@ public class OptionalImplVisitor
         // The receiver can be null if the receiver is the implicit "this.".
         return;
       }
-      if (receiver.getKind() != Tree.Kind.METHOD_INVOCATION) {
+      if (!(receiver instanceof MethodInvocationTree)) {
         return;
       }
       MethodInvocationTree methodCall = (MethodInvocationTree) receiver;
@@ -781,7 +778,7 @@ public class OptionalImplVisitor
       } else if (ekind == ElementKind.PARAMETER) {
         TreePath paramPath = getCurrentPath();
         Tree parent = paramPath.getParentPath().getLeaf();
-        if (parent.getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
+        if (parent instanceof LambdaExpressionTree) {
           // Exception to rule: lambda parameters can have type Optional.
         } else {
           checker.reportWarning(tree, "optional.parameter");
@@ -878,7 +875,7 @@ public class OptionalImplVisitor
   }
 
   /**
-   * Return true if tm is a subtype of Collection (other than the Null type).
+   * Returns true if tm is a subtype of Collection (other than the Null type).
    *
    * @param tm a type
    * @return true if the given type is a subtype of Collection
@@ -897,7 +894,8 @@ public class OptionalImplVisitor
               "java.util.OptionalLong"));
 
   /**
-   * Return true if tm is class Optional, OptionalDouble, OptionalInt, or OptionalLong in java.util.
+   * Returns true if tm is class Optional, OptionalDouble, OptionalInt, or OptionalLong in
+   * java.util.
    *
    * @param tm a type
    * @return true if the given type is Optional, OptionalDouble, OptionalInt, or OptionalLong
@@ -919,7 +917,7 @@ public class OptionalImplVisitor
       return tree;
     }
     StatementTree s = tree;
-    while (s.getKind() == Tree.Kind.BLOCK) {
+    while (s instanceof BlockTree) {
       List<? extends StatementTree> stmts = ((BlockTree) s).getStatements();
       if (stmts.size() == 1) {
         s = stmts.get(0);
@@ -959,7 +957,7 @@ public class OptionalImplVisitor
     TreePath getParentPath = getPath.getParentPath();
     // "getParent" means "the parent of the node `Optional::get`".
     Tree getParent = getParentPath.getLeaf();
-    if (getParent.getKind() == Tree.Kind.METHOD_INVOCATION) {
+    if (getParent instanceof MethodInvocationTree) {
       MethodInvocationTree hasGetAsArgumentTree = (MethodInvocationTree) getParent;
       ExecutableElement hasGetAsArgumentElement = TreeUtils.elementFromUse(hasGetAsArgumentTree);
       if (!hasGetAsArgumentElement.equals(streamMap)) {
@@ -969,7 +967,7 @@ public class OptionalImplVisitor
       // hasGetAsArgumentTree is an invocation of Stream#map(...).
       Tree mapReceiverTree = TreeUtils.getReceiverTree(hasGetAsArgumentTree);
       // Will check whether mapParent is the call `Stream.filter(Optional::isPresent)`.
-      if (mapReceiverTree != null && mapReceiverTree.getKind() == Tree.Kind.METHOD_INVOCATION) {
+      if (mapReceiverTree != null && mapReceiverTree instanceof MethodInvocationTree) {
         MethodInvocationTree fluentToMapTree = (MethodInvocationTree) mapReceiverTree;
         ExecutableElement fluentToMapElement = TreeUtils.elementFromUse(fluentToMapTree);
         if (!fluentToMapElement.equals(streamFilter)) {
@@ -978,7 +976,7 @@ public class OptionalImplVisitor
         }
         MethodInvocationTree filterInvocationTree = fluentToMapTree;
         ExpressionTree filterArgTree = filterInvocationTree.getArguments().get(0);
-        if (filterArgTree.getKind() == Tree.Kind.MEMBER_REFERENCE) {
+        if (filterArgTree instanceof MemberReferenceTree) {
           ExecutableElement filterArgElement =
               TreeUtils.elementFromUse((MemberReferenceTree) filterArgTree);
           return filterArgElement.equals(optionalIsPresent);

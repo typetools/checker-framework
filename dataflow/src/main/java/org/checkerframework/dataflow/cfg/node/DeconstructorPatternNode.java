@@ -69,7 +69,7 @@ public class DeconstructorPatternNode extends Node {
   protected @MonotonicNonNull List<LocalVariableNode> bindingVariables = null;
 
   /**
-   * Return all the binding variables in this pattern.
+   * Returns all the binding variables in this pattern.
    *
    * @return all the binding variables in this pattern
    */

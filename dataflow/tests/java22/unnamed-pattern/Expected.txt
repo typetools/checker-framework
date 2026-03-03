@@ -18,9 +18,9 @@ Process order: 2
 TransferInput#1
 Before:   reaching definitions = none
 ~~~~~~~~~
-x   [ VariableDeclaration ]
+to_increment   [ VariableDeclaration ]
 0   [ IntegerLiteral ]
-x = 0   [ Assignment ]
+to_increment = 0   [ Assignment ]
 switch#num0   [ VariableDeclaration ]
 switch#num0   [ LocalVariable ]
 i   [ LocalVariable ]
@@ -31,60 +31,60 @@ WrappedInt(_)   [ DeconstructorPattern ]
 case WrappedInt(_):   [ Case ]
 ~~~~~~~~~
 AnalysisResult#0
-After:   reaching definitions = { x = 0, switch#num0 = i }
+After:   reaching definitions = { to_increment = 0, switch#num0 = i }
 
 4:
 Process order: 3
 TransferInput#14
-Before:   reaching definitions = { x = 0, switch#num0 = i }
+Before:   reaching definitions = { to_increment = 0, switch#num0 = i }
 ~~~~~~~~~
 ConditionalBlock: then: 8, else: 10
 
 8:
 Process order: 4
 TransferInput#16
-Before:   reaching definitions = { x = 0, switch#num0 = i }
+Before:   reaching definitions = { to_increment = 0, switch#num0 = i }
 ~~~~~~~~~
-x   [ LocalVariable ]
-x   [ LocalVariable ]
+to_increment   [ LocalVariable ]
+to_increment   [ LocalVariable ]
 1   [ IntegerLiteral ]
-(x + 1)   [ NumericalAddition ]
-x = (x + 1)   [ Assignment ]
-expression statement x = x + 1   [ ExpressionStatement ]
+(to_increment + 1)   [ NumericalAddition ]
+to_increment = (to_increment + 1)   [ Assignment ]
+expression statement to_increment = to_increment + 1   [ ExpressionStatement ]
 ~~~~~~~~~
 AnalysisResult#0
-After:   reaching definitions = { switch#num0 = i, x = (x + 1) }
+After:   reaching definitions = { switch#num0 = i, to_increment = (to_increment + 1) }
 
 10:
 Process order: 5
 TransferInput#17
-Before:   reaching definitions = { x = 0, switch#num0 = i }
+Before:   reaching definitions = { to_increment = 0, switch#num0 = i }
 ~~~~~~~~~
-x   [ LocalVariable ]
-x   [ LocalVariable ]
+to_increment   [ LocalVariable ]
+to_increment   [ LocalVariable ]
 2   [ IntegerLiteral ]
-(x + 2)   [ NumericalAddition ]
-x = (x + 2)   [ Assignment ]
-expression statement x = x + 2   [ ExpressionStatement ]
+(to_increment + 2)   [ NumericalAddition ]
+to_increment = (to_increment + 2)   [ Assignment ]
+expression statement to_increment = to_increment + 2   [ ExpressionStatement ]
 ~~~~~~~~~
 AnalysisResult#0
-After:   reaching definitions = { switch#num0 = i, x = (x + 2) }
+After:   reaching definitions = { switch#num0 = i, to_increment = (to_increment + 2) }
 
 12:
 Process order: 6
 TransferInput#33
-Before:   reaching definitions = { switch#num0 = i, x = (x + 2), x = (x + 1) }
+Before:   reaching definitions = { switch#num0 = i, to_increment = (to_increment + 2), to_increment = (to_increment + 1) }
 ~~~~~~~~~
 marker (end of switch statement #0)   [ Marker ]
-x   [ LocalVariable ]
-return x   [ Return ]
+to_increment   [ LocalVariable ]
+return to_increment   [ Return ]
 ~~~~~~~~~
 AnalysisResult#0
-After:   reaching definitions = { switch#num0 = i, x = (x + 2), x = (x + 1) }
+After:   reaching definitions = { switch#num0 = i, to_increment = (to_increment + 2), to_increment = (to_increment + 1) }
 
 0:
 Process order: 7
 TransferInput#38
-Before:   reaching definitions = { switch#num0 = i, x = (x + 2), x = (x + 1) }
+Before:   reaching definitions = { switch#num0 = i, to_increment = (to_increment + 2), to_increment = (to_increment + 1) }
 ~~~~~~~~~
 <exit>

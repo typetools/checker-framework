@@ -70,7 +70,7 @@ public class CalledMethodsChecker extends AccumulationChecker {
   /**
    * Was the Returns Receiver Checker disabled on the command line?
    *
-   * @return whether the -AdisableReturnsReceiver option was specified on the command line
+   * @return true if the -AdisableReturnsReceiver option was specified on the command line
    */
   protected boolean isReturnsReceiverDisabled() {
     if (returnsReceiverDisabled == null) {
@@ -97,7 +97,7 @@ public class CalledMethodsChecker extends AccumulationChecker {
   }
 
   /**
-   * Check whether the given alias analysis is enabled by this particular accumulation checker.
+   * Returns true if the given alias analysis is enabled by this particular accumulation checker.
    *
    * @param aliasAnalysis the analysis to check
    * @return true iff the analysis is enabled

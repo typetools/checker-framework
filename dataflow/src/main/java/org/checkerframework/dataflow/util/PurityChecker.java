@@ -9,6 +9,7 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.util.TreePath;
@@ -88,7 +89,7 @@ public class PurityChecker {
     protected EnumSet<Pure.Kind> kinds = EnumSet.allOf(Pure.Kind.class);
 
     /**
-     * Return the kinds of purity that the method has.
+     * Returns the kinds of purity that the method has.
      *
      * @return the kinds of purity that the method has
      */
@@ -107,7 +108,7 @@ public class PurityChecker {
     }
 
     /**
-     * Get the reasons why the method is not side-effect-free.
+     * Returns the reasons why the method is not side-effect-free.
      *
      * @return the reasons why the method is not side-effect-free
      */
@@ -127,7 +128,7 @@ public class PurityChecker {
     }
 
     /**
-     * Get the reasons why the method is not deterministic.
+     * Returns the reasons why the method is not deterministic.
      *
      * @return the reasons why the method is not deterministic
      */
@@ -147,7 +148,7 @@ public class PurityChecker {
     }
 
     /**
-     * Get the reasons why the method is not both side-effect-free and deterministic.
+     * Returns the reasons why the method is not both side-effect-free and deterministic.
      *
      * @return the reasons why the method is not both side-effect-free and deterministic
      */
@@ -301,7 +302,7 @@ public class PurityChecker {
       // to check the latter condition, because the Purity Checker forbids all catch
       // statements.)
       Tree parent = getCurrentPath().getParentPath().getLeaf();
-      boolean okThrowDeterministic = parent.getKind() == Tree.Kind.THROW;
+      boolean okThrowDeterministic = parent instanceof ThrowTree;
 
       ExecutableElement ctorElement = TreeUtils.elementFromUse(tree);
       boolean deterministic =
@@ -353,7 +354,7 @@ public class PurityChecker {
     }
 
     /**
-     * Check whether {@code variable} is permitted on the left-hand-side of an assignment.
+     * Returns true if {@code variable} is permitted on the left-hand-side of an assignment.
      *
      * @param variable the lhs to check
      */

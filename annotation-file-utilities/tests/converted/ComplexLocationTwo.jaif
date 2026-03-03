@@ -1,0 +1,37 @@
+package java.lang:
+annotation @C: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package java.lang:
+annotation @F: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package java.lang:
+annotation @E: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package java.lang:
+annotation @D: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package java.lang:
+annotation @H: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package java.lang:
+annotation @B: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package java.lang:
+annotation @G: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package java.lang:
+annotation @A: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package org.checkerframework.afu.annotator.tests:
+class ComplexLocationTwo:
+
+    field field:
+        insert-annotation Variable.type, ParameterizedType.typeArgument 0, ParameterizedType.typeArgument 0, ArrayType.type, ArrayType.type, ArrayType.type: @java.lang.C
+        insert-annotation Variable.type, ParameterizedType.typeArgument 0, ParameterizedType.typeArgument 0, ArrayType.type, ArrayType.type: @java.lang.F
+        insert-annotation Variable.type, ParameterizedType.typeArgument 0, ParameterizedType.typeArgument 0, ArrayType.type: @java.lang.E
+        insert-annotation Variable.type, ParameterizedType.typeArgument 0, ParameterizedType.typeArgument 0: @java.lang.D
+        insert-annotation Variable.type, ParameterizedType.typeArgument 1, ParameterizedType.typeArgument 0: @java.lang.H
+        insert-annotation Variable.type, ParameterizedType.typeArgument 0: @java.lang.B
+        insert-annotation Variable.type, ParameterizedType.typeArgument 1: @java.lang.G
+        insert-annotation Variable.type: @java.lang.A
+
