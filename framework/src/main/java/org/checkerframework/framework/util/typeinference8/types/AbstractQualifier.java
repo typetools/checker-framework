@@ -40,10 +40,10 @@ public abstract class AbstractQualifier {
   }
 
   /**
-   * Returns whether {@code other} is in the same hierarchy as this.
+   * Returns true if {@code other} is in the same hierarchy as this.
    *
    * @param other another abstract qualifier
-   * @return whether {@code other} is in the same hierarchy as this
+   * @return true if {@code other} is in the same hierarchy as this
    */
   public boolean sameHierarchy(AbstractQualifier other) {
     return this.hierarchyName == other.hierarchyName;

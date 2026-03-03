@@ -29,7 +29,7 @@ import org.checkerframework.javacutil.TypesUtils;
  * may be types or wildcards and may mention inference variables).
  */
 public class CaptureBound {
-  /** {@code G<A1, ..., An>} sometimes called the right hand side */
+  /** {@code G<A1, ..., An>} sometimes called the right-hand side. */
   private final AbstractType capturedType;
 
   /**
@@ -157,7 +157,7 @@ public class CaptureBound {
   }
 
   /**
-   * Return all variables on the left-hand side of this capture.
+   * Returns all variables on the left-hand side of this capture.
    *
    * @return all variables on the left-hand side of this capture
    */
@@ -166,7 +166,7 @@ public class CaptureBound {
   }
 
   /**
-   * Return all variables on the right-hand side of this capture.
+   * Returns all variables on the right-hand side of this capture.
    *
    * @return all variables on the right-hand side of this capture
    */
@@ -175,10 +175,10 @@ public class CaptureBound {
   }
 
   /**
-   * Returns whether this bound contains any {@code variables}.
+   * Returns true if this bound contains any {@code variables}.
    *
    * @param variables inference variables
-   * @return whether this bound contains any {@code variables}
+   * @return true if this bound contains any {@code variables}
    */
   public boolean isCaptureMentionsAny(Collection<Variable> variables) {
     for (Variable a : variables) {
@@ -196,14 +196,14 @@ public class CaptureBound {
   private static class CaptureTuple {
 
     /**
-     * Fresh inference variable (in the left hand side of the capture). (Also referred to as beta in
+     * Fresh inference variable (in the left-hand side of the capture). (Also referred to as beta in
      * the some places in the JLS.) For example {@code a1} in {@code G<a1, ..., an> = capture(G<A1,
      * ..., An>)}.
      */
     public final CaptureVariable alpha;
 
     /**
-     * Type argument in the right hand side for the capture. For example {@code A1} in {@code G<a1,
+     * Type argument in the right-hand side for the capture. For example {@code A1} in {@code G<a1,
      * ..., an> = capture(G<A1, ..., An>)}.
      */
     public final AbstractType capturedTypeArg;

@@ -28,8 +28,8 @@ import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeKindUtils;
-import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.IPair;
+import org.plumelib.util.MapsP;
 
 /**
  * {@link PropagationTreeAnnotator} adds qualifiers to types where the resulting type is a function
@@ -57,10 +57,10 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
   }
 
   /**
-   * Whether to use the assignment context when computing the type of a new array expression. This
-   * is a hack to prevent infinite recursion if computing the type of the assignment context
-   * includes computing the type of the right-hand side of the assignment. This happens when the
-   * assignment is the pseudo-assignment of a method argument to a formal parameter.
+   * If true, use the assignment context when computing the type of a new array expression. This is
+   * a hack to prevent infinite recursion if computing the type of the assignment context includes
+   * computing the type of the right-hand side of the assignment. This happens when the assignment
+   * is the pseudo-assignment of a method argument to a formal parameter.
    */
   private boolean useAssignmentContext = true;
 
@@ -73,7 +73,7 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
    * and this cache is used to improve performance.
    */
   private final Map<MethodInvocationTree, AnnotatedExecutableType> methodInvocationToType =
-      CollectionsPlume.createLruCache(300);
+      MapsP.createLruCache(300);
 
   @Override
   public Void visitNewArray(NewArrayTree arrayTree, AnnotatedTypeMirror arrayType) {

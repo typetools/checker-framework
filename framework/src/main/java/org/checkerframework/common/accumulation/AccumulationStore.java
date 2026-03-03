@@ -7,11 +7,11 @@ import org.checkerframework.framework.flow.CFAbstractStore;
 public class AccumulationStore extends CFAbstractStore<AccumulationValue, AccumulationStore> {
 
   /**
-   * Constructor matching super.
+   * Creates an AccumulationStore.
    *
    * @param analysis the analysis
-   * @param sequentialSemantics whether to use sequential semantics (true) or concurrent semantics
-   *     (false)
+   * @param sequentialSemantics if true, use sequential semantics; if false, use concurrent
+   *     semantics
    */
   protected AccumulationStore(
       CFAbstractAnalysis<AccumulationValue, AccumulationStore, ?> analysis,
@@ -20,7 +20,7 @@ public class AccumulationStore extends CFAbstractStore<AccumulationValue, Accumu
   }
 
   /**
-   * Constructor matching super's copy constructor.
+   * Creates an AccumulationStore as a copy of the given store.
    *
    * @param other another store
    */

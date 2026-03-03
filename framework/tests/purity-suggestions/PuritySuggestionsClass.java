@@ -22,7 +22,7 @@ public class PuritySuggestionsClass {
 
   // class with a pure constructor
   private static class PureClass {
-    // :: warning: (purity.more.sideeffectfree)
+    // :: warning: [purity.more.sideeffectfree]
     public PureClass() {}
   }
 
@@ -30,13 +30,13 @@ public class PuritySuggestionsClass {
   private static class PureClass2 {
     String t;
 
-    // :: warning: (purity.more.sideeffectfree)
+    // :: warning: [purity.more.sideeffectfree]
     public PureClass2() {
       t = "";
     }
   }
 
-  // :: warning: (purity.more.sideeffectfree)
+  // :: warning: [purity.more.sideeffectfree]
   void nonpure() {}
 
   @Pure
@@ -49,19 +49,19 @@ public class PuritySuggestionsClass {
     return "";
   }
 
-  // :: warning: (purity.more.pure)
+  // :: warning: [purity.more.pure]
   String t4() {
     pure();
     return "";
   }
 
-  // :: warning: (purity.more.pure)
+  // :: warning: [purity.more.pure]
   int t5() {
     int i = 1;
     return i;
   }
 
-  // :: warning: (purity.more.pure)
+  // :: warning: [purity.more.pure]
   int t6() {
     int j = 0;
     for (int i = 0; i < 10; i++) {
@@ -70,7 +70,7 @@ public class PuritySuggestionsClass {
     return j;
   }
 
-  // :: warning: (purity.more.pure)
+  // :: warning: [purity.more.pure]
   String t7() {
     if (true) {
       return "a";
@@ -78,12 +78,12 @@ public class PuritySuggestionsClass {
     return "";
   }
 
-  // :: warning: (purity.more.pure)
+  // :: warning: [purity.more.pure]
   int t8() {
     return 1 - 2 / 3 * 2 % 2;
   }
 
-  // :: warning: (purity.more.pure)
+  // :: warning: [purity.more.pure]
   String t9() {
     return "b" + "a";
   }
@@ -109,20 +109,20 @@ public class PuritySuggestionsClass {
     return "";
   }
 
-  // :: warning: (purity.more.pure)
+  // :: warning: [purity.more.pure]
   String t14() {
     String i = "";
     i = "a";
     return i;
   }
 
-  // :: warning: (purity.more.pure)
+  // :: warning: [purity.more.pure]
   String t15() {
     String[] s = new String[1];
     return s[0];
   }
 
-  // :: warning: (purity.more.sideeffectfree)
+  // :: warning: [purity.more.sideeffectfree]
   String t16() {
     try {
       int i = 1 / 0;
@@ -132,7 +132,7 @@ public class PuritySuggestionsClass {
     return "";
   }
 
-  // :: warning: (purity.more.sideeffectfree)
+  // :: warning: [purity.more.sideeffectfree]
   String t16b() {
     try {
       int i = 1 / 0;
@@ -142,7 +142,7 @@ public class PuritySuggestionsClass {
     return "";
   }
 
-  // :: warning: (purity.more.sideeffectfree)
+  // :: warning: [purity.more.sideeffectfree]
   String t16c() {
     try {
       int i = 1 / 0;
@@ -152,18 +152,18 @@ public class PuritySuggestionsClass {
     return "";
   }
 
-  // :: warning: (purity.more.pure)
+  // :: warning: [purity.more.pure]
   String t17() {
     return "";
   }
 
   @Deterministic
-  // :: warning: (purity.more.sideeffectfree)
+  // :: warning: [purity.more.sideeffectfree]
   String t18() {
     return "";
   }
 
-  // :: warning: (purity.more.deterministic)
+  // :: warning: [purity.more.deterministic]
   String t19() {
     return t18();
   }
@@ -175,7 +175,7 @@ public class PuritySuggestionsClass {
 
   @SideEffectFree
   @Deterministic
-  // :: warning: (purity.effectively.pure)
+  // :: warning: [purity.effectively.pure]
   String shouldBeMarkedPure() {
     return "";
   }

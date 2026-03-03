@@ -22,7 +22,7 @@ public class CastInsertion extends Insertion {
   /** The type to cast to. */
   private Type type;
 
-  /** Whether insertion is to take place on a bare array literal. */
+  /** True if insertion is to take place on a bare array literal. */
   public boolean onArrayLiteral = false;
 
   /**

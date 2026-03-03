@@ -106,7 +106,7 @@ public class BugInCF extends RuntimeException {
   }
 
   /**
-   * Return the tree at which to report the exception.
+   * Returns the tree at which to report the exception.
    *
    * @return the tree at which to report the exception
    */

@@ -26,7 +26,7 @@ public class UseOfVariable extends AbstractType {
   /** The variable that this is a use of. */
   private final Variable variable;
 
-  /** Whether this use has a primary annotation. */
+  /** True if this use has a primary annotation. */
   private final boolean hasPrimaryAnno;
 
   /** The bottom annotations for each hierarchy that has a primary annotation on this use. */
@@ -48,7 +48,7 @@ public class UseOfVariable extends AbstractType {
    * @param variable variable that this is a use of
    * @param qualifierVars a mapping from polymorphic annotation to {@link QualifierVar}
    * @param context the context
-   * @param ignoreAnnotations whether the annotations on this type should be ignored
+   * @param ignoreAnnotations true if the annotations on this type should be ignored
    */
   public UseOfVariable(
       AnnotatedTypeVariable type,
@@ -138,7 +138,7 @@ public class UseOfVariable extends AbstractType {
   /**
    * Set whether this use has a throws bound.
    *
-   * @param hasThrowsBound whether this use has a throws bound
+   * @param hasThrowsBound true if this use has a throws bound
    */
   public void setHasThrowsBound(boolean hasThrowsBound) {
     variable.getBounds().setHasThrowsBound(hasThrowsBound);

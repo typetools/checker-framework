@@ -29,13 +29,13 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.expression.ArrayCreation;
 import org.checkerframework.dataflow.expression.ClassName;
 import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.JavaExpressionParseException;
 import org.checkerframework.dataflow.expression.ValueLiteral;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.ElementQualifierHierarchy;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.util.JavaExpressionParseUtil;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -353,7 +353,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       sameLenAnno =
           getAnnotationFromJavaExpressionString(
               sequenceExpression, tree, currentPath, SameLen.class);
-    } catch (JavaExpressionParseUtil.JavaExpressionParseException e) {
+    } catch (JavaExpressionParseException e) {
       // ignore parse errors
       return Collections.emptyList();
     }

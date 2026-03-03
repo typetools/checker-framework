@@ -22,8 +22,8 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
  * public void callM(T t) { ... }
  * </pre>
  *
- * <p>The <code>callM</code> method promises to always call {@code t.m()} before throwing any kind
- * of {@link Exception}.
+ * <p>The {@code callM} method promises to always call {@code t.m()} before throwing any kind of
+ * {@link Exception}.
  *
  * <p>Note that {@code EnsuresCalledMethodsOnException} only describes behavior for {@link
  * Exception} (and by extension {@link RuntimeException}, {@link NullPointerException}, etc.) but
@@ -88,7 +88,7 @@ public @interface EnsuresCalledMethodsOnException {
   @InheritedAnnotation
   public static @interface List {
     /**
-     * Return the repeatable annotations.
+     * Returns the repeatable annotations.
      *
      * @return the repeatable annotations
      */

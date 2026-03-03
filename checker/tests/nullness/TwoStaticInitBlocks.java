@@ -20,7 +20,7 @@ public class TwoStaticInitBlocks {
   {
     ws_regexp = "hello";
     t.toString();
-    // :: error: (dereference.of.nullable)
+    // :: error: [dereference.of.nullable]
     s.toString();
   }
 }

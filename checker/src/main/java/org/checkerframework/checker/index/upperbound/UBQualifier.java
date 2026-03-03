@@ -22,8 +22,8 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TypeSystemError;
-import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.IPair;
+import org.plumelib.util.MapsP;
 
 /**
  * Abstraction for Upper Bound annotations. This abstract class has 4 subclasses, each of which is a
@@ -325,7 +325,7 @@ public abstract class UBQualifier {
   }
 
   /**
-   * Return true if this is UBQualifier.PolyQualifier.
+   * Returns true if this is UBQualifier.PolyQualifier.
    *
    * @return true if this is UBQualifier.PolyQualifier
    */
@@ -348,7 +348,7 @@ public abstract class UBQualifier {
    * Is the value with this qualifier less than the length of sequence?
    *
    * @param sequence a String sequence
-   * @return whether or not the value with this qualifier is less than the length of sequence
+   * @return true if the value with this qualifier is less than the length of sequence
    */
   public boolean isLessThanLengthOf(String sequence) {
     return false;
@@ -358,30 +358,29 @@ public abstract class UBQualifier {
    * Is the value with this qualifier less than the length of any of the sequences?
    *
    * @param sequences list of sequences
-   * @return whether or not the value with this qualifier is less than the length of any of the
-   *     sequences
+   * @return true if the value with this qualifier is less than the length of any of the sequences
    */
   public boolean isLessThanLengthOfAny(List<String> sequences) {
     return false;
   }
 
   /**
-   * Returns whether or not this qualifier has sequence with the specified offset.
+   * Returns true if this qualifier has sequence with the specified offset.
    *
    * @param sequence sequence expression
    * @param offset the offset being looked for
-   * @return whether or not this qualifier has sequence with the specified offset
+   * @return true if this qualifier has sequence with the specified offset
    */
   public boolean hasSequenceWithOffset(String sequence, int offset) {
     return false;
   }
 
   /**
-   * Returns whether or not this qualifier has sequence with the specified offset.
+   * Returns true if this qualifier has sequence with the specified offset.
    *
    * @param sequence sequence expression
    * @param offset the offset being looked for
-   * @return whether or not this qualifier has sequence with the specified offset
+   * @return true if this qualifier has sequence with the specified offset
    */
   public boolean hasSequenceWithOffset(String sequence, String offset) {
     return false;
@@ -391,8 +390,7 @@ public abstract class UBQualifier {
    * Is the value with this qualifier less than or equal to the length of sequence?
    *
    * @param sequence a String sequence
-   * @return whether or not the value with this qualifier is less than or equal to the length of
-   *     sequence
+   * @return true if the value with this qualifier is less than or equal to the length of sequence
    */
   public boolean isLessThanOrEqualTo(String sequence) {
     return false;
@@ -417,11 +415,10 @@ public abstract class UBQualifier {
      * @return a copy of the map
      */
     private Map<String, Set<OffsetEquation>> copyMap() {
-      Map<String, Set<OffsetEquation>> result = new HashMap<>(CollectionsPlume.mapCapacity(map));
+      Map<String, Set<OffsetEquation>> result = new HashMap<>(MapsP.mapCapacity(map));
       for (String sequenceName : map.keySet()) {
         Set<OffsetEquation> oldEquations = map.get(sequenceName);
-        Set<OffsetEquation> newEquations =
-            new HashSet<>(CollectionsPlume.mapCapacity(oldEquations));
+        Set<OffsetEquation> newEquations = new HashSet<>(MapsP.mapCapacity(oldEquations));
         for (OffsetEquation offsetEquation : oldEquations) {
           newEquations.add(new OffsetEquation(offsetEquation));
         }
@@ -463,7 +460,7 @@ public abstract class UBQualifier {
     private static @Nullable Map<String, Set<OffsetEquation>> sequencesAndOffsetsToMap(
         List<String> sequences, List<String> offsets, @Nullable OffsetEquation extraEq) {
 
-      Map<String, Set<OffsetEquation>> map = new HashMap<>(CollectionsPlume.mapCapacity(sequences));
+      Map<String, Set<OffsetEquation>> map = new HashMap<>(MapsP.mapCapacity(sequences));
       if (offsets.isEmpty()) {
         for (String sequence : sequences) {
           // Not `Collections.singleton(extraEq)` because the values get modified
@@ -760,7 +757,7 @@ public abstract class UBQualifier {
      * the sequence that is greater than or equal to the super offset.
      *
      * @param superType other qualifier
-     * @return whether this qualifier is a subtype of superType
+     * @return true if this qualifier is a subtype of superType
      */
     @Override
     public boolean isSubtype(UBQualifier superType) {
@@ -840,8 +837,7 @@ public abstract class UBQualifier {
       Set<String> sequences = new HashSet<>(map.keySet());
       sequences.retainAll(otherLtl.map.keySet());
 
-      Map<String, Set<OffsetEquation>> lubMap =
-          new HashMap<>(CollectionsPlume.mapCapacity(sequences));
+      Map<String, Set<OffsetEquation>> lubMap = new HashMap<>(MapsP.mapCapacity(sequences));
       for (String sequence : sequences) {
         Set<OffsetEquation> offsets1 = map.get(sequence);
         Set<OffsetEquation> offsets2 = otherLtl.map.get(sequence);
@@ -1198,7 +1194,7 @@ public abstract class UBQualifier {
     }
 
     /**
-     * Checks whether replacing sequence with replacementSequence in this qualifier creates
+     * Returns true if replacing sequence with replacementSequence in this qualifier creates
      * replacementSequence entry in other.
      */
     public boolean isValidReplacement(

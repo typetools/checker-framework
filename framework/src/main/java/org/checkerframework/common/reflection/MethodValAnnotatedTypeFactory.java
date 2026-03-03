@@ -38,6 +38,7 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.MapsP;
 
 /** AnnotatedTypeFactory for the MethodVal Checker. */
 public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
@@ -152,7 +153,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * Returns a list of class names for the given tree using the Class Val Checker.
    *
    * @param tree an ExpressionTree whose class names are requested
-   * @param mustBeExact whether @ClassBound may be read to produce the result; if false,
+   * @param mustBeExact true if @ClassBound may be read to produce the result; if false,
    *     only @ClassVal may be read
    * @return list of class names or the empty list if no class names were found
    */
@@ -325,8 +326,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       }
 
       Set<MethodSignature> methodSigs =
-          new HashSet<>(
-              CollectionsPlume.mapCapacity(methodNames.size() * classNames.size() * params.size()));
+          new HashSet<>(MapsP.mapCapacity(methodNames.size() * classNames.size() * params.size()));
       // The possible method signatures are the Cartesian product of all
       // found class, method, and parameter lengths.
       for (String methodName : methodNames) {
@@ -443,8 +443,9 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 }
 
 /**
- * An object that represents a the tuple that identifies a method signature: (fully qualified class
- * name, method name, number of parameters).
+ * An object that represents a method signature: fully qualified class name, method name, and number
+ * of parameters. It does not distinguish among overloads that have the same number of arguments,
+ * but arguments of different types.
  */
 class MethodSignature {
   String className;

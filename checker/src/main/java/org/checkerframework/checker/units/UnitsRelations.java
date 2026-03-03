@@ -22,8 +22,8 @@ public interface UnitsRelations {
   /**
    * Called for the multiplication of type lht and rht.
    *
-   * @param lht left hand side in multiplication
-   * @param rht right hand side in multiplication
+   * @param lht left-hand side in multiplication
+   * @param rht right-hand side in multiplication
    * @return the annotation to use for the result of the multiplication or null if no special
    *     relation is known
    */
@@ -32,8 +32,8 @@ public interface UnitsRelations {
   /**
    * Called for the division of type lht and rht.
    *
-   * @param lht left hand side in division
-   * @param rht right hand side in division
+   * @param lht left-hand side in division
+   * @param rht right-hand side in division
    * @return the annotation to use for the result of the division or null if no special relation is
    *     known
    */
