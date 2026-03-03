@@ -10,6 +10,7 @@ import org.checkerframework.common.delegation.qual.Delegate;
 public class DelegationAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   /** Create the type factory. */
+  @SuppressWarnings("this-escape")
   public DelegationAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     this.postInit();
