@@ -38,9 +38,12 @@ public abstract class GitTask extends DefaultTask {
   public void cloneRetryOnce(String url, String branch, File directory) {
     clone(url, branch, directory, true);
     if (!new File(directory, ".git").exists()) {
-      System.out.printf(
-          "Cloning failed, will try again in 1 minute: clone(%s, %s, %s)%n",
-          url, branch, directory);
+      getLogger()
+          .warn(
+              "Cloning failed, will try again in 1 minute: clone({}, {}, {})",
+              url,
+              branch,
+              directory);
       try {
         Thread.sleep(60000); // wait 1 minute, then try again
       } catch (InterruptedException e) {
@@ -68,7 +71,7 @@ public abstract class GitTask extends DefaultTask {
     try (Git git = cloneCommand.call()) {
       getLogger().debug("Cloning successful.");
     } catch (GitAPIException e) {
-      getLogger().lifecycle("Error cloning repository " + url + ": " + e.getMessage());
+      getLogger().warn("Error cloning repository {}: {}", url, e.getMessage());
       if (ignoreError) {
         return;
       }
@@ -81,9 +84,8 @@ public abstract class GitTask extends DefaultTask {
    * no exception is thrown.
    *
    * @param directory where the clone to update is
-   * @param execOperations used to run exec commands
    */
-  public void update(File directory, ExecOperations execOperations) {
+  public void update(File directory) {
     try (Git git = Git.open(directory)) {
       git.pull().call();
     } catch (GitAPIException e) {
@@ -103,11 +105,10 @@ public abstract class GitTask extends DefaultTask {
               });
       if (execResult.getExitValue() != 0) {
         getLogger()
-            .lifecycle(
-                "git pull failed in " + directory + " with exit code " + execResult.getExitValue());
+            .warn("git pull failed in {} with exit code {}", directory, execResult.getExitValue());
       }
     } catch (IOException e) {
-      getLogger().lifecycle("git pull failed in " + directory + " because " + e.getMessage());
+      getLogger().warn("git pull failed in {} because {}", directory, e.getMessage());
     }
   }
 }

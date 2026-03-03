@@ -42,7 +42,7 @@ public abstract class CloneOrUpdateTask extends GitTask {
     File directory = getDirectory().get().getAsFile();
 
     if (new File(directory, ".git").exists()) {
-      update(directory, execOperations);
+      update(directory);
     } else {
       cloneRetryOnce(url, null, directory);
     }

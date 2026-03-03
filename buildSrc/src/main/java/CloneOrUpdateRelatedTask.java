@@ -62,7 +62,7 @@ public abstract class CloneOrUpdateRelatedTask extends GitTask {
     File relatedRepoDir = new File(cfDir.getParentFile(), relatedRepoName);
     if (relatedRepoDir.exists() && new File(relatedRepoDir, ".git").exists()) {
       checkOrgBranch(relatedRepoDir);
-      update(relatedRepoDir, execOperations);
+      update(relatedRepoDir);
     } else {
       OrgBranch fbCf = getOrgBranch(new File(cfDir, ".git"));
       if (fbCf == null
