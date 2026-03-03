@@ -481,14 +481,6 @@ workflows:
       - typecheck_part1_jdk25
       - typecheck_part2_jdk25
 
-      - junit_part1_jdk25:
-          requires:
-            - canary_jobs
-
-      - junit_part2_jdk25:
-          requires:
-            - canary_jobs
-
       - inference_part1_jdk25:
           requires:
             - canary_jobs

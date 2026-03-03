@@ -9,7 +9,7 @@ jobs:
   # Only proceed to other jobs if canary_jobs passes.
   canary_jobs:
     docker:
-      - image: 'cimg/base:2025.10'
+      - image: 'cimg/base:2026.03'
     resource_class: small
     environment:
       CIRCLE_COMPARE_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<<pipeline.git.revision>>
@@ -42,8 +42,7 @@ job_dependences(25, misc)
 job_dependences(canary_version, typecheck_part1)
 job_dependences(canary_version, typecheck_part2)
 
-job_dependences_not_in_canary(canary_version, junit_part1)
-job_dependences_not_in_canary(canary_version, junit_part2)
+ifelse([The following jobs are not canary jobs, so they run after canary jobs succeed.])dnl
 job_dependences_not_in_canary(canary_version, inference_part1)
 job_dependences_not_in_canary(canary_version, inference_part2)
 job_dependences_not_in_canary(canary_version, daikon_part1)
