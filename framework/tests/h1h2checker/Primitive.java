@@ -13,7 +13,7 @@ public class Primitive {
   }
 
   void use2(@H1S2 @H2S2 int p) {
-    // :: error: (assignment)
+    // :: error: [assignment]
     @H1S2 @H2S1 int l = m(p);
   }
 }
