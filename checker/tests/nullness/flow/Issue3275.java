@@ -28,7 +28,7 @@ public class Issue3275 {
 
   void return_eet(@Nullable Object obj) {
     if ((obj == null) == true) {
-      // :: error: (dereference.of.nullable)
+      // :: error: [dereference.of.nullable]
       obj.toString();
     }
   }
@@ -41,7 +41,7 @@ public class Issue3275 {
 
   void return_eeb(@Nullable Object obj) {
     if ((obj == null) == b) {
-      // :: error: (dereference.of.nullable)
+      // :: error: [dereference.of.nullable]
       obj.toString();
     }
   }
@@ -54,14 +54,14 @@ public class Issue3275 {
 
   void return_enf(@Nullable Object obj) {
     if ((obj == null) != false) {
-      // :: error: (dereference.of.nullable)
+      // :: error: [dereference.of.nullable]
       obj.toString();
     }
   }
 
   void return_enb(@Nullable Object obj) {
     if ((obj == null) != b) {
-      // :: error: (dereference.of.nullable)
+      // :: error: [dereference.of.nullable]
       obj.toString();
     }
   }
@@ -74,21 +74,21 @@ public class Issue3275 {
 
   void return_nef(@Nullable Object obj) {
     if ((obj != null) == false) {
-      // :: error: (dereference.of.nullable)
+      // :: error: [dereference.of.nullable]
       obj.toString();
     }
   }
 
   void return_neb(@Nullable Object obj) {
     if ((obj != null) == b) {
-      // :: error: (dereference.of.nullable)
+      // :: error: [dereference.of.nullable]
       obj.toString();
     }
   }
 
   void return_nnt(@Nullable Object obj) {
     if ((obj != null) != true) {
-      // :: error: (dereference.of.nullable)
+      // :: error: [dereference.of.nullable]
       obj.toString();
     }
   }
@@ -101,7 +101,7 @@ public class Issue3275 {
 
   void return_nnb(@Nullable Object obj) {
     if ((obj != null) != b) {
-      // :: error: (dereference.of.nullable)
+      // :: error: [dereference.of.nullable]
       obj.toString();
     }
   }
@@ -126,7 +126,7 @@ public class Issue3275 {
 
   void assign_eet(@Nullable Object obj) {
     if ((obj == null) == true) {
-      // :: error: (assignment)
+      // :: error: [assignment]
       f = obj;
     }
   }
@@ -139,7 +139,7 @@ public class Issue3275 {
 
   void assign_eeb(@Nullable Object obj) {
     if ((obj == null) == b) {
-      // :: error: (assignment)
+      // :: error: [assignment]
       f = obj;
     }
   }
@@ -152,14 +152,14 @@ public class Issue3275 {
 
   void assign_enf(@Nullable Object obj) {
     if ((obj == null) != false) {
-      // :: error: (assignment)
+      // :: error: [assignment]
       f = obj;
     }
   }
 
   void assign_enb(@Nullable Object obj) {
     if ((obj == null) != b) {
-      // :: error: (assignment)
+      // :: error: [assignment]
       f = obj;
     }
   }
@@ -172,21 +172,21 @@ public class Issue3275 {
 
   void assign_nef(@Nullable Object obj) {
     if ((obj != null) == false) {
-      // :: error: (assignment)
+      // :: error: [assignment]
       f = obj;
     }
   }
 
   void assign_neb(@Nullable Object obj) {
     if ((obj != null) == b) {
-      // :: error: (assignment)
+      // :: error: [assignment]
       f = obj;
     }
   }
 
   void assign_nnt(@Nullable Object obj) {
     if ((obj != null) != true) {
-      // :: error: (assignment)
+      // :: error: [assignment]
       f = obj;
     }
   }
@@ -199,7 +199,7 @@ public class Issue3275 {
 
   void assign_nnb(@Nullable Object obj) {
     if ((obj != null) != b) {
-      // :: error: (assignment)
+      // :: error: [assignment]
       f = obj;
     }
   }

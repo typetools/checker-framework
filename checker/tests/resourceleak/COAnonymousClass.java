@@ -17,7 +17,7 @@ class COAnonymousClass {
           new Runnable() {
             @Override
             @CreatesMustCallFor("Foo.this")
-            // :: error: (creates.mustcall.for.override.invalid)
+            // :: error: [creates.mustcall.for.override.invalid]
             public void run() {
               resetFoo();
             }
@@ -31,11 +31,11 @@ class COAnonymousClass {
           new Runnable() {
             @Override
             @CreatesMustCallFor("this")
-            // :: error: (creates.mustcall.for.invalid.target)
-            // :: error: (creates.mustcall.for.override.invalid)
+            // :: error: [creates.mustcall.for.invalid.target]
+            // :: error: [creates.mustcall.for.override.invalid]
             public void run() {
               // This error definitely must be issued, since Foo.this != this.
-              // :: error: (reset.not.owning)
+              // :: error: [reset.not.owning]
               resetFoo();
             }
           };

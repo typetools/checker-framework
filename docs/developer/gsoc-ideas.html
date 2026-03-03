@@ -1,17 +1,213 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>Projects for new contributors</title>
+  <title>How to apply to GSoC</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes">
-  <meta http-equiv="Refresh" content="1; URL=new-contributor-projects.html">
 </head>
 <body>
-<h1>Projects for new contributors</h1>
+<h1>How to apply to GSoC</h1>
 
 <p>
-Redirecting to <a href="https://checkerframework.org/manual/new-contributor-projects.html">https://checkerframework.org/manual/new-contributor-projects.html</a>.
+(Here is a link to <a href="new-contributor-projects.html">the project list</a>.)
+</p>
+
+<p>
+Each year, the Checker Framework developers work with a small number of Google
+Summer of Code students who are paid to contribute to the Checker Framework.
+This document gives advice to make your application the best it can be.  We look
+forward to your application!
+</p>
+
+<h2>The parts of your application</h2>
+
+<p>
+  To apply, you will submit a <b>single PDF</b> through the
+  <a href="https://summerofcode.withgoogle.com/">Google Summer of Code
+  website</a>.  This PDF should contain two main parts.  We suggest that you
+  number the parts and subparts to ensure that you don't forget anything, and to
+  ensure that we don't overlook anything when reading your application.  You
+  might find it easiest to create multiple PDFs for the different parts, then
+  concatenate them before uploading to the website, but how you create your
+  proposal is entirely up to you.
+</p>
+
+<ol>
+  <li>The <b>proposal</b> itself:  what project you want to work on.  You might propose
+    to do a project listed on
+    the <a href="new-contributor-projects.html">"projects for new
+    contributors"</a> webpage, or you might propose a different project.
+
+    <p>The proposal should have a descriptive title, both in the PDF and in
+      the GSoC submission system.  Don't use a title like "Checker
+      Proposal" or "Proposal for GSoC".  Don't distract from content with
+      gratuitous graphics.
+    </p>
+
+    <p>List the tasks or subparts that are required to complete your
+    project.  This may help you discover a part that you had forgotten.
+    We do not require a detailed timeline, because you don't yet
+    know enough to create one.
+    </p>
+
+    <p>
+    If you want to do a
+    case study, say what program you will do your case study on.
+    </p>
+
+    <p>If you want to create a new type system (whether one proposed on
+    this webpage or one of your own devising), then your proposal should include
+    the type system's user manual.  You don't have to integrate it in the Checker
+    Framework repository (in other words, use any word processor or text
+    editor you want to create a PDF file you will submit), but you should describe
+    your proposed checker's <a href="https://checkerframework.org/manual/#creating-parts-of-a-checker">parts</a>
+    in precise English or simple formalisms, and you should follow the
+    suggested <a href="https://checkerframework.org/manual/#creating-documenting-a-checker">structure</a>.
+      <br>
+      <b>Warning</b>:
+      For GSoC students, the best projects are typically <em>not</em> in
+      the <a href="new-contributor-projects.html#create-new-type-system">"Create
+      a new type system"</a> category.  The reason is that creating a new type
+      system usually takes more time than one summer.  It is better to succeed
+      with a smaller task than to fail with a larger task.  If you finish a
+      smaller task quickly, then you can proceed to a more ambitious goal.
+    </p>
+
+    <p>
+    If you want to do exactly a project listed on
+    the <a href="new-contributor-projects.html">"projects for new
+    contributors"</a> webpage, then just say that (but be specific about which
+    one!), and the lack of further details will not hurt your chances of being
+    selected.  However, it can be helpful to show that you have thought about
+    the problem, by adding details, discussing implementation strategies, or
+    giving specific ideas about evaluation or extensions.
+    </p>
+
+    <p>Never literally cut-and-paste text that was not written by you without
+    attribution, because that would be plagiarism.  If you quote from text
+    written by someone else, give proper credit.  Don't submit a proposal that
+    is just a rearrangement of text written by other people (for example, from
+    the <a href="new-contributor-projects.html">project ideas webpage</a> or the
+    Checker Framework manual), because that does not help us assess your
+    likelihood of being successful.
+    </p>
+
+  </li>
+
+  <li>Your <b>qualifications</b>.  Please convince us that you
+    are likely to be successful in your proposed project.
+
+    <ol>
+      <li>A URL that points to a code sample.
+        Don't write any new code, but provide code you wrote in the
+        past, such as for a class assignment
+        or a project you have worked on outside class.
+        It does not need to have anything to do with
+        the Checker Framework project.  It should be your own personal work.
+        The code sample helps us assess your programming skills so we can assign you
+        to an appropriate project.
+        A common problem is submitting undocumented code; we expect every
+        programmer to write documentation when working on the Checker
+        Framework.
+        Don't share a Google Drive folder containing multiple files; rather,
+        provide a single <code>.zip</code> file or a GitHub URL.
+        (The GitHub URL would be part of your single PDF document;
+        a <code>.zip</code> file is allowed to be a separate upload.)
+      </li>
+      <li>
+        What you have done to prepare yourself
+        for working with the Checker Framework during the summer.
+        You may wish to structure this as a list.
+    Examples of items in the list could include:
+    <ul>
+      <li>Code you have annotated as a case study.  Please indicate the original
+        unannotated code (as a URL or a <code>.zip</code> file), the annotated code
+        (as a URL or a <code>.zip</code> file), and the exact command to run the
+        type-checker from the command line.  Ensure that the GSoC mentors can
+        compile your code.  (It is acceptable to use the same code, or different
+        code, for this item and the code sample above.)
+
+        <p>
+        You should have shared the case study as soon as you finished it or
+        as soon as you had a question that is not answered in
+        the <a href="https://checkerframework.org/manual/">manual</a>;
+        don't wait until you submit your proposal, because that does not
+        give us a chance to help you with feedback.
+        </p>
+      </li>
+      <li>URLs for bugs or pull requests that you have filed.  These can be
+      related to any project, not only the Checker Framework.</li>
+      <li>Information about other projects you have done, or classes you
+        have taken, that prepare you for your proposed summer task.  This
+        is optional.  If something already appears in your resume, don't
+        repeat it here; we will see it in your resume.</li>
+    </ul>
+  </li>
+  <li>A <b>resume</b>.
+    A <a href="https://en.wikipedia.org/wiki/R%C3%A9sum%C3%A9">resume</a>
+    contains a brief description of your skills and your job or project
+    experience.  It will often list classes you have taken so far and your
+    GPA.  It should not be longer than one page.</li>
+  <li>An unofficial <b>transcript</b> or grade report (don't spend
+    money for an official one), if you are a student.</li>
+  </ol>
+  </li>
+</ol>
+
+<h2>Advice</h2>
+
+<p>
+The <b>best way</b> to impress us is by doing a thoughtful job in the <b>case
+study</b>.  The case study is even more important than the proposal text,
+because it shows us your abilities.
+The case study may result in you submitting issues against the issue tracker of the
+program you are annotating or of the Checker Framework.
+Pull requests against the Checker Framework GitHub project are a plus but are not required:
+good submitted bugs are just as valuable as bug fixes!
+You can also make a good impression by correctly answering questions from
+other students on the GSoC mailing list.
+</p>
+
+<p>
+Some GSoC organizations have a requirement to fix an issue in the issue tracker
+or open a pull request.  The Checker Framework does not have that requirement.
+For us, a pull request is a plus, but it is <em>not</em> necessary.  It can be
+unproductive to try to fix an issue before you understand the Checker Framework
+from the user point of view.  Understanding the Checker Framework requires using
+it, for example by doing a case study on an open-source program.
+</p>
+
+<h3>Get feedback</h3>
+
+<p>
+  We want your application to be competitive, and we want you to succeed.  We
+  encourage you to ask us for feedback and other help.  Historically, students
+  who start early and get feedback are most successful.
+</p>
+
+<p>
+  For discussions related to GSoC, please send mail to
+  <a href="https://groups.google.com/g/checker-framework-gsoc">checker-framework-gsoc@googlegroups.com</a>.
+</p>
+
+<p>
+Please do not violate the guidelines
+in <a href="new-contributor-projects.html#ask-questions">How to get help and ask
+questions</a>.  If you violate them, you are disqualified from participating in
+GSoC, because it shows that you do not read instructions, and you haven't
+thought about the problem nor tried to solve it.
+</p>
+
+<p>
+You can submit a draft proposal via the Google Summer of Code website, and we
+will review it.  We do <em>not</em> receive any notification when you submit a
+draft proposal, so if you want feedback, please tell us that.  Also, we can only
+see draft proposals. If you submit a final proposal, we cannot see it until
+after the application deadline has passed.
 </p>
 
 </body>
 </html>
+
+<!--  LocalWords:  subparts PDFs
+ -->

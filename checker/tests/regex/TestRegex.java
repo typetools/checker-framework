@@ -5,7 +5,7 @@ public class TestRegex {
 
   public void Concatenation2() {
     @Regex String a = "a";
-    // :: error: (compound.assignment)
+    // :: error: [compound.assignment]
     a += "(";
   }
 }

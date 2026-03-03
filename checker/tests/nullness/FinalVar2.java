@@ -35,7 +35,7 @@ public class FinalVar2 {
     Object result =
         new Object() {
           public void useFinalVar() {
-            // :: error: (dereference.of.nullable)
+            // :: error: [dereference.of.nullable]
             tmp.hashCode();
           }
         };

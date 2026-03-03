@@ -6,6 +6,7 @@ import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.ClassNameNode;
+import org.checkerframework.dataflow.cfg.node.EqualToNode;
 import org.checkerframework.dataflow.cfg.node.GreaterThanNode;
 import org.checkerframework.dataflow.cfg.node.GreaterThanOrEqualNode;
 import org.checkerframework.dataflow.cfg.node.IntegerLiteralNode;
@@ -124,7 +125,7 @@ public class RegexTransfer extends CFTransfer {
     // Look for: constant < mat.groupCount()
     // Make mat be @Regex(constant + 1)
     TransferResult<CFValue, CFStore> res = super.visitLessThan(n, in);
-    return handleMatcherGroupCount(n.getRightOperand(), n.getLeftOperand(), false, res);
+    return handleMatcherGroupCount(n.getRightOperand(), n.getLeftOperand(), true, res);
   }
 
   @Override
@@ -133,7 +134,7 @@ public class RegexTransfer extends CFTransfer {
     // Look for: constant <= mat.groupCount()
     // Make mat be @Regex(constant)
     TransferResult<CFValue, CFStore> res = super.visitLessThanOrEqual(n, in);
-    return handleMatcherGroupCount(n.getRightOperand(), n.getLeftOperand(), true, res);
+    return handleMatcherGroupCount(n.getRightOperand(), n.getLeftOperand(), false, res);
   }
 
   @Override
@@ -141,7 +142,7 @@ public class RegexTransfer extends CFTransfer {
       GreaterThanNode n, TransferInput<CFValue, CFStore> in) {
 
     TransferResult<CFValue, CFStore> res = super.visitGreaterThan(n, in);
-    return handleMatcherGroupCount(n.getLeftOperand(), n.getRightOperand(), false, res);
+    return handleMatcherGroupCount(n.getLeftOperand(), n.getRightOperand(), true, res);
   }
 
   @Override
@@ -150,24 +151,37 @@ public class RegexTransfer extends CFTransfer {
     // Look for: mat.groupCount() >= constant
     // Make mat be @Regex(constant)
     TransferResult<CFValue, CFStore> res = super.visitGreaterThanOrEqual(n, in);
-    return handleMatcherGroupCount(n.getLeftOperand(), n.getRightOperand(), true, res);
+    return handleMatcherGroupCount(n.getLeftOperand(), n.getRightOperand(), false, res);
+  }
+
+  @Override
+  public TransferResult<CFValue, CFStore> visitEqualTo(
+      EqualToNode n, TransferInput<CFValue, CFStore> in) {
+    // Look for: mat.groupCount() == constant
+    // Make mat be @Regex(constant)
+    TransferResult<CFValue, CFStore> res = super.visitEqualTo(n, in);
+    Node leftOperand = n.getLeftOperand();
+    Node rightOperand = n.getRightOperand();
+    TransferResult<CFValue, CFStore> intermediateResult =
+        handleMatcherGroupCount(leftOperand, rightOperand, false, res);
+    return handleMatcherGroupCount(rightOperand, leftOperand, false, intermediateResult);
   }
 
   /**
-   * If possibleMatcher is a call of groupCount on a Matcher and possibleConstant is a constant,
-   * annotate the matcher as constant + 1 if !isAlsoEqual constant if isAlsoEqual.
+   * Handle one of {@code m.groupCount() > const}, {@code m.groupCount() >= const}, or {@code
+   * m.groupCount() == const}. Annotate the matcher as {@code @Regex(const)} or (if the operation is
+   * {@code >}) as {@code @Regex(const+1)}.
    *
    * @param possibleMatcher the Node that might be a call of Matcher.groupCount()
    * @param possibleConstant the Node that might be a constant
-   * @param isAlsoEqual if true, the comparison operation is strict; if false, the comparison is
-   *     reflexive
+   * @param isGreater true if the comparison operation is {@code >}
    * @param resultIn the TransferResult
    * @return the possibly refined output TransferResult
    */
   private TransferResult<CFValue, CFStore> handleMatcherGroupCount(
       Node possibleMatcher,
       Node possibleConstant,
-      boolean isAlsoEqual,
+      boolean isGreater,
       TransferResult<CFValue, CFStore> resultIn) {
     if (!(possibleMatcher instanceof MethodInvocationNode)) {
       return resultIn;
@@ -182,17 +196,10 @@ public class RegexTransfer extends CFTransfer {
     }
 
     MethodAccessNode methodAccessNode = ((MethodInvocationNode) possibleMatcher).getTarget();
-    Node receiver = methodAccessNode.getReceiver();
+    JavaExpression matcherReceiver = JavaExpression.fromNode(methodAccessNode.getReceiver());
 
-    JavaExpression matcherReceiver = JavaExpression.fromNode(receiver);
-
-    IntegerLiteralNode iln = (IntegerLiteralNode) possibleConstant;
-    int groupCount;
-    if (isAlsoEqual) {
-      groupCount = iln.getValue();
-    } else {
-      groupCount = iln.getValue() + 1;
-    }
+    int constant = ((IntegerLiteralNode) possibleConstant).getValue();
+    int groupCount = isGreater ? constant + 1 : constant;
 
     CFStore thenStore = resultIn.getRegularStore();
     CFStore elseStore = thenStore.copy();

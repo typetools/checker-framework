@@ -12,7 +12,7 @@ public class KeyForMultiple {
     Map<@KeyFor({"sharedBooks"}) String, Integer> sharedBooks = new HashMap<>();
 
     Map<@KeyFor({"sharedBooks"}) String, Integer> sharedCounts1 = new HashMap<>();
-    // :: error: (assignment)
+    // :: error: [assignment]
     Set<@KeyFor({"sharedCounts1"}) String> sharedCountsKeys1 = sharedCounts1.keySet();
   }
 
@@ -29,7 +29,7 @@ public class KeyForMultiple {
     Map<@KeyFor({"sharedBooks"}) String, Integer> sharedBooks = new HashMap<>();
 
     Map<@KeyFor({"sharedBooks", "sharedCounts2"}) String, Integer> sharedCounts2 = new HashMap<>();
-    // :: error: (assignment)
+    // :: error: [assignment]
     Set<@KeyFor({"sharedCounts2"}) String> sharedCountsKeys2 = sharedCounts2.keySet();
   }
 

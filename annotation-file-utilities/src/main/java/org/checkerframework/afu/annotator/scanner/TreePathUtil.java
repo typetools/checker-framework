@@ -1,5 +1,6 @@
 package org.checkerframework.afu.annotator.scanner;
 
+import com.google.common.base.Throwables;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
@@ -9,8 +10,13 @@ import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.tree.JCTree;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
+import java.lang.invoke.VarHandle;
 
 /** Utility methods relating to TreePaths. */
 public class TreePathUtil {
@@ -248,5 +254,64 @@ public class TreePathUtil {
       }
     }
     throw new Error("unreachable");
+  }
+
+  /**
+   * Returns the end position of the given tree, see {@link
+   * SourcePositions#getEndPosition(CompilationUnitTree, Tree)}.
+   *
+   * @param tree an AST node
+   * @param unit the compilation unit that contains {@code tree}
+   * @return the end position of the given tree
+   */
+  public static int getEndPosition(Tree tree, CompilationUnitTree unit) {
+    // This method has no `throws` clause, because of the `try` block.
+    try {
+      return (int) GET_END_POS_HANDLE.invokeExact((JCTree) tree, (JCTree.JCCompilationUnit) unit);
+    } catch (Throwable e) {
+      Throwables.throwIfUnchecked(e);
+      throw new AssertionError(e);
+    }
+  }
+
+  /** The {@link MethodHandle} for retrieving the end position of a {@link JCTree}. */
+  private static final MethodHandle GET_END_POS_HANDLE = getEndPosMethodHandle();
+
+  /**
+   * Returns the {@link MethodHandle} for retrieving the end position of a {@link JCTree}.
+   *
+   * @return the {@link MethodHandle} for retrieving the end position of a {@link JCTree}.
+   */
+  private static MethodHandle getEndPosMethodHandle() {
+    MethodHandles.Lookup lookup = MethodHandles.lookup();
+    try {
+      // JDK versions after https://bugs.openjdk.org/browse/JDK-8372948
+      // (tree, unit) -> tree.getEndPosition()
+      return MethodHandles.dropArguments(
+          lookup.findVirtual(JCTree.class, "getEndPosition", MethodType.methodType(int.class)),
+          1,
+          JCTree.JCCompilationUnit.class);
+    } catch (ReflectiveOperationException e1) {
+      // JDK versions before https://bugs.openjdk.org/browse/JDK-8372948
+      // (tree, unit) -> tree.getEndPosition(unit.endPositions)
+      try {
+        return MethodHandles.filterArguments(
+            lookup.findVirtual(
+                JCTree.class,
+                "getEndPosition",
+                MethodType.methodType(
+                    int.class, Class.forName("com.sun.tools.javac.tree.EndPosTable"))),
+            1,
+            lookup
+                .findVarHandle(
+                    JCTree.JCCompilationUnit.class,
+                    "endPositions",
+                    Class.forName("com.sun.tools.javac.tree.EndPosTable"))
+                .toMethodHandle(VarHandle.AccessMode.GET));
+      } catch (ReflectiveOperationException e2) {
+        e2.addSuppressed(e1);
+        throw new LinkageError(e2.getMessage(), e2);
+      }
+    }
   }
 }
