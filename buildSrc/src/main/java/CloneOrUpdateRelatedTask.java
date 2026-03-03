@@ -3,6 +3,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
+import java.util.Locale;
 import javax.inject.Inject;
 import org.eclipse.jgit.lib.Config;
 import org.eclipse.jgit.lib.ConfigConstants;
@@ -103,6 +104,7 @@ public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
       return;
     }
     if (remoteBranchExists(fbCf.org, relatedRepoName, fbCf.branch)) {
+      System.out.printf("Checker: %s, JDK: %s.", fbCf, fbRelated);
       throw new RuntimeException(
           String.format(
               "Please checkout the corresponding %s branch. URL: %s Branch: %s.",
@@ -111,12 +113,30 @@ public abstract class CloneOrUpdateRelatedTask extends DefaultTask {
   }
 
   /**
-   * A pair of {@code org} and {@code branch}
+   * A pair of {@code org} and {@code branch}. Because GitHub organizations are case-insensitive,
+   * {@code org} is compared using case-insensitive string comparisons.
    *
    * @param org a GitHub organization name
    * @param branch a branch name
    */
-  public record OrgBranch(String org, String branch) {}
+  public record OrgBranch(String org, String branch) {
+
+    @Override
+    public boolean equals(Object o) {
+      if (!(o instanceof OrgBranch orgBranch)) {
+        return false;
+      }
+
+      return org.equalsIgnoreCase(orgBranch.org) && branch.equals(orgBranch.branch);
+    }
+
+    @Override
+    public int hashCode() {
+      int result = org.toLowerCase(Locale.ENGLISH).hashCode();
+      result = 31 * result + branch.hashCode();
+      return result;
+    }
+  }
 
   /**
    * Find the org and branch of the remote tracking branch that is currently checked out in {@code
