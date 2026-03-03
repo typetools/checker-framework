@@ -30,7 +30,7 @@ public class RLLambda {
     f.a();
     Function<@MustCall Foo, @CalledMethods("a") @MustCall Foo> innerfunc =
         st -> {
-          // :: error: (required.method.not.called)
+          // :: error: [required.method.not.called]
           Foo fn1 = new Foo();
           Foo fn2 = makeFoo();
           fn2.a();

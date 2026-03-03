@@ -154,7 +154,10 @@ public abstract class GenericAnnotatedTypeFactory<
   /** To cache the supported monotonic type qualifiers. */
   private @MonotonicNonNull Set<Class<? extends Annotation>> supportedMonotonicQuals;
 
-  /** to annotate types based on the given tree */
+  /**
+   * Used to annotate types based on the given un-annotated types. The type may be for source code
+   * or bytecode.
+   */
   protected TypeAnnotator typeAnnotator;
 
   /** for use in addAnnotationsFromDefaultForType */
@@ -163,7 +166,7 @@ public abstract class GenericAnnotatedTypeFactory<
   /** for use in addAnnotationsFromDefaultForType */
   private DefaultForTypeAnnotator defaultForTypeAnnotator;
 
-  /** to annotate types based on the given un-annotated types */
+  /** Used to annotate types based on a given tree. */
   protected TreeAnnotator treeAnnotator;
 
   /** to handle any polymorphic types */

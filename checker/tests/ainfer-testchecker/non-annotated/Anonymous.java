@@ -13,11 +13,11 @@ public class Anonymous {
   }
 
   void testPublicInference() {
-    // :: warning: (argument)
+    // :: warning: [argument]
     expectsAinferSibling2(field2);
-    // :: warning: (argument)
+    // :: warning: [argument]
     expectsParent(field1);
-    // :: warning: (argument)
+    // :: warning: [argument]
     expectsParent(field2);
   }
 

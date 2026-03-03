@@ -35,18 +35,18 @@ public class I18nFormat {
     MessageFormat.format("{0}", 1);
     MessageFormat.format("{0}", new Date());
 
-    // :: error: (argument)
+    // :: error: [argument]
     MessageFormat.format("{0, number}", "S");
     MessageFormat.format("{0, number}", 1);
-    // :: error: (argument)
+    // :: error: [argument]
     MessageFormat.format("{0, number}", new Date());
 
-    // :: error: (argument)
+    // :: error: [argument]
     MessageFormat.format("{0, time}", "S");
     MessageFormat.format("{0, time}", 1);
     MessageFormat.format("{0, time}", new Date());
 
-    // :: error: (argument)
+    // :: error: [argument]
     MessageFormat.format("{0, date}", "S");
     MessageFormat.format("{0, date}", 1);
     MessageFormat.format("{0, date}", new Date());

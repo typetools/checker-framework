@@ -66,13 +66,10 @@ dependencies {
   testImplementation(libs.lombok)
 }
 
-tasks.register("cloneTypetoolsJdk", CloneTask) {
+tasks.register("cloneTypetoolsJdk", CloneOrUpdateRelatedTask) {
   description = "Obtain or update the annotated JDK."
-  url.set("https://github.com/typetools/jdk.git")
-  directory.set(file(annotatedJdkHome))
-  outputs.upToDateWhen { false }
+  relatedRepo = "jdk"
 }
-
 
 tasks.register("copyAndMinimizeAnnotatedJdkFiles", JavaExec) {
   dependsOn(cloneTypetoolsJdk)

@@ -4,9 +4,9 @@ public class Issue1590a {
 
   private String a;
 
-  // :: error: (initialization.fields.uninitialized)
+  // :: error: [initialization.fields.uninitialized]
   public Issue1590a() {
-    // :: error: (method.invocation)
+    // :: error: [method.invocation]
     init();
   }
 

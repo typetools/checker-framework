@@ -1017,7 +1017,7 @@ public class DependentTypesHelper {
     if (errorTree instanceof VariableTree) {
       Tree typeTree = ((VariableTree) errorTree).getType();
       // Don't report the error at the type if the type is not present in source code.
-      if (((JCTree) typeTree).getPreferredPosition() != -1) {
+      if (typeTree != null && ((JCTree) typeTree).getPreferredPosition() != -1) {
         ModifiersTree modifiers = ((VariableTree) errorTree).getModifiers();
         errorTree = typeTree;
         for (AnnotationTree annoTree : modifiers.getAnnotations()) {
