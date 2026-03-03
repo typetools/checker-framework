@@ -6,26 +6,26 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class Issue1044 {
   static class Inner1<V> {
-    // :: error: (initialization.field.uninitialized)
+    // :: error: [initialization.field.uninitialized]
     V f;
   }
 
   static class Inner2<@Nullable T extends @Nullable Object> {
-    // :: error: (initialization.field.uninitialized)
+    // :: error: [initialization.field.uninitialized]
     @NonNull T f;
   }
 
   static class Inner3<V> {
     V f;
 
-    // :: error: (initialization.fields.uninitialized)
+    // :: error: [initialization.fields.uninitialized]
     Inner3() {}
   }
 
   static class Inner4<@Nullable T extends @Nullable Object> {
     @NonNull T f;
 
-    // :: error: (initialization.fields.uninitialized)
+    // :: error: [initialization.fields.uninitialized]
     Inner4() {}
   }
 
@@ -50,14 +50,14 @@ public class Issue1044 {
   }
 
   static class Inner9<V extends Object> {
-    // :: error: (initialization.field.uninitialized)
+    // :: error: [initialization.field.uninitialized]
     V f;
   }
 
   static class Inner10<V extends Object> {
     V f;
 
-    // :: error: (initialization.fields.uninitialized)
+    // :: error: [initialization.fields.uninitialized]
     Inner10() {}
   }
 

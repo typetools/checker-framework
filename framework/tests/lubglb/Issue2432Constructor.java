@@ -48,13 +48,13 @@ class Issue2432C {
   }
 
   void invokeConstructors(@LubglbA Object top, @LubglbF Object bottom, @PolyLubglb Object poly) {
-    // :: error: (assignment)
+    // :: error: [assignment]
     @LubglbF Issue2432C bottomOuter = new Issue2432C(top);
     @LubglbA Issue2432C topOuter = new Issue2432C(top);
 
     // lub test
     @LubglbA Issue2432C bottomOuter2 = new Issue2432C(top, bottom);
-    // :: error: (assignment)
+    // :: error: [assignment]
     @LubglbB Issue2432C bottomOuter3 = new Issue2432C(top, bottom);
 
     @LubglbF Issue2432C bottomOuter4 = new Issue2432C(bottom, bottom);
@@ -68,12 +68,12 @@ class Issue2432C {
       @LubglbF Object bottom,
       @LubglbA Object top) {
     Issue2432C.@LubglbF ReceiverClass ref1 = polyOuter.new ReceiverClass(bottom);
-    // :: error: (assignment)
+    // :: error: [assignment]
     Issue2432C.@LubglbB ReceiverClass ref2 = polyOuter.new ReceiverClass(top);
 
     // lub tests
     Issue2432C.@LubglbA ReceiverClass ref3 = polyOuter.new ReceiverClass(top, bottom);
-    // :: error: (assignment)
+    // :: error: [assignment]
     Issue2432C.@LubglbB ReceiverClass ref4 = polyOuter.new ReceiverClass(top, bottom);
 
     Issue2432C.@LubglbF ReceiverClass ref5 = polyOuter.new ReceiverClass(bottom, bottom);
@@ -83,12 +83,12 @@ class Issue2432C {
   void invokeTypeVarConstructors(
       @LubglbA Object top, @LubglbF Object bottom, @PolyLubglb Object poly) {
     @LubglbF TypeParamClass<@PolyLubglb Object> ref1 = new TypeParamClass<>(bottom, poly);
-    // :: error: (assignment)
+    // :: error: [assignment]
     @LubglbB TypeParamClass<@PolyLubglb Object> ref2 = new TypeParamClass<>(top, poly);
 
     // lub tests
     @LubglbA TypeParamClass<@PolyLubglb Object> ref3 = new TypeParamClass<>(bottom, top, poly);
-    // :: error: (assignment)
+    // :: error: [assignment]
     @LubglbB TypeParamClass<@PolyLubglb Object> ref4 = new TypeParamClass<>(bottom, top, poly);
 
     @LubglbF TypeParamClass<@PolyLubglb Object> ref5 = new TypeParamClass<>(bottom, bottom, poly);

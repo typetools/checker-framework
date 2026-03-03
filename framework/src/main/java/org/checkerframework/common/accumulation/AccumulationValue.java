@@ -79,8 +79,10 @@ public class AccumulationValue extends CFAbstractValue<AccumulationValue> {
   }
 
   @Override
-  public AccumulationValue leastUpperBound(AccumulationValue other) {
-    AccumulationValue lub = super.leastUpperBound(other);
+  protected AccumulationValue upperBound(
+      @Nullable AccumulationValue other, TypeMirror upperBoundTypeMirror, boolean shouldWiden) {
+    AccumulationValue lub = super.upperBound(other, upperBoundTypeMirror, shouldWiden);
+
     if (other == null || other.accumulatedValues == null || this.accumulatedValues == null) {
       return lub;
     }

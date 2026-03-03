@@ -4,10 +4,10 @@ public class AnnotatedGenerics2 {
   // Top-level class to ensure that both classes are processed.
 
   class AnnotatedGenerics2Nble<T extends @Nullable Object> {
-    // :: error: (initialization.field.uninitialized)
+    // :: error: [initialization.field.uninitialized]
     @NonNull T myFieldNN;
     @Nullable T myFieldNble;
-    // :: error: (initialization.field.uninitialized)
+    // :: error: [initialization.field.uninitialized]
     T myFieldT;
 
     /* TODO: This test case gets affected by flow inference.
@@ -17,13 +17,13 @@ public class AnnotatedGenerics2 {
          myFieldNble = myFieldNN;
          myFieldT = myFieldNN;
 
-         // TODO:: error: (assignment)
+         // TODO:: error: [assignment]
          myFieldNN = myFieldNble;
          myFieldNble = myFieldNble;
-         // TODO:: error: (assignment)
+         // TODO:: error: [assignment]
          myFieldT = myFieldNble;
 
-         // TODO:: error: (assignment)
+         // TODO:: error: [assignment]
          myFieldNN = myFieldT;
          myFieldNble = myFieldT;
          myFieldT = myFieldT;
@@ -37,15 +37,15 @@ public class AnnotatedGenerics2 {
     }
 
     void fields2() {
-      // :: error: (assignment)
+      // :: error: [assignment]
       myFieldNN = myFieldNble;
       myFieldNble = myFieldNble;
-      // :: error: (assignment)
+      // :: error: [assignment]
       myFieldT = myFieldNble;
     }
 
     void fields3() {
-      // :: error: (assignment)
+      // :: error: [assignment]
       myFieldNN = myFieldT;
       myFieldNble = myFieldT;
       myFieldT = myFieldT;
@@ -56,13 +56,13 @@ public class AnnotatedGenerics2 {
       myFieldNble = myParamNN;
       myFieldT = myParamNN;
 
-      // :: error: (assignment)
+      // :: error: [assignment]
       myFieldNN = myParamNble;
       myFieldNble = myParamNble;
-      // :: error: (assignment)
+      // :: error: [assignment]
       myFieldT = myParamNble;
 
-      // :: error: (assignment)
+      // :: error: [assignment]
       myFieldNN = myParamT;
       myFieldNble = myParamT;
       myFieldT = myParamT;
@@ -70,10 +70,10 @@ public class AnnotatedGenerics2 {
   }
 
   class AnnotatedGenerics2NN<T extends @NonNull Object> {
-    // :: error: (initialization.field.uninitialized)
+    // :: error: [initialization.field.uninitialized]
     @NonNull T myFieldNN;
     @Nullable T myFieldNble;
-    // :: error: (initialization.field.uninitialized)
+    // :: error: [initialization.field.uninitialized]
     T myFieldT;
 
     /* TODO: This test case gets affected by flow inference.
@@ -83,13 +83,13 @@ public class AnnotatedGenerics2 {
         myFieldNble = myFieldNN;
         myFieldT = myFieldNN;
 
-        // TODO:: error: (assignment)
+        // TODO:: error: [assignment]
         myFieldNN = myFieldNble;
         myFieldNble = myFieldNble;
-        // TODO:: error: (assignment)
+        // TODO:: error: [assignment]
         myFieldT = myFieldNble;
 
-        // TODO:: error: (assignment)
+        // TODO:: error: [assignment]
         myFieldNN = myFieldT;
         myFieldNble = myFieldT;
         myFieldT = myFieldT;
@@ -103,10 +103,10 @@ public class AnnotatedGenerics2 {
     }
 
     void fields2() {
-      // :: error: (assignment)
+      // :: error: [assignment]
       myFieldNN = myFieldNble;
       myFieldNble = myFieldNble;
-      // :: error: (assignment)
+      // :: error: [assignment]
       myFieldT = myFieldNble;
     }
 
@@ -121,10 +121,10 @@ public class AnnotatedGenerics2 {
       myFieldNble = myParamNN;
       myFieldT = myParamNN;
 
-      // :: error: (assignment)
+      // :: error: [assignment]
       myFieldNN = myParamNble;
       myFieldNble = myParamNble;
-      // :: error: (assignment)
+      // :: error: [assignment]
       myFieldT = myParamNble;
 
       myFieldNN = myParamT;

@@ -100,6 +100,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   private static final Map<String, AnnotationMirror> aliasMap = new HashMap<>();
 
+  @SuppressWarnings("this-escape")
   public UnitsAnnotatedTypeFactory(BaseTypeChecker checker) {
     // use true to enable flow inference, false to disable it
     super(checker, false);
@@ -122,15 +123,15 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     String aname = AnnotationUtils.annotationName(anno);
 
     // See if we already have a map from this aliased annotation to its corresponding base unit
-    // annotation
-    if (aliasMap.containsKey(aname)) {
-      // if so return it
-      return aliasMap.get(aname);
+    // annotation.
+    AnnotationMirror result = aliasMap.get(aname);
+    if (result != null) {
+      // If so, return it.
+      return result;
     }
 
     boolean built = false;
-    AnnotationMirror result = null;
-    // if not, look for the UnitsMultiple meta annotations of this aliased annotation
+    // If not, look for the UnitsMultiple meta annotations of this aliased annotation.
     for (AnnotationMirror metaAnno : anno.getAnnotationType().asElement().getAnnotationMirrors()) {
       // see if the meta annotation is UnitsMultiple
       if (isUnitsMultiple(metaAnno)) {
@@ -305,7 +306,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
-   * Return the name of the given annotation, if it is meta-annotated with UnitsMultiple; otherwise
+   * Returns the name of the given annotation, if it is meta-annotated with UnitsMultiple; otherwise
    * return null.
    *
    * @param anno the annotation to examine
@@ -395,8 +396,8 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   @Override
   public TreeAnnotator createTreeAnnotator() {
-    // Don't call super.createTreeAnnotator because it includes PropagationTreeAnnotator which
-    // is incorrect.
+    // Don't call super.createTreeAnnotator() because it includes PropagationTreeAnnotator,
+    // but we want to use UnitsPropagationTreeAnnotator instead.
     return new ListTreeAnnotator(
         new UnitsPropagationTreeAnnotator(this),
         new LiteralTreeAnnotator(this).addStandardLiteralQualifiers(),
@@ -425,10 +426,16 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /** A class for adding annotations based on tree. */
   private class UnitsTreeAnnotator extends TreeAnnotator {
 
+    /**
+     * Creates a new UnitsTreeAnnotator.
+     *
+     * @param atypeFactory the type factory
+     */
     UnitsTreeAnnotator(UnitsAnnotatedTypeFactory atypeFactory) {
       super(atypeFactory);
     }
 
+    @SuppressWarnings("DuplicateBranches")
     @Override
     public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
       AnnotatedTypeMirror lht = getAnnotatedType(tree.getLeftOperand());
@@ -611,7 +618,6 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       throw new TypeSystemError("Unexpected QualifierKinds: %s %s", qualifierKind1, qualifierKind2);
     }
 
-    @SuppressWarnings("nullness:return")
     @Override
     protected AnnotationMirror greatestLowerBoundWithElements(
         AnnotationMirror a1,
@@ -672,7 +678,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Get the direct super qualifier for the given qualifier kind.
+     * Returns the direct super qualifier for the given qualifier kind.
      *
      * @param qualifierKind qualifier kind
      * @return direct super qualifier kind
@@ -683,7 +689,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return qualifierKind;
       }
       Set<QualifierKind> superQuals = new TreeSet<>(qualifierKind.getStrictSuperTypes());
-      while (superQuals.size() > 0) {
+      while (!superQuals.isEmpty()) {
         Set<QualifierKind> lowest = findLowestQualifiers(superQuals);
         if (lowest.size() == 1) {
           return lowest.iterator().next();

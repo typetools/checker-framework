@@ -4,5 +4,6 @@
 import java.util.concurrent.Callable;
 
 public class Issue2082 {
+  @SuppressWarnings("all") // Callable is a raw type.
   Callable foo = () -> 0;
 }

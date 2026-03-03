@@ -19,7 +19,7 @@ public class InferNullType {
   }
 
   void x() {
-    @SuppressWarnings("nullness:type.argument")
+    @SuppressWarnings("nullness:type.arguments.not.inferred")
     Object m = toInfer(null);
     Object m2 = toInfer2(null);
 
@@ -27,11 +27,11 @@ public class InferNullType {
     Object m4 = toInfer3(1, null);
     Object m5 = toInfer3(null, 1);
 
-    @SuppressWarnings("nullness:type.argument")
+    @SuppressWarnings("nullness:type.arguments.not.inferred")
     Object m6 = toInfer4(null, null);
-    @SuppressWarnings("nullness:type.argument")
+    @SuppressWarnings("nullness:type.arguments.not.inferred")
     Object m7 = toInfer4(1, null);
-    @SuppressWarnings("nullness:type.argument")
+    @SuppressWarnings("nullness:type.arguments.not.inferred")
     Object m8 = toInfer4(null, 1);
   }
 }

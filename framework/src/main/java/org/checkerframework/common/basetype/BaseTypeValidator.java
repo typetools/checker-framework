@@ -46,6 +46,10 @@ import org.plumelib.util.IPair;
 /**
  * A visitor to validate the types in a tree.
  *
+ * <p>The validator is called on the type of every expression, such as on the right-hand side of
+ * {@code x = Optional.of(Optional.of("baz"));}. However, note that the type of the right-hand side
+ * is {@code Optional<? extends Object>}, not {@code Optional<Optional<String>>}.
+ *
  * <p>Note: A TypeValidator (this class and its subclasses) cannot tell whether an annotation was
  * written by a programmer or defaulted/inferred/computed by the Checker Framework, because the
  * AnnotatedTypeMirror does not make distinctions about which annotations in an AnnotatedTypeMirror
@@ -122,8 +126,8 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
    *
    * @param type the AnnotatedTypeMirror being validated
    * @param tree a Tree whose type is {@code type}
-   * @return whether or not the top-level type should be checked, if {@code type} is a declared or
-   *     primitive type.
+   * @return true if the top-level type should be checked, if {@code type} is a declared or
+   *     primitive type
    */
   protected boolean shouldCheckTopLevelDeclaredOrPrimitiveType(
       AnnotatedTypeMirror type, Tree tree) {
@@ -398,7 +402,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
     List<? extends Tree> boundTrees = typeParameterTree.getBounds();
     if (boundTrees.size() == 1) {
       scan(typeParameter.getUpperBound(), boundTrees.get(0));
-    } else if (boundTrees.size() == 0) {
+    } else if (boundTrees.isEmpty()) {
       // The upper bound is implicitly Object
       scan(typeParameter.getUpperBound(), typeParameterTree);
     } else {
@@ -438,7 +442,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
       case NEW_CLASS:
         NewClassTree nct = (NewClassTree) tree;
         ExpressionTree nctid = nct.getIdentifier();
-        if (nctid.getKind() == Tree.Kind.PARAMETERIZED_TYPE) {
+        if (nctid instanceof ParameterizedTypeTree) {
           typeargtree = (ParameterizedTypeTree) nctid;
           /*
            * This is quite tricky... for anonymous class instantiations,
@@ -694,8 +698,8 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
       return atypeFactory.getTypeHierarchy().isSubtypeShallowEffective(lowerBound, upperBound);
     } else {
       // When upperBoundAnnos.size() != lowerBoundAnnos.size() one of the two bound types will
-      // be reported as invalid.  Therefore, we do not do any other comparisons nor do we report
-      // a bound.
+      // be reported as invalid.  Therefore, we do not do any other comparisons nor do we
+      // report a bound.
       return true;
     }
   }

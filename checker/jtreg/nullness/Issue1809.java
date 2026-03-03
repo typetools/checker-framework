@@ -4,9 +4,9 @@
  *     https://github.com/typetools/checker-framework/issues/1809
  *     Also see framework/tests/all-systems/Issue1809.java
  *
- * @compile -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -AatfCacheSize=4 Issue1809.java
- * @compile -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -AatfDoNotCache Issue1809.java
- * @compile -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker Issue1809.java
+ * @compile -processor org.checkerframework.checker.nullness.NullnessChecker -AatfCacheSize=4 Issue1809.java
+ * @compile -processor org.checkerframework.checker.nullness.NullnessChecker -AatfDoNotCache Issue1809.java
+ * @compile -processor org.checkerframework.checker.nullness.NullnessChecker Issue1809.java
  */
 
 import java.util.List;
@@ -32,6 +32,7 @@ abstract class Issue1809 {
 
   interface S {}
 
+  @SuppressWarnings("nullness")
   private Stream<A> xrefsFor(B b) {
     return concat(b.g().stream().flatMap(a -> a.h().stream().map(c -> f())))
         .filter(Optional::isPresent)

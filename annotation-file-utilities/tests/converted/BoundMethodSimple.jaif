@@ -1,0 +1,16 @@
+// @skip-test
+
+package java.lang:
+annotation @Tainted: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package org.checkerframework.afu.annotator.tests:
+class BoundMethodSimple:
+
+    method foo(Ljava/util/Date;)V:
+        return:
+        insert-annotation Method.typeParameter 0, TypeParameter.bound 0: @java.lang.Tainted
+
+    method foo2(Ljava/lang/Object;)V:
+        return:
+        insert-annotation Method.typeParameter 0, TypeParameter.bound 0: @java.lang.Tainted
+

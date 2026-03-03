@@ -1,4 +1,4 @@
-import org.checkerframework.common.util.report.qual.*;
+import org.checkerframework.common.util.count.report.qual.*;
 
 public class Creation {
   class TestOne {
@@ -16,20 +16,20 @@ public class Creation {
   }
 
   void test() {
-    // :: error: (creation)
+    // :: error: [creation]
     new TestAll();
-    // :: error: (creation)
+    // :: error: [creation]
     new TestAll(4);
 
     new TestOne();
-    // :: error: (creation)
+    // :: error: [creation]
     new TestOne(4);
   }
 
   class TestSub extends TestAll {}
 
   void testSub() {
-    // :: error: (creation)
+    // :: error: [creation]
     new TestSub();
   }
 }

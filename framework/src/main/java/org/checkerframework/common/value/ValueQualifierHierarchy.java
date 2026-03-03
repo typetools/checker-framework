@@ -18,25 +18,11 @@ import org.plumelib.util.RegexUtil;
 /** The qualifier hierarchy for the Value type system. */
 final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
 
-  // This shadows the same-named field in GenericAnnotatedTypeFactory, but has a more specific type.
+  // This shadows the same-named field in GenericAnnotatedTypeFactory, but has a more specific
+  // type.
   /** The type factory to use. */
   @SuppressWarnings("HidingField")
   private final ValueAnnotatedTypeFactory atypeFactory;
-
-  /**
-   * Creates a ValueQualifierHierarchy from the given classes.
-   *
-   * @param atypeFactory a ValueAnnotatedTypeFactory
-   * @param qualifierClasses classes of annotations that are the qualifiers for this hierarchy
-   * @deprecated use {@link #ValueQualifierHierarchy(Collection, ValueAnnotatedTypeFactory)} which
-   *     has the arguments in the other order
-   */
-  @Deprecated // 2023-05-23
-  ValueQualifierHierarchy(
-      ValueAnnotatedTypeFactory atypeFactory,
-      Collection<Class<? extends Annotation>> qualifierClasses) {
-    this(qualifierClasses, atypeFactory);
-  }
 
   /**
    * Creates a ValueQualifierHierarchy from the given classes.
@@ -239,12 +225,12 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
     } else if (isSubtypeQualifiers(a2, a1)) {
       return a1;
     }
-    String qual1 = AnnotationUtils.annotationName(a1);
-    String qual2 = AnnotationUtils.annotationName(a2);
+    String qualName1 = AnnotationUtils.annotationName(a1);
+    String qualName2 = AnnotationUtils.annotationName(a2);
 
-    if (qual1.equals(qual2)) {
+    if (qualName1.equals(qualName2)) {
       // If both are the same type, determine the type and merge
-      switch (qual1) {
+      switch (qualName1) {
         case ValueAnnotatedTypeFactory.INTRANGE_NAME:
           // special handling for IntRange
           Range intrange1 = atypeFactory.getRange(a1);
@@ -286,7 +272,7 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
           regexes1.retainAll(regexes2);
           return atypeFactory.createDoesNotMatchRegexAnnotation(regexes1);
         default:
-          throw new TypeSystemError("default case: %s %s %s%n", qual1, a1, a2);
+          throw new TypeSystemError("default case: %s %s %s%n", qualName1, a1, a2);
       }
     }
 
@@ -303,7 +289,7 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
     AnnotationMirror intRangeAnno = null;
     AnnotationMirror doubleValAnno = null;
 
-    switch (qual1) {
+    switch (qualName1) {
       case ValueAnnotatedTypeFactory.ARRAYLEN_NAME:
         arrayLenAnno = a1;
         break;
@@ -332,7 +318,7 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
         // Do nothing
     }
 
-    switch (qual2) {
+    switch (qualName2) {
       case ValueAnnotatedTypeFactory.ARRAYLEN_NAME:
         arrayLenAnno = a2;
         break;

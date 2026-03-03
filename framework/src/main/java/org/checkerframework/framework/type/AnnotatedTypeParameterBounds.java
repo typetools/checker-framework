@@ -27,7 +27,7 @@ public class AnnotatedTypeParameterBounds {
   }
 
   /**
-   * Return a possibly-verbose string representation of this.
+   * Returns a possibly-verbose string representation of this.
    *
    * @param verbose if true, returned representation is verbose
    * @return a possibly-verbose string representation of this

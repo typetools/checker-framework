@@ -19,7 +19,7 @@ import java.lang.annotation.Target;
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface CalledMethods {
   /**
-   * The names of methods that have definetely been called.
+   * The names of methods that have definitely been called.
    *
    * @return the names of methods that have definetely been called
    */

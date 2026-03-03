@@ -16,6 +16,9 @@ public interface AbstractValue<V extends AbstractValue<V>> {
    *       more permissive.
    *   <li>Is commutative.
    * </ul>
+   *
+   * @param other the other value
+   * @return the least upper bound of the two values
    */
   V leastUpperBound(V other);
 }

@@ -5,6 +5,7 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.InstanceOfTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
+import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -13,9 +14,10 @@ import java.util.List;
 import javax.lang.model.SourceVersion;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.ClassGetName;
+import org.checkerframework.dataflow.qual.Pure;
 
 /**
- * This class contains util methods for reflective accessing Tree classes and methods that were
+ * This class contains utility methods for reflectively accessing Tree classes and methods that were
  * added after Java 11.
  */
 public class TreeUtilsAfterJava11 {
@@ -123,7 +125,7 @@ public class TreeUtilsAfterJava11 {
     public static boolean isDefaultCaseTree(CaseTree caseTree) {
       if (sourceVersionNumber >= 21) {
         for (Tree label : getLabels(caseTree, true)) {
-          if (TreeUtils.isDefaultCaseLabelTree(label)) {
+          if (isDefaultCaseLabelTree(label)) {
             return true;
           }
         }
@@ -134,9 +136,19 @@ public class TreeUtilsAfterJava11 {
     }
 
     /**
-     * Get the list of labels from a case expression. For {@code default}, this is empty. For {@code
-     * case null, default}, the list contains {@code null}. Otherwise, in JDK 11 and earlier, this
-     * is a list of a single expression tree. In JDK 12+, the list may have multiple expression
+     * Returns true if {@code tree} is a {@code DefaultCaseLabelTree}.
+     *
+     * @param tree a tree to check
+     * @return true if {@code tree} is a {@code DefaultCaseLabelTree}
+     */
+    public static boolean isDefaultCaseLabelTree(Tree tree) {
+      return tree.getKind().name().contentEquals("DEFAULT_CASE_LABEL");
+    }
+
+    /**
+     * Returns the list of labels from a case expression. For {@code default}, this is empty. For
+     * {@code case null, default}, the list contains {@code null}. Otherwise, in JDK 11 and earlier,
+     * this is a list of a single expression tree. In JDK 12+, the list may have multiple expression
      * trees. In JDK 21+, the list might contain a single pattern tree.
      *
      * @param caseTree the case expression to get the labels from
@@ -147,7 +159,7 @@ public class TreeUtilsAfterJava11 {
     }
 
     /**
-     * Get the list of labels from a case expression.
+     * Returns the list of labels from a case expression.
      *
      * <p>For JDKs before 21, if {@code caseTree} is the default case, then the returned list is
      * empty.
@@ -179,13 +191,13 @@ public class TreeUtilsAfterJava11 {
             (List<? extends Tree>) invokeNonNullResult(GET_LABELS, caseTree);
         List<Tree> labels = new ArrayList<>();
         for (Tree caseLabel : caseLabelTrees) {
-          if (TreeUtils.isDefaultCaseLabelTree(caseLabel)) {
+          if (isDefaultCaseLabelTree(caseLabel)) {
             if (useDefaultCaseLabelTree) {
               labels.add(caseLabel);
             }
-          } else if (TreeUtils.isConstantCaseLabelTree(caseLabel)) {
+          } else if (ConstantCaseLabelUtils.isConstantCaseLabelTree(caseLabel)) {
             labels.add(ConstantCaseLabelUtils.getConstantExpression(caseLabel));
-          } else if (TreeUtils.isPatternCaseLabelTree(caseLabel)) {
+          } else if (PatternCaseLabelUtils.isPatternCaseLabelTree(caseLabel)) {
             labels.add(PatternCaseLabelUtils.getPattern(caseLabel));
           }
         }
@@ -195,7 +207,7 @@ public class TreeUtilsAfterJava11 {
     }
 
     /**
-     * Get the list of expressions from a case expression. For the default case, this is empty.
+     * Returns the list of expressions from a case expression. For the default case, this is empty.
      * Otherwise, in JDK 11 and earlier, this is a singleton list. In JDK 12 onwards, there can be
      * multiple expressions per case.
      *
@@ -249,6 +261,16 @@ public class TreeUtilsAfterJava11 {
      * otherwise.
      */
     private static @Nullable Method GET_CONSTANT_EXPRESSION = null;
+
+    /**
+     * Returns true if {@code tree} is a {@code ConstantCaseLabelTree}.
+     *
+     * @param tree a tree to check
+     * @return true if {@code tree} is a {@code ConstantCaseLabelTree}
+     */
+    public static boolean isConstantCaseLabelTree(Tree tree) {
+      return tree.getKind().name().contentEquals("CONSTANT_CASE_LABEL");
+    }
 
     /**
      * Wrapper around {@code ConstantCaseLabelTree#getConstantExpression}.
@@ -332,6 +354,16 @@ public class TreeUtilsAfterJava11 {
 
     /** The PatternCaseLabelTree.getPattern method for Java 21 and higher; null otherwise. */
     private static @Nullable Method GET_PATTERN = null;
+
+    /**
+     * Returns true if {@code tree} is a {@code PatternCaseLabelTree}.
+     *
+     * @param tree a tree to check
+     * @return true if {@code tree} is a {@code PatternCaseLabelTree}
+     */
+    public static boolean isPatternCaseLabelTree(Tree tree) {
+      return tree.getKind().name().contentEquals("PATTERN_CASE_LABEL");
+    }
 
     /**
      * Wrapper around {@code PatternCaseLabelTree#getPattern}.
@@ -434,6 +466,42 @@ public class TreeUtilsAfterJava11 {
     }
   }
 
+  /** Utility methods for accessing {@code JCVariableDecl} methods. */
+  public static class JCVariableDeclUtils {
+
+    /** Don't use. */
+    private JCVariableDeclUtils() {
+      throw new AssertionError("Cannot be instantiated.");
+    }
+
+    /**
+     * The {@code JCVariableDecl.declaredUsingVar} method for Java 16 and higher; null otherwise.
+     */
+    private static @Nullable Method DECLARED_USING_VAR = null;
+
+    /**
+     * For Java 17+, returns true if {@code variableTree} was declared using {@code var}. Otherwise,
+     * returns false.
+     *
+     * <p>Use {@link TreeUtils#isVariableTreeDeclaredUsingVar(VariableTree)} for a method that works
+     * on all versions of java.
+     *
+     * @param variableTree a variable tree
+     * @return true if {@code variableTree} was declared using {@code var} and using Java 17+
+     */
+    @Pure
+    public static boolean declaredUsingVar(JCVariableDecl variableTree) {
+      if (sourceVersionNumber < 16) {
+        return false;
+      }
+      if (DECLARED_USING_VAR == null) {
+        DECLARED_USING_VAR = getMethod(JCVariableDecl.class, "declaredUsingVar");
+      }
+      Boolean result = (Boolean) invoke(DECLARED_USING_VAR, variableTree);
+      return result != null ? result : false;
+    }
+  }
+
   /** Utility methods for accessing {@code InstanceOfTree} methods. */
   public static class InstanceOfUtils {
 
@@ -452,6 +520,7 @@ public class TreeUtilsAfterJava11 {
      * @param instanceOfTree the {@link InstanceOfTree} whose pattern is returned
      * @return the {@code PatternTree} of {@code instanceOfTree} or null if it doesn't exist
      */
+    @Pure
     public static @Nullable Tree getPattern(InstanceOfTree instanceOfTree) {
       if (sourceVersionNumber < 16) {
         return null;

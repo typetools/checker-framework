@@ -38,7 +38,10 @@ public abstract class Contract {
   /** The annotation on the type of expression, according to this contract. */
   public final AnnotationMirror annotation;
 
-  /** The annotation that expressed this contract; used for diagnostic messages. */
+  /**
+   * The annotation that expressed this contract; used for diagnostic messages, but not for the
+   * location of the diagnostic message.
+   */
   public final AnnotationMirror contractAnnotation;
 
   // This is redundant with the contract's class and is not used in this file, but the field
@@ -70,13 +73,22 @@ public abstract class Contract {
     /** Used for constructing error messages. */
     public final String errorKey;
 
-    /** The meta-annotation identifying annotations of this kind. */
+    /**
+     * The meta-annotation identifying annotations of this kind: PreconditionAnnotation,
+     * PostconditionAnnotation, or ConditionalPostconditionAnnotation.
+     */
     public final Class<? extends Annotation> metaAnnotation;
 
-    /** The built-in framework qualifier for this contract. */
+    /**
+     * The built-in framework qualifier for this contract: RequiresQualifier, EnsuresQualifier, or
+     * EnsuresQualifierIf.
+     */
     public final Class<? extends Annotation> frameworkContractClass;
 
-    /** The built-in framework qualifier for repeated occurrences of this contract. */
+    /**
+     * The built-in framework qualifier for repeated occurrences of this contract:
+     * RequiresQualifier.List, EnsuresQualifier.List, or EnsuresQualifierIf.List.
+     */
     public final Class<? extends Annotation> frameworkContractListClass;
 
     /**
@@ -122,7 +134,7 @@ public abstract class Contract {
   }
 
   /**
-   * Creates a new Contract.
+   * Creates a new {@code Contract}.
    *
    * @param kind precondition, postcondition, or conditional postcondition
    * @param expressionString the Java expression that should have a type qualifier
@@ -278,7 +290,7 @@ public abstract class Contract {
      * @param annotation the type qualifier that {@code expressionString} should have
      * @param contractAnnotation the postcondition annotation that the programmer wrote; used for
      *     diagnostic messages
-     * @param resultValue whether the condition is the method returning true or false
+     * @param resultValue true if the condition is the method returning true or false
      */
     public ConditionalPostcondition(
         String expressionString,

@@ -62,4 +62,25 @@ public class BasicAnnotationProvider implements AnnotationProvider {
 
     return false;
   }
+
+  /**
+   * {@inheritDoc}
+   *
+   * <p>This implementation returns true if the {@code @Deterministic} annotation is present on the
+   * given method.
+   */
+  @Override
+  public boolean isDeterministic(ExecutableElement methodElement) {
+    List<? extends AnnotationMirror> annotationMirrors = methodElement.getAnnotationMirrors();
+
+    for (AnnotationMirror am : annotationMirrors) {
+      boolean found =
+          AnnotationUtils.areSameByName(am, "org.checkerframework.dataflow.qual.Deterministic");
+      if (found) {
+        return true;
+      }
+    }
+
+    return false;
+  }
 }

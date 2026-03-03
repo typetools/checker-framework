@@ -35,7 +35,7 @@ public abstract class JavaExpressionConverter extends JavaExpressionVisitor<Java
    */
   public List<@PolyNull JavaExpression> convert(List<@PolyNull JavaExpression> list) {
     return CollectionsPlume.mapList(
-        (@PolyNull JavaExpression expression) -> {
+        expression -> {
           // Can't use a ternary operator because of:
           // https://github.com/typetools/checker-framework/issues/1170
           if (expression == null) {
@@ -99,6 +99,11 @@ public abstract class JavaExpressionConverter extends JavaExpressionVisitor<Java
   @Override
   protected JavaExpression visitThisReference(ThisReference thisExpr, Void unused) {
     return thisExpr;
+  }
+
+  @Override
+  protected JavaExpression visitSuperReference(SuperReference superExpr, Void unused) {
+    return superExpr;
   }
 
   @Override

@@ -7,7 +7,7 @@ public class Issue2719 {
   public static void main(String[] args) {
     List<Integer> iList = asList(0);
     List<@Nullable Integer> jList = asList((Integer) null);
-    // TODO:: error:  (assignment)
+    // :: error:  (type.arguments.not.inferred)
     List<List<Integer>> both = passThrough(asList(iList, jList));
     System.out.println(both.get(1).get(0).intValue());
   }

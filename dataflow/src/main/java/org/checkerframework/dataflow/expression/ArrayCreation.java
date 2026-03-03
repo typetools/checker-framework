@@ -26,8 +26,8 @@ public class ArrayCreation extends JavaExpression {
    * Creates an ArrayCreation object.
    *
    * @param type array type
-   * @param dimensions list of dimension expressions; a {code null} element means that there is no
-   *     dimension expression for the given array level.
+   * @param dimensions list of dimension expressions; a {@code null} element means that there is no
+   *     dimension expression for the given array level
    * @param initializers list of initializer expressions
    */
   public ArrayCreation(
@@ -54,19 +54,20 @@ public class ArrayCreation extends JavaExpression {
     return initializers;
   }
 
+  @SuppressWarnings("unchecked") // generic cast
   @Override
-  public boolean containsOfClass(Class<? extends JavaExpression> clazz) {
+  public <T extends JavaExpression> @Nullable T containedOfClass(Class<T> clazz) {
     for (JavaExpression n : dimensions) {
       if (n != null && n.getClass() == clazz) {
-        return true;
+        return (T) n;
       }
     }
     for (JavaExpression n : initializers) {
       if (n.getClass() == clazz) {
-        return true;
+        return (T) n;
       }
     }
-    return false;
+    return null;
   }
 
   @Override
@@ -75,13 +76,13 @@ public class ArrayCreation extends JavaExpression {
   }
 
   @Override
-  public boolean isUnassignableByOtherCode() {
-    return false;
+  public boolean isAssignableByOtherCode() {
+    return true;
   }
 
   @Override
-  public boolean isUnmodifiableByOtherCode() {
-    return false;
+  public boolean isModifiableByOtherCode() {
+    return true;
   }
 
   @Override
@@ -133,7 +134,7 @@ public class ArrayCreation extends JavaExpression {
         sb.append("]");
       }
     }
-    if (!initializers.isEmpty()) {
+    if (!initializers.isEmpty() || dimensions.isEmpty()) {
       sb.append(" {");
       sb.append(StringsPlume.join(", ", initializers));
       sb.append("}");

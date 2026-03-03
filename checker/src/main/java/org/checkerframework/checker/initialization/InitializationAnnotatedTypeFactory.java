@@ -3,6 +3,8 @@ package org.checkerframework.checker.initialization;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.MemberReferenceTree;
+import com.sun.source.tree.MemberReferenceTree.ReferenceMode;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
@@ -195,7 +197,7 @@ public abstract class InitializationAnnotatedTypeFactory<
   public abstract AnnotationMirror getFieldInvariantAnnotation();
 
   /**
-   * Returns whether or not {@code field} has the invariant annotation.
+   * Returns true if {@code field} has the invariant annotation.
    *
    * <p>This method is a convenience method for {@link
    * #hasFieldInvariantAnnotation(AnnotatedTypeMirror, VariableElement)}.
@@ -205,7 +207,7 @@ public abstract class InitializationAnnotatedTypeFactory<
    * NullnessAnnotatedTypeFactory#hasFieldInvariantAnnotation(VariableTree)} for an example.
    *
    * @param field field that might have invariant annotation
-   * @return whether or not field has the invariant annotation
+   * @return true if field has the invariant annotation
    */
   protected final boolean hasFieldInvariantAnnotation(VariableTree field) {
     AnnotatedTypeMirror type = getAnnotatedType(field);
@@ -214,7 +216,7 @@ public abstract class InitializationAnnotatedTypeFactory<
   }
 
   /**
-   * Returns whether or not {@code type} has the invariant annotation.
+   * Returns true if {@code type} has the invariant annotation.
    *
    * <p>If the {@code type} is a type variable, this method returns true if any possible
    * instantiation of the type parameter could have the invariant annotation. See {@link
@@ -223,7 +225,7 @@ public abstract class InitializationAnnotatedTypeFactory<
    * @param type of field that might have invariant annotation
    * @param fieldElement the field element, which can be used to check annotations on the
    *     declaration
-   * @return whether or not the type has the invariant annotation
+   * @return true if the type has the invariant annotation
    */
   protected abstract boolean hasFieldInvariantAnnotation(
       AnnotatedTypeMirror type, VariableElement fieldElement);
@@ -386,7 +388,7 @@ public abstract class InitializationAnnotatedTypeFactory<
    */
   protected boolean areAllFieldsInitializedOnly(ClassTree classTree) {
     for (Tree member : classTree.getMembers()) {
-      if (member.getKind() != Tree.Kind.VARIABLE) {
+      if (!(member instanceof VariableTree)) {
         continue;
       }
       VariableTree var = (VariableTree) member;
@@ -448,7 +450,7 @@ public abstract class InitializationAnnotatedTypeFactory<
       TreePath topLevelMemberPath = findTopLevelClassMemberForTree(path);
       if (topLevelMemberPath != null && topLevelMemberPath.getLeaf() != null) {
         Tree topLevelMember = topLevelMemberPath.getLeaf();
-        if (topLevelMember.getKind() != Tree.Kind.METHOD
+        if (!(topLevelMember instanceof MethodTree)
             || TreeUtils.isConstructor((MethodTree) topLevelMember)) {
           setSelfTypeInInitializationCode(tree, enclosing, topLevelMemberPath);
         }
@@ -569,7 +571,7 @@ public abstract class InitializationAnnotatedTypeFactory<
    *
    * @param store a store
    * @param path the current path, used to determine the current class
-   * @param isStatic whether to report static fields or instance fields
+   * @param isStatic if true, report static fields; if false, report instance fields
    * @param receiverAnnotations the annotations on the receiver
    * @return the fields that are not yet initialized in a given store (a pair of lists)
    */
@@ -579,7 +581,7 @@ public abstract class InitializationAnnotatedTypeFactory<
       boolean isStatic,
       Collection<? extends AnnotationMirror> receiverAnnotations) {
     ClassTree currentClass = TreePathUtil.enclosingClass(path);
-    List<VariableTree> fields = InitializationChecker.getAllFields(currentClass);
+    List<VariableTree> fields = TreeUtils.fieldsFromClassTree(currentClass);
     List<VariableTree> uninitWithInvariantAnno = new ArrayList<>();
     List<VariableTree> uninitWithoutInvariantAnno = new ArrayList<>();
     for (VariableTree field : fields) {
@@ -608,7 +610,7 @@ public abstract class InitializationAnnotatedTypeFactory<
    *
    * @param store a store
    * @param path the current path, used to determine the current class
-   * @param isStatic whether to report static fields or instance fields
+   * @param isStatic if true, report static fields; if false, report instance fields
    * @param receiverAnnotations the annotations on the receiver
    * @return the fields that have the invariant annotation and are not yet initialized in a given
    *     store (a pair of lists)
@@ -629,10 +631,8 @@ public abstract class InitializationAnnotatedTypeFactory<
    * @return the fields that have the invariant annotation and are initialized in a given store
    */
   public List<VariableTree> getInitializedInvariantFields(Store store, TreePath path) {
-    // TODO: Instead of passing the TreePath around, can we use
-    // getCurrentClassTree?
     ClassTree currentClass = TreePathUtil.enclosingClass(path);
-    List<VariableTree> fields = InitializationChecker.getAllFields(currentClass);
+    List<VariableTree> fields = TreeUtils.fieldsFromClassTree(currentClass);
     List<VariableTree> initializedFields = new ArrayList<>();
     for (VariableTree field : fields) {
       VariableElement fieldElem = TreeUtils.elementFromDeclaration(field);
@@ -649,7 +649,7 @@ public abstract class InitializationAnnotatedTypeFactory<
     return initializedFields;
   }
 
-  /** Returns whether the field {@code f} is unused, given the annotations on the receiver. */
+  /** Returns true if the field {@code f} is unused, given the annotations on the receiver. */
   private boolean isUnused(
       VariableTree field, Collection<? extends AnnotationMirror> receiverAnnos) {
     if (receiverAnnos.isEmpty()) {
@@ -674,7 +674,7 @@ public abstract class InitializationAnnotatedTypeFactory<
   }
 
   /**
-   * Return true if the type is initialized with respect to the given frame -- that is, all of the
+   * Returns true if the type is initialized with respect to the given frame -- that is, all of the
    * fields of the frame are initialized.
    *
    * @param type the type whose initialization type qualifiers to check
@@ -797,6 +797,10 @@ public abstract class InitializationAnnotatedTypeFactory<
       boolean allInitialized = true;
       Type type = ((JCTree) tree).type;
       for (ExpressionTree a : tree.getArguments()) {
+        if (!TreeUtils.isStandaloneExpression(a)) {
+          continue;
+        }
+
         AnnotatedTypeMirror t = getAnnotatedType(a);
         allInitialized &= (isInitialized(t) || isFbcBottom(t));
       }
@@ -997,5 +1001,20 @@ public abstract class InitializationAnnotatedTypeFactory<
       assert (unknowninit1 || underinit1) && (unknowninit2 || underinit2);
       return createUnderInitializationAnnotation(typeFrame);
     }
+  }
+
+  @Override
+  protected ParameterizedExecutableType methodFromUse(
+      ExpressionTree tree,
+      ExecutableElement methodElt,
+      AnnotatedTypeMirror receiverType,
+      boolean inferTypeArgs) {
+    ParameterizedExecutableType x =
+        super.methodFromUse(tree, methodElt, receiverType, inferTypeArgs);
+    if (tree instanceof MemberReferenceTree
+        && ((MemberReferenceTree) tree).getMode() == ReferenceMode.NEW) {
+      x.executableType.getReturnType().replaceAnnotation(INITIALIZED);
+    }
+    return x;
   }
 }

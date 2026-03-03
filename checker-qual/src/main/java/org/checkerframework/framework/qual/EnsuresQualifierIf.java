@@ -40,6 +40,13 @@ import java.lang.annotation.Target;
 @Repeatable(EnsuresQualifierIf.List.class)
 public @interface EnsuresQualifierIf {
   /**
+   * Returns the return value of the method that needs to hold for the postcondition to hold.
+   *
+   * @return the return value of the method that needs to hold for the postcondition to hold
+   */
+  boolean result();
+
+  /**
    * Returns the Java expressions for which the qualifier holds if the method terminates with return
    * value {@link #result()}.
    *
@@ -59,13 +66,6 @@ public @interface EnsuresQualifierIf {
   Class<? extends Annotation> qualifier();
 
   /**
-   * Returns the return value of the method that needs to hold for the postcondition to hold.
-   *
-   * @return the return value of the method that needs to hold for the postcondition to hold
-   */
-  boolean result();
-
-  /**
    * A wrapper annotation that makes the {@link EnsuresQualifierIf} annotation repeatable.
    *
    * <p>Programmers generally do not need to write this. It is created by Java when a programmer
@@ -77,7 +77,7 @@ public @interface EnsuresQualifierIf {
   @InheritedAnnotation
   public static @interface List {
     /**
-     * Return the repeatable annotations.
+     * Returns the repeatable annotations.
      *
      * @return the repeatable annotations
      */

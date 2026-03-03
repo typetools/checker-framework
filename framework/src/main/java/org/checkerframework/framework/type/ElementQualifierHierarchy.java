@@ -70,6 +70,7 @@ public abstract class ElementQualifierHierarchy extends QualifierHierarchy {
    * @param elements element utils
    * @param atypeFactory the associated type factory
    */
+  @SuppressWarnings("this-escape")
   protected ElementQualifierHierarchy(
       Collection<Class<? extends Annotation>> qualifierClasses,
       Elements elements,

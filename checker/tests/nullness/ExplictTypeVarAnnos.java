@@ -42,6 +42,6 @@ public class ExplictTypeVarAnnos<E extends @Nullable Object, @Nullable F> {
 
   static class A<Q extends @NonNull Object> {}
 
-  // :: error: (type.argument)
+  // :: error: [type.argument]
   static class B<S> extends A<S> {}
 }

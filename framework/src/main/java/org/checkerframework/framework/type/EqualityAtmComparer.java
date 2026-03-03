@@ -8,8 +8,8 @@ import org.checkerframework.javacutil.AnnotationUtils;
  * Compares two annotated type mirrors for structural equality using only the primary annotations
  * and underlying types of the two input types and their component types. Note, this leaves out
  * other fields specific to some AnnotatedTypeMirrors (like directSupertypes, isUnderlyingTypeRaw,
- * isUninferredTypeArgument etc...). Ideally, both EqualityAtmComparer and HashcodeAtmVisitor would
- * visit relevant fields.
+ * isTypeArgOfRawType etc...). Ideally, both EqualityAtmComparer and HashcodeAtmVisitor would visit
+ * relevant fields.
  *
  * <p>This class is used by AnnotatedTypeMirror#equals
  *
@@ -21,7 +21,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 public class EqualityAtmComparer extends EquivalentAtmComboScanner<Boolean, Void> {
 
   /**
-   * Return true if {@code type1} and {@code type2} have equivalent sets of annotations.
+   * Returns true if {@code type1} and {@code type2} have equivalent sets of annotations.
    *
    * @param type1 a type
    * @param type2 a type
@@ -32,7 +32,7 @@ public class EqualityAtmComparer extends EquivalentAtmComboScanner<Boolean, Void
   }
 
   /**
-   * Return true if the twe types are the same.
+   * Returns true if the twe types are the same.
    *
    * @param type1 the first type to compare
    * @param type2 the second type to compare

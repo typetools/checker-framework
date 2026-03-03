@@ -1,0 +1,21 @@
+package :
+annotation @A:
+
+package :
+class ParseType:
+
+    method m(Ljava/lang/Object;)V:
+        return:
+        insert-typecast Block.statement 0, Variable.initializer: @A String
+        insert-typecast Block.statement 1, Variable.initializer: @A Map<String, Integer>
+        insert-typecast Block.statement 2, Variable.initializer: @A String[]
+        insert-typecast Block.statement 3, Variable.initializer: @A String[][]
+        insert-typecast Block.statement 4, Variable.initializer: @A Map<String[], Integer>
+        insert-typecast Block.statement 5, Variable.initializer: @A Map<String[][], Integer>
+        insert-typecast Block.statement 6, Variable.initializer: @A Map<?, ?>
+        insert-typecast Block.statement 7, Variable.initializer: @A Map<? extends String, ? super List<Integer>>
+        insert-typecast Block.statement 8, Variable.initializer: @A Map<List<String>, List<String>[]>
+        insert-typecast Block.statement 9, Variable.initializer: @A Map.Entry<String, Integer>
+        insert-typecast Block.statement 10, Variable.initializer: @A Map.Entry<String, Integer>[]
+        insert-typecast Block.statement 11, Variable.initializer: @A ParseType<String>.Inner<Integer>[]
+

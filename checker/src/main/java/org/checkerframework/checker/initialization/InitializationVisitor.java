@@ -72,11 +72,11 @@ public class InitializationVisitor<
   }
 
   @Override
-  public void setRoot(CompilationUnitTree root) {
+  public void setRoot(CompilationUnitTree newRoot) {
     // Clean up the cache of initialized fields once per compilation unit.
     // Alternatively, but harder to determine, this could be done once per top-level class.
     initializedFields.clear();
-    super.setRoot(root);
+    super.setRoot(newRoot);
   }
 
   @Override
@@ -226,7 +226,7 @@ public class InitializationVisitor<
     // save all fields that are initialized and do not report errors about
     // them later when checking constructors.
     for (Tree member : tree.getMembers()) {
-      if (member.getKind() == Tree.Kind.BLOCK && !((BlockTree) member).isStatic()) {
+      if (member instanceof BlockTree && !((BlockTree) member).isStatic()) {
         BlockTree block = (BlockTree) member;
         Store store = atypeFactory.getRegularExitStore(block);
 
@@ -248,7 +248,7 @@ public class InitializationVisitor<
     // Warn about uninitialized static fields.
     Tree.Kind nodeKind = tree.getKind();
     // Skip interfaces (and annotations, which are interfaces).  In an interface, every static
-    // field must be initialized.  Java forbids uninitialized variables and static initalizer
+    // field must be initialized.  Java forbids uninitialized variables and static initializer
     // blocks.
     if (nodeKind != Tree.Kind.INTERFACE && nodeKind != Tree.Kind.ANNOTATION_TYPE) {
       boolean isStatic = true;
@@ -269,7 +269,7 @@ public class InitializationVisitor<
   }
 
   @Override
-  public Void visitMethod(MethodTree tree, Void p) {
+  public void processMethodTree(String className, MethodTree tree) {
     if (TreeUtils.isConstructor(tree)) {
       Collection<? extends AnnotationMirror> returnTypeAnnotations =
           AnnotationUtils.getExplicitAnnotationsOnConstructorResult(tree);
@@ -290,7 +290,7 @@ public class InitializationVisitor<
       List<? extends AnnotationMirror> receiverAnnotations = getAllReceiverAnnotations(tree);
       checkFieldsInitialized(tree, isStatic, store, receiverAnnotations);
     }
-    return super.visitMethod(tree, p);
+    super.processMethodTree(className, tree);
   }
 
   /**
@@ -320,7 +320,7 @@ public class InitializationVisitor<
    * @param tree a {@link ClassTree} if {@code staticFields} is true; a {@link MethodTree} for a
    *     constructor if {@code staticFields} is false. This is where errors are reported, if they
    *     are not reported at the fields themselves
-   * @param staticFields whether to check static fields or instance fields
+   * @param staticFields if true, check static fields; if false, check instance fields
    * @param store the store
    * @param receiverAnnotations the annotations on the receiver
    */
@@ -343,7 +343,7 @@ public class InitializationVisitor<
     // Compact canonical record constructors do not generate visible assignments in the source,
     // but by definition they assign to all the record's fields so we don't need to
     // check for uninitialized fields in them:
-    if (tree.getKind() == Tree.Kind.METHOD
+    if (tree instanceof MethodTree
         && TreeUtils.isCompactCanonicalRecordConstructor((MethodTree) tree)) {
       return;
     }
@@ -355,13 +355,8 @@ public class InitializationVisitor<
     List<VariableTree> nonviolatingFields = uninitializedFields.second;
 
     // Remove fields that have already been initialized by an initializer block.
-    if (staticFields) {
-      violatingFields.removeAll(initializedFields);
-      nonviolatingFields.removeAll(initializedFields);
-    } else {
-      violatingFields.removeAll(initializedFields);
-      nonviolatingFields.removeAll(initializedFields);
-    }
+    violatingFields.removeAll(initializedFields);
+    nonviolatingFields.removeAll(initializedFields);
 
     // Errors are issued at the field declaration if the field is static or if the constructor
     // is the default constructor.

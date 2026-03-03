@@ -1,7 +1,5 @@
 // Test case for issue #979: https://github.com/typetools/checker-framework/issues/979
 
-// @skip-test
-
 import org.checkerframework.checker.nullness.qual.*;
 
 public class Issue531 {
@@ -14,12 +12,12 @@ public class Issue531 {
   static <T> MyCollector<T, ?, MyList<T>> toList() {
     return new MyCollector<>();
   }
-}
 
-class MyList<T> {}
+  static class MyList<T> {}
 
-class MyCollector<T, A, R> {}
+  static class MyCollector<T, A, R> {}
 
-abstract class MyStream<T> {
-  public abstract <R, A> R collect(MyCollector<? super T, A, R> c);
+  abstract static class MyStream<T> {
+    public abstract <R, A> R collect(MyCollector<? super T, A, R> c);
+  }
 }

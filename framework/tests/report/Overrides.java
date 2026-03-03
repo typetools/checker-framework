@@ -1,4 +1,4 @@
-import org.checkerframework.common.util.report.qual.*;
+import org.checkerframework.common.util.count.report.qual.*;
 
 public class Overrides {
   class A {
@@ -11,7 +11,7 @@ public class Overrides {
   }
 
   class C extends B {
-    // :: error: (override)
+    // :: error: [override]
     void m() {}
   }
 

@@ -581,7 +581,7 @@ including both IDEs (such as an Eclipse plug-in) and build tools
   project's support for build systems and IDEs.  For instance, you might
   make <a href="https://github.com/coala/coala">coala</a> support the
   Checker Framework, or you might adapt the tool integration provided
-  by <a href="http://errorprone.info/">Error Prone</a>.
+  by <a href="https://errorprone.info/">Error Prone</a>.
 </p>
 
 
@@ -618,7 +618,7 @@ size. The challenge lies in efficient enumeration of all programs and
 avoiding redundant checks, and in knowing the expected outcome of the
 tests.  This approach is related to bounded exhaustive
 testing and model checking; for a reference, see
-[Efficient Software Model Checking of Soundness of Type Systems](http://www.eecs.umich.edu/~bchandra/publications/oopsla08.pdf).
+[Efficient Software Model Checking of Soundness of Type Systems](https://www.eecs.umich.edu/~bchandra/publications/oopsla08.pdf).
 </p>
 
 
@@ -645,4 +645,235 @@ two deterministic executions than two nondeterministic executions.
   manual chapter</a>, and its implementation is in
 <a href="https://github.com/t-rasmud/checker-framework/tree/nondet-checker">t-rasmud/nondet-checker</a>.
 You will do a case study of this type system.
+</p>
+
+<h2 id="optional-case-study">Detecting errors in use of the Optional class</h2>
+
+<!-- This project is duplicated in the highlight section and in
+the Checker Framework's new-contributor-projects.html . -->
+
+<p>
+Java 8 introduced the
+<a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/Optional.html"><code>Optional</code></a>
+class, a container that is either empty or contains a non-null value.
+It is intended to solve the problem of null
+pointer exceptions.  However, <code>Optional</code>
+has <a href="https://homes.cs.washington.edu/~mernst/advice/nothing-is-better-than-optional.html">its
+  own problems</a>, leading
+to <a href="https://stuartmarks.wordpress.com/2016/09/27/vjug24-session-on-optional/">extensive
+  advice</a> on when and how to use Optional.  It is difficult for
+programmers to remember all these rules.
+</p>
+
+<p>
+The goal of this project is to build a tool to check uses of Optional and run it on open-source projects.  The research questions are:
+</p>
+<ul>
+  <li>Is it possible to build a tool that enforces good style in using Optional?
+  </li>
+  <li>How much effort is is for programmers to use such a tool?
+  </li>
+  <li>Does real-world code obey the rules about use of Optional, or not?
+  </li>
+</ul>
+
+<p>
+We have
+a <a href="https://checkerframework.org/manual/#optional-checker">prototype
+    verification tool</a> that checks some but not all rules about use of
+Optional (https://checkerframework.org/manual/#optional-checker).  This
+project will do case studies of it and extend it.
+</p>
+
+<p>
+The methodology is to find open-source projects that use Optional(you can
+do this by searching GitHub, for example), run the tool on them, and read
+the tool's warnings.  Each warning will lead to either a bug report against
+an open-source project or an improvement to the verification tool.
+</p>
+
+<!--
+
+For the Optional Class project, the first task is to run the existing
+verification tool:  https://checkerframework.org/manual/#optional-checker .
+Doing so will give you a feel for its strengths and weaknesses (and the latter
+may suggest ways to improve it).  First, read parts of the Checker Framework
+manual first (the "How to read this manual" section tells you what to read).  In
+addition to reading the section about the Optional Checker, do follow the link
+to the webpage “Nothing is better than the Optional type”.  Once you have done
+that reading, you need to choose a project to type-check.  You can choose a
+program that you know uses Optional, or search GitHub for one.  For each warning
+issued by the Optional Checker, follow the methodology at
+https://checkerframework.org/manual/#handling-warnings .
+
+-->
+
+
+<!--
+<h2 id="nullness-bug-detector">Nullness bug detector</h2>
+
+<p>
+Verifying a program to be free of errors can be a daunting task.  When
+starting out, a user may be more interested in
+<a href="https://checkerframework.org/manual/#faq-other-tools-section">bug-finding</a>
+than verification.  The goal of this project is to create a nullness bug
+detector that uses the powerful analysis of the Checker Framework and its
+Nullness Checker, but omits some of its more confusing or expensive
+features.  The goal is to create a fast, easy-to-use bug detector.  It
+would enable users to start small and advance to full verification in the
+future, rather than having to start out doing full verification.
+</p>
+
+<p>
+This could be structured as a new NullnessLight Checker, or as a
+command-line argument to the current Nullness Checker.  Here are some
+differences from the real Nullness checker:
+</p>
+<ul>
+  <li>No initialization analysis; the checker assumes that every value is
+  initialized.</li>
+  <li>No map key analysis; assume that, at every call to
+    <code>Map.get</code>, the given key appears in the map.</li>
+  <li>No invalidation of dataflow facts.  Assume all method calls are pure,
+  so method calls do not invalidate dataflow facts.  Assume there is no
+    aliasing, so field updates do not invalidate dataflow facts.
+    </li>
+  <li>Assume that boxing of primitives is <code>@Pure</code>: it returns
+  the same value on every call.</li>
+  <li>If the Checker Framework cannot infer a type argument, assume that
+  the type argument is <code>@NonNull</code>.</li>
+</ul>
+<p>
+  Each of these behaviors should be controlled by its own command-line
+  argument, as well as being enabled in the NullnessLight Checker.
+</p>
+
+<p>
+  The implementation may be relatively straightforward, since in most cases
+  the behavior is just to disable some functionality of existing checkers.
+</p>
+
+<p>Tools such as FindBugs, NullAway, NullnessLight, and the Nullness
+  Checker form a spectrum from easy-to-use bug detectors to sound
+  verification.  NullnessLight represents a new point in the design space.
+  It will be interesting to compare these checkers:
+</p>
+
+<ul>
+    <li>How much easier is it to use?  For example, how many fewer
+      annotations need to be written?</li>
+    <li>
+      How many more fewer true positives does it report &mdash; in other
+      words, how many more false negatives does it suffer?
+    </li>
+    <li>
+      How many fewer false positives does it report?
+    </li>
+</ul>
+
+<p>
+  Uber's <a href="https://github.com/uber/NullAway">NullAway</a> tool is also
+  an implementation of this idea (that is, a fast, but incomplete and
+  unsound, nullness checker).  NullAway doesn't let the user specify Java
+  Generics:  it assumes that every type parameter is <code>@NonNull</code>.
+  Does Uber's tool provide users a good
+  introduction to the ideas that a user can use to transition to a nullness
+  type system later?
+</p>
+-->
+
+<!--
+<h2 id="compare-other-tools">Comparison to other tools</h2>
+
+<p>
+  Many other tools exist for prevention of programming errors, such as
+  Error Prone, NullAway, FindBugs, JLint, PMD, and IDEs such as Eclipse and
+  IntelliJ.  These tools
+  are not as powerful as the Checker Framework (some are bug finders rather
+  than verification tools, and some perform a shallower analysis), but they
+  may be easier to use.
+  Programmers who use these tools wonder, "Is it worth my time to switch to
+  using the Checker Framework?"
+</p>
+
+<p>
+  The goal of this project is to perform a head-to-head comparison of as
+  many different tools as possible.  You will quantify:
+</p>
+
+<ul>
+  <li>the number of annotations that need to be written</li>
+  <li>the number of bugs detected</li>
+  <li>the number of bugs missed</li>
+  <li>the number of false positive warnings</li>
+</ul>
+
+<p>
+  This project will help programmers to choose among the different tools
+  &mdash; it will show when a programmer should or should not use the
+  Checker Framework.
+  This project will also indicate how each tool should be improved.
+</p>
+
+<p>
+  One place to start would be with an old version of a program that is
+  known to contain bugs.  Or, start with the latest version of the program
+  and re-introduce fixed bugs.  (Either of these is more realistic than
+  introducing artificial bugs into the program.)  A possibility would be to
+  use the Lookup program that has been used in previous case studies.
+</p>
+-->
+
+<!-- Yuki Yang is taking on this project. -->
+<h2 id="track-unsupported-operations">Warn about unsupported operations</h2>
+
+<p>
+In Java, some objects do not fully implement their interface; they
+throw <code>UnsupportedOperationException</code> for some operations.  One
+example is <a href="https://docs.oracle.com/en/java/javase/11/core/creating-immutable-lists-sets-and-maps.html">unmodifiable collections</a>.  They throw the exception when a
+mutating operation is called, such
+as <code>add</code>, <code>addAll</code>, <code>put</code>, <code>remove</code>,
+etc.
+</p>
+
+<p>
+The goal of this project is to
+design a compile-time verification tool to track which operations might not be supported.
+This tool will issue a warning whenever
+an <code>UnsupportedOperationException</code> might occur at run time.
+This helps programmers to avoid run-time exceptions (crashes) in their Java programs.
+</p>
+
+<p>
+The research questions include:
+</p>
+<ul>
+  <li>Is it is possible to build a verification tool to prevent <code>UnsupportedOperationException</code>?  What design is effective?
+  </li>
+  <li>How difficult is such a tool to use, in terms of programmer effort and number of false alarms?
+  </li>
+  <li>Are potential <code>UnsupportedOperationException</code> exceptions
+  pervasive in Java programs?  Is it possible to eliminate them?
+  </li>
+</ul>
+
+<p>
+The methodology is:
+</p>
+<ol>
+  <li>design a static (compile-time) analysis
+  </li>
+  <li>implement it
+  </li>
+  <li>evaluate it on open-source projects
+  </li>
+  <li>report bugs in the projects, and improve the tool
+  </li>
+</ol>
+
+<p>
+Methods such
+as <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/Arrays.html#asList(T...)">Arrays.asList</a>
+and <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/Collections.html#emptyList()">Collections.emptyList</a>
+must be annotated to return a less-capable type.
 </p>

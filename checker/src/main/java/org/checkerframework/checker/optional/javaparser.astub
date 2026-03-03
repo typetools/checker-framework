@@ -1,0 +1,412 @@
+// Every `getParentNode()` method except that of `CompilationUnit`, `Node`, and `StubUnit` returns a @Present Optional.
+
+import org.checkerframework.checker.optional.qual.Present;
+
+
+package com.github.javaparser;
+
+public class JavaToken {
+  @Present Optional<Range> getRange();
+}
+public class TokenRange implements Iterable<JavaToken> {
+  @Present Optional<Range> toRange();
+}
+
+
+package com.github.javaparser.ast;
+
+class ArrayCreationLevel {
+  @Present Optional<Node> getParentNode();
+}
+class ImportDeclaration {
+  @Present Optional<Node> getParentNode();
+}
+class Modifier {
+  @Present Optional<Node> getParentNode();
+}
+class Node {
+  // This might be unsound.
+  @Present Optional<Range> getRange();
+  // This might be unsound.
+  @Present Optional<TokenRange> getTokenRange();
+}
+class NodeList<N extends Node> {
+  @Present Optional<Node> getParentNode();
+}
+class PackageDeclaration {
+  @Present Optional<Node> getParentNode();
+}
+
+
+package com.github.javaparser.ast.body;
+
+class AnnotationDeclaration {
+  @Present Optional<Node> getParentNode();
+}
+class AnnotationMemberDeclaration {
+  @Present Optional<Node> getParentNode();
+}
+class BodyDeclaration<T extends BodyDeclaration<?>> {
+  @Present Optional<Node> getParentNode();
+}
+class CallableDeclaration<T extends CallableDeclaration<?>> {
+  @Present Optional<Node> getParentNode();
+}
+class ClassOrInterfaceDeclaration {
+  @Present Optional<Node> getParentNode();
+}
+class CompactConstructorDeclaration {
+  @Present Optional<Node> getParentNode();
+}
+class ConstructorDeclaration {
+  @Present Optional<Node> getParentNode();
+}
+class EnumConstantDeclaration {
+  @Present Optional<Node> getParentNode();
+}
+class EnumDeclaration {
+  @Present Optional<Node> getParentNode();
+}
+class FieldDeclaration {
+  @Present Optional<Node> getParentNode();
+}
+class InitializerDeclaration {
+  @Present Optional<Node> getParentNode();
+}
+class MethodDeclaration {
+  @Present Optional<Node> getParentNode();
+}
+class Parameter {
+  @Present Optional<Node> getParentNode();
+}
+class ReceiverParameter {
+  @Present Optional<Node> getParentNode();
+}
+class RecordDeclaration {
+  @Present Optional<Node> getParentNode();
+  @Present Optional<String> getFullyQualifiedName();
+}
+class TypeDeclaration<T extends TypeDeclaration<?>> {
+  @Present Optional<Node> getParentNode();
+}
+class VariableDeclarator {
+  @Present Optional<Node> getParentNode();
+}
+
+
+package com.github.javaparser.ast.comments;
+
+class BlockComment {
+  @Present Optional<Node> getParentNode();
+}
+class Comment {
+  @Present Optional<Node> getParentNode();
+}
+class JavadocComment {
+  @Present Optional<Node> getParentNode();
+}
+class LineComment {
+  @Present Optional<Node> getParentNode();
+}
+
+
+package com.github.javaparser.ast.expr;
+
+class AnnotationExpr {
+  @Present Optional<Node> getParentNode();
+}
+class ArrayAccessExpr {
+  @Present Optional<Node> getParentNode();
+}
+class ArrayCreationExpr {
+  @Present Optional<Node> getParentNode();
+}
+class ArrayInitializerExpr {
+  @Present Optional<Node> getParentNode();
+}
+class AssignExpr {
+  @Present Optional<Node> getParentNode();
+}
+class BinaryExpr {
+  @Present Optional<Node> getParentNode();
+}
+class BooleanLiteralExpr {
+  @Present Optional<Node> getParentNode();
+}
+class CastExpr {
+  @Present Optional<Node> getParentNode();
+}
+class CharLiteralExpr {
+  @Present Optional<Node> getParentNode();
+}
+class ClassExpr {
+  @Present Optional<Node> getParentNode();
+}
+class ConditionalExpr {
+  @Present Optional<Node> getParentNode();
+}
+class DoubleLiteralExpr {
+  @Present Optional<Node> getParentNode();
+}
+class EnclosedExpr {
+  @Present Optional<Node> getParentNode();
+}
+class Expression {
+  @Present Optional<Node> getParentNode();
+}
+class FieldAccessExpr {
+  @Present Optional<Node> getParentNode();
+}
+class InstanceOfExpr {
+  @Present Optional<Node> getParentNode();
+}
+class IntegerLiteralExpr {
+  @Present Optional<Node> getParentNode();
+}
+class LambdaExpr {
+  @Present Optional<Node> getParentNode();
+}
+class LiteralExpr {
+  @Present Optional<Node> getParentNode();
+}
+class LiteralStringValueExpr {
+  @Present Optional<Node> getParentNode();
+}
+class LongLiteralExpr {
+  @Present Optional<Node> getParentNode();
+}
+class MarkerAnnotationExpr {
+  @Present Optional<Node> getParentNode();
+}
+class MemberValuePair {
+  @Present Optional<Node> getParentNode();
+}
+class MethodCallExpr {
+  @Present Optional<Node> getParentNode();
+}
+class MethodReferenceExpr {
+  @Present Optional<Node> getParentNode();
+}
+class Name {
+  @Present Optional<Node> getParentNode();
+}
+class NameExpr {
+  @Present Optional<Node> getParentNode();
+}
+class NormalAnnotationExpr {
+  @Present Optional<Node> getParentNode();
+}
+class NullLiteralExpr {
+  @Present Optional<Node> getParentNode();
+}
+class ObjectCreationExpr {
+  @Present Optional<Node> getParentNode();
+}
+class PatternExpr {
+  @Present Optional<Node> getParentNode();
+}
+class SimpleName {
+  @Present Optional<Node> getParentNode();
+}
+class SingleMemberAnnotationExpr {
+  @Present Optional<Node> getParentNode();
+}
+class StringLiteralExpr {
+  @Present Optional<Node> getParentNode();
+}
+class SuperExpr {
+  @Present Optional<Node> getParentNode();
+}
+class SwitchExpr {
+  @Present Optional<Node> getParentNode();
+}
+class TextBlockLiteralExpr {
+  @Present Optional<Node> getParentNode();
+}
+class ThisExpr {
+  @Present Optional<Node> getParentNode();
+}
+class TypeExpr {
+  @Present Optional<Node> getParentNode();
+}
+class UnaryExpr {
+  @Present Optional<Node> getParentNode();
+}
+class VariableDeclarationExpr {
+  @Present Optional<Node> getParentNode();
+}
+
+
+package com.github.javaparser.ast.modules;
+
+class ModuleDeclaration {
+  @Present Optional<Node> getParentNode();
+}
+class ModuleDirective {
+  @Present Optional<Node> getParentNode();
+}
+class ModuleExportsDirective {
+  @Present Optional<Node> getParentNode();
+}
+class ModuleOpensDirective {
+  @Present Optional<Node> getParentNode();
+}
+class ModuleProvidesDirective {
+  @Present Optional<Node> getParentNode();
+}
+class ModuleRequiresDirective {
+  @Present Optional<Node> getParentNode();
+}
+class ModuleUsesDirective {
+  @Present Optional<Node> getParentNode();
+}
+
+
+package com.github.javaparser.ast.nodeTypes;
+
+public interface NodeWithRange<N> {
+  // This might be unsound.
+  @Present Optional<Range> getRange();
+
+  // This might be unsound.
+  @Present Optional<Position> getBegin();
+
+  // This might be unsound.
+  @Present Optional<Position> getEnd();
+}
+
+
+package com.github.javaparser.ast.stmt;
+
+class AssertStmt {
+  @Present Optional<Node> getParentNode();
+}
+class BlockStmt {
+  @Present Optional<Node> getParentNode();
+}
+class BreakStmt {
+  @Present Optional<Node> getParentNode();
+}
+class CatchClause {
+  @Present Optional<Node> getParentNode();
+}
+class ContinueStmt {
+  @Present Optional<Node> getParentNode();
+}
+class DoStmt {
+  @Present Optional<Node> getParentNode();
+}
+class EmptyStmt {
+  @Present Optional<Node> getParentNode();
+}
+class ExplicitConstructorInvocationStmt {
+  @Present Optional<Node> getParentNode();
+}
+class ExpressionStmt {
+  @Present Optional<Node> getParentNode();
+}
+class ForEachStmt {
+  @Present Optional<Node> getParentNode();
+}
+class ForStmt {
+  @Present Optional<Node> getParentNode();
+}
+class IfStmt {
+  @Present Optional<Node> getParentNode();
+}
+class LabeledStmt {
+  @Present Optional<Node> getParentNode();
+}
+class LocalClassDeclarationStmt {
+  @Present Optional<Node> getParentNode();
+}
+class LocalRecordDeclarationStmt {
+  @Present Optional<Node> getParentNode();
+}
+class ReturnStmt {
+  @Present Optional<Node> getParentNode();
+}
+class Statement {
+  @Present Optional<Node> getParentNode();
+}
+class SwitchEntry {
+  @Present Optional<Node> getParentNode();
+}
+class SwitchStmt {
+  @Present Optional<Node> getParentNode();
+}
+class SynchronizedStmt {
+  @Present Optional<Node> getParentNode();
+}
+class ThrowStmt {
+  @Present Optional<Node> getParentNode();
+}
+class TryStmt {
+  @Present Optional<Node> getParentNode();
+}
+class UnparsableStmt {
+  @Present Optional<Node> getParentNode();
+}
+class WhileStmt {
+  @Present Optional<Node> getParentNode();
+}
+class YieldStmt {
+  @Present Optional<Node> getParentNode();
+}
+
+
+package com.github.javaparser.ast.type;
+
+class ArrayType {
+  @Present Optional<Node> getParentNode();
+  // This might be unsound.
+  @Present Optional<TokenRange> getTokenRange();
+  class ArrayBracketPair {
+    // This might be unsound.
+    @Present Optional<TokenRange> getTokenRange();
+  }
+}
+class ClassOrInterfaceType {
+  @Present Optional<Node> getParentNode();
+}
+class IntersectionType {
+  @Present Optional<Node> getParentNode();
+}
+class PrimitiveType {
+  @Present Optional<Node> getParentNode();
+}
+class ReferenceType {
+  @Present Optional<Node> getParentNode();
+}
+class Type {
+  @Present Optional<Node> getParentNode();
+}
+class TypeParameter {
+  @Present Optional<Node> getParentNode();
+}
+class UnionType {
+  @Present Optional<Node> getParentNode();
+}
+class UnknownType {
+  @Present Optional<Node> getParentNode();
+}
+class VarType {
+  @Present Optional<Node> getParentNode();
+}
+class VoidType {
+  @Present Optional<Node> getParentNode();
+}
+class WildcardType {
+  @Present Optional<Node> getParentNode();
+  @Present Optional<ReferenceType> getSuperType();
+}
+
+
+package com.github.javaparser.printer.lexicalpreservation;
+
+public class TokenTextElement extends TextElement {
+  @Present Optional<Range> getRange();
+}
+public class ChildTextElement extends TextElement {
+  @Present Optional<Range> getRange();
+}

@@ -1,0 +1,17 @@
+strict digraph corresp {
+graph [ratio=1,ordering=out]
+AClass
+AMethod
+ABlock
+ClassTree [shape=box]
+MethodTree [shape=box]
+BlockTree [shape=box]
+z1 [label="..."]
+z2 [label="..."]
+AClass -> AMethod -> ABlock -> z1
+ClassTree -> MethodTree -> BlockTree -> z2
+AClass -> ClassTree [style=dashed,constraint=false]
+AMethod -> MethodTree [style=dashed,constraint=false]
+ABlock -> BlockTree [style=dashed,constraint=false]
+}
+

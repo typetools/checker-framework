@@ -1,0 +1,44 @@
+package org.checkerframework.afu.annotator.tests:
+annotation @A: @java.lang.annotation.Target({java.lang.annotation.ElementType.TYPE_USE})
+annotation @B: @java.lang.annotation.Target({java.lang.annotation.ElementType.TYPE_USE})
+annotation @C: @java.lang.annotation.Target({java.lang.annotation.ElementType.TYPE_USE})
+annotation @X: @java.lang.annotation.Target({java.lang.annotation.ElementType.TYPE_USE})
+annotation @Y: @java.lang.annotation.Target({java.lang.annotation.ElementType.TYPE_USE})
+
+class BoundZero:
+    bound 0&0: @A @B @C
+
+    method m1(Ljava/lang/Object;)V:
+        bound 0&0: @X @Y
+
+    method m2(Ljava/lang/Object;)V:
+        bound 0&0: @X
+
+    method m3(Ljava/lang/Object;)V:
+        bound 0&0: @X
+
+    method m4(Ljava/lang/Object;)V:
+        bound 0&0: @X @Y
+
+    method m5(Ljava/lang/Object;)V:
+        bound 0&0: @X
+
+    method m6(Ljava/lang/Object;)V:
+        bound 0&0: @X
+
+    method m7(Ljava/lang/Object;)V:
+        bound 0&0: @X
+        bound 0&1: @Y
+
+    method m8(Ljava/lang/Object;)V:
+        bound 0&0: @X
+
+    method m9(Ljava/lang/Object;)V:
+        bound 0&0: @X
+
+class BoundZero$Inner:
+    bound 0&0: @A @B @C
+
+class Outer:
+    bound 0&0: @A @B @C
+

@@ -48,7 +48,7 @@ public class AnnotatedTypeReplacer extends DoubleAnnotatedTypeScanner<Void> {
    * otherwise, all annotations are replaced.
    *
    * @param top if top != null, then only annotations in the hierarchy of top are replaced;
-   *     otherwise, all annotations are replaced.
+   *     otherwise, all annotations are replaced
    */
   public void setTop(@Nullable AnnotationMirror top) {
     this.top = top;

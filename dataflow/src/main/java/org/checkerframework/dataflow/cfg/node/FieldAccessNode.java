@@ -3,6 +3,7 @@ package org.checkerframework.dataflow.cfg.node;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.Tree;
+import com.sun.tools.javac.code.Symbol;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
@@ -21,19 +22,23 @@ import org.checkerframework.javacutil.TreeUtils;
  * </pre>
  */
 public class FieldAccessNode extends Node {
-
+  /** The tree of the field access. */
   protected final Tree tree;
-  protected final VariableElement element;
-  protected final String field;
-  protected final Node receiver;
 
-  // TODO: add method to get modifiers (static, access level, ..)
+  /** The element of the accessed field. */
+  protected final VariableElement element;
+
+  /** The name of the accessed field. */
+  protected final String field;
+
+  /** The receiver node of the field access. */
+  protected final Node receiver;
 
   /**
    * Creates a new FieldAccessNode.
    *
    * @param tree the tree from which to create a FieldAccessNode
-   * @param receiver the receiver for the resuling FieldAccessNode
+   * @param receiver the receiver for the resulting FieldAccessNode
    */
   public FieldAccessNode(Tree tree, Node receiver) {
     super(TreeUtils.typeOf(tree));
@@ -87,10 +92,18 @@ public class FieldAccessNode extends Node {
 
   @Override
   public String toString() {
-    return getReceiver() + "." + field;
+    if (Node.disambiguateOwner) {
+      return getReceiver() + "." + field + "{owner=" + ((Symbol) element).owner + "}";
+    } else {
+      return getReceiver() + "." + field;
+    }
   }
 
-  /** Is this a static field? */
+  /**
+   * Returns true if the field is static.
+   *
+   * @return true if the field is static
+   */
   public boolean isStatic() {
     return ElementUtils.isStatic(getElement());
   }

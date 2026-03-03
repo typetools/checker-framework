@@ -9,6 +9,7 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.util.TreePath;
@@ -49,6 +50,7 @@ public class PurityChecker {
    * @param annoProvider the annotation provider
    * @param assumeSideEffectFree true if all methods should be assumed to be @SideEffectFree
    * @param assumeDeterministic true if all methods should be assumed to be @Deterministic
+   * @param assumePureGetters true if all getter methods should be assumed to be @Pure
    * @return information about whether the given statement is side-effect-free, deterministic, or
    *     both
    */
@@ -56,9 +58,11 @@ public class PurityChecker {
       TreePath statement,
       AnnotationProvider annoProvider,
       boolean assumeSideEffectFree,
-      boolean assumeDeterministic) {
+      boolean assumeDeterministic,
+      boolean assumePureGetters) {
     PurityCheckerHelper helper =
-        new PurityCheckerHelper(annoProvider, assumeSideEffectFree, assumeDeterministic);
+        new PurityCheckerHelper(
+            annoProvider, assumeSideEffectFree, assumeDeterministic, assumePureGetters);
     helper.scan(statement, null);
     return helper.purityResult;
   }
@@ -85,7 +89,7 @@ public class PurityChecker {
     protected EnumSet<Pure.Kind> kinds = EnumSet.allOf(Pure.Kind.class);
 
     /**
-     * Return the kinds of purity that the method has.
+     * Returns the kinds of purity that the method has.
      *
      * @return the kinds of purity that the method has
      */
@@ -104,7 +108,7 @@ public class PurityChecker {
     }
 
     /**
-     * Get the reasons why the method is not side-effect-free.
+     * Returns the reasons why the method is not side-effect-free.
      *
      * @return the reasons why the method is not side-effect-free
      */
@@ -124,7 +128,7 @@ public class PurityChecker {
     }
 
     /**
-     * Get the reasons why the method is not deterministic.
+     * Returns the reasons why the method is not deterministic.
      *
      * @return the reasons why the method is not deterministic
      */
@@ -144,7 +148,7 @@ public class PurityChecker {
     }
 
     /**
-     * Get the reasons why the method is not both side-effect-free and deterministic.
+     * Returns the reasons why the method is not both side-effect-free and deterministic.
      *
      * @return the reasons why the method is not both side-effect-free and deterministic
      */
@@ -205,19 +209,28 @@ public class PurityChecker {
     private final boolean assumeDeterministic;
 
     /**
+     * True if all getter methods should be assumed to be @SideEffectFree and @Deterministic, for
+     * the purposes of org.checkerframework.dataflow analysis.
+     */
+    private final boolean assumePureGetters;
+
+    /**
      * Create a PurityCheckerHelper.
      *
      * @param annoProvider the annotation provider
      * @param assumeSideEffectFree true if all methods should be assumed to be @SideEffectFree
      * @param assumeDeterministic true if all methods should be assumed to be @Deterministic
+     * @param assumePureGetters true if getter methods should be assumed to be @Pure
      */
     public PurityCheckerHelper(
         AnnotationProvider annoProvider,
         boolean assumeSideEffectFree,
-        boolean assumeDeterministic) {
+        boolean assumeDeterministic,
+        boolean assumePureGetters) {
       this.annoProvider = annoProvider;
       this.assumeSideEffectFree = assumeSideEffectFree;
       this.assumeDeterministic = assumeDeterministic;
+      this.assumePureGetters = assumePureGetters;
     }
 
     @Override
@@ -237,7 +250,8 @@ public class PurityChecker {
         purityResult.addNotBothReason(tree, "call");
       } else {
         EnumSet<Pure.Kind> purityKinds =
-            (assumeDeterministic && assumeSideEffectFree)
+            ((assumeDeterministic && assumeSideEffectFree)
+                    || (assumePureGetters && ElementUtils.isGetter(elt)))
                 // Avoid computation if not necessary
                 ? detAndSeFree
                 : PurityUtils.getPurityKinds(annoProvider, elt);
@@ -288,10 +302,15 @@ public class PurityChecker {
       // to check the latter condition, because the Purity Checker forbids all catch
       // statements.)
       Tree parent = getCurrentPath().getParentPath().getLeaf();
-      boolean okThrowDeterministic = parent.getKind() == Tree.Kind.THROW;
+      boolean okThrowDeterministic = parent instanceof ThrowTree;
 
       ExecutableElement ctorElement = TreeUtils.elementFromUse(tree);
-      boolean deterministic = assumeDeterministic || okThrowDeterministic;
+      boolean deterministic =
+          assumeDeterministic
+              || okThrowDeterministic
+              // No need to check assumePureGetters because a constructor is never a
+              // getter.
+              || PurityUtils.isDeterministic(annoProvider, ctorElement);
       boolean sideEffectFree =
           assumeSideEffectFree || PurityUtils.isSideEffectFree(annoProvider, ctorElement);
       // This does not use "addNotBothReason" because the reasons are different:  one is
@@ -335,7 +354,7 @@ public class PurityChecker {
     }
 
     /**
-     * Check whether {@code variable} is permitted on the left-hand-side of an assignment.
+     * Returns true if {@code variable} is permitted on the left-hand-side of an assignment.
      *
      * @param variable the lhs to check
      */
