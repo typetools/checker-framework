@@ -31,10 +31,10 @@ public class Issue289 {
 
   void complex() {
     Upper<@Nullable String> uns = new Lower1<>();
-    // :: error: (assignment)
+    // :: error: [assignment]
     Upper<String> us = new Lower1<>();
 
-    // :: error: (assignment)
+    // :: error: [assignment]
     uns = new Lower2<>();
     us = new Lower2<>();
   }

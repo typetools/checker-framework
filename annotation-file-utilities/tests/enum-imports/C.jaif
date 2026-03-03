@@ -1,0 +1,8 @@
+package foo.qual:
+  annotation @TA:
+    enum foo.bar.EnumClass value
+
+package :
+class C:
+  field f:
+  @TA(value=EnumValue)

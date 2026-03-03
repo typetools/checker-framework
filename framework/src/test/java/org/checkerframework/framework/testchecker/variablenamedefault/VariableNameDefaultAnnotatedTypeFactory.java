@@ -12,6 +12,7 @@ import org.checkerframework.framework.testchecker.variablenamedefault.quals.Vari
 import org.checkerframework.framework.testchecker.variablenamedefault.quals.VariableNameDefaultTop;
 
 public class VariableNameDefaultAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
+  @SuppressWarnings("this-escape")
   public VariableNameDefaultAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     this.postInit();

@@ -16,9 +16,9 @@ class PolyMustCallDifferentNames {
     private final @Owning Wrapped field;
 
     public @PolyMustCall Wrapper1(@PolyMustCall Wrapped w) {
-      // we get this error since we only have a field-assignment special case for @MustCallAlias,
-      // not @PolyMustCall
-      // :: error: (assignment)
+      // we get this error since we only have a field-assignment special case for
+      // @MustCallAlias, not @PolyMustCall.
+      // :: error: [assignment]
       this.field = w;
     }
 
@@ -58,9 +58,9 @@ class PolyMustCallDifferentNames {
     @MustCall("a") Wrapped x = new Wrapped();
     @MustCall("b") Wrapper1 w1 = new Wrapper1(x);
     @MustCall("b") Wrapper1 w2 = getWrapper1(x);
-    // :: error: (assignment)
+    // :: error: [assignment]
     @MustCall("a") Wrapper1 w3 = new Wrapper1(x);
-    // :: error: (assignment)
+    // :: error: [assignment]
     @MustCall("a") Wrapper1 w4 = getWrapper1(x);
   }
 
@@ -68,9 +68,9 @@ class PolyMustCallDifferentNames {
     @MustCall("a") Wrapped x = new Wrapped();
     @MustCall("c") Wrapper2 w1 = new Wrapper2(x);
     @MustCall("c") Wrapper2 w2 = getWrapper2(x);
-    // :: error: (assignment)
+    // :: error: [assignment]
     @MustCall("a") Wrapper2 w3 = new Wrapper2(x);
-    // :: error: (assignment)
+    // :: error: [assignment]
     @MustCall("a") Wrapper2 w4 = getWrapper2(x);
   }
 }

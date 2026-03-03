@@ -1,0 +1,32 @@
+package java.lang:
+annotation @D: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package java.lang:
+annotation @C: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package java.lang:
+annotation @E: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package java.lang:
+annotation @B: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package java.lang:
+annotation @A: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package org.checkerframework.afu.annotator.tests:
+class ComplexLocationOne:
+
+    field field:
+        insert-annotation Variable.type, ParameterizedType.typeArgument 0, ParameterizedType.typeArgument 1, ArrayType.type: @java.lang.D
+        insert-annotation Variable.type, ParameterizedType.typeArgument 0, ParameterizedType.typeArgument 0: @java.lang.C
+        insert-annotation Variable.type, ParameterizedType.typeArgument 0, ParameterizedType.typeArgument 1: @java.lang.E
+        insert-annotation Variable.type, ParameterizedType.typeArgument 0: @java.lang.B
+        insert-annotation Variable.type: @java.lang.A
+
+    field entries:
+        insert-annotation Variable.type, ParameterizedType.typeArgument 0, ParameterizedType.type, MemberSelect.expression, ParameterizedType.typeArgument 1, ArrayType.type: @java.lang.B
+        insert-annotation Variable.type, ParameterizedType.typeArgument 0, ParameterizedType.type, MemberSelect.expression, ParameterizedType.typeArgument 0: @java.lang.A
+        insert-annotation Variable.type, ParameterizedType.typeArgument 0, ParameterizedType.typeArgument 1, ArrayType.type: @java.lang.E
+        insert-annotation Variable.type, ParameterizedType.typeArgument 0, ParameterizedType.type: @java.lang.C
+        insert-annotation Variable.type, ParameterizedType.typeArgument 0, ParameterizedType.typeArgument 0: @java.lang.D
+

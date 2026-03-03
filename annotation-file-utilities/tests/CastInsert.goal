@@ -1,0 +1,84 @@
+import java.io.PrintStream;
+
+public class CastInsert {
+
+  PrintStream out;
+  private int c = ((@checkers.nullness.quals.Nullable Integer) (((@checkers.nullness.quals.Nullable Integer) (12)) + ((@checkers.nullness.quals.Nullable Integer) (13))));
+  private String str = "this" + ((@checkers.nullness.quals.Nullable String) ("is")).concat(((@checkers.nullness.quals.Nullable String) ("string")));
+
+  void m() {
+    int i;
+  }
+
+  int m(String y, String[] z, int i) {
+    String x = ((@checkers.nullness.quals.Nullable String) (new String()));
+    String s;
+    s = ((@checkers.nullness.quals.Nullable String) (((@checkers.nullness.quals.Nullable String) (x)) + ((@checkers.nullness.quals.Nullable String) (x))));
+    s = y;
+    s = z[((@checkers.nullness.quals.Nullable Integer) (0))];
+    s = x;
+    int j = 0;
+    switch (((@checkers.nullness.quals.Nullable Integer) (i + 2))) {
+      case 1:
+        j = i + ((@checkers.nullness.quals.Nullable Integer) (1));
+        System.out.println(1);
+        break;
+      case 2:
+        j = i + 2;
+        System.out.println(((@checkers.nullness.quals.Nullable Integer) (2)));
+        break;
+      default:
+        j = i + 3;
+        System.out.println(-1);
+    }
+    j *= ((@checkers.nullness.quals.Nullable Integer) (i));
+    j = s != x ? ((@checkers.nullness.quals.Nullable Integer) (j)) : i;
+    do {
+      int h = ((@checkers.nullness.quals.Nullable Integer) (i)) & j;
+    } while (i < j);
+    for (int i2 : new int[5]) {
+      j = ((@checkers.nullness.quals.Nullable Integer) (i2));
+    }
+    for (int a = 0, b = ((@checkers.nullness.quals.Nullable Integer) (0)); a < ((@checkers.nullness.quals.Nullable Integer) (j)); a = ((@checkers.nullness.quals.Nullable Integer) (a + 1)), b++) a = ((@checkers.nullness.quals.Nullable Integer) (b));
+    if (((@checkers.nullness.quals.Nullable Integer) (i)) < j) i = j;
+    else j = ((@checkers.nullness.quals.Nullable Integer) (i));
+    boolean b = ((@checkers.nullness.quals.Nullable String) (x)) instanceof String;
+    label:
+    b = ((@checkers.nullness.quals.Nullable Boolean) (false));
+    Object o = ((@checkers.nullness.quals.Nullable CastInsert) (this)).out;
+    m(y, z, ((@checkers.nullness.quals.Nullable Integer) (i)));
+    int[][] test = new int[4][((@checkers.nullness.quals.Nullable Integer) (5))];
+    int[][] test2 = {{1, 2}, {1, 2, ((@checkers.nullness.quals.Nullable Integer) (3))}};
+    new String(((@checkers.nullness.quals.Nullable String) ("test")));
+    if (i < 1) return ((@checkers.nullness.quals.Nullable Integer) (18));
+    synchronized (o) {
+      i = ((@checkers.nullness.quals.Nullable Integer) (i + i));
+    }
+    if (j < 1) throw ((@checkers.nullness.quals.Nullable RuntimeException) (new IllegalStateException()));
+    try {
+      int t = ((@checkers.nullness.quals.Nullable Integer) (1));
+    } catch (Error e) {
+      i = j;
+    } catch (RuntimeException e) {
+      j = ((@checkers.nullness.quals.Nullable Integer) (i));
+    } finally {
+      j = i + ((@checkers.nullness.quals.Nullable Integer) (j));
+    }
+    j = (int) (i + ((@checkers.nullness.quals.Nullable Integer) (j)));
+    j = - ((@checkers.nullness.quals.Nullable Integer) (j));
+    while (i < ((@checkers.nullness.quals.Nullable Integer) (j))) i = ((@checkers.nullness.quals.Nullable Integer) (i)) + 1;
+    ((@checkers.nullness.quals.Nullable CastInsert) (this)).out.println();
+    ((@checkers.nullness.quals.Nullable PrintStream) (System.out)).println();
+    Object obj = ((@checkers.nullness.quals.Nullable @annotation.A @annotation.B @annotation.C String) (null));
+    return 0;
+  }
+
+  void m2(Object o) {
+    o = ((@checkers.nullness.quals.Nullable Map<@annotation.A String, @annotation.B Integer>) (o));
+    o = ((@annotation.B Object @annotation.A [] @checkers.nullness.quals.Nullable []) (o));
+    o = ((@annotation.B int @annotation.A [] @checkers.nullness.quals.Nullable []) (o));
+    o = ((@checkers.nullness.quals.Nullable List<@annotation.A ? extends @annotation.B Object>) (o));
+    o = ((int) (o));
+    o = ((Map<@annotation.A String, @annotation.B Integer>) (o));
+  }
+}

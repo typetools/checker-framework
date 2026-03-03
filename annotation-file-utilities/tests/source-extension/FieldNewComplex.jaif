@@ -1,0 +1,47 @@
+package GUT.quals:
+annotation @Rep:
+annotation @Peer:
+annotation @Any:
+
+package org.checkerframework.afu.annotator.tests:
+class FieldNewComplex:
+field f:
+new *1: @GUT.quals.Peer
+
+package org.checkerframework.afu.annotator.tests:
+class FieldNewComplex:
+field f:
+new *2: @GUT.quals.Rep
+
+package org.checkerframework.afu.annotator.tests:
+class FieldNewComplex:
+method m(Lannotator/tests/FieldNewComplex;Lannotator/tests/FieldNewComplex;Lannotator/tests/FieldNewComplex;)Lannotator/tests/FieldNewComplex;:
+parameter 1:
+type: @GUT.quals.Peer
+
+package org.checkerframework.afu.annotator.tests:
+class FieldNewComplex:
+field f:
+new *0: @GUT.quals.Peer
+
+package org.checkerframework.afu.annotator.tests:
+class FieldNewComplex:
+field f:
+type: @GUT.quals.Rep
+
+package org.checkerframework.afu.annotator.tests:
+class FieldNewComplex:
+method m(Lannotator/tests/FieldNewComplex;Lannotator/tests/FieldNewComplex;Lannotator/tests/FieldNewComplex;)Lannotator/tests/FieldNewComplex;:
+return: @GUT.quals.Rep
+
+package org.checkerframework.afu.annotator.tests:
+class FieldNewComplex:
+method m(Lannotator/tests/FieldNewComplex;Lannotator/tests/FieldNewComplex;Lannotator/tests/FieldNewComplex;)Lannotator/tests/FieldNewComplex;:
+parameter 2:
+type: @GUT.quals.Rep
+
+package org.checkerframework.afu.annotator.tests:
+class FieldNewComplex:
+method m(Lannotator/tests/FieldNewComplex;Lannotator/tests/FieldNewComplex;Lannotator/tests/FieldNewComplex;)Lannotator/tests/FieldNewComplex;:
+parameter 0:
+type: @GUT.quals.Peer

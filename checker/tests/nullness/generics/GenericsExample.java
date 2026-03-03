@@ -26,11 +26,11 @@ public class GenericsExample {
       t = null;
       t = nble;
       nble = null;
-      // :: error: (assignment)
+      // :: error: [assignment]
       nn = null;
       t = this.get(0);
       nble = this.get(0);
-      // :: error: (assignment)
+      // :: error: [assignment]
       nn = this.get(0);
       this.add(t);
       this.add(nble);
@@ -59,11 +59,11 @@ public class GenericsExample {
       t = null;
       t = nble;
       nble = null;
-      // :: error: (assignment)
+      // :: error: [assignment]
       nn = null;
       t = this.get(0);
       nble = this.get(0);
-      // :: error: (assignment)
+      // :: error: [assignment]
       nn = this.get(0);
       this.add(t);
       this.add(nble);
@@ -89,18 +89,18 @@ public class GenericsExample {
     }
 
     void m() {
-      // :: error: (assignment)
+      // :: error: [assignment]
       t = null;
-      // :: error: (assignment)
+      // :: error: [assignment]
       t = nble;
       nble = null;
-      // :: error: (assignment)
+      // :: error: [assignment]
       nn = null;
       t = this.get(0);
       nble = this.get(0);
       nn = this.get(0);
       this.add(t);
-      // :: error: (argument)
+      // :: error: [argument]
       this.add(nble);
       this.add(nn);
     }
@@ -124,18 +124,18 @@ public class GenericsExample {
     }
 
     void m() {
-      // :: error: (assignment)
+      // :: error: [assignment]
       t = null;
-      // :: error: (assignment)
+      // :: error: [assignment]
       t = nble;
       nble = null;
-      // :: error: (assignment)
+      // :: error: [assignment]
       nn = null;
       t = this.get(0);
       nble = this.get(0);
       nn = this.get(0);
       this.add(t);
-      // :: error: (argument)
+      // :: error: [argument]
       this.add(nble);
       this.add(nn);
     }
@@ -159,19 +159,19 @@ public class GenericsExample {
     }
 
     void m() {
-      // :: error: (assignment)
+      // :: error: [assignment]
       t = null;
-      // :: error: (assignment)
+      // :: error: [assignment]
       t = nble;
       nble = null;
-      // :: error: (assignment)
+      // :: error: [assignment]
       nn = null;
       t = this.get(0);
       nble = this.get(0);
-      // :: error: (assignment)
+      // :: error: [assignment]
       nn = this.get(0);
       this.add(t);
-      // :: error: (argument)
+      // :: error: [argument]
       this.add(nble);
       this.add(nn);
     }

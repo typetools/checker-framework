@@ -10,7 +10,10 @@ import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.ForwardAnalysisImpl;
+import org.checkerframework.dataflow.analysis.TransferInput;
+import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
+import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -22,6 +25,7 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -107,6 +111,7 @@ public abstract class CFAbstractAnalysis<
    * @param factory an annotated type factory to introduce type and dataflow rules
    * @param maxCountBeforeWidening number of times a block can be analyzed before widening
    */
+  @SuppressWarnings("this-escape")
   protected CFAbstractAnalysis(
       BaseTypeChecker checker,
       GenericAnnotatedTypeFactory<V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory,
@@ -211,8 +216,16 @@ public abstract class CFAbstractAnalysis<
   public abstract @Nullable V createAbstractValue(
       AnnotationMirrorSet annotations, TypeMirror underlyingType);
 
-  /** Default implementation for {@link #createAbstractValue(AnnotationMirrorSet, TypeMirror)}. */
-  public @Nullable CFValue defaultCreateAbstractValue(
+  // This cannot be inlined into `createAbstractValue()`, because the Java type system forbids it.
+  /**
+   * Default implementation for {@link #createAbstractValue(AnnotationMirrorSet, TypeMirror)}.
+   *
+   * @param analysis the analysis
+   * @param annotations the annotations for the result annotated type
+   * @param underlyingType the unannotated type for the result annotated type
+   * @return an abstract value containing the given {@code annotations} and {@code underlyingType}
+   */
+  public final @Nullable CFValue getCfValue(
       CFAbstractAnalysis<CFValue, ?, ?> analysis,
       AnnotationMirrorSet annotations,
       TypeMirror underlyingType) {
@@ -222,6 +235,11 @@ public abstract class CFAbstractAnalysis<
     return new CFValue(analysis, annotations, underlyingType);
   }
 
+  /**
+   * Returns the type hierarchy.
+   *
+   * @return the type hierarchy
+   */
   public TypeHierarchy getTypeHierarchy() {
     return typeHierarchy;
   }
@@ -229,6 +247,17 @@ public abstract class CFAbstractAnalysis<
   public GenericAnnotatedTypeFactory<V, S, T, ? extends CFAbstractAnalysis<V, S, T>>
       getTypeFactory() {
     return atypeFactory;
+  }
+
+  @Override
+  protected TransferResult<V, S> callTransferFunction(Node node, TransferInput<V, S> input) {
+    TransferResult<V, S> result;
+    try {
+      result = super.callTransferFunction(node, input);
+    } catch (Throwable t) {
+      throw new BugInCF(node.getTree(), t);
+    }
+    return result;
   }
 
   /**
@@ -250,7 +279,7 @@ public abstract class CFAbstractAnalysis<
   }
 
   /**
-   * Get the types utility.
+   * Returns the types utility.
    *
    * @return {@link #types}
    */
@@ -259,7 +288,7 @@ public abstract class CFAbstractAnalysis<
   }
 
   /**
-   * Get the processing environment.
+   * Returns the processing environment.
    *
    * @return {@link #env}
    */

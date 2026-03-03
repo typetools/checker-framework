@@ -74,13 +74,12 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
     }
 
     @Override
-    public Void visitMethod(MethodTree tree, Void p) {
+    public void processMethodTree(String className, MethodTree tree) {
       ExecutableElement elem = TreeUtils.elementFromDeclaration(tree);
 
       AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(tree);
       System.out.println(currentClass + "." + elem + "\t\t" + type);
       // Don't dig deeper
-      return null;
     }
 
     @Override
@@ -154,6 +153,7 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
    */
   public static class GeneralAnnotatedTypeFactory extends AnnotatedTypeFactory {
 
+    @SuppressWarnings("this-escape")
     public GeneralAnnotatedTypeFactory(BaseTypeChecker checker) {
       super(checker);
       postInit();

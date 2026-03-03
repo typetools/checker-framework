@@ -1,0 +1,47 @@
+package:
+annotation @X:
+annotation @Y:
+
+package:
+class GenericCellDoubled:
+
+field f:
+type:
+inner-type 3, 0: @X
+
+field g:
+type:
+inner-type 3, 0: @X
+
+field h:
+type:
+inner-type 3, 0, 3, 0: @X
+
+field i:
+type:
+inner-type 3, 0: @X
+
+field j1:
+type:
+inner-type 3, 1, 3, 0: @X
+
+field j2:
+type:
+inner-type 3, 1, 3, 0: @X
+
+field j3:
+type:
+inner-type 3, 1, 3, 0: @X
+
+// duplicate, @X already there -> no effect
+field j3:
+type:
+inner-type 3, 1: @X
+
+// real
+field j3:
+type:
+inner-type 3, 1: @Y
+
+field k:
+type: @Y

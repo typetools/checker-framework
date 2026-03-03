@@ -86,7 +86,7 @@ public class FluentAPIGenerator {
       }
 
       /**
-       * Get the qualified name of the AutoValue Builder annotation. This method constructs the
+       * Returns the qualified name of the AutoValue Builder annotation. This method constructs the
        * String dynamically, to ensure it does not get rewritten due to relocation of the {@code
        * "com.google"} package during the build process.
        *

@@ -1,0 +1,101 @@
+package:
+    annotation @A: @java.lang.annotation.Target(value={TYPE_USE})
+    annotation @B: @java.lang.annotation.Target(value={TYPE_USE})
+    annotation @C: @java.lang.annotation.Target(value={TYPE_USE})
+    annotation @D: @java.lang.annotation.Target(value={TYPE_USE})
+    annotation @E: @java.lang.annotation.Target(value={TYPE_USE})
+    annotation @F: @java.lang.annotation.Target(value={TYPE_USE})
+    annotation @G: @java.lang.annotation.Target(value={TYPE_USE})
+    annotation @H: @java.lang.annotation.Target(value={TYPE_USE})
+    annotation @I: @java.lang.annotation.Target(value={TYPE_USE})
+    annotation @J: @java.lang.annotation.Target(value={TYPE_USE})
+    annotation @K: @java.lang.annotation.Target(value={TYPE_USE})
+    annotation @L: @java.lang.annotation.Target(value={TYPE_USE})
+    annotation @M: @java.lang.annotation.Target(value={TYPE_USE})
+    annotation @N: @java.lang.annotation.Target(value={TYPE_USE})
+    annotation @O: @java.lang.annotation.Target(value={TYPE_USE})
+    annotation @P: @java.lang.annotation.Target(value={TYPE_USE})
+    annotation @Q: @java.lang.annotation.Target(value={TYPE_USE})
+    annotation @R: @java.lang.annotation.Target(value={TYPE_USE})
+    annotation @S: @java.lang.annotation.Target(value={TYPE_USE})
+    annotation @Anno: @java.lang.annotation.Target(value={TYPE_USE})
+        int value
+
+    class MemberSelectTypes$Inner:
+        method m()V:
+            receiver: @A
+
+    class MemberSelectTypes$StaticInner:
+        method m()V:
+            receiver: @B
+
+    class MemberSelectTypes:
+        bound 0 & 0: @Anno(0)
+        bound 0 & 1: @Anno(1)
+        extends: @Anno(2)
+        implements 0: @Anno(3)
+        field o:
+            type: @C
+        field m1:
+            type: @D
+                inner-type 3, 0: @E
+                inner-type 3, 1: @F
+        field m2:
+            type: @G
+                inner-type 3, 0: @H
+                inner-type 3, 1: @I
+
+        field m3:
+            type:
+                inner-type 3, 0: @H
+                inner-type 3, 1: @I
+
+        field m4:
+            type: @G
+                inner-type 3, 0: @H
+                inner-type 3, 0, 3, 0: @I
+                inner-type 3, 0, 3, 0, 3, 0: @K
+
+        field i:
+            type: @J
+        field s:
+            type: @K
+
+        method m(Ljava/lang/Object;LMemberSelectTypes$Inner;LMemberSelectTypes$StaticInner;)Ljava/lang/Object;:
+            return: @L
+            parameter 0:
+                type: @M
+            parameter 1:
+                type: @M
+            parameter 2:
+                type: @M
+            local o2:
+                type: @N
+            local i2:
+                type: @N
+            local s2:
+                type: @N
+            typecast *0: @O
+            typecast *1: @O
+            typecast *2: @O
+            new *0: @P
+            new *1: @P
+            new *2: @P
+            local os:
+                type:
+                    inner-type 0, 0: @Q
+            local is:
+                type:
+                    inner-type 0, 0: @Q
+            local ss:
+                type:
+                    inner-type 0, 0: @Q
+            new *3:
+                inner-type 0, 0: @R
+            new *4:
+                inner-type 0, 0: @R
+            new *5:
+                inner-type 0, 0: @R
+            instanceof *0: @S
+            instanceof *1: @S
+            instanceof *2: @S

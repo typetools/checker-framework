@@ -1,3 +1,3 @@
-Error.java:13:23: compiler.err.proc.messager: (assignment)
-AnonymousClass.java:4:27: compiler.err.proc.messager: (assignment)
+Error.java:13:23: compiler.err.proc.messager: [assignment]
+AnonymousClass.java:4:27: compiler.err.proc.messager: [assignment]
 2 errors

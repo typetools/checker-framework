@@ -4,8 +4,8 @@ JAVA_VER := $(shell java -version 2>&1 | head -1 | cut -d'"' -f2 | sed '/^1\./s/
 
 # Delomboking seems to mess up line numbers. The actual error is on line 13, but the error appears on line 12.
 # So check for both the error message and make sure it is for the right assignment.
-# As of 2020-09-23, lombok does not work under Java 22, see https://projectlombok.org/changelog .
-ifeq (${JAVA_VER},22)
+# As of 2020-09-23, lombok does not work under Java 23, see https://projectlombok.org/changelog .
+ifeq (${JAVA_VER},23)
 all:
 	@echo "Skipping test because lombok does not work under Java ${JAVA_VER}"
 else

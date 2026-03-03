@@ -1,0 +1,26 @@
+package java.lang:
+
+// Note no @Target meta-annotation
+annotation @Nullable:
+
+
+package org.checkerframework.afu.annotator.tests:
+
+class Varargs:
+    method m1([Ljava.lang.String;)V:
+      parameter #0:
+       type:
+       inner-type 0, 0: @Nullable
+    method m2([Ljava.lang.String;)V:
+      parameter #0:
+        type: @Nullable
+    method m3([Ljava.lang.String;)V:
+      parameter #0:
+        type: @Nullable
+        inner-type 0, 0: @Nullable
+    method m4([Ljava.lang.Comparable;)V:
+      parameter #0:
+        type: @Nullable
+        inner-type 0, 0: @Nullable
+        inner-type 0, 0, 3, 0: @Nullable
+

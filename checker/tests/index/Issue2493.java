@@ -1,4 +1,4 @@
-// test case for issue 2493: http://tinyurl.com/cfissue/2493
+// test case for issue 2493: https://tinyurl.com/cfissue/2493
 
 import org.checkerframework.checker.index.qual.*;
 

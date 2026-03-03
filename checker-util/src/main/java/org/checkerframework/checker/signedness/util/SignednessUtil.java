@@ -399,11 +399,10 @@ public final class SignednessUtil {
     return Integer.toUnsignedString(Byte.toUnsignedInt(b), radix);
   }
 
-  /*
+  /**
    * Creates a BigInteger representing the same value as unsigned long.
    *
-   * This is a reimplementation of Java 8's
-   * {@link Long.toUnsignedBigInteger(long)}.
+   * <p>This is a reimplementation of Java 8's {@link Long#toUnsignedBigInteger(long)}.
    */
   @SuppressWarnings("signedness")
   private static @Unsigned BigInteger toUnsignedBigInteger(@Unsigned long l) {

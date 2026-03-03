@@ -34,11 +34,6 @@ The Resource Leak Checker works in three stages:
   if there exists some method in \emph{MC} that is not in \emph{CM}.
 \end{enumerate}
 
-The paper
-``Lightweight and Modular Resource Leak Verification''~\cite{KelloggSSE2021} (ESEC/FSE 2021,
-\myurl{https://homes.cs.washington.edu/~mernst/pubs/resource-leak-esecfse2021-abstract.html})
-gives more details about the Resource Leak Checker.
-
 
 \sectionAndLabel{How to run the Resource Leak Checker}{resource-leak-run-checker}
 
@@ -51,7 +46,7 @@ javac -processor org.checkerframework.checker.resourceleak.ResourceLeakChecker M
 
 The Resource Leak Checker supports all the command-line arguments
 listed in Section~\ref{called-methods-run-checker} for
-the Called Methods Checker, plus three others:
+the Called Methods Checker, plus four others:
 
 \begin{description}
 \item[\<-ApermitStaticOwning>]
@@ -60,9 +55,14 @@ the Called Methods Checker, plus three others:
   See Section~\ref{resource-leak-ignored-exceptions}.
 \item[\<-ApermitInitializationLeak>]
   See Section~\ref{resource-leak-field-initialization}.
-%% TODO: Uncomment when the feature is ready to be publicized.
-% \item[\<-AenableWpiForRlc>]
-%   See Section~\ref{resource-leak-checker-inference-algo}.
+\item[\<-AenableReturnsReceiverForRlc>]
+  Enables the Returns Receiver Checker (Section~\ref{returns-receiver-checker})
+  when running this checker. By default, the Returns Receiver checker is
+  disabled when running the Called Methods Checker as part of the RLC,
+  because it has a significant runtime cost but provides little benefit in the common case,
+  since resources are rarely combined with fluent builders.
+\item[\<-AenableWpiForRlc>]
+  See Section~\ref{resource-leak-checker-references}.
 \end{description}
 
 If you are running the Resource Leak Checker, then there is no need to run
@@ -366,6 +366,36 @@ and its parameter \<p>, the Resource Leak Checker requires one of the following:
   \<@Owning> field cannot have a resource alias relationship).
 \end{enumerate}
 
+\subsectionAndLabel{A complete wrapper type example}{resource-leak-wrapper-type-example}
+
+Here is a complete example of a type \<InputStreamWrapper> that wraps an \<InputStream> as a resource alias.  Defining a wrapper type typically involves combined usage of \<@InheritableMustCall>, \<@EnsuresCalledMethods>, an \<@Owning> field, and \<@MustCallAlias>.  The \<test> method shows that the checker is able to verify code that releases an \<InputStream> using either the \<InputStream> directly or a wrapping \<InputStreamWrapper>.
+
+\begin{verbatim}
+@InheritableMustCall("dispose")
+class InputStreamWrapper {
+  private final @Owning InputStream stream;
+
+  @MustCallAlias InputStreamWrapper(@MustCallAlias InputStream stream) {
+    this.stream = stream;
+  }
+
+  @EnsuresCalledMethods(value = "this.stream", methods = "close")
+  public void dispose() throws IOException {
+    this.stream.close();
+  }
+
+  /** Shows that either the stream or the wrapper can be closed. */
+  static void test(@Owning InputStream stream, boolean b) throws IOException {
+    InputStreamWrapper wrapper = new InputStreamWrapper(stream);
+    if (b) {
+      stream.close();
+    } else {
+      wrapper.dispose();
+    }
+  }
+}
+\end{verbatim}
+
 
 \sectionAndLabel{Creating obligations (how to re-assign a non-final owning field)}{resource-leak-createsmustcallfor}
 
@@ -632,7 +662,12 @@ not possible, the programmer will probably need to suppress a warning and
 then verify the code using a method other than the Resource Leak Checker.
 
 
-\sectionAndLabel{Resource Leak Checker annotation inference algorithm}{resource-leak-checker-inference-algo}
+\sectionAndLabel{Further reading}{resource-leak-checker-references}
+
+The paper ``Lightweight and Modular Resource Leak
+Verification''~\cite{KelloggSSE2021} (ESEC/FSE 2021,
+\myurl{https://homes.cs.washington.edu/~mernst/pubs/resource-leak-esecfse2021-abstract.html})
+gives more details about the Resource Leak Checker.
 
 The Resource Leak Checker uses a specialized algorithm to infer annotations
 when whole program inference (WPI, Section~\ref{whole-program-inference})

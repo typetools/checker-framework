@@ -30,7 +30,7 @@ public class AnonymousClassTest {
       Class<?> c = Class.forName("AnonymousClassTest$1");
       Method m = c.getMethod("getSib1", new Class[] {});
       // TODO: Can we resolve anonymous classes?
-      // :: error: (assignment)
+      // :: error: [assignment]
       @TestReflectSibling1 Object a = m.invoke(anonymous, (@TestReflectBottom Object[]) null);
     } catch (Exception ignore) {
       ignore.printStackTrace();
@@ -45,10 +45,10 @@ public class AnonymousClassTest {
       Class<?> c = Class.forName("AnonymousClassTest$1");
       Method m = c.getMethod(str, new Class[] {int.class});
       // TODO: Can we resolve anonymous classes?
-      // :: error: (argument)
+      // :: error: [argument]
       m.invoke(anonymous, val1);
       // TODO: Can we resolve anonymous classes?
-      // :: error: (argument)
+      // :: error: [argument]
       m.invoke(anonymous, val2);
     } catch (Exception ignore) {
       ignore.printStackTrace();
@@ -62,9 +62,9 @@ public class AnonymousClassTest {
     try {
       Class<?> c = Class.forName("AnonymousClassTest$1");
       Method m = c.getMethod(str, new Class[] {int.class});
-      // :: error: (argument)
+      // :: error: [argument]
       m.invoke(anonymous, val1);
-      // :: error: (argument)
+      // :: error: [argument]
       m.invoke(anonymous, val2);
     } catch (Exception ignore) {
       ignore.printStackTrace();
@@ -75,7 +75,7 @@ public class AnonymousClassTest {
     try {
       Class<?> c = Class.forName("AnonymousClassTest$1");
       Method m = c.getMethod("getSib2", new Class[] {});
-      // :: error: (assignment)
+      // :: error: [assignment]
       @TestReflectSibling1 Object a = m.invoke(anonymous, (@TestReflectBottom Object[]) null);
     } catch (Exception ignore) {
       ignore.printStackTrace();
@@ -83,7 +83,7 @@ public class AnonymousClassTest {
   }
 
   public @TestReflectBottom MyClass anonymous =
-      // :: warning: (cast.unsafe.constructor.invocation)
+      // :: warning: [cast.unsafe.constructor.invocation]
       new @TestReflectBottom MyClass() {
 
         public @TestReflectSibling1 int getSib1() {

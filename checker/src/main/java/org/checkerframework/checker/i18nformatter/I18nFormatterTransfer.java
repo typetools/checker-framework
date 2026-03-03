@@ -5,7 +5,6 @@ import org.checkerframework.checker.formatter.FormatterTreeUtil.Result;
 import org.checkerframework.checker.i18nformatter.qual.I18nConversionCategory;
 import org.checkerframework.checker.i18nformatter.qual.I18nInvalidFormat;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
-import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
@@ -76,9 +75,7 @@ public class I18nFormatterTransfer extends CFTransfer {
         tu.failure(cats, "i18nformat.key.not.found");
       } else {
         AnnotationMirror anno = atypeFactory.treeUtil.categoriesToFormatAnnotation(cats.value());
-        CFValue newResultValue =
-            analysis.createSingleAnnotationValue(anno, result.getResultValue().getUnderlyingType());
-        return new RegularTransferResult<>(newResultValue, result.getRegularStore());
+        return recreateTransferResult(anno, result);
       }
     }
 

@@ -205,10 +205,10 @@ public class OffsetEquation {
   }
 
   /**
-   * Returns whether or not this equation is known to be less than or equal to the other equation.
+   * Returns true if this equation is known to be less than or equal to the other equation.
    *
    * @param other equation
-   * @return whether or not this equation is known to be less than or equal to the other equation
+   * @return true if this equation is known to be less than or equal to the other equation
    */
   public boolean lessThanOrEqual(OffsetEquation other) {
     return (isInt() && other.isInt() && intValue <= other.getInt()) || this.equals(other);
@@ -383,7 +383,7 @@ public class OffsetEquation {
   private static Pattern intPattern = Pattern.compile("[-+]?[0-9]+");
 
   /**
-   * Returns true if the given string is an integer literal
+   * Returns true if the given string is an integer literal.
    *
    * @param string a string
    * @return true if the given string is an integer literal
@@ -444,7 +444,7 @@ public class OffsetEquation {
    * Creates an offset equation from the Node.
    *
    * <p>If node is an addition or subtracted node, then this method is called recursively on the
-   * left and right hand nodes and the two equations are added/subtracted to each other depending on
+   * left and right-hand nodes and the two equations are added/subtracted to each other depending on
    * the value of op.
    *
    * <p>Otherwise the return equation is created by converting the node to a {@link

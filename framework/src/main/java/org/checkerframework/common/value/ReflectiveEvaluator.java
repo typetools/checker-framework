@@ -44,7 +44,7 @@ public class ReflectiveEvaluator {
   private final BaseTypeChecker checker;
 
   /**
-   * Whether to report warnings about problems with evaluation. Controlled by the -AreportEvalWarns
+   * If true, report warnings about problems with evaluation. Controlled by the -AreportEvalWarns
    * command-line option.
    */
   private final boolean reportWarnings;
@@ -163,11 +163,11 @@ public class ReflectiveEvaluator {
     }
     Object[] newArgs = new Object[numberOfParameters];
     Object[] varArgsArray;
-    int numOfVarArgs = arguments.length - numberOfParameters + 1;
-    if (numOfVarArgs > 0) {
+    int numOfVarargs = arguments.length - numberOfParameters + 1;
+    if (numOfVarargs > 0) {
       System.arraycopy(arguments, 0, newArgs, 0, numberOfParameters - 1);
-      varArgsArray = new Object[numOfVarArgs];
-      System.arraycopy(arguments, numberOfParameters - 1, varArgsArray, 0, numOfVarArgs);
+      varArgsArray = new Object[numOfVarargs];
+      System.arraycopy(arguments, numberOfParameters - 1, varArgsArray, 0, numOfVarargs);
     } else {
       System.arraycopy(arguments, 0, newArgs, 0, numberOfParameters - 1);
       varArgsArray = emptyObjectArray;
@@ -202,7 +202,7 @@ public class ReflectiveEvaluator {
       return method;
     } catch (ClassNotFoundException | UnsupportedClassVersionError | NoClassDefFoundError e) {
       if (reportWarnings) {
-        checker.reportWarning(tree, "class.find.failed", ele.getEnclosingElement());
+        checker.reportWarning(tree, "class.find.failed", ele.getEnclosingElement(), e.getMessage());
       }
       return null;
 
@@ -277,7 +277,7 @@ public class ReflectiveEvaluator {
   }
 
   /**
-   * Return the value of a static field access. Return null if accessing the field reflectively
+   * Returns the value of a static field access. Return null if accessing the field reflectively
    * fails.
    *
    * @param classname the class containing the field

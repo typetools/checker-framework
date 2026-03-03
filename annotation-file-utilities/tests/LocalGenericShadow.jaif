@@ -1,0 +1,14 @@
+package java.lang:
+annotation @UnderInitialization: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package org.checkerframework.afu.annotator.tests:
+class LocalGenericShadow:
+
+    field foo:
+
+    method <init>()V:
+
+    method method()V:
+        local 1 #2+8:
+            type: @java.lang.UnderInitialization
+

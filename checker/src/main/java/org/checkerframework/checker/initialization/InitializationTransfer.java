@@ -51,7 +51,9 @@ import org.checkerframework.javacutil.TreeUtils;
  * </ol>
  *
  * @see InitializationStore
+ * @param <V> the type of the abstract value
  * @param <T> the type of the transfer function
+ * @param <S> the type of the store
  */
 public class InitializationTransfer<
         V extends CFAbstractValue<V>,
@@ -164,7 +166,7 @@ public class InitializationTransfer<
   }
 
   /**
-   * If an invariant field is initialized and has the invariant annotation, than it has at least the
+   * If an invariant field is initialized and has the invariant annotation, then it has at least the
    * invariant annotation. Note that only fields of the 'this' receiver are tracked for
    * initialization.
    */
@@ -183,7 +185,7 @@ public class InitializationTransfer<
         V refinedResultValue =
             analysis.createSingleAnnotationValue(inv, oldResultValue.getUnderlyingType());
         V newResultValue = refinedResultValue.mostSpecific(oldResultValue, null);
-        result.setResultValue(newResultValue);
+        return recreateTransferResult(newResultValue, result);
       }
     }
     return result;

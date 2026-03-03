@@ -1,0 +1,108 @@
+// @skip-test
+
+package checkers.tainting.quals:
+annotation @Tainted: @java.lang.annotation.Target(value={TYPE_USE,TYPE_PARAMETER}) @java.lang.annotation.Retention(value=RUNTIME)
+
+package annotation:
+annotation @A:
+
+package annotation:
+annotation @B:
+
+package annotation:
+annotation @C:
+
+package annotation:
+annotation @Inner: @java.lang.annotation.Target(value={TYPE_USE})
+    int value
+
+package org.checkerframework.afu.annotator.tests:
+class ConstructorReceivers$C0:
+
+    method <init>()V:
+        insert-annotation Method.parameter -1: @checkers.tainting.quals.Tainted
+
+    method <init>(I)V:
+        insert-annotation Method.parameter -1: @checkers.tainting.quals.Tainted
+
+package org.checkerframework.afu.annotator.tests:
+class ConstructorReceivers$C1:
+
+    method <init>()V:
+        insert-annotation Method.parameter -1, Variable.type: @checkers.tainting.quals.Tainted
+
+    method <init>(I)V:
+        insert-annotation Method.parameter -1, Variable.type: @checkers.tainting.quals.Tainted
+
+package org.checkerframework.afu.annotator.tests:
+class ConstructorReceivers$C2:
+
+    method <init>()V:
+        insert-annotation Method.parameter -1: @checkers.tainting.quals.Tainted @annotation.A @annotation.B @annotation.C
+
+package org.checkerframework.afu.annotator.tests:
+class ConstructorReceivers$C3:
+
+    method <init>()V:
+        insert-annotation Method.parameter -1, Variable.type: @checkers.tainting.quals.Tainted @annotation.A @annotation.B @annotation.C
+
+package org.checkerframework.afu.annotator.tests:
+class ConstructorReceivers$P0$C4:
+
+    method <init>()V:
+        insert-annotation Method.parameter -1: @checkers.tainting.quals.Tainted
+
+    method <init>(I)V:
+        insert-annotation Method.parameter -1: @checkers.tainting.quals.Tainted
+
+package org.checkerframework.afu.annotator.tests:
+class ConstructorReceivers$P0$C5:
+
+    method <init>()V:
+        insert-annotation Method.parameter -1, Variable.type, ParameterizedType.type, MemberSelect.expression: @checkers.tainting.quals.Tainted
+
+    method <init>(I)V:
+        insert-annotation Method.parameter -1, Variable.type, ParameterizedType.type, MemberSelect.expression: @checkers.tainting.quals.Tainted
+
+package org.checkerframework.afu.annotator.tests:
+class ConstructorReceivers$P0$C6:
+
+    method <init>()V:
+        insert-annotation Method.parameter -1: @checkers.tainting.quals.Tainted
+
+    method <init>(Lannotator/tests/ConstructorReceivers$P0;)V:
+        insert-annotation Method.parameter -1, ParameterizedType.typeArgument 0: @annotation.Inner(value=0)
+        insert-annotation Method.parameter -1, ParameterizedType.typeArgument 1: @annotation.Inner(value=1)
+        insert-annotation Method.parameter -1: @checkers.tainting.quals.Tainted
+
+package org.checkerframework.afu.annotator.tests:
+class ConstructorReceivers$P0$C7:
+
+    method <init>()V:
+        insert-annotation Method.parameter -1, Variable.type, ParameterizedType.type, MemberSelect.expression: @checkers.tainting.quals.Tainted
+
+    method <init>(Lannotator/tests/ConstructorReceivers$P0;)V:
+        insert-annotation Method.parameter -1, Variable.type, ParameterizedType.type, MemberSelect.expression, MemberSelect.expression, ParameterizedType.typeArgument 0: @annotation.Inner(value=0)
+        insert-annotation Method.parameter -1, Variable.type, ParameterizedType.type, MemberSelect.expression, MemberSelect.expression, ParameterizedType.typeArgument 1: @annotation.Inner(value=1)
+        insert-annotation Method.parameter -1, Variable.type, ParameterizedType.type, MemberSelect.expression: @checkers.tainting.quals.Tainted
+        insert-annotation Method.parameter -1, Variable.type, ParameterizedType.typeArgument 0: @annotation.Inner(value=0)
+        insert-annotation Method.parameter -1, Variable.type, ParameterizedType.typeArgument 1: @annotation.Inner(value=1)
+
+package org.checkerframework.afu.annotator.tests:
+class ConstructorReceivers$P1$C8:
+
+    method <init>()V:
+        insert-annotation Method.parameter -1, ParameterizedType.typeArgument 0: @annotation.Inner(value=0)
+        insert-annotation Method.parameter -1, ParameterizedType.typeArgument 1: @annotation.Inner(value=1)
+        insert-annotation Method.parameter -1: @checkers.tainting.quals.Tainted
+
+package org.checkerframework.afu.annotator.tests:
+class ConstructorReceivers$P1$C9:
+
+    method <init>()V:
+        insert-annotation Method.parameter -1, Variable.type, ParameterizedType.type, MemberSelect.expression, MemberSelect.expression, ParameterizedType.typeArgument 0: @annotation.Inner(value=0)
+        insert-annotation Method.parameter -1, Variable.type, ParameterizedType.type, MemberSelect.expression, MemberSelect.expression, ParameterizedType.typeArgument 1: @annotation.Inner(value=1)
+        insert-annotation Method.parameter -1, Variable.type, ParameterizedType.type, MemberSelect.expression: @checkers.tainting.quals.Tainted
+        insert-annotation Method.parameter -1, Variable.type, ParameterizedType.typeArgument 0: @annotation.Inner(value=0)
+        insert-annotation Method.parameter -1, Variable.type, ParameterizedType.typeArgument 1: @annotation.Inner(value=1)
+

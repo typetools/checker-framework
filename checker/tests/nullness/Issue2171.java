@@ -4,7 +4,7 @@ import org.checkerframework.checker.nullness.qual.*;
 public class Issue2171 {
   static void varArgsMethod(@PolyNull Object... args) {}
 
-  static void callToVarArgsObject(@PolyNull Object pn, @NonNull Object nn, @Nullable Object nble) {
+  static void callToVarargsObject(@PolyNull Object pn, @NonNull Object nn, @Nullable Object nble) {
     varArgsMethod(nble, nble);
     varArgsMethod(nble, nn);
     varArgsMethod(nble, pn);
@@ -17,19 +17,19 @@ public class Issue2171 {
   }
 
   @SuppressWarnings("unchecked")
-  static void genVarArgsMethod(List<? extends @PolyNull Object>... args) {}
+  static void genVarargsMethod(List<? extends @PolyNull Object>... args) {}
 
   @SuppressWarnings("unchecked")
-  static void genCallToVarArgsObject(
+  static void genCallToVarargsObject(
       List<@PolyNull Object> pn, List<@NonNull Object> nn, List<@Nullable Object> nble) {
-    genVarArgsMethod(nble, nble);
-    genVarArgsMethod(nble, nn);
-    genVarArgsMethod(nble, pn);
-    genVarArgsMethod(nn, nble);
-    genVarArgsMethod(nn, nn);
-    genVarArgsMethod(nn, pn);
-    genVarArgsMethod(pn, nble);
-    genVarArgsMethod(pn, nn);
-    genVarArgsMethod(pn, pn);
+    genVarargsMethod(nble, nble);
+    genVarargsMethod(nble, nn);
+    genVarargsMethod(nble, pn);
+    genVarargsMethod(nn, nble);
+    genVarargsMethod(nn, nn);
+    genVarargsMethod(nn, pn);
+    genVarargsMethod(pn, nble);
+    genVarargsMethod(pn, nn);
+    genVarargsMethod(pn, pn);
   }
 }

@@ -1,23 +1,17 @@
-///////////////////////////////////////////////////////////////////////////
-/// Checker Framework pluggable type-checking and Error Prone example
-///
+// ///////////////////////////////////////////////////////////////////////////
+// Checker Framework pluggable type-checking and Error Prone example
+//
 
 plugins {
-  id 'java'
-  id 'net.ltgt.errorprone' version '2.0.2'
+  id("java")
+  id("net.ltgt.errorprone").version("5.0.0")
   // Checker Framework pluggable type-checking
-  id 'org.checkerframework' version '0.6.35'
+  id("org.checkerframework").version("1.0.2")
 }
 
-apply plugin: 'org.checkerframework'
 
 dependencies {
-  // Must use at least version 2.4.0 of Error Prone.
-  if (JavaVersion.current() == JavaVersion.VERSION_1_8) {
-    errorprone 'com.google.errorprone:error_prone_core:2.10.0'
-  } else {
-    errorprone 'com.google.errorprone:error_prone_core:2.12.0'
-  }
+  errorprone("com.google.errorprone:error_prone_core:2.46.0")
 }
 
 repositories {
@@ -25,8 +19,9 @@ repositories {
 }
 
 checkerFramework {
+  version = "local"
   checkers = [
-    'org.checkerframework.checker.nullness.NullnessChecker',
+    "org.checkerframework.checker.nullness.NullnessChecker",
   ]
 }
 
@@ -34,5 +29,5 @@ compileJava {
   // A checker will only run if Error Prone does not issue any warnings.  So
   // convert the expected error to a warning to test that both Error Prone
   // and the Nullness Checker run.
-  options.errorprone.warn('CollectionIncompatibleType')
+  options.errorprone.warn("CollectionIncompatibleType")
 }

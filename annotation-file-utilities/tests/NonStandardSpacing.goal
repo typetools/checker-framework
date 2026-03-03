@@ -1,0 +1,40 @@
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Target;
+
+public abstract class NonStandardSpacing {
+
+  public void m1() {
+    int a = ((@Anno int) (1 + 2)) + 3;
+    int b = ((@Anno int) (1 + /* comment */ 2)) + 3;
+    int c = ((@Anno int) (1 + 2)) + 3;
+    int d =
+        ((@Anno int) (1 + // comment
+            2)) + 3;
+    int e = ((@Anno int) (1 + /* comment
+            end */ 2)) + 3;
+  }
+
+  public void m2(@Anno NonStandardSpacing this) // comment()
+      {}
+
+  public void m3(@Anno NonStandardSpacing this) throws @AnnoField(1) Exception {}
+
+  // ()
+  public abstract void m4(@Anno NonStandardSpacing this);
+
+  // ()
+  public abstract void // comment
+      m5(@Anno NonStandardSpacing this);
+
+  // ()
+  public abstract void /* comment
+        end */ m6(@Anno NonStandardSpacing this);
+
+  // ()
+  public abstract void m7(@Anno NonStandardSpacing this);
+}
+
+@Target(ElementType.TYPE_USE)
+@interface AnnoField {
+  int value();
+}
