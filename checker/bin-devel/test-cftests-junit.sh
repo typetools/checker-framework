@@ -30,17 +30,9 @@ fi
 # ./gradlew test --warning-mode=all
 
 if [ "$arg" != "part2" ]; then
-  ./gradlew :checker:test --warning-mode=all
+  ./gradlew  junitPart2 --warning-mode=all
 fi
 
 if [ "$arg" != "part1" ]; then
-  ./gradlew :annotation-file-utilities:test --warning-mode=all
-  ./gradlew :checker-qual-android:test --warning-mode=all
-  ./gradlew :checker-qual:test --warning-mode=all
-  ./gradlew :checker-util:test --warning-mode=all
-  ./gradlew :dataflow:test --warning-mode=all
-  ./gradlew :framework-test:test --warning-mode=all
-  ./gradlew :framework:test --warning-mode=all
-  ./gradlew :javacutil:test --warning-mode=all
-  ./gradlew :test --warning-mode=all
+  ./gradlew junitPart1 --warning-mode=all
 fi
