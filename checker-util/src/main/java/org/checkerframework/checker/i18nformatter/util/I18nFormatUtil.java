@@ -7,7 +7,7 @@ import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.IllegalFormatException;
+import java.util.IllegalArgumentException;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -36,7 +36,7 @@ public class I18nFormatUtil {
    */
   @SuppressWarnings("nullness:argument") // It's not documented, but passing null as the
   // argument array is supported.
-  public static void tryFormatSatisfiability(String format) throws IllegalFormatException {
+  public static void tryFormatSatisfiability(String format) throws IllegalArgumentException {
     MessageFormat.format(format, (Object[]) null);
   }
 
@@ -44,10 +44,10 @@ public class I18nFormatUtil {
    * Returns a {@link I18nConversionCategory} for every conversion found in the format string.
    *
    * @param format the format string to parse
-   * @throws IllegalFormatException if the format is not syntactically valid
+   * @throws IllegalArgumentException if the format is not syntactically valid
    */
   public static I18nConversionCategory[] formatParameterCategories(String format)
-      throws IllegalFormatException {
+      throws IllegalArgumentException {
 
     tryFormatSatisfiability(format);
 
@@ -56,7 +56,7 @@ public class I18nFormatUtil {
       cs = MessageFormatParser.parse(format);
     } catch (Exception e) {
       // Defensive programming: fail gracefully on parse errors
-      throw new IllegalFormatException("Invalid format string: " + format);
+      throw new IllegalArgumentException("Invalid format string: " + format);
     }
 
     int maxIndex = -1;
@@ -65,7 +65,8 @@ public class I18nFormatUtil {
     for (I18nConversion c : cs) {
       int index = c.index;
       if (index < 0 || index > 1000) { // Arbitrary upper bound to prevent abuse
-        throw new IllegalFormatException("Format string contains illegal argument index: " + index);
+        throw new IllegalArgumentException(
+            "Format string contains illegal argument index: " + index);
       }
 
       Integer indexKey = index;
