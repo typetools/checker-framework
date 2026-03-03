@@ -155,22 +155,13 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
   }
 
   /**
-   * The two list arguments must either both be null or both be non-null and have the same length.
-   * Corresponding elements of {@code list1} and {@code list2} must have the same AST structure.
+   * The two list arguments must have the same length. Corresponding elements of {@code list1} and
+   * {@code list2} must have the same AST structure.
    *
-   * @param list1 the first list of trees, or null
-   * @param list2 the second list of trees, or null
+   * @param list1 the first list of trees
+   * @param list2 the second list of trees
    */
-  public final void assertSameLength(
-      @Nullable List<? extends Tree> list1, @Nullable List<? extends Tree> list2) {
-    if (list1 == null && list2 == null) {
-      return;
-    }
-    if (list1 == null || list2 == null) {
-      throw new UserError(
-          "%s: one list is null: list1=%s list2=%s",
-          this.getClass().getCanonicalName(), list1, list2);
-    }
+  public final void assertSameLength(List<? extends Tree> list1, List<? extends Tree> list2) {
     if (list1.size() != list2.size()) {
       throw new UserError(
           "%s: different size lists: %s (size %d), %s (size %d)",
@@ -212,19 +203,14 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
    * Traverses two lists of trees in lockstep by scanning corresponding elements. For each pair of
    * corresponding elements index, this method invokes {@link #scan(Tree, Tree)}.
    *
-   * <p>The two list arguments must either both be null or both be non-null and have the same
-   * length. Corresponding elements of {@code list1} and {@code list2} must have the same AST
-   * structure.
+   * <p>The two list arguments must have the same length. Corresponding elements of {@code list1}
+   * and {@code list2} must have the same AST structure.
    *
-   * @param list1 the first list of trees, or null
-   * @param list2 the second list of trees, or null
+   * @param list1 the first list of trees
+   * @param list2 the second list of trees
    */
-  public final void scanList(
-      @Nullable List<? extends Tree> list1, @Nullable List<? extends Tree> list2) {
+  public final void scanList(List<? extends Tree> list1, List<? extends Tree> list2) {
     assertSameLength(list1, list2);
-    if (list1 == null && list2 == null) {
-      return;
-    }
     for (int i = 0; i < list1.size(); i++) {
       scan(list1.get(i), list2.get(i));
     }
