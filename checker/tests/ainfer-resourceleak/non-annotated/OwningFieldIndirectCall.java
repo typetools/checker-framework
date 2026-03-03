@@ -21,7 +21,7 @@ class OwningFieldIndirectCall {
     final Foo f; // expect owning annotation for this field
 
     DisposeFieldUsingECM() {
-      // :: warning: (required.method.not.called)
+      // :: warning: [required.method.not.called]
       f = new Foo();
     }
 

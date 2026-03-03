@@ -17,10 +17,10 @@ public class DefaultAnnotation {
           locations = {TypeUseLocation.ALL}))
   public void testDefault() {
 
-    // :: error: (assignment)
+    // :: error: [assignment]
     String s = null; // error
     List<String> lst = new List<>(); // valid
-    // :: error: (argument)
+    // :: error: [argument]
     lst.add(null); // error
   }
 
@@ -30,16 +30,16 @@ public class DefaultAnnotation {
   public class InnerDefault {
 
     public void testDefault() {
-      // :: error: (assignment)
+      // :: error: [assignment]
       String s = null; // error
       List<String> lst = new List<>(); // valid
-      // :: error: (argument)
+      // :: error: [argument]
       lst.add(null); // error
       s = lst.get(0); // valid
 
       List<@Nullable String> nullList = new List<>(); // valid
       nullList.add(null); // valid
-      // :: error: (assignment)
+      // :: error: [assignment]
       s = nullList.get(0); // error
     }
   }
@@ -54,17 +54,17 @@ public class DefaultAnnotation {
     }
 
     public String getNNString2() {
-      // :: error: (return)
+      // :: error: [return]
       return null; // error
     }
 
     public <T extends @Nullable Object> T getNull(T t) {
-      // :: error: (return)
+      // :: error: [return]
       return null; // invalid
     }
 
     public <T extends @NonNull Object> T getNonNull(T t) {
-      // :: error: (return)
+      // :: error: [return]
       return null; // error
     }
   }
@@ -85,10 +85,10 @@ public class DefaultAnnotation {
 
       DefaultDefs d = new DefaultDefs();
 
-      // :: error: (assignment)
+      // :: error: [assignment]
       String s1 = d.<@Nullable String>getNull(null); // error
       String s2 = d.<String>getNonNull("foo"); // valid
-      // :: error: (type.argument) :: error: (assignment)
+      // :: error: [type.argument] :: error: [assignment]
       String s3 = d.<@Nullable String>getNonNull("foo"); // error
     }
   }
@@ -130,10 +130,10 @@ public class DefaultAnnotation {
   @DefaultQualifier(value = NonNull.class)
   public void testDefaultUnqualified() {
 
-    // :: error: (assignment)
+    // :: error: [assignment]
     String s = null; // error
     List<String> lst = new List<>(); // valid
-    // :: error: (argument)
+    // :: error: [argument]
     lst.add(null); // error
   }
 }

@@ -420,6 +420,26 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
     return null;
   }
 
+  /**
+   * Visit a switch expression.
+   *
+   * @param javacTree switch expression tree
+   * @param javaParserNode a JavaParser node
+   * @return null
+   */
+  public Void visitSwitchExpression17(Tree javacTree, Node javaParserNode) {
+    SwitchExpr node = castNode(SwitchExpr.class, javaParserNode, javacTree);
+    processSwitchExpression(javacTree, node);
+
+    // Switch expressions are always parenthesized in javac but never in JavaParser.
+    ExpressionTree expression =
+        ((ParenthesizedTree) SwitchExpressionUtils.getExpression(javacTree)).getExpression();
+    expression.accept(this, node.getSelector());
+
+    visitLists(SwitchExpressionUtils.getCases(javacTree), node.getEntries());
+    return null;
+  }
+
   @Override
   public Void visitCase(CaseTree javacTree, Node javaParserNode) {
     SwitchEntry node = castNode(SwitchEntry.class, javaParserNode, javacTree);
@@ -1375,26 +1395,6 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
     return null;
   }
 
-  /**
-   * Visit a switch expression.
-   *
-   * @param javacTree switch expression tree
-   * @param javaParserNode a JavaParser node
-   * @return null
-   */
-  public Void visitSwitchExpression17(Tree javacTree, Node javaParserNode) {
-    SwitchExpr node = castNode(SwitchExpr.class, javaParserNode, javacTree);
-    processSwitchExpression(javacTree, node);
-
-    // Switch expressions are always parenthesized in javac but never in JavaParser.
-    ExpressionTree expression =
-        ((ParenthesizedTree) SwitchExpressionUtils.getExpression(javacTree)).getExpression();
-    expression.accept(this, node.getSelector());
-
-    visitLists(SwitchExpressionUtils.getCases(javacTree), node.getEntries());
-    return null;
-  }
-
   @Override
   public Void visitSynchronized(SynchronizedTree javacTree, Node javaParserNode) {
     SynchronizedStmt node = castNode(SynchronizedStmt.class, javaParserNode, javacTree);
@@ -1602,27 +1602,6 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
         throw new BugInCF("Unexpected wildcard kind: %s", javacTree);
     }
 
-    return null;
-  }
-
-  /**
-   * Visit a YieldTree.
-   *
-   * @param tree a YieldTree, typed as Tree to be backward-compatible
-   * @param node a YieldStmt, typed as Node to be backward-compatible
-   * @return nothing
-   */
-  public Void visitYield17(Tree tree, Node node) {
-    if (node instanceof YieldStmt) {
-      YieldStmt yieldStmt = castNode(YieldStmt.class, node, tree);
-      processYield(tree, yieldStmt);
-
-      YieldUtils.getValue(tree).accept(this, yieldStmt.getExpression());
-      return null;
-    }
-    // JavaParser does not parse yields correctly:
-    // https://github.com/javaparser/javaparser/issues/3364
-    // So skip yields that aren't matched with a YieldStmt.
     return null;
   }
 
@@ -2484,5 +2463,26 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
     }
 
     return super.defaultAction(tree, node);
+  }
+
+  /**
+   * Visit a YieldTree.
+   *
+   * @param tree a YieldTree, typed as Tree to be backward-compatible
+   * @param node a YieldStmt, typed as Node to be backward-compatible
+   * @return nothing
+   */
+  public Void visitYield17(Tree tree, Node node) {
+    if (node instanceof YieldStmt) {
+      YieldStmt yieldStmt = castNode(YieldStmt.class, node, tree);
+      processYield(tree, yieldStmt);
+
+      YieldUtils.getValue(tree).accept(this, yieldStmt.getExpression());
+      return null;
+    }
+    // JavaParser does not parse yields correctly:
+    // https://github.com/javaparser/javaparser/issues/3364
+    // So skip yields that aren't matched with a YieldStmt.
+    return null;
   }
 }

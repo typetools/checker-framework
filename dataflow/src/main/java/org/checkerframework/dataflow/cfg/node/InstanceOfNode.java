@@ -75,20 +75,6 @@ public class InstanceOfNode extends Node {
   }
 
   /**
-   * Returns the binding variable for this instanceof, or null if one does not exist.
-   *
-   * @return the binding variable for this instanceof, or null if one does not exist
-   * @deprecated Use {@link #getPatternNode()} or {@link #getBindingVariables()} instead.
-   */
-  @Deprecated // 2023-09-24
-  public @Nullable LocalVariableNode getBindingVariable() {
-    if (patternNode instanceof LocalVariableNode) {
-      return (LocalVariableNode) patternNode;
-    }
-    return null;
-  }
-
-  /**
    * A list of all binding variables in this instanceof. This is lazily initialized, use {@link
    * #getBindingVariables()}.
    */

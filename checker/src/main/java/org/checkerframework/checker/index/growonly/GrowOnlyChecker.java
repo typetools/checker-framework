@@ -6,6 +6,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.RelevantJavaTypes;
 import org.checkerframework.framework.source.SuppressWarningsPrefix;
 
+// TODO: In the future, this should be discarded in favor of the Mutability Checker.
 /**
  * A type-checker that enforces rules about mutable-length sequences.
  *
