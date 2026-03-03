@@ -42,7 +42,7 @@ class MustCallAliasOnRegularExits {
   void testMCAOnMCAConstructor() {
     Foo f = new Foo();
     try {
-      // :: warning: (required.method.not.called)
+      // :: warning: [required.method.not.called]
       MCAConstructor mcaf = new MCAConstructor(f);
     } catch (IOException e) {
     } finally {

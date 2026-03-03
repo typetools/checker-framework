@@ -11,7 +11,7 @@ public class OverrideNNOE {
   static class Sub extends Super {
     @Override
     @RequiresNonNull("f")
-    // :: error: (contracts.precondition.override)
+    // :: error: [contracts.precondition.override]
     void call() {
       f.hashCode();
     }

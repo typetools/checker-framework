@@ -20,12 +20,12 @@ public class FindDistinctTest {
   }
 
   public void bad1(Object o) {
-    // :: error: (assignment)
+    // :: error: [assignment]
     @InternedDistinct Object o2 = o;
   }
 
   public void bad2(Object findIt, Object other) {
-    // :: error: (not.interned)
+    // :: error: [not.interned]
     boolean b = findIt == other;
   }
 }

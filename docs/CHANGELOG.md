@@ -3,7 +3,15 @@
 <!-- markdownlint-disable no-duplicate-heading -->
 <!-- pyml disable no-duplicate-heading -->
 
-## Version 3.54.0 (2026-03-03)
+## Version 3.54.1 (2026-04-02)
+
+### User-visible changes
+
+### Implementation details
+
+### Closed issues
+
+## Version 3.54.0 (2026-03-02)
 
 ### User-visible changes
 
@@ -14,6 +22,9 @@ Command-line arguments:
 
 New command-line argument `-Aonelinemsg` puts error messages on a single line.
 This is useful when using a tool that only shows the first line of the error.
+
+The command-line argument `-Anomsgtext` surrounds the error key with brackets
+instead of parenthesis. This matches Java error messages.
 
 ### Implementation details
 
@@ -33,6 +44,8 @@ In `TestDiagnostic`:
 Removed classes and methods that have been deprecated for more than two years.
 
 ### Closed issues
+
+\#6874, #7471, #7475, #7486.
 
 ## Version 3.53.1 (2026-02-02)
 

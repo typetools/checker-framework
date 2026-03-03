@@ -8,11 +8,11 @@ public class AnonymousClasses {
       // @Unqualified @Unqualified Object
       // We should make sure that the qualifier is only present once.
 
-      // :: error: (assignment)
+      // :: error: [assignment]
       @Odd Object o = this; // error
     };
 
-    // :: warning: (cast.unsafe.constructor.invocation)
+    // :: warning: [cast.unsafe.constructor.invocation]
     new @Odd Object() {
       @Odd Object o = this;
     };

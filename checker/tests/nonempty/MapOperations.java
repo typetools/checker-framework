@@ -5,7 +5,7 @@ class MapOperations {
 
   // Skip test until we decide whether to handle accesses on empty containers
   // void addToMapParam(Map<String, Integer> m) {
-  //   // :: error: (method.invocation)
+  //   // :: error: [method.invocation]
   //   m.get("hello");
 
   //   m.put("hello", 1);
@@ -20,7 +20,7 @@ class MapOperations {
   //   m.get("hello"); // OK
 
   //   m.clear();
-  //   // :: error: (method.invocation)
+  //   // :: error: [method.invocation]
   //   m.get("hello");
   // }
 
@@ -28,7 +28,7 @@ class MapOperations {
     if (m.containsKey(key)) {
       @NonEmpty Map<String, Integer> m2 = m; // OK
     } else {
-      // :: error: (assignment)
+      // :: error: [assignment]
       @NonEmpty Map<String, Integer> m2 = m; // OK
     }
   }
@@ -37,7 +37,7 @@ class MapOperations {
     if (m.containsValue(value)) {
       @NonEmpty Map<String, Integer> m2 = m;
     } else {
-      // :: error: (assignment)
+      // :: error: [assignment]
       @NonEmpty Map<String, Integer> m2 = m;
     }
   }

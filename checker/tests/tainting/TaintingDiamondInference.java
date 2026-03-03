@@ -9,9 +9,9 @@ public class TaintingDiamondInference {
   private @Untainted Set<@Untainted String> s;
 
   public TaintingDiamondInference() {
-    // :: warning: (cast.unsafe.constructor.invocation)
+    // :: warning: [cast.unsafe.constructor.invocation]
     s = new @Untainted TreeSet<>();
-    // :: warning: (cast.unsafe.constructor.invocation)
+    // :: warning: [cast.unsafe.constructor.invocation]
     s = new @Untainted TreeSet<@Untainted String>();
   }
 }
