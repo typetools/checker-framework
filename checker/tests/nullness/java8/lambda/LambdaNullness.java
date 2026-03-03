@@ -35,7 +35,7 @@ public class LambdaNullness {
   Supplier<Integer> f2a = () -> 42;
 
   // No parameters, expression body
-  // :: error: (return)
+  // :: error: [return]
   Supplier<Integer> f2b = () -> null;
 
   // No parameters, expression body
@@ -48,7 +48,7 @@ public class LambdaNullness {
   // No parameters, block body with return
   Supplier<@Nullable Integer> f4b =
       () -> {
-        // :: error: (assignment)
+        // :: error: [assignment]
         @NonNull String s = null;
 
         return null;
@@ -69,7 +69,7 @@ public class LambdaNullness {
           for (int i = 1; i < 10; i++) {
             result *= i;
           }
-          // :: error: (return)
+          // :: error: [return]
           return null;
         }
       };
@@ -79,7 +79,7 @@ public class LambdaNullness {
 
   // Single declared-type parameter
   FunctionNull<@Nullable String, String> f9 =
-      // :: error: (lambda.param)
+      // :: error: [lambda.param]
       (@NonNull String x) -> {
         return x + "";
       };
@@ -92,7 +92,7 @@ public class LambdaNullness {
   BiFunctionNull<Integer, Integer, Integer> f16 =
       (@Nullable Integer x, final Integer y) -> {
         x = null;
-        // :: error: (unboxing.of.nullable)
+        // :: error: [unboxing.of.nullable]
         return x + y;
       };
 
@@ -102,7 +102,7 @@ public class LambdaNullness {
   // Infer based on context.
   FunctionNull<@Nullable String, String> fn =
       (s) -> {
-        // :: error: (dereference.of.nullable)
+        // :: error: [dereference.of.nullable]
         s.toString();
         return "";
       };

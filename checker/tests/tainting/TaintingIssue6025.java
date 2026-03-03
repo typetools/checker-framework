@@ -12,9 +12,9 @@ public class TaintingIssue6025 {
   private final B<C<? extends A<?>, ? extends A<?>>> two = new B<>();
 
   void f(boolean b) {
-    // :: error: (assignment)
+    // :: error: [assignment]
     B<C<@Untainted ?, ?>> three1 = one;
-    // :: error: (assignment)
+    // :: error: [assignment]
     B<C<?, @Untainted ?>> three = b ? two : one;
   }
 }

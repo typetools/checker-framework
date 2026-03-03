@@ -103,7 +103,7 @@ public class KeyForPropagationTreeAnnotator extends TreeAnnotator {
     return null;
   }
 
-  /** Transfers annotations to type if the left hand side is a variable declaration. */
+  /** Transfers annotations to type if the left-hand side is a variable declaration. */
   @Override
   public Void visitNewClass(NewClassTree tree, AnnotatedTypeMirror type) {
     keyForPropagator.propagateNewClassTree(tree, type, (KeyForAnnotatedTypeFactory) atypeFactory);

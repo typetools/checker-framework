@@ -146,7 +146,7 @@ So the final test case would be:
 public class MyNullnessTest {
   void method() {
     Object nullable = null;
-    // :: error: (dereference.of.nullable)
+    // :: error: [dereference.of.nullable]
     nullable.toString();
   }
 }
@@ -163,7 +163,7 @@ You can indicate an expected warning (as opposed to error) by using
 "warning:" instead of "error:", as in
 
 ```java
-  // :: warning: (nulltest.redundant)
+  // :: warning: [nulltest.redundant]
   assert val != null;
 ```
 
@@ -173,7 +173,7 @@ a warning from the same line of code:
 
 ```java
   @Regex String s1 = null;
-  // :: error: (assignment) :: warning: (cast.unsafe)
+  // :: error: [assignment] :: warning: [cast.unsafe]
   @Regex(3) String s2 = (@Regex(2) String) s;
 ```
 
@@ -182,7 +182,7 @@ syntax, expected errors can be specified in a separate file using the .out
 file extension.  These files contain lines of the following format:
 
 ```output
-:19: error: (dereference.of.nullable)
+:19: error: [dereference.of.nullable]
 ```
 
 The number between the colons is the line number of the expected error

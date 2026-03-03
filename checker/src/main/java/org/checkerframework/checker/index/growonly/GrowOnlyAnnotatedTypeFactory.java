@@ -5,9 +5,9 @@ import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import org.checkerframework.checker.index.qual.BottomGrowShrink;
+import org.checkerframework.checker.index.qual.CanShrink;
 import org.checkerframework.checker.index.qual.GrowOnly;
-import org.checkerframework.checker.index.qual.Shrinkable;
-import org.checkerframework.checker.index.qual.UncheckedShrinkable;
+import org.checkerframework.checker.index.qual.UncheckedCanShrink;
 import org.checkerframework.checker.index.qual.UnshrinkableRef;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -33,8 +33,8 @@ public class GrowOnlyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         Arrays.asList(
             UnshrinkableRef.class,
             GrowOnly.class,
-            Shrinkable.class,
-            UncheckedShrinkable.class,
+            CanShrink.class,
+            UncheckedCanShrink.class,
             BottomGrowShrink.class));
   }
 }
