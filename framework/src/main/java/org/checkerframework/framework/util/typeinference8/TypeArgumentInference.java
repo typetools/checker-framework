@@ -37,7 +37,7 @@ public interface TypeArgumentInference {
    *     inferring type arguments
    * @param methodType the declaration type of method elem
    * @return the result which includes the inferred type arguments or an error message if they were
-   *     not inferred.
+   *     not inferred
    */
   InferenceResult inferTypeArgs(
       AnnotatedTypeFactory typeFactory,

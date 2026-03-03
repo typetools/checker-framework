@@ -1,6 +1,9 @@
 package org.checkerframework.framework.util.typeinference8.util;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.List;
 import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.javacutil.TypesUtils;
@@ -45,5 +48,21 @@ public class Theta extends LinkedHashMap<TypeVariable, Variable> {
       return super.get(getTypeVariable((TypeVariable) key));
     }
     return super.get(key);
+  }
+
+  /**
+   * Returns a list of type variables that do not yet have a value.
+   *
+   * @return a list of type variables that do not yet have a value
+   */
+  public Collection<? extends TypeVariable> getNotInstantiated() {
+    List<TypeVariable> list = new ArrayList<>();
+    forEach(
+        (typevar, var) -> {
+          if (var.getInstantiation() == null) {
+            list.add(typevar);
+          }
+        });
+    return list;
   }
 }

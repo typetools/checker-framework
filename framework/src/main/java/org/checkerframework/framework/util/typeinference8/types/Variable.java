@@ -75,7 +75,10 @@ import org.checkerframework.javacutil.TypesUtils;
    * @param map a mapping from type variable to inference variable
    * @param id a unique number for this variable
    */
-  @SuppressWarnings("interning:argument") // "this" is interned
+  @SuppressWarnings({
+    "interning:argument", // "this" is interned
+    "this-escape"
+  })
   protected Variable(
       AnnotatedTypeVariable typeVariable,
       TypeVariable typeVariableJava,
@@ -94,7 +97,7 @@ import org.checkerframework.javacutil.TypesUtils;
   }
 
   /**
-   * Return this variable's current bounds.
+   * Returns this variable's current bounds.
    *
    * @return this variable's current bounds
    */
@@ -109,7 +112,7 @@ import org.checkerframework.javacutil.TypesUtils;
    * @param map used to determine if the bounds refer to another variable
    */
   public void initialBounds(Theta map) {
-    TypeMirror upperBound = typeVariableJava.getUpperBound();
+    TypeMirror upperBound = typeVariable.getUpperBound().getUnderlyingType();
     // If Pl has no TypeBound, the bound {@literal al <: Object} appears in the set. Otherwise,
     // for each type T delimited by & in the TypeBound, the bound {@literal al <: T[P1:=a1,...,
     // Pp:=ap]} appears in the set; if this results in no proper upper bounds for al (only
@@ -120,13 +123,13 @@ import org.checkerframework.javacutil.TypesUtils;
             ((IntersectionType) upperBound).getBounds().iterator();
         for (AnnotatedTypeMirror bound : typeVariable.getUpperBound().directSupertypes()) {
           AbstractType t1 = InferenceType.create(bound, iter.next(), map, context);
-          variableBounds.addBound(BoundKind.UPPER, t1);
+          variableBounds.addBound(null, BoundKind.UPPER, t1);
         }
         break;
       default:
         AbstractType t1 =
             InferenceType.create(typeVariable.getUpperBound(), upperBound, map, context);
-        variableBounds.addBound(BoundKind.UPPER, t1);
+        variableBounds.addBound(null, BoundKind.UPPER, t1);
         break;
     }
 
@@ -172,10 +175,13 @@ import org.checkerframework.javacutil.TypesUtils;
 
   @Override
   public String toString() {
-    if (variableBounds.hasInstantiation()) {
-      return "a" + id + " := " + variableBounds.getInstantiation();
-    }
-    return "a" + id;
+    return String.format("%s from %s", typeVariableJava, invocation);
+
+    // Uncomment for easier to read names for debugging.
+    // if (variableBounds.hasInstantiation()) {
+    //    return "a" + id + " := " + variableBounds.getInstantiation();
+    //  }
+    //  return "a" + id;
   }
 
   /**
@@ -201,9 +207,9 @@ import org.checkerframework.javacutil.TypesUtils;
   }
 
   /**
-   * Returns whether this variable was created for a capture bound.
+   * Returns true if this variable was created for a capture bound.
    *
-   * @return whether this variable was created for a capture bound
+   * @return true if this variable was created for a capture bound
    */
   public boolean isCaptureVariable() {
     return false;

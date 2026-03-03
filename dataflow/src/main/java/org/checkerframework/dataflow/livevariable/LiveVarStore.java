@@ -22,7 +22,7 @@ import org.plumelib.util.ArraySet;
 /** A live variable store contains a set of live variables represented by nodes. */
 public class LiveVarStore implements Store<LiveVarStore> {
 
-  /** The set of live variables in this store */
+  /** The set of live variables in this store. */
   private final Set<LiveVarNode> liveVarNodeSet;
 
   /** Create a new LiveVarStore. */

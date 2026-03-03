@@ -1,7 +1,5 @@
 // Test case for issue #4007: https://tinyurl.com/cfissue/4007
 
-// @skip-test until the issue is fixed
-
 import java.util.List;
 import java.util.Optional;
 import org.checkerframework.checker.nullness.qual.NonNull;

@@ -1,0 +1,9 @@
+package java.lang:
+annotation @A:
+
+package org.checkerframework.afu.annotator.tests:
+class MatchReturnValue:
+
+    method clone()Lannotator/tests/MatchReturnValue;: @java.lang.A
+        return:
+

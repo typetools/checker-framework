@@ -133,6 +133,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
    *
    * @param checker the checker associated with this type factory
    */
+  @SuppressWarnings("this-escape")
   public MustCallAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     TOP = AnnotationBuilder.fromClass(elements, MustCallUnknown.class);
@@ -149,8 +150,8 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   }
 
   @Override
-  public void setRoot(@Nullable CompilationUnitTree root) {
-    super.setRoot(root);
+  public void setRoot(@Nullable CompilationUnitTree newRoot) {
+    super.setRoot(newRoot);
     // TODO: This should probably be guarded by isSafeToClearSharedCFG from
     // GenericAnnotatedTypeFactory, but this works here because we know the Must Call Checker is
     // always the first subchecker that's sharing tempvars.
@@ -259,7 +260,8 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
                   getMustCallValueElement(),
                   String.class,
                   Collections.emptyList());
-          // replacement only customized when parameter type has a non-empty must-call obligation
+          // Replacement is only customized when the parameter type has a non-empty
+          // must-call obligation.
           if (!extentReplacementVals.isEmpty()) {
             AnnotationMirror inheritableMustCall =
                 getDeclAnnotation(typeElement, InheritableMustCall.class);
@@ -271,9 +273,10 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
                       String.class,
                       Collections.emptyList());
               if (!inheritableMustCallVals.equals(extentReplacementVals)) {
-                // Use the must call values from the @InheritableMustCall annotation instead.
-                // This allows for wrapper types to have a must-call method with a different
-                // name than the must-call method for the wrapped type
+                // Use the must call values from the @InheritableMustCall annotation
+                // instead. This allows for wrapper types to have a must-call method
+                // with a different name than the must-call method for the wrapped
+                // type.
                 AnnotationMirror mustCall = createMustCall(inheritableMustCallVals);
                 realReplacements = new AnnotationMirrorMap<>();
                 realReplacements.put(POLY, mustCall);
@@ -302,10 +305,10 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
    */
   private void changeNonOwningParameterTypesToTop(
       ExecutableElement declaration, AnnotatedExecutableType type) {
-    // Formal parameters without a declared owning annotation are disregarded by the RLC _analysis_,
-    // as their @MustCall obligation is set to Top in this method. However, this computation is not
-    // desirable for RLC _inference_ in unannotated programs, where a goal is to infer and add
-    // @Owning annotations to formal parameters.
+    // Formal parameters without a declared owning annotation are disregarded by the RLC
+    // _analysis_, as their @MustCall obligation is set to Top in this method. However,
+    // this computation is not desirable for RLC _inference_ in unannotated programs,
+    // where a goal is to infer and add @Owning annotations to formal parameters.
     if (getWholeProgramInference() != null && !isWpiEnabledForRLC()) {
       return;
     }
@@ -344,8 +347,18 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     return mustCallValueElement;
   }
 
+  /**
+   * Returns the {@link InheritableMustCall#value} element.
+   *
+   * @return the {@link InheritableMustCall#value} element
+   */
+  public ExecutableElement getInheritableMustCallValueElement() {
+    return inheritableMustCallValueElement;
+  }
+
   /** Support @InheritableMustCall meaning @MustCall on all subtype elements. */
-  class MustCallDefaultQualifierForUseTypeAnnotator extends DefaultQualifierForUseTypeAnnotator {
+  private class MustCallDefaultQualifierForUseTypeAnnotator
+      extends DefaultQualifierForUseTypeAnnotator {
 
     /** Creates a {@code MustCallDefaultQualifierForUseTypeAnnotator}. */
     public MustCallDefaultQualifierForUseTypeAnnotator() {
@@ -375,7 +388,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   }
 
   /** Support @InheritableMustCall meaning @MustCall on all subtypes. */
-  class MustCallQualifierUpperBounds extends QualifierUpperBounds {
+  private class MustCallQualifierUpperBounds extends QualifierUpperBounds {
 
     /**
      * Creates a {@link QualifierUpperBounds} from the MustCall Checker the annotations that are in
@@ -428,7 +441,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
    */
   private AnnotationMirror createMustCallImpl(List<String> methodList) {
     AnnotationBuilder builder = new AnnotationBuilder(processingEnv, MustCall.class);
-    String[] methodArray = methodList.toArray(new String[methodList.size()]);
+    String[] methodArray = methodList.toArray(new String[0]);
     Arrays.sort(methodArray);
     builder.setValue("value", methodArray);
     return builder.build();
@@ -441,19 +454,21 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   }
 
   /**
-   * Fetches the store from the results of dataflow for {@code first}. If {@code afterFirstStore} is
-   * true, then the store after {@code first} is returned; if {@code afterFirstStore} is false, the
-   * store before {@code succ} is returned.
+   * Fetches the store from the results of dataflow for {@code firstBlock}. If {@code
+   * afterFirstStore} is true, then the store after {@code firstBlock} is returned; if {@code
+   * afterFirstStore} is false, the store before {@code succBlock} is returned.
    *
-   * @param afterFirstStore whether to use the store after the first block or the store before its
-   *     successor, succ
-   * @param first a block
-   * @param succ first's successor
+   * @param afterFirstStore if true, use the store after {@code firstBlock}; if false, use the store
+   *     before its successor, {@code succBlock}
+   * @param firstBlock a CFG block
+   * @param succBlock {@code firstBlock}'s successor
    * @return the appropriate CFStore, populated with MustCall annotations, from the results of
    *     running dataflow
    */
-  public CFStore getStoreForBlock(boolean afterFirstStore, Block first, Block succ) {
-    return afterFirstStore ? flowResult.getStoreAfter(first) : flowResult.getStoreBefore(succ);
+  public CFStore getStoreForBlock(boolean afterFirstStore, Block firstBlock, Block succBlock) {
+    return afterFirstStore
+        ? flowResult.getStoreAfter(firstBlock)
+        : flowResult.getStoreBefore(succBlock);
   }
 
   /**
@@ -502,17 +517,18 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     @Override
     public Void visitIdentifier(IdentifierTree tree, AnnotatedTypeMirror type) {
       Element elt = TreeUtils.elementFromUse(tree);
-      // The following changes are not desired for RLC _inference_ in unannotated programs, where a
-      // goal is to infer and add @Owning annotations to formal parameters. Therefore, if WPI is
-      // enabled, they should not be executed.
+      // The following changes are not desired for RLC _inference_ in unannotated programs,
+      // where a goal is to infer and add @Owning annotations to formal parameters.
+      // Therefore, if WPI is enabled, they should not be executed.
       if (getWholeProgramInference() == null
           && elt.getKind() == ElementKind.PARAMETER
           && (noLightweightOwnership || getDeclAnnotation(elt, Owning.class) == null)) {
         if (!type.hasPrimaryAnnotation(POLY)) {
           // Parameters that are not annotated with @Owning should be treated as bottom
-          // (to suppress warnings about them). An exception is polymorphic parameters, which
-          // might be @MustCallAlias (and so wouldn't be annotated with @Owning): these are not
-          // modified, to support verification of @MustCallAlias annotations.
+          // (to suppress warnings about them). An exception is polymorphic parameters,
+          // which might be @MustCallAlias (and so wouldn't be annotated with @Owning):
+          // these are not modified, to support verification of @MustCallAlias
+          // annotations.
           type.replaceAnnotation(BOTTOM);
         }
       }
@@ -521,7 +537,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   }
 
   /**
-   * Return the temporary variable for node, if it exists. See {@code #tempVars}.
+   * Returns the temporary variable for node, if it exists. See {@code #tempVars}.
    *
    * @param node a CFG node
    * @return the corresponding temporary variable, or null if there is not one
@@ -551,7 +567,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   }
 
   /** Qualifier hierarchy for the Must Call Checker. */
-  class MustCallQualifierHierarchy extends SubtypeIsSubsetQualifierHierarchy {
+  private class MustCallQualifierHierarchy extends SubtypeIsSubsetQualifierHierarchy {
 
     /**
      * Creates a SubtypeIsSubsetQualifierHierarchy from the given classes.

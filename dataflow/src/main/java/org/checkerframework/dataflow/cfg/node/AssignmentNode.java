@@ -31,6 +31,9 @@ import org.checkerframework.javacutil.TreeUtils;
  * <p>String concatenation compound assignments are desugared to an assignment and a string
  * concatenation.
  *
+ * <p>Assignments desugared from an enhanced-for-loop over an array are marked as such for special
+ * casing.
+ *
  * <p>Numeric compound assignments are desugared to an assignment and a numeric operation.
  */
 public class AssignmentNode extends Node {
@@ -44,8 +47,11 @@ public class AssignmentNode extends Node {
   /** The node for the RHS of the assignment tree. */
   protected final Node rhs;
 
-  /** Whether the assignment node is synthetic */
+  /** True if the assignment node is synthetic. */
   protected final boolean synthetic;
+
+  /** True if the assignment node is desugared from an enhanced-for-loop over an array. */
+  protected boolean desugaredFromEnhancedArrayForLoop;
 
   /**
    * Create a (non-synthetic) AssignmentNode.
@@ -64,7 +70,7 @@ public class AssignmentNode extends Node {
    * @param tree the {@code AssignmentTree} corresponding to the {@code AssignmentNode}
    * @param target the lhs of {@code tree}
    * @param expression the rhs of {@code tree}
-   * @param synthetic whether the assignment node is synthetic
+   * @param synthetic true if the assignment node is synthetic
    */
   public AssignmentNode(Tree tree, Node target, Node expression, boolean synthetic) {
     super(TreeUtils.typeOf(tree));
@@ -79,6 +85,7 @@ public class AssignmentNode extends Node {
     this.lhs = target;
     this.rhs = expression;
     this.synthetic = synthetic;
+    this.desugaredFromEnhancedArrayForLoop = false;
   }
 
   /**
@@ -115,6 +122,20 @@ public class AssignmentNode extends Node {
    */
   public boolean isSynthetic() {
     return synthetic;
+  }
+
+  /**
+   * Check if the assignment node is desugared from an enhanced-for-loop over an array.
+   *
+   * @return true if the assignment node is desugared
+   */
+  public boolean isDesugaredFromEnhancedArrayForLoop() {
+    return desugaredFromEnhancedArrayForLoop;
+  }
+
+  /** set the assignment node as desugared from an enhanced-for-loop over an array */
+  public void setDesugaredFromEnhancedArrayForLoop() {
+    desugaredFromEnhancedArrayForLoop = true;
   }
 
   @Override

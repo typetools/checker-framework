@@ -18,7 +18,7 @@ public class ClassName extends JavaExpression {
    * Creates a new ClassName object for the given type.
    *
    * @param type the type for the new ClassName. If it will represent a class literal, the type is
-   *     declared primitive, void, or array of one of them. If it represents part of a static field
+   *     declared, primitive, void, or array of one of them. If it represents part of a static field
    *     access or static method invocation, the type is declared, type variable, or array
    *     (including array of primitive).
    */
@@ -26,7 +26,7 @@ public class ClassName extends JavaExpression {
     super(type);
     String typeString = type.toString();
     if (typeString.endsWith(">")) {
-      typeString = typeString.substring(0, typeString.indexOf("<"));
+      typeString = typeString.substring(0, typeString.indexOf('<'));
     }
     this.typeString = typeString;
   }
@@ -50,9 +50,10 @@ public class ClassName extends JavaExpression {
     return typeString + ".class";
   }
 
+  @SuppressWarnings("unchecked") // generic cast
   @Override
-  public boolean containsOfClass(Class<? extends JavaExpression> clazz) {
-    return getClass() == clazz;
+  public <T extends JavaExpression> @Nullable T containedOfClass(Class<T> clazz) {
+    return getClass() == clazz ? (T) this : null;
   }
 
   @Override
@@ -61,13 +62,13 @@ public class ClassName extends JavaExpression {
   }
 
   @Override
-  public boolean isUnassignableByOtherCode() {
-    return true;
+  public boolean isAssignableByOtherCode() {
+    return false;
   }
 
   @Override
-  public boolean isUnmodifiableByOtherCode() {
-    return true;
+  public boolean isModifiableByOtherCode() {
+    return false;
   }
 
   @Override

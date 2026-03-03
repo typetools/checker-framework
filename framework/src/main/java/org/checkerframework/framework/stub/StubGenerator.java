@@ -385,7 +385,7 @@ public class StubGenerator {
   }
 
   /**
-   * Return a string representation of the list in the form of {@code item1, item2, item3, ...},
+   * Returns a string representation of the list in the form of {@code item1, item2, item3, ...},
    * without surrounding square brackets as the default representation has.
    *
    * @param lst a list to format

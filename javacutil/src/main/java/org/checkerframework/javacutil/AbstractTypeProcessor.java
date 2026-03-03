@@ -143,7 +143,7 @@ public abstract class AbstractTypeProcessor extends AbstractProcessor {
   public void typeProcessingOver() {}
 
   /**
-   * Return the compiler log, which contains errors and warnings.
+   * Returns the compiler log, which contains errors and warnings.
    *
    * @return the compiler log, which contains errors and warnings
    */

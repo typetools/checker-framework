@@ -5,7 +5,7 @@ public class CastInit {
 
   public CastInit() {
     @UnknownInitialization CastInit t1 = (@UnknownInitialization CastInit) this;
-    // :: warning: (cast.unsafe)
+    // :: warning: [cast.unsafe]
     @Initialized CastInit t2 = (@Initialized CastInit) this;
   }
 }

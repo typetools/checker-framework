@@ -17,7 +17,7 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.MapsP;
 
 /**
  * Implements support for {@link DefaultQualifierForUse} and {@link NoDefaultQualifierForUse}. Adds
@@ -46,8 +46,8 @@ public class DefaultQualifierForUseTypeAnnotator extends TypeAnnotator {
   }
 
   // There is no `visitPrimitive()` because `@DefaultQualifierForUse` is an annotation the goes on
-  // a type declaration. Defaults for primitives are add via the meta-annotation @DefaultFor, which
-  // is handled elsewhere.
+  // a type declaration. Defaults for primitives are add via the meta-annotation @DefaultFor,
+  // which is handled elsewhere.
 
   @Override
   public Void visitDeclared(AnnotatedDeclaredType type, Void aVoid) {
@@ -61,8 +61,7 @@ public class DefaultQualifierForUseTypeAnnotator extends TypeAnnotator {
    * Cache of elements to the set of annotations that should be applied to unannotated uses of the
    * element.
    */
-  protected final Map<Element, AnnotationMirrorSet> elementToDefaults =
-      CollectionsPlume.createLruCache(100);
+  protected final Map<Element, AnnotationMirrorSet> elementToDefaults = MapsP.createLruCache(100);
 
   /** Clears all caches. */
   public void clearCache() {
@@ -70,7 +69,7 @@ public class DefaultQualifierForUseTypeAnnotator extends TypeAnnotator {
   }
 
   /**
-   * Returns the set of qualifiers that should be applied to unannotated uses of the given element
+   * Returns the set of qualifiers that should be applied to unannotated uses of the given element.
    *
    * @param element the element for which to determine default qualifiers
    * @return the set of qualifiers that should be applied to unannotated uses of {@code element}
@@ -110,7 +109,7 @@ public class DefaultQualifierForUseTypeAnnotator extends TypeAnnotator {
   }
 
   /**
-   * Return the annotations explicitly written on the element.
+   * Returns the annotations explicitly written on the element.
    *
    * @param element an element
    * @return the annotations explicitly written on the element
@@ -121,7 +120,7 @@ public class DefaultQualifierForUseTypeAnnotator extends TypeAnnotator {
   }
 
   /**
-   * Return the default qualifiers for uses of {@code element} as specified by a {@link
+   * Returns the default qualifiers for uses of {@code element} as specified by a {@link
    * DefaultQualifierForUse} annotation.
    *
    * <p>Subclasses may override to use an annotation other than {@link DefaultQualifierForUse}.

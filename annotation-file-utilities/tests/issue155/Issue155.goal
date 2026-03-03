@@ -1,0 +1,12 @@
+package test;
+import qual.Q3;
+import qual.Q4;
+import qual.Q1;
+import qual.Q2;
+
+class Issue155 {
+  void foo() {
+    @Q2
+    B result @Q1 [] = new @Q4 B @Q3 [2];
+  }
+}

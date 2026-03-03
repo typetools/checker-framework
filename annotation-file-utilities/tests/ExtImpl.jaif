@@ -1,0 +1,48 @@
+package org.checkerframework.checker.nullness.qual:
+
+annotation @NonNull: @java.lang.annotation.Target(value={TYPE_USE,TYPE_PARAMETER}) @java.lang.annotation.Retention(value=RUNTIME)
+
+annotation @UnknownKeyFor: @java.lang.annotation.Target(value={TYPE_USE,TYPE_PARAMETER}) @java.lang.annotation.Retention(value=RUNTIME)
+
+package:
+
+annotation @A:
+annotation @B:
+annotation @C:
+annotation @D:
+annotation @E:
+annotation @F:
+
+package java.lang:
+
+annotation @SuppressWarnings:
+    String[] value
+
+package org.checkerframework.afu.annotator.tests:
+
+class ExtImpl$C1:
+extends: @A
+inner-type 3, 0: @B
+inner-type 3, 1: @C
+implements 0: @D
+inner-type 3, 0: @E
+inner-type 3, 1: @F
+
+class ExtImpl$C2:
+implements 0: @A
+inner-type 3, 0: @B
+inner-type 3, 1: @C
+implements 1: @D
+inner-type 3, 0: @E
+inner-type 3, 1: @F
+
+class ExtImpl$C3:
+    method getI1()LIface3;: @SuppressWarnings({})
+    method getI2()Lorg.checkerframework.afu.annotator.tests.ExtImpl$C3$Iface3;: @SuppressWarnings({})
+    method getI3()LExtImpl$C3$Iface3;: @SuppressWarnings({})
+    method getI4()LIface3;: @SuppressWarnings({})
+
+class ExtImpl$Iface4:
+    typeparam 1: @org.checkerframework.checker.nullness.qual.NonNull
+    bound 1&1: @org.checkerframework.checker.nullness.qual.UnknownKeyFor @org.checkerframework.checker.nullness.qual.NonNull
+

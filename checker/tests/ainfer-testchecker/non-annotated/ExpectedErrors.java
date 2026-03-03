@@ -24,9 +24,9 @@ public class ExpectedErrors {
   }
 
   void testFields() {
-    // :: warning: (argument)
+    // :: warning: [argument]
     expectsAinferSibling1(privateDeclaredField);
-    // :: warning: (argument)
+    // :: warning: [argument]
     expectsAinferSibling1(publicDeclaredField);
   }
 
@@ -36,9 +36,9 @@ public class ExpectedErrors {
 
   // The refinement cannot happen and an assignemnt type incompatible error occurs.
   void assignFieldsToAinferTop() {
-    // :: warning: (assignment)
+    // :: warning: [assignment]
     privateDeclaredField2 = getAinferTop();
-    // :: warning: (assignment)
+    // :: warning: [assignment]
     publicDeclaredField2 = getAinferTop();
   }
 
@@ -70,16 +70,16 @@ public class ExpectedErrors {
   }
 
   void testLUBFields1() {
-    // :: warning: (argument)
+    // :: warning: [argument]
     expectsAinferSibling1(lubPrivateField);
-    // :: warning: (argument)
+    // :: warning: [argument]
     expectsAinferSibling1(lubPublicField);
   }
 
   void testLUBFields2() {
-    // :: warning: (argument)
+    // :: warning: [argument]
     expectsAinferSibling2(lubPrivateField);
-    // :: warning: (argument)
+    // :: warning: [argument]
     expectsAinferSibling2(lubPublicField);
   }
 
@@ -95,13 +95,13 @@ public class ExpectedErrors {
 
   public @AinferSibling1 int getAinferSibling1Wrong() {
     int x = lubTest();
-    // :: warning: (return)
+    // :: warning: [return]
     return x;
   }
 
   public @AinferSibling2 int getAinferSibling2Wrong() {
     int x = lubTest();
-    // :: warning: (return)
+    // :: warning: [return]
     return x;
   }
 
@@ -140,7 +140,7 @@ public class ExpectedErrors {
   }
 
   void setBoolean(Object o, boolean b) {
-    // :: warning: (assignment)
+    // :: warning: [assignment]
     @AinferBottom Object bot = o;
   }
 
@@ -161,15 +161,15 @@ public class ExpectedErrors {
     }
 
     public void suppressWarningsValidation() {
-      // :: warning: (argument)
+      // :: warning: [argument]
       expectsAinferSibling1(i);
-      // :: warning: (argument)
+      // :: warning: [argument]
       expectsAinferSibling1(i2);
-      // :: warning: (argument)
+      // :: warning: [argument]
       expectsAinferSibling1(SuppressWarningsInner.i);
-      // :: warning: (argument)
+      // :: warning: [argument]
       expectsAinferSibling1(SuppressWarningsInner.i2);
-      // :: warning: (argument)
+      // :: warning: [argument]
       expectsAinferSibling1(suppressWarningsMethodReturn());
 
       suppressWarningsMethodParams(getAinferSibling1());
@@ -210,9 +210,9 @@ public class ExpectedErrors {
 
     // Testing the refinement above.
     void testFields() {
-      // :: warning: (argument)
+      // :: warning: [argument]
       expectsBottom(privateField);
-      // :: warning: (argument)
+      // :: warning: [argument]
       expectsBottom(publicField);
     }
   }
@@ -227,16 +227,16 @@ public class ExpectedErrors {
     }
 
     void test() {
-      // :: warning: (argument)
+      // :: warning: [argument]
       expectsAinferSibling1(field);
-      // :: warning: (argument)
+      // :: warning: [argument]
       expectsAinferSibling1(field2);
     }
   }
 
   class AssignParam {
     public void f(@AinferBottom Object param) {
-      // :: warning: (assignment)
+      // :: warning: [assignment]
       param = ((@AinferTop Object) null);
     }
   }

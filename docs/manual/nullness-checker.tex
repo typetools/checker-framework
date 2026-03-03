@@ -618,8 +618,8 @@ Section~\ref{null-defaults}) your code uses.  You only need one of these tools.
   %
   If your code uses the standard CLIMB-to-top default (Section~\ref{climb-to-top}) or
   the NonNull default, then use the
-  \href{http://plse.cs.washington.edu/daikon/download/doc/daikon.html#AnnotateNullable}{AnnotateNullable}
-  tool of the \href{http://plse.cs.washington.edu/daikon/}{Daikon invariant
+  \href{https://plse.cs.washington.edu/daikon/download/doc/daikon.html#AnnotateNullable}{AnnotateNullable}
+  tool of the \href{https://plse.cs.washington.edu/daikon/}{Daikon invariant
     detector}.
 
 \item
@@ -861,7 +861,7 @@ Type-checking occurs on each build.
 
 \item
 The
-\href{http://plse.cs.washington.edu/daikon/}{Daikon invariant detector}.
+\href{https://plse.cs.washington.edu/daikon/}{Daikon invariant detector}.
 Run the command \code{make check-nullness}.
 
 \end{itemize}
@@ -992,7 +992,9 @@ If your code is already annotated with a different nullness
 annotation, the Checker Framework can type-check your code.
 It treats annotations from other tools
 as if you had written the corresponding annotation from the
-Nullness Checker, as described in Figure~\ref{fig-nullness-refactoring}.
+Nullness Checker, as described in Figures~\ref{fig-nullness-refactoring-nonnull},
+\ref{fig-nullness-refactoring-nullable}, and
+\ref{fig-nullness-refactoring-polynull}.
 If the other annotation is a declaration annotation, it may be moved; see
 Section~\ref{declaration-annotations-moved}.
 
@@ -1001,6 +1003,7 @@ Section~\ref{declaration-annotations-moved}.
 % ../../checker/src/main/java/org/checkerframework/checker/nullness/NullnessAnnotatedTypeFactory.java
 % and with variables NONNULL_ANNOTATIONS and BASE_COPYABLE_ANNOTATIONS in
 % https://github.com/rzwitserloot/lombok/blob/master/src/core/lombok/core/handlers/HandlerUtil.java .
+
 \begin{figure}
 \begin{center}
 % The ~ around the text makes things look better in Hevea (and not terrible
@@ -1022,16 +1025,21 @@ Section~\ref{declaration-annotations-moved}.
  ~com.unboundid.util.NotNull~ \\ \hline
  ~edu.umd.cs.findbugs.annotations.NonNull~ \\ \hline
  ~io.micrometer.core.lang.NonNull~ \\ \hline
+ ~io.micronaut.core.annotation.NonNull~ \\ \hline
  ~io.reactivex.annotations.NonNull~ \\ \hline
  ~io.reactivex.rxjava3.annotations.NonNull~ \\ \hline
+ ~jakarta.annotation.Nonnull~ \\ \hline
  ~javax.annotation.Nonnull~ \\ \hline
  % javax.validation.constraints.NotNull: The field might contain a null value until it is persisted.
  ~javax.validation.constraints.NotNull~ \\ \hline
  ~libcore.util.NonNull~ \\ \hline
  ~lombok.NonNull~ \\ \hline
+ ~net.bytebuddy.agent.utility.nullability.NeverNull~ \\ \hline
+ ~net.bytebuddy.utility.nullability.NeverNull~ \\ \hline
  ~org.antlr.v4.runtime.misc.NotNull~ \\ \hline
  ~org.checkerframework.checker.nullness.compatqual.NonNullDecl~ \\ \hline
  ~org.checkerframework.checker.nullness.compatqual.NonNullType~ \\ \hline
+ ~org.chromium.build.annotations.OptimizeAsNonNull~ \\ \hline
  ~org.codehaus.commons.nullanalysis.NotNull~ \\ \hline
  ~org.eclipse.jdt.annotation.NonNull~ \\ \hline
  ~org.eclipse.jgit.annotations.NonNull~ \\ \hline
@@ -1039,6 +1047,7 @@ Section~\ref{declaration-annotations-moved}.
  ~org.jetbrains.annotations.NotNull~ \\ \hline
  ~org.jmlspecs.annotation.NonNull~ \\ \hline
  ~org.jspecify.annotations.NonNull~ \\ \hline
+ ~org.jspecify.nullness.NonNull~ \\ \hline
  ~org.netbeans.api.annotations.common.NonNull~ \\ \hline
  ~org.springframework.lang.NonNull~ \\ \hline
  ~reactor.util.annotation.NonNull~ \\ \hline
@@ -1046,9 +1055,20 @@ Section~\ref{declaration-annotations-moved}.
 &
 $\Rightarrow$
 ~org.checkerframework.checker.nullness.qual.NonNull~
-\\
-\
-\\
+\end{tabular}
+\end{center}
+%BEGIN LATEX
+\vspace{-1.5\baselineskip}
+%END LATEX
+\caption{Correspondence between other nullness annotations and the
+  Checker Framework's \<NonNull> annotation.}
+\label{fig-nullness-refactoring-nonnull}
+\end{figure}
+
+% See comments above previous table.
+\begin{figure}
+\begin{center}
+\begin{tabular}{ll}
 \begin{tabular}{|l|l|}
 \hline
  ~android.annotation.Nullable~ \\ \hline
@@ -1062,6 +1082,8 @@ $\Rightarrow$
  ~com.google.firebase.database.annotations.Nullable~ \\ \hline
  ~com.google.firebase.internal.Nullable~ \\ \hline
  ~com.google.gerrit.common.Nullable~ \\ \hline
+ ~com.google.protobuf.Internal.ProtoMethodAcceptsNullParameter~ \\ \hline
+ ~com.google.protobuf.Internal.ProtoMethodMayReturnNull~ \\ \hline
  ~com.mongodb.lang.Nullable~ \\ \hline
  ~com.sun.istack.Nullable~ \\ \hline
  ~com.sun.istack.internal.Nullable~ \\ \hline
@@ -1071,17 +1093,27 @@ $\Rightarrow$
  ~edu.umd.cs.findbugs.annotations.PossiblyNull~ \\ \hline
  ~edu.umd.cs.findbugs.annotations.UnknownNullness~ \\ \hline
  ~io.micrometer.core.lang.Nullable~ \\ \hline
+ ~io.micronaut.core.annotation.Nullable~ \\ \hline
  ~io.reactivex.annotations.Nullable~ \\ \hline
  ~io.reactivex.rxjava3.annotations.Nullable~ \\ \hline
+ ~io.vertx.codegen.annotations.Nullable~ \\ \hline
+ ~jakarta.annotation.Nullable~ \\ \hline
  ~javax.annotation.CheckForNull~ \\ \hline
  ~javax.annotation.Nullable~ \\ \hline
  ~junitparams.converters.Nullable~ \\ \hline
  ~libcore.util.Nullable~ \\ \hline
+ ~net.bytebuddy.agent.utility.nullability.AlwaysNull~ \\ \hline
+ ~net.bytebuddy.agent.utility.nullability.MaybeNull~ \\ \hline
+ ~net.bytebuddy.agent.utility.nullability.UnknownNull~ \\ \hline
+ ~net.bytebuddy.utility.nullability.AlwaysNull~ \\ \hline
+ ~net.bytebuddy.utility.nullability.MaybeNull~ \\ \hline
+ ~net.bytebuddy.utility.nullability.UnknownNull~ \\ \hline
  ~org.apache.avro.reflect.Nullable~ \\ \hline
  ~org.apache.cxf.jaxrs.ext.Nullable~ \\ \hline
  ~org.apache.shindig.common.Nullable~ \\ \hline
  ~org.checkerframework.checker.nullness.compatqual.NullableDecl~ \\ \hline
  ~org.checkerframework.checker.nullness.compatqual.NullableType~ \\ \hline
+ ~org.chromium.build.annotations.Nullable~ \\ \hline
  ~org.codehaus.commons.nullanalysis.Nullable~ \\ \hline
  ~org.eclipse.jdt.annotation.Nullable~ \\ \hline
  ~org.eclipse.jgit.annotations.Nullable~ \\ \hline
@@ -1106,8 +1138,29 @@ $\Rightarrow$
 \vspace{-1.5\baselineskip}
 %END LATEX
 \caption{Correspondence between other nullness annotations and the
-  Checker Framework's annotations.}
-\label{fig-nullness-refactoring}
+  Checker Framework's \<Nullable> annotation.}
+\label{fig-nullness-refactoring-nullable}
+\end{figure}
+
+% See comments above previous table.
+\begin{figure}
+\begin{center}
+\begin{tabular}{ll}
+\begin{tabular}{|l|l|}
+\hline
+ ~com.google.protobuf.Internal.ProtoPassThroughNullness~ \\ \hline
+\end{tabular}
+&
+$\Rightarrow$
+~org.checkerframework.checker.nullness.qual.PolyNull~
+\end{tabular}
+\end{center}
+%BEGIN LATEX
+\vspace{-1.5\baselineskip}
+%END LATEX
+\caption{Correspondence between other nullness annotations and the
+  Checker Framework's \<PolyNull> annotation.}
+\label{fig-nullness-refactoring-polynull}
 \end{figure}
 
 %% Removed, because it's tedious and should be obvious to a decent programmer.
@@ -1173,7 +1226,7 @@ If some other tool discovers a nullness error that the Checker
 Framework does not, please report it to us (see
 Section~\ref{reporting-bugs}) so that we can enhance the Checker Framework.
 For example, SpotBugs might detect an error that the Nullness Checker does
-not, if you are using an unnannotated library (including an unannotated
+not, if you are using an unannotated library (including an unannotated
 part of the JDK) and running the Checker Framework in an unsound mode (see
 Section~\ref{checker-options}).
 
@@ -2164,7 +2217,7 @@ running the Nullness Checker.
 (For more about suppressing warnings, see
 \chapterpageref{suppressing-warnings}.)  You will no longer get a guarantee
 of no null pointer exceptions, but you can still use the Nullness Checker
-to find most of the null pointer problems in your code.
+to find most of the null-pointer problems in your code.
 
 This suppresses warnings that are specific to the Initialization Checker,
 but does not suppress warnings issued by the Checker Framework itself, such
@@ -2222,7 +2275,7 @@ greater than the benefit from adopting the Freedom Before Commitment system.
 % LocalWords:  typeofthis nraB nrbB rO nroO nroB containsKey enum NullAway
 % LocalWords:  JUnit's field1 field2 superclasses Foo C1 C2 PolyRaw type''
 % LocalWords:  NullnessChecker redundantNullComparison instanceof runtime
-% LocalWords:  noInitForMonotonicNonNull UnknownInitialization isArray
+% LocalWords:  noInitForMonotonicNonNull UnknownInitialization isArray jdk
 % LocalWords:  UnderInitialization getComponentType AsuppressWarnings util
 % LocalWords:  isEmpty AssumeAssertion cleanroom varargs OtherClass Astubs
 % LocalWords:  mymap mykey KeyType ValueType lineSeparator receiver''
@@ -2230,6 +2283,7 @@ greater than the benefit from adopting the Freedom Before Commitment system.
 % LocalWords:  initHelper helperMethod NoSuchElementException classpath
 % LocalWords:  soundArrayCreationNullness lombok findbugs CurrentClass
 % LocalWords:  NotOnlyInitialized underinitialization Commitment'' toarray
-% LocalWords:  unclassified'' trustArrayLenZero ArrayLen toArray
+% LocalWords:  unclassified'' trustArrayLenZero ArrayLen toArray Java''
 % LocalWords:  ConcurrentHashMap permitClearProperty setProperties
-% LocalWords:  clearProperty AassumeKeyFor
+% LocalWords:  clearProperty AassumeKeyFor WeakReference checkers''
+% LocalWords:  AinvocationPreservesArgumentNullness SpotBugs's

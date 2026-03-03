@@ -16,7 +16,7 @@ public class Issue764 {
     }
 
     public void otherMethod2() {
-      // :: error: (contracts.precondition)
+      // :: error: [contracts.precondition]
       method();
     }
   }

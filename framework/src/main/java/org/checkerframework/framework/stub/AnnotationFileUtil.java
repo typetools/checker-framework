@@ -121,7 +121,7 @@ public class AnnotationFileUtil {
    * @param className fully qualified name of the type declaration to find
    * @param indexFile a StubUnit to search
    * @return the declaration in {@code indexFile} with {@code className} if it exists, null
-   *     otherwise.
+   *     otherwise
    */
   /*package-private*/ static @Nullable TypeDeclaration<?> findDeclaration(
       String className, StubUnit indexFile) {
@@ -130,7 +130,7 @@ public class AnnotationFileUtil {
     if (indexOfDot == -1) {
       // classes not within a package needs to be the first in the index file
       CompilationUnit cu = indexFile.getCompilationUnits().get(0);
-      assert cu.getPackageDeclaration().isEmpty();
+      assert !cu.getPackageDeclaration().isPresent();
       return findDeclaration(className, cu);
     }
 
@@ -253,8 +253,9 @@ public class AnnotationFileUtil {
    */
   @SuppressWarnings("signature") // string parsing
   public static IPair<@FullyQualifiedName String, String> partitionQualifiedName(String imported) {
-    @FullyQualifiedName String typeName = imported.substring(0, imported.lastIndexOf("."));
-    String name = imported.substring(imported.lastIndexOf(".") + 1);
+    int lastDot = imported.lastIndexOf('.');
+    @FullyQualifiedName String typeName = imported.substring(0, lastDot);
+    String name = imported.substring(lastDot + 1);
     IPair<String, String> typeParts = IPair.of(typeName, name);
     return typeParts;
   }
@@ -374,7 +375,7 @@ public class AnnotationFileUtil {
   }
 
   /**
-   * Return annotation files found at a given file system location (does not look on classpath).
+   * Returns annotation files found at a given file system location (does not look on classpath).
    *
    * @param location an annotation file (stub file or ajava file), a jarfile, or a directory. Look
    *     for it as an absolute file and relative to the current directory.

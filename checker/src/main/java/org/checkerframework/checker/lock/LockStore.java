@@ -85,10 +85,10 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
       }
     } else if (je instanceof MethodCall) {
       MethodCall method = (MethodCall) je;
-      CFValue current = methodValues.get(method);
+      CFValue current = methodCallExpressions.get(method);
       CFValue value = changeLockAnnoToTop(je, current);
       if (value != null) {
-        methodValues.put(method, value);
+        methodCallExpressions.put(method, value);
       }
     } else if (je instanceof ArrayAccess) {
       ArrayAccess arrayAccess = (ArrayAccess) je;
@@ -114,7 +114,7 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
   /**
    * Makes a new CFValue with the same annotations as currentValue except that the annotation in the
    * LockPossiblyHeld hierarchy is set to LockPossiblyHeld. If currentValue is null, then a new
-   * value is created where the annotation set is LockPossiblyHeld and GuardedByUnknown
+   * value is created where the annotation set is LockPossiblyHeld and GuardedByUnknown.
    */
   private CFValue changeLockAnnoToTop(JavaExpression je, @Nullable CFValue currentValue) {
     if (currentValue == null) {
@@ -233,10 +233,10 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
         }
       } else if (je instanceof MethodCall) {
         MethodCall method = (MethodCall) je;
-        CFValue oldValue = methodValues.get(method);
+        CFValue oldValue = methodCallExpressions.get(method);
         CFValue newValue = value.mostSpecific(oldValue, null);
         if (newValue != null) {
-          methodValues.put(method, newValue);
+          methodCallExpressions.put(method, newValue);
         }
       }
     }

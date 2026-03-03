@@ -34,7 +34,7 @@ import org.plumelib.util.IPair;
  *
  * @param <V> the abstract value type to be tracked by the analysis
  * @param <S> the store type used in the analysis
- * @param <T> the transfer function type that is used to approximate runtime behavior
+ * @param <T> the transfer function type that is used to approximate run-time behavior
  */
 public class ForwardAnalysisImpl<
         V extends AbstractValue<V>, S extends Store<S>, T extends ForwardTransferFunction<V, S>>
@@ -101,7 +101,7 @@ public class ForwardAnalysisImpl<
     try {
       init(cfg);
       while (!worklist.isEmpty()) {
-        Block b = worklist.poll();
+        Block b = worklist.remove();
         performAnalysisBlock(b);
       }
     } finally {
@@ -344,7 +344,13 @@ public class ForwardAnalysisImpl<
     UnderlyingAST underlyingAST = cfg.getUnderlyingAST();
     List<LocalVariableNode> parameters = getParameters(underlyingAST);
     assert transferFunction != null : "@AssumeAssertion(nullness): invariant";
-    S initialStore = transferFunction.initialStore(underlyingAST, parameters);
+    S initialStore;
+    try {
+      initialStore = transferFunction.initialStore(underlyingAST, parameters);
+    } catch (Exception e) {
+      throw new BugInCF(
+          "Problem with initial store for " + underlyingAST + ", parameters=" + parameters);
+    }
     thenStores.put(entry, initialStore);
     elseStores.put(entry, initialStore);
     inputs.put(entry, new TransferInput<>(null, this, initialStore));
@@ -430,7 +436,7 @@ public class ForwardAnalysisImpl<
    * @param node the node of the basic block {@code b}
    * @param s the store being added
    * @param kind the kind of store {@code s}
-   * @param addBlockToWorklist whether the basic block {@code b} should be added back to {@code
+   * @param addBlockToWorklist true if the basic block {@code b} should be added back to {@code
    *     Worklist}
    */
   protected void addStoreBefore(
@@ -528,7 +534,7 @@ public class ForwardAnalysisImpl<
   }
 
   /**
-   * Return the store corresponding to the location right before the basic block {@code b}.
+   * Returns the store corresponding to the location right before the basic block {@code b}.
    *
    * @param b a block
    * @param kind the kind of store which will be returned
@@ -537,9 +543,9 @@ public class ForwardAnalysisImpl<
   protected @Nullable S getStoreBefore(Block b, Store.Kind kind) {
     switch (kind) {
       case THEN:
-        return readFromStore(thenStores, b);
+        return thenStores.get(b);
       case ELSE:
-        return readFromStore(elseStores, b);
+        return elseStores.get(b);
       default:
         throw new BugInCF("Unexpected Store.Kind: " + kind);
     }

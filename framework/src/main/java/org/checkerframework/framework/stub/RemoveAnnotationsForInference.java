@@ -25,12 +25,11 @@ import com.google.common.base.CharMatcher;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.reflect.ClassPath;
-import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -45,6 +44,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.framework.stubifier.JavaStubifier;
 import org.checkerframework.framework.util.JavaParserUtil;
 import org.checkerframework.javacutil.BugInCF;
 import org.plumelib.util.ArraysPlume;
@@ -103,9 +103,9 @@ public class RemoveAnnotationsForInference {
    * @param args command-line arguments: directories to process
    */
   public static void main(String[] args) {
-    // TODO: using plume-lib's options here would be better, but would add a dependency
-    // to the whole Checker Framework, which is undesirable. Move this program elsewhere
-    // (e.g., to a plume-lib project)?
+    // TODO: using plume-lib's "Options" project here would be better, but would add a
+    // dependency to the whole Checker Framework, which is undesirable. Move this program
+    // elsewhere (e.g., to a plume-lib project)?
     if (args[0].contentEquals("-keepFile")) {
       if (args.length < 2) {
         System.err.println(
@@ -272,7 +272,8 @@ public class RemoveAnnotationsForInference {
     }
 
     try (PrintWriter pw =
-        new PrintWriter(new BufferedWriter(new FileWriter(absolutePath.toString())))) {
+        new PrintWriter(
+            Files.newBufferedWriter(Paths.get(absolutePath.toString()), StandardCharsets.UTF_8))) {
       for (String line : lines) {
         pw.println(line);
       }
@@ -571,10 +572,10 @@ public class RemoveAnnotationsForInference {
         if (v instanceof StringLiteralExpr) {
           result.add(((StringLiteralExpr) v).asString());
         } else if (v instanceof NameExpr) {
-          // TODO: is it better to return null here, thus causing nothing under this warning
-          // to be treated as "suppressed", or to return any keys that are string literals?
-          // Returning null here ensures that if any argument to the SW annotation isn't a string
-          // literal, then none of them are considered.
+          // TODO: is it better to return null here, thus causing nothing under this
+          // warning to be treated as "suppressed", or to return any keys that are string
+          // literals?  Returning null here ensures that if any argument to the SW
+          // annotation isn't a string literal, then none of them are considered.
           return null;
         } else {
           throw new BugInCF("Unexpected annotation element of type %s: %s", v.getClass(), v);
@@ -599,7 +600,7 @@ public class RemoveAnnotationsForInference {
    * @return the part of s before the colon, or the whole thing if it contains no colon
    */
   private static String checkerName(String s) {
-    int colonPos = s.indexOf(":");
+    int colonPos = s.indexOf(':');
     if (colonPos == -1) {
       return s;
     } else {

@@ -27,14 +27,14 @@ query_file=$1
 query_tries=5
 
 if [ -z "${query_file}" ]; then
-    echo "you must provide a query file as the first argument"
-    exit 2
+  echo "you must provide a query file as the first argument"
+  exit 2
 fi
 
 if [ -z "$2" ]; then
-    page_count=1
+  page_count=1
 else
-    page_count=$2
+  page_count=$2
 fi
 
 query=$(tr ' ' '+' < "${query_file}")
@@ -55,51 +55,51 @@ curl_output_file=$(mktemp "/tmp/$USER/curl-output-$(date +%Y%m%d-%H%M%S)-XXX.txt
 
 # find the repos
 for i in $(seq "${page_count}"); do
-    # GitHub only allows 30 searches per minute, so add a delay to each request.
-    if [ "${i}" -gt 1 ]; then
-        sleep 5
+  # GitHub only allows 30 searches per minute, so add a delay to each request.
+  if [ "${i}" -gt 1 ]; then
+    sleep 5
+  fi
+
+  full_query='https://api.github.com/search/code?q='${query}'&page='${i}
+  if [ $DEBUG -ne 0 ]; then
+    echo "full_query=$full_query"
+  fi
+  for tries in $(seq ${query_tries}); do
+    status_code=$(curl -s \
+      -H "Authorization: token $(cat git-personal-access-token)" \
+      -H "Accept: application/vnd.github.v3+json" \
+      -w "%{http_code}" \
+      -o "${curl_output_file}" \
+      "${full_query}")
+
+    if [ "${status_code}" -eq 200 ] || [ "${status_code}" -eq 422 ]; then
+      # Don't retry.
+      # 200 is success.  422 means too many GitHub requests.
+      break
+    elif [ "${tries}" -lt $((query_tries - 1)) ]; then
+      # Retry.
+      # Other status codes are failures. Failures are usually due to
+      # triggering the abuse detection mechanism for sending too many
+      # requests, so we add a delay when this happens.
+      sleep 20
     fi
+  done
 
-    full_query='https://api.github.com/search/code?q='${query}'&page='${i}
-    if [ $DEBUG -ne 0 ] ; then
-        echo "full_query=$full_query"
-    fi
-    for tries in $(seq ${query_tries}); do
-        status_code=$(curl -s \
-            -H "Authorization: token $(cat git-personal-access-token)" \
-            -H "Accept: application/vnd.github.v3+json" \
-            -w "%{http_code}" \
-            -o "${curl_output_file}" \
-            "${full_query}")
+  # GitHub only returns the first 1000 results. Requests past this limit
+  # return 422, so stop making requests.
+  if [ "${status_code}" -eq 422 ]; then
+    break
+  elif [ "${status_code}" -ne 200 ]; then
+    echo "GitHub query failed, last response:"
+    cat "${curl_output_file}"
+    rm -f "${curl_output_file}"
+    exit 1
+  fi
 
-        if [ "${status_code}" -eq 200 ] || [ "${status_code}" -eq 422 ]; then
-            # Don't retry.
-            # 200 is success.  422 means too many GitHub requests.
-            break
-        elif [ "${tries}" -lt $((query_tries - 1)) ]; then
-            # Retry.
-            # Other status codes are failures. Failures are usually due to
-            # triggering the abuse detection mechanism for sending too many
-            # requests, so we add a delay when this happens.
-            sleep 20
-        fi
-    done
-
-    # GitHub only returns the first 1000 results. Requests past this limit
-    # return 422, so stop making requests.
-    if [ "${status_code}" -eq 422 ]; then
-        break;
-    elif [ "${status_code}" -ne 200 ]; then
-        echo "GitHub query failed, last response:"
-        cat "${curl_output_file}"
-        rm -f "${curl_output_file}"
-        exit 1
-    fi
-
-    grep "        \"html_url" < "${curl_output_file}" \
-        | grep -v "          " \
-        | sort -u \
-        | cut -d \" -f 4 >> "${tempfile}"
+  grep "        \"html_url" < "${curl_output_file}" \
+    | grep -v "          " \
+    | sort -u \
+    | cut -d \" -f 4 >> "${tempfile}"
 done
 
 rm -f "${curl_output_file}"
@@ -107,16 +107,15 @@ rm -f "${curl_output_file}"
 # Each loop iteration was sorted and unique; this does it for the full result.
 sort -u -o "${tempfile}" "${tempfile}"
 
-while IFS= read -r line
-do
-    repo=$(echo "${line}" | cut -d / -f 5)
-    owner=$(echo "${line}" | cut -d / -f 4)
-    hash_query='https://api.github.com/repos/'${owner}'/'${repo}'/commits?per_page=1'
-    curl -sH "Authorization: token $(cat git-personal-access-token)" \
-             "Accept: application/vnd.github.v3+json" \
-             "${hash_query}" \
-        | grep '^    "sha":' \
-        | cut -d \" -f 4 >> "${hashfile}"
+while IFS= read -r line; do
+  repo=$(echo "${line}" | cut -d / -f 5)
+  owner=$(echo "${line}" | cut -d / -f 4)
+  hash_query='https://api.github.com/repos/'${owner}'/'${repo}'/commits?per_page=1'
+  curl -sH "Authorization: token $(cat git-personal-access-token)" \
+    "Accept: application/vnd.github.v3+json" \
+    "${hash_query}" \
+    | grep '^    "sha":' \
+    | cut -d \" -f 4 >> "${hashfile}"
 done < "${tempfile}"
 
 paste "${tempfile}" "${hashfile}"

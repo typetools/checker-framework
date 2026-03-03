@@ -14,12 +14,12 @@ public class AnonymousClassWithField {
 
           @Override
           public void testX() {
-            // :: warning: (argument)
+            // :: warning: [argument]
             requireAinferSibling1(s1);
           }
 
           public void testY() {
-            // :: warning: (argument)
+            // :: warning: [argument]
             requireAinferSibling1(toaster);
           }
         });

@@ -39,29 +39,51 @@ public class LombokSupport implements BuilderFrameworkSupport {
     this.atypeFactory = atypeFactory;
   }
 
-  // The list is copied from lombok.core.handlers.HandlerUtil. The list cannot be used from that
-  // class directly because Lombok does not provide class files for its own implementation, to
-  // prevent itself from being accidentally added to clients' compile classpaths. This design
-  // decision means that it is impossible to depend directly on Lombok internals.
+  // The list is copied from lombok.core.handlers.HandlerUtil:
+  // https://github.com/projectlombok/lombok/blob/master/src/core/lombok/core/handlers/HandlerUtil.java
+  // The list cannot be used from that class directly because Lombok does not provide
+  // class files for its own implementation, to prevent itself from being accidentally
+  // added to clients' compile classpaths. This design decision means that it is
+  // impossible to depend directly on Lombok internals.
   /** The list of annotations that Lombok treats as non-null. */
   public static final List<String> NONNULL_ANNOTATIONS =
       Collections.unmodifiableList(
           Arrays.asList(
               "android.annotation.NonNull",
               "android.support.annotation.NonNull",
-              "com.sun.istack.internal.NotNull",
+              "android.support.annotation.RecentlyNonNull",
+              "androidx.annotation.NonNull",
+              "androidx.annotation.RecentlyNonNull",
+              "com.android.annotations.NonNull",
+              "com.google.firebase.database.annotations.NotNull", // Even though it's in a
+              // database package, it does mean semantically: "Check if
+              // never null at the language level", and not 'db column cannot be null'.
+              "com.mongodb.lang.NonNull", // Even though mongo is a DB engine,
+              // this semantically refers to language, not DB table designs (mongo is a
+              // document DB engine, so this isn't surprising perhaps).
+              "com.sun.istack.NotNull",
+              "com.unboundid.util.NotNull",
               "edu.umd.cs.findbugs.annotations.NonNull",
+              "io.micrometer.core.lang.NonNull",
+              "io.reactivex.annotations.NonNull",
+              "io.reactivex.rxjava3.annotations.NonNull",
+              "jakarta.annotation.Nonnull",
               "javax.annotation.Nonnull",
               // "javax.validation.constraints.NotNull", // The field might contain a
               // null value until it is persisted.
+              "libcore.util.NonNull",
               "lombok.NonNull",
               "org.checkerframework.checker.nullness.qual.NonNull",
+              "org.checkerframework.checker.nullness.compatqual.NonNullDecl",
+              "org.checkerframework.checker.nullness.compatqual.NonNullType",
+              "org.codehaus.commons.nullanalysis.NotNull",
               "org.eclipse.jdt.annotation.NonNull",
-              "org.eclipse.jgit.annotations.NonNull",
               "org.jetbrains.annotations.NotNull",
               "org.jmlspecs.annotation.NonNull",
+              "org.jspecify.annotations.NonNull",
               "org.netbeans.api.annotations.common.NonNull",
-              "org.springframework.lang.NonNull"));
+              "org.springframework.lang.NonNull",
+              "reactor.util.annotation.NonNull"));
 
   /**
    * A map from elements that have a lombok.Builder.Default annotation to the simple property name
@@ -73,7 +95,7 @@ public class LombokSupport implements BuilderFrameworkSupport {
    * available and that method returns null). See the code in {@link
    * #getLombokRequiredProperties(Element)} that handles fields.
    */
-  private final Map<Element, Name> defaultedElements = new HashMap<>(2);
+  private final Map<Element, Name> defaultedElements = new HashMap<>(4);
 
   @Override
   public boolean isBuilderBuildMethod(ExecutableElement candidateBuildElement) {

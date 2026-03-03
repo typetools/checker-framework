@@ -10,7 +10,7 @@ public class NonEmptyCollection {
   }
 
   public static @NonNull String returnPoll1(PriorityQueue1<@NonNull String> pq) {
-    // :: error: (return)
+    // :: error: [return]
     return pq.poll();
   }
 
@@ -26,9 +26,9 @@ public class NonEmptyCollection {
     return sm.firstKey();
   }
 
-  ///////////////////////////////////////////////////////////////////////////
-  /// Helper classes copied from JDK
-  ///
+  // ///////////////////////////////////////////////////////////////////////////
+  // Helper classes copied from JDK
+  //
 
   public class PriorityQueue1<E> {
     @SuppressWarnings("purity") // object creation is forbidden in pure methods

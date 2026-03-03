@@ -10,13 +10,14 @@ public class MustCallAliasNotThis implements Closeable {
   @Owning Closeable foo;
 
   // Both of these constructors are wrong: the first assigns to the owning field of another
-  // object of the same class, but not the "this" object; the second assigns to another class'
-  // owning field entirely. Both of these assignments would require @CreatesMustCallFor annotations
-  // to verify, so it's okay that the @MustCallAlias annotations are verified here (because it
-  // is impossible to write the required @CreatesMustCallFor annotations, since they can only be
-  // written on methods, not on constructors). If we ever permit @CreatesMustCallFor annotations
-  // on constructors, this test should be revisited: it might be necessary to make a corresponding
-  // change in the rules for verifying @MustCallAlias.
+  // object of the same class, but not the "this" object; the second assigns to another
+  // class' owning field entirely. Both of these assignments would require
+  // @CreatesMustCallFor annotations to verify, so it's okay that the @MustCallAlias
+  // annotations are verified here (because it is impossible to write the required
+  // @CreatesMustCallFor annotations, since they can only be written on methods, not on
+  // constructors). If we ever permit @CreatesMustCallFor annotations on constructors, this
+  // test should be revisited: it might be necessary to make a corresponding change in the
+  // rules for verifying @MustCallAlias.
 
   // :: error: missing.creates.mustcall.for
   public @MustCallAlias MustCallAliasNotThis(

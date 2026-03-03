@@ -1,0 +1,27 @@
+package p2:
+annotation @A: @Retention(RUNTIME)
+    int value
+
+package p2:
+annotation @B: @Retention(CLASS)
+
+package p2:
+annotation @C: @Retention(RUNTIME)
+
+package p2:
+annotation @D:
+    String value
+
+package p1:
+class Foo: @p2.A(value=12)
+
+package p1:
+class Foo:
+    field baz: @p2.B
+
+package p1:
+class Foo:
+    field baz:
+        type:
+            inner-type 0, 0: @p2.C
+

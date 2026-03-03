@@ -13,7 +13,7 @@ public class ContractsOverridingSubtyping {
     void requiresOdd() {}
 
     @RequiresQualifier(expression = "f", qualifier = Unqualified.class)
-    // :: warning: (contracts.toptype)
+    // :: warning: [contracts.toptype]
     void requiresUnqual() {}
 
     @EnsuresQualifier(expression = "f", qualifier = Odd.class)
@@ -22,7 +22,7 @@ public class ContractsOverridingSubtyping {
     }
 
     @EnsuresQualifier(expression = "f", qualifier = Unqualified.class)
-    // :: warning: (contracts.toptype)
+    // :: warning: [contracts.toptype]
     void ensuresUnqual() {}
 
     @EnsuresQualifierIf(expression = "f", result = true, qualifier = Odd.class)
@@ -32,7 +32,7 @@ public class ContractsOverridingSubtyping {
     }
 
     @EnsuresQualifierIf(expression = "f", result = true, qualifier = Unqualified.class)
-    // :: warning: (contracts.toptype)
+    // :: warning: [contracts.toptype]
     boolean ensuresIfUnqual() {
       return true;
     }
@@ -42,18 +42,18 @@ public class ContractsOverridingSubtyping {
 
     @Override
     @RequiresQualifier(expression = "f", qualifier = Unqualified.class)
-    // :: warning: (contracts.toptype)
+    // :: warning: [contracts.toptype]
     void requiresOdd() {}
 
     @Override
     @RequiresQualifier(expression = "f", qualifier = Odd.class)
-    // :: error: (contracts.precondition.override)
+    // :: error: [contracts.precondition.override]
     void requiresUnqual() {}
 
     @Override
     @EnsuresQualifier(expression = "f", qualifier = Unqualified.class)
-    // :: warning: (contracts.toptype)
-    // :: error: (contracts.postcondition.override)
+    // :: warning: [contracts.toptype]
+    // :: error: [contracts.postcondition.override]
     void ensuresOdd() {
       f = g;
     }
@@ -66,8 +66,8 @@ public class ContractsOverridingSubtyping {
 
     @Override
     @EnsuresQualifierIf(expression = "f", result = true, qualifier = Unqualified.class)
-    // :: warning: (contracts.toptype)
-    // :: error: (contracts.conditional.postcondition.true.override)
+    // :: warning: [contracts.toptype]
+    // :: error: [contracts.conditional.postcondition.true.override]
     boolean ensuresIfOdd() {
       f = g;
       return true;

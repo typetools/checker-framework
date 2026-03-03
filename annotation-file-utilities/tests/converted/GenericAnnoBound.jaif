@@ -1,0 +1,10 @@
+package :
+annotation @Bla:
+
+package :
+class GenericAnnoBound:
+
+    method <init>(LGenericAnnoBound;Ljava/lang/Object;)V:
+        return:
+        insert-annotation Method.parameter 0, Variable.type: @Bla
+

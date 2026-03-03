@@ -1,7 +1,7 @@
 #!/bin/bash
 
 set -e
-set -o verbose
+# set -o verbose
 set -o xtrace
 export SHELLOPTS
 echo "SHELLOPTS=${SHELLOPTS}"
@@ -30,13 +30,11 @@ if [ -z ${PACKAGES+x} ]; then
 fi
 echo "PACKAGES=" "${PACKAGES[@]}"
 
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
 
-SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-# shellcheck disable=SC1090 # In newer shellcheck than 0.6.0, pass: "-P SCRIPTDIR" (literally)
-export ORG_GRADLE_PROJECT_useJdk17Compiler=true
-source "$SCRIPTDIR"/clone-related.sh
-./gradlew assembleForJavac --console=plain -Dorg.gradle.internal.http.socketTimeout=60000 -Dorg.gradle.internal.http.connectionTimeout=60000
+source "$SCRIPT_DIR"/clone-related.sh
 
+./gradlew assembleForJavac -Dorg.gradle.internal.http.socketTimeout=60000 -Dorg.gradle.internal.http.connectionTimeout=60000
 
 failing_packages=""
 echo "PACKAGES=" "${PACKAGES[@]}"
@@ -44,15 +42,15 @@ for PACKAGE in "${PACKAGES[@]}"; do
   echo "PACKAGE=${PACKAGE}"
   PACKAGEDIR="/tmp/${PACKAGE}"
   rm -rf "${PACKAGEDIR}"
-  "$SCRIPTDIR/.git-scripts/git-clone-related" plume-lib "${PACKAGE}" "${PACKAGEDIR}"
+  "$SCRIPT_DIR/.git-scripts/git-clone-related" plume-lib "${PACKAGE}" "${PACKAGEDIR}"
   # Uses "compileJava" target instead of "assemble" to avoid the javadoc error "Error fetching URL:
-  # https://docs.oracle.com/en/java/javase/17/docs/api/" due to network problems.
-  echo "About to call ./gradlew --console=plain -PcfLocal compileJava"
+  # https://docs.oracle.com/en/java/javase/25/docs/api/" due to network problems.
+  echo "About to call ./gradlew -PcfVersion=local compileJava"
   # Try twice in case of network lossage.
-  (cd "${PACKAGEDIR}" && (./gradlew --console=plain -PcfLocal compileJava || (sleep 60 && ./gradlew --console=plain -PcfLocal compileJava))) || failing_packages="${failing_packages} ${PACKAGE}"
+  (cd "${PACKAGEDIR}" && (./gradlew -PcfVersion=local compileJava || (sleep 60 && ./gradlew -PcfVersion=local compileJava))) || failing_packages="${failing_packages} ${PACKAGE}"
 done
 
-if [ -n "${failing_packages}" ] ; then
+if [ -n "${failing_packages}" ]; then
   echo "Failing packages: ${failing_packages}"
   exit 1
 fi

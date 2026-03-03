@@ -1,0 +1,138 @@
+// @skip-test
+
+package checkers.tainting.quals:
+annotation @Tainted: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package annotation:
+annotation @Inner: @java.lang.annotation.Target(value={TYPE_USE})
+    int value
+
+package annotation:
+annotation @A:
+
+package annotation:
+annotation @B:
+
+package annotation:
+annotation @C:
+
+package org.checkerframework.afu.annotator.tests:
+class Receivers:
+
+    method m()V:
+        return:
+        insert-annotation Method.parameter -1: @checkers.tainting.quals.Tainted
+
+    method spaces()V:
+        return:
+        insert-annotation Method.parameter -1: @checkers.tainting.quals.Tainted
+
+    method m(I)V:
+        return:
+        insert-annotation Method.parameter -1: @checkers.tainting.quals.Tainted
+
+    method spaces(I)V:
+        return:
+        insert-annotation Method.parameter -1: @checkers.tainting.quals.Tainted
+
+    method m(Ljava/lang/String;)V:
+        return:
+        insert-annotation Method.parameter -1: @checkers.tainting.quals.Tainted
+
+package org.checkerframework.afu.annotator.tests:
+class Receivers2:
+
+    method m()V:
+        return:
+        insert-annotation Method.parameter -1, Variable.type: @checkers.tainting.quals.Tainted
+
+    method spaces()V:
+        return:
+        insert-annotation Method.parameter -1, Variable.type: @checkers.tainting.quals.Tainted
+
+    method m(I)V:
+        return:
+        insert-annotation Method.parameter -1, Variable.type: @checkers.tainting.quals.Tainted
+
+    method spaces(I)V:
+        return:
+        insert-annotation Method.parameter -1, Variable.type: @checkers.tainting.quals.Tainted
+
+package org.checkerframework.afu.annotator.tests:
+class Receivers3:
+
+    method m()V:
+        return:
+        insert-annotation Method.parameter -1, ParameterizedType.typeArgument 0: @annotation.Inner(value=0)
+        insert-annotation Method.parameter -1, ParameterizedType.typeArgument 1: @annotation.Inner(value=1)
+        insert-annotation Method.parameter -1: @checkers.tainting.quals.Tainted
+
+    method m(I)V:
+        return:
+        insert-annotation Method.parameter -1, ParameterizedType.typeArgument 0: @annotation.Inner(value=0)
+        insert-annotation Method.parameter -1, ParameterizedType.typeArgument 1: @annotation.Inner(value=1)
+        insert-annotation Method.parameter -1: @checkers.tainting.quals.Tainted
+
+package org.checkerframework.afu.annotator.tests:
+class Receivers4:
+
+    method m()V:
+        return:
+        insert-annotation Method.parameter -1, Variable.type: @checkers.tainting.quals.Tainted
+
+    method m(I)V:
+        return:
+        insert-annotation Method.parameter -1, Variable.type: @checkers.tainting.quals.Tainted
+
+package org.checkerframework.afu.annotator.tests:
+class Receivers5:
+
+    method m()V:
+        return:
+        insert-annotation Method.parameter -1: @checkers.tainting.quals.Tainted
+
+package org.checkerframework.afu.annotator.tests:
+class Receivers6:
+
+    method m()V:
+        return:
+        insert-annotation Method.parameter -1: @checkers.tainting.quals.Tainted
+
+package org.checkerframework.afu.annotator.tests:
+class Receivers7:
+
+    method m()V:
+        return:
+        insert-annotation Method.parameter -1, ParameterizedType.typeArgument 0: @annotation.Inner(value=0)
+        insert-annotation Method.parameter -1, ParameterizedType.typeArgument 1: @annotation.Inner(value=1)
+        insert-annotation Method.parameter -1: @checkers.tainting.quals.Tainted
+
+package org.checkerframework.afu.annotator.tests:
+class Receivers8:
+
+    method m()V:
+        return:
+        insert-annotation Method.parameter -1, Variable.type: @checkers.tainting.quals.Tainted
+
+package org.checkerframework.afu.annotator.tests:
+class Receivers9:
+
+    method m()V:
+        return:
+        insert-annotation Method.parameter -1: @checkers.tainting.quals.Tainted @annotation.A @annotation.B @annotation.C
+
+package org.checkerframework.afu.annotator.tests:
+class Receivers10:
+
+    method m()V:
+        return:
+        insert-annotation Method.parameter -1, Variable.type, ParameterizedType.typeArgument 0: @annotation.A
+        insert-annotation Method.parameter -1, Variable.type, ParameterizedType.typeArgument 1: @annotation.B
+        insert-annotation Method.parameter -1, Variable.type: @checkers.tainting.quals.Tainted
+
+    method m(Lannotator/tests/Receivers10;)V:
+        return:
+        insert-annotation Method.parameter -1, Variable.type, ParameterizedType.typeArgument 0: @annotation.A
+        insert-annotation Method.parameter -1, Variable.type, ParameterizedType.typeArgument 1: @annotation.B
+        insert-annotation Method.parameter -1, Variable.type: @checkers.tainting.quals.Tainted
+

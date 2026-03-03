@@ -11,16 +11,16 @@ import org.plumelib.util.IPair;
  *
  * @param <V> the abstract value type to be tracked by the analysis
  * @param <S> the store type used in the analysis
- * @param <T> the forward transfer function type that is used to approximated runtime behavior
+ * @param <T> the forward transfer function type that is used to approximate run-time behavior
  */
 public interface ForwardAnalysis<
         V extends AbstractValue<V>, S extends Store<S>, T extends ForwardTransferFunction<V, S>>
     extends Analysis<V, S, T> {
 
   /**
-   * Get stores at return statements. These stores are transfer results at return node. Thus for a
-   * forward analysis, these stores contain the analyzed flow information from entry nodes to return
-   * nodes.
+   * Returns stores at return statements. These stores are transfer results at return node. Thus for
+   * a forward analysis, these stores contain the analyzed flow information from entry nodes to
+   * return nodes.
    *
    * @return the transfer results for each return node in the CFG
    */

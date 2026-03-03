@@ -6,6 +6,11 @@ import com.sun.tools.javac.tree.JCTree;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Writer;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -63,9 +68,12 @@ public class DOTCFGVisualizer<
     super.init(args);
     this.outDir = (String) args.get("outdir");
     if (this.outDir == null) {
-      throw new BugInCF(
-          "outDir should never be null,"
-              + " provide it in args when calling DOTCFGVisualizer.init(args).");
+      throw new UserError(
+          "The outdir argument to -Acfgvis was missing. Provide a non-empty directory path.");
+    }
+    if (this.outDir.isEmpty()) {
+      throw new UserError(
+          "The outdir argument to -Acfgvis was empty. Provide a non-empty directory path.");
     }
     this.checkerName = (String) args.get("checkerName");
     this.generated = new HashMap<>();
@@ -81,7 +89,7 @@ public class DOTCFGVisualizer<
       ControlFlowGraph cfg, Block entry, @Nullable Analysis<V, S, T> analysis) {
     String dotGraph = visualizeGraph(cfg, entry, analysis);
 
-    Map<String, Object> vis = new HashMap<>(2);
+    Map<String, Object> vis = new HashMap<>(4);
     vis.put("dotGraph", dotGraph);
     return vis;
   }
@@ -96,7 +104,8 @@ public class DOTCFGVisualizer<
     }
     String dotFileName = dotOutputFileName(cfg.underlyingAST);
 
-    try (BufferedWriter out = new BufferedWriter(new FileWriter(dotFileName))) {
+    try (BufferedWriter out =
+        new BufferedWriter(new FileWriter(dotFileName, StandardCharsets.UTF_8))) {
       out.write(dotGraph);
     } catch (IOException e) {
       throw new UserError("Error creating dot file (is the path valid?): " + dotFileName, e);
@@ -148,12 +157,18 @@ public class DOTCFGVisualizer<
 
   @Override
   protected String visualizeEdge(Object sId, Object eId, String flowRule) {
-    return "    " + format(sId) + " -> " + format(eId) + " [label=\"" + flowRule + "\"];";
+    return "    "
+        + escapeString(sId)
+        + " -> "
+        + escapeString(eId)
+        + " [label=\""
+        + flowRule
+        + "\"];";
   }
 
   @Override
   public String visualizeBlock(Block bb, @Nullable Analysis<V, S, T> analysis) {
-    return super.visualizeBlockHelper(bb, analysis, getSeparator());
+    return super.visualizeBlockWithSeparator(bb, analysis, getSeparator());
   }
 
   @Override
@@ -276,11 +291,6 @@ public class DOTCFGVisualizer<
   }
 
   @Override
-  protected String format(Object obj) {
-    return escapeString(obj);
-  }
-
-  @Override
   public String visualizeStoreThisVal(V value) {
     return storeEntryIndent + "this > " + escapeString(value);
   }
@@ -321,18 +331,9 @@ public class DOTCFGVisualizer<
    * @param str the string to be escaped
    * @return the escaped version of the string
    */
-  private static String escapeString(String str) {
+  @Override
+  protected String escapeString(String str) {
     return str.replace("\"", "\\\"").replace("\r", "\\\\r").replace("\n", "\\\\n");
-  }
-
-  /**
-   * Escape the double quotes from the string representation of the given object.
-   *
-   * @param obj an object
-   * @return an escaped version of the string representation of the object
-   */
-  private static String escapeString(Object obj) {
-    return escapeString(String.valueOf(obj));
   }
 
   /**
@@ -342,7 +343,12 @@ public class DOTCFGVisualizer<
   @Override
   public void shutdown() {
     // Open for append, in case of multiple sub-checkers.
-    try (FileWriter fstream = new FileWriter(outDir + "/methods.txt", true);
+    try (Writer fstream =
+            Files.newBufferedWriter(
+                Paths.get(outDir + "/methods.txt"),
+                StandardCharsets.UTF_8,
+                StandardOpenOption.CREATE,
+                StandardOpenOption.APPEND);
         BufferedWriter out = new BufferedWriter(fstream)) {
       for (Map.Entry<String, String> kv : generated.entrySet()) {
         out.write(kv.getKey());

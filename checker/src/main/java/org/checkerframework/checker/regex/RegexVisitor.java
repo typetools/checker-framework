@@ -72,7 +72,7 @@ public class RegexVisitor extends BaseTypeVisitor<RegexAnnotatedTypeFactory> {
     ProcessingEnvironment env = checker.getProcessingEnvironment();
     if (TreeUtils.isMethodInvocation(tree, patternCompile, env)) {
       ExpressionTree flagParam = tree.getArguments().get(1);
-      if (flagParam.getKind() == Tree.Kind.MEMBER_SELECT) {
+      if (flagParam instanceof MemberSelectTree) {
         MemberSelectTree memSelect = (MemberSelectTree) flagParam;
         if (TreeUtils.isSpecificFieldAccess(memSelect, patternLiteral)) {
           // This is a call to Pattern.compile with the Pattern.LITERAL flag so the first
@@ -99,8 +99,8 @@ public class RegexVisitor extends BaseTypeVisitor<RegexAnnotatedTypeFactory> {
           // When checking implementations of java.util.regex.MatcherResult, calls to
           // group (and other methods) don't have a receiver tree.  So, just do the
           // regular checking.
-          // Verifying an implemenation of a subclass of MatcherResult is out of the scope
-          // of this checker.
+          // Verifying an implementation of a subclass of MatcherResult is out of the
+          // scope of this checker.
           return super.visitMethodInvocation(tree, p);
         }
         int annoGroups = 0;
