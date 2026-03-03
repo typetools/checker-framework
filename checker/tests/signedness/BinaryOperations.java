@@ -11,52 +11,52 @@ public class BinaryOperations {
     @Unsigned int unsignedresult;
     @UnknownSignedness int unknownresult;
 
-    // :: error: (operation.unsignedrhs)
+    // :: error: [operation.unsignedrhs]
     unknownresult = unknown / unsigned;
 
-    // :: error: (operation.unsignedlhs)
+    // :: error: [operation.unsignedlhs]
     unknownresult = unsigned / unknown;
 
-    // :: error: (operation.unsignedlhs)
+    // :: error: [operation.unsignedlhs]
     unsignedresult = unsigned / constant;
 
-    // :: error: (operation.unsignedrhs)
+    // :: error: [operation.unsignedrhs]
     unsignedresult = constant / unsigned;
 
-    // :: error: (operation.unsignedrhs)
+    // :: error: [operation.unsignedrhs]
     unknownresult = unknown / polysigned;
 
-    // :: error: (operation.unsignedlhs)
+    // :: error: [operation.unsignedlhs]
     unknownresult = polysigned / unknown;
 
-    // :: error: (operation.unsignedlhs)
+    // :: error: [operation.unsignedlhs]
     unknownresult = polysigned / constant;
 
-    // :: error: (operation.unsignedrhs)
+    // :: error: [operation.unsignedrhs]
     unknownresult = constant / polysigned;
 
-    // :: error: (operation.unsignedrhs)
+    // :: error: [operation.unsignedrhs]
     unknownresult = unknown % unsigned;
 
-    // :: error: (operation.unsignedlhs)
+    // :: error: [operation.unsignedlhs]
     unknownresult = unsigned % unknown;
 
-    // :: error: (operation.unsignedrhs)
+    // :: error: [operation.unsignedrhs]
     unknownresult = unknown % polysigned;
 
-    // :: error: (operation.unsignedlhs)
+    // :: error: [operation.unsignedlhs]
     unknownresult = polysigned % unknown;
 
-    // :: error: (operation.unsignedlhs)
+    // :: error: [operation.unsignedlhs]
     unsignedresult = unsigned % constant;
 
-    // :: error: (operation.unsignedrhs)
+    // :: error: [operation.unsignedrhs]
     unsignedresult = constant % unsigned;
 
-    // :: error: (operation.unsignedlhs)
+    // :: error: [operation.unsignedlhs]
     unknownresult = polysigned % constant;
 
-    // :: error: (operation.unsignedrhs)
+    // :: error: [operation.unsignedrhs]
     unknownresult = constant % polysigned;
   }
 
@@ -71,22 +71,22 @@ public class BinaryOperations {
     @UnknownSignedness int unknownresult;
     int result;
 
-    // :: error: (shift.signed)
+    // :: error: [shift.signed]
     unsignedresult = unsigned >> constant;
 
     result = constant >> unsigned;
 
-    // :: error: (shift.signed)
+    // :: error: [shift.signed]
     polysignedresult = polysigned >> constant;
 
     result = constant >> polysigned;
 
-    // :: error: (shift.signed)
+    // :: error: [shift.signed]
     unsignedresult = unsigned >> unknown;
 
     unknownresult = unknown >> unsigned;
 
-    // :: error: (shift.signed)
+    // :: error: [shift.signed]
     polysignedresult = polysigned >> unknown;
 
     unknownresult = unknown >> polysigned;
@@ -102,22 +102,22 @@ public class BinaryOperations {
     @UnknownSignedness int unknownresult;
     int result;
 
-    // :: error: (shift.unsigned)
+    // :: error: [shift.unsigned]
     result = signed >>> constant;
 
     result = constant >>> signed;
 
-    // :: error: (shift.unsigned)
+    // :: error: [shift.unsigned]
     result = signed >>> unknown;
 
     unknownresult = unknown >>> signed;
 
-    // :: error: (shift.unsigned)
+    // :: error: [shift.unsigned]
     polysignedresult = polysigned >>> constant;
 
     result = constant >>> polysigned;
 
-    // :: error: (shift.unsigned)
+    // :: error: [shift.unsigned]
     polysignedresult = polysigned >>> unknown;
 
     unknownresult = unknown >>> polysigned;

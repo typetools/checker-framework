@@ -16,13 +16,13 @@ class Usage {
     C c = new D(); // C<@Odd String>();
     // Oddness is OK, will fail with ClassCastException
     // :: warning: [unchecked] unchecked call to id(T) as a member of the raw type C
-    // :: warning: (cast.unsafe.constructor.invocation)
+    // :: warning: [cast.unsafe.constructor.invocation]
     c.id(new @Odd Object());
 
     // Oddness is wrong! Would also fail with ClassCastException.
-    // :: error: (argument)
+    // :: error: [argument]
     // :: warning: [unchecked] unchecked call to id(T) as a member of the raw type C
-    // :: warning: (cast.unsafe.constructor.invocation)
+    // :: warning: [cast.unsafe.constructor.invocation]
     c.id(new @Even Object());
   }
 }

@@ -28,8 +28,6 @@ import org.checkerframework.framework.source.SupportedLintOptions;
   // learn what advice to give programmers about avoid false positive warnings.
   // See issue #986: https://github.com/typetools/checker-framework/issues/986
   "soundArrayCreationNullness",
-  // Old name for soundArrayCreationNullness, for backward compatibility; remove in January 2021.
-  "forbidnonnullarraycomponents",
   NullnessChecker.LINT_TRUSTARRAYLENZERO,
   NullnessChecker.LINT_PERMITCLEARPROPERTY,
 })

@@ -20,11 +20,11 @@ interface SupplierRe {
 
 class MetaReturn {
 
-  // :: error: (dereference.of.nullable)
+  // :: error: [dereference.of.nullable]
   ConsumerSupplier t1 = () -> (s) -> s.toString();
   ConsumerSupplier t2 =
       () -> {
-        // :: error: (lambda.param)
+        // :: error: [lambda.param]
         return (String s) -> {
           s.toString();
         };
@@ -32,7 +32,7 @@ class MetaReturn {
 
   SupplierSupplier t3 =
       () -> {
-        // :: error: (return)
+        // :: error: [return]
         return () -> null;
       };
 

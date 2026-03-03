@@ -537,7 +537,7 @@ public abstract class QualifierHierarchy {
    */
   // The fact that null is returned if the qualifiers are not in the same hierarchy is used by the
   // collection version of LUB below.
-  protected abstract @Nullable AnnotationMirror greatestLowerBoundQualifiers(
+  public abstract @Nullable AnnotationMirror greatestLowerBoundQualifiers(
       AnnotationMirror qualifier1, AnnotationMirror qualifier2);
 
   /**

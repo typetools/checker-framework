@@ -192,7 +192,7 @@ such as Gradle or Maven, \textbf{no installation is necessary}; just see
 \chapterpageref{external-tools}.
 \item
 If you wish to try the Checker Framework without installing it, use the
-\href{http://eisop.uwaterloo.ca/live/}{Checker Framework Live Demo} webpage.
+\href{https://eisop.uwaterloo.ca/live/}{Checker Framework Live Demo} webpage.
 \item
 This section describes how to install the Checker Framework from its
 distribution.  The Checker Framework release contains everything that you
@@ -214,7 +214,7 @@ optional step.
   %BEGIN LATEX
   \\
   %END LATEX
-  \url{https://checkerframework.org/checker-framework-3.52.1.zip}
+  \url{https://checkerframework.org/checker-framework-3.54.0.zip}
 
   For example, on Unix you can run: \<wget https://checkerframework.org/checker-framework-\ReleaseVersion{}.zip>
 
@@ -693,6 +693,12 @@ Type-checking modes:  enable/disable functionality
   Using \<-Ainfer=stubs> produces \<.astub> files.
   Using \<-Ainfer=ajava> produces \<.ajava> files.
   You must also supply \<-Awarns>, or the inference output may be incomplete.
+\item \<-AinferOutputDirectory>
+  The directory into which to write inference output (e.g., \<.ajava>
+  files).  It defaults to \<build/whole-program-inference>.  When using
+  a build system (e.g., Gradle), the default may be interpreted relative to
+  a build system directory (e.g., \<\$HOME/.gradle/workers>) rather than the
+  project root directory, so you may need to provide an absolute path.
 \item \<-AinferOutputOriginal>
   When outputting \<.ajava> files when running with \<-Ainfer=ajava>,
   also output a copy of the original file with no inferred annotations,
@@ -770,7 +776,8 @@ Debugging
  \<-AprintAllQualifiers>,
  \<-AprintVerboseGenerics>,
  \<-Anomsgtext>,
- \<-AdumpOnErrors>
+ \<-Aonelinemsg>,
+ \<-AdumpOnErrors>,
  \<-AexceptionLineSeparator>
 Amount of detail in messages; see Section~\ref{creating-debugging-options-detail}.
 
@@ -1668,7 +1675,7 @@ or suppress warnings.
 % LocalWords:  Djsr qual Alint javac's dotequals nullable supertype JLS Papi
 % LocalWords:  deserialization Mahmood Telmo Correa changelog txt nullness ESC
 % LocalWords:  Nullness unselect checkbox unsetting PolyNull typedefs arg
-% LocalWords:  bashrc IDE xml buildfile enum API elts INF sql WPI
+% LocalWords:  bashrc IDE xml buildfile enum API elts INF sql WPI wget
 % LocalWords:  type-checker proc discoverable Xlint util QualifierDefaults Foo
 % LocalWords:  DefaultQualifier SoyLatte GetStarted Formatter bcel csv sbt
 % LocalWords:  Dcheckers Warski MyClass ProcessorName compareTo toString myDate
@@ -1688,7 +1695,7 @@ or suppress warnings.
 % LocalWords:  AinvariantArrays AcheckCastElementType formatter pathname
 % LocalWords:  typedef guieffect Gradle jdk8 javadoc MyFile argfiles tz1
 % LocalWords:  AshowSuppressWarningsStrings AoutputArgsToFile RegexChecker
-% LocalWords:  NullnessChecker commandlineargfile AnnotatedFor
+% LocalWords:  NullnessChecker commandlineargfile AnnotatedFor Xmx4g
 % LocalWords:  AsafeDefaultsForUnannotatedBytecode Signedness Werror jaif
 % LocalWords:  AuseSafeDefaultsForUnannotatedSourceCode beingConstructed
 % LocalWords:  AuseConservativeDefaultsForUncheckedCode AresolveReflection Ainfer
@@ -1709,3 +1716,4 @@ or suppress warnings.
 % LocalWords:  AshowPrefixInWarningMessages AstubNoWarnIfNotFound
 % LocalWords:  AshowWpiFailedInferences AassumePureGetters AonlyFiles AskipFiles
 % LocalWords:  AexceptionLineSeparator AslowTypecheckingSeconds
+% LocalWords:  AinferOutputDirectory

@@ -1,20 +1,20 @@
 This directory contains test cases for all type systems.
-As they are meant for all type systems, they do not contain any
-actual annotations or expected errors.
+As they are meant for all type systems, they do not contain any expected errors.
 They exercise tricky Java coding patterns that should be handled
 correctly.
 
 If a new type system correctly issues an error or a warning for one of these
-tests, then suppress it using the most specific SuppressWarnings string
-possible, for example "keyfor:return".  Write the
-@SuppressWarnings annotation such that the scope is as limited as possible, but
-do not alter the code.  Write a comment on the warning suppression explaining
-why the error is expected. Add the test with the expected error to the type
-systems test and add the expected error and/or adding annotations to prevent the
-error to the test.
+tests, then you can either add annotations to fix the error or suppress the
+warning.  In either case, do not alter the code itself. Rewriting the code
+may cause the test to no longer test the specific syntax intended to.
 
-TODO: move interesting general purpose test cases from specific
-type systems to this directory.
+If suppressing the warning, use the most specific SuppressWarnings string
+possible, for example "keyfor:return".  Write the @SuppressWarnings
+annotation such that the scope is as limited as possible, but do not alter
+the code.  Write a comment on the warning suppression explaining why the
+error is expected.  Also add the test to the test suite for the specific
+checker, because the all-systems tests should not be the only place that a
+feature is tested.
 
 Note that this directory is also linked from
-checker/tests/all-system
+checker/tests/all-systems

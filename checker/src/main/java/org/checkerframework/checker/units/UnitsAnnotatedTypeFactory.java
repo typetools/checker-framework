@@ -123,15 +123,15 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     String aname = AnnotationUtils.annotationName(anno);
 
     // See if we already have a map from this aliased annotation to its corresponding base unit
-    // annotation
-    if (aliasMap.containsKey(aname)) {
-      // if so return it
-      return aliasMap.get(aname);
+    // annotation.
+    AnnotationMirror result = aliasMap.get(aname);
+    if (result != null) {
+      // If so, return it.
+      return result;
     }
 
     boolean built = false;
-    AnnotationMirror result = null;
-    // if not, look for the UnitsMultiple meta annotations of this aliased annotation
+    // If not, look for the UnitsMultiple meta annotations of this aliased annotation.
     for (AnnotationMirror metaAnno : anno.getAnnotationType().asElement().getAnnotationMirrors()) {
       // see if the meta annotation is UnitsMultiple
       if (isUnitsMultiple(metaAnno)) {

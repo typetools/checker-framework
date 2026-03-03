@@ -21,10 +21,10 @@ import org.checkerframework.javacutil.BugInCF;
  */
 public class QualifierTyping implements Constraint {
 
-  /** The qualifier on the left hand side of the constraint. */
+  /** The qualifier on the left-hand side of the constraint. */
   private final AbstractQualifier Q;
 
-  /** The qualifier on the right hand side of the constraint. */
+  /** The qualifier on the right-hand side of the constraint. */
   private final AbstractQualifier R;
 
   /**
@@ -35,8 +35,8 @@ public class QualifierTyping implements Constraint {
   /**
    * Creates a qualifier typing constraint.
    *
-   * @param Q the qualifiers on the left hand side of the constraint
-   * @param R the qualifiers on the right hand side of the constraint
+   * @param Q the qualifiers on the left-hand side of the constraint
+   * @param R the qualifiers on the right-hand side of the constraint
    * @param kind the kind of qualifier constraint
    */
   public QualifierTyping(AbstractQualifier Q, AbstractQualifier R, Kind kind) {
