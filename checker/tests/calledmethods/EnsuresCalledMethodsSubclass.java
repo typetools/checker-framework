@@ -12,7 +12,7 @@ public class EnsuresCalledMethodsSubclass {
 
   public static class Subclass extends Parent {
     @Override
-    // ::error: (contracts.postcondition)
+    // ::error: [contracts.postcondition]
     public void method(Closeable x) throws IOException {}
   }
 }

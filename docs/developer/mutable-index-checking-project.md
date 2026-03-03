@@ -55,7 +55,7 @@ Here are some steps toward invalidating fewer flow facts.
    which can be hard-coded for the collection classes in the JDK.
 
 3. Implement the
-   [`@SideEffectsOnly`](https://rawgit.com/mernst/checker-framework/refs/heads/index-checker-mutable-project/docs/developer/new-contributor-projects.html#SideEffectsOnly)
+   [`@SideEffectsOnly`](https://checkerframework.org/manual/new-contributor-projects.html#SideEffectsOnly)
    annotation.
    Suppose that a method is called that only side-effects variable `a` of type
    `T` and variable `b` of type `U`. Then the Index Checker needs to
@@ -132,44 +132,44 @@ This is the qualifier hierarchy:
 
 ``` text
 @BottomGrowShrink <: @GrowOnly <: @UnshrinkableRef
-@BottomGrowShrink <: @UncheckedShrinkable <: @Shrinkable <: @UnshrinkableRef
+@BottomGrowShrink <: @UncheckedCanShrink <: @CanShrink <: @UnshrinkableRef
 ```
 
 * A `@GrowOnly` reference to a collection states that as long as that reference exists,
   the size of the collection will not decrease (elements cannot be removed, but can be added).
   Calling `remove()`, `clear()`, etc. is forbidden, and no alias can remove
   elements, either.
-  The expression is not aliased to any `@Shrinkable` list.
+  The expression is not aliased to any `@CanShrink` list.
   Any valid index remains valid (unless the index is changed), regardless of
   changes to any list.
   This is the default type.
-* A `@Shrinkable` reference to a collection allows removing elements
+* A `@CanShrink` reference to a collection allows removing elements
   from the collection using methods such as `remove()` and `clear()`.
   An alias to the collection may also shrink the collection.
 * `@UnshrinkableRef`: calling `remove()`, `clear()`, etc. is forbidden.
   A `@UnshrinkableRef` reference to the collection cannot be used to remove elements,
   but admits the possibility to remove elements from the collection using another reference to it.
-* The annotation `@UncheckedShrinkable` is like `@Shrinkable`,
+* The annotation `@UncheckedCanShrink` is like `@CanShrink`,
   but is used to opt out of index checking.
   The checker behaves as if all indices are valid for this collection.
 
-Unless a reference is `@GrowOnly` or `@UncheckedShrinkable`,
+Unless a reference is `@GrowOnly` or `@UncheckedCanShrink`,
 the checker has to invalidate all `@IndexFor` qualifiers for it
 whenever a side effect may occur.
 
 The type hierarchy guarantees that no `@GrowOnly` expression is
-aliased to any `@Shrinkable` expression.
+aliased to any `@CanShrink` expression.
 
-A collection allocated with `new @GrowOnly` or `new @Shrinkable`
+A collection allocated with `new @GrowOnly` or `new @CanShrink`
 will have indices checked.
 
-When annotating a library, do not use `@UncheckedShrinkable` and `@GrowOnly`.
+When annotating a library, do not use `@UncheckedCanShrink` and `@GrowOnly`.
 TODO: why not use `@GrowOnly`?
 
-### Implementation strategy for `@Shrinkable` and `@UncheckedShrinkable`
+### Implementation strategy for `@CanShrink` and `@UncheckedCanShrink`
 
-One approach is to implement `@Shrinkable` and `@UncheckedShrinkable`.
-Another approach is to initially implement only `@UncheckedShrinkable` (and
+One approach is to implement `@CanShrink` and `@UncheckedCanShrink`.
+Another approach is to initially implement only `@UncheckedCanShrink` (and
 probably also treat `@UnshrinkableRef` as unchecked).
 
 ### Library annotations
@@ -181,13 +181,13 @@ Checking indices of a mutable collection type (such as `List`) in the Java libra
 * Methods that accept indices must have the parameters annotated `@IndexFor` or `@IndexOrHigh`. Missing annotation would create unsoundness.
 * Methods that return indices should have the return type annotated `@IndexFor` or `@IndexOrHigh`. Missing annotation would cause false positives.
 * Most methods do not remove from the collection -- the default qualifier for this type should be UnshrinkableRef.
-* Methods that can remove from the collection must use the Shrinkable annotation. Missing annotation would create unsoundness.
-* Methods that allocate and return a new list could also use the Shrinkable annotation.
+* Methods that can remove from the collection must use the CanShrink annotation. Missing annotation would create unsoundness.
+* Methods that allocate and return a new list could also use the CanShrink annotation.
 
 ### Annotating application code
 
-In application code, each allocation of a list should be by default `@UncheckedShrinkable`.
-If all lists are `@UncheckedShrinkable`, it would ideally result in no warnings reported.
+In application code, each allocation of a list should be by default `@UncheckedCanShrink`.
+If all lists are `@UncheckedCanShrink`, it would ideally result in no warnings reported.
 
 Then, collections that are intended to be grow-only should be annotated `@GrowOnly`.
 Now, the Index Checker starts providing value by checking that the accesses are not out of bounds.
@@ -201,19 +201,19 @@ Also see [advanced features](mutable-index-checking-advanced.md).
 
 Here are alternative, unacceptable qualifier hierarchy designs.
 
-In this hierarchy, any `@GrowOnly` can be cast to `@Shrinkable` and have `remove()` called on it:
+In this hierarchy, any `@GrowOnly` can be cast to `@CanShrink` and have `remove()` called on it:
 
 ```text
-bottom <: @GrowOnly <: @Shrinkable
+bottom <: @GrowOnly <: @CanShrink
 ```
 
-In this hierarchy, any `@Shrinkable` can be cast to `@GrowOnly`, then
+In this hierarchy, any `@CanShrink` can be cast to `@GrowOnly`, then
 an alias of it can be modified:
 
 ```text
-bottom <: @Shrinkable <: @GrowOnly
+bottom <: @CanShrink <: @GrowOnly
 ```
 
 // LocalWords:  toc toclevels myList indexable SideEffectsOnly BackedBy Doop
 // LocalWords:  ChangesLength LengthOf LTELengthOf hardbreaks GrowOnly
-// LocalWords:  UnshrinkableRef UncheckedShrinkable IndexFor TODO
+// LocalWords:  UnshrinkableRef UncheckedCanShrink IndexFor TODO

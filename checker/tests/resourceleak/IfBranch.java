@@ -25,7 +25,7 @@ abstract class IfBranch {
   // Checker and instead track called methods for each alias alongside obligations in
   // MustCallConsistencyAnalyzer.
   //
-  // :: error: (required.method.not.called)
+  // :: error: [required.method.not.called]
   public @Owning @Nullable Closeable test1(@Owning Closeable r1) throws IOException {
     Closeable result;
     if (choice()) {

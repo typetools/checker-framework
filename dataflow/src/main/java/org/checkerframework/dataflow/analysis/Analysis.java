@@ -79,8 +79,8 @@ public interface Analysis<
    * @param blockTransferInput the transfer input of the block of this node
    * @param nodeValues abstract values of nodes
    * @param analysisCaches caches of analysis results. If it is not null, this method uses and
-   *     updates it. It is a map from a TransferInput for a Block to a map. The inner map is from
-   *     from a node within the block to a TransferResult.
+   *     updates it. It is a map from a TransferInput for a Block to a map. The inner map is from a
+   *     node within the block to a TransferResult.
    * @return the store before or after {@code node} (depends on the value of {@code before}) after
    *     running the analysis
    */

@@ -16,7 +16,7 @@ public class Issue1347<T> {
     this.o = new Object();
   }
 
-  // :: error: (initialization.fields.uninitialized)
+  // :: error: [initialization.fields.uninitialized]
   Issue1347(T t, String s) {
     this.t = t;
     this.o = new Object();

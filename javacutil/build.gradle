@@ -35,7 +35,7 @@ final javacUtilPom(publication) {
     licenses {
       license {
         name = "GNU General Public License, version 2 (GPL2), with the classpath exception"
-        url = "http://www.gnu.org/software/classpath/license.html"
+        url = "https://www.gnu.org/software/classpath/license.html"
         distribution = "repo"
       }
     }

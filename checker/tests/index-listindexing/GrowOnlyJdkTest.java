@@ -1,7 +1,7 @@
 import java.util.ArrayList;
 import java.util.List;
 import org.checkerframework.checker.index.qual.GrowOnly;
-import org.checkerframework.checker.index.qual.UncheckedShrinkable;
+import org.checkerframework.checker.index.qual.UncheckedCanShrink;
 
 public class GrowOnlyJdkTest {
 
@@ -10,19 +10,19 @@ public class GrowOnlyJdkTest {
   }
 
   void testForbiddenCalls(@GrowOnly List<String> list) {
-    // :: error: (method.invocation)
+    // :: error: [method.invocation]
     list.remove(0);
   }
 
   void testLocalVariable() {
     @GrowOnly List<String> localList = new @GrowOnly ArrayList<>();
     localList.add("hello");
-    // :: error: (method.invocation)
+    // :: error: [method.invocation]
     localList.clear();
   }
 
-  void testUncheckedShrinkable() {
-    @UncheckedShrinkable List<String> list = new @UncheckedShrinkable ArrayList<>();
+  void testUncheckedCanShrink() {
+    @UncheckedCanShrink List<String> list = new @UncheckedCanShrink ArrayList<>();
     list.add("hello");
     list.remove(0);
   }
