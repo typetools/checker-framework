@@ -28,8 +28,8 @@ import org.checkerframework.javacutil.TreeUtils;
 /** The transfer function for the Optional Checker. */
 public class OptionalTransfer extends CFTransfer {
 
-  /** The {@link OptionalAnnotatedTypeFactory} instance for this transfer class. */
-  private final OptionalAnnotatedTypeFactory optionalTypeFactory;
+  /** The {@link OptionalImplAnnotatedTypeFactory} instance for this transfer class. */
+  private final OptionalImplAnnotatedTypeFactory optionalTypeFactory;
 
   /** The @{@link Present} annotation. */
   private final AnnotationMirror PRESENT;
@@ -47,7 +47,7 @@ public class OptionalTransfer extends CFTransfer {
    */
   public OptionalTransfer(CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
     super(analysis);
-    optionalTypeFactory = (OptionalAnnotatedTypeFactory) analysis.getTypeFactory();
+    optionalTypeFactory = (OptionalImplAnnotatedTypeFactory) analysis.getTypeFactory();
     Elements elements = optionalTypeFactory.getElementUtils();
     PRESENT = AnnotationBuilder.fromClass(elements, Present.class);
     ProcessingEnvironment env = optionalTypeFactory.getProcessingEnv();

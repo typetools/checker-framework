@@ -65,7 +65,7 @@ import org.plumelib.util.IPair;
  * @checker_framework.manual #optional-checker Optional Checker
  */
 public class OptionalImplVisitor
-    extends BaseTypeVisitor</* OptionalAnnotatedTypeFactory*/ BaseAnnotatedTypeFactory> {
+    extends BaseTypeVisitor</* OptionalImplAnnotatedTypeFactory*/ BaseAnnotatedTypeFactory> {
 
   /** The Collection type. */
   private final TypeMirror collectionType;
