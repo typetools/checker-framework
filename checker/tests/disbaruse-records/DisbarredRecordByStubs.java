@@ -1,14 +1,14 @@
 record DisbarredRecordByStubs(String barred, String fine) {
 
   DisbarredRecordByStubs {
-    // :: error: (disbar.use)
+    // :: error: [disbar.use]
     int x = barred.length();
   }
 
   void invalid() {
-    // :: error: (disbar.use)
+    // :: error: [disbar.use]
     barred();
-    // :: error: (disbar.use)
+    // :: error: [disbar.use]
     int x = barred.length();
   }
 
