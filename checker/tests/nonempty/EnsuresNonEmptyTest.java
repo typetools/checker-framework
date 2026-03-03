@@ -13,7 +13,7 @@ class EnsuresNonEmptyTest {
 
   void test(ArrayList<String> l1) {
     // m2 requires a @NonEmpty collection, l1 has type @UnknownNonEmpty
-    // :: error: (argument)
+    // :: error: [argument]
     m2(l1);
 
     m1(l1);

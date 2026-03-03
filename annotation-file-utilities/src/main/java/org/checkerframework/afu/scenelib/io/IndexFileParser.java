@@ -125,7 +125,7 @@ public final class IndexFileParser {
   }
 
   /**
-   * Return true if the next thing to be read from st is the given string. In that case, also read
+   * Returns true if the next thing to be read from st is the given string. In that case, also read
    * past the given string. If the result is false, reads nothing from st.
    */
   private boolean matchChar(char c) throws IOException {
@@ -138,7 +138,7 @@ public final class IndexFileParser {
   }
 
   /**
-   * Return true if the next thing to be read from st is the given string. In that case, also read
+   * Returns true if the next thing to be read from st is the given string. In that case, also read
    * past the given string. If the result is false, reads nothing from st.
    */
   private boolean matchKeyword(String s) throws IOException {
@@ -256,7 +256,9 @@ public final class IndexFileParser {
   private boolean isValidIdentifier(String x) {
     if (x.length() == 0
         || !Character.isJavaIdentifierStart(x.charAt(0))
-        || knownKeywords.contains(x)) return false;
+        || knownKeywords.contains(x)) {
+      return false;
+    }
     for (int i = 1; i < x.length(); i++) {
       if (!Character.isJavaIdentifierPart(x.charAt(i))) {
         return false;
@@ -349,8 +351,10 @@ public final class IndexFileParser {
   private int checkNNInteger() {
     if (st.ttype == StreamTokenizer.TT_NUMBER) {
       int x = (int) st.nval;
-      if (x == st.nval && x >= -1) // shouldn't give us a huge number
-      return x;
+      if (x == st.nval && x >= -1) {
+        // shouldn't give us a huge number
+        return x;
+      }
     }
     return -1;
   }
@@ -672,7 +676,7 @@ public final class IndexFileParser {
   }
 
   /**
-   * Get the {@link ScalarAFT} for the annotation currenttly being parsed.
+   * Returns the {@link ScalarAFT} for the annotation currenttly being parsed.
    *
    * @param annotationFullyQualifiedName the fully-qualified name of current parsing annotation
    * @return the {@link ScalarAFT} of current parsing annotation
@@ -934,8 +938,8 @@ public final class IndexFileParser {
       key = "<" + basename + ">";
     } else {
       key = expectIdentifier();
-      // too bad className is private in AClass and thus must be
-      // extracted from what toString() returns
+      // It's too bad that className is private in AClass and thus must be
+      // extracted from what toString() returns.
       if (Pattern.matches("AClass: (?:[^. ]+\\.)*" + key, c.toString())) { // ugh
         key = "<init>";
       }
@@ -1814,9 +1818,9 @@ public final class IndexFileParser {
   }
 
   /**
-   * Reads annotations from <code>in</code> in index file format and merges them into <code>scene
-   * </code>. Annotations from the input are merged into the scene; it is an error if both the scene
-   * and the input contain annotations of the same type on the same element.
+   * Reads annotations from {@code in} in index file format and merges them into {@code scene}.
+   * Annotations from the input are merged into the scene; it is an error if both the scene and the
+   * input contain annotations of the same type on the same element.
    *
    * <p>Since each annotation in a scene carries its own definition and the scene as a whole no
    * longer has a set of definitions, annotation definitions that are given in the input but never
@@ -1834,8 +1838,8 @@ public final class IndexFileParser {
   }
 
   /**
-   * Reads annotations from the index file <code>filename</code> and merges them into <code>scene
-   * </code>; see {@link #parse(LineNumberReader, String, AScene)}.
+   * Reads annotations from the index file {@code filename} and merges them into {@code scene}; see
+   * {@link #parse(LineNumberReader, String, AScene)}.
    */
   public static Map<String, AnnotationDef> parseFile(String filename, AScene scene)
       throws IOException {
@@ -1848,8 +1852,8 @@ public final class IndexFileParser {
   }
 
   /**
-   * Reads annotations from the string (in index file format) and merges them into <code>scene
-   * </code>; see {@link #parse(LineNumberReader, String, AScene)}. Primarily for testing.
+   * Reads annotations from the string (in index file format) and merges them into {@code scene};
+   * see {@link #parse(LineNumberReader, String, AScene)}. Primarily for testing.
    */
   public static Map<String, AnnotationDef> parseString(
       String fileContents, String source, AScene scene) throws IOException {

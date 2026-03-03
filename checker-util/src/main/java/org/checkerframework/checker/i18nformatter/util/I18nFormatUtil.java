@@ -381,7 +381,7 @@ public class I18nFormatUtil {
     }
 
     /**
-     * Return the index of s in list. If not found, return the index of
+     * Returns the index of s in list. If not found, return the index of
      * s.trim().toLowerCase(Locale.ROOT) in list. If still not found, return -1.
      */
     private static int findKeyword(String s, String[] list) {

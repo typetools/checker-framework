@@ -7,11 +7,10 @@ import org.checkerframework.afu.scenelib.Annotation;
 import org.checkerframework.afu.scenelib.util.coll.VivifyingMap;
 
 /**
- * An <code>AElement</code> represents a Java element and the annotations it carries. Some <code>
- * AElements</code> may contain others; for example, an {@link AClass} may contain {@link AMethod}s.
- * Every <code>AElement</code> usually belongs directly or indirectly to an {@link AScene}. Each
- * subclass of <code>AElement</code> represents one kind of annotatable element; its name should
- * make this clear.
+ * An {@code AElement} represents a Java element and the annotations it carries. Some {@code
+ * AElements} may contain others; for example, an {@link AClass} may contain {@link AMethod}s. Every
+ * {@code AElement} usually belongs directly or indirectly to an {@link AScene}. Each subclass of
+ * {@code AElement} represents one kind of annotatable element; its name should make this clear.
  *
  * <p>The name {@code AElement} stands for "annotatable element" or "annotated element".
  */
@@ -19,7 +18,7 @@ public class AElement implements Cloneable {
 
   /**
    * The top-level annotations directly on this element. Annotations on subelements are in those
-   * subelements' <code>tlAnnotationsHere</code> sets, not here.
+   * subelements' {@code tlAnnotationsHere} sets, not here.
    */
   public final Set<Annotation> tlAnnotationsHere;
 
@@ -83,7 +82,7 @@ public class AElement implements Cloneable {
   }
 
   /**
-   * Returns whether this {@link AElement} equals <code>o</code> (see warnings below). Generally
+   * Returns true if this {@link AElement} equals {@code o} (see warnings below). Generally
    * speaking, two {@link AElement}s are equal if they are of the same type, have the same {@link
    * #tlAnnotationsHere}, and have recursively equal, corresponding subelements. Two warnings:
    *
@@ -103,9 +102,9 @@ public class AElement implements Cloneable {
   }
 
   /**
-   * Returns whether this {@link AElement} equals <code>o</code>. This is a slightly faster variant
-   * of {@link #equals(Object)} for when the argument is statically known to be another nonnull
-   * {@link AElement}.
+   * Returns true if this {@link AElement} equals {@code o}. This is a slightly faster variant of
+   * {@link #equals(Object)} for when the argument is statically known to be another nonnull {@link
+   * AElement}.
    *
    * @param o the AElement to compare to
    * @return true if this is equal to {@code o}
@@ -132,7 +131,7 @@ public class AElement implements Cloneable {
   }
 
   /**
-   * Returns whether this {@link AElement} is empty.
+   * Returns true if this {@link AElement} is empty.
    *
    * @return true iff this is empty
    */
@@ -161,7 +160,7 @@ public class AElement implements Cloneable {
   }
 
   /**
-   * Return the top-level annotation on this that has the given name. Return null if no such
+   * Returns the top-level annotation on this that has the given name. Return null if no such
    * annotation exists.
    *
    * @param name the fully-qualified type name of the annotation to search for

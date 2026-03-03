@@ -12,7 +12,7 @@ import org.checkerframework.framework.util.typeinference8.util.Theta;
 @Interned public class CaptureVariable extends Variable {
 
   /**
-   * Creates a captured variable
+   * Creates a captured variable.
    *
    * @param type the annotated type variable that is captured
    * @param typeVariableJava the type variable that is captured

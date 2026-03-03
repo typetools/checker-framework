@@ -20,9 +20,8 @@ import org.objectweb.asm.TypeReference;
 import org.plumelib.util.CollectionsPlume;
 
 /**
- * An <code>AnnotationVerifier</code> provides a way to check to see if two versions of the same
- * class (from two different <code>.class</code> files), have the same annotations on the same
- * elements.
+ * An {@code AnnotationVerifier} provides a way to check to see if two versions of the same class
+ * (from two different {@code .class} files), have the same annotations on the same elements.
  */
 public class AnnotationVerifier {
 
@@ -35,8 +34,8 @@ public class AnnotationVerifier {
   private ClassRecorder newVisitor;
 
   /**
-   * Constructs a new <code>AnnotationVerifier</code> that does not yet have any information about
-   * the class.
+   * Constructs a new {@code AnnotationVerifier} that does not yet have any information about the
+   * class.
    */
   public AnnotationVerifier() {
     originalVisitor = new ClassRecorder(Opcodes.ASM8);
@@ -44,8 +43,8 @@ public class AnnotationVerifier {
   }
 
   /**
-   * Returns the <code>ClassVisitor</code> which should be made to visit the version of the class
-   * known to be correct.
+   * Returns the {@code ClassVisitor} which should be made to visit the version of the class known
+   * to be correct.
    *
    * @return a visitor for the good version of the class
    */
@@ -54,8 +53,8 @@ public class AnnotationVerifier {
   }
 
   /**
-   * Returns the <code>ClassVisitor</code> which should be made to visit the version of the class
-   * being tested.
+   * Returns the {@code ClassVisitor} which should be made to visit the version of the class being
+   * tested.
    *
    * @return a visitor for the experimental version of the class
    */

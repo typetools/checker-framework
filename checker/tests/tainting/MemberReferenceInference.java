@@ -9,7 +9,7 @@ public class MemberReferenceInference {
   void clever2(
       Stream<Optional<BigDecimal>> taintedStream,
       Stream<Optional<@Untainted BigDecimal>> untaintedStream) {
-    // :: error: (type.arguments.not.inferred)
+    // :: error: [type.arguments.not.inferred]
     Stream<@Untainted BigDecimal> s = taintedStream.map(Optional::get);
     Stream<@Untainted BigDecimal> s2 = untaintedStream.map(Optional::get);
     Stream<@Tainted BigDecimal> s3 = taintedStream.map(Optional::get);
@@ -23,7 +23,7 @@ public class MemberReferenceInference {
   void method(
       MyClass<? extends String> clazz,
       Map<MyClass<? extends String>, @Untainted String> annotationClassNames) {
-    // :: error: (type.arguments.not.inferred)
+    // :: error: [type.arguments.not.inferred]
     String canonicalName = annotationClassNames.computeIfAbsent(clazz, MyClass::getName);
   }
 

@@ -1,0 +1,31 @@
+// This file is temporary.  It is needed because the annotated JDK is from JDK 17.  JDK 25 needs to
+// be pulled into it, which will create the java.lang.classfile files.  Then, these annotations can
+// be transferred to the corresponding files in it.
+
+import org.checkerframework.checker.signature.qual.*;
+
+package java.lang.classfile.attribute;
+
+interface SignatureAttribute {
+  @MethodDescriptor Utf8Entry signature();
+}
+
+package java.lang.classfile.constantpool;
+
+interface ClassEntry {
+  @InternalForm String asInternalName();
+}
+
+interface Utf8Entry {
+  @PolySignature String stringValue(@PolySignature Utf8Entry this);
+}
+
+package java.lang.classfile.instruction;
+
+interface InvokeInstruction {
+  @Identifier Utf8Entry name();
+}
+
+interface LocalVariable {
+  @Identifier Utf8Entry name();
+}

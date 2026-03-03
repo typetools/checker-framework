@@ -29,7 +29,7 @@ public class Label {
   }
 
   /**
-   * Return a new unique label name that cannot be confused with a Java source code label.
+   * Returns a new unique label name that cannot be confused with a Java source code label.
    *
    * @return a new unique label name
    */

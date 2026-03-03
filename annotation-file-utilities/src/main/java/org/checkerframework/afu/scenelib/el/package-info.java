@@ -1,7 +1,7 @@
 /**
- * <code>annotations.el</code> provides classes that associate annotations with Java elements.
- * {@link org.checkerframework.afu.scenelib.el.AElement}s represent Java elements of the scene that
- * can carry annotations. There is a multi-level class hierarchy for elements that exploits certain
+ * {@code annotations.el} provides classes that associate annotations with Java elements. {@link
+ * org.checkerframework.afu.scenelib.el.AElement}s represent Java elements of the scene that can
+ * carry annotations. There is a multi-level class hierarchy for elements that exploits certain
  * commonalities: for example, all and only {@link org.checkerframework.afu.scenelib.el.ADeclaration
  * declarations} contain an {@link org.checkerframework.afu.scenelib.el.ADeclaration#insertTypecasts
  * insertTypecasts} field. A &ldquo;scene&rdquo; ({@link

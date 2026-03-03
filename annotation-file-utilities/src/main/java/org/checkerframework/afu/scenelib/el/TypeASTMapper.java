@@ -35,14 +35,14 @@ public abstract class TypeASTMapper<N> {
   }
 
   /**
-   * Traverses the type AST rooted at <code>tastRoot</code>, calling {@link #map} with each AST node
-   * and the corresponding {@link AElement} from <code>aslRoot</code>.
+   * Traverses the type AST rooted at {@code tastRoot}, calling {@link #map} with each AST node and
+   * the corresponding {@link AElement} from {@code aslRoot}.
    *
-   * <p>If a node of the AST has no corresponding inner type in <code>aslRoot</code>, an inner type
+   * <p>If a node of the AST has no corresponding inner type in {@code aslRoot}, an inner type
    * {@link AElement} is vivified to hold any annotations that {@link #map} might wish to store in
-   * it. Thus, a call to {@link #traverse} may write to <code>aslRoot</code> even if {@link #map}
-   * does not write to its {@link AElement} argument. You may wish to {@linkplain AElement#prune
-   * prune} <code>aslRoot</code> after traversal.
+   * it. Thus, a call to {@link #traverse} may write to {@code aslRoot} even if {@link #map} does
+   * not write to its {@link AElement} argument. You may wish to {@linkplain AElement#prune prune}
+   * {@code aslRoot} after traversal.
    */
   public void traverse(N tastRoot, ATypeElement aslRoot) {
     // Elements are added and removed from the end of this sole mutable
@@ -98,30 +98,30 @@ public abstract class TypeASTMapper<N> {
   }
 
   /**
-   * If <code>n</code> represents an array type, {@link #getElementType} returns the node for the
-   * element type of the array; otherwise it returns <code>null</code>.
+   * If {@code n} represents an array type, {@link #getElementType} returns the node for the element
+   * type of the array; otherwise it returns {@code null}.
    */
   protected abstract N getElementType(N n);
 
   /**
-   * If <code>n</code> represents a parameterized type, {@link #numTypeArguments} returns the number
-   * of type arguments; otherwise it returns 0.
+   * If {@code n} represents a parameterized type, {@link #numTypeArguments} returns the number of
+   * type arguments; otherwise it returns 0.
    */
   protected abstract int numTypeArguments(N n);
 
   /**
-   * Returns the node corresponding to the type argument of <code>n</code> (which must be a
-   * parameterized type) at the given index. The caller must ensure that <code>
+   * Returns the node corresponding to the type argument of {@code n} (which must be a parameterized
+   * type) at the given index. The caller must ensure that <code>
    * 0 &lt;= index &lt; {@link #numTypeArguments}(n)</code>.
    */
   protected abstract N getTypeArgument(N n, int index);
 
   /**
-   * Signals to the client that <code>n</code> corresponds to <code>e</code>. The client may, for
-   * example, set flags in <code>n</code> based on the annotations in <code>
+   * Signals to the client that {@code n} corresponds to {@code e}. The client may, for example, set
+   * flags in {@code n} based on the annotations in <code>
    * e.{@link AElement#tlAnnotationsHere tlAnnotationsHere}</code>. The {@link TypeASTMapper} calls
-   * {@link #map} on <code>n</code> before it calls {@link #map} on sub-nodes of <code>n</code> but
-   * not necessarily before it explores the structure of <code>n</code>'s subtree.
+   * {@link #map} on {@code n} before it calls {@link #map} on sub-nodes of {@code n} but not
+   * necessarily before it explores the structure of {@code n}'s subtree.
    */
   protected abstract void map(N n, ATypeElement e);
 }

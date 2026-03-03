@@ -126,8 +126,8 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
    *
    * @param type the AnnotatedTypeMirror being validated
    * @param tree a Tree whose type is {@code type}
-   * @return whether or not the top-level type should be checked, if {@code type} is a declared or
-   *     primitive type.
+   * @return true if the top-level type should be checked, if {@code type} is a declared or
+   *     primitive type
    */
   protected boolean shouldCheckTopLevelDeclaredOrPrimitiveType(
       AnnotatedTypeMirror type, Tree tree) {
@@ -402,7 +402,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
     List<? extends Tree> boundTrees = typeParameterTree.getBounds();
     if (boundTrees.size() == 1) {
       scan(typeParameter.getUpperBound(), boundTrees.get(0));
-    } else if (boundTrees.size() == 0) {
+    } else if (boundTrees.isEmpty()) {
       // The upper bound is implicitly Object
       scan(typeParameter.getUpperBound(), typeParameterTree);
     } else {

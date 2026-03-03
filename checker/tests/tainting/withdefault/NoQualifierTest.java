@@ -6,6 +6,6 @@ import org.checkerframework.framework.qual.NoQualifierParameter;
 
 @NoQualifierParameter(Tainted.class)
 public class NoQualifierTest {
-  // :: error: (invalid.polymorphic.qualifier.use)
+  // :: error: [invalid.polymorphic.qualifier.use]
   @PolyTainted int field;
 }

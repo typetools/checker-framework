@@ -20,7 +20,7 @@ public class RegularTransferResult<V extends AbstractValue<V>, S extends Store<S
   protected final S store;
 
   /**
-   * Whether the store changed; see {@link
+   * True if the store changed; see {@link
    * org.checkerframework.dataflow.analysis.TransferResult#storeChanged}.
    */
   private final boolean storeChanged;
@@ -40,7 +40,7 @@ public class RegularTransferResult<V extends AbstractValue<V>, S extends Store<S
    *
    * @param value the abstract value produced by the transfer function
    * @param resultStore regular result store
-   * @param storeChanged whether the store changed; see {@link
+   * @param storeChanged true if the store changed; see {@link
    *     org.checkerframework.dataflow.analysis.TransferResult#storeChanged}
    * @see #RegularTransferResult(AbstractValue, Store, Map, boolean)
    */

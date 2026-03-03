@@ -1289,7 +1289,7 @@ Java basetype is a logical unit, which aids people reading the code.
   @Positive
   public int numItems;
 
-  // Right
+  // Correct formatting
   public @Positive int numItems;
 
   // Wrong formatting
@@ -1298,7 +1298,7 @@ Java basetype is a logical unit, which aids people reading the code.
     ...
   }
 
-  // Right
+  // Correct formatting
   public @Nullable Object getThing() {
     ...
   }
@@ -1312,7 +1312,7 @@ By contrast, declaration annotations are conventionally written on their own lin
     ...
   }
 
-  // Right
+  // Correct formatting
   @Deprecated
   URL toURL() {
     ...
@@ -1354,8 +1354,8 @@ The popular
 tool formats type annotations incorrectly, with type annotations on their
 own line instead of on the same line with the type they modify.  (Actually,
 you can see from method \ahref{https://github.com/google/google-java-format/blob/master/core/src/main/java/com/google/googlejavaformat/java/JavaInputAstVisitor.java}{\<JavaInputAstVisitor>}\<.typeAnnotations()> that
-it handles two \<@Nullable> annotations correctly, but all other type
-annotations incorrectly!  This would be fixed by merging
+it handles two of the many \<@Nullable> \<@NonNull> annotations correctly,
+but all other type annotations incorrectly!  This would be fixed by merging
 \ahref{https://github.com/google/google-java-format/pull/802}{pull request
   \#802}.)
 Until this bug in google-java-format is fixed, you have these options:
@@ -1363,7 +1363,7 @@ Until this bug in google-java-format is fixed, you have these options:
 \item
   Run google-java-format via
   \ahref{https://github.com/diffplug/spotless}{Spotless} and use the
-  \ahref{https://github.com/diffplug/spotless/tree/main/plugin-gradle#formatannotations}{\<formatAnnotations>}
+  \ahref{https://github.com/diffplug/spotless/tree/main/plugin-gradle#formatAnnotations}{\<formatAnnotations>}
   step to correct the formatting of type annotations.
 \item
   Run google-java-format via \ahref{https://github.com/plume-lib/run-google-java-format}{run-google-java-format}
@@ -1373,6 +1373,29 @@ Until this bug in google-java-format is fixed, you have these options:
 %   \href{https://github.com/palantir/palantir-java-format}{palantir-java-format},
 %   which is a variant of google-java-format that fixes the bug (among other
 %   differences from google-java-format).
+\end{itemize}
+
+If you define a new type qualifier --- for example, because you are using the
+Subtyping Checker (Chapter~\ref{subtyping-checker}) or Fake Enum Checker
+(Chapter~\ref{fenum-checker}), or because you have created a new checker
+(Chapter~\ref{creating-a-checker}) --- then the above tools will format
+your new type qualifiers incorrectly, like declaration qualifiers.  Here is
+how to fix the formatting.
+
+\begin{itemize}
+\item
+  For \ahref{https://github.com/diffplug/spotless}{Spotless}, change your
+  configuration to indicate the new type qualifiers.  If you use the
+  \ahref{https://github.com/diffplug/spotless/tree/main/plugin-gradle}{Spotless
+  plugin for Gradle}, edit your \<build.gradle> file to change
+  \<formatAnnotations()> to (for example)
+  \<formatAnnotations().addTypeAnnotation("Growable").addTypeAnnotation("Modifiable")...>.
+\item
+  For
+  \ahref{https://github.com/plume-lib/run-google-java-format}{run-google-java-format},
+  make a pull request to change variable \<type\_annotations> in file
+  \ahref{https://github.com/plume-lib/run-google-java-format/blob/master/fixup-google-java-format.py}{fixup-google-java-format.py}.
+%% Write text about palantir-java-format when it is uncommented in the list above.
 \end{itemize}
 
 
@@ -1415,7 +1438,7 @@ its successor SpotBugs, which has not yet adopted type annotations, even
 though type annotations were added to Java in 2014) can use annotations in
 package \<org.checkerframework.checker.nullness.compatqual> to avoid name
 conflicts.  These are available in package
-\href{https://search.maven.org/search?q=a:checker-compat-qual}{\<checker-compat-qual>}
+\href{https://central.sonatype.com/search?q=a:checker-compat-qual}{\<checker-compat-qual>}
 on Maven Central.  Once the users are ready to upgrade to Java 8+ type
 annotations, those compatibility annotations are no longer necessary.
 
@@ -1816,11 +1839,11 @@ To improve performance:
   limit is so small that the Checker Framework might spend most of its time
   in garbage collection.  (If this is the case, the Checker Framework will
   issue a warning ``Garbage collection consumed over 25\% of CPU during the
-  past minute.")  To permit the Checker Framework to use up to 3GB of
-  memory, pass an argument like \<-Xmx3g> or set an environment variable
-  like \<export \_JAVA\_OPTIONS=-Xmx3g>.  Also consider upgrading to a more
-  recent release of Java, because older versions of Java (especially 8 and
-  11, but also 17) have worse memory management.
+  past minute.")  To permit the Checker Framework to use up to 4GB of
+  memory, pass an argument like \<-Xmx4g> or set an environment variable
+  like \<export \_JAVA\_OPTIONS=-Xmx4g>.  Also consider upgrading to a more
+  recent release of Java, because older versions of Java
+  have worse memory management.
 \item
   Set your build system to perform \emph{incremental compilation}.  When
   compiling just a few source files (the size of a typical edit or commit),
@@ -2161,7 +2184,7 @@ nullness and \<Optional> and the benefits of each.
 
 \subsectionAndLabel{How does pluggable type-checking compare with JML?}{faq-jml}
 
-\href{http://www.eecs.ucf.edu/~leavens/JML/index.shtml}{JML}, the Java Modeling
+\href{https://www.eecs.ucf.edu/~leavens/JML/index.shtml}{JML}, the Java Modeling
 Language~\cite{LeavensBR2006:JML}, is a language for writing formal
 specifications.
 
@@ -2255,7 +2278,7 @@ third-party tools.  The Checker Framework is one such tool.
 % LocalWords:  intExample1 intExample2 requiresPositive RUNTIME NullAway
 % LocalWords:  IllegalFormatException typequals typedef runtime nullaway
 % LocalWords:  covariance InheritedAnnotation someMethod jml jsr Java''
-% LocalWords:  checkers'' covariance'' contravariance'' Xmx3g lookups
+% LocalWords:  checkers'' covariance'' contravariance'' Xmx4g lookups
 % LocalWords:  checkerframework basetype strictfp JavaInputAstVisitor
 % LocalWords:  typeAnnotations formatannotations semver org's jspecify
 % LocalWords:  EISOP PolyNull eisop JSpecify Askipuses NullMarked

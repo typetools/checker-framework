@@ -50,7 +50,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
   /** The receiver type of the enclosing method tree. */
   private @Nullable AnnotatedDeclaredType receiverType = null;
 
-  /** Whether or not to display debugging information. */
+  /** If true, display debugging information. */
   protected final boolean debugSpew;
 
   // effStack and currentMethods should always be the same size.

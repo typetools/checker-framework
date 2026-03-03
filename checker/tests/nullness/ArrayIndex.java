@@ -9,7 +9,7 @@ public class ArrayIndex {
       a[i + 1].hashCode();
     }
     if (a[i + 1] != null) {
-      // :: error: (dereference.of.nullable)
+      // :: error: [dereference.of.nullable]
       a[i].hashCode();
     }
   }

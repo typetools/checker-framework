@@ -12,7 +12,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * Java regular expressions. If an expression's type has this annotation, then at run time, the
  * expression evaluates to a string that matches at least one of the regular expressions. Matching
  * is via the <a
- * href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html#matches(java.lang.String)">java.lang.String#matches</a>
+ * href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/String.html#matches(java.lang.String)">java.lang.String#matches</a>
  * method, which matches against the entire string (it does not look for a match against a
  * substring).
  *

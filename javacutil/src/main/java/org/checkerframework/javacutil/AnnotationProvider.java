@@ -24,7 +24,7 @@ public interface AnnotationProvider {
   @Nullable AnnotationMirror getDeclAnnotation(Element elt, Class<? extends Annotation> anno);
 
   /**
-   * Return the annotation on {@code tree} that is in the hierarchy that contains the qualifier
+   * Returns the annotation on {@code tree} that is in the hierarchy that contains the qualifier
    * {@code target}. Returns null if none exists.
    *
    * @param tree the tree of which the annotation is returned

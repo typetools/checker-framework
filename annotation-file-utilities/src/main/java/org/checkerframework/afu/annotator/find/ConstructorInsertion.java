@@ -106,7 +106,7 @@ public class ConstructorInsertion extends TypedInsertion {
    * Sets whether this insertion has already been inserted into source code.
    *
    * @param inserted {@code true} if this insertion has already been inserted, {@code false}
-   *     otherwise.
+   *     otherwise
    */
   @Override
   public void setInserted(boolean inserted) {

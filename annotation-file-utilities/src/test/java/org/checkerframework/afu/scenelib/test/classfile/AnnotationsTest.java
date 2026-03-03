@@ -22,10 +22,10 @@ import org.objectweb.asm.ClassReader;
  * <p>Two types of tests are performed:
  *
  * <ul>
- *   <li>"c" tests that call testAgainstClass: Read the annotations from <code>name.jaif</code>,
- *       insert them into <code>name.class</code>, write the results to a temporary file
- *       (name_Generated.class), and compare this generated class file with <code>
- *       name_Expected.class</code>, asserting that they have the same annotations.
+ *   <li>"c" tests that call testAgainstClass: Read the annotations from {@code name.jaif}, insert
+ *       them into {@code name.class}, write the results to a temporary file (name_Generated.class),
+ *       and compare this generated class file with {@code name_Expected.class}, asserting that they
+ *       have the same annotations.
  *   <li>"i" tests that call testAgainstIndexFile: Read the annotations from the generated class
  *       file, and check them against the annotations from the index file.
  * </ul>
@@ -55,9 +55,8 @@ import org.objectweb.asm.ClassReader;
  *   <li>place two files in directory {@link #INDEX_FILE_BASE}: a .java source file (this is not
  *       used by the tests -- it is only for documentation, and is helpful when creating the test
  *       files), a .jaif index file.
- *   <li>Add a <code>testc*()</code> method to test against class file and a <code>testi*()</code>
- *       method to test against index file; this is just so that JUnit has an accurate count of all
- *       tests.
+ *   <li>Add a {@code testc*()} method to test against class file and a {@code testi*()} method to
+ *       test against index file; this is just so that JUnit has an accurate count of all tests.
  * </ul>
  */
 // TODO: there are currently two "golden" class files: the un-annotated file
@@ -101,7 +100,7 @@ public class AnnotationsTest {
     "TestMethodReturnTypeGenericArray"
   };
 
-  /** Constructs a new <code>AnnotationsTest</code> with the given name. */
+  /** Constructs a new {@code AnnotationsTest} with the given name. */
   public AnnotationsTest() {}
 
   /** Runs all the tests in {@link #allTests} and displays the failure and error counts. */
@@ -168,7 +167,7 @@ public class AnnotationsTest {
    * @param oldFileName the class file to read from
    * @param newFileName the class file to write to
    * @param scene the scene that contains annotations to be inserted
-   * @param overwrite whether to overwrite existing annotations
+   * @param overwrite if true, overwrite existing annotations
    */
   private void writeClass(String oldFileName, String newFileName, AScene scene, boolean overwrite) {
     try {

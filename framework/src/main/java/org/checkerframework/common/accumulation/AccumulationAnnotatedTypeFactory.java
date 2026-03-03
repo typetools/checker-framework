@@ -564,7 +564,7 @@ public abstract class AccumulationAnnotatedTypeFactory
    *
    * @param subAnno an accumulator annotation
    * @param pred a predicate
-   * @return whether the accumulator annotation satisfies the predicate
+   * @return true if the accumulator annotation satisfies the predicate
    */
   protected boolean evaluatePredicate(AnnotationMirror subAnno, String pred) {
     if (!isAccumulatorAnnotation(subAnno)) {
@@ -606,7 +606,7 @@ public abstract class AccumulationAnnotatedTypeFactory
    *
    * @param trueVariables a list of names that should be replaced with {@code true}
    * @param pred a predicate
-   * @return whether the true variables satisfy the predicate
+   * @return true if the true variables satisfy the predicate
    */
   protected boolean evaluatePredicate(List<String> trueVariables, String pred) {
     Expression expression;

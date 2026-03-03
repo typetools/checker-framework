@@ -437,7 +437,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
   }
 
   /**
-   * Return a non-null value if randTree is a call to Math.random() or Random.nextDouble(), and
+   * Returns a non-null value if randTree is a call to Math.random() or Random.nextDouble(), and
    * arrLenTree is someArray.length.
    *
    * @param randTree a tree that might be a call to a {@code random} method

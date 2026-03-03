@@ -4,7 +4,7 @@ import org.checkerframework.dataflow.qual.*;
 public class AnnotatedGenerics {
   public static void testNullableTypeVariable() {
     class Test<T extends @Nullable Object> {
-      // :: error: (initialization.field.uninitialized)
+      // :: error: [initialization.field.uninitialized]
       T f;
 
       @Nullable T get() {
@@ -12,7 +12,7 @@ public class AnnotatedGenerics {
       }
     }
     Test<Iterable<String>> l = new Test<>();
-    // :: error: (iterating.over.nullable)
+    // :: error: [iterating.over.nullable]
     for (String s : l.get()) {}
   }
 
@@ -43,7 +43,7 @@ public class AnnotatedGenerics {
       MyClass<String> c = new MyClass<>();
       String c1 = c.next();
       @Nullable String c2 = c.next();
-      // :: error: (assignment)
+      // :: error: [assignment]
       @NonNull String c3 = c.next();
     }
   }
@@ -58,7 +58,7 @@ public class AnnotatedGenerics {
     }
 
     public void compare3(T a1, @Nullable T a2) {
-      // :: error: (argument)
+      // :: error: [argument]
       a1.compareTo(a2);
     }
   }

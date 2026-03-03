@@ -326,7 +326,7 @@ public class TestUtilities {
   }
 
   /**
-   * Return the file absolute pathnames, separated by commas.
+   * Returns the file absolute pathnames, separated by commas.
    *
    * @param javaFiles a list of Java files
    * @return the file absolute pathnames, separated by commas

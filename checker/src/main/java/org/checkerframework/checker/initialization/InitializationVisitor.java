@@ -320,7 +320,7 @@ public class InitializationVisitor<
    * @param tree a {@link ClassTree} if {@code staticFields} is true; a {@link MethodTree} for a
    *     constructor if {@code staticFields} is false. This is where errors are reported, if they
    *     are not reported at the fields themselves
-   * @param staticFields whether to check static fields or instance fields
+   * @param staticFields if true, check static fields; if false, check instance fields
    * @param store the store
    * @param receiverAnnotations the annotations on the receiver
    */

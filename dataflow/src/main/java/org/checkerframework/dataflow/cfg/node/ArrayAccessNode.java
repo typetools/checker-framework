@@ -106,7 +106,7 @@ public class ArrayAccessNode extends Node {
   }
 
   /**
-   * Get the node that represents the array expression being accessed.
+   * Returns the node that represents the array expression being accessed.
    *
    * @return the array expression node
    */

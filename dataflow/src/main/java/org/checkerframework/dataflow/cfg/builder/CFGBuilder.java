@@ -111,7 +111,7 @@ public abstract class CFGBuilder {
   }
 
   /**
-   * Return a printed representation of a collection of extended nodes.
+   * Returns a printed representation of a collection of extended nodes.
    *
    * @param nodes a collection of extended nodes to format
    * @return a printed representation of the given collection

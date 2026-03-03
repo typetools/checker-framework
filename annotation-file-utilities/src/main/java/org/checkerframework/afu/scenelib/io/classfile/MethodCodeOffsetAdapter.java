@@ -58,8 +58,10 @@ class MethodCodeOffsetAdapter extends MethodVisitor {
   }
 
   /**
+   * Returns the int represented (big-endian) by the four bytes starting at {@code i}.
+   *
    * @param i code offset at which to read int
-   * @return int represented (big-endian) by four bytes starting at {@code i}
+   * @return the int represented (big-endian) by the four bytes starting at {@code i}
    */
   private int readInt(int i) {
     return classReader.readInt(codeStart + i);
@@ -95,7 +97,7 @@ class MethodCodeOffsetAdapter extends MethodVisitor {
 
   /**
    * Returns the offset after instruction just visited; 0 before first visit, -1 if {@link
-   * #visitEnd()} has been called
+   * #visitEnd()} has been called.
    *
    * @return offset after instruction just visited; 0 before first visit, -1 if {@link #visitEnd()}
    *     has been called

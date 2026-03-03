@@ -23,8 +23,8 @@ import org.objectweb.asm.Opcodes;
 
 /**
  * An annotation type definition, consisting of the annotation name, its meta-annotations, and its
- * field names and types. <code>AnnotationDef</code>s are immutable. An AnnotationDef with a
- * non-null retention policy is called a "top-level annotation definition".
+ * field names and types. {@code AnnotationDef}s are immutable. An AnnotationDef with a non-null
+ * retention policy is called a "top-level annotation definition".
  */
 public final class AnnotationDef extends AElement {
 
@@ -260,9 +260,9 @@ public final class AnnotationDef extends AElement {
   }
 
   /**
-   * This {@link AnnotationDef} equals <code>o</code> if and only if <code>o</code> is another
-   * nonnull {@link AnnotationDef} and <code>this</code> and <code>o</code> define annotation types
-   * of the same name with the same field names and types.
+   * This {@link AnnotationDef} equals {@code o} if and only if {@code o} is another nonnull {@link
+   * AnnotationDef} and {@code this} and {@code o} define annotation types of the same name with the
+   * same field names and types.
    */
   @Override
   public boolean equals(Object o) {
@@ -270,7 +270,7 @@ public final class AnnotationDef extends AElement {
   }
 
   /**
-   * Returns whether this {@link AnnotationDef} equals <code>o</code>; a slightly faster variant of
+   * Returns true if this {@link AnnotationDef} equals {@code o}; a slightly faster variant of
    * {@link #equals(Object)} for when the argument is statically known to be another nonnull {@link
    * AnnotationDef}.
    *
@@ -303,8 +303,8 @@ public final class AnnotationDef extends AElement {
   }
 
   /**
-   * Returns an <code>AnnotationDef</code> containing all the information from both arguments, or
-   * <code>null</code> if the two arguments contradict each other. Currently this just {@linkplain
+   * Returns an {@code AnnotationDef} containing all the information from both arguments, or {@code
+   * null} if the two arguments contradict each other. Currently this just {@linkplain
    * AnnotationFieldType#unify unifies the field types} to handle arrays of unknown element type,
    * which can arise via {@link AnnotationBuilder#addEmptyArrayField}.
    *

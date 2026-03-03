@@ -21,10 +21,10 @@ public class OffsetsAndConstants {
 
     read(a, 5, 5);
 
-    // :: error: (argument)
+    // :: error: [argument]
     read(a, 5, 6);
 
-    // :: error: (argument)
+    // :: error: [argument]
     read(a, 5, 7);
   }
 }

@@ -176,7 +176,7 @@ public class BinaryOperation extends JavaExpression {
   }
 
   /**
-   * Return the Java source code representation of the given operation.
+   * Returns the Java source code representation of the given operation.
    *
    * @param operationKind an unary operation kind
    * @return the Java source code representation of the given operation
