@@ -21,6 +21,7 @@ elif [ "$#" -eq 1 ]; then
   arg=$1
 else
   echo "$0 expects 0 or 1 arguments:" "$@"
+  exit 2
 fi
 
 ## Split "test" into its parts (up to date as of 2025-11-02).
