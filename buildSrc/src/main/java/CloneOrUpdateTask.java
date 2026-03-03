@@ -95,7 +95,7 @@ public abstract class CloneOrUpdateTask extends DefaultTask {
       cloneCommand.setBranch(branch);
     }
     try (Git git = cloneCommand.call()) {
-      System.out.println("Cloning successful.");
+      // System.out.println("Cloning successful.");
     } catch (GitAPIException e) {
       System.err.println("Error cloning repository " + url + ": " + e.getMessage());
       if (ignoreError) {
