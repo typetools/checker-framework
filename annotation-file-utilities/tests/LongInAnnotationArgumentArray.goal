@@ -1,0 +1,4 @@
+class LongInAnnotationArgumentArray {
+  @org.checkerframework.common.value.qual.IntVal(2147483648L)
+  long s0 = 2147483648L;
+}

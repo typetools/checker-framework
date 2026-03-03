@@ -29,7 +29,7 @@ import org.checkerframework.javacutil.TypesUtils;
  * may be types or wildcards and may mention inference variables).
  */
 public class CaptureBound {
-  /** {@code G<A1, ..., An>} sometimes called the right hand side */
+  /** {@code G<A1, ..., An>} sometimes called the right-hand side. */
   private final AbstractType capturedType;
 
   /**
@@ -50,6 +50,9 @@ public class CaptureBound {
    */
   private final List<CaptureVariable> captureVariables = new ArrayList<>();
 
+  /** Method invocation where variable is from. */
+  private final ExpressionTree invocation;
+
   /**
    * Creates a captured bound.
    *
@@ -61,6 +64,7 @@ public class CaptureBound {
   private CaptureBound(
       AbstractType capturedType, ExpressionTree invocation, Java8InferenceContext context) {
     this.capturedType = capturedType;
+    this.invocation = invocation;
     DeclaredType underlying = (DeclaredType) capturedType.getJavaType();
     TypeElement ele = TypesUtils.getTypeElement(underlying);
     this.map = context.inferenceTypeFactory.createThetaForCapture(invocation, capturedType);
@@ -119,11 +123,12 @@ public class CaptureBound {
     for (CaptureTuple t : tuples) {
       if (t.capturedTypeArg.getTypeKind() != TypeKind.WILDCARD) {
         // If Ai is not a wildcard, then the bound alphai = Ai is implied.
-        t.alpha.getBounds().addBound(VariableBounds.BoundKind.EQUAL, t.capturedTypeArg);
+        t.alpha.getBounds().addBound(null, VariableBounds.BoundKind.EQUAL, t.capturedTypeArg);
       }
     }
 
-    ConstraintSet set = new ConstraintSet(new Typing(lhs, target, Kind.TYPE_COMPATIBILITY));
+    String source = "Captured constraint from method call: " + invocation;
+    ConstraintSet set = new ConstraintSet(new Typing(source, lhs, target, Kind.TYPE_COMPATIBILITY));
     // Reduce and incorporate so that the capture variables bounds are set.
     BoundSet b1 = set.reduce(context);
     b1.incorporateToFixedPoint(new BoundSet(context));
@@ -152,7 +157,7 @@ public class CaptureBound {
   }
 
   /**
-   * Return all variables on the left-hand side of this capture.
+   * Returns all variables on the left-hand side of this capture.
    *
    * @return all variables on the left-hand side of this capture
    */
@@ -161,7 +166,7 @@ public class CaptureBound {
   }
 
   /**
-   * Return all variables on the right-hand side of this capture.
+   * Returns all variables on the right-hand side of this capture.
    *
    * @return all variables on the right-hand side of this capture
    */
@@ -170,10 +175,10 @@ public class CaptureBound {
   }
 
   /**
-   * Returns whether this bound contains any {@code variables}.
+   * Returns true if this bound contains any {@code variables}.
    *
    * @param variables inference variables
-   * @return whether this bound contains any {@code variables}
+   * @return true if this bound contains any {@code variables}
    */
   public boolean isCaptureMentionsAny(Collection<Variable> variables) {
     for (Variable a : variables) {
@@ -191,14 +196,14 @@ public class CaptureBound {
   private static class CaptureTuple {
 
     /**
-     * Fresh inference variable (in the left hand side of the capture). (Also referred to as beta in
+     * Fresh inference variable (in the left-hand side of the capture). (Also referred to as beta in
      * the some places in the JLS.) For example {@code a1} in {@code G<a1, ..., an> = capture(G<A1,
      * ..., An>)}.
      */
     public final CaptureVariable alpha;
 
     /**
-     * Type argument in the right hand side for the capture. For example {@code A1} in {@code G<a1,
+     * Type argument in the right-hand side for the capture. For example {@code A1} in {@code G<a1,
      * ..., an> = capture(G<A1, ..., An>)}.
      */
     public final AbstractType capturedTypeArg;

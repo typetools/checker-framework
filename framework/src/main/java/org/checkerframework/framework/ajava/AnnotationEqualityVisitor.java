@@ -16,7 +16,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  * the second argument. Then, check {@link #getAnnotationsMatch}.
  */
 public class AnnotationEqualityVisitor extends DoubleJavaParserVisitor {
-  /** Whether or not a node with mismatched annotations has been seen. */
+  /** True if a node with mismatched annotations has been seen. */
   private boolean annotationsMatch;
 
   /** If a node with mismatched annotations has been seen, stores the node from the first AST. */
@@ -33,7 +33,7 @@ public class AnnotationEqualityVisitor extends DoubleJavaParserVisitor {
   }
 
   /**
-   * Returns whether a visited pair of nodes differed in annotations.
+   * Returns true if a visited pair of nodes differed in annotations.
    *
    * @return true if some visited pair of nodes differed in annotations
    */

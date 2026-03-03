@@ -1,0 +1,19 @@
+package :
+annotation @OuterMostType: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package :
+annotation @InsideArray: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package :
+annotation @GenericType: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package org.checkerframework.afu.annotator.tests:
+class FieldGenericArray:
+
+    field field:
+        type: @OuterMostType
+        inner-type 0, 0: @InsideArray
+        inner-type 0, 0, 3, 0: @GenericType
+
+    method <init>()V:
+

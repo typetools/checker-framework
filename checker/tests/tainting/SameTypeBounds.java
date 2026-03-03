@@ -9,23 +9,23 @@ public class SameTypeBounds {
   void test1(MyGen<Object> p) {
     // The upper and lower bound must have the same annotation because the bounds are collasped
     // during capture conversion.
-    // :: error: (super.wildcard)
+    // :: error: [super.wildcard]
     MyGen<? super Object> o = p;
-    // :: error: (assignment)
+    // :: error: [assignment]
     p = o;
   }
 
   void test2(MyGen<Object> p) {
-    // :: error: (assignment)
+    // :: error: [assignment]
     MyGen<@Untainted ? super @Untainted Object> o = p;
-    // :: error: (assignment)
+    // :: error: [assignment]
     p = o;
   }
 
   void test3(MyGen<@Untainted Object> p) {
-    // :: error: (assignment)
+    // :: error: [assignment]
     MyGen<? super @Tainted Object> o = p;
-    // :: error: (assignment)
+    // :: error: [assignment]
     p = o;
   }
 
@@ -35,12 +35,12 @@ public class SameTypeBounds {
 
   class Gen<E extends MyClass> {}
 
-  // :: error: (super.wildcard)
+  // :: error: [super.wildcard]
   void test3(Gen<MyClass> p, Gen<? super MyClass> p2) {
-    // :: error: (super.wildcard)
+    // :: error: [super.wildcard]
     Gen<? super MyClass> o = p;
     o = p2;
-    // :: error: (assignment)
+    // :: error: [assignment]
     p = p2;
   }
 }

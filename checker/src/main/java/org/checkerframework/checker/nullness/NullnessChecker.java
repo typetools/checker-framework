@@ -5,9 +5,9 @@ import java.util.Set;
 import javax.annotation.processing.SupportedOptions;
 import org.checkerframework.checker.initialization.InitializationChecker;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
-import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.qual.StubFiles;
+import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.source.SupportedLintOptions;
 
 /**
@@ -28,13 +28,11 @@ import org.checkerframework.framework.source.SupportedLintOptions;
   // learn what advice to give programmers about avoid false positive warnings.
   // See issue #986: https://github.com/typetools/checker-framework/issues/986
   "soundArrayCreationNullness",
-  // Old name for soundArrayCreationNullness, for backward compatibility; remove in January 2021.
-  "forbidnonnullarraycomponents",
   NullnessChecker.LINT_TRUSTARRAYLENZERO,
   NullnessChecker.LINT_PERMITCLEARPROPERTY,
 })
 @SupportedOptions({"assumeKeyFor", "invocationPreservesArgumentNullness"})
-@StubFiles({"junit-assertions.astub", "log4j.astub"})
+@StubFiles({"java-lang-classfile.astub", "junit-assertions.astub", "log4j.astub"})
 public class NullnessChecker extends InitializationChecker {
 
   /** Should we be strict about initialization of {@link MonotonicNonNull} variables? */
@@ -74,8 +72,8 @@ public class NullnessChecker extends InitializationChecker {
   public NullnessChecker() {}
 
   @Override
-  protected Set<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
-    Set<Class<? extends BaseTypeChecker>> checkers = super.getImmediateSubcheckerClasses();
+  protected Set<Class<? extends SourceChecker>> getImmediateSubcheckerClasses() {
+    Set<Class<? extends SourceChecker>> checkers = super.getImmediateSubcheckerClasses();
     if (!hasOptionNoSubcheckers("assumeKeyFor")) {
       checkers.add(KeyForSubchecker.class);
     }

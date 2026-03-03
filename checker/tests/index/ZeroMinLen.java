@@ -12,7 +12,7 @@ public class ZeroMinLen {
 
   void test() {
     current_index = 0;
-    // :: error: (assignment)
+    // :: error: [assignment]
     current_index2 = 0;
   }
 }

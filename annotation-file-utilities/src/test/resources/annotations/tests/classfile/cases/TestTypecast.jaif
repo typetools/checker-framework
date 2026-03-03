@@ -1,0 +1,28 @@
+package annotations.tests.classfile.foo:
+annotation @A: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+annotation @B: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+	String value
+
+// annotation @C: @Retention(value=CLASS) @java.lang.annotation.Target(value={TYPE_USE})
+annotation @C: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+	int fieldA
+	String fieldB
+
+package annotations.tests.classfile.cases:
+class TestTypecast:
+
+  method test()V :
+  	typecast # 21 : @annotations.tests.classfile.foo.A
+  	typecast # 32 : @annotations.tests.classfile.foo.B(value="second cast")
+  	typecast # 59 : @annotations.tests.classfile.foo.C(fieldA=3, fieldB="cast")
+  	typecast # 70 : @annotations.tests.classfile.foo.C(fieldA=4, fieldB="cast")
+  	typecast # 99, 0 : @annotations.tests.classfile.foo.A
+  	typecast # 99, 1 : @annotations.tests.classfile.foo.B(value="99")
+  	    inner-type 3, 0: @annotations.tests.classfile.foo.C(fieldA=0, fieldB="99")
+  	typecast # 110, 0 : @annotations.tests.classfile.foo.A
+  	typecast # 110, 1 : @annotations.tests.classfile.foo.B(value="110")
+  	    inner-type 3, 0 : @annotations.tests.classfile.foo.C(fieldA=0, fieldB="110")
+  	    inner-type 3, 1 : @annotations.tests.classfile.foo.C(fieldA=1, fieldB="110")
+  	    inner-type 3, 1, 2, 0: @annotations.tests.classfile.foo.C(fieldA=10, fieldB="110")
+  	typecast # 110, 2 : @annotations.tests.classfile.foo.B(value="59")

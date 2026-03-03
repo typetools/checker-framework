@@ -39,8 +39,8 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
   private final QualifierHierarchy qualHierarchy;
 
   /**
-   * Whether or not the type being visited is a type argument from a raw type. If true, then the
-   * underlying type may not have the correct relationship with the supertype.
+   * True if the type being visited is a type argument from a raw type. If true, then the underlying
+   * type may not have the correct relationship with the supertype.
    */
   private boolean isTypeArgumentFromRawType = false;
 
@@ -62,9 +62,9 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
    * @param <T> the type of the supertype
    * @param type type from which to copy annotations
    * @param superType a type whose erased Java type is a supertype of {@code type}'s erased Java
-   *     type.
+   *     type
    * @return a copy of {@code superType} with annotations copied from {@code type} and type
-   *     variables substituted from {@code type}.
+   *     variables substituted from {@code type}
    */
   @SuppressWarnings({
     "unchecked",
@@ -244,6 +244,22 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
     return types.isSameType(underlyingTypeA, underlyingTypeB);
   }
 
+  @Override
+  public String defaultErrorMessage(
+      AnnotatedTypeMirror type, AnnotatedTypeMirror superType, Void p) {
+    // Message is on one line, without line breaks, because in a stack trace only the first line
+    // of the message may be shown.
+    return String.format(
+        "%s: unexpected combination:  type: [%s %s] %s  superType: [%s %s] %s",
+        this.getClass().getSimpleName(),
+        type.getKind(),
+        type.getClass(),
+        type,
+        superType.getKind(),
+        superType.getClass(),
+        superType);
+  }
+
   // <editor-fold defaultstate="collapsed" desc="visitArray_Other methods">
   @Override
   public AnnotatedTypeMirror visitArray_Array(
@@ -359,7 +375,9 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
   public AnnotatedTypeMirror visitDeclared_Primitive(
       AnnotatedDeclaredType type, AnnotatedPrimitiveType superType, Void p) {
     if (!TypesUtils.isBoxedPrimitive(type.getUnderlyingType())) {
-      throw new BugInCF("AsSuperVisitor Declared_Primitive: type is not a boxed primitive.");
+      throw new BugInCF(
+          "AsSuperVisitor Declared_Primitive: type is not a boxed primitive: %s %s",
+          type, superType);
     }
     AnnotatedTypeMirror unboxedType = atypeFactory.getUnboxedType(type);
     return copyPrimaryAnnos(unboxedType, superType);
@@ -578,6 +596,12 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
       AnnotatedTypeVariable type, AnnotatedTypeMirror superType, Void p) {
     AnnotatedTypeMirror asSuper = visit(type.getUpperBound(), superType, p);
     return copyPrimaryAnnos(type, asSuper);
+  }
+
+  @Override
+  public AnnotatedTypeMirror visitTypevar_Array(
+      AnnotatedTypeVariable type, AnnotatedArrayType superType, Void p) {
+    return visitTypevar_NotTypevarNorWildcard(type, superType, p);
   }
 
   @Override

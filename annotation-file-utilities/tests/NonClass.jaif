@@ -1,0 +1,50 @@
+package:
+
+annotation @X:
+
+class NonClass$A:
+method m(Ljava/lang/Object;)V:
+parameter 0:
+type: @X
+
+class NonClass$B:
+method m()V:
+local l:
+type: @X
+
+class NonClass$C:
+method value()Ljava/lang/String;:
+return: @X
+
+annotation @V:
+  int value
+
+class NonClass$E:
+field D:
+typecast *0: @V(1)
+
+package:
+class NonClass$E:
+field D:
+new *0: @V(2)
+
+package:
+class NonClass$E:
+field D:
+type: @V(3)
+
+package:
+class NonClass$E:
+field a:
+type: @X
+
+package:
+class NonClass$E:
+method <init>(Ljava/lang/String;)V:
+new *0: @V(0)
+
+package:
+class NonClass$I: @X
+implements 0: @X
+inner-type 3, 0: @X
+

@@ -1,0 +1,69 @@
+#!/bin/sh
+
+# Insert annotations (from an annotation file) into a Java source file.
+# For usage information, run: insert-annotations-to-source --help
+# See the Annotation File Utilities documentation for more information.
+
+# A few options are consumed by this script rather than being passed to the
+# underlying Java program, org.checkerframework.afu.annotator.Main.
+# They must be the first command-line arguments provided.
+DEBUG=0
+CLASSPATH=${CLASSPATH:-}
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --debug-script)
+      # Debug this script
+      DEBUG=1
+      shift
+      ;;
+    -cp | -classpath)
+      # Set the classpath
+      CLASSPATH=$2
+      shift 2
+      ;;
+    *)
+      break
+      ;;
+  esac
+done
+
+AFUSCRIPTS=$(dirname "$0")
+AFU=$(cd "$AFUSCRIPTS/.." > /dev/null 2>&1 && pwd)
+
+ANNOTATION_FILE_UTILS=${ANNOTATION_FILE_UTILS:-${AFU}/dist/annotation-file-utilities-all.jar}
+JAVAC_JAR=${JAVAC_JAR:-${AFU}/lib/javac-9+181-r4173-1.jar}
+
+if java -version 2>&1 | grep version | grep 1.8 > /dev/null; then
+  # Using JDK 8.
+  BOOTCLASSPATH=-Xbootclasspath/p:${JAVAC_JAR}
+  JDK_OPENS=
+else
+  # Using JDK 9 or later. -Xbootclasspth isn't supported in 9+ and isn't required.
+  BOOTCLASSPATH=
+  # Need open to access CommandLine.parse dynamically to check its type:
+  JDK_OPENS="--add-opens jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED  --add-opens jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED --add-opens jdk.internal.opt/jdk.internal.opt=ALL-UNNAMED"
+fi
+
+if [ "$DEBUG" = "1" ]; then
+  echo "--- start of insert-annotations-to-source debugging output"
+  echo "AFU=${AFU}"
+  echo "ANNOTATION_FILE_UTILS=${ANNOTATION_FILE_UTILS}"
+  echo "JAVAC_JAR=${JAVAC_JAR}"
+  echo "CLASSPATH=${CLASSPATH}"
+  # Keep this in sync with the actual command below.
+  # shellcheck disable=SC2181 disable=SC2086
+  echo about to run: java -ea -Xmx4g ${BOOTCLASSPATH} ${JDK_OPENS} -classpath "${JAVAC_JAR}:${ANNOTATION_FILE_UTILS}:${CLASSPATH}" org.checkerframework.afu.annotator.Main "$@"
+  echo "--- end of insert-annotations-to-source debugging output"
+  # echo "--- start of input files"
+  # for file in "$@"; do
+  #     if [ -f "$file" ]; then
+  #        echo "$file"
+  #        cat "$file"
+  #     fi
+  # done
+  # echo "--- end of input files"
+fi
+
+# Augment, don't replace, CLASSPATH, so as to find user files.
+# shellcheck disable=SC2181 disable=SC2086 # ${BOOTCLASSPATH} and ${JDK_OPENS} might be empty and must not be quoted.
+java -ea -Xmx4g ${BOOTCLASSPATH} ${JDK_OPENS} -classpath "${JAVAC_JAR}:${ANNOTATION_FILE_UTILS}:${CLASSPATH}" org.checkerframework.afu.annotator.Main "$@"

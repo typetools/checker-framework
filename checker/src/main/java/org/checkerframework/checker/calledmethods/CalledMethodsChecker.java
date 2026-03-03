@@ -3,10 +3,10 @@ package org.checkerframework.checker.calledmethods;
 import java.util.Set;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.common.accumulation.AccumulationChecker;
-import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.returnsreceiver.ReturnsReceiverChecker;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.framework.qual.StubFiles;
+import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.source.SupportedOptions;
 import org.checkerframework.framework.source.SuppressWarningsPrefix;
 
@@ -70,9 +70,9 @@ public class CalledMethodsChecker extends AccumulationChecker {
   /**
    * Was the Returns Receiver Checker disabled on the command line?
    *
-   * @return whether the -AdisableReturnsReceiver option was specified on the command line
+   * @return true if the -AdisableReturnsReceiver option was specified on the command line
    */
-  private boolean isReturnsReceiverDisabled() {
+  protected boolean isReturnsReceiverDisabled() {
     if (returnsReceiverDisabled == null) {
       returnsReceiverDisabled = hasOptionNoSubcheckers(DISABLE_RETURNS_RECEIVER);
     }
@@ -80,8 +80,8 @@ public class CalledMethodsChecker extends AccumulationChecker {
   }
 
   @Override
-  protected Set<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
-    Set<Class<? extends BaseTypeChecker>> checkers = super.getImmediateSubcheckerClasses();
+  protected Set<Class<? extends SourceChecker>> getImmediateSubcheckerClasses() {
+    Set<Class<? extends SourceChecker>> checkers = super.getImmediateSubcheckerClasses();
     if (!isReturnsReceiverDisabled()) {
       checkers.add(ReturnsReceiverChecker.class);
     }
@@ -97,7 +97,7 @@ public class CalledMethodsChecker extends AccumulationChecker {
   }
 
   /**
-   * Check whether the given alias analysis is enabled by this particular accumulation checker.
+   * Returns true if the given alias analysis is enabled by this particular accumulation checker.
    *
    * @param aliasAnalysis the analysis to check
    * @return true iff the analysis is enabled

@@ -290,7 +290,7 @@ public abstract class Contract {
      * @param annotation the type qualifier that {@code expressionString} should have
      * @param contractAnnotation the postcondition annotation that the programmer wrote; used for
      *     diagnostic messages
-     * @param resultValue whether the condition is the method returning true or false
+     * @param resultValue true if the condition is the method returning true or false
      */
     public ConditionalPostcondition(
         String expressionString,

@@ -10,6 +10,7 @@ import org.checkerframework.dataflow.cfg.node.ValueLiteralNode;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.StringsPlume;
 
 /** JavaExpression for literals. */
 public class ValueLiteral extends JavaExpression {
@@ -99,9 +100,10 @@ public class ValueLiteral extends JavaExpression {
     return value;
   }
 
+  @SuppressWarnings("unchecked") // generic cast
   @Override
-  public boolean containsOfClass(Class<? extends JavaExpression> clazz) {
-    return getClass() == clazz;
+  public <T extends JavaExpression> @Nullable T containedOfClass(Class<T> clazz) {
+    return getClass() == clazz ? (T) this : null;
   }
 
   @Override
@@ -110,13 +112,13 @@ public class ValueLiteral extends JavaExpression {
   }
 
   @Override
-  public boolean isUnassignableByOtherCode() {
-    return true;
+  public boolean isAssignableByOtherCode() {
+    return false;
   }
 
   @Override
-  public boolean isUnmodifiableByOtherCode() {
-    return true;
+  public boolean isModifiableByOtherCode() {
+    return false;
   }
 
   @Override
@@ -134,7 +136,7 @@ public class ValueLiteral extends JavaExpression {
     return false; // not modifiable
   }
 
-  /// java.lang.Object methods
+  // java.lang.Object methods
 
   @Override
   public boolean equals(@Nullable Object obj) {
@@ -149,15 +151,17 @@ public class ValueLiteral extends JavaExpression {
 
   @Override
   public String toString() {
-    if (TypesUtils.isString(type)) {
-      return "\"" + value + "\"";
+    if (value == null) {
+      return "null";
+    } else if (TypesUtils.isString(type)) {
+      return "\"" + StringsPlume.escapeJava((String) value) + "\"";
     } else if (type.getKind() == TypeKind.LONG) {
       assert value != null : "@AssumeAssertion(nullness): invariant";
       return value.toString() + "L";
     } else if (type.getKind() == TypeKind.CHAR) {
-      return "\'" + value + "\'";
+      return StringsPlume.charLiteral((Character) value);
     }
-    return value == null ? "null" : value.toString();
+    return value.toString();
   }
 
   @Override

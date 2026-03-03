@@ -1,0 +1,6 @@
+package annotations.tests.classfile.foo:
+annotation @A: @java.lang.annotation.Retention(RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package annotations.tests.classfile.cases:
+class TestClassEmpty: @annotations.tests.classfile.foo.A
+

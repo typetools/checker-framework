@@ -23,7 +23,7 @@ public class NumericalAdditionNode extends BinaryOperationNode {
    */
   public NumericalAdditionNode(BinaryTree tree, Node left, Node right) {
     super(tree, left, right);
-    assert tree.getKind() == Tree.Kind.PLUS || tree.getKind() == Tree.Kind.PLUS_ASSIGNMENT;
+    assert tree.getKind() == Tree.Kind.PLUS;
   }
 
   @Override

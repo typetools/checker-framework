@@ -1,0 +1,10 @@
+package java.lang:
+annotation @Tainted: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package org.checkerframework.afu.annotator.tests:
+class NewSimple:
+
+    method foo()V:
+        return:
+        insert-annotation Method.body, Block.statement 0, Variable.initializer, NewClass.identifier: @java.lang.Tainted
+

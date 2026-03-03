@@ -128,6 +128,7 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
    *
    * @param qualifierClasses all the classes of qualifiers supported by this hierarchy
    */
+  @SuppressWarnings("this-escape")
   public DefaultQualifierKindHierarchy(Collection<Class<? extends Annotation>> qualifierClasses) {
     this(qualifierClasses, null, null);
   }
@@ -144,6 +145,7 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
    * @param qualifierClasses all the classes of qualifiers supported by this hierarchy
    * @param bottom the bottom qualifier of this hierarchy
    */
+  @SuppressWarnings("this-escape")
   public DefaultQualifierKindHierarchy(
       Collection<Class<? extends Annotation>> qualifierClasses,
       Class<? extends Annotation> bottom) {
@@ -159,6 +161,7 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
    * @param voidParam void parameter to differentiate from {@link
    *     #DefaultQualifierKindHierarchy(Collection, Class)}
    */
+  @SuppressWarnings("this-escape")
   private DefaultQualifierKindHierarchy(
       Collection<Class<? extends Annotation>> qualifierClasses,
       @Nullable Class<? extends Annotation> bottom,

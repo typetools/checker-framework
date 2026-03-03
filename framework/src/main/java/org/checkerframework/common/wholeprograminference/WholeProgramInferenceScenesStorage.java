@@ -7,6 +7,9 @@ import com.sun.tools.javac.code.Symbol.VarSymbol;
 import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Target;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -53,8 +56,8 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.UserError;
-import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.IPair;
+import org.plumelib.util.MapsP;
 
 /**
  * This class stores annotations using scenelib objects.
@@ -66,19 +69,12 @@ import org.plumelib.util.IPair;
  * if using {@link OutputFormat#STUB}.
  *
  * <p>This class populates the initial Scenes by reading existing .jaif files on the {@link
- * #JAIF_FILES_PATH} directory (regardless of output format). Having more information in those
+ * #inferOutputDirectory} directory (regardless of output format). Having more information in those
  * initial .jaif files means that the precision achieved by the whole-program inference analysis
  * will be better. {@link #writeScenes} rewrites the initial .jaif files and may create new ones.
  */
 public class WholeProgramInferenceScenesStorage
     implements WholeProgramInferenceStorage<ATypeElement> {
-
-  /**
-   * Directory where .jaif files will be written to and read from. This directory is relative to
-   * where the CF's javac command is executed.
-   */
-  public static final String JAIF_FILES_PATH =
-      "build" + File.separator + "whole-program-inference" + File.separator;
 
   /** The type factory associated with this WholeProgramInferenceScenesStorage. */
   protected final AnnotatedTypeFactory atypeFactory;
@@ -97,13 +93,13 @@ public class WholeProgramInferenceScenesStorage
    */
   private final boolean ignoreNullAssignments;
 
-  /** Maps .jaif file paths (Strings) to Scenes. Relative to JAIF_FILES_PATH. */
+  /** Maps .jaif file paths (Strings) to Scenes. Relative to inferOutputDirectory. */
   public final Map<String, ASceneWrapper> scenes = new HashMap<>();
 
   /**
    * Scenes that were modified since the last time all Scenes were written into .jaif files. Each
-   * String element of this set is a path (relative to JAIF_FILES_PATH) to the .jaif file of the
-   * corresponding Scene in the set. It is obtained by passing a class name as argument to the
+   * String element of this set is a path (relative to inferOutputDirectory) to the .jaif file of
+   * the corresponding Scene in the set. It is obtained by passing a class name as argument to the
    * {@link #getJaifPath} method.
    *
    * <p>Modifying a Scene means adding (or changing) a type annotation for a field, method return
@@ -134,16 +130,26 @@ public class WholeProgramInferenceScenesStorage
    */
   private final Map<String, AnnotatedTypeMirror> postconditionsToDeclaredTypes = new HashMap<>();
 
+  /** The directory for reading and writing .jaif files. */
+  private final Path inferOutputDirectory;
+
   /**
    * Default constructor.
    *
    * @param atypeFactory the type factory associated with this WholeProgramInferenceScenesStorage
+   * @param inferOutputDirectory the directory into which to write whole program inference files
    */
-  public WholeProgramInferenceScenesStorage(AnnotatedTypeFactory atypeFactory) {
+  public WholeProgramInferenceScenesStorage(
+      AnnotatedTypeFactory atypeFactory, String inferOutputDirectory) {
     this.atypeFactory = atypeFactory;
     boolean isNullness =
         atypeFactory.getClass().getSimpleName().equals("NullnessAnnotatedTypeFactory");
     this.ignoreNullAssignments = !isNullness;
+    try {
+      this.inferOutputDirectory = Path.of(inferOutputDirectory);
+    } catch (InvalidPathException e) {
+      throw new UserError("Invalid -AinferOutputDirectory path: " + inferOutputDirectory, e);
+    }
   }
 
   @Override
@@ -176,7 +182,7 @@ public class WholeProgramInferenceScenesStorage
   }
 
   /**
-   * Get the annotations for a class.
+   * Returns the annotations for a class.
    *
    * @param className the name of the class, in binary form
    * @param file the path to the file that represents the class
@@ -193,7 +199,7 @@ public class WholeProgramInferenceScenesStorage
   }
 
   /**
-   * Get the annotations for a method or constructor.
+   * Returns the annotations for a method or constructor.
    *
    * @param methodElt the method or constructor
    * @return the annotations for a method or constructor
@@ -208,7 +214,7 @@ public class WholeProgramInferenceScenesStorage
   }
 
   /**
-   * Get the annotations for a field.
+   * Returns the annotations for a field.
    *
    * @param fieldElt the field
    * @return the annotations for a field
@@ -302,6 +308,7 @@ public class WholeProgramInferenceScenesStorage
 
   @Override
   public ATypeElement getPreOrPostconditions(
+      String className,
       Analysis.BeforeOrAfter preOrPost,
       ExecutableElement methodElement,
       String expression,
@@ -309,9 +316,9 @@ public class WholeProgramInferenceScenesStorage
       AnnotatedTypeFactory atypeFactory) {
     switch (preOrPost) {
       case BEFORE:
-        return getPreconditionsForExpression(methodElement, expression, declaredType);
+        return getPreconditionsForExpression(className, methodElement, expression, declaredType);
       case AFTER:
-        return getPostconditionsForExpression(methodElement, expression, declaredType);
+        return getPostconditionsForExpression(className, methodElement, expression, declaredType);
       default:
         throw new BugInCF("Unexpected " + preOrPost);
     }
@@ -320,13 +327,18 @@ public class WholeProgramInferenceScenesStorage
   /**
    * Returns the precondition annotations for a Java expression.
    *
+   * @param className the class that contains the method, for diagnostics only
    * @param methodElement the method
    * @param expression the expression
    * @param declaredType the declared type of the expression
    * @return the precondition annotations for a Java expression
    */
+  @SuppressWarnings("UnusedVariable")
   private ATypeElement getPreconditionsForExpression(
-      ExecutableElement methodElement, String expression, AnnotatedTypeMirror declaredType) {
+      String className,
+      ExecutableElement methodElement,
+      String expression,
+      AnnotatedTypeMirror declaredType) {
     AMethod methodAnnos = getMethodAnnos(methodElement);
     preconditionsToDeclaredTypes.put(methodAnnos.methodSignature + expression, declaredType);
     return methodAnnos.vivifyAndAddTypeMirrorToPrecondition(
@@ -337,13 +349,18 @@ public class WholeProgramInferenceScenesStorage
   /**
    * Returns the postcondition annotations for a Java expression.
    *
+   * @param className the class that contains the method, for diagnostics only
    * @param methodElement the method
    * @param expression the expression
    * @param declaredType the declared type of the expression
    * @return the postcondition annotations for a Java expression
    */
+  @SuppressWarnings("UnusedVariable")
   private ATypeElement getPostconditionsForExpression(
-      ExecutableElement methodElement, String expression, AnnotatedTypeMirror declaredType) {
+      String className,
+      ExecutableElement methodElement,
+      String expression,
+      AnnotatedTypeMirror declaredType) {
     AMethod methodAnnos = getMethodAnnos(methodElement);
     postconditionsToDeclaredTypes.put(methodAnnos.methodSignature + expression, declaredType);
     return methodAnnos.vivifyAndAddTypeMirrorToPostcondition(
@@ -467,9 +484,10 @@ public class WholeProgramInferenceScenesStorage
    */
   public void writeScenes(OutputFormat outputFormat, BaseTypeChecker checker) {
     // Create WPI directory if it doesn't exist already.
-    File jaifDir = new File(JAIF_FILES_PATH);
-    if (!jaifDir.exists()) {
-      jaifDir.mkdirs();
+    try {
+      Files.createDirectories(inferOutputDirectory);
+    } catch (IOException e) {
+      throw new UserError("Cannot create " + inferOutputDirectory.toAbsolutePath(), e);
     }
     // Write scenes into files.
     for (String jaifPath : modifiedScenes) {
@@ -485,7 +503,7 @@ public class WholeProgramInferenceScenesStorage
    * @return the path to the .jaif file
    */
   protected String getJaifPath(String className) {
-    String jaifPath = JAIF_FILES_PATH + className + ".jaif";
+    String jaifPath = inferOutputDirectory.resolve(className + ".jaif").toString();
     return jaifPath;
   }
 
@@ -617,25 +635,25 @@ public class WholeProgramInferenceScenesStorage
             ((AnnotatedTypeVariable) sourceCodeATM).getUpperBound(),
             ((AnnotatedTypeVariable) jaifATM).getUpperBound());
         break;
-        //        case WILDCARD:
-        // Because inferring type arguments is not supported, wildcards won't be encoutered
-        //            updateAtmWithLub(((AnnotatedWildcardType)
-        // sourceCodeATM).getExtendsBound(),
-        //                              ((AnnotatedWildcardType)
-        // jaifATM).getExtendsBound());
-        //            updateAtmWithLub(((AnnotatedWildcardType)
-        // sourceCodeATM).getSuperBound(),
-        //                              ((AnnotatedWildcardType) jaifATM).getSuperBound());
-        //            break;
+      //        case WILDCARD:
+      // Because inferring type arguments is not supported, wildcards won't be encoutered
+      //            updateAtmWithLub(((AnnotatedWildcardType)
+      // sourceCodeATM).getExtendsBound(),
+      //                              ((AnnotatedWildcardType)
+      // jaifATM).getExtendsBound());
+      //            updateAtmWithLub(((AnnotatedWildcardType)
+      // sourceCodeATM).getSuperBound(),
+      //                              ((AnnotatedWildcardType) jaifATM).getSuperBound());
+      //            break;
       case ARRAY:
         updateAtmWithLub(
             ((AnnotatedArrayType) sourceCodeATM).getComponentType(),
             ((AnnotatedArrayType) jaifATM).getComponentType());
         break;
-        // case DECLARED:
-        // inferring annotations on type arguments is not supported, so no need to recur on
-        // generic types. If this was every implemented, this method would need VisitHistory
-        // object to prevent infinite recursion on types such as T extends List<T>.
+      // case DECLARED:
+      // inferring annotations on type arguments is not supported, so no need to recur on
+      // generic types. If this was every implemented, this method would need VisitHistory
+      // object to prevent infinite recursion on types such as T extends List<T>.
       default:
         // ATM only has primary annotations
         break;
@@ -812,9 +830,9 @@ public class WholeProgramInferenceScenesStorage
     updateTypeElementFromATM(typeToUpdate, defLoc, newATM, curATM, ignoreIfAnnotated);
   }
 
-  ///
-  /// Writing to a file
-  ///
+  //
+  // Writing to a file
+  //
 
   // The prepare*ForWriting hooks are needed in addition to the postProcessClassTree hook because
   // a scene may be modifed and written at any time, including before or after
@@ -839,7 +857,7 @@ public class WholeProgramInferenceScenesStorage
    */
   public void wpiPrepareClassForWriting(AClass classAnnos) {
     for (Map.Entry<String, AMethod> methodEntry : classAnnos.methods.entrySet()) {
-      wpiPrepareMethodForWriting(methodEntry.getValue());
+      wpiPrepareMethodForWriting(classAnnos.className, methodEntry.getValue());
     }
   }
 
@@ -847,10 +865,11 @@ public class WholeProgramInferenceScenesStorage
    * Side-effects the method or constructor annotations to make any desired changes before writing
    * to a file.
    *
+   * @param className the class that contains the method, for diagnostics only
    * @param methodAnnos the method or constructor annotations to modify
    */
-  public void wpiPrepareMethodForWriting(AMethod methodAnnos) {
-    atypeFactory.wpiPrepareMethodForWriting(methodAnnos);
+  public void wpiPrepareMethodForWriting(String className, AMethod methodAnnos) {
+    atypeFactory.wpiPrepareMethodForWriting(className, methodAnnos);
   }
 
   @Override
@@ -964,7 +983,7 @@ public class WholeProgramInferenceScenesStorage
       IPair<String, TypeUseLocation> key = IPair.of(firstKey, defLoc);
       Set<String> annosIgnored = annosToIgnore.get(key);
       if (annosIgnored == null) {
-        annosIgnored = new HashSet<>(CollectionsPlume.mapCapacity(1));
+        annosIgnored = new HashSet<>(MapsP.mapCapacity(1));
         annosToIgnore.put(key, annosIgnored);
       }
       annosIgnored.add(anno.def().toString());

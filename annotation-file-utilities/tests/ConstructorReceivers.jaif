@@ -1,0 +1,142 @@
+package annotation:
+annotation @A:
+annotation @B:
+annotation @C:
+annotation @Inner: @java.lang.annotation.Target(value={TYPE_USE})
+    int value
+
+package checkers.tainting.quals:
+annotation @Tainted: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE,TYPE_PARAMETER})
+
+package org.checkerframework.afu.annotator.tests:
+class ConstructorReceivers:
+
+    method <init>()V:
+        return:
+
+class ConstructorReceivers$C0:
+
+    field this$0:
+
+    method <init>()V:
+        return:
+        receiver: @Tainted
+
+    method <init>(I)V:
+        return:
+        receiver: @Tainted
+
+class ConstructorReceivers$C1:
+
+    field this$0:
+
+    method <init>()V:
+        return:
+        receiver: @Tainted
+
+    method <init>(I)V:
+        return:
+        receiver: @Tainted
+
+class ConstructorReceivers$C2:
+
+    field this$0:
+
+    method <init>()V:
+        return:
+        receiver: @Tainted @A @B @C
+
+class ConstructorReceivers$C3:
+
+    field this$0:
+
+    method <init>()V:
+        return:
+        receiver: @Tainted @A @B @C
+
+class ConstructorReceivers$P0$C4:
+
+    field this$1:
+
+    method <init>()V:
+        return:
+        receiver: @Tainted
+
+    method <init>(I)V:
+        return:
+        receiver: @Tainted
+
+class ConstructorReceivers$P0$C5:
+
+    field this$1:
+
+    method <init>()V:
+        return:
+        receiver: @Tainted
+
+    method <init>(I)V:
+        return:
+        receiver: @Tainted
+
+class ConstructorReceivers$P0$C6:
+
+    field this$1:
+
+    method <init>()V:
+        return:
+        receiver: @Tainted
+
+    method <init>(Lannotator/tests/ConstructorReceivers$P0;)V:
+        return:
+        receiver: @Tainted
+            inner-type 1, 0, 3, 0: @Inner(0)
+            inner-type 1, 0, 3, 1: @Inner(1)
+
+class ConstructorReceivers$P0$C7:
+
+    field this$1:
+
+    method <init>()V:
+        return:
+        receiver: @Tainted
+
+    method <init>(Lannotator/tests/ConstructorReceivers$P0;)V:
+        return:
+        receiver: @Tainted
+            inner-type 1, 0, 3, 0: @Inner(0)
+            inner-type 1, 0, 3, 1: @Inner(1)
+
+class ConstructorReceivers$P0:
+
+    field this$0:
+
+    method <init>()V:
+        return:
+
+class ConstructorReceivers$P1$C8:
+
+    field this$1:
+
+    method <init>()V:
+        return:
+        receiver: @Tainted
+            inner-type 1, 0, 3, 0: @Inner(0)
+            inner-type 1, 0, 3, 1: @Inner(1)
+
+class ConstructorReceivers$P1$C9:
+
+    field this$1:
+
+    method <init>()V:
+        return:
+        receiver: @Tainted
+            inner-type 1, 0, 3, 0: @Inner(0)
+            inner-type 1, 0, 3, 1: @Inner(1)
+
+class ConstructorReceivers$P1:
+
+    field this$0:
+
+    method <init>()V:
+        return:
+

@@ -1,0 +1,101 @@
+package:
+annotation @Bla:
+annotation @A:
+annotation @B:
+annotation @C:
+annotation @D:
+annotation @E:
+annotation @F:
+annotation @G:
+annotation @H:
+annotation @I:
+annotation @J:
+
+package checkers.nullness.quals:
+annotation @Nullable: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE,TYPE_PARAMETER})
+annotation @NonNull: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE,TYPE_PARAMETER})
+
+package :
+class ASTInsert:
+
+    field c:
+        insert-annotation Variable.initializer, Binary.rightOperand: @Nullable
+        insert-annotation Variable.initializer, Binary.leftOperand: @Nullable
+        insert-annotation Variable.initializer: @Nullable
+
+    field str:
+        insert-annotation Variable.initializer, Binary.rightOperand, MethodInvocation.methodSelect, MemberSelect.expression: @Nullable
+        insert-annotation Variable.initializer, Binary.rightOperand, MethodInvocation.argument 0: @Nullable
+
+    field sa:
+        insert-annotation Variable.initializer, NewArray.type 0: @Bla
+        insert-annotation Variable.type, ArrayType.type: @Bla
+        insert-annotation Variable.type: @Bla
+        insert-annotation Variable.initializer, NewArray.type 1: @Bla
+
+    method m(Ljava/lang/String;[Ljava/lang/String;I)I:
+        insert-annotation Block.statement 0, Variable.initializer: @Nullable
+        insert-annotation Block.statement 2, ExpressionStatement.expression, Assignment.expression: @Nullable
+        insert-annotation Block.statement 2, ExpressionStatement.expression, Assignment.expression, Binary.leftOperand: @Nullable
+        insert-annotation Block.statement 2, ExpressionStatement.expression, Assignment.expression, Binary.rightOperand: @Nullable
+        insert-annotation Block.statement 4, ExpressionStatement.expression, Assignment.expression, ArrayAccess.index: @Nullable
+        insert-annotation Block.statement 7, Switch.expression, Parenthesized.expression: @Nullable
+        insert-annotation Block.statement 7, Switch.case 0, Case.statement 0, ExpressionStatement.expression, Assignment.expression, Binary.rightOperand: @Nullable
+        insert-annotation Block.statement 7, Switch.case 1, Case.statement 1, ExpressionStatement.expression, MethodInvocation.argument 0: @Nullable
+        insert-annotation Block.statement 8, ExpressionStatement.expression, CompoundAssignment.expression: @Nullable
+        insert-annotation Block.statement 9, ExpressionStatement.expression, Assignment.expression, ConditionalExpression.trueExpression: @Nullable
+        insert-annotation Block.statement 10, DoWhileLoop.statement, Block.statement 0, Variable.initializer, Binary.leftOperand: @Nullable
+        insert-annotation Block.statement 11, EnhancedForLoop.statement, Block.statement 0, ExpressionStatement.expression, Assignment.expression: @Nullable
+        insert-annotation Block.statement 12, ForLoop.initializer 1, Variable.initializer: @Nullable
+        insert-annotation Block.statement 12, ForLoop.condition, Binary.rightOperand: @Nullable
+        insert-annotation Block.statement 12, ForLoop.update 0, ExpressionStatement.expression, Assignment.expression: @Nullable
+        insert-annotation Block.statement 12, ForLoop.statement, ExpressionStatement.expression, Assignment.expression: @Nullable
+        insert-annotation Block.statement 13, If.condition, Parenthesized.expression, Binary.leftOperand: @Nullable
+        insert-annotation Block.statement 13, If.elseStatement, ExpressionStatement.expression, Assignment.expression: @Nullable
+        insert-annotation Block.statement 14, Variable.initializer, InstanceOf.expression: @Nullable
+        insert-annotation Block.statement 15, LabeledStatement.statement, ExpressionStatement.expression, Assignment.expression: @Nullable
+        insert-annotation Block.statement 16, Variable.initializer, MemberSelect.expression: @Nullable
+        insert-annotation Block.statement 17, ExpressionStatement.expression, MethodInvocation.argument 2: @Nullable
+        insert-annotation Block.statement 18, Variable.initializer, NewArray.dimension 1: @Nullable
+        insert-annotation Block.statement 19, Variable.initializer, NewArray.initializer 1, NewArray.initializer 2: @Nullable
+        insert-annotation Block.statement 20, ExpressionStatement.expression, NewClass.argument 0: @Nullable
+        insert-annotation Block.statement 21, If.thenStatement, Return.expression: @Nullable
+        insert-annotation Block.statement 22, Synchronized.block, Block.statement 0, ExpressionStatement.expression, Assignment.expression: @Nullable
+        insert-annotation Block.statement 23, If.thenStatement, Throw.expression: @Nullable
+        insert-annotation Block.statement 24, Try.block, Block.statement 0, Variable.initializer: @Nullable
+        insert-annotation Block.statement 24, Try.catch 1, Catch.block, Block.statement 0, ExpressionStatement.expression, Assignment.expression: @Nullable
+        insert-annotation Block.statement 24, Try.finallyBlock, Block.statement 0, ExpressionStatement.expression, Assignment.expression, Binary.rightOperand: @Nullable
+        insert-annotation Block.statement 25, ExpressionStatement.expression, Assignment.expression, TypeCast.expression, Parenthesized.expression, Binary.rightOperand: @Nullable
+        insert-annotation Block.statement 26, ExpressionStatement.expression, Assignment.expression, Unary.expression: @Nullable
+        insert-annotation Block.statement 27, WhileLoop.condition, Parenthesized.expression, Binary.rightOperand: @Nullable
+        insert-annotation Block.statement 27, WhileLoop.statement, ExpressionStatement.expression, Assignment.expression, Binary.leftOperand: @Nullable
+        insert-annotation Block.statement 28, ExpressionStatement.expression, MethodInvocation.methodSelect, MemberSelect.expression, MemberSelect.expression: @Nullable
+        insert-annotation Block.statement 29, ExpressionStatement.expression, MethodInvocation.methodSelect, MemberSelect.expression: @Nullable
+        insert-annotation Block.statement 30, Variable.initializer: @Nullable @A @B @C
+
+    method context()V:
+        insert-annotation Block.statement 0, ExpressionStatement.expression, MethodInvocation.typeArgument 0: @NonNull
+
+class Wild:
+bound 0 & 0:
+inner-type 3, 0, 2, 0: @Bla
+
+class Wild:
+method <init>(LWild;Ljava/util/List;)V:
+parameter 0:
+type: @Bla
+
+class Unbound:
+bound 0 & 0: @A
+
+class Bound:
+	typeparam 0: @A
+	typeparam 1: @J
+	bound 0 & 0: @B
+	bound 0 & 1: @C
+		inner-type 3, 0: @E
+		inner-type 3, 0, 0, 0: @D
+	bound 0 & 2: @F
+		inner-type 3, 0: @G
+		inner-type 3, 0, 2, 0: @H
+		inner-type 3, 1: @I

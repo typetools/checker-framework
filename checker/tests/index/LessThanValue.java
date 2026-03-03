@@ -12,7 +12,7 @@ public class LessThanValue {
   void subtyping(int x, int y, @LessThan({"#1", "#2"}) int a, @LessThan("#1") int b) {
     @LessThan("x") int q = a;
     @LessThan({"x", "y"})
-    // :: error: (assignment)
+    // :: error: [assignment]
     int r = b;
   }
 
@@ -21,14 +21,14 @@ public class LessThanValue {
   void lub(int x, int y, @LessThan({"#1", "#2"}) int a, @LessThan("#1") int b) {
     @LessThan("x") int r = flag ? a : b;
     @LessThan({"x", "y"})
-    // :: error: (assignment)
+    // :: error: [assignment]
     int s = flag ? a : b;
   }
 
   void transitive(int a, int b, int c) {
     if (a < b) {
       if (b < c) {
-        // :: error: (assignment)
+        // :: error: [assignment]
         @LessThan("c") int x = a;
       }
     }
@@ -80,7 +80,7 @@ public class LessThanValue {
     if (count > maximum) {
       int deleteIndex = count - maximum - 1;
       // TODO: shouldn't error
-      // :: error: (argument)
+      // :: error: [argument]
       isLessThanOrEqual(0, deleteIndex);
     }
   }
@@ -91,11 +91,11 @@ public class LessThanValue {
 
       } else {
         // TODO: improve value checker
-        // :: error: (assignment)
+        // :: error: [assignment]
         @IntRange(from = 0) int countDivMinus = count / 2 - 1;
         // Reasign to update the value in the store.
         countDivMinus = countDivMinus;
-        // :: error: (argument)
+        // :: error: [argument]
         isLessThan(0, countDivMinus);
         isLessThanOrEqual(0, countDivMinus);
       }
@@ -116,7 +116,7 @@ public class LessThanValue {
       newCapacity = Integer.MAX_VALUE;
       // guaranteed to be >= newCapacity
     }
-    // :: error: (return)
+    // :: error: [return]
     return newCapacity;
   }
 }

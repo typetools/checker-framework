@@ -1,0 +1,58 @@
+package :
+annotation @Bla:
+
+package :
+annotation @A:
+
+package :
+annotation @D:
+
+package :
+annotation @H:
+
+package :
+annotation @E:
+
+package :
+annotation @G:
+
+package :
+annotation @I:
+
+package :
+annotation @B:
+
+package :
+annotation @C:
+
+package :
+annotation @F:
+
+package :
+annotation @J:
+
+package :
+class WildcardAnnoBound:
+    insert-annotation Class.typeParameter 0, TypeParameter.bound 0, ParameterizedType.typeArgument 0, Wildcard.bound: @Bla
+
+    method <init>(LWildcardAnnoBound;Ljava/util/List;)V:
+        return:
+        insert-annotation Method.parameter 0, Variable.type: @Bla
+
+package :
+class NoBound:
+    insert-annotation Class.typeParameter 0, TypeParameter.bound 0: @A
+
+package :
+class Bounds:
+    insert-annotation Class.typeParameter 0, TypeParameter.bound 1, ParameterizedType.typeArgument 0, ArrayType.type: @D
+    insert-annotation Class.typeParameter 0, TypeParameter.bound 2, ParameterizedType.typeArgument 0, Wildcard.bound: @H
+    insert-annotation Class.typeParameter 0, TypeParameter.bound 1, ParameterizedType.typeArgument 0: @E
+    insert-annotation Class.typeParameter 0, TypeParameter.bound 2, ParameterizedType.typeArgument 0: @G
+    insert-annotation Class.typeParameter 0, TypeParameter.bound 2, ParameterizedType.typeArgument 1: @I
+    insert-annotation Class.typeParameter 0, TypeParameter.bound 0: @B
+    insert-annotation Class.typeParameter 0, TypeParameter.bound 1: @C
+    insert-annotation Class.typeParameter 0, TypeParameter.bound 2: @F
+    insert-annotation Class.typeParameter 0: @A
+    insert-annotation Class.typeParameter 1: @J
+

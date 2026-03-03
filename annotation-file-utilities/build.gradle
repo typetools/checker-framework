@@ -1,0 +1,173 @@
+plugins {
+  id("java-library")
+  id("base")
+}
+
+
+java {
+  // This test is for whether the Checker Framework runs under Java 8.
+  // Currently, the Checker Framework does run under Java 8.
+  if (true /* runs under Java 8 */) {
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+  } else {
+    sourceCompatibility = 11
+    targetCompatibility = 11
+  }
+}
+
+dependencies {
+  // Annotations in checker-qual.jar are used, but no checkers are (currently) run on the code.
+  compileOnly(project(":checker-qual"))
+
+  implementation(libs.options)
+  implementation(libs.plume.util)
+  implementation(libs.reflection.util)
+  implementation(libs.guava) {
+    // So long as Guava only uses annotations from checker-qual, excluding it should not cause problems.
+    exclude group: "org.checkerframework"
+  }
+  implementation(libs.asm)
+  testImplementation(libs.junit)
+  testImplementation(project(":checker-qual"))
+}
+
+
+shadowJar {
+  destinationDirectory = file("${projectDir}/dist")
+  includeEmptyDirs = false
+  archiveFileName = "annotation-file-utilities-all.jar"
+  // Don't include any class from the Checker Framework.
+  // This should just be checker-qual.
+  exclude("org/checkerframework/checker/**")
+  exclude("org/checkerframework/framework/**")
+  exclude("org/checkerframework/dataflow/**")
+}
+
+// Shadowing Test Sources and Dependencies
+
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
+import java.nio.file.Files
+
+tasks.register("skinnyJar", ShadowJar) {
+  dependsOn(compileJava)
+  description = "Builds annotation-file-utilities.jar with only scene-lib and annotation-file-utilities classes."
+  includeEmptyDirs = false
+  destinationDirectory = file("${projectDir}/dist")
+  archiveFileName = "annotation-file-utilities.jar"
+  include("org/checkerframework/afu/scenelib/**/*.class")
+  include("org/checkerframework/afu/annotator/**/*.class")
+}
+
+tasks.register("testExample", JavaExec) {
+  dependsOn(compileTestJava)
+  description = "Run the scene-lib example test."
+
+  String outputDir = "${layout.buildDirectory.get()}/example-test/"
+  String resourceDir = "${projectDir}/src/test/resources/annotations/tests/executable/"
+
+  classpath(files(sourceSets.test.java.classesDirectory))
+  classpath += sourceSets.test.compileClasspath
+  mainClass = "org.checkerframework.afu.scenelib.test.executable.Example"
+
+  args = [
+    "${resourceDir}/example-input.jaif",
+    "foo.Bar",
+    "${outputDir}/example-output.jaif"
+  ]
+
+  doFirst {
+    file(outputDir).mkdir()
+    new File("${outputDir}/example-stdout.jaif").createNewFile()
+
+    standardOutput = new FileOutputStream("${outputDir}/example-stdout.jaif")
+  }
+  doLast {
+
+    byte[] goalJaif = Files.readAllBytes(new File(resourceDir, "example-output.jaif.goal").toPath())
+    byte[] outputJaif = Files.readAllBytes(new File(outputDir, "example-output.jaif").toPath())
+    if (!Arrays.equals(goalJaif, outputJaif)) {
+      throw new GradleException("In ${outputDir}, file example-output.jaif does not match goal.")
+    }
+
+    byte[] goalStdOut = Files.readAllBytes(new File(resourceDir, "example-stdout.jaif.goal").toPath())
+    byte[] stdOut = Files.readAllBytes(new File(outputDir, "example-stdout.jaif").toPath())
+    if (!Arrays.equals(goalStdOut, stdOut)) {
+      throw new GradleException("In ${outputDir}, file example-stdout.jaif does not match goal.")
+    }
+  }
+}
+
+tasks.register("testAnnotator", Exec) {
+  dependsOn(shadowJar)
+  description = "Run the annotator test."
+  group = "Verification"
+  workingDir = "${projectDir}/tests/"
+  executable = "make"
+}
+
+tasks.register("cleanTestAnnotator", Exec) {
+  description = "Clean the annotator test."
+  workingDir = "tests/"
+  executable = "make"
+  args("clean")
+}
+
+clean {
+  dependsOn(cleanTestAnnotator)
+  delete("dist/annotation-file-utilities.jar", "dist/annotation-file-utilities-all.jar", "annotation-tools.zip")
+}
+
+test.dependsOn(testExample)
+test.dependsOn(testAnnotator)
+
+tasks.register("updateUserOptions") {
+  dependsOn(
+      "updateUserOptionsJavadoc",
+      "updateUserOptionsHtml"
+      )
+}
+
+tasks.register("updateUserOptionsJavadoc", Javadoc) {
+  dependsOn("assemble")
+  description = "Updates documentation of command-line arguments in Javadoc."
+
+  // Include only sources from annotation-file-utilities, not from scene-lib.
+  source = fileTree(dir: "src", include: "**/*.java")
+  exclude("org.checkerframework.afu.scenelib.io.classfile/**")
+  classpath = project.sourceSets.main.compileClasspath + project.sourceSets.main.runtimeClasspath
+  options.memberLevel = JavadocMemberLevel.PRIVATE
+  options.docletpath = project.sourceSets.main.runtimeClasspath as List
+  options.doclet = "org.plumelib.options.OptionsDoclet"
+  options.addStringOption("docfile", "${projectDir}/src/annotator/Main.java")
+  options.addStringOption("format", "javadoc")
+  options.addStringOption("i", "-quiet")
+  options.addStringOption("source", "8")
+  options.noTimestamp(false)
+  title = ""
+}
+
+tasks.register("updateUserOptionsHtml", Javadoc) {
+  dependsOn("assemble")
+  description = "Updates documentation of command-line arguments in the manual."
+
+  // Include only sources from annotation-file-utilities, not from scene-lib.
+  source = fileTree(dir: "src", include: "**/*.java")
+  exclude("org.checkerframework.afu.scenelib.io.classfile/**")
+  classpath = project.sourceSets.main.compileClasspath + project.sourceSets.main.runtimeClasspath
+  options.memberLevel = JavadocMemberLevel.PRIVATE
+  options.docletpath = project.sourceSets.main.runtimeClasspath as List
+  options.doclet = "org.plumelib.options.OptionsDoclet"
+  options.addStringOption("docfile", "${projectDir}/annotation-file-utilities.html")
+  options.addStringOption("format", "html")
+  options.addStringOption("i", "-quiet")
+  options.addStringOption("source", "8")
+  options.noTimestamp(false)
+  title = ""
+}
+
+tasks.named("assemble") {
+  dependsOn(shadowJar)
+  dependsOn(skinnyJar)
+}

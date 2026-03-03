@@ -14,7 +14,7 @@ public class Marks5 {
   // unless BOTH are empty, in which case return an empty Optional.
 
   Optional<BigDecimal> clever(Optional<BigDecimal> first, Optional<BigDecimal> second) {
-    @SuppressWarnings({"methodref.inference.unimplemented", "methodref.receiver"})
+    @SuppressWarnings("methodref.receiver")
     Optional<BigDecimal> result =
         Stream.of(first, second)
             .filter(Optional::isPresent)
@@ -33,10 +33,11 @@ public class Marks5 {
     return result;
   }
 
-  // The use of `map(Optional::of)` creates Optional<Optional>, so a warning should be issued there.
+  // The use of `map(Optional::of)` creates Optional<Optional>, so a warning should be issued
+  // there.
   Optional<BigDecimal> moreClever(Optional<BigDecimal> first, Optional<BigDecimal> second) {
     Optional<BigDecimal> result =
-        // :: error: (argument)
+        // :: error: [argument]
         first.map(b -> second.map(b::add).orElse(b)).map(Optional::of).orElse(second);
     return result;
   }

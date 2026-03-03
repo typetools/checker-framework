@@ -1,0 +1,62 @@
+package :
+annotation @A: @java.lang.annotation.Target(value={TYPE_USE})
+annotation @B: @java.lang.annotation.Target(value={TYPE_USE})
+annotation @C: @java.lang.annotation.Target(value={TYPE_USE})
+annotation @D: @java.lang.annotation.Target(value={TYPE_USE})
+
+class MemberReference:
+
+    field o1:
+        reference *0: @A
+
+    field o2:
+        reference *0: @A
+
+    field o3:
+        reference *0: @A
+            inner-type 3, 0: @B
+
+    field o4:
+        reference *0: @A
+
+    field o5:
+        reference *0: @B
+            inner-type 0, 0: @A
+
+    field o6:
+        reference *0: @A
+
+    field o9:
+        call *0:
+            typearg 0: @A
+
+    field o10:
+        reference *0: @A
+            inner-type 3, 0: @B
+
+    field o11:
+        reference *0: @A
+
+    field o12:
+        reference *0: @A
+            inner-type 3, 0: @B
+            typearg 0: @C
+
+    field o13:
+        reference *0: @A
+            inner-type 3, 0: @B
+            typearg 0: @C
+
+    field o14:
+        reference *0: @A
+            inner-type 3, 0: @B
+            inner-type 1, 0, 3, 0: @C
+            typearg 0: @D
+
+    field o15:
+        reference *0: @B
+            inner-type 0, 0: @A
+
+    method main([Ljava/lang/String;)V:
+        reference #27: @A
+

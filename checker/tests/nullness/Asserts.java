@@ -17,7 +17,7 @@ public class Asserts {
   void correctAssertExpr() {
     String s = null;
     assert s == null : "@AssumeAssertion(nullness)";
-    // :: error: (dereference.of.nullable)
+    // :: error: [dereference.of.nullable]
     s.getClass(); // error
   }
 
@@ -29,7 +29,7 @@ public class Asserts {
     assert ac.vals[i] != null : "@AssumeAssertion(nullness)";
     @NonNull Object o = ac.vals[i];
     i = 10;
-    // :: error: (assignment)
+    // :: error: [assignment]
     @NonNull Object o2 = ac.vals[i];
   }
 
@@ -46,7 +46,7 @@ public class Asserts {
       expression = {"#1", "#2"})
   boolean sameLength(final boolean @Nullable [] seq1, final boolean @Nullable [] seq2) {
     // don't bother with the implementation
-    // :: error: (contracts.conditional.postcondition)
+    // :: error: [contracts.conditional.postcondition]
     return true;
   }
 
@@ -57,7 +57,7 @@ public class Asserts {
   void testAssertBad(boolean @Nullable [] seq1, boolean @Nullable [] seq2) {
     assert sameLength(seq1, seq2);
     // the @EnsuresNonNullIf is not taken from the assert, as it doesn't contain "nullness"
-    // :: error: (accessing.nullable)
+    // :: error: [accessing.nullable]
     if (seq1[0]) {}
   }
 
@@ -72,7 +72,7 @@ public class Asserts {
   }
 
   void testAssertOr(@Nullable Object o) {
-    // :: error: (dereference.of.nullable)
+    // :: error: [dereference.of.nullable]
     assert o != null || o.hashCode() > 6;
   }
 }

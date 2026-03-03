@@ -11,9 +11,9 @@ public class RestrictedPolymorphism {
 
   void client() {
     foo(sn, sn);
-    // :: error: (argument)
+    // :: error: [argument]
     foo(sn, un);
-    // :: error: (argument)
+    // :: error: [argument]
     foo(un, sn);
     foo(un, un);
   }

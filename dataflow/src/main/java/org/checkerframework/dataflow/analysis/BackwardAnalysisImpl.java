@@ -28,7 +28,7 @@ import org.checkerframework.javacutil.BugInCF;
  *
  * @param <V> the abstract value type to be tracked by the analysis
  * @param <S> the store type used in the analysis
- * @param <T> the transfer function type that is used to approximate runtime behavior
+ * @param <T> the transfer function type that is used to approximate run-time behavior
  */
 public class BackwardAnalysisImpl<
         V extends AbstractValue<V>, S extends Store<S>, T extends BackwardTransferFunction<V, S>>
@@ -78,7 +78,7 @@ public class BackwardAnalysisImpl<
     try {
       init(cfg);
       while (!worklist.isEmpty()) {
-        Block b = worklist.poll();
+        Block b = worklist.remove();
         performAnalysisBlock(b);
       }
     } finally {
@@ -249,12 +249,12 @@ public class BackwardAnalysisImpl<
    * @param pred the basic block
    * @param node the node of the basic block {@code b}
    * @param s the store being added
-   * @param addBlockToWorklist whether the basic block {@code b} should be added back to {@code
+   * @param addBlockToWorklist true if the basic block {@code b} should be added back to {@code
    *     Worklist}
    */
   protected void addStoreAfter(Block pred, @Nullable Node node, S s, boolean addBlockToWorklist) {
-    // If the block pred is an exception block, decide whether the block of passing node is an
-    // exceptional successor of the block pred
+    // If the block `pred` is an exception block, decide whether the block of passing node is an
+    // exceptional successor of the block `pred`.
     TypeMirror excSuccType = getSuccExceptionType(pred, node);
     if (excSuccType != null) {
       if (isIgnoredExceptionType(excSuccType)) {
@@ -323,7 +323,7 @@ public class BackwardAnalysisImpl<
    * @return the store right after the given block
    */
   protected @Nullable S getStoreAfter(Block b) {
-    return readFromStore(outStores, b);
+    return outStores.get(b);
   }
 
   @Override

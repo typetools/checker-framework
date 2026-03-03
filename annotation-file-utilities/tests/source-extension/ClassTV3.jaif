@@ -1,0 +1,16 @@
+package GUT.quals:
+annotation @Peer:
+annotation @Rep:
+annotation @Any:
+
+package:
+class ClassTV3:
+bound 0 & 0: @GUT.quals.Peer
+
+package:
+class ClassTV3:
+bound 1 & 0: @GUT.quals.Rep
+
+package:
+class ClassTV3:
+bound 2 & 0: @GUT.quals.Any

@@ -222,13 +222,13 @@ public class NullnessTransfer
         }
       }
 
-      AnnotationMirrorSet secondAnnos =
-          secondValue != null ? secondValue.getAnnotations() : new AnnotationMirrorSet();
-      if (nullnessTypeFactory.containsSameByClass(secondAnnos, PolyNull.class)) {
+      if (secondValue != null
+          && nullnessTypeFactory.containsSameByClass(
+              secondValue.getAnnotations(), PolyNull.class)) {
         thenStore = thenStore == null ? res.getThenStore() : thenStore;
         elseStore = elseStore == null ? res.getElseStore() : elseStore;
         // TODO: methodTree is null for lambdas.  Handle that case.  See Issue3850.java.
-        MethodTree methodTree = analysis.getContainingMethod(secondNode.getTree());
+        MethodTree methodTree = analysis.getEnclosingMethod(secondNode.getTree());
         ExecutableElement methodElem =
             methodTree == null ? null : TreeUtils.elementFromDeclaration(methodTree);
         if (notEqualTo) {
@@ -338,9 +338,11 @@ public class NullnessTransfer
   public TransferResult<NullnessValue, NullnessStore> visitMethodAccess(
       MethodAccessNode n, TransferInput<NullnessValue, NullnessStore> p) {
     TransferResult<NullnessValue, NullnessStore> result = super.visitMethodAccess(n, p);
-    // In contrast to the conditional makeNonNull in visitMethodInvocation, this
-    // makeNonNull is unconditional, as the receiver is definitely non-null after the access.
-    makeNonNull(result, n.getReceiver());
+    // The receiver of an instance method access is non-null. A static method access does not
+    // ensure that the receiver is non-null.
+    if (!n.isStatic()) {
+      makeNonNull(result, n.getReceiver());
+    }
     return result;
   }
 
@@ -348,7 +350,11 @@ public class NullnessTransfer
   public TransferResult<NullnessValue, NullnessStore> visitFieldAccess(
       FieldAccessNode n, TransferInput<NullnessValue, NullnessStore> p) {
     TransferResult<NullnessValue, NullnessStore> result = super.visitFieldAccess(n, p);
-    makeNonNull(result, n.getReceiver());
+    // The receiver of an instance field access is non-null. A static field access does not
+    // ensure that the receiver is non-null.
+    if (!n.isStatic()) {
+      makeNonNull(result, n.getReceiver());
+    }
     return result;
   }
 
@@ -391,7 +397,7 @@ public class NullnessTransfer
     Node receiver = n.getTarget().getReceiver();
     if (nonNullAssumptionAfterInvocation
         || isMethodSideEffectFree
-        || JavaExpression.fromNode(receiver).isUnassignableByOtherCode()) {
+        || !JavaExpression.fromNode(receiver).isAssignableByOtherCode()) {
       // Make receiver non-null.
       makeNonNull(result, receiver);
     }
@@ -407,7 +413,7 @@ public class NullnessTransfer
       if (methodParams.get(i).hasPrimaryAnnotation(NONNULL)
           && (nonNullAssumptionAfterInvocation
               || isMethodSideEffectFree
-              || JavaExpression.fromTree(methodArgs.get(i)).isUnassignableByOtherCode())) {
+              || !JavaExpression.fromTree(methodArgs.get(i)).isAssignableByOtherCode())) {
         makeNonNull(result, n.getArgument(i));
       }
     }
@@ -424,7 +430,7 @@ public class NullnessTransfer
       }
       if (isKeyFor) {
         AnnotatedTypeMirror receiverType = nullnessTypeFactory.getReceiverType(n.getTree());
-        if (!hasNullableValueType(receiverType)) {
+        if (!isValueTypeNullable(receiverType)) {
           makeNonNull(result, n);
           refineToNonNull(result);
         }
@@ -440,7 +446,7 @@ public class NullnessTransfer
    * @param mapOrSubtype the Map type, or a subtype
    * @return true if mapType's value type is @Nullable
    */
-  private boolean hasNullableValueType(AnnotatedTypeMirror mapOrSubtype) {
+  private boolean isValueTypeNullable(AnnotatedTypeMirror mapOrSubtype) {
     AnnotatedDeclaredType mapType =
         AnnotatedTypes.asSuper(nullnessTypeFactory, mapOrSubtype, MAP_TYPE);
     int numTypeArguments = mapType.getTypeArguments().size();

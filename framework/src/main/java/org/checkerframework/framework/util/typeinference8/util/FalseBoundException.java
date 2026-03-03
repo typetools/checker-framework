@@ -10,7 +10,7 @@ public class FalseBoundException extends RuntimeException {
   private static final long serialVersionUID = 1;
 
   /**
-   * Creates a false bound exception
+   * Creates a false bound exception.
    *
    * @param constraint the constraint the was not resolved
    * @param result the result of reduction

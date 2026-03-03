@@ -1,6 +1,5 @@
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.framework.qual.RequiresQualifier;
-import org.checkerframework.framework.test.*;
 import org.checkerframework.framework.testchecker.util.*;
 
 // various tests for the precondition mechanism
@@ -15,7 +14,7 @@ public class FieldShadowing {
     @RequiresQualifier(expression = "f", qualifier = Odd.class)
     int reqSub() {
       @Odd String l2 = f;
-      // :: error: (assignment)
+      // :: error: [assignment]
       @Odd String l1 = super.f;
       int i;
       i = 1;
@@ -25,7 +24,7 @@ public class FieldShadowing {
     @Pure
     @RequiresQualifier(expression = "super.f", qualifier = Odd.class)
     int reqSuper() {
-      // :: error: (assignment)
+      // :: error: [assignment]
       @Odd String l2 = f;
       @Odd String l1 = super.f;
       return 1;
@@ -33,14 +32,14 @@ public class FieldShadowing {
 
     void t1(@Odd String p1) {
       f = p1;
-      // :: error: (contracts.precondition)
+      // :: error: [contracts.precondition]
       reqSuper();
       reqSub();
     }
 
     void t2(@Odd String p1) {
       super.f = p1;
-      // :: error: (contracts.precondition)
+      // :: error: [contracts.precondition]
       reqSub();
       reqSuper();
     }

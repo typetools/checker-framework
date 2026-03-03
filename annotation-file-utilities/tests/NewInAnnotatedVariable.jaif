@@ -1,0 +1,39 @@
+package:
+annotation @NonNull:
+
+package:
+class NewInAnnotatedVariable:
+field b1:
+new *0: @NonNull
+
+package:
+class NewInAnnotatedVariable:
+field b2:
+new *0: @NonNull
+
+package:
+class NewInAnnotatedVariable:
+field b3:
+new *0: @NonNull
+
+package :
+class NewInAnnotatedVariable:
+field b4:
+type: @NonNull
+
+package :
+class NewInAnnotatedVariable:
+field b4:
+type:
+inner-type 0, 0: @NonNull
+
+package :
+class NewInAnnotatedVariable:
+field b4:
+new *0: @NonNull
+
+package :
+class NewInAnnotatedVariable:
+field b4:
+new *0:
+inner-type 0, 0: @NonNull

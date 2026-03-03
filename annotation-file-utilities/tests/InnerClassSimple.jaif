@@ -1,0 +1,13 @@
+package java.lang:
+annotation @Tainted: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+annotation @DoesNotExist: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package org.checkerframework.afu.annotator.tests:
+class InnerClassSimple$ActualInnerClass: @java.lang.Tainted
+
+    field d:
+        type: @java.lang.Tainted
+
+package org.checkerframework.afu.annotator.tests:
+class InnerClassSimple$ActualInnerClass: @java.lang.DoesNotExist
+

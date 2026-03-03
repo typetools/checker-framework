@@ -12,21 +12,21 @@ interface NNConsumerLPB {
 
 class LambdaParamBody {
 
-  // :: error: (lambda.param)
+  // :: error: [lambda.param]
   ConsumerLPB fn0 = (String i) -> i.toString();
   ConsumerLPB fn2 =
       (@Nullable String i) -> {
-        // :: error: (dereference.of.nullable)
+        // :: error: [dereference.of.nullable]
         i.toString();
       };
   ConsumerLPB fn3 =
-      // :: error: (lambda.param)
+      // :: error: [lambda.param]
       (String i) -> {
         i.toString();
       };
   ConsumerLPB fn3b =
       (i) -> {
-        // :: error: (dereference.of.nullable)
+        // :: error: [dereference.of.nullable]
         i.toString();
       };
 
@@ -40,7 +40,7 @@ class LambdaParamBody {
       };
   NNConsumerLPB fn5 =
       (@Nullable String i) -> {
-        // :: error: (dereference.of.nullable)
+        // :: error: [dereference.of.nullable]
         i.toString();
       };
   NNConsumerLPB fn6 =

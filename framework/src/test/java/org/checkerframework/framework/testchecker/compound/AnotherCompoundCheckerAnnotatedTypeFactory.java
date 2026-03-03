@@ -23,6 +23,7 @@ public class AnotherCompoundCheckerAnnotatedTypeFactory extends BaseAnnotatedTyp
    *
    * @param checker the checker
    */
+  @SuppressWarnings("this-escape")
   public AnotherCompoundCheckerAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     this.postInit();

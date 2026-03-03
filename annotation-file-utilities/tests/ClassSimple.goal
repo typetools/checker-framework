@@ -1,0 +1,5 @@
+package org.checkerframework.afu.annotator.tests;
+
+@java.lang.Tainted public class ClassSimple {
+  public Integer field;
+}
