@@ -30,9 +30,9 @@ fi
 # ./gradlew test --warning-mode=all
 
 if [ "$arg" != "part2" ]; then
-  ./gradlew  junitPart2 --warning-mode=all
+  ./gradlew junitPart1 --warning-mode=all
 fi
 
 if [ "$arg" != "part1" ]; then
-  ./gradlew junitPart1 --warning-mode=all
+  ./gradlew junitPart2 --warning-mode=all
 fi
