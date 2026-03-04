@@ -25,7 +25,8 @@ jobs:
 
   - job: canary_jobs
     dependsOn:
-      - junit_jdk[]canary_version
+      - junit_part1_jdk[]canary_version
+      - junit_part2_jdk[]canary_version
       - nonjunit_jdk[]canary_version
       - inference_part1_jdk[]canary_version
       - inference_part2_jdk[]canary_version
@@ -40,7 +41,7 @@ jobs:
 junit_job(11)
 junit_job(17)
 junit_job(21)
-junit_job(25)
+junit_jobs(25)
 
 nonjunit_job(11)
 nonjunit_job(17)
