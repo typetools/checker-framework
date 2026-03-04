@@ -13,7 +13,7 @@ public class SimpleConfidential {
   }
 
   void confidentialRef(@Confidential String s) {
-    // :: error: (argument)
+    // :: error: [argument]
     executeNonConfidential(s);
     executeConfidential(s);
   }

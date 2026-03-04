@@ -3,7 +3,7 @@ import org.checkerframework.checker.confidential.qual.NonConfidential;
 
 public class ConfidentialToString {
   void confObj(@Confidential Object confObj) {
-    // :: error: (assignment)
+    // :: error: [assignment]
     @NonConfidential String nonConfRes = confObj.toString();
     @Confidential String confRes = confObj.toString();
   }

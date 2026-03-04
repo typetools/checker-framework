@@ -16,21 +16,21 @@ public class ConfidentialConcatenation {
     @Confidential String s_4 = s2 + s2;
 
     @NonConfidential String s_5 = s1 + s1;
-    // :: error: (assignment)
+    // :: error: [assignment]
     @NonConfidential String s_6 = s1 + s2;
-    // :: error: (assignment)
+    // :: error: [assignment]
     @NonConfidential String s_7 = s2 + s1;
-    // :: error: (assignment)
+    // :: error: [assignment]
     @NonConfidential String s_8 = s2 + s2;
   }
 
   void concatenationInvocation(@NonConfidential String s1, @Confidential String s2) {
     executeNonConfidential(s1 + s1);
-    // :: error: (argument)
+    // :: error: [argument]
     executeNonConfidential(s1 + s2);
-    // :: error: (argument)
+    // :: error: [argument]
     executeNonConfidential(s2 + s1);
-    // :: error: (argument)
+    // :: error: [argument]
     executeNonConfidential(s2 + s2);
 
     executeConfidential(s1 + s1);
@@ -41,7 +41,7 @@ public class ConfidentialConcatenation {
 
   void compoundConcatenation(@NonConfidential String s1, @Confidential String s2) {
     s1 += s1;
-    // :: error: (compound.assignment)
+    // :: error: [compound.assignment]
     s1 += s2;
 
     s2 += s2;
