@@ -224,18 +224,18 @@ public class NullnessVisitor
   protected boolean commonAssignmentCheck(
       AnnotatedTypeMirror varType,
       AnnotatedTypeMirror valueType,
-      Tree valueTree,
+      Tree errorLocation,
       @CompilerMessageKey String errorKey,
       Object... extraArgs) {
     if (TypesUtils.isPrimitive(varType.getUnderlyingType())
         && !TypesUtils.isPrimitive(valueType.getUnderlyingType())) {
-      boolean succeed = checkForNullability(valueType, valueTree, UNBOXING_OF_NULLABLE);
+      boolean succeed = checkForNullability(valueType, errorLocation, UNBOXING_OF_NULLABLE);
       if (!succeed) {
         // Only issue the unboxing of nullable error.
         return false;
       }
     }
-    return super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, extraArgs);
+    return super.commonAssignmentCheck(varType, valueType, errorLocation, errorKey, extraArgs);
   }
 
   /** Case 1: Check for null dereferencing. */
