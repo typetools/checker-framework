@@ -21,7 +21,7 @@ public class WildcardNullableKey {
 
     Holder<Map<@Nullable String, String>> x = new Holder<>(map);
 
-    // :: error: (assignment)
+    // :: error: [assignment]
     Map<String, ?> y = x.getF();
 
     y.keySet().iterator().next().toString();
