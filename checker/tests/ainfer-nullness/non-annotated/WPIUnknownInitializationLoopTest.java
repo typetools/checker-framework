@@ -69,7 +69,7 @@ class SimpleMoveValidator implements MoveValidator {
 
   public void test() {
     PlayerDependentMoveValidator g1 = new PlayerDependentMoveValidator(game);
-    // :: warning: (assignment)
+    // :: warning: [assignment]
     this.game = g1.game;
   }
 }
