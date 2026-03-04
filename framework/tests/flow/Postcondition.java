@@ -315,11 +315,11 @@ public class Postcondition {
   }
 
   /** *** errors for invalid postconditions ***** */
-  // :: warning: (contracts.toptype)
+  // :: warning: [contracts.toptype]
   @EnsuresQualifier(expression = "f1", qualifier = Unqualified.class)
   void noOpForTesting() {}
 
-  // :: warning: (contracts.toptype)
+  // :: warning: [contracts.toptype]
   @EnsuresQualifierIf(result = true, expression = "f1", qualifier = Unqualified.class)
   boolean isF1NotSet() {
     return f1 == null;
