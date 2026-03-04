@@ -1,0 +1,149 @@
+\htmlhr
+\chapterAndLabel{Confidential Checker for information leakage}{confidential-checker}
+
+The Confidential Checker identifies
+\href{https://cwe.mitre.org/data/definitions/1417.html}{sensitive information
+exposure}, also known as information leakage. An information leak occurs
+when private information is revealed by being passed to a public-facing
+sink, such as website and app user interfaces, log files, error messages,
+and URL targets.  Private information includes PII (personally identifiable
+information), passwords, local file paths, or whatever data the user
+chooses.
+
+The Confidential Checker guarantees that no values marked as
+\emph{confidential} flow to a location marked as \emph{non-confidential}.
+
+It is the responsibility of the user to annotate sources and sinks as
+confidential or non-confidential.  Sources are locations where information
+is created, such as being read from a file.  Sinks are locations where
+information is used, such as being displayed on a screen or printed to a
+log.  The Confidential Checker ships with many sinks annotated, both in the
+JDK and in popular libraries, but the user may want to annotate more sinks.
+
+Since \code{@NonConfidential} is the default annotation, if a programmer
+forgets to annotate a sensitive source as \<@Confidential>, then there will
+be an information leak that the Confidential Checker cannot warn about.
+Once sources and sinks are annotated, the Confidential Checker guarantees
+that any other annotations in the program are consistent with those
+annotations, and that no information flows from confidential to
+non-confidential locations.
+
+Exposure may occur mistakenly --- in which case
+it should be fixed --- or with a benign objective in mind, such as when
+logging to aid troubleshooting.  After the Confidential Checker reveals a
+leak, it is up to the user to decide whether the leakage is acceptable.
+
+To run the Confidential Checker, supply one of these
+command-line options to javac:
+\begin{Verbatim}
+-processor ConfidentialChecker
+-processor org.checkerframework.checker.confidential.ConfidentialChecker
+\end{Verbatim}
+
+
+\sectionAndLabel{Only direct leakage, via a chain of assignments}{confidential-direct-only}
+
+The Confidential Checker does \emph{not} identify \emph{indirect}
+information flows, such as in:
+
+\begin{Verbatim}
+  // Information is leaked, but the Confidential Checker issues no error.
+  @Confidential boolean secret = ...;
+  @NonConfidential boolean revealed;
+  if (secret) {
+    revealed = true;
+  } else {
+    revealed = false;
+  }
+\end{Verbatim}
+
+
+\sectionAndLabel{Confidential annotations}{confidential-annotations}
+
+The Confidential Checker type system uses the following type qualifiers.
+Figure~\ref{fig-confidential-hierarchy} shows their subtyping hierarchy.
+
+\begin{description}
+\item[\refqualclass{checker/confidential/qual}{Confidential}]
+    An expression whose type is qualified with
+    \refqualclass{checker/confidential/qual}{Confidential} may evaluate to
+    a value that should not be exposed.
+\item[\refqualclass{checker/confidential/qual}{NonConfidential}]
+    The value of an expression of type
+    \refqualclass{checker/confidential/qual}{NonConfidential} might be
+    exposed.  It is written on the formal parameter type of a method such
+    as \<println> that may leak its argument.  It is the default qualifier.
+\item[\refqualclass{checker/confidential/qual}{UnknownConfidential}]
+    indicates a value whose confidentiality is unknown.
+    \code{@UnknownConfidential} is a supertype of \code{@Confidential}
+    and \code{@NonConfidential}.
+\item[\refqualclass{checker/confidential/qual}{PolyConfidential}]
+    indicates qualifier polymorphism. For a description of qualifier polymorphism,
+    see Section~\ref{method-qualifier-polymorphism}.
+\item[\refqualclass{checker/confidential/qual}{BottomConfidential}]
+    is the bottom qualifier. Programmers rarely need to write it.
+\end{description}
+
+
+\begin{figure}
+\includeimage{confidential}{5.5cm}
+\caption{The subtyping relationship of the Confidential Checker's qualifiers.
+  Any cast to \refqualclass{checker/confidential/qual}{Confidential} is permitted.
+  Qualifiers in gray are used internally by the type system and should rarely
+  be written by a programmer.
+}
+\label{fig-confidential-hierarchy}
+\end{figure}
+
+The Confidential Checker's \code{@Confidential} qualifier has similarities
+to the Taint Checker's \code{@Tainted} qualifier.  One difference is that
+there is no subtyping relationship between \code{@Confidential} and
+\code{@NonConfidential}. However, the external behavior of these annotations
+can strongly resemble that of a supertype and subtype, as casts from the
+latter to the former are always permitted. As a result, while the
+Confidential Checker (correctly) does not allow \code{@Confidential} values
+to flow to \code{@NonConfidential} sinks, it does allow
+\code{@NonConfidential} values in \code{@Confidential} sinks.
+
+\sectionAndLabel{Concatenation}{confidential-concatenation}
+
+Concatenation of \code{@Confidential} and \code{@NonConfidential} values
+results in a \code{@Confidential} value. In other words, concatenation of
+\code{@Confidential} and \code{@NonConfidential} values are most narrowly typed
+as follows:
+
+\begin{Verbatim}
+    @Confidential String c;
+    @NonConfidential String nc;
+    c + c // has type @Confidential
+    c + nc // has type @Confidential
+    nc + c // has type @Confidential
+    nc + nc // has type @NonConfidential
+\end{Verbatim}
+
+
+\sectionAndLabel{Library annotations}{confidential-library-annotations}
+
+The Confidential Checker provides annotations for certain public-facing
+sinks.  For instance, methods in Android's \code{TextView} class have a
+formal parameter of type \code{@NonConfidential CharSequence}, indicating
+that they display the argument on the user's viewport.  The Confidential
+Checker will issue a type error anywhere that a \<@Confidential> value can
+be passed to such functions.
+
+The built-in annotations appear in the Checker
+Framework's annotated JDK and in stub files in directory
+\<checker/\allowbreak src/\allowbreak main/\allowbreak java/\allowbreak org/\allowbreak checkerframework/\allowbreak checker/\allowbreak confidential/>.
+A developer can write more annotations in stub files
+(\sectionpageref{stub}), especially for libraries that do not already have
+annotations.  (Please share these with the Checker Framework developers, so
+that they can distribute them to all users.)
+
+If a program contains a method that tests whether a run-time value is
+confidential, use annotation
+\refqualclass{framework/qual}{EnsuresQualifierIf} (\sectionpageref{type-refinement}).
+
+If a program contains a method that takes a possibly-confidential argument
+and returns a non-confidential result, then suppress the warning
+(\chapterpageref{suppressing-warnings}) after manually validating the
+method's behavior.
