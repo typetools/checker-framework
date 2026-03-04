@@ -29,7 +29,7 @@ import org.checkerframework.javacutil.TypesUtils;
  * may be types or wildcards and may mention inference variables).
  */
 public class CaptureBound {
-  /** {@code G<A1, ..., An>} sometimes called the right hand side. */
+  /** {@code G<A1, ..., An>} sometimes called the right-hand side. */
   private final AbstractType capturedType;
 
   /**
@@ -196,14 +196,14 @@ public class CaptureBound {
   private static class CaptureTuple {
 
     /**
-     * Fresh inference variable (in the left hand side of the capture). (Also referred to as beta in
+     * Fresh inference variable (in the left-hand side of the capture). (Also referred to as beta in
      * the some places in the JLS.) For example {@code a1} in {@code G<a1, ..., an> = capture(G<A1,
      * ..., An>)}.
      */
     public final CaptureVariable alpha;
 
     /**
-     * Type argument in the right hand side for the capture. For example {@code A1} in {@code G<a1,
+     * Type argument in the right-hand side for the capture. For example {@code A1} in {@code G<a1,
      * ..., an> = capture(G<A1, ..., An>)}.
      */
     public final AbstractType capturedTypeArg;

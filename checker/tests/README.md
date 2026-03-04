@@ -112,14 +112,14 @@ or by creating the test and observing the failure.
 To indicate the expected failure, insert the line
 
 ```java
-  // :: error: (<error-message-key>)
+  // :: error: [<error-message-key>]
 ```
 
 directly preceding the expected error line.
 If a warning rather than an error is expected, insert the line
 
 ```java
-  // :: warning: (<warning-message-key>)
+  // :: warning: [<warning-message-key>]
 ```
 
 If a stub parser warning is expected, insert the line
@@ -132,7 +132,7 @@ If multiple errors are expected on a single line, duplicate everything
 except the "//" comment characters, as in
 
 ```java
-  // :: error: (<error-message-key1>) :: error: (<error-message-key2>)
+  // :: error: [<error-message-key1>] :: error: [<error-message-key2>]
 ```
 
 If the expected failures line would be very long, you may break it across
@@ -146,7 +146,7 @@ So the final test case would be:
 public class MyNullnessTest {
   void method() {
     Object nullable = null;
-    // :: error: (dereference.of.nullable)
+    // :: error: [dereference.of.nullable]
     nullable.toString();
   }
 }
@@ -163,7 +163,7 @@ You can indicate an expected warning (as opposed to error) by using
 "warning:" instead of "error:", as in
 
 ```java
-  // :: warning: (nulltest.redundant)
+  // :: warning: [nulltest.redundant]
   assert val != null;
 ```
 
@@ -173,7 +173,7 @@ a warning from the same line of code:
 
 ```java
   @Regex String s1 = null;
-  // :: error: (assignment) :: warning: (cast.unsafe)
+  // :: error: [assignment] :: warning: [cast.unsafe]
   @Regex(3) String s2 = (@Regex(2) String) s;
 ```
 
@@ -182,7 +182,7 @@ syntax, expected errors can be specified in a separate file using the .out
 file extension.  These files contain lines of the following format:
 
 ```output
-:19: error: (dereference.of.nullable)
+:19: error: [dereference.of.nullable]
 ```
 
 The number between the colons is the line number of the expected error

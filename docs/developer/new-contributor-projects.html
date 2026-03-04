@@ -18,7 +18,12 @@
 <ul>
   <li><a href="#introduction">Introduction</a>
     <ul>
-      <li><a href="#get-started">How to get started: do a case study</a></li>
+      <li><a href="#get-started">How to get started: do a case study</a>
+        <ul>
+          <li><a href="#why-case-study">Why should you start with a case study?</a></li>
+          <li><a href="#case-study-purpose">What is the purpose of a case study?</a></li>
+          <li><a href="#case-study-process">The process of doing a case study</a></li>
+        </ul></li>
       <li><a href="#ask-questions">How to get help and ask questions</a></li>
       <li><a href="#types-of-projects">Types of projects</a></li>
     </ul></li>
@@ -26,6 +31,7 @@
     <ul>
       <li><a href="#case-study-signature">Signature strings</a></li>
       <li><a href="#case-study-signedness">Preventing mixed signed/unsigned computations</a></li>
+      <li><a href="#resource-leak-collections">Preventing resource leaks in collections of resources</a></li>
       <li><a href="#Whole-program_type_inference">Whole-program type inference</a></li>
       <li><a href="#sound-by-default">Sound checking by default</a></li>
       <li><a href="#case-study-android-support">Android support annotations</a></li>
@@ -38,13 +44,11 @@
     </ul></li>
   <li><a href="#create-new-type-system">Create a new type system</a>
     <ul>
-      <li><a href="#resource-leak-collections">Preventing resource leaks in collections of resources</a></li>
-      <li><a href="#ownership-type-system">Ownership type system</a></li>
       <li><a href="#nullness-queue">Nullness Checker precise handling of Queue.peek() and poll()</a></li>
       <li><a href="#non-empty-checker">Non-Empty Checker</a></li>
       <li><a href="#iteration-checker">Iteration Checker to prevent <code>NoSuchElementException</code></a></li>
       <li><a href="#custom-tainting-checking">Preventing injection vulnerabilities via specialized taint analysis</a></li>
-      <li><a href="#track-unsupported-operations">Warn about unsupported operations</a></li>
+      <li><a href="#ownership-type-system">Ownership type system</a></li>
       <li><a href="#overflow">Overflow checking</a></li>
     </ul></li>
   <li><a href="#cf-other">Enhance the toolset</a>
@@ -66,7 +70,6 @@
       <li><a href="#purity-inference">Side effect inference, also known as purity inference</a></li>
       <li><a href="#javadoc">Javadoc support</a></li>
     </ul></li>
-  <li><a href="#apply">How to apply to GSoC (relevant to GSoC students only)</a></li>
 </ul>
 <!-- end toc -->
 
@@ -162,6 +165,12 @@ Most of this document lists potential projects.  The projects are
 grouped roughly from easiest to most challenging.
 </p>
 
+<p>
+You do not need to understand everything in this long document.  Most
+contributors start by doing a single case study and exploring one project
+in depth.
+</p>
+
 
 <h2 id="get-started">How to get started: do a case study</h2>
 
@@ -174,12 +183,13 @@ grouped roughly from easiest to most challenging.
   the program it is analyzing.
 </p>
 
-<p>
-<b>Why should you start with a case study?</b>
+<h3 id="why-case-study">Why should you start with a case study?</h3>
+
   <!-- , instead of diving right into fixing
 bugs, designing a new type system, or making other changes to the Checker
 Framework?
 -->
+<p>
 Before you can contribute to any project, you must
 understand the tool from a user point of view, including its strengths,
 weaknesses, and how to use it.
@@ -188,18 +198,32 @@ learn about it and determine whether you would enjoy
 contributing to it.
 </p>
 
+<h3 id="case-study-purpose">What is the purpose of a case study?</h3>
+
 <p>
-<b>What is the purpose of a case study?</b>
-The primary result of your case study is that you will discover bugs in the
-subject program, or you will verify that it has no bugs (of some particular
-type).  If you find bugs in open-source code,
-and let us know when they are resolved.<br/>
-Another outcome of your case study is that you may discover bugs, limitations,
-or usability problems in the Checker Framework.  Please
-<a href="https://checkerframework.org/manual/#reporting-bugs">report them</a>.
-We'll try to fix them, or they might give you inspiration for
-improvements you would like to make to the Checker Framework.
+Here are three goals.
 </p>
+
+<ul>
+<li>
+Discover bugs in the subject program, or verify that it has no bugs (of
+some particular type).  If you find bugs in open-source code, please report
+them to the maintainers and let us know
+when they are resolved.
+</li>
+<li>
+Discover bugs, limitations,
+or usability problems in the Checker Framework.  Please
+<a href="https://checkerframework.org/manual/#reporting-bugs">report
+them</a>.  We'll try to fix them, or they might give you inspiration for
+improvements you would like to make to the Checker Framework.
+</li>
+<li>
+Increase your understanding of type systems and of the Checker Framework.
+</li>
+</ul>
+
+<h3 id="case-study-process">The process of doing a case study</h3>
 
 <p>
   You might want to start with a small program that you wrote,
@@ -214,7 +238,7 @@ improvements you would like to make to the Checker Framework.
     the Checker Framework documentation.</a>
   <li>
     Choose an existing library or program to type-check.
-    A program that is about 1000 lines long is a good size for your first
+    A program that is about 1000 lines long is a good size for your very first
     use of the Checker Framework, but you could use a smaller or larger one.
     The library or program should be under active maintenance; don't choose one
     that has not had a commit in the past year.
@@ -252,7 +276,7 @@ improvements you would like to make to the Checker Framework.
         execute, or else don't add the <code>if</code> statement.
       <li>If you add a <code>@SuppressWarnings</code> annotation,
         <a href="https://checkerframework.org/manual/#suppresswarnings-best-practices-smallest-scope">write
-        it on the smallest possible scope</a> and
+        it on the smallest possible scope</a>.  Also
         <a href="https://checkerframework.org/manual/#suppresswarnings-best-practices-justification">explain
         why</a> the checker warning is a false positive and you are certain
         the code is safe.
@@ -358,7 +382,6 @@ to the issue tracker.
 This document gives a few suggestions in each category.
 </p>
 
-
 <h1 id="evaluate-type-system">Evaluate a type system or a Checker Framework feature</h1>
 
 <p>
@@ -430,6 +453,10 @@ One possible outcome is to identify
     string format is not defined.
   </li>
 </ul>
+
+<p>
+  Project size: medium
+</p>
 
 
 <h2 id="case-study-signedness">Preventing mixed signed/unsigned computations</h2>
@@ -541,6 +568,46 @@ The methodology is:
   <li><a href="https://bytonic.de/html/jake2.html">Jake2</a></li>
    -->
 
+<p>
+  Project size: medium
+</p>
+
+
+<h2 id="resource-leak-collections">Preventing resource leaks in collections of resources</h2>
+
+<p>
+The <a href="https://checkerframework.org/manual/#resource-leak-checker">Resource
+Leak Checker</a> ensures that resources (sockets, file descriptors,
+database connections, ...) are closed.  This prevents resource exhaustion,
+which can lead to crashes and denial-of-service attacks.  The Resource Leak
+Checker may be the second-most-used checker in the Checker Framework (after
+the Nullness Checker).  Real-world users have asked us to extend it to
+handle <em>collections</em> of resources.
+</p>
+
+<p>
+<a href="https://github.com/typetools/checker-framework/pull/7166">Pull
+request #7166</a> implements resource leak checking for collections.  The
+goal of this project is to finish up the work by doing case studies.
+The <a href="https://github.com/njit-jerse/specimin">Specimin tool</a> can
+extract just the parts of a project that are relevant to resource
+leak <em>collections</em>, so it may be possible to type-check only a few
+hundred lines of a large project and be sure that there are no leaks
+related to collections of resources.
+</p>
+
+<p>
+Maybe the case studies will be easy to do and this project is very quickly
+finished.  Or, maybe as the checker is run on more and more projects, we
+will discover more and more different ways that real-world projects use
+collections of resources, and this will require improvements and extensions
+to the algorithm and implementation.
+</p>
+
+<p>
+  Project size: medium
+</p>
+
 
 <h2 id="Whole-program_type_inference">Whole-program type inference</h2>
 
@@ -556,6 +623,15 @@ a <a href="https://checkerframework.org/manual/#whole-program-inference">whole-p
     inference</a> that inserts type qualifiers in the user's program.
 It works well on some programs, but needs more enhancements to work well on
 all programs.
+</p>
+
+<p>
+A valuable project is running whole-program inference to determine how it
+needs to be enhanced.
+</p>
+
+<p>
+  Project size: medium
 </p>
 
 
@@ -596,6 +672,10 @@ Pipelines for your fork and then changing the default behavior in a
 branch.  The Azure Pipelines job will show you what new warnings appear.
 </p>
 
+<p>
+  Project size: large
+</p>
+
 
 <h2 id="case-study-android-support">Android support annotations</h2>
 
@@ -619,6 +699,10 @@ in <a href="https://checkerframework.org/api/org/checkerframework/framework/type
   Then, do a case study to show the utility (or not) of
   pluggable type-checking, by comparison with how Android Studio currently
   checks the annotations.
+</p>
+
+<p>
+  Project size: small
 </p>
 
 
@@ -734,6 +818,14 @@ Alternately, you can
   its annotations are so heavily depended on by the Checker Framework.
 </p>
 
+<p>
+  Project priority: high
+</p>
+
+<p>
+  Project size: large
+</p>
+
 
 <h2 id="case-study-nullness-guava">Guava library</h2>
 
@@ -744,6 +836,10 @@ Alternately, you can
   find more errors (the Checker Framework has found nullness and indexing
   errors in Guava in the past) and would be a good case study to learn the
   limitations of the Nullness Checker.
+</p>
+
+<p>
+  Project size: large
 </p>
 
 
@@ -761,57 +857,6 @@ Checker Framework for easy use.
 Each of these projects requires you to design a <a href="https://checkerframework.org/manual/#creating-a-checker">new type system</a>,
 implement it, and perform case studies to demonstrate that it is both
 usable and effective in finding/preventing bugs.
-</p>
-
-
-<h2 id="resource-leak-collections">Preventing resource leaks in collections of resources</h2>
-
-<p>
-The <a href="https://checkerframework.org/manual/#resource-leak-checker">Resource
-Leak Checker</a> ensures that resources (sockets, file descriptors,
-database connections, ...) are closed.  This prevents resource exhaustion,
-which can lead to crashes and denial-of-service attacks.  The Resource Leak
-Checker may be the second-most-used checker in the Checker Framework (after
-the Nullness Checker).  Real-world users have asked us to extend it to
-handle <em>collections</em> of resources.
-</p>
-
-<p>
-<a href="https://github.com/typetools/checker-framework/pull/7166">Pull
-request #7166</a> implements resource leak checking for collections.  The
-goal of this project is to finish up the work by doing case studies.
-The <a href="https://github.com/njit-jerse/specimin">Specimin tool</a> can
-extract just the parts of a project that are relevant to resource
-leak <em>collections</em>, so it may be possible to type-check only a few
-hundred lines of a large project and be sure that there are no leaks
-related to collections of resources.
-</p>
-
-<p>
-Maybe the case studies will be easy to do and this project is very quickly
-finished.  Or, maybe as the checker is run on more and more projects, we
-will discover more and more different ways that real-world projects use
-collections of resources, and this will require improvements and extensions
-to the algorithm and implementation.
-</p>
-
-
-<h2 id="ownership-type-system">Ownership type system</h2>
-
-<p>
-The <a href="https://checkerframework.org/manual/#resource-leak-annotations">lightweight
-ownership mechanism</a> of the Resource Leak Checker is not implemented as
-a type system, but it should be.  That would enable writing ownership
-annotations on generic type arguments, like <code>List&lt;@Owning
-Socket&gt;</code>.  It would also enable changing the Resource Leak Checker
-so that non-<code>@Owning</code> formal parameters do not have
-their <a href="https://checkerframework.org/manual/#resource-leak-owning-fields"><code>@MustCall</code>
-annotation erased</a>.
-</p>
-
-<!-- See https://docs.google.com/document/d/14Q0iIH_3cfKvGnoLtYDck64MEKkvvPKaW5t7nvaNuVA -->
-<p>
-  We have some notes on possible implementation strategies.
 </p>
 
 
@@ -856,7 +901,8 @@ exists in the Checker Framework, though it is not advertised.
 
 <p>
 When you are done, the Nullness Checker should issue only the <code>// ::</code> diagnostics from <code>checker/tests/nullness/IsEmptyPoll.java</code> &mdash; no more and no fewer.
-You can test that by running the Nullness Checker on the file, and when you are done you should delete the <code>// @skip-test</code> line so that the file is run as part of the Checker Framework test suite.
+You can test that by deleting the <code>// @skip-test</code> line, then
+running <code>./gradlew checkNullness</code> (run it in the top-level <code>checker-framework</code> directory).
 </p>
 
 <p>
@@ -866,6 +912,10 @@ You can test that by running the Nullness Checker on the file, and when you are 
   Checker verifies, without caring about code that the Nonempty Checker
   cannot verify.  The Optional Checker takes this approach in its
   integration with the Nonempty Checker.
+</p>
+
+<p>
+  Project size: large
 </p>
 
 
@@ -891,6 +941,10 @@ Its types are:
 
 <p>
 For information about what needs to be done, see <a href="https://github.com/typetools/checker-framework/issues/399">issue #399</a>.
+</p>
+
+<p>
+  Project size: large
 </p>
 
 
@@ -945,6 +999,14 @@ mentioned elsewhere in this document.
 Once
 case studies have demonstrated its effectiveness, then it can be released
 to the world, and a scientific paper can be written.
+</p>
+
+<p>
+  Project priority: low
+</p>
+
+<p>
+  Project size: medium
 </p>
 
 
@@ -1027,7 +1089,7 @@ studies showing the utility of compile-time taint checking.
     information flow
   </li>
   <li>
-    many of the <a href="http://cwe.mitre.org/top25/">CWE/SANS most
+    many of the <a href="https://cwe.mitre.org/top25/">CWE/SANS most
       dangerous software programming errors</a> (and the "on the cusp" ones too)
     <!-- More details appear in these files:
       ~/research/games/notes/notes
@@ -1040,77 +1102,40 @@ studies showing the utility of compile-time taint checking.
 For some microbenchmarks, see the Juliette test suite for Java from CWE.
 </p>
 
-
-<h2 id="track-unsupported-operations">Warn about unsupported operations</h2>
-
-<!-- This project is duplicated in the highlight section and in the Checker
- Framework's new-contributor-projects.html. -->
-
 <p>
-In Java, some objects do not fully implement their interface; they
-throw <code>UnsupportedOperationException</code> for some operations.  One
-example is <a href="https://docs.oracle.com/en/java/javase/11/core/creating-immutable-lists-sets-and-maps.html">unmodifiable collections</a>.  They throw the exception when a
-mutating operation is called, such
-as <code>add</code>, <code>addAll</code>, <code>put</code>, <code>remove</code>,
-etc.
+  Project priority: low
 </p>
 
 <p>
-The goal of this project is to
-design a compile-time verification tool to track which operations might not be supported.
-This tool will issue a warning whenever
-an <code>UnsupportedOperationException</code> might occur at run time.
-This helps programmers to avoid run-time exceptions (crashes) in their Java programs.
+  Project size: small
+</p>
+
+
+<h2 id="ownership-type-system">Ownership type system</h2>
+
+<p>
+The <a href="https://checkerframework.org/manual/#resource-leak-annotations">lightweight
+ownership mechanism</a> of the Resource Leak Checker is not implemented as
+a type system, but it should be.  That would enable writing ownership
+annotations on generic type arguments, like <code>List&lt;@Owning
+Socket&gt;</code>.  It would also enable changing the Resource Leak Checker
+so that non-<code>@Owning</code> formal parameters do not have
+their <a href="https://checkerframework.org/manual/#resource-leak-owning-fields"><code>@MustCall</code>
+annotation erased</a>.
 </p>
 
 <p>
-The research questions include:
-</p>
-<ul>
-  <li>Is it is possible to build a verification tool to prevent <code>UnsupportedOperationException</code>?  What design is effective?
-  </li>
-  <li>How difficult is such a tool to use, in terms of programmer effort and number of false alarms?
-  </li>
-  <li>Are potential <code>UnsupportedOperationException</code> exceptions
-  pervasive in Java programs?  Is it possible to eliminate them?
-  </li>
-</ul>
-
-<p>
-The methodology is:
-</p>
-<ol>
-  <li>design a static (compile-time) analysis
-  </li>
-  <li>implement it
-  </li>
-  <li>evaluate it on open-source projects
-  </li>
-  <li>report bugs in the projects, and improve the tool
-  </li>
-</ol>
-
-<p>
-Here is a possible design, as a pluggable type system.
-</p>
-<pre>
-  @Unmodifiable
-       |
-  @Modifiable
-</pre>
-<p>
-In other words, the <code>@Unmodifiable</code> type qualifier is a
-supertype of <code>@Modifiable</code>.  This means that a <code>@Modifiable
-    List</code> can be used where an <code>@Unmodifiable List</code> is
-expected, but not vice versa.
+  We have
+  some <a href="https://docs.google.com/document/d/14Q0iIH_3cfKvGnoLtYDck64MEKkvvPKaW5t7nvaNuVA">notes</a>
+  on possible implementation strategies.
 </p>
 
 <p>
-  <code>@Modifable</code> is the default, and
-  methods such
-as <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Arrays.html#asList(T...)">Arrays.asList</a>
-and <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Collections.html#emptyList()">Collections.emptyList</a>
-must be annotated to return the less-capable supertype.
+  Project priority: low
+</p>
+
+<p>
+  Project size: very large
 </p>
 
 
@@ -1220,6 +1245,14 @@ a loop (but maybe other approaches are possible):
   </li>
 </ul>
 
+<p>
+  Project priority: low
+</p>
+
+<p>
+  Project size: medium
+</p>
+
 
 <h1 id="cf-other">Enhance the toolset</h1>
 
@@ -1228,7 +1261,7 @@ a loop (but maybe other approaches are possible):
 
 <p>
   Sometimes, the best way to avoid a checker warning is to use an annotated
-  library method.  Consider this code:
+  library method.  Consider this code (which does not do so):
 </p>
 
 <pre>
@@ -1257,14 +1290,18 @@ import org.plumelib.reflection.Signatures;
 However, users may not know about the library method.  Therefore, the
 Checker Framework should issue a warning message, along with the error
 message, notifying users of the library method.  For example, the Signature
-String Checker would heuristically mention
-the <a href="http://plumelib.org/reflection-util/api/org/plumelib/reflection/Signatures.html#getArrayElementType(java.lang.String)"><code>Signatures.getArrayElementType()</code></a>
+String Checker would mention
+the <a href="https://plumelib.org/reflection-util/api/org/plumelib/reflection/Signatures.html#getArrayElementType(java.lang.String)"><code>Signatures.getArrayElementType()</code></a>
 method when it issues an error about string manipulation where some input
 is
 a <a href="https://checkerframework.org/api/org/checkerframework/checker/signature/qual/FqBinaryName.html"><code>FqBinaryName</code></a>
 and the output is annotated
 as <a href="https://checkerframework.org/api/org/checkerframework/checker/signature/qual/ClassGetName.html"><code>ClassGetName</code></a>.
 It would behave similarly for other library methods.
+</p>
+
+<p>
+  Project size: small
 </p>
 
 
@@ -1293,6 +1330,14 @@ It would behave similarly for other library methods.
   worthy of including in the Checker Framework.
 </p>
 
+<p>
+  Project priority: low
+</p>
+
+<p>
+  Project size: small to very large
+</p>
+
 
 <h2 id="explain-errors">Explaining error messages</h2>
 
@@ -1313,11 +1358,15 @@ It would behave similarly for other library methods.
   etc.) that have one webpage per error message.
 </p>
 
+<p>
+  Project size: medium
+</p>
+
 
 <h2 id="improve-errors">Improving error messages</h2>
 
 <p>
-Compiler writers have come to realize that clarity of error
+Clarity of compiler error
 messages is as important as the speed of the executable
 (<a href="https://www.brettbecker.com/wp-content/uploads/2016/06/Becker-Effective-2016-SIGCSE.pdf">1</a>, <a href="https://www.mville.edu/sites/default/files/p53-munson_1.pdf">2</a>,
 <a href="https://se.inf.ethz.ch/~meyer/publications/teaching/compiler-errors.pdf">3</a>,
@@ -1361,6 +1410,10 @@ some distinct challenges:
     When a checker has multiple type systems, a type error or the lack of one may depend on facts from multiple type systems, and this should be expressed to the user.
   </li>
 </ul>
+
+<p>
+  Project size: large
+</p>
 
 
 <h2 id="javaparser-to-javac-parse">Replace JavaParser by javac's parser</h2>
@@ -1442,6 +1495,10 @@ There is a lot of code to change, but each change should be simple.
   </li>
 </ul>
 
+<p>
+  Project size: medium
+</p>
+
 
 <h3 id="javacparse-annotated-jdk">Replace JavaParser for the annotated JDK</h3>
 
@@ -1484,6 +1541,10 @@ There is a lot of code to change, but each change should be simple.
   </li>
 </ul>
 
+<p>
+  Project size: small
+</p>
+
 
 <h3 id="javaparser-stub">Replace JavaParser for stub files</h3>
 
@@ -1510,6 +1571,10 @@ or wrappers.  One possibility is to (1) split a stub file into many
 small files, (2) make those files legal Java (or at least parsable) by
 replacing "<code>;</code>" bodies by "<code>{ throw new Error(); }</code>", and
 (3) parse those files.
+</p>
+
+<p>
+  Project size: small
 </p>
 
 
@@ -1572,6 +1637,10 @@ Here is a possible sequence of steps for this project:
   </li>
 </ol>
 
+<p>
+  Project size: large
+</p>
+
 
 <h2 id="dataflow">Dataflow enhancements</h2>
 
@@ -1582,7 +1651,7 @@ Framework's <a href="https://checkerframework.org/manual/#creating-dataflow">dat
 (<a href="https://checkerframework.org/manual/checker-framework-dataflow-manual.pdf">manual
     here</a>) implements flow-sensitive type refinement (local type
 inference) and other features.  It is used in the Checker
-Framework and also in <a href="http://errorprone.info/">Error Prone</a>,
+Framework and also in <a href="https://errorprone.info/">Error Prone</a>,
 <a href="https://github.com/uber/NullAway">NullAway</a>, and elsewhere.
 </p>
 
@@ -1593,6 +1662,10 @@ issues</a> &mdash; both bugs and feature requests &mdash; related to the
 dataflow framework.  The goal of this project is to address as many of
 those issues as possible, which will directly improve all the tools that
 use it.
+</p>
+
+<p>
+  Project size: small to very large
 </p>
 
 
@@ -1613,6 +1686,14 @@ use it.
   annotation.  <code>@SideEffectsOnly</code> indicates all the expressions
   whose value can possibly be modified by a particular method.  This will
   make the Checker Framework more precise in many cases.
+</p>
+
+<p>
+  Project priority: high
+</p>
+
+<p>
+  Project size: medium
 </p>
 
 
@@ -1669,9 +1750,9 @@ on some called method, report that fact to the user.
     the required expression.
   </li>
   <li>
-    For all such locations (or maybe just for the frontier of such
-    locations?), issue a new warning that includes both the original
-    warning text and the fact that expression U prevented the code from
+    For the graph frontier of such locations,
+    issue a new warning that includes both the original
+    warning text and the side-effecting expression that prevented the code from
     being verified. The new warning message for the example above might
     look something like this, where the &ldquo;found&rdquo; and
     &ldquo;required&rdquo; types refer to the type of <code>f1</code>.
@@ -1681,7 +1762,7 @@ on some called method, report that fact to the user.
 found   : @CalledMethods({}) Socket
 required: @CalledMethods({“close”}) Socket
 caused by:
-  this.f1 has type @CalledMethods({“close”}) Socket before a possible side-effect from the call to f2.close(),
+  this.f1 has type `@CalledMethods({“close”}) Socket` before a possible side-effect from the call to `f2.close()`,
   which has an implicit @Impure annotation (no purity annotation found for java.lang.AutoCloseable#close()):
       try { f2.close(); } catch (Exception e) { }
               ^
@@ -1690,6 +1771,14 @@ caused by:
 </ol>
 
 <!-- For more details, see email thread "Some thoughts on purity", April 2025. -->
+
+<p>
+  Project priority: high
+</p>
+
+<p>
+  Project size: large
+</p>
 
 
 <h2 id="purity-inference">Side effect inference, also known as purity inference</h2>
@@ -1728,7 +1817,8 @@ effective and to improve them.  The research questions include:
 The methodology is to collect existing side effect analysis tools (two examples are
 <a href="https://github.com/soot-oss/soot/wiki/Using-Side-Effect-Attributes">Soot</a> and
 <a href="https://www.semanticscholar.org/paper/Precise-Interprocedural-Side-Effect-Analysis-Report-Geffken-Saffrich/d2bd29e20c99a10ab9d0c5ecf3acaf15606407d1?p2df">Geffken</a>);
-run them on open-source projects; examine the result; and then improve them.
+run them on open-source projects; examine the result; and then either
+improve the best one or write a new, better one.
 </p>
 
 <!--
@@ -1736,6 +1826,14 @@ For design and implementation ideas, see:
  * $qn/notes-purity
  * ~/prof/grants/2011-09-darpa-apac/phase3-extension-proposal
 -->
+
+<p>
+  Project priority: high
+</p>
+
+<p>
+  Project size: very large
+</p>
 
 
 <h2 id="javadoc">Javadoc support</h2>
@@ -1754,185 +1852,9 @@ explored, e.g. using JavaScript to show or hide only the type annotations
 currently of interest.
 </p>
 
-
-<h1 id="apply">How to apply to GSoC (relevant to GSoC students only)</h1>
-
 <p>
-This section is relevant only to Google Summer of Code Students.
+  Project size: medium
 </p>
-
-<p>
-  For GSoC students, the best projects are <em>not</em> in the "Create a
-  new type system" category.  The reason is that creating a new type system
-  usually takes more time than one summer.  It is better to succeed with a
-  smaller task than to fail with a larger task.  If you finish a smaller task
-  quickly, then you can proceed to a more ambitious goal.
-</p>
-
-<p>
-  To <b>apply</b>, you will submit a single PDF through the Google Summer
-  of Code website.  This PDF should contain two main parts.  We suggest
-  that you number the parts and subparts to ensure that you don't forget anything, and
-  to ensure that we don't overlook anything when reading your application.  You might find it
-  easiest to create multiple PDFs for the different parts, then concatenate
-  them before uploading to the website, but how you create your proposal is
-  entirely up to you.
-</p>
-
-<ol>
-  <li>The proposal itself:  what project you want to work on during the
-    summer.  You might propose to do a project listed on this webpage, or
-    you might propose a different project.
-
-    <p>The proposal should have a descriptive title, both in the PDF and in
-      the GSoC submission system.  Don't use a title like "Checker
-      Proposal" or "Proposal for GSoC".  Don't distract from content with
-      gratuitous graphics.
-    </p>
-
-    <p>List the tasks or subparts that are required to complete your
-    project.  This will help you discover a part that you had forgotten.
-    We do not require a detailed timeline, because you don't yet
-    know enough to create one.
-    </p>
-
-    <p>
-    If you want to do a
-    case study, say what program you will do your case study on.
-    </p>
-
-    <p>If you want to create a new type system (whether one proposed on
-    this webpage or one of your own devising), then your proposal should include
-    the type system's user manual.  You don't have to integrate it in the Checker
-    Framework repository (in other words, use any word processor or text
-    editor you want to create a PDF file you will submit), but you should describe
-    your proposed checker's <a href="https://checkerframework.org/manual/#creating-parts-of-a-checker">parts</a>
-    in precise English or simple formalisms, and you should follow the
-    suggested <a href="https://checkerframework.org/manual/#creating-documenting-a-checker">structure</a>.
-    </p>
-
-    <p>
-    If you want to do exactly what is already listed on this page, then
-    just say that (but be specific about which one!), and it will not hurt
-    your chances of being selected.  However, show us what progress you
-    have made so far.  You might also give specific ideas
-    about extensions, about details that are not mentioned on this webpage,
-    about implementation strategies, and so forth.
-    </p>
-
-    <p>Never literally cut-and-paste text that was not written by you, because
-    that would be plagiarism.  If you quote from text written by someone
-    else, give proper credit.
-    Don't
-    submit a proposal that is just a rearrangement of text that already
-    appears on this page or in the Checker Framework manual, because it does
-    not help us to assess your likelihood of being successful.
-    </p>
-
-  </li>
-
-  <li>Your qualifications.  Please convince us that you
-    are likely to be successful in your proposed summer project.
-
-    <ol>
-      <li>A URL that points to a code sample.
-        Don't write any new code, but provide code you wrote in the
-        past, such as for a class assignment
-        or a project you have worked on outside class.
-        It does not need to have anything to do with
-        the Checker Framework project.  It should be your own personal work.
-        The purpose is to assess your programming skills so we can assign you
-        to an appropriate project.
-        A common problem is to submit undocumented code; we expect every
-        programmer to write documentation when working on the Checker
-        Framework.
-        Don't put a lot of different files in Google Drive and share that
-        URL; it's better to upload a single <code>.zip</code> file or
-        provide a GitHub URL.
-      </li>
-      <li>
-        What you have done to prepare yourself
-        for working with the Checker Framework during the summer.
-        You may wish to structure this as a list.
-    Examples of items in the list include:
-    <ul>
-      <li>A URL for code you have annotated as a case study.  Please indicate the
-        original unannotated code, the annotated code, and the exact command to
-        run the type-checker from the command line.  Ensure that the GSoC
-        mentors can compile your code.
-        (It is acceptable to use the same code, or different code, for this
-        item and the code sample above.)
-
-        <p>
-        You should have shared the case study as soon as you finished it or
-        as soon as you had a question that is not answered in
-        the <a href="https://checkerframework.org/manual/">manual</a>;
-        don't wait until you submit your proposal, because that does not
-        give us a chance to help you with feedback.
-        </p>
-      </li>
-      <li>URLs for bugs or pull requests that you have filed.</li>
-      <li>Information about other projects you have done, or classes you
-        have taken, that prepare you for your proposed summer task.  This
-        is optional.  If something already appears in your resume, don't
-        repeat it here; we will see it in your resume.</li>
-    </ul>
-  </li>
-  <li>A resume.
-    A <a href="https://en.wikipedia.org/wiki/R%C3%A9sum%C3%A9">resume</a>
-    contains a brief description of your skills and your job or project
-    experience.  It will often list classes you have taken so far and your
-    GPA.  It should not be longer than one page.</li>
-  <li>An unofficial transcript or grade report (don't spend
-    money for an official one).</li>
-  </ol>
-  </li>
-</ol>
-
-<p>
-The <b>best way</b> to impress us is by doing a thoughtful job in the case
-study.  The case study is even more important than the proposal text,
-because it shows us your abilities.
-The case study may result in you submitting issues against the issue tracker of the
-program you are annotating or of the Checker Framework.
-Pull requests against our GitHub project are a plus but are not required:
-good submitted bugs are just as valuable as bug fixes!
-You can also make a good impression by correctly answering questions from
-other students on the GSoC mailing list.
-</p>
-
-<p>
-Some GSoC projects have a requirement to fix an issue in the issue tracker.
-We do not, because it is unproductive.
-Don't try to start fixing issues before you
-understand the Checker Framework from the user point of view, which will
-not happen until you have completed a case study on an open-source program.
-You may discuss your ideas with us by sending mail
-to <a href="https://groups.google.com/g/checker-framework-gsoc">checker-framework-gsoc@googlegroups.com</a>.
-</p>
-
-<p>
-Get feedback!  Feel free to <a href="#ask-questions">ask questions</a>
-to make your application more
-competitive.  We want you to succeed.  Historically, students who start
-early and get feedback are most successful.  You can submit a draft
-proposal via the Google Summer of Code website, and we will review it.  We
-do <em>not</em> receive any notification when you submit a draft
-proposal, so if you want feedback, please tell us that.
-Also, we can only see draft proposals; we cannot see final proposals until
-after the application deadline has passed.
-</p>
-
-<p>
-Please do not violate the guidelines in
-the <a href="#ask-questions">How to get help and ask questions</a> section
-of this document.  If you do so, you are disqualified you from participating in
-GSoC, because it shows that you do not read instructions, and you haven't
-thought about the problem nor tried to solve it.
-</p>
-
-
-
 
 
 </body>

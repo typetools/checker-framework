@@ -24,7 +24,7 @@ class EnsuresCalledMethodsVarargsTest {
     final Foo foo;
 
     ECMVA() {
-      // :: warning: (required.method.not.called)
+      // :: warning: [required.method.not.called]
       foo = new Foo();
     }
 
@@ -47,7 +47,7 @@ class EnsuresCalledMethodsVarargsTest {
     }
 
     void testOwningParamOnOwningParam() {
-      // :: warning: (required.method.not.called)
+      // :: warning: [required.method.not.called]
       Foo f = new Foo();
       owningParam(f);
     }

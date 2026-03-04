@@ -15,7 +15,7 @@ public class Issue1838 {
     list.add(null);
     List<List<@Nullable Object>> listList = new ArrayList<List<@Nullable Object>>();
     listList.add(list);
-    // :: error: (argument)
+    // :: error: [argument]
     processElements(listList);
   }
 

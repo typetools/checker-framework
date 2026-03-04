@@ -22,6 +22,7 @@ from release_utils import (  # ty: ignore # TODO: limitation in ty
     delete_directory_if_exists,
     delete_if_exists,
     ensure_group_access,
+    ensure_user_access,
     has_command_line_option,
     increment_version,
     print_step,
@@ -187,7 +188,7 @@ def build_checker_framework_release(
     # Check that updating versions didn't overlook anything.
     print("Here are occurrences of the old version number, " + old_cf_version + ":")
     grep_cmd = f"grep -n -r --exclude-dir=build --exclude-dir=.git -F {old_cf_version}"
-    #
+
     execute_status(grep_cmd, CHECKER_FRAMEWORK)
     continue_or_exit(
         "If any occurrence is not acceptable, then stop the release, update target"
@@ -216,7 +217,9 @@ def build_checker_framework_release(
 
     dev_website_relative_dir = Path(DEV_SITE_DIR) / "releases" / version
     print(f"Copying from: {dev_website_relative_dir}\n  to: {DEV_SITE_DIR}")
-    shutil.copytree(str(dev_website_relative_dir), str(DEV_SITE_DIR))
+    ensure_group_access(dev_website_relative_dir)
+    ensure_user_access(dev_website_relative_dir)
+    shutil.copytree(str(dev_website_relative_dir), str(DEV_SITE_DIR), dirs_exist_ok=True)
 
 
 def commit_to_interm_projects(cf_version: str) -> None:

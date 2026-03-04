@@ -23,7 +23,7 @@ class Callback {
     MyProc p = new MyProc();
     // This call is illegal.  It passes an @UnderInitialization outer this, but MyProc.call is
     // declared to take an @Initialized outer this (whith is the default type).
-    // :: error: (method.invocation)
+    // :: error: [method.invocation]
     p.call();
     foo = "hello";
   }

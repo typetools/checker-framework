@@ -83,27 +83,6 @@ public class PurityUtils {
   }
 
   /**
-   * Is the method {@code methodTree} side-effect-free?
-   *
-   * <p>This method does not use, and has different semantics than, {@link
-   * AnnotationProvider#isSideEffectFree}. This method is concerned only with standard purity
-   * annotations.
-   *
-   * @param provider how to get annotations
-   * @param methodTree a method to test
-   * @return true if the method is side-effect-free
-   * @deprecated use {@link AnnotationProvider#isSideEffectFree}
-   */
-  @Deprecated // 2022-09-27
-  public static boolean isSideEffectFree(AnnotationProvider provider, MethodTree methodTree) {
-    ExecutableElement methodElement = TreeUtils.elementFromDeclaration(methodTree);
-    if (methodElement == null) {
-      throw new BugInCF("Could not find element for tree: " + methodTree);
-    }
-    return isSideEffectFree(provider, methodElement);
-  }
-
-  /**
    * Is the method {@code methodElement} side-effect-free?
    *
    * <p>This method does not use, and has different semantics than, {@link

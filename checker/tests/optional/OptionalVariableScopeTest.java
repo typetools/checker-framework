@@ -24,12 +24,12 @@ class OptionalVariableScopeTest {
   void m2() {
     Optional<String> opt = getOpt();
     {
-      // :: error: (method.invocation)
+      // :: error: [method.invocation]
       opt.get();
-      // :: error: (method.invocation)
+      // :: error: [method.invocation]
       getOpt().get();
       Optional<String> anotherOpt = getOpt();
-      // :: error: (method.invocation)
+      // :: error: [method.invocation]
       anotherOpt.get();
     }
   }

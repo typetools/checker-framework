@@ -8,17 +8,17 @@ class RawField {
   public @UnknownInitialization RawField a;
 
   public RawField() {
-    // :: error: (assignment)
+    // :: error: [assignment]
     a = null;
     this.a = this;
     a = this;
   }
 
-  // :: error: (initialization.fields.uninitialized)
+  // :: error: [initialization.fields.uninitialized]
   public RawField(boolean foo) {}
 
   void t1() {
-    // :: error: (method.invocation)
+    // :: error: [method.invocation]
     a.t1();
   }
 
