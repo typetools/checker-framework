@@ -12,7 +12,7 @@ class RowSetResourceLeak {
 
     void jdbcRowSetNotClosed(ResultSet rs) throws SQLException {
         JdbcRowSet jrs = new JdbcRowSetImpl(rs);
-        // :: error: (required.method.not.called)
+        // :: error: [required.method.not.called]
     }
 
     void jdbcRowSetClosed(ResultSet rs) throws SQLException {
@@ -24,7 +24,7 @@ class RowSetResourceLeak {
 
     void cachedRowSetNotClosed() throws SQLException {
         CachedRowSet crs = new CachedRowSetImpl();
-        // :: error: (required.method.not.called)
+        // :: error: [required.method.not.called]
     }
 
     void cachedRowSetClosed() throws SQLException {
@@ -36,7 +36,7 @@ class RowSetResourceLeak {
         CachedRowSet crs = new CachedRowSetImpl();
         ResultSet rs = crs.toResultSet();
         crs.close();
-        // :: error: (required.method.not.called)
+        // :: error: [required.method.not.called]
     }
 
     void cachedRowSetToResultSetBothClosed() throws SQLException {
@@ -49,15 +49,15 @@ class RowSetResourceLeak {
     void cachedRowSetToResultSetBothNotClosed() throws SQLException {
         CachedRowSet crs = new CachedRowSetImpl();
         ResultSet rs = crs.toResultSet();
-        // :: error: (required.method.not.called)
-        // :: error: (required.method.not.called)
+        // :: error: [required.method.not.called]
+        // :: error: [required.method.not.called]
     }
 
     // ========== FilteredRowSet Tests ==========
 
     void filteredRowSetNotClosed() throws SQLException {
         FilteredRowSet frs = new FilteredRowSetImpl();
-        // :: error: (required.method.not.called)
+        // :: error: [required.method.not.called]
     }
 
     void filteredRowSetClosed() throws SQLException {
@@ -69,7 +69,7 @@ class RowSetResourceLeak {
 
     void webRowSetNotClosed() throws SQLException {
         WebRowSet wrs = new WebRowSetImpl();
-        // :: error: (required.method.not.called)
+        // :: error: [required.method.not.called]
     }
 
     void webRowSetClosed() throws SQLException {
@@ -81,7 +81,7 @@ class RowSetResourceLeak {
 
     void joinRowSetNotClosed() throws SQLException {
         JoinRowSet jrs = new JoinRowSetImpl();
-        // :: error: (required.method.not.called)
+        // :: error: [required.method.not.called]
     }
 
     void joinRowSetClosed() throws SQLException {
