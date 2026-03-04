@@ -4,6 +4,7 @@ plugins {
   // https://github.com/n0mer/gradle-git-properties
   // Generates file build/resources/main/git.properties when the `classes` task runs.
   alias(libs.plugins.com.gorylenko.gradle.git.properties)
+  id("cf-spotless")
 }
 
 sourceSets {
