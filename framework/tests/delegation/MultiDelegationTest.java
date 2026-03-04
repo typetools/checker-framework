@@ -4,6 +4,6 @@ class MultiDelegationTest {
 
   @Delegate public int foo;
 
-  // :: error: (multiple.delegate.annotations)
+  // :: error: [multiple.delegate.annotations]
   @Delegate public int bar;
 }

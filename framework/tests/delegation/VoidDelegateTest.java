@@ -1,7 +1,7 @@
 import java.util.ArrayList;
 import org.checkerframework.common.delegation.qual.*;
 
-// :: warning: (delegate.override)
+// :: warning: [delegate.override]
 public class VoidDelegateTest<E> extends ArrayList<E> {
 
   @Delegate private ArrayList<E> array;
