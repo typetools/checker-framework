@@ -8,6 +8,8 @@ plugins {
   alias(libs.plugins.net.ltgt.errorprone)
   // https://docs.gradle.org/current/userguide/eclipse_plugin.html
   id("eclipse")
+  // This is locally built "plugin" that contains the spotless configuration. It is in
+  // buildSrc/src/main/groovy/cf-spotless.gradle.
   id("cf-spotless")
 }
 apply from: rootProject.file("release.gradle")
@@ -754,6 +756,8 @@ tasks.register("tags", Exec) {
 }
 
 subprojects {
+  // This is locally built "plugin" that contains the spotless configuration. It is in
+  // buildSrc/src/main/groovy/cf-spotless.gradle.
   apply plugin: "cf-spotless"
   configurations {
     annotatedGuava
