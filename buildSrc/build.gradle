@@ -19,6 +19,7 @@ java {
 tasks.withType(Javadoc).configureEach {
   // This makes Javadoc warnings errors, so that Javadoc comments are required on all elements.
   options.addBooleanOption('Werror', true)
+  exclude("build/**")
 }
 
 dependencies {
