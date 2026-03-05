@@ -1,5 +1,5 @@
 plugins {
-  id 'groovy-gradle-plugin'
+  id ("groovy-gradle-plugin")
   id("java")
 }
 
@@ -25,6 +25,6 @@ dependencies {
   implementation("org.eclipse.jgit:org.eclipse.jgit:7.5.0.202512021534-r")
   implementation("org.eclipse.jgit:org.eclipse.jgit.ssh.apache:7.5.0.202512021534-r")
   implementation("org.bouncycastle:bcprov-jdk15to18:1.83")
-  implementation("com.diffplug.spotless:com.diffplug.spotless.gradle.plugin:8.2.1")
+  implementation("com.diffplug.spotless:com.diffplug.spotless.gradle.plugin:8.3.0")
   implementation(gradleApi())
 }

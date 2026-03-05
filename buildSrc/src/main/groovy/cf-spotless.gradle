@@ -77,7 +77,7 @@ spotless {
       def targets = [
         "docs/examples",
         "docs/tutorial",
-        "buildSrc"
+        "buildSrc/src"
       ]
       targets = targets.collectMany {
         [
