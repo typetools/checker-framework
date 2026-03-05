@@ -28,9 +28,6 @@ def perProjectDoNotFormat = [
 ]
 
 spotless {
-  // If you add any formatters to this block that require dependencies, then you must also
-  // add them to the spotlessPredeclare block.
-
   // Never format files under build/ directory.
   def doNotFormat = ["build/**"]
   if (project != project.rootProject) {
