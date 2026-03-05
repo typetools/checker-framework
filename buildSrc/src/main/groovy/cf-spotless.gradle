@@ -136,6 +136,17 @@ spotless {
   }
 }
 
+if (project.name.contentEquals("checker-qual")) {
+  spotlessJava {
+    // Spotless has a dependency on checker-qual.jar Gradle tries to use the checker-qual.jar that
+    // is locally built, so it must be built.  (This does not happen with other subprojects.)
+    // Without this line the following error will occur:
+    // Execution failed for task ':checker-qual:spotlessJava'.
+    // > File signature can only be created for existing regular files, given: /Users/smillst/jsr308/checker-framework/checker-qual/build/libs/checker-qual-3.54.1-SNAPSHOT.jar
+    dependsOn("jar")
+  }
+}
+
 // a useful task for debugging; prints exactly which files are getting formatted by spotless
 tasks.register("printSpotlessTaskInputs") {
   doLast {
