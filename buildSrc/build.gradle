@@ -1,5 +1,5 @@
 plugins {
-  id ("groovy-gradle-plugin")
+  id("groovy-gradle-plugin")
   id("java")
 }
 
@@ -17,7 +17,7 @@ tasks.withType(Javadoc).configureEach {
   options.memberLevel = JavadocMemberLevel.PRIVATE
   // This makes Javadoc warnings errors, so that Javadoc comments are required on all elements.
   options.addBooleanOption('Werror', true)
-  // This excludes the generate Java source files from *.gradle in files in src/groovy/.
+  // This excludes the generated Java source files from *.gradle in files in src/groovy/.
   exclude("*Plugin.java")
 }
 
