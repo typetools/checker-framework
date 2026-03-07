@@ -1,0 +1,151 @@
+plugins {
+  // Code formatting; defines targets "spotlessApply" and "spotlessCheck".
+  // At https://github.com/diffplug/spotless/tags, see tags starting "gradle/".
+  id("com.diffplug.spotless") // version number is in buildSrc/build.gradle.
+}
+
+// Patterns of files to skip for individual sub-projects.
+def perProjectDoNotFormat = [
+  "checker"  : [
+    "bin/.do-like-javac/**",
+    "bin-devel/.git-scripts/**",
+    "bin-devel/.html-tools/**",
+    "bin-devel/.plume-scripts/**",
+    "dist/**",
+    "tests/ainfer-*/annotated/*",
+    "tests/build/**",
+    "tests/calledmethods-delomboked/*",
+    "tests/nullness-javac-errors/*",
+  ],
+  "framework": [
+    "tests/build/**",
+    "tests/returnsreceiverdelomboked/*",
+  ],
+]
+
+spotless {
+  // Never format files under the build/ directory.
+  def doNotFormat = ["build/**"]
+  if (project != project.rootProject) {
+    if (perProjectDoNotFormat.containsKey(project.name)) {
+      doNotFormat += perProjectDoNotFormat[project.name]
+    }
+
+    if (!gradleRunsOnJava21orHigher) {
+      doNotFormat += ["tests/**/java21/"]
+    }
+    if (!gradleRunsOnJava22orHigher) {
+      doNotFormat += ["tests/**/java22/"]
+    }
+  }
+
+  format "misc", {
+    // Define the files to apply `misc` formatting to.
+    target("*.md", "*.tex", ".gitignore")
+    targetExclude(doNotFormat)
+    // define the steps to apply to those files
+    leadingTabsToSpaces(2)
+    trimTrailingWhitespace()
+    // endWithNewline() // Don't want to end empty files with a newline
+  }
+
+  format "make", {
+    // Define the files to apply `make` formatting to.
+    target("Makefile")
+    targetExclude(doNotFormat)
+    // define the steps to apply to those files
+    trimTrailingWhitespace()
+    // endWithNewline() // Don't want to end empty files with a newline
+  }
+
+  java {
+    if (project == project.rootProject) {
+      // This is the root project.
+      // Format .java files outside of Gradle sub-projects.
+      def targets = [
+        "docs/examples",
+        "docs/tutorial",
+        "buildSrc/src"
+      ]
+      targets = targets.collectMany {
+        [
+          // must call toString() to convert GString to String
+          "${it}/**/*.java".toString(),
+          // Not .ajava files because formatting would remove import statements.
+        ]
+      }
+      target(targets)
+    } else {
+      // This is not the root project; format all .java files in this sub-project.
+      target("**/*.java")
+    }
+    targetExclude(doNotFormat)
+
+    // The formatter to apply to Java files.
+    if (project.hasProperty("eisopFormatting")) {
+      googleJavaFormat(libs.google.java.format.get().version).aosp()
+      importOrder("com", "jdk", "lib", "lombok", "org", "java", "javax")
+    } else {
+      googleJavaFormat(libs.google.java.format.get().version)
+    }
+    formatAnnotations()
+  }
+
+  // Only define a groovyGradle task on the root project, for simplicity in setting the target pattern
+  if (project == project.rootProject) {
+    groovyGradle {
+      target("**/*.gradle")
+      targetExclude(doNotFormat)
+      greclipse()  // which formatter Spotless should use to format .gradle files.
+      if (project.hasProperty("eisopFormatting")) {
+        leadingTabsToSpaces(4)
+      } else {
+        leadingTabsToSpaces(2)
+      }
+      trimTrailingWhitespace()
+      // endWithNewline() // Don't want to end empty files with a newline
+    }
+
+    groovy {
+      target("buildSrc/**/*.groovy")
+      importOrder()
+
+      removeSemicolons() // removes semicolons at the end of lines
+      greclipse()
+      leadingTabsToSpaces(2)
+      trimTrailingWhitespace()
+    }
+
+    // Don't do this, because it does not respect "ignore=true" in .editorconfig nor `doNotFormat` here.
+    // shell {
+    //   targetExclude doNotFormat
+    //   shfmt() // configuration is in .editorconfig
+    // }
+  }
+}
+
+if (project.name.contentEquals("checker-qual")) {
+  spotlessJava {
+    // Spotless has a dependency on checker-qual.jar. Gradle tries to use the checker-qual.jar that
+    // is locally built, so it must be built.  (This does not happen with other subprojects.)
+    // Without this line the following error will occur:
+    // Execution failed for task ':checker-qual:spotlessJava'.
+    // > File signature can only be created for existing regular files, given: /Users/smillst/jsr308/checker-framework/checker-qual/build/libs/checker-qual-3.54.1-SNAPSHOT.jar
+    dependsOn("jar")
+  }
+}
+
+// Prints exactly which files are getting formatted by spotless.  Useful for debugging.
+tasks.register("printSpotlessTaskInputs") {
+  doLast {
+    project.tasks.forEach { task ->
+      if (task.name.contains("spotless")) {
+        println("Inputs for task \"${task.name}\":")
+
+        task.inputs.files.each { inputFile ->
+          println("  Input: $inputFile")
+        }
+      }
+    }
+  }
+}
