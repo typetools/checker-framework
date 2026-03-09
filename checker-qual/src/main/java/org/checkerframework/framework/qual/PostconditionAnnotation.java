@@ -47,7 +47,7 @@ import java.lang.annotation.Target;
  * {@code @MinLen(2)} upon return.
  *
  * <pre><code>
- *  {@literal @}EnsuresMinLen(value = "field", targetValue = 2")
+ *  {@literal @}EnsuresMinLen(value = "field", targetValue = 2)
  *  public void setField(String argument) {
  *    field = "(" + argument + ")";
  *  }
