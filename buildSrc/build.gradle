@@ -1,7 +1,10 @@
-plugins{
+plugins {
+  id("groovy-gradle-plugin")
   id("java")
 }
+
 repositories {
+  gradlePluginPortal()
   mavenCentral()
 }
 
@@ -9,14 +12,25 @@ java {
   sourceCompatibility = '17'
   targetCompatibility = '17'
 }
+
 tasks.withType(Javadoc).configureEach {
+  options.memberLevel = JavadocMemberLevel.PRIVATE
   // This makes Javadoc warnings errors, so that Javadoc comments are required on all elements.
   options.addBooleanOption('Werror', true)
+  // This excludes the generated Java source files from *.gradle in files in src/groovy/.
+  exclude("*Plugin.java")
 }
 
 dependencies {
+  implementation(plugin(libs.plugins.com.diffplug.spotless))
   implementation("org.eclipse.jgit:org.eclipse.jgit:7.5.0.202512021534-r")
   implementation("org.eclipse.jgit:org.eclipse.jgit.ssh.apache:7.5.0.202512021534-r")
   implementation("org.bouncycastle:bcprov-jdk15to18:1.83")
   implementation(gradleApi())
+}
+
+// Helper function that transforms a Gradle Plugin alias from a
+// Version Catalog into a valid dependency notation for buildSrc
+def plugin(Provider<PluginDependency> plugin) {
+  return plugin.map { it.pluginId + ":" + it.pluginId + ".gradle.plugin:" + it.version }
 }
