@@ -4039,7 +4039,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           createOverrideChecker(
               memberReferenceTree,
               invocationType,
-              invocationType.getReceiverType(),
+              enclosingType,
               invocationReturnType,
               functionType,
               (AnnotatedDeclaredType) functionalInterface,
