@@ -29,7 +29,8 @@ public abstract class GitTask extends DefaultTask {
   public abstract void doTaskAction();
 
   /**
-   * Clones the repository at {@code url}. If the clone fails, sleep 1 minute then retry clone.
+   * Clones the repository at {@code url}. If the clone fails, sleep 1 minute then retry clone. If
+   * the second try fails, then a warning is printed, but no exception is thrown.
    *
    * @param url repository URL
    * @param branch if non-null, which branch to use
@@ -55,7 +56,7 @@ public abstract class GitTask extends DefaultTask {
   }
 
   /**
-   * Quietly clones the git repository at {@code url}, to {@code directory}, with depth 1.
+   * Clones the git repository at {@code url}, to {@code directory}, with depth 1.
    *
    * @param url git repository to clone
    * @param branch if non-null, which branch to use
@@ -71,11 +72,12 @@ public abstract class GitTask extends DefaultTask {
     try (Git git = cloneCommand.call()) {
       getLogger().debug("Cloning successful.");
     } catch (GitAPIException e) {
-      getLogger().warn("Error cloning repository {}: {}", url, e.getMessage());
+      String warningMsg = String.format("Error cloning repository %s: %s", url, e.getMessage());
+      getLogger().warn(warningMsg);
       if (ignoreError) {
         return;
       }
-      throw new RuntimeException(e.getMessage(), e);
+      throw new RuntimeException(warningMsg, e);
     }
   }
 
