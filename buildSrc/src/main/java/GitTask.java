@@ -65,7 +65,7 @@ public abstract class GitTask extends DefaultTask {
    */
   public void clone(String url, String branch, File directory, boolean ignoreError) {
     CloneCommand cloneCommand =
-        Git.cloneRepository().setURI(url).setDirectory(directory).setTimeout(60).setDepth(1);
+        Git.cloneRepository().setURI(url).setDirectory(directory).setTimeout(180).setDepth(1);
     if (branch != null) {
       cloneCommand.setBranch(branch);
     }
