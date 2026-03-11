@@ -48,7 +48,7 @@ auto-value = "com.google.auto.value:auto-value:1.11.1"
 
 auto-value-parcel = "com.ryanharter.auto.value:auto-value-parcel:0.2.9"
 
-lombok = "org.projectlombok:lombok:1.18.42"
+lombok = "org.projectlombok:lombok:1.18.44"
 
 aws-java-sdk-ec2 = { module = "com.amazonaws:aws-java-sdk-ec2" }
 
