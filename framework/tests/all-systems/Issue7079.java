@@ -1,5 +1,3 @@
-package open.crash;
-
 import java.util.stream.Stream;
 
 @SuppressWarnings("all") // Just check for crashes.
