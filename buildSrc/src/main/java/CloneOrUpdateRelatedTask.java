@@ -108,7 +108,7 @@ public abstract class CloneOrUpdateRelatedTask extends GitTask {
     if (cfBranch.equals(DEFAULT_BRANCH)
         && relatedBranch.equals(DEFAULT_BRANCH)
         && relatedOrg.equals(DEFAULT_ORG)) {
-      // The related repo can use the default org and branch if CF is checker out to master and any
+      // The related repo can use the default org and branch if CF is checked out to master and any
       // org.
       return;
     }
