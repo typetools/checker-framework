@@ -97,17 +97,26 @@ public abstract class CloneOrUpdateRelatedTask extends GitTask {
       // branch.
       return;
     }
-    if (!orgExists(orgBranchCF.org, relatedRepoName)) {
+    String cfOrg = orgBranchCF.org;
+    String cfBranch = orgBranchCF.branch;
+    if (!orgExists(cfOrg, relatedRepoName)) {
       // There is no related repo that is in the same org as the CF clone.
       return;
     }
-    if (remoteBranchExists(orgBranchCF.org, relatedRepoName, orgBranchCF.branch)) {
+    String relatedOrg = orgBranchRelated.org;
+    String relatedBranch = orgBranchRelated.branch;
+    if (cfBranch.equals(DEFAULT_BRANCH)
+        && relatedBranch.equals(DEFAULT_BRANCH)
+        && relatedOrg.equals(DEFAULT_ORG)) {
+      // The related repo can use the default org and branch if CF is checked out to master and any
+      // org.
+      return;
+    }
+    if (remoteBranchExists(cfOrg, relatedRepoName, cfBranch)) {
       throw new RuntimeException(
           String.format(
               "Please checkout the corresponding %s branch. URL: %s Branch: %s.",
-              relatedRepoName,
-              getGitHubHttpsUrl(orgBranchCF.org, relatedRepoName),
-              orgBranchCF.branch));
+              relatedRepoName, getGitHubHttpsUrl(cfOrg, relatedRepoName), cfBranch));
     }
   }
 
