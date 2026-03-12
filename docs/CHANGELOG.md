@@ -2,8 +2,16 @@
 
 <!-- markdownlint-disable no-duplicate-heading -->
 <!-- pyml disable no-duplicate-heading -->
+## Version 4.0.0 (2026-??)
 
-## Version 3.54.1 (2026-04-02)
+### User-visible changes
+The Checker Framework now requires JDK 21+ to use.
+
+### Implementation details
+
+### Closed issues
+
+## Version 3.54.1 (2026-04-01)
 
 ### User-visible changes
 
