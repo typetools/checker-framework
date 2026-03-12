@@ -254,6 +254,9 @@ allprojects { currentProj ->
         if (!name.equals("javadocDoclintAll")) {
           options.memberLevel = javadocMemberLevel
         }
+        // Without the following, Javadoc will error on checker-qual with "error: reference not found"
+        // on class in checker.jar.
+        exclude "**/module-info.java"
         classpath += configurations.named("checkerFatJar").get().asFileTree
         options.taglets("org.checkerframework.taglet.ManualTaglet")
         options.tagletPath(project(":framework-test").sourceSets.taglet.output.classesDirs.getFiles() as File[])

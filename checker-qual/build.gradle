@@ -3,18 +3,6 @@ plugins {
   alias(libs.plugins.biz.aqute.bnd.builder)
 }
 
-sourceSets {
-  main {
-    java {
-      exclude("module-info.java")
-    }
-  }
-  module_info {
-    java {
-      srcDirs("src/main")
-    }
-  }
-}
 
 jar {
   doLast {
@@ -27,16 +15,6 @@ jar {
       }
     }
   }
-}
-
-tasks.register("compileJava9", JavaCompile) {
-  source = sourceSets.module_info.java
-  destinationDirectory = sourceSets.main.output.classesDirs[0]
-  classpath = configurations.allProjects
-}
-
-compileJava {
-  dependsOn(compileJava9)
 }
 
 javadoc {
