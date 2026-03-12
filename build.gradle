@@ -41,7 +41,6 @@ ext {
   // or
   // ./gradlew sometask -PuseJdk21Compiler=true
 
-  gradleRunsOnJava17orHigher = JavaVersion.current() >= JavaVersion.VERSION_17
   gradleRunsOnJava21orHigher = JavaVersion.current() >= JavaVersion.VERSION_21
   gradleRunsOnJava22orHigher = JavaVersion.current() >= JavaVersion.VERSION_22
   gradleRunsOnJava24orHigher = JavaVersion.current() >= JavaVersion.VERSION_24
@@ -155,9 +154,6 @@ allprojects { currentProj ->
   }
 
   configurations {
-    // This is required to run the Checker Framework on JDK 8.
-    javacJar
-
     // Holds the combined classpath of all subprojects including the subprojects themselves.
     allProjects
 
@@ -171,8 +167,6 @@ allprojects { currentProj ->
 
   dependencies {
     errorprone(libs.error.prone.core)
-
-    javacJar(libs.javac)
 
     allProjects(subprojects)
   }
