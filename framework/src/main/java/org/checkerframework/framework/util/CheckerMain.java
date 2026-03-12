@@ -28,15 +28,12 @@ import org.checkerframework.checker.regex.qual.Regex;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.SystemUtil;
-import org.checkerframework.javacutil.UserError;
 import org.plumelib.util.CollectionsPlume;
 
 /**
  * This class behaves similarly to javac. CheckerMain does the following:
  *
  * <ul>
- *   <li>add the {@code javac.jar} to the runtime classpath of the process that runs the Checker
- *       Framework.
  *   <li>parse and implement any special options used by the Checker Framework, e.g., using
  *       "shortnames" for annotation processors
  *   <li>pass all remaining command-line arguments to the real javac
@@ -70,9 +67,6 @@ public class CheckerMain {
     System.exit(exitStatus);
   }
 
-  /** The path to the javacJar to use. */
-  protected final File javacJar;
-
   /** The path to the jar containing CheckerMain.class (i.e. checker.jar). */
   protected final File checkerJar;
 
@@ -81,9 +75,6 @@ public class CheckerMain {
 
   /** The path to checker-util.jar. */
   protected final File checkerUtilJar;
-
-  /** Compilation bootclasspath. */
-  private final List<String> compilationBootclasspath;
 
   private final List<String> runtimeClasspath;
 
@@ -118,18 +109,6 @@ public class CheckerMain {
   public static final String CHECKER_UTIL_PATH_OPT = "-checkerUtilJar";
 
   /**
-   * Option name for specifying an alternative javac.jar location. The accompanying value MUST be
-   * the path to the jar file (NOT the path to its encompassing directory)
-   */
-  public static final String JAVAC_PATH_OPT = "-javacJar";
-
-  /**
-   * Option name for specifying an alternative jdk.jar location. The accompanying value MUST be the
-   * path to the jar file (NOT the path to its encompassing directory)
-   */
-  public static final String JDK_PATH_OPT = "-jdkJar";
-
-  /**
    * Construct all the relevant file locations and Java version given the path to this jar and a set
    * of directories in which to search for jars.
    */
@@ -148,9 +127,6 @@ public class CheckerMain {
     this.checkerUtilJar =
         extractFileArg(CHECKER_UTIL_PATH_OPT, new File(searchPath, "checker-util.jar"), args);
 
-    this.javacJar = extractFileArg(JAVAC_PATH_OPT, new File(searchPath, "javac.jar"), args);
-
-    this.compilationBootclasspath = createCompilationBootclasspath(args);
     this.runtimeClasspath = createRuntimeClasspath(args);
     this.jvmOpts = extractJvmOpts(args);
 
@@ -163,11 +139,7 @@ public class CheckerMain {
 
   /** Assert that required jars exist. */
   protected void assertValidState() {
-    if (SystemUtil.jreVersion == 8) {
-      assertFilesExist(javacJar, checkerJar, checkerQualJar, checkerUtilJar);
-    } else {
-      assertFilesExist(checkerJar, checkerQualJar, checkerUtilJar);
-    }
+    assertFilesExist(checkerJar, checkerQualJar, checkerUtilJar);
   }
 
   public void addToClasspath(List<String> cpOpts) {
@@ -183,17 +155,7 @@ public class CheckerMain {
   }
 
   protected List<String> createRuntimeClasspath(List<String> argsList) {
-    return new ArrayList<>(Arrays.asList(javacJar.getAbsolutePath()));
-  }
-
-  /**
-   * Returns the compilation bootclasspath from {@code argsList}.
-   *
-   * @param argsList args to add
-   * @return the compilation bootclasspath from {@code argsList}
-   */
-  protected List<String> createCompilationBootclasspath(List<String> argsList) {
-    return extractBootClassPath(argsList);
+    return new ArrayList<>();
   }
 
   protected List<String> createCpOpts(List<String> argsList) {
@@ -322,26 +284,6 @@ public class CheckerMain {
     return matchedArgs;
   }
 
-  /**
-   * A pattern to match bootclasspath prepend entries, used to construct one {@code
-   * -Xbootclasspath/p:} command-line argument.
-   */
-  protected static final Pattern BOOT_CLASS_PATH_REGEX =
-      Pattern.compile("^(?:-J)?-Xbootclasspath/p:(.*)$");
-
-  // TODO: Why does this treat -J and -J-X the same?  They have different semantics, don't they?
-  /**
-   * Remove all {@code -Xbootclasspath/p:} or {@code -J-Xbootclasspath/p:} arguments from args and
-   * add them to the returned list.
-   *
-   * @param args the arguments to extract from
-   * @return all non-empty arguments matching BOOT_CLASS_PATH_REGEX or an empty list if there were
-   *     none
-   */
-  protected static List<String> extractBootClassPath(List<String> args) {
-    return extractOptWithPattern(BOOT_CLASS_PATH_REGEX, false, args);
-  }
-
   /** Matches all {@code -J} arguments. */
   protected static final Pattern JVM_OPTS_REGEX = Pattern.compile("^(?:-J)(.*)$");
 
@@ -437,41 +379,37 @@ public class CheckerMain {
     String java = "java";
     args.add(java);
 
-    if (SystemUtil.jreVersion == 8) {
-      args.add("-Xbootclasspath/p:" + String.join(File.pathSeparator, runtimeClasspath));
-    } else {
-      args.addAll(
-          // Keep this list in sync with the lists in checker-framework/build.gradle in
-          // compilerArgsForRunningCFs, the sections with labels
-          // "javac-jdk11-non-modularized", "maven", and "sbt" in the manual, and in the
-          // checker-framework-gradle-plugin, CheckerFrameworkPlugin#applyToProject
-          Arrays.asList(
-              // These are required in Java 17+ because the --illegal-access option is
-              // set to deny by default.  None of these packages are accessed via
-              // reflection, so the module only needs to be exported, but not opened.
-              "--add-exports",
-              "jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
-              "--add-exports",
-              "jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
-              "--add-exports",
-              "jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
-              "--add-exports",
-              "jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED",
-              "--add-exports",
-              "jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED",
-              "--add-exports",
-              "jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED",
-              "--add-exports",
-              "jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED",
-              "--add-exports",
-              "jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
-              "--add-exports",
-              "jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
-              // Required because the Checker Framework reflectively accesses private
-              // members in com.sun.tools.javac.comp.
-              "--add-opens",
-              "jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED"));
-    }
+    args.addAll(
+        // Keep this list in sync with the lists in checker-framework/build.gradle in
+        // compilerArgsForRunningCFs, the sections with labels
+        // "javac-jdk11-non-modularized", "maven", and "sbt" in the manual, and in the
+        // checker-framework-gradle-plugin, CheckerFrameworkPlugin#applyToProject
+        Arrays.asList(
+            // These are required in Java 17+ because the --illegal-access option is
+            // set to deny by default.  None of these packages are accessed via
+            // reflection, so the module only needs to be exported, but not opened.
+            "--add-exports",
+            "jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
+            "--add-exports",
+            "jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
+            "--add-exports",
+            "jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
+            "--add-exports",
+            "jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED",
+            "--add-exports",
+            "jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED",
+            "--add-exports",
+            "jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED",
+            "--add-exports",
+            "jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED",
+            "--add-exports",
+            "jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
+            "--add-exports",
+            "jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
+            // Required because the Checker Framework reflectively accesses private
+            // members in com.sun.tools.javac.comp.
+            "--add-opens",
+            "jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED"));
 
     args.add("-classpath");
     args.add(String.join(File.pathSeparator, runtimeClasspath));
@@ -490,15 +428,6 @@ public class CheckerMain {
     if (!argsListHasProcessorPath(argListFiles)) {
       args.add("-processorpath");
       args.add(quote(concatenatePaths(ppOpts)));
-    }
-
-    if (SystemUtil.jreVersion == 8) {
-      // No classes on the compilation bootclasspath will be loaded
-      // during compilation, but the classes are read by the compiler
-      // without loading them.  The compiler assumes that any class on
-      // this bootclasspath will be on the bootclasspath of the JVM used
-      // to later run the classfiles that Javac produces.
-      args.add("-Xbootclasspath/p:" + String.join(File.pathSeparator, compilationBootclasspath));
     }
 
     args.addAll(toolOpts);
@@ -750,16 +679,6 @@ public class CheckerMain {
     }
 
     if (!missingFiles.isEmpty()) {
-      if (missingFiles.size() == 1) {
-        File missingFile = missingFiles.get(0);
-        if (missingFile.getName().equals("javac.jar")) {
-          throw new UserError(
-              "Could not find "
-                  + missingFile.getAbsolutePath()
-                  + ". This may be because you built the Checker Framework under"
-                  + " Java 11 but are running it under Java 8.");
-        }
-      }
       List<String> missingAbsoluteFilenames =
           CollectionsPlume.mapList(File::getAbsolutePath, missingFiles);
       throw new RuntimeException(

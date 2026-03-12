@@ -83,7 +83,8 @@ class TestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       @Override
       protected QualifierKindHierarchy createQualifierKindHierarchy(
           Collection<Class<? extends Annotation>> qualifierClasses) {
-        return new DefaultQualifierKindHierarchy(qualifierClasses, Bottom.class);
+        return new DefaultQualifierKindHierarchy(
+            qualifierClasses, Bottom.class, TestAnnotatedTypeFactory.this);
       }
     };
   }
