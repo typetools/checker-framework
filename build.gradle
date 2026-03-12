@@ -290,55 +290,46 @@ allprojects { currentProj ->
       // // Put source files in deterministic order, for debugging.
       // compilationTask.source = compilationTask.source.sort()
 
-      // This test is for whether the Checker Framework supports (runs under) Java 8.
-      // Currently, the Checker Framework does support Java 8.
-      if (true) {
-        // Using `options.release.set(8)` here leads to compilation
-        // errors such as "package com.sun.source.tree does not exist".
-        sourceCompatibility = 8
-        targetCompatibility = 8
-        // Because the target is 8, all of the public compiler classes are accessible, so
-        // --add-exports are not required (nor are they allowed with target 8). See
-        // https://openjdk.org/jeps/247 for details on compiling for older versions.
-      } else {
-        // This makes the class files Java 11, and then the Checker Framework would not run under Java 8.
-        options.release.set(11)
-        options.compilerArgs += [
-          "--add-exports",
-          "jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
-          "--add-exports",
-          "jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
-          "--add-exports",
-          "jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
-          "--add-exports",
-          "jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
-          "--add-exports",
-          "jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED",
-          "--add-exports",
-          "jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED",
-          "--add-exports",
-          "jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED",
-          "--add-exports",
-          "jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED",
-          "--add-exports",
-          "jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
-          "--add-exports",
-          "jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
-        ]
-        // This is equivalent to writing "exports jdk.compiler/... to ALL-UNNAMED" in the
-        // module-info.java of jdk.compiler, so corresponding --add-opens are only required for
-        // reflective access to private members.
-        //
-        // From https://openjdk.org/jeps/261, Section titled: "Breaking encapsulation"
-        // "The effect of each instance [of --add-exports] is to add a qualified export of the
-        // named package from the source module to the target module. This is, essentially, a
-        // command-line form of an exports clause in a module declaration[...].
-        // [...]
-        // The --add-exports option enables access to the public types of a specified package.
-        // It is sometimes necessary to go further and enable access to all non-public elements
-        // via the setAccessible method of the core reflection API. The --add-opens option can
-        // be used, at run time, to do this."
-      }
+      sourceCompatibility = 21
+      targetCompatibility = 21
+      // Can't use --release with --add-exports, otherwise you'll see errors like:
+      // error: exporting a package from system module jdk.compiler is not allowed with --release
+      // options.release.set(21)
+      options.compilerArgs += [
+        "--add-exports",
+        "jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
+        "--add-exports",
+        "jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
+        "--add-exports",
+        "jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
+        "--add-exports",
+        "jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
+        "--add-exports",
+        "jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED",
+        "--add-exports",
+        "jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED",
+        "--add-exports",
+        "jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED",
+        "--add-exports",
+        "jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED",
+        "--add-exports",
+        "jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
+        "--add-exports",
+        "jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
+      ]
+      // This is equivalent to writing "exports jdk.compiler/... to ALL-UNNAMED" in the
+      // module-info.java of jdk.compiler, so corresponding --add-opens are only required for
+      // reflective access to private members.
+      //
+      // From https://openjdk.org/jeps/261, Section titled: "Breaking encapsulation"
+      // "The effect of each instance [of --add-exports] is to add a qualified export of the
+      // named package from the source module to the target module. This is, essentially, a
+      // command-line form of an exports clause in a module declaration[...].
+      // [...]
+      // The --add-exports option enables access to the public types of a specified package.
+      // It is sometimes necessary to go further and enable access to all non-public elements
+      // via the setAccessible method of the core reflection API. The --add-opens option can
+      // be used, at run time, to do this."
 
       options.failOnError = true
       options.deprecation = true
@@ -365,6 +356,10 @@ allprojects { currentProj ->
         options.errorprone.enabled = compilerRunsOnJava21orHigher
         options.errorprone.disableWarningsInGeneratedCode = true
         options.errorprone.errorproneArgs = [
+          // TODO: Fix these warnings now that JDK 21 is required.
+          "-Xep:StatementSwitchToExpressionSwitch:OFF",
+          // TODO: Fix these warnings now that JDK 21 is required.
+          "-Xep:PatternMatchingInstanceof:OFF",
           // Many compiler classes are interned.
           "-Xep:ReferenceEquality:OFF",
           // Not useful to suggest Splitter; maybe clean up.
