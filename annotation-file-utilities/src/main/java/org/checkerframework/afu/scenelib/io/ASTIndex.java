@@ -179,7 +179,7 @@ public class ASTIndex extends WrapperMap<Tree, ASTRecord> {
   // better to save the current node's entry first, at a small cost to
   // the clarity of the code.)
   private class AstIndexVisitor extends SimpleTreeVisitor<Void, ASTRecord> {
-    private final Deque<Integer> counters = new ArrayDeque<Integer>();
+    private final Deque<Integer> counters = new ArrayDeque<>();
     private String inMethod = null;
 
     private void save(Tree node, ASTRecord rec, Kind kind, String sel) {

@@ -241,7 +241,7 @@ public final class IndexFileParser {
       "volatile",
       "while",
     };
-    knownKeywords = new LinkedHashSet<String>();
+    knownKeywords = new LinkedHashSet<>();
     Collections.addAll(knownKeywords, knownKeywords_array);
   }
 
@@ -698,7 +698,7 @@ public final class IndexFileParser {
         if (i >= 0) {
           Set<String> importSet = scene.imports.get(annotationFullyQualifiedName);
           if (importSet == null) {
-            importSet = new TreeSet<String>();
+            importSet = new TreeSet<>();
             scene.imports.put(annotationFullyQualifiedName, importSet);
           }
           importSet.add(name);

@@ -1386,8 +1386,8 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
     // hacky fix: remove {Method,Class}.body for comparison
     ImmutableStack<ASTEntry> s0 = canonical(this);
     ImmutableStack<ASTEntry> s1 = canonical(o);
-    Deque<ASTEntry> d0 = new LinkedList<ASTEntry>();
-    Deque<ASTEntry> d1 = new LinkedList<ASTEntry>();
+    Deque<ASTEntry> d0 = new LinkedList<>();
+    Deque<ASTEntry> d1 = new LinkedList<>();
     while (!s0.isEmpty()) {
       d0.push(s0.peek());
       s0 = s0.pop();

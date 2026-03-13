@@ -339,7 +339,7 @@ public class IndexFileSpecification {
    * @return a list of the {@link AnnotationInsertion}s that are created
    */
   private List<Insertion> parseElement(CriterionList clist, AElement element) {
-    return parseElement(clist, element, new ArrayList<Insertion>(), false);
+    return parseElement(clist, element, new ArrayList<>(), false);
   }
 
   /**
@@ -353,7 +353,7 @@ public class IndexFileSpecification {
    */
   private List<Insertion> parseElement(
       CriterionList clist, AElement element, boolean isCastInsertion) {
-    return parseElement(clist, element, new ArrayList<Insertion>(), isCastInsertion);
+    return parseElement(clist, element, new ArrayList<>(), isCastInsertion);
   }
 
   /**
@@ -517,8 +517,7 @@ public class IndexFileSpecification {
 
         if (constructorInsertion == null) {
           DeclaredType type = new DeclaredType(criteria.getClassName());
-          constructorInsertion =
-              new ConstructorInsertion(type, criteria, new ArrayList<Insertion>());
+          constructorInsertion = new ConstructorInsertion(type, criteria, new ArrayList<>());
           this.insertions.add(constructorInsertion);
           // debug(
           //     "Added constructorInsertion to this.insertions, which is now %s%n",

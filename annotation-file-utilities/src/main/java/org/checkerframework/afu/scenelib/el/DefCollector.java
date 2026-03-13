@@ -27,7 +27,7 @@ public abstract class DefCollector {
    * annotation type, a {@link DefException} is thrown.
    */
   public DefCollector(AScene s) throws DefException {
-    defs = new LinkedHashSet<AnnotationDef>();
+    defs = new LinkedHashSet<>();
     collect(s);
   }
 

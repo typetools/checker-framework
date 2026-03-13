@@ -62,7 +62,7 @@ public abstract class Insertion {
   public Insertion(Criteria criteria, boolean separateLine) {
     this.criteria = criteria;
     this.separateLine = separateLine;
-    this.packageNames = new LinkedHashSet<String>();
+    this.packageNames = new LinkedHashSet<>();
     this.inserted = false;
   }
 

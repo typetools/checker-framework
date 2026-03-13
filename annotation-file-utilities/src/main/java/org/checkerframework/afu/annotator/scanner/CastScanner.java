@@ -74,7 +74,7 @@ public class CastScanner extends CommonScanner {
   public static void addCastToMethod(String methodName, Integer offset) {
     List<Integer> offsetList = methodNameToCastOffsets.get(methodName);
     if (offsetList == null) {
-      offsetList = new ArrayList<Integer>();
+      offsetList = new ArrayList<>();
       methodNameToCastOffsets.put(methodName, offsetList);
     }
     if (methodName.equals(prevMethodName) && offset - prevOffset == 3) {

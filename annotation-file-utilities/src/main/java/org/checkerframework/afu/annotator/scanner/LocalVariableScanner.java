@@ -140,7 +140,7 @@ public class LocalVariableScanner extends CommonScanner {
 
     List<Integer> listOfOffsets = nameOffsetCounter.get(varName);
     if (listOfOffsets == null) {
-      listOfOffsets = new ArrayList<Integer>();
+      listOfOffsets = new ArrayList<>();
       nameOffsetCounter.put(varName, listOfOffsets);
     }
 

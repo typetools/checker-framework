@@ -43,7 +43,7 @@ public class DeclaredType extends Type {
   public DeclaredType(String name) {
     super();
     this.name = name;
-    this.typeParameters = new ArrayList<Type>();
+    this.typeParameters = new ArrayList<>();
     this.innerType = null;
   }
 
@@ -108,7 +108,7 @@ public class DeclaredType extends Type {
    */
   public List<Type> getTypeParameters() {
     checkWildcard();
-    return new ArrayList<Type>(typeParameters);
+    return new ArrayList<>(typeParameters);
   }
 
   /**

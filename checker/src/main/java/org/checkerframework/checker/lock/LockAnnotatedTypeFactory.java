@@ -100,8 +100,7 @@ public class LockAnnotatedTypeFactory
 
   /** The @{@link GuardedBy} annotation. */
   @SuppressWarnings("this-escape")
-  protected final AnnotationMirror GUARDEDBY =
-      createGuardedByAnnotationMirror(new ArrayList<String>());
+  protected final AnnotationMirror GUARDEDBY = createGuardedByAnnotationMirror(new ArrayList<>());
 
   /** The @{@link NewObject} annotation. */
   protected final AnnotationMirror NEWOBJECT =

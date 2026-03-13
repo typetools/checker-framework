@@ -94,7 +94,7 @@ public class NewScanner extends CommonScanner {
     debug("adding new to method: " + methodName + " offset: " + offset);
     List<Integer> offsetList = methodNameToNewOffsets.get(methodName);
     if (offsetList == null) {
-      offsetList = new ArrayList<Integer>();
+      offsetList = new ArrayList<>();
       methodNameToNewOffsets.put(methodName, offsetList);
     }
     offsetList.add(offset);
