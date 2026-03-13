@@ -5,6 +5,7 @@
 // @infer-jaifs-skip-test
 // @infer-ajava-skip-test
 // @infer-stubs-skip-test
+@SupressWarnings("all") // Just check for crashes.
 public class Jep513 {
   class Person {
 
