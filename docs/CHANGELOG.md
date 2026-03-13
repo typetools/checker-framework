@@ -6,7 +6,8 @@
 
 ### User-visible changes
 
-The Checker Framework now requires JDK 21+ to use.
+The Checker Framework now requires JDK 21+ to use. checker-qual.jar and checker-util.jar still use
+Java 11 bytecode so that they may be included in projects that use earlier version of Java.
 
 ### Implementation details
 
