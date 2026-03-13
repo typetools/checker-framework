@@ -36,8 +36,13 @@ import org.checkerframework.javacutil.BugInCF;
  */
 public class CFGTranslationPhaseThree {
 
+  /** Do not instantiate. */
+  private CFGTranslationPhaseThree() {
+    throw new Error("Do not instantiate");
+  }
+
   /** A simple wrapper object that holds a basic block and allows to set one of its successors. */
-  protected interface PredecessorHolder {
+  protected static interface PredecessorHolder {
     void setSuccessor(BlockImpl b);
 
     BlockImpl getBlock();

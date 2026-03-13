@@ -19,6 +19,11 @@ import org.plumelib.options.Options;
  */
 public class ClassFileWriter {
 
+  /** Do not instantiate. */
+  private ClassFileWriter() {
+    throw new Error("Do not instantiate");
+  }
+
   @Option("-h print usage information and exit")
   public static boolean help = false;
 

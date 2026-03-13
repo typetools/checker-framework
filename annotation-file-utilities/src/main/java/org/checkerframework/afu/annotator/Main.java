@@ -138,6 +138,11 @@ import org.plumelib.util.IPair;
  */
 public class Main {
 
+  /** Do not instantiate. */
+  private Main() {
+    throw new Error("Do not instantiate");
+  }
+
   // Options
 
   /** Directory in which output files are written. */

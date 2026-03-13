@@ -35,6 +35,12 @@ import org.checkerframework.framework.qual.AnnotatedFor;
 @SuppressWarnings({"units", "checkstyle:constantname"})
 @AnnotatedFor("nullness")
 public class UnitsTools {
+
+  /** Do not instantiate. */
+  private UnitsTools() {
+    throw new Error("Do not instantiate");
+  }
+
   // Acceleration
   public static final @mPERs2 int mPERs2 = 1;
 
