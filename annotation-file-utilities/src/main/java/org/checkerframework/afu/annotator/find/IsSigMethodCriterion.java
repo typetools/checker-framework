@@ -208,7 +208,7 @@ public class IsSigMethodCriterion implements Criterion {
     if (!matchable) {
       // match with any of the imports
       for (String someImport : context.imports) {
-        String importPrefix = null;
+        String importPrefix;
         if (someImport.contains("*")) {
           // don't include the * in the prefix, should end in .
           // TODO: this is a real bug due to nonnull, though I discovered it manually
