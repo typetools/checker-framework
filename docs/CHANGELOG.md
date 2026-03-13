@@ -5,6 +5,7 @@
 ## Version 4.0.0 (2026-??)
 
 ### User-visible changes
+
 The Checker Framework now requires JDK 21+ to use.
 
 ### Implementation details
