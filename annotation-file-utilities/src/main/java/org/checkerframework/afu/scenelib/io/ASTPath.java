@@ -306,10 +306,22 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
     return Arrays.asList(a).iterator();
   }
 
+  /**
+   * Extend with `new T[]` statement, with the given depth.
+   *
+   * @param depth the depth for the array
+   * @return the path to the new statement
+   */
   public ASTPath extendNewArray(int depth) {
     return extend(new ASTEntry(Tree.Kind.NEW_ARRAY, TYPE, depth));
   }
 
+  /**
+   * Add a `new T[]` statement, with the given depth.
+   *
+   * @param depth the depth for the array
+   * @return the path to the new statement
+   */
   public ASTPath newArrayLevel(int depth) {
     return add(new ASTEntry(Tree.Kind.NEW_ARRAY, TYPE, depth));
   }

@@ -481,8 +481,14 @@ public class LockAnnotatedTypeFactory
       return weaker;
     }
 
+    /** The weakest side effect annotation. */
     static SideEffectAnnotation weakest = null;
 
+    /**
+     * Returns the weakest side effect annotation.
+     *
+     * @return the weakest side effect annotation
+     */
     public static SideEffectAnnotation weakest() {
       if (weakest == null) {
         for (SideEffectAnnotation sea : values()) {
