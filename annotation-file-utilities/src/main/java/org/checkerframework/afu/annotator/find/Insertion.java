@@ -265,7 +265,7 @@ public abstract class Insertion {
     if (nameEnd == -1) {
       nameEnd = s.length();
     }
-    int dotIndex = s.lastIndexOf(".", nameEnd);
+    int dotIndex = s.lastIndexOf('.', nameEnd);
     if (dotIndex != -1) {
       String basename = s.substring(dotIndex + 1);
       if (!alwaysQualify.contains(basename)) {
