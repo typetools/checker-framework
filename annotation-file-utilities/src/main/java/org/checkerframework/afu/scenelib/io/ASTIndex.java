@@ -120,7 +120,8 @@ public class ASTIndex extends WrapperMap<Tree, ASTRecord> {
   public static String getParameterName(
       CompilationUnitTree cut, String className, String methodName, int index) {
     try {
-      ASTIndex ai = (ASTIndex) indexOf(cut);
+      // Without "ASTIndex." here, we get an error: "nullness:dereference.of.nullable".
+      ASTIndex ai = (ASTIndex) ASTIndex.indexOf(cut);
       return ai.formals.get(className).get(methodName).get(index);
     } catch (NullPointerException ex) {
       return null;
@@ -139,7 +140,8 @@ public class ASTIndex extends WrapperMap<Tree, ASTRecord> {
       }
       // otherwise, look through parameter list for string
       try {
-        ASTIndex ai = (ASTIndex) indexOf(cut);
+        // Without "ASTIndex." here, we get an error: "nullness:dereference.of.nullable".
+        ASTIndex ai = (ASTIndex) ASTIndex.indexOf(cut);
         List<String> names = ai.formals.get(className).get(methodName);
         int i = 0;
         for (String name : names) {
