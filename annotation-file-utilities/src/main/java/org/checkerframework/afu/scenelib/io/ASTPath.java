@@ -426,27 +426,21 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
             new String[] {ANNOTATION, UNDERLYING_TYPE},
             new String[] {ANNOTATION});
       } else if (s.equals("ArrayAccess")) {
-        return newASTEntry(
-            Tree.Kind.ARRAY_ACCESS, new String[] {EXPRESSION, INDEX});
+        return newASTEntry(Tree.Kind.ARRAY_ACCESS, new String[] {EXPRESSION, INDEX});
       } else if (s.equals("ArrayType")) {
         return newASTEntry(Tree.Kind.ARRAY_TYPE, new String[] {TYPE});
       } else if (s.equals("Assert")) {
         return newASTEntry(Tree.Kind.ASSERT, new String[] {CONDITION, DETAIL});
       } else if (s.equals("Assignment")) {
-        return newASTEntry(
-            Tree.Kind.ASSIGNMENT, new String[] {VARIABLE, EXPRESSION});
+        return newASTEntry(Tree.Kind.ASSIGNMENT, new String[] {VARIABLE, EXPRESSION});
       } else if (s.equals("Binary")) {
         // Always use Tree.Kind.PLUS for Binary
-        return newASTEntry(
-            Tree.Kind.PLUS, new String[] {LEFT_OPERAND, RIGHT_OPERAND});
+        return newASTEntry(Tree.Kind.PLUS, new String[] {LEFT_OPERAND, RIGHT_OPERAND});
       } else if (s.equals("Block")) {
-        return newASTEntry(
-            Tree.Kind.BLOCK, new String[] {STATEMENT}, new String[] {STATEMENT});
+        return newASTEntry(Tree.Kind.BLOCK, new String[] {STATEMENT}, new String[] {STATEMENT});
       } else if (s.equals("Case")) {
         return newASTEntry(
-            Tree.Kind.CASE,
-            new String[] {EXPRESSION, STATEMENT},
-            new String[] {STATEMENT});
+            Tree.Kind.CASE, new String[] {EXPRESSION, STATEMENT}, new String[] {STATEMENT});
       } else if (s.equals("Catch")) {
         return newASTEntry(Tree.Kind.CATCH, new String[] {PARAMETER, BLOCK});
       } else if (s.equals("Class")) {
@@ -456,41 +450,32 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
             new String[] {BOUND, INITIALIZER, TYPE_PARAMETER});
       } else if (s.equals("CompoundAssignment")) {
         // Always use Tree.Kind.PLUS_ASSIGNMENT for CompoundAssignment
-        return newASTEntry(
-            Tree.Kind.PLUS_ASSIGNMENT, new String[] {VARIABLE, EXPRESSION});
+        return newASTEntry(Tree.Kind.PLUS_ASSIGNMENT, new String[] {VARIABLE, EXPRESSION});
       } else if (s.equals("ConditionalExpression")) {
         return newASTEntry(
             Tree.Kind.CONDITIONAL_EXPRESSION,
             new String[] {CONDITION, TRUE_EXPRESSION, FALSE_EXPRESSION});
       } else if (s.equals("DoWhileLoop")) {
-        return newASTEntry(
-            Tree.Kind.DO_WHILE_LOOP, new String[] {CONDITION, STATEMENT});
+        return newASTEntry(Tree.Kind.DO_WHILE_LOOP, new String[] {CONDITION, STATEMENT});
       } else if (s.equals("EnhancedForLoop")) {
         return newASTEntry(
-            Tree.Kind.ENHANCED_FOR_LOOP,
-            new String[] {VARIABLE, EXPRESSION, STATEMENT});
+            Tree.Kind.ENHANCED_FOR_LOOP, new String[] {VARIABLE, EXPRESSION, STATEMENT});
       } else if (s.equals("ExpressionStatement")) {
         return newASTEntry(Tree.Kind.EXPRESSION_STATEMENT, new String[] {EXPRESSION});
       } else if (s.equals("ForLoop")) {
         return newASTEntry(
             Tree.Kind.FOR_LOOP,
-            new String[] {
-              INITIALIZER, CONDITION, UPDATE, STATEMENT
-            },
+            new String[] {INITIALIZER, CONDITION, UPDATE, STATEMENT},
             new String[] {INITIALIZER, UPDATE});
       } else if (s.equals("If")) {
-        return newASTEntry(
-            Tree.Kind.IF,
-            new String[] {CONDITION, THEN_STATEMENT, ELSE_STATEMENT});
+        return newASTEntry(Tree.Kind.IF, new String[] {CONDITION, THEN_STATEMENT, ELSE_STATEMENT});
       } else if (s.equals("InstanceOf")) {
         return newASTEntry(Tree.Kind.INSTANCE_OF, new String[] {EXPRESSION, TYPE});
       } else if (s.equals("LabeledStatement")) {
         return newASTEntry(Tree.Kind.LABELED_STATEMENT, new String[] {STATEMENT});
       } else if (s.equals("LambdaExpression")) {
         return newASTEntry(
-            Tree.Kind.LAMBDA_EXPRESSION,
-            new String[] {PARAMETER, BODY},
-            new String[] {PARAMETER});
+            Tree.Kind.LAMBDA_EXPRESSION, new String[] {PARAMETER, BODY}, new String[] {PARAMETER});
       } else if (s.equals("MemberReference")) {
         return newASTEntry(
             Tree.Kind.MEMBER_REFERENCE,
@@ -516,13 +501,7 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
       } else if (s.equals("NewClass")) {
         return newASTEntry(
             Tree.Kind.NEW_CLASS,
-            new String[] {
-              ENCLOSING_EXPRESSION,
-              TYPE_ARGUMENT,
-              IDENTIFIER,
-              ARGUMENT,
-              CLASS_BODY
-            },
+            new String[] {ENCLOSING_EXPRESSION, TYPE_ARGUMENT, IDENTIFIER, ARGUMENT, CLASS_BODY},
             new String[] {TYPE_ARGUMENT, ARGUMENT});
       } else if (s.equals("ParameterizedType")) {
         return newASTEntry(
@@ -534,20 +513,14 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
       } else if (s.equals("Return")) {
         return newASTEntry(Tree.Kind.RETURN, new String[] {EXPRESSION});
       } else if (s.equals("Switch")) {
-        return newASTEntry(
-            Tree.Kind.SWITCH,
-            new String[] {EXPRESSION, CASE},
-            new String[] {CASE});
+        return newASTEntry(Tree.Kind.SWITCH, new String[] {EXPRESSION, CASE}, new String[] {CASE});
       } else if (s.equals("Synchronized")) {
-        return newASTEntry(
-            Tree.Kind.SYNCHRONIZED, new String[] {EXPRESSION, BLOCK});
+        return newASTEntry(Tree.Kind.SYNCHRONIZED, new String[] {EXPRESSION, BLOCK});
       } else if (s.equals("Throw")) {
         return newASTEntry(Tree.Kind.THROW, new String[] {EXPRESSION});
       } else if (s.equals("Try")) {
         return newASTEntry(
-            Tree.Kind.TRY,
-            new String[] {BLOCK, CATCH, FINALLY_BLOCK},
-            new String[] {CATCH});
+            Tree.Kind.TRY, new String[] {BLOCK, CATCH, FINALLY_BLOCK}, new String[] {CATCH});
       } else if (s.equals("TypeCast")) {
         return newASTEntry(Tree.Kind.TYPE_CAST, new String[] {TYPE, EXPRESSION});
       } else if (s.equals("Unary")) {
@@ -555,14 +528,11 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
         return newASTEntry(Tree.Kind.UNARY_PLUS, new String[] {EXPRESSION});
       } else if (s.equals("UnionType")) {
         return newASTEntry(
-            Tree.Kind.UNION_TYPE,
-            new String[] {TYPE_ALTERNATIVE},
-            new String[] {TYPE_ALTERNATIVE});
+            Tree.Kind.UNION_TYPE, new String[] {TYPE_ALTERNATIVE}, new String[] {TYPE_ALTERNATIVE});
       } else if (s.equals("Variable")) {
         return newASTEntry(Tree.Kind.VARIABLE, new String[] {TYPE, INITIALIZER});
       } else if (s.equals("WhileLoop")) {
-        return newASTEntry(
-            Tree.Kind.WHILE_LOOP, new String[] {CONDITION, STATEMENT});
+        return newASTEntry(Tree.Kind.WHILE_LOOP, new String[] {CONDITION, STATEMENT});
       } else if (s.equals("Wildcard")) {
         // Always use Tree.Kind.UNBOUNDED_WILDCARD for Wildcard
         return newASTEntry(Tree.Kind.UNBOUNDED_WILDCARD, new String[] {BOUND});
