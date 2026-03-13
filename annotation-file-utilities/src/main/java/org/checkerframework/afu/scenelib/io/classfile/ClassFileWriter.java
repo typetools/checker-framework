@@ -32,7 +32,7 @@ public class ClassFileWriter {
 
   static String usage =
       "usage: insert-annotations [options] class1 indexfile1 class2 indexfile2 ..."
-          + ""
+          + linesep
           + linesep
           + "For each class/index file pair (a.second.C a.second.C.jaif), read annotations from"
           + linesep
