@@ -69,7 +69,8 @@ public abstract class GitTask extends DefaultTask {
     if (branch != null) {
       cloneCommand.setBranch(branch);
     }
-    try (Git git = cloneCommand.call()) {
+    try {
+      cloneCommand.call();
       getLogger().debug("Cloning successful.");
     } catch (GitAPIException e) {
       String warningMsg = String.format("Error cloning repository %s: %s", url, e.getMessage());

@@ -208,8 +208,6 @@ public class AExpression extends AElement {
       }
       prev = loc;
     }
-    prev = null;
-    map.clear();
     for (Map.Entry<RelativeLocation, AMethod> em : funs.entrySet()) {
       sb.append("lambda ");
       RelativeLocation loc = em.getKey();
