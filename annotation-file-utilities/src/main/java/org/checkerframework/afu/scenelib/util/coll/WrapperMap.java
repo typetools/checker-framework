@@ -34,7 +34,7 @@ public class WrapperMap<K, V> implements Map<K, V> {
   }
 
   @Override
-  public Set<java.util.Map.Entry<K, V>> entrySet() {
+  public Set<Map.Entry<K, V>> entrySet() {
     return back.entrySet();
   }
 

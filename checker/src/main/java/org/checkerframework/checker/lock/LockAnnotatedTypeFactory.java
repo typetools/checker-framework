@@ -442,7 +442,7 @@ public class LockAnnotatedTypeFactory
         case MAYRELEASELOCKS:
           break;
         case RELEASESNOLOCKS:
-          if (this == SideEffectAnnotation.MAYRELEASELOCKS) {
+          if (this == MAYRELEASELOCKS) {
             weaker = true;
           }
           break;
@@ -485,7 +485,7 @@ public class LockAnnotatedTypeFactory
 
     public static SideEffectAnnotation weakest() {
       if (weakest == null) {
-        for (SideEffectAnnotation sea : SideEffectAnnotation.values()) {
+        for (SideEffectAnnotation sea : values()) {
           if (weakest == null) {
             weakest = sea;
           }
