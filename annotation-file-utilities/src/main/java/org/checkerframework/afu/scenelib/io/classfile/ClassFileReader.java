@@ -28,9 +28,6 @@ public class ClassFileReader {
   @Option("-h print usage information and exit")
   public static boolean help = false;
 
-  @Option("print version information and exit")
-  public static boolean version = false;
-
   @Option("print progress messages")
   public static boolean verbose = false;
 
@@ -83,13 +80,8 @@ public class ClassFileReader {
       System.exit(1);
     }
 
-    if (version) {
-      System.out.printf("extract-annotations (%s)", INDEX_UTILS_VERSION);
-    }
     if (help) {
       options.printUsage();
-    }
-    if (version || help) {
       System.exit(-1);
     }
 

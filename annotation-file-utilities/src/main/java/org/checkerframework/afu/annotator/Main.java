@@ -64,7 +64,6 @@ import org.checkerframework.afu.scenelib.io.ASTRecord;
 import org.checkerframework.afu.scenelib.io.DebugWriter;
 import org.checkerframework.afu.scenelib.io.IndexFileParser;
 import org.checkerframework.afu.scenelib.io.IndexFileWriter;
-import org.checkerframework.afu.scenelib.io.classfile.ClassFileReader;
 import org.checkerframework.afu.scenelib.type.DeclaredType;
 import org.checkerframework.afu.scenelib.type.Type;
 import org.checkerframework.afu.scenelib.util.CommandLineUtils;
@@ -503,7 +502,7 @@ public class Main {
   public static void main(String[] args) throws IOException {
 
     if (verbose) {
-      System.out.printf("insert-annotations-to-source (%s)%n", ClassFileReader.INDEX_UTILS_VERSION);
+      System.out.printf("insert-annotations-to-source%n");
     }
 
     Options options =

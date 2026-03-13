@@ -27,9 +27,6 @@ public class ClassFileWriter {
   @Option("-h print usage information and exit")
   public static boolean help = false;
 
-  @Option("print version information and exit")
-  public static boolean version = false;
-
   @Option("print progress messages")
   public static boolean verbose = false;
 
@@ -65,7 +62,6 @@ public class ClassFileWriter {
    *
    * <pre>
    *   -h, --help   print usage information and exit
-   *   --version    print version information and exit
    * </pre>
    *
    * @param args options and classes and index files to analyze;
@@ -88,13 +84,8 @@ public class ClassFileWriter {
       throw new Error("unreachable");
     }
 
-    if (version) {
-      System.out.printf("insert-annotations (%s)", ClassFileReader.INDEX_UTILS_VERSION);
-    }
     if (help) {
       options.printUsage();
-    }
-    if (version || help) {
       System.exit(-1);
     }
 
