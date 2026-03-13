@@ -254,6 +254,9 @@ allprojects { currentProj ->
         if (!name.equals("javadocDoclintAll")) {
           options.memberLevel = javadocMemberLevel
         }
+        // Without the following, Javadoc will error on checker-qual with "error: reference not found"
+        // on class in checker.jar.
+        exclude "**/module-info.java"
         classpath += configurations.named("checkerFatJar").get().asFileTree
         options.taglets("org.checkerframework.taglet.ManualTaglet")
         options.tagletPath(project(":framework-test").sourceSets.taglet.output.classesDirs.getFiles() as File[])
@@ -289,20 +292,16 @@ allprojects { currentProj ->
       // Uncomment when needed.
       // // Put source files in deterministic order, for debugging.
       // compilationTask.source = compilationTask.source.sort()
-
-      // This test is for whether the Checker Framework supports (runs under) Java 8.
-      // Currently, the Checker Framework does support Java 8.
-      if (true) {
-        // Using `options.release.set(8)` here leads to compilation
-        // errors such as "package com.sun.source.tree does not exist".
-        sourceCompatibility = 8
-        targetCompatibility = 8
-        // Because the target is 8, all of the public compiler classes are accessible, so
-        // --add-exports are not required (nor are they allowed with target 8). See
-        // https://openjdk.org/jeps/247 for details on compiling for older versions.
+      if ((project.name.equals("checker-qual")
+          || project.name.equals("checker-util")
+          || project.name.equals("checker-qual-android"))) {
+        options.release = 11
       } else {
-        // This makes the class files Java 11, and then the Checker Framework would not run under Java 8.
-        options.release.set(11)
+        sourceCompatibility = 21
+        targetCompatibility = 21
+        // Can't use --release with --add-exports, otherwise you'll see errors like:
+        // error: exporting a package from system module jdk.compiler is not allowed with --release
+        // options.release.set(21)
         options.compilerArgs += [
           "--add-exports",
           "jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
@@ -339,7 +338,6 @@ allprojects { currentProj ->
         // via the setAccessible method of the core reflection API. The --add-opens option can
         // be used, at run time, to do this."
       }
-
       options.failOnError = true
       options.deprecation = true
       // -options: To not get a warning about missing bootstrap classpath (when using Java 9 and `-source 8`).
@@ -365,6 +363,10 @@ allprojects { currentProj ->
         options.errorprone.enabled = compilerRunsOnJava21orHigher
         options.errorprone.disableWarningsInGeneratedCode = true
         options.errorprone.errorproneArgs = [
+          // TODO: Fix these warnings now that JDK 21 is required.
+          "-Xep:StatementSwitchToExpressionSwitch:OFF",
+          // TODO: Fix these warnings now that JDK 21 is required.
+          "-Xep:PatternMatchingInstanceof:OFF",
           // Many compiler classes are interned.
           "-Xep:ReferenceEquality:OFF",
           // Not useful to suggest Splitter; maybe clean up.

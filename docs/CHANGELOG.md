@@ -2,8 +2,18 @@
 
 <!-- markdownlint-disable no-duplicate-heading -->
 <!-- pyml disable no-duplicate-heading -->
+## Version 4.0.0 (2026-??)
 
-## Version 3.54.1 (2026-04-02)
+### User-visible changes
+
+The Checker Framework now requires JDK 21+ to use. checker-qual.jar and checker-util.jar still use
+Java 11 bytecode so that they may be included in projects that use earlier version of Java.
+
+### Implementation details
+
+### Closed issues
+
+## Version 3.54.1 (2026-04-01)
 
 ### User-visible changes
 
