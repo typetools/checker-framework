@@ -46,8 +46,6 @@ public class InstanceOfScanner extends CommonScanner {
    * @param tree the given instanceof check to search for
    */
   private InstanceOfScanner(Tree tree) {
-    this.index = -1;
-    this.done = false;
     this.tree = tree;
   }
 
