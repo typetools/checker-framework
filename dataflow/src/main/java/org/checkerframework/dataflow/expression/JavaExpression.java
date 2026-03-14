@@ -828,7 +828,7 @@ public abstract class JavaExpression {
    * @return viewpoint-adapted version of this
    */
   public final JavaExpression atMethodInvocation(MethodInvocationTree methodInvocationTree) {
-    JavaExpression receiverJe = JavaExpression.getReceiver(methodInvocationTree);
+    JavaExpression receiverJe = getReceiver(methodInvocationTree);
     List<JavaExpression> argumentsJe =
         argumentTreesToJavaExpressions(
             TreeUtils.elementFromUse(methodInvocationTree), methodInvocationTree.getArguments());
@@ -842,7 +842,7 @@ public abstract class JavaExpression {
    * @return viewpoint-adapted version of this
    */
   public final JavaExpression atMethodInvocation(MethodInvocationNode invocationNode) {
-    JavaExpression receiverJe = JavaExpression.fromNode(invocationNode.getTarget().getReceiver());
+    JavaExpression receiverJe = fromNode(invocationNode.getTarget().getReceiver());
     List<JavaExpression> argumentsJe =
         CollectionsPlume.mapList(JavaExpression::fromNode, invocationNode.getArguments());
     return ViewpointAdaptJavaExpression.viewpointAdapt(this, receiverJe, argumentsJe);
@@ -855,7 +855,7 @@ public abstract class JavaExpression {
    * @return viewpoint-adapted version of this
    */
   public JavaExpression atConstructorInvocation(NewClassTree newClassTree) {
-    JavaExpression receiverJe = JavaExpression.getReceiver(newClassTree);
+    JavaExpression receiverJe = getReceiver(newClassTree);
     List<JavaExpression> argumentsJe =
         argumentTreesToJavaExpressions(
             TreeUtils.elementFromUse(newClassTree), newClassTree.getArguments());
@@ -874,13 +874,13 @@ public abstract class JavaExpression {
     if (isVarargsInvocation(method, argTrees)) {
       List<JavaExpression> result = new ArrayList<>(method.getParameters().size());
       for (int i = 0; i < method.getParameters().size() - 1; i++) {
-        result.add(JavaExpression.fromTree(argTrees.get(i)));
+        result.add(fromTree(argTrees.get(i)));
       }
 
       List<JavaExpression> varargArgs =
           new ArrayList<>(argTrees.size() - method.getParameters().size() + 1);
       for (int i = method.getParameters().size() - 1; i < argTrees.size(); i++) {
-        varargArgs.add(JavaExpression.fromTree(argTrees.get(i)));
+        varargArgs.add(fromTree(argTrees.get(i)));
       }
       Element varargsElement = method.getParameters().get(method.getParameters().size() - 1);
       TypeMirror tm = ElementUtils.getType(varargsElement);

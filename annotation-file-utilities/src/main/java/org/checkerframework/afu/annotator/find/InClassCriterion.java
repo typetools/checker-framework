@@ -70,7 +70,7 @@ public final class InClassCriterion implements Criterion {
 
   @Override
   public boolean isSatisfiedBy(@Nullable TreePath path) {
-    return InClassCriterion.isSatisfiedBy(path, className, exactMatch);
+    return isSatisfiedBy(path, className, exactMatch);
   }
 
   static Pattern anonclassPattern;
