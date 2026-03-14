@@ -638,7 +638,7 @@ public class Main {
         insertions.addAll(parsedSpec);
         annotationImports.putAll(spec.annotationImports());
       } catch (RuntimeException e) {
-        if (e.getCause() != null && e.getCause() instanceof FileNotFoundException) {
+        if (e.getCause() instanceof FileNotFoundException) {
           System.err.println("File not found: " + jaifFile);
           System.exit(1);
         } else {
