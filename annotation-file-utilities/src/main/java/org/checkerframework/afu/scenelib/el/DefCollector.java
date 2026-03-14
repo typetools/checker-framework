@@ -6,6 +6,7 @@ import org.checkerframework.afu.scenelib.Annotation;
 import org.checkerframework.afu.scenelib.field.AnnotationAFT;
 import org.checkerframework.afu.scenelib.field.AnnotationFieldType;
 import org.checkerframework.afu.scenelib.io.IndexFileWriter;
+import org.checkerframework.checker.initialization.qual.UnderInitialization;
 
 /**
  * A DefCollector supplies a visitor for the annotation definitions in an AScene. First, call the
@@ -44,7 +45,8 @@ public abstract class DefCollector {
     return null;
   }
 
-  private void collect(AScene s) throws DefException {
+  private void collect(@UnderInitialization(DefCollector.class) DefCollector this, AScene s)
+      throws DefException {
     for (AElement p : s.packages.values()) {
       collect(p);
     }

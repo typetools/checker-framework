@@ -516,6 +516,7 @@ public class IndexFileSpecification {
       if (noTypePath(criteria) && isOnImplicitDefaultConstructor(criteria)) {
 
         if (constructorInsertion == null) {
+          @SuppressWarnings("nullness:argument") // getClassName returns non-null for Criteria
           DeclaredType type = new DeclaredType(criteria.getClassName());
           constructorInsertion = new ConstructorInsertion(type, criteria, new ArrayList<>());
           this.insertions.add(constructorInsertion);

@@ -3,6 +3,7 @@ package org.checkerframework.afu.scenelib.type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringJoiner;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * A Java type with optional type parameters and inner type. For example:
@@ -33,7 +34,7 @@ public class DeclaredType extends Type {
   private List<Type> typeParameters;
 
   /** The inner type of this type. {@code null} if there is none. */
-  private DeclaredType innerType;
+  private @Nullable DeclaredType innerType;
 
   /**
    * Creates a new declared type with no type parameters or inner type.
