@@ -41,7 +41,11 @@ public class IndexFileMerger {
     throw new Error("Do not instantiate");
   }
 
-  /** Merges index files. */
+  /**
+   * Merges index files.
+   *
+   * @param args command-line arguments
+   */
   @SuppressWarnings("CatchAndPrintStackTrace") // TODO
   public static void main(String[] args) {
     if (args.length < 1) {
