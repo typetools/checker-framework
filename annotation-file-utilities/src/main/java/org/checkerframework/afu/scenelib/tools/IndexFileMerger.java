@@ -41,6 +41,7 @@ public class IndexFileMerger {
     throw new Error("Do not instantiate");
   }
 
+  /** Merges index files. */
   @SuppressWarnings("CatchAndPrintStackTrace") // TODO
   public static void main(String[] args) {
     if (args.length < 1) {

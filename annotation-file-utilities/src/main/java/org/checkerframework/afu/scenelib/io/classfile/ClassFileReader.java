@@ -22,15 +22,19 @@ public class ClassFileReader {
     throw new Error("Do not instantiate");
   }
 
+  /** Omit annotations from bridge (compiler-created) methods. */
   @Option("-b omit annotations from bridge (compiler-created) methods")
   public static boolean ignore_bridge_methods = false;
 
+  /** Print usage information and exit. */
   @Option("-h print usage information and exit")
   public static boolean help = false;
 
+  /** Print progress messages. */
   @Option("print progress messages")
   public static boolean verbose = false;
 
+  /** The system-specific line separator. */
   private static String linesep = System.lineSeparator();
 
   static String usage =

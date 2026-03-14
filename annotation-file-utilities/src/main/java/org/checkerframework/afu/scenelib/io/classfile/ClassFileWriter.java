@@ -24,14 +24,18 @@ public class ClassFileWriter {
     throw new Error("Do not instantiate");
   }
 
+  /** Print usage information and exit. */
   @Option("-h print usage information and exit")
   public static boolean help = false;
 
+  /** Print progress messages. */
   @Option("print progress messages")
   public static boolean verbose = false;
 
+  /** The system-specific line separator. */
   private static String linesep = System.getProperty("line.separator");
 
+  /** The usage message. */
   static String usage =
       "usage: insert-annotations [options] class1 indexfile1 class2 indexfile2 ..."
           + ""

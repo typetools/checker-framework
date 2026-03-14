@@ -42,6 +42,7 @@ public class UnitsTools {
   }
 
   // Acceleration
+  /** Acceleration: meters per second squared. */
   public static final @mPERs2 int mPERs2 = 1;
 
   // Angle

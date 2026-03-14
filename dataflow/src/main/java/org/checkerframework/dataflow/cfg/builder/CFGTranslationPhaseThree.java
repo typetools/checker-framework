@@ -43,8 +43,18 @@ public class CFGTranslationPhaseThree {
 
   /** A simple wrapper object that holds a basic block and allows to set one of its successors. */
   protected static interface PredecessorHolder {
+    /**
+     * Sets the successor.
+     *
+     * @param b the new successor
+     */
     void setSuccessor(BlockImpl b);
 
+    /**
+     * Returns the block.
+     *
+     * @return the block
+     */
     BlockImpl getBlock();
   }
 
