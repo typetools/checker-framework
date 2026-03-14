@@ -158,7 +158,7 @@ public class AField extends ADeclaration {
     return new VivifyingMap<K, AField>(new LinkedHashMap<>()) {
       @Override
       public AField createValueFor(K k) {
-        return new AField("" + k);
+        return new AField(k.toString());
       }
 
       @Override
