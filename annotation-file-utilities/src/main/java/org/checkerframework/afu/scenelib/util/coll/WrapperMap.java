@@ -34,6 +34,7 @@ public class WrapperMap<K, V> implements Map<K, V> {
   }
 
   @Override
+  // Fully qualified "java.util.Map.Entry" is needed here.  I don't know why.
   public Set<java.util.Map.Entry<K, V>> entrySet() {
     return back.entrySet();
   }

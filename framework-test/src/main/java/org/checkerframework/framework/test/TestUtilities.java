@@ -316,7 +316,7 @@ public class TestUtilities {
       Iterable<Diagnostic<? extends JavaFileObject>> actualDiagnostics, boolean usingAnomsgtxt) {
     Set<String> actualDiagnosticsStr = new LinkedHashSet<>();
     for (Diagnostic<? extends JavaFileObject> diagnostic : actualDiagnostics) {
-      String diagnosticStr = TestUtilities.diagnosticToString(diagnostic, usingAnomsgtxt);
+      String diagnosticStr = diagnosticToString(diagnostic, usingAnomsgtxt);
       if (diagnosticStr != null) {
         actualDiagnosticsStr.add(diagnosticStr);
       }

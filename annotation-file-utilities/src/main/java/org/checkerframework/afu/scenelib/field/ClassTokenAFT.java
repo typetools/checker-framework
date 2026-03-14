@@ -19,7 +19,7 @@ public final class ClassTokenAFT extends ScalarAFT {
 
   @Override
   public boolean isValidValue(Object o) {
-    return o instanceof java.lang.Class;
+    return o instanceof Class;
   }
 
   @Override
@@ -29,7 +29,7 @@ public final class ClassTokenAFT extends ScalarAFT {
 
   @Override
   public void format(StringBuilder sb, Object o) {
-    sb.append(((java.lang.Class<?>) o).getName());
+    sb.append(((Class<?>) o).getName());
     sb.append(".class");
   }
 
