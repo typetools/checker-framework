@@ -17,6 +17,11 @@ import org.checkerframework.framework.qual.AnnotatedFor;
 @AnnotatedFor("nullness")
 public class FormatUtil {
 
+  /** Do not instantiate. */
+  private FormatUtil() {
+    throw new Error("Do not instantiate");
+  }
+
   /**
    * A representation of a format specifier, which is represented by "%..." in the format string.
    * Indicates how to convert a value into a string.
