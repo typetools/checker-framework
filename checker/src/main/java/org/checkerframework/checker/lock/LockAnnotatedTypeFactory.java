@@ -767,7 +767,9 @@ public class LockAnnotatedTypeFactory
    * @param values a list of lock expressions
    * @return an AnnotationMirror corresponding to @GuardedBy(values)
    */
-  private AnnotationMirror createGuardedByAnnotationMirror(List<String> values) {
+  private AnnotationMirror createGuardedByAnnotationMirror(
+      @UnknownInitialization(GenericAnnotatedTypeFactory.class) LockAnnotatedTypeFactory this,
+      List<String> values) {
     AnnotationBuilder builder = new AnnotationBuilder(getProcessingEnv(), GuardedBy.class);
     builder.setValue("value", values.toArray());
 
