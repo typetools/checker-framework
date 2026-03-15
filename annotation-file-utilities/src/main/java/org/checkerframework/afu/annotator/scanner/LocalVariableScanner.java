@@ -66,8 +66,6 @@ public class LocalVariableScanner extends CommonScanner {
   private final String varName;
 
   private LocalVariableScanner(Tree varTree, String varName) {
-    this.index = -1;
-    this.done = false;
     this.varTree = varTree;
     this.varName = varName;
   }

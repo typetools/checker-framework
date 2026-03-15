@@ -42,8 +42,6 @@ public class CastScanner extends CommonScanner {
   private static int nestLevels = 0;
 
   private CastScanner(Tree tree) {
-    this.index = -1;
-    this.done = false;
     this.tree = tree;
   }
 

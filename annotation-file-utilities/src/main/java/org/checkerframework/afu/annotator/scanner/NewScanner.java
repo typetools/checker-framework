@@ -53,8 +53,6 @@ public class NewScanner extends CommonScanner {
   private final Tree tree;
 
   private NewScanner(Tree tree) {
-    this.index = -1;
-    this.done = false;
     this.tree = tree;
   }
 
