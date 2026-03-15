@@ -9,6 +9,12 @@ import java.util.List;
 
 /** Utility class for dealing with CaseTree. */
 public class CaseUtils {
+
+  /** Do not instantiate. */
+  private CaseUtils() {
+    throw new Error("Do not instantiate");
+  }
+
   // This is a copy of a method from checker-framework's {@code TreeUtils}.  Keep them in sync.
   /**
    * Returns the list of expressions from a case expression. In JDK 11 and earlier, this will be a

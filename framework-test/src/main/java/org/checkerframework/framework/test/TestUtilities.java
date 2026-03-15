@@ -37,6 +37,11 @@ import org.plumelib.util.SystemPlume;
 /** Utilities for testing. */
 public class TestUtilities {
 
+  /** Do not instantiate. */
+  private TestUtilities() {
+    throw new Error("Do not instantiate");
+  }
+
   /** True if the JVM is version 9 or above. */
   public static final boolean IS_AT_LEAST_9_JVM = SystemUtil.jreVersion >= 9;
 
