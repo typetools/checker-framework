@@ -453,7 +453,7 @@ public class TestDiagnosticUtils {
         continue;
       }
 
-      diagnostics.add(TestDiagnosticUtils.fromJavaxToolsDiagnostic(diagnosticString));
+      diagnostics.add(fromJavaxToolsDiagnostic(diagnosticString));
     }
 
     return diagnostics;
