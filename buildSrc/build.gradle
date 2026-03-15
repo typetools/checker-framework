@@ -24,7 +24,7 @@ tasks.withType(Javadoc).configureEach {
 dependencies {
   implementation(plugin(libs.plugins.com.diffplug.spotless))
   implementation("org.eclipse.jgit:org.eclipse.jgit:7.6.0.202603022253-r")
-  implementation("org.eclipse.jgit:org.eclipse.jgit.ssh.apache:7.5.0.202512021534-r")
+  implementation("org.eclipse.jgit:org.eclipse.jgit.ssh.apache:7.6.0.202603022253-r")
   implementation("org.bouncycastle:bcprov-jdk15to18:1.83")
   implementation(gradleApi())
 }
