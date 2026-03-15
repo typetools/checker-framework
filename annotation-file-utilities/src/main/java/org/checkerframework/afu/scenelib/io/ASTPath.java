@@ -227,9 +227,9 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
     private boolean negativeAllowed() {
       switch (treeKind) {
         case CLASS:
-          return childSelectorIs(ASTPath.BOUND);
+          return childSelectorIs(BOUND);
         case METHOD:
-          return childSelectorIs(ASTPath.PARAMETER);
+          return childSelectorIs(PARAMETER);
         default:
           return false;
       }
@@ -306,12 +306,24 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
     return Arrays.asList(a).iterator();
   }
 
+  /**
+   * Extend with `new T[]` statement, with the given depth.
+   *
+   * @param depth the depth for the array
+   * @return the path to the new statement
+   */
   public ASTPath extendNewArray(int depth) {
-    return extend(new ASTEntry(Tree.Kind.NEW_ARRAY, ASTPath.TYPE, depth));
+    return extend(new ASTEntry(Tree.Kind.NEW_ARRAY, TYPE, depth));
   }
 
+  /**
+   * Add a `new T[]` statement, with the given depth.
+   *
+   * @param depth the depth for the array
+   * @return the path to the new statement
+   */
   public ASTPath newArrayLevel(int depth) {
-    return add(new ASTEntry(Tree.Kind.NEW_ARRAY, ASTPath.TYPE, depth));
+    return add(new ASTEntry(Tree.Kind.NEW_ARRAY, TYPE, depth));
   }
 
   public ASTPath add(ASTEntry entry) {
@@ -423,149 +435,119 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
       if (s.equals("AnnotatedType")) {
         return newASTEntry(
             Tree.Kind.ANNOTATED_TYPE,
-            new String[] {ASTPath.ANNOTATION, ASTPath.UNDERLYING_TYPE},
-            new String[] {ASTPath.ANNOTATION});
+            new String[] {ANNOTATION, UNDERLYING_TYPE},
+            new String[] {ANNOTATION});
       } else if (s.equals("ArrayAccess")) {
-        return newASTEntry(
-            Tree.Kind.ARRAY_ACCESS, new String[] {ASTPath.EXPRESSION, ASTPath.INDEX});
+        return newASTEntry(Tree.Kind.ARRAY_ACCESS, new String[] {EXPRESSION, INDEX});
       } else if (s.equals("ArrayType")) {
-        return newASTEntry(Tree.Kind.ARRAY_TYPE, new String[] {ASTPath.TYPE});
+        return newASTEntry(Tree.Kind.ARRAY_TYPE, new String[] {TYPE});
       } else if (s.equals("Assert")) {
-        return newASTEntry(Tree.Kind.ASSERT, new String[] {ASTPath.CONDITION, ASTPath.DETAIL});
+        return newASTEntry(Tree.Kind.ASSERT, new String[] {CONDITION, DETAIL});
       } else if (s.equals("Assignment")) {
-        return newASTEntry(
-            Tree.Kind.ASSIGNMENT, new String[] {ASTPath.VARIABLE, ASTPath.EXPRESSION});
+        return newASTEntry(Tree.Kind.ASSIGNMENT, new String[] {VARIABLE, EXPRESSION});
       } else if (s.equals("Binary")) {
         // Always use Tree.Kind.PLUS for Binary
-        return newASTEntry(
-            Tree.Kind.PLUS, new String[] {ASTPath.LEFT_OPERAND, ASTPath.RIGHT_OPERAND});
+        return newASTEntry(Tree.Kind.PLUS, new String[] {LEFT_OPERAND, RIGHT_OPERAND});
       } else if (s.equals("Block")) {
-        return newASTEntry(
-            Tree.Kind.BLOCK, new String[] {ASTPath.STATEMENT}, new String[] {ASTPath.STATEMENT});
+        return newASTEntry(Tree.Kind.BLOCK, new String[] {STATEMENT}, new String[] {STATEMENT});
       } else if (s.equals("Case")) {
         return newASTEntry(
-            Tree.Kind.CASE,
-            new String[] {ASTPath.EXPRESSION, ASTPath.STATEMENT},
-            new String[] {ASTPath.STATEMENT});
+            Tree.Kind.CASE, new String[] {EXPRESSION, STATEMENT}, new String[] {STATEMENT});
       } else if (s.equals("Catch")) {
-        return newASTEntry(Tree.Kind.CATCH, new String[] {ASTPath.PARAMETER, ASTPath.BLOCK});
+        return newASTEntry(Tree.Kind.CATCH, new String[] {PARAMETER, BLOCK});
       } else if (s.equals("Class")) {
         return newASTEntry(
             Tree.Kind.CLASS,
-            new String[] {ASTPath.BOUND, ASTPath.INITIALIZER, ASTPath.TYPE_PARAMETER},
-            new String[] {ASTPath.BOUND, ASTPath.INITIALIZER, ASTPath.TYPE_PARAMETER});
+            new String[] {BOUND, INITIALIZER, TYPE_PARAMETER},
+            new String[] {BOUND, INITIALIZER, TYPE_PARAMETER});
       } else if (s.equals("CompoundAssignment")) {
         // Always use Tree.Kind.PLUS_ASSIGNMENT for CompoundAssignment
-        return newASTEntry(
-            Tree.Kind.PLUS_ASSIGNMENT, new String[] {ASTPath.VARIABLE, ASTPath.EXPRESSION});
+        return newASTEntry(Tree.Kind.PLUS_ASSIGNMENT, new String[] {VARIABLE, EXPRESSION});
       } else if (s.equals("ConditionalExpression")) {
         return newASTEntry(
             Tree.Kind.CONDITIONAL_EXPRESSION,
-            new String[] {ASTPath.CONDITION, ASTPath.TRUE_EXPRESSION, ASTPath.FALSE_EXPRESSION});
+            new String[] {CONDITION, TRUE_EXPRESSION, FALSE_EXPRESSION});
       } else if (s.equals("DoWhileLoop")) {
-        return newASTEntry(
-            Tree.Kind.DO_WHILE_LOOP, new String[] {ASTPath.CONDITION, ASTPath.STATEMENT});
+        return newASTEntry(Tree.Kind.DO_WHILE_LOOP, new String[] {CONDITION, STATEMENT});
       } else if (s.equals("EnhancedForLoop")) {
         return newASTEntry(
-            Tree.Kind.ENHANCED_FOR_LOOP,
-            new String[] {ASTPath.VARIABLE, ASTPath.EXPRESSION, ASTPath.STATEMENT});
+            Tree.Kind.ENHANCED_FOR_LOOP, new String[] {VARIABLE, EXPRESSION, STATEMENT});
       } else if (s.equals("ExpressionStatement")) {
-        return newASTEntry(Tree.Kind.EXPRESSION_STATEMENT, new String[] {ASTPath.EXPRESSION});
+        return newASTEntry(Tree.Kind.EXPRESSION_STATEMENT, new String[] {EXPRESSION});
       } else if (s.equals("ForLoop")) {
         return newASTEntry(
             Tree.Kind.FOR_LOOP,
-            new String[] {
-              ASTPath.INITIALIZER, ASTPath.CONDITION, ASTPath.UPDATE, ASTPath.STATEMENT
-            },
-            new String[] {ASTPath.INITIALIZER, ASTPath.UPDATE});
+            new String[] {INITIALIZER, CONDITION, UPDATE, STATEMENT},
+            new String[] {INITIALIZER, UPDATE});
       } else if (s.equals("If")) {
-        return newASTEntry(
-            Tree.Kind.IF,
-            new String[] {ASTPath.CONDITION, ASTPath.THEN_STATEMENT, ASTPath.ELSE_STATEMENT});
+        return newASTEntry(Tree.Kind.IF, new String[] {CONDITION, THEN_STATEMENT, ELSE_STATEMENT});
       } else if (s.equals("InstanceOf")) {
-        return newASTEntry(Tree.Kind.INSTANCE_OF, new String[] {ASTPath.EXPRESSION, ASTPath.TYPE});
+        return newASTEntry(Tree.Kind.INSTANCE_OF, new String[] {EXPRESSION, TYPE});
       } else if (s.equals("LabeledStatement")) {
-        return newASTEntry(Tree.Kind.LABELED_STATEMENT, new String[] {ASTPath.STATEMENT});
+        return newASTEntry(Tree.Kind.LABELED_STATEMENT, new String[] {STATEMENT});
       } else if (s.equals("LambdaExpression")) {
         return newASTEntry(
-            Tree.Kind.LAMBDA_EXPRESSION,
-            new String[] {ASTPath.PARAMETER, ASTPath.BODY},
-            new String[] {ASTPath.PARAMETER});
+            Tree.Kind.LAMBDA_EXPRESSION, new String[] {PARAMETER, BODY}, new String[] {PARAMETER});
       } else if (s.equals("MemberReference")) {
         return newASTEntry(
             Tree.Kind.MEMBER_REFERENCE,
-            new String[] {ASTPath.QUALIFIER_EXPRESSION, ASTPath.TYPE_ARGUMENT},
-            new String[] {ASTPath.TYPE_ARGUMENT});
+            new String[] {QUALIFIER_EXPRESSION, TYPE_ARGUMENT},
+            new String[] {TYPE_ARGUMENT});
       } else if (s.equals("MemberSelect")) {
-        return newASTEntry(Tree.Kind.MEMBER_SELECT, new String[] {ASTPath.EXPRESSION});
+        return newASTEntry(Tree.Kind.MEMBER_SELECT, new String[] {EXPRESSION});
       } else if (s.equals("Method")) {
         return newASTEntry(
             Tree.Kind.METHOD,
-            new String[] {ASTPath.BODY, ASTPath.PARAMETER, ASTPath.TYPE, ASTPath.TYPE_PARAMETER},
-            new String[] {ASTPath.PARAMETER, ASTPath.TYPE_PARAMETER});
+            new String[] {BODY, PARAMETER, TYPE, TYPE_PARAMETER},
+            new String[] {PARAMETER, TYPE_PARAMETER});
       } else if (s.equals("MethodInvocation")) {
         return newASTEntry(
             Tree.Kind.METHOD_INVOCATION,
-            new String[] {ASTPath.TYPE_ARGUMENT, ASTPath.METHOD_SELECT, ASTPath.ARGUMENT},
-            new String[] {ASTPath.TYPE_ARGUMENT, ASTPath.ARGUMENT});
+            new String[] {TYPE_ARGUMENT, METHOD_SELECT, ARGUMENT},
+            new String[] {TYPE_ARGUMENT, ARGUMENT});
       } else if (s.equals("NewArray")) {
         return newASTEntry(
             Tree.Kind.NEW_ARRAY,
-            new String[] {ASTPath.TYPE, ASTPath.DIMENSION, ASTPath.INITIALIZER},
-            new String[] {ASTPath.TYPE, ASTPath.DIMENSION, ASTPath.INITIALIZER});
+            new String[] {TYPE, DIMENSION, INITIALIZER},
+            new String[] {TYPE, DIMENSION, INITIALIZER});
       } else if (s.equals("NewClass")) {
         return newASTEntry(
             Tree.Kind.NEW_CLASS,
-            new String[] {
-              ASTPath.ENCLOSING_EXPRESSION,
-              ASTPath.TYPE_ARGUMENT,
-              ASTPath.IDENTIFIER,
-              ASTPath.ARGUMENT,
-              ASTPath.CLASS_BODY
-            },
-            new String[] {ASTPath.TYPE_ARGUMENT, ASTPath.ARGUMENT});
+            new String[] {ENCLOSING_EXPRESSION, TYPE_ARGUMENT, IDENTIFIER, ARGUMENT, CLASS_BODY},
+            new String[] {TYPE_ARGUMENT, ARGUMENT});
       } else if (s.equals("ParameterizedType")) {
         return newASTEntry(
             Tree.Kind.PARAMETERIZED_TYPE,
-            new String[] {ASTPath.TYPE, ASTPath.TYPE_ARGUMENT},
-            new String[] {ASTPath.TYPE_ARGUMENT});
+            new String[] {TYPE, TYPE_ARGUMENT},
+            new String[] {TYPE_ARGUMENT});
       } else if (s.equals("Parenthesized")) {
-        return newASTEntry(Tree.Kind.PARENTHESIZED, new String[] {ASTPath.EXPRESSION});
+        return newASTEntry(Tree.Kind.PARENTHESIZED, new String[] {EXPRESSION});
       } else if (s.equals("Return")) {
-        return newASTEntry(Tree.Kind.RETURN, new String[] {ASTPath.EXPRESSION});
+        return newASTEntry(Tree.Kind.RETURN, new String[] {EXPRESSION});
       } else if (s.equals("Switch")) {
-        return newASTEntry(
-            Tree.Kind.SWITCH,
-            new String[] {ASTPath.EXPRESSION, ASTPath.CASE},
-            new String[] {ASTPath.CASE});
+        return newASTEntry(Tree.Kind.SWITCH, new String[] {EXPRESSION, CASE}, new String[] {CASE});
       } else if (s.equals("Synchronized")) {
-        return newASTEntry(
-            Tree.Kind.SYNCHRONIZED, new String[] {ASTPath.EXPRESSION, ASTPath.BLOCK});
+        return newASTEntry(Tree.Kind.SYNCHRONIZED, new String[] {EXPRESSION, BLOCK});
       } else if (s.equals("Throw")) {
-        return newASTEntry(Tree.Kind.THROW, new String[] {ASTPath.EXPRESSION});
+        return newASTEntry(Tree.Kind.THROW, new String[] {EXPRESSION});
       } else if (s.equals("Try")) {
         return newASTEntry(
-            Tree.Kind.TRY,
-            new String[] {ASTPath.BLOCK, ASTPath.CATCH, ASTPath.FINALLY_BLOCK},
-            new String[] {ASTPath.CATCH});
+            Tree.Kind.TRY, new String[] {BLOCK, CATCH, FINALLY_BLOCK}, new String[] {CATCH});
       } else if (s.equals("TypeCast")) {
-        return newASTEntry(Tree.Kind.TYPE_CAST, new String[] {ASTPath.TYPE, ASTPath.EXPRESSION});
+        return newASTEntry(Tree.Kind.TYPE_CAST, new String[] {TYPE, EXPRESSION});
       } else if (s.equals("Unary")) {
         // Always use Tree.Kind.UNARY_PLUS for Unary
-        return newASTEntry(Tree.Kind.UNARY_PLUS, new String[] {ASTPath.EXPRESSION});
+        return newASTEntry(Tree.Kind.UNARY_PLUS, new String[] {EXPRESSION});
       } else if (s.equals("UnionType")) {
         return newASTEntry(
-            Tree.Kind.UNION_TYPE,
-            new String[] {ASTPath.TYPE_ALTERNATIVE},
-            new String[] {ASTPath.TYPE_ALTERNATIVE});
+            Tree.Kind.UNION_TYPE, new String[] {TYPE_ALTERNATIVE}, new String[] {TYPE_ALTERNATIVE});
       } else if (s.equals("Variable")) {
-        return newASTEntry(Tree.Kind.VARIABLE, new String[] {ASTPath.TYPE, ASTPath.INITIALIZER});
+        return newASTEntry(Tree.Kind.VARIABLE, new String[] {TYPE, INITIALIZER});
       } else if (s.equals("WhileLoop")) {
-        return newASTEntry(
-            Tree.Kind.WHILE_LOOP, new String[] {ASTPath.CONDITION, ASTPath.STATEMENT});
+        return newASTEntry(Tree.Kind.WHILE_LOOP, new String[] {CONDITION, STATEMENT});
       } else if (s.equals("Wildcard")) {
         // Always use Tree.Kind.UNBOUNDED_WILDCARD for Wildcard
-        return newASTEntry(Tree.Kind.UNBOUNDED_WILDCARD, new String[] {ASTPath.BOUND});
+        return newASTEntry(Tree.Kind.UNBOUNDED_WILDCARD, new String[] {BOUND});
       }
 
       throw new ParseException("Invalid AST path type: " + s);
@@ -701,7 +683,7 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
       }
 
       for (int i = 0; i < astPath.size() && i < actualPath.size(); i++) {
-        ASTPath.ASTEntry astNode = astPath.get(i);
+        ASTEntry astNode = astPath.get(i);
         Tree actualNode = actualPath.get(i);
 
         // Based on the child selector and (optional) argument in "astNode",
@@ -720,7 +702,7 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
           case ANNOTATED_TYPE:
             {
               AnnotatedTypeTree annotatedType = (AnnotatedTypeTree) actualNode;
-              if (astNode.childSelectorIs(ASTPath.ANNOTATION)) {
+              if (astNode.childSelectorIs(ANNOTATION)) {
                 int arg = astNode.getArgument();
                 List<? extends AnnotationTree> annos = annotatedType.getAnnotations();
                 if (arg >= annos.size()) {
@@ -735,7 +717,7 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
           case ARRAY_ACCESS:
             {
               ArrayAccessTree arrayAccess = (ArrayAccessTree) actualNode;
-              if (astNode.childSelectorIs(ASTPath.EXPRESSION)) {
+              if (astNode.childSelectorIs(EXPRESSION)) {
                 next = arrayAccess.getExpression();
               } else {
                 next = arrayAccess.getIndex();
@@ -751,7 +733,7 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
           case ASSERT:
             {
               AssertTree azzert = (AssertTree) actualNode;
-              if (astNode.childSelectorIs(ASTPath.CONDITION)) {
+              if (astNode.childSelectorIs(CONDITION)) {
                 next = azzert.getCondition();
               } else {
                 next = azzert.getDetail();
@@ -761,7 +743,7 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
           case ASSIGNMENT:
             {
               AssignmentTree assignment = (AssignmentTree) actualNode;
-              if (astNode.childSelectorIs(ASTPath.VARIABLE)) {
+              if (astNode.childSelectorIs(VARIABLE)) {
                 next = assignment.getVariable();
               } else {
                 next = assignment.getExpression();
@@ -783,7 +765,7 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
             {
               CaseTree caze = (CaseTree) actualNode;
               int arg = astNode.getArgument();
-              if (astNode.childSelectorIs(ASTPath.EXPRESSION)) {
+              if (astNode.childSelectorIs(EXPRESSION)) {
                 List<? extends ExpressionTree> expressions = CaseUtils.caseTreeGetExpressions(caze);
                 // If expressions is empty, it means default case:
                 if (!expressions.isEmpty() && arg >= expressions.size()) {
@@ -802,7 +784,7 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
           case CATCH:
             {
               CatchTree cach = (CatchTree) actualNode;
-              if (astNode.childSelectorIs(ASTPath.PARAMETER)) {
+              if (astNode.childSelectorIs(PARAMETER)) {
                 next = cach.getParameter();
               } else {
                 next = cach.getBlock();
@@ -813,7 +795,7 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
             {
               ClassTree clazz = (ClassTree) actualNode;
               int arg = astNode.getArgument();
-              if (astNode.childSelectorIs(ASTPath.BOUND)) {
+              if (astNode.childSelectorIs(BOUND)) {
                 next = arg == -1 ? clazz.getExtendsClause() : clazz.getImplementsClause().get(arg);
               } else {
                 next = clazz.getTypeParameters().get(arg);
@@ -824,9 +806,9 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
             {
               ConditionalExpressionTree conditionalExpression =
                   (ConditionalExpressionTree) actualNode;
-              if (astNode.childSelectorIs(ASTPath.CONDITION)) {
+              if (astNode.childSelectorIs(CONDITION)) {
                 next = conditionalExpression.getCondition();
-              } else if (astNode.childSelectorIs(ASTPath.TRUE_EXPRESSION)) {
+              } else if (astNode.childSelectorIs(TRUE_EXPRESSION)) {
                 next = conditionalExpression.getTrueExpression();
               } else {
                 next = conditionalExpression.getFalseExpression();
@@ -836,7 +818,7 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
           case DO_WHILE_LOOP:
             {
               DoWhileLoopTree doWhileLoop = (DoWhileLoopTree) actualNode;
-              if (astNode.childSelectorIs(ASTPath.CONDITION)) {
+              if (astNode.childSelectorIs(CONDITION)) {
                 next = doWhileLoop.getCondition();
               } else {
                 next = doWhileLoop.getStatement();
@@ -846,9 +828,9 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
           case ENHANCED_FOR_LOOP:
             {
               EnhancedForLoopTree enhancedForLoop = (EnhancedForLoopTree) actualNode;
-              if (astNode.childSelectorIs(ASTPath.VARIABLE)) {
+              if (astNode.childSelectorIs(VARIABLE)) {
                 next = enhancedForLoop.getVariable();
-              } else if (astNode.childSelectorIs(ASTPath.EXPRESSION)) {
+              } else if (astNode.childSelectorIs(EXPRESSION)) {
                 next = enhancedForLoop.getExpression();
               } else {
                 next = enhancedForLoop.getStatement();
@@ -864,16 +846,16 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
           case FOR_LOOP:
             {
               ForLoopTree forLoop = (ForLoopTree) actualNode;
-              if (astNode.childSelectorIs(ASTPath.INITIALIZER)) {
+              if (astNode.childSelectorIs(INITIALIZER)) {
                 int arg = astNode.getArgument();
                 List<? extends StatementTree> inits = forLoop.getInitializer();
                 if (arg >= inits.size()) {
                   return false;
                 }
                 next = inits.get(arg);
-              } else if (astNode.childSelectorIs(ASTPath.CONDITION)) {
+              } else if (astNode.childSelectorIs(CONDITION)) {
                 next = forLoop.getCondition();
-              } else if (astNode.childSelectorIs(ASTPath.UPDATE)) {
+              } else if (astNode.childSelectorIs(UPDATE)) {
                 int arg = astNode.getArgument();
                 List<? extends ExpressionStatementTree> updates = forLoop.getUpdate();
                 if (arg >= updates.size()) {
@@ -888,9 +870,9 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
           case IF:
             {
               IfTree iff = (IfTree) actualNode;
-              if (astNode.childSelectorIs(ASTPath.CONDITION)) {
+              if (astNode.childSelectorIs(CONDITION)) {
                 next = iff.getCondition();
-              } else if (astNode.childSelectorIs(ASTPath.THEN_STATEMENT)) {
+              } else if (astNode.childSelectorIs(THEN_STATEMENT)) {
                 next = iff.getThenStatement();
               } else {
                 next = iff.getElseStatement();
@@ -900,7 +882,7 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
           case INSTANCE_OF:
             {
               InstanceOfTree instanceOf = (InstanceOfTree) actualNode;
-              if (astNode.childSelectorIs(ASTPath.EXPRESSION)) {
+              if (astNode.childSelectorIs(EXPRESSION)) {
                 next = instanceOf.getExpression();
               } else {
                 next = instanceOf.getType();
@@ -916,7 +898,7 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
           case LAMBDA_EXPRESSION:
             {
               LambdaExpressionTree lambdaExpression = (LambdaExpressionTree) actualNode;
-              if (astNode.childSelectorIs(ASTPath.PARAMETER)) {
+              if (astNode.childSelectorIs(PARAMETER)) {
                 int arg = astNode.getArgument();
                 List<? extends VariableTree> params = lambdaExpression.getParameters();
                 if (arg >= params.size()) {
@@ -931,7 +913,7 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
           case MEMBER_REFERENCE:
             {
               MemberReferenceTree memberReference = (MemberReferenceTree) actualNode;
-              if (astNode.childSelectorIs(ASTPath.QUALIFIER_EXPRESSION)) {
+              if (astNode.childSelectorIs(QUALIFIER_EXPRESSION)) {
                 next = memberReference.getQualifierExpression();
               } else {
                 int arg = astNode.getArgument();
@@ -953,13 +935,13 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
             {
               MethodTree method = (MethodTree) actualNode;
               int arg = astNode.getArgument();
-              if (astNode.childSelectorIs(ASTPath.TYPE)) {
+              if (astNode.childSelectorIs(TYPE)) {
                 next = method.getReturnType();
-              } else if (astNode.childSelectorIs(ASTPath.PARAMETER)) {
+              } else if (astNode.childSelectorIs(PARAMETER)) {
                 next = arg == -1 ? method.getReceiverParameter() : method.getParameters().get(arg);
-              } else if (astNode.childSelectorIs(ASTPath.TYPE_PARAMETER)) {
+              } else if (astNode.childSelectorIs(TYPE_PARAMETER)) {
                 next = method.getTypeParameters().get(arg);
-              } else if (astNode.childSelectorIs(ASTPath.BODY)) {
+              } else if (astNode.childSelectorIs(BODY)) {
                 next = method.getBody();
               } else { // THROWS?
                 return false;
@@ -969,14 +951,14 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
           case METHOD_INVOCATION:
             {
               MethodInvocationTree methodInvocation = (MethodInvocationTree) actualNode;
-              if (astNode.childSelectorIs(ASTPath.TYPE_ARGUMENT)) {
+              if (astNode.childSelectorIs(TYPE_ARGUMENT)) {
                 int arg = astNode.getArgument();
                 List<? extends Tree> typeArgs = methodInvocation.getTypeArguments();
                 if (arg >= typeArgs.size()) {
                   return false;
                 }
                 next = typeArgs.get(arg);
-              } else if (astNode.childSelectorIs(ASTPath.METHOD_SELECT)) {
+              } else if (astNode.childSelectorIs(METHOD_SELECT)) {
                 next = methodInvocation.getMethodSelect();
               } else {
                 int arg = astNode.getArgument();
@@ -991,14 +973,14 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
           case NEW_ARRAY:
             {
               NewArrayTree newArray = (NewArrayTree) actualNode;
-              if (astNode.childSelectorIs(ASTPath.TYPE)) {
+              if (astNode.childSelectorIs(TYPE)) {
                 int arg = astNode.getArgument();
                 if (arg < 0) {
                   next = newArray.getType();
                 } else {
                   return arg == depth;
                 }
-              } else if (astNode.childSelectorIs(ASTPath.DIMENSION)) {
+              } else if (astNode.childSelectorIs(DIMENSION)) {
                 int arg = astNode.getArgument();
                 List<? extends ExpressionTree> dims = newArray.getDimensions();
                 if (arg >= dims.size()) {
@@ -1018,18 +1000,18 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
           case NEW_CLASS:
             {
               NewClassTree newClass = (NewClassTree) actualNode;
-              if (astNode.childSelectorIs(ASTPath.ENCLOSING_EXPRESSION)) {
+              if (astNode.childSelectorIs(ENCLOSING_EXPRESSION)) {
                 next = newClass.getEnclosingExpression();
-              } else if (astNode.childSelectorIs(ASTPath.TYPE_ARGUMENT)) {
+              } else if (astNode.childSelectorIs(TYPE_ARGUMENT)) {
                 int arg = astNode.getArgument();
                 List<? extends Tree> typeArgs = newClass.getTypeArguments();
                 if (arg >= typeArgs.size()) {
                   return false;
                 }
                 next = typeArgs.get(arg);
-              } else if (astNode.childSelectorIs(ASTPath.IDENTIFIER)) {
+              } else if (astNode.childSelectorIs(IDENTIFIER)) {
                 next = newClass.getIdentifier();
-              } else if (astNode.childSelectorIs(ASTPath.ARGUMENT)) {
+              } else if (astNode.childSelectorIs(ARGUMENT)) {
                 int arg = astNode.getArgument();
                 List<? extends ExpressionTree> args = newClass.getArguments();
                 if (arg >= args.size()) {
@@ -1044,7 +1026,7 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
           case PARAMETERIZED_TYPE:
             {
               ParameterizedTypeTree parameterizedType = (ParameterizedTypeTree) actualNode;
-              if (astNode.childSelectorIs(ASTPath.TYPE)) {
+              if (astNode.childSelectorIs(TYPE)) {
                 next = parameterizedType.getType();
               } else {
                 int arg = astNode.getArgument();
@@ -1071,7 +1053,7 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
           case SWITCH:
             {
               SwitchTree zwitch = (SwitchTree) actualNode;
-              if (astNode.childSelectorIs(ASTPath.EXPRESSION)) {
+              if (astNode.childSelectorIs(EXPRESSION)) {
                 next = zwitch.getExpression();
               } else {
                 int arg = astNode.getArgument();
@@ -1086,7 +1068,7 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
           case SYNCHRONIZED:
             {
               SynchronizedTree synchronizzed = (SynchronizedTree) actualNode;
-              if (astNode.childSelectorIs(ASTPath.EXPRESSION)) {
+              if (astNode.childSelectorIs(EXPRESSION)) {
                 next = synchronizzed.getExpression();
               } else {
                 next = synchronizzed.getBlock();
@@ -1102,16 +1084,16 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
           case TRY:
             {
               TryTree tryy = (TryTree) actualNode;
-              if (astNode.childSelectorIs(ASTPath.BLOCK)) {
+              if (astNode.childSelectorIs(BLOCK)) {
                 next = tryy.getBlock();
-              } else if (astNode.childSelectorIs(ASTPath.CATCH)) {
+              } else if (astNode.childSelectorIs(CATCH)) {
                 int arg = astNode.getArgument();
                 List<? extends CatchTree> catches = tryy.getCatches();
                 if (arg >= catches.size()) {
                   return false;
                 }
                 next = catches.get(arg);
-              } else if (astNode.childSelectorIs(ASTPath.FINALLY_BLOCK)) {
+              } else if (astNode.childSelectorIs(FINALLY_BLOCK)) {
                 next = tryy.getFinallyBlock();
               } else {
                 int arg = astNode.getArgument();
@@ -1126,7 +1108,7 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
           case TYPE_CAST:
             {
               TypeCastTree typeCast = (TypeCastTree) actualNode;
-              if (astNode.childSelectorIs(ASTPath.TYPE)) {
+              if (astNode.childSelectorIs(TYPE)) {
                 next = typeCast.getType();
               } else {
                 next = typeCast.getExpression();
@@ -1147,7 +1129,7 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
           case VARIABLE:
             {
               VariableTree var = (VariableTree) actualNode;
-              if (astNode.childSelectorIs(ASTPath.INITIALIZER)) {
+              if (astNode.childSelectorIs(INITIALIZER)) {
                 next = var.getInitializer();
               } else {
                 next = var.getType();
@@ -1157,7 +1139,7 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
           case WHILE_LOOP:
             {
               WhileLoopTree whileLoop = (WhileLoopTree) actualNode;
-              if (astNode.childSelectorIs(ASTPath.CONDITION)) {
+              if (astNode.childSelectorIs(CONDITION)) {
                 next = whileLoop.getCondition();
               } else {
                 next = whileLoop.getStatement();
@@ -1168,14 +1150,14 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
             {
               if (isBinaryOperator(actualNode.getKind())) {
                 BinaryTree binary = (BinaryTree) actualNode;
-                if (astNode.childSelectorIs(ASTPath.LEFT_OPERAND)) {
+                if (astNode.childSelectorIs(LEFT_OPERAND)) {
                   next = binary.getLeftOperand();
                 } else {
                   next = binary.getRightOperand();
                 }
               } else if (isCompoundAssignment(actualNode.getKind())) {
                 CompoundAssignmentTree compoundAssignment = (CompoundAssignmentTree) actualNode;
-                if (astNode.childSelectorIs(ASTPath.VARIABLE)) {
+                if (astNode.childSelectorIs(VARIABLE)) {
                   next = compoundAssignment.getVariable();
                 } else {
                   next = compoundAssignment.getExpression();

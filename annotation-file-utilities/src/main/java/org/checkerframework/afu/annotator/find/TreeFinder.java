@@ -142,7 +142,7 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
         cEscaped = "\\" + c;
         break; // escape!
       default:
-        cEscaped = "" + c;
+        cEscaped = String.valueOf(c);
     }
 
     return "[^/'"
@@ -211,7 +211,7 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
       int count = n;
       int pos = Position.NOPOS;
       int stop = Math.min(end, s.length());
-      String cQuoted = c == '/' ? nonDelimSlash : Pattern.quote("" + c);
+      String cQuoted = c == '/' ? nonDelimSlash : Pattern.quote(String.valueOf(c));
       String regex = "(?:" + otherThan(c) + ")*+" + cQuoted;
       Pattern p = Pattern.compile(regex, Pattern.MULTILINE);
       Matcher m = p.matcher(s).region(start, stop);

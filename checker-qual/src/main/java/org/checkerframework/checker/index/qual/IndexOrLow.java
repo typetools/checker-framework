@@ -14,9 +14,9 @@ import java.lang.annotation.Target;
  * {@code String.indexOf(String)}</a> method is declared as
  *
  * <pre><code>
- *   class String {
+ *  class String {
  *    {@literal @}IndexOrLow("this") int indexOf(String str) { ... }
- *   }
+ *  }
  * </code></pre>
  *
  * <p>Writing {@code @IndexOrLow("arr")} is equivalent to writing {@link
