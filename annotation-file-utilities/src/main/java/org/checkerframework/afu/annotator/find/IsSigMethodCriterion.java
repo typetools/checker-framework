@@ -162,7 +162,7 @@ public class IsSigMethodCriterion implements Criterion {
     while (simpleType.contains("<")) {
       int bracketIndex = simpleType.lastIndexOf('<');
       String beforeBracket = simpleType.substring(0, bracketIndex);
-      String afterBracket = simpleType.substring(simpleType.indexOf(">", bracketIndex) + 1);
+      String afterBracket = simpleType.substring(simpleType.indexOf('>', bracketIndex) + 1);
       simpleType = beforeBracket + afterBracket;
     }
 
