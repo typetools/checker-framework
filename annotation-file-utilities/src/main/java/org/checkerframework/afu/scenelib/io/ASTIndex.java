@@ -478,7 +478,7 @@ public class ASTIndex extends WrapperMap<Tree, ASTRecord> {
       saveAll(node.getArguments(), rec, kind, ASTPath.ARGUMENT);
       if (classBody != null) {
         Name name = classBody.getSimpleName();
-        String className = null;
+        String className;
         if (name == null || name.toString().isEmpty()) {
           int i = counters.pop();
           counters.push(++i);

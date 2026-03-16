@@ -353,7 +353,7 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
         return pathAndPos(jcvar);
       }
 
-      int pos = Position.NOPOS;
+      int pos;
       ASTRecord astPath = astRecord(jcnode).extend(Tree.Kind.METHOD, ASTPath.PARAMETER, -1);
 
       if (node.getParameters().isEmpty()) {
@@ -479,7 +479,7 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
       GenericArrayLocationCriterion galc = ins.getCriteria().getGenericArrayLocation();
       ASTRecord rec = astRecord(node);
       ASTPath astPath = ins.getCriteria().getASTPath();
-      String childSelector = null;
+      String childSelector;
       // Invariant:  na.dims.isEmpty()  or  na.elems == null  (but not both)
       // If !na.dims.isEmpty(), na.elemtype is non-null.
       // If na.dims.isEmpty(), na.elemtype may be null or non-null.
@@ -1179,7 +1179,7 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
       // the receiver, or because of the return value.  Distinguish those.
       // One way would be to set a global variable here.  Another would be
       // to look for a particular different node.  I will do the latter.
-      Integer pos = Position.NOPOS;
+      Integer pos;
 
       // The insertion location is at or below the matched location
       // in the source tree.  For example, a receiver annotation
@@ -1366,7 +1366,7 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
       // the receiver, or because of the return value.  Distinguish those.
       // One way would be to set a global variable here.  Another would be
       // to look for a particular different node.  I will do the latter.
-      Integer pos = Position.NOPOS;
+      Integer pos;
 
       // The insertion location is at or below the matched location
       // in the source tree.  For example, a receiver annotation
