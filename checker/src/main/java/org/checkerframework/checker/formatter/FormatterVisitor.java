@@ -45,7 +45,7 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
   public void processMethodTree(String className, MethodTree tree) {
     ExecutableElement methodElement = TreeUtils.elementFromDeclaration(tree);
     if (atypeFactory.getDeclAnnotation(methodElement, FormatMethod.class) != null) {
-      int formatStringIndex = FormatterVisitor.formatStringIndex(methodElement);
+      int formatStringIndex = formatStringIndex(methodElement);
       if (formatStringIndex == -1) {
         checker.reportError(tree, "format.method", methodElement.getSimpleName());
       }

@@ -41,9 +41,12 @@ public class CastScanner extends CommonScanner {
   private static int prevOffset = -1;
   private static int nestLevels = 0;
 
+  /**
+   * Creates a new CastScanner.
+   *
+   * @param tree the tree
+   */
   private CastScanner(Tree tree) {
-    this.index = -1;
-    this.done = false;
     this.tree = tree;
   }
 

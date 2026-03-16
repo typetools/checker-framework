@@ -8,6 +8,9 @@ import java.util.Set;
  * A {@link WrapperMap} is a map all of whose methods delegate by default to those of a supplied
  * {@linkplain #back backing map}. Subclasses can add or override methods. Compare to {@link
  * java.io.FilterInputStream}.
+ *
+ * @param <K> the type of keys for the map
+ * @param <V> the type of values for the map
  */
 public class WrapperMap<K, V> implements Map<K, V> {
   /** The backing map. */
