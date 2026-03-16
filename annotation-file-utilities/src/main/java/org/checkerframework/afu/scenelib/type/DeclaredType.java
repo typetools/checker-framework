@@ -127,7 +127,7 @@ public class DeclaredType extends Type {
    *
    * @return the inner type or {@code null}
    */
-  public DeclaredType getInnerType() {
+  public @Nullable DeclaredType getInnerType() {
     checkWildcard();
     return innerType;
   }
