@@ -77,7 +77,7 @@ public class LambdaScanner extends CommonScanner {
   public static void addLambdaExpressionToMethod(String methodName, Integer offset) {
     List<Integer> offsetList = methodNameToLambdaExpressionOffsets.get(methodName);
     if (offsetList == null) {
-      offsetList = new ArrayList<Integer>();
+      offsetList = new ArrayList<>();
       methodNameToLambdaExpressionOffsets.put(methodName, offsetList);
     }
     offsetList.add(offset);
