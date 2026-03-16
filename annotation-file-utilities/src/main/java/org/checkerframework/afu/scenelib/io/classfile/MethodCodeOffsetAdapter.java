@@ -19,10 +19,10 @@ class MethodCodeOffsetAdapter extends MethodVisitor {
   private final ClassReader classReader;
 
   /** Offset from start of class file to code attribute for method. */
-  private int codeStart = 0;
+  private int codeStart;
 
   /** Number of attributes for this method. */
-  private int attrCount = 0;
+  private int attrCount;
 
   /** Offset from start of bytecodes to current instruction. */
   private int offset;
