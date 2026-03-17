@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
@@ -527,7 +528,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
         // check all member methods
         if (s.getKind() == ElementKind.METHOD) {
           // Check for method name and number of arguments
-          if (names.fromString(methodName) == s.name
+          if (names.fromString(methodName) == ((Element) s).getSimpleName()
               && ((MethodSymbol) s).getParameters().size() == paramLength) {
             result.add(s);
           }
