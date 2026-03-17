@@ -902,7 +902,7 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
     }
   }
 
-  private Set<Block> reachableFrom(Block entry, int budget) {
+  public static Set<Block> reachableFrom(Block entry, int budget) {
     Set<Block> seen = new HashSet<>();
     ArrayDeque<Block> q = new ArrayDeque<>();
     q.add(entry);

@@ -102,6 +102,10 @@ class NotOwningCollectionMutationTest {
     cache.add(r); // ok
   }
 
+  void ok_noc_field_add_notowning_2(R r) {
+    cache.add(r); // also ok
+  }
+
   void err_noc_field_add_owning_then_close() {
     R r = new R();
     // :: error: illegal.collection.mutator.owning.insert.into.notowning
@@ -123,6 +127,19 @@ class NotOwningCollectionMutationTest {
     R r = new R();
     // :: error: unfulfilled.collection.obligations
     l.add(r);
+  }
+
+  void err_oc_add_owning_call_no_dispose() {
+    List<R> l = new ArrayList<>();
+    // :: error: unfulfilled.collection.obligations
+    l.add(owning());
+  }
+
+  void err_oc_add_notowning_call_no_dispose() {
+    @OwningCollection List<R> l = new ArrayList<>();
+    // :: error: illegal.collection.mutator.nonowning.insert.into.owning
+    // :: error: unfulfilled.collection.obligations
+    l.add(notowning());
   }
 
   void err_oc_add_owning_alias_no_dispose() {

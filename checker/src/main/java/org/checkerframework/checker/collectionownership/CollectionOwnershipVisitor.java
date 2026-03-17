@@ -16,6 +16,7 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.MustCallChecker;
 import org.checkerframework.checker.mustcall.qual.NotOwning;
+import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer;
 import org.checkerframework.checker.resourceleak.ResourceLeakUtils;
 import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsAnnotatedTypeFactory;
@@ -172,11 +173,17 @@ public class CollectionOwnershipVisitor
     }
 
     // annotation-first: explicit @NotOwning
-    // 1) On the element/variable symbol (locals/params/fields)
+    // 1) On the element/variable symbol (params/fields)
     Element e = TreeUtils.elementFromTree(insertedTree);
     if (e != null && e.getAnnotation(NotOwning.class) != null) {
       return true;
     }
+
+    // If it's param and not annotated then treat as notowning
+    if (e != null && e.getKind() == ElementKind.PARAMETER) {
+      return e.getAnnotation(Owning.class) == null;
+    }
+
     // 2) On the return type of a method invocation
     if (insertedTree instanceof MethodInvocationTree) {
       ExecutableElement callee = TreeUtils.elementFromUse((MethodInvocationTree) insertedTree);

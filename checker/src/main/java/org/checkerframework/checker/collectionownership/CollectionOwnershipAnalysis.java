@@ -29,7 +29,7 @@ public class CollectionOwnershipAnalysis
           ImmutableSet.of(
               // Any method call has a CFG edge for Throwable/RuntimeException/Error
               // to represent run-time misbehavior. Ignore it.
-              Throwable.class.getCanonicalName(),
+              //              Throwable.class.getCanonicalName(),
               Error.class.getCanonicalName(),
               RuntimeException.class.getCanonicalName(),
               // Use the Nullness Checker to prove this won't happen.

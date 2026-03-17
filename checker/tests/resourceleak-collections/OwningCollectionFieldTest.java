@@ -42,7 +42,7 @@ class Aggregator implements Closeable {
   }
 
   // :: error: missing.creates.mustcall.for
-  void addIllegal(Resource r) {
+  void addIllegal(@Owning Resource r) {
     resList.add(r);
   }
 

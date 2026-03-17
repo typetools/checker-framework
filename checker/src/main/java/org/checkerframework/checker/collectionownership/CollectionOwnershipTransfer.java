@@ -1,6 +1,7 @@
 package org.checkerframework.checker.collectionownership;
 
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -87,7 +88,20 @@ public class CollectionOwnershipTransfer
                   TreeUtils.elementFromTree(node.getExpression().getTree()))) {
             replaceInStores(res, lhsJE, atypeFactory.NOTOWNINGCOLLECTION);
           } else {
-            replaceInStores(res, rhsJE, atypeFactory.NOTOWNINGCOLLECTION);
+            CollectionOwnershipType declCoType = null;
+            if (node.getTree() instanceof VariableTree) {
+              VariableTree varTree = (VariableTree) node.getTree();
+              VariableElement vtElement = TreeUtils.elementFromDeclaration(varTree);
+              if (vtElement != null) {
+                List<? extends AnnotationMirror> vtType = vtElement.asType().getAnnotationMirrors();
+                declCoType = atypeFactory.getCoType(vtType);
+              }
+            }
+            if (declCoType == CollectionOwnershipType.NotOwningCollection) {
+              replaceInStores(res, lhsJE, atypeFactory.NOTOWNINGCOLLECTION);
+            } else {
+              replaceInStores(res, rhsJE, atypeFactory.NOTOWNINGCOLLECTION);
+            }
           }
           break;
         default:

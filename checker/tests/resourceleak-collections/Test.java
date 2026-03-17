@@ -24,11 +24,22 @@ class CollectionFieldDestructorExceptionPathTest {
     @CollectionFieldDestructor("this.tcpConnections")
     // ::error: contracts.postcondition
     void shutdownConnections() throws IOException {
-      Iterator<Resource2> it = tcpConnections.iterator();
-      while (it.hasNext()) {
-        Resource2 r = it.next();
-        r.close();
+      fieldCloser(this.tcpConnections);
+    }
+
+    void fieldCloser(@OwningCollection List<Resource2> tcpConnections) {
+      for (Resource2 r : tcpConnections) {
+        try {
+          r.close();
+        } catch (IOException e) {
+        }
       }
+    }
+
+    void test() {
+      List<Resource2> ll = new ArrayList<>();
+      ll.add(new Resource2());
+      ll = this.tcpConnections;
     }
   }
 

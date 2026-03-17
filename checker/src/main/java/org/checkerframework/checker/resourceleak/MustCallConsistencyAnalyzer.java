@@ -222,6 +222,18 @@ public class MustCallConsistencyAnalyzer {
         ImmutableSet.copyOf(EnumSet.allOf(MethodExitKind.class));
   }
 
+  /** Lazy per-CFG cache: blocks that can reach some method exit. */
+  /** CFG currently being analyzed by analyze(cfg). */
+  private @Nullable ControlFlowGraph currentCfg = null;
+
+  /**
+   * Cached set of blocks that can reach an exit block (normal or exceptional), respecting
+   * getSuccessorsExceptIgnoredExceptions filtering. Computed lazily per CFG, only if needed.
+   */
+  private @Nullable Set<Block> blocksThatCanReachExit = null;
+
+  private final Set<Tree> reportedNeverEnforcedSites = new HashSet<>();
+
   /**
    * An Obligation is a dataflow fact: a set of resource aliases and when those resources need to be
    * cleaned up. Abstractly, each Obligation represents a resource for which the analyzed program
@@ -728,6 +740,88 @@ public class MustCallConsistencyAnalyzer {
   }
 
   /**
+   * Ensures blocksThatCanReachExit is computed for currentCfg. Safe to call multiple times; the
+   * computation runs at most once per CFG.
+   */
+  private void ensureBlocksThatCanReachExitComputed() {
+    if (blocksThatCanReachExit != null) {
+      return;
+    }
+    if (currentCfg == null) {
+      throw new BugInCF("ensureBlocksThatCanReachExitComputed called with no currentCfg");
+    }
+    blocksThatCanReachExit = computeBlocksThatCanReachExit(currentCfg);
+  }
+
+  /**
+   * Returns true iff {@code b} can reach some method exit (normal or exceptional), along edges that
+   * are not filtered out by getSuccessorsExceptIgnoredExceptions.
+   */
+  private boolean canReachExit(Block b) {
+    ensureBlocksThatCanReachExitComputed();
+    return blocksThatCanReachExit != null && blocksThatCanReachExit.contains(b);
+  }
+
+  /**
+   * Computes the set of blocks that can reach an exit.
+   *
+   * <p>Implementation: 1) enumerate reachable blocks (from entry) to avoid weird unreachable junk
+   * 2) seed with all exit-like SpecialBlocks (excluding entry) 3) reverse BFS using predecessors,
+   * but only if the pred->succ edge is one of getSuccessorsExceptIgnoredExceptions(pred)
+   */
+  private Set<Block> computeBlocksThatCanReachExit(ControlFlowGraph cfg) {
+    Block entry = cfg.getEntryBlock();
+    Set<Block> reachable = RLCCalledMethodsAnnotatedTypeFactory.reachableFrom(entry, 10_000);
+
+    // Identify exit blocks. In CF, normal/exceptional exits are SpecialBlocks.
+    // Entry is also special, so exclude it explicitly.
+    //    Set<Block> exitBlocks = new HashSet<>();
+    //    for (Block b : reachable) {
+    //      if (b.getType() == BlockType.SPECIAL_BLOCK && b != entry) {
+    //        exitBlocks.add(b);
+    //      }
+    //    }
+    Block normalExit = cfg.getRegularExitBlock();
+    Set<Block> exitBlocks = new HashSet<>();
+    if (reachable.contains(normalExit)) {
+      exitBlocks.add(normalExit);
+    }
+
+    // Reverse reachability from exits.
+    Set<Block> canReachExit = new HashSet<>(exitBlocks);
+    Deque<Block> worklist = new ArrayDeque<>(exitBlocks);
+
+    while (!worklist.isEmpty()) {
+      Block cur = worklist.removeFirst();
+      for (Block pred : cur.getPredecessors()) {
+        if (!reachable.contains(pred)) {
+          continue;
+        }
+        if (!isAllowedSuccessor(pred, cur)) {
+          continue;
+        }
+        if (canReachExit.add(pred)) {
+          worklist.addLast(pred);
+        }
+      }
+    }
+    return canReachExit;
+  }
+
+  /**
+   * Returns true iff {@code succ} appears among getSuccessorsExceptIgnoredExceptions(pred). This is
+   * the key that keeps backward reachability consistent with your forward traversal.
+   */
+  private boolean isAllowedSuccessor(Block pred, Block succ) {
+    for (IPair<Block, @Nullable TypeMirror> p : getSuccessorsExceptIgnoredExceptions(pred)) {
+      if (p.first == succ) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
    * The main function of the consistency dataflow analysis. The analysis tracks dataflow facts
    * ("Obligations") of type {@link Obligation}, each representing a set of owning resource aliases
    * for some value with a non-empty {@code @MustCall} obligation. The set of tracked Obligations is
@@ -746,6 +840,10 @@ public class MustCallConsistencyAnalyzer {
   // TODO: This analysis is currently implemented directly using a worklist; in the future, it
   // should be rewritten to use the dataflow framework of the Checker Framework.
   public void analyze(ControlFlowGraph cfg) {
+    //
+    this.currentCfg = cfg;
+    this.blocksThatCanReachExit = null;
+
     // The `visited` set contains everything that has been added to the worklist, even if it has
     // not yet been removed and analyzed.
     Set<BlockWithObligations> visited = new HashSet<>();
@@ -835,6 +933,20 @@ public class MustCallConsistencyAnalyzer {
             for (String mustCallMethod : mustCallValues) {
               obligations.add(
                   CollectionObligation.fromTree(receiverNode.getTree(), mustCallMethod));
+            }
+            if (!mustCallValues.isEmpty()) {
+              // If this call is in a region with no path to method exit, the obligation will never
+              // be enforced.
+              if (!canReachExit(node.getBlock())) {
+                // Deduplication check per call-site tree
+                if (reportedNeverEnforcedSites.add(node.getTree())) {
+                  checker.reportError(
+                      node.getTree(),
+                      "collection.obligation.never.enforced",
+                      mustCallValues.get(0),
+                      receiverNode.getTree().toString());
+                }
+              }
             }
           }
           if (receiverIsOwningField) {
@@ -1940,14 +2052,22 @@ public class MustCallConsistencyAnalyzer {
         if (TreeUtils.isConstructor(enclosingMethodTree)) {
           // If its in the constructor, it may be the first assignment to the field.
           // TODO: after PR #7050 is merged, use that logic here to determine if first assignment.
+          // Treat as first assignment into this.field: ownership transfers into the object.
+          // So the constructor should not be forced to discharge the parameter’s obligation.
+          if (isOwningCollectionField) {
+            Set<Obligation> obs = getObligationsForVar(obligations, rhs.getTree());
+            for (Obligation o : obs) {
+              obligations.remove(o);
+            }
+          }
           return;
         }
         // TODO: instead of throwing an exception here, we should probably treat it as Owning
         // collection and issue an error below to be sound.
         throw new BugInCF(
             "Expression " + lhs + " cannot be found in CollectionOwnership store " + coStore);
-      } else if (lhsCoType == CollectionOwnershipType.OwningCollectionBottom
-          || rhsCoType == CollectionOwnershipType.OwningCollectionBottom) {
+      } else if (lhsCoType == CollectionOwnershipType.OwningCollectionBottom) {
+        // Bottom represents null; it’s allowed on RHS of assignment.
         throw new BugInCF(
             "Expression "
                 + node
