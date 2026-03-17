@@ -20,7 +20,7 @@ public abstract class Type {
 
   /** Constructs a new type with no outer annotations. */
   public Type() {
-    annotations = new ArrayList<String>();
+    annotations = new ArrayList<>();
   }
 
   /**

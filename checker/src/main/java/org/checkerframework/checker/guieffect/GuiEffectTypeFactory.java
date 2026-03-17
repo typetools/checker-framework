@@ -284,7 +284,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
       ExecutableElement methodElt) {
     Effect targetEffect = getDeclaredEffect(methodElt);
     if (targetEffect.isPoly()) {
-      AnnotatedTypeMirror srcType = null;
+      AnnotatedTypeMirror srcType;
       ExpressionTree methodSelect = tree.getMethodSelect();
       if (methodSelect instanceof MemberSelectTree) {
         ExpressionTree src = ((MemberSelectTree) methodSelect).getExpression();
