@@ -621,7 +621,7 @@ public class Main {
         }
         verb.debug("Read %d annotations from %s%n", parsedSpec.size(), jaifFile);
         if (omit_annotation != null) {
-          List<Insertion> filtered = new ArrayList<Insertion>(parsedSpec.size());
+          List<Insertion> filtered = new ArrayList<>(parsedSpec.size());
           for (Insertion insertion : parsedSpec) {
             // TODO: this won't omit annotations if the insertion is more than
             // just the annotation (such as if the insertion is a cast
