@@ -8,6 +8,6 @@ import org.checkerframework.checker.interning.qual.Interned;
 
 public @Interned interface Name extends java.lang.CharSequence {}
 
-package com.sun.tools.javac.util;
-
-public @Interned class Name implements javax.lang.model.element.Name {}
+// TODO: warning: javax-lang-model-element-name.astub:(line 11,col 1): Package not found: com.sun.tools.javac.util
+// package com.sun.tools.javac.util;
+// public @Interned class Name implements javax.lang.model.element.Name {}

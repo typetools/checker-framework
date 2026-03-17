@@ -840,7 +840,7 @@ subprojects {
     createCheckTypeTask(project.name, "Interning",
         "org.checkerframework.checker.interning.InterningChecker",
         [
-          "-Astubs=javax-lang-model-element-name.astub"
+          "-Astubs=javax-lang-model-element-name.astub",
         ])
     createCheckTypeTask(project.name, "Optional",
         "org.checkerframework.checker.optional.OptionalChecker",
