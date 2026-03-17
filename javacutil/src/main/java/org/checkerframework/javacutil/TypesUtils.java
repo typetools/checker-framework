@@ -281,7 +281,7 @@ public final class TypesUtils {
    */
   public static boolean areSameDeclaredTypes(Type.ClassType t1, Type.ClassType t2) {
     // Do a cheaper test first
-    if (t1.tsym.name != t2.tsym.name) {
+    if (((Element) t1.tsym).getSimpleName() != ((Element) t2.tsym).getSimpleName()) {
       return false;
     }
     return t1.toString().equals(t2.toString());

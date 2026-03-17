@@ -849,7 +849,9 @@ public class AnnotationUtils {
       AnnotationMirror anno, CharSequence elementName, boolean useDefaults) {
     Type.ClassType ct = getElementValue(anno, elementName, Type.ClassType.class, useDefaults);
     // TODO:  Is it a problem that this returns the type parameters too?  Should I cut them off?
-    @CanonicalName Name result = ct.asElement().getQualifiedName();
+    @SuppressWarnings(
+        "interning:assignment") // com.sun.tools.javac.util.Name stubfile is not read correctly.
+    @Interned @CanonicalName Name result = ct.asElement().getQualifiedName();
     return result;
   }
 
@@ -1166,7 +1168,9 @@ public class AnnotationUtils {
       throw new BugInCF("getElementValueClassName(%s, %s, ...)", anno, element);
     }
     // TODO:  Is it a problem that this returns the type parameters too?  Should I cut them off?
-    @CanonicalName Name result = ct.asElement().getQualifiedName();
+    @SuppressWarnings(
+        "interning:assignment") // com.sun.tools.javac.util.Name stubfile is not read correctly.
+    @Interned @CanonicalName Name result = ct.asElement().getQualifiedName();
     return result;
   }
 
@@ -1178,6 +1182,9 @@ public class AnnotationUtils {
    * @param element the element/field of {@code anno} whose content is a list of classes
    * @return the names of classes in {@code anno.annoElement}
    */
+  @SuppressWarnings(
+      "interning:return") // The stub file for com.sun.tools.javac.util.Name is not being read
+  // correctly.
   public static List<@CanonicalName Name> getElementValueClassNames(
       AnnotationMirror anno, ExecutableElement element) {
     List<Type.ClassType> la = getElementValueArray(anno, element, Type.ClassType.class);

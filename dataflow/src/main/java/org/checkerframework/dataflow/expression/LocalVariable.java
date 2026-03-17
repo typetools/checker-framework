@@ -64,7 +64,9 @@ public class LocalVariable extends JavaExpression {
     // The owner of a lambda parameter is the enclosing method, so a local variable and a lambda
     // parameter might have the same name and the same owner. Use pos to differentiate this
     // case.
-    return vs1.pos == vs2.pos && vs1.name == vs2.name && vs1.owner.equals(vs2.owner);
+    return vs1.pos == vs2.pos
+        && element1.getSimpleName() == element2.getSimpleName()
+        && vs1.owner.equals(vs2.owner);
   }
 
   /**
