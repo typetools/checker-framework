@@ -292,9 +292,9 @@ allprojects { currentProj ->
       // Uncomment when needed.
       // // Put source files in deterministic order, for debugging.
       // compilationTask.source = compilationTask.source.sort()
-      if((project.name.equals("checker-qual")
-          ||project.name.equals("checker-util")
-          ||project.name.equals("checker-qual-android"))) {
+      if ((project.name.equals("checker-qual")
+          || project.name.equals("checker-util")
+          || project.name.equals("checker-qual-android"))) {
         options.release = 11
       } else {
         sourceCompatibility = 21
