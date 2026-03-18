@@ -130,7 +130,7 @@ public class ASTRecord implements Comparable<ASTRecord> {
     String meth = null;
     String var = null;
     boolean matchVars = false; // members only!
-    Deque<Tree> stack = new ArrayDeque<Tree>();
+    Deque<Tree> stack = new ArrayDeque<>();
     for (Tree tree : treePath) {
       stack.push(tree);
     }
