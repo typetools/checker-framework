@@ -647,7 +647,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     public UnitsQualifierKindHierarchy(
         Collection<Class<? extends Annotation>> qualifierClasses, Elements elements) {
-      super(qualifierClasses, UnitsBottom.class, processingEnv);
+      super(qualifierClasses, UnitsBottom.class, UnitsAnnotatedTypeFactory.this);
       directSuperQualifierMap = createDirectSuperQualifierMap(elements);
     }
 

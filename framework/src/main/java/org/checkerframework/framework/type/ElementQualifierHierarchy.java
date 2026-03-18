@@ -108,7 +108,7 @@ public abstract class ElementQualifierHierarchy extends QualifierHierarchy {
   protected QualifierKindHierarchy createQualifierKindHierarchy(
       @UnderInitialization ElementQualifierHierarchy this,
       Collection<Class<? extends Annotation>> qualifierClasses) {
-    return new DefaultQualifierKindHierarchy(qualifierClasses, atypeFactory.processingEnv);
+    return new DefaultQualifierKindHierarchy(qualifierClasses, atypeFactory);
   }
 
   /**
