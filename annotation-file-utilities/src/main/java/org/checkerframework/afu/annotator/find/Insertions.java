@@ -1153,7 +1153,7 @@ public class Insertions implements Iterable<Insertion> {
           case MEMBER_SELECT:
             return new MemberSelectTT(
                 fromJCTree(((JCTree.JCFieldAccess) jt).getExpression()),
-                ((MemberSelectTree) jt).getIdentifier());
+                ((JCTree.JCFieldAccess) jt).getIdentifier());
           case EXTENDS_WILDCARD:
           case SUPER_WILDCARD:
             return new WildcardTT(kind, fromJCTree(((JCTree.JCWildcard) jt).getBound()));
