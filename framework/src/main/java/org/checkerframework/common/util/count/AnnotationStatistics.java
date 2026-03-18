@@ -26,7 +26,6 @@ import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Name;
 import javax.tools.Diagnostic;
-import org.checkerframework.checker.interning.qual.Interned;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.source.SourceVisitor;
 import org.checkerframework.framework.source.SupportedOptions;
@@ -160,10 +159,7 @@ public class AnnotationStatistics extends SourceChecker {
     @Override
     public Void visitAnnotation(AnnotationTree tree, Void p) {
       if (annotations) {
-        @SuppressWarnings(
-            "interning:assignment") // The stub file for com.sun.tools.javac.util.Name is not being
-        // read correctly.
-        @Interned Name annoName = ((JCAnnotation) tree).annotationType.type.tsym.getQualifiedName();
+        Name annoName = ((JCAnnotation) tree).annotationType.type.tsym.getQualifiedName();
         incrementCount(annoName);
 
         // An annotation is a body annotation if, while ascending the AST from the
