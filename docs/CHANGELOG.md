@@ -7,10 +7,9 @@
 
 ### User-visible changes
 
-To run the Checker Framework, you need to use a JDK 21 or later version of
+To run the Checker Framework, you need to use a JDK 17 or later version of
 javac.  The Checker Framework can run on any Java project, including projects
-that compile to Java 8, 11, or 17 bytecodes and run on JRE versions 8, 11, or
-17.
+that compile to Java 8 or 11 bytecodes and run on JRE versions 8 or 11.
 
 The type qualifiers and utility libraries in `checker-qual.jar` and
 `checker-util.jar` still use Java 11 bytecode.  Thus, they may be included in
