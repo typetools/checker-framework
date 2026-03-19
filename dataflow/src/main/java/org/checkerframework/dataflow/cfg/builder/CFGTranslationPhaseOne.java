@@ -3714,7 +3714,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         TypeMirror leftType = TreeUtils.typeOf(tree.getVariable());
         TypeMirror rightType = TreeUtils.typeOf(tree.getExpression());
 
-        Node targetRHS = null;
+        Node targetRHS;
         if (isNumericOrBoxed(leftType) && isNumericOrBoxed(rightType)) {
           TypeMirror promotedType = binaryPromotedType(leftType, rightType);
           targetRHS = binaryNumericPromotion(targetLHS, promotedType);

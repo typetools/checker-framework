@@ -46,8 +46,6 @@ public class InstanceOfScanner extends CommonScanner {
    * @param tree the given instanceof check to search for
    */
   private InstanceOfScanner(Tree tree) {
-    this.index = -1;
-    this.done = false;
     this.tree = tree;
   }
 
@@ -77,7 +75,7 @@ public class InstanceOfScanner extends CommonScanner {
   public static void addInstanceOfToMethod(String methodName, Integer offset) {
     List<Integer> offsetList = methodNameToInstanceOfOffsets.get(methodName);
     if (offsetList == null) {
-      offsetList = new ArrayList<Integer>();
+      offsetList = new ArrayList<>();
       methodNameToInstanceOfOffsets.put(methodName, offsetList);
     }
     offsetList.add(offset);

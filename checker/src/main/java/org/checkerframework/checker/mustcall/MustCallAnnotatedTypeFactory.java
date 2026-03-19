@@ -376,12 +376,11 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     protected void replace(
         AnnotatedTypeMirror type, AnnotationMirrorMap<AnnotationMirror> replacements) {
       AnnotationMirrorMap<AnnotationMirror> realReplacements = replacements;
-      AnnotationMirror extantPolyAnnoReplacement = null;
       TypeElement typeElement = TypesUtils.getTypeElement(type.getUnderlyingType());
       // only customize replacement for type elements
       if (typeElement != null) {
         assert replacements.size() == 1 && replacements.containsKey(POLY);
-        extantPolyAnnoReplacement = replacements.get(POLY);
+        AnnotationMirror extantPolyAnnoReplacement = replacements.get(POLY);
         if (AnnotationUtils.areSameByName(
             extantPolyAnnoReplacement, MustCall.class.getCanonicalName())) {
           List<String> extentReplacementVals =
