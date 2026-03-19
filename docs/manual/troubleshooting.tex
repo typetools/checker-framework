@@ -715,7 +715,7 @@ You may need to log out and log back in for the setting to take effect.
 \item[Ubuntu]
   Run the following commands, which should be the same as those in
   \<checker/bin-devel/Dockerfile-ubuntu-jdk\emph{XX}-plus>, where \emph{XX}
-  is a JDK version such as 21, 25, etc.:
+  is a JDK version such as 17, 21, 25, etc.:
 
 (This list should be the same as in
 \<checker/bin-devel/Dockerfile-ubuntu-jdk25-plus>; if your build fails
@@ -806,11 +806,11 @@ In a startup file, write:
 \begin{Verbatim}
 brew update
 brew install git graphviz ant hevea maven librsvg unzip make
-brew install --cask temurin21
+brew install --cask temurin17
 brew install --cask mactex
 \end{Verbatim}
 
-Note: Running \<brew install --cask temurin21> is only necessary if you do not
+Note: Running \<brew install --cask temurin17> is only necessary if you do not
 already have a JDK that is compatible with the Checker Framework installed.
 
 Make a \<latex> directory and copy \<hevea.sty> file into it.
@@ -835,7 +835,7 @@ or
 export JAVA_HOME=/Library/Java/JavaVirtualMachines/adoptopenjdk-XX.jdk/Contents/Home/
 \end{Verbatim}
 
-In the command, \emph{XX} is a JDK version such as 21, 24, etc.
+In the command, \emph{XX} is a JDK version such as 17, 21, 25, etc.
 
 \item[Windows]
   To build on Windows 10 or later,

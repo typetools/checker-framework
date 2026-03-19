@@ -250,7 +250,7 @@ prebuilt_jar(
 java_library (
     name = 'hello',
     srcs = glob(['src/main/java/**/*.java']),
-    java_version = '21',
+    java_version = '17',
     provided_deps = [ ':checker-framework', ':checker-qual' ],
 # To add annotation processing
     annotation_processors = [ 'org.checkerframework.checker.units.UnitsChecker' ],
@@ -448,8 +448,9 @@ Alternately, you can get all of the jars mentioned in this section from Maven Ce
 \item \<checker-util.jar>: \url{https://repo1.maven.org/maven2/org/checkerframework/checker-util/3.54.0/checker-util-3.54.0.jar}
 \item \<checker.jar>: \url{https://repo1.maven.org/maven2/org/checkerframework/checker/3.54.0/checker-3.54.0-all.jar}
 \end{itemize}
- These instructions should work on JDK 21 or later, but we only test with supported
-versions of Java: JDK 21 and JDK 25.
+
+These instructions should work on JDK 17 or later, but we only test with supported
+versions of Java: JDK 17, JDK 21, and JDK 25.
 
 
 \subsubsectionAndLabel{Non-modularized code}{javac-jdk11-non-modularized}
@@ -633,7 +634,7 @@ to run a checker within IntelliJ IDEA on every compile:
 
 \begin{enumerate}
 
-\item Change the project SDK to 21 or later, as explained at
+\item Change the project SDK to 17 or later, as explained at
   \url{https://www.jetbrains.com/help/idea/sdk.html#change-project-sdk}.
 
 \item Make sure the language level for your project is 8 or higher, as explained at
@@ -846,7 +847,7 @@ latest bug fixes and new features:
       <id>checkerframework</id>
       <!-- If you omit the activation block, run mvn with "-P checkerframework" to run checkers. -->
       <activation>
-        <jdk>[21,)</jdk>
+        <jdk>[17,)</jdk>
       </activation>
       <build>
         <plugins>

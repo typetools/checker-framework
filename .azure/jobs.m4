@@ -1,3 +1,4 @@
+junit_job(17)
 junit_job(21)
 junit_jobs(25)
 
@@ -9,6 +10,7 @@ nonjunit_job(canary_version)
   # So use a timeout of 90 minutes, and hope that is enough.
 inference_job(canary_version)
 
+misc_job(17)
 misc_job(21)
 misc_job(25)
 

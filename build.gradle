@@ -291,11 +291,11 @@ allprojects { currentProj ->
           || project.name.equals("checker-qual-android"))) {
         options.release = 11
       } else {
-        sourceCompatibility = 21
-        targetCompatibility = 21
+        sourceCompatibility = 17
+        targetCompatibility = 17
         // Can't use --release with --add-exports, otherwise you'll see errors like:
         // error: exporting a package from system module jdk.compiler is not allowed with --release
-        // options.release.set(21)
+        // options.release.set(17)
         options.compilerArgs += [
           "--add-exports",
           "jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
@@ -357,9 +357,9 @@ allprojects { currentProj ->
         options.errorprone.enabled = compilerRunsOnJava21orHigher
         options.errorprone.disableWarningsInGeneratedCode = true
         options.errorprone.errorproneArgs = [
-          // TODO: Fix these warnings now that JDK 21 is required.
+          // TODO: Fix these warnings now that JDK 17 is used.
           "-Xep:StatementSwitchToExpressionSwitch:OFF",
-          // TODO: Fix these warnings now that JDK 21 is required.
+          // TODO: Fix these warnings now that JDK 17 is used.
           "-Xep:PatternMatchingInstanceof:OFF",
           // Many compiler classes are interned.
           "-Xep:ReferenceEquality:OFF",
