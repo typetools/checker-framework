@@ -193,7 +193,7 @@ public abstract class CloneOrUpdateRelatedTask extends GitTask {
       if (remoteUrl.startsWith("git@github.com:")) {
         // `remoteUrl` has the form:
         // git@github.com:typetools/checker-framework.git
-        int slashPos = remoteUrl.indexOf("/");
+        int slashPos = remoteUrl.indexOf('/');
         if (slashPos == -1) {
           getLogger().lifecycle("Unexpected URL format " + remoteUrl);
           return null;

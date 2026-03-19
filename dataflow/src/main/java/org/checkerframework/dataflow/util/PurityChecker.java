@@ -42,6 +42,11 @@ import org.plumelib.util.IPair;
  */
 public class PurityChecker {
 
+  /** Do not instantiate. */
+  private PurityChecker() {
+    throw new Error("Do not instantiate");
+  }
+
   /**
    * Compute whether the given statement is side-effect-free, deterministic, or both. Returns a
    * result that can be queried.

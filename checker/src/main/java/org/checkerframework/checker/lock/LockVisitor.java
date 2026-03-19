@@ -641,13 +641,12 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
     guardSatisfiedIndex[0] = -1;
 
-    AnnotatedTypeMirror methodDefinitionReceiver = null;
     AnnotatedTypeMirror methodCallReceiver = null;
 
     ExecutableElement invokedMethodElement = invokedMethod.getElement();
     if (!ElementUtils.isStatic(invokedMethodElement)
         && invokedMethod.getElement().getKind() != ElementKind.CONSTRUCTOR) {
-      methodDefinitionReceiver = invokedMethod.getReceiverType();
+      AnnotatedTypeMirror methodDefinitionReceiver = invokedMethod.getReceiverType();
       if (methodDefinitionReceiver != null
           && methodDefinitionReceiver.hasPrimaryAnnotation(checkerGuardSatisfiedClass)) {
         guardSatisfiedIndex[0] = atypeFactory.getGuardSatisfiedIndex(methodDefinitionReceiver);
@@ -812,9 +811,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
     MethodTree enclosingMethod = TreePathUtil.enclosingMethod(atypeFactory.getPath(tree));
 
-    ExecutableElement methodElement = null;
     if (enclosingMethod != null) {
-      methodElement = TreeUtils.elementFromDeclaration(enclosingMethod);
+      ExecutableElement methodElement = TreeUtils.elementFromDeclaration(enclosingMethod);
 
       SideEffectAnnotation seaOfEnclosingMethod =
           atypeFactory.methodSideEffectAnnotation(methodElement, false);

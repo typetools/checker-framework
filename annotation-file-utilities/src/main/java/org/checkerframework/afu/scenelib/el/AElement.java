@@ -55,7 +55,7 @@ public class AElement implements Cloneable {
   }
 
   AElement(Object description, ATypeElement type) {
-    tlAnnotationsHere = new LinkedHashSet<Annotation>();
+    tlAnnotationsHere = new LinkedHashSet<>();
     this.description = description;
     this.type = type;
   }
