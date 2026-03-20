@@ -163,7 +163,7 @@ public class Insertions implements Iterable<Insertion> {
 
     Set<Insertion> set = map.get(innerClass);
     if (set == null) {
-      set = new LinkedHashSet<Insertion>();
+      set = new LinkedHashSet<>();
       map.put(innerClass, set);
     }
 

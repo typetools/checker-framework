@@ -20,6 +20,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.util.Elements;
+import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.lock.qual.EnsuresLockHeld;
 import org.checkerframework.checker.lock.qual.EnsuresLockHeldIf;
 import org.checkerframework.checker.lock.qual.GuardSatisfied;
@@ -100,8 +101,7 @@ public class LockAnnotatedTypeFactory
 
   /** The @{@link GuardedBy} annotation. */
   @SuppressWarnings("this-escape")
-  protected final AnnotationMirror GUARDEDBY =
-      createGuardedByAnnotationMirror(new ArrayList<String>());
+  protected final AnnotationMirror GUARDEDBY = createGuardedByAnnotationMirror(new ArrayList<>());
 
   /** The @{@link NewObject} annotation. */
   protected final AnnotationMirror NEWOBJECT =
@@ -774,7 +774,9 @@ public class LockAnnotatedTypeFactory
    * @param values a list of lock expressions
    * @return an AnnotationMirror corresponding to @GuardedBy(values)
    */
-  private AnnotationMirror createGuardedByAnnotationMirror(List<String> values) {
+  private AnnotationMirror createGuardedByAnnotationMirror(
+      @UnknownInitialization(GenericAnnotatedTypeFactory.class) LockAnnotatedTypeFactory this,
+      List<String> values) {
     AnnotationBuilder builder = new AnnotationBuilder(getProcessingEnv(), GuardedBy.class);
     builder.setValue("value", values.toArray());
 
