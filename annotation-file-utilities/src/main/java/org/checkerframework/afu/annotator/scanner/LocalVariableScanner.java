@@ -66,8 +66,6 @@ public class LocalVariableScanner extends CommonScanner {
   private final String varName;
 
   private LocalVariableScanner(Tree varTree, String varName) {
-    this.index = -1;
-    this.done = false;
     this.varTree = varTree;
     this.varName = varName;
   }
@@ -140,7 +138,7 @@ public class LocalVariableScanner extends CommonScanner {
 
     List<Integer> listOfOffsets = nameOffsetCounter.get(varName);
     if (listOfOffsets == null) {
-      listOfOffsets = new ArrayList<Integer>();
+      listOfOffsets = new ArrayList<>();
       nameOffsetCounter.put(varName, listOfOffsets);
     }
 

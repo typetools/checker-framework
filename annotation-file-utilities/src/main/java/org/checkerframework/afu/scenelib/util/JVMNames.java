@@ -23,8 +23,10 @@ import org.plumelib.reflection.Signatures;
 /** Class to generate class formatted names from Trees. */
 public class JVMNames {
 
-  /** Creates a new JVMNames. */
-  public JVMNames() {}
+  /** Do not instantiate. */
+  private JVMNames() {
+    throw new Error("Do not instantiate");
+  }
 
   /**
    * Converts a MethodTree into a JVML format method signature. There is probably an API to do this,

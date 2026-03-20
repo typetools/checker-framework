@@ -247,11 +247,16 @@ public class Expression extends TypeConstraint {
         context.inferenceTypeFactory.createThetaForMethodReference(
             memRef, compileTimeDecl, context);
     AbstractType compileTimeReturn = compileTimeDecl.getReturnType(map);
-    if (TreeUtils.needsTypeArgInference(memRef) && !compileTimeReturn.isProper()) {
-      BoundSet b2 =
+    BoundSet b2;
+    if (TreeUtils.needsTypeArgInference(memRef)) {
+      b2 =
           context.inference.createB2MethodRef(
               compileTimeDecl, T.getFunctionTypeParameterTypes(), map);
-      return context.inference.createB3(b2, memRef, compileTimeDecl, r, map);
+      if (!compileTimeReturn.isProper()) {
+        return context.inference.createB3(b2, memRef, compileTimeDecl, r, map);
+      }
+    } else {
+      b2 = new BoundSet(context);
     }
 
     // https://docs.oracle.com/javase/specs/jls/se8/html/jls-18.html#jls-18.2.1-300-D-B-C
@@ -266,7 +271,7 @@ public class Expression extends TypeConstraint {
                 compileTimeReturn.capture(context),
                 r,
                 TypeConstraint.Kind.TYPE_COMPATIBILITY)),
-        new BoundSet(context));
+        b2);
   }
 
   /**
