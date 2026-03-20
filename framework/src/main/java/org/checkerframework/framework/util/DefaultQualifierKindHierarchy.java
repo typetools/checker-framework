@@ -91,6 +91,7 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
   private final Map<QualifierKind, Map<QualifierKind, QualifierKind>> glbs;
 
   private final AnnotatedTypeFactory annotatedTypeFactory;
+  private final ExecutableElement subtypeOfQualifierElement;
 
   @Override
   public Set<? extends QualifierKind> getTops() {
@@ -181,6 +182,8 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
       AnnotatedTypeFactory annotatedTypeFactory,
       @SuppressWarnings("UnusedVariable") Void voidParam) {
     this.annotatedTypeFactory = annotatedTypeFactory;
+    this.subtypeOfQualifierElement =
+        TreeUtils.getMethod(SubtypeOf.class, "value", 0, annotatedTypeFactory.getProcessingEnv());
     this.nameToQualifierKind = createQualifierKinds(qualifierClasses);
     this.qualifierKinds = new ArrayList<>(nameToQualifierKind.values());
     Collections.sort(qualifierKinds);
@@ -297,15 +300,12 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
           ElementUtils.getTypeElement(
               annotatedTypeFactory.getProcessingEnv(), qualifierKind.getAnnotationClass());
 
-      @SuppressWarnings("all")
-      AnnotationMirror a = annotatedTypeFactory.getDeclAnnotation(e, SubtypeOf.class);
-      if (a == null) {
+      AnnotationMirror subtypeOf = annotatedTypeFactory.getDeclAnnotation(e, SubtypeOf.class);
+      if (subtypeOf == null) {
         continue;
       }
-      ExecutableElement subtypeOfQualifierElement =
-          TreeUtils.getMethod(SubtypeOf.class, "value", 0, annotatedTypeFactory.getProcessingEnv());
       List<Name> supertypes =
-          AnnotationUtils.getElementValueClassNames(a, subtypeOfQualifierElement);
+          AnnotationUtils.getElementValueClassNames(subtypeOf, subtypeOfQualifierElement);
 
       Set<DefaultQualifierKind> directSupers = new TreeSet<>();
       for (Name superName : supertypes) {
