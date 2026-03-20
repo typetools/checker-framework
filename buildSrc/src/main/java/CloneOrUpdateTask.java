@@ -4,6 +4,7 @@ import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.OutputDirectory;
+import org.gradle.api.tasks.TaskAction;
 import org.gradle.process.ExecOperations;
 
 /** A task that clones or updates a given Git repository. */
@@ -36,7 +37,7 @@ public abstract class CloneOrUpdateTask extends GitTask {
   }
 
   /** Clones or updates a repo. */
-  @Override
+  @TaskAction
   public void doTaskAction() {
     String url = getUrl().get();
     File directory = getDirectory().get().getAsFile();
