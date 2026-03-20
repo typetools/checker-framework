@@ -5,7 +5,6 @@ import org.eclipse.jgit.api.CloneCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.gradle.api.DefaultTask;
-import org.gradle.api.tasks.TaskAction;
 import org.gradle.process.ExecOperations;
 
 /** An abstract class that is used by other task to do git commands. */
@@ -23,10 +22,6 @@ public abstract class GitTask extends DefaultTask {
   public GitTask(ExecOperations execOperations) {
     this.execOperations = execOperations;
   }
-
-  /** Clones or updates a repo. */
-  @TaskAction
-  public abstract void doTaskAction();
 
   /**
    * Clones the repository at {@code url}. If the clone fails, sleep 1 minute then retry clone. If
