@@ -62,7 +62,7 @@ public final class Source {
       throw new CompilerException("could not get compiler instance");
     }
 
-    diagnostics = new DiagnosticCollector<JavaFileObject>();
+    diagnostics = new DiagnosticCollector<>();
 
     // Get the file manager for locating input files.
     try (StandardJavaFileManager fileManager =

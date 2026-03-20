@@ -62,7 +62,7 @@ public abstract class Insertion {
   public Insertion(Criteria criteria, boolean separateLine) {
     this.criteria = criteria;
     this.separateLine = separateLine;
-    this.packageNames = new LinkedHashSet<String>();
+    this.packageNames = new LinkedHashSet<>();
     this.inserted = false;
   }
 
@@ -265,7 +265,7 @@ public abstract class Insertion {
     if (nameEnd == -1) {
       nameEnd = s.length();
     }
-    int dotIndex = s.lastIndexOf(".", nameEnd);
+    int dotIndex = s.lastIndexOf('.', nameEnd);
     if (dotIndex != -1) {
       String basename = s.substring(dotIndex + 1);
       if (!alwaysQualify.contains(basename)) {

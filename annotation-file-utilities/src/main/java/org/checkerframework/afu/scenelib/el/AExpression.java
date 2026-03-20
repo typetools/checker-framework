@@ -47,7 +47,7 @@ public class AExpression extends AElement {
       new VivifyingMap<RelativeLocation, AMethod>(new LinkedHashMap<>()) {
         @Override
         public AMethod createValueFor(RelativeLocation k) {
-          return new AMethod("" + k); // FIXME: find generated method name
+          return new AMethod(k.toString()); // FIXME: find generated method name
         }
 
         @Override

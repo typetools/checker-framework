@@ -163,7 +163,7 @@ public class Insertions implements Iterable<Insertion> {
 
     Set<Insertion> set = map.get(innerClass);
     if (set == null) {
-      set = new LinkedHashSet<Insertion>();
+      set = new LinkedHashSet<>();
       map.put(innerClass, set);
     }
 
@@ -372,7 +372,7 @@ public class Insertions implements Iterable<Insertion> {
           int d = newArrayInnerTypeDepth(p);
           if (d > 0) {
             ASTPath temp = p;
-            while (!temp.isEmpty() && (node == null || !(node instanceof NewArrayTree))) {
+            while (!temp.isEmpty() && !(node instanceof NewArrayTree)) {
               // TODO: avoid repeating work of newArrayInnerTypeDepth()
               temp = temp.getParentPath();
               node = ASTIndex.getNode(cut, rec.replacePath(temp));

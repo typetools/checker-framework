@@ -29,6 +29,11 @@ import org.checkerframework.framework.qual.AnnotatedFor;
 @AnnotatedFor("nullness")
 public class I18nFormatUtil {
 
+  /** Do not instantiate. */
+  private I18nFormatUtil() {
+    throw new Error("Do not instantiate");
+  }
+
   /**
    * Throws an exception if the format is not syntactically valid.
    *

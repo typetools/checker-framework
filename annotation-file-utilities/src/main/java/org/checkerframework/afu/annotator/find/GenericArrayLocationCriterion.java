@@ -145,7 +145,7 @@ public class GenericArrayLocationCriterion implements Criterion {
     } else if (leaf instanceof NewArrayTree && typePath != null) {
       child = ((NewArrayTree) leaf).getType();
     }
-    if (child != null && child instanceof MemberSelectTree) {
+    if (child instanceof MemberSelectTree) {
       JCExpression exp = ((JCFieldAccess) child).getExpression();
       if ((exp.type != null && exp.type.getKind() == TypeKind.PACKAGE)
           || typePath == null
