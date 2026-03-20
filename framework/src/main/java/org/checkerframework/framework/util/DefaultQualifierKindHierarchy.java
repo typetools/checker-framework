@@ -96,6 +96,9 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
   /** Element of {@link SubtypeOf} annotation. */
   private final ExecutableElement subtypeOfQualifierElement;
 
+  /** Element of {@link PolymorphicQualifier} annotation. */
+  private final ExecutableElement polymotphicQualifierElement;
+
   @Override
   public Set<? extends QualifierKind> getTops() {
     return tops;
@@ -190,6 +193,9 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
     this.annotatedTypeFactory = annotatedTypeFactory;
     this.subtypeOfQualifierElement =
         TreeUtils.getMethod(SubtypeOf.class, "value", 0, annotatedTypeFactory.getProcessingEnv());
+    this.polymotphicQualifierElement =
+        TreeUtils.getMethod(
+            PolymorphicQualifier.class, "value", 0, annotatedTypeFactory.getProcessingEnv());
     this.nameToQualifierKind = createQualifierKinds(qualifierClasses);
     this.qualifierKinds = new ArrayList<>(nameToQualifierKind.values());
     Collections.sort(qualifierKinds);
@@ -419,13 +425,18 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
   protected void initializePolymorphicQualifiers(
       @UnderInitialization DefaultQualifierKindHierarchy this) {
     for (DefaultQualifierKind qualifierKind : qualifierKinds) {
-      Class<? extends Annotation> clazz = qualifierKind.getAnnotationClass();
-      PolymorphicQualifier polyMetaAnno = clazz.getAnnotation(PolymorphicQualifier.class);
+      TypeElement e =
+          ElementUtils.getTypeElement(
+              annotatedTypeFactory.getProcessingEnv(), qualifierKind.getAnnotationClass());
+      AnnotationMirror polyMetaAnno =
+          annotatedTypeFactory.getDeclAnnotation(e, PolymorphicQualifier.class);
       if (polyMetaAnno == null) {
         continue;
       }
       qualifierKind.poly = qualifierKind;
-      String topName = QualifierKindHierarchy.annotationClassName(polyMetaAnno.value());
+      String topName =
+          AnnotationUtils.getElementValueClassName(polyMetaAnno, polymotphicQualifierElement)
+              .toString();
       if (nameToQualifierKind.containsKey(topName)) {
         qualifierKind.top = nameToQualifierKind.get(topName);
       } else if (topName.equals(Annotation.class.getCanonicalName())) {
