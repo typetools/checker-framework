@@ -90,8 +90,14 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
    */
   private final Map<QualifierKind, Map<QualifierKind, QualifierKind>> glbs;
 
+  /** {@link AnnotatedTypeFactory} of the hierarchy. */
   private final AnnotatedTypeFactory annotatedTypeFactory;
+
+  /** Element of {@link SubtypeOf} annotation. */
   private final ExecutableElement subtypeOfQualifierElement;
+
+  /** Element of {@link PolymorphicQualifier} annotation. */
+  private final ExecutableElement polymotphicQualifierElement;
 
   @Override
   public Set<? extends QualifierKind> getTops() {
@@ -138,6 +144,7 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
    * qualifier kinds.
    *
    * @param qualifierClasses all the classes of qualifiers supported by this hierarchy
+   * @param annotatedTypeFactory annotated type factory for the hierarchy.
    */
   @SuppressWarnings("this-escape")
   public DefaultQualifierKindHierarchy(
@@ -157,6 +164,7 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
    *
    * @param qualifierClasses all the classes of qualifiers supported by this hierarchy
    * @param bottom the bottom qualifier of this hierarchy
+   * @param annotatedTypeFactory annotated type factory for the hierarchy.
    */
   @SuppressWarnings("this-escape")
   public DefaultQualifierKindHierarchy(
@@ -172,6 +180,7 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
    * @param qualifierClasses all the classes of qualifiers supported by this hierarchy
    * @param bottom the bottom qualifier of this hierarchy or null if bottom can be inferred from the
    *     meta-annotations
+   * @param annotatedTypeFactory annotated type factory for the hierarchy.
    * @param voidParam void parameter to differentiate from {@link
    *     #DefaultQualifierKindHierarchy(Collection, Class, AnnotatedTypeFactory)}
    */
@@ -184,6 +193,9 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
     this.annotatedTypeFactory = annotatedTypeFactory;
     this.subtypeOfQualifierElement =
         TreeUtils.getMethod(SubtypeOf.class, "value", 0, annotatedTypeFactory.getProcessingEnv());
+    this.polymotphicQualifierElement =
+        TreeUtils.getMethod(
+            PolymorphicQualifier.class, "value", 0, annotatedTypeFactory.getProcessingEnv());
     this.nameToQualifierKind = createQualifierKinds(qualifierClasses);
     this.qualifierKinds = new ArrayList<>(nameToQualifierKind.values());
     Collections.sort(qualifierKinds);
@@ -413,13 +425,18 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
   protected void initializePolymorphicQualifiers(
       @UnderInitialization DefaultQualifierKindHierarchy this) {
     for (DefaultQualifierKind qualifierKind : qualifierKinds) {
-      Class<? extends Annotation> clazz = qualifierKind.getAnnotationClass();
-      PolymorphicQualifier polyMetaAnno = clazz.getAnnotation(PolymorphicQualifier.class);
+      TypeElement e =
+          ElementUtils.getTypeElement(
+              annotatedTypeFactory.getProcessingEnv(), qualifierKind.getAnnotationClass());
+      AnnotationMirror polyMetaAnno =
+          annotatedTypeFactory.getDeclAnnotation(e, PolymorphicQualifier.class);
       if (polyMetaAnno == null) {
         continue;
       }
       qualifierKind.poly = qualifierKind;
-      String topName = QualifierKindHierarchy.annotationClassName(polyMetaAnno.value());
+      String topName =
+          AnnotationUtils.getElementValueClassName(polyMetaAnno, polymotphicQualifierElement)
+              .toString();
       if (nameToQualifierKind.containsKey(topName)) {
         qualifierKind.top = nameToQualifierKind.get(topName);
       } else if (topName.equals(Annotation.class.getCanonicalName())) {
