@@ -12,8 +12,8 @@ javac.  The Checker Framework can run on any Java project, including projects
 that compile to Java 8 or 11 bytecodes and run on JRE versions 8 or 11.
 
 The type qualifiers and utility libraries in `checker-qual.jar` and
-`checker-util.jar` still use Java 11 bytecode.  Thus, they may be included in
-projects that run under an earlier version of Java.
+`checker-util.jar` still use Java 11 bytecode.  Thus, they may be used in
+projects that run under Java 11 or later.
 
 ### Implementation details
 

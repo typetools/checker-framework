@@ -844,7 +844,7 @@ public class AnnotationUtils {
    *     empty name, for a local or anonymous class
    * @deprecated use an ExecutableElement
    */
-  @Deprecated // permitted for use by the framework
+  @Deprecated // for use only by the framework
   public static @CanonicalName Name getElementValueClassName(
       AnnotationMirror anno, CharSequence elementName, boolean useDefaults) {
     Type.ClassType ct = getElementValue(anno, elementName, Type.ClassType.class, useDefaults);

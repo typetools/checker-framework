@@ -79,7 +79,7 @@ public class ObjectCreationNode extends Node {
    * @return the constructor node
    * @deprecated use {@link #getTypeToInstantiate()}
    */
-  @Deprecated // 2024-02-16
+  @Deprecated(since = "2024-02-16")
   public Node getConstructor() {
     return typeToInstantiate;
   }
