@@ -2,7 +2,9 @@ package org.checkerframework.checker.rlccalledmethods;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
@@ -13,6 +15,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Queue;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -43,11 +46,13 @@ import org.checkerframework.common.accumulation.AccumulationValue;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
+import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.framework.flow.CFAbstractAnalysis.FieldInitialValue;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -57,6 +62,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
+import org.plumelib.util.IPair;
 
 /**
  * The type factory for the RLCCalledMethodsChecker. The main difference between this and the Called
@@ -188,6 +194,40 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
    */
   public AnnotationMirror createCalledMethods(String... val) {
     return createAccumulatorAnnotation(Arrays.asList(val));
+  }
+
+  @Override
+  protected ControlFlowGraph analyze(
+      Queue<IPair<ClassTree, @Nullable AccumulationStore>> classQueue,
+      Queue<IPair<LambdaExpressionTree, @Nullable AccumulationStore>> lambdaQueue,
+      UnderlyingAST ast,
+      List<FieldInitialValue<AccumulationValue>> fieldValues,
+      @Nullable ControlFlowGraph cfg,
+      boolean isInitializationCode,
+      boolean updateInitializationStore,
+      boolean isStatic,
+      @Nullable AccumulationStore capturedStore) {
+    if (cfg != null && ast.getKind() == UnderlyingAST.Kind.METHOD) {
+      // Preserve the first method analysis result, but keep the framework's lambda loop running
+      // by re-enqueuing the nested classes and lambdas from the existing CFG.
+      for (ClassTree cls : cfg.getDeclaredClasses()) {
+        classQueue.add(IPair.of(cls, getStoreBefore(cls)));
+      }
+      for (LambdaExpressionTree lambda : cfg.getDeclaredLambdas()) {
+        lambdaQueue.add(IPair.of(lambda, getStoreBefore(lambda)));
+      }
+      return cfg;
+    }
+    return super.analyze(
+        classQueue,
+        lambdaQueue,
+        ast,
+        fieldValues,
+        cfg,
+        isInitializationCode,
+        updateInitializationStore,
+        isStatic,
+        capturedStore);
   }
 
   @Override
