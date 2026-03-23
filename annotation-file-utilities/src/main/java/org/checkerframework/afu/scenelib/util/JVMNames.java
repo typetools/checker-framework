@@ -36,7 +36,7 @@ public class JVMNames {
    * @return a String signature of methodTree in jvml format
    * @deprecated use {@link #getJVMMethodSignature(MethodTree)}
    */
-  @Deprecated // use getJVMMethodSignature(MethodTree)
+  @Deprecated
   @InlineMe(
       replacement = "JVMNames.getJVMMethodSignature(methodTree)",
       imports = "org.checkerframework.afu.scenelib.util.JVMNames")
@@ -93,7 +93,7 @@ public class JVMNames {
    * @return a String signature of methodElement in JVML format
    * @deprecated use {@link #getJVMMethodSignature(ExecutableElement)}
    */
-  @Deprecated // use getJVMMethodSignature(ExecutableElement)
+  @Deprecated
   @InlineMe(
       replacement = "JVMNames.getJVMMethodSignature(methodElement)",
       imports = "org.checkerframework.afu.scenelib.util.JVMNames")

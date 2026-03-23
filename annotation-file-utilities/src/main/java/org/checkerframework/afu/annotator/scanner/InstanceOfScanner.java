@@ -16,25 +16,6 @@ import java.util.Map;
  */
 public class InstanceOfScanner extends CommonScanner {
 
-  /**
-   * Computes the index of the given instanceof tree amongst all instanceof tree inside its method,
-   * using 0-based indexing.
-   *
-   * @param origpath the path ending in the given instanceof tree
-   * @param tree the instanceof tree to search for
-   * @return the index of the given instanceof tree
-   */
-  public static int indexOfInstanceOfTree(TreePath origpath, Tree tree) {
-    TreePath path = TreePathUtil.findCountingContext(origpath);
-    if (path == null) {
-      return -1;
-    }
-
-    InstanceOfScanner ios = new InstanceOfScanner(tree);
-    ios.scan(path, null);
-    return ios.index;
-  }
-
   private int index = -1;
   private boolean done = false;
   private final Tree tree;
@@ -59,6 +40,25 @@ public class InstanceOfScanner extends CommonScanner {
       done = true;
     }
     return super.visitInstanceOf(node, null);
+  }
+
+  /**
+   * Computes the index of the given instanceof tree amongst all instanceof tree inside its method,
+   * using 0-based indexing.
+   *
+   * @param origpath the path ending in the given instanceof tree
+   * @param tree the instanceof tree to search for
+   * @return the index of the given instanceof tree
+   */
+  public static int indexOfInstanceOfTree(TreePath origpath, Tree tree) {
+    TreePath path = TreePathUtil.findCountingContext(origpath);
+    if (path == null) {
+      return -1;
+    }
+
+    InstanceOfScanner ios = new InstanceOfScanner(tree);
+    ios.scan(path, null);
+    return ios.index;
   }
 
   // Map from name of a method to a list of bytecode offsets of all

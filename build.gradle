@@ -45,6 +45,7 @@ ext {
   gradleRunsOnJava21orHigher = JavaVersion.current() >= JavaVersion.VERSION_21
   gradleRunsOnJava22orHigher = JavaVersion.current() >= JavaVersion.VERSION_22
   gradleRunsOnJava24orHigher = JavaVersion.current() >= JavaVersion.VERSION_24
+  gradleRunsOnJava25orHigher = JavaVersion.current() >= JavaVersion.VERSION_25
   // The JDK for running tests: the jdkTestVersion property or if not set, JavaVersion.current()
   if (project.getProperties().containsKey("jdkTestVersion")) {
     testJdkVersion = Integer.valueOf(project.getProperties().get("jdkTestVersion"))
@@ -254,9 +255,9 @@ allprojects { currentProj ->
         if (!name.equals("javadocDoclintAll")) {
           options.memberLevel = javadocMemberLevel
         }
-        // Without the following, Javadoc will error on checker-qual with "error: reference not found"
+        // Without the following exclude, Javadoc will error on checker-qual with "error: reference not found"
         // on class in checker.jar.
-        exclude "**/module-info.java"
+        exclude("**/module-info.java")
         classpath += configurations.named("checkerFatJar").get().asFileTree
         options.taglets("org.checkerframework.taglet.ManualTaglet")
         options.tagletPath(project(":framework-test").sourceSets.taglet.output.classesDirs.getFiles() as File[])
@@ -297,11 +298,10 @@ allprojects { currentProj ->
           || project.name.equals("checker-qual-android"))) {
         options.release = 11
       } else {
-        sourceCompatibility = 17
-        targetCompatibility = 17
         // Can't use --release with --add-exports, otherwise you'll see errors like:
         // error: exporting a package from system module jdk.compiler is not allowed with --release
-        // options.release.set(17)
+        sourceCompatibility = 17
+        targetCompatibility = 17
         options.compilerArgs += [
           "--add-exports",
           "jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
@@ -338,6 +338,7 @@ allprojects { currentProj ->
         // via the setAccessible method of the core reflection API. The --add-opens option can
         // be used, at run time, to do this."
       }
+
       options.failOnError = true
       options.deprecation = true
       // -options: To not get a warning about missing bootstrap classpath (when using Java 9 and `-source 8`).
