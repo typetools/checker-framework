@@ -11,6 +11,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -98,6 +99,13 @@ public class CollectionOwnershipAnnotatedTypeFactory
   /** The value element of the {@code @}{@link CollectionFieldDestructor} annotation. */
   private final ExecutableElement collectionFieldDestructorValueElement =
       TreeUtils.getMethod(CollectionFieldDestructor.class, "value", 0, processingEnv);
+
+  /**
+   * Method CFGs whose resource-leak post-analysis already ran before contained lambdas were
+   * analyzed.
+   */
+  private final Set<ControlFlowGraph> preLambdaPostAnalyzedMethods =
+      Collections.newSetFromMap(new IdentityHashMap<>());
 
   /**
    * Enum for the types in the hierarchy. Combined with a few utility methods to get the right enum
@@ -221,7 +229,22 @@ public class CollectionOwnershipAnnotatedTypeFactory
   // collections. Whatever checker runs last in the RLC must do this. TODO: make this
   // run last in a more sensible way.
   @Override
+  protected void postAnalyzeAfterFirstMethodAnalysis(ControlFlowGraph cfg) {
+    runResourceLeakPostAnalyze(cfg);
+    preLambdaPostAnalyzedMethods.add(cfg);
+  }
+
+  @Override
   public void postAnalyze(ControlFlowGraph cfg) {
+    if (!preLambdaPostAnalyzedMethods.remove(cfg)) {
+      runResourceLeakPostAnalyze(cfg);
+    }
+
+    super.postAnalyze(cfg);
+  }
+
+  /** Runs the resource-leak-specific post-analysis that must happen in the last checker. */
+  private void runResourceLeakPostAnalyze(ControlFlowGraph cfg) {
     ResourceLeakChecker rlc = ResourceLeakUtils.getResourceLeakChecker(this);
     rlc.setRoot(root);
     MustCallConsistencyAnalyzer mustCallConsistencyAnalyzer =
@@ -237,8 +260,6 @@ public class CollectionOwnershipAnnotatedTypeFactory
         MustCallInference.runMustCallInference(cmAtf, cfg, mustCallConsistencyAnalyzer);
       }
     }
-
-    super.postAnalyze(cfg);
   }
 
   /**

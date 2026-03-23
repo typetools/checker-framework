@@ -1395,8 +1395,8 @@ public class MustCallConsistencyAnalyzer {
       } else {
         // return is @OwningCollection. Report error if @OwningCollection field.
         if (node.getResult() != null
-        && coAtf.isOwningCollectionField(
-          TreeUtils.elementFromTree(node.getResult().getTree()))) {
+            && coAtf.isOwningCollectionField(
+                TreeUtils.elementFromTree(node.getResult().getTree()))) {
           checker.reportError(
               node.getTree(),
               "transfer.owningcollection.field.ownership",

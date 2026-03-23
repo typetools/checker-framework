@@ -1523,6 +1523,9 @@ public abstract class GenericAnnotatedTypeFactory<
               /* updateInitializationStore= */ false,
               /* isStatic= */ false,
               capturedStore);
+      if (firstIteration) {
+        postAnalyzeAfterFirstMethodAnalysis(methodCFG);
+      }
       boolean anyLambdaResultChanged = false;
       while (!lambdaQueueInMethod.isEmpty()) {
         IPair<LambdaExpressionTree, @Nullable Store> lambdaPair = lambdaQueueInMethod.remove();
@@ -1588,6 +1591,17 @@ public abstract class GenericAnnotatedTypeFactory<
     }
     return true;
   }
+
+  /**
+   * Perform any additional operations on a method CFG after its first analysis and before any
+   * contained lambdas are analyzed.
+   *
+   * <p>This hook is invoked once per method CFG. If the method contains no lambdas, then this hook
+   * is called after the first analysis and before {@link #postAnalyze(ControlFlowGraph)}.
+   *
+   * @param cfg the method CFG
+   */
+  protected void postAnalyzeAfterFirstMethodAnalysis(ControlFlowGraph cfg) {}
 
   /** Sorts a list of trees with the variables first. */
   private final Comparator<Tree> sortVariablesFirst =
