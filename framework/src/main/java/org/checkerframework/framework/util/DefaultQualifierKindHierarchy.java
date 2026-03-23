@@ -98,7 +98,7 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
   private final ExecutableElement subtypeOfQualifierElement;
 
   /** Element of {@link PolymorphicQualifier} annotation. */
-  private final ExecutableElement polymotphicQualifierElement;
+  private final ExecutableElement polymorphicQualifierElement;
 
   @Override
   public Set<? extends QualifierKind> getTops() {
@@ -194,7 +194,7 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
     this.annotatedTypeFactory = annotatedTypeFactory;
     this.subtypeOfQualifierElement =
         TreeUtils.getMethod(SubtypeOf.class, "value", 0, annotatedTypeFactory.getProcessingEnv());
-    this.polymotphicQualifierElement =
+    this.polymorphicQualifierElement =
         TreeUtils.getMethod(
             PolymorphicQualifier.class, "value", 0, annotatedTypeFactory.getProcessingEnv());
     this.nameToQualifierKind = createQualifierKinds(qualifierClasses);
@@ -439,7 +439,7 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
       // Annotation.class. See docs/examples/subtyping-extension for an example.
       DeclaredType polyValue =
           AnnotationUtils.getElementValue(
-              polyMetaAnno, polymotphicQualifierElement, DeclaredType.class, null);
+              polyMetaAnno, polymorphicQualifierElement, DeclaredType.class, null);
       String topName =
           polyValue == null
               ? null
