@@ -832,15 +832,25 @@ subprojects {
     // When you add one here, also update a dependsOn(item for the "typecheck" task.)
     createCheckTypeTask(project.name, "Formatter",
         "org.checkerframework.checker.formatter.FormatterChecker")
-    createCheckTypeTask(project.name, "Interning",
-        "org.checkerframework.checker.interning.InterningChecker",
-        [
-          "-Astubs=javax-lang-model-element-name.astub",
-          // The stubparser gives a warning on the package, but the class is still found.
-          //  warning: javax-lang-model-element-name.astub:(line 11,col 1): Package not found: com.sun.tools.javac.util
-          //  1 error
-          "-AstubNoWarnIfNotFound"
-        ])
+    if ((project.name.equals("checker-qual")
+        || project.name.equals("checker-util")
+        || project.name.equals("checker-qual-android"))) {
+      createCheckTypeTask(project.name, "Interning",
+          "org.checkerframework.checker.interning.InterningChecker",
+          [
+            "-Astubs=javax-lang-model-element-name.astub",
+            // Because these projects use --release=11, the stubparsers issues warnings like:
+            //  warning: javax-lang-model-element-name.astub:(line 11,col 1): Package not found: com.sun.tools.javac.util
+            //  so just suppress them.
+            "-AstubNoWarnIfNotFound"
+          ])
+    } else {
+      createCheckTypeTask(project.name, "Interning",
+          "org.checkerframework.checker.interning.InterningChecker",
+          [
+            "-Astubs=javax-lang-model-element-name.astub"
+          ])
+    }
     createCheckTypeTask(project.name, "Optional",
         "org.checkerframework.checker.optional.OptionalChecker",
         [

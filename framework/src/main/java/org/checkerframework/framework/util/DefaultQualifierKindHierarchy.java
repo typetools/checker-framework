@@ -17,6 +17,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.interning.qual.Interned;
@@ -434,12 +435,16 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
         continue;
       }
       qualifierKind.poly = qualifierKind;
+      // For user supplied qualifiers, sometimes the value is null rather than the default
+      // Annotation.class. See docs/examples/subtyping-extension for an example.
+      DeclaredType polyValue =
+          AnnotationUtils.getElementValue(
+              polyMetaAnno, polymotphicQualifierElement, DeclaredType.class, null);
       String topName =
-          AnnotationUtils.getElementValueClassName(polyMetaAnno, polymotphicQualifierElement)
-              .toString();
-      if (nameToQualifierKind.containsKey(topName)) {
-        qualifierKind.top = nameToQualifierKind.get(topName);
-      } else if (topName.equals(Annotation.class.getCanonicalName())) {
+          polyValue == null
+              ? null
+              : ((TypeElement) polyValue.asElement()).getQualifiedName().toString();
+      if (topName == null || topName.equals(Annotation.class.getCanonicalName())) {
         // Annotation.class is the default value of PolymorphicQualifier. If it is used,
         // then there must be exactly one top.
         if (tops.size() == 1) {
@@ -449,6 +454,8 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
               "Polymorphic qualifier %s did not specify a top annotation class. Tops: [%s]",
               qualifierKind, StringsPlume.join(", ", tops));
         }
+      } else if (nameToQualifierKind.containsKey(topName)) {
+        qualifierKind.top = nameToQualifierKind.get(topName);
       } else {
         throw new TypeSystemError(
             "Polymorphic qualifier %s's top, %s, is not a qualifier.", qualifierKind, topName);
