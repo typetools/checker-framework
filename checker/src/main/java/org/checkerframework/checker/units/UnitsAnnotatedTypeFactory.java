@@ -631,7 +631,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   /** UnitsQualifierKindHierarchy. */
   @AnnotatedFor("nullness")
-  protected class UnitsQualifierKindHierarchy extends DefaultQualifierKindHierarchy {
+  protected static class UnitsQualifierKindHierarchy extends DefaultQualifierKindHierarchy {
 
     /**
      * Mapping from QualifierKind to an AnnotationMirror that represents its direct super qualifier.
@@ -647,7 +647,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     public UnitsQualifierKindHierarchy(
         Collection<Class<? extends Annotation>> qualifierClasses, Elements elements) {
-      super(qualifierClasses, UnitsBottom.class, UnitsAnnotatedTypeFactory.this);
+      super(qualifierClasses, UnitsBottom.class);
       directSuperQualifierMap = createDirectSuperQualifierMap(elements);
     }
 
