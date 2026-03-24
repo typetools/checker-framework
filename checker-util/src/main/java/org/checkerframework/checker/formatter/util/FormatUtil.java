@@ -241,7 +241,7 @@ public class FormatUtil {
    * @deprecated This method is public only for testing. Use private method {@code
    *     #conversionCharFromFormat(Matcher)}.
    */
-  @Deprecated // used only for testing.  Use conversionCharFromFormat(Matcher).
+  @Deprecated // Not for removal. Used only for testing
   public static char conversionCharFromFormat(String formatSpecifier) {
     Matcher m = fsPattern.matcher(formatSpecifier);
     assert m.find();

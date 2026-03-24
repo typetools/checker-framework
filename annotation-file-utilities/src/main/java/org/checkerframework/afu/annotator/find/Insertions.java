@@ -518,7 +518,6 @@ public class Insertions implements Iterable<Insertion> {
             default:
               break;
           }
-          path = path.getParentPath();
         }
       }
 
