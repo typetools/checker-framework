@@ -122,8 +122,8 @@ public class CheckerMain {
     this.jvmOpts = extractJvmOpts(args);
 
     this.cpOpts = extractCpOpts(args);
-    cpOpts.addFirst(this.checkerQualJar.getAbsolutePath());
-    cpOpts.addFirst(this.checkerUtilJar.getAbsolutePath());
+    cpOpts.add(0, this.checkerQualJar.getAbsolutePath());
+    cpOpts.add(0, this.checkerUtilJar.getAbsolutePath());
 
     String passedProcessorPath = extractPpOpts(args);
     if (passedProcessorPath == null) {
@@ -136,8 +136,8 @@ public class CheckerMain {
       this.ppOpts = new ArrayList<>(3);
       ppOpts.add(passedProcessorPath);
     }
-    ppOpts.addFirst(this.checkerJar.getAbsolutePath());
-    ppOpts.addFirst(this.checkerUtilJar.getAbsolutePath());
+    ppOpts.add(0, this.checkerJar.getAbsolutePath());
+    ppOpts.add(0, checkerUtilJar.getAbsolutePath());
 
     this.toolOpts = args;
 
