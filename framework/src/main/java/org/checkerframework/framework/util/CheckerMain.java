@@ -76,8 +76,6 @@ public class CheckerMain {
   /** The path to checker-util.jar. */
   protected final File checkerUtilJar;
 
-  private final List<String> runtimeClasspath;
-
   private final List<String> jvmOpts;
 
   /**
@@ -127,7 +125,6 @@ public class CheckerMain {
     this.checkerUtilJar =
         extractFileArg(CHECKER_UTIL_PATH_OPT, new File(searchPath, "checker-util.jar"), args);
 
-    this.runtimeClasspath = createRuntimeClasspath(args);
     this.jvmOpts = extractJvmOpts(args);
 
     this.cpOpts = createCpOpts(args);
@@ -148,14 +145,6 @@ public class CheckerMain {
 
   public void addToProcessorpath(List<String> ppOpts) {
     this.ppOpts.addAll(ppOpts);
-  }
-
-  public void addToRuntimeClasspath(List<String> runtimeClasspathOpts) {
-    this.runtimeClasspath.addAll(runtimeClasspathOpts);
-  }
-
-  protected List<String> createRuntimeClasspath(List<String> argsList) {
-    return new ArrayList<>();
   }
 
   protected List<String> createCpOpts(List<String> argsList) {
@@ -367,16 +356,12 @@ public class CheckerMain {
     }
   }
 
-  protected void addMainToArgs(List<String> args) {
-    args.add("com.sun.tools.javac.Main");
-  }
-
   /** Invoke the compiler with all relevant jars on its classpath and/or bootclasspath. */
   public List<String> getExecArguments() {
     List<String> args = new ArrayList<>(jvmOpts.size() + cpOpts.size() + toolOpts.size() + 7);
 
     // TODO: do we need java.exe on Windows?
-    String java = "java";
+    String java = "javac";
     args.add(java);
 
     args.addAll(
@@ -388,38 +373,20 @@ public class CheckerMain {
             // These are required in Java 17+ because the --illegal-access option is
             // set to deny by default.  None of these packages are accessed via
             // reflection, so the module only needs to be exported, but not opened.
-            "--add-exports",
-            "jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
-            "--add-exports",
-            "jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
-            "--add-exports",
-            "jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
-            "--add-exports",
-            "jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED",
-            "--add-exports",
-            "jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED",
-            "--add-exports",
-            "jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED",
-            "--add-exports",
-            "jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED",
-            "--add-exports",
-            "jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
-            "--add-exports",
-            "jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
+            "-J--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
+            "-J--add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
+            "-J--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
+            "-J--add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED",
+            "-J--add-exports=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED",
+            "-J--add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED",
+            "-J--add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED",
+            "-J--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
+            "-J--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
             // Required because the Checker Framework reflectively accesses private
             // members in com.sun.tools.javac.comp.
-            "--add-opens",
-            "jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED"));
-
-    args.add("-classpath");
-    args.add(String.join(File.pathSeparator, runtimeClasspath));
-    args.add("-ea");
-    // com.sun.tools needs to be enabled separately
-    args.add("-ea:com.sun.tools...");
+            "-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED"));
 
     args.addAll(jvmOpts);
-
-    addMainToArgs(args);
 
     if (!argsListHasClassPath(argListFiles)) {
       args.add("-classpath");
@@ -462,7 +429,7 @@ public class CheckerMain {
       return jarFiles(".");
     } else if (pathElement.endsWith(FILESEP_STAR)) {
       return jarFiles(pathElement.substring(0, pathElement.length() - 1));
-    } else if (pathElement.equals("")) {
+    } else if (pathElement.isEmpty()) {
       return Collections.emptyList();
     } else {
       return Collections.singletonList(pathElement);
@@ -502,6 +469,7 @@ public class CheckerMain {
         break;
       }
     }
+    args.removeIf(s -> s == null || s.isBlank());
 
     // Actually invoke the compiler
     return ExecUtil.execute(args.toArray(new String[0]), System.out, System.err);
