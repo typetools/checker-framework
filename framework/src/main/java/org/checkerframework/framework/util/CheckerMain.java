@@ -356,7 +356,11 @@ public class CheckerMain {
     return String.join(File.pathSeparator, elements);
   }
 
-  /** Invoke the compiler with all relevant jars on its classpath and/or bootclasspath. */
+  /**
+   * Invoke the compiler with all relevant jars on its classpath and/or bootclasspath.
+   *
+   * @return error code
+   */
   public int invokeCompiler() {
     List<String> args = getExecArguments();
 
