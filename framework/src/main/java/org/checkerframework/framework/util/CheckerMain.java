@@ -23,7 +23,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.SystemUtil;
@@ -168,14 +167,14 @@ public class CheckerMain {
 
   /**
    * Remove the argument given by argumentName and the subsequent value from the list args if
-   * present. Return the subsequent value.
+   * present. Return the subsequent value or null if not found.
    *
    * @param argumentName a command-line option name whose argument to extract
    * @param args the current list of arguments
-   * @return the string that follows argumentName if argumentName is in args, or alternative if
+   * @return the string that follows argumentName if argumentName is in args, or null if
    *     argumentName is not present in args
    */
-  protected static @PolyNull String extractArg(String argumentName, List<String> args) {
+  protected static @Nullable String extractArg(String argumentName, List<String> args) {
     int i = args.indexOf(argumentName);
     if (i == -1) {
       return null;
