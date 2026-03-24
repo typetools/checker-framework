@@ -114,8 +114,7 @@ public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     protected QualifierKindHierarchy createQualifierKindHierarchy(
         @UnderInitialization FenumQualifierHierarchy this,
         Collection<Class<? extends Annotation>> qualifierClasses) {
-      return new DefaultQualifierKindHierarchy(
-          qualifierClasses, FenumBottom.class, FenumAnnotatedTypeFactory.this);
+      return new DefaultQualifierKindHierarchy(qualifierClasses, FenumBottom.class);
     }
 
     @Override

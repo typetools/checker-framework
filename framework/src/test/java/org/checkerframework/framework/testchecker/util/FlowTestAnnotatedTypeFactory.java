@@ -72,8 +72,7 @@ public class FlowTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     protected QualifierKindHierarchy createQualifierKindHierarchy(
         Collection<Class<? extends Annotation>> qualifierClasses) {
-      return new DefaultQualifierKindHierarchy(
-          qualifierClasses, Bottom.class, FlowTestAnnotatedTypeFactory.this);
+      return new DefaultQualifierKindHierarchy(qualifierClasses, Bottom.class);
     }
 
     @Override

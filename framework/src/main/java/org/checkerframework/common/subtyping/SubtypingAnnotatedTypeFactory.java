@@ -6,8 +6,6 @@ import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.subtyping.qual.Unqualified;
@@ -18,22 +16,15 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.AnnotationClassLoader;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.javacutil.AnnotationBuilder;
-import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.UserError;
 import org.plumelib.reflection.Signatures;
 
 /** Defines {@link #createSupportedTypeQualifiers}. */
 public class SubtypingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-  private final ExecutableElement defaultForValueElement;
-
   @SuppressWarnings("this-escape")
   public SubtypingAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
-    this.defaultForValueElement =
-        TreeUtils.getMethod(DefaultFor.class, "value", 0, getProcessingEnv());
     postInit();
   }
 
@@ -110,19 +101,15 @@ public class SubtypingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     boolean foundOtherwise = false;
     // Add defaults from @DefaultFor and @DefaultQualifierInHierarchy
     for (Class<? extends Annotation> qual : getSupportedTypeQualifiers()) {
-      TypeElement e = ElementUtils.getTypeElement(getProcessingEnv(), qual);
-
-      AnnotationMirror defaultFor = getDeclAnnotation(e, DefaultFor.class);
+      DefaultFor defaultFor = qual.getAnnotation(DefaultFor.class);
       if (defaultFor != null) {
-        TypeUseLocation[] locations =
-            AnnotationUtils.getElementValueEnumArray(
-                defaultFor, defaultForValueElement, TypeUseLocation.class);
+        TypeUseLocation[] locations = defaultFor.value();
         defs.addCheckedCodeDefaults(AnnotationBuilder.fromClass(elements, qual), locations);
         foundOtherwise =
             foundOtherwise || Arrays.asList(locations).contains(TypeUseLocation.OTHERWISE);
       }
 
-      if (getDeclAnnotation(e, DefaultQualifierInHierarchy.class) != null) {
+      if (qual.getAnnotation(DefaultQualifierInHierarchy.class) != null) {
         defs.addCheckedCodeDefault(
             AnnotationBuilder.fromClass(elements, qual), TypeUseLocation.OTHERWISE);
         foundOtherwise = true;

@@ -82,7 +82,7 @@ public class NoElementQualifierHierarchy extends QualifierHierarchy {
   protected QualifierKindHierarchy createQualifierKindHierarchy(
       @UnderInitialization NoElementQualifierHierarchy this,
       Collection<Class<? extends Annotation>> qualifierClasses) {
-    return new DefaultQualifierKindHierarchy(qualifierClasses, atypeFactory);
+    return new DefaultQualifierKindHierarchy(qualifierClasses);
   }
 
   /**
