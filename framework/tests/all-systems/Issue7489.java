@@ -3,7 +3,7 @@ import java.util.Comparator;
 import java.util.List;
 
 @SuppressWarnings("all") // Just check for crashes.
-// @below-java11-jdk-skip-test
+// @below-java17-jdk-skip-test
 public class Issue7489 {
   static List<SubClass> filter(final Collection<ClassA> collection) {
     return collection.stream()
