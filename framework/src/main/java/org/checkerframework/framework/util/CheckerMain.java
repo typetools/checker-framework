@@ -370,7 +370,6 @@ public class CheckerMain {
         break;
       }
     }
-    args.removeIf(s -> s == null || s.isBlank());
 
     // Actually invoke the compiler
     return ExecUtil.execute(args.toArray(new String[0]), System.out, System.err);
