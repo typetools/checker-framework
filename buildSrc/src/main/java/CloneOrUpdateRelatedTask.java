@@ -13,6 +13,7 @@ import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
+import org.gradle.api.tasks.TaskAction;
 import org.gradle.api.tasks.UntrackedTask;
 import org.gradle.process.ExecOperations;
 
@@ -57,7 +58,7 @@ public abstract class CloneOrUpdateRelatedTask extends GitTask {
   }
 
   /** Clones or updates a related repo. */
-  @Override
+  @TaskAction
   public void doTaskAction() {
     String relatedRepoName = getRelatedRepo().get();
     File cfDir = getProject().getRootDir();
@@ -107,7 +108,7 @@ public abstract class CloneOrUpdateRelatedTask extends GitTask {
     String relatedBranch = orgBranchRelated.branch;
     if (cfBranch.equals(DEFAULT_BRANCH)
         && relatedBranch.equals(DEFAULT_BRANCH)
-        && relatedOrg.equals(DEFAULT_ORG)) {
+        && relatedOrg.equalsIgnoreCase(DEFAULT_ORG)) {
       // The related repo can use the default org and branch if CF is checked out to master and any
       // org.
       return;
@@ -193,9 +194,9 @@ public abstract class CloneOrUpdateRelatedTask extends GitTask {
       if (remoteUrl.startsWith("git@github.com:")) {
         // `remoteUrl` has the form:
         // git@github.com:typetools/checker-framework.git
-        int slashPos = remoteUrl.indexOf("/");
+        int slashPos = remoteUrl.indexOf('/');
         if (slashPos == -1) {
-          getLogger().lifecycle("Unexpected URL format " + remoteUrl);
+          getLogger().warn("Unexpected URL format " + remoteUrl);
           return null;
         }
         org = remoteUrl.substring("git@github.com:".length(), slashPos);
@@ -207,18 +208,18 @@ public abstract class CloneOrUpdateRelatedTask extends GitTask {
         // The path has the form:
         // /mernst/checker-framework.git
         if (!path.contains("/")) {
-          getLogger().lifecycle("Unexpected URL format " + remoteUrl);
+          getLogger().warn("Unexpected URL format " + remoteUrl);
           return null;
         }
         org = path.split("/")[1];
       } else {
-        getLogger().lifecycle("Unexpected URL format " + remoteUrl);
+        getLogger().warn("Unexpected URL format " + remoteUrl);
         return null;
       }
       return new OrgBranch(org, remoteBranchFullName.substring(Constants.R_HEADS.length()));
 
     } catch (IOException | IllegalArgumentException e) {
-      getLogger().lifecycle("Error finding branch: " + e.getMessage());
+      getLogger().warn("Error finding branch: " + e.getMessage());
       return null;
     }
   }

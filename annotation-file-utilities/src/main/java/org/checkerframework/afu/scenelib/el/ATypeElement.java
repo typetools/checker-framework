@@ -21,8 +21,7 @@ import org.checkerframework.afu.scenelib.util.coll.VivifyingMap;
 public class ATypeElement extends AElement {
 
   /** The annotated inner types; map key is the inner type location. */
-  public final VivifyingMap<List<TypePathEntry>, ATypeElement> innerTypes =
-      ATypeElement.newVivifyingLHMap_ATE();
+  public final VivifyingMap<List<TypePathEntry>, ATypeElement> innerTypes = newVivifyingLHMap_ATE();
 
   /**
    * Construct a new ATypeElement from its description.
@@ -116,7 +115,7 @@ public class ATypeElement extends AElement {
     return new VivifyingMap<K, ATypeElement>(new LinkedHashMap<>()) {
       @Override
       public ATypeElement createValueFor(K k) {
-        return new ATypeElement("" + k);
+        return new ATypeElement(k.toString());
       }
 
       @Override

@@ -465,7 +465,7 @@ public class ControlFlowGraph implements UniqueId {
     if (astString.length() > 65) {
       astString = "\"" + astString.substring(0, 60) + "\"";
     }
-    result.add("underlyingAST=" + underlyingAST);
+    result.add("underlyingAST=" + astString);
     result.add("treeLookup=" + AnalysisResult.treeLookupToString(treeLookup));
     result.add("convertedTreeLookup=" + AnalysisResult.treeLookupToString(convertedTreeLookup));
     result.add("postfixLookup=" + postfixNodeLookup);
