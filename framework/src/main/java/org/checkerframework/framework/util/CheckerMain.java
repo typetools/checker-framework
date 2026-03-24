@@ -15,7 +15,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.StringJoiner;
 import java.util.jar.JarInputStream;
@@ -125,12 +125,16 @@ public class CheckerMain {
     cpOpts.addFirst(this.checkerQualJar.getAbsolutePath());
     cpOpts.addFirst(this.checkerUtilJar.getAbsolutePath());
 
-    this.ppOpts = extractPpOpts(args);
-    if (ppOpts.isEmpty()) {
+    String passedProcessorPath = extractPpOpts(args);
+    if (passedProcessorPath == null) {
       // If processorpath is not provided, then javac uses the classpath.
       // CheckerMain always supplies a processorpath, so if the user
       // didn't specify a processorpath, then use the classpath.
+      this.ppOpts = new ArrayList<>(this.cpOpts.size() + 2);
       ppOpts.addAll(this.cpOpts);
+    } else {
+      this.ppOpts = new ArrayList<>(3);
+      ppOpts.add(passedProcessorPath);
     }
     ppOpts.addFirst(this.checkerJar.getAbsolutePath());
     ppOpts.addFirst(this.checkerUtilJar.getAbsolutePath());
@@ -214,29 +218,19 @@ public class CheckerMain {
    *     none
    */
   protected static List<String> extractJvmOpts(List<String> args) {
-    List<String> matchedArgs = new ArrayList<>();
+    List<String> jvmArgs = new ArrayList<>();
 
-    int i = 0;
-    while (i < args.size()) {
-      Matcher matcher = CheckerMain.JVM_OPTS_REGEX.matcher(args.get(i));
+    Iterator<String> argsIterator = args.iterator();
+    while (argsIterator.hasNext()) {
+      String arg = argsIterator.next();
+      Matcher matcher = CheckerMain.JVM_OPTS_REGEX.matcher(arg);
       if (matcher.matches()) {
-        String group1 = matcher.group(1);
-        if (group1 == null) {
-          throw new BugInCF("Regex didn't capture group 1: " + CheckerMain.JVM_OPTS_REGEX);
-        }
-        String arg = group1.trim();
-
-        if (!arg.isEmpty()) {
-          matchedArgs.add(arg);
-        }
-
-        args.remove(i);
-      } else {
-        i++;
+        jvmArgs.add(arg);
+        argsIterator.remove();
       }
     }
 
-    return matchedArgs;
+    return jvmArgs;
   }
 
   /**
@@ -282,13 +276,13 @@ public class CheckerMain {
   }
 
   /**
-   * Remove the {@code -processorpath} options and their arguments from args. Return the last
+   * Remove all {@code -processorpath} options and their arguments from args. Return the last
    * argument.
    *
    * @param args a list of arguments to extract from
    * @return the arguments that should be put on the processorpath when calling javac.jar
    */
-  protected static List<String> extractPpOpts(List<String> args) {
+  protected static @Nullable String extractPpOpts(List<String> args) {
     String path = null;
 
     for (int i = 0; i < args.size(); i++) {
@@ -299,12 +293,7 @@ public class CheckerMain {
         i--;
       }
     }
-
-    if (path != null) {
-      return Collections.singletonList(path);
-    } else {
-      return Collections.emptyList();
-    }
+    return path;
   }
 
   /**
