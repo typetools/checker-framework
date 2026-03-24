@@ -283,7 +283,6 @@ public class GenericArrayLocationCriterion implements Criterion {
         if (leaf instanceof ParameterizedTypeTree) {
           leaf = parent;
           parentPath = parentPath.getParentPath();
-          parent = parentPath.getLeaf();
         }
         if (!(leaf instanceof MemberSelectTree)) {
           return false;
@@ -294,7 +293,6 @@ public class GenericArrayLocationCriterion implements Criterion {
           return false;
         }
         locationRemaining.remove(locationRemaining.size() - 1);
-        leaf = fieldAccess.selected;
         pathRemaining = parentPath;
         // TreePath.getPath(pathRemaining.getCompilationUnit(), leaf);
       } else if (loc.step == TypePath.WILDCARD_BOUND

@@ -37,6 +37,9 @@ spotless {
     if (!gradleRunsOnJava22orHigher) {
       doNotFormat += ["tests/**/java22/"]
     }
+    if (!gradleRunsOnJava25orHigher) {
+      doNotFormat += ["tests/**/java25/"]
+    }
   }
 
   format "misc", {
