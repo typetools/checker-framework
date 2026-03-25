@@ -19,6 +19,11 @@ import org.plumelib.util.IPair;
 /** A set of utilities and factory methods useful for working with TestDiagnostics. */
 public class TestDiagnosticUtils {
 
+  /** Do not instantiate. */
+  private TestDiagnosticUtils() {
+    throw new Error("Do not instantiate");
+  }
+
   /** How the diagnostics appear in Java source files. */
   public static final String DIAGNOSTIC_IN_JAVA_REGEX =
       "\\s*(error|fixable-error|warning|fixable-warning|other):\\s*(.*)\\s*";
@@ -448,7 +453,7 @@ public class TestDiagnosticUtils {
         continue;
       }
 
-      diagnostics.add(TestDiagnosticUtils.fromJavaxToolsDiagnostic(diagnosticString));
+      diagnostics.add(fromJavaxToolsDiagnostic(diagnosticString));
     }
 
     return diagnostics;

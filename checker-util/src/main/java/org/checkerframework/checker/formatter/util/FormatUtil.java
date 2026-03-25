@@ -17,6 +17,11 @@ import org.checkerframework.framework.qual.AnnotatedFor;
 @AnnotatedFor("nullness")
 public class FormatUtil {
 
+  /** Do not instantiate. */
+  private FormatUtil() {
+    throw new Error("Do not instantiate");
+  }
+
   /**
    * A representation of a format specifier, which is represented by "%..." in the format string.
    * Indicates how to convert a value into a string.
@@ -236,7 +241,7 @@ public class FormatUtil {
    * @deprecated This method is public only for testing. Use private method {@code
    *     #conversionCharFromFormat(Matcher)}.
    */
-  @Deprecated // used only for testing.  Use conversionCharFromFormat(Matcher).
+  @Deprecated // Not for removal. Used only for testing
   public static char conversionCharFromFormat(String formatSpecifier) {
     Matcher m = fsPattern.matcher(formatSpecifier);
     assert m.find();

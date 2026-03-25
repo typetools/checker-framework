@@ -127,7 +127,7 @@ public final class Annotation {
         if (!aft.isValidValue(val)) {
           if (val instanceof Class[]) {
             Class<?>[] vala = (Class[]) val;
-            List<Class<?>> vall = new ArrayList<Class<?>>(vala.length);
+            List<Class<?>> vall = new ArrayList<>(vala.length);
             for (Class<?> elt : vala) {
               vall.add(elt);
             }

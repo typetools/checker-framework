@@ -13,9 +13,9 @@ import java.lang.annotation.RetentionPolicy;
  * <p>Here is an example:
  *
  * <pre><code>
- * {@literal @}CFComment("interning: factory methods guarantee that all elements are interned")
+ *  {@literal @}CFComment("interning: factory methods guarantee that all elements are interned")
  *  public class MyClass {
- *   {@literal @}CFComment({"nullness: non-null return type is more specific than in superclass",
+ *    {@literal @}CFComment({"nullness: non-null return type is more specific than in superclass",
  *                "signedness: comment related to Signedness type system"})
  *    public String myMethod() { ... }
  * }

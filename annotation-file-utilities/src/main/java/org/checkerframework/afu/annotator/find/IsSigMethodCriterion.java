@@ -162,7 +162,7 @@ public class IsSigMethodCriterion implements Criterion {
     while (simpleType.contains("<")) {
       int bracketIndex = simpleType.lastIndexOf('<');
       String beforeBracket = simpleType.substring(0, bracketIndex);
-      String afterBracket = simpleType.substring(simpleType.indexOf(">", bracketIndex) + 1);
+      String afterBracket = simpleType.substring(simpleType.indexOf('>', bracketIndex) + 1);
       simpleType = beforeBracket + afterBracket;
     }
 
@@ -208,7 +208,7 @@ public class IsSigMethodCriterion implements Criterion {
     if (!matchable) {
       // match with any of the imports
       for (String someImport : context.imports) {
-        String importPrefix = null;
+        String importPrefix;
         if (someImport.contains("*")) {
           // don't include the * in the prefix, should end in .
           // TODO: this is a real bug due to nonnull, though I discovered it manually
