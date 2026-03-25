@@ -628,6 +628,7 @@ public abstract class JavaExpression {
       case RESOURCE_VARIABLE:
       case EXCEPTION_PARAMETER:
       case PARAMETER:
+      case BINDING_VARIABLE:
         return new LocalVariable(ele);
       case FIELD:
       case ENUM_CONSTANT:
@@ -642,9 +643,6 @@ public abstract class JavaExpression {
         }
         return new FieldAccess(fieldAccessExpression, typeOfEle, ele);
       default:
-        if (ElementUtils.isBindingVariable(ele)) {
-          return new LocalVariable(ele);
-        }
         throw new BugInCF(
             "Unexpected kind of VariableTree: kind: %s element: %s", ele.getKind(), ele);
     }

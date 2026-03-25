@@ -3672,8 +3672,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     Tree fromElt;
     // Prevent calling declarationFor on elements we know we don't have the tree for.
 
-    switch (ElementUtils.getKindRecordAsClass(elt)) {
-      case CLASS: // Including RECORD
+    switch (elt.getKind()) {
+      case CLASS:
+      case RECORD:
       case ENUM:
       case INTERFACE:
       case ANNOTATION_TYPE:

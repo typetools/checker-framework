@@ -2399,9 +2399,7 @@ public final class TreeUtils {
    *
    * @param tree a tree to check
    * @return true if the given tree is a switch expression
-   * @deprecated Use {@code tree instanceof SwitchExpressionTree}
    */
-  @Deprecated(forRemoval = true, since = "2026-03-25")
   public static boolean isSwitchExpression(Tree tree) {
     return tree instanceof SwitchExpressionTree;
   }
@@ -2580,11 +2578,11 @@ public final class TreeUtils {
    *
    * @param tree the tree to get the kind for
    * @return true if the tree is of the kind RECORD
+   * @deprecated Use {@link Tree.Kind#RECORD}
    */
+  @Deprecated(forRemoval = true, since = "2026-03-25")
   public static boolean isRecordTree(Tree tree) {
-    Tree.Kind kind = tree.getKind();
-    // Must use String comparison because we may be on an older JDK:
-    return kind.name().equals("RECORD");
+    return tree.getKind() == Tree.Kind.RECORD;
   }
 
   /**
@@ -2594,7 +2592,9 @@ public final class TreeUtils {
    *
    * @param tree the tree to get the kind for
    * @return the kind of the tree, but CLASS if the kind was RECORD
+   * @deprecated Use {@link Tree.Kind#RECORD}
    */
+  @Deprecated(forRemoval = true, since = "2026-03-25")
   public static Tree.Kind getKindRecordAsClass(Tree tree) {
     if (isRecordTree(tree)) {
       return Tree.Kind.CLASS;

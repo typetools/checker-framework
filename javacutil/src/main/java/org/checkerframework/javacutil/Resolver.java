@@ -331,14 +331,12 @@ public class Resolver {
         case LOCAL_VARIABLE:
         case PARAMETER:
         case RESOURCE_VARIABLE:
+        case BINDING_VARIABLE:
           return (VariableElement) res;
         case ENUM_CONSTANT:
         case FIELD:
           return null;
         default:
-          if (ElementUtils.isBindingVariable(res)) {
-            return (VariableElement) res;
-          }
           if (res instanceof VariableElement) {
             throw new BugInCF("unhandled variable ElementKind " + res.getKind());
           }

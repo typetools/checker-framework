@@ -41,7 +41,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.SwitchExpressionScanner;
 import org.checkerframework.javacutil.SwitchExpressionScanner.FunctionalSwitchExpressionScanner;
 import org.checkerframework.javacutil.TreeUtils;
@@ -240,11 +239,12 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
       // the type of a class literal is the type of the "class" element.
       return f.getAnnotatedType(elt);
     }
-    switch (ElementUtils.getKindRecordAsClass(elt)) {
+    switch (elt.getKind()) {
       case METHOD:
       case CONSTRUCTOR: // x0.super() in anoymous classes
       case PACKAGE: // "java.lang" in new java.lang.Short("2")
       case CLASS: // o instanceof MyClass.InnerClass
+      case RECORD:
       case ENUM:
       case INTERFACE: // o instanceof MyClass.InnerInterface
       case ANNOTATION_TYPE:

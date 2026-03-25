@@ -1504,9 +1504,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     boolean isField = false;
     if (getCurrentPath().getParentPath() != null) {
-      Tree.Kind kind = TreeUtils.getKindRecordAsClass(getCurrentPath().getParentPath().getLeaf());
-      // CLASS includes records.
-      if (kind == Tree.Kind.CLASS || kind == Tree.Kind.INTERFACE || kind == Tree.Kind.ENUM) {
+      Tree.Kind kind = getCurrentPath().getParentPath().getLeaf().getKind();
+      if (kind == Tree.Kind.CLASS
+          || kind == Tree.Kind.INTERFACE
+          || kind == Tree.Kind.ENUM
+          || kind == Tree.Kind.RECORD) {
         isField = true;
       }
     }
@@ -4311,6 +4313,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         case LOCAL_VARIABLE:
         case RESOURCE_VARIABLE:
         case PARAMETER:
+        case BINDING_VARIABLE:
           node = new LocalVariableNode(tree);
           break;
         case PACKAGE:
@@ -4319,11 +4322,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         default:
           if (ElementUtils.isTypeDeclaration(element)) {
             node = new ClassNameNode(tree);
-            break;
-          } else if (ElementUtils.isBindingVariable(element)) {
-            // Note: BINDING_VARIABLE should be added as a direct case above when
-            // instanceof pattern matching and Java15 are supported.
-            node = new LocalVariableNode(tree);
             break;
           }
           throw new BugInCF("bad element kind " + element.getKind());

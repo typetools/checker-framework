@@ -25,6 +25,7 @@ import com.sun.source.tree.SwitchExpressionTree;
 import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.tree.YieldTree;
@@ -117,8 +118,7 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
           trees.remove(constructor.getIdentifier());
         }
       }
-      // RECORD was added in Java 14, so use string comparison to be JDK 8,11 compatible:
-    } else if (tree.getKind().name().equals("RECORD")) {
+    } else if (tree.getKind() == Kind.RECORD) {
       // A record like:
       //   record MyRec(String myField) {}
       // will be expanded by javac to:
