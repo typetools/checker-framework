@@ -47,6 +47,7 @@ import com.sun.source.tree.PrimitiveTypeTree;
 import com.sun.source.tree.ProvidesTree;
 import com.sun.source.tree.RequiresTree;
 import com.sun.source.tree.ReturnTree;
+import com.sun.source.tree.SwitchExpressionTree;
 import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.ThrowTree;
@@ -80,9 +81,6 @@ public abstract class TreeScannerWithDefaults extends TreeScanner<Void, Void> {
   public Void scan(Tree tree, Void unused) {
     if (tree != null && SystemUtil.jreVersion >= 14) {
       switch (tree.getKind().name()) {
-        case "SWITCH_EXPRESSION":
-          visitSwitchExpression17(tree, unused);
-          return null;
         case "YIELD":
           visitYield17(tree, unused);
           return null;
@@ -185,7 +183,8 @@ public abstract class TreeScannerWithDefaults extends TreeScanner<Void, Void> {
    * @param p null
    * @return null
    */
-  public Void visitSwitchExpression17(Tree tree, Void p) {
+  @Override
+  public Void visitSwitchExpression(SwitchExpressionTree tree, Void p) {
     defaultAction(tree);
     return super.scan(tree, p);
   }

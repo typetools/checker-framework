@@ -11,6 +11,7 @@ import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParenthesizedTree;
+import com.sun.source.tree.SwitchExpressionTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
@@ -22,7 +23,6 @@ import java.util.StringJoiner;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.javacutil.TreeUtilsAfterJava11.SwitchExpressionUtils;
 import org.plumelib.util.IPair;
 
 /**
@@ -323,6 +323,17 @@ public final class TreePathUtil {
       case PARENTHESIZED:
       case CASE:
         return getContextForPolyExpression(parentPath, isLambdaOrMethodRef);
+      case SWITCH_EXPRESSION:
+        @SuppressWarnings("interning:not.interned") // AST node comparison
+        boolean switchIsLeaf =
+            ((SwitchExpressionTree) parent).getExpression() == treePath.getLeaf();
+        if (switchIsLeaf) {
+          // The assignment context for the switch selector expression is simply boolean. No point
+          // in going on.
+          return null;
+        }
+        // Otherwise use the context of the ConditionalExpressionTree.
+        return getContextForPolyExpression(parentPath, isLambdaOrMethodRef);
       default:
         if (TreeUtils.isYield(parent)) {
           // A yield statement is only legal within a switch expression. Walk up the path
@@ -333,18 +344,6 @@ public final class TreePathUtil {
               : "@AssumeAssertion(nullness): yield statements must be enclosed in a CaseTree";
           parentPath = pathToCase.getParentPath();
           parent = parentPath.getLeaf();
-        }
-        if (TreeUtils.isSwitchExpression(parent)) {
-          @SuppressWarnings("interning:not.interned") // AST node comparison
-          boolean switchIsLeaf = SwitchExpressionUtils.getExpression(parent) == treePath.getLeaf();
-          if (switchIsLeaf) {
-            // The assignment context for the switch selector expression is simply
-            // boolean.
-            // No point in going on.
-            return null;
-          }
-          // Otherwise use the context of the ConditionalExpressionTree.
-          return getContextForPolyExpression(parentPath, isLambdaOrMethodRef);
         }
         // 11 Tree.Kinds are CompoundAssignmentTrees,
         // so use instanceof rather than listing all 11.

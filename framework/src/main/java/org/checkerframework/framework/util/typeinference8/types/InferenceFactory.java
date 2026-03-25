@@ -11,6 +11,7 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.SwitchExpressionTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
@@ -324,17 +325,15 @@ public class InferenceFactory {
     argumentTree = TreeUtils.withoutParens(argumentTree);
     if (argumentTree == path.getLeaf()) {
       return true;
-    } else if (argumentTree instanceof ConditionalExpressionTree) {
-      ConditionalExpressionTree conditionalExpressionTree =
-          (ConditionalExpressionTree) argumentTree;
+    } else if (argumentTree instanceof ConditionalExpressionTree conditionalExpressionTree) {
       return isArgument(path, conditionalExpressionTree.getTrueExpression())
           || isArgument(path, conditionalExpressionTree.getFalseExpression());
-    } else if (TreeUtils.isSwitchExpression(argumentTree)) {
+    } else if (argumentTree instanceof SwitchExpressionTree switchExpressionTree) {
       SwitchExpressionScanner<Boolean, Void> scanner =
           new FunctionalSwitchExpressionScanner<>(
               (tree, unused) -> isArgument(path, tree),
               (r1, r2) -> (r1 != null && r1) || (r2 != null && r2));
-      return scanner.scanSwitchExpression(argumentTree, null);
+      return scanner.scanSwitchExpression(switchExpressionTree, null);
     }
     return false;
   }

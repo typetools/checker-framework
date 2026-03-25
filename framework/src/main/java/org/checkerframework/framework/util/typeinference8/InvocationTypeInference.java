@@ -6,6 +6,7 @@ import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.SwitchExpressionTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
@@ -524,17 +525,17 @@ public class InvocationTypeInference {
         c.addAll(createAdditionalArgConstraints(conditional.getTrueExpression(), fi, map));
         c.addAll(createAdditionalArgConstraints(conditional.getFalseExpression(), fi, map));
         break;
+      case SWITCH_EXPRESSION:
+        SwitchExpressionScanner<Void, Void> scanner =
+            new FunctionalSwitchExpressionScanner<>(
+                (ExpressionTree tree, Void unused) -> {
+                  c.addAll(createAdditionalArgConstraints(tree, fi, map));
+                  return null;
+                },
+                (c1, c2) -> null);
+        scanner.scanSwitchExpression((SwitchExpressionTree) ei, null);
+        break;
       default:
-        if (TreeUtils.isSwitchExpression(ei)) {
-          SwitchExpressionScanner<Void, Void> scanner =
-              new FunctionalSwitchExpressionScanner<>(
-                  (ExpressionTree tree, Void unused) -> {
-                    c.addAll(createAdditionalArgConstraints(tree, fi, map));
-                    return null;
-                  },
-                  (c1, c2) -> null);
-          scanner.scanSwitchExpression(ei, null);
-        }
         // no constraints
     }
 
@@ -583,17 +584,17 @@ public class InvocationTypeInference {
         c.addAll(createAdditionalArgConstraintsNoLambda(conditional.getTrueExpression()));
         c.addAll(createAdditionalArgConstraintsNoLambda(conditional.getFalseExpression()));
         break;
+      case SWITCH_EXPRESSION:
+        SwitchExpressionScanner<Void, Void> scanner =
+            new FunctionalSwitchExpressionScanner<>(
+                (ExpressionTree tree, Void unused) -> {
+                  c.addAll(createAdditionalArgConstraintsNoLambda(tree));
+                  return null;
+                },
+                (c1, c2) -> null);
+        scanner.scanSwitchExpression((SwitchExpressionTree) expression, null);
+        break;
       default:
-        if (TreeUtils.isSwitchExpression(expression)) {
-          SwitchExpressionScanner<Void, Void> scanner =
-              new FunctionalSwitchExpressionScanner<>(
-                  (ExpressionTree tree, Void unused) -> {
-                    c.addAll(createAdditionalArgConstraintsNoLambda(tree));
-                    return null;
-                  },
-                  (c1, c2) -> null);
-          scanner.scanSwitchExpression(expression, null);
-        }
         // no constraints
     }
 
@@ -645,16 +646,15 @@ public class InvocationTypeInference {
         // applicability.
         return notPertinentToApplicability(conditional.getTrueExpression(), formalParameterType)
             || notPertinentToApplicability(conditional.getFalseExpression(), formalParameterType);
+      case SWITCH_EXPRESSION:
+        SwitchExpressionScanner<Boolean, Void> scanner =
+            new FunctionalSwitchExpressionScanner<>(
+                (ExpressionTree tree, Void unused) ->
+                    notPertinentToApplicability(tree, formalParameterType),
+                (r1, r2) -> (r1 != null && r1) || (r2 != null && r2));
+        ;
+        return scanner.scanSwitchExpression((SwitchExpressionTree) expressionTree, null);
       default:
-        if (TreeUtils.isSwitchExpression(expressionTree)) {
-          SwitchExpressionScanner<Boolean, Void> scanner =
-              new FunctionalSwitchExpressionScanner<>(
-                  (ExpressionTree tree, Void unused) ->
-                      notPertinentToApplicability(tree, formalParameterType),
-                  (r1, r2) -> (r1 != null && r1) || (r2 != null && r2));
-          ;
-          return scanner.scanSwitchExpression(expressionTree, null);
-        }
         return false;
     }
   }

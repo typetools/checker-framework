@@ -21,6 +21,7 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.PrimitiveTypeTree;
+import com.sun.source.tree.SwitchExpressionTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.UnaryTree;
@@ -43,7 +44,6 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.SwitchExpressionScanner;
 import org.checkerframework.javacutil.SwitchExpressionScanner.FunctionalSwitchExpressionScanner;
-import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -183,14 +183,6 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
     return AnnotatedTypes.leastUpperBound(f, trueType, falseType, alub);
   }
 
-  @Override
-  public AnnotatedTypeMirror defaultAction(Tree tree, AnnotatedTypeFactory f) {
-    if (SystemUtil.jreVersion >= 14 && tree.getKind().name().equals("SWITCH_EXPRESSION")) {
-      return visitSwitchExpressionTree17(tree, f);
-    }
-    return super.defaultAction(tree, f);
-  }
-
   /**
    * Compute the type of the switch expression tree.
    *
@@ -199,8 +191,10 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
    * @param f an AnnotatedTypeFactory
    * @return the type of the switch expression
    */
-  public AnnotatedTypeMirror visitSwitchExpressionTree17(
-      Tree switchExpressionTree, AnnotatedTypeFactory f) {
+  @Override
+  public AnnotatedTypeMirror visitSwitchExpression(
+      SwitchExpressionTree switchExpressionTree, AnnotatedTypeFactory f) {
+
     TypeMirror switchTypeMirror = TreeUtils.typeOf(switchExpressionTree);
     SwitchExpressionScanner<AnnotatedTypeMirror, Void> luber =
         new FunctionalSwitchExpressionScanner<>(

@@ -30,6 +30,7 @@ import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.ReturnTree;
+import com.sun.source.tree.SwitchExpressionTree;
 import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeCastTree;
@@ -429,13 +430,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
     if (getCurrentPath() != null) {
       this.atypeFactory.setVisitorTreePath(new TreePath(getCurrentPath(), tree));
-    }
-    // TODO: use JCP to add version-specific behavior
-    if (tree != null
-        && SystemUtil.jreVersion >= 14
-        && tree.getKind().name().equals("SWITCH_EXPRESSION")) {
-      visitSwitchExpression17(tree);
-      return null;
     }
     return super.scan(tree, p);
   }
@@ -2481,8 +2475,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * null)} so that the blocks and statements in the cases are checked.
    *
    * @param switchExpressionTree a {@code SwitchExpressionTree}
+   * @param unused not used
+   * @return void
    */
-  public void visitSwitchExpression17(Tree switchExpressionTree) {
+  @Override
+  public Void visitSwitchExpression(SwitchExpressionTree switchExpressionTree, Void unused) {
 
     // boilerplate
     long startMillis = System.currentTimeMillis();
@@ -2493,7 +2490,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       AnnotatedTypeMirror switchType = atypeFactory.getAnnotatedType(switchExpressionTree);
       SwitchExpressionScanner<Void, Void> scanner =
           new FunctionalSwitchExpressionScanner<>(
-              (ExpressionTree valueTree, Void unused) -> {
+              (ExpressionTree valueTree, Void u) -> {
                 BaseTypeVisitor.this.commonAssignmentCheck(
                     switchType, valueTree, "switch.expression");
                 return null;
@@ -2505,6 +2502,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     super.scan(switchExpressionTree, null);
 
     checkSlowTypechecking(switchExpressionTree, startSlowTypeCheckingTree, startMillis);
+    return null;
   }
 
   // **********************************************************************

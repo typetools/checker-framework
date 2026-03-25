@@ -25,6 +25,7 @@ import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.PrimitiveTypeTree;
+import com.sun.source.tree.SwitchExpressionTree;
 import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.ThrowTree;
@@ -61,7 +62,6 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.TreeUtilsAfterJava11.SwitchExpressionUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /** The visitor for the nullness type-system. */
@@ -724,11 +724,11 @@ public class NullnessVisitor
   }
 
   @Override
-  public void visitSwitchExpression17(Tree switchExprTree) {
-    if (!TreeUtils.hasNullCaseLabel(switchExprTree)) {
-      checkForNullability(SwitchExpressionUtils.getExpression(switchExprTree), SWITCHING_NULLABLE);
+  public Void visitSwitchExpression(SwitchExpressionTree switchExpressionTree, Void unused) {
+    if (!TreeUtils.hasNullCaseLabel(switchExpressionTree)) {
+      checkForNullability(switchExpressionTree.getExpression(), SWITCHING_NULLABLE);
     }
-    super.visitSwitchExpression17(switchExprTree);
+    return super.visitSwitchExpression(switchExpressionTree, unused);
   }
 
   @Override

@@ -20,6 +20,7 @@ import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.StatementTree;
+import com.sun.source.tree.SwitchExpressionTree;
 import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.Tree;
@@ -29,7 +30,6 @@ import java.util.HashSet;
 import java.util.Set;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TreeUtilsAfterJava11.BindingPatternUtils;
-import org.checkerframework.javacutil.TreeUtilsAfterJava11.SwitchExpressionUtils;
 
 /**
  * After this visitor visits a tree, {@link #getTrees} returns all the trees that should match with
@@ -256,10 +256,10 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
   }
 
   @Override
-  public Void visitSwitchExpression17(Tree tree, Void p) {
-    super.visitSwitchExpression17(tree, p);
+  public Void visitSwitchExpression(SwitchExpressionTree tree, Void unused) {
+    super.visitSwitchExpression(tree, unused);
     // javac surrounds switch expression in a ParenthesizedTree but JavaParser does not.
-    trees.remove(SwitchExpressionUtils.getExpression(tree));
+    trees.remove(tree.getExpression());
     return null;
   }
 

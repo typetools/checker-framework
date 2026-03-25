@@ -27,6 +27,7 @@ import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.PrimitiveTypeTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.StatementTree;
+import com.sun.source.tree.SwitchExpressionTree;
 import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
@@ -98,9 +99,8 @@ import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.dataflow.qual.Pure;
-import org.checkerframework.javacutil.TreeUtilsAfterJava11.CaseUtils;
 import org.checkerframework.javacutil.TreeUtilsAfterJava11.JCVariableDeclUtils;
-import org.checkerframework.javacutil.TreeUtilsAfterJava11.SwitchExpressionUtils;
+import org.checkerframework.javacutil.TreeUtilsAfterJava17.CaseUtils;
 import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.UniqueIdMap;
 
@@ -2365,10 +2365,10 @@ public final class TreeUtils {
       return false;
     }
     List<? extends CaseTree> cases;
-    if (isSwitchStatement(switchTree)) {
-      cases = ((SwitchTree) switchTree).getCases();
+    if (switchTree instanceof SwitchExpressionTree switchExpressionTree) {
+      cases = switchExpressionTree.getCases();
     } else {
-      cases = SwitchExpressionUtils.getCases(switchTree);
+      cases = ((SwitchTree) switchTree).getCases();
     }
     for (CaseTree caseTree : cases) {
       List<? extends Tree> labels = CaseUtils.getLabels(caseTree);
