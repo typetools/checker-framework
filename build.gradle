@@ -839,7 +839,7 @@ subprojects {
           "org.checkerframework.checker.interning.InterningChecker",
           [
             "-Astubs=javax-lang-model-element-name.astub",
-            // Because these projects use --release=11, the stubparsers issues warnings like:
+            // Because these projects use --release=11, the stubparser issues warnings like:
             //  warning: javax-lang-model-element-name.astub:(line 11,col 1): Package not found: com.sun.tools.javac.util
             //  so just suppress them.
             "-AstubNoWarnIfNotFound"
