@@ -7,6 +7,7 @@ import com.sun.source.tree.InstanceOfTree;
 import com.sun.source.tree.SwitchExpressionTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.tree.YieldTree;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -310,22 +311,16 @@ public class TreeUtilsAfterJava11 {
       throw new AssertionError("Cannot be instantiated.");
     }
 
-    /** The {@code YieldTree.getValue} method for Java 13 and higher; null otherwise. */
-    private static @Nullable Method GET_VALUE = null;
-
     /**
      * Returns the value (expression) for {@code yieldTree}.
      *
      * @param yieldTree the yield tree
      * @return the value (expression) for {@code yieldTree}
+     * @deprecated Use {@link YieldTree#getValue()}
      */
+    @Deprecated(forRemoval = true, since = "2026-03-25")
     public static ExpressionTree getValue(Tree yieldTree) {
-      assertVersionAtLeast(13);
-      if (GET_VALUE == null) {
-        Class<?> yieldTreeClass = classForName("com.sun.source.tree.YieldTree");
-        GET_VALUE = getMethod(yieldTreeClass, "getValue");
-      }
-      return (ExpressionTree) invokeNonNullResult(GET_VALUE, yieldTree);
+      return ((YieldTree) yieldTree).getValue();
     }
   }
 
@@ -338,11 +333,6 @@ public class TreeUtilsAfterJava11 {
     }
 
     /**
-     * The {@code JCVariableDecl.declaredUsingVar} method for Java 16 and higher; null otherwise.
-     */
-    private static @Nullable Method DECLARED_USING_VAR = null;
-
-    /**
      * For Java 17+, returns true if {@code variableTree} was declared using {@code var}. Otherwise,
      * returns false.
      *
@@ -351,17 +341,12 @@ public class TreeUtilsAfterJava11 {
      *
      * @param variableTree a variable tree
      * @return true if {@code variableTree} was declared using {@code var} and using Java 17+
+     * @deprecated Use {@link JCVariableDecl#declaredUsingVar()}
      */
+    @Deprecated(forRemoval = true, since = "2026-03-25")
     @Pure
     public static boolean declaredUsingVar(JCVariableDecl variableTree) {
-      if (sourceVersionNumber < 16) {
-        return false;
-      }
-      if (DECLARED_USING_VAR == null) {
-        DECLARED_USING_VAR = getMethod(JCVariableDecl.class, "declaredUsingVar");
-      }
-      Boolean result = (Boolean) invoke(DECLARED_USING_VAR, variableTree);
-      return result != null ? result : false;
+      return variableTree.declaredUsingVar();
     }
   }
 

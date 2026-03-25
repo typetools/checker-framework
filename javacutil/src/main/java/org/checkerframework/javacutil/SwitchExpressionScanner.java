@@ -6,12 +6,12 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.SwitchExpressionTree;
 import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.YieldTree;
 import com.sun.source.util.TreeScanner;
 import java.util.List;
 import java.util.function.BiFunction;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.javacutil.TreeUtilsAfterJava11.YieldUtils;
 
 /**
  * A class that visits each result expression of a switch expression and calls {@link
@@ -116,11 +116,11 @@ public abstract class SwitchExpressionScanner<R, P> extends TreeScanner<R, P> {
       if (tree == null) {
         return null;
       }
-      if (tree.getKind().name().equals("SWITCH_EXPRESSION")) {
+      if (tree instanceof SwitchExpressionTree) {
         // Don't scan nested switch expressions.
         return null;
-      } else if (tree.getKind().name().equals("YIELD")) {
-        ExpressionTree value = YieldUtils.getValue(tree);
+      } else if (tree instanceof YieldTree yieldTree) {
+        ExpressionTree value = yieldTree.getValue();
         return visitSwitchResultExpression(value, p);
       }
       return super.scan(tree, p);

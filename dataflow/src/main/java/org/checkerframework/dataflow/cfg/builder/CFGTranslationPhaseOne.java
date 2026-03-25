@@ -55,6 +55,7 @@ import com.sun.source.tree.UnionTypeTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.tree.WildcardTree;
+import com.sun.source.tree.YieldTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 import com.sun.source.util.Trees;
@@ -175,7 +176,6 @@ import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TreeUtilsAfterJava11.BindingPatternUtils;
 import org.checkerframework.javacutil.TreeUtilsAfterJava11.InstanceOfUtils;
-import org.checkerframework.javacutil.TreeUtilsAfterJava11.YieldUtils;
 import org.checkerframework.javacutil.TreeUtilsAfterJava17.CaseUtils;
 import org.checkerframework.javacutil.TreeUtilsAfterJava17.DeconstructionPatternUtils;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
@@ -571,8 +571,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
             return visitBindingPattern17(path.getLeaf(), p);
           case "SWITCH_EXPRESSION":
             return visitSwitchExpression17(tree, p);
-          case "YIELD":
-            return visitYield17(tree, p);
           case "DECONSTRUCTION_PATTERN":
             return visitDeconstructionPattern21(tree, p);
           case "ANY_PATTERN":
@@ -4482,8 +4480,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @param p parameter
    * @return the result of visiting the switch expression tree
    */
-  public Node visitYield17(Tree yieldTree, Void p) {
-    ExpressionTree resultExpression = YieldUtils.getValue(yieldTree);
+  @Override
+  public Node visitYield(YieldTree yieldTree, Void p) {
+    ExpressionTree resultExpression = yieldTree.getValue();
     switchBuilder.buildSwitchExpressionResult(resultExpression);
     return null;
   }

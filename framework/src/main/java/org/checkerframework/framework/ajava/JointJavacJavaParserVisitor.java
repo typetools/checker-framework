@@ -157,6 +157,7 @@ import com.sun.source.tree.UsesTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.tree.WildcardTree;
+import com.sun.source.tree.YieldTree;
 import com.sun.source.util.SimpleTreeVisitor;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -167,7 +168,6 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TreeUtilsAfterJava11.BindingPatternUtils;
 import org.checkerframework.javacutil.TreeUtilsAfterJava11.InstanceOfUtils;
-import org.checkerframework.javacutil.TreeUtilsAfterJava11.YieldUtils;
 import org.checkerframework.javacutil.TreeUtilsAfterJava17.CaseUtils;
 
 /**
@@ -2456,10 +2456,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
     switch (tree.getKind().name()) {
       case "BINDING_PATTERN":
         return visitBindingPattern17(tree, node);
-      case "YIELD":
-        return visitYield17(tree, node);
     }
-
     return super.defaultAction(tree, node);
   }
 
@@ -2470,12 +2467,13 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
    * @param node a YieldStmt, typed as Node to be backward-compatible
    * @return nothing
    */
-  public Void visitYield17(Tree tree, Node node) {
+  @Override
+  public Void visitYield(YieldTree tree, Node node) {
     if (node instanceof YieldStmt) {
       YieldStmt yieldStmt = castNode(YieldStmt.class, node, tree);
       processYield(tree, yieldStmt);
 
-      YieldUtils.getValue(tree).accept(this, yieldStmt.getExpression());
+      tree.getValue().accept(this, yieldStmt.getExpression());
       return null;
     }
     // JavaParser does not parse yields correctly:

@@ -99,7 +99,6 @@ import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.dataflow.qual.Pure;
-import org.checkerframework.javacutil.TreeUtilsAfterJava11.JCVariableDeclUtils;
 import org.checkerframework.javacutil.TreeUtilsAfterJava17.CaseUtils;
 import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.UniqueIdMap;
@@ -2450,7 +2449,7 @@ public final class TreeUtils {
    */
   public static boolean isVariableTreeDeclaredUsingVar(VariableTree variableTree) {
     JCVariableDecl variableDecl = (JCVariableDecl) variableTree;
-    if (JCVariableDeclUtils.declaredUsingVar(variableDecl)) {
+    if (variableDecl.declaredUsingVar()) {
       return true;
     }
     JCExpression type = variableDecl.vartype;
