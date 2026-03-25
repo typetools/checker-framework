@@ -323,6 +323,16 @@ public final class TreePathUtil {
       case PARENTHESIZED:
       case CASE:
         return getContextForPolyExpression(parentPath, isLambdaOrMethodRef);
+      case YIELD:
+        // A yield statement is only legal within a switch expression. Walk up the path
+        // to the case tree instead of the switch expression tree so the code remains
+        // backward compatible.
+        TreePath pathToCase = pathTillOfKind(parentPath, Kind.CASE);
+        assert pathToCase != null
+            : "@AssumeAssertion(nullness): yield statements must be enclosed in a CaseTree";
+        parentPath = pathToCase.getParentPath();
+        parent = parentPath.getLeaf();
+        return getContextForPolyExpression(parentPath, isLambdaOrMethodRef);
       case SWITCH_EXPRESSION:
         @SuppressWarnings("interning:not.interned") // AST node comparison
         boolean switchIsLeaf =
@@ -335,16 +345,6 @@ public final class TreePathUtil {
         // Otherwise use the context of the ConditionalExpressionTree.
         return getContextForPolyExpression(parentPath, isLambdaOrMethodRef);
       default:
-        if (TreeUtils.isYield(parent)) {
-          // A yield statement is only legal within a switch expression. Walk up the path
-          // to the case tree instead of the switch expression tree so the code remains
-          // backward compatible.
-          TreePath pathToCase = pathTillOfKind(parentPath, Kind.CASE);
-          assert pathToCase != null
-              : "@AssumeAssertion(nullness): yield statements must be enclosed in a CaseTree";
-          parentPath = pathToCase.getParentPath();
-          parent = parentPath.getLeaf();
-        }
         // 11 Tree.Kinds are CompoundAssignmentTrees,
         // so use instanceof rather than listing all 11.
         if (parent instanceof CompoundAssignmentTree) {

@@ -568,8 +568,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         switch (tree.getKind().name()) {
           case "BINDING_PATTERN":
             return visitBindingPattern17(path.getLeaf(), p);
-          case "SWITCH_EXPRESSION":
-            return visitSwitchExpression17(tree, p);
           case "DECONSTRUCTION_PATTERN":
             return visitDeconstructionPattern21(tree, p);
           case "ANY_PATTERN":
@@ -2192,7 +2190,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
                 env.getTypeUtils()));
       }
 
-      if (!TreeUtils.isSwitchStatement(switchTree)) {
+      if (switchTree instanceof SwitchExpressionTree switchExpressionTree) {
         // It's a switch expression, not a switch statement.
         IdentifierTree switchExprVarUseTree = treeBuilder.buildVariableUse(switchExprVarTree);
         handleArtificialTree(switchExprVarUseTree);
@@ -2202,7 +2200,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         extendWithNode(switchExprVarUseNode);
         SwitchExpressionNode switchExpressionNode =
             new SwitchExpressionNode(
-                TreeUtils.typeOf(switchTree), switchTree, switchExprVarUseNode);
+                TreeUtils.typeOf(switchTree), switchExpressionTree, switchExprVarUseNode);
         extendWithNode(switchExpressionNode);
         return switchExpressionNode;
       } else {
@@ -2387,7 +2385,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @param p parameter
    * @return the result of visiting the switch expression tree
    */
-  public Node visitSwitchExpression17(Tree switchExpressionTree, Void p) {
+  @Override
+  public Node visitSwitchExpression(SwitchExpressionTree switchExpressionTree, Void p) {
     SwitchBuilder oldSwitchBuilder = switchBuilder;
     switchBuilder = new SwitchBuilder(switchExpressionTree);
     Node result = switchBuilder.build();

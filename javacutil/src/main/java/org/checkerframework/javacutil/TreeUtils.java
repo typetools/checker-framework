@@ -36,6 +36,7 @@ import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.UnionTypeTree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.tree.YieldTree;
 import com.sun.source.util.SimpleTreeVisitor;
 import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.code.Flags;
@@ -2395,9 +2396,11 @@ public final class TreeUtils {
    *
    * @param tree a tree to check
    * @return true if the given tree is a switch expression
+   * @deprecated Use {@code tree instanceof SwitchExpressionTree}
    */
+  @Deprecated(forRemoval = true, since = "2026-03-25")
   public static boolean isSwitchExpression(Tree tree) {
-    return tree.getKind().name().equals("SWITCH_EXPRESSION");
+    return tree instanceof SwitchExpressionTree;
   }
 
   /**
@@ -2405,9 +2408,11 @@ public final class TreeUtils {
    *
    * @param tree a tree to check
    * @return true if the given tree is a yield expression
+   * @deprecated Use {@code tree instanceof YieldTree}
    */
+  @Deprecated(forRemoval = true, since = "2026-03-25")
   public static boolean isYield(Tree tree) {
-    return tree.getKind().name().equals("YIELD");
+    return tree instanceof YieldTree;
   }
 
   /**

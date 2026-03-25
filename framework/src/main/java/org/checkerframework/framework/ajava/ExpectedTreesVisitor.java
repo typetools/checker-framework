@@ -26,6 +26,7 @@ import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
+import com.sun.source.tree.YieldTree;
 import java.util.HashSet;
 import java.util.Set;
 import org.checkerframework.javacutil.TreeUtils;
@@ -405,7 +406,7 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
   }
 
   @Override
-  public Void visitYield17(Tree tree, Void p) {
+  public Void visitYield(YieldTree tree, Void p) {
     // JavaParser does not parse yields correctly:
     // https://github.com/javaparser/javaparser/issues/3364
     // So skip yields.

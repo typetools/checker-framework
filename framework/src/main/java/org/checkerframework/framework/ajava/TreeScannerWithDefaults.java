@@ -61,6 +61,7 @@ import com.sun.source.tree.UsesTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.tree.WildcardTree;
+import com.sun.source.tree.YieldTree;
 import com.sun.source.util.TreeScanner;
 import org.checkerframework.javacutil.SystemUtil;
 
@@ -81,9 +82,6 @@ public abstract class TreeScannerWithDefaults extends TreeScanner<Void, Void> {
   public Void scan(Tree tree, Void unused) {
     if (tree != null && SystemUtil.jreVersion >= 14) {
       switch (tree.getKind().name()) {
-        case "YIELD":
-          visitYield17(tree, unused);
-          return null;
         case "BINDING_PATTERN":
           visitBindingPattern17(tree, unused);
           return null;
@@ -477,15 +475,10 @@ public abstract class TreeScannerWithDefaults extends TreeScanner<Void, Void> {
     return super.visitErroneous(tree, p);
   }
 
-  /**
-   * Visit a yield tree.
-   *
-   * @param tree a yield tree
-   * @param p null
-   * @return null
-   */
-  public Void visitYield17(Tree tree, Void p) {
+  @Override
+  public Void visitYield(YieldTree tree, Void p) {
     defaultAction(tree);
-    return super.scan(tree, p);
+
+    return super.visitYield(tree, p);
   }
 }

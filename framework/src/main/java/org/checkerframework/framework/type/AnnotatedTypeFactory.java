@@ -4745,12 +4745,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         // Get the functional interface type of the whole switch expression.
         Tree switchTree = parentPath.getParentPath().getLeaf();
         return getFunctionalInterfaceType(switchTree);
+      case YIELD:
+        TreePath pathToCase = TreePathUtil.pathTillOfKind(parentPath, Kind.CASE);
+        return getFunctionalInterfaceType(pathToCase.getParentPath().getLeaf());
 
       default:
-        if (parentTree.getKind().toString().equals("YIELD")) {
-          TreePath pathToCase = TreePathUtil.pathTillOfKind(parentPath, Kind.CASE);
-          return getFunctionalInterfaceType(pathToCase.getParentPath().getLeaf());
-        }
         throw new BugInCF(
             "Could not find functional interface from assignment context. "
                 + "Unexpected tree type: "
