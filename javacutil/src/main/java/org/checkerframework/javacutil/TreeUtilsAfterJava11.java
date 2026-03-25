@@ -358,25 +358,18 @@ public class TreeUtilsAfterJava11 {
       throw new AssertionError("Cannot be instantiated.");
     }
 
-    /** The {@code InstanceOfTree.getPattern} method for Java 16 and higher; null otherwise. */
-    private static @Nullable Method GET_PATTERN = null;
-
     /**
      * Returns the pattern of {@code instanceOfTree} tree. Returns null if the instanceof does not
      * have a pattern, including if the JDK version does not support instance-of patterns.
      *
      * @param instanceOfTree the {@link InstanceOfTree} whose pattern is returned
      * @return the {@code PatternTree} of {@code instanceOfTree} or null if it doesn't exist
+     * @deprecated Use {@link InstanceOfTree#getPattern()}
      */
+    @Deprecated(forRemoval = true, since = "2026-03-25")
     @Pure
     public static @Nullable Tree getPattern(InstanceOfTree instanceOfTree) {
-      if (sourceVersionNumber < 16) {
-        return null;
-      }
-      if (GET_PATTERN == null) {
-        GET_PATTERN = getMethod(InstanceOfTree.class, "getPattern");
-      }
-      return (Tree) invoke(GET_PATTERN, instanceOfTree);
+      return instanceOfTree.getPattern();
     }
   }
 

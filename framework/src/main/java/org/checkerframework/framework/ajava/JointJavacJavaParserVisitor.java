@@ -167,7 +167,6 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TreeUtilsAfterJava11.BindingPatternUtils;
-import org.checkerframework.javacutil.TreeUtilsAfterJava11.InstanceOfUtils;
 import org.checkerframework.javacutil.TreeUtilsAfterJava17.CaseUtils;
 
 /**
@@ -966,7 +965,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
     processInstanceOf(javacTree, node);
     javacTree.getExpression().accept(this, node.getExpression());
     if (node.getPattern().isPresent()) {
-      Tree bindingPattern = InstanceOfUtils.getPattern(javacTree);
+      Tree bindingPattern = javacTree.getPattern();
       visitBindingPattern17(bindingPattern, node.getPattern().get());
     } else {
       javacTree.getType().accept(this, node.getType());
