@@ -1,5 +1,6 @@
 package org.checkerframework.javacutil;
 
+import com.sun.source.tree.BindingPatternTree;
 import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.CaseTree.CaseKind;
 import com.sun.source.tree.ExpressionTree;
@@ -9,12 +10,8 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.YieldTree;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.List;
-import javax.lang.model.SourceVersion;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.dataflow.qual.Pure;
 
 /**
@@ -28,10 +25,6 @@ public class TreeUtilsAfterJava11 {
     throw new AssertionError("Cannot be instantiated.");
   }
 
-  /** The latest source version supported by this compiler. */
-  private static final int sourceVersionNumber =
-      Integer.parseInt(SourceVersion.latest().toString().substring("RELEASE_".length()));
-
   /** Utility methods for accessing {@code BindingPatternTree} methods. */
   public static class BindingPatternUtils {
 
@@ -40,22 +33,16 @@ public class TreeUtilsAfterJava11 {
       throw new AssertionError("Cannot be instantiated.");
     }
 
-    /** The {@code BindingPatternTree.getVariable} method for Java 16 and higher; null otherwise. */
-    private static @Nullable Method GET_VARIABLE = null;
-
     /**
      * Returns the binding variable of {@code bindingPatternTree}.
      *
      * @param bindingPatternTree the BindingPatternTree whose binding variable is returned
      * @return the binding variable of {@code bindingPatternTree}
+     * @deprecated Use {@link BindingPatternTree#getVariable()}
      */
+    @Deprecated(forRemoval = true, since = "2026-03-25")
     public static VariableTree getVariable(Tree bindingPatternTree) {
-      assertVersionAtLeast(16);
-      if (GET_VARIABLE == null) {
-        Class<?> bindingPatternClass = classForName("com.sun.source.tree.BindingPatternTree");
-        GET_VARIABLE = getMethod(bindingPatternClass, "getVariable");
-      }
-      return (VariableTree) invokeNonNullResult(GET_VARIABLE, bindingPatternTree);
+      return ((BindingPatternTree) bindingPatternTree).getVariable();
     }
   }
 
@@ -370,85 +357,6 @@ public class TreeUtilsAfterJava11 {
     @Pure
     public static @Nullable Tree getPattern(InstanceOfTree instanceOfTree) {
       return instanceOfTree.getPattern();
-    }
-  }
-
-  /**
-   * Asserts that the latest source version is at least {@code version}.
-   *
-   * @param version version to check
-   * @throws BugInCF if the latest version is smaller than {@code version}
-   */
-  private static void assertVersionAtLeast(int version) {
-    if (sourceVersionNumber < version) {
-      throw new BugInCF(
-          "Method call requires at least Java version %s, but the current version is %s",
-          version, sourceVersionNumber);
-    }
-  }
-
-  /**
-   * Reflectively invokes {@code method} with {@code receiver}; rethrowing any exceptions as {@code
-   * BugInCF} exceptions. If the results is {@code null} a {@code BugInCF} is thrown.
-   *
-   * @param method a method
-   * @param receiver the receiver for the method
-   * @return the result of invoking {@code method} on {@code receiver}
-   */
-  private static Object invokeNonNullResult(Method method, Tree receiver) {
-    Object result = invoke(method, receiver);
-    if (result != null) {
-      return result;
-    }
-    throw new BugInCF(
-        "Expected nonnull result for method invocation: %s for tree: %s",
-        method.getName(), receiver);
-  }
-
-  /**
-   * Reflectively invokes {@code method} with {@code receiver}; rethrowing any exceptions as {@code
-   * BugInCF} exceptions.
-   *
-   * @param method a method
-   * @param receiver the receiver for the method
-   * @return the result of invoking {@code method} on {@code receiver}
-   */
-  private static @Nullable Object invoke(Method method, Tree receiver) {
-    try {
-      return method.invoke(receiver);
-    } catch (IllegalAccessException | InvocationTargetException e) {
-      throw new BugInCF(
-          e, "Reflection failed for method: %s for tree: %s", method.getName(), receiver);
-    }
-  }
-
-  /**
-   * Returns the {@link Method} object for the method with name {@code name} in class {@code clazz}.
-   * Rethrowing any exceptions as {@code BugInCF} exceptions.
-   *
-   * @param clazz a class
-   * @param name a method name
-   * @return the {@link Method} object for the method with name {@code name} in class {@code clazz}
-   */
-  private static Method getMethod(Class<?> clazz, String name) {
-    try {
-      return clazz.getMethod(name);
-    } catch (NoSuchMethodException e) {
-      throw new BugInCF("Method %s not found in class %s", name, clazz);
-    }
-  }
-
-  /**
-   * Returns the class named {@code name}. Rethrows any exceptions as {@code BugInCF} exceptions.
-   *
-   * @param name a class name
-   * @return the class named {@code name}
-   */
-  private static Class<?> classForName(@ClassGetName String name) {
-    try {
-      return Class.forName(name);
-    } catch (ClassNotFoundException e) {
-      throw new BugInCF("Class not found " + name);
     }
   }
 }

@@ -3,6 +3,7 @@ package org.checkerframework.framework.ajava;
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayTypeTree;
+import com.sun.source.tree.BindingPatternTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.DoWhileLoopTree;
 import com.sun.source.tree.EmptyStatementTree;
@@ -30,7 +31,6 @@ import com.sun.source.tree.YieldTree;
 import java.util.HashSet;
 import java.util.Set;
 import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.TreeUtilsAfterJava11.BindingPatternUtils;
 
 /**
  * After this visitor visits a tree, {@link #getTrees} returns all the trees that should match with
@@ -385,10 +385,9 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
   }
 
   @Override
-  public Void visitBindingPattern17(Tree tree, Void p) {
-    super.visitBindingPattern17(tree, p);
+  public Void visitBindingPattern(BindingPatternTree tree, Void unused) {
     // JavaParser doesn't have a node for the VariableTree.
-    trees.remove(BindingPatternUtils.getVariable(tree));
+    trees.remove(tree.getVariable());
     return null;
   }
 

@@ -7,6 +7,7 @@ import com.sun.source.tree.ArrayTypeTree;
 import com.sun.source.tree.AssertTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.BindingPatternTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.BreakTree;
 import com.sun.source.tree.CaseTree;
@@ -174,7 +175,6 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.TreeUtilsAfterJava11.BindingPatternUtils;
 import org.checkerframework.javacutil.TreeUtilsAfterJava17.CaseUtils;
 import org.checkerframework.javacutil.TreeUtilsAfterJava17.DeconstructionPatternUtils;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
@@ -562,12 +562,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     }
     try {
       // TODO: use JCP to add version-specific behavior
-      if (SystemUtil.jreVersion >= 14) {
-        // Must use String comparison to support compiling on JDK 11 and earlier.
-        // Features added between JDK 12 and JDK 17 inclusive.
+      if (SystemUtil.jreVersion >= 21) {
+        // Must use String comparison to support compiling on JDK 17.
+        // Features added after JDK 17.
         switch (tree.getKind().name()) {
-          case "BINDING_PATTERN":
-            return visitBindingPattern17(path.getLeaf(), p);
           case "DECONSTRUCTION_PATTERN":
             return visitDeconstructionPattern21(tree, p);
           case "ANY_PATTERN":
@@ -4201,18 +4199,12 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     return anyPatternNode;
   }
 
-  /**
-   * Visit a BindingPatternTree.
-   *
-   * @param bindingPatternTree a BindingPatternTree, typed as Tree to be backward-compatible
-   * @param p parameter
-   * @return the result of visiting the binding pattern tree
-   */
-  public Node visitBindingPattern17(Tree bindingPatternTree, Void p) {
+  @Override
+  public Node visitBindingPattern(BindingPatternTree bindingPatternTree, Void unused) {
     ClassTree enclosingClass = TreePathUtil.enclosingClass(getCurrentPath());
     TypeElement classElem = TreeUtils.elementFromDeclaration(enclosingClass);
     Node receiver = new ImplicitThisNode(classElem.asType());
-    VariableTree varTree = BindingPatternUtils.getVariable(bindingPatternTree);
+    VariableTree varTree = bindingPatternTree.getVariable();
     VariableDeclarationNode variableDeclarationNode = new VariableDeclarationNode(varTree);
     extendWithNode(variableDeclarationNode);
     LocalVariableNode varNode = new LocalVariableNode(varTree, receiver);

@@ -4,7 +4,6 @@ import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.InstanceOfTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.VariableTree;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -17,7 +16,7 @@ import org.checkerframework.dataflow.qual.Pure;
 
 /**
  * This class contains utility methods for reflectively accessing Tree classes and methods that were
- * added after Java 11.
+ * added after Java 17.
  */
 public class TreeUtilsAfterJava17 {
 
@@ -29,33 +28,6 @@ public class TreeUtilsAfterJava17 {
   /** The latest source version supported by this compiler. */
   private static final int sourceVersionNumber =
       Integer.parseInt(SourceVersion.latest().toString().substring("RELEASE_".length()));
-
-  /** Utility methods for accessing {@code BindingPatternTree} methods. */
-  public static class BindingPatternUtils {
-
-    /** Don't use. */
-    private BindingPatternUtils() {
-      throw new AssertionError("Cannot be instantiated.");
-    }
-
-    /** The {@code BindingPatternTree.getVariable} method for Java 16 and higher; null otherwise. */
-    private static @Nullable Method GET_VARIABLE = null;
-
-    /**
-     * Returns the binding variable of {@code bindingPatternTree}.
-     *
-     * @param bindingPatternTree the BindingPatternTree whose binding variable is returned
-     * @return the binding variable of {@code bindingPatternTree}
-     */
-    public static VariableTree getVariable(Tree bindingPatternTree) {
-      assertVersionAtLeast(16);
-      if (GET_VARIABLE == null) {
-        Class<?> bindingPatternClass = classForName("com.sun.source.tree.BindingPatternTree");
-        GET_VARIABLE = getMethod(bindingPatternClass, "getVariable");
-      }
-      return (VariableTree) invokeNonNullResult(GET_VARIABLE, bindingPatternTree);
-    }
-  }
 
   /** Utility methods for accessing {@code CaseTree} methods. */
   public static class CaseUtils {

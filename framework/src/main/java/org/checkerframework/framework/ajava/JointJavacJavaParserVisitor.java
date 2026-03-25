@@ -101,6 +101,7 @@ import com.sun.source.tree.ArrayTypeTree;
 import com.sun.source.tree.AssertTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.BindingPatternTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.BreakTree;
 import com.sun.source.tree.CaseTree;
@@ -166,7 +167,6 @@ import java.util.Optional;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.TreeUtilsAfterJava11.BindingPatternUtils;
 import org.checkerframework.javacutil.TreeUtilsAfterJava17.CaseUtils;
 
 /**
@@ -277,18 +277,11 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
     return null;
   }
 
-  /**
-   * Visit a BindingPatternTree.
-   *
-   * @param javacTree a BindingPatternTree, typed as Tree to be backward-compatible
-   * @param javaParserNode a PatternExpr
-   * @return nothing
-   */
-  @SuppressWarnings("UnusedVariable")
-  public Void visitBindingPattern17(Tree javacTree, Node javaParserNode) {
+  @Override
+  public Void visitBindingPattern(BindingPatternTree javacTree, Node javaParserNode) {
     TypePatternExpr patternExpr = castNode(TypePatternExpr.class, javaParserNode, javacTree);
     processBindingPattern(javacTree, patternExpr);
-    VariableTree variableTree = BindingPatternUtils.getVariable(javacTree);
+    VariableTree variableTree = javacTree.getVariable();
     // The name expression can be null, even when a name exists.
     if (variableTree.getNameExpression() != null) {
       variableTree.getNameExpression().accept(this, patternExpr.getName());
@@ -966,7 +959,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
     javacTree.getExpression().accept(this, node.getExpression());
     if (node.getPattern().isPresent()) {
       Tree bindingPattern = javacTree.getPattern();
-      visitBindingPattern17(bindingPattern, node.getPattern().get());
+      bindingPattern.accept(this, node.getPattern().get());
     } else {
       javacTree.getType().accept(this, node.getType());
     }
@@ -2437,26 +2430,6 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
         javaParserNode.getClass(),
         expectedType,
         new YamlPrinter(true).output(javaParserNode));
-  }
-
-  /**
-   * The default action for this visitor. This is inherited from SimpleTreeVisitor, but is only
-   * called for those methods which do not have an override of the visitXXX method in this class.
-   * Ultimately, those are the methods added post Java 11, such as for switch-expressions.
-   *
-   * @param tree the Javac tree
-   * @param node the Javaparser node
-   * @return nothing
-   */
-  @Override
-  protected Void defaultAction(Tree tree, Node node) {
-    // Features added between JDK 12 and JDK 17 inclusive.
-    // Must use String comparison to support compiling on JDK 11 and earlier:
-    switch (tree.getKind().name()) {
-      case "BINDING_PATTERN":
-        return visitBindingPattern17(tree, node);
-    }
-    return super.defaultAction(tree, node);
   }
 
   /**

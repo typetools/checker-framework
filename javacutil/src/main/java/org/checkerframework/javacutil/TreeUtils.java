@@ -5,6 +5,7 @@ import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.BindingPatternTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.ClassTree;
@@ -2339,9 +2340,11 @@ public final class TreeUtils {
    *
    * @param tree a tree to check
    * @return true if {@code tree} is a {@code BindingPatternTree}
+   * @deprecated Use {@code tree instanceof BindingPatternTree}
    */
+  @Deprecated(forRemoval = true, since = "2026-03-25")
   public static boolean isBindingPatternTree(Tree tree) {
-    return tree.getKind().name().contentEquals("BINDING_PATTERN");
+    return tree instanceof BindingPatternTree;
   }
 
   /**

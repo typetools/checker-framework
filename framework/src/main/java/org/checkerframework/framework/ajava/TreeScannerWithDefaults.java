@@ -7,6 +7,7 @@ import com.sun.source.tree.ArrayTypeTree;
 import com.sun.source.tree.AssertTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.BindingPatternTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.BreakTree;
 import com.sun.source.tree.CaseTree;
@@ -63,7 +64,6 @@ import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.tree.WildcardTree;
 import com.sun.source.tree.YieldTree;
 import com.sun.source.util.TreeScanner;
-import org.checkerframework.javacutil.SystemUtil;
 
 /**
  * A visitor that performs some default action on a tree and then all of its children. To use this
@@ -77,18 +77,6 @@ public abstract class TreeScannerWithDefaults extends TreeScanner<Void, Void> {
    * @param tree tree to perform action on
    */
   public abstract void defaultAction(Tree tree);
-
-  @Override
-  public Void scan(Tree tree, Void unused) {
-    if (tree != null && SystemUtil.jreVersion >= 14) {
-      switch (tree.getKind().name()) {
-        case "BINDING_PATTERN":
-          visitBindingPattern17(tree, unused);
-          return null;
-      }
-    }
-    return super.scan(tree, unused);
-  }
 
   @Override
   public Void visitCompilationUnit(CompilationUnitTree tree, Void p) {
@@ -325,14 +313,8 @@ public abstract class TreeScannerWithDefaults extends TreeScanner<Void, Void> {
     return super.visitInstanceOf(tree, p);
   }
 
-  /**
-   * Visit a binding pattern tree.
-   *
-   * @param tree a binding pattern tree
-   * @param p null
-   * @return null
-   */
-  public Void visitBindingPattern17(Tree tree, Void p) {
+  @Override
+  public Void visitBindingPattern(BindingPatternTree tree, Void p) {
     defaultAction(tree);
     return super.scan(tree, p);
   }
