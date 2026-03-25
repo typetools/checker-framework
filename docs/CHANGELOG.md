@@ -9,6 +9,9 @@
 
 ### Implementation details
 
+In `AnnotatedTypeFactory`, `canonicalAnnotation()` has a new overload that also
+takes a `TypeMirror`.
+
 ### Closed issues
 
 ## Version 3.54.0 (2026-03-02)

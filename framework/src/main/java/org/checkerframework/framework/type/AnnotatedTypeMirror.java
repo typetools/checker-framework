@@ -634,7 +634,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
     if (annotation == null) {
       throw new BugInCF("AnnotatedTypeMirror.addAnnotation: null argument.");
     }
-    annotation = atypeFactory.canonicalAnnotation(annotation);
+    annotation = atypeFactory.canonicalAnnotation(annotation, underlyingType);
     if (atypeFactory.isSupportedQualifier(annotation)) {
       this.primaryAnnotations.add(annotation);
     }

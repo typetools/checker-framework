@@ -3535,7 +3535,25 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * annotation in the framework. Subclasses can do additional work.
    *
    * @param a the qualifier to canonicalize
+   * @param tm the type that the qualifier applies to
    * @return the canonical annotation, which may be the given annotation
+   * @see #canonicalAnnotation(AnnotationMirror)
+   */
+  public AnnotationMirror canonicalAnnotation(AnnotationMirror a, TypeMirror tm) {
+    return canonicalAnnotation(a);
+  }
+
+  /**
+   * Returns the canonical annotation for the passed annotation. May return its argument.
+   *
+   * <p>This overload is for annotations that will not be added to an {@link AnnotatedTypeMirror}.
+   *
+   * <p>This implementation checks whether the passed annotation is not an alias of another
+   * annotation in the framework. Subclasses can do additional work.
+   *
+   * @param a the qualifier to canonicalize
+   * @return the canonical annotation, which may be the given annotation
+   * @see #canonicalAnnotation(AnnotationMirror,TypeMirror)
    */
   public AnnotationMirror canonicalAnnotation(AnnotationMirror a) {
     TypeElement elem = (TypeElement) a.getAnnotationType().asElement();
