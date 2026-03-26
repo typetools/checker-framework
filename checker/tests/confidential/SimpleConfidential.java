@@ -8,7 +8,6 @@ public class SimpleConfidential {
   void executeConfidential(@Confidential String s) {}
 
   void nonConfidentialRef(@NonConfidential String s) {
-    // :: error: [argument]
     executeNonConfidential(s);
     executeConfidential(s);
   }
