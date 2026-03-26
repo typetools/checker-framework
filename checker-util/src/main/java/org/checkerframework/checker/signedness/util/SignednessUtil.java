@@ -348,13 +348,12 @@ public final class SignednessUtil {
    * @param y the second value to compare
    * @return a negative number iff x {@literal <} y, a positive number iff x {@literal >} y, and
    *     zero iff x == y.
+   * @deprecated use {@link Short#compareUnsigned(short, short)}
    */
-  // TODO: deprecate when we require Java 9, which defines Short.compareUnsigned()
-  // * @deprecated use Short.compareUnsigned
-  // @Deprecated // use Short.compareUnsigned
   @SuppressWarnings("signedness")
+  @Deprecated(forRemoval = true, since = "2026-03-26")
   public static int compareUnsigned(@Unsigned short x, @Unsigned short y) {
-    return Integer.compareUnsigned(Short.toUnsignedInt(x), Short.toUnsignedInt(y));
+    return Short.compareUnsigned(x, y);
   }
 
   /**
@@ -366,11 +365,10 @@ public final class SignednessUtil {
    * @param y the second value to compare
    * @return a negative number iff x {@literal <} y, a positive number iff x {@literal >} y, and
    *     zero iff x == y.
+   * @deprecated use {@link Byte#compareUnsigned(byte, byte)}
    */
-  // TODO: deprecate when we require Java 9, which defines Byte.compareUnsigned()
-  // * @deprecated use Byte.compareUnsigned
-  // @Deprecated // use Byte.compareUnsigned
   @SuppressWarnings("signedness")
+  @Deprecated(forRemoval = true, since = "2026-03-26")
   public static int compareUnsigned(@Unsigned byte x, @Unsigned byte y) {
     return Integer.compareUnsigned(Byte.toUnsignedInt(x), Byte.toUnsignedInt(y));
   }

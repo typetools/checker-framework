@@ -1293,7 +1293,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
      *
      * @deprecated add to the appropriate component
      */
-    @Deprecated // not for removal
+    @Deprecated(forRemoval = false)
     @Override
     public void addAnnotation(AnnotationMirror annotation) {
       assert false : "AnnotatedExecutableType.addAnnotation should never be called";
