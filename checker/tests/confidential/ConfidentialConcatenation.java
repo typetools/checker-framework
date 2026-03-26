@@ -1,4 +1,5 @@
-// NonConfidential <: Confidential
+// NonConfidential <: UnknownConfidential
+// Confidential <: UnknownConfidential
 
 import org.checkerframework.checker.confidential.qual.Confidential;
 import org.checkerframework.checker.confidential.qual.NonConfidential;

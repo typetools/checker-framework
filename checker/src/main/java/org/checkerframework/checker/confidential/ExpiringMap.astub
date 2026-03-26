@@ -1,6 +1,7 @@
 package net.jodah.expiringmap;
 
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeUnit;
 import org.checkerframework.checker.confidential.qual.PolyConfidential;
 
 public class ExpiringMap<@PolyConfidential K, @PolyConfidential V> implements ConcurrentMap<@PolyConfidential K, @PolyConfidential V> {
