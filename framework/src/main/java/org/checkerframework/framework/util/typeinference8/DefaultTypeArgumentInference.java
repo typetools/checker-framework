@@ -196,6 +196,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
               (ExpressionTree) parentParentPath.getLeaf(), parentParentPath.getParentPath());
         }
         return tree;
+      case CASE:
       case YIELD:
         parentPath = TreePathUtil.pathTillOfKind(parentPath, Kind.SWITCH_EXPRESSION);
         parentTree = parentPath.getLeaf();

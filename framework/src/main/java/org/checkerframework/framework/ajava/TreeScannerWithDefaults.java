@@ -172,7 +172,7 @@ public abstract class TreeScannerWithDefaults extends TreeScanner<Void, Void> {
   @Override
   public Void visitSwitchExpression(SwitchExpressionTree tree, Void p) {
     defaultAction(tree);
-    return super.scan(tree, p);
+    return super.visitSwitchExpression(tree, p);
   }
 
   @Override
@@ -316,7 +316,7 @@ public abstract class TreeScannerWithDefaults extends TreeScanner<Void, Void> {
   @Override
   public Void visitBindingPattern(BindingPatternTree tree, Void p) {
     defaultAction(tree);
-    return super.scan(tree, p);
+    return super.visitBindingPattern(tree, p);
   }
 
   @Override
@@ -460,7 +460,6 @@ public abstract class TreeScannerWithDefaults extends TreeScanner<Void, Void> {
   @Override
   public Void visitYield(YieldTree tree, Void p) {
     defaultAction(tree);
-
     return super.visitYield(tree, p);
   }
 }
