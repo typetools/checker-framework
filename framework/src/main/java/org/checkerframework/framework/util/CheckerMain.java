@@ -314,7 +314,7 @@ public class CheckerMain {
         // checker-framework-gradle-plugin, CheckerFrameworkPlugin#applyToProject
         Arrays.asList(
             // These are required in Java 17+ because the --illegal-access option is
-            // set to deny by default.  None of these packages are accessed via
+            // set to deny by default.  None of these packages is accessed via
             // reflection, so the module only needs to be exported, but not opened.
             "-J--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
             "-J--add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
