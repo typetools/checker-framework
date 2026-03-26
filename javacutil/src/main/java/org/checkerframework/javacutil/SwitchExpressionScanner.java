@@ -73,10 +73,7 @@ public abstract class SwitchExpressionScanner<R, P> extends TreeScanner<R, P> {
         // statements.
         result = combineResults(result, yieldVisitor.scan(caseTree.getStatements(), p));
       } else {
-        @SuppressWarnings(
-            "nullness:assignment") // caseTree.getStatements() == null, so the case has
-        // a body.
-        @NonNull Tree body = caseTree.getBody();
+        Tree body = caseTree.getBody();
         // This case is a switch rule, so its body is either an expression, block, or throw.
         // See https://docs.oracle.com/javase/specs/jls/se17/html/jls-15.html#jls-15.28.2.
         if (body instanceof BlockTree) {
