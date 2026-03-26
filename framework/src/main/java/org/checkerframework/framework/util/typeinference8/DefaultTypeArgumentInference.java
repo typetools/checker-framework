@@ -6,6 +6,7 @@ import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -24,6 +25,7 @@ import org.checkerframework.framework.util.typeinference8.types.ContainsInferenc
 import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.framework.util.typeinference8.util.Theta;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 
 /** Implementation of type argument inference. */
@@ -195,9 +197,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         }
         return tree;
       case YIELD:
-        parentPath = parentPath.getParentPath();
-        // The first parent is a case statement.
-        parentPath = parentPath.getParentPath();
+        parentPath = TreePathUtil.pathTillOfKind(parentPath, Kind.SWITCH_EXPRESSION);
         parentTree = parentPath.getLeaf();
       // parentTree is a switch expression, so fall through
       case SWITCH_EXPRESSION:
