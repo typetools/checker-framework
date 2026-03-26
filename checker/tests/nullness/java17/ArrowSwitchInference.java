@@ -20,6 +20,7 @@ public class ArrowSwitchInference {
   }
 
   @Nullable List<String> method(Letter letter, boolean a, boolean b) {
+    // :: error: [type.arguments.not.inferred]
     return id(
         switch (letter) {
           case A -> singletonList((String) null);
