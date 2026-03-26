@@ -78,7 +78,5 @@ import java.lang.annotation.Target;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-// In Java 11, this can be:
-// @Target({ElementType.PARAMETER, ElementType.CONSTRUCTOR, ElementType.METHOD})
-@Target({ElementType.PARAMETER, ElementType.CONSTRUCTOR, ElementType.METHOD, ElementType.TYPE_USE})
+@Target({ElementType.PARAMETER, ElementType.CONSTRUCTOR, ElementType.METHOD})
 public @interface MustCallAlias {}

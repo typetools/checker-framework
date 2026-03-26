@@ -76,8 +76,8 @@ public class OptionalImplVisitor
   /** The element for java.util.Optional.isPresent(). */
   private final ExecutableElement optionalIsPresent;
 
-  /** The element for java.util.Optional.isEmpty(), or null if running under JDK 8. */
-  private final @Nullable ExecutableElement optionalIsEmpty;
+  /** The element for java.util.Optional.isEmpty(). */
+  private final ExecutableElement optionalIsEmpty;
 
   /** The element for java.util.stream.Stream.filter(). */
   private final ExecutableElement streamFilter;
@@ -135,7 +135,7 @@ public class OptionalImplVisitor
     ProcessingEnvironment env = checker.getProcessingEnvironment();
     optionalGet = TreeUtils.getMethod("java.util.Optional", "get", 0, env);
     optionalIsPresent = TreeUtils.getMethod("java.util.Optional", "isPresent", 0, env);
-    optionalIsEmpty = TreeUtils.getMethodOrNull("java.util.Optional", "isEmpty", 0, env);
+    optionalIsEmpty = TreeUtils.getMethod("java.util.Optional", "isEmpty", 0, env);
 
     streamFilter = TreeUtils.getMethod("java.util.stream.Stream", "filter", 1, env);
     streamMap = TreeUtils.getMethod("java.util.stream.Stream", "map", 1, env);
@@ -198,8 +198,7 @@ public class OptionalImplVisitor
         case METHOD_INVOCATION:
           if (TreeUtils.isMethodInvocation(expression, optionalIsPresent, env)) {
             return IPair.of(!negate, TreeUtils.getReceiverTree(expression));
-          } else if (optionalIsEmpty != null
-              && TreeUtils.isMethodInvocation(expression, optionalIsEmpty, env)) {
+          } else if (TreeUtils.isMethodInvocation(expression, optionalIsEmpty, env)) {
             return IPair.of(negate, TreeUtils.getReceiverTree(expression));
           } else {
             return null;

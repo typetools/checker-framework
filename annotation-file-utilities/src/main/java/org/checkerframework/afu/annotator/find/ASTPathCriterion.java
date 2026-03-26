@@ -356,7 +356,7 @@ public class ASTPathCriterion implements Criterion {
             CaseTree caze = (CaseTree) actualNode;
             int arg = astNode.getArgument();
             if (astNode.childSelectorIs(ASTPath.EXPRESSION)) {
-              List<? extends ExpressionTree> expressions = CaseUtils.caseTreeGetExpressions(caze);
+              List<? extends ExpressionTree> expressions = caze.getExpressions();
               if (arg >= expressions.size()) {
                 return null;
               }
