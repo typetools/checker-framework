@@ -2498,7 +2498,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
       scanner.scanSwitchExpression(switchExpressionTree, null);
     }
-    super.scan(switchExpressionTree, null);
+    super.visitSwitchExpression(switchExpressionTree, null);
 
     checkSlowTypechecking(switchExpressionTree, startSlowTypeCheckingTree, startMillis);
     return null;
