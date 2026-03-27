@@ -130,16 +130,6 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
   public AnnotationMirror widenedUpperBound(
       AnnotationMirror newQualifier, AnnotationMirror previousQualifier) {
     AnnotationMirror lub = leastUpperBoundQualifiers(newQualifier, previousQualifier);
-    /*
-    String msg =
-        String.format("widenedUpperBound(%s, %s): lub = %s", newQualifier, previousQualifier, lub);
-    if (msg.contains("IntRange")) {
-      System.out.println(msg);
-    }
-    if (msg.contains("9223372036854775807")) {
-      new Error("stack trace").printStackTrace(System.out);
-    }
-    */
     if (AnnotationUtils.areSameByName(lub, ValueAnnotatedTypeFactory.INTRANGE_NAME)) {
       Range lubRange = atypeFactory.getRange(lub);
       Range newRange = atypeFactory.getRange(newQualifier);
@@ -217,8 +207,6 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
     }
 
     Range result = Range.create(min, max);
-    System.out.printf(
-        "widenedRange(new=%s, old=%s, lub=%s) => %s%n", newRange, oldRange, lubRange, result);
     return result;
   }
 
