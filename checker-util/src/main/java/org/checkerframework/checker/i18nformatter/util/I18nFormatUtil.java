@@ -7,7 +7,6 @@ import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.IllegalFormatException;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -41,7 +40,7 @@ public class I18nFormatUtil {
    */
   @SuppressWarnings("nullness:argument") // It's not documented, but passing null as the
   // argument array is supported.
-  public static void tryFormatSatisfiability(String format) throws IllegalFormatException {
+  public static void tryFormatSatisfiability(String format) throws IllegalArgumentException {
     MessageFormat.format(format, (Object[]) null);
   }
 
@@ -49,32 +48,44 @@ public class I18nFormatUtil {
    * Returns a {@link I18nConversionCategory} for every conversion found in the format string.
    *
    * @param format the format string to parse
-   * @throws IllegalFormatException if the format is not syntactically valid
+   * @throws IllegalArgumentException if the format is not syntactically valid
    */
   public static I18nConversionCategory[] formatParameterCategories(String format)
-      throws IllegalFormatException {
+      throws IllegalArgumentException {
+
     tryFormatSatisfiability(format);
-    I18nConversion[] cs = MessageFormatParser.parse(format);
+
+    I18nConversion[] cs;
+    try {
+      cs = MessageFormatParser.parse(format);
+    } catch (Exception e) {
+      // Defensive programming: fail gracefully on parse errors
+      throw new IllegalArgumentException("Invalid format string: " + format);
+    }
 
     int maxIndex = -1;
     Map<Integer, I18nConversionCategory> conv = new HashMap<>(cs.length);
 
     for (I18nConversion c : cs) {
       int index = c.index;
+      if (index < 0 || index > 1000) { // Arbitrary upper bound to prevent abuse
+        throw new IllegalArgumentException(
+            "Format string contains illegal argument index: " + index);
+      }
+
       Integer indexKey = index;
-      conv.put(
-          indexKey,
-          I18nConversionCategory.intersect(
-              c.category,
-              conv.containsKey(indexKey) ? conv.get(indexKey) : I18nConversionCategory.UNUSED));
+      I18nConversionCategory existing = conv.getOrDefault(indexKey, I18nConversionCategory.UNUSED);
+      I18nConversionCategory merged = I18nConversionCategory.intersect(c.category, existing);
+
+      conv.put(indexKey, merged);
       maxIndex = Math.max(maxIndex, index);
     }
 
     I18nConversionCategory[] res = new I18nConversionCategory[maxIndex + 1];
     for (int i = 0; i <= maxIndex; i++) {
-      Integer indexKey = i;
-      res[i] = conv.containsKey(indexKey) ? conv.get(indexKey) : I18nConversionCategory.UNUSED;
+      res[i] = conv.getOrDefault(i, I18nConversionCategory.UNUSED);
     }
+
     return res;
   }
 
