@@ -147,11 +147,12 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
   }
 
   /** Possible values for the bound of a widened range. */
-  static TreeSet<Long> wideningValues = new TreeSet<>();
+  private static final TreeSet<Long> wideningValues = new TreeSet<>();
 
   static {
     for (long i :
         List.of(
+            // Wraparound for long values is deduplicated by TreeSet.
             Long.MIN_VALUE,
             Long.MAX_VALUE,
             (long) Integer.MIN_VALUE,
