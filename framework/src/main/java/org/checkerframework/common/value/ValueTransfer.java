@@ -409,7 +409,11 @@ public class ValueTransfer extends CFTransfer {
    */
   private boolean isIntRange(Node subNode, TransferInput<CFValue, CFStore> p) {
     CFValue value = p.getValueOfSubNode(subNode);
-    return atypeFactory.isIntRange(value.getAnnotations());
+    try {
+      return atypeFactory.isIntRange(value.getAnnotations());
+    } catch (Exception e) {
+      return false;
+    }
   }
 
   /**
@@ -1168,16 +1172,23 @@ public class ValueTransfer extends CFTransfer {
       ComparisonOperators op,
       CFStore thenStore,
       CFStore elseStore) {
-    AnnotationMirror leftAnno = getValueAnnotation(leftValue);
-    AnnotationMirror rightAnno = getValueAnnotation(rightValue);
+    AnnotationMirror leftAnno;
+    AnnotationMirror rightAnno;
+    try {
+      leftAnno = getValueAnnotation(leftValue);
+      rightAnno = getValueAnnotation(rightValue);
+    } catch (Exception e) {
+      return null;
+    }
 
     if (atypeFactory.isIntRange(leftAnno)
         || atypeFactory.isIntRange(rightAnno)
         || isIntegralUnknownVal(rightNode, rightAnno)
         || isIntegralUnknownVal(leftNode, leftAnno)) {
       // If either is @UnknownVal, then refineIntRanges will treat it as the max range and
-      // thus refine it if possible.  Also, if either is an @IntVal, then it will be converted
-      // to a range.  This is less precise in some cases, but avoids the complexity of
+      // thus refine it if possible.
+      // If one is a range and the other is an @IntVal, then `refineIntRanges` will convert the
+      // @IntVal to a range.  This is less precise in some cases, but avoids the complexity of
       // comparing a list of values to a range. (This could be implemented in the future.)
       return refineIntRanges(leftNode, leftAnno, rightNode, rightAnno, op, thenStore, elseStore);
     }
@@ -1263,59 +1274,60 @@ public class ValueTransfer extends CFTransfer {
       CFStore thenStore,
       CFStore elseStore) {
 
+    // Convert @IntVal into a range.
     Range leftRange = getIntRangeFromAnnotation(leftNode, leftAnno);
     Range rightRange = getIntRangeFromAnnotation(rightNode, rightAnno);
 
-    final Range thenRightRange;
     final Range thenLeftRange;
-    final Range elseRightRange;
+    final Range thenRightRange;
     final Range elseLeftRange;
+    final Range elseRightRange;
 
     switch (op) {
       case EQUAL:
-        thenRightRange = rightRange.refineEqualTo(leftRange);
-        thenLeftRange = thenRightRange; // Only needs to be computed once.
-        elseRightRange = rightRange.refineNotEqualTo(leftRange);
+        thenLeftRange = leftRange.refineEqualTo(rightRange);
+        thenRightRange = thenLeftRange; // Equality only needs to be computed once.
         elseLeftRange = leftRange.refineNotEqualTo(rightRange);
+        elseRightRange = rightRange.refineNotEqualTo(leftRange);
         break;
       case GREATER_THAN:
         thenLeftRange = leftRange.refineGreaterThan(rightRange);
         thenRightRange = rightRange.refineLessThan(leftRange);
-        elseRightRange = rightRange.refineGreaterThanEq(leftRange);
         elseLeftRange = leftRange.refineLessThanEq(rightRange);
+        elseRightRange = rightRange.refineGreaterThanEq(leftRange);
         break;
       case GREATER_THAN_EQ:
-        thenRightRange = rightRange.refineLessThanEq(leftRange);
         thenLeftRange = leftRange.refineGreaterThanEq(rightRange);
+        thenRightRange = rightRange.refineLessThanEq(leftRange);
         elseLeftRange = leftRange.refineLessThan(rightRange);
         elseRightRange = rightRange.refineGreaterThan(leftRange);
         break;
       case LESS_THAN:
         thenLeftRange = leftRange.refineLessThan(rightRange);
         thenRightRange = rightRange.refineGreaterThan(leftRange);
-        elseRightRange = rightRange.refineLessThanEq(leftRange);
         elseLeftRange = leftRange.refineGreaterThanEq(rightRange);
+        elseRightRange = rightRange.refineLessThanEq(leftRange);
         break;
       case LESS_THAN_EQ:
-        thenRightRange = rightRange.refineGreaterThanEq(leftRange);
         thenLeftRange = leftRange.refineLessThanEq(rightRange);
+        thenRightRange = rightRange.refineGreaterThanEq(leftRange);
         elseLeftRange = leftRange.refineGreaterThan(rightRange);
         elseRightRange = rightRange.refineLessThan(leftRange);
         break;
       case NOT_EQUAL:
-        thenRightRange = rightRange.refineNotEqualTo(leftRange);
         thenLeftRange = leftRange.refineNotEqualTo(rightRange);
-        elseRightRange = rightRange.refineEqualTo(leftRange);
-        elseLeftRange = elseRightRange; // Equality only needs to be computed once.
+        thenRightRange = rightRange.refineNotEqualTo(leftRange);
+        elseLeftRange = leftRange.refineEqualTo(rightRange);
+        elseRightRange = elseLeftRange; // Equality only needs to be computed once.
         break;
       default:
         throw new TypeSystemError("ValueTransfer: unsupported operation: " + op);
     }
 
-    createAnnotationFromRangeAndAddToStore(thenStore, thenRightRange, rightNode);
     createAnnotationFromRangeAndAddToStore(thenStore, thenLeftRange, leftNode);
-    createAnnotationFromRangeAndAddToStore(elseStore, elseRightRange, rightNode);
+    createAnnotationFromRangeAndAddToStore(thenStore, thenRightRange, rightNode);
     createAnnotationFromRangeAndAddToStore(elseStore, elseLeftRange, leftNode);
+    createAnnotationFromRangeAndAddToStore(elseStore, elseRightRange, rightNode);
 
     // TODO: Refine the type of the comparison.
     return null;
