@@ -35,6 +35,7 @@ import org.checkerframework.dataflow.cfg.node.FloatingRemainderNode;
 import org.checkerframework.dataflow.cfg.node.GreaterThanNode;
 import org.checkerframework.dataflow.cfg.node.GreaterThanOrEqualNode;
 import org.checkerframework.dataflow.cfg.node.IntegerDivisionNode;
+import org.checkerframework.dataflow.cfg.node.IntegerLiteralNode;
 import org.checkerframework.dataflow.cfg.node.IntegerRemainderNode;
 import org.checkerframework.dataflow.cfg.node.LeftShiftNode;
 import org.checkerframework.dataflow.cfg.node.LessThanNode;
@@ -1169,6 +1170,7 @@ public class ValueTransfer extends CFTransfer {
       CFStore thenStore,
       CFStore elseStore,
       boolean isLoopCondition) {
+
     AnnotationMirror leftAnno = getValueAnnotation(leftValue);
     AnnotationMirror rightAnno = getValueAnnotation(rightValue);
 
@@ -1272,10 +1274,12 @@ public class ValueTransfer extends CFTransfer {
     // eventually, and this is both more efficient and more precise than leaving it to the usual
     // widening operation.
 
-    System.out.println(isLoopCondition);
-
+    // Convert @IntVal into a range.
     Range leftRange = getIntRangeFromAnnotation(leftNode, leftAnno);
     Range rightRange = getIntRangeFromAnnotation(rightNode, rightAnno);
+
+    // TODO: handle comparisons when the lhs is the integer literal.
+    boolean rightIsLoopBoundLiteral = isLoopCondition && rightNode instanceof IntegerLiteralNode;
 
     final Range thenRightRange;
     final Range thenLeftRange;
@@ -1290,26 +1294,46 @@ public class ValueTransfer extends CFTransfer {
         elseLeftRange = leftRange.refineNotEqualTo(rightRange);
         break;
       case GREATER_THAN:
-        thenLeftRange = leftRange.refineGreaterThan(rightRange);
-        thenRightRange = rightRange.refineLessThan(leftRange);
+        if (rightIsLoopBoundLiteral) {
+          thenLeftRange = Range.create(rightRange.from + 1, leftRange.to);
+          thenRightRange = rightRange;
+        } else {
+          thenLeftRange = leftRange.refineGreaterThan(rightRange);
+          thenRightRange = rightRange.refineLessThan(leftRange);
+        }
         elseRightRange = rightRange.refineGreaterThanEq(leftRange);
         elseLeftRange = leftRange.refineLessThanEq(rightRange);
         break;
       case GREATER_THAN_EQ:
-        thenRightRange = rightRange.refineLessThanEq(leftRange);
-        thenLeftRange = leftRange.refineGreaterThanEq(rightRange);
+        if (rightIsLoopBoundLiteral) {
+          thenLeftRange = Range.create(rightRange.from, leftRange.to);
+          thenRightRange = rightRange;
+        } else {
+          thenLeftRange = rightRange.refineLessThanEq(leftRange);
+          thenRightRange = rightRange.refineLessThanEq(leftRange);
+        }
         elseLeftRange = leftRange.refineLessThan(rightRange);
         elseRightRange = rightRange.refineGreaterThan(leftRange);
         break;
       case LESS_THAN:
-        thenLeftRange = leftRange.refineLessThan(rightRange);
-        thenRightRange = rightRange.refineGreaterThan(leftRange);
+        if (rightIsLoopBoundLiteral) {
+          thenLeftRange = Range.create(leftRange.from, rightRange.to - 1);
+          thenRightRange = rightRange;
+        } else {
+          thenLeftRange = leftRange.refineLessThan(rightRange);
+          thenRightRange = rightRange.refineGreaterThan(leftRange);
+        }
         elseRightRange = rightRange.refineLessThanEq(leftRange);
         elseLeftRange = leftRange.refineGreaterThanEq(rightRange);
         break;
       case LESS_THAN_EQ:
-        thenRightRange = rightRange.refineGreaterThanEq(leftRange);
-        thenLeftRange = leftRange.refineLessThanEq(rightRange);
+        if (rightIsLoopBoundLiteral) {
+          thenLeftRange = Range.create(leftRange.from, rightRange.to);
+          thenRightRange = rightRange;
+        } else {
+          thenLeftRange = leftRange.refineLessThanEq(rightRange);
+          thenRightRange = rightRange.refineGreaterThanEq(leftRange);
+        }
         elseLeftRange = leftRange.refineGreaterThan(rightRange);
         elseRightRange = rightRange.refineLessThan(leftRange);
         break;
@@ -1323,10 +1347,10 @@ public class ValueTransfer extends CFTransfer {
         throw new TypeSystemError("ValueTransfer: unsupported operation: " + op);
     }
 
-    createAnnotationFromRangeAndAddToStore(thenStore, thenRightRange, rightNode);
     createAnnotationFromRangeAndAddToStore(thenStore, thenLeftRange, leftNode);
-    createAnnotationFromRangeAndAddToStore(elseStore, elseRightRange, rightNode);
+    createAnnotationFromRangeAndAddToStore(thenStore, thenRightRange, rightNode);
     createAnnotationFromRangeAndAddToStore(elseStore, elseLeftRange, leftNode);
+    createAnnotationFromRangeAndAddToStore(elseStore, elseRightRange, rightNode);
 
     // TODO: Refine the type of the comparison.
     return null;
