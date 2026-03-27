@@ -22,7 +22,6 @@ import com.github.javaparser.ast.body.ReceiverParameter;
 import com.github.javaparser.ast.body.RecordDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.comments.BlockComment;
-import com.github.javaparser.ast.comments.JavadocComment;
 import com.github.javaparser.ast.comments.LineComment;
 import com.github.javaparser.ast.expr.ArrayAccessExpr;
 import com.github.javaparser.ast.expr.ArrayCreationExpr;
@@ -50,6 +49,7 @@ import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.NormalAnnotationExpr;
 import com.github.javaparser.ast.expr.NullLiteralExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
+import com.github.javaparser.ast.expr.RecordPatternExpr;
 import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.expr.SingleMemberAnnotationExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
@@ -58,6 +58,7 @@ import com.github.javaparser.ast.expr.SwitchExpr;
 import com.github.javaparser.ast.expr.TextBlockLiteralExpr;
 import com.github.javaparser.ast.expr.ThisExpr;
 import com.github.javaparser.ast.expr.TypeExpr;
+import com.github.javaparser.ast.expr.TypePatternExpr;
 import com.github.javaparser.ast.expr.UnaryExpr;
 import com.github.javaparser.ast.expr.VariableDeclarationExpr;
 import com.github.javaparser.ast.modules.ModuleDeclaration;
@@ -372,12 +373,6 @@ public abstract class VoidVisitorWithDefaultAction extends VoidVisitorAdapter<Vo
 
   @Override
   public void visit(IntersectionType n, Void p) {
-    super.visit(n, p);
-    defaultAction(n);
-  }
-
-  @Override
-  public void visit(JavadocComment n, Void p) {
     super.visit(n, p);
     defaultAction(n);
   }
@@ -709,6 +704,18 @@ public abstract class VoidVisitorWithDefaultAction extends VoidVisitorAdapter<Vo
   @Override
   public void visit(CompactConstructorDeclaration n, Void p) {
     super.visit(n, p);
+    defaultAction(n);
+  }
+
+  @Override
+  public void visit(TypePatternExpr n, Void arg) {
+    super.visit(n, arg);
+    defaultAction(n);
+  }
+
+  @Override
+  public void visit(RecordPatternExpr n, Void arg) {
+    super.visit(n, arg);
     defaultAction(n);
   }
 }
