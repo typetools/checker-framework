@@ -1281,17 +1281,17 @@ public class ValueTransfer extends CFTransfer {
     // TODO: handle comparisons when the lhs is the integer literal.
     boolean rightIsLoopBoundLiteral = isLoopCondition && rightNode instanceof IntegerLiteralNode;
 
-    final Range thenRightRange;
     final Range thenLeftRange;
-    final Range elseRightRange;
+    final Range thenRightRange;
     final Range elseLeftRange;
+    final Range elseRightRange;
 
     switch (op) {
       case EQUAL:
-        thenRightRange = rightRange.refineEqualTo(leftRange);
-        thenLeftRange = thenRightRange; // Equality only needs to be computed once.
-        elseRightRange = rightRange.refineNotEqualTo(leftRange);
+        thenLeftRange = leftRange.refineEqualTo(rightRange);
+        thenRightRange = thenLeftRange; // Equality only needs to be computed once.
         elseLeftRange = leftRange.refineNotEqualTo(rightRange);
+        elseRightRange = rightRange.refineNotEqualTo(leftRange);
         break;
       case GREATER_THAN:
         if (rightIsLoopBoundLiteral) {
@@ -1301,15 +1301,15 @@ public class ValueTransfer extends CFTransfer {
           thenLeftRange = leftRange.refineGreaterThan(rightRange);
           thenRightRange = rightRange.refineLessThan(leftRange);
         }
-        elseRightRange = rightRange.refineGreaterThanEq(leftRange);
         elseLeftRange = leftRange.refineLessThanEq(rightRange);
+        elseRightRange = rightRange.refineGreaterThanEq(leftRange);
         break;
       case GREATER_THAN_EQ:
         if (rightIsLoopBoundLiteral) {
           thenLeftRange = Range.create(rightRange.from, leftRange.to);
           thenRightRange = rightRange;
         } else {
-          thenLeftRange = rightRange.refineLessThanEq(leftRange);
+          thenLeftRange = leftRange.refineGreaterThanEq(rightRange);
           thenRightRange = rightRange.refineLessThanEq(leftRange);
         }
         elseLeftRange = leftRange.refineLessThan(rightRange);
@@ -1323,8 +1323,8 @@ public class ValueTransfer extends CFTransfer {
           thenLeftRange = leftRange.refineLessThan(rightRange);
           thenRightRange = rightRange.refineGreaterThan(leftRange);
         }
-        elseRightRange = rightRange.refineLessThanEq(leftRange);
         elseLeftRange = leftRange.refineGreaterThanEq(rightRange);
+        elseRightRange = rightRange.refineLessThanEq(leftRange);
         break;
       case LESS_THAN_EQ:
         if (rightIsLoopBoundLiteral) {
@@ -1338,10 +1338,10 @@ public class ValueTransfer extends CFTransfer {
         elseRightRange = rightRange.refineLessThan(leftRange);
         break;
       case NOT_EQUAL:
-        thenRightRange = rightRange.refineNotEqualTo(leftRange);
         thenLeftRange = leftRange.refineNotEqualTo(rightRange);
-        elseRightRange = rightRange.refineEqualTo(leftRange);
-        elseLeftRange = elseRightRange; // Equality only needs to be computed once.
+        thenRightRange = rightRange.refineNotEqualTo(leftRange);
+        elseLeftRange = leftRange.refineEqualTo(rightRange);
+        elseRightRange = elseLeftRange; // Equality only needs to be computed once.
         break;
       default:
         throw new TypeSystemError("ValueTransfer: unsupported operation: " + op);
