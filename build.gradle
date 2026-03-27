@@ -745,6 +745,7 @@ tasks.register("pythonIsInstalled", Exec) {
 
 tasks.register("docTags", Exec) {
   group = "Emacs"
+  description = "Create Emacs TAGS table for the manual"
   commandLine("make", "-C", "docs/manual/", "tags")
 }
 

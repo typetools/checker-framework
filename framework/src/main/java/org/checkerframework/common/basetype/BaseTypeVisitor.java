@@ -1506,21 +1506,22 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     if (exitStore == null) {
       // If there is no regular exitStore, then the method cannot reach the regular exit and
       // there is no need to check anything.
-    } else {
-      CFAbstractValue<?> value = exitStore.getValue(expression);
-      AnnotationMirror inferredAnno = null;
-      if (value != null) {
-        AnnotationMirrorSet annos = value.getAnnotations();
-        inferredAnno = qualHierarchy.findAnnotationInSameHierarchy(annos, annotation);
-      }
-      if (!checkContract(expression, annotation, inferredAnno, exitStore)) {
-        checker.reportError(
-            methodTree,
-            "contracts.postcondition",
-            methodTree.getName(),
-            contractExpressionAndType(expression.toString(), inferredAnno),
-            contractExpressionAndType(expression.toString(), annotation));
-      }
+      return;
+    }
+
+    CFAbstractValue<?> value = exitStore.getValue(expression);
+    AnnotationMirror inferredAnno = null;
+    if (value != null) {
+      AnnotationMirrorSet annos = value.getAnnotations();
+      inferredAnno = qualHierarchy.findAnnotationInSameHierarchy(annos, annotation);
+    }
+    if (!checkContract(expression, annotation, inferredAnno, exitStore)) {
+      checker.reportError(
+          methodTree,
+          "contracts.postcondition",
+          methodTree.getName(),
+          contractExpressionAndType(expression.toString(), inferredAnno),
+          contractExpressionAndType(expression.toString(), annotation));
     }
   }
 
@@ -1556,12 +1557,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       AnnotationMirror annotation,
       JavaExpression expression,
       boolean result) {
-    boolean booleanReturnType =
-        TypesUtils.isBooleanType(TreeUtils.typeOf(methodTree.getReturnType()));
-    if (!booleanReturnType) {
+    TypeMirror returnType = TreeUtils.typeOf(methodTree.getReturnType());
+    if (!TypesUtils.isBooleanType(returnType)) {
       checker.reportError(methodTree, "contracts.conditional.postcondition.returntype");
-      // No reason to go ahead with further checking. The
-      // annotation is invalid.
+      // The annotation is invalid. No reason to check further.
       return;
     }
 
@@ -1672,12 +1671,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     Element varElt = TreeUtils.elementFromDeclaration(tree);
     if (varElt.getKind() == ElementKind.ENUM_CONSTANT) {
       commonAssignmentCheck(tree, tree.getInitializer(), "enum.declaration");
-    } else if (tree.getInitializer() != null) {
-      // If there's no assignment in this variable declaration, skip it.
+    } else
+    // If there's no assignment in this variable declaration, skip it.
+    if (tree.getInitializer() != null) {
       commonAssignmentCheck(tree, tree.getInitializer(), "assignment");
     } else {
       // commonAssignmentCheck validates the type of `tree`,
-      // so only validate if commonAssignmentCheck wasn't called
+      // so only validate if commonAssignmentCheck wasn't called.
       validateTypeOf(tree);
     }
     warnRedundantAnnotations(tree, variableType);
@@ -3182,7 +3182,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             "%s %s (at %s): actual tree = %s %s%n   expected: %s %s%n",
             this.getClass().getSimpleName(),
             "skipping test whether actual is a subtype of expected"
-                + " because member reference and lambda expression are type checked separately",
+                + " because member reference and lambda expression are type-checked separately",
             fileAndLineNumber(valueExpTree),
             valueExpTree.getKind(),
             valueExpTree,
@@ -3207,7 +3207,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             "%s %s (at %s): actual tree = %s %s%n   expected: %s %s%n",
             this.getClass().getSimpleName(),
             "skipping test whether actual is a subtype of expected"
-                + " because validateType() returned false",
+                + " because validateTypeOf() returned false",
             fileAndLineNumber(valueExpTree),
             valueExpTree.getKind(),
             valueExpTree,

@@ -139,8 +139,8 @@ public class ConditionalTransferResult<V extends AbstractValue<V>, S extends Sto
   public String toString() {
     StringJoiner result = new StringJoiner(System.lineSeparator());
     result.add("RegularTransferResult(");
-    result.add("  resultValue = " + StringsPlume.indentLinesExceptFirst(2, resultValue));
-    result.add("  thenStore = " + StringsPlume.indentLinesExceptFirst(2, thenStore));
+    result.add("  resultValue = " + StringsPlume.indentLinesExceptFirst(2, resultValue) + ",");
+    result.add("  thenStore = " + StringsPlume.indentLinesExceptFirst(2, thenStore) + ",");
     result.add("  elseStore = " + StringsPlume.indentLinesExceptFirst(2, elseStore));
     result.add(")");
     return result.toString();
