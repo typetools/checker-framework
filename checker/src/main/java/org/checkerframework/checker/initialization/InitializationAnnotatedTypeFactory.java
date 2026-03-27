@@ -512,16 +512,13 @@ public abstract class InitializationAnnotatedTypeFactory<
     //  - if the class is final, this is @Initialized
     //  - otherwise, this is @UnderInitialization(CurrentClass) as
     //    there might still be subclasses that need initialization.
-    if (areAllFieldsInitializedOnly(enclosingClass)) {
-      Store store = getStoreBefore(tree);
-      if (store != null
-          && getUninitializedInvariantFields(store, path, false, Collections.emptyList())
-              .isEmpty()) {
-        if (classType.isFinal()) {
-          annotation = INITIALIZED;
-        } else {
-          annotation = createUnderInitializationAnnotation(classType);
-        }
+    Store store = getStoreBefore(tree);
+    if (store != null
+        && getUninitializedInvariantFields(store, path, false, Collections.emptyList()).isEmpty()) {
+      if (classType.isFinal()) {
+        annotation = INITIALIZED;
+      } else {
+        annotation = createUnderInitializationAnnotation(classType);
       }
     }
 
