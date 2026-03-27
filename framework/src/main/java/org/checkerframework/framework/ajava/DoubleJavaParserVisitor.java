@@ -659,6 +659,7 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
     defaultAction(node1, node2);
     visitLists(node1.getPatternList(), node2.getPatternList());
     visitLists(node1.getModifiers(), node2.getModifiers());
+    node1.getType().accept(this, node2.getType());
   }
 
   @Override
@@ -667,6 +668,7 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
     defaultAction(node1, node2);
     node1.getName().accept(this, node2.getName());
     visitLists(node1.getModifiers(), node2.getModifiers());
+    node1.getType().accept(this, node2.getType());
   }
 
   @Override
@@ -674,6 +676,7 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
     MatchAllPatternExpr node2 = (MatchAllPatternExpr) other;
     defaultAction(node1, node2);
     visitLists(node1.getModifiers(), node2.getModifiers());
+    node1.getType().accept(this, node2.getType());
   }
 
   @Override

@@ -23,6 +23,8 @@ import com.github.javaparser.ast.body.RecordDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.comments.BlockComment;
 import com.github.javaparser.ast.comments.LineComment;
+import com.github.javaparser.ast.comments.MarkdownComment;
+import com.github.javaparser.ast.comments.TraditionalJavadocComment;
 import com.github.javaparser.ast.expr.ArrayAccessExpr;
 import com.github.javaparser.ast.expr.ArrayCreationExpr;
 import com.github.javaparser.ast.expr.ArrayInitializerExpr;
@@ -41,6 +43,7 @@ import com.github.javaparser.ast.expr.IntegerLiteralExpr;
 import com.github.javaparser.ast.expr.LambdaExpr;
 import com.github.javaparser.ast.expr.LongLiteralExpr;
 import com.github.javaparser.ast.expr.MarkerAnnotationExpr;
+import com.github.javaparser.ast.expr.MatchAllPatternExpr;
 import com.github.javaparser.ast.expr.MemberValuePair;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.MethodReferenceExpr;
@@ -715,6 +718,23 @@ public abstract class VoidVisitorWithDefaultAction extends VoidVisitorAdapter<Vo
 
   @Override
   public void visit(RecordPatternExpr n, Void arg) {
+    super.visit(n, arg);
+    defaultAction(n);
+  }
+
+  @Override
+  public void visit(TraditionalJavadocComment n, Void arg) {
+    super.visit(n, arg);
+  }
+
+  @Override
+  public void visit(MarkdownComment n, Void arg) {
+    super.visit(n, arg);
+    defaultAction(n);
+  }
+
+  @Override
+  public void visit(MatchAllPatternExpr n, Void arg) {
     super.visit(n, arg);
     defaultAction(n);
   }
