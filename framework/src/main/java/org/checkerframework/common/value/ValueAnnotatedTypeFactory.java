@@ -1691,7 +1691,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       // This is only expected to support array creations in varargs methods
       return arrayCreation.getInitializers().size();
     } else if (expressionObj instanceof ArrayAccess) {
-      List<? extends AnnotationMirror> annoList = expressionObj.getType().getAnnotationMirrors();
+      TypeMirror expressionType = expressionObj.getType();
+      List<? extends AnnotationMirror> annoList = expressionType.getAnnotationMirrors();
       for (AnnotationMirror anno : annoList) {
         String ANNO_NAME = AnnotationUtils.annotationName(anno);
         if (ANNO_NAME.equals(MINLEN_NAME)) {
