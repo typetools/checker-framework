@@ -4142,7 +4142,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         return true;
       }
 
-      boolean result = checkReturn();
+      // First, ensure that method type parameter bounds are compatible. This must be
+      // checked before return/parameter checks because those checks may depend on
+      // the meaning of the type parameters.
+      boolean result = checkTypeParameters();
+
+      // Then check return type, parameters, receiver, and other properties.
+      result &= checkReturn();
       result &= checkParameters();
       if (isMethodReference) {
         result &= checkMemberReferenceReceivers();
@@ -4152,6 +4158,46 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       checkPreAndPostConditions();
       checkPurity();
 
+      return result;
+    }
+
+    /**
+     * Check that corresponding method type parameters have compatible bounds.
+     *
+     * @return true if type parameter bounds are compatible
+     */
+    private boolean checkTypeParameters() {
+      List<AnnotatedTypeVariable> subTypeVars = overrider.getTypeVariables();
+      List<AnnotatedTypeVariable> superTypeVars = overridden.getTypeVariables();
+
+      if (subTypeVars == null || superTypeVars == null) {
+        return true;
+      }
+      if (subTypeVars.size() != superTypeVars.size()) {
+        return true;
+      }
+
+      boolean result = true;
+      for (int i = 0; i < subTypeVars.size(); i++) {
+        AnnotatedTypeVariable subVar = subTypeVars.get(i);
+        AnnotatedTypeVariable superVar = superTypeVars.get(i);
+
+        boolean ok = testTypevarContainment(subVar, superVar);
+        if (!ok) {
+          FoundRequired pair = FoundRequired.of(subVar, superVar);
+          checker.reportError(
+              overriderTree,
+              "override.typeparam",
+              Integer.toString(i),
+              pair.found,
+              pair.required,
+              overriderType,
+              overrider,
+              overriddenType,
+              overridden);
+        }
+        result &= ok;
+      }
       return result;
     }
 
