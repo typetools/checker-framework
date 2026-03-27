@@ -34,4 +34,3 @@ annotation @G: @Retention(RUNTIME)
 	boolean[] fieldC
 	int fieldD
 	int fieldE
-	
