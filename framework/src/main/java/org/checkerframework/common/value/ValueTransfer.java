@@ -1295,7 +1295,7 @@ public class ValueTransfer extends CFTransfer {
         break;
       case GREATER_THAN:
         if (rightIsLoopBoundLiteral) {
-          thenLeftRange = Range.create(rightRange.from + 1, leftRange.to);
+          thenLeftRange = Range.createOrNothing(rightRange.from + 1, leftRange.to);
           thenRightRange = rightRange;
         } else {
           thenLeftRange = leftRange.refineGreaterThan(rightRange);
@@ -1306,7 +1306,7 @@ public class ValueTransfer extends CFTransfer {
         break;
       case GREATER_THAN_EQ:
         if (rightIsLoopBoundLiteral) {
-          thenLeftRange = Range.create(rightRange.from, leftRange.to);
+          thenLeftRange = Range.createOrNothing(rightRange.from, leftRange.to);
           thenRightRange = rightRange;
         } else {
           thenLeftRange = leftRange.refineGreaterThanEq(rightRange);
@@ -1317,7 +1317,7 @@ public class ValueTransfer extends CFTransfer {
         break;
       case LESS_THAN:
         if (rightIsLoopBoundLiteral) {
-          thenLeftRange = Range.create(leftRange.from, rightRange.to - 1);
+          thenLeftRange = Range.createOrNothing(leftRange.from, rightRange.to - 1);
           thenRightRange = rightRange;
         } else {
           thenLeftRange = leftRange.refineLessThan(rightRange);
@@ -1328,7 +1328,7 @@ public class ValueTransfer extends CFTransfer {
         break;
       case LESS_THAN_EQ:
         if (rightIsLoopBoundLiteral) {
-          thenLeftRange = Range.create(leftRange.from, rightRange.to);
+          thenLeftRange = Range.createOrNothing(leftRange.from, rightRange.to);
           thenRightRange = rightRange;
         } else {
           thenLeftRange = leftRange.refineLessThanEq(rightRange);

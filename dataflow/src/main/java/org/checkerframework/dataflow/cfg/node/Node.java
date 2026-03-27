@@ -65,7 +65,7 @@ public abstract class Node implements UniqueId {
   protected boolean inSource = true;
 
   /**
-   * True if this node represents a tree that is the condition of a loop.
+   * True if this node represents a tree in the condition of a loop that is always evaluated.
    *
    * <p>Is set by {@link #setIsLoopCondition}.
    */
@@ -194,6 +194,12 @@ public abstract class Node implements UniqueId {
    */
   public void setIsLoopCondition(boolean isLoopCondition) {
     this.isLoopCondition = isLoopCondition;
+    if (isLoopCondition) {
+      if (this instanceof BinaryOperationNode) {
+        // Only the LHS of a binary operation is guaranteed to be executed.
+        ((BinaryOperationNode) this).left.setIsLoopCondition(isLoopCondition);
+      }
+    }
   }
 
   /**
