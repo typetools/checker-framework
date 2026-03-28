@@ -42,7 +42,6 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
-import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.checker.initialization.InitializationVisitor;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -251,7 +250,6 @@ public class NullnessVisitor
   }
 
   @Override
-  @FormatMethod
   protected boolean supertypeCheck(
       AnnotatedTypeMirror varType,
       AnnotatedTypeMirror valueType,
