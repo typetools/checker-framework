@@ -592,6 +592,8 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    * A version of {@link #hasPrimaryAnnotation(Class)} that considers annotations on the upper bound
    * of wildcards and type variables.
    *
+   * @param a an annotation class
+   * @return true if this has an annotation of the given class
    * @deprecated use {@link hasAnnotation(Class)}
    */
   @Deprecated(since = "2026-03-28")
@@ -602,6 +604,9 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
   /**
    * A version of {@link #hasPrimaryAnnotation(Class)} that considers annotations on the upper bound
    * of wildcards and type variables.
+   *
+   * @param a an annotation class
+   * @return true if this has an annotation of the given class
    */
   public boolean hasAnnotation(Class<? extends Annotation> a) {
     return getAnnotation(a) != null;
@@ -611,6 +616,8 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    * A version of {@link #hasPrimaryAnnotation(AnnotationMirror)} that considers annotations on the
    * upper bound of wildcards and type variables.
    *
+   * @param a an annotation
+   * @return true if this has an annotation that is the same as the given annotation
    * @deprecated use {@link hasAnnotation(AnnotationMirror)}
    */
   @Deprecated(since = "2026-03-28")
@@ -621,6 +628,9 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
   /**
    * A version of {@link #hasPrimaryAnnotation(AnnotationMirror)} that considers annotations on the
    * upper bound of wildcards and type variables.
+   *
+   * @param a an annotation class
+   * @return true if this has an annotation that is the same as the given annotation
    */
   public boolean hasAnnotation(AnnotationMirror a) {
     return AnnotationUtils.containsSame(getAnnotations(), a);
@@ -666,6 +676,8 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    * A version of {@link #hasPrimaryAnnotationRelaxed(AnnotationMirror)} that considers annotations
    * on the upper bound of wildcards and type variables.
    *
+   * @param a an annotation class
+   * @return true if this has an annotation that is the same as the given annotation
    * @deprecated use {@link #hasAnnotationRelaxed}
    */
   @Deprecated(since = "2026-03-28")
@@ -676,6 +688,9 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
   /**
    * A version of {@link #hasPrimaryAnnotationRelaxed(AnnotationMirror)} that considers annotations
    * on the upper bound of wildcards and type variables.
+   *
+   * @param a an annotation class
+   * @return true if this has an annotation that is the same as the given annotation
    */
   public boolean hasAnnotationRelaxed(AnnotationMirror a) {
     return AnnotationUtils.containsSameByName(getAnnotations(), a);
