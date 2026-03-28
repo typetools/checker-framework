@@ -68,7 +68,7 @@ public class I18nFormatterVisitor extends BaseTypeVisitor<I18nFormatterAnnotated
 
             // For assignments, "i18nformat.missing.arguments" and
             // "i18nformat.excess.arguments" are
-            // issued from commonAssignmentCheck().
+            // issued from supertypeCheck().
             if (paraml < formatl) {
               tu.warning(invc, "i18nformat.missing.arguments", formatl, paraml);
             }
@@ -120,7 +120,18 @@ public class I18nFormatterVisitor extends BaseTypeVisitor<I18nFormatterAnnotated
   }
 
   @Override
+  @Deprecated(since = "2026-03-26")
   protected boolean commonAssignmentCheck(
+      AnnotatedTypeMirror varType,
+      AnnotatedTypeMirror valueType,
+      Tree valueTree,
+      @CompilerMessageKey String errorKey,
+      Object... extraArgs) {
+    return supertypeCheck(varType, valueType, valueTree, errorKey, extraArgs);
+  }
+
+  @Override
+  protected boolean supertypeCheck(
       AnnotatedTypeMirror varType,
       AnnotatedTypeMirror valueType,
       Tree valueTree,
@@ -161,12 +172,11 @@ public class I18nFormatterVisitor extends BaseTypeVisitor<I18nFormatterAnnotated
 
     // TODO: What does "take precedence over" mean?  Both are issued, but the
     // "i18nformat.excess.arguments" appears first in the output.  Is this meant to not call
-    // super.commonAssignmentCheck() if `result` is already false?
-    // By calling super.commonAssignmentCheck() last, any "i18nformat.excess.arguments"
+    // super.supertypeCheck() if `result` is already false?
+    // By calling super.supertypeCheck() last, any "i18nformat.excess.arguments"
     // message issued for a given line of code will take precedence over the "assignment"
-    // issued by super.commonAssignmentCheck().
-    result =
-        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, extraArgs) && result;
+    // issued by super.supertypeCheck().
+    result = super.supertypeCheck(varType, valueType, valueTree, errorKey, extraArgs) && result;
     return result;
   }
 }

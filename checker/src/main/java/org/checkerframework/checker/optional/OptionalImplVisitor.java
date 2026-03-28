@@ -662,12 +662,22 @@ public class OptionalImplVisitor
 
   // Partially enforces Rule #1.  (Only handles the literal `null`, not all nullable expressions.)
   @Override
+  @Deprecated(since = "2026-03-28")
   protected boolean commonAssignmentCheck(
       AnnotatedTypeMirror varType,
       ExpressionTree valueExpTree,
       @CompilerMessageKey String errorKey,
       Object... extraArgs) {
-    boolean result = super.commonAssignmentCheck(varType, valueExpTree, errorKey, extraArgs);
+    return supertypeCheck(varType, valueExpTree, errorKey, extraArgs);
+  }
+
+  @Override
+  protected boolean supertypeCheck(
+      AnnotatedTypeMirror varType,
+      ExpressionTree valueExpTree,
+      @CompilerMessageKey String errorKey,
+      Object... extraArgs) {
+    boolean result = super.supertypeCheck(varType, valueExpTree, errorKey, extraArgs);
     ExpressionTree valueWithoutParens = TreeUtils.withoutParens(valueExpTree);
     if (valueWithoutParens.getKind() == Kind.NULL_LITERAL
         && isOptionalType(varType.getUnderlyingType())) {

@@ -9,6 +9,8 @@
 
 ### Implementation details
 
+Renamed `BaseTypeVisitor.commonAssignmentCheck()` to `supertypeCheck()`.
+
 ### Closed issues
 
 ## Version 3.54.0 (2026-03-02)

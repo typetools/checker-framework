@@ -81,7 +81,7 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
             int formatl = formatCats.length;
             if (argl < formatl) {
               // For assignments, format.missing.arguments is issued from
-              // commonAssignmentCheck().
+              // supertypeCheck().
               // II.1
               ftu.failure(invc, "format.missing.arguments", formatl, argl);
             } else {
@@ -257,14 +257,24 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
   }
 
   @Override
+  @Deprecated(since = "2026-03-26")
   protected boolean commonAssignmentCheck(
       AnnotatedTypeMirror varType,
       AnnotatedTypeMirror valueType,
       Tree valueTree,
       @CompilerMessageKey String errorKey,
       Object... extraArgs) {
-    boolean result =
-        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, extraArgs);
+    return supertypeCheck(varType, valueType, valueTree, errorKey, extraArgs);
+  }
+
+  @Override
+  protected boolean supertypeCheck(
+      AnnotatedTypeMirror varType,
+      AnnotatedTypeMirror valueType,
+      Tree valueTree,
+      @CompilerMessageKey String errorKey,
+      Object... extraArgs) {
+    boolean result = super.supertypeCheck(varType, valueType, valueTree, errorKey, extraArgs);
 
     AnnotationMirror rhs = valueType.getPrimaryAnnotationInHierarchy(atypeFactory.UNKNOWNFORMAT);
     AnnotationMirror lhs = varType.getPrimaryAnnotationInHierarchy(atypeFactory.UNKNOWNFORMAT);

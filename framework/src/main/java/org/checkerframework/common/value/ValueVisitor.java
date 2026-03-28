@@ -17,7 +17,6 @@ import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
-import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.value.qual.IntRangeFromGTENegativeOne;
@@ -61,21 +60,59 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
    * @param errorKey the error message key to use if the check fails
    * @param extraArgs arguments to the error message key, before "found" and "expected" types
    * @return true if the check succeeds, false if an error message was issued
+   * @deprecated use {@link #supertypeCheck}
    */
   @Override
+  @Deprecated(since = "2026-03-28")
   protected boolean commonAssignmentCheck(
+      AnnotatedTypeMirror varType,
+      ExpressionTree valueExp,
+      @CompilerMessageKey String errorKey,
+      Object... extraArgs) {
+    return supertypeCheck(varType, valueExp, errorKey, extraArgs);
+  }
+
+  /**
+   * ValueVisitor overrides this method so that it does not have to check variables annotated with
+   * the {@link IntRangeFromPositive} annotation, the {@link IntRangeFromNonNegative} annotation, or
+   * the {@link IntRangeFromGTENegativeOne} annotation. This annotation is only introduced by the
+   * Index Checker's lower bound annotations. It is safe to defer checking of these values to the
+   * Index Checker because this is only introduced for explicitly-written {@code
+   * org.checkerframework.checker.index.qual.Positive}, explicitly-written {@code
+   * org.checkerframework.checker.index.qual.NonNegative}, and explicitly-written {@code
+   * org.checkerframework.checker.index.qual.GTENegativeOne} annotations, which must be checked by
+   * the Lower Bound Checker.
+   *
+   * @param varType the annotated type of the lvalue (usually a variable)
+   * @param valueExp the AST node for the rvalue (the new value)
+   * @param errorKey the error message key to use if the check fails
+   * @param extraArgs arguments to the error message key, before "found" and "expected" types
+   * @return true if the check succeeds, false if an error message was issued
+   */
+  @Override
+  protected boolean supertypeCheck(
       AnnotatedTypeMirror varType,
       ExpressionTree valueExp,
       @CompilerMessageKey String errorKey,
       Object... extraArgs) {
 
     replaceSpecialIntRangeAnnotations(varType);
-    return super.commonAssignmentCheck(varType, valueExp, errorKey, extraArgs);
+    return super.supertypeCheck(varType, valueExp, errorKey, extraArgs);
   }
 
   @Override
-  @FormatMethod
+  @Deprecated(since = "2026-03-28")
   protected boolean commonAssignmentCheck(
+      AnnotatedTypeMirror varType,
+      AnnotatedTypeMirror valueType,
+      Tree valueTree,
+      @CompilerMessageKey String errorKey,
+      Object... extraArgs) {
+    return supertypeCheck(varType, valueType, valueTree, errorKey, extraArgs);
+  }
+
+  @Override
+  protected boolean supertypeCheck(
       AnnotatedTypeMirror varType,
       AnnotatedTypeMirror valueType,
       Tree valueTree,
@@ -89,17 +126,16 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
       valueType.addAnnotation(getTypeFactory().createIntRangeAnnotation(Range.CHAR_EVERYTHING));
     }
 
-    return super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, extraArgs);
+    return super.supertypeCheck(varType, valueType, valueTree, errorKey, extraArgs);
   }
 
   /**
    * Returns types for methods that are annotated with {@code @IntRangeFromX} annotations need to be
    * replaced with {@code @UnknownVal}. See the documentation on {@link
-   * #commonAssignmentCheck(AnnotatedTypeMirror, ExpressionTree, String, Object[])
-   * commonAssignmentCheck}.
+   * #supertypeCheck(AnnotatedTypeMirror, ExpressionTree, String, Object[]) supertypeCheck}.
    *
    * <p>A separate override is necessary because checkOverride doesn't actually use the
-   * commonAssignmentCheck.
+   * supertypeCheck.
    */
   @Override
   protected boolean checkOverride(

@@ -196,7 +196,17 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
   }
 
   @Override
+  @Deprecated(since = "2026-03-28")
   protected boolean commonAssignmentCheck(
+      Tree varTree,
+      ExpressionTree valueTree,
+      @CompilerMessageKey String errorKey,
+      Object... extraArgs) {
+    return supertypeCheck(varTree, valueTree, errorKey, extraArgs);
+  }
+
+  @Override
+  protected boolean supertypeCheck(
       Tree varTree,
       ExpressionTree valueTree,
       @CompilerMessageKey String errorKey,
@@ -250,12 +260,22 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
       }
     }
 
-    result = super.commonAssignmentCheck(varTree, valueTree, errorKey, extraArgs) && result;
+    result = super.supertypeCheck(varTree, valueTree, errorKey, extraArgs) && result;
     return result;
   }
 
   @Override
+  @Deprecated(since = "2026-03-28")
   protected boolean commonAssignmentCheck(
+      AnnotatedTypeMirror varType,
+      ExpressionTree valueTree,
+      @CompilerMessageKey String errorKey,
+      Object... extraArgs) {
+    return supertypeCheck(varType, valueTree, errorKey, extraArgs);
+  }
+
+  @Override
+  protected boolean supertypeCheck(
       AnnotatedTypeMirror varType,
       ExpressionTree valueTree,
       @CompilerMessageKey String errorKey,
@@ -270,7 +290,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
           varType,
           valueType,
           valueTree);
-      result = super.commonAssignmentCheck(varType, valueTree, errorKey, extraArgs);
+      result = super.supertypeCheck(varType, valueTree, errorKey, extraArgs);
       if (!result && showchecks) {
         diagnosticMessage = "relaxedCommonAssignment()=>false and super()=>false";
       }

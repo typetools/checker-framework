@@ -473,8 +473,8 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
 
   /**
    * This method is called to traverse the path back up from any anonymous inner class or lambda
-   * which has been inferred to be UI affecting and re-run {@code commonAssignmentCheck()} as needed
-   * on places where the class declaration or lambda expression are being assigned to a variable,
+   * which has been inferred to be UI affecting and re-run {@code supertypeCheck()} as needed on
+   * places where the class declaration or lambda expression are being assigned to a variable,
    * passed as a parameter or returned from a method. This is necessary because the normal visitor
    * traversal only checks assignments on the way down the AST, before inference has had a chance to
    * run.
@@ -486,7 +486,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
     switch (tree.getKind()) {
       case ASSIGNMENT:
         AssignmentTree assignmentTree = (AssignmentTree) tree;
-        commonAssignmentCheck(
+        supertypeCheck(
             atypeFactory.getAnnotatedType(assignmentTree.getVariable()),
             atypeFactory.getAnnotatedType(assignmentTree.getExpression()),
             assignmentTree.getExpression(),
@@ -494,7 +494,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
         break;
       case VARIABLE:
         VariableTree variableTree = (VariableTree) tree;
-        commonAssignmentCheck(
+        supertypeCheck(
             atypeFactory.getAnnotatedType(variableTree),
             atypeFactory.getAnnotatedType(variableTree.getInitializer()),
             variableTree.getInitializer(),
@@ -513,7 +513,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
                 atypeFactory, invokedMethod, invocationTree.getArguments(), invocationTree);
         for (int i = 0; i < args.size(); ++i) {
           if (args.get(i) instanceof NewClassTree || args.get(i) instanceof LambdaExpressionTree) {
-            commonAssignmentCheck(
+            supertypeCheck(
                 paramTypes.get(i),
                 atypeFactory.getAnnotatedType(args.get(i)),
                 args.get(i),
@@ -543,7 +543,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
           }
 
           if (ret != null) {
-            commonAssignmentCheck(
+            supertypeCheck(
                 ret,
                 atypeFactory.getAnnotatedType(returnTree.getExpression()),
                 returnTree.getExpression(),

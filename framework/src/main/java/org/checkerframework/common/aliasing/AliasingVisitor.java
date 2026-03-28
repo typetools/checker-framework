@@ -17,7 +17,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
-import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.common.aliasing.qual.LeakedToResult;
 import org.checkerframework.common.aliasing.qual.NonLeaked;
 import org.checkerframework.common.aliasing.qual.Unique;
@@ -149,7 +148,7 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
     }
   }
 
-  // TODO: Merge that code in commonAssignmentCheck(AnnotatedTypeMirror varType, ExpressionTree
+  // TODO: Merge that code in supertypeCheck(AnnotatedTypeMirror varType, ExpressionTree
   // valueExp, String errorKey, boolean isLocalVariableAssignment), because the method below
   // isn't called for pseudo-assignments, but the mentioned one is. The issue of copy-pasting the
   // code from this method to the other one is that a declaration such as: List<@Unique Object>
@@ -157,12 +156,22 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
   // @MaybeAliased object, if the @Unique annotation is not in the stubfile.  TODO: Change the
   // documentation in BaseTypeVisitor to point out that this isn't called for pseudo-assignments.
   @Override
+  @Deprecated(since = "2026-03-28")
   protected boolean commonAssignmentCheck(
       Tree varTree,
       ExpressionTree valueExp,
       @CompilerMessageKey String errorKey,
       Object... extraArgs) {
-    boolean result = super.commonAssignmentCheck(varTree, valueExp, errorKey, extraArgs);
+    return supertypeCheck(varTree, valueExp, errorKey, extraArgs);
+  }
+
+  @Override
+  protected boolean supertypeCheck(
+      Tree varTree,
+      ExpressionTree valueExp,
+      @CompilerMessageKey String errorKey,
+      Object... extraArgs) {
+    boolean result = super.supertypeCheck(varTree, valueExp, errorKey, extraArgs);
     if (isInUniqueConstructor() && TreeUtils.isExplicitThisDereference(valueExp)) {
       // If an assignment occurs inside a constructor with result type @Unique, it will
       // invalidate the @Unique property by using the "this" reference.
@@ -176,15 +185,24 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
   }
 
   @Override
-  @FormatMethod
+  @Deprecated(since = "2026-03-28")
   protected boolean commonAssignmentCheck(
       AnnotatedTypeMirror varType,
       AnnotatedTypeMirror valueType,
       Tree valueTree,
       @CompilerMessageKey String errorKey,
       Object... extraArgs) {
-    boolean result =
-        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, extraArgs);
+    return supertypeCheck(varType, valueType, valueTree, errorKey, extraArgs);
+  }
+
+  @Override
+  protected boolean supertypeCheck(
+      AnnotatedTypeMirror varType,
+      AnnotatedTypeMirror valueType,
+      Tree valueTree,
+      @CompilerMessageKey String errorKey,
+      Object... extraArgs) {
+    boolean result = super.supertypeCheck(varType, valueType, valueTree, errorKey, extraArgs);
 
     // If we are visiting a pseudo-assignment, visitorLeafKind is either
     // Tree.Kind.NEW_CLASS or Tree.Kind.METHOD_INVOCATION.
