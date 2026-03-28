@@ -6,6 +6,7 @@ import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.SwitchExpressionTree;
 import com.sun.source.tree.VariableTree;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -109,20 +110,20 @@ public class Expression extends TypeConstraint {
         return reduceLambda(context);
       case MEMBER_REFERENCE:
         return reduceMethodRef(context);
+      case SWITCH_EXPRESSION:
+        ConstraintSet set = new ConstraintSet();
+        SwitchExpressionScanner<Void, Void> scanner =
+            new FunctionalSwitchExpressionScanner<>(
+                (ExpressionTree valueTree, Void unused) -> {
+                  Constraint c = new Expression(this, valueTree, T);
+                  set.add(c);
+                  return null;
+                },
+                (c1, c2) -> null);
+        scanner.scanSwitchExpression((SwitchExpressionTree) expression, null);
+        return set;
+
       default:
-        if (TreeUtils.isSwitchExpression(expression)) {
-          ConstraintSet set = new ConstraintSet();
-          SwitchExpressionScanner<Void, Void> scanner =
-              new FunctionalSwitchExpressionScanner<>(
-                  (ExpressionTree valueTree, Void unused) -> {
-                    Constraint c = new Expression(this, valueTree, T);
-                    set.add(c);
-                    return null;
-                  },
-                  (c1, c2) -> null);
-          scanner.scanSwitchExpression(expression, null);
-          return set;
-        }
         throw new BugInCF(
             "Unexpected expression kind: %s, Expression: %s", expression.getKind(), expression);
     }

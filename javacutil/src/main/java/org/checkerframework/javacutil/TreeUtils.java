@@ -5,6 +5,7 @@ import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.BindingPatternTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.ClassTree;
@@ -27,6 +28,7 @@ import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.PrimitiveTypeTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.StatementTree;
+import com.sun.source.tree.SwitchExpressionTree;
 import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
@@ -35,6 +37,7 @@ import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.UnionTypeTree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.tree.YieldTree;
 import com.sun.source.util.SimpleTreeVisitor;
 import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.code.Flags;
@@ -98,9 +101,7 @@ import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.dataflow.qual.Pure;
-import org.checkerframework.javacutil.TreeUtilsAfterJava11.CaseUtils;
-import org.checkerframework.javacutil.TreeUtilsAfterJava11.JCVariableDeclUtils;
-import org.checkerframework.javacutil.TreeUtilsAfterJava11.SwitchExpressionUtils;
+import org.checkerframework.javacutil.TreeUtilsAfterJava17.CaseUtils;
 import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.UniqueIdMap;
 
@@ -2339,9 +2340,11 @@ public final class TreeUtils {
    *
    * @param tree a tree to check
    * @return true if {@code tree} is a {@code BindingPatternTree}
+   * @deprecated Use {@code tree instanceof BindingPatternTree}
    */
+  @Deprecated(forRemoval = true, since = "2026-03-25")
   public static boolean isBindingPatternTree(Tree tree) {
-    return tree.getKind().name().contentEquals("BINDING_PATTERN");
+    return tree instanceof BindingPatternTree;
   }
 
   /**
@@ -2365,10 +2368,10 @@ public final class TreeUtils {
       return false;
     }
     List<? extends CaseTree> cases;
-    if (isSwitchStatement(switchTree)) {
-      cases = ((SwitchTree) switchTree).getCases();
+    if (switchTree instanceof SwitchExpressionTree switchExpressionTree) {
+      cases = switchExpressionTree.getCases();
     } else {
-      cases = SwitchExpressionUtils.getCases(switchTree);
+      cases = ((SwitchTree) switchTree).getCases();
     }
     for (CaseTree caseTree : cases) {
       List<? extends Tree> labels = CaseUtils.getLabels(caseTree);
@@ -2398,7 +2401,7 @@ public final class TreeUtils {
    * @return true if the given tree is a switch expression
    */
   public static boolean isSwitchExpression(Tree tree) {
-    return tree.getKind().name().equals("SWITCH_EXPRESSION");
+    return tree instanceof SwitchExpressionTree;
   }
 
   /**
@@ -2406,9 +2409,11 @@ public final class TreeUtils {
    *
    * @param tree a tree to check
    * @return true if the given tree is a yield expression
+   * @deprecated Use {@code tree instanceof YieldTree}
    */
+  @Deprecated(forRemoval = true, since = "2026-03-25")
   public static boolean isYield(Tree tree) {
-    return tree.getKind().name().equals("YIELD");
+    return tree instanceof YieldTree;
   }
 
   /**
@@ -2450,7 +2455,7 @@ public final class TreeUtils {
    */
   public static boolean isVariableTreeDeclaredUsingVar(VariableTree variableTree) {
     JCVariableDecl variableDecl = (JCVariableDecl) variableTree;
-    if (JCVariableDeclUtils.declaredUsingVar(variableDecl)) {
+    if (variableDecl.declaredUsingVar()) {
       return true;
     }
     JCExpression type = variableDecl.vartype;
@@ -2573,11 +2578,11 @@ public final class TreeUtils {
    *
    * @param tree the tree to get the kind for
    * @return true if the tree is of the kind RECORD
+   * @deprecated Use {@link Tree.Kind#RECORD}
    */
+  @Deprecated(forRemoval = true, since = "2026-03-25")
   public static boolean isRecordTree(Tree tree) {
-    Tree.Kind kind = tree.getKind();
-    // Must use String comparison because we may be on an older JDK:
-    return kind.name().equals("RECORD");
+    return tree.getKind() == Tree.Kind.RECORD;
   }
 
   /**
@@ -2587,7 +2592,9 @@ public final class TreeUtils {
    *
    * @param tree the tree to get the kind for
    * @return the kind of the tree, but CLASS if the kind was RECORD
+   * @deprecated Use {@link Tree.Kind#RECORD}
    */
+  @Deprecated(forRemoval = true, since = "2026-03-25")
   public static Tree.Kind getKindRecordAsClass(Tree tree) {
     if (isRecordTree(tree)) {
       return Tree.Kind.CLASS;

@@ -3672,8 +3672,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     Tree fromElt;
     // Prevent calling declarationFor on elements we know we don't have the tree for.
 
-    switch (ElementUtils.getKindRecordAsClass(elt)) {
-      case CLASS: // Including RECORD
+    switch (elt.getKind()) {
+      case CLASS:
+      case RECORD:
       case ENUM:
       case INTERFACE:
       case ANNOTATION_TYPE:
@@ -4745,12 +4746,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         // Get the functional interface type of the whole switch expression.
         Tree switchTree = parentPath.getParentPath().getLeaf();
         return getFunctionalInterfaceType(switchTree);
+      case YIELD:
+        TreePath pathToCase = TreePathUtil.pathTillOfKind(parentPath, Kind.CASE);
+        return getFunctionalInterfaceType(pathToCase.getParentPath().getLeaf());
 
       default:
-        if (parentTree.getKind().toString().equals("YIELD")) {
-          TreePath pathToCase = TreePathUtil.pathTillOfKind(parentPath, Kind.CASE);
-          return getFunctionalInterfaceType(pathToCase.getParentPath().getLeaf());
-        }
         throw new BugInCF(
             "Could not find functional interface from assignment context. "
                 + "Unexpected tree type: "

@@ -41,7 +41,6 @@ ext {
   // or
   // ./gradlew sometask -PuseJdk21Compiler=true
 
-  gradleRunsOnJava17orHigher = JavaVersion.current() >= JavaVersion.VERSION_17
   gradleRunsOnJava21orHigher = JavaVersion.current() >= JavaVersion.VERSION_21
   gradleRunsOnJava22orHigher = JavaVersion.current() >= JavaVersion.VERSION_22
   gradleRunsOnJava24orHigher = JavaVersion.current() >= JavaVersion.VERSION_24
@@ -156,9 +155,6 @@ allprojects { currentProj ->
   }
 
   configurations {
-    // This is required to run the Checker Framework on JDK 8.
-    javacJar
-
     // Holds the combined classpath of all subprojects including the subprojects themselves.
     allProjects
 
@@ -172,8 +168,6 @@ allprojects { currentProj ->
 
   dependencies {
     errorprone(libs.error.prone.core)
-
-    javacJar(libs.javac)
 
     allProjects(subprojects)
   }
@@ -255,6 +249,9 @@ allprojects { currentProj ->
         if (!name.equals("javadocDoclintAll")) {
           options.memberLevel = javadocMemberLevel
         }
+        // Without the following exclude, Javadoc will error on checker-qual with "error: reference not found"
+        // on class in checker.jar.
+        exclude("**/module-info.java")
         classpath += configurations.named("checkerFatJar").get().asFileTree
         options.taglets("org.checkerframework.taglet.ManualTaglet")
         options.tagletPath(project(":framework-test").sourceSets.taglet.output.classesDirs.getFiles() as File[])
@@ -290,20 +287,15 @@ allprojects { currentProj ->
       // Uncomment when needed.
       // // Put source files in deterministic order, for debugging.
       // compilationTask.source = compilationTask.source.sort()
-
-      // This test is for whether the Checker Framework supports (runs under) Java 8.
-      // Currently, the Checker Framework does support Java 8.
-      if (true) {
-        // Using `options.release.set(8)` here leads to compilation
-        // errors such as "package com.sun.source.tree does not exist".
-        sourceCompatibility = 8
-        targetCompatibility = 8
-        // Because the target is 8, all of the public compiler classes are accessible, so
-        // --add-exports are not required (nor are they allowed with target 8). See
-        // https://openjdk.org/jeps/247 for details on compiling for older versions.
+      if ((project.name.equals("checker-qual")
+          || project.name.equals("checker-util")
+          || project.name.equals("checker-qual-android"))) {
+        options.release = 11
       } else {
-        // This makes the class files Java 11, and then the Checker Framework would not run under Java 8.
-        options.release.set(11)
+        // Can't use --release with --add-exports, otherwise you'll see errors like:
+        // error: exporting a package from system module jdk.compiler is not allowed with --release
+        sourceCompatibility = 17
+        targetCompatibility = 17
         options.compilerArgs += [
           "--add-exports",
           "jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
@@ -366,6 +358,10 @@ allprojects { currentProj ->
         options.errorprone.enabled = compilerRunsOnJava21orHigher
         options.errorprone.disableWarningsInGeneratedCode = true
         options.errorprone.errorproneArgs = [
+          // TODO: Fix these warnings now that JDK 17 is used.
+          "-Xep:StatementSwitchToExpressionSwitch:OFF",
+          // TODO: Fix these warnings now that JDK 17 is used.
+          "-Xep:PatternMatchingInstanceof:OFF",
           // Many compiler classes are interned.
           "-Xep:ReferenceEquality:OFF",
           // Not useful to suggest Splitter; maybe clean up.
@@ -837,11 +833,24 @@ subprojects {
     // When you add one here, also update a dependsOn(item for the "typecheck" task.)
     createCheckTypeTask(project.name, "Formatter",
         "org.checkerframework.checker.formatter.FormatterChecker")
+
+    def checkInterningArgs = [
+      "-Astubs=javax-lang-model-element-name.astub"
+    ]
+    if ((project.name.equals("checker-qual")
+        || project.name.equals("checker-util")
+        || project.name.equals("checker-qual-android"))) {
+      // Because these projects use --release=11, the stubparser issues warnings like:
+      //  warning: javax-lang-model-element-name.astub:(line 11,col 1): Package not found: com.sun.tools.javac.util
+      //  so just suppress them.
+      checkInterningArgs += "-AstubNoWarnIfNotFound"
+    }
+
+
     createCheckTypeTask(project.name, "Interning",
         "org.checkerframework.checker.interning.InterningChecker",
-        [
-          "-Astubs=javax-lang-model-element-name.astub"
-        ])
+        checkInterningArgs)
+
     createCheckTypeTask(project.name, "Optional",
         "org.checkerframework.checker.optional.OptionalChecker",
         [

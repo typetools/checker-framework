@@ -692,9 +692,6 @@ the Checker Framework, rather than an official release.
 % checkers and of the checker framework.  It may also help you to debug
 % problems more effectively.
 
-The Checker Framework runs under any JDK version 8 or later.
-However, you must build the Checker Framework under JDK 11 or later.
-
 
 \subsectionAndLabel{Install prerequisites}{building-prerequisites}
 
@@ -718,7 +715,7 @@ You may need to log out and log back in for the setting to take effect.
 \item[Ubuntu]
   Run the following commands, which should be the same as those in
   \<checker/bin-devel/Dockerfile-ubuntu-jdk\emph{XX}-plus>, where \emph{XX}
-  is a JDK version such as 8, 11, 17, 21, 25, etc.:
+  is a JDK version such as 17, 21, 25, etc.:
 
 (This list should be the same as in
 \<checker/bin-devel/Dockerfile-ubuntu-jdk25-plus>; if your build fails
@@ -838,7 +835,7 @@ or
 export JAVA_HOME=/Library/Java/JavaVirtualMachines/adoptopenjdk-XX.jdk/Contents/Home/
 \end{Verbatim}
 
-In the command, \emph{XX} is a JDK version such as 17, 21, 24, etc.
+In the command, \emph{XX} is a JDK version such as 17, 21, 25, etc.
 
 \item[Windows]
   To build on Windows 10 or later,
