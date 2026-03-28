@@ -65,6 +65,13 @@ public abstract class Node implements UniqueId {
   protected boolean inSource = true;
 
   /**
+   * True if this node represents a tree in the condition of a loop that is always evaluated.
+   *
+   * <p>Is set by {@link #setIsLoopCondition}.
+   */
+  protected boolean isLoopCondition = false;
+
+  /**
    * The type of this node. For {@link Node}s with {@link Tree}s, this type is the type of the
    * {@link Tree}. Otherwise, it is the type is set by the {@link CFGBuilder}.
    */
@@ -161,8 +168,38 @@ public abstract class Node implements UniqueId {
     return inSource;
   }
 
-  public void setInSource(boolean inSrc) {
-    inSource = inSrc;
+  /**
+   * Marks this node as representing a tree that appears in source code.
+   *
+   * @param inSource true if this node represents a tree that appears in the source code
+   */
+  public void setInSource(boolean inSource) {
+    this.inSource = inSource;
+  }
+
+  /**
+   * Returns true if this node represents a tree that is the condition of a loop.
+   *
+   * @return true if this node represents a tree that is the condition of a loop
+   */
+  @Pure
+  public boolean getIsLoopCondition() {
+    return isLoopCondition;
+  }
+
+  /**
+   * Marks this node as being the condition of a loop.
+   *
+   * @param isLoopCondition true if this node is the condition of a loop
+   */
+  public void setIsLoopCondition(boolean isLoopCondition) {
+    this.isLoopCondition = isLoopCondition;
+    if (isLoopCondition) {
+      if (this instanceof BinaryOperationNode) {
+        // Only the LHS of a binary operation is guaranteed to be executed.
+        ((BinaryOperationNode) this).left.setIsLoopCondition(isLoopCondition);
+      }
+    }
   }
 
   /**
