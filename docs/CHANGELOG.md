@@ -26,8 +26,8 @@ New checkers include:
 * The [Resource Leak
   Checker](https://checkerframework.org/manual/#resource-leak-checker)
   guarantees that every resource is closed rather than leaked.  Examples of
-  resources are such as a channel, executor, `ExecutionControl`, file,
-  `FileLock`, `Formatter`, reader, `Scanner`, socket, stream, writer, etc.
+  resources are a channel, executor, `ExecutionControl`, file, `FileLock`,
+  `Formatter`, reader, `Scanner`, socket, stream, writer, etc.
 * The [SQL Quotes
   Checker](https://checkerframework.org/manual/#sql-quotes-checker) helps
   prevent SQL injection vulnerabilities.
@@ -42,7 +42,7 @@ New command-line arguments include:
 * `-Ainfer=ajava`, `-AinferOutputDirectory`, `-AinferOutputOriginal`, `-AshowWpiFailedInferences`
 * `-AshowSuppressWarningsStrings`, `-AwarnUnneededSuppressionsExceptions`
 * `-AshowPrefixInWarningMessages`
-* `-AstubNoWarnIfNotFound`, `-AstubWarnNote` `-AmergeStubsWithSource`
+* `-AstubNoWarnIfNotFound`, `-AstubWarnNote`, `-AmergeStubsWithSource`
 * `-Aonelinemsg`, `-AdumpOnErrors`, `-AexceptionLineSeparator`
 * `-ApermitMissingJdk`, `-AparseAllJdk`
 * `-AslowTypecheckingSeconds`
@@ -56,7 +56,7 @@ There are too many other improvements to list here.
 
 All deprecated methods and classes have been removed.  If your project builds
 upon the Checker Framework, we suggest that you upgrade to version 3.54.1,
-resolve all the deprecation warnings. then upgrade to version 4.0.0.
+resolve all the deprecation warnings, then upgrade to version 4.0.0.
 
 ### Closed issues
 
