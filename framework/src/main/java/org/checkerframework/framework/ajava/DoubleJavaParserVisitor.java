@@ -21,8 +21,9 @@ import com.github.javaparser.ast.body.ReceiverParameter;
 import com.github.javaparser.ast.body.RecordDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.comments.BlockComment;
-import com.github.javaparser.ast.comments.JavadocComment;
 import com.github.javaparser.ast.comments.LineComment;
+import com.github.javaparser.ast.comments.MarkdownComment;
+import com.github.javaparser.ast.comments.TraditionalJavadocComment;
 import com.github.javaparser.ast.expr.ArrayAccessExpr;
 import com.github.javaparser.ast.expr.ArrayCreationExpr;
 import com.github.javaparser.ast.expr.ArrayInitializerExpr;
@@ -41,6 +42,7 @@ import com.github.javaparser.ast.expr.IntegerLiteralExpr;
 import com.github.javaparser.ast.expr.LambdaExpr;
 import com.github.javaparser.ast.expr.LongLiteralExpr;
 import com.github.javaparser.ast.expr.MarkerAnnotationExpr;
+import com.github.javaparser.ast.expr.MatchAllPatternExpr;
 import com.github.javaparser.ast.expr.MemberValuePair;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.MethodReferenceExpr;
@@ -49,6 +51,7 @@ import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.NormalAnnotationExpr;
 import com.github.javaparser.ast.expr.NullLiteralExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
+import com.github.javaparser.ast.expr.RecordPatternExpr;
 import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.expr.SingleMemberAnnotationExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
@@ -57,6 +60,7 @@ import com.github.javaparser.ast.expr.SwitchExpr;
 import com.github.javaparser.ast.expr.TextBlockLiteralExpr;
 import com.github.javaparser.ast.expr.ThisExpr;
 import com.github.javaparser.ast.expr.TypeExpr;
+import com.github.javaparser.ast.expr.TypePatternExpr;
 import com.github.javaparser.ast.expr.UnaryExpr;
 import com.github.javaparser.ast.expr.VariableDeclarationExpr;
 import com.github.javaparser.ast.modules.ModuleDeclaration;
@@ -471,8 +475,13 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
   }
 
   @Override
-  public void visit(JavadocComment node1, Node other) {
-    defaultAction(node1, other);
+  public void visit(MarkdownComment n, Node arg) {
+    defaultAction(n, arg);
+  }
+
+  @Override
+  public void visit(TraditionalJavadocComment n, Node arg) {
+    defaultAction(n, arg);
   }
 
   @Override
@@ -642,6 +651,32 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
     if (node1.getReceiverParameter().isPresent() && node2.getReceiverParameter().isPresent()) {
       node1.getReceiverParameter().get().accept(this, node2.getReceiverParameter().get());
     }
+  }
+
+  @Override
+  public void visit(RecordPatternExpr node1, Node other) {
+    RecordPatternExpr node2 = (RecordPatternExpr) other;
+    defaultAction(node1, node2);
+    visitLists(node1.getPatternList(), node2.getPatternList());
+    visitLists(node1.getModifiers(), node2.getModifiers());
+    node1.getType().accept(this, node2.getType());
+  }
+
+  @Override
+  public void visit(TypePatternExpr node1, Node other) {
+    TypePatternExpr node2 = (TypePatternExpr) other;
+    defaultAction(node1, node2);
+    node1.getName().accept(this, node2.getName());
+    visitLists(node1.getModifiers(), node2.getModifiers());
+    node1.getType().accept(this, node2.getType());
+  }
+
+  @Override
+  public void visit(MatchAllPatternExpr node1, Node other) {
+    MatchAllPatternExpr node2 = (MatchAllPatternExpr) other;
+    defaultAction(node1, node2);
+    visitLists(node1.getModifiers(), node2.getModifiers());
+    node1.getType().accept(this, node2.getType());
   }
 
   @Override
