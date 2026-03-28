@@ -42,7 +42,7 @@ New command-line arguments include:
 * `-Ainfer=ajava`, `-AinferOutputDirectory`, `-AinferOutputOriginal`, `-AshowWpiFailedInferences`
 * `-AshowSuppressWarningsStrings`, `-AwarnUnneededSuppressionsExceptions`
 * `-AshowPrefixInWarningMessages`
-*  `-AstubNoWarnIfNotFound`, `-AstubWarnNote` `-AmergeStubsWithSource`
+* `-AstubNoWarnIfNotFound`, `-AstubWarnNote` `-AmergeStubsWithSource`
 * `-Aonelinemsg`, `-AdumpOnErrors`, `-AexceptionLineSeparator`
 * `-ApermitMissingJdk`, `-AparseAllJdk`
 * `-AslowTypecheckingSeconds`
