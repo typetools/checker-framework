@@ -3,7 +3,62 @@
 <!-- markdownlint-disable no-duplicate-heading -->
 <!-- pyml disable no-duplicate-heading -->
 
-## Version 3.54.1 (2026-04-02)
+## Version 4.0.0 (2026-04-02)
+
+### User-visible changes
+
+The Checker Framework requires Java 17 to run.  That is, you need to use JDK 17
+or later when compiling your code.  Your code can run under any release of Java,
+from Java 8 onward.
+
+### Changes since version 3.0.0
+
+Since version 3.0.0, 91 authors have made over 5000 commits and closed over 600
+issues.  Thanks to everyone who contributed!
+
+New checkers include:
+
+* The [Index Checker](https://checkerframework.org/manual/#index-checker) warns
+  about out-of-bounds accesses to arrays and strings.
+* The [Initialized Fields
+  Checker](https://checkerframework.org/manual/#initialized-fields-checker)
+  warns if a constructor does not initialize a field.
+* The [Resource Leak
+  Checker](https://checkerframework.org/manual/#resource-leak-checker)
+  guarantees that every resource is closed rather than leaked.  Examples of
+  resources are such as a channel, executor, `ExecutionControl`, file,
+  `FileLock`, `Formatter`, reader, `Scanner`, socket, stream, writer, etc.
+* The [SQL Quotes
+  Checker](https://checkerframework.org/manual/#sql-quotes-checker) helps
+  prevent SQL injection vulnerabilities.
+
+New command-line arguments include:
+
+* `-AskipFiles`, `-AonlyFiles`
+* `-AassumeSideEffectFree`, `-AassumeDeterministic`, `-AassumePure`, `-AassumePureGetters`
+* `-AuseConservativeDefaultsForUncheckedCode`
+* `-AignoreRawTypeArguments`
+* `-AwarnRedundantAnnotations`
+* `-Ainfer=ajava`, `-AinferOutputDirectory`, `-AinferOutputOriginal`, `-AshowWpiFailedInferences`
+* `-AshowSuppressWarningsStrings`, `-AwarnUnneededSuppressionsExceptions`
+* `-AshowPrefixInWarningMessages`
+*  `-AstubNoWarnIfNotFound`, `-AstubWarnNote` `-AmergeStubsWithSource`
+* `-Aonelinemsg`, `-AdumpOnErrors`, `-AexceptionLineSeparator`
+* `-ApermitMissingJdk`, `-AparseAllJdk`
+* `-AslowTypecheckingSeconds`
+* `-Aversion`, `-AprintGitProperties`
+* You can pass an option to only a particular checker (not all checkers) by
+  using an underscore prefix.
+
+There are too many other improvements to list here.
+
+### Implementation details
+
+All deprecated methods and classes have been removed.
+
+### Closed issues
+
+## Version 3.54.1 (2026-04-01)
 
 ### User-visible changes
 
