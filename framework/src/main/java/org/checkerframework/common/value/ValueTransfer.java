@@ -410,7 +410,11 @@ public class ValueTransfer extends CFTransfer {
    */
   private boolean isIntRange(Node subNode, TransferInput<CFValue, CFStore> p) {
     CFValue value = p.getValueOfSubNode(subNode);
-    return atypeFactory.isIntRange(value.getAnnotations());
+    try {
+      return atypeFactory.isIntRange(value.getAnnotations());
+    } catch (Exception e) {
+      return false;
+    }
   }
 
   /**
@@ -1171,8 +1175,14 @@ public class ValueTransfer extends CFTransfer {
       CFStore elseStore,
       boolean isLoopCondition) {
 
-    AnnotationMirror leftAnno = getValueAnnotation(leftValue);
-    AnnotationMirror rightAnno = getValueAnnotation(rightValue);
+    AnnotationMirror leftAnno;
+    AnnotationMirror rightAnno;
+    try {
+      leftAnno = getValueAnnotation(leftValue);
+      rightAnno = getValueAnnotation(rightValue);
+    } catch (Exception e) {
+      return null;
+    }
 
     if (atypeFactory.isIntRange(leftAnno)
         || atypeFactory.isIntRange(rightAnno)
