@@ -594,7 +594,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    *
    * @param a an annotation class
    * @return true if this has an annotation of the given class
-   * @deprecated use {@link hasAnnotation(Class)}
+   * @deprecated use {@link #hasAnnotation(Class)}
    */
   @Deprecated(since = "2026-03-28")
   public boolean hasEffectiveAnnotation(Class<? extends Annotation> a) {
@@ -618,7 +618,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    *
    * @param a an annotation
    * @return true if this has an annotation that is the same as the given annotation
-   * @deprecated use {@link hasAnnotation(AnnotationMirror)}
+   * @deprecated use {@link #hasAnnotation(AnnotationMirror)}
    */
   @Deprecated(since = "2026-03-28")
   public boolean hasEffectiveAnnotation(AnnotationMirror a) {
@@ -1345,7 +1345,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
     /** The parameter types; an unmodifiable list. */
     /*package-private*/ @MonotonicNonNull List<AnnotatedTypeMirror> paramTypes = null;
 
-    /** True if {@link paramTypes} has been computed. */
+    /** True if {@link #paramTypes} has been computed. */
     private boolean paramTypesComputed = false;
 
     /**
@@ -1354,25 +1354,25 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
      */
     /*package-private*/ @Nullable AnnotatedDeclaredType receiverType;
 
-    /** True if {@link receiverType} has been computed. */
+    /** True if {@link #receiverType} has been computed. */
     private boolean receiverTypeComputed = false;
 
     /** The return type. */
     /*package-private*/ @MonotonicNonNull AnnotatedTypeMirror returnType;
 
-    /** True if {@link returnType} has been computed. */
+    /** True if {@link #returnType} has been computed. */
     private boolean returnTypeComputed = false;
 
     /** The thrown types; an unmodifiable list. */
     /*package-private*/ @MonotonicNonNull List<AnnotatedTypeMirror> thrownTypes;
 
-    /** True if {@link thrownTypes} has been computed. */
+    /** True if {@link #thrownTypes} has been computed. */
     private boolean thrownTypesComputed = false;
 
     /** The type variables; an unmodifiable list. */
     /*package-private*/ @MonotonicNonNull List<AnnotatedTypeVariable> typeVarTypes;
 
-    /** True if {@link typeVarTypes} has been computed. */
+    /** True if {@link #typeVarTypes} has been computed. */
     private boolean typeVarTypesComputed = false;
 
     /**
