@@ -289,6 +289,7 @@ class DiffVisitor implements ElementVisitor<Void, Pair<AElement, AElement>> {
    * Calculates difference between {@code minuend} and first component of {@code eltPair}, adding
    * results to second component of {@code eltPair}.
    */
+  @SuppressWarnings("resourceleak:required.method.not.known") // Not relevant to resources
   private <K, V extends AElement> void visitElements(
       VivifyingMap<K, V> minuend, VivifyingMap<K, V> subtrahend, VivifyingMap<K, V> difference) {
     if (minuend != null) {
