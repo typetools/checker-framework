@@ -59,6 +59,7 @@ import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
@@ -413,6 +414,9 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
       // it.
       if (atmOfReceiver.getKind() != TypeKind.VOID) {
         AnnotationMirror gb = atmOfReceiver.getAnnotationInHierarchy(atypeFactory.GUARDEDBYUNKNOWN);
+        if (gb == null) {
+          throw new BugInCF("no annotation: " + atmOfReceiver + " for " + tree.getExpression());
+        }
         checkLock(tree.getExpression(), gb);
       }
     }
@@ -494,6 +498,9 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
   public Void visitArrayAccess(ArrayAccessTree tree, Void p) {
     AnnotatedTypeMirror atmOfReceiver = atypeFactory.getAnnotatedType(tree.getExpression());
     AnnotationMirror gb = atmOfReceiver.getAnnotationInHierarchy(atypeFactory.GUARDEDBYUNKNOWN);
+    if (gb == null) {
+      throw new BugInCF("no annotation: " + atmOfReceiver + " for " + tree.getExpression());
+    }
     checkLock(tree.getExpression(), gb);
     return super.visitArrayAccess(tree, p);
   }
@@ -1118,8 +1125,11 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
   // "contracts.precondition.field", so it would be clear that
   // the error refers to an implicit method call, not a dereference (field access).
   private void checkPreconditionsForImplicitToStringCall(ExpressionTree tree) {
-    AnnotationMirror gbAnno =
-        atypeFactory.getAnnotatedType(tree).getAnnotationInHierarchy(atypeFactory.GUARDEDBY);
+    AnnotatedTypeMirror atm = atypeFactory.getAnnotatedType(tree);
+    AnnotationMirror gbAnno = atm.getAnnotationInHierarchy(atypeFactory.GUARDEDBY);
+    if (gbAnno == null) {
+      throw new BugInCF("no annotation: " + atm + " for " + tree);
+    }
     checkLock(tree, gbAnno);
   }
 
