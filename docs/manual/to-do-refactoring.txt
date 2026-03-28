@@ -5,14 +5,12 @@ Checker Framework redesign/refactoring (in priority order):
 
 * Document the difference between getAnnotation and getEffectiveAnnotation
 
-* rename commonAssignmentCheck to subtypeCheck
-
 * rename asMemberOf or postAsMemberOf to fieldFromUse
 
 * isSubtype should not return boolean.
   (Sometimes it is used for control flow rather than error reporting?  Why?  And would that even be possible to incorporate into inference mode?)
   It should be "requireSubtype", return void, and issue the proper error.
-  This is essentially commonAssignmentCheck, though.  What's the distinction?  Determine that and document it.
+  This is essentially supertypeCheck, though.  What's the distinction?  Determine that and document it.
   An alternative (but not as good?):  isSubtype could return information about the specific error (like 3rd type parameter is the one that doesn't match, for example).
   Problem: type hierarchy doesn't have access to the Checker.
    * could return an error object, or pass in something that will handle errors.
@@ -99,7 +97,7 @@ will replace inference's ids.  This can be a discrete task, though I would
 imagine there are some interactions with Stuart's code.
 
 * Add a callback for either generating constraints or enforcing checks in
-either commonAssignmentCheck or QualifierHierarchy.  If this is done through
+either supertypeCheck or QualifierHierarchy.  If this is done through
 QualifierHierarchy, create methods isSubtype and mustBeSubtype to distinguish
 between the times when isSubtype is used in conditionals rather than to
 enforce a subtype relationship

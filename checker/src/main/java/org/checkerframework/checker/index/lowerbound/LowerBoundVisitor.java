@@ -61,7 +61,17 @@ public class LowerBoundVisitor extends BaseTypeVisitor<LowerBoundAnnotatedTypeFa
   }
 
   @Override
+  @Deprecated(since = "2026-03-28")
   protected boolean commonAssignmentCheck(
+      Tree varTree,
+      ExpressionTree valueTree,
+      @CompilerMessageKey String errorKey,
+      Object... extraArgs) {
+    return supertypeCheck(varTree, valueTree, errorKey, extraArgs);
+  }
+
+  @Override
+  protected boolean supertypeCheck(
       Tree varTree,
       ExpressionTree valueTree,
       @CompilerMessageKey String errorKey,
@@ -91,7 +101,7 @@ public class LowerBoundVisitor extends BaseTypeVisitor<LowerBoundAnnotatedTypeFa
       }
     }
 
-    result = super.commonAssignmentCheck(varTree, valueTree, errorKey, extraArgs) && result;
+    result = super.supertypeCheck(varTree, valueTree, errorKey, extraArgs) && result;
     return result;
   }
 }

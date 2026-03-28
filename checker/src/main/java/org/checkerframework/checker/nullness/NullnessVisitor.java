@@ -146,7 +146,17 @@ public class NullnessVisitor
   }
 
   @Override
+  @Deprecated(since = "2026-03-28")
   protected boolean commonAssignmentCheck(
+      Tree varTree,
+      ExpressionTree valueExp,
+      @CompilerMessageKey String errorKey,
+      Object... extraArgs) {
+    return supertypeCheck(varTree, valueExp, errorKey, extraArgs);
+  }
+
+  @Override
+  protected boolean supertypeCheck(
       Tree varTree,
       ExpressionTree valueExp,
       @CompilerMessageKey String errorKey,
@@ -164,7 +174,7 @@ public class NullnessVisitor
             NullnessChecker.LINT_DEFAULT_NOINITFORMONOTONICNONNULL)) {
       return true;
     }
-    return super.commonAssignmentCheck(varTree, valueExp, errorKey, extraArgs);
+    return super.supertypeCheck(varTree, valueExp, errorKey, extraArgs);
   }
 
   /**
@@ -207,7 +217,17 @@ public class NullnessVisitor
   }
 
   @Override
+  @Deprecated(since = "2026-03-28")
   protected boolean commonAssignmentCheck(
+      AnnotatedTypeMirror varType,
+      ExpressionTree valueExp,
+      @CompilerMessageKey String errorKey,
+      Object... extraArgs) {
+    return supertypeCheck(varType, valueExp, errorKey, extraArgs);
+  }
+
+  @Override
+  protected boolean supertypeCheck(
       AnnotatedTypeMirror varType,
       ExpressionTree valueExp,
       @CompilerMessageKey String errorKey,
@@ -216,12 +236,23 @@ public class NullnessVisitor
     // might not have a value for the var tree.  This is sound because if data flow has
     // determined @PolyNull is @Nullable at the RHS, then it is also @Nullable for the LHS.
     atypeFactory.replacePolyQualifier(varType, valueExp);
-    return super.commonAssignmentCheck(varType, valueExp, errorKey, extraArgs);
+    return super.supertypeCheck(varType, valueExp, errorKey, extraArgs);
+  }
+
+  @Override
+  @Deprecated(since = "2026-03-28")
+  protected boolean commonAssignmentCheck(
+      AnnotatedTypeMirror varType,
+      AnnotatedTypeMirror valueType,
+      Tree valueTree,
+      @CompilerMessageKey String errorKey,
+      Object... extraArgs) {
+    return supertypeCheck(varType, valueType, valueTree, errorKey, extraArgs);
   }
 
   @Override
   @FormatMethod
-  protected boolean commonAssignmentCheck(
+  protected boolean supertypeCheck(
       AnnotatedTypeMirror varType,
       AnnotatedTypeMirror valueType,
       Tree valueTree,
@@ -235,7 +266,7 @@ public class NullnessVisitor
         return false;
       }
     }
-    return super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, extraArgs);
+    return super.supertypeCheck(varType, valueType, valueTree, errorKey, extraArgs);
   }
 
   /** Case 1: Check for null dereferencing. */

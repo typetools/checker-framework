@@ -99,7 +99,17 @@ public class InitializationVisitor<
   }
 
   @Override
+  @Deprecated(since = "2026-03-28")
   protected boolean commonAssignmentCheck(
+      Tree varTree,
+      ExpressionTree valueExp,
+      @CompilerMessageKey String errorKey,
+      Object... extraArgs) {
+    return supertypeCheck(varTree, valueExp, errorKey, extraArgs);
+  }
+
+  @Override
+  protected boolean supertypeCheck(
       Tree varTree,
       ExpressionTree valueExp,
       @CompilerMessageKey String errorKey,
@@ -133,7 +143,7 @@ public class InitializationVisitor<
         }
       }
     }
-    return super.commonAssignmentCheck(varTree, valueExp, errorKey, extraArgs);
+    return super.supertypeCheck(varTree, valueExp, errorKey, extraArgs);
   }
 
   @Override

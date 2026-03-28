@@ -160,9 +160,9 @@ import org.plumelib.util.IPair;
  * <p>This implementation uses the {@link AnnotatedTypeFactory} implementation provided by an
  * associated {@link BaseTypeChecker}; its visitor methods will invoke this factory on parts of the
  * AST to determine the "annotated type" of an expression. Then, the visitor methods will check the
- * types in assignments and pseudo-assignments using {@link #commonAssignmentCheck}, which
- * ultimately calls the {@link TypeHierarchy#isSubtype} method and reports errors that violate
- * Java's rules of assignment.
+ * types in assignments and pseudo-assignments using {@link #supertypeCheck}, which ultimately calls
+ * the {@link TypeHierarchy#isSubtype} method and reports errors that violate Java's rules of
+ * assignment.
  *
  * <p>Note that since this implementation only performs assignment and pseudo-assignment checking,
  * other rules for custom type systems must be added in subclasses (e.g., dereference checking in
@@ -1670,14 +1670,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     atypeFactory.getDependentTypesHelper().checkTypeForErrorExpressions(variableType, tree);
     Element varElt = TreeUtils.elementFromDeclaration(tree);
     if (varElt.getKind() == ElementKind.ENUM_CONSTANT) {
-      commonAssignmentCheck(tree, tree.getInitializer(), "enum.declaration");
+      supertypeCheck(tree, tree.getInitializer(), "enum.declaration");
     } else
     // If there's no assignment in this variable declaration, skip it.
     if (tree.getInitializer() != null) {
-      commonAssignmentCheck(tree, tree.getInitializer(), "assignment");
+      supertypeCheck(tree, tree.getInitializer(), "assignment");
     } else {
-      // commonAssignmentCheck validates the type of `tree`,
-      // so only validate if commonAssignmentCheck wasn't called.
+      // supertypeCheck validates the type of `tree`,
+      // so only validate if supertypeCheck wasn't called.
       validateTypeOf(tree);
     }
     warnRedundantAnnotations(tree, variableType);
@@ -1835,14 +1835,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Performs two checks: subtyping and assignability checks, using {@link
-   * #commonAssignmentCheck(Tree, ExpressionTree, String, Object[])}.
+   * Performs two checks: subtyping and assignability checks, using {@link #supertypeCheck(Tree,
+   * ExpressionTree, String, Object[])}.
    *
    * <p>If the subtype check fails, it issues an "assignment" error.
    */
   @Override
   public Void visitAssignment(AssignmentTree tree, Void p) {
-    commonAssignmentCheck(tree.getVariable(), tree.getExpression(), "assignment");
+    supertypeCheck(tree.getVariable(), tree.getExpression(), "assignment");
     return super.visitAssignment(tree, p);
   }
 
@@ -1863,7 +1863,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     AnnotatedTypeMirror iteratedType = atypeFactory.getIterableElementType(tree.getExpression());
     boolean valid = validateTypeOf(tree.getVariable());
     if (valid) {
-      commonAssignmentCheck(var, iteratedType, tree.getExpression(), "enhancedfor");
+      supertypeCheck(var, iteratedType, tree.getExpression(), "enhancedfor");
     }
     Void result = super.visitEnhancedForLoop(tree, p);
 
@@ -2082,7 +2082,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           .setComponentType(lastParamAnnotatedType.getComponentType());
     }
 
-    commonAssignmentCheck(lastParamAnnotatedType, wrappedVarargsType, tree, "varargs");
+    supertypeCheck(lastParamAnnotatedType, wrappedVarargsType, tree, "varargs");
   }
 
   /**
@@ -2228,7 +2228,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     Tree errorLocation = tree.getArguments().get(0);
     if (TypesUtils.isErasedSubtype(
         vectorTypeArg.getUnderlyingType(), argComponent.getUnderlyingType(), types)) {
-      commonAssignmentCheck(argComponent, vectorTypeArg, errorLocation, "vector.copyinto");
+      supertypeCheck(argComponent, vectorTypeArg, errorLocation, "vector.copyinto");
     } else {
       checker.reportError(errorLocation, "vector.copyinto", vectorTypeArg, argComponent);
     }
@@ -2310,7 +2310,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       // Check return type for single statement returns here.
       AnnotatedTypeMirror ret = functionType.getReturnType();
       if (ret.getKind() != TypeKind.VOID) {
-        commonAssignmentCheck(ret, (ExpressionTree) tree.getBody(), "return");
+        supertypeCheck(ret, (ExpressionTree) tree.getBody(), "return");
       }
     }
 
@@ -2318,7 +2318,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     for (int i = 0; i < functionType.getParameterTypes().size(); ++i) {
       AnnotatedTypeMirror lambdaParameter =
           atypeFactory.getAnnotatedType(tree.getParameters().get(i));
-      commonAssignmentCheck(
+      supertypeCheck(
           lambdaParameter,
           functionType.getParameterTypes().get(i),
           tree.getParameters().get(i),
@@ -2373,7 +2373,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     if (declaredReturnType != null) {
-      commonAssignmentCheck(declaredReturnType, tree.getExpression(), "return");
+      supertypeCheck(declaredReturnType, tree.getExpression(), "return");
     }
     Void result = super.visitReturn(tree, p);
 
@@ -2443,13 +2443,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       AnnotatedTypeMirror actual = atypeFactory.getAnnotatedType(at.getExpression());
       if (expected.getKind() != TypeKind.ARRAY) {
         // Expected is not an array -> direct comparison.
-        commonAssignmentCheck(expected, actual, at.getExpression(), "annotation");
+        supertypeCheck(expected, actual, at.getExpression(), "annotation");
       } else if (actual.getKind() == TypeKind.ARRAY) {
         // Both actual and expected are arrays.
-        commonAssignmentCheck(expected, actual, at.getExpression(), "annotation");
+        supertypeCheck(expected, actual, at.getExpression(), "annotation");
       } else {
         // The declaration is an array type, but just a single element is given.
-        commonAssignmentCheck(
+        supertypeCheck(
             ((AnnotatedArrayType) expected).getComponentType(),
             actual,
             at.getExpression(),
@@ -2465,7 +2465,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       // From the JLS:
       // A poly reference conditional expression is compatible with a target type T if its
       // second and third operand expressions are compatible with T.  In the Checker
-      // Framework this check happens in #commonAssignmentCheck.
+      // Framework this check happens in #supertypeCheck.
       return super.visitConditionalExpression(tree, p);
     }
 
@@ -2474,8 +2474,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     // AnnotatedTypeFactory) is correct, the following checks are redundant. However, let's add
     // another failsafe guard and do the checks.
     AnnotatedTypeMirror cond = atypeFactory.getAnnotatedType(tree);
-    this.commonAssignmentCheck(cond, tree.getTrueExpression(), "conditional");
-    this.commonAssignmentCheck(cond, tree.getFalseExpression(), "conditional");
+    this.supertypeCheck(cond, tree.getTrueExpression(), "conditional");
+    this.supertypeCheck(cond, tree.getFalseExpression(), "conditional");
     return super.visitConditionalExpression(tree, p);
   }
 
@@ -2500,8 +2500,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       SwitchExpressionScanner<Void, Void> scanner =
           new FunctionalSwitchExpressionScanner<>(
               (ExpressionTree valueTree, Void unused) -> {
-                BaseTypeVisitor.this.commonAssignmentCheck(
-                    switchType, valueTree, "switch.expression");
+                BaseTypeVisitor.this.supertypeCheck(switchType, valueTree, "switch.expression");
                 return null;
               },
               (r1, r2) -> null);
@@ -2544,7 +2543,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           (treeKind == Tree.Kind.PREFIX_INCREMENT || treeKind == Tree.Kind.POSTFIX_INCREMENT)
               ? "unary.increment"
               : "unary.decrement";
-      commonAssignmentCheck(varType, valueType, tree, errorKey);
+      supertypeCheck(varType, valueType, tree, errorKey);
     }
     return super.visitUnary(tree, p);
   }
@@ -2556,7 +2555,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     // Then this method should check whether s + expr can be assigned to s,
     // but the "s + expr" tree does not exist.  So instead, check that
     // s += expr can be assigned to s.
-    commonAssignmentCheck(tree.getVariable(), tree, "compound.assignment");
+    supertypeCheck(tree.getVariable(), tree, "compound.assignment");
     return super.visitCompoundAssignment(tree, p);
   }
 
@@ -3112,18 +3111,37 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @param errorKey the error message key to use if the check fails
    * @param extraArgs arguments to the error message key, before "found" and "expected" types
    * @return true if the check succeeds, false if an error message was issued
+   * @deprecated use {@link #supertypeCheck}
    */
+  @Deprecated(since = "2026-03-28")
   protected boolean commonAssignmentCheck(
+      Tree varTree,
+      ExpressionTree valueExpTree,
+      @CompilerMessageKey String errorKey,
+      Object... extraArgs) {
+    return supertypeCheck(varTree, valueExpTree, errorKey, extraArgs);
+  }
+
+  /**
+   * Checks the validity of an assignment (or pseudo-assignment) from a value to a variable and
+   * emits an error message (through the compiler's messaging interface) if it is not valid.
+   *
+   * @param varTree the AST node for the lvalue (usually a variable)
+   * @param valueExpTree the AST node for the rvalue (the new value)
+   * @param errorKey the error message key to use if the check fails
+   * @param extraArgs arguments to the error message key, before "found" and "expected" types
+   * @return true if the check succeeds, false if an error message was issued
+   */
+  protected boolean supertypeCheck(
       Tree varTree,
       ExpressionTree valueExpTree,
       @CompilerMessageKey String errorKey,
       Object... extraArgs) {
     if (valueExpTree instanceof ConditionalExpressionTree) {
       ConditionalExpressionTree condExprTree = (ConditionalExpressionTree) valueExpTree;
-      boolean trueResult =
-          commonAssignmentCheck(varTree, condExprTree.getTrueExpression(), "assignment");
+      boolean trueResult = supertypeCheck(varTree, condExprTree.getTrueExpression(), "assignment");
       boolean falseResult =
-          commonAssignmentCheck(varTree, condExprTree.getFalseExpression(), "assignment");
+          supertypeCheck(varTree, condExprTree.getFalseExpression(), "assignment");
       return trueResult && falseResult;
     }
 
@@ -3146,7 +3164,27 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       return true;
     }
 
-    return commonAssignmentCheck(varType, valueExpTree, errorKey, extraArgs);
+    return supertypeCheck(varType, valueExpTree, errorKey, extraArgs);
+  }
+
+  /**
+   * Checks the validity of an assignment (or pseudo-assignment) from a value to a variable and
+   * emits an error message (through the compiler's messaging interface) if it is not valid.
+   *
+   * @param varType the annotated type for the lvalue (usually a variable)
+   * @param valueExpTree the AST node for the rvalue (the new value)
+   * @param errorKey the error message key to use if the check fails
+   * @param extraArgs arguments to the error message key, before "found" and "expected" types
+   * @return true if the check succeeds, false if an error message was issued
+   * @deprecated use {@link #supertypeCheck(AnnotatedTypeMirror,ExpressionTree,String,Object[])}
+   */
+  @Deprecated(since = "2026-03-28")
+  protected boolean commonAssignmentCheck(
+      AnnotatedTypeMirror varType,
+      ExpressionTree valueExpTree,
+      @CompilerMessageKey String errorKey,
+      Object... extraArgs) {
+    return supertypeCheck(varType, valueExpTree, errorKey, extraArgs);
   }
 
   /**
@@ -3159,7 +3197,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @param extraArgs arguments to the error message key, before "found" and "expected" types
    * @return true if the check succeeds, false if an error message was issued
    */
-  protected boolean commonAssignmentCheck(
+  protected boolean supertypeCheck(
       AnnotatedTypeMirror varType,
       ExpressionTree valueExpTree,
       @CompilerMessageKey String errorKey,
@@ -3227,7 +3265,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         "BTV: %s.getAnnotatedType(%s) => %s%n",
         atypeFactory.getClass().getSimpleName(), valueExpTree, valueType);
     assert valueType != null : "null type for expression: " + valueExpTree;
-    result = commonAssignmentCheck(varType, valueType, valueExpTree, errorKey, extraArgs) && result;
+    result = supertypeCheck(varType, valueType, valueExpTree, errorKey, extraArgs) && result;
     return result;
   }
 
@@ -3241,8 +3279,36 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @param errorKey the error message key to use if the check fails
    * @param extraArgs arguments to the error message key, before "found" and "expected" types
    * @return true if the check succeeds, false if an error message was issued
+   * @deprecated use {@link
+   * #supertypeCheck(
+   * AnnotatedTypeMirror,
+   * AnnotatedTypeMirror,
+   * Tree ,
+   * String,
+   * Object[])
    */
+  @Deprecated(since = "2026-03-28")
   protected boolean commonAssignmentCheck(
+      AnnotatedTypeMirror varType,
+      AnnotatedTypeMirror valueType,
+      Tree valueExpTree,
+      @CompilerMessageKey String errorKey,
+      Object... extraArgs) {
+    return supertypeCheck(varType, valueType, valueExpTree, errorKey, extraArgs);
+  }
+
+  /**
+   * Checks the validity of an assignment (or pseudo-assignment) from a value to a variable and
+   * emits an error message (through the compiler's messaging interface) if it is not valid.
+   *
+   * @param varType the annotated type of the variable
+   * @param valueType the annotated type of the value
+   * @param valueExpTree the location to use when reporting the error message
+   * @param errorKey the error message key to use if the check fails
+   * @param extraArgs arguments to the error message key, before "found" and "expected" types
+   * @return true if the check succeeds, false if an error message was issued
+   */
+  protected boolean supertypeCheck(
       AnnotatedTypeMirror varType,
       AnnotatedTypeMirror valueType,
       Tree valueExpTree,
@@ -3285,8 +3351,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Prints a diagnostic about entering {@code commonAssignmentCheck()}, if the showchecks option
-   * was set.
+   * Prints a diagnostic about entering {@code supertypeCheck()}, if the showchecks option was set.
    *
    * @param varType the annotated type of the variable
    * @param valueType the annotated type of the value
@@ -3310,8 +3375,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Prints a diagnostic about exiting {@code commonAssignmentCheck()}, if the showchecks option was
-   * set.
+   * Prints a diagnostic about exiting {@code supertypeCheck()}, if the showchecks option was set.
    *
    * @param success true if the check succeeded
    * @param extraMessage information about why the result is what it is; may be null
@@ -3338,7 +3402,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Helper method for printing a diagnostic about exiting {@code commonAssignmentCheck()}, if the
+   * Helper method for printing a diagnostic about exiting {@code supertypeCheck()}, if the
    * showchecks option was set.
    *
    * <p>Most clients should call {@link #commonAssignmentCheckEndDiagnostic(boolean, String,
@@ -3526,7 +3590,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     // Also in AbstractFlow.
     boolean result = true;
     for (ExpressionTree init : initializers) {
-      result = commonAssignmentCheck(type, init, "array.initializer") && result;
+      result = supertypeCheck(type, init, "array.initializer") && result;
     }
     return result;
   }
@@ -3585,7 +3649,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       }
 
       checkHasQualifierParameterAsTypeArgument(typeArg, paramUpperBound, toptree);
-      commonAssignmentCheck(
+      supertypeCheck(
           paramUpperBound,
           typeArg,
           reportErrorToTree,
@@ -3796,7 +3860,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       AnnotatedTypeMirror requiredType = requiredTypes.get(i);
       ExpressionTree passedArg = passedArgs.get(i);
       Object paramName = paramNames.get(Math.min(i, maxParamNamesIndex));
-      commonAssignmentCheck(
+      supertypeCheck(
           requiredType,
           passedArg,
           "argument",

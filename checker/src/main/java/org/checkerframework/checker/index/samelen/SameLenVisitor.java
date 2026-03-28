@@ -26,9 +26,27 @@ public class SameLenVisitor extends BaseTypeVisitor<SameLenAnnotatedTypeFactory>
    * Merges SameLen annotations, then calls super.
    *
    * <p>{@inheritDoc}
+   *
+   * @deprecated use {@link #supertypeCheck}
    */
   @Override
+  @Deprecated(since = "2026-03-28")
   protected boolean commonAssignmentCheck(
+      AnnotatedTypeMirror varType,
+      AnnotatedTypeMirror valueType,
+      Tree valueTree,
+      @CompilerMessageKey String errorKey,
+      Object... extraArgs) {
+    return supertypeCheck(varType, valueType, valueTree, errorKey, extraArgs);
+  }
+
+  /**
+   * Merges SameLen annotations, then calls super.
+   *
+   * <p>{@inheritDoc}
+   */
+  @Override
+  protected boolean supertypeCheck(
       AnnotatedTypeMirror varType,
       AnnotatedTypeMirror valueType,
       Tree valueTree,
@@ -58,6 +76,6 @@ public class SameLenVisitor extends BaseTypeVisitor<SameLenAnnotatedTypeFactory>
         valueType.replaceAnnotation(newSameLen);
       }
     }
-    return super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, extraArgs);
+    return super.supertypeCheck(varType, valueType, valueTree, errorKey, extraArgs);
   }
 }
