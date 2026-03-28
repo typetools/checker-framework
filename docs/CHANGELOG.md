@@ -54,7 +54,9 @@ There are too many other improvements to list here.
 
 ### Implementation details
 
-All deprecated methods and classes have been removed.
+All deprecated methods and classes have been removed.  If your project builds
+upon the Checker Framework, we suggest that you upgrade to version 3.54.1,
+resolve all the deprecation warnings. then upgrade to version 4.0.0.
 
 ### Closed issues
 
