@@ -277,7 +277,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     AnnotationMirror primaryGb =
         methodCallReceiver.getPrimaryAnnotationInHierarchy(atypeFactory.GUARDEDBYUNKNOWN);
     AnnotationMirror effectiveGb =
-        methodCallReceiver.getEffectiveAnnotationInHierarchy(atypeFactory.GUARDEDBYUNKNOWN);
+        methodCallReceiver.getAnnotationInHierarchy(atypeFactory.GUARDEDBYUNKNOWN);
 
     // If the receiver actual parameter has type @GuardSatisfied, skip the subtype check.
     // Consider only a @GuardSatisfied primary annotation - hence use primaryGb instead of
@@ -412,8 +412,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
       // The atmOfReceiver for "void.class" is TypeKind.VOID, which isn't annotated so avoid
       // it.
       if (atmOfReceiver.getKind() != TypeKind.VOID) {
-        AnnotationMirror gb =
-            atmOfReceiver.getEffectiveAnnotationInHierarchy(atypeFactory.GUARDEDBYUNKNOWN);
+        AnnotationMirror gb = atmOfReceiver.getAnnotationInHierarchy(atypeFactory.GUARDEDBYUNKNOWN);
         checkLock(tree.getExpression(), gb);
       }
     }
@@ -494,8 +493,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
   @Override
   public Void visitArrayAccess(ArrayAccessTree tree, Void p) {
     AnnotatedTypeMirror atmOfReceiver = atypeFactory.getAnnotatedType(tree.getExpression());
-    AnnotationMirror gb =
-        atmOfReceiver.getEffectiveAnnotationInHierarchy(atypeFactory.GUARDEDBYUNKNOWN);
+    AnnotationMirror gb = atmOfReceiver.getAnnotationInHierarchy(atypeFactory.GUARDEDBYUNKNOWN);
     checkLock(tree.getExpression(), gb);
     return super.visitArrayAccess(tree, p);
   }
@@ -1121,9 +1119,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
   // the error refers to an implicit method call, not a dereference (field access).
   private void checkPreconditionsForImplicitToStringCall(ExpressionTree tree) {
     AnnotationMirror gbAnno =
-        atypeFactory
-            .getAnnotatedType(tree)
-            .getEffectiveAnnotationInHierarchy(atypeFactory.GUARDEDBY);
+        atypeFactory.getAnnotatedType(tree).getAnnotationInHierarchy(atypeFactory.GUARDEDBY);
     checkLock(tree, gbAnno);
   }
 

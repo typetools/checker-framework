@@ -224,7 +224,7 @@ public abstract class UBQualifier {
    */
   public static UBQualifier createUBQualifier(
       AnnotatedTypeMirror type, AnnotationMirror top, UpperBoundChecker ubChecker) {
-    return createUBQualifier(type.getEffectiveAnnotationInHierarchy(top), ubChecker);
+    return createUBQualifier(type.getAnnotationInHierarchy(top), ubChecker);
   }
 
   /**

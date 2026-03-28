@@ -646,7 +646,7 @@ public class LockAnnotatedTypeFactory
           paramTypes.get(i),
           returnGuardSatisfiedIndex,
           getAnnotatedType(methodInvocationTreeArguments.get(i))
-              .getEffectiveAnnotationInHierarchy(GUARDEDBYUNKNOWN))) {
+              .getAnnotationInHierarchy(GUARDEDBYUNKNOWN))) {
         return mType;
       }
     }
