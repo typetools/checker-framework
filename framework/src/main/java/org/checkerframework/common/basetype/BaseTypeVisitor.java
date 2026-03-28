@@ -3280,12 +3280,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @param extraArgs arguments to the error message key, before "found" and "expected" types
    * @return true if the check succeeds, false if an error message was issued
    * @deprecated use {@link
-   * #supertypeCheck(
-   * AnnotatedTypeMirror,
-   * AnnotatedTypeMirror,
-   * Tree ,
-   * String,
-   * Object[])
+   *     #supertypeCheck(AnnotatedTypeMirror,AnnotatedTypeMirror,Tree,String,Object[])}
    */
   @Deprecated(since = "2026-03-28")
   protected boolean commonAssignmentCheck(
