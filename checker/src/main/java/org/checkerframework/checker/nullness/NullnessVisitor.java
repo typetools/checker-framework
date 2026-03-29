@@ -658,13 +658,13 @@ public class NullnessVisitor
       AnnotatedTypeMirror methodReceiverType = method.getReceiverType();
       AnnotatedTypeMirror treeReceiverType = atypeFactory.getReceiverType(tree);
       assert (methodReceiverType == null) == (treeReceiverType == null);
-      // Static methods don't have a receiver
+      // Static methods don't have a receiver.
       if (methodReceiverType != null && treeReceiverType != null) {
 
         // TODO: should all or some constructors be excluded?
         // method.getElement().getKind() != ElementKind.CONSTRUCTOR) {
 
-        AnnotationMirrorSet treeReceiverAnnos = treeReceiverType.getPrimaryAnnotations();
+        AnnotationMirrorSet treeReceiverAnnos = treeReceiverType.getEffectiveAnnotations();
         if (treeReceiverAnnos.contains(MONOTONIC_NONNULL) || treeReceiverAnnos.contains(NULLABLE)) {
           // Issue only the "dereference.of.nullable" message (it is issued elsewhere), nothing
           // about invokability.
