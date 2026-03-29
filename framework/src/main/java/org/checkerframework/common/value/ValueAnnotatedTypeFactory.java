@@ -776,7 +776,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * reflects the {@code resultType} given.
    *
    * @param resultType used to select which kind of value annotation is returned
-   * @param values must be a homogeneous list: every element of it has the same class
+   * @param values a homogeneous list: every element of it has the same class
    * @return a constant value annotation with the {@code values}
    */
   /*package-private*/ AnnotationMirror createResultingAnnotation(
