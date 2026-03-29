@@ -641,12 +641,12 @@ public class LockAnnotatedTypeFactory
         AnnotatedTypes.adaptParameters(this, invokedMethod, methodInvocationTreeArguments, tree);
 
     for (int i = 0; i < paramTypes.size(); i++) {
+      AnnotatedTypeMirror argType = getAnnotatedType(methodInvocationTreeArguments.get(i));
       if (replaceAnnotationInGuardedByHierarchyIfGuardSatisfiedIndexMatches(
           methodDefinitionReturn,
           paramTypes.get(i),
           returnGuardSatisfiedIndex,
-          getAnnotatedType(methodInvocationTreeArguments.get(i))
-              .getEffectiveAnnotationInHierarchy(GUARDEDBYUNKNOWN))) {
+          argType.getAnnotationInHierarchy(GUARDEDBYUNKNOWN))) {
         return mType;
       }
     }

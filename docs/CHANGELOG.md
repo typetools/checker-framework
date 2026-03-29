@@ -9,6 +9,11 @@
 
 ### Implementation details
 
+In `AnnotatedTypeMirror`:
+
+* Renamed `getEffectiveAnnotation*()` to `getAnnotation*()`.
+* Renamed `hasEffectiveAnnotation*()` to `hasAnnotation*()`.
+
 ### Closed issues
 
 ## Version 3.54.0 (2026-03-02)
