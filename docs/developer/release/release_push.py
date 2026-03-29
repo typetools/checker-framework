@@ -8,7 +8,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from release_utils import (  # ty: ignore # TODO: limitation in ty
+from release_utils import (
     continue_or_exit,
     current_distribution_by_website,
     delete_directory,
@@ -25,7 +25,7 @@ from release_utils import (  # ty: ignore # TODO: limitation in ty
     set_umask,
     version_number_to_array,
 )
-from release_vars import (  # ty: ignore # TODO: limitation in ty
+from release_vars import (
     CF_VERSION,
     CHECKER_FRAMEWORK,
     CHECKER_LIVE_API_DIR,
@@ -42,7 +42,7 @@ from release_vars import (  # ty: ignore # TODO: limitation in ty
     TMP_DIR,
     execute,
 )
-from sanity_checks import (  # ty: ignore # TODO: limitation in ty
+from sanity_checks import (
     javac_sanity_check,
     maven_sanity_check,
 )
