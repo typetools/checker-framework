@@ -742,9 +742,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   }
 
   /**
-   * Completely replaces the abstract value {@code value} for the expression {@code expr} (correctly
-   * deciding where to store the information depending on the type of the expression {@code expr}).
-   * Any previous information is discarded.
+   * Completely replaces the abstract value for the expression {@code expr} (correctly deciding
+   * where to store the information depending on the type of the expression {@code expr}). Any
+   * previous information is discarded.
    *
    * <p>This method does not take care of removing other information that might be influenced by
    * changes to certain parts of the state.
