@@ -197,6 +197,8 @@ public abstract class Node implements UniqueId {
     if (isLoopCondition) {
       if (this instanceof BinaryOperationNode) {
         // Only the LHS of a binary operation is guaranteed to be executed.
+        // This descends only into the left of non-short-circuiting binary operations,
+        // but that likely loses little or no precision.
         ((BinaryOperationNode) this).left.setIsLoopCondition(isLoopCondition);
       }
     }
