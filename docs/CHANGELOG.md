@@ -3,9 +3,11 @@
 <!-- markdownlint-disable no-duplicate-heading -->
 <!-- pyml disable no-duplicate-heading -->
 
-## Version 3.54.1 (2026-04-02)
+## Version 3.54.1 (2026-04-01)
 
 ### User-visible changes
+
+The Checker Framework runs under JDK 26 -- that is, it runs on a version 26 JVM.
 
 ### Implementation details
 

@@ -2,6 +2,7 @@ junit_job(11)
 junit_job(17)
 junit_job(21)
 junit_jobs(25)
+junit_jobs(26)
 
 nonjunit_job(canary_version)
 
@@ -15,6 +16,7 @@ misc_job(11)
 misc_job(17)
 misc_job(21)
 misc_job(25)
+misc_job(26)
 
 typecheck_job(canary_version)
 
