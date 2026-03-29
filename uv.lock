@@ -163,10 +163,10 @@ dev = [
 [package.metadata.requires-dev]
 dev = [
     { name = "html5validator", specifier = ">=0.4.2" },
-    { name = "pymarkdownlnt", specifier = ">=0.9.33" },
+    { name = "pymarkdownlnt", specifier = ">=0.9.36" },
     { name = "requests", specifier = ">=2.32.5" },
     { name = "ruff", specifier = ">=0.15.8" },
-    { name = "ty", specifier = ">=0.0.1a31" },
+    { name = "ty", specifier = ">=0.0.26" },
 ]
 
 [[package]]

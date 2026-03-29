@@ -9,8 +9,8 @@ dependencies = []
 [dependency-groups]
 dev = [
     "html5validator>=0.4.2",
-    "pymarkdownlnt>=0.9.33",
+    "pymarkdownlnt>=0.9.36",
     "requests>=2.32.5",
     "ruff>=0.15.8",
-    "ty>=0.0.1a31",
+    "ty>=0.0.26",
 ]
