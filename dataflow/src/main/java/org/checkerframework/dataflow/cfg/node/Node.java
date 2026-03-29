@@ -169,7 +169,7 @@ public abstract class Node implements UniqueId {
   }
 
   /**
-   * Marks this node as representing a tree that appears in source code.
+   * Sets whether this node represents a tree in source code.
    *
    * @param inSource true if this node represents a tree that appears in the source code
    */

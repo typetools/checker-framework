@@ -1418,7 +1418,8 @@ public class ValueTransfer extends CFTransfer {
   }
 
   /**
-   * Adds an annotation to the store, by computing its LUB with the current value.
+   * Adds an annotation to the store, by computing its GLB with the current value. That is, both the
+   * current value and the new one are simultaneously true after this method call.
    *
    * @param store the store to side-effect
    * @param anno the new value for the node
