@@ -335,7 +335,11 @@ public class ValueTransfer extends CFTransfer {
    */
   private @Nullable List<? extends Number> getNumericalValues(
       Node subNode, TransferInput<CFValue, CFStore> p) {
-    AnnotationMirror valueAnno = getValueAnnotation(subNode, p);
+    CFValue value = p.getValueOfSubNode(subNode);
+    if (value == null) {
+      return null;
+    }
+    AnnotationMirror valueAnno = getValueAnnotation(value);
     return getNumericalValues(subNode, valueAnno);
   }
 
@@ -440,7 +444,11 @@ public class ValueTransfer extends CFTransfer {
     if (isIntRange(node, p)) {
       return true;
     }
-    return isIntegralUnknownVal(node, getValueAnnotation(p.getValueOfSubNode(node)));
+    CFValue cfValue = p.getValueOfSubNode(node);
+    if (cfValue == null) {
+      return false;
+    }
+    return isIntegralUnknownVal(node, getValueAnnotation(cfValue));
   }
 
   /**
@@ -1186,6 +1194,9 @@ public class ValueTransfer extends CFTransfer {
 
     if (atypeFactory.isIntRange(leftAnno)
         || atypeFactory.isIntRange(rightAnno)
+        || (isLoopCondition
+            && (AnnotationUtils.areSameByName(leftAnno, ValueAnnotatedTypeFactory.INTVAL_NAME)
+                || AnnotationUtils.areSameByName(rightAnno, ValueAnnotatedTypeFactory.INTVAL_NAME)))
         || isIntegralUnknownVal(rightNode, rightAnno)
         || isIntegralUnknownVal(leftNode, leftAnno)) {
       // If either is @UnknownVal, then refineIntRanges will treat it as the max range and
@@ -1289,7 +1300,11 @@ public class ValueTransfer extends CFTransfer {
     Range rightRange = getIntRangeFromAnnotation(rightNode, rightAnno);
 
     // TODO: handle comparisons when the lhs is the integer literal.
-    boolean rightIsLoopBoundLiteral = isLoopCondition && rightNode instanceof IntegerLiteralNode;
+    JavaExpression leftJe = JavaExpression.fromNode(leftNode);
+    boolean rightIsLoopBoundLiteral =
+        isLoopCondition
+            && rightNode instanceof IntegerLiteralNode
+            && CFAbstractStore.canInsertJavaExpression(leftJe);
 
     final Range thenLeftRange;
     final Range thenRightRange;
@@ -1357,7 +1372,13 @@ public class ValueTransfer extends CFTransfer {
         throw new TypeSystemError("ValueTransfer: unsupported operation: " + op);
     }
 
-    createAnnotationFromRangeAndAddToStore(thenStore, thenLeftRange, leftNode);
+    if (rightIsLoopBoundLiteral) {
+      // Replace current annotation in store, don't LUB.
+      AnnotationMirror thenLeftAnno = atypeFactory.createIntRangeAnnotation(thenLeftRange);
+      thenStore.replaceValue(leftJe, thenLeftAnno);
+    } else {
+      createAnnotationFromRangeAndAddToStore(thenStore, thenLeftRange, leftNode);
+    }
     createAnnotationFromRangeAndAddToStore(thenStore, thenRightRange, rightNode);
     createAnnotationFromRangeAndAddToStore(elseStore, elseLeftRange, leftNode);
     createAnnotationFromRangeAndAddToStore(elseStore, elseRightRange, rightNode);
@@ -1393,6 +1414,7 @@ public class ValueTransfer extends CFTransfer {
     addAnnotationToStore(store, anno, node);
   }
 
+  // This does not do replacement.  It does LUB.
   private void addAnnotationToStore(CFStore store, AnnotationMirror anno, Node node) {
     // If node is assignment, iterate over lhs and rhs; otherwise, iterator contains just node.
     for (Node internal : splitAssignments(node)) {
