@@ -735,7 +735,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * changes to certain parts of the state.
    *
    * @param expr the expression whose value to replace
-   * @param value the new annotation
+   * @param a the new annotation
    */
   public void replaceValue(JavaExpression expr, AnnotationMirror a) {
     replaceValue(expr, analysis.createSingleAnnotationValue(a, expr.getType()));
