@@ -664,7 +664,7 @@ public class NullnessVisitor
         // TODO: should all or some constructors be excluded?
         // method.getElement().getKind() != ElementKind.CONSTRUCTOR) {
 
-        AnnotationMirrorSet treeReceiverAnnos = treeReceiverType.getEffectiveAnnotations();
+        AnnotationMirrorSet treeReceiverAnnos = treeReceiverType.getAnnotations();
         if (treeReceiverAnnos.contains(MONOTONIC_NONNULL) || treeReceiverAnnos.contains(NULLABLE)) {
           // Issue only the "dereference.of.nullable" message (it is issued elsewhere), nothing
           // about invokability.
