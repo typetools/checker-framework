@@ -653,25 +653,27 @@ public class NullnessVisitor
       return;
     }
 
-    if (!TreeUtils.isSelfAccess(tree)
-        &&
-        // Static methods don't have a receiver
-        method.getReceiverType() != null) {
-      // TODO: should all or some constructors be excluded?
-      // method.getElement().getKind() != ElementKind.CONSTRUCTOR) {
-      AnnotationMirrorSet receiverAnnos =
-          atypeFactory.getReceiverType(tree).getPrimaryAnnotations();
-      AnnotatedTypeMirror methodReceiver = method.getReceiverType().getErased();
-      AnnotatedTypeMirror treeReceiver = methodReceiver.shallowCopy(false);
-      AnnotatedTypeMirror rcv = atypeFactory.getReceiverType(tree);
-      treeReceiver.addAnnotations(rcv.getEffectiveAnnotations());
-      // If receiver is Nullable, then we don't want to issue a warning about method
-      // invocability (we'd rather have only the "dereference.of.nullable" message).
-      if (treeReceiver.hasPrimaryAnnotation(NULLABLE)
-          || receiverAnnos.contains(MONOTONIC_NONNULL)) {
-        return;
+    // If receiver is Nullable, then we don't want to issue a warning about method
+    // invocability (we'd rather have only the "dereference.of.nullable" message).
+    if (!TreeUtils.isSelfAccess(tree)) {
+      AnnotatedTypeMirror methodReceiverType = method.getReceiverType();
+      AnnotatedTypeMirror treeReceiverType = atypeFactory.getReceiverType(tree);
+      assert (methodReceiverType == null) == (treeReceiverType == null);
+      // Static methods don't have a receiver.
+      if (methodReceiverType != null && treeReceiverType != null) {
+
+        // TODO: should all or some constructors be excluded?
+        // method.getElement().getKind() != ElementKind.CONSTRUCTOR) {
+
+        AnnotationMirrorSet treeReceiverAnnos = treeReceiverType.getEffectiveAnnotations();
+        if (treeReceiverAnnos.contains(MONOTONIC_NONNULL) || treeReceiverAnnos.contains(NULLABLE)) {
+          // Issue only the "dereference.of.nullable" message (it is issued elsewhere), nothing
+          // about invokability.
+          return;
+        }
       }
     }
+
     super.checkMethodInvocability(method, tree);
   }
 
