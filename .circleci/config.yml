@@ -527,7 +527,6 @@ workflows:
       - misc_jdk26:
           requires:
             - canary_jobs
-            - misc_jdk25
 
       - typecheck_part1_jdk25
       - typecheck_part2_jdk25
