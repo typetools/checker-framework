@@ -11,7 +11,7 @@ import shutil
 import sys
 from pathlib import Path
 
-from release_utils import (  # ty: ignore # TODO: limitation in ty
+from release_utils import (
     check_repo,
     check_tools,
     clone_from_scratch_or_update,
@@ -31,7 +31,7 @@ from release_utils import (  # ty: ignore # TODO: limitation in ty
     prompt_yes_no,
     set_umask,
 )
-from release_vars import (  # ty: ignore # TODO: limitation in ty
+from release_vars import (
     CF_VERSION,
     CHECKER_FRAMEWORK,
     CHECKLINK,

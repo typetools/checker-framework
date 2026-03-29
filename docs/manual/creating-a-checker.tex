@@ -2250,7 +2250,9 @@ for dotfile in *.dot; do dot -Tpdf -o "$dotfile.pdf" "$dotfile"; done
 or (for more verbose output)
 
 \begin{Verbatim}
-javacheck -processor mypackage.MyProcessor -Acfgviz=org.checkerframework.dataflow.cfg.visualize.DOTCFGVisualizer,outdir=.,verbose MyClass.java
+javacheck -processor mypackage.MyProcessor \
+  -Acfgviz=org.checkerframework.dataflow.cfg.visualize.DOTCFGVisualizer,outdir=.,verbose \
+  MyClass.java
 for dotfile in *.dot; do dot -Tpdf -o "$dotfile.pdf" "$dotfile"; done
 \end{Verbatim}
 
