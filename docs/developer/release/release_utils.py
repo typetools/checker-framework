@@ -19,7 +19,7 @@ import subprocess
 import urllib.request
 from pathlib import Path
 
-from release_vars import (  # ty: ignore # TODO: limitation in ty
+from release_vars import (
     execute,
     execute_output,
     execute_status,
