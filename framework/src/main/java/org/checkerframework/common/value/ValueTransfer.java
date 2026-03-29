@@ -332,6 +332,10 @@ public class ValueTransfer extends CFTransfer {
   /**
    * Returns a list of possible values, or null if no estimate is available and any value is
    * possible.
+   *
+   * @param subNode the node whose value to look up
+   * @param p where to look up
+   * @return the possible values for the node
    */
   private @Nullable List<? extends Number> getNumericalValues(
       Node subNode, TransferInput<CFValue, CFStore> p) {
@@ -1414,7 +1418,13 @@ public class ValueTransfer extends CFTransfer {
     addAnnotationToStore(store, anno, node);
   }
 
-  // This does not do replacement.  It does LUB.
+  /**
+   * Adds an annotation to the store, by computing its LUB with the current value.
+   *
+   * @param store the store to side-effect
+   * @param anno the new value for the node
+   * @param node the node whose value to update in the store
+   */
   private void addAnnotationToStore(CFStore store, AnnotationMirror anno, Node node) {
     // If node is assignment, iterate over lhs and rhs; otherwise, iterator contains just node.
     for (Node internal : splitAssignments(node)) {
