@@ -648,7 +648,8 @@ public class NullnessVisitor
   @Override
   protected void checkMethodInvocability(
       AnnotatedExecutableType method, MethodInvocationTree tree) {
-    if (method.getReceiverType() == null) {
+    AnnotatedTypeMirror methodReceiverType = method.getReceiverType();
+    if (methodReceiverType == null) {
       // Static methods don't have a receiver to check.
       return;
     }
@@ -656,21 +657,16 @@ public class NullnessVisitor
     // If receiver is Nullable, then we don't want to issue a warning about method
     // invocability (we'd rather have only the "dereference.of.nullable" message).
     if (!TreeUtils.isSelfAccess(tree)) {
-      AnnotatedTypeMirror methodReceiverType = method.getReceiverType();
-      AnnotatedTypeMirror treeReceiverType = atypeFactory.getReceiverType(tree);
-      assert (methodReceiverType == null) == (treeReceiverType == null);
-      // Static methods don't have a receiver.
-      if (methodReceiverType != null && treeReceiverType != null) {
+      @NonNull AnnotatedTypeMirror treeReceiverType = atypeFactory.getReceiverType(tree);
 
-        // TODO: should all or some constructors be excluded?
-        // method.getElement().getKind() != ElementKind.CONSTRUCTOR) {
+      // TODO: should all or some constructors be excluded?
+      // method.getElement().getKind() != ElementKind.CONSTRUCTOR) {
 
-        AnnotationMirrorSet treeReceiverAnnos = treeReceiverType.getEffectiveAnnotations();
-        if (treeReceiverAnnos.contains(MONOTONIC_NONNULL) || treeReceiverAnnos.contains(NULLABLE)) {
-          // Issue only the "dereference.of.nullable" message (it is issued elsewhere), nothing
-          // about invokability.
-          return;
-        }
+      AnnotationMirrorSet treeReceiverAnnos = treeReceiverType.getEffectiveAnnotations();
+      if (treeReceiverAnnos.contains(MONOTONIC_NONNULL) || treeReceiverAnnos.contains(NULLABLE)) {
+        // Issue only the "dereference.of.nullable" message (it is issued elsewhere), nothing
+        // about invokability.
+        return;
       }
     }
 
