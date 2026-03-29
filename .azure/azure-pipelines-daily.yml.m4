@@ -42,7 +42,7 @@ junit_job(11)
 junit_job(17)
 junit_job(21)
 junit_jobs(25)
-junit_jobs(26)
+junit_job(26)
 
 nonjunit_job(11)
 nonjunit_job(17)
