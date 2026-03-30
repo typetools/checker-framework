@@ -13,7 +13,7 @@ from Java 8 onward.
 
 ### Changes since version 3.0.0
 
-Since version 3.0.0, 91 authors have made over 5000 commits and closed over 600
+Since version 3.0.0, 92 authors have made over 5000 commits and closed over 600
 issues.  Thanks to everyone who contributed!
 
 New checkers include:
