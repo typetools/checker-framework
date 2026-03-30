@@ -161,8 +161,13 @@ public abstract class Node implements UniqueId {
     return inSource;
   }
 
-  public void setInSource(boolean inSrc) {
-    inSource = inSrc;
+  /**
+   * Sets whether this node represents a tree in source code.
+   *
+   * @param inSource true if this node represents a tree that appears in the source code
+   */
+  public void setInSource(boolean inSource) {
+    this.inSource = inSource;
   }
 
   /**

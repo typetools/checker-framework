@@ -217,7 +217,9 @@ public class Range {
 
   /**
    * Returns a range with its bounds specified by two parameters, {@code from} and {@code to}. If
-   * {@code from} is greater than {@code to}, returns {@link #NOTHING}.
+   * {@code from > to}, returns {@link #NOTHING}.
+   *
+   * <p>Usually, you should use {@link #create(long,long)} rather than this method.
    *
    * @param from the lower bound (inclusive)
    * @param to the upper bound (inclusive)
