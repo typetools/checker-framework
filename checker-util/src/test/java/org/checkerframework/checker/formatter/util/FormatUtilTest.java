@@ -27,8 +27,8 @@ public final class FormatUtilTest {
    *       ignoring the explicit {@code 1$}.
    * </ul>
    *
-   * <p>Therefore argument 1 (index 0) is UNUSED. Before the fix, FormatUtil checked for an
-   * explicit index first, incorrectly treating {@code %1$<s} as a reference to argument 1.
+   * <p>Therefore argument 1 (index 0) is UNUSED. Before the fix, FormatUtil checked for an explicit
+   * index first, incorrectly treating {@code %1$<s} as a reference to argument 1.
    */
   @Test
   public void testRelativeIndex_precedenceOverExplicitIndex() {
