@@ -682,7 +682,8 @@ public abstract class InitializationAnnotatedTypeFactory<
    * @return true if the type is initialized for the given frame
    */
   public boolean isInitializedForFrame(AnnotatedTypeMirror type, TypeMirror frame) {
-    AnnotationMirror initializationAnno = type.getAnnotationInHierarchy(UNKNOWN_INITIALIZATION);
+    @SuppressWarnings("nullness:assignment") // type should have an annotation in this hierarchy
+    @NonNull AnnotationMirror initializationAnno = type.getAnnotationInHierarchy(UNKNOWN_INITIALIZATION);
     TypeMirror typeFrame = getTypeFrameFromAnnotation(initializationAnno);
     Types types = processingEnv.getTypeUtils();
     return types.isSubtype(typeFrame, types.erasure(frame));

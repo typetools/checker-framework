@@ -656,6 +656,7 @@ public class NullnessVisitor
     // If receiver is Nullable, then we don't want to issue a warning about method
     // invocability (we'd rather have only the "dereference.of.nullable" message).
     if (!TreeUtils.isSelfAccess(tree)) {
+      @SuppressWarnings("nullness:assignment") // method and tree receiver types have same nullness
       @NonNull AnnotatedTypeMirror treeReceiverType = atypeFactory.getReceiverType(tree);
 
       // TODO: should all or some constructors be excluded?
