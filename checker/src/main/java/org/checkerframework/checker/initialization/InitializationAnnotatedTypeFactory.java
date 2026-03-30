@@ -40,6 +40,7 @@ import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.NullnessAnnotatedTypeFactory;
 import org.checkerframework.checker.nullness.NullnessChecker;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
@@ -683,7 +684,8 @@ public abstract class InitializationAnnotatedTypeFactory<
    */
   public boolean isInitializedForFrame(AnnotatedTypeMirror type, TypeMirror frame) {
     @SuppressWarnings("nullness:assignment") // type should have an annotation in this hierarchy
-    @NonNull AnnotationMirror initializationAnno = type.getAnnotationInHierarchy(UNKNOWN_INITIALIZATION);
+    @NonNull AnnotationMirror initializationAnno =
+        type.getAnnotationInHierarchy(UNKNOWN_INITIALIZATION);
     TypeMirror typeFrame = getTypeFrameFromAnnotation(initializationAnno);
     Types types = processingEnv.getTypeUtils();
     return types.isSubtype(typeFrame, types.erasure(frame));
