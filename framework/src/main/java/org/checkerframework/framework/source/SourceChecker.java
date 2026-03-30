@@ -133,7 +133,6 @@ import org.plumelib.util.UtilPlume;
   "onlyDefs",
   "skipFiles",
   "onlyFiles",
-  "skipDirs", // Obsolete as of 2024-03-15, replaced by "skipFiles".
 
   // Unsoundly assume all methods have no side effects, are deterministic, or both.
   "assumeSideEffectFree",
