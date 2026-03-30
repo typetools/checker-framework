@@ -9,7 +9,12 @@
 
 The Checker Framework runs under JDK 26 -- that is, it runs on a version 26 JVM.
 
+Removed deprecated command-line option `-AskipDirs`; use `-AskipFiles`.
+
 ### Implementation details
+
+Removed deprecated method `ObjectCreationNode.getConstructor()`; use
+`getTypeToInstantiate()`.
 
 ### Closed issues
 
