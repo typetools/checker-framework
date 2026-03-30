@@ -45,6 +45,7 @@ ext {
   gradleRunsOnJava21orHigher = JavaVersion.current() >= JavaVersion.VERSION_21
   gradleRunsOnJava22orHigher = JavaVersion.current() >= JavaVersion.VERSION_22
   gradleRunsOnJava24orHigher = JavaVersion.current() >= JavaVersion.VERSION_24
+  gradleRunsOnJava25orHigher = JavaVersion.current() >= JavaVersion.VERSION_25
   // The JDK for running tests: the jdkTestVersion property or if not set, JavaVersion.current()
   if (project.getProperties().containsKey("jdkTestVersion")) {
     testJdkVersion = Integer.valueOf(project.getProperties().get("jdkTestVersion"))
@@ -744,6 +745,7 @@ tasks.register("pythonIsInstalled", Exec) {
 
 tasks.register("docTags", Exec) {
   group = "Emacs"
+  description = "Create Emacs TAGS table for the manual"
   commandLine("make", "-C", "docs/manual/", "tags")
 }
 

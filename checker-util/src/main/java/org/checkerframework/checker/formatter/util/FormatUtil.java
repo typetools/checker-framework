@@ -254,7 +254,7 @@ public class FormatUtil {
    */
   private static Conversion[] parse(String format) {
     ArrayList<Conversion> cs = new ArrayList<>();
-    @Regex(7) Matcher m = fsPattern.matcher(format);
+    @Regex(6) Matcher m = fsPattern.matcher(format);
     while (m.find()) {
       char c = conversionCharFromFormat(m);
       switch (c) {

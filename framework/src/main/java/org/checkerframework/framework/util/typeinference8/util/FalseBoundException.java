@@ -2,6 +2,7 @@ package org.checkerframework.framework.util.typeinference8.util;
 
 import org.checkerframework.framework.util.typeinference8.constraint.Constraint;
 import org.checkerframework.framework.util.typeinference8.constraint.ReductionResult;
+import org.checkerframework.framework.util.typeinference8.constraint.TypeConstraint;
 
 /** Exception thrown when the Java types make it so that false is inferred. */
 public class FalseBoundException extends RuntimeException {
@@ -16,6 +17,14 @@ public class FalseBoundException extends RuntimeException {
    * @param result the result of reduction
    */
   public FalseBoundException(Constraint constraint, ReductionResult result) {
-    super(" False bound for: Constraint: " + constraint + " Result: " + result);
+    super(
+        " False bound for: Constraint: "
+            + constraint
+            + " Result: "
+            + result
+            + "\n"
+            + (constraint instanceof TypeConstraint
+                ? ((TypeConstraint) constraint).constraintHistory()
+                : ""));
   }
 }
