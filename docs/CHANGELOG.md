@@ -13,7 +13,7 @@ from Java 8 onward.
 
 ### Changes since version 3.0.0
 
-Since version 3.0.0, 92 authors have made over 5000 commits and closed over 600
+Since version 3.0.0, 91 authors have made over 4500 commits and closed over 600
 issues.  Thanks to everyone who contributed!
 
 New checkers include:
@@ -50,7 +50,8 @@ New command-line arguments include:
 * You can pass an option to only a particular checker (not all checkers) by
   using an underscore prefix.
 
-There are too many other improvements to list here.
+Other improvements include thousands of enhancements and bug fixes -- too many
+to list here.
 
 ### Implementation details
 
