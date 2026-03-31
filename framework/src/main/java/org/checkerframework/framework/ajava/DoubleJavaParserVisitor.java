@@ -542,7 +542,7 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
 
   @Override
   public void visit(MarkdownComment node1, Node other) {
-    defaultAction(n, arg);
+    defaultAction(node1, other);
   }
 
   @Override
@@ -831,7 +831,7 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
 
   @Override
   public void visit(TraditionalJavadocComment node1, Node other) {
-    defaultAction(n, arg);
+    defaultAction(node1, other);
   }
 
   @Override
