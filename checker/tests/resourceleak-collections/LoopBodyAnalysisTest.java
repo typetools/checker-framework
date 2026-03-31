@@ -5,7 +5,7 @@ import org.checkerframework.checker.calledmethods.qual.*;
 import org.checkerframework.checker.collectionownership.qual.*;
 import org.checkerframework.checker.mustcall.qual.*;
 
-class LoopBodyAnalysisTests {
+class LoopBodyAnalysisTest {
 
   void fullSatisfyCollection(@OwningCollection Collection<Resource> resources) {
     for (Resource r : resources) {

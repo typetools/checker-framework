@@ -1,10 +1,12 @@
 package org.checkerframework.checker.mustcall;
 
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
@@ -36,12 +38,15 @@ import org.checkerframework.checker.mustcall.qual.PolyMustCall;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
 import org.checkerframework.checker.resourceleak.ResourceLeakUtils;
+import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.cfg.block.Block;
+import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.framework.flow.CFStore;
+import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -152,6 +157,120 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     noLightweightOwnership = checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP);
     enableWpiForRlc = checker.hasOption(ResourceLeakChecker.ENABLE_WPI_FOR_RLC);
     this.postInit();
+  }
+
+  /**
+   * Records a potentially fulfilling collection loop for the given enclosing method.
+   *
+   * <p>If this Must Call factory is part of the Resource Leak Checker hierarchy, then this method
+   * forwards the loop to the RLCCalledMethodsAnnotatedTypeFactory, which retains the per-method
+   * loop state used by RLCC.
+   *
+   * @param enclosingMethodTree the method containing the loop
+   * @param collectionTree the collection iterated over by the loop
+   * @param collectionElementTree the tree for the collection element
+   * @param conditionTree the loop condition
+   * @param loopBodyEntryBlock the CFG block for the loop body entry
+   * @param loopConditionalBlock the CFG conditional block for the loop
+   * @param collectionElementNode the CFG node for the iterated element
+   */
+  public void recordPotentiallyFulfillingCollectionLoop(
+      MethodTree enclosingMethodTree,
+      ExpressionTree collectionTree,
+      Tree collectionElementTree,
+      Tree conditionTree,
+      Block loopBodyEntryBlock,
+      ConditionalBlock loopConditionalBlock,
+      Node collectionElementNode) {
+    RLCCalledMethodsAnnotatedTypeFactory rlccAtf = getRlccAtfIfPartOfHierarchy();
+    if (rlccAtf == null) {
+      return;
+    }
+    rlccAtf.recordPotentiallyFulfillingCollectionLoop(
+        enclosingMethodTree,
+        collectionTree,
+        collectionElementTree,
+        conditionTree,
+        loopBodyEntryBlock,
+        loopConditionalBlock,
+        collectionElementNode);
+  }
+
+  /**
+   * Records a potentially fulfilling enhanced-for-loop for the given enclosing method.
+   *
+   * <p>If this Must Call factory is part of the Resource Leak Checker hierarchy, then this method
+   * forwards the loop to the RLCCalledMethodsAnnotatedTypeFactory, which retains the per-method
+   * loop state used by RLCC.
+   *
+   * @param enclosingMethodTree the method containing the loop
+   * @param enhancedForLoopTree the enhanced-for-loop tree
+   */
+  public void recordPotentiallyFulfillingEnhancedForLoop(
+      MethodTree enclosingMethodTree, EnhancedForLoopTree enhancedForLoopTree) {
+    RLCCalledMethodsAnnotatedTypeFactory rlccAtf = getRlccAtfIfPartOfHierarchy();
+    if (rlccAtf == null) {
+      return;
+    }
+    rlccAtf.recordPotentiallyFulfillingEnhancedForLoop(enclosingMethodTree, enhancedForLoopTree);
+  }
+
+  /**
+   * Records a CFG-resolved potentially fulfilling collection loop for the given enclosing method.
+   *
+   * <p>If this Must Call factory is part of the Resource Leak Checker hierarchy, then this method
+   * forwards the loop to the RLCCalledMethodsAnnotatedTypeFactory, which retains the per-method
+   * loop state used by RLCC.
+   *
+   * @param enclosingMethodTree the method containing the loop
+   * @param collectionTree the collection iterated over by the loop
+   * @param collectionElementTree the tree for the collection element
+   * @param conditionTree the loop condition
+   * @param loopBodyEntryBlock the CFG block for the loop body entry
+   * @param loopUpdateBlock the CFG block for the loop update
+   * @param loopConditionalBlock the CFG conditional block for the loop
+   * @param collectionElementNode the CFG node for the iterated element
+   */
+  public void recordResolvedPotentiallyFulfillingCollectionLoop(
+      MethodTree enclosingMethodTree,
+      ExpressionTree collectionTree,
+      Tree collectionElementTree,
+      Tree conditionTree,
+      Block loopBodyEntryBlock,
+      Block loopUpdateBlock,
+      ConditionalBlock loopConditionalBlock,
+      Node collectionElementNode) {
+    RLCCalledMethodsAnnotatedTypeFactory rlccAtf = getRlccAtfIfPartOfHierarchy();
+    if (rlccAtf == null) {
+      return;
+    }
+    rlccAtf.recordResolvedPotentiallyFulfillingCollectionLoop(
+        enclosingMethodTree,
+        collectionTree,
+        collectionElementTree,
+        conditionTree,
+        loopBodyEntryBlock,
+        loopUpdateBlock,
+        loopConditionalBlock,
+        collectionElementNode);
+  }
+
+  /**
+   * Returns the RLCC called-methods type factory if this factory is part of the Resource Leak
+   * Checker hierarchy, or {@code null} otherwise.
+   *
+   * @return the RLCC called-methods type factory, or {@code null}
+   */
+  private @Nullable RLCCalledMethodsAnnotatedTypeFactory getRlccAtfIfPartOfHierarchy() {
+    SourceChecker currentChecker = checker;
+    while (currentChecker != null) {
+      String currentCheckerName = currentChecker.getClass().getCanonicalName();
+      if (ResourceLeakUtils.rlcCheckers.contains(currentCheckerName)) {
+        return ResourceLeakUtils.getRLCCalledMethodsAnnotatedTypeFactory(this);
+      }
+      currentChecker = currentChecker.getParentChecker();
+    }
+    return null;
   }
 
   @Override

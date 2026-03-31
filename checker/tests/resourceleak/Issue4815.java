@@ -13,7 +13,6 @@ public class Issue4815 {
     // type checker. This is an unfortunate consequence of the otherwise
     // elegant extension of the RLC to collections, which doesn't detect
     // that object already fulfilled its obligation here.
-    // :: error: argument
     list.add(object);
   }
 

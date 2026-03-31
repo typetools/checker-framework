@@ -1,7 +1,4 @@
 import java.io.*;
-import java.io.Closeable;
-import java.util.*;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -11,11 +8,15 @@ import org.checkerframework.checker.calledmethods.qual.*;
 import org.checkerframework.checker.collectionownership.qual.*;
 import org.checkerframework.checker.mustcall.qual.*;
 
-class LoopBodyAnalysisWhileTests {
+/*
+ * Tests certification of collection obligations for supported while-loop patterns.
+ */
+class WhileLoopBodyAnalysisTest {
 
-  // -------------------------
-  // WHILE LOOP: Iterator.hasNext/next
-  // -------------------------
+  /*
+   * Iterator.hasNext()/next() loops can certify collection obligations when every element is
+   * fully satisfied.
+   */
   void whileIteratorFull(@OwningCollection Collection<Resource> resources) {
     Iterator<Resource> it = resources.iterator();
     while (it.hasNext()) {
@@ -38,6 +39,10 @@ class LoopBodyAnalysisWhileTests {
     checkArgIsOCWO(resources);
   }
 
+  /*
+   * Early exit prevents certification of the loop body, even if the loop closes the current
+   * element before breaking.
+   */
   // :: error: unfulfilled.collection.obligations
   void whileIteratorFullEarlyBreak(@OwningCollection Collection<Resource> resources) {
     Iterator<Resource> it = resources.iterator();
@@ -53,9 +58,9 @@ class LoopBodyAnalysisWhileTests {
     checkArgIsOCWO(resources);
   }
 
-  // -------------------------
-  // WHILE LOOP: Queue.isEmpty/poll
-  // -------------------------
+  /*
+   * Queue.isEmpty()/poll() loops are also supported.
+   */
   void whileQueuePollFull(@OwningCollection Queue<Resource> resources) {
     while (!resources.isEmpty()) {
       Resource r = resources.poll();
@@ -67,9 +72,9 @@ class LoopBodyAnalysisWhileTests {
     checkArgIsOCWO(resources);
   }
 
-  // -------------------------
-  // WHILE LOOP: Stack.isEmpty/pop (FULL)
-  // -------------------------
+  /*
+   * Stack loops should work for both isEmpty()/pop() and size()/pop().
+   */
   void whileStackPopFull(@OwningCollection Stack<Resource> resources) {
     while (!resources.isEmpty()) {
       Resource r = resources.pop();
@@ -88,10 +93,9 @@ class LoopBodyAnalysisWhileTests {
     checkArgIsOCWO(resources);
   }
 
-  // -------------------------
-  // NEGATIVE: Iterator while-loop missing flush
-  // -------------------------
-
+  /*
+   * Missing one of the required methods should prevent loop certification.
+   */
   // :: error: unfulfilled.collection.obligations
   void whileIteratorPartialShouldError(@OwningCollection List<Resource> resources) {
     Iterator<Resource> it = resources.iterator();
@@ -104,6 +108,10 @@ class LoopBodyAnalysisWhileTests {
     checkArgIsOCWO(resources);
   }
 
+  /*
+   * The same partial-satisfaction case should fail for close-only resources that throw
+   * checked exceptions.
+   */
   void whileIteratorPartialShouldError2(@OwningCollection List<FileInputStream> resources)
       throws IOException {
     Iterator<FileInputStream> it = resources.iterator();
@@ -117,27 +125,9 @@ class LoopBodyAnalysisWhileTests {
     checkArgIsOCWO2(resources);
   }
 
-  // Helper used by the tests (same as your for-loop file).
   // :: error: illegal.type.annotation
   void checkArgIsOCWO(@OwningCollectionWithoutObligation Iterable<Resource> arg) {}
 
   // :: error: illegal.type.annotation
   void checkArgIsOCWO2(@OwningCollectionWithoutObligation Iterable<FileInputStream> arg) {}
-}
-
-abstract class RLCCollections {
-
-  abstract Closeable alloc();
-
-  void foo() throws Exception {
-    @OwningCollection Collection<Closeable> resources = new ArrayList<Closeable>();
-    resources.add(alloc());
-
-    for (var r : resources) {
-      try {
-        r.close();
-      } catch (IOException e) {
-      }
-    }
-  }
 }

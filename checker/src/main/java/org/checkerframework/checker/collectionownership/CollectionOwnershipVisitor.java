@@ -10,13 +10,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
-import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeMirror;
-import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
-import org.checkerframework.checker.mustcall.MustCallChecker;
-import org.checkerframework.checker.mustcall.qual.NotOwning;
-import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer;
 import org.checkerframework.checker.resourceleak.ResourceLeakUtils;
 import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsAnnotatedTypeFactory;
@@ -30,7 +24,6 @@ import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * The visitor for the Collection Ownership Checker. This visitor is similar to BaseTypeVisitor, but
@@ -70,10 +63,9 @@ public class CollectionOwnershipVisitor
    * Enforces the "mutations on non-owning collections" policy for methods annotated
    * {@code @CreatesCollectionObligation}.
    *
-   * <p>Strategy: (A) Owning receiver (OC or OCWO): the call is a transfer point. It should not be
-   * used to insert a definitely-non-owning element. (B) NotOwning receiver (NOC): allow mutation
-   * ONLY if the inserted thing is definitely non-owning. This prevents "smuggling" an owning /
-   * obligation-carrying element into a non-owning collection.
+   * <p>Strategy: a {@code @NotOwningCollection} receiver may only accept an inserted argument that
+   * is definitely non-owning. Owning receivers are allowed; the resource-leak analysis models any
+   * collection obligation they create.
    *
    * <p>Note: we intentionally do not add an index property to @CreatesCollectionObligation yet. We
    * use a heuristic: the "inserted thing" is the last argument at the call site. TODO: Maybe later
@@ -82,13 +74,7 @@ public class CollectionOwnershipVisitor
    */
   private void enforceCreatesCollectionObligationPolicy(MethodInvocationTree tree) {
     ExecutableElement methodElt = TreeUtils.elementFromUse(tree);
-    boolean isCreates =
-        atypeFactory.getDeclAnnotation(
-                methodElt,
-                org.checkerframework.checker.collectionownership.qual.CreatesCollectionObligation
-                    .class)
-            != null;
-    if (!isCreates) {
+    if (!atypeFactory.isCreatesCollectionObligationMethod(methodElt)) {
       return;
     }
     ExpressionTree receiverTree = TreeUtils.getReceiverTree(tree);
@@ -109,15 +95,18 @@ public class CollectionOwnershipVisitor
     if (recvType == null) {
       return;
     }
-    // Heuristic: inserted resource is at the last index of call
-    ExpressionTree insertedTree = tree.getArguments().get(tree.getArguments().size() - 1);
-    RLCCalledMethodsAnnotatedTypeFactory rlAtf =
-        ResourceLeakUtils.getRLCCalledMethodsAnnotatedTypeFactory(atypeFactory);
-    boolean insertedDefinitelyNonOwning = isInsertedThingDefinitelyNonOwning(insertedTree, rlAtf);
+    ExpressionTree insertedTree = atypeFactory.getInsertedArgumentTree(tree);
+    if (insertedTree == null) {
+      return;
+    }
+    CollectionOwnershipAnnotatedTypeFactory.CollectionMutatorArgumentKind insertedArgumentKind =
+        atypeFactory.getCollectionMutatorArgumentKind(insertedTree);
     String methodName = methodElt.getSimpleName().toString();
     switch (recvType) {
       case NotOwningCollection:
-        if (!insertedDefinitelyNonOwning) {
+        if (insertedArgumentKind
+            != CollectionOwnershipAnnotatedTypeFactory.CollectionMutatorArgumentKind
+                .DEFINITELY_NON_OWNING) {
           checker.reportError(
               insertedTree,
               "illegal.collection.mutator.owning.insert.into.notowning",
@@ -125,19 +114,8 @@ public class CollectionOwnershipVisitor
               TreeUtils.toStringTruncated(insertedTree, 60));
         }
         break;
-      case OwningCollection:
-      case OwningCollectionWithoutObligation:
-        // disallow inserting something that is definitely non-owning into an owning collection.
-        if (insertedDefinitelyNonOwning) {
-          checker.reportError(
-              insertedTree,
-              "illegal.collection.mutator.nonowning.insert.into.owning",
-              methodName,
-              TreeUtils.toStringTruncated(insertedTree, 60));
-        }
-        break;
       default:
-        // bottom : ignore
+        // Owning receivers are handled by resource-leak analysis; bottom is ignored.
     }
   }
 
@@ -152,60 +130,6 @@ public class CollectionOwnershipVisitor
       }
     }
     return null;
-  }
-
-  /**
-   * Returns true iff the "inserted thing" is definitely non-owning at this call site.
-   *
-   * <p>For non-collection values: - annotation-first: explicit @NotOwning on the
-   * expression/return/element, if present - fallback: empty @MustCall (no obligation exists)
-   *
-   * <p>For resource-collection values (e.g., addAll/putAll where the "inserted thing" is a
-   * collection): - annotation-first: the argument must be @NotOwningCollection at the call site -
-   * we intentionally avoid inspecting element obligations here without extra machinery.
-   */
-  private boolean isInsertedThingDefinitelyNonOwning(
-      ExpressionTree insertedTree, RLCCalledMethodsAnnotatedTypeFactory rlAtf) {
-
-    // If the inserted thing is itself a resource collection (bulk ops e.g. addAll)
-    if (atypeFactory.isResourceCollection(insertedTree)) {
-      return false;
-    }
-
-    // annotation-first: explicit @NotOwning
-    // 1) On the element/variable symbol (params/fields)
-    Element e = TreeUtils.elementFromTree(insertedTree);
-    if (e != null && e.getAnnotation(NotOwning.class) != null) {
-      return true;
-    }
-
-    // If it's param and not annotated then treat as notowning
-    if (e != null && e.getKind() == ElementKind.PARAMETER) {
-      return e.getAnnotation(Owning.class) == null;
-    }
-
-    // 2) On the return type of a method invocation
-    if (insertedTree instanceof MethodInvocationTree) {
-      ExecutableElement callee = TreeUtils.elementFromUse((MethodInvocationTree) insertedTree);
-      if (rlAtf.hasNotOwning(callee)) {
-        return true;
-      }
-    }
-    // 3) On the type at the tree (covers return-type annotations in many cases)
-    MustCallAnnotatedTypeFactory mcAtf = rlAtf.getTypeFactoryOfSubchecker(MustCallChecker.class);
-    AnnotatedTypeMirror mcType = mcAtf.getAnnotatedType(insertedTree);
-    if (mcType != null && mcType.hasPrimaryAnnotation(NotOwning.class)) {
-      return true;
-    }
-
-    // fallback: empty must-call => no obligation to "smuggle" ---
-    TypeMirror tm = TreeUtils.typeOf(insertedTree);
-    TypeElement typeElt = TypesUtils.getTypeElement(tm);
-    if (typeElt == null) {
-      return false;
-    }
-    // If the type can never have a must-call obligation, treat as definitely safe.
-    return rlAtf.hasEmptyMustCallValue(typeElt);
   }
 
   /**

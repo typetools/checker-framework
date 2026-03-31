@@ -60,8 +60,8 @@ public class RLCCalledMethodsTransfer extends CalledMethodsTransfer {
   }
 
   /**
-   * Add the collection elements iterated over in potentially Mcoe-obligation-fulfilling loops to
-   * the store.
+   * Add the collection elements iterated over in potentially fulfilling collection loops to the
+   * store.
    */
   @Override
   public AccumulationStore initialStore(
@@ -69,10 +69,22 @@ public class RLCCalledMethodsTransfer extends CalledMethodsTransfer {
     AccumulationStore store = super.initialStore(underlyingAST, parameters);
     RLCCalledMethodsAnnotatedTypeFactory cmAtf =
         (RLCCalledMethodsAnnotatedTypeFactory) this.analysis.getTypeFactory();
-    for (RLCCalledMethodsAnnotatedTypeFactory.PotentiallyFulfillingLoop loop :
-        RLCCalledMethodsAnnotatedTypeFactory.getPotentiallyFulfillingLoops()) {
+    for (RLCCalledMethodsAnnotatedTypeFactory.PotentiallyFulfillingCollectionLoop
+        potentiallyFulfillingCollectionLoop :
+            cmAtf.getPotentiallyFulfillingCollectionLoops(underlyingAST)) {
       IteratedCollectionElement collectionElementJE =
-          new IteratedCollectionElement(loop.collectionElementNode, loop.collectionElementTree);
+          new IteratedCollectionElement(
+              potentiallyFulfillingCollectionLoop.collectionElementNode,
+              potentiallyFulfillingCollectionLoop.collectionElementTree);
+      store.insertValue(collectionElementJE, cmAtf.top);
+    }
+    for (RLCCalledMethodsAnnotatedTypeFactory.ResolvedPotentiallyFulfillingCollectionLoop
+        resolvedPotentiallyFulfillingLoop :
+            cmAtf.getResolvedPotentiallyFulfillingCollectionLoops(underlyingAST)) {
+      IteratedCollectionElement collectionElementJE =
+          new IteratedCollectionElement(
+              resolvedPotentiallyFulfillingLoop.collectionElementNode,
+              resolvedPotentiallyFulfillingLoop.collectionElementTree);
       store.insertValue(collectionElementJE, cmAtf.top);
     }
     return store;
@@ -80,7 +92,7 @@ public class RLCCalledMethodsTransfer extends CalledMethodsTransfer {
 
   /**
    * Accumulates the called methods to this collection element if the given node is the element of a
-   * collection iterated over in a potentially-Mcoe-obligation-fulfilling loop.
+   * collection iterated over in a potentially fulfilling collection loop.
    *
    * @param valuesAsList the list of called methods
    * @param result the transfer result

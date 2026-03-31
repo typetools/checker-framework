@@ -36,7 +36,11 @@ class Path {
   }
 }
 
-class TokenCache {
+/*
+ * Reproducer for collecting FileSystem instances, using them, and closing them in a finally
+ * block.
+ */
+class TokenCacheFileSystemCleanup {
 
   private static final Log LOG = null;
 

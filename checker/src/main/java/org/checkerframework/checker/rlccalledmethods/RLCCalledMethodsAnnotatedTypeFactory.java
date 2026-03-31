@@ -3,6 +3,7 @@ package org.checkerframework.checker.rlccalledmethods;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -15,8 +16,12 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -53,6 +58,9 @@ import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
+import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
+import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlock;
+import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
@@ -63,6 +71,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.util.Contract;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
@@ -123,70 +132,331 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
   private final BiMap<LocalVariableNode, Tree> tempVarToTree = HashBiMap.create();
 
   /**
-   * Set of potentially collection-obligation-fulfilling loops. Found in the MustCallVisitor, which
-   * checks the header and (parts of the) body.
+   * Per-method loop state for collection-obligation loops that have been matched syntactically by
+   * the MustCall visitor.
    */
-  private static final Set<PotentiallyFulfillingLoop> potentiallyFulfillingLoops = new HashSet<>();
+  private static final class MethodCollectionLoopState {
 
-  /**
-   * Construct a {@code PotentiallyFulfillingLoop} and add it to the static set of such loops to
-   * have their loop body analyzed for possibly fulfilling collection obligations.
-   *
-   * @param collectionTree AST {@code Tree} for collection iterated over
-   * @param collectionElementTree AST {@code Tree} for collection element iterated over
-   * @param condition AST {@code Tree} for loop condition
-   * @param loopBodyEntryBlock cfg {@code Block} for loop body entry
-   * @param loopUpdateBlock {@code Block} containing loop update
-   * @param loopConditionalBlock {@code Block} containing loop condition
-   * @param collectionEltNode cfg {@code Node} for collection element iterated over
-   */
-  public static void addPotentiallyFulfillingLoop(
-      ExpressionTree collectionTree,
-      Tree collectionElementTree,
-      Tree condition,
-      Block loopBodyEntryBlock,
-      Block loopUpdateBlock,
-      ConditionalBlock loopConditionalBlock,
-      Node collectionEltNode) {
-    potentiallyFulfillingLoops.add(
-        new PotentiallyFulfillingLoop(
-            collectionTree,
-            collectionElementTree,
-            condition,
-            loopBodyEntryBlock,
-            loopUpdateBlock,
-            loopConditionalBlock,
-            collectionEltNode));
+    /** Enhanced-for-loops that have been matched syntactically but still need CFG resolution. */
+    final Set<EnhancedForLoopTree> potentiallyFulfillingEnhancedForLoops = new LinkedHashSet<>();
+
+    /**
+     * Collection-obligation loops that have been matched syntactically but still need CFG-local
+     * resolution before the consistency analyzer can verify them.
+     */
+    final Set<PotentiallyFulfillingCollectionLoop> potentiallyFulfillingCollectionLoops =
+        new LinkedHashSet<>();
+
+    /**
+     * Potentially fulfilling collection loops that have all CFG information required by the
+     * consistency analyzer.
+     */
+    final Set<ResolvedPotentiallyFulfillingCollectionLoop>
+        resolvedPotentiallyFulfillingCollectionLoops = new LinkedHashSet<>();
+
+    /** Lazily-computed CFG facts used to resolve potentially fulfilling while loops. */
+    private @Nullable WhileLoopResolutionCache whileLoopCache;
+
+    /**
+     * Returns CFG facts for resolving potentially fulfilling while loops in this method, creating
+     * them lazily if needed.
+     *
+     * @param cfg the enclosing method CFG
+     * @return the CFG facts for resolving potentially fulfilling while loops in this method
+     */
+    private WhileLoopResolutionCache getOrCreateWhileLoopCache(ControlFlowGraph cfg) {
+      if (whileLoopCache == null) {
+        whileLoopCache = new WhileLoopResolutionCache(cfg);
+      }
+      return whileLoopCache;
+    }
   }
 
-  public static void addPotentiallyFulfillingLoop(
-      ExpressionTree collectionTree,
-      Tree collectionElementTree,
-      Tree condition,
-      Block loopBodyEntryBlock,
-      Block loopUpdateBlock,
-      ConditionalBlock loopConditionalBlock,
-      Node collectionEltNode,
-      boolean pendingCfg) {
-    potentiallyFulfillingLoops.add(
-        new PotentiallyFulfillingLoop(
-            collectionTree,
-            collectionElementTree,
-            condition,
-            loopBodyEntryBlock,
-            loopUpdateBlock,
-            loopConditionalBlock,
-            collectionEltNode,
-            pendingCfg));
+  /** Lazily-computed CFG facts used to resolve potentially fulfilling while loops. */
+  private static final class WhileLoopResolutionCache {
+
+    /** A back edge in the CFG. */
+    private static final class BlockEdge {
+      final Block sourceBlock;
+      final Block targetBlock;
+
+      BlockEdge(Block sourceBlock, Block targetBlock) {
+        this.sourceBlock = sourceBlock;
+        this.targetBlock = targetBlock;
+      }
+    }
+
+    /** Reachable CFG blocks in the current method. */
+    private final Set<Block> reachableBlocks;
+
+    /** Back edges among {@link #reachableBlocks}. */
+    private final List<BlockEdge> backEdges;
+
+    /** Natural loops for back edges, computed lazily. */
+    private final IdentityHashMap<BlockEdge, Set<Block>> naturalLoopsByBackEdge =
+        new IdentityHashMap<>();
+
+    /**
+     * Creates CFG facts for resolving potentially fulfilling while loops in the given CFG.
+     *
+     * @param cfg the enclosing method CFG
+     */
+    private WhileLoopResolutionCache(ControlFlowGraph cfg) {
+      Block entryBlock = cfg.getEntryBlock();
+      this.reachableBlocks = reachableFrom(entryBlock);
+      Map<Block, Set<Block>> dominators = computeDominators(entryBlock, reachableBlocks);
+      this.backEdges = findBackEdges(reachableBlocks, dominators);
+    }
+
+    /**
+     * Returns the back edges among the reachable blocks in the current CFG.
+     *
+     * @return the CFG back edges
+     */
+    private List<BlockEdge> getBackEdges() {
+      return backEdges;
+    }
+
+    /**
+     * Returns the natural loop induced by the given back edge, computing it lazily if needed.
+     *
+     * @param backEdge the back edge
+     * @return the natural loop induced by the given back edge
+     */
+    private Set<Block> getNaturalLoopForBackEdge(BlockEdge backEdge) {
+      return naturalLoopsByBackEdge.computeIfAbsent(
+          backEdge,
+          ignored -> naturalLoop(backEdge.sourceBlock, backEdge.targetBlock, reachableBlocks));
+    }
+
+    /**
+     * Returns blocks reachable from {@code entryBlock}.
+     *
+     * @param entryBlock the CFG entry block
+     * @return the reachable blocks
+     */
+    private static Set<Block> reachableFrom(Block entryBlock) {
+      Set<Block> seen = new HashSet<>();
+      ArrayDeque<Block> queue = new ArrayDeque<>();
+      queue.add(entryBlock);
+      seen.add(entryBlock);
+
+      while (!queue.isEmpty()) {
+        Block block = queue.remove();
+        for (Block successor : block.getSuccessors()) {
+          if (successor != null && seen.add(successor)) {
+            queue.add(successor);
+          }
+        }
+      }
+      return seen;
+    }
+
+    /**
+     * Computes dominators for the reachable blocks in the current CFG.
+     *
+     * @param entryBlock the CFG entry block
+     * @param reachableBlocks reachable blocks in the CFG
+     * @return dominators for each reachable block
+     */
+    private static Map<Block, Set<Block>> computeDominators(
+        Block entryBlock, Set<Block> reachableBlocks) {
+      Map<Block, Set<Block>> dominators = new HashMap<>();
+
+      for (Block block : reachableBlocks) {
+        if (block == entryBlock) {
+          dominators.put(block, new HashSet<>(Collections.singleton(entryBlock)));
+        } else {
+          dominators.put(block, new HashSet<>(reachableBlocks)); // TOP
+        }
+      }
+
+      boolean changed;
+      do {
+        changed = false;
+        for (Block block : reachableBlocks) {
+          if (block == entryBlock) {
+            continue;
+          }
+
+          Set<Block> newDominators = null;
+          for (Block predecessor : block.getPredecessors()) {
+            if (predecessor == null || !reachableBlocks.contains(predecessor)) {
+              continue;
+            }
+            Set<Block> predecessorDominators = dominators.get(predecessor);
+            if (predecessorDominators == null) {
+              continue;
+            }
+            if (newDominators == null) {
+              newDominators = new HashSet<>(predecessorDominators);
+            } else {
+              newDominators.retainAll(predecessorDominators);
+            }
+          }
+
+          if (newDominators == null) {
+            newDominators = new HashSet<>();
+          }
+          newDominators.add(block);
+
+          if (!newDominators.equals(dominators.get(block))) {
+            dominators.put(block, newDominators);
+            changed = true;
+          }
+        }
+      } while (changed);
+
+      return dominators;
+    }
+
+    /**
+     * Returns the back edges among the reachable blocks in the current CFG.
+     *
+     * @param reachableBlocks reachable blocks in the CFG
+     * @param dominators dominators for each reachable block
+     * @return the CFG back edges
+     */
+    private static List<BlockEdge> findBackEdges(
+        Set<Block> reachableBlocks, Map<Block, Set<Block>> dominators) {
+      List<BlockEdge> backEdges = new ArrayList<>();
+      for (Block sourceBlock : reachableBlocks) {
+        for (Block targetBlock : sourceBlock.getSuccessors()) {
+          if (targetBlock == null || !reachableBlocks.contains(targetBlock)) {
+            continue;
+          }
+          Set<Block> sourceDominators = dominators.get(sourceBlock);
+          if (sourceDominators != null && sourceDominators.contains(targetBlock)) {
+            // targetBlock dominates sourceBlock, so sourceBlock -> targetBlock is a back edge.
+            backEdges.add(new BlockEdge(sourceBlock, targetBlock));
+          }
+        }
+      }
+      return backEdges;
+    }
+
+    /**
+     * Returns the natural loop induced by the back edge {@code sourceBlock -> targetBlock}.
+     *
+     * @param sourceBlock the source of the back edge
+     * @param targetBlock the target of the back edge
+     * @param reachableBlocks reachable blocks in the CFG
+     * @return the natural loop induced by the back edge
+     */
+    private static Set<Block> naturalLoop(
+        Block sourceBlock, Block targetBlock, Set<Block> reachableBlocks) {
+      Set<Block> loopBlocks = new HashSet<>();
+      ArrayDeque<Block> stack = new ArrayDeque<>();
+
+      loopBlocks.add(targetBlock);
+      if (loopBlocks.add(sourceBlock)) {
+        stack.push(sourceBlock);
+      }
+
+      while (!stack.isEmpty()) {
+        Block block = stack.pop();
+        for (Block predecessor : block.getPredecessors()) {
+          if (predecessor == null || !reachableBlocks.contains(predecessor)) {
+            continue;
+          }
+          if (loopBlocks.add(predecessor) && predecessor != targetBlock) {
+            stack.push(predecessor);
+          }
+        }
+      }
+      return loopBlocks;
+    }
+  }
+
+  /** Per-method collection-loop state accumulated during MustCall visitor matching. */
+  private final IdentityHashMap<MethodTree, MethodCollectionLoopState>
+      collectionLoopStateByEnclosingMethod = new IdentityHashMap<>();
+
+  /**
+   * Returns the loop state for the given method, creating it if needed.
+   *
+   * @param enclosingMethodTree the enclosing method
+   * @return the loop state for the given method
+   */
+  private MethodCollectionLoopState getOrCreateMethodCollectionLoopState(
+      MethodTree enclosingMethodTree) {
+    return collectionLoopStateByEnclosingMethod.computeIfAbsent(
+        enclosingMethodTree, ignored -> new MethodCollectionLoopState());
   }
 
   /**
-   * Returns the static set of {@code PotentiallyFulfillingLoop}s scheduled for analysis.
+   * Returns the loop state for the given underlying AST, or {@code null} if there is none.
    *
-   * @return the static set of {@code PotentiallyFulfillingLoop}s scheduled for analysis
+   * @param underlyingAST the current underlying AST
+   * @return the loop state for the given underlying AST, or {@code null}
    */
-  public static Set<PotentiallyFulfillingLoop> getPotentiallyFulfillingLoops() {
-    return potentiallyFulfillingLoops;
+  private @Nullable MethodCollectionLoopState getMethodCollectionLoopState(
+      UnderlyingAST underlyingAST) {
+    MethodTree enclosingMethodTree = getEnclosingMethodTree(underlyingAST);
+    if (enclosingMethodTree == null) {
+      return null;
+    }
+    return collectionLoopStateByEnclosingMethod.get(enclosingMethodTree);
+  }
+
+  /**
+   * Returns the potentially fulfilling collection loops for the method represented by the given
+   * underlying AST.
+   *
+   * @param underlyingAST the current underlying AST
+   * @return the potentially fulfilling collection loops for the method represented by the given
+   *     underlying AST
+   */
+  Set<PotentiallyFulfillingCollectionLoop> getPotentiallyFulfillingCollectionLoops(
+      UnderlyingAST underlyingAST) {
+    MethodCollectionLoopState loopState = getMethodCollectionLoopState(underlyingAST);
+    if (loopState == null) {
+      return Collections.emptySet();
+    }
+    return loopState.potentiallyFulfillingCollectionLoops;
+  }
+
+  /**
+   * Returns the resolved potentially fulfilling collection loops for the method represented by the
+   * given underlying AST.
+   *
+   * @param underlyingAST the current underlying AST
+   * @return the resolved potentially fulfilling collection loops for the method represented by the
+   *     given underlying AST
+   */
+  Set<ResolvedPotentiallyFulfillingCollectionLoop> getResolvedPotentiallyFulfillingCollectionLoops(
+      UnderlyingAST underlyingAST) {
+    MethodCollectionLoopState loopState = getMethodCollectionLoopState(underlyingAST);
+    if (loopState == null) {
+      return Collections.emptySet();
+    }
+    return loopState.resolvedPotentiallyFulfillingCollectionLoops;
+  }
+
+  /**
+   * Removes the loop state associated with the given underlying AST.
+   *
+   * @param underlyingAST the current underlying AST
+   */
+  private void removeMethodCollectionLoopState(UnderlyingAST underlyingAST) {
+    MethodTree enclosingMethodTree = getEnclosingMethodTree(underlyingAST);
+    if (enclosingMethodTree != null) {
+      collectionLoopStateByEnclosingMethod.remove(enclosingMethodTree);
+    }
+  }
+
+  /**
+   * Returns the enclosing method for the given underlying AST, or {@code null} if the underlying
+   * AST is not a method.
+   *
+   * @param underlyingAST the current underlying AST
+   * @return the enclosing method for the given underlying AST, or {@code null}
+   */
+  private @Nullable MethodTree getEnclosingMethodTree(UnderlyingAST underlyingAST) {
+    if (underlyingAST.getKind() != UnderlyingAST.Kind.METHOD) {
+      return null;
+    }
+    return ((UnderlyingAST.CFGMethod) underlyingAST).getMethod();
   }
 
   /**
@@ -253,6 +523,55 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
         updateInitializationStore,
         isStatic,
         capturedStore);
+  }
+
+  public void recordPotentiallyFulfillingCollectionLoop(
+      MethodTree enclosingMethodTree,
+      ExpressionTree collectionTree,
+      Tree collectionElementTree,
+      Tree conditionTree,
+      Block loopBodyEntryBlock,
+      ConditionalBlock loopConditionalBlock,
+      Node collectionElementNode) {
+    getOrCreateMethodCollectionLoopState(enclosingMethodTree)
+        .potentiallyFulfillingCollectionLoops
+        .add(
+            new PotentiallyFulfillingCollectionLoop(
+                collectionTree,
+                collectionElementTree,
+                conditionTree,
+                loopBodyEntryBlock,
+                loopConditionalBlock,
+                collectionElementNode));
+  }
+
+  public void recordPotentiallyFulfillingEnhancedForLoop(
+      MethodTree enclosingMethodTree, EnhancedForLoopTree enhancedForLoopTree) {
+    getOrCreateMethodCollectionLoopState(enclosingMethodTree)
+        .potentiallyFulfillingEnhancedForLoops
+        .add(enhancedForLoopTree);
+  }
+
+  public void recordResolvedPotentiallyFulfillingCollectionLoop(
+      MethodTree enclosingMethodTree,
+      ExpressionTree collectionTree,
+      Tree collectionElementTree,
+      Tree conditionTree,
+      Block loopBodyEntryBlock,
+      Block loopUpdateBlock,
+      ConditionalBlock loopConditionalBlock,
+      Node collectionElementNode) {
+    getOrCreateMethodCollectionLoopState(enclosingMethodTree)
+        .resolvedPotentiallyFulfillingCollectionLoops
+        .add(
+            new ResolvedPotentiallyFulfillingCollectionLoop(
+                collectionTree,
+                collectionElementTree,
+                conditionTree,
+                loopBodyEntryBlock,
+                loopUpdateBlock,
+                loopConditionalBlock,
+                collectionElementNode));
   }
 
   @Override
@@ -693,7 +1012,7 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
   }
 
   /** Wrapper for a loop that potentially calls methods on all elements of a collection/array. */
-  public static class PotentiallyFulfillingLoop {
+  public static class PotentiallyFulfillingCollectionLoop {
 
     /** AST {@code Tree} for collection iterated over. */
     public final ExpressionTree collectionTree;
@@ -704,17 +1023,8 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
     /** AST {@code Tree} for loop condition. */
     public final Tree condition;
 
-    /**
-     * The methods that the loop definitely calls on all elements of the collection it iterates
-     * over.
-     */
-    protected final Set<String> calledMethods;
-
     /** cfg {@code Block} containing the loop body entry. */
     public final Block loopBodyEntryBlock;
-
-    /** cfg {@code Block} containing the loop update. */
-    public Block loopUpdateBlock;
 
     /** cfg conditional {@link Block} following loop condition. */
     public final ConditionalBlock loopConditionalBlock;
@@ -722,10 +1032,50 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
     /** cfg {@code Node} for the collection element iterated over. */
     public final Node collectionElementNode;
 
-    public boolean pendingCfg = false;
+    /**
+     * Constructs a new {@code PotentiallyFulfillingCollectionLoop}.
+     *
+     * @param collectionTree AST {@link Tree} for collection iterated over
+     * @param collectionElementTree AST {@link Tree} for collection element iterated over
+     * @param condition AST {@link Tree} for loop condition
+     * @param loopBodyEntryBlock cfg {@link Block} for the loop body entry
+     * @param loopConditionalBlock cfg conditional {@link Block} following loop condition
+     * @param collectionEltNode cfg {@link Node} for the collection element iterated over
+     */
+    public PotentiallyFulfillingCollectionLoop(
+        ExpressionTree collectionTree,
+        Tree collectionElementTree,
+        Tree condition,
+        Block loopBodyEntryBlock,
+        ConditionalBlock loopConditionalBlock,
+        Node collectionEltNode) {
+      this.collectionTree = collectionTree;
+      this.collectionElementTree = collectionElementTree;
+      this.condition = condition;
+      this.loopBodyEntryBlock = loopBodyEntryBlock;
+      this.loopConditionalBlock = loopConditionalBlock;
+      this.collectionElementNode = collectionEltNode;
+    }
+  }
+
+  /**
+   * A potentially fulfilling collection loop whose CFG-local information is complete enough for
+   * consistency analysis.
+   */
+  public static class ResolvedPotentiallyFulfillingCollectionLoop
+      extends PotentiallyFulfillingCollectionLoop {
 
     /**
-     * Constructs a new {@code PotentiallyFulfillingLoop}
+     * The methods that the loop definitely calls on all elements of the collection it iterates
+     * over.
+     */
+    protected final Set<String> calledMethods;
+
+    /** cfg {@code Block} containing the loop update. */
+    public final Block loopUpdateBlock;
+
+    /**
+     * Constructs a new {@code ResolvedPotentiallyFulfillingCollectionLoop}.
      *
      * @param collectionTree AST {@link Tree} for collection iterated over
      * @param collectionElementTree AST {@link Tree} for collection element iterated over
@@ -735,7 +1085,7 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
      * @param loopConditionalBlock cfg conditional {@link Block} following loop condition
      * @param collectionEltNode cfg {@link Node} for the collection element iterated over
      */
-    public PotentiallyFulfillingLoop(
+    public ResolvedPotentiallyFulfillingCollectionLoop(
         ExpressionTree collectionTree,
         Tree collectionElementTree,
         Tree condition,
@@ -743,42 +1093,15 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
         Block loopUpdateBlock,
         ConditionalBlock loopConditionalBlock,
         Node collectionEltNode) {
-      this.collectionTree = collectionTree;
-      this.collectionElementTree = collectionElementTree;
-      this.condition = condition;
+      super(
+          collectionTree,
+          collectionElementTree,
+          condition,
+          loopBodyEntryBlock,
+          loopConditionalBlock,
+          collectionEltNode);
       this.calledMethods = new HashSet<>();
-      this.loopBodyEntryBlock = loopBodyEntryBlock;
       this.loopUpdateBlock = loopUpdateBlock;
-      this.loopConditionalBlock = loopConditionalBlock;
-      this.collectionElementNode = collectionEltNode;
-    }
-
-    public PotentiallyFulfillingLoop(
-        ExpressionTree collectionTree,
-        Tree collectionElementTree,
-        Tree condition,
-        Block loopBodyEntryBlock,
-        Block loopUpdateBlock,
-        ConditionalBlock loopConditionalBlock,
-        Node collectionEltNode,
-        boolean pendingCfg) {
-      this.collectionTree = collectionTree;
-      this.collectionElementTree = collectionElementTree;
-      this.condition = condition;
-      this.calledMethods = new HashSet<>();
-      this.loopBodyEntryBlock = loopBodyEntryBlock;
-      this.loopUpdateBlock = loopUpdateBlock;
-      this.loopConditionalBlock = loopConditionalBlock;
-      this.collectionElementNode = collectionEltNode;
-      this.pendingCfg = pendingCfg;
-    }
-
-    public boolean isResolved() {
-      return !pendingCfg
-          && loopBodyEntryBlock != null
-          && loopUpdateBlock != null
-          && loopConditionalBlock != null
-          && collectionElementNode != null;
     }
 
     /**
@@ -803,9 +1126,9 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
   }
 
   /**
-   * After running the called-methods analysis, call the consistency analyzer to analyze the loop
-   * bodys of 'potentially-collection-obligation-fulfilling-loops', as determined by a
-   * pre-pattern-match in the MustCallVisitor.
+   * After running the called-methods analysis, call the consistency analyzer to analyze
+   * CFG-resolved potentially fulfilling collection loops, as determined by a pre-pattern-match in
+   * the MustCallVisitor.
    *
    * <p>The analysis uses the CalledMethods type of the collection element iterated over to
    * determine the methods the loop calls on the collection elements.
@@ -816,180 +1139,353 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
   public void postAnalyze(ControlFlowGraph cfg) {
     MustCallConsistencyAnalyzer mustCallConsistencyAnalyzer =
         new MustCallConsistencyAnalyzer(ResourceLeakUtils.getResourceLeakChecker(this), true);
+    MethodCollectionLoopState loopState = getMethodCollectionLoopState(cfg.getUnderlyingAST());
 
-    resolvePendingWhileLoopUpdateBlocks(cfg);
-
-    // traverse the cfg to find enhanced-for-loops over collections and perform a
-    // loop-body-analysis.
-    // since this runs before the consistency analysis, we unfortunately have to traverse the cfg
-    // twice. The first time to find these for-each loop, and the second time much later to do the
-    // final consistency analysis.
-    mustCallConsistencyAnalyzer.findFulfillingForEachLoops(cfg);
-
-    // perform loop-body-analysis on normal for-loops that were pattern matched on the AST
-    if (potentiallyFulfillingLoops.size() > 0) {
-      Set<PotentiallyFulfillingLoop> analyzed = new HashSet<>();
-      for (PotentiallyFulfillingLoop potentiallyFulfillingLoop : potentiallyFulfillingLoops) {
-        Tree collectionElementTree = potentiallyFulfillingLoop.collectionElementTree;
-        boolean loopContainedInThisMethod =
-            cfg.getNodesCorrespondingToTree(collectionElementTree) != null;
-        if (loopContainedInThisMethod) {
-          mustCallConsistencyAnalyzer.analyzeObligationFulfillingLoop(
-              cfg, potentiallyFulfillingLoop);
-          analyzed.add(potentiallyFulfillingLoop);
-        }
+    if (loopState != null) {
+      if (!loopState.potentiallyFulfillingEnhancedForLoops.isEmpty()) {
+        new EnhancedForLoopResolver(cfg, loopState).resolveEnhancedForLoops();
       }
-      potentiallyFulfillingLoops.removeAll(analyzed);
+      new WhileLoopResolver(cfg).resolveWhileLoops(loopState);
+      analyzeResolvedPotentiallyFulfillingCollectionLoops(
+          cfg, loopState, mustCallConsistencyAnalyzer);
     }
 
     super.postAnalyze(cfg);
+    removeMethodCollectionLoopState(cfg.getUnderlyingAST());
   }
 
-  public void resolvePendingWhileLoopUpdateBlocks(ControlFlowGraph cfg) {
-    Block entry = cfg.getEntryBlock();
-    Set<Block> blocks = reachableFrom(entry, 500);
+  /**
+   * Returns blocks reachable from {@code entryBlock}.
+   *
+   * <p>This remains a utility on the outer type because the resource leak consistency analyzer also
+   * uses it.
+   *
+   * @param entryBlock the CFG entry block
+   * @return the reachable blocks
+   */
+  public static Set<Block> reachableFrom(Block entryBlock) {
+    return WhileLoopResolutionCache.reachableFrom(entryBlock);
+  }
 
-    Map<Block, Set<Block>> dom = computeDominators(entry, blocks);
-    List<Edge> backEdges = findBackEdges(blocks, dom);
+  /**
+   * Analyzes CFG-resolved potentially fulfilling collection loops for the current method and
+   * removes the ones that were analyzed.
+   *
+   * @param cfg the CFG of the current method
+   * @param loopState per-method collection-loop state
+   * @param mustCallConsistencyAnalyzer the consistency analyzer
+   */
+  private void analyzeResolvedPotentiallyFulfillingCollectionLoops(
+      ControlFlowGraph cfg,
+      MethodCollectionLoopState loopState,
+      MustCallConsistencyAnalyzer mustCallConsistencyAnalyzer) {
+    if (loopState.resolvedPotentiallyFulfillingCollectionLoops.isEmpty()) {
+      return;
+    }
 
-    for (PotentiallyFulfillingLoop loop : getPotentiallyFulfillingLoops()) {
-      if (!loop.pendingCfg) continue;
-      if (loop.loopConditionalBlock == null || loop.loopBodyEntryBlock == null) continue;
-
-      Block header = chooseHeaderForLoop(loop, backEdges, blocks);
-      if (header != null) {
-        loop.loopUpdateBlock = header; // back-edge target = loop "header"
-        loop.pendingCfg = false;
+    Iterator<ResolvedPotentiallyFulfillingCollectionLoop> resolvedLoopIterator =
+        loopState.resolvedPotentiallyFulfillingCollectionLoops.iterator();
+    while (resolvedLoopIterator.hasNext()) {
+      ResolvedPotentiallyFulfillingCollectionLoop resolvedLoop = resolvedLoopIterator.next();
+      Tree collectionElementTree = resolvedLoop.collectionElementTree;
+      boolean loopContainedInThisMethod =
+          cfg.getNodesCorrespondingToTree(collectionElementTree) != null;
+      if (loopContainedInThisMethod) {
+        mustCallConsistencyAnalyzer.analyzeResolvedPotentiallyFulfillingCollectionLoop(
+            cfg, resolvedLoop);
+        resolvedLoopIterator.remove();
       }
     }
   }
 
-  private @Nullable Block chooseHeaderForLoop(
-      PotentiallyFulfillingLoop loop, List<Edge> backEdges, Set<Block> blocks) {
+  /** Resolves enhanced-for-loop candidates into CFG-resolved loops for consistency analysis. */
+  private final class EnhancedForLoopResolver {
+    /** The CFG of the current method. */
+    private final ControlFlowGraph cfg;
 
-    Block bodyEntry = loop.loopBodyEntryBlock;
-    Block condBlock = loop.loopConditionalBlock;
+    /** Per-method collection-loop state. */
+    private final MethodCollectionLoopState loopState;
 
-    Block bestHeader = null;
-    int bestSize = Integer.MAX_VALUE;
+    /** Blocks that have already been visited while traversing the CFG. */
+    private final Set<Block> visitedBlocks = new HashSet<>();
 
-    for (Edge e : backEdges) {
-      // e.v is header candidate (dominates e.u)
-      Set<Block> natural = naturalLoop(e.u, e.v, blocks, 100000);
+    /** Worklist for CFG traversal. */
+    private final Deque<Block> worklist = new ArrayDeque<>();
 
-      // Must contain this while’s body entry and conditional block
-      if (!natural.contains(bodyEntry)) continue;
-      if (!natural.contains(condBlock)) continue;
-
-      // Prefer tightest loop (helps nested-loop disambiguation)
-      if (natural.size() < bestSize) {
-        bestSize = natural.size();
-        bestHeader = e.v;
-      }
+    /**
+     * Creates a resolver for enhanced-for-loops in the given CFG.
+     *
+     * @param cfg the CFG of the current method
+     * @param loopState per-method collection-loop state
+     */
+    private EnhancedForLoopResolver(ControlFlowGraph cfg, MethodCollectionLoopState loopState) {
+      this.cfg = cfg;
+      this.loopState = loopState;
     }
 
-    return bestHeader;
-  }
+    /** Traverses the CFG and records resolved enhanced-for-loops for the pending candidates. */
+    private void resolveEnhancedForLoops() {
+      Block entryBlock = cfg.getEntryBlock();
+      worklist.add(entryBlock);
+      visitedBlocks.add(entryBlock);
 
-  // ----- Dominators / natural-loop machinery -----
+      while (!worklist.isEmpty() && !loopState.potentiallyFulfillingEnhancedForLoops.isEmpty()) {
+        Block currentBlock = worklist.removeFirst();
 
-  private static final class Edge {
-    final Block u, v; // u -> v
+        for (Node node : currentBlock.getNodes()) {
+          if (node instanceof MethodInvocationNode) {
+            resolveEnhancedForLoop((MethodInvocationNode) node);
+          }
+        }
 
-    Edge(Block u, Block v) {
-      this.u = u;
-      this.v = v;
-    }
-  }
-
-  public static Set<Block> reachableFrom(Block entry, int budget) {
-    Set<Block> seen = new HashSet<>();
-    ArrayDeque<Block> q = new ArrayDeque<>();
-    q.add(entry);
-    seen.add(entry);
-
-    while (!q.isEmpty() && budget-- > 0) {
-      Block b = q.remove();
-      for (Block s : b.getSuccessors()) {
-        if (s != null && seen.add(s)) {
-          q.add(s);
+        for (IPair<Block, @Nullable TypeMirror> successorAndExceptionType :
+            getSuccessorsExceptIgnoredExceptions(currentBlock)) {
+          Block successorBlock = successorAndExceptionType.first;
+          if (successorBlock != null && visitedBlocks.add(successorBlock)) {
+            worklist.addLast(successorBlock);
+          }
         }
       }
     }
-    return seen;
-  }
 
-  private Map<Block, Set<Block>> computeDominators(Block entry, Set<Block> blocks) {
-    Map<Block, Set<Block>> dom = new HashMap<>();
-
-    for (Block b : blocks) {
-      if (b == entry) {
-        dom.put(b, new HashSet<>(Collections.singleton(entry)));
+    /**
+     * Returns all successor blocks for some block, except for those corresponding to ignored
+     * exception types. See {@link RLCCalledMethodsAnalysis#isIgnoredExceptionType(TypeMirror)}.
+     *
+     * @param block input block
+     * @return set of pairs (b, t), where b is a successor block, and t is the type of exception for
+     *     the CFG edge from block to b, or {@code null} if b is a non-exceptional successor
+     */
+    private Set<IPair<Block, @Nullable TypeMirror>> getSuccessorsExceptIgnoredExceptions(
+        Block block) {
+      if (block.getType() == Block.BlockType.EXCEPTION_BLOCK) {
+        ExceptionBlock exceptionBlock = (ExceptionBlock) block;
+        Set<IPair<Block, @Nullable TypeMirror>> result = new LinkedHashSet<>();
+        Block regularSuccessor = exceptionBlock.getSuccessor();
+        if (regularSuccessor != null) {
+          result.add(IPair.of(regularSuccessor, null));
+        }
+        Map<TypeMirror, Set<Block>> exceptionalSuccessors =
+            exceptionBlock.getExceptionalSuccessors();
+        for (Map.Entry<TypeMirror, Set<Block>> entry : exceptionalSuccessors.entrySet()) {
+          TypeMirror exceptionType = entry.getKey();
+          if (!isIgnoredExceptionType(exceptionType)) {
+            for (Block exceptionalSuccessor : entry.getValue()) {
+              result.add(IPair.of(exceptionalSuccessor, exceptionType));
+            }
+          }
+        }
+        return result;
       } else {
-        dom.put(b, new HashSet<>(blocks)); // TOP
+        Set<IPair<Block, @Nullable TypeMirror>> result = new LinkedHashSet<>();
+        for (Block successorBlock : block.getSuccessors()) {
+          result.add(IPair.of(successorBlock, null));
+        }
+        return result;
       }
     }
 
-    boolean changed;
-    do {
-      changed = false;
-      for (Block b : blocks) {
-        if (b == entry) continue;
-
-        Set<Block> newDom = null;
-        for (Block p : b.getPredecessors()) {
-          if (p == null || !blocks.contains(p)) continue;
-          Set<Block> pDom = dom.get(p);
-          if (pDom == null) continue;
-          if (newDom == null) newDom = new HashSet<>(pDom);
-          else newDom.retainAll(pDom);
-        }
-
-        if (newDom == null) newDom = new HashSet<>();
-        newDom.add(b);
-
-        if (!newDom.equals(dom.get(b))) {
-          dom.put(b, newDom);
-          changed = true;
-        }
+    /**
+     * Records a resolved collection loop if the given node is desugared from an enhanced-for-loop
+     * over a collection.
+     *
+     * @param methodInvocationNode the node to check
+     */
+    private void resolveEnhancedForLoop(MethodInvocationNode methodInvocationNode) {
+      if (methodInvocationNode.getIterableExpression() == null) {
+        return;
       }
-    } while (changed);
 
-    return dom;
+      EnhancedForLoopTree loop = methodInvocationNode.getEnhancedForLoop();
+      if (loop == null) {
+        throw new BugInCF(
+            "MethodInvocationNode.iterableExpression should be non-null iff"
+                + " MethodInvocationNode.enhancedForLoop is non-null");
+      }
+      if (!loopState.potentiallyFulfillingEnhancedForLoops.contains(loop)) {
+        return;
+      }
+
+      VariableTree loopVariable = loop.getVariable();
+
+      // Find the first block of the loop body by traversing the desugared iterator.next() path
+      // until the assignment of the loop variable is found.
+      SingleSuccessorBlock singleSuccessorBlock =
+          (SingleSuccessorBlock) methodInvocationNode.getBlock();
+      Iterator<Node> nodeIterator = singleSuccessorBlock.getNodes().iterator();
+      Node loopVariableNode = null;
+      Node node;
+      boolean isAssignmentOfLoopVariable;
+      do {
+        while (!nodeIterator.hasNext()) {
+          singleSuccessorBlock = (SingleSuccessorBlock) singleSuccessorBlock.getSuccessor();
+          nodeIterator = singleSuccessorBlock.getNodes().iterator();
+        }
+        node = nodeIterator.next();
+        isAssignmentOfLoopVariable = false;
+        if ((node instanceof AssignmentNode) && (node.getTree() instanceof VariableTree)) {
+          loopVariableNode = ((AssignmentNode) node).getTarget();
+          VariableTree iteratorVariableDeclaration = (VariableTree) node.getTree();
+          isAssignmentOfLoopVariable =
+              iteratorVariableDeclaration.getName() == loopVariable.getName();
+        }
+      } while (!isAssignmentOfLoopVariable);
+      Block loopBodyEntryBlock = singleSuccessorBlock.getSuccessor();
+
+      // Find the desugared loop condition by traversing the CFG backwards until iterator.hasNext()
+      // is found.
+      Block loopUpdateBlock = methodInvocationNode.getBlock();
+      nodeIterator = loopUpdateBlock.getNodes().iterator();
+      boolean isLoopCondition;
+      do {
+        while (!nodeIterator.hasNext()) {
+          Set<Block> predecessorBlocks = loopUpdateBlock.getPredecessors();
+          if (predecessorBlocks.size() == 1) {
+            loopUpdateBlock = predecessorBlocks.iterator().next();
+            nodeIterator = loopUpdateBlock.getNodes().iterator();
+          } else {
+            // There is no trivial resolution here. Best we can do is skip this loop.
+            return;
+          }
+        }
+        node = nodeIterator.next();
+        isLoopCondition = false;
+        if (node instanceof MethodInvocationNode) {
+          MethodInvocationTree methodInvocationTree = ((MethodInvocationNode) node).getTree();
+          isLoopCondition = TreeUtils.isHasNextCall(methodInvocationTree);
+        }
+      } while (!isLoopCondition);
+
+      Block blockContainingLoopCondition = node.getBlock();
+      if (blockContainingLoopCondition.getSuccessors().size() != 1) {
+        throw new BugInCF(
+            "loop condition has: "
+                + blockContainingLoopCondition.getSuccessors().size()
+                + " successors instead of 1.");
+      }
+      Block conditionalBlock = blockContainingLoopCondition.getSuccessors().iterator().next();
+      if (!(conditionalBlock instanceof ConditionalBlock)) {
+        throw new BugInCF(
+            "loop condition successor is not ConditionalBlock, but: "
+                + conditionalBlock.getClass());
+      }
+
+      loopState.resolvedPotentiallyFulfillingCollectionLoops.add(
+          new ResolvedPotentiallyFulfillingCollectionLoop(
+              loop.getExpression(),
+              loopVariableNode.getTree(),
+              node.getTree(),
+              loopBodyEntryBlock,
+              loopUpdateBlock,
+              (ConditionalBlock) conditionalBlock,
+              loopVariableNode));
+      loopState.potentiallyFulfillingEnhancedForLoops.remove(loop);
+    }
   }
 
-  private List<Edge> findBackEdges(Set<Block> blocks, Map<Block, Set<Block>> dom) {
-    List<Edge> backs = new ArrayList<>();
-    for (Block u : blocks) {
-      for (Block v : u.getSuccessors()) {
-        if (v == null || !blocks.contains(v)) continue;
-        Set<Block> domU = dom.get(u);
-        if (domU != null && domU.contains(v)) {
-          // v dominates u => back edge u -> v
-          backs.add(new Edge(u, v));
+  /** Resolves while-loop candidates into CFG-resolved loops for consistency analysis. */
+  private static final class WhileLoopResolver {
+    /** The CFG of the current method. */
+    private final ControlFlowGraph cfg;
+
+    /**
+     * Creates a resolver for potentially fulfilling while loops in the given CFG.
+     *
+     * @param cfg the enclosing method CFG
+     */
+    private WhileLoopResolver(ControlFlowGraph cfg) {
+      this.cfg = cfg;
+    }
+
+    /**
+     * Resolves all potentially fulfilling while loops in the given method state that can be tied to
+     * a loop update block in the current CFG.
+     *
+     * @param loopState per-method collection-loop state
+     */
+    private void resolveWhileLoops(MethodCollectionLoopState loopState) {
+      if (loopState.potentiallyFulfillingCollectionLoops.isEmpty()) {
+        return;
+      }
+
+      WhileLoopResolutionCache whileLoopCache = loopState.getOrCreateWhileLoopCache(cfg);
+
+      Iterator<PotentiallyFulfillingCollectionLoop> potentialLoopIterator =
+          loopState.potentiallyFulfillingCollectionLoops.iterator();
+      while (potentialLoopIterator.hasNext()) {
+        PotentiallyFulfillingCollectionLoop potentialLoop = potentialLoopIterator.next();
+        ResolvedPotentiallyFulfillingCollectionLoop resolvedLoop =
+            resolveWhileLoop(potentialLoop, whileLoopCache);
+        if (resolvedLoop != null) {
+          loopState.resolvedPotentiallyFulfillingCollectionLoops.add(resolvedLoop);
+          potentialLoopIterator.remove();
         }
       }
     }
-    return backs;
-  }
 
-  private Set<Block> naturalLoop(Block u, Block v, Set<Block> blocks, int budget) {
-    // Standard natural-loop: start from backedge u->v
-    Set<Block> loop = new HashSet<>();
-    ArrayDeque<Block> stack = new ArrayDeque<>();
+    /**
+     * Resolves one potentially fulfilling while loop if a suitable loop update block can be found.
+     *
+     * @param potentialLoop a potentially fulfilling while loop
+     * @param whileLoopCache cached CFG facts for while-loop resolution
+     * @return the CFG-resolved loop, or {@code null} if no loop update block is found
+     */
+    private @Nullable ResolvedPotentiallyFulfillingCollectionLoop resolveWhileLoop(
+        PotentiallyFulfillingCollectionLoop potentialLoop,
+        WhileLoopResolutionCache whileLoopCache) {
+      Block loopUpdateBlock =
+          chooseLoopUpdateBlockForPotentiallyFulfillingLoop(potentialLoop, whileLoopCache);
+      if (loopUpdateBlock == null) {
+        return null;
+      }
+      return new ResolvedPotentiallyFulfillingCollectionLoop(
+          potentialLoop.collectionTree,
+          potentialLoop.collectionElementTree,
+          potentialLoop.condition,
+          potentialLoop.loopBodyEntryBlock,
+          loopUpdateBlock,
+          potentialLoop.loopConditionalBlock,
+          potentialLoop.collectionElementNode);
+    }
 
-    loop.add(v);
-    if (loop.add(u)) stack.push(u);
+    /**
+     * Chooses the best loop update block for a potentially fulfilling while loop by matching it to
+     * the tightest natural loop that contains both the body entry and the loop condition.
+     *
+     * @param potentialLoop a potentially fulfilling while loop
+     * @param whileLoopCache cached CFG facts for while-loop resolution
+     * @return the chosen loop update block, or {@code null} if none is found
+     */
+    private @Nullable Block chooseLoopUpdateBlockForPotentiallyFulfillingLoop(
+        PotentiallyFulfillingCollectionLoop potentialLoop,
+        WhileLoopResolutionCache whileLoopCache) {
 
-    while (!stack.isEmpty() && budget-- > 0) {
-      Block x = stack.pop();
-      for (Block p : x.getPredecessors()) {
-        if (p == null || !blocks.contains(p)) continue;
-        if (loop.add(p) && p != v) {
-          stack.push(p);
+      Block bodyEntryBlock = potentialLoop.loopBodyEntryBlock;
+      Block conditionalBlock = potentialLoop.loopConditionalBlock;
+
+      Block bestLoopUpdateBlock = null;
+      int bestLoopSize = Integer.MAX_VALUE;
+
+      for (WhileLoopResolutionCache.BlockEdge backEdge : whileLoopCache.getBackEdges()) {
+        // backEdge.targetBlock is the candidate block that the loop body flows back to.
+        Set<Block> naturalLoop = whileLoopCache.getNaturalLoopForBackEdge(backEdge);
+
+        // Must contain this while-loop's body entry and conditional block.
+        if (!naturalLoop.contains(bodyEntryBlock)) {
+          continue;
+        }
+        if (!naturalLoop.contains(conditionalBlock)) {
+          continue;
+        }
+
+        // Prefer the tightest loop. This helps nested-loop disambiguation.
+        if (naturalLoop.size() < bestLoopSize) {
+          bestLoopSize = naturalLoop.size();
+          bestLoopUpdateBlock = backEdge.targetBlock;
         }
       }
+
+      return bestLoopUpdateBlock;
     }
-    return loop;
   }
 }

@@ -26,10 +26,11 @@ public class SocketIntoList {
     // Although s is illegally added to l, a required.method.not.called error
     // is not additionally reported at this declaration site. List#add(@Owning E) takes on
     // the obligation of its argument.
+    // After RLCC, now we get the expected required.method.not.called error.
+    // :: error: required.method.not.called
     Socket s = new Socket();
     s.bind(new InetSocketAddress("192.168.0.1", 0));
     // l cannot hold elements with non-empty @MustCall values
-    // :: error: argument
     l.add(s);
   }
 

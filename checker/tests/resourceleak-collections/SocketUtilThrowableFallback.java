@@ -8,7 +8,11 @@ import org.checkerframework.checker.calledmethods.qual.*;
 import org.checkerframework.checker.collectionownership.qual.*;
 import org.checkerframework.checker.mustcall.qual.*;
 
-class SocketUtil {
+/*
+ * Reproducer for socket allocation code that falls back through Throwable-based recovery
+ * while still closing any sockets that were successfully created.
+ */
+class SocketUtilThrowableFallback {
 
   public static Integer[] findUnusedLocalPorts(final int ports) {
     Throwable firstFoundExc = null;

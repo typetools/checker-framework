@@ -4,7 +4,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
-import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
@@ -44,7 +43,6 @@ import org.checkerframework.checker.calledmethods.qual.CalledMethods;
 import org.checkerframework.checker.collectionownership.CollectionOwnershipAnnotatedTypeFactory;
 import org.checkerframework.checker.collectionownership.CollectionOwnershipAnnotatedTypeFactory.CollectionOwnershipType;
 import org.checkerframework.checker.collectionownership.CollectionOwnershipStore;
-import org.checkerframework.checker.collectionownership.qual.CreatesCollectionObligation;
 import org.checkerframework.checker.mustcall.CreatesMustCallForToJavaExpression;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.MustCallChecker;
@@ -55,7 +53,7 @@ import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsAnalysis;
 import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsAnnotatedTypeFactory;
-import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsAnnotatedTypeFactory.PotentiallyFulfillingLoop;
+import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsAnnotatedTypeFactory.ResolvedPotentiallyFulfillingCollectionLoop;
 import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsVisitor;
 import org.checkerframework.common.accumulation.AccumulationStore;
 import org.checkerframework.common.accumulation.AccumulationValue;
@@ -67,7 +65,6 @@ import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.Block.BlockType;
 import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
-import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlock;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.ClassNameNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
@@ -222,15 +219,14 @@ public class MustCallConsistencyAnalyzer {
         ImmutableSet.copyOf(EnumSet.allOf(MethodExitKind.class));
   }
 
-  /** Lazy per-CFG cache: blocks that can reach some method exit. */
   /** CFG currently being analyzed by analyze(cfg). */
   private @Nullable ControlFlowGraph currentCfg = null;
 
   /**
-   * Cached set of blocks that can reach an exit block (normal or exceptional), respecting
+   * Cached set of blocks that can reach a regular exit block, respecting
    * getSuccessorsExceptIgnoredExceptions filtering. Computed lazily per CFG, only if needed.
    */
-  private @Nullable Set<Block> blocksThatCanReachExit = null;
+  private @Nullable Set<Block> blocksThatCanReachRegularExit = null;
 
   private final Set<Tree> reportedNeverEnforcedSites = new HashSet<>();
 
@@ -740,55 +736,46 @@ public class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Ensures blocksThatCanReachExit is computed for currentCfg. Safe to call multiple times; the
-   * computation runs at most once per CFG.
+   * Ensures blocksThatCanReachRegularExit is computed for currentCfg. Safe to call multiple times;
+   * the computation runs at most once per CFG.
    */
-  private void ensureBlocksThatCanReachExitComputed() {
-    if (blocksThatCanReachExit != null) {
+  private void ensureBlocksThatCanReachRegularExitComputed() {
+    if (blocksThatCanReachRegularExit != null) {
       return;
     }
     if (currentCfg == null) {
-      throw new BugInCF("ensureBlocksThatCanReachExitComputed called with no currentCfg");
+      throw new BugInCF("ensureBlocksThatCanReachRegularExitComputed called with no currentCfg");
     }
-    blocksThatCanReachExit = computeBlocksThatCanReachExit(currentCfg);
+    blocksThatCanReachRegularExit = computeBlocksThatCanReachRegularExit(currentCfg);
   }
 
   /**
-   * Returns true iff {@code b} can reach some method exit (normal or exceptional), along edges that
-   * are not filtered out by getSuccessorsExceptIgnoredExceptions.
+   * Returns true iff {@code b} can reach the regular method exit along edges that are not filtered
+   * out by getSuccessorsExceptIgnoredExceptions.
    */
-  private boolean canReachExit(Block b) {
-    ensureBlocksThatCanReachExitComputed();
-    return blocksThatCanReachExit != null && blocksThatCanReachExit.contains(b);
+  private boolean canReachRegularExit(Block b) {
+    ensureBlocksThatCanReachRegularExitComputed();
+    return blocksThatCanReachRegularExit != null && blocksThatCanReachRegularExit.contains(b);
   }
 
   /**
-   * Computes the set of blocks that can reach an exit.
+   * Computes the set of blocks that can reach the regular exit.
    *
    * <p>Implementation: 1) enumerate reachable blocks (from entry) to avoid weird unreachable junk
-   * 2) seed with all exit-like SpecialBlocks (excluding entry) 3) reverse BFS using predecessors,
-   * but only if the pred->succ edge is one of getSuccessorsExceptIgnoredExceptions(pred)
+   * 2) seed with the regular exit block, if reachable 3) reverse BFS using predecessors, but only
+   * if the pred->succ edge is one of getSuccessorsExceptIgnoredExceptions(pred)
    */
-  private Set<Block> computeBlocksThatCanReachExit(ControlFlowGraph cfg) {
+  private Set<Block> computeBlocksThatCanReachRegularExit(ControlFlowGraph cfg) {
     Block entry = cfg.getEntryBlock();
-    Set<Block> reachable = RLCCalledMethodsAnnotatedTypeFactory.reachableFrom(entry, 10_000);
-
-    // Identify exit blocks. In CF, normal/exceptional exits are SpecialBlocks.
-    // Entry is also special, so exclude it explicitly.
-    //    Set<Block> exitBlocks = new HashSet<>();
-    //    for (Block b : reachable) {
-    //      if (b.getType() == BlockType.SPECIAL_BLOCK && b != entry) {
-    //        exitBlocks.add(b);
-    //      }
-    //    }
+    Set<Block> reachable = RLCCalledMethodsAnnotatedTypeFactory.reachableFrom(entry);
     Block normalExit = cfg.getRegularExitBlock();
     Set<Block> exitBlocks = new HashSet<>();
     if (reachable.contains(normalExit)) {
       exitBlocks.add(normalExit);
     }
 
-    // Reverse reachability from exits.
-    Set<Block> canReachExit = new HashSet<>(exitBlocks);
+    // Reverse reachability from the regular exit.
+    Set<Block> canReachRegularExit = new HashSet<>(exitBlocks);
     Deque<Block> worklist = new ArrayDeque<>(exitBlocks);
 
     while (!worklist.isEmpty()) {
@@ -800,12 +787,12 @@ public class MustCallConsistencyAnalyzer {
         if (!isAllowedSuccessor(pred, cur)) {
           continue;
         }
-        if (canReachExit.add(pred)) {
+        if (canReachRegularExit.add(pred)) {
           worklist.addLast(pred);
         }
       }
     }
-    return canReachExit;
+    return canReachRegularExit;
   }
 
   /**
@@ -840,9 +827,8 @@ public class MustCallConsistencyAnalyzer {
   // TODO: This analysis is currently implemented directly using a worklist; in the future, it
   // should be rewritten to use the dataflow framework of the Checker Framework.
   public void analyze(ControlFlowGraph cfg) {
-    //
     this.currentCfg = cfg;
-    this.blocksThatCanReachExit = null;
+    this.blocksThatCanReachRegularExit = null;
 
     // The `visited` set contains everything that has been added to the worklist, even if it has
     // not yet been removed and analyzed.
@@ -897,8 +883,7 @@ public class MustCallConsistencyAnalyzer {
 
   /**
    * Adds {@code CollectionObligation}s if the method is annotated
-   * {@code @CreatesCollectionObligation} and the receiver is currently
-   * {@code @OwningCollectionWithoutObligation}.
+   * {@code @CreatesCollectionObligation} and the receiver is currently some owning collection type.
    *
    * @param obligations the set of tracked obligations
    * @param node the method invocation node
@@ -906,9 +891,7 @@ public class MustCallConsistencyAnalyzer {
   private void addObligationsForCreatesCollectionObligationAnno(
       Set<Obligation> obligations, MethodInvocationNode node) {
     ExecutableElement methodElement = TreeUtils.elementFromUse(node.getTree());
-    boolean hasCreatesCollectionObligation =
-        coAtf.getDeclAnnotation(methodElement, CreatesCollectionObligation.class) != null;
-    if (hasCreatesCollectionObligation) {
+    if (coAtf.isCreatesCollectionObligationMethod(methodElement)) {
       Node receiverNode = node.getTarget().getReceiver();
       receiverNode = removeCastsAndGetTmpVarIfPresent(receiverNode);
       boolean receiverIsResourceCollection = coAtf.isResourceCollection(receiverNode.getTree());
@@ -935,9 +918,9 @@ public class MustCallConsistencyAnalyzer {
                   CollectionObligation.fromTree(receiverNode.getTree(), mustCallMethod));
             }
             if (!mustCallValues.isEmpty()) {
-              // If this call is in a region with no path to method exit, the obligation will never
-              // be enforced.
-              if (!canReachExit(node.getBlock())) {
+              // If this call is in a region with no path to the regular method exit, the
+              // obligation will never be enforced.
+              if (!canReachRegularExit(node.getBlock())) {
                 // Deduplication check per call-site tree
                 if (reportedNeverEnforcedSites.add(node.getTree())) {
                   checker.reportError(
@@ -968,17 +951,21 @@ public class MustCallConsistencyAnalyzer {
    * Models consumption of the inserted element's obligation by the receiver collection for
    * {@code @CreatesCollectionObligation} calls on owning receivers.
    *
-   * <p>Heuristic: "inserted thing" is the last argument. We only consume when the inserted thing is
-   * NOT itself a resource collection (i.e., avoid bulk ops).
+   * <p>The inserted argument is identified by {@link
+   * CollectionOwnershipAnnotatedTypeFactory#getInsertedArgumentNode(MethodInvocationNode)}. We only
+   * consume obligations for single-element inserts, not bulk operations such as {@code addAll} or
+   * {@code putAll}.
    */
   private void consumeInsertedArgumentObligationIfSingleElementInsert(
       Set<Obligation> obligations, MethodInvocationNode node) {
-    List<Node> args = node.getArguments();
-    if (args.isEmpty()) {
+    Node inserted = coAtf.getInsertedArgumentNode(node);
+    if (inserted == null) {
       return;
     }
-    Node inserted = removeCastsAndGetTmpVarIfPresent(args.get(args.size() - 1));
-    if (inserted.getTree() != null && coAtf.isResourceCollection(inserted.getTree())) {
+    inserted = removeCastsAndGetTmpVarIfPresent(inserted);
+    if (coAtf.getCollectionMutatorArgumentKind(inserted.getTree())
+        == CollectionOwnershipAnnotatedTypeFactory.CollectionMutatorArgumentKind
+            .BULK_RESOURCE_COLLECTION) {
       // Bulk op (addAll/putAll etc).
       return;
     }
@@ -2723,13 +2710,13 @@ public class MustCallConsistencyAnalyzer {
     // corresponding to the loop condition of a collection-obligation-fulfilling
     // loop. If yes, don't propagate the collection obligations that are fulfilled
     // inside the loop.
-    boolean isElseEdgeOfFulfillingLoop = false;
-    PotentiallyFulfillingLoop loop =
+    boolean isElseEdgeOfVerifiedFulfillingLoop = false;
+    ResolvedPotentiallyFulfillingCollectionLoop verifiedFulfillingLoop =
         CollectionOwnershipAnnotatedTypeFactory.getFulfillingLoopForConditionalBlock(currentBlock);
-    if ((currentBlock instanceof ConditionalBlock) && loop != null) {
+    if ((currentBlock instanceof ConditionalBlock) && verifiedFulfillingLoop != null) {
       ConditionalBlock conditionalBlock = (ConditionalBlock) currentBlock;
       if (conditionalBlock.getElseSuccessor().equals(successor)) {
-        isElseEdgeOfFulfillingLoop = true;
+        isElseEdgeOfVerifiedFulfillingLoop = true;
       }
     }
 
@@ -2738,10 +2725,10 @@ public class MustCallConsistencyAnalyzer {
 
     for (Obligation obligation : obligations) {
 
-      if (isElseEdgeOfFulfillingLoop) {
+      if (isElseEdgeOfVerifiedFulfillingLoop) {
         if (obligation instanceof CollectionObligation) {
           String mustCallMethodOfCo = ((CollectionObligation) obligation).mustCallMethod;
-          if (loop.getCalledMethods().contains(mustCallMethodOfCo)) {
+          if (verifiedFulfillingLoop.getCalledMethods().contains(mustCallMethodOfCo)) {
             // don't propagate this obligation along this edge, as it was fulfilled
             // in the loop that the currentBlock is the conditional block of
             continue;
@@ -3437,172 +3424,14 @@ public class MustCallConsistencyAnalyzer {
     }
   }
 
-  /*
-   * SECTION: Loop Body Analysis. This section finds loops and analyzes them to determine whether they
-   * call methods on each element of a collection, which allows for fulfilling collection obligations.
-   * It reuses much of the cfg traversal logic of the consistency analysis, but is it's own separate
-   * thing.
-   */
+  // Loop body analysis verifies collection loops that may call required methods on each iterated
+  // element, which can satisfy collection obligations.
 
   /**
-   * Traverses the cfg of a method to find and mark enhanced-for-loops that potentially fulfill
-   * {@code CollectionObligation}s.
-   *
-   * @param cfg the cfg of the method to analyze
-   */
-  public void findFulfillingForEachLoops(ControlFlowGraph cfg) {
-    // The `visited` set contains everything that has been added to the worklist, even if it has
-    // not yet been removed and analyzed.
-    Set<BlockWithObligations> visited = new HashSet<>();
-    Deque<BlockWithObligations> worklist = new ArrayDeque<>();
-
-    // Add any owning parameters to the initial set of variables to track.
-    BlockWithObligations entry =
-        new BlockWithObligations(cfg.getEntryBlock(), new HashSet<Obligation>());
-    worklist.add(entry);
-    visited.add(entry);
-
-    while (!worklist.isEmpty()) {
-      BlockWithObligations current = worklist.remove();
-      Block currentBlock = current.block;
-
-      for (IPair<Block, @Nullable TypeMirror> successorAndExceptionType :
-          getSuccessorsExceptIgnoredExceptions(currentBlock)) {
-        for (Node node : currentBlock.getNodes()) {
-          if (node instanceof MethodInvocationNode) {
-            patternMatchEnhancedCollectionForLoop((MethodInvocationNode) node, cfg);
-          }
-        }
-        propagate(
-            new BlockWithObligations(successorAndExceptionType.first, new HashSet<Obligation>()),
-            visited,
-            worklist);
-      }
-    }
-  }
-
-  /**
-   * Calls a loop-body-analysis on the loop if it is desugared from an enhanced for loop.
-   *
-   * <p>If a {@code MethodInvocationNode} is desugared from an enhanced for loop over a collection
-   * it corresponds to the node in the synthetic {@code Iterator.next()} method call, which is the
-   * loop update instruction. The AST node corresponding to the loop itself is in this case
-   * contained as a field in the {@code MethodInvocationNode}, which is set in the CFG translation
-   * phase one.
-   *
-   * <p>This method now traverses the CFG upwards to find the loop condition and downwards to find
-   * the first block of the loop body. With these two blocks, it can then call a loop-body-analysis
-   * to find the methods the loop calls on the elements of the iterated collection, as part of the
-   * MustCallOnElements checker.
-   *
-   * @param methodInvocationNode the {@code MethodInvocationNode}, for which it is checked, whether
-   *     it is desugared from an enhanced for loop
-   * @param cfg the enclosing cfg of the {@code MethodInvocationNode}
-   */
-  private void patternMatchEnhancedCollectionForLoop(
-      MethodInvocationNode methodInvocationNode, ControlFlowGraph cfg) {
-    boolean nodeIsDesugaredFromEnhancedForLoop =
-        methodInvocationNode.getIterableExpression() != null;
-    if (nodeIsDesugaredFromEnhancedForLoop) {
-      // this is the Iterator.next() call desugared from an enhanced-for-loop
-      EnhancedForLoopTree loop = methodInvocationNode.getEnhancedForLoop();
-      if (loop == null) {
-        throw new BugInCF(
-            "MethodInvocationNode.iterableExpression should be non-null iff"
-                + " MethodInvocationNode.enhancedForLoop is non-null");
-      }
-
-      // Find the first block of the loop body.
-      // Start from the synthetic (desugared) iterator.next() node and traverse the cfg
-      // until the assignment of the loop iterator variable is found, which is the last
-      // desugared instruction. The next block is then the start of the loop body.
-      VariableTree loopVariable = loop.getVariable();
-      SingleSuccessorBlock ssblock = (SingleSuccessorBlock) methodInvocationNode.getBlock();
-      Iterator<Node> nodeIterator = ssblock.getNodes().iterator();
-      Node loopVarNode = null;
-      Node node;
-      boolean isAssignmentOfIterVar;
-      do {
-        while (!nodeIterator.hasNext()) {
-          ssblock = (SingleSuccessorBlock) ssblock.getSuccessor();
-          nodeIterator = ssblock.getNodes().iterator();
-        }
-        node = nodeIterator.next();
-        isAssignmentOfIterVar = false;
-        if ((node instanceof AssignmentNode) && (node.getTree() instanceof VariableTree)) {
-          loopVarNode = ((AssignmentNode) node).getTarget();
-          VariableTree iterVarDecl = (VariableTree) node.getTree();
-          isAssignmentOfIterVar = iterVarDecl.getName() == loopVariable.getName();
-        }
-      } while (!isAssignmentOfIterVar);
-      Block loopBodyEntryBlock = ssblock.getSuccessor();
-
-      // Find the loop-body-condition
-      // Start from the synthetic (desugared) iterator.next() node and traverse the cfg
-      // backwards until the conditional block is found. The previous block is then the block
-      // containing the desugared loop condition iterator.hasNext().
-      Block block = methodInvocationNode.getBlock();
-      nodeIterator = block.getNodes().iterator();
-      boolean isLoopCondition;
-      do {
-        while (!nodeIterator.hasNext()) {
-          Set<Block> predBlocks = block.getPredecessors();
-          if (predBlocks.size() == 1) {
-            block = predBlocks.iterator().next();
-            nodeIterator = block.getNodes().iterator();
-          } else {
-            // there is no trivial resolution here. Best we can do is just skip this loop,
-            // which is of course sound.
-            return;
-            // throw new BugInCF(
-            //     "Encountered more than one CFG Block predecessor trying to find the"
-            //         + " enhanced-for-loop update block. Block: ");
-          }
-        }
-        node = nodeIterator.next();
-        isLoopCondition = false;
-        if (node instanceof MethodInvocationNode) {
-          MethodInvocationTree mit = ((MethodInvocationNode) node).getTree();
-          isLoopCondition = TreeUtils.isHasNextCall(mit);
-        }
-      } while (!isLoopCondition);
-
-      Block blockContainingLoopCondition = node.getBlock();
-      if (blockContainingLoopCondition.getSuccessors().size() != 1) {
-        throw new BugInCF(
-            "loop condition has: "
-                + blockContainingLoopCondition.getSuccessors().size()
-                + " successors instead of 1.");
-      }
-      Block conditionalBlock = blockContainingLoopCondition.getSuccessors().iterator().next();
-      if (!(conditionalBlock instanceof ConditionalBlock)) {
-        throw new BugInCF(
-            "loop condition successor is not ConditionalBlock, but: "
-                + conditionalBlock.getClass());
-      }
-
-      // add the blocks into a static datastructure in the calledmethodsatf, such that it can
-      // analyze
-      // them (call MustCallConsistencyAnalyzer.analyzeFulfillingLoops, which in turn adds the trees
-      // to the static datastructure in McoeAtf)
-      PotentiallyFulfillingLoop pfLoop =
-          new PotentiallyFulfillingLoop(
-              loop.getExpression(),
-              loopVarNode.getTree(),
-              node.getTree(),
-              loopBodyEntryBlock,
-              block,
-              (ConditionalBlock) conditionalBlock,
-              loopVarNode);
-      this.analyzeObligationFulfillingLoop(cfg, pfLoop);
-    }
-  }
-
-  /**
-   * Analyze the loop body of a 'potentially-mcoe-obligation-fulfilling-loop', as determined by a
-   * pre-pattern-match in the MustCallVisitor (in the case of a normal for-loop) or determined by a
-   * pre-pattern-match in {@code this.patternMatchEnhancedForLoop(MethodInvocationNode)} (in the
-   * case of an enhanced-for-loop).
+   * Analyze the loop body of a CFG-resolved potentially fulfilling collection loop, as determined
+   * by a pre-pattern-match in the MustCallVisitor (in the case of a normal for-loop) or by a
+   * pre-pattern-match in the RLCCalledMethodsAnnotatedTypeFactory (in the case of an
+   * enhanced-for-loop).
    *
    * <p>The analysis uses the CalledMethods type of the collection element iterated over to
    * determine the methods the loop calls on the collection elements.
@@ -3611,26 +3440,29 @@ public class MustCallConsistencyAnalyzer {
    * postAnalyze(cfg)} method of the {@code RLCCalledMethodsAnnotatedTypeFactory}).
    *
    * @param cfg the cfg of the enclosing method
-   * @param potentiallyFulfillingLoop the loop to check
+   * @param resolvedPotentiallyFulfillingLoop the loop to check
    */
-  public void analyzeObligationFulfillingLoop(
-      ControlFlowGraph cfg, PotentiallyFulfillingLoop potentiallyFulfillingLoop) {
+  public void analyzeResolvedPotentiallyFulfillingCollectionLoop(
+      ControlFlowGraph cfg,
+      ResolvedPotentiallyFulfillingCollectionLoop resolvedPotentiallyFulfillingLoop) {
 
     // ensure checked loop is initialized in a valid way
     Objects.requireNonNull(
-        potentiallyFulfillingLoop.collectionElementTree,
+        resolvedPotentiallyFulfillingLoop.collectionElementTree,
         "CollectionElementAccess tree provided to analyze loop body of an"
-            + " mcoe-obligation-fulfilling loop is null.");
+            + " CFG-resolved potentially fulfilling collection loop is null.");
     Objects.requireNonNull(
-        potentiallyFulfillingLoop.loopBodyEntryBlock,
-        "Block provided to analyze loop body of an mcoe-obligation-fulfilling loop is null.");
+        resolvedPotentiallyFulfillingLoop.loopBodyEntryBlock,
+        "Block provided to analyze loop body of a CFG-resolved potentially fulfilling collection"
+            + " loop is null.");
     Objects.requireNonNull(
-        potentiallyFulfillingLoop.loopUpdateBlock,
-        "Block provided to analyze loop body of an mcoe-obligation-fulfilling loop is null.");
+        resolvedPotentiallyFulfillingLoop.loopUpdateBlock,
+        "Block provided to analyze loop body of a CFG-resolved potentially fulfilling collection"
+            + " loop is null.");
 
-    Block loopBodyEntryBlock = potentiallyFulfillingLoop.loopBodyEntryBlock;
-    Block loopUpdateBlock = potentiallyFulfillingLoop.loopUpdateBlock;
-    Tree collectionElement = potentiallyFulfillingLoop.collectionElementTree;
+    Block loopBodyEntryBlock = resolvedPotentiallyFulfillingLoop.loopBodyEntryBlock;
+    Block loopUpdateBlock = resolvedPotentiallyFulfillingLoop.loopUpdateBlock;
+    Tree collectionElement = resolvedPotentiallyFulfillingLoop.collectionElementTree;
 
     boolean emptyLoopBody = loopBodyEntryBlock.equals(loopUpdateBlock);
     if (emptyLoopBody) {
@@ -3689,7 +3521,7 @@ public class MustCallConsistencyAnalyzer {
         if (isLastBlockOfBody) {
           Set<String> calledMethodsAfterBlock =
               analyzeTypeOfCollectionElement(
-                  currentBlock, potentiallyFulfillingLoop, obligations, loopUpdateBlock);
+                  currentBlock, resolvedPotentiallyFulfillingLoop, obligations, loopUpdateBlock);
           // intersect the called methods after this block with the accumulated ones so far.
           // This is required because there may be multiple "back edges" of the loop, in which
           // case we must intersect the called methods between those.
@@ -3717,10 +3549,10 @@ public class MustCallConsistencyAnalyzer {
       }
     }
 
-    // now put the loop into the static datastructure if it calls any methods on the element
-    if (calledMethodsInLoop != null && calledMethodsInLoop.size() > 0) {
-      potentiallyFulfillingLoop.addCalledMethods(calledMethodsInLoop);
-      CollectionOwnershipAnnotatedTypeFactory.markFulfillingLoop(potentiallyFulfillingLoop);
+    // Record the loop as verified if it calls any methods on the iterated element.
+    if (calledMethodsInLoop != null && !calledMethodsInLoop.isEmpty()) {
+      resolvedPotentiallyFulfillingLoop.addCalledMethods(calledMethodsInLoop);
+      CollectionOwnershipAnnotatedTypeFactory.markFulfillingLoop(resolvedPotentiallyFulfillingLoop);
     }
   }
 
@@ -3798,7 +3630,7 @@ public class MustCallConsistencyAnalyzer {
    * aliases.
    *
    * @param lastLoopBodyBlock last block of loop body
-   * @param potentiallyFulfillingLoop loop wrapper of the loop to analyze
+   * @param resolvedPotentiallyFulfillingLoop loop wrapper of the loop to analyze
    * @param obligations the set of tracked obligations
    * @param loopUpdateBlock block that updates the loop
    * @return the union of methods in the CalledMethods type of the collection element and all its
@@ -3806,7 +3638,7 @@ public class MustCallConsistencyAnalyzer {
    */
   private Set<String> analyzeTypeOfCollectionElement(
       Block lastLoopBodyBlock,
-      PotentiallyFulfillingLoop potentiallyFulfillingLoop,
+      ResolvedPotentiallyFulfillingCollectionLoop resolvedPotentiallyFulfillingLoop,
       Set<Obligation> obligations,
       Block loopUpdateBlock) {
     AccumulationStore store = null;
@@ -3822,7 +3654,7 @@ public class MustCallConsistencyAnalyzer {
       store = cmAtf.getStoreAfter(lastLoopBodyBlock.getLastNode());
     }
     Obligation collectionElementObligation =
-        getObligationForVar(obligations, potentiallyFulfillingLoop.collectionElementTree);
+        getObligationForVar(obligations, resolvedPotentiallyFulfillingLoop.collectionElementTree);
     if (collectionElementObligation == null) {
       // the loop did something weird. Might have reassigned the collection element.
       // The sound thing to do is return an empty list.
@@ -3838,8 +3670,8 @@ public class MustCallConsistencyAnalyzer {
     // add the called methods of the ICE
     IteratedCollectionElement ice =
         store.getIteratedCollectionElement(
-            potentiallyFulfillingLoop.collectionElementNode,
-            potentiallyFulfillingLoop.collectionElementTree);
+            resolvedPotentiallyFulfillingLoop.collectionElementNode,
+            resolvedPotentiallyFulfillingLoop.collectionElementTree);
     if (ice != null) {
       AccumulationValue cmValOfIce = store.getValue(ice);
       List<String> calledMethods = getCalledMethods(cmValOfIce);

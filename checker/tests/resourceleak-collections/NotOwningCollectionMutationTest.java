@@ -3,219 +3,209 @@ import java.util.*;
 import org.checkerframework.checker.collectionownership.qual.*;
 import org.checkerframework.checker.mustcall.qual.*;
 
+/*
+ * Tests mutation policy for non-owning and owning collections.
+ *
+ * <p>The non-owning cases check that only definitely non-owning elements may be inserted.
+ * The owning cases check that inserted obligations are tracked and later discharged.
+ */
 class NotOwningCollectionMutationTest {
 
   @InheritableMustCall("close")
-  static class R {
+  static class TrackedResource {
     void close() throws IOException {}
   }
 
-  R owning() {
-    return new R();
+  TrackedResource owning() {
+    return new TrackedResource();
   }
 
   @NotOwning
-  R notowning() {
+  TrackedResource notOwning() {
     // :: error: required.method.not.called
-    return new R();
+    return new TrackedResource();
   }
 
-  // ------------------------------------------------------------
-  // NotOwningCollection receiver + NotOwning element: OK
-  // ------------------------------------------------------------
-  void ok_noc_add_notowning_param(@NotOwningCollection List<R> l, @NotOwning R r) {
-    l.add(r); // ok
+  /*
+   * Non-owning collection receivers may accept only definitely non-owning elements.
+   */
+  void okNocAddNotOwningParam(
+      @NotOwningCollection List<TrackedResource> list, @NotOwning TrackedResource resource) {
+    list.add(resource);
   }
 
-  void ok_noc_add_notowning_method(@NotOwningCollection List<R> l) {
-    l.add(notowning()); // ok
+  void okNocAddNotOwningMethod(@NotOwningCollection List<TrackedResource> list) {
+    list.add(notOwning());
   }
 
-  // ------------------------------------------------------------
-  // NotOwningCollection receiver + owning element: error (smuggling)
-  // Close afterwards to avoid extra RLC "required.method.not.called".
-  // ------------------------------------------------------------
-  void err_noc_add_owning_local_then_close(@NotOwningCollection List<R> l) {
-    R r = new R();
+  /*
+   * Inserting owning elements into a non-owning collection is illegal even if the caller
+   * closes the value afterward.
+   */
+  void errNocAddOwningLocalThenClose(@NotOwningCollection List<TrackedResource> list) {
+    TrackedResource resource = new TrackedResource();
     // :: error: illegal.collection.mutator.owning.insert.into.notowning
-    l.add(r);
+    list.add(resource);
     try {
-      r.close();
+      resource.close();
     } catch (IOException e) {
       // ignore
     }
   }
 
-  void err_noc_add_owning_param_then_close(@NotOwningCollection List<R> l, @Owning R r) {
+  void errNocAddOwningParamThenClose(
+      @NotOwningCollection List<TrackedResource> list, @Owning TrackedResource resource) {
     // :: error: illegal.collection.mutator.owning.insert.into.notowning
-    l.add(r);
+    list.add(resource);
     try {
-      r.close();
+      resource.close();
     } catch (IOException e) {
       // ignore
     }
   }
 
-  void err_noc_add_alias_of_owning_then_close(@NotOwningCollection List<R> l) {
-    R r = new R();
-    R r2 = r;
+  void errNocAddAliasOfOwningThenClose(@NotOwningCollection List<TrackedResource> list) {
+    TrackedResource resource = new TrackedResource();
+    TrackedResource alias = resource;
     // :: error: illegal.collection.mutator.owning.insert.into.notowning
-    l.add(r2);
+    list.add(alias);
     try {
-      r.close();
+      resource.close();
     } catch (IOException e) {
       // ignore
     }
   }
 
-  // ------------------------------------------------------------
-  // NotOwningCollection receiver via move/alias: old name becomes NOC
-  // (assuming your assignment transfer sets RHS (old owner) to NOC)
-  // ------------------------------------------------------------
-  void err_noc_receiver_after_move_then_close() {
-    @OwningCollection List<R> owner = new ArrayList<>();
-    List<R> newOwner = owner; // after transfer: "owner" becomes @NotOwningCollection
-    R r = new R();
+  /*
+   * Reassignment turns the old owner name into a non-owning alias. Inserting through that
+   * old name should therefore be rejected.
+   */
+  void errNocReceiverAfterMoveThenClose() {
+    @OwningCollection List<TrackedResource> owner = new ArrayList<>();
+    List<TrackedResource> newOwner = owner;
+    TrackedResource resource = new TrackedResource();
     // :: error: illegal.collection.mutator.owning.insert.into.notowning
-    owner.add(r);
+    owner.add(resource);
     try {
-      r.close();
+      resource.close();
     } catch (IOException e) {
       // ignore
     }
 
-    for (R r2 : newOwner) {
+    for (TrackedResource item : newOwner) {
       try {
-        r2.close();
-      } catch (Exception e) {
-      }
-    }
-  }
-
-  // ------------------------------------------------------------
-  // NotOwningCollection as a field: same rule (can add only non-owning)
-  // ------------------------------------------------------------
-
-  final @NotOwningCollection List<R> cache = new ArrayList<>();
-
-  void ok_noc_field_add_notowning(@NotOwning R r) {
-    cache.add(r); // ok
-  }
-
-  void ok_noc_field_add_notowning_2(R r) {
-    cache.add(r); // also ok
-  }
-
-  void err_noc_field_add_owning_then_close() {
-    R r = new R();
-    // :: error: illegal.collection.mutator.owning.insert.into.notowning
-    cache.add(r);
-    try {
-      r.close();
-    } catch (IOException e) {
-      // ignore
-    }
-  }
-
-  // ------------------------------------------------------------
-  // OwningCollection receiver + owning element: should create collection obligation.
-  // If you don't discharge via a certified loop, expect unfulfilled.collection.obligations.
-  // ------------------------------------------------------------
-
-  void err_oc_add_owning_local_no_dispose() {
-    @OwningCollection List<R> l = new ArrayList<>();
-    R r = new R();
-    // :: error: unfulfilled.collection.obligations
-    l.add(r);
-  }
-
-  void err_oc_add_owning_call_no_dispose() {
-    List<R> l = new ArrayList<>();
-    // :: error: unfulfilled.collection.obligations
-    l.add(owning());
-  }
-
-  void err_oc_add_notowning_call_no_dispose() {
-    @OwningCollection List<R> l = new ArrayList<>();
-    // :: error: illegal.collection.mutator.nonowning.insert.into.owning
-    // :: error: unfulfilled.collection.obligations
-    l.add(notowning());
-  }
-
-  void err_oc_add_owning_alias_no_dispose() {
-    @OwningCollection List<R> l = new ArrayList<>();
-    R r = new R();
-    R r2 = r;
-    // :: error: unfulfilled.collection.obligations
-    l.add(r2);
-  }
-
-  void err_oc_add_owning_newexpr_no_dispose() {
-    @OwningCollection List<R> l = new ArrayList<>();
-    // :: error: unfulfilled.collection.obligations
-    l.add(new R());
-  }
-
-  // Discharge via a certified loop (close is inside try/catch so no early-exit via exception).
-  void ok_oc_add_owning_then_dispose_loop() {
-    @OwningCollection List<R> l = new ArrayList<>();
-    R r = new R();
-    l.add(r);
-
-    for (R x : l) {
-      try {
-        x.close();
+        item.close();
       } catch (IOException e) {
-
+        // ignore
       }
     }
   }
 
-  void ok_oc_add_two_then_dispose_loop() {
-    @OwningCollection List<R> l = new ArrayList<>();
-    R r1 = new R();
-    R r2 = new R();
-    l.add(r1);
-    l.add(r2);
+  final @NotOwningCollection List<TrackedResource> cache = new ArrayList<>();
 
-    for (R x : l) {
+  /*
+   * Non-owning collection fields follow the same mutation rule as local non-owning
+   * collection references.
+   */
+  void okNocFieldAddNotOwning(@NotOwning TrackedResource resource) {
+    cache.add(resource);
+  }
+
+  void okNocFieldAddDefaultParam(TrackedResource resource) {
+    cache.add(resource);
+  }
+
+  void errNocFieldAddOwningThenClose() {
+    TrackedResource resource = new TrackedResource();
+    // :: error: illegal.collection.mutator.owning.insert.into.notowning
+    cache.add(resource);
+    try {
+      resource.close();
+    } catch (IOException e) {
+      // ignore
+    }
+  }
+
+  /*
+   * Owning collections may accumulate element obligations, which must later be discharged
+   * by a certified loop.
+   */
+  void errOcAddOwningLocalNoDispose() {
+    @OwningCollection List<TrackedResource> list = new ArrayList<>();
+    TrackedResource resource = new TrackedResource();
+    // :: error: unfulfilled.collection.obligations
+    list.add(resource);
+  }
+
+  void errOcAddOwningCallNoDispose() {
+    List<TrackedResource> list = new ArrayList<>();
+    // :: error: unfulfilled.collection.obligations
+    list.add(owning());
+  }
+
+  void errOcAddNotOwningCallNoDispose() {
+    @OwningCollection List<TrackedResource> list = new ArrayList<>();
+    // :: error: unfulfilled.collection.obligations
+    list.add(notOwning());
+  }
+
+  void errOcAddOwningAliasNoDispose() {
+    @OwningCollection List<TrackedResource> list = new ArrayList<>();
+    TrackedResource resource = new TrackedResource();
+    TrackedResource alias = resource;
+    // :: error: unfulfilled.collection.obligations
+    list.add(alias);
+  }
+
+  void errOcAddOwningNewExprNoDispose() {
+    @OwningCollection List<TrackedResource> list = new ArrayList<>();
+    // :: error: unfulfilled.collection.obligations
+    list.add(new TrackedResource());
+  }
+
+  void okOcAddOwningThenDisposeLoop() {
+    @OwningCollection List<TrackedResource> list = new ArrayList<>();
+    TrackedResource resource = new TrackedResource();
+    list.add(resource);
+
+    for (TrackedResource item : list) {
       try {
-        x.close();
+        item.close();
       } catch (IOException e) {
-        // swallow
+        // ignore
       }
     }
   }
 
-  // inserting @NotOwning elements into an owning collection:
-  void err_oc_insert_notowning(@OwningCollection List<R> l, @NotOwning R r) {
-    // :: error: illegal.collection.mutator.nonowning.insert.into.owning
-    l.add(r);
-    close_collection(l);
-  }
+  void okOcAddTwoThenDisposeLoop() {
+    @OwningCollection List<TrackedResource> list = new ArrayList<>();
+    TrackedResource first = new TrackedResource();
+    TrackedResource second = new TrackedResource();
+    list.add(first);
+    list.add(second);
 
-  void close_collection(@OwningCollection List<R> l) {
-    for (R r : l) {
+    for (TrackedResource item : list) {
       try {
-        r.close();
+        item.close();
       } catch (IOException e) {
+        // ignore
       }
     }
   }
 
-  // ------------------------------------------------------------
-  // addAll: TODO: Take care of the type errors in addAll via JDK stubs
-  // ------------------------------------------------------------
-
-  //  void err_noc_receiver_addAll_noc_arg(
-  //      @NotOwningCollection List<R> dst, @NotOwningCollection List<R> src) {
-  //    // :: error: method.invocation
-  //    dst.addAll(src);
-  //  }
-  //
-  //  void err_noc_receiver_addAll_oc_arg(
-  //      @NotOwningCollection List<R> dst, @OwningCollection List<R> src) {
-  //    // :: error: method.invocation
-  //    dst.addAll(src);
-  //  }
+  /*
+   * Inserting non-owning elements into an owning collection is allowed, because it does not
+   * create a new collection obligation.
+   */
+  void okOcInsertNotOwning(
+      @OwningCollection List<TrackedResource> list, @NotOwning TrackedResource resource) {
+    list.add(resource);
+    for (TrackedResource item : list) {
+      try {
+        item.close();
+      } catch (IOException e) {
+        // ignore
+      }
+    }
+  }
 }

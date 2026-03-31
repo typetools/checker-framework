@@ -4,13 +4,16 @@ import java.util.List;
 import org.checkerframework.checker.collectionownership.qual.*;
 import org.checkerframework.checker.mustcall.qual.*;
 
+/*
+ * Crash reproducer for pruning a pooled owning collection after it was initialized with an
+ * ArrayList(int) constructor.
+ */
 @InheritableMustCall("close")
-class CrashRepro {
+class PoolPruneCrash {
 
-  // TODO: Bug ArrayList l = new ArrayList<>() has JDK issues.
   private List<Resource> pool;
 
-  CrashRepro(int maxSize) {
+  PoolPruneCrash(int maxSize) {
     this.pool = new ArrayList<>(maxSize); // should trigger the crash path
   }
 
@@ -25,9 +28,9 @@ class CrashRepro {
   }
 
   public synchronized void prune() {
-    //    if (pool == null) {
-    //      return;
-    //    }
+    if (pool == null) {
+      return;
+    }
     Iterator<Resource> itr = pool.iterator();
     while (itr.hasNext()) {
       Resource reader = itr.next();

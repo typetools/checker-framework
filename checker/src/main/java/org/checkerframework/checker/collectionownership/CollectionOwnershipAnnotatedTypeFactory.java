@@ -1,6 +1,7 @@
 package org.checkerframework.checker.collectionownership;
 
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
@@ -20,6 +21,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
@@ -31,16 +33,20 @@ import org.checkerframework.checker.collectionownership.qual.OwningCollectionBot
 import org.checkerframework.checker.collectionownership.qual.OwningCollectionWithoutObligation;
 import org.checkerframework.checker.collectionownership.qual.PolyOwningCollection;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
+import org.checkerframework.checker.mustcall.qual.NotOwning;
+import org.checkerframework.checker.mustcall.qual.Owning;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer;
 import org.checkerframework.checker.resourceleak.MustCallInference;
 import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
 import org.checkerframework.checker.resourceleak.ResourceLeakUtils;
 import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsAnnotatedTypeFactory;
-import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsAnnotatedTypeFactory.PotentiallyFulfillingLoop;
+import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsAnnotatedTypeFactory.ResolvedPotentiallyFulfillingCollectionLoop;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.block.Block;
+import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
@@ -60,6 +66,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 /** The annotated type factory for the Collection Ownership Checker. */
 public class CollectionOwnershipAnnotatedTypeFactory
@@ -123,8 +130,20 @@ public class CollectionOwnershipAnnotatedTypeFactory
     OwningCollectionBottom
   };
 
+  /** Classification of the argument inserted by a {@code @CreatesCollectionObligation} mutator. */
+  public enum CollectionMutatorArgumentKind {
+    /**
+     * The inserted argument is a resource collection, such as in {@code addAll} or {@code putAll}.
+     */
+    BULK_RESOURCE_COLLECTION,
+    /** The inserted argument is definitely non-owning at the call site. */
+    DEFINITELY_NON_OWNING,
+    /** The inserted argument may be owning or its ownership could not be proven. */
+    MAY_BE_OWNING
+  }
+
   /**
-   * The method name used for CollectionObligations that represent an obligation of MustCallUnkown.
+   * The method name used for CollectionObligations that represent an obligation of MustCallUnknown.
    * The digit in the first character ensures this cannot coincide with an actual method name.
    */
   public static final String UNKNOWN_METHOD_NAME = "1UNKNOWN";
@@ -133,24 +152,27 @@ public class CollectionOwnershipAnnotatedTypeFactory
    * Maps the AST-tree corresponding to the loop condition of a collection-obligation-fulfilling
    * loop to the loop wrapper.
    */
-  private static Map<Tree, PotentiallyFulfillingLoop> conditionToFulfillingLoopMap =
-      new HashMap<>();
+  private static final Map<Tree, ResolvedPotentiallyFulfillingCollectionLoop>
+      conditionToVerifiedFulfillingLoopMap = new HashMap<>();
 
   /**
    * Maps the cfg-block corresponding to the loop conditional block of a
    * collection-obligation-fulfilling loop to the loop wrapper.
    */
-  private static Map<Block, PotentiallyFulfillingLoop> conditionalBlockToFulfillingLoopMap =
-      new HashMap<>();
+  private static final Map<Block, ResolvedPotentiallyFulfillingCollectionLoop>
+      conditionalBlockToVerifiedFulfillingLoopMap = new HashMap<>();
 
   /**
    * Marks the specified loop as fulfilling a collection obligation.
    *
-   * @param loop the loop wrapper
+   * @param verifiedFulfillingLoop the verified loop wrapper
    */
-  public static void markFulfillingLoop(PotentiallyFulfillingLoop loop) {
-    conditionToFulfillingLoopMap.put(loop.condition, loop);
-    conditionalBlockToFulfillingLoopMap.put(loop.loopConditionalBlock, loop);
+  public static void markFulfillingLoop(
+      ResolvedPotentiallyFulfillingCollectionLoop verifiedFulfillingLoop) {
+    conditionToVerifiedFulfillingLoopMap.put(
+        verifiedFulfillingLoop.condition, verifiedFulfillingLoop);
+    conditionalBlockToVerifiedFulfillingLoopMap.put(
+        verifiedFulfillingLoop.loopConditionalBlock, verifiedFulfillingLoop);
   }
 
   /**
@@ -159,8 +181,9 @@ public class CollectionOwnershipAnnotatedTypeFactory
    * @param tree a tree that is potentially the condition for a fulfilling loop
    * @return the collection-obligation-fulfilling loop for which the given tree is the condition
    */
-  public static PotentiallyFulfillingLoop getFulfillingLoopForCondition(Tree tree) {
-    return conditionToFulfillingLoopMap.get(tree);
+  public static ResolvedPotentiallyFulfillingCollectionLoop getFulfillingLoopForCondition(
+      Tree tree) {
+    return conditionToVerifiedFulfillingLoopMap.get(tree);
   }
 
   /**
@@ -171,8 +194,9 @@ public class CollectionOwnershipAnnotatedTypeFactory
    * @return the collection-obligation-fulfilling loop for which the given block is the CFG
    *     conditional block
    */
-  public static PotentiallyFulfillingLoop getFulfillingLoopForConditionalBlock(Block block) {
-    return conditionalBlockToFulfillingLoopMap.get(block);
+  public static ResolvedPotentiallyFulfillingCollectionLoop getFulfillingLoopForConditionalBlock(
+      Block block) {
+    return conditionalBlockToVerifiedFulfillingLoopMap.get(block);
   }
 
   /**
@@ -274,7 +298,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
    */
   public boolean isResourceCollection(TypeMirror t) {
     List<String> mcValues = getMustCallValuesOfResourceCollectionComponent(t);
-    return mcValues != null && mcValues.size() > 0;
+    return mcValues != null && !mcValues.isEmpty();
   }
 
   /**
@@ -376,7 +400,109 @@ public class CollectionOwnershipAnnotatedTypeFactory
       treeMcType = null;
     }
     List<String> mcValues = getMustCallValuesOfResourceCollectionComponent(treeMcType);
-    return mcValues != null && mcValues.size() > 0;
+    return mcValues != null && !mcValues.isEmpty();
+  }
+
+  /**
+   * Returns true if the given method is annotated {@code @CreatesCollectionObligation}.
+   *
+   * @param methodElement a method
+   * @return true if the method is annotated {@code @CreatesCollectionObligation}
+   */
+  public boolean isCreatesCollectionObligationMethod(ExecutableElement methodElement) {
+    return getDeclAnnotation(
+            methodElement,
+            org.checkerframework.checker.collectionownership.qual.CreatesCollectionObligation.class)
+        != null;
+  }
+
+  /**
+   * Returns the argument whose obligation is transferred by a {@code @CreatesCollectionObligation}
+   * call, or null if the call has no such argument.
+   *
+   * <p>The current heuristic is that the inserted argument is the last argument at the call site.
+   *
+   * @param tree a method invocation tree
+   * @return the inserted argument tree, or null if there is none
+   */
+  public @Nullable ExpressionTree getInsertedArgumentTree(MethodInvocationTree tree) {
+    if (tree.getArguments().isEmpty()) {
+      return null;
+    }
+    return tree.getArguments().get(tree.getArguments().size() - 1);
+  }
+
+  /**
+   * Returns the argument whose obligation is transferred by a {@code @CreatesCollectionObligation}
+   * call, or null if the call has no such argument.
+   *
+   * <p>The current heuristic is that the inserted argument is the last argument at the call site.
+   *
+   * @param node a method invocation node
+   * @return the inserted argument node, or null if there is none
+   */
+  public @Nullable Node getInsertedArgumentNode(MethodInvocationNode node) {
+    List<Node> args = node.getArguments();
+    if (args.isEmpty()) {
+      return null;
+    }
+    return args.get(args.size() - 1);
+  }
+
+  /**
+   * Classifies the argument inserted by a {@code @CreatesCollectionObligation} mutator call.
+   *
+   * <p>For resource collections, this returns {@link
+   * CollectionMutatorArgumentKind#BULK_RESOURCE_COLLECTION}. For non-collection values, this
+   * returns {@link CollectionMutatorArgumentKind#DEFINITELY_NON_OWNING} only if ownership is
+   * definitely absent at the call site.
+   *
+   * @param insertedArgumentTree the inserted argument
+   * @return the inserted argument's ownership classification
+   */
+  public CollectionMutatorArgumentKind getCollectionMutatorArgumentKind(Tree insertedArgumentTree) {
+    if (insertedArgumentTree == null) {
+      return CollectionMutatorArgumentKind.MAY_BE_OWNING;
+    }
+
+    if (isResourceCollection(insertedArgumentTree)) {
+      return CollectionMutatorArgumentKind.BULK_RESOURCE_COLLECTION;
+    }
+
+    RLCCalledMethodsAnnotatedTypeFactory rlAtf =
+        ResourceLeakUtils.getRLCCalledMethodsAnnotatedTypeFactory(this);
+
+    Element insertedElement = TreeUtils.elementFromTree(insertedArgumentTree);
+    if (insertedElement != null && insertedElement.getAnnotation(NotOwning.class) != null) {
+      return CollectionMutatorArgumentKind.DEFINITELY_NON_OWNING;
+    }
+
+    if (insertedElement != null && insertedElement.getKind() == ElementKind.PARAMETER) {
+      return insertedElement.getAnnotation(Owning.class) == null
+          ? CollectionMutatorArgumentKind.DEFINITELY_NON_OWNING
+          : CollectionMutatorArgumentKind.MAY_BE_OWNING;
+    }
+
+    if (insertedArgumentTree instanceof MethodInvocationTree) {
+      ExecutableElement callee =
+          TreeUtils.elementFromUse((MethodInvocationTree) insertedArgumentTree);
+      if (rlAtf.hasNotOwning(callee)) {
+        return CollectionMutatorArgumentKind.DEFINITELY_NON_OWNING;
+      }
+    }
+
+    AnnotatedTypeMirror mustCallType = mcAtf.getAnnotatedType(insertedArgumentTree);
+    if (mustCallType != null && mustCallType.hasPrimaryAnnotation(NotOwning.class)) {
+      return CollectionMutatorArgumentKind.DEFINITELY_NON_OWNING;
+    }
+
+    TypeMirror typeMirror = TreeUtils.typeOf(insertedArgumentTree);
+    TypeElement typeElement = TypesUtils.getTypeElement(typeMirror);
+    if (typeElement != null && rlAtf.hasEmptyMustCallValue(typeElement)) {
+      return CollectionMutatorArgumentKind.DEFINITELY_NON_OWNING;
+    }
+
+    return CollectionMutatorArgumentKind.MAY_BE_OWNING;
   }
 
   /**
@@ -759,6 +885,15 @@ public class CollectionOwnershipAnnotatedTypeFactory
               break;
             }
           }
+        }
+      } else if (elt.getKind() == ElementKind.LOCAL_VARIABLE) {
+        // Non-resource locals such as "Socket sock = null" can be reconstructed
+        // as @NotOwningCollection at identifier use sites because of the defaulting path. For
+        // plain non-collection locals, collection-ownership qualifiers are not meaningful, so
+        // override that fallback here and keep them at bottom.
+        AnnotationMirror localAnno = type.getEffectiveAnnotationInHierarchy(TOP);
+        if (localAnno == null || AnnotationUtils.areSameByName(TOP, localAnno)) {
+          type.replaceAnnotation(BOTTOM);
         }
       }
     }

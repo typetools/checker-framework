@@ -7,6 +7,7 @@ import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.BreakTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompoundAssignmentTree;
+import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.ForLoopTree;
@@ -45,7 +46,6 @@ import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.mustcall.qual.PolyMustCall;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.resourceleak.ResourceLeakUtils;
-import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.dataflow.cfg.block.Block;
@@ -357,16 +357,11 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
     return null;
   }
 
-  // ///////////////////////////////////////////////////////////////////////////
-  // Syntactically match for-loops that iterate over all elements of a collection on the AST.
-  // This happens here in the MustCallVisitor instead of the CollectionOwnershipVisitor, which
-  // would be the natural place to put this logic, because the matching must be completed
-  // before the CollectionOwnershipTransfer logic runs, and the CollectionOwnershipVisitor runs
-  // after the CollectionOwnershipTransfer.
-
   /**
-   * Records, in the {@code @CollectionOwnershipAnnotatedTypeFactory}, loops that call a method on
-   * entries of an {@code @OwningCollection}.
+   * Syntactically matches indexed for-loops that iterate over all elements of a collection.
+   *
+   * <p>This logic lives in the Must Call visitor because matching must complete before collection
+   * ownership transfer runs.
    */
   @Override
   public Void visitForLoop(ForLoopTree tree, Void p) {
@@ -377,16 +372,49 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
     return super.visitForLoop(tree, p);
   }
 
-  // ///////////////////////////////////////////////////////////////////////////
-  // AST-only while-loop matching
-  //
-  // We only pattern-match on AST here and record a "pendingCfg" loop.
-  // Later, when CFG exists, we resolve loopUpdateBlock/bodyEntry/conditional/etc.
-  // ///////////////////////////////////////////////////////////////////////////
+  /**
+   * Performs AST-only matching for while-loops that may fulfill collection obligations.
+   *
+   * <p>RLCC resolves the remaining CFG-local loop facts later, during post-analysis of the
+   * enclosing method.
+   */
   @Override
   public Void visitWhileLoop(WhileLoopTree tree, Void p) {
     detectCollectionObligationFulfillingWhileLoop(tree);
     return super.visitWhileLoop(tree, p);
+  }
+
+  @Override
+  public Void visitEnhancedForLoop(EnhancedForLoopTree tree, Void p) {
+    detectPotentiallyFulfillingEnhancedForLoop(tree);
+    return super.visitEnhancedForLoop(tree, p);
+  }
+
+  /**
+   * Records an enhanced-for-loop that potentially fulfills collection obligations.
+   *
+   * <p>This method only performs AST matching. RLCC resolves the CFG-specific loop facts later,
+   * during post-analysis of the enclosing method.
+   *
+   * @param tree the enhanced-for-loop to inspect
+   */
+  private void detectPotentiallyFulfillingEnhancedForLoop(EnhancedForLoopTree tree) {
+    MethodTree enclosingMethodTree = getEnclosingMethodForCollectionLoop();
+    if (enclosingMethodTree == null) {
+      return;
+    }
+
+    ExpressionTree collectionTree = collectionTreeFromExpression(tree.getExpression());
+    if (collectionTree == null) {
+      return;
+    }
+
+    if (!ResourceLeakUtils.getCollectionOwnershipAnnotatedTypeFactory(atypeFactory)
+        .isResourceCollection(collectionTree)) {
+      return;
+    }
+
+    atypeFactory.recordPotentiallyFulfillingEnhancedForLoop(enclosingMethodTree, tree);
   }
 
   /** Condition-kind -> allowed extraction methods. */
@@ -440,6 +468,11 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
   }
 
   private void detectCollectionObligationFulfillingWhileLoop(WhileLoopTree tree) {
+    MethodTree enclosingMethodTree = getEnclosingMethodForCollectionLoop();
+    if (enclosingMethodTree == null) {
+      return;
+    }
+
     // 1) Match header
     ExpressionTree condNoParens = TreeUtils.withoutParens(tree.getCondition());
     WhileHeaderMatch header = matchWhileHeader(condNoParens);
@@ -478,7 +511,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
     ConditionalBlock cblock = findConditionalSuccessor(condBlock);
     if (cblock == null) {
       // condition often lives in ExceptionBlocks; try walking up preds and retry
-      Block peeled = peelExceptionBlocksToPred(condBlock, 50);
+      Block peeled = peelExceptionBlocksToPred(condBlock);
       if (peeled != null) {
         cblock = findConditionalSuccessor(peeled);
         condBlock = peeled;
@@ -496,59 +529,89 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
       return;
     }
 
-    // 4) Record a "pendingCfg" potentially fulfilling loop.
+    // 4) Record a potentially fulfilling collection loop.
     //
     // We store:
     //   - collectionTree (resources / q / s)
     //   - collectionElementTree (it.next() / q.poll() / s.pop())
     //   - condition tree (the while condition)
     //
-    // We leave CFG fields null and mark pendingCfg=true.
-    RLCCalledMethodsAnnotatedTypeFactory.addPotentiallyFulfillingLoop(
+    atypeFactory.recordPotentiallyFulfillingCollectionLoop(
+        enclosingMethodTree,
         header.collectionTree,
         extraction.extractionCall, // IMPORTANT: element is the extraction call tree
         condNoParens,
-        /* loopBodyEntryBlock */ loopBodyEntryBlock,
-        /* loopUpdateBlock */ null,
-        /* conditionalBlock */ cblock,
-        /* collectionElementNode */ elementNode,
-        /* pendingCfg */ true);
+        loopBodyEntryBlock,
+        cblock,
+        elementNode);
+  }
+
+  /**
+   * Returns the enclosing method for the current loop, or {@code null} if the loop is inside a
+   * lambda expression.
+   *
+   * <p>The per-method loop-state refactor records only loops that are part of the enclosing method
+   * analysis. Lambda-local loop support can be added separately if needed.
+   *
+   * @return the enclosing method for the current loop, or {@code null} if it is inside a lambda
+   */
+  private @Nullable MethodTree getEnclosingMethodForCollectionLoop() {
+    Tree enclosingMethodOrLambda = TreePathUtil.enclosingMethodOrLambda(getCurrentPath());
+    if (enclosingMethodOrLambda instanceof MethodTree) {
+      return (MethodTree) enclosingMethodOrLambda;
+    }
+    return null;
   }
 
   private @Nullable Block firstBlockForTree(Tree t) {
     Set<Node> nodes = atypeFactory.getNodesForTree(t);
-    if (nodes == null || nodes.isEmpty()) return null;
+    if (nodes == null || nodes.isEmpty()) {
+      return null;
+    }
     for (Node n : nodes) {
-      Block b = n.getBlock();
-      if (b != null) return b;
+      Block block = n.getBlock();
+      if (block != null) {
+        return block;
+      }
     }
     return null;
   }
 
   private @Nullable Node anyNodeForTree(Tree t) {
     Set<Node> nodes = atypeFactory.getNodesForTree(t);
-    if (nodes == null || nodes.isEmpty()) return null;
+    if (nodes == null || nodes.isEmpty()) {
+      return null;
+    }
     return nodes.iterator().next();
   }
 
   private @Nullable ConditionalBlock findConditionalSuccessor(Block b) {
     for (Block succ : b.getSuccessors()) {
-      if (succ instanceof ConditionalBlock) return (ConditionalBlock) succ;
+      if (succ instanceof ConditionalBlock) {
+        return (ConditionalBlock) succ;
+      }
     }
     if (b instanceof SingleSuccessorBlock) {
       Block succ = ((SingleSuccessorBlock) b).getSuccessor();
-      if (succ instanceof ConditionalBlock) return (ConditionalBlock) succ;
+      if (succ instanceof ConditionalBlock) {
+        return (ConditionalBlock) succ;
+      }
     }
     return null;
   }
 
-  private @Nullable Block peelExceptionBlocksToPred(Block b, int budget) {
+  private @Nullable Block peelExceptionBlocksToPred(Block b) {
     Block cur = b;
-    while (budget-- > 0 && cur instanceof ExceptionBlock) {
+    Set<Block> visitedBlocks = new HashSet<>();
+    while (cur instanceof ExceptionBlock && visitedBlocks.add(cur)) {
       Set<Block> preds = cur.getPredecessors();
-      if (preds.size() != 1) break;
+      if (preds.size() != 1) {
+        break;
+      }
       Block p = preds.iterator().next();
-      if (p == null) break;
+      if (p == null) {
+        break;
+      }
       cur = p;
     }
     return cur;
@@ -577,13 +640,17 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
     if (cond instanceof UnaryTree && cond.getKind() == Tree.Kind.LOGICAL_COMPLEMENT) {
       ExpressionTree inner = TreeUtils.withoutParens(((UnaryTree) cond).getExpression());
       WhileHeaderMatch m = matchNonEmptyFromExpr(inner);
-      if (m != null) return m;
+      if (m != null) {
+        return m;
+      }
     }
 
     // Case B2: while (c.size() > 0) or while (0 < c.size())
     if (cond instanceof BinaryTree) {
       WhileHeaderMatch m = matchNonEmptyFromSize((BinaryTree) cond);
-      if (m != null) return m;
+      if (m != null) {
+        return m;
+      }
     }
 
     return null;
@@ -598,10 +665,14 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
       return null;
     }
     ExpressionTree recv = receiverOfInvocation(mit);
-    if (recv == null) return null;
+    if (recv == null) {
+      return null;
+    }
 
     Name varName = getNameFromExpressionTree(recv);
-    if (varName == null) return null;
+    if (varName == null) {
+      return null;
+    }
 
     Element recvElt = TreeUtils.elementFromTree(recv);
     if (!ResourceLeakUtils.isCollection(recvElt, atypeFactory)) {
@@ -609,7 +680,9 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
     }
 
     ExpressionTree colTree = collectionTreeFromExpression(recv);
-    if (colTree == null) return null;
+    if (colTree == null) {
+      return null;
+    }
 
     return new WhileHeaderMatch(colTree, varName, varName, NONEMPTY_SPEC);
   }
@@ -651,10 +724,14 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
     }
 
     ExpressionTree recv = receiverOfInvocation(sizeCall);
-    if (recv == null) return null;
+    if (recv == null) {
+      return null;
+    }
 
     Name varName = getNameFromExpressionTree(recv);
-    if (varName == null) return null;
+    if (varName == null) {
+      return null;
+    }
 
     Element recvElt = TreeUtils.elementFromTree(recv);
     if (!ResourceLeakUtils.isCollection(recvElt, atypeFactory)) {
@@ -662,7 +739,9 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
     }
 
     ExpressionTree colTree = collectionTreeFromExpression(recv);
-    if (colTree == null) return null;
+    if (colTree == null) {
+      return null;
+    }
 
     return new WhileHeaderMatch(colTree, varName, varName, NONEMPTY_SPEC);
   }
@@ -686,10 +765,14 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
 
   /** Recover "col" from: Iterator<T> it = col.iterator(); while (it.hasNext()) { ... } */
   private @Nullable ExpressionTree recoverCollectionFromIteratorReceiver(ExpressionTree itExpr) {
-    if (itExpr == null) return null;
+    if (itExpr == null) {
+      return null;
+    }
 
     Element itElt = TreeUtils.elementFromTree(itExpr);
-    if (!(itElt instanceof VariableElement)) return null;
+    if (!(itElt instanceof VariableElement)) {
+      return null;
+    }
 
     // Only recover from local variable declaration with initializer "col.iterator()"
     if (itElt.getKind() != ElementKind.LOCAL_VARIABLE) {
@@ -697,14 +780,20 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
     }
 
     Tree decl = atypeFactory.declarationFromElement(itElt);
-    if (!(decl instanceof VariableTree)) return null;
+    if (!(decl instanceof VariableTree)) {
+      return null;
+    }
 
     ExpressionTree init = ((VariableTree) decl).getInitializer();
-    if (!(init instanceof MethodInvocationTree)) return null;
+    if (!(init instanceof MethodInvocationTree)) {
+      return null;
+    }
 
     MethodInvocationTree initCall = (MethodInvocationTree) init;
     ExpressionTree sel = initCall.getMethodSelect();
-    if (!(sel instanceof MemberSelectTree)) return null;
+    if (!(sel instanceof MemberSelectTree)) {
+      return null;
+    }
 
     MemberSelectTree ms = (MemberSelectTree) sel;
     if (!ms.getIdentifier().contentEquals("iterator") || !initCall.getArguments().isEmpty()) {
@@ -757,10 +846,14 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
 
           private void recordExtractionIfAny(ExpressionTree expr) {
             expr = TreeUtils.withoutParens(expr);
-            if (!(expr instanceof MethodInvocationTree)) return;
+            if (!(expr instanceof MethodInvocationTree)) {
+              return;
+            }
 
             MethodInvocationTree mit = (MethodInvocationTree) expr;
-            if (!isExtractionCallOnHeaderVar(mit, headerVar, allowedExtractMethods)) return;
+            if (!isExtractionCallOnHeaderVar(mit, headerVar, allowedExtractMethods)) {
+              return;
+            }
 
             extractionCount[0]++;
             if (extractionCount[0] > 1) {
@@ -798,7 +891,9 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
           @Override
           public Void visitVariable(VariableTree vt, Void p) {
             ExpressionTree init = vt.getInitializer();
-            if (init != null) recordExtractionIfAny(init); // T r = it.next()
+            if (init != null) {
+              recordExtractionIfAny(init); // T r = it.next()
+            }
             return super.visitVariable(vt, p);
           }
 
@@ -849,6 +944,11 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
    * @param tree a `for` loop with exactly one loop variable
    */
   private void detectCollectionObligationFulfillingLoop(ForLoopTree tree) {
+    MethodTree enclosingMethodTree = getEnclosingMethodForCollectionLoop();
+    if (enclosingMethodTree == null) {
+      return;
+    }
+
     List<? extends StatementTree> loopBodyStatementList;
     if (tree.getStatement() instanceof BlockTree) {
       BlockTree blockT = (BlockTree) tree.getStatement();
@@ -899,12 +999,14 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
       if (loopUpdateBlock == null || loopConditionBlock == null) {
         return;
       }
-      // Add the blocks into a static datastructure in the calledmethodsatf, such that it can
-      // analyze them (call MustCallConsistencyAnalyzer.analyzeFulfillingLoops, which in turn adds
-      // the trees to the static datastructure in McoeAtf).
+      // Record the loop in the RLCCalledMethods ATF's per-method loop state so that it can
+      // analyze it later.
+      // MustCallConsistencyAnalyzer.analyzeResolvedPotentiallyFulfillingCollectionLoop will then
+      // add verified fulfilling loops to the collection-ownership ATF.
       Block conditionalBlock = ((SingleSuccessorBlock) loopConditionBlock).getSuccessor();
       Block loopBodyEntryBlock = ((ConditionalBlock) conditionalBlock).getThenSuccessor();
-      RLCCalledMethodsAnnotatedTypeFactory.addPotentiallyFulfillingLoop(
+      atypeFactory.recordResolvedPotentiallyFulfillingCollectionLoop(
+          enclosingMethodTree,
           collectionTreeFromExpression(collectionElementTree),
           collectionElementTree,
           tree.getCondition(),
