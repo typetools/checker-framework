@@ -1,5 +1,4 @@
 import java.io.File;
-import java.io.IOException;
 import javax.inject.Inject;
 import org.eclipse.jgit.api.CloneCommand;
 import org.eclipse.jgit.api.Git;
@@ -104,7 +103,7 @@ public abstract class GitTask extends DefaultTask {
         getLogger()
             .warn("git pull failed in {} with exit code {}", directory, execResult.getExitValue());
       }
-    } catch (IOException e) {
+    } catch (Exception e) {
       getLogger().warn("git pull failed in {} because {}", directory, e.getMessage());
     }
   }
