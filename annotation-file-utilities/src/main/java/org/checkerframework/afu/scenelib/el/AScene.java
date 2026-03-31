@@ -408,7 +408,10 @@ public class AScene implements Cloneable {
       System.out.print(args[i] + ": ");
       try {
         IndexFileParser.parseFile(args[i], s0);
-        @SuppressWarnings("UnusedVariable") // testing that clone() does not throw an exception
+        @SuppressWarnings({
+          "UnusedVariable",
+          "PMD.UnusedLocalVariable"
+        }) // testing that clone() does not throw an exception
         AScene ignore = s0.clone();
         System.out.println("ok");
       } catch (Throwable e) {

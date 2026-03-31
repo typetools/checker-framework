@@ -1590,7 +1590,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     // Condition
     addLabelForNextNode(conditionStart);
     assert tree.getCondition() != null;
-    unbox(scan(tree.getCondition(), p));
+    Node condition = unbox(scan(tree.getCondition(), p));
+    condition.setIsLoopCondition(true);
     ConditionalJump cjump = new ConditionalJump(loopEntry, loopExit);
     extendWithExtendedNode(cjump);
 
@@ -1632,7 +1633,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     // compiler logic.
     boolean isCondConstTrue = TreeUtils.isExprConstTrue(tree.getCondition());
 
-    unbox(scan(tree.getCondition(), p));
+    Node condition = unbox(scan(tree.getCondition(), p));
+    condition.setIsLoopCondition(true);
 
     if (!isCondConstTrue) {
       // If the loop condition does not have the constant value true, the control flow is
@@ -1695,7 +1697,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     // Condition
     addLabelForNextNode(conditionStart);
     if (tree.getCondition() != null) {
-      unbox(scan(tree.getCondition(), p));
+      Node condition = unbox(scan(tree.getCondition(), p));
+      condition.setIsLoopCondition(true);
       ConditionalJump cjump = new ConditionalJump(loopEntry, loopExit);
       extendWithExtendedNode(cjump);
     }
@@ -3714,7 +3717,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         TypeMirror leftType = TreeUtils.typeOf(tree.getVariable());
         TypeMirror rightType = TreeUtils.typeOf(tree.getExpression());
 
-        Node targetRHS = null;
+        Node targetRHS;
         if (isNumericOrBoxed(leftType) && isNumericOrBoxed(rightType)) {
           TypeMirror promotedType = binaryPromotedType(leftType, rightType);
           targetRHS = binaryNumericPromotion(targetLHS, promotedType);

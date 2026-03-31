@@ -9,6 +9,11 @@ import org.checkerframework.dataflow.constantpropagation.ConstantPropagationTran
 
 public class ConstantPropagation {
 
+  /** Do not instantiate. */
+  private ConstantPropagation() {
+    throw new Error("Do not instantiate");
+  }
+
   /**
    * The main method expects to be run in dataflow/tests/constant-propagation directory.
    *

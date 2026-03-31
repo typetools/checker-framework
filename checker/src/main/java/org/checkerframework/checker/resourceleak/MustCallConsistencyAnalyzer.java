@@ -373,7 +373,7 @@ public class MustCallConsistencyAnalyzer {
       }
 
       AnnotationMirror result =
-          mcAtf.getAnnotatedType(alias.element).getEffectiveAnnotationInHierarchy(mcAtf.TOP);
+          mcAtf.getAnnotatedType(alias.element).getAnnotationInHierarchy(mcAtf.TOP);
       if (result != null && !AnnotationUtils.areSame(result, mcAtf.TOP)) {
         return result;
       }
@@ -2351,7 +2351,7 @@ public class MustCallConsistencyAnalyzer {
         }
       }
       if (cmAnno == null) {
-        cmAnno = cmAtf.getAnnotatedType(alias.element).getEffectiveAnnotationInHierarchy(cmAtf.top);
+        cmAnno = cmAtf.getAnnotatedType(alias.element).getAnnotationInHierarchy(cmAtf.top);
       }
 
       if (calledMethodsSatisfyMustCall(mustCallValuesForAlias, cmAnno)) {

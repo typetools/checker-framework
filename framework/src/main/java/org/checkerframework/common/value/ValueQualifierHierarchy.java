@@ -4,8 +4,10 @@ import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.TreeSet;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.regex.qual.Regex;
 import org.checkerframework.common.value.util.Range;
@@ -145,6 +147,33 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
     }
   }
 
+  /** Possible values for the bound of a widened range. */
+  private static final TreeSet<Long> wideningValues = new TreeSet<>();
+
+  static {
+    for (long i :
+        new long[] {
+          // Wraparound for long values is deduplicated by TreeSet.
+          Long.MIN_VALUE,
+          Long.MAX_VALUE,
+          Integer.MIN_VALUE,
+          Integer.MAX_VALUE,
+          Short.MIN_VALUE,
+          Short.MAX_VALUE,
+          Character.MIN_VALUE,
+          Character.MAX_VALUE,
+          Byte.MIN_VALUE,
+          Byte.MAX_VALUE,
+          0L
+        }) {
+      wideningValues.add(i - 2);
+      wideningValues.add(i - 1);
+      wideningValues.add(i);
+      wideningValues.add(i + 1);
+      wideningValues.add(i + 2);
+    }
+  }
+
   /**
    * Determine the widened range from other ranges.
    *
@@ -157,50 +186,29 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
     if (newRange == null || oldRange == null || lubRange.equals(oldRange)) {
       return lubRange;
     }
-    // If both bounds of the new range are bigger than the old range, then returned range
-    // should use the lower bound of the new range and a MAX_VALUE.
-    if ((newRange.from >= oldRange.from && newRange.to >= oldRange.to)) {
-      long max = lubRange.to;
-      if (max < Byte.MAX_VALUE) {
-        max = Byte.MAX_VALUE;
-      } else if (max < Short.MAX_VALUE) {
-        max = Short.MAX_VALUE;
-      } else if (max < Integer.MAX_VALUE) {
-        max = Integer.MAX_VALUE;
-      } else {
-        max = Long.MAX_VALUE;
-      }
-      return Range.create(newRange.from, max);
-    }
 
-    // If both bounds of the old range are bigger than the new range, then returned range
-    // should use a MIN_VALUE and the upper bound of the new range.
-    if ((newRange.from <= oldRange.from && newRange.to <= oldRange.to)) {
-      long min = lubRange.from;
-      if (min > Byte.MIN_VALUE) {
-        min = Byte.MIN_VALUE;
-      } else if (min > Short.MIN_VALUE) {
-        min = Short.MIN_VALUE;
-      } else if (min > Integer.MIN_VALUE) {
-        min = Integer.MIN_VALUE;
-      } else {
-        min = Long.MIN_VALUE;
-      }
-      return Range.create(min, newRange.to);
-    }
-
-    if (lubRange.isWithin(Byte.MIN_VALUE + 1, Byte.MAX_VALUE)
-        || lubRange.isWithin(Byte.MIN_VALUE, Byte.MAX_VALUE - 1)) {
-      return Range.BYTE_EVERYTHING;
-    } else if (lubRange.isWithin(Short.MIN_VALUE + 1, Short.MAX_VALUE)
-        || lubRange.isWithin(Short.MIN_VALUE, Short.MAX_VALUE - 1)) {
-      return Range.SHORT_EVERYTHING;
-    } else if (lubRange.isWithin(Long.MIN_VALUE + 1, Long.MAX_VALUE)
-        || lubRange.isWithin(Long.MIN_VALUE, Long.MAX_VALUE - 1)) {
-      return Range.INT_EVERYTHING;
+    long min;
+    // Is the lower bound decreasing?
+    if (newRange.from < oldRange.from) {
+      // Non-null because wideningValues contains Long.MIN_VALUE.
+      @NonNull Long floor = wideningValues.floor(newRange.from);
+      min = floor;
     } else {
-      return Range.EVERYTHING;
+      min = oldRange.from;
     }
+
+    long max;
+    // Is the upper bound increasing?
+    if (newRange.to > oldRange.to) {
+      // Non-null because wideningValues contains Long.MAX_VALUE.
+      @NonNull Long ceiling = wideningValues.ceiling(newRange.to);
+      max = ceiling;
+    } else {
+      max = oldRange.to;
+    }
+
+    Range result = Range.create(min, max);
+    return result;
   }
 
   /**
