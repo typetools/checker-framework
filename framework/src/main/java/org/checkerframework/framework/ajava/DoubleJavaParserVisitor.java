@@ -324,7 +324,6 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
     if (node1.getReceiverParameter().isPresent() && node2.getReceiverParameter().isPresent()) {
       node1.getReceiverParameter().get().accept(this, node2.getReceiverParameter().get());
     }
-
     visitLists(node1.getThrownExceptions(), node2.getThrownExceptions());
     visitLists(node1.getTypeParameters(), node2.getTypeParameters());
   }
@@ -336,7 +335,6 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
     node1.getBody().accept(this, node2.getBody());
     visitLists(node1.getModifiers(), node2.getModifiers());
     node1.getName().accept(this, node2.getName());
-
     visitLists(node1.getThrownExceptions(), node2.getThrownExceptions());
     visitLists(node1.getTypeParameters(), node2.getTypeParameters());
   }
@@ -475,12 +473,12 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
   }
 
   @Override
-  public void visit(MarkdownComment n, Node arg) {
+  public void visit(MarkdownComment node1, Node other) {
     defaultAction(n, arg);
   }
 
   @Override
-  public void visit(TraditionalJavadocComment n, Node arg) {
+  public void visit(TraditionalJavadocComment node1, Node other) {
     defaultAction(n, arg);
   }
 
@@ -539,7 +537,6 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
     if (node1.getReceiverParameter().isPresent() && node2.getReceiverParameter().isPresent()) {
       node1.getReceiverParameter().get().accept(this, node2.getReceiverParameter().get());
     }
-
     visitLists(node1.getThrownExceptions(), node2.getThrownExceptions());
     visitLists(node1.getTypeParameters(), node2.getTypeParameters());
   }
