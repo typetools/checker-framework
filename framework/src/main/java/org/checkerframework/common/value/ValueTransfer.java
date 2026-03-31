@@ -1306,7 +1306,9 @@ public class ValueTransfer extends CFTransfer {
     // range permitted by the constant.  The fixed-point loop is likely to get to that value
     // eventually, and this is both more efficient and more precise than leaving it to the usual
     // widening operation.
-    // TODO: handle comparisons when the lhs is the integer literal.
+
+    // TODO: This does not handle comparisons when the lhs is the integer literal, as in "0 < i" or
+    // "10 > i".  I think that those are quite rare, but if they are important, support them.
     JavaExpression leftJe = JavaExpression.fromNode(leftNode);
     boolean rightIsLoopBoundLiteral =
         isLoopCondition
