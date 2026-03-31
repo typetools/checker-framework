@@ -13,7 +13,7 @@
       "Bash(ls)",
       "Bash(timeout 300 ./gradlew:*)",
       "Edit(./**)",
-      "Bash(./x.py check:*)",
+      "Bash(./x.py check:*)"
     ],
     "deny": [],
     "ask": []
