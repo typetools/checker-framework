@@ -330,7 +330,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       } else if (type.getPrimaryAnnotations().isEmpty() && !maybeIntegral(type)) {
         AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(tree.getExpression());
         if ((type.getKind() != TypeKind.TYPEVAR || exprType.getKind() != TypeKind.TYPEVAR)
-            && !AnnotationUtils.containsSame(exprType.getEffectiveAnnotations(), UNSIGNED)) {
+            && !AnnotationUtils.containsSame(exprType.getAnnotations(), UNSIGNED)) {
           type.addAnnotation(SIGNED);
         }
       }
