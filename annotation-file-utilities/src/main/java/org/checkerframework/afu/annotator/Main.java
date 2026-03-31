@@ -1105,7 +1105,7 @@ public class Main {
   public static Map<String, Boolean> hasExplicitConstructor = new HashMap<>();
 
   /**
-   * Fills in the {@link hasExplicitConstructor} map.
+   * Fills in the {@link #hasExplicitConstructor} map.
    *
    * @param javaFiles the Java files that were passed on the command line
    */
