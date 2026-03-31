@@ -776,7 +776,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * reflects the {@code resultType} given.
    *
    * @param resultType used to select which kind of value annotation is returned
-   * @param values must be a homogeneous list: every element of it has the same class
+   * @param values a homogeneous list: every element of it has the same class
    * @return a constant value annotation with the {@code values}
    */
   /*package-private*/ AnnotationMirror createResultingAnnotation(
@@ -1691,7 +1691,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       // This is only expected to support array creations in varargs methods
       return arrayCreation.getInitializers().size();
     } else if (expressionObj instanceof ArrayAccess) {
-      List<? extends AnnotationMirror> annoList = expressionObj.getType().getAnnotationMirrors();
+      TypeMirror expressionType = expressionObj.getType();
+      List<? extends AnnotationMirror> annoList = expressionType.getAnnotationMirrors();
       for (AnnotationMirror anno : annoList) {
         String ANNO_NAME = AnnotationUtils.annotationName(anno);
         if (ANNO_NAME.equals(MINLEN_NAME)) {
