@@ -72,7 +72,7 @@ public class OptionalImplAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       return;
     }
     AnnotatedTypeMirror mapReceiver = getReceiverType(mapTree);
-    if (mapReceiver == null || !mapReceiver.hasEffectiveAnnotation(Present.class)) {
+    if (mapReceiver == null || !mapReceiver.hasAnnotation(Present.class)) {
       return;
     }
     MemberReferenceTree memberReferenceTree = (MemberReferenceTree) argTree;

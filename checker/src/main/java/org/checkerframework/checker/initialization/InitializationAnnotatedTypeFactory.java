@@ -40,6 +40,7 @@ import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.NullnessAnnotatedTypeFactory;
 import org.checkerframework.checker.nullness.NullnessChecker;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
@@ -347,7 +348,7 @@ public abstract class InitializationAnnotatedTypeFactory<
    * @return true if {@code anno} has {@link UnderInitialization}
    */
   public boolean isUnderInitialization(AnnotatedTypeMirror anno) {
-    return anno.hasEffectiveAnnotation(UnderInitialization.class);
+    return anno.hasAnnotation(UnderInitialization.class);
   }
 
   /**
@@ -357,7 +358,7 @@ public abstract class InitializationAnnotatedTypeFactory<
    * @return true if {@code anno} has {@link UnknownInitialization}
    */
   public boolean isUnknownInitialization(AnnotatedTypeMirror anno) {
-    return anno.hasEffectiveAnnotation(UnknownInitialization.class);
+    return anno.hasAnnotation(UnknownInitialization.class);
   }
 
   /**
@@ -367,7 +368,7 @@ public abstract class InitializationAnnotatedTypeFactory<
    * @return true if {@code anno} has {@link FBCBottom}
    */
   public boolean isFbcBottom(AnnotatedTypeMirror anno) {
-    return anno.hasEffectiveAnnotation(FBCBottom.class);
+    return anno.hasAnnotation(FBCBottom.class);
   }
 
   /**
@@ -377,7 +378,7 @@ public abstract class InitializationAnnotatedTypeFactory<
    * @return true if {@code anno} has {@link Initialized}
    */
   public boolean isInitialized(AnnotatedTypeMirror anno) {
-    return anno.hasEffectiveAnnotation(Initialized.class);
+    return anno.hasAnnotation(Initialized.class);
   }
 
   /**
@@ -682,8 +683,9 @@ public abstract class InitializationAnnotatedTypeFactory<
    * @return true if the type is initialized for the given frame
    */
   public boolean isInitializedForFrame(AnnotatedTypeMirror type, TypeMirror frame) {
-    AnnotationMirror initializationAnno =
-        type.getEffectiveAnnotationInHierarchy(UNKNOWN_INITIALIZATION);
+    @SuppressWarnings("nullness:assignment") // type should have an annotation in this hierarchy
+    @NonNull AnnotationMirror initializationAnno =
+        type.getAnnotationInHierarchy(UNKNOWN_INITIALIZATION);
     TypeMirror typeFrame = getTypeFrameFromAnnotation(initializationAnno);
     Types types = processingEnv.getTypeUtils();
     return types.isSubtype(typeFrame, types.erasure(frame));

@@ -709,7 +709,7 @@ public class NullnessAnnotatedTypeFactory
       // the most useful element type is @Initialized (which is also accurate).
       AnnotatedArrayType arrayType = (AnnotatedArrayType) type;
       AnnotatedTypeMirror componentType = arrayType.getComponentType();
-      if (componentType.hasEffectiveAnnotation(FBCBOTTOM)) {
+      if (componentType.hasAnnotation(FBCBOTTOM)) {
         componentType.replaceAnnotation(INITIALIZED);
       }
       return null;
