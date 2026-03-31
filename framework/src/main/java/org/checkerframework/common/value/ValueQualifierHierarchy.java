@@ -152,19 +152,20 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
 
   static {
     for (long i :
-        List.of(
-            // Wraparound for long values is deduplicated by TreeSet.
-            Long.MIN_VALUE,
-            Long.MAX_VALUE,
-            (long) Integer.MIN_VALUE,
-            (long) Integer.MAX_VALUE,
-            (long) Short.MIN_VALUE,
-            (long) Short.MAX_VALUE,
-            (long) Character.MIN_VALUE,
-            (long) Character.MAX_VALUE,
-            (long) Byte.MIN_VALUE,
-            (long) Byte.MAX_VALUE,
-            0L)) {
+        new long[] {
+          // Wraparound for long values is deduplicated by TreeSet.
+          Long.MIN_VALUE,
+          Long.MAX_VALUE,
+          Integer.MIN_VALUE,
+          Integer.MAX_VALUE,
+          Short.MIN_VALUE,
+          Short.MAX_VALUE,
+          Character.MIN_VALUE,
+          Character.MAX_VALUE,
+          Byte.MIN_VALUE,
+          Byte.MAX_VALUE,
+          0L
+        }) {
       wideningValues.add(i - 2);
       wideningValues.add(i - 1);
       wideningValues.add(i);

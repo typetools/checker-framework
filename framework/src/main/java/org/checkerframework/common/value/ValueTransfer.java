@@ -340,6 +340,7 @@ public class ValueTransfer extends CFTransfer {
   private @Nullable List<? extends Number> getNumericalValues(
       Node subNode, TransferInput<CFValue, CFStore> p) {
     CFValue value = p.getValueOfSubNode(subNode);
+    // Because of crash when using `-Acfgviz=...,verbose`. TODO: fix.
     if (value == null) {
       return null;
     }
@@ -421,6 +422,7 @@ public class ValueTransfer extends CFTransfer {
     try {
       return atypeFactory.isIntRange(value.getAnnotations());
     } catch (Exception e) {
+      // Because of crash when using `-Acfgviz=...,verbose`. TODO: fix.
       return false;
     }
   }
@@ -449,6 +451,7 @@ public class ValueTransfer extends CFTransfer {
       return true;
     }
     CFValue cfValue = p.getValueOfSubNode(node);
+    // Because of crash when using `-Acfgviz=...,verbose`. TODO: fix.
     if (cfValue == null) {
       return false;
     }
@@ -1193,6 +1196,7 @@ public class ValueTransfer extends CFTransfer {
       leftAnno = getValueAnnotation(leftValue);
       rightAnno = getValueAnnotation(rightValue);
     } catch (Exception e) {
+      // Because of crash when using `-Acfgviz=...,verbose`. TODO: fix.
       return null;
     }
 
