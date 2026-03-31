@@ -2494,7 +2494,7 @@ public final class TreeUtils {
    * @return true if the given method invocation is a varargs invocation
    * @deprecated use {@link #isVarargsCall(MethodInvocationTree)}
    */
-  @Deprecated // 2024-06-04
+  @Deprecated(since = "2024-06-04")
   public static boolean isVarArgs(MethodInvocationTree invok) {
     return ((JCMethodInvocation) invok).varargsElement != null;
   }
@@ -2553,7 +2553,7 @@ public final class TreeUtils {
    * @return true if the given method invocation is a varargs invocation
    * @deprecated use {@link #isVarargsCall(NewClassTree)}
    */
-  @Deprecated // 2024-06-04
+  @Deprecated(since = "2024-06-04")
   public static boolean isVarArgs(NewClassTree newClassTree) {
     return isVarargsCall(newClassTree);
   }
@@ -2758,7 +2758,7 @@ public final class TreeUtils {
    *     signature
    * @deprecated use {@link #isVarargsCall(Tree)}
    */
-  @Deprecated // 2024-06-04
+  @Deprecated(since = "2024-06-04")
   public static boolean isVarArgMethodCall(ExpressionTree methodInvocation) {
     return isVarargsCall(methodInvocation);
   }

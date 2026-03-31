@@ -231,7 +231,7 @@ public class NonEmptyTransfer extends CFTransfer {
    * Updates the transfer result's store with information from the Non-Empty type system for
    * expressions of the form {@code container.size() > n} or {@code container.indexOf(Object) > n}.
    *
-   * <p>When this method is called, {@link refineGTE} is also called, with the arguments reversed.
+   * <p>When this method is called, {@link #refineGTE} is also called, with the arguments reversed.
    * So, this method can do non-symmetric checks.
    *
    * <p>For example, the type of {@code container} in the "then" branch of a conditional statement
@@ -263,7 +263,7 @@ public class NonEmptyTransfer extends CFTransfer {
    * expressions of the form {@code container.size() >= n} or {@code container.indexOf(Object) >=
    * n}.
    *
-   * <p>When this method is called, {@link refineGTE} is also called, with the arguments reversed.
+   * <p>When this method is called, {@link #refineGT} is also called, with the arguments reversed.
    * So, this method can do non-symmetric checks.
    *
    * <p>For example, the type of {@code container} in the "then" branch of a conditional statement

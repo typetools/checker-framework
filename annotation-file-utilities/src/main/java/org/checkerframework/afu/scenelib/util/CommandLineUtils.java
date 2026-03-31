@@ -7,6 +7,12 @@ import java.util.List;
 
 /** Handle javac class {@code CommandLine} under all versions of the JDK. */
 public class CommandLineUtils {
+
+  /** Do not instantiate. */
+  private CommandLineUtils() {
+    throw new Error("Do not instantiate");
+  }
+
   /**
    * Calls {@code CommandLine.parse}, handling both JDK 8-11 (where it takes and returns arrays) and
    * later JDKs, where it takes and returns a list.
