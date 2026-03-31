@@ -35,6 +35,7 @@ import org.checkerframework.dataflow.cfg.node.FloatingRemainderNode;
 import org.checkerframework.dataflow.cfg.node.GreaterThanNode;
 import org.checkerframework.dataflow.cfg.node.GreaterThanOrEqualNode;
 import org.checkerframework.dataflow.cfg.node.IntegerDivisionNode;
+import org.checkerframework.dataflow.cfg.node.IntegerLiteralNode;
 import org.checkerframework.dataflow.cfg.node.IntegerRemainderNode;
 import org.checkerframework.dataflow.cfg.node.LeftShiftNode;
 import org.checkerframework.dataflow.cfg.node.LessThanNode;
@@ -338,7 +339,12 @@ public class ValueTransfer extends CFTransfer {
    */
   private @Nullable List<? extends Number> getNumericalValues(
       Node subNode, TransferInput<CFValue, CFStore> p) {
-    AnnotationMirror valueAnno = getValueAnnotation(subNode, p);
+    CFValue value = p.getValueOfSubNode(subNode);
+    // Because of crash when using `-Acfgviz=...,verbose`. TODO: fix.
+    if (value == null) {
+      return null;
+    }
+    AnnotationMirror valueAnno = getValueAnnotation(value);
     return getNumericalValues(subNode, valueAnno);
   }
 
@@ -413,7 +419,12 @@ public class ValueTransfer extends CFTransfer {
    */
   private boolean isIntRange(Node subNode, TransferInput<CFValue, CFStore> p) {
     CFValue value = p.getValueOfSubNode(subNode);
-    return atypeFactory.isIntRange(value.getAnnotations());
+    try {
+      return atypeFactory.isIntRange(value.getAnnotations());
+    } catch (Exception e) {
+      // Because of crash when using `-Acfgviz=...,verbose`. TODO: fix.
+      return false;
+    }
   }
 
   /**
@@ -439,7 +450,12 @@ public class ValueTransfer extends CFTransfer {
     if (isIntRange(node, p)) {
       return true;
     }
-    return isIntegralUnknownVal(node, getValueAnnotation(p.getValueOfSubNode(node)));
+    CFValue cfValue = p.getValueOfSubNode(node);
+    // Because of crash when using `-Acfgviz=...,verbose`. TODO: fix.
+    if (cfValue == null) {
+      return false;
+    }
+    return isIntegralUnknownVal(node, getValueAnnotation(cfValue));
   }
 
   /**
@@ -1171,12 +1187,24 @@ public class ValueTransfer extends CFTransfer {
       CFValue rightValue,
       ComparisonOperators op,
       CFStore thenStore,
-      CFStore elseStore) {
-    AnnotationMirror leftAnno = getValueAnnotation(leftValue);
-    AnnotationMirror rightAnno = getValueAnnotation(rightValue);
+      CFStore elseStore,
+      boolean isLoopCondition) {
+
+    AnnotationMirror leftAnno;
+    AnnotationMirror rightAnno;
+    try {
+      leftAnno = getValueAnnotation(leftValue);
+      rightAnno = getValueAnnotation(rightValue);
+    } catch (Exception e) {
+      // Because of crash when using `-Acfgviz=...,verbose`. TODO: fix.
+      return null;
+    }
 
     if (atypeFactory.isIntRange(leftAnno)
         || atypeFactory.isIntRange(rightAnno)
+        || (isLoopCondition
+            && (AnnotationUtils.areSameByName(leftAnno, ValueAnnotatedTypeFactory.INTVAL_NAME)
+                || AnnotationUtils.areSameByName(rightAnno, ValueAnnotatedTypeFactory.INTVAL_NAME)))
         || isIntegralUnknownVal(rightNode, rightAnno)
         || isIntegralUnknownVal(leftNode, leftAnno)) {
       // If either is @UnknownVal, then refineIntRanges will treat it as the max range and
@@ -1184,7 +1212,8 @@ public class ValueTransfer extends CFTransfer {
       // If one is a range and the other is an @IntVal, then `refineIntRanges` will convert the
       // @IntVal to a range.  This is less precise in some cases, but avoids the complexity of
       // comparing a list of values to a range. (This could be implemented in the future.)
-      return refineIntRanges(leftNode, leftAnno, rightNode, rightAnno, op, thenStore, elseStore);
+      return refineIntRanges(
+          leftNode, leftAnno, rightNode, rightAnno, op, thenStore, elseStore, isLoopCondition);
     }
 
     List<? extends Number> lefts = getNumericalValues(leftNode, leftAnno);
@@ -1266,11 +1295,25 @@ public class ValueTransfer extends CFTransfer {
       AnnotationMirror rightAnno,
       ComparisonOperators op,
       CFStore thenStore,
-      CFStore elseStore) {
+      CFStore elseStore,
+      boolean isLoopCondition) {
 
     // Convert @IntVal into a range.
     Range leftRange = getIntRangeFromAnnotation(leftNode, leftAnno);
     Range rightRange = getIntRangeFromAnnotation(rightNode, rightAnno);
+
+    // Special case for loop conditions:  If inequality against a constant, then widen to the entire
+    // range permitted by the constant.  The fixed-point loop is likely to get to that value
+    // eventually, and this is both more efficient and more precise than leaving it to the usual
+    // widening operation.
+
+    // TODO: This does not handle comparisons when the lhs is the integer literal, as in "0 < i" or
+    // "10 > i".  I think that those are quite rare, but if they are important, support them.
+    JavaExpression leftJe = JavaExpression.fromNode(leftNode);
+    boolean rightIsLoopBoundLiteral =
+        isLoopCondition
+            && rightNode instanceof IntegerLiteralNode
+            && CFAbstractStore.canInsertJavaExpression(leftJe);
 
     final Range thenLeftRange;
     final Range thenRightRange;
@@ -1285,26 +1328,46 @@ public class ValueTransfer extends CFTransfer {
         elseRightRange = rightRange.refineNotEqualTo(leftRange);
         break;
       case GREATER_THAN:
-        thenLeftRange = leftRange.refineGreaterThan(rightRange);
-        thenRightRange = rightRange.refineLessThan(leftRange);
+        if (rightIsLoopBoundLiteral) {
+          thenLeftRange = Range.createOrNothing(rightRange.from + 1, leftRange.to);
+          thenRightRange = rightRange;
+        } else {
+          thenLeftRange = leftRange.refineGreaterThan(rightRange);
+          thenRightRange = rightRange.refineLessThan(leftRange);
+        }
         elseLeftRange = leftRange.refineLessThanEq(rightRange);
         elseRightRange = rightRange.refineGreaterThanEq(leftRange);
         break;
       case GREATER_THAN_EQ:
-        thenLeftRange = leftRange.refineGreaterThanEq(rightRange);
-        thenRightRange = rightRange.refineLessThanEq(leftRange);
+        if (rightIsLoopBoundLiteral) {
+          thenLeftRange = Range.createOrNothing(rightRange.from, leftRange.to);
+          thenRightRange = rightRange;
+        } else {
+          thenLeftRange = leftRange.refineGreaterThanEq(rightRange);
+          thenRightRange = rightRange.refineLessThanEq(leftRange);
+        }
         elseLeftRange = leftRange.refineLessThan(rightRange);
         elseRightRange = rightRange.refineGreaterThan(leftRange);
         break;
       case LESS_THAN:
-        thenLeftRange = leftRange.refineLessThan(rightRange);
-        thenRightRange = rightRange.refineGreaterThan(leftRange);
+        if (rightIsLoopBoundLiteral) {
+          thenLeftRange = Range.createOrNothing(leftRange.from, rightRange.to - 1);
+          thenRightRange = rightRange;
+        } else {
+          thenLeftRange = leftRange.refineLessThan(rightRange);
+          thenRightRange = rightRange.refineGreaterThan(leftRange);
+        }
         elseLeftRange = leftRange.refineGreaterThanEq(rightRange);
         elseRightRange = rightRange.refineLessThanEq(leftRange);
         break;
       case LESS_THAN_EQ:
-        thenLeftRange = leftRange.refineLessThanEq(rightRange);
-        thenRightRange = rightRange.refineGreaterThanEq(leftRange);
+        if (rightIsLoopBoundLiteral) {
+          thenLeftRange = Range.createOrNothing(leftRange.from, rightRange.to);
+          thenRightRange = rightRange;
+        } else {
+          thenLeftRange = leftRange.refineLessThanEq(rightRange);
+          thenRightRange = rightRange.refineGreaterThanEq(leftRange);
+        }
         elseLeftRange = leftRange.refineGreaterThan(rightRange);
         elseRightRange = rightRange.refineLessThan(leftRange);
         break;
@@ -1318,7 +1381,13 @@ public class ValueTransfer extends CFTransfer {
         throw new TypeSystemError("ValueTransfer: unsupported operation: " + op);
     }
 
-    createAnnotationFromRangeAndAddToStore(thenStore, thenLeftRange, leftNode);
+    if (rightIsLoopBoundLiteral) {
+      // Replace current annotation in store, don't LUB.
+      AnnotationMirror thenLeftAnno = atypeFactory.createIntRangeAnnotation(thenLeftRange);
+      thenStore.replaceValue(leftJe, thenLeftAnno);
+    } else {
+      createAnnotationFromRangeAndAddToStore(thenStore, thenLeftRange, leftNode);
+    }
     createAnnotationFromRangeAndAddToStore(thenStore, thenRightRange, rightNode);
     createAnnotationFromRangeAndAddToStore(elseStore, elseLeftRange, leftNode);
     createAnnotationFromRangeAndAddToStore(elseStore, elseRightRange, rightNode);
@@ -1406,7 +1475,8 @@ public class ValueTransfer extends CFTransfer {
             p.getValueOfSubNode(n.getRightOperand()),
             ComparisonOperators.LESS_THAN,
             thenStore,
-            elseStore);
+            elseStore,
+            n.getIsLoopCondition());
     TypeMirror underlyingType = transferResult.getResultValue().getUnderlyingType();
     return createNewResultBoolean(thenStore, elseStore, resultValues, underlyingType);
   }
@@ -1425,7 +1495,8 @@ public class ValueTransfer extends CFTransfer {
             p.getValueOfSubNode(n.getRightOperand()),
             ComparisonOperators.LESS_THAN_EQ,
             thenStore,
-            elseStore);
+            elseStore,
+            n.getIsLoopCondition());
     TypeMirror underlyingType = transferResult.getResultValue().getUnderlyingType();
     return createNewResultBoolean(thenStore, elseStore, resultValues, underlyingType);
   }
@@ -1444,7 +1515,8 @@ public class ValueTransfer extends CFTransfer {
             p.getValueOfSubNode(n.getRightOperand()),
             ComparisonOperators.GREATER_THAN,
             thenStore,
-            elseStore);
+            elseStore,
+            n.getIsLoopCondition());
     TypeMirror underlyingType = transferResult.getResultValue().getUnderlyingType();
     return createNewResultBoolean(thenStore, elseStore, resultValues, underlyingType);
   }
@@ -1463,7 +1535,8 @@ public class ValueTransfer extends CFTransfer {
             p.getValueOfSubNode(n.getRightOperand()),
             ComparisonOperators.GREATER_THAN_EQ,
             thenStore,
-            elseStore);
+            elseStore,
+            n.getIsLoopCondition());
     TypeMirror underlyingType = transferResult.getResultValue().getUnderlyingType();
     return createNewResultBoolean(thenStore, elseStore, resultValues, underlyingType);
   }
@@ -1491,7 +1564,8 @@ public class ValueTransfer extends CFTransfer {
               secondValue,
               notEqualTo ? ComparisonOperators.NOT_EQUAL : ComparisonOperators.EQUAL,
               thenStore,
-              elseStore);
+              elseStore,
+              false);
       if (transferResult.getResultValue() == null) {
         // Happens for case labels
         return transferResult;

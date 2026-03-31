@@ -8,7 +8,7 @@
 ### User-visible changes
 
 To run the Checker Framework, you need to use a JDK 17 or later version of
-javac.  The Checker Framework can run on any Java project, including projects
+javac.  The Checker Framework can type-check any Java project, including projects
 that compile to Java 8 or 11 bytecodes and run on JRE versions 8 or 11.
 
 The type qualifiers and utility libraries in `checker-qual.jar` and
@@ -23,7 +23,14 @@ projects that run under Java 11 or later.
 
 ### User-visible changes
 
+The Checker Framework runs under JDK 26 -- that is, it runs on a version 26 JVM.
+
+Removed deprecated command-line option `-AskipDirs`; use `-AskipFiles`.
+
 ### Implementation details
+
+Removed deprecated method `ObjectCreationNode.getConstructor()`; use
+`getTypeToInstantiate()`.
 
 ### Closed issues
 
