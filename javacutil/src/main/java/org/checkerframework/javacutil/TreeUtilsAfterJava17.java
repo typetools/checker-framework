@@ -331,6 +331,7 @@ public class TreeUtilsAfterJava17 {
      * @return the {@code PatternTree} of {@code instanceOfTree} or null if it doesn't exist
      */
     @Pure
+    // TODO: No need for reflection any longer.
     public static @Nullable Tree getPattern(InstanceOfTree instanceOfTree) {
       if (sourceVersionNumber < 16) {
         return null;
