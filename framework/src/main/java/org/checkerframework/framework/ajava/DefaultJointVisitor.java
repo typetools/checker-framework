@@ -141,7 +141,7 @@ import com.sun.source.tree.WildcardTree;
 public class DefaultJointVisitor extends JointJavacJavaParserVisitor {
 
   /** Creates a DefaultJointVisitor. */
-  DefaultJointVisitor() {}
+  public DefaultJointVisitor() {}
 
   @Override
   public void processAnnotatedType(AnnotatedTypeTree javacTree, Node javaParserNode) {}
