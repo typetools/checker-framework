@@ -2,17 +2,14 @@ package org.checkerframework.javacutil;
 
 import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.InstanceOfTree;
 import com.sun.source.tree.Tree;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import javax.lang.model.SourceVersion;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.ClassGetName;
-import org.checkerframework.dataflow.qual.Pure;
 
 /**
  * This class contains utility methods for reflectively accessing Tree classes and methods that were
@@ -36,9 +33,7 @@ public class TreeUtilsAfterJava17 {
     private CaseUtils() {
       throw new AssertionError("Cannot be instantiated.");
     }
-
-    /** The {@code CaseTree.getExpressions} method for Java 12 and higher; null otherwise. */
-    private static @Nullable Method GET_EXPRESSIONS = null;
+    ;
 
     /** The {@code CaseTree.getLabels} method for Java 21 and higher; null otherwise. */
     private static @Nullable Method GET_LABELS = null;
@@ -62,7 +57,7 @@ public class TreeUtilsAfterJava17 {
         }
         return false;
       } else {
-        return getExpressions(caseTree).isEmpty();
+        return caseTree.getExpressions().isEmpty();
       }
     }
 
@@ -102,9 +97,8 @@ public class TreeUtilsAfterJava17 {
      * then if {@code caseTree} is {@code case null, default} the returned list is a {@code
      * DefaultCaseLabelTree} and the expression tree for {@code null}.
      *
-     * <p>Otherwise, in JDK 11 and earlier, this is a list of a single expression tree. In JDK 12+,
-     * the list may have multiple expression trees. In JDK 21+, the list might contain a single
-     * pattern tree.
+     * <p>Otherwise, in JDK 12+, the list may have multiple expression trees. In JDK 21+, the list
+     * might contain a single pattern tree.
      *
      * @param caseTree the case expression to get the labels from
      * @param useDefaultCaseLabelTree weather the result should contain a {@code
@@ -134,31 +128,7 @@ public class TreeUtilsAfterJava17 {
         }
         return labels;
       }
-      return getExpressions(caseTree);
-    }
-
-    /**
-     * Returns the list of expressions from a case expression. For the default case, this is empty.
-     * Otherwise, in JDK 11 and earlier, this is a singleton list. In JDK 12 onwards, there can be
-     * multiple expressions per case.
-     *
-     * @param caseTree the case expression to get the expressions from
-     * @return the list of expressions in the case
-     */
-    @SuppressWarnings("unchecked")
-    public static List<? extends ExpressionTree> getExpressions(CaseTree caseTree) {
-      if (sourceVersionNumber >= 12) {
-        if (GET_EXPRESSIONS == null) {
-          GET_EXPRESSIONS = getMethod(CaseTree.class, "getExpressions");
-        }
-        return (List<? extends ExpressionTree>) invokeNonNullResult(GET_EXPRESSIONS, caseTree);
-      }
-      @SuppressWarnings("deprecation") // getExpression is deprecated in Java 21
-      ExpressionTree expression = caseTree.getExpression();
-      if (expression == null) {
-        return Collections.emptyList();
-      }
-      return Collections.singletonList(expression);
+      return caseTree.getExpressions();
     }
 
     /**
@@ -309,37 +279,6 @@ public class TreeUtilsAfterJava17 {
         GET_PATTERN = getMethod(patternCaseLabelClass, "getPattern");
       }
       return (Tree) invokeNonNullResult(GET_PATTERN, patternCaseLabelTree);
-    }
-  }
-
-  /** Utility methods for accessing {@code InstanceOfTree} methods. */
-  public static class InstanceOfUtils {
-
-    /** Don't use. */
-    private InstanceOfUtils() {
-      throw new AssertionError("Cannot be instantiated.");
-    }
-
-    /** The {@code InstanceOfTree.getPattern} method for Java 16 and higher; null otherwise. */
-    private static @Nullable Method GET_PATTERN = null;
-
-    /**
-     * Returns the pattern of {@code instanceOfTree} tree. Returns null if the instanceof does not
-     * have a pattern, including if the JDK version does not support instance-of patterns.
-     *
-     * @param instanceOfTree the {@link InstanceOfTree} whose pattern is returned
-     * @return the {@code PatternTree} of {@code instanceOfTree} or null if it doesn't exist
-     */
-    @Pure
-    // TODO: No need for reflection any longer.
-    public static @Nullable Tree getPattern(InstanceOfTree instanceOfTree) {
-      if (sourceVersionNumber < 16) {
-        return null;
-      }
-      if (GET_PATTERN == null) {
-        GET_PATTERN = getMethod(InstanceOfTree.class, "getPattern");
-      }
-      return (Tree) invoke(GET_PATTERN, instanceOfTree);
     }
   }
 

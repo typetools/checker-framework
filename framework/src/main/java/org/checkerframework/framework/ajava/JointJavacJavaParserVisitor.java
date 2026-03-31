@@ -167,7 +167,6 @@ import java.util.Optional;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.TreeUtilsAfterJava17.CaseUtils;
 
 /**
  * A visitor that processes javac trees and JavaParser nodes simultaneously, matching corresponding
@@ -438,7 +437,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
     processCase(javacTree, node);
     // Java 12 introduced multiple label cases:
     List<Expression> labels = node.getLabels();
-    List<? extends ExpressionTree> treeExpressions = CaseUtils.getExpressions(javacTree);
+    List<? extends ExpressionTree> treeExpressions = javacTree.getExpressions();
     assert node.getLabels().size() == treeExpressions.size()
         : String.format(
             "node.getLabels() = %s, treeExpressions = %s", node.getLabels(), treeExpressions);
