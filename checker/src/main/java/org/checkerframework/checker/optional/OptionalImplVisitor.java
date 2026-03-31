@@ -99,10 +99,10 @@ public class OptionalImplVisitor
    *   <li>Its body contains a variable or value that is annotated with {@link NonEmpty}
    * </ul>
    *
-   * <p>This set is used to help compute {@link calleesToCallers} whenever a method invocation is
+   * <p>This set is used to help compute {@link #calleesToCallers} whenever a method invocation is
    * visited. The method being invoked is checked for membership in this set. If it is found, then
    * the caller of the method (i.e., the method that encloses the method invocation) is added to the
-   * list of callers of the method being invoked (i.e., the callee) in {@link calleesToCallers}.
+   * list of callers of the method being invoked (i.e., the callee) in {@link #calleesToCallers}.
    */
   private final Set<String> namesOfMethodsToVerifyWithNonEmptyChecker = new HashSet<>();
 
@@ -115,10 +115,10 @@ public class OptionalImplVisitor
    * methods that have programmer-written annotations from the {@link NonEmpty} type system, and
    * their immediate dependents.
    *
-   * <p>This mapping is used to help compute {@link namesOfMethodsToVerifyWithNonEmptyChecker}.
+   * <p>This mapping is used to help compute {@link #namesOfMethodsToVerifyWithNonEmptyChecker}.
    * Whenever a method declaration is visited, its name is checked in the keys (i.e., the set of
    * callees). If it is found, then the corresponding values (i.e., the names of the callers of the
-   * method being visited) are added to {@link namesOfMethodsToVerifyWithNonEmptyChecker}.
+   * method being visited) are added to {@link #namesOfMethodsToVerifyWithNonEmptyChecker}.
    */
   private final Map<String, Set<String>> calleesToCallers = new HashMap<>();
 
@@ -518,7 +518,7 @@ public class OptionalImplVisitor
   }
 
   /**
-   * Updates {@link calleesToCallers} given a method invocation, if the caller of the method is
+   * Updates {@link #calleesToCallers} given a method invocation, if the caller of the method is
    * known to rely on the {@link NonEmpty} type system.
    *
    * <p>The caller is the method that <i>encloses</i> the given method invocation. The map is
@@ -561,7 +561,7 @@ public class OptionalImplVisitor
   }
 
   /**
-   * Updates {@link namesOfMethodsToVerifyWithNonEmptyChecker}.
+   * Updates {@link #namesOfMethodsToVerifyWithNonEmptyChecker}.
    *
    * @param methodDecl a method declaration that definitely has a precondition regarding
    *     {@code @NonEmpty}

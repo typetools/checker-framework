@@ -953,7 +953,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
       List<AnnotationMirror> annos = invariants.getQualifiersFor(field.getSimpleName());
       for (AnnotationMirror invariantAnno : annos) {
-        AnnotationMirror declaredAnno = fieldType.getEffectiveAnnotationInHierarchy(invariantAnno);
+        AnnotationMirror declaredAnno = fieldType.getAnnotationInHierarchy(invariantAnno);
         if (declaredAnno == null) {
           // invariant anno isn't in this hierarchy
           continue;
@@ -2124,7 +2124,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         if (expressionString.equals("this")) {
           AnnotatedTypeMirror atype = atypeFactory.getReceiverType(tree);
           if (atype != null) {
-            AnnotationMirrorSet annos = atype.getEffectiveAnnotations();
+            AnnotationMirrorSet annos = atype.getAnnotations();
             inferredAnno = qualHierarchy.findAnnotationInSameHierarchy(annos, anno);
           }
         }
@@ -2656,7 +2656,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     TypeMirror newCastTM;
     if (!checkCastElementType) {
       // checkCastElementType option wasn't specified, so only check effective annotations.
-      castAnnos = castType.getEffectiveAnnotations();
+      castAnnos = castType.getAnnotations();
       newCastType = castType;
       newCastTM = newCastType.getUnderlyingType();
     } else {
@@ -2714,7 +2714,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     AnnotatedTypeMirror exprTypeWidened = atypeFactory.getWidenedType(exprType, castType);
     return qualHierarchy.isSubtypeShallow(
-        exprTypeWidened.getEffectiveAnnotations(),
+        exprTypeWidened.getAnnotations(),
         exprTypeWidened.getUnderlyingType(),
         castAnnos,
         newCastTM);
@@ -2745,8 +2745,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       // so just check the reverse to check that the qualifiers are equivalent.
       return typeHierarchy.isSubtypeShallowEffective(castType, exprType, top);
     }
-    AnnotationMirror castTypeAnno = castType.getEffectiveAnnotationInHierarchy(top);
-    AnnotationMirror exprTypeAnno = exprType.getEffectiveAnnotationInHierarchy(top);
+    AnnotationMirror castTypeAnno = castType.getAnnotationInHierarchy(top);
+    AnnotationMirror exprTypeAnno = exprType.getAnnotationInHierarchy(top);
     // Otherwise the cast is unsafe, unless the qualifiers on both cast and expr are bottom.
     AnnotationMirror bottom = qualHierarchy.getBottomAnnotation(top);
     return AnnotationUtils.areSame(castTypeAnno, bottom)
@@ -3061,7 +3061,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       case TYPEVAR:
       case WILDCARD:
         if (!typeHierarchy.isSubtypeShallowEffective(throwType, required)) {
-          AnnotationMirrorSet found = throwType.getEffectiveAnnotations();
+          AnnotationMirrorSet found = throwType.getAnnotations();
           checker.reportError(tree.getExpression(), "throw", found, required);
         }
         break;
@@ -3669,7 +3669,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     AnnotatedTypeMirror erasedTreeReceiver = erasedMethodReceiver.shallowCopy(false);
     AnnotatedTypeMirror treeReceiver = atypeFactory.getReceiverType(tree);
 
-    erasedTreeReceiver.addAnnotations(treeReceiver.getEffectiveAnnotations());
+    erasedTreeReceiver.addAnnotations(treeReceiver.getAnnotations());
 
     if (!skipReceiverSubtypeCheck(tree, erasedMethodReceiver, treeReceiver)) {
       // The diagnostic can be a bit misleading because the check is of the receiver but

@@ -85,7 +85,7 @@ public class AnnotationUtils {
   /**
    * Returns the fully-qualified name of an annotation as a String.
    *
-   * <p>This is more efficient than calling {@link annotationName} and {@link
+   * <p>This is more efficient than calling {@link #annotationName} and {@link
    * java.lang.String#intern}.
    *
    * @param annotation the annotation whose name to return
@@ -1372,7 +1372,7 @@ public class AnnotationUtils {
   // Other methods
   // **********************************************************************
 
-  // The Javadoc doesn't use @link because framework is a different project than this one
+  // The Javadoc doesn't use `@link` because framework is a different project than this one
   // (javacutil).
   /**
    * Update a map, to add {@code newQual} to the set that {@code key} maps to. The mapped-to element

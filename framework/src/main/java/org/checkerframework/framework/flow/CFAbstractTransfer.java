@@ -440,8 +440,7 @@ public abstract class CFAbstractTransfer<
       if (aliasingAtf != null) {
         int indexOfLambdaActual = invok.getArguments().indexOf(lambdaTree);
         VariableElement lambdaFormal = methodElt.getParameters().get(indexOfLambdaActual);
-        return aliasingAtf.getAnnotatedType(lambdaFormal).getEffectiveAnnotation(NonLeaked.class)
-            == null;
+        return aliasingAtf.getAnnotatedType(lambdaFormal).getAnnotation(NonLeaked.class) == null;
       }
     }
     return true;
