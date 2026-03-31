@@ -243,13 +243,13 @@ public abstract class VoidVisitorWithDefaultAction extends VoidVisitorAdapter<Vo
   }
 
   @Override
-  public void visit(CompilationUnit n, Void p) {
+  public void visit(CompactConstructorDeclaration n, Void p) {
     super.visit(n, p);
     defaultAction(n);
   }
 
   @Override
-  public void visit(StubUnit n, Void p) {
+  public void visit(CompilationUnit n, Void p) {
     super.visit(n, p);
     defaultAction(n);
   }
@@ -333,13 +333,13 @@ public abstract class VoidVisitorWithDefaultAction extends VoidVisitorAdapter<Vo
   }
 
   @Override
-  public void visit(ForStmt n, Void p) {
+  public void visit(ForEachStmt n, Void p) {
     super.visit(n, p);
     defaultAction(n);
   }
 
   @Override
-  public void visit(ForEachStmt n, Void p) {
+  public void visit(ForStmt n, Void p) {
     super.visit(n, p);
     defaultAction(n);
   }
@@ -405,14 +405,32 @@ public abstract class VoidVisitorWithDefaultAction extends VoidVisitorAdapter<Vo
   }
 
   @Override
+  public void visit(LocalRecordDeclarationStmt n, Void p) {
+    super.visit(n, p);
+    defaultAction(n);
+  }
+
+  @Override
   public void visit(LongLiteralExpr n, Void p) {
     super.visit(n, p);
     defaultAction(n);
   }
 
   @Override
+  public void visit(MarkdownComment n, Void arg) {
+    super.visit(n, arg);
+    defaultAction(n);
+  }
+
+  @Override
   public void visit(MarkerAnnotationExpr n, Void p) {
     super.visit(n, p);
+    defaultAction(n);
+  }
+
+  @Override
+  public void visit(MatchAllPatternExpr n, Void arg) {
+    super.visit(n, arg);
     defaultAction(n);
   }
 
@@ -441,13 +459,55 @@ public abstract class VoidVisitorWithDefaultAction extends VoidVisitorAdapter<Vo
   }
 
   @Override
-  public void visit(NameExpr n, Void p) {
+  public void visit(Modifier n, Void p) {
+    super.visit(n, p);
+    defaultAction(n);
+  }
+
+  @Override
+  public void visit(ModuleDeclaration n, Void p) {
+    super.visit(n, p);
+    defaultAction(n);
+  }
+
+  @Override
+  public void visit(ModuleExportsDirective n, Void p) {
+    super.visit(n, p);
+    defaultAction(n);
+  }
+
+  @Override
+  public void visit(ModuleOpensDirective n, Void p) {
+    super.visit(n, p);
+    defaultAction(n);
+  }
+
+  @Override
+  public void visit(ModuleProvidesDirective n, Void p) {
+    super.visit(n, p);
+    defaultAction(n);
+  }
+
+  @Override
+  public void visit(ModuleRequiresDirective n, Void p) {
+    super.visit(n, p);
+    defaultAction(n);
+  }
+
+  @Override
+  public void visit(ModuleUsesDirective n, Void p) {
     super.visit(n, p);
     defaultAction(n);
   }
 
   @Override
   public void visit(Name n, Void p) {
+    super.visit(n, p);
+    defaultAction(n);
+  }
+
+  @Override
+  public void visit(NameExpr n, Void p) {
     super.visit(n, p);
     defaultAction(n);
   }
@@ -489,6 +549,24 @@ public abstract class VoidVisitorWithDefaultAction extends VoidVisitorAdapter<Vo
   }
 
   @Override
+  public void visit(ReceiverParameter n, Void p) {
+    super.visit(n, p);
+    defaultAction(n);
+  }
+
+  @Override
+  public void visit(RecordDeclaration n, Void p) {
+    super.visit(n, p);
+    defaultAction(n);
+  }
+
+  @Override
+  public void visit(RecordPatternExpr n, Void arg) {
+    super.visit(n, arg);
+    defaultAction(n);
+  }
+
+  @Override
   public void visit(ReturnStmt n, Void p) {
     super.visit(n, p);
     defaultAction(n);
@@ -513,6 +591,12 @@ public abstract class VoidVisitorWithDefaultAction extends VoidVisitorAdapter<Vo
   }
 
   @Override
+  public void visit(StubUnit n, Void p) {
+    super.visit(n, p);
+    defaultAction(n);
+  }
+
+  @Override
   public void visit(SuperExpr n, Void p) {
     super.visit(n, p);
     defaultAction(n);
@@ -520,6 +604,12 @@ public abstract class VoidVisitorWithDefaultAction extends VoidVisitorAdapter<Vo
 
   @Override
   public void visit(SwitchEntry n, Void p) {
+    super.visit(n, p);
+    defaultAction(n);
+  }
+
+  @Override
+  public void visit(SwitchExpr n, Void p) {
     super.visit(n, p);
     defaultAction(n);
   }
@@ -537,6 +627,12 @@ public abstract class VoidVisitorWithDefaultAction extends VoidVisitorAdapter<Vo
   }
 
   @Override
+  public void visit(TextBlockLiteralExpr n, Void p) {
+    super.visit(n, p);
+    defaultAction(n);
+  }
+
+  @Override
   public void visit(ThisExpr n, Void p) {
     super.visit(n, p);
     defaultAction(n);
@@ -546,6 +642,11 @@ public abstract class VoidVisitorWithDefaultAction extends VoidVisitorAdapter<Vo
   public void visit(ThrowStmt n, Void p) {
     super.visit(n, p);
     defaultAction(n);
+  }
+
+  @Override
+  public void visit(TraditionalJavadocComment n, Void arg) {
+    super.visit(n, arg);
   }
 
   @Override
@@ -567,6 +668,12 @@ public abstract class VoidVisitorWithDefaultAction extends VoidVisitorAdapter<Vo
   }
 
   @Override
+  public void visit(TypePatternExpr n, Void arg) {
+    super.visit(n, arg);
+    defaultAction(n);
+  }
+
+  @Override
   public void visit(UnaryExpr n, Void p) {
     super.visit(n, p);
     defaultAction(n);
@@ -580,6 +687,18 @@ public abstract class VoidVisitorWithDefaultAction extends VoidVisitorAdapter<Vo
 
   @Override
   public void visit(UnknownType n, Void p) {
+    super.visit(n, p);
+    defaultAction(n);
+  }
+
+  @Override
+  public void visit(UnparsableStmt n, Void p) {
+    super.visit(n, p);
+    defaultAction(n);
+  }
+
+  @Override
+  public void visit(VarType n, Void p) {
     super.visit(n, p);
     defaultAction(n);
   }
@@ -615,127 +734,8 @@ public abstract class VoidVisitorWithDefaultAction extends VoidVisitorAdapter<Vo
   }
 
   @Override
-  public void visit(ModuleDeclaration n, Void p) {
-    super.visit(n, p);
-    defaultAction(n);
-  }
-
-  @Override
-  public void visit(ModuleRequiresDirective n, Void p) {
-    super.visit(n, p);
-    defaultAction(n);
-  }
-
-  @Override
-  public void visit(ModuleExportsDirective n, Void p) {
-    super.visit(n, p);
-    defaultAction(n);
-  }
-
-  @Override
-  public void visit(ModuleProvidesDirective n, Void p) {
-    super.visit(n, p);
-    defaultAction(n);
-  }
-
-  @Override
-  public void visit(ModuleUsesDirective n, Void p) {
-    super.visit(n, p);
-    defaultAction(n);
-  }
-
-  @Override
-  public void visit(ModuleOpensDirective n, Void p) {
-    super.visit(n, p);
-    defaultAction(n);
-  }
-
-  @Override
-  public void visit(UnparsableStmt n, Void p) {
-    super.visit(n, p);
-    defaultAction(n);
-  }
-
-  @Override
-  public void visit(ReceiverParameter n, Void p) {
-    super.visit(n, p);
-    defaultAction(n);
-  }
-
-  @Override
-  public void visit(VarType n, Void p) {
-    super.visit(n, p);
-    defaultAction(n);
-  }
-
-  @Override
-  public void visit(Modifier n, Void p) {
-    super.visit(n, p);
-    defaultAction(n);
-  }
-
-  @Override
-  public void visit(SwitchExpr n, Void p) {
-    super.visit(n, p);
-    defaultAction(n);
-  }
-
-  @Override
-  public void visit(TextBlockLiteralExpr n, Void p) {
-    super.visit(n, p);
-    defaultAction(n);
-  }
-
-  @Override
   public void visit(YieldStmt n, Void p) {
     super.visit(n, p);
-    defaultAction(n);
-  }
-
-  @Override
-  public void visit(RecordDeclaration n, Void p) {
-    super.visit(n, p);
-    defaultAction(n);
-  }
-
-  @Override
-  public void visit(LocalRecordDeclarationStmt n, Void p) {
-    super.visit(n, p);
-    defaultAction(n);
-  }
-
-  @Override
-  public void visit(CompactConstructorDeclaration n, Void p) {
-    super.visit(n, p);
-    defaultAction(n);
-  }
-
-  @Override
-  public void visit(TypePatternExpr n, Void arg) {
-    super.visit(n, arg);
-    defaultAction(n);
-  }
-
-  @Override
-  public void visit(RecordPatternExpr n, Void arg) {
-    super.visit(n, arg);
-    defaultAction(n);
-  }
-
-  @Override
-  public void visit(TraditionalJavadocComment n, Void arg) {
-    super.visit(n, arg);
-  }
-
-  @Override
-  public void visit(MarkdownComment n, Void arg) {
-    super.visit(n, arg);
-    defaultAction(n);
-  }
-
-  @Override
-  public void visit(MatchAllPatternExpr n, Void arg) {
-    super.visit(n, arg);
     defaultAction(n);
   }
 }
