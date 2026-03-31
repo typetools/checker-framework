@@ -225,7 +225,7 @@ public class Range {
    * @param to the upper bound (inclusive)
    * @return newly-created Range or NOTHING
    */
-  private static Range createOrNothing(long from, long to) {
+  public static Range createOrNothing(long from, long to) {
     return createOrElse(from, to, NOTHING);
   }
 

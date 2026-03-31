@@ -212,7 +212,7 @@ public class NullnessAnnotatedTypeFactory
           "org.jmlspecs.annotation.NonNull",
           // https://github.com/jspecify/jspecify/blob/main/src/main/java/org/jspecify/annotations/NonNull.java
           "org.jspecify.annotations.NonNull",
-          // 2022-11-17: Deprecated old package location, remove after some grace period
+          // 2022-11-17: Deprecated old package location, remove after some grace period.
           // https://github.com/jspecify/jspecify/tree/main/src/main/java/org/jspecify/nullness
           "org.jspecify.nullness.NonNull",
           // https://bits.netbeans.org/dev/javadoc/org-netbeans-api-annotations-common/org/netbeans/api/annotations/common/NonNull.html
@@ -344,7 +344,7 @@ public class NullnessAnnotatedTypeFactory
           "org.jmlspecs.annotation.Nullable",
           // https://github.com/jspecify/jspecify/blob/main/src/main/java/org/jspecify/annotations/Nullable.java
           "org.jspecify.annotations.Nullable",
-          // 2022-11-17: Deprecated old package location, remove after some grace period
+          // 2022-11-17: Deprecated old package location, remove after some grace period.
           // https://github.com/jspecify/jspecify/tree/main/src/main/java/org/jspecify/nullness
           "org.jspecify.nullness.Nullable",
           "org.jspecify.nullness.NullnessUnspecified",

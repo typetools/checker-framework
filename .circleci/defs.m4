@@ -153,7 +153,9 @@ ifelse($1,canary_version,,[:
           requires:
             - canary_jobs
 ifelse($1,canary_version,,[dnl
+ifelse($2$1,misc[]latest_version,,[dnl
             - $2_jdk[]canary_version
+])dnl
 ])dnl
 ])dnl
 ])dnl
