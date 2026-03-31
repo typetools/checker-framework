@@ -202,7 +202,7 @@ public class FormatUtil {
     int index;
     String s = m.group(1);
     String group2 = m.group(2); // not @Deterministic, so extract into local var
-    if (group2 != null && group2.contains(String.valueOf('<'))) {
+    if (group2 != null && group2.indexOf('<') != -1) {
       index = -1; // relative index
     } else if (s != null) { // explicit index
       index = Integer.parseInt(s.substring(0, s.length() - 1));
