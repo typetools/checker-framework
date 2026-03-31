@@ -1,6 +1,7 @@
 junit_job(17)
 junit_job(21)
-junit_jobs(25)
+junit_jobs(canary_version)
+junit_job(latest_version)
 
 nonjunit_job(canary_version)
 
@@ -12,7 +13,8 @@ inference_job(canary_version)
 
 misc_job(17)
 misc_job(21)
-misc_job(25)
+misc_job(canary_version)
+misc_job(latest_version)
 
 typecheck_job(canary_version)
 
