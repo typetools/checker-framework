@@ -733,6 +733,24 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    *
    * <p>This method does not take care of removing other information that might be influenced by
    * changes to certain parts of the state.
+   *
+   * @param expr the expression whose value to replace
+   * @param a the new annotation
+   */
+  public void replaceValue(JavaExpression expr, AnnotationMirror a) {
+    replaceValue(expr, analysis.createSingleAnnotationValue(a, expr.getType()));
+  }
+
+  /**
+   * Completely replaces the abstract value for the expression {@code expr} (correctly deciding
+   * where to store the information depending on the type of the expression {@code expr}). Any
+   * previous information is discarded.
+   *
+   * <p>This method does not take care of removing other information that might be influenced by
+   * changes to certain parts of the state.
+   *
+   * @param expr the expression whose value to replace
+   * @param value the new value
    */
   public void replaceValue(JavaExpression expr, @Nullable V value) {
     clearValue(expr);
