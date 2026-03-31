@@ -110,7 +110,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
   // public AnnotatedTypeMirror clone() { ... }
 
   /**
-   * Creates an AnnotatedTypeMirror for the provided type. The result contains no annotations.
+   * Creates an empty AnnotatedTypeMirror for the provided type. The result contains no annotations.
    *
    * @param type the underlying type for the resulting AnnotatedTypeMirror
    * @param atypeFactory the type factory that will build the result
@@ -256,8 +256,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    * Returns true if this type has a primary annotation in the same hierarchy as {@code annotation}.
    *
    * @param annotation the qualifier hierarchy to check for
-   * @return true iff this type has a primary annotation in the same hierarchy as {@code
-   *     annotation}.
+   * @return true iff this type has a primary annotation in the same hierarchy as {@code annotation}
    */
   public boolean hasPrimaryAnnotationInHierarchy(AnnotationMirror annotation) {
     return getPrimaryAnnotationInHierarchy(annotation) != null;

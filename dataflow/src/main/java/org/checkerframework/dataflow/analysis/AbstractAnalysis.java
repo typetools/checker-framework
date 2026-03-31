@@ -458,7 +458,7 @@ public abstract class AbstractAnalysis<
    * @return the contained method tree of the given tree
    * @deprecated use {@link #getEnclosingMethod}
    */
-  @Deprecated // 2024-05-01
+  @Deprecated(since = "2024-05-01")
   public @Nullable MethodTree getContainingMethod(Tree t) {
     return getEnclosingMethod(t);
   }
@@ -485,7 +485,7 @@ public abstract class AbstractAnalysis<
    * @return the contained class tree of the given tree
    * @deprecated use {@link #getEnclosingClass}
    */
-  @Deprecated // 2024-05-01
+  @Deprecated(since = "2024-05-01")
   public @Nullable ClassTree getContainingClass(Tree t) {
     return getEnclosingClass(t);
   }
