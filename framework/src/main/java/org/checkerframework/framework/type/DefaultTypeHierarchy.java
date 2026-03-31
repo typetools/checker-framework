@@ -994,7 +994,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
       } else if (!subtypeHasAnno && supertypeHasAnno) {
         // This is the case "T <: @A T" where T is a type variable.
         return qualHierarchy.isSubtypeShallow(
-            subtype.getEffectiveAnnotationInHierarchy(currentTop),
+            subtype.getAnnotationInHierarchy(currentTop),
             subTM,
             supertype.getPrimaryAnnotationInHierarchy(currentTop),
             superTM);

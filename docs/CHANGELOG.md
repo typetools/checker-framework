@@ -29,6 +29,11 @@ Removed deprecated command-line option `-AskipDirs`; use `-AskipFiles`.
 
 ### Implementation details
 
+In `AnnotatedTypeMirror`:
+
+* Renamed `getEffectiveAnnotation*()` to `getAnnotation*()`.
+* Renamed `hasEffectiveAnnotation*()` to `hasAnnotation*()`.
+
 Removed deprecated method `ObjectCreationNode.getConstructor()`; use
 `getTypeToInstantiate()`.
 

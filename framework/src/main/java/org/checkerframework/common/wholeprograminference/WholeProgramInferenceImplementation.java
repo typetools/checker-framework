@@ -1021,7 +1021,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       AnnotatedTypeVariable lhsTV = (AnnotatedTypeVariable) lhsATM;
       AnnotatedTypeMirror decl =
           atypeFactory.getAnnotatedType(lhsTV.getUnderlyingType().asElement());
-      AnnotationMirrorSet upperAnnos = decl.getEffectiveAnnotations();
+      AnnotationMirrorSet upperAnnos = decl.getAnnotations();
 
       // If the inferred type is a subtype of the upper bounds of the
       // current type in the source code, do nothing.
