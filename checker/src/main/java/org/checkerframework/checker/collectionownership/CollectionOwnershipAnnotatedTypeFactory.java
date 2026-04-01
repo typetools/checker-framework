@@ -27,6 +27,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.collectionownership.qual.CollectionFieldDestructor;
+import org.checkerframework.checker.collectionownership.qual.CreatesCollectionObligation;
 import org.checkerframework.checker.collectionownership.qual.NotOwningCollection;
 import org.checkerframework.checker.collectionownership.qual.OwningCollection;
 import org.checkerframework.checker.collectionownership.qual.OwningCollectionBottom;
@@ -108,8 +109,8 @@ public class CollectionOwnershipAnnotatedTypeFactory
       TreeUtils.getMethod(CollectionFieldDestructor.class, "value", 0, processingEnv);
 
   /**
-   * Method CFGs whose resource-leak post-analysis already ran before contained lambdas were
-   * analyzed.
+   * Method CFGs whose resource-leak post-analysis already ran after the first method analysis and
+   * before any contained lambdas were analyzed.
    */
   private final Set<ControlFlowGraph> preLambdaPostAnalyzedMethods =
       Collections.newSetFromMap(new IdentityHashMap<>());
@@ -248,26 +249,45 @@ public class CollectionOwnershipAnnotatedTypeFactory
         : flowResult.getStoreBefore(succBlock);
   }
 
-  // Note that this method is overridden here because the collections ownership
-  // typechecker runs last in the RLC, not because this has anything to do with
-  // collections. Whatever checker runs last in the RLC must do this. TODO: make this
-  // run last in a more sensible way.
+  /**
+   * Runs resource-leak post-analysis after the first method analysis and before any contained
+   * lambdas are analyzed.
+   *
+   * <p>This override exists because the Collection Ownership Checker currently runs last in the
+   * Resource Leak Checker hierarchy. The last checker in that hierarchy is responsible for
+   * triggering the final resource-leak post-analysis for the method.
+   *
+   * @param cfg the method CFG that has completed its first analysis
+   */
   @Override
   protected void postAnalyzeAfterFirstMethodAnalysis(ControlFlowGraph cfg) {
     runResourceLeakPostAnalyze(cfg);
     preLambdaPostAnalyzedMethods.add(cfg);
   }
 
+  /**
+   * Performs post-analysis for the given CFG.
+   *
+   * <p>If resource-leak-specific post-analysis already ran during {@link
+   * #postAnalyzeAfterFirstMethodAnalysis(ControlFlowGraph)}, then this method avoids running it a
+   * second time.
+   *
+   * @param cfg the CFG to post-analyze
+   */
   @Override
   public void postAnalyze(ControlFlowGraph cfg) {
     if (!preLambdaPostAnalyzedMethods.remove(cfg)) {
       runResourceLeakPostAnalyze(cfg);
     }
-
     super.postAnalyze(cfg);
   }
 
-  /** Runs the resource-leak-specific post-analysis that must happen in the last checker. */
+  /**
+   * Runs the resource-leak post-analysis that must happen in the last checker in the Resource Leak
+   * Checker hierarchy.
+   *
+   * @param cfg the CFG to analyze
+   */
   private void runResourceLeakPostAnalyze(ControlFlowGraph cfg) {
     ResourceLeakChecker rlc = ResourceLeakUtils.getResourceLeakChecker(this);
     rlc.setRoot(root);
@@ -410,15 +430,12 @@ public class CollectionOwnershipAnnotatedTypeFactory
    * @return true if the method is annotated {@code @CreatesCollectionObligation}
    */
   public boolean isCreatesCollectionObligationMethod(ExecutableElement methodElement) {
-    return getDeclAnnotation(
-            methodElement,
-            org.checkerframework.checker.collectionownership.qual.CreatesCollectionObligation.class)
-        != null;
+    return getDeclAnnotation(methodElement, CreatesCollectionObligation.class) != null;
   }
 
   /**
    * Returns the argument whose obligation is transferred by a {@code @CreatesCollectionObligation}
-   * call, or null if the call has no such argument.
+   * call, or {@code null} if the call has no such argument.
    *
    * <p>The current heuristic is that the inserted argument is the last argument at the call site.
    *
@@ -434,7 +451,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
 
   /**
    * Returns the argument whose obligation is transferred by a {@code @CreatesCollectionObligation}
-   * call, or null if the call has no such argument.
+   * call, or {@code null} if the call has no such argument.
    *
    * <p>The current heuristic is that the inserted argument is the last argument at the call site.
    *
@@ -472,17 +489,22 @@ public class CollectionOwnershipAnnotatedTypeFactory
     RLCCalledMethodsAnnotatedTypeFactory rlAtf =
         ResourceLeakUtils.getRLCCalledMethodsAnnotatedTypeFactory(this);
 
+    // If the inserted element annotated as @NotOwning, then it's definitely not owning
     Element insertedElement = TreeUtils.elementFromTree(insertedArgumentTree);
     if (insertedElement != null && insertedElement.getAnnotation(NotOwning.class) != null) {
       return CollectionMutatorArgumentKind.DEFINITELY_NON_OWNING;
     }
 
+    // If the inserted element is a parameter, and it has no explicit @Owning annotation, then it's
+    // definitely not owning.
     if (insertedElement != null && insertedElement.getKind() == ElementKind.PARAMETER) {
       return insertedElement.getAnnotation(Owning.class) == null
           ? CollectionMutatorArgumentKind.DEFINITELY_NON_OWNING
           : CollectionMutatorArgumentKind.MAY_BE_OWNING;
     }
 
+    // If the inserted element is a method call, and the callee has no @Owning annotation, then it's
+    // definitely not owning.
     if (insertedArgumentTree instanceof MethodInvocationTree) {
       ExecutableElement callee =
           TreeUtils.elementFromUse((MethodInvocationTree) insertedArgumentTree);

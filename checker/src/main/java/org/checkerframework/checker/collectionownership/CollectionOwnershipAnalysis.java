@@ -21,9 +21,10 @@ public class CollectionOwnershipAnalysis
     extends CFAbstractAnalysis<CFValue, CollectionOwnershipStore, CollectionOwnershipTransfer> {
 
   /**
-   * The resource-leak ignored-exception policy, except that RLCC does not ignore {@link Throwable}.
-   * Broad {@code Throwable}-only exceptional paths affect collection-ownership flow in ways that
-   * matter for RLCC, so this analysis treats them as real exceptional control flow.
+   * Ignored-exception policy used by collection-ownership flow.
+   *
+   * <p>This policy matches the Resource Leak Checker policy except that exact {@link Throwable}
+   * exceptional edges are preserved.
    */
   private final SetOfTypes ignoredExceptions;
 
@@ -31,19 +32,31 @@ public class CollectionOwnershipAnalysis
    * Creates a new {@link CollectionOwnershipAnalysis}.
    *
    * @param checker the checker
-   * @param factory the factory
+   * @param factory the collection-ownership type factory
    */
   public CollectionOwnershipAnalysis(
       BaseTypeChecker checker, CollectionOwnershipAnnotatedTypeFactory factory) {
     super(checker, factory);
+    ignoredExceptions = createIgnoredExceptionPolicy(checker);
+  }
+
+  /**
+   * Creates the ignored-exception policy used by collection-ownership flow.
+   *
+   * <p>The policy follows the Resource Leak Checker configuration, but keeps exact{@link Throwable}
+   * exceptional edges because broad catch/fallback paths affect collection-obligation reasoning.
+   *
+   * @param checker the enclosing checker
+   * @return the ignored-exception policy for collection-ownership flow
+   */
+  private static SetOfTypes createIgnoredExceptionPolicy(BaseTypeChecker checker) {
     ResourceLeakChecker resourceLeakChecker = ResourceLeakUtils.getResourceLeakChecker(checker);
     SetOfTypes baseIgnoredExceptions = resourceLeakChecker.getIgnoredExceptions();
-    SetOfTypes exactThrowable =
+    SetOfTypes exactThrowableOnly =
         SetOfTypes.anyOfTheseNames(ImmutableSet.of(Throwable.class.getCanonicalName()));
-    ignoredExceptions =
-        (types, exceptionType) ->
-            !exactThrowable.contains(types, exceptionType)
-                && baseIgnoredExceptions.contains(types, exceptionType);
+    return (types, exceptionType) ->
+        !exactThrowableOnly.contains(types, exceptionType)
+            && baseIgnoredExceptions.contains(types, exceptionType);
   }
 
   @Override
