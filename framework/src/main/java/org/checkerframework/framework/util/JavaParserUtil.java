@@ -413,12 +413,32 @@ public class JavaParserUtil {
         case "RELEASE_17":
           currentSourceVersion = ParserConfiguration.LanguageLevel.JAVA_17;
           break;
-        // JavaParser's ParserConfiguration.LanguageLevel has no constant for JDK 18, as
-        // of version 3.25.1 (2023-02-28).  See
+        case "RELEASE_18":
+          currentSourceVersion = ParserConfiguration.LanguageLevel.JAVA_18;
+          break;
+        case "RELEASE_19":
+          currentSourceVersion = ParserConfiguration.LanguageLevel.JAVA_19;
+          break;
+        case "RELEASE_20":
+          currentSourceVersion = ParserConfiguration.LanguageLevel.JAVA_20;
+          break;
+        case "RELEASE_21":
+          currentSourceVersion = ParserConfiguration.LanguageLevel.JAVA_21;
+          break;
+        case "RELEASE_22":
+          currentSourceVersion = ParserConfiguration.LanguageLevel.JAVA_22;
+          break;
+        case "RELEASE_23":
+          currentSourceVersion = ParserConfiguration.LanguageLevel.JAVA_23;
+          break;
+        case "RELEASE_24":
+          currentSourceVersion = ParserConfiguration.LanguageLevel.JAVA_24;
+          break;
+        case "RELEASE_25":
+          currentSourceVersion = ParserConfiguration.LanguageLevel.JAVA_25;
+          break;
+        // Up-to-date as of (2026-03-26).  See
         // https://www.javadoc.io/doc/com.github.javaparser/javaparser-core/latest/com/github/javaparser/ParserConfiguration.LanguageLevel.html .
-        // case "RELEASE_18":
-        //   currentSourceVersion = ParserConfiguration.LanguageLevel.JAVA_18;
-        //   break;
         default:
           currentSourceVersion = DEFAULT_LANGUAGE_LEVEL;
       }

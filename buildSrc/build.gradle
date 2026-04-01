@@ -30,7 +30,7 @@ dependencies {
 }
 
 // Helper function that transforms a Gradle Plugin alias from a
-// Version Catalog into a valid dependency notation for buildSrc
+// Version Catalog into valid dependency notation for buildSrc.
 def plugin(Provider<PluginDependency> plugin) {
   return plugin.map { it.pluginId + ":" + it.pluginId + ".gradle.plugin:" + it.version }
 }

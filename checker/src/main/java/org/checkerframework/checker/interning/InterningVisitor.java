@@ -135,8 +135,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
       return super.visitBinary(tree, p);
     }
 
-    if (left.hasEffectiveAnnotation(INTERNED_DISTINCT)
-        || right.hasEffectiveAnnotation(INTERNED_DISTINCT)) {
+    if (left.hasAnnotation(INTERNED_DISTINCT) || right.hasAnnotation(INTERNED_DISTINCT)) {
       return super.visitBinary(tree, p);
     }
 
@@ -187,14 +186,14 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
 
     Element leftElt = TypesUtils.getTypeElement(left.getUnderlyingType());
     // If neither @Interned or @UsesObjectEquals, report error.
-    if (!(left.hasEffectiveAnnotation(INTERNED)
+    if (!(left.hasAnnotation(INTERNED)
         || (leftElt != null
             && atypeFactory.getDeclAnnotation(leftElt, UsesObjectEquals.class) != null))) {
       checker.reportError(leftOp, "not.interned");
     }
 
     Element rightElt = TypesUtils.getTypeElement(right.getUnderlyingType());
-    if (!(right.hasEffectiveAnnotation(INTERNED)
+    if (!(right.hasAnnotation(INTERNED)
         || (rightElt != null
             && atypeFactory.getDeclAnnotation(rightElt, UsesObjectEquals.class) != null))) {
       checker.reportError(rightOp, "not.interned");
@@ -214,8 +213,8 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
       AnnotatedTypeMirror comp = atypeFactory.getAnnotatedType(tree.getArguments().get(0));
 
       if (this.checker.getLintOption("dotequals", true)
-          && receiverType.hasEffectiveAnnotation(INTERNED)
-          && comp.hasEffectiveAnnotation(INTERNED)) {
+          && receiverType.hasAnnotation(INTERNED)
+          && comp.hasAnnotation(INTERNED)) {
         checker.reportWarning(tree, "unnecessary.equals");
       }
     }

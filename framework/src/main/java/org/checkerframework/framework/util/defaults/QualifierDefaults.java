@@ -1167,7 +1167,7 @@ public class QualifierDefaults {
    * @param typeParamElem the type parameter element
    * @return the boundType (UPPER or UNBOUNDED) of the declaration of typeParamElem
    */
-  // Results are cached in {@link elementToBoundType}.
+  // Results are cached in {@link #elementToBoundType}.
   private BoundType getTypeVarBoundType(TypeParameterElement typeParamElem) {
     BoundType prev = elementToBoundType.get(typeParamElem);
     if (prev != null) {
