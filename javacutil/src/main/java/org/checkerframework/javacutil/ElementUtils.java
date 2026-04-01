@@ -55,12 +55,6 @@ public class ElementUtils {
     throw new AssertionError("Class ElementUtils cannot be instantiated.");
   }
 
-  /** The value of Flags.COMPACT_RECORD_CONSTRUCTOR which does not exist in Java 9 or 11. */
-  private static final long Flags_COMPACT_RECORD_CONSTRUCTOR = 1L << 51;
-
-  /** The value of Flags.GENERATED_MEMBER which does not exist in Java 9 or 11. */
-  private static final long Flags_GENERATED_MEMBER = 16777216;
-
   /**
    * Returns the innermost type element that is, or encloses, the given element.
    *
@@ -873,7 +867,7 @@ public class ElementUtils {
     }
     // Generated constructors seem to get GENERATEDCONSTR even though the documentation
     // seems to imply they would get GENERATED_MEMBER like the fields do.
-    return (((Symbol) e).flags() & (Flags_GENERATED_MEMBER | Flags.GENERATEDCONSTR)) != 0;
+    return (((Symbol) e).flags() & (Flags.GENERATED_MEMBER | Flags.GENERATEDCONSTR)) != 0;
   }
 
   /**
@@ -1063,7 +1057,7 @@ public class ElementUtils {
    */
   public static boolean isCompactCanonicalRecordConstructor(Element elt) {
     return elt.getKind() == ElementKind.CONSTRUCTOR
-        && (((Symbol) elt).flags() & Flags_COMPACT_RECORD_CONSTRUCTOR) != 0;
+        && (((Symbol) elt).flags() & Flags.COMPACT_RECORD_CONSTRUCTOR) != 0;
   }
 
   /**
