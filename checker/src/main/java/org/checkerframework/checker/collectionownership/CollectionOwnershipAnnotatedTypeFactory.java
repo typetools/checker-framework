@@ -255,7 +255,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
    *
    * <p>This override exists because the Collection Ownership Checker currently runs last in the
    * Resource Leak Checker hierarchy. The last checker in that hierarchy is responsible for
-   * triggering the final resource-leak post-analysis for the method.
+   * triggering the method-level resource-leak post-analysis for the enclosing method.
    *
    * @param cfg the method CFG that has completed its first analysis
    */
@@ -270,7 +270,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
    *
    * <p>If resource-leak-specific post-analysis already ran during {@link
    * #postAnalyzeAfterFirstMethodAnalysis(ControlFlowGraph)}, then this method avoids running it a
-   * second time.
+   * second time for the enclosing method.
    *
    * @param cfg the CFG to post-analyze
    */

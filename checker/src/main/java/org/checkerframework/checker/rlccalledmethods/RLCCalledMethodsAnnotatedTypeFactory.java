@@ -503,8 +503,16 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
       boolean isStatic,
       @Nullable AccumulationStore capturedStore) {
     if (cfg != null && ast.getKind() == UnderlyingAST.Kind.METHOD) {
-      // Preserve the first method analysis result, but keep the framework's lambda loop running
-      // by re-enqueuing the nested classes and lambdas from the existing CFG.
+      // The old RLCC workaround for RLLambda.java (#7316) used to run in analyze(). It was moved
+      // to CollectionOwnershipAnnotatedTypeFactory.postAnalyzeAfterFirstMethodAnalysis(...) so it
+      // executes once at the correct lifecycle point: after the first method analysis and before
+      // lambda fixpoint.
+      //
+      // At this point cfg is the preserved first method analysis result. Keep that result, but
+      // re-enqueue nested classes and lambdas so later fixpoint iterations still analyze them.
+      // Returning cfg without re-enqueuing would incorrectly stop lambda processing; recomputing
+      // the method analysis would discard the preserved first-pass result that the early
+      // resource-leak post-analysis depends on.
       for (ClassTree cls : cfg.getDeclaredClasses()) {
         classQueue.add(IPair.of(cls, getStoreBefore(cls)));
       }

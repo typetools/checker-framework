@@ -1524,6 +1524,10 @@ public abstract class GenericAnnotatedTypeFactory<
               /* isStatic= */ false,
               capturedStore);
       if (firstIteration) {
+        // Some checkers need a method-level pass after the method CFG is analyzed once but before
+        // contained lambdas enter fixpoint. This hook was added so such logic does not have to live
+        // inside analyze(); the Resource Leak Checker's old workaround for RLLambda.java (#7316)
+        // was the motivating case.
         postAnalyzeAfterFirstMethodAnalysis(methodCFG);
       }
       boolean anyLambdaResultChanged = false;
