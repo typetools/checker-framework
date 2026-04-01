@@ -280,7 +280,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * removed from the store.
    *
    * <p>In this default implementation, the field's value is preserved if it is either unassignable
-   * (see {@link FieldAccess#isUnassignableByOtherCode()}) or has a monotonic qualifier (see {@link
+   * (see {@link FieldAccess#isAssignableByOtherCode()}) or has a monotonic qualifier (see {@link
    * #newMonotonicFieldValueAfterMethodCall(FieldAccess, GenericAnnotatedTypeFactory,
    * CFAbstractValue)}). Otherwise, it is removed from the store.
    *
