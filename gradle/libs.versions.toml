@@ -72,6 +72,6 @@ reflection-util = "org.plumelib:reflection-util:1.1.6"
 
 require-javadoc = "org.plumelib:require-javadoc:2.0.0"
 
-spark-sql = "org.apache.spark:spark-sql_2.12:3.5.8"
+spark-sql = "org.apache.spark:spark-sql_2.13:4.1.1"
 
 stubparser = "org.checkerframework:stubparser:3.28.0"
