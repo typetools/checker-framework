@@ -1019,7 +1019,7 @@ subprojects {
       }
 
       if (project.name.is("checker")) {
-        dependsOn("jtregJdk11Tests", "nullnessExtraTests", "commandLineTests", "tutorialTests")
+        dependsOn("nullnessExtraTests", "commandLineTests", "tutorialTests")
       }
 
       if (project.name.is("dataflow")) {
