@@ -1,5 +1,4 @@
 import java.io.File;
-import java.io.IOException;
 import javax.inject.Inject;
 import org.eclipse.jgit.api.CloneCommand;
 import org.eclipse.jgit.api.Git;
@@ -85,7 +84,7 @@ public abstract class GitTask extends DefaultTask {
   public void update(File directory) {
     try (Git git = Git.open(directory)) {
       git.pull().call();
-    } catch (GitAPIException e) {
+    } catch (Exception e) {
       //       If the repository remote is configured using ssh, e.g.,
       // git@github.com:typetools/checker-framework.git,
       //       then the above may get permission problems such as:
@@ -104,8 +103,6 @@ public abstract class GitTask extends DefaultTask {
         getLogger()
             .warn("git pull failed in {} with exit code {}", directory, execResult.getExitValue());
       }
-    } catch (IOException e) {
-      getLogger().warn("git pull failed in {} because {}", directory, e.getMessage());
     }
   }
 }
