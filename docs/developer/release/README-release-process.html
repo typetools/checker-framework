@@ -117,19 +117,18 @@ miss a step if you only read the paragraph asking you to say 'yes'.
     release</a> since the last Checker Framework
     release, <a href="https://github.com/typetools/stubparser#updating-from-upstream-javaparser">update
       Stubparser from JavaParser</a>.
-    Do this on your own computer; it doesn't have to be done on the CSE file system..
+    Do this on your own computer; it doesn't have to be done on the CSE file system.
   </li>
   <li>On your own computer, update the Checker Framework source code <em>in the <code>master</code> branch</em>:
     <ul>
+      <!-- This is handled by renovate, which updates the dependency once a month.
       <li>
         <b>Update the AWS Java SDK BOM dependency.</b> In file <code>checker/build.gradle</code>,
         edit the <code>com.amazonaws:aws-java-sdk-bom</code> dependency to be the latest version
         number at
         <a href="https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk">https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk</a>.
-        (The next time Dependabot opens a pull request for that dependency, you
-        might need to respond <code>@dependabot ignore this dependency</code> to
-        prevent such pull requests for the next month.)
       </li>
+      -->
       <li>
         <b>Update Checker Framework change log</b> by following the instructions
         at <a href="#content_guidelines">content guidelines</a>.
