@@ -255,7 +255,6 @@ public final class CFGVisualizeLauncher {
     try {
       // Redirect syserr to nothing (and prevent the compiler from issuing
       // warnings about our exception).
-      @SuppressWarnings({"builder:required.method.not.called", "mustcall:assignment"})
       @MustCall OutputStream nullOS = OutputStream.nullOutputStream();
       System.setErr(new PrintStream(nullOS));
       javac.compile(List.of(l), List.of(clas), List.of(cfgProcessor), List.nil());
