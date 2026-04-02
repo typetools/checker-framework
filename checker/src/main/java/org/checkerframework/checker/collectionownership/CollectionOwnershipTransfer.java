@@ -75,9 +75,12 @@ public class CollectionOwnershipTransfer
     CollectionOwnershipType rhsType =
         atypeFactory.getCoType(rhs, atypeFactory.getStoreBefore(node));
 
-    // Ownership transfer from rhs into lhs usually.
-    // Special case: desugared assignments of a temporary array variable
-    // and rhs being owning resource collection field.
+    // Ownership usually transfers from the rhs into the lhs.
+    // Some assignments instead create a non-owning alias at the lhs:
+    //   1. desugared enhanced-for array temporaries
+    //   2. reads from owning collection fields
+    //   3. explicit @NotOwningCollection declarations
+    // In those cases the rhs keeps its existing ownership information.
     if (rhsType != null) {
       switch (rhsType) {
         case OwningCollection:
@@ -88,20 +91,10 @@ public class CollectionOwnershipTransfer
                   TreeUtils.elementFromTree(node.getExpression().getTree()))) {
             replaceInStores(res, lhsJE, atypeFactory.NOTOWNINGCOLLECTION);
           } else {
-            CollectionOwnershipType declCoType = null;
-            if (node.getTree() instanceof VariableTree) {
-              VariableTree varTree = (VariableTree) node.getTree();
-              VariableElement vtElement = TreeUtils.elementFromDeclaration(varTree);
-              if (vtElement != null) {
-                List<? extends AnnotationMirror> vtType = vtElement.asType().getAnnotationMirrors();
-                declCoType = atypeFactory.getCoType(vtType);
-              }
-            }
-            if (declCoType == CollectionOwnershipType.NotOwningCollection) {
-              replaceInStores(res, lhsJE, atypeFactory.NOTOWNINGCOLLECTION);
-            } else {
-              replaceInStores(res, rhsJE, atypeFactory.NOTOWNINGCOLLECTION);
-            }
+            replaceInStores(
+                res,
+                hasExplicitNotOwningCollectionDeclaration(node) ? lhsJE : rhsJE,
+                atypeFactory.NOTOWNINGCOLLECTION);
           }
           break;
         default:
@@ -117,8 +110,7 @@ public class CollectionOwnershipTransfer
    * elements of some collection.
    *
    * @param res the incoming transfer result
-   * @param tree the AST tree that is possibly the loop condition for a
-   *     collection-obligation-fulfilling loop
+   * @param tree the AST tree that may represent a verified fulfilling-loop condition
    * @return the resulting transfer result
    */
   private TransferResult<CFValue, CollectionOwnershipStore>
@@ -145,6 +137,30 @@ public class CollectionOwnershipTransfer
       }
     }
     return res;
+  }
+
+  /**
+   * Returns whether the given assignment is a variable declaration whose declared type is
+   * explicitly {@code @NotOwningCollection}.
+   *
+   * <p>Such a declaration initializes a non-owning alias at the lhs instead of consuming ownership
+   * from the rhs expression.
+   *
+   * @param node an assignment node
+   * @return true if the assignment is a variable declaration with declared type
+   *     {@code @NotOwningCollection}
+   */
+  private boolean hasExplicitNotOwningCollectionDeclaration(AssignmentNode node) {
+    if (!(node.getTree() instanceof VariableTree)) {
+      return false;
+    }
+    VariableTree variableTree = (VariableTree) node.getTree();
+    VariableElement declaredElement = TreeUtils.elementFromDeclaration(variableTree);
+    if (declaredElement == null) {
+      return false;
+    }
+    List<? extends AnnotationMirror> declaredType = declaredElement.asType().getAnnotationMirrors();
+    return atypeFactory.getCoType(declaredType) == CollectionOwnershipType.NotOwningCollection;
   }
 
   @Override

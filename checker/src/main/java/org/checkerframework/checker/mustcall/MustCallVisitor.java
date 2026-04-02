@@ -4,7 +4,6 @@ import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.BlockTree;
-import com.sun.source.tree.BreakTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.EnhancedForLoopTree;
@@ -384,6 +383,14 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
     return super.visitWhileLoop(tree, p);
   }
 
+  /**
+   * Performs AST-only matching for enhanced-for-loops that may fulfill collection obligations.
+   *
+   * <p>The visitor records only the loop tree here. RLCC resolves the desugared iterator CFG shape
+   * later during post-analysis of the enclosing method.
+   *
+   * @param tree the enhanced-for-loop to inspect
+   */
   @Override
   public Void visitEnhancedForLoop(EnhancedForLoopTree tree, Void p) {
     detectPotentiallyFulfillingEnhancedForLoop(tree);
@@ -403,21 +410,22 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
     if (enclosingMethodTree == null) {
       return;
     }
-
     ExpressionTree collectionTree = collectionTreeFromExpression(tree.getExpression());
     if (collectionTree == null) {
       return;
     }
-
     if (!ResourceLeakUtils.getCollectionOwnershipAnnotatedTypeFactory(atypeFactory)
         .isResourceCollection(collectionTree)) {
       return;
     }
-
     atypeFactory.recordPotentiallyFulfillingEnhancedForLoop(enclosingMethodTree, tree);
   }
 
-  /** Condition-kind -> allowed extraction methods. */
+  /**
+   * Description of an accepted while-loop header form.
+   *
+   * <p>Each header form determines which extraction methods are allowed in the loop body.
+   */
   private static final class WhileSpec {
     final Set<String> extractMethods;
 
@@ -444,11 +452,16 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
                   "removeFirst",
                   "removeLast",
                   // Stack
-                  "pop"
-                  // If you want more later, add "getFirst"/"getLast" only if you also
-                  // guard soundness (they don't remove elements)
-                  )));
+                  "pop")));
 
+  /**
+   * AST facts recovered from a matched while-loop header.
+   *
+   * <p>{@link #collectionTree} is the collection whose element obligations may be discharged.
+   * {@link #headerVar} is the iterator or collection variable constrained by the header. {@link
+   * #collectionVarNameForBailout} names the collection variable whose writes should invalidate the
+   * match when present.
+   */
   private static final class WhileHeaderMatch {
     final ExpressionTree collectionTree; // the owning collection expression to mark
     final @Nullable Name collectionVarNameForBailout; // for writes/bailouts
@@ -467,46 +480,51 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
     }
   }
 
+  /**
+   * Records a while-loop that may fulfill collection obligations.
+   *
+   * <p>This method performs AST matching plus the small amount of CFG lookup needed to identify the
+   * condition block, the conditional successor, the body entry block, and the extracted element
+   * node. RLCC resolves the remaining CFG-local fact, the loop update block, later during
+   * post-analysis.
+   *
+   * <p>Supported header shapes are iterator loops such as {@code while (it.hasNext())} and
+   * non-empty collection loops such as {@code while (!q.isEmpty())}, {@code while (q.size() > 0)},
+   * and {@code while (0 < q.size())}.
+   *
+   * @param tree the while-loop to inspect
+   */
   private void detectCollectionObligationFulfillingWhileLoop(WhileLoopTree tree) {
     MethodTree enclosingMethodTree = getEnclosingMethodForCollectionLoop();
     if (enclosingMethodTree == null) {
       return;
     }
-
     // 1) Match header
     ExpressionTree condNoParens = TreeUtils.withoutParens(tree.getCondition());
     WhileHeaderMatch header = matchWhileHeader(condNoParens);
     if (header == null) {
       return;
     }
-
-    // 2) Extract body statements
-    List<? extends StatementTree> bodyStmts;
-    if (tree.getStatement() instanceof BlockTree) {
-      bodyStmts = ((BlockTree) tree.getStatement()).getStatements();
-    } else if (tree.getStatement() != null) {
-      bodyStmts = Collections.singletonList(tree.getStatement());
-    } else {
+    // 2) Extract body statements.
+    List<? extends StatementTree> bodyStatements = getLoopBodyStatements(tree.getStatement());
+    if (bodyStatements == null) {
       return;
     }
-
-    // 3) Find exactly one extraction call in the body (soundness)
+    // 3) Find exactly one extraction call in the body to be sound.
     BodyExtraction extraction =
         findSingleExtractionInWhileBody(
-            bodyStmts,
+            bodyStatements,
             header.headerVar,
             header.collectionVarNameForBailout,
             header.spec.extractMethods);
     if (extraction == null) {
       return;
     }
-
-    // Resolve CFG-local metadata *now* (except loopUpdateBlock).
+    // Resolve CFG-local metadata (except loopUpdateBlock).
     Block condBlock = firstBlockForTree(condNoParens);
     if (condBlock == null) {
       return;
     }
-
     // Find the ConditionalBlock that branches on the while condition.
     ConditionalBlock cblock = findConditionalSuccessor(condBlock);
     if (cblock == null) {
@@ -514,7 +532,6 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
       Block peeled = peelExceptionBlocksToPred(condBlock);
       if (peeled != null) {
         cblock = findConditionalSuccessor(peeled);
-        condBlock = peeled;
       }
     }
     if (cblock == null) {
@@ -531,15 +548,14 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
 
     // 4) Record a potentially fulfilling collection loop.
     //
-    // We store:
+    // Store:
     //   - collectionTree (resources / q / s)
     //   - collectionElementTree (it.next() / q.poll() / s.pop())
     //   - condition tree (the while condition)
-    //
     atypeFactory.recordPotentiallyFulfillingCollectionLoop(
         enclosingMethodTree,
         header.collectionTree,
-        extraction.extractionCall, // IMPORTANT: element is the extraction call tree
+        extraction.extractionCall,
         condNoParens,
         loopBodyEntryBlock,
         cblock,
@@ -563,8 +579,30 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
     return null;
   }
 
-  private @Nullable Block firstBlockForTree(Tree t) {
-    Set<Node> nodes = atypeFactory.getNodesForTree(t);
+  /**
+   * Returns the statements in a loop body, regardless of whether the body is a block.
+   *
+   * @param statement the loop body statement
+   * @return the loop body statements, or {@code null} if {@code statement} is {@code null}
+   */
+  private @Nullable List<? extends StatementTree> getLoopBodyStatements(
+      @Nullable StatementTree statement) {
+    if (statement == null) {
+      return null;
+    }
+    return statement instanceof BlockTree
+        ? ((BlockTree) statement).getStatements()
+        : Collections.singletonList(statement);
+  }
+
+  /**
+   * Returns the first CFG block associated with the given tree.
+   *
+   * @param tree a tree
+   * @return the first CFG block associated with {@code tree}, or {@code null} if none is known
+   */
+  private @Nullable Block firstBlockForTree(Tree tree) {
+    Set<Node> nodes = atypeFactory.getNodesForTree(tree);
     if (nodes == null || nodes.isEmpty()) {
       return null;
     }
@@ -577,22 +615,34 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
     return null;
   }
 
-  private @Nullable Node anyNodeForTree(Tree t) {
-    Set<Node> nodes = atypeFactory.getNodesForTree(t);
+  /**
+   * Returns an arbitrary CFG node associated with the given tree.
+   *
+   * @param tree a tree
+   * @return a CFG node associated with {@code tree}, or {@code null} if none is known
+   */
+  private @Nullable Node anyNodeForTree(Tree tree) {
+    Set<Node> nodes = atypeFactory.getNodesForTree(tree);
     if (nodes == null || nodes.isEmpty()) {
       return null;
     }
     return nodes.iterator().next();
   }
 
-  private @Nullable ConditionalBlock findConditionalSuccessor(Block b) {
-    for (Block succ : b.getSuccessors()) {
+  /**
+   * Returns the conditional successor reached from the given block, if one is immediately visible.
+   *
+   * @param block a CFG block
+   * @return the conditional successor of {@code block}, or {@code null} if none is found
+   */
+  private @Nullable ConditionalBlock findConditionalSuccessor(Block block) {
+    for (Block succ : block.getSuccessors()) {
       if (succ instanceof ConditionalBlock) {
         return (ConditionalBlock) succ;
       }
     }
-    if (b instanceof SingleSuccessorBlock) {
-      Block succ = ((SingleSuccessorBlock) b).getSuccessor();
+    if (block instanceof SingleSuccessorBlock) {
+      Block succ = ((SingleSuccessorBlock) block).getSuccessor();
       if (succ instanceof ConditionalBlock) {
         return (ConditionalBlock) succ;
       }
@@ -600,8 +650,18 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
     return null;
   }
 
-  private @Nullable Block peelExceptionBlocksToPred(Block b) {
-    Block cur = b;
+  /**
+   * Walks backward through exception blocks to recover the predecessor block that leads to the
+   * actual loop conditional.
+   *
+   * <p>This is needed because loop conditions such as {@code iterator.hasNext()} may be represented
+   * by exception blocks before reaching the conditional branch.
+   *
+   * @param block a CFG block
+   * @return a predecessor block to retry from, or {@code null} if no such block is found
+   */
+  private @Nullable Block peelExceptionBlocksToPred(Block block) {
+    Block cur = block;
     Set<Block> visitedBlocks = new HashSet<>();
     while (cur instanceof ExceptionBlock && visitedBlocks.add(cur)) {
       Set<Block> preds = cur.getPredecessors();
@@ -617,6 +677,15 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
     return cur;
   }
 
+  /**
+   * Matches supported while-loop header forms and returns the recovered loop facts.
+   *
+   * <p>Supported forms are: {@code while (it.hasNext())}, {@code while (!c.isEmpty())}, {@code
+   * while (c.size() > 0)}, and {@code while (0 < c.size())}.
+   *
+   * @param cond the while-loop condition with parentheses removed
+   * @return the recovered header facts, or {@code null} if the header is unsupported
+   */
   private @Nullable WhileHeaderMatch matchWhileHeader(ExpressionTree cond) {
     // Case A: while (it.hasNext())
     if (cond instanceof MethodInvocationTree) {
@@ -656,6 +725,12 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
     return null;
   }
 
+  /**
+   * Matches a non-empty collection condition of the form {@code !c.isEmpty()}.
+   *
+   * @param inner the expression under the logical complement
+   * @return the recovered header facts, or {@code null} if the expression does not match
+   */
   private @Nullable WhileHeaderMatch matchNonEmptyFromExpr(ExpressionTree inner) {
     if (!(inner instanceof MethodInvocationTree)) {
       return null;
@@ -668,33 +743,36 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
     if (recv == null) {
       return null;
     }
-
     Name varName = getNameFromExpressionTree(recv);
     if (varName == null) {
       return null;
     }
-
     Element recvElt = TreeUtils.elementFromTree(recv);
     if (!ResourceLeakUtils.isCollection(recvElt, atypeFactory)) {
       return null;
     }
-
     ExpressionTree colTree = collectionTreeFromExpression(recv);
     if (colTree == null) {
       return null;
     }
-
     return new WhileHeaderMatch(colTree, varName, varName, NONEMPTY_SPEC);
   }
 
-  private @Nullable WhileHeaderMatch matchNonEmptyFromSize(BinaryTree bt) {
-    Tree.Kind k = bt.getKind();
+  /**
+   * Matches a non-empty collection condition of the form {@code c.size() > 0} or {@code 0 <
+   * c.size()}.
+   *
+   * @param condition the binary condition
+   * @return the recovered header facts, or {@code null} if the expression does not match
+   */
+  private @Nullable WhileHeaderMatch matchNonEmptyFromSize(BinaryTree condition) {
+    Tree.Kind k = condition.getKind();
     if (k != Tree.Kind.GREATER_THAN && k != Tree.Kind.LESS_THAN) {
       return null;
     }
 
-    ExpressionTree left = TreeUtils.withoutParens(bt.getLeftOperand());
-    ExpressionTree right = TreeUtils.withoutParens(bt.getRightOperand());
+    ExpressionTree left = TreeUtils.withoutParens(condition.getLeftOperand());
+    ExpressionTree right = TreeUtils.withoutParens(condition.getRightOperand());
 
     // Normalize: accept "c.size() > 0" or "0 < c.size()"
     MethodInvocationTree sizeCall = null;
@@ -746,30 +824,51 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
     return new WhileHeaderMatch(colTree, varName, varName, NONEMPTY_SPEC);
   }
 
-  private boolean isIsEmptyCall(MethodInvocationTree mit) {
-    ExpressionTree sel = mit.getMethodSelect();
+  /**
+   * Returns whether the given invocation is an {@code isEmpty()} call with no arguments.
+   *
+   * @param invocation a method invocation
+   * @return true if {@code invocation} is an {@code isEmpty()} call with no arguments
+   */
+  private boolean isIsEmptyCall(MethodInvocationTree invocation) {
+    ExpressionTree sel = invocation.getMethodSelect();
     if (!(sel instanceof MemberSelectTree)) {
       return false;
     }
     MemberSelectTree ms = (MemberSelectTree) sel;
-    return ms.getIdentifier().contentEquals("isEmpty") && mit.getArguments().isEmpty();
+    return ms.getIdentifier().contentEquals("isEmpty") && invocation.getArguments().isEmpty();
   }
 
-  private @Nullable ExpressionTree receiverOfInvocation(MethodInvocationTree mit) {
-    ExpressionTree sel = mit.getMethodSelect();
+  /**
+   * Returns the explicit receiver of the given invocation, if present.
+   *
+   * @param invocation a method invocation
+   * @return the explicit receiver, or {@code null} if none exists
+   */
+  private @Nullable ExpressionTree receiverOfInvocation(MethodInvocationTree invocation) {
+    ExpressionTree sel = invocation.getMethodSelect();
     if (sel instanceof MemberSelectTree) {
       return ((MemberSelectTree) sel).getExpression();
     }
     return null;
   }
 
-  /** Recover "col" from: Iterator<T> it = col.iterator(); while (it.hasNext()) { ... } */
-  private @Nullable ExpressionTree recoverCollectionFromIteratorReceiver(ExpressionTree itExpr) {
-    if (itExpr == null) {
+  /**
+   * Recovers the collection expression from an iterator receiver in a header such as {@code while
+   * (it.hasNext())}.
+   *
+   * <p>This only recognizes local iterator variables initialized by {@code col.iterator()}.
+   *
+   * @param iteratorExpr the iterator receiver expression
+   * @return the collection expression, or {@code null} if it cannot be recovered
+   */
+  private @Nullable ExpressionTree recoverCollectionFromIteratorReceiver(
+      ExpressionTree iteratorExpr) {
+    if (iteratorExpr == null) {
       return null;
     }
 
-    Element itElt = TreeUtils.elementFromTree(itExpr);
+    Element itElt = TreeUtils.elementFromTree(iteratorExpr);
     if (!(itElt instanceof VariableElement)) {
       return null;
     }
@@ -809,6 +908,12 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
     return collectionTreeFromExpression(colExpr);
   }
 
+  /**
+   * One extracted element use recovered from a while-loop body.
+   *
+   * <p>The extraction call is the expression that removes or advances to the next element, such as
+   * {@code it.next()}, {@code q.poll()}, or {@code s.pop()}.
+   */
   private static final class BodyExtraction {
     final MethodInvocationTree extractionCall; // it.next()/q.poll()/s.pop()
 
@@ -818,10 +923,18 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
   }
 
   /**
-   * Finds exactly one extraction in the loop body. If 0 or >1 extractions occur, returns null
-   * (conservative/sound).
+   * Finds exactly one extraction in the loop body. If 0 or >1 extractions occur, returns {@code
+   * null}.
    *
-   * <p>Also rejects break/return and writes to iterator/collection vars.
+   * <p>This matcher rejects writes to the iterator/header variable and, when present, to the
+   * collection variable itself, because such writes invalidate the header/body correspondence used
+   * by later CFG verification.
+   *
+   * @param statements the loop body statements
+   * @param headerVar the iterator or collection variable constrained by the header
+   * @param collectionVarName the collection variable to protect from writes, if any
+   * @param allowedExtractMethods the extraction methods allowed by the matched header
+   * @return the unique extraction in the loop body, or {@code null} if the body is unsupported
    */
   private @Nullable BodyExtraction findSingleExtractionInWhileBody(
       List<? extends StatementTree> statements,
@@ -861,18 +974,6 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
               return;
             }
             extraction[0] = mit;
-          }
-
-          @Override
-          public Void visitBreak(BreakTree node, Void p) {
-            illegal.set(true);
-            return super.visitBreak(node, p);
-          }
-
-          @Override
-          public Void visitReturn(ReturnTree node, Void p) {
-            illegal.set(true);
-            return super.visitReturn(node, p);
           }
 
           @Override
@@ -920,9 +1021,18 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
     return new BodyExtraction(extraction[0]);
   }
 
+  /**
+   * Returns whether the given invocation is an allowed extraction call on the matched header
+   * variable.
+   *
+   * @param invocation a method invocation
+   * @param headerVar the iterator or collection variable constrained by the header
+   * @param allowedExtractMethods extraction methods permitted by the matched header form
+   * @return true if {@code invocation} is an allowed extraction call on {@code headerVar}
+   */
   private boolean isExtractionCallOnHeaderVar(
-      MethodInvocationTree mit, Name headerVar, Set<String> allowedExtractMethods) {
-    ExpressionTree sel = mit.getMethodSelect();
+      MethodInvocationTree invocation, Name headerVar, Set<String> allowedExtractMethods) {
+    ExpressionTree sel = invocation.getMethodSelect();
     if (!(sel instanceof MemberSelectTree)) {
       return false;
     }
@@ -931,7 +1041,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
     if (!allowedExtractMethods.contains(methodName)) {
       return false;
     }
-    if (!mit.getArguments().isEmpty()) {
+    if (!invocation.getArguments().isEmpty()) {
       return false;
     }
     Name recv = getNameFromExpressionTree(ms.getExpression());
@@ -949,12 +1059,9 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
       return;
     }
 
-    List<? extends StatementTree> loopBodyStatementList;
-    if (tree.getStatement() instanceof BlockTree) {
-      BlockTree blockT = (BlockTree) tree.getStatement();
-      loopBodyStatementList = blockT.getStatements();
-    } else {
-      loopBodyStatementList = Collections.singletonList(tree.getStatement());
+    List<? extends StatementTree> loopBodyStatements = getLoopBodyStatements(tree.getStatement());
+    if (loopBodyStatements == null) {
+      return;
     }
     StatementTree init = tree.getInitializer().get(0);
     ExpressionTree condition = TreeUtils.withoutParens(tree.getCondition());
@@ -969,7 +1076,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
       return;
     }
     ExpressionTree collectionElementTree =
-        getLastElementAccessIfLoopValid(loopBodyStatementList, identifierInHeader, iterator);
+        getLastElementAccessIfLoopValid(loopBodyStatements, identifierInHeader, iterator);
     if (collectionElementTree != null) {
       // Pattern match succeeded, now mark the loop in the respective datastructures.
 
@@ -1089,18 +1196,16 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
 
   /**
    * Check that the loop does not contain any writes to the loop iterator variable or to the
-   * collection variable itself, or any return/break statements. Extract the collection access tree
-   * ({@code arr[i]} or {@code collection.get(i)} where {@code i} is the iterator variable and
-   * {@code collection/arr} is consistent with the loop header) and return the last encountered such
-   * tree.
+   * collection variable itself. Extract the collection access tree ({@code arr[i]} or {@code
+   * collection.get(i)} where {@code i} is the iterator variable and {@code collection/arr} is
+   * consistent with the loop header) and return the last encountered such tree.
    *
    * @param statements list of statements of the loop body
    * @param identifierInHeader collection name if loop condition is {@code i < collection.size()} or
    *     {@code i < arr.length} and {@code n} if loop condition is {@code i < n}
    * @param iterator the name of the loop iterator variable
-   * @return null if any writes to loop iterator variable or return/break statements are in {@code
-   *     block}. Else, return the last encountered collection access tree consistent with the loop
-   *     heaer if it exists and else null.
+   * @return {@code null} if the loop body writes to the iterator or collection variable; otherwise
+   *     the last collection element access tree consistent with the loop header, if one exists
    */
   private @Nullable ExpressionTree getLastElementAccessIfLoopValid(
       List<? extends StatementTree> statements, Name identifierInHeader, Name iterator) {
@@ -1142,18 +1247,6 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
             }
 
             return super.visitAssignment(tree, p);
-          }
-
-          @Override
-          public Void visitBreak(BreakTree bt, Void p) {
-            blockIsIllegal.set(true);
-            return super.visitBreak(bt, p);
-          }
-
-          @Override
-          public Void visitReturn(ReturnTree rt, Void p) {
-            blockIsIllegal.set(true);
-            return super.visitReturn(rt, p);
           }
 
           // check whether corresponds to collection.get(i)

@@ -219,15 +219,31 @@ public class MustCallConsistencyAnalyzer {
         ImmutableSet.copyOf(EnumSet.allOf(MethodExitKind.class));
   }
 
-  /** CFG currently being analyzed by analyze(cfg). */
+  /**
+   * CFG currently being analyzed by {@link #analyze(ControlFlowGraph)}.
+   *
+   * <p>This field is initialized at the start of {@code analyze} and is only used by helpers that
+   * reason about whether newly-created obligations can still reach the regular exit.
+   */
   private @Nullable ControlFlowGraph currentCfg = null;
 
   /**
-   * Cached set of blocks that can reach a regular exit block, respecting
-   * getSuccessorsExceptIgnoredExceptions filtering. Computed lazily per CFG, only if needed.
+   * Cached set of blocks that can reach a regular exit block, respecting {@link
+   * #getSuccessorsExceptIgnoredExceptions(Block)} filtering.
+   *
+   * <p>This cache is scoped to {@link #currentCfg}. It is cleared at the start of each top-level
+   * {@link #analyze(ControlFlowGraph)} call and computed lazily only if collection-obligation
+   * reporting needs it.
    */
   private @Nullable Set<Block> blocksThatCanReachRegularExit = null;
 
+  /**
+   * Trees for which collection.obligation.never.enforced has already been reported in the current
+   * CFG analysis.
+   *
+   * <p>This suppresses duplicate diagnostics when the same invocation is visited on multiple
+   * obligation states during the worklist traversal.
+   */
   private final Set<Tree> reportedNeverEnforcedSites = new HashSet<>();
 
   /**
@@ -736,8 +752,10 @@ public class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Ensures blocksThatCanReachRegularExit is computed for currentCfg. Safe to call multiple times;
-   * the computation runs at most once per CFG.
+   * Ensures {@link #blocksThatCanReachRegularExit} has been computed for {@link #currentCfg}.
+   *
+   * <p>This method is idempotent. The expensive reverse-reachability computation runs at most once
+   * per top-level CFG analysis.
    */
   private void ensureBlocksThatCanReachRegularExitComputed() {
     if (blocksThatCanReachRegularExit != null) {
@@ -750,20 +768,35 @@ public class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Returns true iff {@code b} can reach the regular method exit along edges that are not filtered
-   * out by getSuccessorsExceptIgnoredExceptions.
+   * Returns whether {@code block} can reach the regular method exit in the current CFG.
+   *
+   * <p>Reachability is computed with the same filtered exceptional successors used by the main
+   * obligation traversal, so ignored exceptional edges do not make a block count as
+   * regular-exit-reachable.
+   *
+   * @param block the block to query
+   * @return true if {@code block} can reach the regular exit along allowed successor edges
    */
-  private boolean canReachRegularExit(Block b) {
+  private boolean canReachRegularExit(Block block) {
     ensureBlocksThatCanReachRegularExitComputed();
-    return blocksThatCanReachRegularExit != null && blocksThatCanReachRegularExit.contains(b);
+    return blocksThatCanReachRegularExit != null && blocksThatCanReachRegularExit.contains(block);
   }
 
   /**
-   * Computes the set of blocks that can reach the regular exit.
+   * Computes the blocks in {@code cfg} that can reach the regular exit.
    *
-   * <p>Implementation: 1) enumerate reachable blocks (from entry) to avoid weird unreachable junk
-   * 2) seed with the regular exit block, if reachable 3) reverse BFS using predecessors, but only
-   * if the pred->succ edge is one of getSuccessorsExceptIgnoredExceptions(pred)
+   * <p>The computation uses the same filtered exceptional edges as the main analysis:
+   *
+   * <ol>
+   *   <li>Enumerate blocks reachable from the entry block.
+   *   <li>Seed the worklist with the regular exit block, if that block is itself reachable.
+   *   <li>Run a reverse traversal through predecessor edges, but only when the predecessor-to-
+   *       successor edge is one that {@link #getSuccessorsExceptIgnoredExceptions(Block)} would
+   *       follow during forward propagation.
+   * </ol>
+   *
+   * @param cfg the CFG currently being analyzed
+   * @return the set of blocks that can reach the regular exit
    */
   private Set<Block> computeBlocksThatCanReachRegularExit(ControlFlowGraph cfg) {
     Block entry = cfg.getEntryBlock();
@@ -796,12 +829,16 @@ public class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Returns true iff {@code succ} appears among getSuccessorsExceptIgnoredExceptions(pred). This is
-   * the key that keeps backward reachability consistent with your forward traversal.
+   * Returns whether {@code successor} is a forward edge that the analysis would traverse from
+   * {@code predecessor}.
+   *
+   * @param predecessor the source block of the candidate edge
+   * @param successor the target block of the candidate edge
+   * @return true if {@code successor} is an allowed successor of {@code predecessor}
    */
-  private boolean isAllowedSuccessor(Block pred, Block succ) {
-    for (IPair<Block, @Nullable TypeMirror> p : getSuccessorsExceptIgnoredExceptions(pred)) {
-      if (p.first == succ) {
+  private boolean isAllowedSuccessor(Block predecessor, Block successor) {
+    for (IPair<Block, @Nullable TypeMirror> p : getSuccessorsExceptIgnoredExceptions(predecessor)) {
+      if (p.first == successor) {
         return true;
       }
     }
@@ -822,6 +859,10 @@ public class MustCallConsistencyAnalyzer {
    * is tracking non-owning aliases necessary, because by definition they cannot be used to fulfill
    * must-call obligations.
    *
+   * <p>This method also initializes per-CFG state used by helpers that diagnose collection
+   * obligations at their creation sites when those obligations cannot reach the regular method
+   * exit.
+   *
    * @param cfg the control flow graph of the method to check
    */
   // TODO: This analysis is currently implemented directly using a worklist; in the future, it
@@ -829,6 +870,7 @@ public class MustCallConsistencyAnalyzer {
   public void analyze(ControlFlowGraph cfg) {
     this.currentCfg = cfg;
     this.blocksThatCanReachRegularExit = null;
+    this.reportedNeverEnforcedSites.clear();
 
     // The `visited` set contains everything that has been added to the worklist, even if it has
     // not yet been removed and analyzed.
@@ -918,18 +960,8 @@ public class MustCallConsistencyAnalyzer {
                   CollectionObligation.fromTree(receiverNode.getTree(), mustCallMethod));
             }
             if (!mustCallValues.isEmpty()) {
-              // If this call is in a region with no path to the regular method exit, the
-              // obligation will never be enforced.
-              if (!canReachRegularExit(node.getBlock())) {
-                // Deduplication check per call-site tree
-                if (reportedNeverEnforcedSites.add(node.getTree())) {
-                  checker.reportError(
-                      node.getTree(),
-                      "collection.obligation.never.enforced",
-                      mustCallValues.get(0),
-                      receiverNode.getTree().toString());
-                }
-              }
+              reportNeverEnforcedCollectionObligationIfNeeded(
+                  node, mustCallValues.get(0), receiverNode.getTree());
             }
           }
           if (receiverIsOwningField) {
@@ -939,7 +971,7 @@ public class MustCallConsistencyAnalyzer {
               checkEnclosingMethodIsCreatesMustCallFor(receiverNode, enclosingMethodTree);
             }
           }
-          // consume the inserted elements obligation
+          // Transfer the inserted element's obligation to the owning collection receiver.
           consumeInsertedArgumentObligationIfSingleElementInsert(obligations, node);
           break;
         default:
@@ -948,13 +980,37 @@ public class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Models consumption of the inserted element's obligation by the receiver collection for
-   * {@code @CreatesCollectionObligation} calls on owning receivers.
+   * Reports a collection obligation that is created in a region with no path to the regular method
+   * exit.
+   *
+   * <p>Such an obligation will never reach the normal enforcement point in {@link #analyze}, so it
+   * should be diagnosed at the creation site instead of being silently dropped from checking.
+   *
+   * @param node the invocation that creates the collection obligation
+   * @param mustCallMethod one required method of the collection element type, used in the message
+   * @param receiverTree the receiver whose collection obligation is being created
+   */
+  private void reportNeverEnforcedCollectionObligationIfNeeded(
+      MethodInvocationNode node, String mustCallMethod, Tree receiverTree) {
+    if (!canReachRegularExit(node.getBlock()) && reportedNeverEnforcedSites.add(node.getTree())) {
+      checker.reportError(
+          node.getTree(),
+          "collection.obligation.never.enforced",
+          mustCallMethod,
+          receiverTree.toString());
+    }
+  }
+
+  /**
+   * Models transfer of the inserted element's obligation to an owning collection receiver.
    *
    * <p>The inserted argument is identified by {@link
    * CollectionOwnershipAnnotatedTypeFactory#getInsertedArgumentNode(MethodInvocationNode)}. We only
    * consume obligations for single-element inserts, not bulk operations such as {@code addAll} or
    * {@code putAll}.
+   *
+   * @param obligations the currently tracked obligations
+   * @param node the collection-mutating invocation
    */
   private void consumeInsertedArgumentObligationIfSingleElementInsert(
       Set<Obligation> obligations, MethodInvocationNode node) {
@@ -970,8 +1026,8 @@ public class MustCallConsistencyAnalyzer {
       return;
     }
 
-    // Remove any tracked obligations for the inserted value from the caller context:
-    // responsibility is now represented by the collection obligation.
+    // Remove any tracked obligations for the inserted value from the caller context; responsibility
+    // is now represented by the collection obligation on the receiver.
     if (inserted instanceof LocalVariableNode) {
       removeObligationsContainingVar(obligations, (LocalVariableNode) inserted);
       return;
@@ -2037,7 +2093,7 @@ public class MustCallConsistencyAnalyzer {
           coAtf.getCoType(removeCastsAndGetTmpVarIfPresent(lhs), coStore);
       if (lhsCoType == null) {
         if (TreeUtils.isConstructor(enclosingMethodTree)) {
-          // If its in the constructor, it may be the first assignment to the field.
+          // If this is in a constructor, it may be the field's first assignment.
           // TODO: after PR #7050 is merged, use that logic here to determine if first assignment.
           // Treat as first assignment into this.field: ownership transfers into the object.
           // So the constructor should not be forced to discharge the parameter’s obligation.
@@ -2089,7 +2145,6 @@ public class MustCallConsistencyAnalyzer {
               "Field assignment might overwrite field's current value");
           return;
         default:
-          return;
       }
     }
   }
@@ -3424,9 +3479,6 @@ public class MustCallConsistencyAnalyzer {
     }
   }
 
-  // Loop body analysis verifies collection loops that may call required methods on each iterated
-  // element, which can satisfy collection obligations.
-
   /**
    * Analyze the loop body of a CFG-resolved potentially fulfilling collection loop, as determined
    * by a pre-pattern-match in the MustCallVisitor (in the case of a normal for-loop) or by a
@@ -3556,9 +3608,27 @@ public class MustCallConsistencyAnalyzer {
     }
   }
 
+  /**
+   * Computes the loop blocks that are on some filtered path from the loop body entry to the loop
+   * update block.
+   *
+   * <p>The returned set is the intersection of:
+   *
+   * <ul>
+   *   <li>blocks reachable from {@code entry} using {@link
+   *       #getSuccessorsExceptIgnoredExceptions(Block)}, and
+   *   <li>blocks that can reach {@code update} using that same filtered edge relation.
+   * </ul>
+   *
+   * <p>The update block itself is excluded because callers handle that edge separately.
+   *
+   * @param entry the first block in the loop body
+   * @param update the loop update block
+   * @return the loop blocks that stay within the verified loop region
+   */
   private Set<Block> computeLoopRegion(Block entry, Block update) {
     // Forward reachability (using getSuccessorsExceptIgnoredExceptions),
-    // and build the reverse graph *for the same filtered edges*.
+    // and build the reverse graph for the same filtered edges.
     Set<Block> forward = new HashSet<>();
     Map<Block, Set<Block>> allowedPreds = new HashMap<>();
 
@@ -3574,27 +3644,22 @@ public class MustCallConsistencyAnalyzer {
         if (s == null) {
           continue;
         }
-
         // Record filtered predecessor relation for backward traversal.
         allowedPreds.computeIfAbsent(s, k -> new LinkedHashSet<>()).add(b);
-
-        // We allow edges *to* update, but we do not expand beyond update.
+        // Allow edges to update, but we do not expand beyond update.
         if (s == update) {
           continue;
         }
-
         if (forward.add(s)) {
           wl.addLast(s);
         }
       }
     }
-
     // If update isn't even reachable from entry under the filtered edge relation,
-    // region is empty (nothing meaningful to certify).
+    // region is empty.
     if (!forward.contains(update) && !allowedPreds.containsKey(update)) {
       return Collections.emptySet();
     }
-
     // Backward reachability to update, but ONLY using the filtered reverse edges we built.
     Set<Block> forwardPlus = new HashSet<>(forward);
     forwardPlus.add(update);
@@ -3698,7 +3763,7 @@ public class MustCallConsistencyAnalyzer {
       }
     }
     if (!hasAnyLiveAlias) {
-      // all aliases are dead; called methods is bottom
+      // if any alias is not reachable, then./ called methods is bottom
       return null;
     }
 

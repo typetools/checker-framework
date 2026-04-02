@@ -162,9 +162,8 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   /**
    * Records a potentially fulfilling collection loop for the given enclosing method.
    *
-   * <p>If this Must Call factory is part of the Resource Leak Checker hierarchy, then this method
-   * forwards the loop to the RLCCalledMethodsAnnotatedTypeFactory, which retains the per-method
-   * loop state used by RLCC.
+   * <p>If this Must Call factory is not running under the Resource Leak Checker hierarchy, then
+   * this method does nothing.
    *
    * @param enclosingMethodTree the method containing the loop
    * @param collectionTree the collection iterated over by the loop
@@ -199,9 +198,8 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   /**
    * Records a potentially fulfilling enhanced-for-loop for the given enclosing method.
    *
-   * <p>If this Must Call factory is part of the Resource Leak Checker hierarchy, then this method
-   * forwards the loop to the RLCCalledMethodsAnnotatedTypeFactory, which retains the per-method
-   * loop state used by RLCC.
+   * <p>If this Must Call factory is not running under the Resource Leak Checker hierarchy, then
+   * this method does nothing.
    *
    * @param enclosingMethodTree the method containing the loop
    * @param enhancedForLoopTree the enhanced-for-loop tree
@@ -218,9 +216,8 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   /**
    * Records a CFG-resolved potentially fulfilling collection loop for the given enclosing method.
    *
-   * <p>If this Must Call factory is part of the Resource Leak Checker hierarchy, then this method
-   * forwards the loop to the RLCCalledMethodsAnnotatedTypeFactory, which retains the per-method
-   * loop state used by RLCC.
+   * <p>If this Must Call factory is not running under the Resource Leak Checker hierarchy, then
+   * this method does nothing.
    *
    * @param enclosingMethodTree the method containing the loop
    * @param collectionTree the collection iterated over by the loop

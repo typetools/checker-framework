@@ -54,27 +54,27 @@ public class CollectionOwnershipVisitor
 
   @Override
   public Void visitMethodInvocation(MethodInvocationTree tree, Void p) {
-    // Enforce additional policy for collection mutators.
+    // Enforce source-level mutator restrictions before base type-checking.
     enforceCreatesCollectionObligationPolicy(tree);
     return super.visitMethodInvocation(tree, p);
   }
 
   /**
-   * Enforces the "mutations on non-owning collections" policy for methods annotated
-   * {@code @CreatesCollectionObligation}.
+   * Enforces the mutator policy for methods annotated {@code @CreatesCollectionObligation}.
    *
-   * <p>Strategy: a {@code @NotOwningCollection} receiver may only accept an inserted argument that
-   * is definitely non-owning. Owning receivers are allowed; the resource-leak analysis models any
-   * collection obligation they create.
+   * <p>A {@code @NotOwningCollection} receiver may only accept an inserted argument that is
+   * definitely non-owning at the call site. Owning receivers are allowed; the resource-leak
+   * analysis models any collection obligation they create.
    *
-   * <p>Note: we intentionally do not add an index property to @CreatesCollectionObligation yet. We
-   * use a heuristic: the "inserted thing" is the last argument at the call site. TODO: Maybe later
-   * remove this heuristic and require and index on the CreatesCollectionObligation annotation to
-   * determine the inserted element's index.
+   * <p>This visitor only checks instance mutators on resource-collection receivers. The inserted
+   * argument is identified using the current {@code @CreatesCollectionObligation} heuristic in
+   * {@link CollectionOwnershipAnnotatedTypeFactory#getInsertedArgumentTree(MethodInvocationTree)}.
+   *
+   * @param tree the method invocation tree
    */
   private void enforceCreatesCollectionObligationPolicy(MethodInvocationTree tree) {
-    ExecutableElement methodElt = TreeUtils.elementFromUse(tree);
-    if (!atypeFactory.isCreatesCollectionObligationMethod(methodElt)) {
+    ExecutableElement methodElement = TreeUtils.elementFromUse(tree);
+    if (!atypeFactory.isCreatesCollectionObligationMethod(methodElement)) {
       return;
     }
     ExpressionTree receiverTree = TreeUtils.getReceiverTree(tree);
@@ -86,40 +86,48 @@ public class CollectionOwnershipVisitor
       return;
     }
     if (tree.getArguments().isEmpty()) {
-      // No "inserted thing" to validate.
       return;
     }
     CollectionOwnershipStore storeBefore = atypeFactory.getStoreBefore(tree);
-    CollectionOwnershipAnnotatedTypeFactory.CollectionOwnershipType recvType =
+    CollectionOwnershipAnnotatedTypeFactory.CollectionOwnershipType receiverType =
         getCoTypeAtTree(receiverTree, storeBefore);
-    if (recvType == null) {
+    if (receiverType == null) {
       return;
     }
-    ExpressionTree insertedTree = atypeFactory.getInsertedArgumentTree(tree);
-    if (insertedTree == null) {
+    ExpressionTree insertedArgumentTree = atypeFactory.getInsertedArgumentTree(tree);
+    if (insertedArgumentTree == null) {
       return;
     }
     CollectionOwnershipAnnotatedTypeFactory.CollectionMutatorArgumentKind insertedArgumentKind =
-        atypeFactory.getCollectionMutatorArgumentKind(insertedTree);
-    String methodName = methodElt.getSimpleName().toString();
-    switch (recvType) {
+        atypeFactory.getCollectionMutatorArgumentKind(insertedArgumentTree);
+    String methodName = methodElement.getSimpleName().toString();
+    switch (receiverType) {
       case NotOwningCollection:
         if (insertedArgumentKind
             != CollectionOwnershipAnnotatedTypeFactory.CollectionMutatorArgumentKind
                 .DEFINITELY_NON_OWNING) {
           checker.reportError(
-              insertedTree,
+              insertedArgumentTree,
               "illegal.collection.mutator.owning.insert.into.notowning",
               methodName,
-              TreeUtils.toStringTruncated(insertedTree, 60));
+              TreeUtils.toStringTruncated(insertedArgumentTree, 60));
         }
         break;
       default:
-        // Owning receivers are handled by resource-leak analysis; bottom is ignored.
+        // Owning receivers are handled by CO analysis; bottom and other cases are intentionally
+        // ignored here.
     }
   }
 
-  /** Gets the flow-sensitive collection-ownership qualifier for {@code expr}, if available. */
+  /**
+   * Returns the flow-sensitive collection-ownership qualifier for the given expression, if
+   * available.
+   *
+   * @param expr an expression tree
+   * @param storeBefore the store before {@code expr}
+   * @return the flow-sensitive collection-ownership qualifier for {@code expr}, or {@code null} if
+   *     no such qualifier is available
+   */
   private CollectionOwnershipAnnotatedTypeFactory.CollectionOwnershipType getCoTypeAtTree(
       ExpressionTree expr, CollectionOwnershipStore storeBefore) {
     if (storeBefore != null) {
