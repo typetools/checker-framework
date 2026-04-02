@@ -69,6 +69,28 @@ public class Utils {
     res = Integer.compareUnsigned(uint, sint);
 
     res = Integer.compareUnsigned(uint, uint);
+
+    // :: error: [argument]
+    res = Short.compareUnsigned(sshort, sshort);
+
+    // :: error: [argument]
+    res = Short.compareUnsigned(sshort, ushort);
+
+    // :: error: [argument]
+    res = Short.compareUnsigned(ushort, sshort);
+
+    res = Short.compareUnsigned(ushort, ushort);
+
+    // :: error: [argument]
+    res = Short.compareUnsigned(sbyte, sbyte);
+
+    // :: error: [argument]
+    res = Short.compareUnsigned(sbyte, ubyte);
+
+    // :: error: [argument]
+    res = Short.compareUnsigned(ubyte, sbyte);
+
+    res = Short.compareUnsigned(ubyte, ubyte);
   }
 
   public void stringTests(
