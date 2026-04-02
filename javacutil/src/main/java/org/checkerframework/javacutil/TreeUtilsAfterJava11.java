@@ -174,7 +174,7 @@ public class TreeUtilsAfterJava11 {
      * @param constantCaseLabelTree a ConstantCaseLabelTree tree
      * @return the expression in the {@code constantCaseLabelTree}
      * @deprecated use {@link
-     *     TreeUtilsAfterJava17.ConstantCaseLabelUtils#isConstantCaseLabelTree(Tree)}
+     *     TreeUtilsAfterJava17.ConstantCaseLabelUtils#getConstantExpression(Tree)}
      */
     @Deprecated(forRemoval = true, since = "4.0.0")
     public static ExpressionTree getConstantExpression(Tree constantCaseLabelTree) {
@@ -210,7 +210,6 @@ public class TreeUtilsAfterJava11 {
      * @param tree the DeconstructionPatternTree
      * @return the nested patterns of {@code DeconstructionPatternTree}
      * @deprecated {@link TreeUtilsAfterJava17.DeconstructionPatternUtils#getNestedPatterns(Tree)}
-     *     (Tree)}
      */
     @Deprecated(forRemoval = true, since = "4.0.0")
     public static List<? extends Tree> getNestedPatterns(Tree tree) {
