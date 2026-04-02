@@ -219,7 +219,17 @@ def build_checker_framework_release(
     print(f"Copying from: {dev_website_relative_dir}\n  to: {DEV_SITE_DIR}")
     ensure_group_access(dev_website_relative_dir)
     ensure_user_access(dev_website_relative_dir)
-    shutil.copytree(str(dev_website_relative_dir), str(DEV_SITE_DIR), dirs_exist_ok=True)
+    # When run with copy_function=shutil.copy2 (the default), it raises Error if
+    # it cannot set the modification time.  On Unix systems, only the owner or
+    # root (not someone in the group) can set the modification time.  shutil.copy
+    # doesn't preserve modification time, so use it instead of shutil.copy2.
+    # An alternative would be to delete the destination before calling copytree.
+    shutil.copytree(
+        str(dev_website_relative_dir),
+        str(DEV_SITE_DIR),
+        copy_function=shutil.copy,
+        dirs_exist_ok=True,
+    )
 
 
 def commit_to_interm_projects(cf_version: str) -> None:
