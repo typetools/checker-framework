@@ -216,9 +216,6 @@ def build_checker_framework_release(
     build_and_locally_deploy_maven()
 
     dev_website_relative_dir = Path(DEV_SITE_DIR) / "releases" / version
-    print(f"Copying from: {dev_website_relative_dir}\n  to: {DEV_SITE_DIR}")
-    ensure_group_access(dev_website_relative_dir)
-    ensure_user_access(dev_website_relative_dir)
 
     # # This did not work, so do the deletion instead.
     # # When run with copy_function=shutil.copy2 (the default), it raises Error if
@@ -226,13 +223,20 @@ def build_checker_framework_release(
     # # root (not someone in the group) can set the modification time.  shutil.copy
     # # doesn't preserve modification time, so use it instead of shutil.copy2.
     # # An alternative would be to delete the destination before calling copytree.
+    # ensure_group_access(dev_website_relative_dir)
+    # ensure_user_access(dev_website_relative_dir)
     # shutil.copytree(
     #     str(dev_website_relative_dir),
     #     str(DEV_SITE_DIR),
     #     copy_function=shutil.copy,
     #     dirs_exist_ok=True,
     # )
-    shutil.rmtree(DEV_SITE_DIR)
+    print(f"Deleting {DEV_SITE_DIR}")
+    print(f"Copying from: {dev_website_relative_dir}\n  to: {DEV_SITE_DIR}")
+    shutil.copytree(
+         str(dev_website_relative_dir),
+         str(DEV_SITE_DIR)
+     )
 
 
 def commit_to_interm_projects(cf_version: str) -> None:
