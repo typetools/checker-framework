@@ -252,11 +252,7 @@ public class TreeUtilsAfterJava11 {
     }
   }
 
-  /**
-   * Utility methods for accessing {@code SwitchExpressionTree} methods.
-   *
-   * @deprecated use {@link SwitchExpressionTree}
-   */
+  /** Utility methods for accessing {@code SwitchExpressionTree} methods. */
   public static class SwitchExpressionUtils {
 
     /** Don't use. */
