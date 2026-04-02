@@ -2544,18 +2544,6 @@ public final class TreeUtils {
    *
    * @param newClassTree the constructor invocation
    * @return true if the given method invocation is a varargs invocation
-   * @deprecated use {@link #isVarargsCall(NewClassTree)}
-   */
-  @Deprecated(since = "2024-06-04")
-  public static boolean isVarArgs(NewClassTree newClassTree) {
-    return isVarargsCall(newClassTree);
-  }
-
-  /**
-   * Returns true if the given constructor invocation is a varargs invocation.
-   *
-   * @param newClassTree the constructor invocation
-   * @return true if the given method invocation is a varargs invocation
    */
   public static boolean isVarargsCall(NewClassTree newClassTree) {
     return ((JCNewClass) newClassTree).varargsElement != null;
