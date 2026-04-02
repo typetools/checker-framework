@@ -232,7 +232,7 @@ def build_checker_framework_release(
     #     copy_function=shutil.copy,
     #     dirs_exist_ok=True,
     # )
-    os.rmdir(DEV_SITE_DIR)
+    shutil.rmtree(DEV_SITE_DIR)
 
 
 def commit_to_interm_projects(cf_version: str) -> None:
