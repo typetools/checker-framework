@@ -2342,7 +2342,7 @@ public final class TreeUtils {
    * @return true if {@code tree} is a {@code BindingPatternTree}
    * @deprecated Use {@code tree instanceof BindingPatternTree}
    */
-  @Deprecated(forRemoval = true, since = "2026-03-25")
+  @Deprecated(forRemoval = true, since = "4.0.0")
   public static boolean isBindingPatternTree(Tree tree) {
     return tree instanceof BindingPatternTree;
   }
@@ -2411,7 +2411,7 @@ public final class TreeUtils {
    * @return true if the given tree is a yield expression
    * @deprecated Use {@code tree instanceof YieldTree}
    */
-  @Deprecated(forRemoval = true, since = "2026-03-25")
+  @Deprecated(forRemoval = true, since = "4.0.0")
   public static boolean isYield(Tree tree) {
     return tree instanceof YieldTree;
   }
@@ -2556,7 +2556,7 @@ public final class TreeUtils {
    * @return true if the tree is of the kind RECORD
    * @deprecated Use {@link Tree.Kind#RECORD}
    */
-  @Deprecated(forRemoval = true, since = "2026-03-25")
+  @Deprecated(forRemoval = true, since = "4.0.0")
   public static boolean isRecordTree(Tree tree) {
     return tree.getKind() == Tree.Kind.RECORD;
   }
@@ -2570,7 +2570,7 @@ public final class TreeUtils {
    * @return the kind of the tree, but CLASS if the kind was RECORD
    * @deprecated Use {@link Tree.Kind#RECORD}
    */
-  @Deprecated(forRemoval = true, since = "2026-03-25")
+  @Deprecated(forRemoval = true, since = "4.0.0")
   public static Tree.Kind getKindRecordAsClass(Tree tree) {
     if (isRecordTree(tree)) {
       return Tree.Kind.CLASS;

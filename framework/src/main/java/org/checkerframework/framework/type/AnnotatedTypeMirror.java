@@ -375,20 +375,6 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    * hierarchy.
    *
    * @return a set of the annotations on this
-   * @deprecated use {@link #getAnnotations}
-   */
-  @Deprecated(since = "2026-03-28")
-  public AnnotationMirrorSet getEffectiveAnnotations() {
-    return getAnnotations();
-  }
-
-  /**
-   * Returns the "effective" annotations on this type, i.e. the annotations on the type itself, or
-   * on the upper/extends bound of a type variable/wildcard (recursively, until a class type is
-   * reached). If this is fully-annotated, the returned set will contain one annotation per
-   * hierarchy.
-   *
-   * @return a set of the annotations on this
    */
   public AnnotationMirrorSet getAnnotations() {
     AnnotationMirrorSet effectiveAnnotations = getErased().getPrimaryAnnotations();
@@ -530,22 +516,6 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    *
    * @param annoClass annotation class
    * @return the effective annotation with the same class as {@code annoClass}
-   * @deprecated use {@link #getAnnotation(Class)}
-   */
-  @Deprecated(since = "2026-03-28")
-  public @Nullable AnnotationMirror getEffectiveAnnotation(Class<? extends Annotation> annoClass) {
-    return getAnnotation(annoClass);
-  }
-
-  /**
-   * Returns the "effective" annotation on this type with the class {@code annoClass} or {@code
-   * null} if this type does not have one.
-   *
-   * <p>An effective annotation is the annotation on the type itself, or on the upper/extends bound
-   * of a type variable/wildcard (recursively, until a class type is reached).
-   *
-   * @param annoClass annotation class
-   * @return the effective annotation with the same class as {@code annoClass}
    */
   public @Nullable AnnotationMirror getAnnotation(Class<? extends Annotation> annoClass) {
     for (AnnotationMirror annoMirror : getAnnotations()) {
@@ -565,19 +535,6 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    */
   public boolean hasAnnotation(Class<? extends Annotation> a) {
     return getAnnotation(a) != null;
-  }
-
-  /**
-   * A version of {@link #hasPrimaryAnnotation(AnnotationMirror)} that considers annotations on the
-   * upper bound of wildcards and type variables.
-   *
-   * @param a an annotation
-   * @return true if this has an annotation that is the same as the given annotation
-   * @deprecated use {@link #hasAnnotation(AnnotationMirror)}
-   */
-  @Deprecated(since = "2026-03-28")
-  public boolean hasEffectiveAnnotation(AnnotationMirror a) {
-    return hasAnnotation(a);
   }
 
   /**
