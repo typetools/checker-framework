@@ -351,7 +351,7 @@ public final class SignednessUtil {
    * @deprecated use {@link Short#compareUnsigned(short, short)}
    */
   @SuppressWarnings("signedness")
-  @Deprecated(forRemoval = true, since = "2026-03-26")
+  @Deprecated(forRemoval = true, since = "4.0.0")
   public static int compareUnsigned(@Unsigned short x, @Unsigned short y) {
     return Short.compareUnsigned(x, y);
   }
@@ -368,7 +368,7 @@ public final class SignednessUtil {
    * @deprecated use {@link Byte#compareUnsigned(byte, byte)}
    */
   @SuppressWarnings("signedness")
-  @Deprecated(forRemoval = true, since = "2026-03-26")
+  @Deprecated(forRemoval = true, since = "4.0.0")
   public static int compareUnsigned(@Unsigned byte x, @Unsigned byte y) {
     return Integer.compareUnsigned(Byte.toUnsignedInt(x), Byte.toUnsignedInt(y));
   }

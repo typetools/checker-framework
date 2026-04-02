@@ -33,22 +33,6 @@ public class JVMNames {
    * but I couldn't find it.
    *
    * @param methodTree the tree to convert
-   * @return a String signature of methodTree in jvml format
-   * @deprecated use {@link #getJVMMethodSignature(MethodTree)}
-   */
-  @Deprecated
-  @InlineMe(
-      replacement = "JVMNames.getJVMMethodSignature(methodTree)",
-      imports = "org.checkerframework.afu.scenelib.util.JVMNames")
-  public static String getJVMMethodName(MethodTree methodTree) {
-    return getJVMMethodSignature(methodTree);
-  }
-
-  /**
-   * Converts a MethodTree into a JVML format method signature. There is probably an API to do this,
-   * but I couldn't find it.
-   *
-   * @param methodTree the tree to convert
    * @return a String signature of methodTree in JVML format
    */
   public static String getJVMMethodSignature(MethodTree methodTree) {

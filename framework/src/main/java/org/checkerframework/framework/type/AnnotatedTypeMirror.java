@@ -300,22 +300,6 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    *
    * @param annotation an annotation in the qualifier hierarchy to check for
    * @return an annotation from the same hierarchy as {@code annotation} if present
-   * @deprecated use {@link #getAnnotationInHierarchy}
-   */
-  @Deprecated(since = "2026-03-28")
-  public @Nullable AnnotationMirror getEffectiveAnnotationInHierarchy(AnnotationMirror annotation) {
-    return getAnnotationInHierarchy(annotation);
-  }
-
-  /**
-   * Returns the "effective" annotation from the same hierarchy as {@code annotation}, otherwise
-   * returns {@code null}.
-   *
-   * <p>An effective annotation is the annotation on the type itself, or on the upper/extends bound
-   * of a type variable/wildcard (recursively, until a class type is reached).
-   *
-   * @param annotation an annotation in the qualifier hierarchy to check for
-   * @return an annotation from the same hierarchy as {@code annotation} if present
    */
   public @Nullable AnnotationMirror getAnnotationInHierarchy(AnnotationMirror annotation) {
     annotation = atypeFactory.canonicalAnnotation(annotation);
@@ -391,20 +375,6 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    * hierarchy.
    *
    * @return a set of the annotations on this
-   * @deprecated use {@link #getAnnotations}
-   */
-  @Deprecated(since = "2026-03-28")
-  public AnnotationMirrorSet getEffectiveAnnotations() {
-    return getAnnotations();
-  }
-
-  /**
-   * Returns the "effective" annotations on this type, i.e. the annotations on the type itself, or
-   * on the upper/extends bound of a type variable/wildcard (recursively, until a class type is
-   * reached). If this is fully-annotated, the returned set will contain one annotation per
-   * hierarchy.
-   *
-   * @return a set of the annotations on this
    */
   public AnnotationMirrorSet getAnnotations() {
     AnnotationMirrorSet effectiveAnnotations = getErased().getPrimaryAnnotations();
@@ -414,22 +384,6 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
     //                + atypeFactory.qualHierarchy.getWidth() + " but is "
     //                + effectiveAnnotations.size() + ". Type: " + this;
     return effectiveAnnotations;
-  }
-
-  /**
-   * Returns the single "effective" annotation on this type, i.e. the annotations on the type
-   * itself, or on the upper/extends bound of a type variable/wildcard (recursively, until a class
-   * type is reached). If this is fully-annotated, this method will not return {@code null}
-   *
-   * <p>This method requires that there is only a single hierarchy. Therefore, it is equivalent to
-   * {@link #getAnnotationInHierarchy(AnnotationMirror)}.
-   *
-   * @return a set of the annotations on this
-   * @deprecated use {@link #getAnnotation()}
-   */
-  @Deprecated(since = "2026-03-28")
-  public final AnnotationMirror getEffectiveAnnotation() {
-    return getAnnotation();
   }
 
   /**
@@ -562,22 +516,6 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    *
    * @param annoClass annotation class
    * @return the effective annotation with the same class as {@code annoClass}
-   * @deprecated use {@link #getAnnotation(Class)}
-   */
-  @Deprecated(since = "2026-03-28")
-  public @Nullable AnnotationMirror getEffectiveAnnotation(Class<? extends Annotation> annoClass) {
-    return getAnnotation(annoClass);
-  }
-
-  /**
-   * Returns the "effective" annotation on this type with the class {@code annoClass} or {@code
-   * null} if this type does not have one.
-   *
-   * <p>An effective annotation is the annotation on the type itself, or on the upper/extends bound
-   * of a type variable/wildcard (recursively, until a class type is reached).
-   *
-   * @param annoClass annotation class
-   * @return the effective annotation with the same class as {@code annoClass}
    */
   public @Nullable AnnotationMirror getAnnotation(Class<? extends Annotation> annoClass) {
     for (AnnotationMirror annoMirror : getAnnotations()) {
@@ -594,35 +532,9 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    *
    * @param a an annotation class
    * @return true if this has an annotation of the given class
-   * @deprecated use {@link #hasAnnotation(Class)}
-   */
-  @Deprecated(since = "2026-03-28")
-  public boolean hasEffectiveAnnotation(Class<? extends Annotation> a) {
-    return hasAnnotation(a);
-  }
-
-  /**
-   * A version of {@link #hasPrimaryAnnotation(Class)} that considers annotations on the upper bound
-   * of wildcards and type variables.
-   *
-   * @param a an annotation class
-   * @return true if this has an annotation of the given class
    */
   public boolean hasAnnotation(Class<? extends Annotation> a) {
     return getAnnotation(a) != null;
-  }
-
-  /**
-   * A version of {@link #hasPrimaryAnnotation(AnnotationMirror)} that considers annotations on the
-   * upper bound of wildcards and type variables.
-   *
-   * @param a an annotation
-   * @return true if this has an annotation that is the same as the given annotation
-   * @deprecated use {@link #hasAnnotation(AnnotationMirror)}
-   */
-  @Deprecated(since = "2026-03-28")
-  public boolean hasEffectiveAnnotation(AnnotationMirror a) {
-    return hasAnnotation(a);
   }
 
   /**
@@ -670,19 +582,6 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    */
   public boolean hasPrimaryAnnotationRelaxed(AnnotationMirror a) {
     return AnnotationUtils.containsSameByName(primaryAnnotations, a);
-  }
-
-  /**
-   * A version of {@link #hasPrimaryAnnotationRelaxed(AnnotationMirror)} that considers annotations
-   * on the upper bound of wildcards and type variables.
-   *
-   * @param a an annotation class
-   * @return true if this has an annotation that is the same as the given annotation
-   * @deprecated use {@link #hasAnnotationRelaxed}
-   */
-  @Deprecated(since = "2026-03-28")
-  public boolean hasEffectiveAnnotationRelaxed(AnnotationMirror a) {
-    return hasAnnotationRelaxed(a);
   }
 
   /**
@@ -1400,10 +1299,12 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
      *
      * @deprecated add to the appropriate component
      */
-    @Deprecated(forRemoval = false)
+    @Deprecated(forRemoval = false) // deprecated to catch some calls at compile time
     @Override
     public void addAnnotation(AnnotationMirror annotation) {
-      assert false : "AnnotatedExecutableType.addAnnotation should never be called";
+      throw new BugInCF(
+          "AnnotatedExecutableType.addAnnotation should never be called. this=%s, annotation=%s",
+          this, annotation);
     }
 
     /**

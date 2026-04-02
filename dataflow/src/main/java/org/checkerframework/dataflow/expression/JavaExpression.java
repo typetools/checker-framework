@@ -170,7 +170,7 @@ public abstract class JavaExpression {
    * body.
    *
    * <p>This is false for local variables, the self reference, final field accesses whose receiver
-   * is {@link #isAssignableByOtherCode}, and operations whose operands are all not {@link
+   * is not {@link #isAssignableByOtherCode}, and operations whose operands are all not {@link
    * #isModifiableByOtherCode}.
    *
    * @return true if some subexpression of this can be assigned to from outside the current method
