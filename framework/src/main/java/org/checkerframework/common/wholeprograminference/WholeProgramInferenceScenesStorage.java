@@ -601,7 +601,7 @@ public class WholeProgramInferenceScenesStorage
     updateAtmWithLub(rhsATM, atmFromScene);
     if (lhsATM instanceof AnnotatedTypeVariable) {
       AnnotationMirrorSet upperAnnos =
-          ((AnnotatedTypeVariable) lhsATM).getUpperBound().getEffectiveAnnotations();
+          ((AnnotatedTypeVariable) lhsATM).getUpperBound().getAnnotations();
       // If the inferred type is a subtype of the upper bounds of the
       // current type on the source code, halt.
       if (upperAnnos.size() == rhsATM.getPrimaryAnnotations().size()
@@ -935,8 +935,7 @@ public class WholeProgramInferenceScenesStorage
     // Only update the ATypeElement if there are no explicit annotations.
     if (curATM.getExplicitAnnotations().isEmpty() || !ignoreIfAnnotated) {
       for (AnnotationMirror am : newATM.getPrimaryAnnotations()) {
-        addAnnotationsToATypeElement(
-            newATM, typeToUpdate, defLoc, am, curATM.hasEffectiveAnnotation(am));
+        addAnnotationsToATypeElement(newATM, typeToUpdate, defLoc, am, curATM.hasAnnotation(am));
       }
     } else if (curATM.getKind() == TypeKind.TYPEVAR) {
       // getExplicitAnnotations will be non-empty for type vars whose bounds are explicitly
@@ -949,8 +948,7 @@ public class WholeProgramInferenceScenesStorage
           // in the same hierarchy.
           break;
         }
-        addAnnotationsToATypeElement(
-            newATM, typeToUpdate, defLoc, am, curATM.hasEffectiveAnnotation(am));
+        addAnnotationsToATypeElement(newATM, typeToUpdate, defLoc, am, curATM.hasAnnotation(am));
       }
     }
 

@@ -205,7 +205,7 @@ public class CollectionToArrayHeuristics {
         AnnotatedTypes.asSuper(atypeFactory, receiver, collectionType);
 
     if (collection.getTypeArguments().isEmpty() // raw type
-        || !collection.getTypeArguments().get(0).hasEffectiveAnnotation(atypeFactory.NONNULL)) {
+        || !collection.getTypeArguments().get(0).hasAnnotation(atypeFactory.NONNULL)) {
       return false;
     }
     return true;
