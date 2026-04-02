@@ -414,7 +414,7 @@ public class ResourceLeakUtils {
    */
   public static List<String> getMcValues(
       AnnotatedTypeMirror type, MustCallAnnotatedTypeFactory mcAtf) {
-    AnnotationMirror anno = type.getEffectiveAnnotationInHierarchy(mcAtf.TOP);
+    AnnotationMirror anno = type.getAnnotationInHierarchy(mcAtf.TOP);
     if (anno == null) {
       return Collections.emptyList();
     }

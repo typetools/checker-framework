@@ -303,7 +303,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
               continue;
             }
           }
-          AnnotationMirror mcAnno = typeArg.getEffectiveAnnotationInHierarchy(TOP);
+          AnnotationMirror mcAnno = typeArg.getAnnotationInHierarchy(TOP);
           boolean typeArgIsMcUnknown =
               mcAnno != null
                   && processingEnv
