@@ -1661,10 +1661,10 @@ public class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Returns true if the given assignment is the first write to {@code field} on its path in the
-   * constructor. This method is conservative: it returns {@code false} unless it can prove that the
-   * write is the first. This check runs only for non-final fields because the Java compiler already
-   * forbids reassignment of final fields.
+   * Returns true if the given assignment is the first write to {@code targetField} on its path in
+   * the constructor. This method is conservative: it returns {@code false} unless it can prove that
+   * the write is the first. This check runs only for non-final fields because the Java compiler
+   * already forbids reassignment of final fields.
    *
    * <p>The result is {@code true} only if all the following hold:
    *
@@ -1675,20 +1675,16 @@ public class MustCallConsistencyAnalyzer {
    *       field or a disqualifying side effect before reaching the target assignment.
    * </ul>
    *
-   * <p>Design note: This is an AST-only check and does not reason about control flow or path
-   * feasibility. It intentionally avoids descending into branching and looping constructs (for
-   * example, {@code if}, loops, and {@code switch}). When such constructs appear before the target
-   * assignment, the analysis bails out conservatively rather than making unsound assumptions about
-   * which statements execute.
-   *
    * @param assignment the assignment tree being analyzed, which is a statement in the body of
    *     {@code constructor}
-   * @param field the field being assigned; its type is non-primitive
+   * @param targetField the field assigned by {@code assignment}; its type is non-primitive
    * @param constructor the constructor where the assignment appears
    * @return true if this assignment is the first write during construction
    */
   private boolean isFirstWriteToFieldInConstructor(
-      @FindDistinct Tree assignment, @FindDistinct VariableElement field, MethodTree constructor) {
+      @FindDistinct Tree assignment,
+      @FindDistinct VariableElement targetField,
+      MethodTree constructor) {
     TreePath constructorPath = cmAtf.getPath(constructor);
     if (constructorPath == null) {
       return false;
@@ -1703,7 +1699,7 @@ public class MustCallConsistencyAnalyzer {
       if (member instanceof VariableTree) {
         VariableTree decl = (VariableTree) member;
         VariableElement declElement = TreeUtils.elementFromDeclaration(decl);
-        if (field == declElement
+        if (targetField == declElement
             && decl.getInitializer() != null
             && decl.getInitializer().getKind() != Tree.Kind.NULL_LITERAL) {
           return false;
@@ -1725,7 +1721,7 @@ public class MustCallConsistencyAnalyzer {
               public Void visitAssignment(AssignmentTree assignmentTree, Void unused) {
                 ExpressionTree lhs = assignmentTree.getVariable();
                 Element lhsElement = TreeUtils.elementFromTree(lhs);
-                if (field == lhsElement) {
+                if (targetField == lhsElement) {
                   isInitialized.set(true);
                   return null;
                 }
@@ -1760,8 +1756,8 @@ public class MustCallConsistencyAnalyzer {
 
     // (3): Single-pass conservative scan of the constructor body in source order.
     FirstWriteScanResult r =
-        scanStraightLinePrefix(constructor.getBody().getStatements(), assignment, field, cmAtf);
-    return r == FirstWriteScanResult.FOUND;
+        scanForFirstWrite(constructor.getBody().getStatements(), assignment, targetField, cmAtf);
+    return r == FirstWriteScanResult.FIRST_ASSIGNMENT;
   }
 
   /**
@@ -2700,73 +2696,60 @@ public class MustCallConsistencyAnalyzer {
 
   /** Result of scanning the constructor for the target assignment under the conservative rules. */
   private enum FirstWriteScanResult {
-    /** Found the target assignment before any disqualifying event. */
-    FOUND,
+    /** The target assignment is definitely the first assignment in the scanned region. */
+    FIRST_ASSIGNMENT,
     /**
      * Disqualified by an earlier write, disallowed call/allocation, or unsupported statement form.
      */
-    REJECT,
-    /** Scanned the supported region and did not encounter the target assignment. */
-    NOT_FOUND
+    REASSIGNMENT,
+    /** The target assignment does not occur in the scanned region. */
+    UNASSIGNED
   }
 
   /**
-   * Scans statements in source order.
+   * Scans {@code stmts} in source order to determine whether {@code targetAssignment} is definitely
+   * the first write to {@code targetField} in this constructor fragment.
    *
-   * <p>Definition: the straight-line initialization prefix is the sequence of statements from the
-   * start of a block up to (and including) the target assignment, where each statement is one that
-   * executes in order without introducing branching or looping. This check enforces that definition
-   * syntactically by:
-   *
-   * <ul>
-   *   <li>recursing only into nested blocks and supported try bodies
-   *   <li>treating any other statement form (such as {@code if}, loops, or {@code switch}) as a
-   *       barrier that causes a conservative rejection if the target has not been reached
-   * </ul>
-   *
-   * <p>Supported statement kinds (recursed into):
-   *
-   * <ul>
-   *   <li>{@link ExpressionStatementTree}: scan its expression for assignments/calls
-   *   <li>{@link BlockTree}: recurse into nested statements
-   *   <li>{@link TryTree}: supported only for plain try/catch (no resources, no finally), and only
-   *       when no catch assigns the same field (to avoid path-dependent initialization)
-   * </ul>
-   *
-   * <p>Unsupported statement kinds (barriers): {@code if}, loops, {@code switch}, synchronized, and
-   * any try-with-resources or try-with-finally. Encountering a barrier before reaching the target
-   * assignment yields {@link FirstWriteScanResult#REJECT}.
+   * <p>This helper is conservative and does not model every statement form. Unsupported constructs
+   * are documented inline below and conservatively return {@link
+   * FirstWriteScanResult#REASSIGNMENT}.
    *
    * @param stmts statements to scan in source order
    * @param targetAssignment the assignment under test
-   * @param field the field potentially written by assignments in {@code stmts}
+   * @param targetField the field assigned by {@code targetAssignment}
    * @param cmAtf the factory used for side-effect reasoning
-   * @return {@link FirstWriteScanResult#FOUND} if {@code targetAssignment} is reached before any
-   *     disqualifying event; {@link FirstWriteScanResult#REJECT} if a potential assignment is
-   *     encountered first; otherwise {@link FirstWriteScanResult#NOT_FOUND} if the target
-   *     assignment does not occur in the scanned region
+   * @return {@link FirstWriteScanResult#FIRST_ASSIGNMENT} if {@code targetAssignment} is reached
+   *     before any disqualifying event; {@link FirstWriteScanResult#REASSIGNMENT} if an earlier
+   *     write, disallowed call/allocation, or unsupported statement form prevents proving that;
+   *     otherwise {@link FirstWriteScanResult#UNASSIGNED} if the target assignment does not occur
+   *     in the scanned region
    */
-  private static FirstWriteScanResult scanStraightLinePrefix(
+  private static FirstWriteScanResult scanForFirstWrite(
       List<? extends StatementTree> stmts,
       Tree targetAssignment,
-      VariableElement field,
+      VariableElement targetField,
       RLCCalledMethodsAnnotatedTypeFactory cmAtf) {
     for (StatementTree stmt : stmts) {
       if (stmt instanceof BlockTree) {
+        // Nested blocks preserve source order, so scan them recursively.
         FirstWriteScanResult r =
-            scanStraightLinePrefix(
-                ((BlockTree) stmt).getStatements(), targetAssignment, field, cmAtf);
-        if (r != FirstWriteScanResult.NOT_FOUND) {
+            scanForFirstWrite(
+                ((BlockTree) stmt).getStatements(), targetAssignment, targetField, cmAtf);
+        if (r != FirstWriteScanResult.UNASSIGNED) {
           return r;
         }
         continue;
       }
 
       if (stmt instanceof ExpressionStatementTree) {
+        // Expression statements execute here in source order, so scan the expression subtree.
         FirstWriteScanResult res =
             ConstructorFirstWriteScanner.isFirstWrite(
-                ((ExpressionStatementTree) stmt).getExpression(), targetAssignment, field, cmAtf);
-        if (res != FirstWriteScanResult.NOT_FOUND) {
+                ((ExpressionStatementTree) stmt).getExpression(),
+                targetAssignment,
+                targetField,
+                cmAtf);
+        if (res != FirstWriteScanResult.UNASSIGNED) {
           return res;
         }
         continue;
@@ -2777,8 +2760,8 @@ public class MustCallConsistencyAnalyzer {
         ExpressionTree init = vt.getInitializer();
         if (init != null) {
           FirstWriteScanResult res =
-              ConstructorFirstWriteScanner.isFirstWrite(init, targetAssignment, field, cmAtf);
-          if (res != FirstWriteScanResult.NOT_FOUND) {
+              ConstructorFirstWriteScanner.isFirstWrite(init, targetAssignment, targetField, cmAtf);
+          if (res != FirstWriteScanResult.UNASSIGNED) {
             return res;
           }
         }
@@ -2790,51 +2773,55 @@ public class MustCallConsistencyAnalyzer {
 
         // finally introduces ordering across try/catch that requires CFG reasoning
         if (tryTree.getFinallyBlock() != null) {
-          return FirstWriteScanResult.REJECT;
+          return FirstWriteScanResult.REASSIGNMENT;
         }
 
         // try-with-resources evaluates resource initializers before the try body. Modeling those
         // effects would require extra handling, so reject.
         if (!tryTree.getResources().isEmpty()) {
-          return FirstWriteScanResult.REJECT;
+          return FirstWriteScanResult.REASSIGNMENT;
         }
 
         // If any catch assigns the field, then initialization is path-dependent (try vs catch).
         // Without control-flow reasoning, conservatively reject.
-        if (catchAssignsField(tryTree, field)) {
-          return FirstWriteScanResult.REJECT;
+        if (catchAssignsField(tryTree, targetField)) {
+          return FirstWriteScanResult.REASSIGNMENT;
         }
 
         // Scan the try block body only (catch blocks are exceptional-path-only and not eligible).
         FirstWriteScanResult res =
-            scanStraightLinePrefix(
-                tryTree.getBlock().getStatements(), targetAssignment, field, cmAtf);
-        if (res != FirstWriteScanResult.NOT_FOUND) {
+            scanForFirstWrite(
+                tryTree.getBlock().getStatements(), targetAssignment, targetField, cmAtf);
+        if (res != FirstWriteScanResult.UNASSIGNED) {
           return res;
         }
         continue;
       }
 
-      // Any other statement kind breaks the straight-line prefix (if/loop/switch/etc.).
-      return FirstWriteScanResult.REJECT;
+      // Any other statement kind requires control-flow-aware reasoning that this helper does not
+      // attempt. Loops and switches can repeat or fall through before the target. An `if` could
+      // be handled more precisely by a more path-sensitive implementation, but this AST-only
+      // helper does not distinguish which branch executes, so it conservatively rejects all of
+      // them here.
+      return FirstWriteScanResult.REASSIGNMENT;
     }
 
-    return FirstWriteScanResult.NOT_FOUND;
+    return FirstWriteScanResult.UNASSIGNED;
   }
 
   /**
    * Returns true if any {@code catch} block of {@code tryTree} contains an assignment to {@code
-   * field}.
+   * targetField}.
    *
    * <p>This is used to conservatively reject {@code try/catch} regions where initialization becomes
    * path-dependent (a write may occur in {@code try} on the normal path or in {@code catch} on an
    * exceptional path).
    *
    * @param tryTree the try statement to inspect
-   * @param field the field to check for assignments
-   * @return true if any catch block assigns {@code field}
+   * @param targetField the field to check for assignments
+   * @return true if any catch block assigns {@code targetField}
    */
-  private static boolean catchAssignsField(TryTree tryTree, VariableElement field) {
+  private static boolean catchAssignsField(TryTree tryTree, VariableElement targetField) {
     for (CatchTree ct : tryTree.getCatches()) {
       AtomicBoolean assigns = new AtomicBoolean(false);
       ct.getBlock()
@@ -2843,7 +2830,7 @@ public class MustCallConsistencyAnalyzer {
                 @Override
                 public Void visitAssignment(AssignmentTree node, Void p) {
                   Element lhsEl = TreeUtils.elementFromUse(node.getVariable());
-                  if (field.equals(lhsEl)) {
+                  if (targetField.equals(lhsEl)) {
                     assigns.set(true);
                     return null;
                   }
@@ -2874,25 +2861,27 @@ public class MustCallConsistencyAnalyzer {
     /** The assignment under test within the constructor. */
     private final Tree targetAssignment;
 
-    /** The field potentially written by the assignment. */
-    private final VariableElement field;
+    /** The field assigned by {@code targetAssignment}. */
+    private final VariableElement targetField;
 
     /** The annotated type factory, used for a method's side-effect reasoning. */
     private final RLCCalledMethodsAnnotatedTypeFactory cmAtf;
 
     /**
-     * Creates a scanner that checks if {@code assignment} is the first write to {@code field}
+     * Creates a scanner that checks if {@code assignment} is the first write to {@code targetField}
      * within the current constructor. The scan stops as soon as a decisive result (true/false) is
      * encountered.
      *
      * @param targetAssignment the assignment being analyzed
-     * @param field the field written by that assignment
+     * @param targetField the field written by that assignment
      * @param cmAtf the type factory for side-effect reasoning
      */
     private ConstructorFirstWriteScanner(
-        Tree targetAssignment, VariableElement field, RLCCalledMethodsAnnotatedTypeFactory cmAtf) {
+        Tree targetAssignment,
+        VariableElement targetField,
+        RLCCalledMethodsAnnotatedTypeFactory cmAtf) {
       this.targetAssignment = targetAssignment;
-      this.field = field;
+      this.targetField = targetField;
       this.cmAtf = cmAtf;
     }
 
@@ -2900,40 +2889,40 @@ public class MustCallConsistencyAnalyzer {
      * Scans {@code root} to determine whether {@code targetAssignment} is reached before any
      * disqualifying event within this tree fragment.
      *
-     * <p>This method is conservative and AST-only. It returns {@link FirstWriteScanResult#FOUND} if
-     * the target assignment is encountered before any earlier write to {@code field} or any
-     * potentially side-effecting call/allocation (except {@code super(...)}). It returns {@link
-     * FirstWriteScanResult#REJECT} if a disqualifying event is encountered first. Otherwise, it
-     * returns {@link FirstWriteScanResult#NOT_FOUND} if the target assignment does not appear in
-     * {@code root}.
+     * <p>This method is conservative and AST-only. It returns {@link
+     * FirstWriteScanResult#FIRST_ASSIGNMENT} if the target assignment is encountered before any
+     * earlier write to {@code targetField} or any potentially side-effecting call/allocation
+     * (except {@code super(...)}). It returns {@link FirstWriteScanResult#REASSIGNMENT} if a
+     * disqualifying event is encountered first. Otherwise, it returns {@link
+     * FirstWriteScanResult#UNASSIGNED} if the target assignment does not appear in {@code root}.
      *
      * @param root the statement to scan
      * @param targetAssignment the target assignment
-     * @param field the field being checked
+     * @param targetField the field assigned by {@code targetAssignment}
      * @param cmAtf the factory for side-effect reasoning
      * @return the scan result for {@code root}
      */
     static FirstWriteScanResult isFirstWrite(
         ExpressionTree root,
         Tree targetAssignment,
-        VariableElement field,
+        VariableElement targetField,
         RLCCalledMethodsAnnotatedTypeFactory cmAtf) {
       FirstWriteScanResult r =
-          new ConstructorFirstWriteScanner(targetAssignment, field, cmAtf).scan(root, null);
+          new ConstructorFirstWriteScanner(targetAssignment, targetField, cmAtf).scan(root, null);
       // TreeScanner may return null if the subtree contains no relevant nodes.
-      return r == null ? FirstWriteScanResult.NOT_FOUND : r;
+      return r == null ? FirstWriteScanResult.UNASSIGNED : r;
     }
 
     @Override
     public FirstWriteScanResult visitAssignment(AssignmentTree node, Void p) {
       Element lhsEl = TreeUtils.elementFromUse(node.getVariable());
-      if (field.equals(lhsEl)) {
+      if (targetField.equals(lhsEl)) {
         // Found an assignment to the same field:
-        //   - current assignment → first write → FOUND
-        //   - earlier assignment → not first → REJECT
+        //   - current assignment → first write → FIRST_ASSIGNMENT
+        //   - earlier assignment → not first → REASSIGNMENT
         @SuppressWarnings("interning:not.interned")
         boolean isTarget = node == targetAssignment;
-        return isTarget ? FirstWriteScanResult.FOUND : FirstWriteScanResult.REJECT;
+        return isTarget ? FirstWriteScanResult.FIRST_ASSIGNMENT : FirstWriteScanResult.REASSIGNMENT;
       }
       return super.visitAssignment(node, p);
     }
@@ -2946,7 +2935,7 @@ public class MustCallConsistencyAnalyzer {
           || TreeUtils.isSuperConstructorCall(node)) {
         return super.visitMethodInvocation(node, p);
       }
-      return FirstWriteScanResult.REJECT;
+      return FirstWriteScanResult.REASSIGNMENT;
     }
 
     @Override
@@ -2956,20 +2945,21 @@ public class MustCallConsistencyAnalyzer {
       if (cmAtf.isSideEffectFree(TreeUtils.elementFromUse(node))) {
         return super.visitNewClass(node, p);
       }
-      return FirstWriteScanResult.REJECT;
+      return FirstWriteScanResult.REASSIGNMENT;
     }
 
     @Override
     public FirstWriteScanResult reduce(FirstWriteScanResult r1, FirstWriteScanResult r2) {
-      // Return the first decisive result. REJECT dominates (unsafe earlier write/call), then FOUND
-      // (reached target safely), NOT_FOUND means inconclusive so far.
-      if (r1 == FirstWriteScanResult.REJECT || r2 == FirstWriteScanResult.REJECT) {
-        return FirstWriteScanResult.REJECT;
+      // Return the first decisive result. REASSIGNMENT dominates (unsafe earlier write/call), then
+      // FIRST_ASSIGNMENT (reached target safely), UNASSIGNED means inconclusive so far.
+      if (r1 == FirstWriteScanResult.REASSIGNMENT || r2 == FirstWriteScanResult.REASSIGNMENT) {
+        return FirstWriteScanResult.REASSIGNMENT;
       }
-      if (r1 == FirstWriteScanResult.FOUND || r2 == FirstWriteScanResult.FOUND) {
-        return FirstWriteScanResult.FOUND;
+      if (r1 == FirstWriteScanResult.FIRST_ASSIGNMENT
+          || r2 == FirstWriteScanResult.FIRST_ASSIGNMENT) {
+        return FirstWriteScanResult.FIRST_ASSIGNMENT;
       }
-      return FirstWriteScanResult.NOT_FOUND;
+      return FirstWriteScanResult.UNASSIGNED;
     }
   }
 }
