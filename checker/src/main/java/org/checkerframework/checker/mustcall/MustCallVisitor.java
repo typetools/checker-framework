@@ -427,18 +427,26 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
    * <p>Each header form determines which extraction methods are allowed in the loop body.
    */
   private static final class WhileSpec {
+    /** Methods that may extract an element when this header form is used. */
     final Set<String> extractMethods;
 
+    /**
+     * Creates a while-loop header specification.
+     *
+     * @param extractMethods methods that may extract an element from the looped collection
+     */
     WhileSpec(Set<String> extractMethods) {
       this.extractMethods = extractMethods;
     }
   }
 
-  // Iterator: while (it.hasNext()) { ... it.next() ... }
+  /** Iterator form: {@code while (it.hasNext()) { ... it.next() ... }}. */
   private static final WhileSpec ITERATOR_SPEC = new WhileSpec(Collections.singleton("next"));
 
-  // Queue/Deque/Stack: while (!c.isEmpty()) { ... c.poll()/pop/removeFirst/... ... }
-  // Also size() > 0 / 0 < size()
+  /**
+   * Non-empty collection form: {@code while (!c.isEmpty()) { ... c.poll()/pop/removeFirst/... ...
+   * }}, including {@code size() > 0} and {@code 0 < size()} variants.
+   */
   private static final WhileSpec NONEMPTY_SPEC =
       new WhileSpec(
           new HashSet<>(
@@ -463,11 +471,26 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
    * match when present.
    */
   private static final class WhileHeaderMatch {
-    final ExpressionTree collectionTree; // the owning collection expression to mark
-    final @Nullable Name collectionVarNameForBailout; // for writes/bailouts
-    final Name headerVar; // iterator var (it) OR collection var (q)
+    /** Owning collection expression whose element obligations may be discharged. */
+    final ExpressionTree collectionTree;
+
+    /** Collection variable name whose writes should invalidate the match, if one exists. */
+    final @Nullable Name collectionVarNameForBailout;
+
+    /** Iterator variable or collection variable constrained by the loop header. */
+    final Name headerVar;
+
+    /** Accepted extraction shape for the matched loop header. */
     final WhileSpec spec;
 
+    /**
+     * Creates a summary of the AST facts recovered from a matched while-loop header.
+     *
+     * @param collectionTree the owning collection expression to mark
+     * @param collectionVarNameForBailout collection variable whose writes invalidate the match
+     * @param headerVar iterator or collection variable constrained by the header
+     * @param spec accepted extraction shape for the matched loop header
+     */
     WhileHeaderMatch(
         ExpressionTree collectionTree,
         @Nullable Name collectionVarNameForBailout,
@@ -915,8 +938,14 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
    * {@code it.next()}, {@code q.poll()}, or {@code s.pop()}.
    */
   private static final class BodyExtraction {
-    final MethodInvocationTree extractionCall; // it.next()/q.poll()/s.pop()
+    /** Extraction call such as {@code it.next()}, {@code q.poll()}, or {@code s.pop()}. */
+    final MethodInvocationTree extractionCall;
 
+    /**
+     * Creates a body extraction summary.
+     *
+     * @param extractionCall extraction call found in the loop body
+     */
     BodyExtraction(MethodInvocationTree extractionCall) {
       this.extractionCall = extractionCall;
     }

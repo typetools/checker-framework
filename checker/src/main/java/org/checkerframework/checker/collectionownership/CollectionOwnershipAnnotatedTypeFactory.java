@@ -614,7 +614,10 @@ public class CollectionOwnershipAnnotatedTypeFactory
    * @param coStore the store
    * @return the {@code CollectionOwnershipType} that the given node has in the given store
    */
-  public CollectionOwnershipType getCoType(Node node, CollectionOwnershipStore coStore) {
+  public CollectionOwnershipType getCoType(Node node, @Nullable CollectionOwnershipStore coStore) {
+    if (coStore == null) {
+      return null;
+    }
     JavaExpression jx = JavaExpression.fromNode(node);
     CFValue storeVal;
     try {

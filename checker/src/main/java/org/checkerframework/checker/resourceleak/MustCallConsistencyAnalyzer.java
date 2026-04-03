@@ -838,7 +838,7 @@ public class MustCallConsistencyAnalyzer {
    */
   private boolean isAllowedSuccessor(Block predecessor, Block successor) {
     for (IPair<Block, @Nullable TypeMirror> p : getSuccessorsExceptIgnoredExceptions(predecessor)) {
-      if (p.first == successor) {
+      if (Objects.equals(p.first, successor)) {
         return true;
       }
     }
@@ -3647,7 +3647,7 @@ public class MustCallConsistencyAnalyzer {
         // Record filtered predecessor relation for backward traversal.
         allowedPreds.computeIfAbsent(s, k -> new LinkedHashSet<>()).add(b);
         // Allow edges to update, but we do not expand beyond update.
-        if (s == update) {
+        if (s.equals(update)) {
           continue;
         }
         if (forward.add(s)) {

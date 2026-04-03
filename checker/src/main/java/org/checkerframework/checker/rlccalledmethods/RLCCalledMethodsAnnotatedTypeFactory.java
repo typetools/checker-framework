@@ -177,9 +177,18 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
 
     /** A back edge in the CFG. */
     private static final class BlockEdge {
+      /** Source block of the back edge. */
       final Block sourceBlock;
+
+      /** Target block of the back edge. */
       final Block targetBlock;
 
+      /**
+       * Creates a CFG back edge description.
+       *
+       * @param sourceBlock source block of the back edge
+       * @param targetBlock target block of the back edge
+       */
       BlockEdge(Block sourceBlock, Block targetBlock) {
         this.sourceBlock = sourceBlock;
         this.targetBlock = targetBlock;
@@ -264,7 +273,7 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
       Map<Block, Set<Block>> dominators = new HashMap<>();
 
       for (Block block : reachableBlocks) {
-        if (block == entryBlock) {
+        if (block.equals(entryBlock)) {
           dominators.put(block, new HashSet<>(Collections.singleton(entryBlock)));
         } else {
           dominators.put(block, new HashSet<>(reachableBlocks)); // TOP
@@ -275,7 +284,7 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
       do {
         changed = false;
         for (Block block : reachableBlocks) {
-          if (block == entryBlock) {
+          if (block.equals(entryBlock)) {
             continue;
           }
 
@@ -359,7 +368,7 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
           if (predecessor == null || !reachableBlocks.contains(predecessor)) {
             continue;
           }
-          if (loopBlocks.add(predecessor) && predecessor != targetBlock) {
+          if (loopBlocks.add(predecessor) && !predecessor.equals(targetBlock)) {
             stack.push(predecessor);
           }
         }
@@ -533,6 +542,17 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
         capturedStore);
   }
 
+  /**
+   * Records a while-like collection loop that matched syntactically and still needs CFG resolution.
+   *
+   * @param enclosingMethodTree enclosing method that contains the loop
+   * @param collectionTree collection expression whose elements may be discharged
+   * @param collectionElementTree tree for the element extracted from the collection
+   * @param conditionTree loop condition tree
+   * @param loopBodyEntryBlock first block of the loop body
+   * @param loopConditionalBlock conditional block that controls the loop
+   * @param collectionElementNode CFG node for the extracted collection element
+   */
   public void recordPotentiallyFulfillingCollectionLoop(
       MethodTree enclosingMethodTree,
       ExpressionTree collectionTree,
@@ -553,6 +573,12 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
                 collectionElementNode));
   }
 
+  /**
+   * Records an enhanced-for loop that matched syntactically and still needs CFG resolution.
+   *
+   * @param enclosingMethodTree enclosing method that contains the loop
+   * @param enhancedForLoopTree matched enhanced-for loop
+   */
   public void recordPotentiallyFulfillingEnhancedForLoop(
       MethodTree enclosingMethodTree, EnhancedForLoopTree enhancedForLoopTree) {
     getOrCreateMethodCollectionLoopState(enclosingMethodTree)
@@ -560,6 +586,18 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
         .add(enhancedForLoopTree);
   }
 
+  /**
+   * Records a collection loop whose CFG facts are fully resolved for the consistency analyzer.
+   *
+   * @param enclosingMethodTree enclosing method that contains the loop
+   * @param collectionTree collection expression whose elements may be discharged
+   * @param collectionElementTree tree for the element extracted from the collection
+   * @param conditionTree loop condition tree
+   * @param loopBodyEntryBlock first block of the loop body
+   * @param loopUpdateBlock block that updates the loop state before the next iteration
+   * @param loopConditionalBlock conditional block that controls the loop
+   * @param collectionElementNode CFG node for the extracted collection element
+   */
   public void recordResolvedPotentiallyFulfillingCollectionLoop(
       MethodTree enclosingMethodTree,
       ExpressionTree collectionTree,
