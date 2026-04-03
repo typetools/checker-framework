@@ -222,8 +222,6 @@ def build_checker_framework_release(
     print(f"Deleting target files in {DEV_SITE_DIR}")
     for source in dev_website_relative_dir.iterdir():
         target = Path(DEV_SITE_DIR) / source.name
-        # TODO: Remove this print statement when everything is working.
-        print(f"  deleting {target}")
         if target.is_file():
             target.unlink()
         else:
@@ -233,7 +231,6 @@ def build_checker_framework_release(
     shutil.copytree(
         str(dev_website_relative_dir),
         str(DEV_SITE_DIR),
-        copy_function=shutil.copy,
         dirs_exist_ok=True,
     )
 
