@@ -230,7 +230,15 @@ def build_checker_framework_release(
     #     copy_function=shutil.copy,
     #     dirs_exist_ok=True,
     # )
-    print(f"Deleting {DEV_SITE_DIR}")
+
+    # Do not delete DEV_SITE_DIR because it contains dev_website_relative_dir within it (!).
+    # print(f"Deleting {DEV_SITE_DIR}")
+    # shutil.rmtree(DEV_SITE_DIR)
+    # os.mkdir(DEV_SITE_DIR)
+
+    # Here is another thing to try:
+    # for each file or directory in dev_website_relative_dir, delete the corresponding file in DEV_SITE_DIR.
+
     print(f"Copying from: {dev_website_relative_dir}\n  to: {DEV_SITE_DIR}")
     shutil.copytree(
         str(dev_website_relative_dir),
