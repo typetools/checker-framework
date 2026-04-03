@@ -8,15 +8,9 @@ plugins {
   alias(libs.plugins.net.ltgt.errorprone)
   // https://docs.gradle.org/current/userguide/eclipse_plugin.html
   id("eclipse")
-
-  id("groovy") // needed for formatting Gradle files
-
-  // Code formatting; defines targets "spotlessApply" and "spotlessCheck".
-  // https://github.com/diffplug/spotless/tags ; see tags starting "gradle/"
-  // Only works on JDK 11+ (even including the plugin crashes Gradle on JDK 8);
-  // shell scripts in checker/bin-devel/ ensure spotless isn't called unless
-  // the JDK is 17 or later.
-  alias(libs.plugins.com.diffplug.spotless)
+  // This is a locally built "plugin" that contains the spotless configuration. It is in
+  // buildSrc/src/main/groovy/cf-spotless.gradle.
+  id("cf-spotless")
 }
 apply from: rootProject.file("release.gradle")
 
@@ -51,6 +45,7 @@ ext {
   gradleRunsOnJava21orHigher = JavaVersion.current() >= JavaVersion.VERSION_21
   gradleRunsOnJava22orHigher = JavaVersion.current() >= JavaVersion.VERSION_22
   gradleRunsOnJava24orHigher = JavaVersion.current() >= JavaVersion.VERSION_24
+  gradleRunsOnJava25orHigher = JavaVersion.current() >= JavaVersion.VERSION_25
   // The JDK for running tests: the jdkTestVersion property or if not set, JavaVersion.current()
   if (project.getProperties().containsKey("jdkTestVersion")) {
     testJdkVersion = Integer.valueOf(project.getProperties().get("jdkTestVersion"))
@@ -101,38 +96,6 @@ tasks.register("installGitHooks", Copy) {
   rename("git\\.(.*)", "\$1")
   into(localRepo + "/hooks")
 }
-
-spotless {
-  // Resolve the Spotless plugin dependencies from the buildscript repositories rather than the
-  // project repositories.  That way the spotless plugin does not use the locally built version of
-  // checker-qual as a dependency. Without this, errors like the follow are issued when running
-  // a spotless task without a locally-built version of checker-qual.jar:
-  // Could not determine the dependencies of task ":checker-qual:spotlessCheck'.
-  //  > Could not create task ":checker-qual:spotlessJavaCheck'.
-  //     > Could not create task ":checker-qual:spotlessJava'.
-  //        > File signature can only be created for existing regular files, given:
-  //          .../checker-framework/checker-qual/build/libs/checker-qual-3.25.1-SNAPSHOT.jar
-  predeclareDeps()
-}
-
-spotlessPredeclare {
-  // Put all the formatters that have dependencies here.  Without this, errors like the following
-  // will happen:
-  // Could not determine the dependencies of task ":spotlessCheck'.
-  //  > Could not create task ":spotlessJavaCheck'.
-  //     > Could not create task ":spotlessJava'.
-  //        > Add a step with [com.google.googlejavaformat:google-java-format:1.15.0] into the `spotlessPredeclare` block in the root project.
-  java {
-    googleJavaFormat(libs.google.java.format.get().version)
-  }
-  groovyGradle {
-    greclipse()
-  }
-  groovy {
-    greclipse()
-  }
-}
-
 subprojects { subProject ->
   if (subProject.name.equals("checker")
       || subProject.name.equals("annotation-file-utilities")
@@ -260,150 +223,6 @@ allprojects { currentProj ->
       "--add-opens",
       "jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
     ]
-  }
-
-  apply plugin: "com.diffplug.spotless"
-  // patterns of files to skip for individual sub-projects
-  def perProjectDoNotFormat = [
-    "checker"  : [
-      "bin/.do-like-javac/**",
-      "bin-devel/.git-scripts/**",
-      "bin-devel/.html-tools/**",
-      "bin-devel/.plume-scripts/**",
-      "dist/**",
-      "tests/ainfer-*/annotated/*",
-      "tests/build/**",
-      "tests/calledmethods-delomboked/*",
-      "tests/nullness-javac-errors/*",
-    ],
-    "dataflow" : ["manual/examples/"],
-    "framework": [
-      "tests/build/**",
-      "tests/returnsreceiverdelomboked/*",
-    ],
-  ]
-  spotless {
-    // If you add any formatters to this block that require dependencies, then you must also
-    // add them to the spotlessPredeclare block.
-
-    // Never format files under build/ directory.
-    def doNotFormat = ["build/**"]
-    if (currentProj != project.rootProject) {
-      if (perProjectDoNotFormat.containsKey(currentProj.name)) {
-        doNotFormat += perProjectDoNotFormat[currentProj.name]
-      }
-
-      if (!gradleRunsOnJava17orHigher) {
-        doNotFormat += [
-          "tests/**/java17/",
-          "tests/*record*/"
-        ]
-      }
-      if (!gradleRunsOnJava21orHigher) {
-        doNotFormat += ["tests/**/java21/"]
-      }
-      if (!gradleRunsOnJava22orHigher) {
-        doNotFormat += ["tests/**/java22/"]
-      }
-    }
-
-    format "misc", {
-      // define the files to apply `misc` to
-      target("*.md", "*.tex", ".gitignore")
-      targetExclude(doNotFormat)
-      // define the steps to apply to those files
-      leadingTabsToSpaces(2)
-      trimTrailingWhitespace()
-      // endWithNewline() // Don't want to end empty files with a newline
-    }
-
-    format "make", {
-      // define the files to apply `make` to
-      target("Makefile")
-      targetExclude(doNotFormat)
-      // define the steps to apply to those files
-      trimTrailingWhitespace()
-      endWithNewline() // Don't want to end empty files with a newline
-    }
-
-    java {
-      if (currentProj == currentProj.rootProject) {
-        // format .java files outside of Gradle sub-projects
-        def targets = [
-          "docs/examples",
-          "docs/tutorial",
-          "buildSrc"
-        ]
-        targets = targets.collectMany {
-          [
-            // must call toString() to convert GString to String
-            "${it}/**/*.java".toString(),
-            // Not .ajava files because formatting would remove import statements.
-          ]
-        }
-        target(targets)
-      } else {
-        // not the root project; format all .java files in the sub-project
-        target("**/*.java")
-      }
-      targetExclude(doNotFormat)
-
-      if (project.hasProperty("eisopFormatting")) {
-        googleJavaFormat(libs.google.java.format.get().version).aosp()
-        importOrder("com", "jdk", "lib", "lombok", "org", "java", "javax")
-      } else {
-        googleJavaFormat(libs.google.java.format.get().version) // the formatter to apply to Java files
-      }
-      formatAnnotations()
-    }
-
-    // Only define a groovyGradle task on the root project, for simplicity in setting the target pattern
-    if (currentProj == currentProj.rootProject) {
-      groovyGradle {
-        target("**/*.gradle")
-        targetExclude(doNotFormat)
-        greclipse()  // which formatter Spotless should use to format .gradle files.
-        if (project.hasProperty("eisopFormatting")) {
-          leadingTabsToSpaces(4)
-        } else {
-          leadingTabsToSpaces(2)
-        }
-        trimTrailingWhitespace()
-        // endWithNewline() // Don't want to end empty files with a newline
-      }
-
-      groovy {
-        target("buildSrc/**/*.groovy")
-        importOrder()
-
-        // removes semicolons at the end of lines
-        removeSemicolons()
-        greclipse()
-        leadingTabsToSpaces(2)
-        trimTrailingWhitespace()
-      }
-
-      // Don't do this, because it does not respect "ignore=true" in .editorconfig nor `doNotFormat` here.
-      // shell {
-      //   targetExclude doNotFormat
-      //   shfmt() // configuration is in .editorconfig
-      // }
-    }
-
-    // a useful task for debugging; prints exactly which files are getting formatted by spotless
-    tasks.register("printSpotlessTaskInputs") {
-      doLast {
-        project.tasks.forEach { task ->
-          if (task.name.contains("spotless")) {
-            println("Inputs for task \"${task.name}\":")
-
-            task.inputs.files.each { inputFile ->
-              println("  Input: $inputFile")
-            }
-          }
-        }
-      }
-    }
   }
 
   test {
@@ -728,7 +547,6 @@ tasks.register("zip", Zip) {
         "annotation-file-utilities/bin/**",
         "annotation-file-utilities/dist/**",
         "annotation-file-utilities/LICENSE.txt",
-        "checker/bin/**",
         "checker/dist/**",
         "checker/resources/**",
         "docs/CHANGELOG.md",
@@ -757,6 +575,15 @@ tasks.register("zip", Zip) {
         "docs/examples/MavenExample/README",
         "docs/examples/MavenExample/src/main/java/org/checkerframework/example/MavenExample.java",
         "docs/tutorial/**")
+  }
+
+  from(layout.projectDirectory) {
+    include("checker/bin/**")
+    filePermissions {
+      user { execute = true }
+      group { execute = true }
+      other { execute = true }
+    }
   }
 
   from("dataflow/manual/checker-framework-dataflow-manual.pdf") {
@@ -926,6 +753,7 @@ tasks.register("pythonIsInstalled", Exec) {
 
 tasks.register("docTags", Exec) {
   group = "Emacs"
+  description = "Create Emacs TAGS table for the manual"
   commandLine("make", "-C", "docs/manual/", "tags")
 }
 
@@ -938,6 +766,9 @@ tasks.register("tags", Exec) {
 }
 
 subprojects {
+  // This is a locally built "plugin" that contains the spotless configuration. It is in
+  // buildSrc/src/main/groovy/cf-spotless.gradle.
+  apply plugin: "cf-spotless"
   configurations {
     annotatedGuava
   }

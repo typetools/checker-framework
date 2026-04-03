@@ -17,6 +17,11 @@ import org.checkerframework.framework.qual.AnnotatedFor;
 @AnnotatedFor("nullness")
 public class FormatUtil {
 
+  /** Do not instantiate. */
+  private FormatUtil() {
+    throw new Error("Do not instantiate");
+  }
+
   /**
    * A representation of a format specifier, which is represented by "%..." in the format string.
    * Indicates how to convert a value into a string.
@@ -196,15 +201,13 @@ public class FormatUtil {
   private static int indexFromFormat(Matcher m) {
     int index;
     String s = m.group(1);
-    if (s != null) { // explicit index
+    String group2 = m.group(2); // not @Deterministic, so extract into local var
+    if (group2 != null && group2.indexOf('<') != -1) {
+      index = -1; // relative index
+    } else if (s != null) { // explicit index
       index = Integer.parseInt(s.substring(0, s.length() - 1));
     } else {
-      String group2 = m.group(2); // not @Deterministic, so extract into local var
-      if (group2 != null && group2.contains(String.valueOf('<'))) {
-        index = -1; // relative index
-      } else {
-        index = 0; // ordinary index
-      }
+      index = 0; // ordinary index
     }
     return index;
   }
@@ -236,7 +239,7 @@ public class FormatUtil {
    * @deprecated This method is public only for testing. Use private method {@code
    *     #conversionCharFromFormat(Matcher)}.
    */
-  @Deprecated // used only for testing.  Use conversionCharFromFormat(Matcher).
+  @Deprecated // Not for removal. Used only for testing
   public static char conversionCharFromFormat(String formatSpecifier) {
     Matcher m = fsPattern.matcher(formatSpecifier);
     assert m.find();
@@ -251,7 +254,7 @@ public class FormatUtil {
    */
   private static Conversion[] parse(String format) {
     ArrayList<Conversion> cs = new ArrayList<>();
-    @Regex(7) Matcher m = fsPattern.matcher(format);
+    @Regex(6) Matcher m = fsPattern.matcher(format);
     while (m.find()) {
       char c = conversionCharFromFormat(m);
       switch (c) {

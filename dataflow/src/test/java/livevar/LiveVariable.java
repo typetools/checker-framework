@@ -10,6 +10,11 @@ import org.checkerframework.dataflow.livevariable.LiveVarTransfer;
 /** Used in liveVariableTest Gradle task to test the LiveVariable analysis. */
 public class LiveVariable {
 
+  /** Do not instantiate. */
+  private LiveVariable() {
+    throw new Error("Do not instantiate");
+  }
+
   /**
    * The main method expects to be run in dataflow/tests/live-variable directory.
    *

@@ -93,7 +93,7 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
       for (ExpressionTree init : arrayTree.getInitializers()) {
         AnnotatedTypeMirror initType = atypeFactory.getAnnotatedType(init);
         // initType might be a typeVariable, so use effectiveAnnotations.
-        AnnotationMirrorSet annos = initType.getEffectiveAnnotations();
+        AnnotationMirrorSet annos = initType.getAnnotations();
 
         prev =
             (prev == null)
@@ -210,9 +210,9 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
     AnnotatedTypeMirror lhs = atypeFactory.getAnnotatedType(tree.getVariable());
     Set<? extends AnnotationMirror> lubs =
         qualHierarchy.leastUpperBoundsShallow(
-            rhs.getEffectiveAnnotations(),
+            rhs.getAnnotations(),
             rhs.getUnderlyingType(),
-            lhs.getEffectiveAnnotations(),
+            lhs.getAnnotations(),
             lhs.getUnderlyingType());
     type.addMissingAnnotations(lubs);
     return null;
@@ -238,9 +238,9 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
     AnnotatedTypeMirror type2 = argTypes.second;
     Set<? extends AnnotationMirror> lubs =
         qualHierarchy.leastUpperBoundsShallow(
-            type1.getEffectiveAnnotations(),
+            type1.getAnnotations(),
             type1.getUnderlyingType(),
-            type2.getEffectiveAnnotations(),
+            type2.getAnnotations(),
             type2.getUnderlyingType());
     log(
         "%s PTA.visitBinary(%s, %s)%n  argTypes=%s%n  lubs=%s%n",
@@ -271,7 +271,7 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
       if (!type.isAnnotated()) {
           AnnotatedTypeMirror a = typeFactory.getAnnotatedType(tree.getTrueExpression());
           AnnotatedTypeMirror b = typeFactory.getAnnotatedType(tree.getFalseExpression());
-          AnnotationMirrorSet lubs = qualHierarchy.leastUpperBounds(a.getEffectiveAnnotations(), b.getEffectiveAnnotations());
+          AnnotationMirrorSet lubs = qualHierarchy.leastUpperBounds(a.getAnnotations(), b.getAnnotations());
           type.replaceAnnotations(lubs);
       }
       return super.visitConditionalExpression(tree, type);
@@ -299,9 +299,9 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
       // else do nothing.
     } else {
       // Use effective annotations from the expression, to get upper bound of type variables.
-      AnnotationMirrorSet expressionAnnos = exprType.getEffectiveAnnotations();
+      AnnotationMirrorSet expressionAnnos = exprType.getAnnotations();
       log(
-          "PTA.visitTypeCast(%s, %s): getEffectiveAnnotations(%s) = %s%n",
+          "PTA.visitTypeCast(%s, %s): getAnnotations(%s) = %s%n",
           tree, type, exprType, expressionAnnos);
 
       TypeKind castKind = type.getPrimitiveKind();
@@ -335,7 +335,7 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
   private boolean hasPrimaryAnnotationInAllHierarchies(AnnotatedTypeMirror type) {
     boolean annotated = true;
     for (AnnotationMirror top : qualHierarchy.getTopAnnotations()) {
-      if (type.getEffectiveAnnotationInHierarchy(top) == null) {
+      if (type.getAnnotationInHierarchy(top) == null) {
         annotated = false;
       }
     }

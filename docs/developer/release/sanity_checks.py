@@ -13,17 +13,17 @@ import pathlib
 import zipfile
 from pathlib import Path
 
-from release_utils import (  # ty: ignore # TODO: limitation in ty
+from release_utils import (
     are_in_file,
     delete,
     delete_directory,
     download_binary,
-    ensure_user_access,
+    ensure_writeable,
     execute_write_to_file,
     insert_before_line,
     wget_file,
 )
-from release_vars import (  # ty: ignore # TODO: limitation in ty
+from release_vars import (
     CHECKER_FRAMEWORK,
     SANITY_DIR,
     execute,
@@ -71,7 +71,7 @@ def javac_sanity_check(checker_framework_website: str, release_version: str) -> 
     with zipfile.ZipFile(javac_sanity_zip, "r") as z:
         z.extractall(javac_sanity_dir)
 
-    ensure_user_access(deploy_dir)
+    ensure_writeable(deploy_dir)
 
     sanity_javac = Path(deploy_dir) / "checker" / "bin" / "javac"
     nullness_output = Path(deploy_dir) / "output.log"
