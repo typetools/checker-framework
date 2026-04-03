@@ -478,14 +478,15 @@ def read_first_line(file_path: Path) -> str:
 
 def ensure_group_access(path: Path) -> None:
     """Give group access to all files and directories under the specified path."""
-    # Errs for any file not owned by this user.
+    # Ignore errors.  It errs for any file not owned by this user.
     # But, the point is to set group writeability of any *new* files.
-    execute(f"chmod -f -R g+rw {path}")
+    execute_status(f"chmod -f -R g+rw {path}")
 
 
 def ensure_user_access(path: Path) -> None:
     """Give the user access to all files and directories under the specified path."""
-    execute(f"chmod -f -R u+rwx {path}")
+    # Ignore errors.
+    execute_status(f"chmod -f -R u+rwx {path}")
 
 
 def set_umask() -> None:

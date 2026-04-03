@@ -22,7 +22,6 @@ from release_utils import (
     delete_directory_if_exists,
     delete_if_exists,
     ensure_group_access,
-    ensure_user_access,
     has_command_line_option,
     increment_version,
     print_step,
@@ -216,10 +215,36 @@ def build_checker_framework_release(
     build_and_locally_deploy_maven()
 
     dev_website_relative_dir = Path(DEV_SITE_DIR) / "releases" / version
+
+    # # This did not work, so do the deletion instead.
+    # # When run with copy_function=shutil.copy2 (the default), it raises Error if
+    # # it cannot set the modification time.  On Unix systems, only the owner or
+    # # root (not someone in the group) can set the modification time.  shutil.copy
+    # # doesn't preserve modification time, so use it instead of shutil.copy2.
+    # # An alternative would be to delete the destination before calling copytree.
+    # ensure_group_access(dev_website_relative_dir)
+    # ensure_user_access(dev_website_relative_dir)
+    # shutil.copytree(
+    #     str(dev_website_relative_dir),
+    #     str(DEV_SITE_DIR),
+    #     copy_function=shutil.copy,
+    #     dirs_exist_ok=True,
+    # )
+
+    # Do not delete DEV_SITE_DIR because it contains dev_website_relative_dir within it (!).
+    # print(f"Deleting {DEV_SITE_DIR}")
+    # shutil.rmtree(DEV_SITE_DIR)
+    # os.mkdir(DEV_SITE_DIR)
+
+    # Here is another thing to try:
+    # for each file or directory in dev_website_relative_dir, delete the corresponding file in DEV_SITE_DIR.
+
     print(f"Copying from: {dev_website_relative_dir}\n  to: {DEV_SITE_DIR}")
-    ensure_group_access(dev_website_relative_dir)
-    ensure_user_access(dev_website_relative_dir)
-    shutil.copytree(str(dev_website_relative_dir), str(DEV_SITE_DIR), dirs_exist_ok=True)
+    shutil.copytree(
+        str(dev_website_relative_dir),
+        str(DEV_SITE_DIR),
+        dirs_exist_ok=True,
+    )
 
 
 def commit_to_interm_projects(cf_version: str) -> None:

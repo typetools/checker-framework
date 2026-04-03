@@ -1864,9 +1864,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       AnnotatedTypeMirror type, List<? extends AnnotatedTypeMirror> supertypes) {
     // Use the effective annotations here to get the correct annotations
     // for type variables and wildcards.
-    AnnotationMirrorSet annotations = type.getEffectiveAnnotations();
+    AnnotationMirrorSet annotations = type.getAnnotations();
     for (AnnotatedTypeMirror supertype : supertypes) {
-      if (!annotations.equals(supertype.getEffectiveAnnotations())) {
+      if (!annotations.equals(supertype.getAnnotations())) {
         supertype.clearPrimaryAnnotations();
         // TODO: is this correct for type variables and wildcards?
         supertype.addAnnotations(annotations);
@@ -2641,7 +2641,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     AnnotationMirrorSet newAnnos = new AnnotationMirrorSet();
     AnnotationMirrorSet receiverTypeBoundAnnos =
         getTypeDeclarationBounds(receiverType.getErased().getUnderlyingType());
-    AnnotationMirrorSet wildcardBoundAnnos = classWildcardArg.getEffectiveAnnotations();
+    AnnotationMirrorSet wildcardBoundAnnos = classWildcardArg.getAnnotations();
     for (AnnotationMirror receiverTypeBoundAnno : receiverTypeBoundAnnos) {
       AnnotationMirror wildcardAnno =
           qualHierarchy.findAnnotationInSameHierarchy(wildcardBoundAnnos, receiverTypeBoundAnno);
@@ -3097,7 +3097,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     AnnotatedDeclaredType stringATM =
         (AnnotatedDeclaredType)
             AnnotatedTypeMirror.createType(stringTypeMirror, this, type.isDeclaration());
-    stringATM.addAnnotations(type.getEffectiveAnnotations());
+    stringATM.addAnnotations(type.getAnnotations());
     return stringATM;
   }
 

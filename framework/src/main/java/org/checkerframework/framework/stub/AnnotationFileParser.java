@@ -1942,7 +1942,7 @@ public class AnnotationFileParser {
    * zero or more mappings. Each mapping is from an element that {@code member} would override to
    * {@code member}.
    *
-   * <p>This method does not read or write field {@link annotationFileAnnos}.
+   * <p>This method does not read or write field {@link #annotationFileAnnos}.
    *
    * @param elementsToDecl the mapping that is side-effected by this method
    * @param fakeOverrideDecls fake overrides, also side-effected by this method

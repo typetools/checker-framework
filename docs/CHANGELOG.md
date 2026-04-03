@@ -3,7 +3,11 @@
 <!-- markdownlint-disable no-duplicate-heading -->
 <!-- pyml disable no-duplicate-heading -->
 
-## Version 3.54.1 (2026-04-01)
+## Version 3.55.1 (2026-04-02)
+
+No user-visible changes.
+
+## Version 3.55.0 (2026-04-02)
 
 ### User-visible changes
 
@@ -13,10 +17,17 @@ Removed deprecated command-line option `-AskipDirs`; use `-AskipFiles`.
 
 ### Implementation details
 
+In `AnnotatedTypeMirror`:
+
+* Renamed `getEffectiveAnnotation*()` to `getAnnotation*()`.
+* Renamed `hasEffectiveAnnotation*()` to `hasAnnotation*()`.
+
 Removed deprecated method `ObjectCreationNode.getConstructor()`; use
 `getTypeToInstantiate()`.
 
 ### Closed issues
+
+\#7079, #7489, #7539.
 
 ## Version 3.54.0 (2026-03-02)
 
