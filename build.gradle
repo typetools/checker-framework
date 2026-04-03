@@ -547,7 +547,6 @@ tasks.register("zip", Zip) {
         "annotation-file-utilities/bin/**",
         "annotation-file-utilities/dist/**",
         "annotation-file-utilities/LICENSE.txt",
-        "checker/bin/**",
         "checker/dist/**",
         "checker/resources/**",
         "docs/CHANGELOG.md",
@@ -576,6 +575,15 @@ tasks.register("zip", Zip) {
         "docs/examples/MavenExample/README",
         "docs/examples/MavenExample/src/main/java/org/checkerframework/example/MavenExample.java",
         "docs/tutorial/**")
+  }
+
+  from(layout.projectDirectory) {
+    include("checker/bin/**")
+    filePermissions {
+      user { execute = true }
+      group { execute = true }
+      other { execute = true }
+    }
   }
 
   from("dataflow/manual/checker-framework-dataflow-manual.pdf") {
