@@ -14,7 +14,7 @@ from release_utils import (
     delete_directory,
     delete_directory_if_exists,
     delete_if_exists,
-    ensure_group_access,
+    ensure_writeable,
     get_announcement_email,
     has_command_line_option,
     print_step,
@@ -120,7 +120,7 @@ def copy_htaccess() -> None:
     dev_htaccess = Path(DEV_SITE_DIR) / ".htaccess"
     live_htaccess = Path(LIVE_SITE_DIR) / ".htaccess"
     execute(f"rsync --times {dev_htaccess} {live_htaccess}")
-    ensure_group_access(live_htaccess)
+    ensure_writeable(live_htaccess)
 
 
 def copy_releases_to_live_site(cf_version: str) -> None:
@@ -441,7 +441,7 @@ def main(argv: list[str]) -> None:
             print("Copying to live site")
             copy_releases_to_live_site(new_cf_version)
             copy_htaccess()
-            ensure_group_access(CHECKER_LIVE_RELEASES_DIR / new_cf_version)
+            ensure_writeable(CHECKER_LIVE_RELEASES_DIR / new_cf_version)
     else:
         print("Test mode: Skipping copy to live site!")
 
