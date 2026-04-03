@@ -3,6 +3,10 @@
 <!-- markdownlint-disable no-duplicate-heading -->
 <!-- pyml disable no-duplicate-heading -->
 
+## Version 3.55.1 (2026-04-02)
+
+No user-visible changes.
+
 ## Version 3.55.0 (2026-04-02)
 
 ### User-visible changes
