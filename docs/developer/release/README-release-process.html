@@ -92,19 +92,12 @@ The process takes around 2 hours (including manual steps) when all goes accordin
 <h2 id="step_by_step">Step by Step</h2>
 
 <p>
-  More information about the steps is
-  provided in the code comments of the <code>main()</code> functions of the <code>release_build</code>
-  and <code>release_push</code> scripts. Please read those comments if you have never done so before.
+  More information about the steps appears in code comments in the
+  <code>release_build.py</code> and <code>release_push.py</code> scripts.
 </p>
 
 <p>
 Answering 'no' to a prompt does not exit the script unless otherwise indicated.
-</p>
-
-<p>
-Be sure to carefully read all instructions on the command-line before answering 'yes' to a prompt.
-This is because the scripts do not ask you to say 'yes' after each step, so you may
-miss a step if you only read the paragraph asking you to say 'yes'.
 </p>
 
 <ol>
@@ -112,12 +105,17 @@ miss a step if you only read the paragraph asking you to say 'yes'.
     <a href="#pre_release_checklist">Pre-release Checklist</a>.
   </li>
   <li>
+    Browse
+    to <a href="https://github.com/typetools/checker-framework/security/dependabot">https://github.com/typetools/checker-framework/security/dependabot</a>
+    and if there are any reports, try to update the responsible packages.
+  </li>
+  <li>
     <b>Update stubparser.</b> If there has been
     a <a href="https://github.com/javaparser/javaparser/releases">JavaParser
     release</a> since the last Checker Framework
     release, <a href="https://github.com/typetools/stubparser#updating-from-upstream-javaparser">update
       Stubparser from JavaParser</a>.
-    Do this on your own computer; it doesn't have to be done on the CSE file system.
+    You may do this on your own computer; it doesn't have to be done on the CSE file system.
   </li>
   <li>On your own computer, update the Checker Framework source code <em>in the <code>master</code> branch</em>:
     <ul>
@@ -186,9 +184,12 @@ TreeAnnotator
       <code>chown -R :types_www /scratch/$USER/cf-release<br/></code>
       <code>chmod -R g+rw /scratch/$USER/cf-release<br/></code>
       <code>cd /scratch/$USER/cf-release<br/></code>
-      <code>test -d checker-framework && (cd checker-framework && git pull --ff-only --quiet) || git clone --quiet https://github.com/typetools/checker-framework.git<br/></code>
+      <code>if [ -d checker-framework ]; then<br/></code>
+      <code>&nbsp;  (cd checker-framework && git pull --ff-only --quiet)<br/></code>
+      <code>else<br/></code>
+      <code>&nbsp;  git clone --quiet https://github.com/typetools/checker-framework.git<br/></code>
+      <code>fi<br/></code>
       <code>cd checker-framework/docs/developer/release<br/></code>
-    (The release scripts will checkout and build all dependencies.)
   </li>
   <li><strong>Run release_build</strong> to create the release artifacts and place them in the development website<br/>
       <code>git pull && python3 release_build.py</code><br/><br/>
@@ -197,11 +198,11 @@ TreeAnnotator
   <li>
       <strong>Run release_push</strong> to run a few tests and move release artifacts from the development website to the live site and to Maven Central <br/>
       <code>python3 release_push.py release</code><br/><br/>
-      <div class="alert alert-danger">
-        <strong>Note:</strong> The &quot;<strong>release</strong>&quot; argument states that you intend
+      <p>
+        The &quot;<strong>release</strong>&quot; argument states that you intend
         to do an actual release.  If you just want to test the script, leave out &quot;release&quot;
         and the script will run but not update anything.
-      </div>
+      </p>
 
       If you get an obscure error about permissions, try running the release_push script several times
       in a row. This will sometimes update the repository permissions such that the script can proceed
@@ -408,13 +409,27 @@ git config --global user.email you@example.com</pre>
     </tr>
     <tr>
       <td>9.</td>
-      <td><strong>Run release_build once</strong><br/>
+      <td><strong>Clone the Checker Framework</strong><br/>
+        <pre>
+mkdir /scratch/$USER/cf-release
+cd /scratch/$USER/cf-release
+git clone git@github.com:typetools/checker-framework.git checker-framework</pre>
+        If the directory already exists, the <code>git clone</code> command will
+        fail.  That is OK.
+      </td>
+    </tr>
+    <tr>
+      <td>10.</td>
+      <td><strong>Run release_build.py once</strong><br/>
         To save time on release day addressing potential configuration issues, before your first
-        release day, ensure that <code>release_build</code> is working correctly
+        release day, ensure that <code>release_build.py</code> is working correctly
         by following the initial steps of the <a href="#step_by_step">Step by Step</a> section.
-        <code>release_build</code> still needs to be re-run on release day (even if no changes
-        were pushed to any repositories since the last run of <code>release_build</code>) in
+        <code>release_build.py</code> still needs to be re-run on release day (even if no changes
+        were pushed to any repositories since the last run of <code>release_build.py</code>) in
         order for the release date to be correct in all documents.
+        <pre>
+cd /scratch/$USER/cf-release/checker-framework
+docs/developer/release/release_build.py</pre>
       </td>
     </tr>
   </table>
