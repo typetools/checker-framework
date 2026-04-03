@@ -1,0 +1,14 @@
+package org.apache.log4j;
+
+import org.checkerframework.dataflow.qual.SideEffectFree;
+
+class Category {
+  @SideEffectFree
+  public void debug(Object message);
+
+  @SideEffectFree
+  public void warn(Object message);
+
+  @SideEffectFree
+  public void error(Object message);
+}
