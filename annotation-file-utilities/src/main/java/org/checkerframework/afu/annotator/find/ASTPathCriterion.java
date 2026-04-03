@@ -291,7 +291,7 @@ public class ASTPathCriterion implements Criterion {
     }
   }
 
-  private Tree getNext(Tree actualNode, ASTPath astPath, int ix) {
+  private @Nullable Tree getNext(Tree actualNode, ASTPath astPath, int ix) {
     try {
       ASTPath.ASTEntry astNode = astPath.get(ix);
       switch (actualNode.getKind()) {
