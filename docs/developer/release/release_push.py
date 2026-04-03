@@ -549,8 +549,8 @@ def main(argv: list[str]) -> None:
             + new_cf_version
             + "\n"
             + "* For the description, insert the latest Checker Framework changelog entry "
-            + "from https://checkerframework.org/CHANGELOG.md ."\n
-            "Include the first line with the release version and date.\n"
+            + "from https://checkerframework.org/CHANGELOG.md .\n"
+            + "Include the first line with the release version and date.\n"
             + '* Find the link below "Attach binaries by dropping them here or selecting them." '
             + 'Click on "selecting them" and upload checker-framework-'
             + new_cf_version
