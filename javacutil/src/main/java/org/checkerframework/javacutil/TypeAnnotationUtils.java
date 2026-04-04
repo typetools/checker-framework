@@ -137,9 +137,9 @@ public class TypeAnnotationUtils {
    * @return true if the two attributes are the same
    */
   private static boolean attributeEquals(Attribute a1, Attribute a2, Types types) {
-    if (a1 instanceof Attribute.Array && a2 instanceof Attribute.Array) {
-      List<Attribute> list1 = ((Attribute.Array) a1).getValue();
-      List<Attribute> list2 = ((Attribute.Array) a2).getValue();
+    if (a1 instanceof Attribute.Array aa1 && a2 instanceof Attribute.Array aa1) {
+      List<Attribute> list1 = aa1.getValue();
+      List<Attribute> list2 = aa2.getValue();
       if (list1.size() != list2.size()) {
         return false;
       }
@@ -150,19 +150,19 @@ public class TypeAnnotationUtils {
         }
       }
       return true;
-    } else if (a1 instanceof Attribute.Class && a2 instanceof Attribute.Class) {
-      Type t1 = ((Attribute.Class) a1).getValue();
-      Type t2 = ((Attribute.Class) a2).getValue();
+    } else if (a1 instanceof Attribute.Class ac && a2 instanceof Attribute.Class ac) {
+      Type t1 = ac1.getValue();
+      Type t2 = ac2.getValue();
       return types.isSameType(t1, t2);
-    } else if (a1 instanceof Attribute.Constant && a2 instanceof Attribute.Constant) {
-      Object v1 = ((Attribute.Constant) a1).getValue();
-      Object v2 = ((Attribute.Constant) a2).getValue();
+    } else if (a1 instanceof Attribute.Constant ac1 && a2 instanceof Attribute.Constant ac2) {
+      Object v1 = ac1.getValue();
+      Object v2 = ac2.getValue();
       return v1.equals(v2);
-    } else if (a1 instanceof Attribute.Compound && a2 instanceof Attribute.Compound) {
+    } else if (a1 instanceof Attribute.Compound ac1 && a2 instanceof Attribute.Compound ac2) {
       // The annotation value is another annotation.  `a1` and `a2` implement
       // AnnotationMirror.
-      DeclaredType t1 = ((Attribute.Compound) a1).getAnnotationType();
-      DeclaredType t2 = ((Attribute.Compound) a2).getAnnotationType();
+      DeclaredType t1 = ac1.getAnnotationType();
+      DeclaredType t2 = ac2.getAnnotationType();
       if (!types.isSameType(t1, t2)) {
         return false;
       }
