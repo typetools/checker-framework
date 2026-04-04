@@ -3,6 +3,22 @@
 <!-- markdownlint-disable no-duplicate-heading -->
 <!-- pyml disable no-duplicate-heading -->
 
+## Version 4.0.0 (2026-??)
+
+### User-visible changes
+
+To run the Checker Framework, you need to use a JDK 17 or later version of
+javac.  The Checker Framework can type-check any Java project, including projects
+that compile to Java 8 or 11 bytecodes and run on JRE versions 8 or 11.
+
+The type qualifiers and utility libraries in `checker-qual.jar` and
+`checker-util.jar` still use Java 11 bytecode.  Thus, they may be used in
+projects that run under Java 11 or later.
+
+### Implementation details
+
+### Closed issues
+
 ## Version 3.55.1 (2026-04-03)
 
 No user-visible changes.
