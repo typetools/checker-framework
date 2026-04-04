@@ -33,6 +33,7 @@ import org.checkerframework.checker.lock.qual.LockingFree;
 import org.checkerframework.checker.lock.qual.MayReleaseLocks;
 import org.checkerframework.checker.lock.qual.NewObject;
 import org.checkerframework.checker.lock.qual.ReleasesNoLocks;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -641,12 +642,11 @@ public class LockAnnotatedTypeFactory
         AnnotatedTypes.adaptParameters(this, invokedMethod, methodInvocationTreeArguments, tree);
 
     for (int i = 0; i < paramTypes.size(); i++) {
+      AnnotatedTypeMirror argType = getAnnotatedType(methodInvocationTreeArguments.get(i));
+      @SuppressWarnings("nullness:assignment") // type should have an annotation in this hierarchy
+      @NonNull AnnotationMirror argAnno = argType.getAnnotationInHierarchy(GUARDEDBYUNKNOWN);
       if (replaceAnnotationInGuardedByHierarchyIfGuardSatisfiedIndexMatches(
-          methodDefinitionReturn,
-          paramTypes.get(i),
-          returnGuardSatisfiedIndex,
-          getAnnotatedType(methodInvocationTreeArguments.get(i))
-              .getEffectiveAnnotationInHierarchy(GUARDEDBYUNKNOWN))) {
+          methodDefinitionReturn, paramTypes.get(i), returnGuardSatisfiedIndex, argAnno)) {
         return mType;
       }
     }

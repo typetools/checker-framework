@@ -3,13 +3,20 @@
 <!-- markdownlint-disable no-duplicate-heading -->
 <!-- pyml disable no-duplicate-heading -->
 
-## Version 4.0.0 (2026-04-02)
+## Version 4.0.0 (2026-04-07)
 
 ### User-visible changes
 
-The Checker Framework requires Java 17 to run.  That is, you need to use JDK 17
-or later when compiling your code.  Your code can run under any release of Java,
-from Java 8 onward.
+To run the Checker Framework, you need to use a JDK 17 or later version of
+javac.  That is, you need to use JDK 17 or later when compiling your code.
+
+The Checker Framework can type-check any Java project, including projects that
+compile to Java 8 or 11 bytecodes and run on JRE versions 8 or 11.  That is,
+your code can run under any release of Java, from Java 8 onward.
+
+The type qualifiers and utility libraries in `checker-qual.jar` and
+`checker-util.jar` still use Java 11 bytecode.  Thus, they may be used in
+projects that run under Java 11 or later.
 
 ### Changes since version 3.0.0
 
@@ -56,12 +63,16 @@ to list here.
 ### Implementation details
 
 All deprecated methods and classes have been removed.  If your project builds
-upon the Checker Framework, we suggest that you upgrade to version 3.54.1,
+upon the Checker Framework, we suggest that you upgrade to version 3.55.1,
 resolve all the deprecation warnings, then upgrade to version 4.0.0.
 
 ### Closed issues
 
-## Version 3.54.1 (2026-04-01)
+## Version 3.55.1 (2026-04-03)
+
+No user-visible changes.
+
+## Version 3.55.0 (2026-04-02)
 
 ### User-visible changes
 
@@ -71,10 +82,17 @@ Removed deprecated command-line option `-AskipDirs`; use `-AskipFiles`.
 
 ### Implementation details
 
+In `AnnotatedTypeMirror`:
+
+* Renamed `getEffectiveAnnotation*()` to `getAnnotation*()`.
+* Renamed `hasEffectiveAnnotation*()` to `hasAnnotation*()`.
+
 Removed deprecated method `ObjectCreationNode.getConstructor()`; use
 `getTypeToInstantiate()`.
 
 ### Closed issues
+
+\#7079, #7489, #7539.
 
 ## Version 3.54.0 (2026-03-02)
 

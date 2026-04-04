@@ -21,6 +21,7 @@ import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.plumelib.util.IPair;
 import org.plumelib.util.MapsP;
@@ -224,7 +225,11 @@ public abstract class UBQualifier {
    */
   public static UBQualifier createUBQualifier(
       AnnotatedTypeMirror type, AnnotationMirror top, UpperBoundChecker ubChecker) {
-    return createUBQualifier(type.getEffectiveAnnotationInHierarchy(top), ubChecker);
+    AnnotationMirror anno = type.getAnnotationInHierarchy(top);
+    if (anno == null) {
+      throw new BugInCF("no annotation for " + type);
+    }
+    return createUBQualifier(anno, ubChecker);
   }
 
   /**
