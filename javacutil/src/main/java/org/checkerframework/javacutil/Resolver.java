@@ -92,9 +92,6 @@ public class Resolver {
   private static final int sourceVersionNumber =
       Integer.parseInt(SourceVersion.latest().toString().substring("RELEASE_".length()));
 
-  /** True if we are running on at least Java 13. */
-  private static final boolean atLeastJava13 = sourceVersionNumber >= 13;
-
   /** True if we are running on at least Java 23. */
   private static final boolean atLeastJava23 = sourceVersionNumber >= 23;
 
@@ -121,46 +118,29 @@ public class Resolver {
       }
       FIND_VAR.setAccessible(true);
 
-      if (atLeastJava13) {
-        FIND_IDENT =
-            Resolve.class.getDeclaredMethod(
-                "findIdent", DiagnosticPosition.class, Env.class, Name.class, KindSelector.class);
-      } else {
-        FIND_IDENT =
-            Resolve.class.getDeclaredMethod("findIdent", Env.class, Name.class, KindSelector.class);
-      }
+      FIND_IDENT =
+          Resolve.class.getDeclaredMethod(
+              "findIdent", DiagnosticPosition.class, Env.class, Name.class, KindSelector.class);
       FIND_IDENT.setAccessible(true);
 
-      if (atLeastJava13) {
-        FIND_IDENT_IN_TYPE =
-            Resolve.class.getDeclaredMethod(
-                "findIdentInType",
-                DiagnosticPosition.class,
-                Env.class,
-                Type.class,
-                Name.class,
-                KindSelector.class);
-      } else {
-        FIND_IDENT_IN_TYPE =
-            Resolve.class.getDeclaredMethod(
-                "findIdentInType", Env.class, Type.class, Name.class, KindSelector.class);
-      }
+      FIND_IDENT_IN_TYPE =
+          Resolve.class.getDeclaredMethod(
+              "findIdentInType",
+              DiagnosticPosition.class,
+              Env.class,
+              Type.class,
+              Name.class,
+              KindSelector.class);
       FIND_IDENT_IN_TYPE.setAccessible(true);
 
-      if (atLeastJava13) {
-        FIND_IDENT_IN_PACKAGE =
-            Resolve.class.getDeclaredMethod(
-                "findIdentInPackage",
-                DiagnosticPosition.class,
-                Env.class,
-                TypeSymbol.class,
-                Name.class,
-                KindSelector.class);
-      } else {
-        FIND_IDENT_IN_PACKAGE =
-            Resolve.class.getDeclaredMethod(
-                "findIdentInPackage", Env.class, TypeSymbol.class, Name.class, KindSelector.class);
-      }
+      FIND_IDENT_IN_PACKAGE =
+          Resolve.class.getDeclaredMethod(
+              "findIdentInPackage",
+              DiagnosticPosition.class,
+              Env.class,
+              TypeSymbol.class,
+              Name.class,
+              KindSelector.class);
       FIND_IDENT_IN_PACKAGE.setAccessible(true);
 
       FIND_TYPE = Resolve.class.getDeclaredMethod("findType", Env.class, Name.class);
@@ -240,11 +220,7 @@ public class Resolver {
     try {
       Env<AttrContext> env = getEnvForPath(path);
       final Element res;
-      if (atLeastJava13) {
-        res = resolve(FIND_IDENT, null, env, names.fromString(name), Kinds.KindSelector.PCK);
-      } else {
-        res = resolve(FIND_IDENT, env, names.fromString(name), Kinds.KindSelector.PCK);
-      }
+      res = resolve(FIND_IDENT, null, env, names.fromString(name), Kinds.KindSelector.PCK);
 
       // findIdent will return a PackageSymbol even for a symbol that is not a package,
       // such as a.b.c.MyClass.myStaticField. "exists()" must be called on it to ensure
@@ -277,19 +253,9 @@ public class Resolver {
     try {
       Env<AttrContext> env = getEnvForPath(path);
       final Element res;
-      if (atLeastJava13) {
-        res =
-            resolve(
-                FIND_IDENT_IN_TYPE,
-                null,
-                env,
-                type,
-                names.fromString(name),
-                Kinds.KindSelector.VAR);
-      } else {
-        res =
-            resolve(FIND_IDENT_IN_TYPE, env, type, names.fromString(name), Kinds.KindSelector.VAR);
-      }
+      res =
+          resolve(
+              FIND_IDENT_IN_TYPE, null, env, type, names.fromString(name), Kinds.KindSelector.VAR);
 
       if (res.getKind().isField()) {
         return (VariableElement) res;
@@ -383,20 +349,14 @@ public class Resolver {
     try {
       Env<AttrContext> env = getEnvForPath(path);
       final Element res;
-      if (atLeastJava13) {
-        res =
-            resolve(
-                FIND_IDENT_IN_PACKAGE,
-                null,
-                env,
-                pck,
-                names.fromString(name),
-                Kinds.KindSelector.TYP);
-      } else {
-        res =
-            resolve(
-                FIND_IDENT_IN_PACKAGE, env, pck, names.fromString(name), Kinds.KindSelector.TYP);
-      }
+      res =
+          resolve(
+              FIND_IDENT_IN_PACKAGE,
+              null,
+              env,
+              pck,
+              names.fromString(name),
+              Kinds.KindSelector.TYP);
 
       if (ElementUtils.isTypeElement(res)) {
         return (ClassSymbol) res;
