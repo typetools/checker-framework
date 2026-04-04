@@ -10,7 +10,6 @@ Copyright (c) 2012 University of Washington
 
 import os
 import pathlib
-import zipfile
 from pathlib import Path
 
 from release_utils import (
@@ -38,38 +37,44 @@ def javac_sanity_check(checker_framework_website: str, release_version: str) -> 
     Run the Nullness Checker on NullnessExampleWithWarnings and verify the output
     Fails if the expected errors are not found in the output.
     """
+    checker_framework_release_dirname = f"checker-framework-{release_version}"
+    checker_framework_zipfile_name = f"{checker_framework_release_dirname}.zip"
+
     new_checkers_release_zip = (
-        f"{checker_framework_website}"
-        f"/releases/{release_version}/checker-framework-{release_version}.zip"
+        f"{checker_framework_website}/releases/{release_version}/{checker_framework_zipfile_name}"
     )
 
-    javac_sanity_dir = Path(SANITY_DIR) / "javac"
+    javac_sanity_path = Path(SANITY_DIR) / "javac"
 
-    if pathlib.Path(javac_sanity_dir).is_dir():
-        delete_directory(javac_sanity_dir)
-    execute(f"mkdir -p {javac_sanity_dir}")
+    if javac_sanity_path.is_dir():
+        delete_directory(javac_sanity_path)
+    execute(f"mkdir -p {javac_sanity_path}")
 
-    javac_sanity_zip = Path(javac_sanity_dir) / f"checker-framework-{release_version}.zip"
+    javac_sanity_zip = javac_sanity_path / f"{checker_framework_zipfile_name}"
 
-    print(f"Attempting to download {new_checkers_release_zip} to {javac_sanity_zip}")
+    print(f"Downloading {new_checkers_release_zip} to {javac_sanity_zip}")
     download_binary(new_checkers_release_zip, javac_sanity_zip)
 
     nullness_example_url = "https://raw.githubusercontent.com/typetools/checker-framework/master/docs/examples/NullnessExampleWithWarnings.java"
-    nullness_example = Path(javac_sanity_dir) / "NullnessExampleWithWarnings.java"
+    nullness_example = javac_sanity_path / "NullnessExampleWithWarnings.java"
 
-    if pathlib.Path(nullness_example).is_file():
+    if nullness_example.is_file():
         delete(nullness_example)
 
-    wget_file(nullness_example_url, javac_sanity_dir)
+    print(f"Downloading {nullness_example_url} to {javac_sanity_path}")
+    wget_file(nullness_example_url, javac_sanity_path)
 
-    deploy_dir = Path(javac_sanity_dir) / f"checker-framework-{release_version}"
+    deploy_dir = javac_sanity_path / f"{checker_framework_release_dirname}"
 
     if pathlib.Path(deploy_dir).exists():
         print(f"Deleting existing path: {deploy_dir}")
         delete_directory(deploy_dir)
 
-    with zipfile.ZipFile(javac_sanity_zip, "r") as z:
-        z.extractall(javac_sanity_dir)
+    # Python's ZipFile.extractall() does not preserve permissions, such as the execute bit:
+    # with zipfile.ZipFile(javac_sanity_zip, "r") as z:
+    #     z.extractall(javac_sanity_path)
+    # The system's unzip utility does preserves permissions.
+    execute(f"unzip {checker_framework_zipfile_name}", working_dir=javac_sanity_path)
 
     ensure_writeable(deploy_dir)
 
