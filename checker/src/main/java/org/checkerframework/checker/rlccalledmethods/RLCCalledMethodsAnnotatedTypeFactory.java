@@ -137,6 +137,9 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
    */
   private static final class MethodCollectionLoopState {
 
+    /** Creates per-method loop state for syntactically matched collection-obligation loops. */
+    private MethodCollectionLoopState() {}
+
     /** Enhanced-for-loops that have been matched syntactically but still need CFG resolution. */
     final Set<EnhancedForLoopTree> potentiallyFulfillingEnhancedForLoops = new LinkedHashSet<>();
 

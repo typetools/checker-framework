@@ -4,6 +4,7 @@ import java.util.AbstractSet;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import org.checkerframework.checker.collectionownership.qual.NotOwningCollection;
 import org.checkerframework.checker.collectionownership.qual.OwningCollection;
 import org.checkerframework.checker.collectionownership.qual.PolyOwningCollection;
 import org.checkerframework.checker.mustcall.qual.NotOwning;
@@ -108,7 +109,11 @@ public class LinkedHashKeyedSet<K, V> extends AbstractSet<V> implements KeyedSet
   }
 
   @Override
-  public V add(LinkedHashKeyedSet<K, V> this, V o, int conflictBehavior, int equalBehavior) {
+  public V add(
+      @NotOwningCollection LinkedHashKeyedSet<K, V> this,
+      V o,
+      int conflictBehavior,
+      int equalBehavior) {
     K key = keyer.getKeyFor(o);
     V old = theMap.get(key);
     if (old == null
