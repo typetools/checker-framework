@@ -19,6 +19,10 @@ projects that run under Java 11 or later.
 
 ### Closed issues
 
+## Version 3.55.1 (2026-04-03)
+
+No user-visible changes.
+
 ## Version 3.55.0 (2026-04-02)
 
 ### User-visible changes

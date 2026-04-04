@@ -14,7 +14,7 @@ from release_utils import (
     delete_directory,
     delete_directory_if_exists,
     delete_if_exists,
-    ensure_group_access,
+    ensure_writeable,
     get_announcement_email,
     has_command_line_option,
     print_step,
@@ -117,9 +117,10 @@ def promote_release(path_to_releases: Path, release_version: str) -> None:
 
 def copy_htaccess() -> None:
     """Copy the .htaccess file from the dev site to the live site."""
+    dev_htaccess = Path(DEV_SITE_DIR) / ".htaccess"
     live_htaccess = Path(LIVE_SITE_DIR) / ".htaccess"
-    execute(f"rsync --times {Path(DEV_SITE_DIR) / '.htaccess'} {live_htaccess}")
-    ensure_group_access(live_htaccess)
+    execute(f"rsync --times {dev_htaccess} {live_htaccess}")
+    ensure_writeable(live_htaccess)
 
 
 def copy_releases_to_live_site(cf_version: str) -> None:
@@ -291,10 +292,14 @@ def main(argv: list[str]) -> None:
     # MANUAL Indicates a manual step
     # AUTO Indicates the step is fully automated.
 
-    set_umask()
-
-    validate_args(argv)
+    dev_checker_website = DEV_SITE_URL
+    live_checker_website = LIVE_SITE_URL
+    current_cf_version = current_distribution_by_website(live_checker_website)
+    new_cf_version = CF_VERSION
     test_mode = not has_command_line_option(argv, "release")
+    validate_args(argv)
+
+    set_umask()
 
     m2_settings = str(pathlib.Path("~").expanduser()) + "/.m2/settings.xml"
     if not pathlib.Path(m2_settings).exists():
@@ -333,10 +338,6 @@ def main(argv: list[str]) -> None:
 
     print_step("Push Step 1: Checking release versions")  # SEMIAUTO
 
-    dev_checker_website = DEV_SITE_URL
-    live_checker_website = LIVE_SITE_URL
-    current_cf_version = current_distribution_by_website(live_checker_website)
-    new_cf_version = CF_VERSION
     check_release_version(current_cf_version, new_cf_version)
 
     print(
@@ -405,17 +406,18 @@ def main(argv: list[str]) -> None:
         # able to close the artifacts by doing the following:
         continue_or_exit(
             "Maven artifacts have been staged!  Please 'close' (but don't release) the artifacts.\n"
-            "Browse to https://ossrh-staging-api.central.sonatype.com/swagger-ui/#/default/manual_search_repositories.\n"
+            "Browse to https://ossrh-staging-api.central.sonatype.com/swagger-ui/#/default/manual_search_repositories\n"
             "Expand GET manual/search/repositories\n"
-            "Click try it out.\n"
+            'Click "Try it out".\n'
             "Type any in the IP field.\n"
             "Click Execute\n"
-            "Log in with user token/password\n"
+            "Log in with the value for SONATYPE_NEXUS_{USERNAME,PASSWORD} "
+            "in file ~/.gradle/gradle.properties .\n"
             "Scroll down until you see a JSON block that includes a key like this:\n"
-            '           "key": "user/ip/org.checkerframework--default-repository",'
+            '           "key": "user/ip/org.checkerframework--default-repository"\n'
             "Copy the key field\n"
             "Expand POST manual/upload/repositories/{repository_key}\n"
-            "Click try it out.\n"
+            'Click "Try it out".\n'
             "Copy key field from above into repository_key\n"
             "Click Execute, it may take a minute or two to update\n"
             "Under Server response it should say Code 200\n"
@@ -440,7 +442,7 @@ def main(argv: list[str]) -> None:
             print("Copying to live site")
             copy_releases_to_live_site(new_cf_version)
             copy_htaccess()
-            ensure_group_access(CHECKER_LIVE_RELEASES_DIR / new_cf_version)
+            ensure_writeable(CHECKER_LIVE_RELEASES_DIR / new_cf_version)
     else:
         print("Test mode: Skipping copy to live site!")
 
@@ -511,10 +513,10 @@ def main(argv: list[str]) -> None:
         msg = (
             "Please 'Publish' the artifacts.\n"
             "First log into https://central.sonatype.com/publishing using your "
-            "Sonatype credentials. Find the deployment labled "
-            "'org.checkerframework (via OSSRH Staging API)' "
-            "and click on the Publish button next to it.\n"
-            "Now it should say PUBLISHING nest to the deployment. "
+            "Sonatype credentials.\n"
+            "Find the deployment labled 'org.checkerframework (via OSSRH Staging API)'.\n"
+            "Click on the Publish button next to it.\n"
+            "Now it should say PUBLISHING next to the deployment. "
             "This will take a while, you can move onto the next release steps.\n\n"
         )
 
@@ -548,8 +550,8 @@ def main(argv: list[str]) -> None:
             + new_cf_version
             + "\n"
             + "* For the description, insert the latest Checker Framework changelog entry "
-            + "(available at https://checkerframework.org/CHANGELOG.md). Please include the first "
-            "line with the release version and date.\n"
+            + "from https://checkerframework.org/CHANGELOG.md .\n"
+            + "Include the first line with the release version and date.\n"
             + '* Find the link below "Attach binaries by dropping them here or selecting them." '
             + 'Click on "selecting them" and upload checker-framework-'
             + new_cf_version
@@ -568,20 +570,7 @@ def main(argv: list[str]) -> None:
         print_step("Push Step 13. Prep for next Checker Framework release.")  # MANUAL
         continue_or_exit(
             "Change the patch level (last number) of the Checker Framework version\n"
-            "in build.gradle:  increment it and add -SNAPSHOT\n"
-        )
-
-        print_step("Push Step 14. Update the Checker Framework Gradle plugin.")  # MANUAL
-        print("You might have to wait for Maven Central to propagate changes.\n")
-        continue_or_exit(
-            "Please update the Checker Framework Gradle plugin:\n"
-            "https://github.com/kelloggm/checkerframework-gradle-plugin/blob/master/RELEASE.md#updating-the-checker-framework-version\n"
-        )
-        continue_or_exit(
-            "Make a pull request to the Checker Framework that\n"
-            "updates the version number of the Checker Framework\n"
-            "Gradle Plugin in docs/examples/lombok and docs/examples/errorprone .\n"
-            "The pull request's tests will fail; you will merge it in a day."
+            "in settings.gradle:  increment it and add -SNAPSHOT\n"
         )
 
     delete_if_exists(RELEASE_BUILD_COMPLETED_FLAG_FILE)
