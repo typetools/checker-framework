@@ -11,6 +11,7 @@ dependencies {
   api(libs.plume.util)
 
   implementation(libs.hashmap.util)
+  implementation(libs.javac.parse)
 
   testImplementation(libs.junit)
 
