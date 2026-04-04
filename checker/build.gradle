@@ -269,23 +269,36 @@ tasks.register("exampleTests", Exec) {
 tasks.register("allNullnessTests", Test) {
   description = "Run all Junit tests for the Nullness Checker."
   group = "Verification"
-  include("**/Nullness*.class")
+  testClassesDirs = sourceSets.test.output.classesDirs
+  classpath = sourceSets.test.runtimeClasspath
+  filter {
+    includeTestsMatching("org.checkerframework.checker.test.junit.Nullness*")
+    excludeTestsMatching("NullnessJSpecifySamplesTest")
+  }
 }
 
 tasks.register("allCalledMethodsTests", Test) {
   description = "Run all Junit tests for the Called Methods Checker."
   group = "Verification"
-  include("**/CalledMethods*.class")
   if (!skipDelombok) {
     dependsOn("delombok")
+  }
+  testClassesDirs = sourceSets.test.output.classesDirs
+  classpath = sourceSets.test.runtimeClasspath
+  filter {
+    includeTestsMatching("org.checkerframework.checker.test.junit.CalledMethods*")
   }
 }
 
 tasks.register("allResourceLeakTests", Test) {
   description = "Run all Junit tests for the Resource Leak Checker."
   group = "Verification"
-  include("**/ResourceLeak*.class")
-  include("**/MustCall*.class")
+  testClassesDirs = sourceSets.test.output.classesDirs
+  classpath = sourceSets.test.runtimeClasspath
+  filter {
+    includeTestsMatching("org.checkerframework.checker.test.junit.ResourceLeak*")
+    includeTestsMatching("org.checkerframework.checker.test.junit.MustCall*")
+  }
 }
 
 // These are tests that should only be run with JDK 11+.

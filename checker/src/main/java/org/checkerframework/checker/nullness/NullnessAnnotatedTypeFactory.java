@@ -212,7 +212,7 @@ public class NullnessAnnotatedTypeFactory
           "org.jmlspecs.annotation.NonNull",
           // https://github.com/jspecify/jspecify/blob/main/src/main/java/org/jspecify/annotations/NonNull.java
           "org.jspecify.annotations.NonNull",
-          // 2022-11-17: Deprecated old package location, remove after some grace period
+          // 2022-11-17: Deprecated old package location, remove after some grace period.
           // https://github.com/jspecify/jspecify/tree/main/src/main/java/org/jspecify/nullness
           "org.jspecify.nullness.NonNull",
           // https://bits.netbeans.org/dev/javadoc/org-netbeans-api-annotations-common/org/netbeans/api/annotations/common/NonNull.html
@@ -344,7 +344,7 @@ public class NullnessAnnotatedTypeFactory
           "org.jmlspecs.annotation.Nullable",
           // https://github.com/jspecify/jspecify/blob/main/src/main/java/org/jspecify/annotations/Nullable.java
           "org.jspecify.annotations.Nullable",
-          // 2022-11-17: Deprecated old package location, remove after some grace period
+          // 2022-11-17: Deprecated old package location, remove after some grace period.
           // https://github.com/jspecify/jspecify/tree/main/src/main/java/org/jspecify/nullness
           "org.jspecify.nullness.Nullable",
           "org.jspecify.nullness.NullnessUnspecified",
@@ -709,7 +709,7 @@ public class NullnessAnnotatedTypeFactory
       // the most useful element type is @Initialized (which is also accurate).
       AnnotatedArrayType arrayType = (AnnotatedArrayType) type;
       AnnotatedTypeMirror componentType = arrayType.getComponentType();
-      if (componentType.hasEffectiveAnnotation(FBCBOTTOM)) {
+      if (componentType.hasAnnotation(FBCBOTTOM)) {
         componentType.replaceAnnotation(INITIALIZED);
       }
       return null;
@@ -851,6 +851,9 @@ public class NullnessAnnotatedTypeFactory
    * <p>This method ignores aliases of nullness annotations that are declaration annotations,
    * because they may apply to inner types.
    *
+   * <p>This method is used only for issuing an error when a nullness annotation is written in a
+   * place it should not be.
+   *
    * @param annoTrees a list of annotations that the Java parser attached to the variable/method
    *     declaration; null if this type is not from such a location. This is a list of extra
    *     annotations to check, in addition to those on the type.
@@ -871,8 +874,9 @@ public class NullnessAnnotatedTypeFactory
    * <p>This method ignores aliases of nullness annotations that are declaration annotations,
    * because they may apply to inner types.
    *
-   * <p>Clients that are processing a field or variable definition, or a method return type, should
-   * call {@link #containsNullnessAnnotation(List, Tree)} instead.
+   * <p>This method is used only for issuing an error when a nullness annotation is written in a
+   * place it should not be. Clients that are processing a field or variable definition, or a method
+   * return type, should call {@link #containsNullnessAnnotation(List, Tree)} instead.
    *
    * @param annoTrees a list of annotations to check
    * @return true if some annotation is a nullness annotation
