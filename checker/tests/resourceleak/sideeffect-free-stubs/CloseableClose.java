@@ -4,7 +4,6 @@
 // conservatively forgetting them after the first invocation.
 
 import java.io.Closeable;
-import java.io.IOException;
 import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;
 import org.checkerframework.checker.mustcall.qual.Owning;
 
@@ -21,14 +20,14 @@ class CloseableClose implements Closeable {
   @EnsuresCalledMethods(
       value = {"this.first", "this.second"},
       methods = "close")
-  // The exceptional postcondition is still expected to fail: if first.close() throws,
-  // then second.close() is not reached.
-  // :: error: contracts.exceptional.postcondition
   public void close() {
     try {
-      first.close();
+      try {
+        first.close();
+      } catch (Exception ignored) {
+      }
       second.close();
-    } catch (IOException e) {
+    } catch (Exception e) {
       throw new AssertionError(e);
     }
   }

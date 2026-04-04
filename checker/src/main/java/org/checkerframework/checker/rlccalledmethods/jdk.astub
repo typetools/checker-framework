@@ -23,7 +23,6 @@ public class Throwable {
 
 package java.io;
 
-import java.io.IOException;
 import org.checkerframework.checker.lock.qual.GuardSatisfied;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 
