@@ -21,8 +21,7 @@ from release_utils import (
     current_distribution_by_website,
     delete_directory_if_exists,
     delete_if_exists,
-    ensure_group_access,
-    ensure_user_access,
+    ensure_writeable,
     has_command_line_option,
     increment_version,
     print_step,
@@ -216,10 +215,24 @@ def build_checker_framework_release(
     build_and_locally_deploy_maven()
 
     dev_website_relative_dir = Path(DEV_SITE_DIR) / "releases" / version
+
+    # The user might not have the permissions to copy over existing files, so
+    # delete them first.
+    # Do not delete DEV_SITE_DIR because it contains dev_website_relative_dir within it (!).
+    print(f"Deleting target files in {DEV_SITE_DIR}")
+    for source in dev_website_relative_dir.iterdir():
+        target = Path(DEV_SITE_DIR) / source.name
+        if target.is_file():
+            target.unlink()
+        else:
+            shutil.rmtree(target)
+
     print(f"Copying from: {dev_website_relative_dir}\n  to: {DEV_SITE_DIR}")
-    ensure_group_access(dev_website_relative_dir)
-    ensure_user_access(dev_website_relative_dir)
-    shutil.copytree(str(dev_website_relative_dir), str(DEV_SITE_DIR), dirs_exist_ok=True)
+    shutil.copytree(
+        str(dev_website_relative_dir),
+        str(DEV_SITE_DIR),
+        dirs_exist_ok=True,
+    )
 
 
 def commit_to_interm_projects(cf_version: str) -> None:
@@ -338,12 +351,12 @@ def main(argv: list[str]) -> None:
     # permissions in order for them to be served.
 
     print_step("\n\nBuild Step 8: Add group permissions to repos.")
-    ensure_group_access(CHECKER_FRAMEWORK)
-    ensure_group_access(INTERM_CHECKER_REPO)
+    ensure_writeable(CHECKER_FRAMEWORK)
+    ensure_writeable(INTERM_CHECKER_REPO)
 
     print_step("\n\nBuild Step 9: Add group permissions to websites.")  # AUTO
     ## TODO: This is returning a status of 1, but it runs fine from the command line.
-    # ensure_group_access(DEV_SITE_DIR)
+    # ensure_writeable(DEV_SITE_DIR)
 
     create_empty_file(RELEASE_BUILD_COMPLETED_FLAG_FILE)
 
