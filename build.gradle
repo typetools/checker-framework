@@ -31,10 +31,10 @@ ext {
   // 1. Run Gradle using JDK 21:
   // mkdir ~/.gradle && echo "org.gradle.java.home=/usr/lib/jvm/java-21-openjdk-amd64" >> ~/.gradle/gradle.properties
   //
-  // 2. Use JDK 24 for all Java tasks: (24 could be replaced with any version.)
-  // export ORG_GRADLE_PROJECT_jdkTestVersion=24
+  // 2. Use JDK 25 for all Java tasks: (25 could be replaced with any version.)
+  // export ORG_GRADLE_PROJECT_jdkTestVersion=25
   // or
-  // ./gradlew sometask -PjdkTestVersion=24
+  // ./gradlew sometask -PjdkTestVersion=25
   //
   // 3. Compile the Checker Framework using JDK 21: (Overrides the version specified in `jdkTestVersion` for compiling only.)
   // export ORG_GRADLE_PROJECT_useJdk21Compiler=true
@@ -43,8 +43,8 @@ ext {
 
   gradleRunsOnJava21orHigher = JavaVersion.current() >= JavaVersion.VERSION_21
   gradleRunsOnJava22orHigher = JavaVersion.current() >= JavaVersion.VERSION_22
-  gradleRunsOnJava24orHigher = JavaVersion.current() >= JavaVersion.VERSION_24
   gradleRunsOnJava25orHigher = JavaVersion.current() >= JavaVersion.VERSION_25
+  gradleRunsOnJava26orHigher = JavaVersion.current() >= JavaVersion.VERSION_26
   // The JDK for running tests: the jdkTestVersion property or if not set, JavaVersion.current()
   if (project.getProperties().containsKey("jdkTestVersion")) {
     testJdkVersion = Integer.valueOf(project.getProperties().get("jdkTestVersion"))
@@ -57,9 +57,9 @@ ext {
   compilerJdkVersion = jdk21Compiler ? 21 : testJdkVersion
   compilerRunsOnJava21orHigher = compilerJdkVersion >= 21
 
-  // As of 2025-04-28 (Lombok 1.18.38), delombok supports JDK 24-ea but not
-  // JDK 24 proper; see https://projectlombok.org/changelog .
-  skipDelombok = gradleRunsOnJava24orHigher
+  // As of 2026-03-11 (Lombok 1.18.44), delombok does not support JDK 26;
+  // see https://projectlombok.org/changelog .
+  skipDelombok = gradleRunsOnJava26orHigher
 
   parentDir = file("${rootDir}/../").absolutePath
   afuManualDir = "docs/annotation-file-utilities/"
@@ -192,8 +192,8 @@ allprojects { currentProj ->
     // the sections with labels "javac-jdk11-non-modularized", "maven", and "sbt" in the manual
     // and in the checker-framework-gradle-plugin, CheckerFrameworkPlugin#applyToProject
     compilerArgsForRunningCF = [
-      // These are required in Java 16+ because the --illegal-access option is set to deny
-      // by default.  None of these packages are accessed via reflection, so the module
+      // These are required because the --illegal-access option is set to deny by default.
+      // None of these packages is accessed via reflection, so the module
       // only needs to be exported, but not opened.
       "--add-exports",
       "jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",

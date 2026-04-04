@@ -318,9 +318,8 @@ public class InsertAjavaAnnotations {
           lineBreaksBeforeFirstImport = 0;
         }
 
-        String insertionContent = lineSeparator;
-        insertionContent = insertionContent.repeat(lineBreaksBeforeFirstImport);
-        insertionContent += String.join("", newImports);
+        String insertionContent =
+            lineSeparator.repeat(lineBreaksBeforeFirstImport) + String.join("", newImports);
 
         insertions.add(new Insertion(position, insertionContent));
       }
