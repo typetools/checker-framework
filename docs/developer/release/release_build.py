@@ -21,7 +21,7 @@ from release_utils import (
     current_distribution_by_website,
     delete_directory_if_exists,
     delete_if_exists,
-    ensure_group_access,
+    ensure_writeable,
     has_command_line_option,
     increment_version,
     print_step,
@@ -216,28 +216,16 @@ def build_checker_framework_release(
 
     dev_website_relative_dir = Path(DEV_SITE_DIR) / "releases" / version
 
-    # # This did not work, so do the deletion instead.
-    # # When run with copy_function=shutil.copy2 (the default), it raises Error if
-    # # it cannot set the modification time.  On Unix systems, only the owner or
-    # # root (not someone in the group) can set the modification time.  shutil.copy
-    # # doesn't preserve modification time, so use it instead of shutil.copy2.
-    # # An alternative would be to delete the destination before calling copytree.
-    # ensure_group_access(dev_website_relative_dir)
-    # ensure_user_access(dev_website_relative_dir)
-    # shutil.copytree(
-    #     str(dev_website_relative_dir),
-    #     str(DEV_SITE_DIR),
-    #     copy_function=shutil.copy,
-    #     dirs_exist_ok=True,
-    # )
-
+    # The user might not have the permissions to copy over existing files, so
+    # delete them first.
     # Do not delete DEV_SITE_DIR because it contains dev_website_relative_dir within it (!).
-    # print(f"Deleting {DEV_SITE_DIR}")
-    # shutil.rmtree(DEV_SITE_DIR)
-    # os.mkdir(DEV_SITE_DIR)
-
-    # Here is another thing to try:
-    # for each file or directory in dev_website_relative_dir, delete the corresponding file in DEV_SITE_DIR.
+    print(f"Deleting target files in {DEV_SITE_DIR}")
+    for source in dev_website_relative_dir.iterdir():
+        target = Path(DEV_SITE_DIR) / source.name
+        if target.is_file():
+            target.unlink()
+        else:
+            shutil.rmtree(target)
 
     print(f"Copying from: {dev_website_relative_dir}\n  to: {DEV_SITE_DIR}")
     shutil.copytree(
@@ -363,12 +351,12 @@ def main(argv: list[str]) -> None:
     # permissions in order for them to be served.
 
     print_step("\n\nBuild Step 8: Add group permissions to repos.")
-    ensure_group_access(CHECKER_FRAMEWORK)
-    ensure_group_access(INTERM_CHECKER_REPO)
+    ensure_writeable(CHECKER_FRAMEWORK)
+    ensure_writeable(INTERM_CHECKER_REPO)
 
     print_step("\n\nBuild Step 9: Add group permissions to websites.")  # AUTO
     ## TODO: This is returning a status of 1, but it runs fine from the command line.
-    # ensure_group_access(DEV_SITE_DIR)
+    # ensure_writeable(DEV_SITE_DIR)
 
     create_empty_file(RELEASE_BUILD_COMPLETED_FLAG_FILE)
 

@@ -14,7 +14,7 @@ from release_utils import (
     delete_directory,
     delete_directory_if_exists,
     delete_if_exists,
-    ensure_group_access,
+    ensure_writeable,
     get_announcement_email,
     has_command_line_option,
     print_step,
@@ -120,7 +120,7 @@ def copy_htaccess() -> None:
     dev_htaccess = Path(DEV_SITE_DIR) / ".htaccess"
     live_htaccess = Path(LIVE_SITE_DIR) / ".htaccess"
     execute(f"rsync --times {dev_htaccess} {live_htaccess}")
-    ensure_group_access(live_htaccess)
+    ensure_writeable(live_htaccess)
 
 
 def copy_releases_to_live_site(cf_version: str) -> None:
@@ -411,7 +411,8 @@ def main(argv: list[str]) -> None:
             'Click "Try it out".\n'
             "Type any in the IP field.\n"
             "Click Execute\n"
-            "Log in with user token/password\n"
+            "Log in with the value for SONATYPE_NEXUS_{USERNAME,PASSWORD} "
+            "in file ~/.gradle/gradle.properties .\n"
             "Scroll down until you see a JSON block that includes a key like this:\n"
             '           "key": "user/ip/org.checkerframework--default-repository"\n'
             "Copy the key field\n"
@@ -441,7 +442,7 @@ def main(argv: list[str]) -> None:
             print("Copying to live site")
             copy_releases_to_live_site(new_cf_version)
             copy_htaccess()
-            ensure_group_access(CHECKER_LIVE_RELEASES_DIR / new_cf_version)
+            ensure_writeable(CHECKER_LIVE_RELEASES_DIR / new_cf_version)
     else:
         print("Test mode: Skipping copy to live site!")
 
@@ -569,20 +570,7 @@ def main(argv: list[str]) -> None:
         print_step("Push Step 13. Prep for next Checker Framework release.")  # MANUAL
         continue_or_exit(
             "Change the patch level (last number) of the Checker Framework version\n"
-            "in build.gradle:  increment it and add -SNAPSHOT\n"
-        )
-
-        print_step("Push Step 14. Update the Checker Framework Gradle plugin.")  # MANUAL
-        print("You might have to wait for Maven Central to propagate changes.\n")
-        continue_or_exit(
-            "Please update the Checker Framework Gradle plugin:\n"
-            "https://github.com/kelloggm/checkerframework-gradle-plugin/blob/master/RELEASE.md#updating-the-checker-framework-version\n"
-        )
-        continue_or_exit(
-            "Make a pull request to the Checker Framework that\n"
-            "updates the version number of the Checker Framework\n"
-            "Gradle Plugin in docs/examples/lombok and docs/examples/errorprone .\n"
-            "The pull request's tests will fail; you will merge it in a day."
+            "in settings.gradle:  increment it and add -SNAPSHOT\n"
         )
 
     delete_if_exists(RELEASE_BUILD_COMPLETED_FLAG_FILE)
