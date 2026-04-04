@@ -108,11 +108,7 @@ public class LinkedHashKeyedSet<K, V> extends AbstractSet<V> implements KeyedSet
   }
 
   @Override
-  public V add(
-      @OwningCollection LinkedHashKeyedSet<K, V> this,
-      V o,
-      int conflictBehavior,
-      int equalBehavior) {
+  public V add(LinkedHashKeyedSet<K, V> this, V o, int conflictBehavior, int equalBehavior) {
     K key = keyer.getKeyFor(o);
     V old = theMap.get(key);
     if (old == null
