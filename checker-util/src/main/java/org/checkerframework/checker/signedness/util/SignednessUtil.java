@@ -400,14 +400,25 @@ public final class SignednessUtil {
   /**
    * Creates a BigInteger representing the same value as unsigned long.
    *
-   * <p>This is a reimplementation of Java 8's {@link Long#toUnsignedBigInteger(long)}.
+   * <p>Java provides no public method with this functionality, unfortunately.
    *
-   * @deprecated use {@link Long#toUnsignedBigInteger(long)}
+   * @param l a long integer
+   * @return the corresponding BigInteger
    */
   @SuppressWarnings("signedness")
   @Deprecated(forRemoval = true, since = "4.0.0")
   private static @Unsigned BigInteger toUnsignedBigInteger(@Unsigned long l) {
-    return Long.toUnsignedBigInteger(l);
+    if (l >= 0L) {
+      return BigInteger.valueOf(l);
+    } else {
+      int upper = (int) (l >>> 32);
+      int lower = (int) l;
+
+      // return (upper << 32) + lower
+      return BigInteger.valueOf(Integer.toUnsignedLong(upper))
+          .shiftLeft(32)
+          .add(BigInteger.valueOf(Integer.toUnsignedLong(lower)));
+    }
   }
 
   /** Returns an unsigned short representing the same value as an unsigned byte. */
