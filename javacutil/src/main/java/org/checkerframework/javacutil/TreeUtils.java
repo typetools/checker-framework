@@ -1750,7 +1750,7 @@ public final class TreeUtils {
       throw new BugInCF(
           "TreeUtils.isCompactCanonicalRecordConstructor: null symbol for method tree: " + method);
     }
-    return (s.flags() & Flags.COMPACT_RECORD_CONSTRUCTOR) != 0;
+    return (s.flags() & Flags.RECORD) != 0;
   }
 
   /**
