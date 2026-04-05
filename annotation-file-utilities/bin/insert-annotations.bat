@@ -7,4 +7,4 @@ set ANNOTATION_FILE_UTILS=%~d0
 set ANNOTATION_FILE_UTILS=%ANNOTATION_FILE_UTILS%%~p0
 set ANNOTATION_FILE_UTILS=%ANNOTATION_FILE_UTILS%\..\dist\annotation-file-utilities-all.jar
 
-java -ea -cp "%ANNOTATION_FILE_UTILS%;%CLASSPATH%" ClassFileWriter %*
+java -ea -cp "%ANNOTATION_FILE_UTILS%;%CLASSPATH%" org.checkerframework.afu.scenelib.io.classfile.ClassFileWriter %*
