@@ -407,18 +407,7 @@ public final class SignednessUtil {
   @SuppressWarnings("signedness")
   @Deprecated(forRemoval = true, since = "4.0.0")
   private static @Unsigned BigInteger toUnsignedBigInteger(@Unsigned long l) {
-    // Java 8 version: return Long.toUnsignedBigInteger(l);
-    if (l >= 0L) {
-      return BigInteger.valueOf(l);
-    } else {
-      int upper = (int) (l >>> 32);
-      int lower = (int) l;
-
-      // return (upper << 32) + lower
-      return BigInteger.valueOf(Integer.toUnsignedLong(upper))
-          .shiftLeft(32)
-          .add(BigInteger.valueOf(Integer.toUnsignedLong(lower)));
-    }
+    return Long.toUnsignedBigInteger(l);
   }
 
   /** Returns an unsigned short representing the same value as an unsigned byte. */
