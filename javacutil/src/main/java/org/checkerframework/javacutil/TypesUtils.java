@@ -113,37 +113,47 @@ public final class TypesUtils {
    */
   public static Class<?> getClassFromType(TypeMirror typeMirror) {
 
-    return switch (typeMirror.getKind()) {
-      case INT -> int.class;
-      case LONG -> long.class;
-      case SHORT -> short.class;
-      case BYTE -> byte.class;
-      case CHAR -> char.class;
-      case DOUBLE -> double.class;
-      case FLOAT -> float.class;
-      case BOOLEAN -> boolean.class;
-      case ARRAY -> {
+    switch (typeMirror.getKind()) {
+      case INT:
+        return int.class;
+      case LONG:
+        return long.class;
+      case SHORT:
+        return short.class;
+      case BYTE:
+        return byte.class;
+      case CHAR:
+        return char.class;
+      case DOUBLE:
+        return double.class;
+      case FLOAT:
+        return float.class;
+      case BOOLEAN:
+        return boolean.class;
+
+      case ARRAY:
         Class<?> componentClass = getClassFromType(((ArrayType) typeMirror).getComponentType());
         // In Java 12, use this instead:
         // return fooClass.arrayType();
-        yield java.lang.reflect.Array.newInstance(componentClass, 0).getClass();
-      }
-      case DECLARED -> {
+        return java.lang.reflect.Array.newInstance(componentClass, 0).getClass();
+
+      case DECLARED:
         // BUG: need to compute a @ClassGetName, but this code computes a
         // @CanonicalNameOrEmpty.  They are different for inner classes.
         @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for Names.toString
         @DotSeparatedIdentifiers String typeString = TypesUtils.getQualifiedName((DeclaredType) typeMirror).toString();
         if (typeString.equals("<nulltype>")) {
-          yield void.class;
+          return void.class;
         }
         try {
-          yield Class.forName(typeString);
+          return Class.forName(typeString);
         } catch (ClassNotFoundException | NoClassDefFoundError | UnsupportedClassVersionError e) {
-          yield Object.class;
+          return Object.class;
         }
-      }
-      default -> Object.class;
-    };
+
+      default:
+        return Object.class;
+    }
   }
 
   // Getters
