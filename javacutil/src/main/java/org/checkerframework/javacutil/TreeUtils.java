@@ -132,9 +132,6 @@ public final class TreeUtils {
    */
   private static final @Nullable Method TREEMAKER_SELECT;
 
-  /** The value of Flags.RECORD which does not exist in Java 9 or 11. */
-  private static final long Flags_RECORD = 2305843009213693952L;
-
   /** Tree kinds that represent a binary comparison. */
   private static final Set<Tree.Kind> BINARY_COMPARISON_TREE_KINDS =
       EnumSet.of(
