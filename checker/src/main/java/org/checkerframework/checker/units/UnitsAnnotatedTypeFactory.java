@@ -95,10 +95,10 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   private @MonotonicNonNull Map<@CanonicalName String, UnitsRelations> unitsRel;
 
   /** Map from canonical name of external qualifiers, to their Class. */
-  private static final Map<@CanonicalName String, Class<? extends Annotation>> externalQualsMap =
+  private final Map<@CanonicalName String, Class<? extends Annotation>> externalQualsMap =
       new HashMap<>();
 
-  private static final Map<String, AnnotationMirror> aliasMap = new HashMap<>();
+  private final Map<String, AnnotationMirror> aliasMap = new HashMap<>();
 
   @SuppressWarnings("this-escape")
   public UnitsAnnotatedTypeFactory(BaseTypeChecker checker) {
