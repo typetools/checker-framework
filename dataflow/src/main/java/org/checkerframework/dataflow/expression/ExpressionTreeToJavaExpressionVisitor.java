@@ -47,9 +47,9 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Resolver;
 import org.checkerframework.javacutil.TypesUtils;
-import org.checkerframework.javacutil.javacparse.JavacParse;
-import org.checkerframework.javacutil.javacparse.JavacParseResult;
 import org.checkerframework.javacutil.trees.TreeBuilder;
+import org.plumelib.javacparse.JavacParse;
+import org.plumelib.javacparse.JavacParseResult;
 import org.plumelib.util.CollectionsPlume;
 
 /**

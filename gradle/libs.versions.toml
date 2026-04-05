@@ -59,6 +59,8 @@ hashmap-util = "org.plumelib:hashmap-util:0.0.1"
 
 javac = "com.google.errorprone:javac:9+181-r4173-1"
 
+javac-parse = "org.plumelib:javac-parse:0.9.0"
+
 javax-servlet-api = "javax.servlet:javax.servlet-api:4.0.1"
 
 jgit-jgit = { group = "org.eclipse.jgit", name = "org.eclipse.jgit", version.ref = "jgit-version" }
