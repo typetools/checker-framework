@@ -110,7 +110,7 @@ public class AScene implements Cloneable {
    */
   @Override
   public boolean equals(Object o) {
-    return o instanceof AScene && ((AScene) o).equals(this);
+    return o instanceof AScene scene && scene.equals(this);
   }
 
   /**

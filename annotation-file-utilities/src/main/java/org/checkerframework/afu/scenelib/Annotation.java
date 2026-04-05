@@ -61,8 +61,7 @@ public final class Annotation {
       Object value = fieldValues.get(fieldname);
       String valueString;
       String classString = value.getClass().toString();
-      if (value instanceof Object[]) {
-        Object[] arr = (Object[]) value;
+      if (value instanceof Object[] arr) {
         valueString = Arrays.toString(arr);
         classString += " {";
         for (Object elt : arr) {
@@ -203,7 +202,7 @@ public final class Annotation {
    */
   @Override
   public final boolean equals(Object o) {
-    return o instanceof Annotation && equals((Annotation) o);
+    return o instanceof Annotation annotation && equals(annotation);
   }
 
   /**

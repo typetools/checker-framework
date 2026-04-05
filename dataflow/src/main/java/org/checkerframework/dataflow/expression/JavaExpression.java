@@ -381,51 +381,43 @@ public abstract class JavaExpression {
    */
   public static JavaExpression fromNode(Node receiverNode) {
     JavaExpression result = null;
-    if (receiverNode instanceof FieldAccessNode) {
-      result = fromNodeFieldAccess((FieldAccessNode) receiverNode);
+    if (receiverNode instanceof FieldAccessNode fieldAccessNode) {
+      result = fromNodeFieldAccess(fieldAccessNode);
     } else if (receiverNode instanceof ExplicitThisNode) {
       result = new ThisReference(receiverNode.getType());
     } else if (receiverNode instanceof ThisNode) {
       result = new ThisReference(receiverNode.getType());
     } else if (receiverNode instanceof SuperNode) {
       result = new SuperReference(receiverNode.getType());
-    } else if (receiverNode instanceof LocalVariableNode) {
-      LocalVariableNode lv = (LocalVariableNode) receiverNode;
+    } else if (receiverNode instanceof LocalVariableNode lv) {
       result = new LocalVariable(lv);
-    } else if (receiverNode instanceof ArrayAccessNode) {
-      ArrayAccessNode a = (ArrayAccessNode) receiverNode;
+    } else if (receiverNode instanceof ArrayAccessNode a) {
       result = fromArrayAccess(a);
-    } else if (receiverNode instanceof StringConversionNode) {
+    } else if (receiverNode instanceof StringConversionNode stringConversionNode) {
       // ignore string conversion
-      return fromNode(((StringConversionNode) receiverNode).getOperand());
-    } else if (receiverNode instanceof WideningConversionNode) {
+      return fromNode(stringConversionNode.getOperand());
+    } else if (receiverNode instanceof WideningConversionNode wideningConversionNode) {
       // ignore widening
-      return fromNode(((WideningConversionNode) receiverNode).getOperand());
-    } else if (receiverNode instanceof NarrowingConversionNode) {
+      return fromNode(wideningConversionNode.getOperand());
+    } else if (receiverNode instanceof NarrowingConversionNode narrowingConversionNode) {
       // ignore narrowing
-      return fromNode(((NarrowingConversionNode) receiverNode).getOperand());
-    } else if (receiverNode instanceof UnaryOperationNode) {
-      UnaryOperationNode uopn = (UnaryOperationNode) receiverNode;
+      return fromNode(narrowingConversionNode.getOperand());
+    } else if (receiverNode instanceof UnaryOperationNode uopn) {
       return new UnaryOperation(uopn, fromNode(uopn.getOperand()));
-    } else if (receiverNode instanceof BinaryOperationNode) {
-      BinaryOperationNode bopn = (BinaryOperationNode) receiverNode;
+    } else if (receiverNode instanceof BinaryOperationNode bopn) {
       return new BinaryOperation(
           bopn, fromNode(bopn.getLeftOperand()), fromNode(bopn.getRightOperand()));
-    } else if (receiverNode instanceof ClassNameNode) {
-      ClassNameNode cn = (ClassNameNode) receiverNode;
+    } else if (receiverNode instanceof ClassNameNode cn) {
       result = new ClassName(cn.getType());
-    } else if (receiverNode instanceof ValueLiteralNode) {
-      ValueLiteralNode vn = (ValueLiteralNode) receiverNode;
+    } else if (receiverNode instanceof ValueLiteralNode vn) {
       result = new ValueLiteral(vn.getType(), vn);
-    } else if (receiverNode instanceof ArrayCreationNode) {
-      ArrayCreationNode an = (ArrayCreationNode) receiverNode;
+    } else if (receiverNode instanceof ArrayCreationNode an) {
       List<@Nullable JavaExpression> dimensions =
           CollectionsPlume.mapList(JavaExpression::fromNode, an.getDimensions());
       List<JavaExpression> initializers =
           CollectionsPlume.mapList(JavaExpression::fromNode, an.getInitializers());
       result = new ArrayCreation(an.getType(), dimensions, initializers);
-    } else if (receiverNode instanceof MethodInvocationNode) {
-      MethodInvocationNode mn = (MethodInvocationNode) receiverNode;
+    } else if (receiverNode instanceof MethodInvocationNode mn) {
       MethodInvocationTree t = mn.getTree();
       if (t == null) {
         throw new BugInCF("Unexpected null tree for node: " + mn);
@@ -463,26 +455,24 @@ public abstract class JavaExpression {
   public static JavaExpression fromTree(ExpressionTree tree) {
     JavaExpression result;
     switch (tree.getKind()) {
-      case ARRAY_ACCESS:
+      case ARRAY_ACCESS -> {
         ArrayAccessTree a = (ArrayAccessTree) tree;
         JavaExpression arrayAccessExpression = fromTree(a.getExpression());
         JavaExpression index = fromTree(a.getIndex());
         result = new ArrayAccess(TreeUtils.typeOf(a), arrayAccessExpression, index);
-        break;
-
-      case BOOLEAN_LITERAL:
-      case CHAR_LITERAL:
-      case DOUBLE_LITERAL:
-      case FLOAT_LITERAL:
-      case INT_LITERAL:
-      case LONG_LITERAL:
-      case NULL_LITERAL:
-      case STRING_LITERAL:
+      }
+      case BOOLEAN_LITERAL,
+          CHAR_LITERAL,
+          DOUBLE_LITERAL,
+          FLOAT_LITERAL,
+          INT_LITERAL,
+          LONG_LITERAL,
+          NULL_LITERAL,
+          STRING_LITERAL -> {
         LiteralTree vn = (LiteralTree) tree;
         result = new ValueLiteral(TreeUtils.typeOf(tree), vn.getValue());
-        break;
-
-      case NEW_ARRAY:
+      }
+      case NEW_ARRAY -> {
         NewArrayTree newArrayTree = (NewArrayTree) tree;
         List<@Nullable JavaExpression> dimensions;
         if (newArrayTree.getDimensions() == null) {
@@ -502,11 +492,9 @@ public abstract class JavaExpression {
             initializers.add(fromTree(initializer));
           }
         }
-
         result = new ArrayCreation(TreeUtils.typeOf(tree), dimensions, initializers);
-        break;
-
-      case METHOD_INVOCATION:
+      }
+      case METHOD_INVOCATION -> {
         MethodInvocationTree mn = (MethodInvocationTree) tree;
         assert TreeUtils.isUseOfElement(mn) : "@AssumeAssertion(nullness): tree kind";
         ExecutableElement invokedMethod = TreeUtils.elementFromUse(mn);
@@ -526,22 +514,16 @@ public abstract class JavaExpression {
         }
         TypeMirror resultType = TreeUtils.typeOf(mn);
         result = new MethodCall(resultType, invokedMethod, methodReceiver, parameters);
-        break;
-
-      case MEMBER_SELECT:
-        result = fromMemberSelect((MemberSelectTree) tree);
-        break;
-
-      case IDENTIFIER:
+      }
+      case MEMBER_SELECT -> result = fromMemberSelect((MemberSelectTree) tree);
+      case IDENTIFIER -> {
         IdentifierTree identifierTree = (IdentifierTree) tree;
         TypeMirror typeOfId = TreeUtils.typeOf(identifierTree);
         Name identifierName = identifierTree.getName();
         if (identifierName.contentEquals("this")) {
-          result = new ThisReference(typeOfId);
-          break;
+          return new ThisReference(typeOfId);
         } else if (identifierName.contentEquals("super")) {
-          result = new SuperReference(typeOfId);
-          break;
+          return new SuperReference(typeOfId);
         }
         assert TreeUtils.isUseOfElement(identifierTree) : "@AssumeAssertion(nullness): tree kind";
         Element ele = TreeUtils.elementFromUse(identifierTree);
@@ -552,45 +534,44 @@ public abstract class JavaExpression {
         } else {
           result = fromVariableElement(typeOfId, (VariableElement) ele, identifierTree);
         }
-        break;
-
-      case UNARY_PLUS:
+      }
+      case UNARY_PLUS -> {
         return fromTree(((UnaryTree) tree).getExpression());
-      case BITWISE_COMPLEMENT:
-      case LOGICAL_COMPLEMENT:
-      case POSTFIX_DECREMENT:
-      case POSTFIX_INCREMENT:
-      case PREFIX_DECREMENT:
-      case PREFIX_INCREMENT:
-      case UNARY_MINUS:
+      }
+      case BITWISE_COMPLEMENT,
+          LOGICAL_COMPLEMENT,
+          POSTFIX_DECREMENT,
+          POSTFIX_INCREMENT,
+          PREFIX_DECREMENT,
+          PREFIX_INCREMENT,
+          UNARY_MINUS -> {
         JavaExpression operand = fromTree(((UnaryTree) tree).getExpression());
         return new UnaryOperation(TreeUtils.typeOf(tree), tree.getKind(), operand);
-
-      case CONDITIONAL_AND:
-      case CONDITIONAL_OR:
-      case DIVIDE:
-      case EQUAL_TO:
-      case GREATER_THAN:
-      case GREATER_THAN_EQUAL:
-      case LEFT_SHIFT:
-      case LESS_THAN:
-      case LESS_THAN_EQUAL:
-      case MINUS:
-      case MULTIPLY:
-      case NOT_EQUAL_TO:
-      case OR:
-      case PLUS:
-      case REMAINDER:
-      case RIGHT_SHIFT:
-      case UNSIGNED_RIGHT_SHIFT:
-      case XOR:
+      }
+      case CONDITIONAL_AND,
+          CONDITIONAL_OR,
+          DIVIDE,
+          EQUAL_TO,
+          GREATER_THAN,
+          GREATER_THAN_EQUAL,
+          LEFT_SHIFT,
+          LESS_THAN,
+          LESS_THAN_EQUAL,
+          MINUS,
+          MULTIPLY,
+          NOT_EQUAL_TO,
+          OR,
+          PLUS,
+          REMAINDER,
+          RIGHT_SHIFT,
+          UNSIGNED_RIGHT_SHIFT,
+          XOR -> {
         BinaryTree binaryTree = (BinaryTree) tree;
         JavaExpression left = fromTree(binaryTree.getLeftOperand());
         JavaExpression right = fromTree(binaryTree.getRightOperand());
         return new BinaryOperation(TreeUtils.typeOf(tree), tree.getKind(), left, right);
-
-      default:
-        result = null;
+      }
+      default -> result = null;
     }
 
     if (result == null) {
@@ -624,13 +605,10 @@ public abstract class JavaExpression {
       return new Unknown(tree);
     }
     switch (ele.getKind()) {
-      case LOCAL_VARIABLE:
-      case RESOURCE_VARIABLE:
-      case EXCEPTION_PARAMETER:
-      case PARAMETER:
+      case LOCAL_VARIABLE, RESOURCE_VARIABLE, EXCEPTION_PARAMETER, PARAMETER -> {
         return new LocalVariable(ele);
-      case FIELD:
-      case ENUM_CONSTANT:
+      }
+      case FIELD, ENUM_CONSTANT -> {
         // Implicit access expression, such as "this" or a class name
         JavaExpression fieldAccessExpression;
         @SuppressWarnings("nullness:dereference.of.nullable") // a field has enclosing class
@@ -641,12 +619,14 @@ public abstract class JavaExpression {
           fieldAccessExpression = new ThisReference(enclosingTypeElement);
         }
         return new FieldAccess(fieldAccessExpression, typeOfEle, ele);
-      default:
+      }
+      default -> {
         if (ElementUtils.isBindingVariable(ele)) {
           return new LocalVariable(ele);
         }
         throw new BugInCF(
             "Unexpected kind of VariableTree: kind: %s element: %s", ele.getKind(), ele);
+      }
     }
   }
 
@@ -676,16 +656,15 @@ public abstract class JavaExpression {
       return new ClassName(selectType);
     }
     switch (ele.getKind()) {
-      case METHOD:
-      case CONSTRUCTOR:
+      case METHOD, CONSTRUCTOR -> {
         return fromTree(memberSelectTree.getExpression());
-      case ENUM_CONSTANT:
-      case FIELD:
+      }
+      case ENUM_CONSTANT, FIELD -> {
         TypeMirror fieldType = TreeUtils.typeOf(memberSelectTree);
         JavaExpression je = fromTree(memberSelectTree.getExpression());
         return new FieldAccess(je, fieldType, (VariableElement) ele);
-      default:
-        throw new BugInCF("Unexpected element kind: %s element: %s", ele.getKind(), ele);
+      }
+      default -> throw new BugInCF("Unexpected element kind: %s element: %s", ele.getKind(), ele);
     }
   }
 

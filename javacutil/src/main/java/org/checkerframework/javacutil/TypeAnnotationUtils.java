@@ -137,7 +137,7 @@ public class TypeAnnotationUtils {
    * @return true if the two attributes are the same
    */
   private static boolean attributeEquals(Attribute a1, Attribute a2, Types types) {
-    if (a1 instanceof Attribute.Array aa1 && a2 instanceof Attribute.Array aa1) {
+    if (a1 instanceof Attribute.Array aa1 && a2 instanceof Attribute.Array aa2) {
       List<Attribute> list1 = aa1.getValue();
       List<Attribute> list2 = aa2.getValue();
       if (list1.size() != list2.size()) {
@@ -150,7 +150,7 @@ public class TypeAnnotationUtils {
         }
       }
       return true;
-    } else if (a1 instanceof Attribute.Class ac && a2 instanceof Attribute.Class ac) {
+    } else if (a1 instanceof Attribute.Class ac1 && a2 instanceof Attribute.Class ac2) {
       Type t1 = ac1.getValue();
       Type t2 = ac2.getValue();
       return types.isSameType(t1, t2);
@@ -181,14 +181,14 @@ public class TypeAnnotationUtils {
         }
       }
       return true;
-    } else if (a1 instanceof Attribute.Enum && a2 instanceof Attribute.Enum) {
-      Symbol.VarSymbol s1 = ((Attribute.Enum) a1).getValue();
-      Symbol.VarSymbol s2 = ((Attribute.Enum) a2).getValue();
+    } else if (a1 instanceof Attribute.Enum ae1 && a2 instanceof Attribute.Enum ae2) {
+      Symbol.VarSymbol s1 = ae1.getValue();
+      Symbol.VarSymbol s2 = ae2.getValue();
       // VarSymbol.equals() is reference equality.
       return s1.equals(s2) || s1.toString().equals(s2.toString());
-    } else if (a1 instanceof Attribute.Error && a2 instanceof Attribute.Error) {
-      String s1 = ((Attribute.Error) a1).getValue();
-      String s2 = ((Attribute.Error) a2).getValue();
+    } else if (a1 instanceof Attribute.Error ae1 && a2 instanceof Attribute.Error ae2) {
+      String s1 = ae1.getValue();
+      String s2 = ae2.getValue();
       return s1.equals(s2);
     } else {
       return a1.equals(a2);
@@ -365,8 +365,8 @@ public class TypeAnnotationUtils {
 
     @Override
     public Attribute visitType(TypeMirror t, Void p) {
-      if (t instanceof Type) {
-        return new Attribute.Class(javacTypes, (Type) t);
+      if (t instanceof Type type) {
+        return new Attribute.Class(javacTypes, type);
       } else {
         throw new BugInCF("Unexpected type of TypeMirror: " + t.getClass());
       }
@@ -374,11 +374,8 @@ public class TypeAnnotationUtils {
 
     @Override
     public Attribute visitEnumConstant(VariableElement c, Void p) {
-      if (c instanceof Symbol.VarSymbol) {
-        Symbol.VarSymbol sym = (Symbol.VarSymbol) c;
-        if (sym.getKind() == ElementKind.ENUM_CONSTANT) {
-          return new Attribute.Enum(sym.type, sym);
-        }
+      if (c instanceof Symbol.VarSymbol sym && sym.getKind() == ElementKind.ENUM_CONSTANT) {
+        return new Attribute.Enum(sym.type, sym);
       }
       throw new BugInCF("Unexpected type of VariableElement: " + c.getClass());
     }

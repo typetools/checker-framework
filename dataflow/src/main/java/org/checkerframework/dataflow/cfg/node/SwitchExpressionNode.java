@@ -85,10 +85,9 @@ public class SwitchExpressionNode extends Node {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof SwitchExpressionNode)) {
+    if (!(obj instanceof SwitchExpressionNode other)) {
       return false;
     }
-    SwitchExpressionNode other = (SwitchExpressionNode) obj;
     return getTree().equals(other.getTree())
         && getSwitchExpressionVar().equals(other.getSwitchExpressionVar());
   }

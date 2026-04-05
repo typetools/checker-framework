@@ -245,6 +245,7 @@ public class TreePathUtil {
             return pkgExp.toString() + "." + result;
           }
         }
+        default -> {}
       }
     }
     throw new Error("unreachable");

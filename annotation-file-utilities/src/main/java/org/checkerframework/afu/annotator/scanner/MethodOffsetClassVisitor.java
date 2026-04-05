@@ -100,16 +100,10 @@ public class MethodOffsetClassVisitor extends ClassVisitor {
     public void visitTypeInsn(int opcode, String descriptor) {
       super.visitTypeInsn(opcode, descriptor);
       switch (opcode) {
-        case Opcodes.CHECKCAST:
-          CastScanner.addCastToMethod(methodName, getOffset());
-          break;
-        case Opcodes.NEW:
-        case Opcodes.ANEWARRAY:
-          NewScanner.addNewToMethod(methodName, getOffset());
-          break;
-        case Opcodes.INSTANCEOF:
-          InstanceOfScanner.addInstanceOfToMethod(methodName, getOffset());
-          break;
+        case Opcodes.CHECKCAST -> CastScanner.addCastToMethod(methodName, getOffset());
+        case Opcodes.NEW, Opcodes.ANEWARRAY -> NewScanner.addNewToMethod(methodName, getOffset());
+        case Opcodes.INSTANCEOF -> InstanceOfScanner.addInstanceOfToMethod(methodName, getOffset());
+        default -> {}
       }
       methodCodeOffsetAdapter.visitTypeInsn(opcode, descriptor);
     }
@@ -135,13 +129,9 @@ public class MethodOffsetClassVisitor extends ClassVisitor {
     public void visitMethodInsn(int opcode, String owner, String name, String descriptor) {
       super.visitMethodInsn(opcode, owner, name, descriptor);
       switch (opcode) {
-        case Opcodes.INVOKEINTERFACE:
-        case Opcodes.INVOKESTATIC:
-        case Opcodes.INVOKEVIRTUAL:
-          MethodCallScanner.addMethodCallToMethod(methodName, getOffset());
-          break;
-        default:
-          break;
+        case Opcodes.INVOKEINTERFACE, Opcodes.INVOKESTATIC, Opcodes.INVOKEVIRTUAL ->
+            MethodCallScanner.addMethodCallToMethod(methodName, getOffset());
+        default -> {}
       }
       methodCodeOffsetAdapter.visitMethodInsn(opcode, owner, name, descriptor);
     }
@@ -151,13 +141,9 @@ public class MethodOffsetClassVisitor extends ClassVisitor {
         int opcode, String owner, String name, String descriptor, boolean isInterface) {
       super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
       switch (opcode) {
-        case Opcodes.INVOKEINTERFACE:
-        case Opcodes.INVOKESTATIC:
-        case Opcodes.INVOKEVIRTUAL:
-          MethodCallScanner.addMethodCallToMethod(methodName, getOffset());
-          break;
-        default:
-          break;
+        case Opcodes.INVOKEINTERFACE, Opcodes.INVOKESTATIC, Opcodes.INVOKEVIRTUAL ->
+            MethodCallScanner.addMethodCallToMethod(methodName, getOffset());
+        default -> {}
       }
       methodCodeOffsetAdapter.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
     }

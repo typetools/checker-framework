@@ -104,8 +104,8 @@ public final class JavacParse {
     }
 
     Tree decl = decls.get(0);
-    if (decl instanceof ClassTree) {
-      return new JavacParseResult<ClassTree>((ClassTree) decl, parsedCU.getDiagnostics());
+    if (decl instanceof ClassTree classTree) {
+      return new JavacParseResult<ClassTree>(classTree, parsedCU.getDiagnostics());
     } else {
       throw new IllegalArgumentException(
           "source code should be a type declaration but is "

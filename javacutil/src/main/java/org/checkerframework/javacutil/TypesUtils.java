@@ -113,48 +113,37 @@ public final class TypesUtils {
    */
   public static Class<?> getClassFromType(TypeMirror typeMirror) {
 
-    switch (typeMirror.getKind()) {
-      case INT:
-        return int.class;
-      case LONG:
-        return long.class;
-      case SHORT:
-        return short.class;
-      case BYTE:
-        return byte.class;
-      case CHAR:
-        return char.class;
-      case DOUBLE:
-        return double.class;
-      case FLOAT:
-        return float.class;
-      case BOOLEAN:
-        return boolean.class;
-
-      case ARRAY:
+    return switch (typeMirror.getKind()) {
+      case INT -> int.class;
+      case LONG -> long.class;
+      case SHORT -> short.class;
+      case BYTE -> byte.class;
+      case CHAR -> char.class;
+      case DOUBLE -> double.class;
+      case FLOAT -> float.class;
+      case BOOLEAN -> boolean.class;
+      case ARRAY -> {
         Class<?> componentClass = getClassFromType(((ArrayType) typeMirror).getComponentType());
         // In Java 12, use this instead:
         // return fooClass.arrayType();
-        return java.lang.reflect.Array.newInstance(componentClass, 0).getClass();
-
-      case DECLARED:
+        yield java.lang.reflect.Array.newInstance(componentClass, 0).getClass();
+      }
+      case DECLARED -> {
         // BUG: need to compute a @ClassGetName, but this code computes a
         // @CanonicalNameOrEmpty.  They are different for inner classes.
         @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for Names.toString
         @DotSeparatedIdentifiers String typeString = TypesUtils.getQualifiedName((DeclaredType) typeMirror).toString();
         if (typeString.equals("<nulltype>")) {
-          return void.class;
+          yield void.class;
         }
-
         try {
-          return Class.forName(typeString);
+          yield Class.forName(typeString);
         } catch (ClassNotFoundException | NoClassDefFoundError | UnsupportedClassVersionError e) {
-          return Object.class;
+          yield Object.class;
         }
-
-      default:
-        return Object.class;
-    }
+      }
+      default -> Object.class;
+    };
   }
 
   // Getters
@@ -180,46 +169,44 @@ public final class TypesUtils {
    * @return the simple type name
    */
   public static String simpleTypeName(TypeMirror type) {
-    switch (type.getKind()) {
-      case ARRAY:
-        return simpleTypeName(((ArrayType) type).getComponentType()) + "[]";
-      case TYPEVAR:
-        return ((TypeVariable) type).asElement().getSimpleName().toString();
-      case DECLARED:
-        return ((DeclaredType) type).asElement().getSimpleName().toString();
-      case INTERSECTION:
+    return switch (type.getKind()) {
+      case ARRAY -> simpleTypeName(((ArrayType) type).getComponentType()) + "[]";
+      case TYPEVAR -> ((TypeVariable) type).asElement().getSimpleName().toString();
+      case DECLARED -> ((DeclaredType) type).asElement().getSimpleName().toString();
+      case INTERSECTION -> {
         StringJoiner sjI = new StringJoiner(" & ");
         for (TypeMirror bound : ((IntersectionType) type).getBounds()) {
           sjI.add(simpleTypeName(bound));
         }
-        return sjI.toString();
-      case NULL:
-        return "<nulltype>";
-      case VOID:
-        return "void";
-      case WILDCARD:
+        yield sjI.toString();
+      }
+      case NULL -> "<nulltype>";
+      case VOID -> "void";
+      case WILDCARD -> {
         WildcardType wildcard = (WildcardType) type;
         TypeMirror extendsBound = wildcard.getExtendsBound();
         TypeMirror superBound = wildcard.getSuperBound();
-        return "?"
+        yield "?"
             + (extendsBound != null ? " extends " + simpleTypeName(extendsBound) : "")
             + (superBound != null ? " super " + simpleTypeName(superBound) : "");
-      case UNION:
+      }
+      case UNION -> {
         StringJoiner sj = new StringJoiner(" | ");
         for (TypeMirror alternative : ((UnionType) type).getAlternatives()) {
           sj.add(simpleTypeName(alternative));
         }
-        return sj.toString();
-      case PACKAGE:
-        return "PACKAGE:" + type;
-      default:
+        yield sj.toString();
+      }
+      case PACKAGE -> "PACKAGE:" + type;
+      default -> {
         if (type.getKind().isPrimitive()) {
-          return TypeAnnotationUtils.unannotatedType(type).toString();
+          yield TypeAnnotationUtils.unannotatedType(type).toString();
         } else {
           throw new BugInCF(
               "simpleTypeName: unhandled type kind: %s, type: %s", type.getKind(), type);
         }
-    }
+      }
+    };
   }
 
   /**
@@ -441,9 +428,8 @@ public final class TypesUtils {
    * @return true if the argument is an anonymous type
    */
   public static boolean isAnonymous(TypeMirror type) {
-    return (type instanceof DeclaredType)
-        && ((TypeElement) ((DeclaredType) type).asElement()).getNestingKind()
-            == NestingKind.ANONYMOUS;
+    return (type instanceof DeclaredType dt)
+        && ((TypeElement) dt.asElement()).getNestingKind() == NestingKind.ANONYMOUS;
   }
 
   /**
@@ -453,19 +439,10 @@ public final class TypesUtils {
    * @return true if the argument is a primitive type
    */
   public static boolean isPrimitive(TypeMirror type) {
-    switch (type.getKind()) {
-      case BOOLEAN:
-      case BYTE:
-      case CHAR:
-      case DOUBLE:
-      case FLOAT:
-      case INT:
-      case LONG:
-      case SHORT:
-        return true;
-      default:
-        return false;
-    }
+    return switch (type.getKind()) {
+      case BOOLEAN, BYTE, CHAR, DOUBLE, FLOAT, INT, LONG, SHORT -> true;
+      default -> false;
+    };
   }
 
   /**
@@ -475,20 +452,11 @@ public final class TypesUtils {
    * @return true if the argument is a primitive type or a boxed primitive type
    */
   public static boolean isPrimitiveOrBoxed(TypeMirror type) {
-    switch (type.getKind()) {
-      case BOOLEAN:
-      case BYTE:
-      case CHAR:
-      case DOUBLE:
-      case FLOAT:
-      case INT:
-      case LONG:
-      case SHORT:
-        return true;
-
-      case DECLARED:
+    return switch (type.getKind()) {
+      case BOOLEAN, BYTE, CHAR, DOUBLE, FLOAT, INT, LONG, SHORT -> true;
+      case DECLARED -> {
         String qualifiedName = getQualifiedName((DeclaredType) type).toString();
-        return (qualifiedName.equals("java.lang.Boolean")
+        yield (qualifiedName.equals("java.lang.Boolean")
             || qualifiedName.equals("java.lang.Byte")
             || qualifiedName.equals("java.lang.Character")
             || qualifiedName.equals("java.lang.Short")
@@ -496,10 +464,9 @@ public final class TypesUtils {
             || qualifiedName.equals("java.lang.Long")
             || qualifiedName.equals("java.lang.Double")
             || qualifiedName.equals("java.lang.Float"));
-
-      default:
-        return false;
-    }
+      }
+      default -> false;
+    };
   }
 
   /**
@@ -592,27 +559,17 @@ public final class TypesUtils {
     }
 
     String qualifiedName = getQualifiedName((DeclaredType) declaredType).toString();
-    switch (primitiveType.getKind()) {
-      case BOOLEAN:
-        return qualifiedName.equals("java.lang.Boolean");
-      case BYTE:
-        return qualifiedName.equals("java.lang.Byte");
-      case CHAR:
-        return qualifiedName.equals("java.lang.Character");
-      case DOUBLE:
-        return qualifiedName.equals("java.lang.Double");
-      case FLOAT:
-        return qualifiedName.equals("java.lang.Float");
-      case INT:
-        return qualifiedName.equals("java.lang.Integer");
-      case LONG:
-        return qualifiedName.equals("java.lang.Long");
-      case SHORT:
-        return qualifiedName.equals("java.lang.Short");
-
-      default:
-        return false;
-    }
+    return switch (primitiveType.getKind()) {
+      case BOOLEAN -> qualifiedName.equals("java.lang.Boolean");
+      case BYTE -> qualifiedName.equals("java.lang.Byte");
+      case CHAR -> qualifiedName.equals("java.lang.Character");
+      case DOUBLE -> qualifiedName.equals("java.lang.Double");
+      case FLOAT -> qualifiedName.equals("java.lang.Float");
+      case INT -> qualifiedName.equals("java.lang.Integer");
+      case LONG -> qualifiedName.equals("java.lang.Long");
+      case SHORT -> qualifiedName.equals("java.lang.Short");
+      default -> false;
+    };
   }
 
   /**
@@ -637,13 +594,10 @@ public final class TypesUtils {
    * @return true if the argument is a primitive floating point type
    */
   public static boolean isFloatingPrimitive(TypeMirror type) {
-    switch (type.getKind()) {
-      case DOUBLE:
-      case FLOAT:
-        return true;
-      default:
-        return false;
-    }
+    return switch (type.getKind()) {
+      case DOUBLE, FLOAT -> true;
+      default -> false;
+    };
   }
 
   /**
@@ -687,22 +641,14 @@ public final class TypesUtils {
    * @return true if the given type is a compound type
    */
   public static boolean isCompoundType(TypeMirror type) {
-    switch (type.getKind()) {
-      case ARRAY:
-      case EXECUTABLE:
-      case INTERSECTION:
-      case UNION:
-      case TYPEVAR:
-      case WILDCARD:
-        return true;
-
-      case DECLARED:
+    return switch (type.getKind()) {
+      case ARRAY, EXECUTABLE, INTERSECTION, UNION, TYPEVAR, WILDCARD -> true;
+      case DECLARED -> {
         DeclaredType declaredType = (DeclaredType) type;
-        return !declaredType.getTypeArguments().isEmpty();
-
-      default:
-        return false;
-    }
+        yield !declaredType.getTypeArguments().isEmpty();
+      }
+      default -> false;
+    };
   }
 
   /**
@@ -863,19 +809,16 @@ public final class TypesUtils {
     outerLoop:
     while (true) {
       switch (effectiveUpper.getKind()) {
-        case WILDCARD:
+        case WILDCARD -> {
           effectiveUpper = ((javax.lang.model.type.WildcardType) effectiveUpper).getExtendsBound();
           if (effectiveUpper == null) {
             return null;
           }
-          break;
-
-        case TYPEVAR:
-          effectiveUpper = ((TypeVariable) effectiveUpper).getUpperBound();
-          break;
-
-        default:
+        }
+        case TYPEVAR -> effectiveUpper = ((TypeVariable) effectiveUpper).getUpperBound();
+        default -> {
           break outerLoop;
+        }
       }
     }
     return effectiveUpper;
@@ -1195,10 +1138,9 @@ public final class TypesUtils {
     List<? extends TypeMirror> superTypes = types.directSupertypes(type);
     for (TypeMirror t : superTypes) {
       // ignore interface types
-      if (!(t instanceof ClassType)) {
+      if (!(t instanceof ClassType tt)) {
         continue;
       }
-      ClassType tt = (ClassType) t;
       if (!tt.isInterface()) {
         return t;
       }
