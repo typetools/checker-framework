@@ -749,14 +749,17 @@ public final class TreeUtils {
   @Pure
   public static boolean isUseOfElement(ExpressionTree tree) {
     ExpressionTree realnode = TreeUtils.withoutParens(tree);
-    return switch (realnode.getKind()) {
-      case IDENTIFIER, MEMBER_SELECT, METHOD_INVOCATION, NEW_CLASS -> {
+    switch (realnode.getKind()) {
+      case IDENTIFIER:
+      case MEMBER_SELECT:
+      case METHOD_INVOCATION:
+      case NEW_CLASS:
         assert elementFromTree(tree) != null : "@AssumeAssertion(nullness): inspection";
         assert elementFromUse(tree) != null : "@AssumeAssertion(nullness): inspection";
-        yield true;
-      }
-      default -> false;
-    };
+        return true;
+      default:
+        return false;
+    }
   }
 
   /**
