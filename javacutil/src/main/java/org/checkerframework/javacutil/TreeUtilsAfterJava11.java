@@ -18,6 +18,7 @@ import org.checkerframework.dataflow.qual.Pure;
  * This class contains utility methods for reflectively accessing Tree classes and methods that were
  * added after Java 11.
  */
+@Deprecated(forRemoval = true, since = "4.0.0")
 public class TreeUtilsAfterJava11 {
 
   /** Don't use. */
@@ -26,6 +27,7 @@ public class TreeUtilsAfterJava11 {
   }
 
   /** Utility methods for accessing {@code BindingPatternTree} methods. */
+  @Deprecated(forRemoval = true, since = "4.0.0")
   public static class BindingPatternUtils {
 
     /** Don't use. */
@@ -47,6 +49,7 @@ public class TreeUtilsAfterJava11 {
   }
 
   /** Utility methods for accessing {@code CaseTree} methods. */
+  @Deprecated(forRemoval = true, since = "4.0.0")
   public static class CaseUtils {
 
     /** Don't use. */
@@ -149,6 +152,7 @@ public class TreeUtilsAfterJava11 {
   }
 
   /** Utility methods for accessing {@code ConstantCaseLabelTree} methods. */
+  @Deprecated(forRemoval = true, since = "4.0.0")
   public static class ConstantCaseLabelUtils {
     /** Don't use. */
     private ConstantCaseLabelUtils() {
@@ -184,6 +188,7 @@ public class TreeUtilsAfterJava11 {
   }
 
   /** Utility methods for accessing {@code DeconstructionPatternTree} methods. */
+  @Deprecated(forRemoval = true, since = "4.0.0")
   public static class DeconstructionPatternUtils {
 
     /** Don't use. */
@@ -218,6 +223,7 @@ public class TreeUtilsAfterJava11 {
   }
 
   /** Utility methods for accessing {@code PatternCaseLabelTree} methods. */
+  @Deprecated(forRemoval = true, since = "4.0.0")
   public static class PatternCaseLabelUtils {
 
     /** Don't use. */
@@ -252,6 +258,7 @@ public class TreeUtilsAfterJava11 {
   }
 
   /** Utility methods for accessing {@code SwitchExpressionTree} methods. */
+  @Deprecated(forRemoval = true, since = "4.0.0")
   public static class SwitchExpressionUtils {
 
     /** Don't use. */
@@ -295,6 +302,7 @@ public class TreeUtilsAfterJava11 {
   }
 
   /** Utility methods for accessing {@code YieldTree} methods. */
+  @Deprecated(forRemoval = true, since = "4.0.0")
   public static class YieldUtils {
 
     /** Don't use. */
@@ -316,6 +324,7 @@ public class TreeUtilsAfterJava11 {
   }
 
   /** Utility methods for accessing {@code JCVariableDecl} methods. */
+  @Deprecated(forRemoval = true, since = "4.0.0")
   public static class JCVariableDeclUtils {
 
     /** Don't use. */
@@ -342,6 +351,7 @@ public class TreeUtilsAfterJava11 {
   }
 
   /** Utility methods for accessing {@code InstanceOfTree} methods. */
+  @Deprecated(forRemoval = true, since = "4.0.0")
   public static class InstanceOfUtils {
 
     /** Don't use. */
