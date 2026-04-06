@@ -100,21 +100,10 @@ jar {
 // It is useful for those who only want to run `javac`.
 // checker.jar is copied to checker/dist/ when it is built by the shadowJar task.
 tasks.register("assembleForJavac") {
-  dependsOn(shadowJar)
   description = "Builds or downloads jars required by CheckerMain and puts them in checker/dist/."
+  dependsOn(shadowJar)
   dependsOn(project(":checker-qual").tasks.jar)
   dependsOn(project(":checker-util").tasks.jar)
-
-  doLast {
-    copy {
-      // This is required to *run* the Checker Framework on JDK 8.
-      from(configurations.javacJar)
-      into("${projectDir}/dist")
-      rename { String fileName ->
-        fileName.replace(fileName, "javac.jar")
-      }
-    }
-  }
 }
 
 assemble.dependsOn(assembleForJavac)

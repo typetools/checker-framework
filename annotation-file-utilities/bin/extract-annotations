@@ -30,17 +30,9 @@ done
 AFU=${AFU:-$(dirname "$0")/..}
 ANNOTATION_FILE_UTILS=${AFU}/dist/annotation-file-utilities-all.jar
 
-JAVAC_JAR=${JAVAC_JAR:-${AFU}/lib/javac-9+181-r4173-1.jar}
-
-if java -version 2>&1 | grep version | grep 1.8 > /dev/null; then
-  # Using JDK 8. -Xbootclasspth isn't supported in 9+ and isn't required.
-  BOOTCLASSPATH=-Xbootclasspath/p:${JAVAC_JAR}
-  JDK_OPENS=
-else
-  BOOTCLASSPATH=
-  # Need open to access CommandLine.parse dynamically to check its type:
-  JDK_OPENS="--add-opens jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED  --add-opens jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED --add-opens jdk.internal.opt/jdk.internal.opt=ALL-UNNAMED"
-fi
+BOOTCLASSPATH=
+# Need open to access CommandLine.parse dynamically to check its type:
+JDK_OPENS="--add-opens jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED  --add-opens jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED --add-opens jdk.internal.opt/jdk.internal.opt=ALL-UNNAMED"
 
 if [ "$DEBUG" = "1" ]; then
   echo "--- start of extract-annotations debugging output"
