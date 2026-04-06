@@ -2396,7 +2396,9 @@ public final class TreeUtils {
    *
    * @param tree a tree to check
    * @return true if the given tree is a switch expression
+   * @deprecated Use {@code tree instanceof SwitchExpressionTree}
    */
+  @Deprecated
   public static boolean isSwitchExpression(Tree tree) {
     return tree instanceof SwitchExpressionTree;
   }
