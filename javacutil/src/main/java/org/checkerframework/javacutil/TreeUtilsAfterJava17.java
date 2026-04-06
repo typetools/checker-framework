@@ -100,10 +100,10 @@ public class TreeUtilsAfterJava17 {
      * <p>Otherwise, in JDK 12+, the list may have multiple expression trees. In JDK 21+, the list
      * might contain a single pattern tree.
      *
-     * @param caseTree the case expression to get the labels from
-     * @param useDefaultCaseLabelTree weather the result should contain a {@code
+     * `@param` caseTree the case expression to get the labels from
+     * `@param` useDefaultCaseLabelTree whether the result should contain a {`@code`
      *     DefaultCaseLabelTree}.
-     * @return the list of case labels in the case
+     * `@return` the list of case labels in the case
      */
     private static List<? extends Tree> getLabels(
         CaseTree caseTree, boolean useDefaultCaseLabelTree) {
