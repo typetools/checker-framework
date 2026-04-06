@@ -490,8 +490,7 @@ public class AnnotationFileUtil {
       return false;
     }
     TypeElement enclosing = (TypeElement) elt.getEnclosingElement();
-    // Can't use RECORD enum constant as it's not available before JDK 16:
-    if (!enclosing.getKind().name().equals("RECORD")) {
+    if (enclosing.getKind() != ElementKind.RECORD) {
       return false;
     }
     List<? extends Element> recordComponents = enclosing.getRecordComponents();

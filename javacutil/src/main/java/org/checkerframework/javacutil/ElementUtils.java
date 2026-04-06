@@ -824,9 +824,11 @@ public class ElementUtils {
    *
    * @param element the element to test
    * @return true if the element is a binding variable
+   * @deprecated Use {@link ElementKind#BINDING_VARIABLE}
    */
+  @Deprecated(forRemoval = true, since = "2026-03-25")
   public static boolean isBindingVariable(Element element) {
-    return SystemUtil.jreVersion >= 16 && "BINDING_VARIABLE".equals(element.getKind().name());
+    return element.getKind() == ElementKind.BINDING_VARIABLE;
   }
 
   /**
@@ -842,11 +844,11 @@ public class ElementUtils {
     }
 
     TypeElement enclosing = (TypeElement) methodElement.getEnclosingElement();
-    if (enclosing.getKind().toString().equals("RECORD")) {
+    if (enclosing.getKind() == ElementKind.RECORD) {
       String methodName = methodElement.getSimpleName().toString();
       List<? extends Element> encloseds = enclosing.getEnclosedElements();
       for (Element enclosed : encloseds) {
-        if (enclosed.getKind().toString().equals("RECORD_COMPONENT")
+        if (enclosed.getKind() == ElementKind.RECORD_COMPONENT
             && enclosed.getSimpleName().toString().equals(methodName)) {
           return true;
         }
@@ -1007,10 +1009,12 @@ public class ElementUtils {
    *
    * @param elt the element to get the kind for
    * @return the kind of the element, but CLASS if the kind was RECORD
+   * @deprecated Use {@link ElementKind#RECORD}
    */
+  @Deprecated(forRemoval = true, since = "2026-03-25")
   public static ElementKind getKindRecordAsClass(Element elt) {
     ElementKind kind = elt.getKind();
-    if (kind.name().equals("RECORD")) {
+    if (kind == ElementKind.RECORD) {
       kind = ElementKind.CLASS;
     }
     return kind;

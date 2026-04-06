@@ -3,22 +3,21 @@ package org.checkerframework.javacutil;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.SwitchExpressionTree;
 import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.YieldTree;
 import com.sun.source.util.TreeScanner;
 import java.util.List;
 import java.util.function.BiFunction;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.javacutil.TreeUtilsAfterJava11.CaseUtils;
-import org.checkerframework.javacutil.TreeUtilsAfterJava11.SwitchExpressionUtils;
-import org.checkerframework.javacutil.TreeUtilsAfterJava11.YieldUtils;
 
 /**
  * A class that visits each result expression of a switch expression and calls {@link
  * #visitSwitchResultExpression(ExpressionTree, Object)} on each result expression. The results of
  * these method calls are combined using {@link #combineResults(Object, Object)}. Call {@link
- * #scanSwitchExpression(Tree, Object)} to start scanning the switch expression.
+ * #scanSwitchExpression(SwitchExpressionTree, Object)} to start scanning the switch expression.
  *
  * <p>{@link FunctionalSwitchExpressionScanner} can be used to pass functions for to use for {@link
  * #visitSwitchResultExpression(ExpressionTree, Object)} and {@link #combineResults(Object,
@@ -32,7 +31,7 @@ public abstract class SwitchExpressionScanner<R, P> extends TreeScanner<R, P> {
 
   /**
    * This method is called for each result expression of the switch expression passed in {@link
-   * #scanSwitchExpression(Tree, Object)}.
+   * #scanSwitchExpression(SwitchExpressionTree, Object)}.
    *
    * @param resultExpressionTree a result expression of the switch expression currently being
    *     scanned
@@ -65,11 +64,8 @@ public abstract class SwitchExpressionScanner<R, P> extends TreeScanner<R, P> {
    *     each result expression of {@code switchExpression} and combining the results using {@link
    *     #combineResults(Object, Object)}
    */
-  public R scanSwitchExpression(Tree switchExpression, P p) {
-    // TODO: use JCP to add version-specific behavior
-    assert SystemUtil.jreVersion >= 14
-        && switchExpression.getKind().name().equals("SWITCH_EXPRESSION");
-    List<? extends CaseTree> caseTrees = SwitchExpressionUtils.getCases(switchExpression);
+  public R scanSwitchExpression(SwitchExpressionTree switchExpression, P p) {
+    List<? extends CaseTree> caseTrees = switchExpression.getCases();
     R result = null;
     for (CaseTree caseTree : caseTrees) {
       if (caseTree.getStatements() != null) {
@@ -77,10 +73,7 @@ public abstract class SwitchExpressionScanner<R, P> extends TreeScanner<R, P> {
         // statements.
         result = combineResults(result, yieldVisitor.scan(caseTree.getStatements(), p));
       } else {
-        @SuppressWarnings(
-            "nullness:assignment") // caseTree.getStatements() == null, so the case has
-        // a body.
-        @NonNull Tree body = CaseUtils.getBody(caseTree);
+        Tree body = caseTree.getBody();
         // This case is a switch rule, so its body is either an expression, block, or throw.
         // See https://docs.oracle.com/javase/specs/jls/se17/html/jls-15.html#jls-15.28.2.
         if (body instanceof BlockTree) {
@@ -120,11 +113,11 @@ public abstract class SwitchExpressionScanner<R, P> extends TreeScanner<R, P> {
       if (tree == null) {
         return null;
       }
-      if (tree.getKind().name().equals("SWITCH_EXPRESSION")) {
+      if (tree instanceof SwitchExpressionTree) {
         // Don't scan nested switch expressions.
         return null;
-      } else if (tree.getKind().name().equals("YIELD")) {
-        ExpressionTree value = YieldUtils.getValue(tree);
+      } else if (tree instanceof YieldTree yieldTree) {
+        ExpressionTree value = yieldTree.getValue();
         return visitSwitchResultExpression(value, p);
       }
       return super.scan(tree, p);

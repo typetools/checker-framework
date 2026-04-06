@@ -101,6 +101,7 @@ import com.sun.source.tree.ArrayTypeTree;
 import com.sun.source.tree.AssertTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.BindingPatternTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.BreakTree;
 import com.sun.source.tree.CaseTree;
@@ -143,6 +144,7 @@ import com.sun.source.tree.ProvidesTree;
 import com.sun.source.tree.RequiresTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.StatementTree;
+import com.sun.source.tree.SwitchExpressionTree;
 import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.ThrowTree;
@@ -156,6 +158,7 @@ import com.sun.source.tree.UsesTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.tree.WildcardTree;
+import com.sun.source.tree.YieldTree;
 import com.sun.source.util.SimpleTreeVisitor;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -164,11 +167,6 @@ import java.util.Optional;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.TreeUtilsAfterJava11.BindingPatternUtils;
-import org.checkerframework.javacutil.TreeUtilsAfterJava11.CaseUtils;
-import org.checkerframework.javacutil.TreeUtilsAfterJava11.InstanceOfUtils;
-import org.checkerframework.javacutil.TreeUtilsAfterJava11.SwitchExpressionUtils;
-import org.checkerframework.javacutil.TreeUtilsAfterJava11.YieldUtils;
 
 /**
  * A visitor that processes javac trees and JavaParser nodes simultaneously, matching corresponding
@@ -278,18 +276,11 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
     return null;
   }
 
-  /**
-   * Visit a BindingPatternTree.
-   *
-   * @param javacTree a BindingPatternTree, typed as Tree to be backward-compatible
-   * @param javaParserNode a PatternExpr
-   * @return nothing
-   */
-  @SuppressWarnings("UnusedVariable")
-  public Void visitBindingPattern17(Tree javacTree, Node javaParserNode) {
+  @Override
+  public Void visitBindingPattern(BindingPatternTree javacTree, Node javaParserNode) {
     TypePatternExpr patternExpr = castNode(TypePatternExpr.class, javaParserNode, javacTree);
     processBindingPattern(javacTree, patternExpr);
-    VariableTree variableTree = BindingPatternUtils.getVariable(javacTree);
+    VariableTree variableTree = javacTree.getVariable();
     // The name expression can be null, even when a name exists.
     if (variableTree.getNameExpression() != null) {
       variableTree.getNameExpression().accept(this, patternExpr.getName());
@@ -427,16 +418,16 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
    * @param javaParserNode a JavaParser node
    * @return null
    */
-  public Void visitSwitchExpression17(Tree javacTree, Node javaParserNode) {
+  @Override
+  public Void visitSwitchExpression(SwitchExpressionTree javacTree, Node javaParserNode) {
     SwitchExpr node = castNode(SwitchExpr.class, javaParserNode, javacTree);
     processSwitchExpression(javacTree, node);
 
     // Switch expressions are always parenthesized in javac but never in JavaParser.
-    ExpressionTree expression =
-        ((ParenthesizedTree) SwitchExpressionUtils.getExpression(javacTree)).getExpression();
+    ExpressionTree expression = ((ParenthesizedTree) javacTree.getExpression()).getExpression();
     expression.accept(this, node.getSelector());
 
-    visitLists(SwitchExpressionUtils.getCases(javacTree), node.getEntries());
+    visitLists(javacTree.getCases(), node.getEntries());
     return null;
   }
 
@@ -446,7 +437,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
     processCase(javacTree, node);
     // Java 12 introduced multiple label cases:
     List<Expression> labels = node.getLabels();
-    List<? extends ExpressionTree> treeExpressions = CaseUtils.getExpressions(javacTree);
+    List<? extends ExpressionTree> treeExpressions = javacTree.getExpressions();
     assert node.getLabels().size() == treeExpressions.size()
         : String.format(
             "node.getLabels() = %s, treeExpressions = %s", node.getLabels(), treeExpressions);
@@ -454,7 +445,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
       treeExpressions.get(i).accept(this, labels.get(i));
     }
     if (javacTree.getStatements() == null) {
-      Tree javacBody = CaseUtils.getBody(javacTree);
+      Tree javacBody = javacTree.getBody();
       Statement nodeBody = node.getStatement(0);
       if (javacBody instanceof ExpressionStatementTree) {
         javacBody.accept(this, node.getStatement(0));
@@ -966,8 +957,8 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
     processInstanceOf(javacTree, node);
     javacTree.getExpression().accept(this, node.getExpression());
     if (node.getPattern().isPresent()) {
-      Tree bindingPattern = InstanceOfUtils.getPattern(javacTree);
-      visitBindingPattern17(bindingPattern, node.getPattern().get());
+      Tree bindingPattern = javacTree.getPattern();
+      bindingPattern.accept(this, node.getPattern().get());
     } else {
       javacTree.getType().accept(this, node.getType());
     }
@@ -2441,43 +2432,19 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   }
 
   /**
-   * The default action for this visitor. This is inherited from SimpleTreeVisitor, but is only
-   * called for those methods which do not have an override of the visitXXX method in this class.
-   * Ultimately, those are the methods added post Java 11, such as for switch-expressions.
-   *
-   * @param tree the Javac tree
-   * @param node the Javaparser node
-   * @return nothing
-   */
-  @Override
-  protected Void defaultAction(Tree tree, Node node) {
-    // Features added between JDK 12 and JDK 17 inclusive.
-    // Must use String comparison to support compiling on JDK 11 and earlier:
-    switch (tree.getKind().name()) {
-      case "BINDING_PATTERN":
-        return visitBindingPattern17(tree, node);
-      case "SWITCH_EXPRESSION":
-        return visitSwitchExpression17(tree, node);
-      case "YIELD":
-        return visitYield17(tree, node);
-    }
-
-    return super.defaultAction(tree, node);
-  }
-
-  /**
    * Visit a YieldTree.
    *
    * @param tree a YieldTree, typed as Tree to be backward-compatible
    * @param node a YieldStmt, typed as Node to be backward-compatible
    * @return nothing
    */
-  public Void visitYield17(Tree tree, Node node) {
+  @Override
+  public Void visitYield(YieldTree tree, Node node) {
     if (node instanceof YieldStmt) {
       YieldStmt yieldStmt = castNode(YieldStmt.class, node, tree);
       processYield(tree, yieldStmt);
 
-      YieldUtils.getValue(tree).accept(this, yieldStmt.getExpression());
+      tree.getValue().accept(this, yieldStmt.getExpression());
       return null;
     }
     // JavaParser does not parse yields correctly:
