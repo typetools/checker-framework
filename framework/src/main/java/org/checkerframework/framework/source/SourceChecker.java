@@ -216,7 +216,7 @@ import org.plumelib.util.UtilPlume;
   "resolveReflection",
 
   // Whether to use whole-program inference. Takes an argument to specify the output format:
-  // "-Ainfer=stubs" or "-Ainfer=jaifs".
+  // "-Ainfer=ajava" or "-Ainfer=stubs" or "-Ainfer=jaifs".
   "infer",
 
   // The directory into which to write whole-program inference results.
@@ -225,6 +225,9 @@ import org.plumelib.util.UtilPlume;
   // Whether to output a copy of each file for which annotations were inferred, formatted
   // as an ajava file. Can only be used with -Ainfer=ajava
   "inferOutputOriginal",
+
+  // Whether to show diagnostics about failed inference steps during whole-program inference.
+  "showWpiFailedInferences",
 
   // With each warning, in addition to the concrete error key,
   // output the SuppressWarnings strings that can be used to

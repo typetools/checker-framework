@@ -400,11 +400,13 @@ public final class SignednessUtil {
   /**
    * Creates a BigInteger representing the same value as unsigned long.
    *
-   * <p>This is a reimplementation of Java 8's {@link Long#toUnsignedBigInteger(long)}.
+   * <p>Java provides no public method with this functionality, unfortunately.
+   *
+   * @param l a long integer
+   * @return the corresponding BigInteger
    */
   @SuppressWarnings("signedness")
   private static @Unsigned BigInteger toUnsignedBigInteger(@Unsigned long l) {
-    // Java 8 version: return Long.toUnsignedBigInteger(l);
     if (l >= 0L) {
       return BigInteger.valueOf(l);
     } else {
