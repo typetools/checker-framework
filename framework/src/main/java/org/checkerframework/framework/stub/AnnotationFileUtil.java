@@ -34,7 +34,6 @@ import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.ElementUtils;
 import org.plumelib.util.IPair;
 
 /** Utility class for annotation files (stub files and ajava files). */
@@ -494,7 +493,7 @@ public class AnnotationFileUtil {
     if (enclosing.getKind() != ElementKind.RECORD) {
       return false;
     }
-    List<? extends Element> recordComponents = ElementUtils.getRecordComponents(enclosing);
+    List<? extends Element> recordComponents = enclosing.getRecordComponents();
     if (recordComponents.size() == elt.getParameters().size()) {
       for (int i = 0; i < recordComponents.size(); i++) {
         if (!types.isSameType(
