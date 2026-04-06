@@ -8,8 +8,6 @@ import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.model.JavacTypes;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -1016,21 +1014,6 @@ public class ElementUtils {
     return kind;
   }
 
-  /** The {@code TypeElement.getRecordComponents()} method. */
-  private static final @Nullable Method getRecordComponentsMethod;
-
-  static {
-    if (SystemUtil.jreVersion >= 16) {
-      try {
-        getRecordComponentsMethod = TypeElement.class.getMethod("getRecordComponents");
-      } catch (NoSuchMethodException e) {
-        throw new BugInCF("Cannot access TypeElement.getRecordComponents()", e);
-      }
-    } else {
-      getRecordComponentsMethod = null;
-    }
-  }
-
   /**
    * Calls getRecordComponents on the given TypeElement. Uses reflection because this method is not
    * available before JDK 16. On earlier JDKs, which don't support records anyway, an exception is
@@ -1039,14 +1022,12 @@ public class ElementUtils {
    * @param element the type element to call getRecordComponents on
    * @return the return value of calling getRecordComponents, or empty list if the method is not
    *     available
+   * @deprecated use {@link TypeElement#getRecordComponents}
    */
+  @Deprecated(forRemoval = true, since = "4.0.0")
   @SuppressWarnings({"unchecked", "nullness"}) // because of cast from reflection
   public static List<? extends Element> getRecordComponents(TypeElement element) {
-    try {
-      return (@NonNull List<? extends Element>) getRecordComponentsMethod.invoke(element);
-    } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-      throw new Error("Cannot call TypeElement.getRecordComponents()", e);
-    }
+    return element.getRecordComponents();
   }
 
   /**

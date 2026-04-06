@@ -3,19 +3,69 @@
 <!-- markdownlint-disable no-duplicate-heading -->
 <!-- pyml disable no-duplicate-heading -->
 
-## Version 4.0.0 (2026-??)
+## Version 4.0.0 (2026-04-07)
 
 ### User-visible changes
 
 To run the Checker Framework, you need to use a JDK 17 or later version of
-javac.  The Checker Framework can type-check any Java project, including projects
-that compile to Java 8 or 11 bytecodes and run on JRE versions 8 or 11.
+javac.  That is, you need to use JDK 17 or later when compiling your code.
+
+The Checker Framework can type-check any Java project, including projects that
+compile to Java 8 or 11 bytecodes and run on JRE versions 8 or 11.  That is,
+your code can run under any release of Java, from Java 8 onward.
 
 The type qualifiers and utility libraries in `checker-qual.jar` and
 `checker-util.jar` still use Java 11 bytecode.  Thus, they may be used in
 projects that run under Java 11 or later.
 
+### Changes since version 3.0.0
+
+Since version 3.0.0, 91 authors have made over 4500 commits and closed over 600
+issues.  Thanks to everyone who contributed!
+
+New checkers include:
+
+* The [Index Checker](https://checkerframework.org/manual/#index-checker) warns
+  about out-of-bounds accesses to arrays and strings.
+* The [Initialized Fields
+  Checker](https://checkerframework.org/manual/#initialized-fields-checker)
+  warns if a constructor does not initialize a field.
+* The [Resource Leak
+  Checker](https://checkerframework.org/manual/#resource-leak-checker)
+  guarantees that every resource is closed rather than leaked.  Examples of
+  resources are a channel, executor, `ExecutionControl`, file, `FileLock`,
+  `Formatter`, reader, `Scanner`, socket, stream, writer, etc.
+* The [SQL Quotes
+  Checker](https://checkerframework.org/manual/#sql-quotes-checker) helps
+  prevent SQL injection vulnerabilities.
+
+New command-line arguments include:
+
+* `-AskipFiles`, `-AonlyFiles`
+* `-AassumeSideEffectFree`, `-AassumeDeterministic`, `-AassumePure`, `-AassumePureGetters`
+* `-AuseConservativeDefaultsForUncheckedCode`
+* `-AignoreRawTypeArguments`
+* `-AwarnRedundantAnnotations`
+* `-Ainfer=ajava`, `-AinferOutputDirectory`, `-AinferOutputOriginal`, `-AshowWpiFailedInferences`
+* `-AshowSuppressWarningsStrings`, `-AwarnUnneededSuppressionsExceptions`
+* `-AshowPrefixInWarningMessages`
+* `-AstubNoWarnIfNotFound`, `-AstubWarnNote`, `-AmergeStubsWithSource`
+* `-Aonelinemsg`, `-AdumpOnErrors`, `-AexceptionLineSeparator`
+* `-ApermitMissingJdk`, `-AparseAllJdk`
+* `-AslowTypecheckingSeconds`
+* `-Aversion`, `-AprintGitProperties`
+* You can pass an option to only a particular checker (not all checkers) by
+  using an underscore prefix.
+
+Other improvements include thousands of enhancements and bug fixes -- too many
+to list here.
+
 ### Implementation details
+
+All previously-deprecated methods and classes have been removed.  If your
+project builds upon the Checker Framework, we suggest that you upgrade to
+version 3.55.1, resolve all the deprecation warnings, then upgrade to version
+4.0.0.
 
 ### Closed issues
 

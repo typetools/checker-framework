@@ -767,7 +767,7 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
               if (astNode.childSelectorIs(EXPRESSION)) {
                 List<? extends ExpressionTree> expressions = caze.getExpressions();
                 // If expressions is empty, it means default case:
-                if (!expressions.isEmpty() && arg >= expressions.size()) {
+                if (arg >= expressions.size()) {
                   return false;
                 }
                 next = expressions.get(arg);
