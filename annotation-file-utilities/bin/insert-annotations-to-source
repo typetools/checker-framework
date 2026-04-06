@@ -32,7 +32,6 @@ AFU=$(cd "$AFUSCRIPTS/.." > /dev/null 2>&1 && pwd)
 
 ANNOTATION_FILE_UTILS=${ANNOTATION_FILE_UTILS:-${AFU}/dist/annotation-file-utilities-all.jar}
 
-BOOTCLASSPATH=
 # Need open to access CommandLine.parse dynamically to check its type:
 JDK_OPENS="--add-opens jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED  --add-opens jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED --add-opens jdk.internal.opt/jdk.internal.opt=ALL-UNNAMED"
 
@@ -43,7 +42,7 @@ if [ "$DEBUG" = "1" ]; then
   echo "CLASSPATH=${CLASSPATH}"
   # Keep this in sync with the actual command below.
   # shellcheck disable=SC2181 disable=SC2086
-  echo about to run: java -ea -Xmx4g ${BOOTCLASSPATH} ${JDK_OPENS} -classpath "${ANNOTATION_FILE_UTILS}:${CLASSPATH}" org.checkerframework.afu.annotator.Main "$@"
+  echo about to run: java -ea -Xmx4g ${JDK_OPENS} -classpath "${ANNOTATION_FILE_UTILS}:${CLASSPATH}" org.checkerframework.afu.annotator.Main "$@"
   echo "--- end of insert-annotations-to-source debugging output"
   # echo "--- start of input files"
   # for file in "$@"; do
@@ -56,5 +55,5 @@ if [ "$DEBUG" = "1" ]; then
 fi
 
 # Augment, don't replace, CLASSPATH, so as to find user files.
-# shellcheck disable=SC2181 disable=SC2086 # ${BOOTCLASSPATH} and ${JDK_OPENS} might be empty and must not be quoted.
-java -ea -Xmx4g ${BOOTCLASSPATH} ${JDK_OPENS} -classpath "${ANNOTATION_FILE_UTILS}:${CLASSPATH}" org.checkerframework.afu.annotator.Main "$@"
+# shellcheck disable=SC2181 disable=SC2086 # ${JDK_OPENS} might be empty and must not be quoted.
+java -ea -Xmx4g ${JDK_OPENS} -classpath "${ANNOTATION_FILE_UTILS}:${CLASSPATH}" org.checkerframework.afu.annotator.Main "$@"
