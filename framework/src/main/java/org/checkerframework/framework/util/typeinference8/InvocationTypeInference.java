@@ -652,7 +652,6 @@ public class InvocationTypeInference {
                 (ExpressionTree tree, Void unused) ->
                     notPertinentToApplicability(tree, formalParameterType),
                 (r1, r2) -> (r1 != null && r1) || (r2 != null && r2));
-        ;
         return scanner.scanSwitchExpression((SwitchExpressionTree) expressionTree, null);
       default:
         return false;
