@@ -386,6 +386,7 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
 
   @Override
   public Void visitBindingPattern(BindingPatternTree tree, Void unused) {
+    super.visitBindingPattern(tree, unused);
     // JavaParser doesn't have a node for the VariableTree.
     trees.remove(tree.getVariable());
     return null;
