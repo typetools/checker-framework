@@ -117,6 +117,10 @@ tasks.register("copyToWebsite", Copy) {
   from("docs") {
     include("checker-framework-webpage.html", "CHANGELOG.md")
   }
+  from("docs/manual") {
+    include("manual.pdf")
+    rename {"checker-framework-manual.pdf"}
+  }
 
   from("docs/logo/Logo/CFLogo.png") {
     into("tutorial/")
