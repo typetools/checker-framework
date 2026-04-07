@@ -2339,7 +2339,7 @@ public final class TreeUtils {
    * @return true if {@code tree} is a {@code BindingPatternTree}
    * @deprecated Use {@code tree instanceof BindingPatternTree}
    */
-  @Deprecated(forRemoval = true, since = "2026-03-25")
+  @Deprecated(forRemoval = true, since = "4.0.0")
   public static boolean isBindingPatternTree(Tree tree) {
     return tree instanceof BindingPatternTree;
   }
@@ -2396,7 +2396,9 @@ public final class TreeUtils {
    *
    * @param tree a tree to check
    * @return true if the given tree is a switch expression
+   * @deprecated Use {@code tree instanceof SwitchExpressionTree}
    */
+  @Deprecated
   public static boolean isSwitchExpression(Tree tree) {
     return tree instanceof SwitchExpressionTree;
   }
@@ -2408,7 +2410,7 @@ public final class TreeUtils {
    * @return true if the given tree is a yield expression
    * @deprecated Use {@code tree instanceof YieldTree}
    */
-  @Deprecated(forRemoval = true, since = "2026-03-25")
+  @Deprecated(forRemoval = true, since = "4.0.0")
   public static boolean isYield(Tree tree) {
     return tree instanceof YieldTree;
   }
@@ -2494,18 +2496,6 @@ public final class TreeUtils {
    *
    * @param invok the method invocation
    * @return true if the given method invocation is a varargs invocation
-   * @deprecated use {@link #isVarargsCall(MethodInvocationTree)}
-   */
-  @Deprecated(since = "2024-06-04")
-  public static boolean isVarArgs(MethodInvocationTree invok) {
-    return ((JCMethodInvocation) invok).varargsElement != null;
-  }
-
-  /**
-   * Returns true if the given method invocation is a varargs invocation.
-   *
-   * @param invok the method invocation
-   * @return true if the given method invocation is a varargs invocation
    */
   public static boolean isVarargsCall(MethodInvocationTree invok) {
     if (((JCMethodInvocation) invok).varargsElement != null) {
@@ -2539,25 +2529,13 @@ public final class TreeUtils {
    *     parameter, and the invocation has with zero vararg actuals
    */
   public static boolean isCallToVarargsMethodWithZeroVarargsActuals(MethodInvocationTree invok) {
-    if (!TreeUtils.isVarArgs(invok)) {
+    if (!TreeUtils.isVarargsCall(invok)) {
       return false;
     }
     int numParams = elementFromUse(invok).getParameters().size();
     // The comparison of the number of arguments to the number of formals (minus one) checks
     // whether there are no varargs actuals.
     return invok.getArguments().size() == numParams - 1;
-  }
-
-  /**
-   * Returns true if the given constructor invocation is a varargs invocation.
-   *
-   * @param newClassTree the constructor invocation
-   * @return true if the given method invocation is a varargs invocation
-   * @deprecated use {@link #isVarargsCall(NewClassTree)}
-   */
-  @Deprecated(since = "2024-06-04")
-  public static boolean isVarArgs(NewClassTree newClassTree) {
-    return isVarargsCall(newClassTree);
   }
 
   /**
@@ -2577,7 +2555,7 @@ public final class TreeUtils {
    * @return true if the tree is of the kind RECORD
    * @deprecated Use {@link Tree.Kind#RECORD}
    */
-  @Deprecated(forRemoval = true, since = "2026-03-25")
+  @Deprecated(forRemoval = true, since = "4.0.0")
   public static boolean isRecordTree(Tree tree) {
     return tree.getKind() == Tree.Kind.RECORD;
   }
@@ -2591,7 +2569,7 @@ public final class TreeUtils {
    * @return the kind of the tree, but CLASS if the kind was RECORD
    * @deprecated Use {@link Tree.Kind#RECORD}
    */
-  @Deprecated(forRemoval = true, since = "2026-03-25")
+  @Deprecated(forRemoval = true, since = "4.0.0")
   public static Tree.Kind getKindRecordAsClass(Tree tree) {
     if (isRecordTree(tree)) {
       return Tree.Kind.CLASS;
@@ -2748,23 +2726,6 @@ public final class TreeUtils {
       }
     }
     return false;
-  }
-
-  /**
-   * Was applicability by variable arity invocation necessary to determine the method signature?
-   *
-   * <p>This isn't the same as {@link ExecutableElement#isVarArgs()}. That method returns true if
-   * the method accepts a variable number of arguments. This method returns true if the method
-   * invocation actually used that fact to invoke the method.
-   *
-   * @param methodInvocation a method or constructor invocation
-   * @return true if applicability by variable arity invocation is necessary to determine the method
-   *     signature
-   * @deprecated use {@link #isVarargsCall(Tree)}
-   */
-  @Deprecated(since = "2024-06-04")
-  public static boolean isVarArgMethodCall(ExpressionTree methodInvocation) {
-    return isVarargsCall(methodInvocation);
   }
 
   /**

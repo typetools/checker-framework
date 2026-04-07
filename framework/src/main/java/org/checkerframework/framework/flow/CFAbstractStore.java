@@ -279,9 +279,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * Returns the new value of a field after a method call, or {@code null} if the field should be
    * removed from the store.
    *
-   * <p>In this default implementation, the field's value is preserved if it is either unassignable
-   * (see {@link FieldAccess#isUnassignableByOtherCode()}) or has a monotonic qualifier (see {@link
-   * #newMonotonicFieldValueAfterMethodCall(FieldAccess, GenericAnnotatedTypeFactory,
+   * <p>In this default implementation, the field's value is preserved if it is either not
+   * assignable (see {@link FieldAccess#isAssignableByOtherCode()}) or has a monotonic qualifier
+   * (see {@link #newMonotonicFieldValueAfterMethodCall(FieldAccess, GenericAnnotatedTypeFactory,
    * CFAbstractValue)}). Otherwise, it is removed from the store.
    *
    * @param fieldAccess the field whose value to update

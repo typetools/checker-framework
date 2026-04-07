@@ -826,7 +826,7 @@ public class ElementUtils {
    * @return true if the element is a binding variable
    * @deprecated Use {@link ElementKind#BINDING_VARIABLE}
    */
-  @Deprecated(forRemoval = true, since = "2026-03-25")
+  @Deprecated(forRemoval = true, since = "4.0.0")
   public static boolean isBindingVariable(Element element) {
     return element.getKind() == ElementKind.BINDING_VARIABLE;
   }
@@ -1011,7 +1011,7 @@ public class ElementUtils {
    * @return the kind of the element, but CLASS if the kind was RECORD
    * @deprecated Use {@link ElementKind#RECORD}
    */
-  @Deprecated(forRemoval = true, since = "2026-03-25")
+  @Deprecated(forRemoval = true, since = "4.0.0")
   public static ElementKind getKindRecordAsClass(Element elt) {
     ElementKind kind = elt.getKind();
     if (kind == ElementKind.RECORD) {

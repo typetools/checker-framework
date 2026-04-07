@@ -501,22 +501,6 @@ public final class IndexFileWriter {
     sb.append(")");
   }
 
-  // TODO: Why isn't this just aft.format(o)??
-  /**
-   * Formats a literal argument of an annotation. Public to permit re-use in stub-based
-   * whole-program inference.
-   *
-   * @param aft the type of the annotation field
-   * @param o the value or values to format
-   * @return the String representation of the value
-   */
-  @Deprecated // TEMPORORY
-  public static String formatAnnotationValue(AnnotationFieldType aft, Object o) {
-    StringBuilder sb = new StringBuilder();
-    formatAnnotationValue(sb, aft, o);
-    return sb.toString();
-  }
-
   /**
    * Formats a literal argument of an annotation. Public to permit re-use in stub-based
    * whole-program inference.
