@@ -67,8 +67,6 @@ project builds upon the Checker Framework, we suggest that you upgrade to
 version 3.55.1, resolve all the deprecation warnings, then upgrade to version
 4.0.0.
 
-### Closed issues
-
 ## Version 3.55.1 (2026-04-03)
 
 No user-visible changes.
