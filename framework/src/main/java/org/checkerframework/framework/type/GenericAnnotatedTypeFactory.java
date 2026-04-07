@@ -1387,8 +1387,8 @@ public abstract class GenericAnnotatedTypeFactory<
                         new CFGStatement(vt, ct),
                         fieldValues,
                         null,
-                        true,
-                        true,
+                        /* isInitializationCode= */ true,
+                        /* updateInitializationStore= */ false,
                         isStatic,
                         capturedStore);
                 postAnalyze(cfg);
