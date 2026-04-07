@@ -82,15 +82,15 @@ public class Utils {
     res = Short.compareUnsigned(ushort, ushort);
 
     // :: error: [argument]
-    res = Short.compareUnsigned(sbyte, sbyte);
+    res = Byte.compareUnsigned(sbyte, sbyte);
 
     // :: error: [argument]
-    res = Short.compareUnsigned(sbyte, ubyte);
+    res = Byte.compareUnsigned(sbyte, ubyte);
 
     // :: error: [argument]
-    res = Short.compareUnsigned(ubyte, sbyte);
+    res = Byte.compareUnsigned(ubyte, sbyte);
 
-    res = Short.compareUnsigned(ubyte, ubyte);
+    res = Byte.compareUnsigned(ubyte, ubyte);
   }
 
   public void stringTests(

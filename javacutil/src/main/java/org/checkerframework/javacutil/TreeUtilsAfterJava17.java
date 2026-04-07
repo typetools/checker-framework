@@ -33,7 +33,6 @@ public class TreeUtilsAfterJava17 {
     private CaseUtils() {
       throw new AssertionError("Cannot be instantiated.");
     }
-    ;
 
     /** The {@code CaseTree.getLabels} method for Java 21 and higher; null otherwise. */
     private static @Nullable Method GET_LABELS = null;
@@ -101,7 +100,7 @@ public class TreeUtilsAfterJava17 {
      * might contain a single pattern tree.
      *
      * @param caseTree the case expression to get the labels from
-     * @param useDefaultCaseLabelTree weather the result should contain a {@code
+     * @param useDefaultCaseLabelTree whether the result should contain a {@code
      *     DefaultCaseLabelTree}.
      * @return the list of case labels in the case
      */

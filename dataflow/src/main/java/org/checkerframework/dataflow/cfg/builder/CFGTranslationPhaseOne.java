@@ -563,8 +563,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     try {
       // TODO: use JCP to add version-specific behavior
       if (SystemUtil.jreVersion >= 21) {
-        // Must use String comparison to support compiling on JDK 17.
-        // Features added after JDK 17.
+        // For features added after JDK 17, use String comparison to support compiling on JDK 17.
         switch (tree.getKind().name()) {
           case "DECONSTRUCTION_PATTERN":
             return visitDeconstructionPattern21(tree, p);
