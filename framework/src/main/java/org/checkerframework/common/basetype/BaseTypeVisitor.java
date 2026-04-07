@@ -7,6 +7,7 @@ import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayTypeTree;
 import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.BindingPatternTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.CatchTree;
 import com.sun.source.tree.ClassTree;
@@ -30,6 +31,7 @@ import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.ReturnTree;
+import com.sun.source.tree.SwitchExpressionTree;
 import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeCastTree;
@@ -143,8 +145,6 @@ import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TreeUtils.MemberReferenceKind;
-import org.checkerframework.javacutil.TreeUtilsAfterJava11.BindingPatternUtils;
-import org.checkerframework.javacutil.TreeUtilsAfterJava11.InstanceOfUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.ArrayMap;
 import org.plumelib.util.ArraySet;
@@ -429,13 +429,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
     if (getCurrentPath() != null) {
       this.atypeFactory.setVisitorTreePath(new TreePath(getCurrentPath(), tree));
-    }
-    // TODO: use JCP to add version-specific behavior
-    if (tree != null
-        && SystemUtil.jreVersion >= 14
-        && tree.getKind().name().equals("SWITCH_EXPRESSION")) {
-      visitSwitchExpression17(tree);
-      return null;
     }
     return super.scan(tree, p);
   }
@@ -2487,8 +2480,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * null)} so that the blocks and statements in the cases are checked.
    *
    * @param switchExpressionTree a {@code SwitchExpressionTree}
+   * @param unused not used
+   * @return void
    */
-  public void visitSwitchExpression17(Tree switchExpressionTree) {
+  @Override
+  public Void visitSwitchExpression(SwitchExpressionTree switchExpressionTree, Void unused) {
 
     // boilerplate
     long startMillis = System.currentTimeMillis();
@@ -2499,7 +2495,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       AnnotatedTypeMirror switchType = atypeFactory.getAnnotatedType(switchExpressionTree);
       SwitchExpressionScanner<Void, Void> scanner =
           new FunctionalSwitchExpressionScanner<>(
-              (ExpressionTree valueTree, Void unused) -> {
+              (ExpressionTree valueTree, Void unused2) -> {
                 BaseTypeVisitor.this.commonAssignmentCheck(
                     switchType, valueTree, "switch.expression");
                 return null;
@@ -2508,9 +2504,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
       scanner.scanSwitchExpression(switchExpressionTree, null);
     }
-    super.scan(switchExpressionTree, null);
+    super.visitSwitchExpression(switchExpressionTree, null);
 
     checkSlowTypechecking(switchExpressionTree, startSlowTypeCheckingTree, startMillis);
+    return null;
   }
 
   // **********************************************************************
@@ -2781,10 +2778,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   @Override
   public Void visitInstanceOf(InstanceOfTree tree, Void p) {
     // The "reference type" is the type after "instanceof".
-    Tree patternTree = InstanceOfUtils.getPattern(tree);
+    Tree patternTree = tree.getPattern();
     if (patternTree != null) {
-      if (TreeUtils.isBindingPatternTree(patternTree)) {
-        VariableTree variableTree = BindingPatternUtils.getVariable(patternTree);
+      if (patternTree instanceof BindingPatternTree bindingPatternTree) {
+        VariableTree variableTree = bindingPatternTree.getVariable();
         validateTypeOf(variableTree);
         if (variableTree.getModifiers() != null) {
           AnnotatedTypeMirror variableType = atypeFactory.getAnnotatedType(variableTree);

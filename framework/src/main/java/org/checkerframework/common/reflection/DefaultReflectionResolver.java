@@ -66,10 +66,6 @@ import org.checkerframework.javacutil.TreeUtils;
  *
  * @checker_framework.manual #reflection-resolution Reflection resolution
  */
-// Error Prone is warning on calls to ClassSymbol#getEnclosedElements() because the JDK 11 return
-// type is java.util.List, but the JDK 17 returns com.sun.tools.javac.util.List.
-// All the calls in this class are to Symbol#getEnclosedElements(), so just suppress the warning.
-@SuppressWarnings("ASTHelpersSuggestions")
 public class DefaultReflectionResolver implements ReflectionResolver {
 
   /** Message prefix added to verbose reflection messages. */

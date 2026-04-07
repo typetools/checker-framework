@@ -6,6 +6,7 @@ import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -24,6 +25,7 @@ import org.checkerframework.framework.util.typeinference8.types.ContainsInferenc
 import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.framework.util.typeinference8.util.Theta;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 
 /** Implementation of type argument inference. */
@@ -194,22 +196,20 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
               (ExpressionTree) parentParentPath.getLeaf(), parentParentPath.getParentPath());
         }
         return tree;
+      case CASE:
+      case YIELD:
+        parentPath = TreePathUtil.pathTillOfKind(parentPath, Kind.SWITCH_EXPRESSION);
+        parentTree = parentPath.getLeaf();
+      // parentTree is a switch expression, so fall through
+      case SWITCH_EXPRESSION:
+        ExpressionTree outerTree =
+            outerInference((ExpressionTree) parentTree, parentPath.getParentPath());
+        if (outerTree == parentTree) {
+          return tree;
+        }
+        return outerTree;
+
       default:
-        if (TreeUtils.isYield(parentTree)) {
-          parentPath = parentPath.getParentPath();
-          // The first parent is a case statement.
-          parentPath = parentPath.getParentPath();
-          parentTree = parentPath.getLeaf();
-        }
-        if (TreeUtils.isSwitchExpression(parentTree)) {
-          // case SWITCH_EXPRESSION:
-          ExpressionTree outerTree =
-              outerInference((ExpressionTree) parentTree, parentPath.getParentPath());
-          if (outerTree == parentTree) {
-            return tree;
-          }
-          return outerTree;
-        }
         return tree;
     }
   }

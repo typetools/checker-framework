@@ -3,6 +3,7 @@ package org.checkerframework.framework.ajava;
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayTypeTree;
+import com.sun.source.tree.BindingPatternTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.DoWhileLoopTree;
 import com.sun.source.tree.EmptyStatementTree;
@@ -20,16 +21,17 @@ import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.StatementTree;
+import com.sun.source.tree.SwitchExpressionTree;
 import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
+import com.sun.source.tree.YieldTree;
 import java.util.HashSet;
 import java.util.Set;
 import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.TreeUtilsAfterJava11.BindingPatternUtils;
-import org.checkerframework.javacutil.TreeUtilsAfterJava11.SwitchExpressionUtils;
 
 /**
  * After this visitor visits a tree, {@link #getTrees} returns all the trees that should match with
@@ -116,8 +118,7 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
           trees.remove(constructor.getIdentifier());
         }
       }
-      // RECORD was added in Java 14, so use string comparison to be JDK 8,11 compatible:
-    } else if (tree.getKind().name().equals("RECORD")) {
+    } else if (tree.getKind() == Kind.RECORD) {
       // A record like:
       //   record MyRec(String myField) {}
       // will be expanded by javac to:
@@ -256,10 +257,10 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
   }
 
   @Override
-  public Void visitSwitchExpression17(Tree tree, Void p) {
-    super.visitSwitchExpression17(tree, p);
+  public Void visitSwitchExpression(SwitchExpressionTree tree, Void unused) {
+    super.visitSwitchExpression(tree, unused);
     // javac surrounds switch expression in a ParenthesizedTree but JavaParser does not.
-    trees.remove(SwitchExpressionUtils.getExpression(tree));
+    trees.remove(tree.getExpression());
     return null;
   }
 
@@ -384,10 +385,10 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
   }
 
   @Override
-  public Void visitBindingPattern17(Tree tree, Void p) {
-    super.visitBindingPattern17(tree, p);
+  public Void visitBindingPattern(BindingPatternTree tree, Void unused) {
+    super.visitBindingPattern(tree, unused);
     // JavaParser doesn't have a node for the VariableTree.
-    trees.remove(BindingPatternUtils.getVariable(tree));
+    trees.remove(tree.getVariable());
     return null;
   }
 
@@ -405,7 +406,7 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
   }
 
   @Override
-  public Void visitYield17(Tree tree, Void p) {
+  public Void visitYield(YieldTree tree, Void p) {
     // JavaParser does not parse yields correctly:
     // https://github.com/javaparser/javaparser/issues/3364
     // So skip yields.
