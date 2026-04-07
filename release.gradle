@@ -118,6 +118,7 @@ tasks.register("copyToWebsite", Copy) {
     include("checker-framework-webpage.html", "CHANGELOG.md")
   }
   from("docs/manual") {
+    into("manual")
     include("manual.pdf")
     rename {"checker-framework-manual.pdf"}
   }
