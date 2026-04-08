@@ -223,8 +223,10 @@ def build_checker_framework_release(
     for source in dev_website_relative_dir.iterdir():
         target = Path(DEV_SITE_DIR) / source.name
         try:
-            if target.is_file():
-                target.unlink()
+            if not target.exists() and not target.is_symlink():
+                continue
+            if target.is_symlink() or target.is_file():
+                    target.unlink()
             else:
                 shutil.rmtree(target)
         except OSError as e:
