@@ -124,18 +124,6 @@ public class MethodOffsetClassVisitor extends ClassVisitor {
       methodCodeOffsetAdapter.visitIntInsn(opcode, operand);
     }
 
-    @Deprecated
-    @Override
-    public void visitMethodInsn(int opcode, String owner, String name, String descriptor) {
-      super.visitMethodInsn(opcode, owner, name, descriptor);
-      switch (opcode) {
-        case Opcodes.INVOKEINTERFACE, Opcodes.INVOKESTATIC, Opcodes.INVOKEVIRTUAL ->
-            MethodCallScanner.addMethodCallToMethod(methodName, getOffset());
-        default -> {}
-      }
-      methodCodeOffsetAdapter.visitMethodInsn(opcode, owner, name, descriptor);
-    }
-
     @Override
     public void visitMethodInsn(
         int opcode, String owner, String name, String descriptor, boolean isInterface) {

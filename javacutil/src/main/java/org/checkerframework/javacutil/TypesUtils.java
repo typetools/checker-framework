@@ -133,9 +133,7 @@ public final class TypesUtils {
 
       case ARRAY:
         Class<?> componentClass = getClassFromType(((ArrayType) typeMirror).getComponentType());
-        // In Java 12, use this instead:
-        // return fooClass.arrayType();
-        return java.lang.reflect.Array.newInstance(componentClass, 0).getClass();
+        return componentClass.arrayType();
 
       case DECLARED:
         // BUG: need to compute a @ClassGetName, but this code computes a

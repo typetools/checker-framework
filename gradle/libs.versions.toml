@@ -57,8 +57,6 @@ guava = "org.checkerframework.annotatedlib:guava:33.1.0.2-jre"
 
 hashmap-util = "org.plumelib:hashmap-util:0.0.1"
 
-javac = "com.google.errorprone:javac:9+181-r4173-1"
-
 javac-parse = "org.plumelib:javac-parse:0.9.0"
 
 javax-servlet-api = "javax.servlet:javax.servlet-api:4.0.1"

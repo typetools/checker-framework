@@ -22,7 +22,6 @@ import java.util.StringJoiner;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.javacutil.TreeUtilsAfterJava11.SwitchExpressionUtils;
 import org.plumelib.util.IPair;
 
 /**
@@ -325,29 +324,29 @@ public final class TreePathUtil {
       case PARENTHESIZED, CASE -> {
         return getContextForPolyExpression(parentPath, isLambdaOrMethodRef);
       }
+      case YIELD -> {
+        // A yield statement is only legal within a switch expression. Walk up the path
+        // to the case tree instead of the switch expression tree so the code remains
+        // backward compatible.
+        TreePath pathToCase = pathTillOfKind(parentPath, Kind.CASE);
+        assert pathToCase != null
+            : "@AssumeAssertion(nullness): yield statements must be enclosed in a CaseTree";
+        parentPath = pathToCase.getParentPath();
+        return getContextForPolyExpression(parentPath, isLambdaOrMethodRef);
+      }
+      case SWITCH_EXPRESSION -> {
+        @SuppressWarnings("interning:not.interned") // AST node comparison
+        boolean switchIsLeaf = parent == treePath.getLeaf();
+        if (switchIsLeaf) {
+          // The assignment context for the switch selector expression is simply
+          // boolean. No point in going on.
+          return null;
+        }
+        // Otherwise use the context of the ConditionalExpressionTree.
+        return getContextForPolyExpression(parentPath, isLambdaOrMethodRef);
+      }
       default -> {
-        if (TreeUtils.isYield(parent)) {
-          // A yield statement is only legal within a switch expression. Walk up the path
-          // to the case tree instead of the switch expression tree so the code remains
-          // backward compatible.
-          TreePath pathToCase = pathTillOfKind(parentPath, Kind.CASE);
-          assert pathToCase != null
-              : "@AssumeAssertion(nullness): yield statements must be enclosed in a CaseTree";
-          parentPath = pathToCase.getParentPath();
-          parent = parentPath.getLeaf();
-        }
-        if (TreeUtils.isSwitchExpression(parent)) {
-          @SuppressWarnings("interning:not.interned") // AST node comparison
-          boolean switchIsLeaf = SwitchExpressionUtils.getExpression(parent) == treePath.getLeaf();
-          if (switchIsLeaf) {
-            // The assignment context for the switch selector expression is simply
-            // boolean.
-            // No point in going on.
-            return null;
-          }
-          // Otherwise use the context of the ConditionalExpressionTree.
-          return getContextForPolyExpression(parentPath, isLambdaOrMethodRef);
-        }
+
         // 11 Tree.Kinds are CompoundAssignmentTrees,
         // so use instanceof rather than listing all 11.
         if (parent instanceof CompoundAssignmentTree) {

@@ -255,16 +255,7 @@ public final class CFGVisualizeLauncher {
     try {
       // Redirect syserr to nothing (and prevent the compiler from issuing
       // warnings about our exception).
-      @SuppressWarnings({
-        "builder:required.method.not.called",
-        "mustcall:assignment"
-      }) // Won't be needed in JDK 11+ with use of "OutputStream.nullOutputStream()".
-      @MustCall OutputStream nullOS =
-          // In JDK 11+, this can be just "OutputStream.nullOutputStream()".
-          new OutputStream() {
-            @Override
-            public void write(int b) throws IOException {}
-          };
+      @MustCall OutputStream nullOS = OutputStream.nullOutputStream();
       System.setErr(new PrintStream(nullOS));
       javac.compile(List.of(l), List.of(clas), List.of(cfgProcessor), List.nil());
     } catch (Throwable e) {

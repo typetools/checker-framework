@@ -152,8 +152,8 @@ public class AnnotationFileElementTypes {
    * <p>If a type is annotated with a qualifier from the same hierarchy in more than one stub file,
    * the qualifier in the last stub file is applied.
    *
-   * <p>If using JDK 11, then the JDK stub files are only parsed if a type or declaration annotation
-   * is requested from a class in that file.
+   * <p>The JDK stub files are only parsed if a type or declaration annotation is requested from a
+   * class in that file.
    */
   public void parseStubFiles() {
     if (stubDebug) {
@@ -497,7 +497,7 @@ public class AnnotationFileElementTypes {
           break;
       }
 
-      if (canTransferAnnotationsToSameName && enclosingType.getKind().toString().equals("RECORD")) {
+      if (canTransferAnnotationsToSameName && enclosingType.getKind() == ElementKind.RECORD) {
         AnnotationFileParser.RecordStub recordStub =
             annotationFileAnnos.records.get(enclosingType.getSimpleName().toString());
         if (recordStub != null

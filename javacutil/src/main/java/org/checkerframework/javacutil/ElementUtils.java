@@ -8,8 +8,6 @@ import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.model.JavacTypes;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -54,12 +52,6 @@ public class ElementUtils {
   private ElementUtils() {
     throw new AssertionError("Class ElementUtils cannot be instantiated.");
   }
-
-  /** The value of Flags.COMPACT_RECORD_CONSTRUCTOR which does not exist in Java 9 or 11. */
-  private static final long Flags_COMPACT_RECORD_CONSTRUCTOR = 1L << 51;
-
-  /** The value of Flags.GENERATED_MEMBER which does not exist in Java 9 or 11. */
-  private static final long Flags_GENERATED_MEMBER = 16777216;
 
   /**
    * Returns the innermost type element that is, or encloses, the given element.
@@ -822,9 +814,11 @@ public class ElementUtils {
    *
    * @param element the element to test
    * @return true if the element is a binding variable
+   * @deprecated Use {@link ElementKind#BINDING_VARIABLE}
    */
+  @Deprecated(forRemoval = true, since = "4.0.0")
   public static boolean isBindingVariable(Element element) {
-    return SystemUtil.jreVersion >= 16 && "BINDING_VARIABLE".equals(element.getKind().name());
+    return element.getKind() == ElementKind.BINDING_VARIABLE;
   }
 
   /**
@@ -840,11 +834,11 @@ public class ElementUtils {
     }
 
     TypeElement enclosing = (TypeElement) methodElement.getEnclosingElement();
-    if (enclosing.getKind().toString().equals("RECORD")) {
+    if (enclosing.getKind() == ElementKind.RECORD) {
       String methodName = methodElement.getSimpleName().toString();
       List<? extends Element> encloseds = enclosing.getEnclosedElements();
       for (Element enclosed : encloseds) {
-        if (enclosed.getKind().toString().equals("RECORD_COMPONENT")
+        if (enclosed.getKind() == ElementKind.RECORD_COMPONENT
             && enclosed.getSimpleName().toString().equals(methodName)) {
           return true;
         }
@@ -867,7 +861,7 @@ public class ElementUtils {
     }
     // Generated constructors seem to get GENERATEDCONSTR even though the documentation
     // seems to imply they would get GENERATED_MEMBER like the fields do.
-    return (sym.flags() & (Flags_GENERATED_MEMBER | Flags.GENERATEDCONSTR)) != 0;
+    return (sym.flags() & (Flags.GENERATED_MEMBER | Flags.GENERATEDCONSTR)) != 0;
   }
 
   /**
@@ -1005,28 +999,15 @@ public class ElementUtils {
    *
    * @param elt the element to get the kind for
    * @return the kind of the element, but CLASS if the kind was RECORD
+   * @deprecated Use {@link ElementKind#RECORD}
    */
+  @Deprecated(forRemoval = true, since = "4.0.0")
   public static ElementKind getKindRecordAsClass(Element elt) {
     ElementKind kind = elt.getKind();
-    if (kind.name().equals("RECORD")) {
+    if (kind == ElementKind.RECORD) {
       kind = ElementKind.CLASS;
     }
     return kind;
-  }
-
-  /** The {@code TypeElement.getRecordComponents()} method. */
-  private static final @Nullable Method getRecordComponentsMethod;
-
-  static {
-    if (SystemUtil.jreVersion >= 16) {
-      try {
-        getRecordComponentsMethod = TypeElement.class.getMethod("getRecordComponents");
-      } catch (NoSuchMethodException e) {
-        throw new BugInCF("Cannot access TypeElement.getRecordComponents()", e);
-      }
-    } else {
-      getRecordComponentsMethod = null;
-    }
   }
 
   /**
@@ -1037,14 +1018,12 @@ public class ElementUtils {
    * @param element the type element to call getRecordComponents on
    * @return the return value of calling getRecordComponents, or empty list if the method is not
    *     available
+   * @deprecated use {@link TypeElement#getRecordComponents}
    */
+  @Deprecated(forRemoval = true, since = "4.0.0")
   @SuppressWarnings({"unchecked", "nullness"}) // because of cast from reflection
   public static List<? extends Element> getRecordComponents(TypeElement element) {
-    try {
-      return (@NonNull List<? extends Element>) getRecordComponentsMethod.invoke(element);
-    } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-      throw new Error("Cannot call TypeElement.getRecordComponents()", e);
-    }
+    return element.getRecordComponents();
   }
 
   /**
@@ -1055,7 +1034,7 @@ public class ElementUtils {
    */
   public static boolean isCompactCanonicalRecordConstructor(Element elt) {
     return elt.getKind() == ElementKind.CONSTRUCTOR
-        && (((Symbol) elt).flags() & Flags_COMPACT_RECORD_CONSTRUCTOR) != 0;
+        && (((Symbol) elt).flags() & Flags.COMPACT_RECORD_CONSTRUCTOR) != 0;
   }
 
   /**

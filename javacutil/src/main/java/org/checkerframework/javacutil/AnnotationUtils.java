@@ -560,17 +560,9 @@ public class AnnotationUtils {
       case PACKAGE -> EnumSet.of(ElementKind.PACKAGE);
       case TYPE_PARAMETER -> EnumSet.of(ElementKind.TYPE_PARAMETER);
       case TYPE_USE -> EnumSet.noneOf(ElementKind.class);
-      default -> {
-        // TODO: Use MODULE enum constants directly instead of looking them up by name.
-        // (Java 11)
-        if (elementType.name().equals("MODULE")) {
-          yield EnumSet.of(ElementKind.valueOf("MODULE"));
-        }
-        if (elementType.name().equals("RECORD_COMPONENT")) {
-          yield EnumSet.of(ElementKind.valueOf("RECORD_COMPONENT"));
-        }
-        throw new BugInCF("Unrecognized ElementType: " + elementType);
-      }
+      case MODULE -> EnumSet.of(ElementKind.MODULE);
+      case RECORD_COMPONENT -> EnumSet.of(ElementKind.RECORD_COMPONENT);
+      default -> throw new BugInCF("Unrecognized ElementType: " + elementType);
     };
   }
 

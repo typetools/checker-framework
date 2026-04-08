@@ -1,6 +1,5 @@
 package org.checkerframework.afu.annotator.find;
 
-import com.google.errorprone.annotations.InlineMe;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
@@ -479,20 +478,6 @@ public final class Criteria {
    */
   public static final Criterion atLocation(TypePath loc) {
     return new GenericArrayLocationCriterion(loc);
-  }
-
-  /**
-   * Creates a GenericArrayLocationCriterion for a field.
-   *
-   * @param varName location of the field
-   * @return a GenericArrayLocationCriterion for the given field
-   */
-  @Deprecated
-  @InlineMe(
-      replacement = "new FieldCriterion(varName)",
-      imports = "org.checkerframework.afu.annotator.find.FieldCriterion")
-  public static final Criterion field(String varName) {
-    return new FieldCriterion(varName);
   }
 
   public static final Criterion field(String varName, boolean isOnDeclaration) {

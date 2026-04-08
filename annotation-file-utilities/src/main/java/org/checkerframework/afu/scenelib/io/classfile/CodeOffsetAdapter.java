@@ -190,15 +190,6 @@ public class CodeOffsetAdapter extends ClassVisitor {
         assert offset > 0 && methodEnd > codeStart + offset;
       }
 
-      @Deprecated
-      @Override
-      public void visitMethodInsn(int opcode, String owner, String name, String descriptor) {
-        super.visitMethodInsn(opcode, owner, name, descriptor);
-        debug.debug(
-            "%d visitMethodInsn(%d, %s, %s, %s)%n", offset, opcode, owner, name, descriptor);
-        advance(opcode == Opcodes.INVOKEINTERFACE ? 5 : 3);
-      }
-
       @Override
       public void visitMethodInsn(
           int opcode, String owner, String name, String descriptor, boolean isInterface) {
