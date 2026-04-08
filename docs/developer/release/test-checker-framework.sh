@@ -50,10 +50,10 @@ function cfruntest() {
   fi
 }
 
-echo "Testing with Java 8:"
+echo "Testing with Java 17:"
 
 # shellcheck disable=SC2153
-export JAVA_HOME=$JAVA_17_HOME
+export JAVA_HOME=$JAVA17_HOME
 export PATH=$JAVA_HOME/bin:$ORIG_PATH
 
 cfruntest

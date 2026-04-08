@@ -231,11 +231,6 @@ def build_checker_framework_release(
             print(f"Error: {target} : {e.strerror}")
 
     print(f"Copying from: {dev_website_relative_dir}\n  to: {DEV_SITE_DIR}")
-    #shutil.copytree(
-    #    str(dev_website_relative_dir),
-    #    str(DEV_SITE_DIR),
-    #    dirs_exist_ok=True,
-    #)
     cmd = (
         "rsync --no-p --no-group --omit-dir-times --recursive --links --quiet"
         f" {dev_website_relative_dir}/ {DEV_SITE_DIR}"

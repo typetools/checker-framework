@@ -338,7 +338,7 @@ def main(argv: list[str]) -> None:
 
     print_step("Push Step 1: Checking release versions")  # SEMIAUTO
 
-    #check_release_version(current_cf_version, new_cf_version)
+    check_release_version(current_cf_version, new_cf_version)
 
     print(
         f"Checker Framework:  current-version={current_cf_version}    new-version={new_cf_version}"
@@ -397,7 +397,7 @@ def main(argv: list[str]) -> None:
 
     print_step("Step 5a: Stage the artifacts at Maven Central.")
     if prompt_yes_no("Stage Maven artifacts in Maven Central?", True):
-     #   stage_maven_artifacts_in_maven_central()
+        stage_maven_artifacts_in_maven_central()
 
         print_step("Step 5b: Close staged artifacts at Maven Central.")
         ## TODO: previously we could 'close' the artifacts vi Sonatype's UI, but now a POST request
