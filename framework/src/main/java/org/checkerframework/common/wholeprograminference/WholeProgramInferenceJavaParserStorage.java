@@ -705,14 +705,17 @@ public class WholeProgramInferenceJavaParserStorage
    */
   private void createWrappersForClass(
       ClassTree javacClass, TypeDeclaration<?> javaParserClass, CompilationUnitAnnos sourceAnnos) {
+    @SuppressWarnings("NotJavadoc") // Error Prone flags Javadoc comments on local class methods.
     JointJavacJavaParserVisitor visitor =
         new DefaultJointVisitor() {
 
-          // The number of inner classes encountered, for use in computing their names as keys to
-          // various maps. This is an estimate only: an error might lead to inaccurate annotations
-          // being emitted, but that is ok: WPI should never be run without running the checker
-          // again afterwards to check the results. This field is only used when no element for the
-          // inner class is available, such as when it comes from another compilation unit.
+          /**
+           * The number of inner classes encountered, for use in computing their names as keys to
+           * various maps. This is an estimate only: an error might lead to inaccurate annotations
+           * being emitted, but that is ok: WPI should never be run without running the checker
+           * again afterwards to check the results. This field is only used when no element for the
+           * inner class is available, such as when it comes from another compilation unit.
+           */
           private int innerClassCount = 0;
 
           @Override
@@ -746,16 +749,18 @@ public class WholeProgramInferenceJavaParserStorage
             }
           }
 
-          // Creates a wrapper around the class for {@code tree} and stores it in {@code
-          // sourceAnnos}.
-          //
-          // <p>This method computes the name of the class when the element corresponding to tree is
-          // null and uses it as the key for {@code classToAnnos}
-          //
-          // @param tree tree to add. Its corresponding name is used as the key for {@code
-          //     classToAnnos}.
-          // @param javaParserNode the node corresponding to the declaration, which is used to place
-          //     annotations on the class itself. Can be null, e.g. for an anonymous class.
+          /**
+           * Creates a wrapper around the class for {@code tree} and stores it in {@code
+           * sourceAnnos}.
+           *
+           * <p>This method computes the name of the class when the element corresponding to tree is
+           * null and uses it as the key for {@code classToAnnos}
+           *
+           * @param tree tree to add. Its corresponding name is used as the key for {@code
+           *     classToAnnos}.
+           * @param javaParserNode the node corresponding to the declaration, which is used to place
+           *     annotations on the class itself. Can be null, e.g. for an anonymous class.
+           */
           private void addClass(ClassTree tree, @Nullable TypeDeclaration<?> javaParserNode) {
             String className;
             TypeElement classElt = TreeUtils.elementFromDeclaration(tree);
@@ -812,11 +817,13 @@ public class WholeProgramInferenceJavaParserStorage
             addCallableDeclaration(javacTree, javaParserNode);
           }
 
-          // Creates a wrapper around {@code javacTree} with the corresponding declaration {@code
-          // javaParserNode} and stores it in {@code sourceAnnos}.
-          //
-          // @param javacTree javac tree for declaration to add
-          // @param javaParserNode a JavaParser node for the same class as {@code javacTree}
+          /**
+           * Creates a wrapper around {@code javacTree} with the corresponding declaration {@code
+           * javaParserNode} and stores it in {@code sourceAnnos}.
+           *
+           * @param javacTree javac tree for declaration to add
+           * @param javaParserNode a JavaParser node for the same class as {@code javacTree}
+           */
           private void addCallableDeclaration(
               MethodTree javacTree, CallableDeclaration<?> javaParserNode) {
             ExecutableElement element = TreeUtils.elementFromDeclaration(javacTree);
