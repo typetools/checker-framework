@@ -230,7 +230,7 @@ def build_checker_framework_release(
             else:
                 shutil.rmtree(target)
         except OSError as e:
-            print(f"Error: {target} : {e.strerror}")
+            print(f"Error deleting {target} : {e.strerror}")
 
     print(f"Copying from: {dev_website_relative_dir}\n  to: {DEV_SITE_DIR}")
     cmd = (
