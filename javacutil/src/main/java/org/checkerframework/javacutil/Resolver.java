@@ -301,7 +301,7 @@ public class Resolver {
             throw new BugInCF("unhandled variable ElementKind " + res.getKind());
           }
           // The Element might be a SymbolNotFoundError.
-          return null;
+          yield null;
         }
       };
     } finally {
