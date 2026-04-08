@@ -226,7 +226,7 @@ def build_checker_framework_release(
             if not target.exists() and not target.is_symlink():
                 continue
             if target.is_symlink() or target.is_file():
-                    target.unlink()
+                target.unlink()
             else:
                 shutil.rmtree(target)
         except OSError as e:
