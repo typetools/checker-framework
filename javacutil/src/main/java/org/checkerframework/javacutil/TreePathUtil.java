@@ -340,7 +340,7 @@ public final class TreePathUtil {
         boolean switchIsLeaf =
             ((SwitchExpressionTree) parent).getExpression() == treePath.getLeaf();
         if (switchIsLeaf) {
-          // The assignment context for the switch selector expression is simply
+          // The assignment context for the conditional guard is simply
           // boolean. No point in going on.
           return null;
         }
