@@ -279,9 +279,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * Returns the new value of a field after a method call, or {@code null} if the field should be
    * removed from the store.
    *
-   * <p>In this default implementation, the field's value is preserved if it is either unassignable
-   * (see {@link FieldAccess#isUnassignableByOtherCode()}) or has a monotonic qualifier (see {@link
-   * #newMonotonicFieldValueAfterMethodCall(FieldAccess, GenericAnnotatedTypeFactory,
+   * <p>In this default implementation, the field's value is preserved if it is either not
+   * assignable (see {@link FieldAccess#isAssignableByOtherCode()}) or has a monotonic qualifier
+   * (see {@link #newMonotonicFieldValueAfterMethodCall(FieldAccess, GenericAnnotatedTypeFactory,
    * CFAbstractValue)}). Otherwise, it is removed from the store.
    *
    * @param fieldAccess the field whose value to update
@@ -727,12 +727,30 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   }
 
   /**
-   * Completely replaces the abstract value {@code value} for the expression {@code expr} (correctly
-   * deciding where to store the information depending on the type of the expression {@code expr}).
-   * Any previous information is discarded.
+   * Completely replaces the abstract value for the expression {@code expr} (correctly deciding
+   * where to store the information depending on the type of the expression {@code expr}). Any
+   * previous information is discarded.
    *
    * <p>This method does not take care of removing other information that might be influenced by
    * changes to certain parts of the state.
+   *
+   * @param expr the expression whose value to replace
+   * @param a the new annotation
+   */
+  public void replaceValue(JavaExpression expr, AnnotationMirror a) {
+    replaceValue(expr, analysis.createSingleAnnotationValue(a, expr.getType()));
+  }
+
+  /**
+   * Completely replaces the abstract value for the expression {@code expr} (correctly deciding
+   * where to store the information depending on the type of the expression {@code expr}). Any
+   * previous information is discarded.
+   *
+   * <p>This method does not take care of removing other information that might be influenced by
+   * changes to certain parts of the state.
+   *
+   * @param expr the expression whose value to replace
+   * @param value the new value
    */
   public void replaceValue(JavaExpression expr, @Nullable V value) {
     clearValue(expr);

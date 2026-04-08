@@ -25,6 +25,7 @@ import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.PrimitiveTypeTree;
+import com.sun.source.tree.SwitchExpressionTree;
 import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.ThrowTree;
@@ -61,7 +62,6 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.TreeUtilsAfterJava11.SwitchExpressionUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /** The visitor for the nullness type-system. */
@@ -158,7 +158,7 @@ public class NullnessVisitor
     // non-null value.  Maybe add an option to disable that behavior.)
     Element elem = initializedElement(varTree);
     if (elem != null
-        && atypeFactory.fromElement(elem).hasEffectiveAnnotation(MONOTONIC_NONNULL)
+        && atypeFactory.fromElement(elem).hasAnnotation(MONOTONIC_NONNULL)
         && !checker.getLintOption(
             NullnessChecker.LINT_NOINITFORMONOTONICNONNULL,
             NullnessChecker.LINT_DEFAULT_NOINITFORMONOTONICNONNULL)) {
@@ -278,7 +278,7 @@ public class NullnessVisitor
   public Void visitNewArray(NewArrayTree tree, Void p) {
     AnnotatedArrayType type = atypeFactory.getAnnotatedType(tree);
     AnnotatedTypeMirror componentType = type.getComponentType();
-    if (componentType.hasEffectiveAnnotation(NONNULL)
+    if (componentType.hasAnnotation(NONNULL)
         && !isNewArrayAllZeroDims(tree)
         && !isNewArrayInToArray(tree)
         && !TypesUtils.isPrimitive(componentType.getUnderlyingType())
@@ -460,10 +460,9 @@ public class NullnessVisitor
     if ((tree.getKind() == Tree.Kind.EQUAL_TO || tree.getKind() == Tree.Kind.NOT_EQUAL_TO)) {
       AnnotatedTypeMirror left = atypeFactory.getAnnotatedType(leftOp);
       AnnotatedTypeMirror right = atypeFactory.getAnnotatedType(rightOp);
-      if (leftOp.getKind() == Tree.Kind.NULL_LITERAL && right.hasEffectiveAnnotation(NONNULL)) {
+      if (leftOp.getKind() == Tree.Kind.NULL_LITERAL && right.hasAnnotation(NONNULL)) {
         checker.reportWarning(tree, "nulltest.redundant", rightOp.toString());
-      } else if (rightOp.getKind() == Tree.Kind.NULL_LITERAL
-          && left.hasEffectiveAnnotation(NONNULL)) {
+      } else if (rightOp.getKind() == Tree.Kind.NULL_LITERAL && left.hasAnnotation(NONNULL)) {
         checker.reportWarning(tree, "nulltest.redundant", leftOp.toString());
       }
     }
@@ -638,7 +637,7 @@ public class NullnessVisitor
    */
   private boolean checkForNullability(
       AnnotatedTypeMirror type, Tree tree, @CompilerMessageKey String errMsg) {
-    if (!type.hasEffectiveAnnotation(NONNULL)) {
+    if (!type.hasAnnotation(NONNULL)) {
       checker.reportError(tree, errMsg, tree);
       return false;
     }
@@ -648,30 +647,28 @@ public class NullnessVisitor
   @Override
   protected void checkMethodInvocability(
       AnnotatedExecutableType method, MethodInvocationTree tree) {
-    if (method.getReceiverType() == null) {
+    AnnotatedTypeMirror methodReceiverType = method.getReceiverType();
+    if (methodReceiverType == null) {
       // Static methods don't have a receiver to check.
       return;
     }
 
-    if (!TreeUtils.isSelfAccess(tree)
-        &&
-        // Static methods don't have a receiver
-        method.getReceiverType() != null) {
+    // If receiver is Nullable, then we don't want to issue a warning about method
+    // invocability (we'd rather have only the "dereference.of.nullable" message).
+    if (!TreeUtils.isSelfAccess(tree)) {
+      @NonNull AnnotatedTypeMirror treeReceiverType = atypeFactory.getReceiverType(tree);
+
       // TODO: should all or some constructors be excluded?
       // method.getElement().getKind() != ElementKind.CONSTRUCTOR) {
-      AnnotationMirrorSet receiverAnnos =
-          atypeFactory.getReceiverType(tree).getPrimaryAnnotations();
-      AnnotatedTypeMirror methodReceiver = method.getReceiverType().getErased();
-      AnnotatedTypeMirror treeReceiver = methodReceiver.shallowCopy(false);
-      AnnotatedTypeMirror rcv = atypeFactory.getReceiverType(tree);
-      treeReceiver.addAnnotations(rcv.getEffectiveAnnotations());
-      // If receiver is Nullable, then we don't want to issue a warning about method
-      // invocability (we'd rather have only the "dereference.of.nullable" message).
-      if (treeReceiver.hasPrimaryAnnotation(NULLABLE)
-          || receiverAnnos.contains(MONOTONIC_NONNULL)) {
+
+      AnnotationMirrorSet treeReceiverAnnos = treeReceiverType.getAnnotations();
+      if (treeReceiverAnnos.contains(MONOTONIC_NONNULL) || treeReceiverAnnos.contains(NULLABLE)) {
+        // Issue only the "dereference.of.nullable" message (it is issued elsewhere), nothing
+        // about invokability.
         return;
       }
     }
+
     super.checkMethodInvocability(method, tree);
   }
 
@@ -724,11 +721,11 @@ public class NullnessVisitor
   }
 
   @Override
-  public void visitSwitchExpression17(Tree switchExprTree) {
-    if (!TreeUtils.hasNullCaseLabel(switchExprTree)) {
-      checkForNullability(SwitchExpressionUtils.getExpression(switchExprTree), SWITCHING_NULLABLE);
+  public Void visitSwitchExpression(SwitchExpressionTree switchExpressionTree, Void unused) {
+    if (!TreeUtils.hasNullCaseLabel(switchExpressionTree)) {
+      checkForNullability(switchExpressionTree.getExpression(), SWITCHING_NULLABLE);
     }
-    super.visitSwitchExpression17(switchExprTree);
+    return super.visitSwitchExpression(switchExpressionTree, unused);
   }
 
   @Override

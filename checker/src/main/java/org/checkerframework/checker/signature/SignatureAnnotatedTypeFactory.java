@@ -103,7 +103,7 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   /** The {@link Class#getCanonicalName()} method. */
   private final ExecutableElement classGetCanonicalName =
-      TreeUtils.getMethod(java.lang.Class.class, "getCanonicalName", processingEnv);
+      TreeUtils.getMethod(Class.class, "getCanonicalName", processingEnv);
 
   /**
    * Creates a SignatureAnnotatedTypeFactory.

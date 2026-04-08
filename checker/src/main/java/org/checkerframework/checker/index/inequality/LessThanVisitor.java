@@ -12,6 +12,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.dataflow.expression.JavaExpressionParseException;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.javacutil.BugInCF;
 import org.plumelib.util.CollectionsPlume;
 
 /** The visitor for the Less Than Checker. */
@@ -79,10 +80,13 @@ public class LessThanVisitor extends BaseTypeVisitor<LessThanAnnotatedTypeFactor
     // If value is less than all expressions in the annotation in varType,
     // using the Value Checker, then skip the common assignment check.
     // Also skip the check if the only expression is "a + 1" and the valueTree is "a".
-    List<String> expressions =
-        getTypeFactory()
-            .getLessThanExpressions(
-                varType.getEffectiveAnnotationInHierarchy(atypeFactory.LESS_THAN_UNKNOWN));
+
+    AnnotationMirror anno = varType.getAnnotationInHierarchy(atypeFactory.LESS_THAN_UNKNOWN);
+    if (anno == null) {
+      throw new BugInCF("no annotation: " + varType);
+    }
+
+    List<String> expressions = getTypeFactory().getLessThanExpressions(anno);
     if (expressions != null) {
       boolean isLessThan = true;
       for (String expression : expressions) {
@@ -114,8 +118,7 @@ public class LessThanVisitor extends BaseTypeVisitor<LessThanAnnotatedTypeFactor
   @Override
   protected boolean isTypeCastSafe(AnnotatedTypeMirror castType, AnnotatedTypeMirror exprType) {
 
-    AnnotationMirror exprLTAnno =
-        exprType.getEffectiveAnnotationInHierarchy(atypeFactory.LESS_THAN_UNKNOWN);
+    AnnotationMirror exprLTAnno = exprType.getAnnotationInHierarchy(atypeFactory.LESS_THAN_UNKNOWN);
 
     if (exprLTAnno != null) {
       LessThanAnnotatedTypeFactory factory = getTypeFactory();

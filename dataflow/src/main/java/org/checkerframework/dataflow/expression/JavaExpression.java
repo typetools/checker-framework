@@ -166,57 +166,19 @@ public abstract class JavaExpression {
   }
 
   /**
-   * Returns true if and only if the value this expression stands for cannot be changed (with
-   * respect to ==) by a method call. This is the case for local variables, the self reference,
-   * final field accesses whose receiver is {@link #isUnassignableByOtherCode}, and operations whose
-   * operands are all {@link #isUnmodifiableByOtherCode}.
-   *
-   * @return true if no subexpression of this can be assigned to from outside the current method
-   *     body
-   * @see #isUnmodifiableByOtherCode
-   * @deprecated use {@link #isAssignableByOtherCode}
-   */
-  @Deprecated // 2024-04-30
-  @Pure
-  public boolean isUnassignableByOtherCode() {
-    return !isAssignableByOtherCode();
-  }
-
-  /**
    * Returns true if some subexpression of this can be assigned to from outside the current method
    * body.
    *
    * <p>This is false for local variables, the self reference, final field accesses whose receiver
-   * is {@link #isUnassignableByOtherCode}, and operations whose operands are all not {@link
+   * is not {@link #isAssignableByOtherCode}, and operations whose operands are all not {@link
    * #isModifiableByOtherCode}.
    *
    * @return true if some subexpression of this can be assigned to from outside the current method
    *     body
    * @see #isModifiableByOtherCode
    */
-  // TODO: Make abstract when isUnassignableByOtherCode is removed.
   @Pure
-  public boolean isAssignableByOtherCode() {
-    return !isUnassignableByOtherCode();
-  }
-
-  /**
-   * Returns true if and only if the value this expression stands for cannot be changed by a method
-   * call, including changes to any of its fields.
-   *
-   * <p>Approximately, this returns true if the expression is {@link #isUnassignableByOtherCode} and
-   * its type is immutable.
-   *
-   * @return true if the value of this expression cannot be changed from outside the current method
-   *     body
-   * @see #isUnassignableByOtherCode
-   * @deprecated use {@link #isModifiableByOtherCode}
-   */
-  @Deprecated // 2024-04-30
-  @Pure
-  public boolean isUnmodifiableByOtherCode() {
-    return !isModifiableByOtherCode();
-  }
+  public abstract boolean isAssignableByOtherCode();
 
   /**
    * Returns true if the value this expression stands for can be changed by a method call;
@@ -228,13 +190,10 @@ public abstract class JavaExpression {
    *
    * @return true if the value of this expression can be changed from outside the current method
    *     body
-   * @see #isUnassignableByOtherCode
+   * @see #isAssignableByOtherCode
    */
-  // TODO: Make abstract when isUnmodifiableByOtherCode is removed.
   @Pure
-  public boolean isModifiableByOtherCode() {
-    return !isUnmodifiableByOtherCode();
-  }
+  public abstract boolean isModifiableByOtherCode();
 
   /**
    * Returns true if and only if the two Java expressions are syntactically identical.
@@ -628,6 +587,7 @@ public abstract class JavaExpression {
       case RESOURCE_VARIABLE:
       case EXCEPTION_PARAMETER:
       case PARAMETER:
+      case BINDING_VARIABLE:
         return new LocalVariable(ele);
       case FIELD:
       case ENUM_CONSTANT:
@@ -642,9 +602,6 @@ public abstract class JavaExpression {
         }
         return new FieldAccess(fieldAccessExpression, typeOfEle, ele);
       default:
-        if (ElementUtils.isBindingVariable(ele)) {
-          return new LocalVariable(ele);
-        }
         throw new BugInCF(
             "Unexpected kind of VariableTree: kind: %s element: %s", ele.getKind(), ele);
     }
@@ -828,7 +785,7 @@ public abstract class JavaExpression {
    * @return viewpoint-adapted version of this
    */
   public final JavaExpression atMethodInvocation(MethodInvocationTree methodInvocationTree) {
-    JavaExpression receiverJe = JavaExpression.getReceiver(methodInvocationTree);
+    JavaExpression receiverJe = getReceiver(methodInvocationTree);
     List<JavaExpression> argumentsJe =
         argumentTreesToJavaExpressions(
             TreeUtils.elementFromUse(methodInvocationTree), methodInvocationTree.getArguments());
@@ -842,7 +799,7 @@ public abstract class JavaExpression {
    * @return viewpoint-adapted version of this
    */
   public final JavaExpression atMethodInvocation(MethodInvocationNode invocationNode) {
-    JavaExpression receiverJe = JavaExpression.fromNode(invocationNode.getTarget().getReceiver());
+    JavaExpression receiverJe = fromNode(invocationNode.getTarget().getReceiver());
     List<JavaExpression> argumentsJe =
         CollectionsPlume.mapList(JavaExpression::fromNode, invocationNode.getArguments());
     return ViewpointAdaptJavaExpression.viewpointAdapt(this, receiverJe, argumentsJe);
@@ -855,7 +812,7 @@ public abstract class JavaExpression {
    * @return viewpoint-adapted version of this
    */
   public JavaExpression atConstructorInvocation(NewClassTree newClassTree) {
-    JavaExpression receiverJe = JavaExpression.getReceiver(newClassTree);
+    JavaExpression receiverJe = getReceiver(newClassTree);
     List<JavaExpression> argumentsJe =
         argumentTreesToJavaExpressions(
             TreeUtils.elementFromUse(newClassTree), newClassTree.getArguments());
@@ -874,13 +831,13 @@ public abstract class JavaExpression {
     if (isVarargsInvocation(method, argTrees)) {
       List<JavaExpression> result = new ArrayList<>(method.getParameters().size());
       for (int i = 0; i < method.getParameters().size() - 1; i++) {
-        result.add(JavaExpression.fromTree(argTrees.get(i)));
+        result.add(fromTree(argTrees.get(i)));
       }
 
       List<JavaExpression> varargArgs =
           new ArrayList<>(argTrees.size() - method.getParameters().size() + 1);
       for (int i = method.getParameters().size() - 1; i < argTrees.size(); i++) {
-        varargArgs.add(JavaExpression.fromTree(argTrees.get(i)));
+        varargArgs.add(fromTree(argTrees.get(i)));
       }
       Element varargsElement = method.getParameters().get(method.getParameters().size() - 1);
       TypeMirror tm = ElementUtils.getType(varargsElement);

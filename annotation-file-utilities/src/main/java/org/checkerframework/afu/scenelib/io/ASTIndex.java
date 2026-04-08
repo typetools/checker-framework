@@ -60,9 +60,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.Name;
-import org.checkerframework.afu.annotator.find.CaseUtils;
 import org.checkerframework.afu.scenelib.util.JVMNames;
 import org.checkerframework.afu.scenelib.util.coll.WrapperMap;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /** Cache of {@code ASTPath} data for the nodes of a compilation unit tree. */
 public class ASTIndex extends WrapperMap<Tree, ASTRecord> {
@@ -179,8 +179,8 @@ public class ASTIndex extends WrapperMap<Tree, ASTRecord> {
   // better to save the current node's entry first, at a small cost to
   // the clarity of the code.)
   private class AstIndexVisitor extends SimpleTreeVisitor<Void, ASTRecord> {
-    private final Deque<Integer> counters = new ArrayDeque<Integer>();
-    private String inMethod = null;
+    private final Deque<Integer> counters = new ArrayDeque<>();
+    private @Nullable String inMethod = null;
 
     private void save(Tree node, ASTRecord rec, Kind kind, String sel) {
       if (node != null) {
@@ -308,7 +308,7 @@ public class ASTIndex extends WrapperMap<Tree, ASTRecord> {
     @Override
     public Void visitCase(CaseTree node, ASTRecord rec) {
       Kind kind = node.getKind();
-      saveAll(CaseUtils.caseTreeGetExpressions(node), rec, kind, ASTPath.EXPRESSION);
+      saveAll(node.getExpressions(), rec, kind, ASTPath.EXPRESSION);
       saveAll(node.getStatements(), rec, kind, ASTPath.STATEMENT);
       return defaultAction(node, rec);
     }
@@ -477,7 +477,7 @@ public class ASTIndex extends WrapperMap<Tree, ASTRecord> {
       saveAll(node.getArguments(), rec, kind, ASTPath.ARGUMENT);
       if (classBody != null) {
         Name name = classBody.getSimpleName();
-        String className = null;
+        String className;
         if (name == null || name.toString().isEmpty()) {
           int i = counters.pop();
           counters.push(++i);

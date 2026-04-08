@@ -6,6 +6,7 @@ import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.SwitchExpressionTree;
 import com.sun.source.tree.VariableTree;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -109,20 +110,20 @@ public class Expression extends TypeConstraint {
         return reduceLambda(context);
       case MEMBER_REFERENCE:
         return reduceMethodRef(context);
+      case SWITCH_EXPRESSION:
+        ConstraintSet set = new ConstraintSet();
+        SwitchExpressionScanner<Void, Void> scanner =
+            new FunctionalSwitchExpressionScanner<>(
+                (ExpressionTree valueTree, Void unused) -> {
+                  Constraint c = new Expression(this, valueTree, T);
+                  set.add(c);
+                  return null;
+                },
+                (c1, c2) -> null);
+        scanner.scanSwitchExpression((SwitchExpressionTree) expression, null);
+        return set;
+
       default:
-        if (TreeUtils.isSwitchExpression(expression)) {
-          ConstraintSet set = new ConstraintSet();
-          SwitchExpressionScanner<Void, Void> scanner =
-              new FunctionalSwitchExpressionScanner<>(
-                  (ExpressionTree valueTree, Void unused) -> {
-                    Constraint c = new Expression(this, valueTree, T);
-                    set.add(c);
-                    return null;
-                  },
-                  (c1, c2) -> null);
-          scanner.scanSwitchExpression(expression, null);
-          return set;
-        }
         throw new BugInCF(
             "Unexpected expression kind: %s, Expression: %s", expression.getKind(), expression);
     }
@@ -247,11 +248,16 @@ public class Expression extends TypeConstraint {
         context.inferenceTypeFactory.createThetaForMethodReference(
             memRef, compileTimeDecl, context);
     AbstractType compileTimeReturn = compileTimeDecl.getReturnType(map);
-    if (TreeUtils.needsTypeArgInference(memRef) && !compileTimeReturn.isProper()) {
-      BoundSet b2 =
+    BoundSet b2;
+    if (TreeUtils.needsTypeArgInference(memRef)) {
+      b2 =
           context.inference.createB2MethodRef(
               compileTimeDecl, T.getFunctionTypeParameterTypes(), map);
-      return context.inference.createB3(b2, memRef, compileTimeDecl, r, map);
+      if (!compileTimeReturn.isProper()) {
+        return context.inference.createB3(b2, memRef, compileTimeDecl, r, map);
+      }
+    } else {
+      b2 = new BoundSet(context);
     }
 
     // https://docs.oracle.com/javase/specs/jls/se8/html/jls-18.html#jls-18.2.1-300-D-B-C
@@ -266,7 +272,7 @@ public class Expression extends TypeConstraint {
                 compileTimeReturn.capture(context),
                 r,
                 TypeConstraint.Kind.TYPE_COMPATIBILITY)),
-        new BoundSet(context));
+        b2);
   }
 
   /**

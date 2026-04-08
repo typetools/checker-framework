@@ -59,6 +59,7 @@ import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
@@ -277,7 +278,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     AnnotationMirror primaryGb =
         methodCallReceiver.getPrimaryAnnotationInHierarchy(atypeFactory.GUARDEDBYUNKNOWN);
     AnnotationMirror effectiveGb =
-        methodCallReceiver.getEffectiveAnnotationInHierarchy(atypeFactory.GUARDEDBYUNKNOWN);
+        methodCallReceiver.getAnnotationInHierarchy(atypeFactory.GUARDEDBYUNKNOWN);
 
     // If the receiver actual parameter has type @GuardSatisfied, skip the subtype check.
     // Consider only a @GuardSatisfied primary annotation - hence use primaryGb instead of
@@ -413,8 +414,10 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
       // The atmOfReceiver for "void.class" is TypeKind.VOID, which isn't annotated so avoid
       // it.
       if (atmOfReceiver.getKind() != TypeKind.VOID) {
-        AnnotationMirror gb =
-            atmOfReceiver.getEffectiveAnnotationInHierarchy(atypeFactory.GUARDEDBYUNKNOWN);
+        AnnotationMirror gb = atmOfReceiver.getAnnotationInHierarchy(atypeFactory.GUARDEDBYUNKNOWN);
+        if (gb == null) {
+          throw new BugInCF("no annotation: " + atmOfReceiver + " for " + tree.getExpression());
+        }
         checkLock(tree.getExpression(), gb);
       }
     }
@@ -495,8 +498,10 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
   @Override
   public Void visitArrayAccess(ArrayAccessTree tree, Void p) {
     AnnotatedTypeMirror atmOfReceiver = atypeFactory.getAnnotatedType(tree.getExpression());
-    AnnotationMirror gb =
-        atmOfReceiver.getEffectiveAnnotationInHierarchy(atypeFactory.GUARDEDBYUNKNOWN);
+    AnnotationMirror gb = atmOfReceiver.getAnnotationInHierarchy(atypeFactory.GUARDEDBYUNKNOWN);
+    if (gb == null) {
+      throw new BugInCF("no annotation: " + atmOfReceiver + " for " + tree.getExpression());
+    }
     checkLock(tree.getExpression(), gb);
     return super.visitArrayAccess(tree, p);
   }
@@ -559,8 +564,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         checker.reportError(
             methodInvocationTree,
             "method.guarantee.violated",
-            seaOfEnclosingMethod.getNameOfSideEffectAnnotation(),
             enclosingMethodElement.getSimpleName(),
+            seaOfEnclosingMethod.getNameOfSideEffectAnnotation(),
             methodElement.getSimpleName(),
             seaOfInvokedMethod.getNameOfSideEffectAnnotation());
       }
@@ -642,13 +647,12 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
     guardSatisfiedIndex[0] = -1;
 
-    AnnotatedTypeMirror methodDefinitionReceiver = null;
     AnnotatedTypeMirror methodCallReceiver = null;
 
     ExecutableElement invokedMethodElement = invokedMethod.getElement();
     if (!ElementUtils.isStatic(invokedMethodElement)
         && invokedMethod.getElement().getKind() != ElementKind.CONSTRUCTOR) {
-      methodDefinitionReceiver = invokedMethod.getReceiverType();
+      AnnotatedTypeMirror methodDefinitionReceiver = invokedMethod.getReceiverType();
       if (methodDefinitionReceiver != null
           && methodDefinitionReceiver.hasPrimaryAnnotation(checkerGuardSatisfiedClass)) {
         guardSatisfiedIndex[0] = atypeFactory.getGuardSatisfiedIndex(methodDefinitionReceiver);
@@ -813,9 +817,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
     MethodTree enclosingMethod = TreePathUtil.enclosingMethod(atypeFactory.getPath(tree));
 
-    ExecutableElement methodElement = null;
     if (enclosingMethod != null) {
-      methodElement = TreeUtils.elementFromDeclaration(enclosingMethod);
+      ExecutableElement methodElement = TreeUtils.elementFromDeclaration(enclosingMethod);
 
       SideEffectAnnotation seaOfEnclosingMethod =
           atypeFactory.methodSideEffectAnnotation(methodElement, false);
@@ -1123,10 +1126,11 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
   // "contracts.precondition.field", so it would be clear that
   // the error refers to an implicit method call, not a dereference (field access).
   private void checkPreconditionsForImplicitToStringCall(ExpressionTree tree) {
-    AnnotationMirror gbAnno =
-        atypeFactory
-            .getAnnotatedType(tree)
-            .getEffectiveAnnotationInHierarchy(atypeFactory.GUARDEDBY);
+    AnnotatedTypeMirror atm = atypeFactory.getAnnotatedType(tree);
+    AnnotationMirror gbAnno = atm.getAnnotationInHierarchy(atypeFactory.GUARDEDBY);
+    if (gbAnno == null) {
+      throw new BugInCF("no annotation: " + atm + " for " + tree);
+    }
     checkLock(tree, gbAnno);
   }
 
