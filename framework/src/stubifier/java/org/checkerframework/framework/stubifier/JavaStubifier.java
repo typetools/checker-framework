@@ -42,7 +42,7 @@ import java.util.Optional;
  * </ol>
  */
 public class JavaStubifier {
-  public static final LanguageLevel DEFAULT_LANGUAGE_LEVEL = LanguageLevel.JAVA_25;
+  public static final LanguageLevel DEFAULT_LANGUAGE_LEVEL = LanguageLevel.JAVA_21;
 
   /**
    * Processes each provided command-line argument; see class documentation for details.
