@@ -336,7 +336,8 @@ public final class TreePathUtil {
       }
       case SWITCH_EXPRESSION -> {
         @SuppressWarnings("interning:not.interned") // AST node comparison
-        boolean switchIsLeaf = parent == treePath.getLeaf();
+        boolean switchIsLeaf =
+            ((SwitchExpressionTree) parent).getExpression() == treePath.getLeaf();
         if (switchIsLeaf) {
           // The assignment context for the switch selector expression is simply
           // boolean. No point in going on.

@@ -296,7 +296,13 @@ public class Resolver {
         case EXCEPTION_PARAMETER, LOCAL_VARIABLE, PARAMETER, RESOURCE_VARIABLE, BINDING_VARIABLE ->
             (VariableElement) res;
         case ENUM_CONSTANT, FIELD -> null;
-        default -> null; // The Element might be a SymbolNotFoundError.
+        default -> {
+          if (res instanceof VariableElement) {
+            throw new BugInCF("unhandled variable ElementKind " + res.getKind());
+          }
+          // The Element might be a SymbolNotFoundError.
+          return null;
+        }
       };
     } finally {
       log.popDiagnosticHandler(discardDiagnosticHandler);
