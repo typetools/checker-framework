@@ -60,7 +60,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
-import org.checkerframework.afu.annotator.find.CaseUtils;
 import org.checkerframework.checker.collectionownership.qual.NotOwningCollection;
 import org.checkerframework.checker.collectionownership.qual.PolyOwningCollection;
 import org.plumelib.util.ArraysPlume;
@@ -768,9 +767,9 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
               CaseTree caze = (CaseTree) actualNode;
               int arg = astNode.getArgument();
               if (astNode.childSelectorIs(EXPRESSION)) {
-                List<? extends ExpressionTree> expressions = CaseUtils.caseTreeGetExpressions(caze);
+                List<? extends ExpressionTree> expressions = caze.getExpressions();
                 // If expressions is empty, it means default case:
-                if (!expressions.isEmpty() && arg >= expressions.size()) {
+                if (arg >= expressions.size()) {
                   return false;
                 }
                 next = expressions.get(arg);

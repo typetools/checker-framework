@@ -253,10 +253,9 @@ public class SignaturePrinter extends AbstractTypeProcessor {
           return "@interface";
         case ENUM:
           return "enum";
+        case RECORD:
+          return "record";
         default:
-          if (e.getKind().name().equals("RECORD")) {
-            return "record";
-          }
           throw new IllegalArgumentException("Not a type element: " + e.getKind());
       }
     }

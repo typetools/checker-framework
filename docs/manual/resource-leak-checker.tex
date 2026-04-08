@@ -1,8 +1,14 @@
 \htmlhr
 \chapterAndLabel{Resource Leak Checker for must-call obligations}{resource-leak-checker}
 
-The Resource Leak Checker guarantees that the program fulfills every object's
-must-call obligations before the object is de-allocated.
+The Resource Leak Checker guarantees that every resource is closed rather
+than leaked.  Examples of resources are a channel, executor,
+\<ExecutionControl>, file, \<FileLock>, \<Formatter>, reader,
+\<Scanner>, socket, stream, writer, etc.
+
+More precisely, the Resource Leak Checker guarantees that the program
+fulfills every object's must-call obligations before the object is
+de-allocated.
 
 A resource leak occurs when a program does not explicitly dispose of some finite
 underlying resource, such as a socket, file descriptor, or database connection.  To dispose
