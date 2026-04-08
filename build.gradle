@@ -396,7 +396,7 @@ allprojects { currentProj ->
           "-Xep:ASTHelpersSuggestions:OFF",
           // Removing "public" from private class members loses information about the abstraction.
           "-Xep:EffectivelyPrivate:OFF",
-          // Broken in Error Prone 2.49.0.  I could check again in a later version of Error Prone.
+          // Broken in Error Prone 2.49.0; see https://github.com/google/error-prone/issues/5710.
           "-Xep:AlreadyChecked:OFF",
           // -Werror halts the build if Error Prone issues a warning, which ensures that
           // the errors get fixed.  On the downside, Error Prone (or maybe the compiler?)
