@@ -493,8 +493,9 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
         AnnotatedTypeMirror type, AnnotationMirrorMap<AnnotationMirror> replacements) {
       AnnotationMirrorMap<AnnotationMirror> realReplacements = replacements;
       TypeElement typeElement = TypesUtils.getTypeElement(type.getUnderlyingType());
-      // only customize replacement for type elements
-      if (typeElement != null) {
+      // Zero-arg polymorphic varargs calls such as Arrays.asList() can reach here with no
+      // computed replacement. The emptiness check avoids dereferencing replacements.get(POLY).
+      if (typeElement != null && !replacements.isEmpty()) {
         assert replacements.size() == 1 && replacements.containsKey(POLY);
         AnnotationMirror extantPolyAnnoReplacement = replacements.get(POLY);
         if (AnnotationUtils.areSameByName(
