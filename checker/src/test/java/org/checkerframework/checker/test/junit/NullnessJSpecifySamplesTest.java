@@ -99,45 +99,39 @@ public class NullnessJSpecifySamplesTest extends CheckerFrameworkPerDirectoryTes
 
     // The JSpecify diagnostics are documented at
     // https://github.com/jspecify/jspecify/blob/main/samples/README.md#syntax .
-    switch (jspecifyDiagnostic.getMessage()) {
-      case "jspecify_conflicting_annotations":
-        throw new BugInCF("jspecifyMatches(%s, %s)", jspecifyDiagnostic, cfDiagnostic);
-
-      case "jspecify_unrecognized_location":
-        return true;
-
-      case "jspecify_nullness_intrinsically_not_nullable":
-        return switch (cfDiagnostic.getMessage()) {
-          case "nullness.on.constructor",
-              "nullness.on.enum",
-              "nullness.on.outer",
-              "nullness.on.primitive",
-              "nullness.on.receiver",
-              "nullness.on.supertype" ->
-              true;
-          default -> false;
-        };
-
-      case "jspecify_nullness_mismatch":
-      case "jspecify_nullness_not_enough_information":
-        return switch (cfDiagnostic.getMessage()) {
-          case "argument",
-              "assignment",
-              "condition.nullable",
-              "dereference.of.nullable",
-              "initialization.field.uninitialized",
-              "locking.nullable",
-              "override.param",
-              "override.return",
-              "return",
-              "type.argument",
-              "unboxing.of.nullable" ->
-              true;
-          default -> false;
-        };
-
-      default:
-        throw new BugInCF("Unexpected JSpecify diagnostic: " + jspecifyDiagnostic.getMessage());
-    }
+    return switch (jspecifyDiagnostic.getMessage()) {
+      case "jspecify_conflicting_annotations" ->
+          throw new BugInCF("jspecifyMatches(%s, %s)", jspecifyDiagnostic, cfDiagnostic);
+      case "jspecify_unrecognized_location" -> true;
+      case "jspecify_nullness_intrinsically_not_nullable" ->
+          switch (cfDiagnostic.getMessage()) {
+            case "nullness.on.constructor",
+                "nullness.on.enum",
+                "nullness.on.outer",
+                "nullness.on.primitive",
+                "nullness.on.receiver",
+                "nullness.on.supertype" ->
+                true;
+            default -> false;
+          };
+      case "jspecify_nullness_mismatch", "jspecify_nullness_not_enough_information" ->
+          switch (cfDiagnostic.getMessage()) {
+            case "argument",
+                "assignment",
+                "condition.nullable",
+                "dereference.of.nullable",
+                "initialization.field.uninitialized",
+                "locking.nullable",
+                "override.param",
+                "override.return",
+                "return",
+                "type.argument",
+                "unboxing.of.nullable" ->
+                true;
+            default -> false;
+          };
+      default ->
+          throw new BugInCF("Unexpected JSpecify diagnostic: " + jspecifyDiagnostic.getMessage());
+    };
   }
 }

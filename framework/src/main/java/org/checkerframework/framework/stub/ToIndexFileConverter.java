@@ -588,9 +588,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
             String typeName = type.getElementType().accept(this, null);
             StringBuilder sb = new StringBuilder();
             int n = type.getArrayLevel();
-            for (int i = 0; i < n; i++) {
-              sb.append("[");
-            }
+            sb.append("[".repeat(Math.max(0, n)));
             sb.append(typeName);
             return sb.toString();
           }
