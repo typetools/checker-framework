@@ -246,7 +246,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       }
 
       // update this value
-      if (sideEffectsUnrefineAliases) {
+      if (sideEffectsUnrefineAliases && !atypeFactory.isDoesNotUnrefineReceiver(method)) {
         thisValue = null;
       }
 

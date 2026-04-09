@@ -96,6 +96,7 @@ import org.checkerframework.common.wholeprograminference.WholeProgramInferenceIm
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceJavaParserStorage;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceJavaParserStorage.InferredDeclared;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenesStorage;
+import org.checkerframework.dataflow.qual.DoesNotUnrefineReceiver;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.qual.EnsuresQualifier;
@@ -217,6 +218,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   // These variables cannot be static because they depend on the ProcessingEnvironment.
   /** The AnnotatedFor.value argument/element. */
   protected final ExecutableElement annotatedForValueElement;
+
+  /** The DoesNotUnrefineReceiver.value argument/element. */
+  protected final ExecutableElement doesNotUnrefineReceiverValueElement;
 
   /** The EnsuresQualifier.expression field/element. */
   protected final ExecutableElement ensuresQualifierExpressionElement;
@@ -680,6 +684,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     this.debugStubParser = checker.hasOption("stubDebug");
 
     annotatedForValueElement = TreeUtils.getMethod(AnnotatedFor.class, "value", 0, processingEnv);
+    doesNotUnrefineReceiverValueElement =
+        TreeUtils.getMethod(DoesNotUnrefineReceiver.class, "value", 0, processingEnv);
     ensuresQualifierExpressionElement =
         TreeUtils.getMethod(EnsuresQualifier.class, "expression", 0, processingEnv);
     ensuresQualifierListValueElement =
@@ -5870,6 +5876,24 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
           || areSameByClass(anno, org.checkerframework.dataflow.qual.Pure.class)
           || areSameByClass(anno, org.jmlspecs.annotation.Pure.class)) {
         return true;
+      }
+    }
+    return false;
+  }
+
+  @Override
+  public boolean isDoesNotUnrefineReceiver(ExecutableElement methodElement) {
+    for (AnnotationMirror am : getDeclAnnotations(methodElement)) {
+      if (areSameByClass(am, org.checkerframework.dataflow.qual.DoesNotUnrefineReceiver.class)) {
+        List<String> typeSystems =
+            AnnotationUtils.getElementValueArray(
+                am, doesNotUnrefineReceiverValueElement, String.class);
+        for (String prefix : checker.getSuppressWarningsPrefixes()) {
+          if (typeSystems.contains(prefix)) {
+            return true;
+          }
+        }
+        return false;
       }
     }
     return false;

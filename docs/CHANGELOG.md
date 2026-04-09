@@ -9,6 +9,9 @@
 
 ### Implementation details
 
+New method annotation `DoesNotUnrefineReceiver`.
+Interface `AnnotationProvider` has a new method `isDoesNotUnrefineReceiver()`.
+
 ### Closed issues
 
 ## Version 4.0.0 (2026-04-07)

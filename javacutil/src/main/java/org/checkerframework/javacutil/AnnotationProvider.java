@@ -56,4 +56,13 @@ public interface AnnotationProvider {
    * @return true if multiple calls to the method (with the same arguments) return the same value
    */
   boolean isDeterministic(ExecutableElement methodElement);
+
+  /**
+   * Returns true if the given method may have side effects but does not does not unrefine its
+   * receiver.
+   *
+   * @param methodElement a method
+   * @return true if the method does not unrefine its receiver
+   */
+  boolean isDoesNotUnrefineReceiver(ExecutableElement methodElement);
 }
