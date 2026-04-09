@@ -503,7 +503,7 @@ public class WholeProgramInferenceJavaParserStorage
       // See the comment on the similar exception in #getParameterAnnotations, above.
       return false;
     }
-    boolean isNewAnnotation = fieldAnnos != null && fieldAnnos.addDeclarationAnnotation(anno);
+    boolean isNewAnnotation = fieldAnnos.addDeclarationAnnotation(anno);
     if (isNewAnnotation) {
       modifiedFiles.add(getFileForElement(field));
     }
@@ -705,6 +705,7 @@ public class WholeProgramInferenceJavaParserStorage
    */
   private void createWrappersForClass(
       ClassTree javacClass, TypeDeclaration<?> javaParserClass, CompilationUnitAnnos sourceAnnos) {
+    @SuppressWarnings("NotJavadoc") // Error Prone flags Javadoc comments on local class methods.
     JointJavacJavaParserVisitor visitor =
         new DefaultJointVisitor() {
 

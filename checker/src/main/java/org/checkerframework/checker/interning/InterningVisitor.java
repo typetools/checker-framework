@@ -639,6 +639,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
     ExpressionTree right = TreeUtils.withoutParens(topBinaryTree.getRightOperand());
 
     // looking for ((a == b || a.equals(b))
+    @SuppressWarnings("NotJavadoc") // Error Prone flags Javadoc comments on local class methods.
     Heuristics.Matcher matcherEqOrEquals =
         new Heuristics.Matcher() {
 
