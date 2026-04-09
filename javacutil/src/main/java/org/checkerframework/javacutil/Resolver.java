@@ -292,23 +292,18 @@ public class Resolver {
       }
       // Every kind in the documentation of Element.getKind() is explicitly tested, possibly
       // in the "default:" case.
-      switch (res.getKind()) {
-        case EXCEPTION_PARAMETER:
-        case LOCAL_VARIABLE:
-        case PARAMETER:
-        case RESOURCE_VARIABLE:
-        case BINDING_VARIABLE:
-          return (VariableElement) res;
-        case ENUM_CONSTANT:
-        case FIELD:
-          return null;
-        default:
+      return switch (res.getKind()) {
+        case EXCEPTION_PARAMETER, LOCAL_VARIABLE, PARAMETER, RESOURCE_VARIABLE, BINDING_VARIABLE ->
+            (VariableElement) res;
+        case ENUM_CONSTANT, FIELD -> null;
+        default -> {
           if (res instanceof VariableElement) {
             throw new BugInCF("unhandled variable ElementKind " + res.getKind());
           }
           // The Element might be a SymbolNotFoundError.
-          return null;
-      }
+          yield null;
+        }
+      };
     } finally {
       log.popDiagnosticHandler(discardDiagnosticHandler);
     }

@@ -266,7 +266,7 @@ public final class AnnotationDef extends AElement {
    */
   @Override
   public boolean equals(Object o) {
-    return o instanceof AnnotationDef && ((AnnotationDef) o).equals(this);
+    return o instanceof AnnotationDef other && other.equals(this);
   }
 
   /**

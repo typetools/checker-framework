@@ -76,9 +76,9 @@ public abstract class SwitchExpressionScanner<R, P> extends TreeScanner<R, P> {
         Tree body = caseTree.getBody();
         // This case is a switch rule, so its body is either an expression, block, or throw.
         // See https://docs.oracle.com/javase/specs/jls/se17/html/jls-15.html#jls-15.28.2.
-        if (body instanceof BlockTree) {
+        if (body instanceof BlockTree blockTree) {
           // Scan for yield statements.
-          result = combineResults(result, yieldVisitor.scan(((BlockTree) body).getStatements(), p));
+          result = combineResults(result, yieldVisitor.scan(blockTree.getStatements(), p));
         } else if (!(body instanceof ThrowTree)) {
           // The expression is the result expression.
           ExpressionTree expressionTree = (ExpressionTree) body;

@@ -50,10 +50,9 @@ public class NarrowingConversionNode extends Node {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof NarrowingConversionNode)) {
+    if (!(obj instanceof NarrowingConversionNode other)) {
       return false;
     }
-    NarrowingConversionNode other = (NarrowingConversionNode) obj;
     return getOperand().equals(other.getOperand())
         && TypesUtils.areSamePrimitiveTypes(getType(), other.getType());
   }
