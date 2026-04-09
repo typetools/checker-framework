@@ -702,10 +702,9 @@ public class OptionalImplVisitor
         // The receiver can be null if the receiver is the implicit "this.".
         return;
       }
-      if (!(receiver instanceof MethodInvocationTree)) {
+      if (!(receiver instanceof MethodInvocationTree methodCall)) {
         return;
       }
-      MethodInvocationTree methodCall = (MethodInvocationTree) receiver;
       if (isOptionalPropagation(methodCall)) {
         receiver = TreeUtils.getReceiverTree(methodCall);
         continue;
@@ -956,8 +955,7 @@ public class OptionalImplVisitor
     TreePath getParentPath = getPath.getParentPath();
     // "getParent" means "the parent of the node `Optional::get`".
     Tree getParent = getParentPath.getLeaf();
-    if (getParent instanceof MethodInvocationTree) {
-      MethodInvocationTree hasGetAsArgumentTree = (MethodInvocationTree) getParent;
+    if (getParent instanceof MethodInvocationTree hasGetAsArgumentTree) {
       ExecutableElement hasGetAsArgumentElement = TreeUtils.elementFromUse(hasGetAsArgumentTree);
       if (!hasGetAsArgumentElement.equals(streamMap)) {
         // Optional::get is not an argument to stream#map
@@ -966,8 +964,7 @@ public class OptionalImplVisitor
       // hasGetAsArgumentTree is an invocation of Stream#map(...).
       Tree mapReceiverTree = TreeUtils.getReceiverTree(hasGetAsArgumentTree);
       // Will check whether mapParent is the call `Stream.filter(Optional::isPresent)`.
-      if (mapReceiverTree instanceof MethodInvocationTree) {
-        MethodInvocationTree fluentToMapTree = (MethodInvocationTree) mapReceiverTree;
+      if (mapReceiverTree instanceof MethodInvocationTree fluentToMapTree) {
         ExecutableElement fluentToMapElement = TreeUtils.elementFromUse(fluentToMapTree);
         if (!fluentToMapElement.equals(streamFilter)) {
           // The receiver of map(Optional::get) is not Stream#filter

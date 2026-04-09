@@ -1665,14 +1665,12 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       return 0;
     }
 
-    if (expressionObj instanceof ValueLiteral) {
-      ValueLiteral sequenceLiteral = (ValueLiteral) expressionObj;
+    if (expressionObj instanceof ValueLiteral sequenceLiteral) {
       Object sequenceLiteralValue = sequenceLiteral.getValue();
       if (sequenceLiteralValue instanceof String) {
         return ((String) sequenceLiteralValue).length();
       }
-    } else if (expressionObj instanceof ArrayCreation) {
-      ArrayCreation arrayCreation = (ArrayCreation) expressionObj;
+    } else if (expressionObj instanceof ArrayCreation arrayCreation) {
       // This is only expected to support array creations in varargs methods
       return arrayCreation.getInitializers().size();
     } else if (expressionObj instanceof ArrayAccess) {

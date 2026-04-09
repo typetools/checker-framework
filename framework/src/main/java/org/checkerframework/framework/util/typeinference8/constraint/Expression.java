@@ -161,8 +161,7 @@ public class Expression extends TypeConstraint {
   private BoundSet reduceMethodInvocation(Java8InferenceContext context) {
     ExpressionTree expressionTree = expression;
     List<? extends ExpressionTree> args;
-    if (expressionTree instanceof NewClassTree) {
-      NewClassTree newClassTree = (NewClassTree) expressionTree;
+    if (expressionTree instanceof NewClassTree newClassTree) {
       args = newClassTree.getArguments();
     } else {
       MethodInvocationTree methodInvocationTree = (MethodInvocationTree) expressionTree;

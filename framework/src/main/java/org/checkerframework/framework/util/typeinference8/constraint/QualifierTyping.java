@@ -84,14 +84,12 @@ public class QualifierTyping implements Constraint {
     }
 
     ConstraintSet constraintSet = new ConstraintSet();
-    if (Q instanceof QualifierVar) {
+    if (Q instanceof QualifierVar var) {
       // Q <: R
-      QualifierVar var = (QualifierVar) Q;
       constraintSet.addAll(var.addBound(BoundKind.UPPER, R));
     }
-    if (R instanceof QualifierVar) {
+    if (R instanceof QualifierVar var) {
       // Q <: R
-      QualifierVar var = (QualifierVar) R;
       constraintSet.addAll(var.addBound(BoundKind.LOWER, Q));
     }
     return constraintSet;
@@ -114,14 +112,12 @@ public class QualifierTyping implements Constraint {
       return ConstraintSet.TRUE_ANNO_FAIL;
     }
     ConstraintSet constraintSet = new ConstraintSet();
-    if (Q instanceof QualifierVar) {
+    if (Q instanceof QualifierVar var) {
       // Q == R
-      QualifierVar var = (QualifierVar) Q;
       constraintSet.addAll(var.addBound(BoundKind.EQUAL, R));
     }
-    if (R instanceof QualifierVar) {
+    if (R instanceof QualifierVar var) {
       // Q == R
-      QualifierVar var = (QualifierVar) R;
       constraintSet.addAll(var.addBound(BoundKind.EQUAL, Q));
     }
     return constraintSet;

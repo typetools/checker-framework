@@ -460,8 +460,7 @@ public class Main {
         for (Annotation anno : annos) {
           el.tlAnnotationsHere.add(anno);
         }
-        if (ins instanceof TypedInsertion) {
-          TypedInsertion ti = (TypedInsertion) ins;
+        if (ins instanceof TypedInsertion ti) {
           if (!rec.astPath.isEmpty()) {
             // addInnerTypePaths(decl, rec, ti, insertionSources);
           }
@@ -946,8 +945,7 @@ public class Main {
               dbug.debug("Need import %s%n  due to insertion %s%n", packageNames, toInsert);
               imports.addAll(packageNames);
             }
-            if (iToInsert instanceof AnnotationInsertion) {
-              AnnotationInsertion annoToInsert = (AnnotationInsertion) iToInsert;
+            if (iToInsert instanceof AnnotationInsertion annoToInsert) {
               Set<String> annoImports =
                   annotationImports.get(annoToInsert.getAnnotationFullyQualifiedName());
               if (annoImports != null) {

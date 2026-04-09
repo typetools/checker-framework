@@ -1347,8 +1347,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     @SuppressWarnings("compilermessages")
     @CompilerMessageKey String msgKey = msgKeyPrefix + reason;
     if (reason.equals("call")) {
-      if (r.first instanceof MethodInvocationTree) {
-        MethodInvocationTree mitree = (MethodInvocationTree) r.first;
+      if (r.first instanceof MethodInvocationTree mitree) {
         checker.reportError(r.first, msgKey, mitree.getMethodSelect());
       } else {
         NewClassTree nctree = (NewClassTree) r.first;
@@ -2348,8 +2347,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     Tree enclosing = TreePathUtil.enclosingOfKind(getCurrentPath(), methodAndLambdaExpression);
 
     AnnotatedTypeMirror declaredReturnType = null;
-    if (enclosing instanceof MethodTree) {
-      MethodTree enclosingMethod = (MethodTree) enclosing;
+    if (enclosing instanceof MethodTree enclosingMethod) {
       boolean valid = validateTypeOf(enclosingMethod);
       if (valid) {
         declaredReturnType = atypeFactory.getMethodReturnType(enclosingMethod, tree);
@@ -2401,20 +2399,18 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     for (ExpressionTree arg : args) {
-      if (!(arg instanceof AssignmentTree)) {
+      if (!(arg instanceof AssignmentTree at)) {
         // TODO: when can this happen?
         continue;
       }
 
-      AssignmentTree at = (AssignmentTree) arg;
       // Ensure that we never ask for the annotated type of an annotation, because
       // we don't have a type for annotations.
       if (at.getExpression().getKind() == Tree.Kind.ANNOTATION) {
         visitAnnotation((AnnotationTree) at.getExpression(), p);
         continue;
       }
-      if (at.getExpression() instanceof NewArrayTree) {
-        NewArrayTree nat = (NewArrayTree) at.getExpression();
+      if (at.getExpression() instanceof NewArrayTree nat) {
         boolean isAnno = false;
         for (ExpressionTree init : nat.getInitializers()) {
           if (init.getKind() == Tree.Kind.ANNOTATION) {
@@ -3110,8 +3106,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       ExpressionTree valueExpTree,
       @CompilerMessageKey String errorKey,
       Object... extraArgs) {
-    if (valueExpTree instanceof ConditionalExpressionTree) {
-      ConditionalExpressionTree condExprTree = (ConditionalExpressionTree) valueExpTree;
+    if (valueExpTree instanceof ConditionalExpressionTree condExprTree) {
       boolean trueResult =
           commonAssignmentCheck(varTree, condExprTree.getTrueExpression(), "assignment");
       boolean falseResult =
@@ -3191,10 +3186,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
     boolean result = true;
     if (varType.getKind() == TypeKind.ARRAY
-        && valueExpTree instanceof NewArrayTree
-        && ((NewArrayTree) valueExpTree).getType() == null) {
+        && valueExpTree instanceof NewArrayTree arrayTree
+        && arrayTree.getType() == null) {
       AnnotatedTypeMirror compType = ((AnnotatedArrayType) varType).getComponentType();
-      NewArrayTree arrayTree = (NewArrayTree) valueExpTree;
       assert arrayTree.getInitializers() != null
           : "array initializers are not expected to be null in: " + valueExpTree;
       result = checkArrayInitialization(compType, arrayTree.getInitializers()) && result;

@@ -2190,8 +2190,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     if (enclosingTree == null) {
       // tree is inside an annotation, where "this" is not allowed. So, no self type exists.
       return null;
-    } else if (enclosingTree instanceof MethodTree) {
-      MethodTree enclosingMethod = (MethodTree) enclosingTree;
+    } else if (enclosingTree instanceof MethodTree enclosingMethod) {
       if (TreeUtils.isConstructor(enclosingMethod)) {
         return (AnnotatedDeclaredType) getAnnotatedType(enclosingMethod).getReturnType();
       } else {
@@ -4693,8 +4692,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 getPath(parentTree),
                 new HashSet<>(Arrays.asList(Tree.Kind.METHOD, Tree.Kind.LAMBDA_EXPRESSION)));
 
-        if (enclosing instanceof MethodTree) {
-          MethodTree enclosingMethod = (MethodTree) enclosing;
+        if (enclosing instanceof MethodTree enclosingMethod) {
           return getAnnotatedType(enclosingMethod.getReturnType());
         } else {
           LambdaExpressionTree enclosingLambda = (LambdaExpressionTree) enclosing;

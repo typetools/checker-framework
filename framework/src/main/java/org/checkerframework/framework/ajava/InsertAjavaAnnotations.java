@@ -215,10 +215,9 @@ public class InsertAjavaAnnotations {
 
     @Override
     public void defaultAction(Node src, Node dest) {
-      if (!(src instanceof NodeWithAnnotations<?>)) {
+      if (!(src instanceof NodeWithAnnotations<?> srcWithAnnos)) {
         return;
       }
-      NodeWithAnnotations<?> srcWithAnnos = (NodeWithAnnotations<?>) src;
 
       // If `src` is a declaration, its annotations are declaration annotations.
       if (src instanceof MethodDeclaration) {

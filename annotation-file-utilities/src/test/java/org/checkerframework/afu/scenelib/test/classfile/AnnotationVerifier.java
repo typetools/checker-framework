@@ -831,8 +831,7 @@ public class AnnotationVerifier {
 
     @Override
     public boolean equals(@Nullable Object o) {
-      if (o instanceof ParameterDescription) {
-        ParameterDescription p = (ParameterDescription) o;
+      if (o instanceof ParameterDescription p) {
         return this.parameter == p.parameter;
       }
       return false;

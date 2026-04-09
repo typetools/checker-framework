@@ -69,29 +69,25 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
       // Expressions containing unknown expressions are not stored.
       return;
     }
-    if (je instanceof LocalVariable) {
-      LocalVariable localVar = (LocalVariable) je;
+    if (je instanceof LocalVariable localVar) {
       CFValue current = localVariableValues.get(localVar);
       CFValue value = changeLockAnnoToTop(je, current);
       if (value != null) {
         localVariableValues.put(localVar, value);
       }
-    } else if (je instanceof FieldAccess) {
-      FieldAccess fieldAcc = (FieldAccess) je;
+    } else if (je instanceof FieldAccess fieldAcc) {
       CFValue current = fieldValues.get(fieldAcc);
       CFValue value = changeLockAnnoToTop(je, current);
       if (value != null) {
         fieldValues.put(fieldAcc, value);
       }
-    } else if (je instanceof MethodCall) {
-      MethodCall method = (MethodCall) je;
+    } else if (je instanceof MethodCall method) {
       CFValue current = methodCallExpressions.get(method);
       CFValue value = changeLockAnnoToTop(je, current);
       if (value != null) {
         methodCallExpressions.put(method, value);
       }
-    } else if (je instanceof ArrayAccess) {
-      ArrayAccess arrayAccess = (ArrayAccess) je;
+    } else if (je instanceof ArrayAccess arrayAccess) {
       CFValue current = arrayValues.get(arrayAccess);
       CFValue value = changeLockAnnoToTop(je, current);
       if (value != null) {
@@ -99,8 +95,7 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
       }
     } else if (je instanceof ThisReference) {
       thisValue = changeLockAnnoToTop(je, thisValue);
-    } else if (je instanceof ClassName) {
-      ClassName className = (ClassName) je;
+    } else if (je instanceof ClassName className) {
       CFValue current = classValues.get(className);
       CFValue value = changeLockAnnoToTop(je, current);
       if (value != null) {
@@ -148,8 +143,7 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
       // The class name, however, is not.
       if (expr instanceof ThisReference) {
         initializeThisValue(atypeFactory.LOCKHELD, expr.getType());
-      } else if (expr instanceof FieldAccess) {
-        FieldAccess fieldAcc = (FieldAccess) expr;
+      } else if (expr instanceof FieldAccess fieldAcc) {
         if (!fieldAcc.isStatic() && fieldAcc.getReceiver() instanceof ThisReference) {
           insertValue(fieldAcc.getReceiver(), atypeFactory.LOCKHELD);
         }
@@ -224,15 +218,13 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
     //  * Locks are assumed to be effectively final, hence another thread will not
     //    side effect the lock expression that has value @LockHeld.
     if (hasLockHeld(value)) {
-      if (je instanceof FieldAccess) {
-        FieldAccess fieldAcc = (FieldAccess) je;
+      if (je instanceof FieldAccess fieldAcc) {
         CFValue oldValue = fieldValues.get(fieldAcc);
         CFValue newValue = value.mostSpecific(oldValue, null);
         if (newValue != null) {
           fieldValues.put(fieldAcc, newValue);
         }
-      } else if (je instanceof MethodCall) {
-        MethodCall method = (MethodCall) je;
+      } else if (je instanceof MethodCall method) {
         CFValue oldValue = methodCallExpressions.get(method);
         CFValue newValue = value.mostSpecific(oldValue, null);
         if (newValue != null) {

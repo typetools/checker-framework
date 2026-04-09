@@ -425,9 +425,8 @@ public final class IndexFileParser {
   /** Parse scalar annotation value. */
   // HMMM can a (readonly) Integer be casted to a writable Object?
   private Object parseScalarAFV(ScalarAFT aft) throws IOException, ParseException {
-    if (aft instanceof BasicAFT) {
+    if (aft instanceof BasicAFT baft) {
       Object val;
-      BasicAFT baft = (BasicAFT) aft;
       Class<?> type = baft.type;
       if (type == boolean.class) {
         if (matchKeyword("true")) {
@@ -506,8 +505,7 @@ public final class IndexFileParser {
       String name = expectQualifiedName();
       assert aft.isValidValue(name);
       return name;
-    } else if (aft instanceof AnnotationAFT) {
-      AnnotationAFT aaft = (AnnotationAFT) aft;
+    } else if (aft instanceof AnnotationAFT aaft) {
       AnnotationDef d = parseAnnotationHead();
       if (!d.name.equals(aaft.annotationDef.name)) {
         throw new ParseException(
@@ -574,8 +572,7 @@ public final class IndexFileParser {
           "The annotation type " + d.name + " has no field called " + fieldName);
     }
     AnnotationFieldType aft = aft1;
-    if (aft instanceof ArrayAFT) {
-      ArrayAFT aaft = (ArrayAFT) aft;
+    if (aft instanceof ArrayAFT aaft) {
       if (aaft.elementType == null) {
         // Array of unknown element type--must be zero-length
         expectChar('{');
@@ -584,8 +581,7 @@ public final class IndexFileParser {
       } else {
         parseAndAddArrayAFV(aaft, ab.beginArrayField(fieldName, aaft));
       }
-    } else if (aft instanceof ScalarAFT) {
-      ScalarAFT saft = (ScalarAFT) aft;
+    } else if (aft instanceof ScalarAFT saft) {
       Object value = parseScalarAFV(saft);
       ab.addScalarField(fieldName, saft, value);
     } else {

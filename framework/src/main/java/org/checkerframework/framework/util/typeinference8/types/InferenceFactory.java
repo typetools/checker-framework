@@ -165,8 +165,7 @@ public class InferenceFactory {
         HashSet<Kind> kinds =
             new HashSet<>(Arrays.asList(Tree.Kind.LAMBDA_EXPRESSION, Tree.Kind.METHOD));
         Tree enclosing = TreePathUtil.enclosingOfKind(path, kinds);
-        if (enclosing instanceof MethodTree) {
-          MethodTree methodTree = (MethodTree) enclosing;
+        if (enclosing instanceof MethodTree methodTree) {
           AnnotatedTypeMirror res = factory.getMethodReturnType(methodTree);
           return new ProperType(res, TreeUtils.typeOf(methodTree.getReturnType()), this.context);
         } else {
@@ -235,9 +234,7 @@ public class InferenceFactory {
    */
   public static AnnotatedTypeMirror assignedToVariable(
       AnnotatedTypeFactory atypeFactory, Tree assignmentContext) {
-    if (atypeFactory instanceof GenericAnnotatedTypeFactory<?, ?, ?, ?>) {
-      final GenericAnnotatedTypeFactory<?, ?, ?, ?> gatf =
-          ((GenericAnnotatedTypeFactory<?, ?, ?, ?>) atypeFactory);
+    if (atypeFactory instanceof GenericAnnotatedTypeFactory<?, ?, ?, ?> gatf) {
       return gatf.getAnnotatedTypeLhsNoTypeVarDefault(assignmentContext);
     } else {
       return atypeFactory.getAnnotatedType(assignmentContext);
@@ -419,8 +416,8 @@ public class InferenceFactory {
     }
 
     // Adapt to class type arguments.
-    if (expressionTree instanceof NewClassTree && !TreeUtils.isDiamondTree(expressionTree)) {
-      NewClassTree newClassTree = (NewClassTree) expressionTree;
+    if (expressionTree instanceof NewClassTree newClassTree
+        && !TreeUtils.isDiamondTree(expressionTree)) {
       List<? extends Tree> typeArgs = TreeUtils.getTypeArgumentsToNewClassTree(newClassTree);
       if (!typeArgs.isEmpty()) {
         ExecutableElement e = TreeUtils.elementFromUse(newClassTree);

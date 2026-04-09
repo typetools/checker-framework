@@ -168,14 +168,13 @@ public class InitializationVisitor<
     AnnotationMirror invariantAnno = atypeFactory.getFieldInvariantAnnotation();
 
     if (!qualHierarchy.isSubtypeShallow(invariantAnno, necessaryAnnotation, expr.getType())
-        || !(expr instanceof FieldAccess)) {
+        || !(expr instanceof FieldAccess fa)) {
       return super.checkContract(expr, necessaryAnnotation, inferredAnnotation, store);
     }
     if (expr.containsUnknown()) {
       return false;
     }
 
-    FieldAccess fa = (FieldAccess) expr;
     if (fa.getReceiver() instanceof ThisReference || fa.getReceiver() instanceof ClassName) {
       @SuppressWarnings("unchecked")
       Store s = (Store) store;
@@ -226,8 +225,7 @@ public class InitializationVisitor<
     // save all fields that are initialized and do not report errors about
     // them later when checking constructors.
     for (Tree member : tree.getMembers()) {
-      if (member instanceof BlockTree && !((BlockTree) member).isStatic()) {
-        BlockTree block = (BlockTree) member;
+      if (member instanceof BlockTree block && !block.isStatic()) {
         Store store = atypeFactory.getRegularExitStore(block);
 
         // Add field values for fields with an initializer.

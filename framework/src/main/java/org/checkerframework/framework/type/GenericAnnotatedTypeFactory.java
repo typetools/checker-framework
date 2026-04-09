@@ -2304,11 +2304,9 @@ public abstract class GenericAnnotatedTypeFactory<
   public <T extends GenericAnnotatedTypeFactory<?, ?, ?, ?>>
       @Nullable T getTypeFactoryOfSubcheckerOrNull(Class<? extends SourceChecker> subCheckerClass) {
     SourceChecker subSouceChecker = checker.getSubchecker(subCheckerClass);
-    if (subSouceChecker == null || !(subSouceChecker instanceof BaseTypeChecker)) {
+    if (subSouceChecker == null || !(subSouceChecker instanceof BaseTypeChecker subchecker)) {
       return null;
     }
-
-    BaseTypeChecker subchecker = (BaseTypeChecker) subSouceChecker;
 
     @SuppressWarnings(
         "unchecked" // This might not be safe, but the caller of the method should use the

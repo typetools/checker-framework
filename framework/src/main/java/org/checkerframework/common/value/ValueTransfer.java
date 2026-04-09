@@ -1411,8 +1411,7 @@ public class ValueTransfer extends CFTransfer {
 
       if (node instanceof FieldAccessNode) {
         refineArrayAtLengthAccess((FieldAccessNode) internal, store);
-      } else if (node instanceof MethodInvocationNode) {
-        MethodInvocationNode miNode = (MethodInvocationNode) node;
+      } else if (node instanceof MethodInvocationNode miNode) {
         refineAtLengthInvocation(miNode, store);
       }
     }

@@ -614,15 +614,13 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       return;
     }
 
-    if (expr instanceof LocalVariable) {
-      LocalVariable localVar = (LocalVariable) expr;
+    if (expr instanceof LocalVariable localVar) {
       V oldValue = localVariableValues.get(localVar);
       V newValue = merger.apply(oldValue, value);
       if (newValue != null) {
         localVariableValues.put(localVar, newValue);
       }
-    } else if (expr instanceof FieldAccess) {
-      FieldAccess fieldAcc = (FieldAccess) expr;
+    } else if (expr instanceof FieldAccess fieldAcc) {
       // Only store information about final fields (where the receiver is
       // also fixed) if concurrent semantics are enabled.
       boolean isMonotonic = isMonotonicUpdate(fieldAcc, value);
@@ -633,8 +631,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
           fieldValues.put(fieldAcc, newValue);
         }
       }
-    } else if (expr instanceof MethodCall) {
-      MethodCall method = (MethodCall) expr;
+    } else if (expr instanceof MethodCall method) {
       // Don't store any information if concurrent semantics are enabled.
       if (sequentialSemantics) {
         V oldValue = methodCallExpressions.get(method);
@@ -643,8 +640,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
           methodCallExpressions.put(method, newValue);
         }
       }
-    } else if (expr instanceof ArrayAccess) {
-      ArrayAccess arrayAccess = (ArrayAccess) expr;
+    } else if (expr instanceof ArrayAccess arrayAccess) {
       if (sequentialSemantics) {
         V oldValue = arrayValues.get(arrayAccess);
         V newValue = merger.apply(oldValue, value);
@@ -660,8 +656,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
           thisValue = newValue;
         }
       }
-    } else if (expr instanceof ClassName) {
-      ClassName className = (ClassName) expr;
+    } else if (expr instanceof ClassName className) {
       if (sequentialSemantics || !className.isAssignableByOtherCode()) {
         V oldValue = classValues.get(className);
         V newValue = merger.apply(oldValue, value);
@@ -766,20 +761,15 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       // Expressions containing unknown expressions are not stored.
       return;
     }
-    if (expr instanceof LocalVariable) {
-      LocalVariable localVar = (LocalVariable) expr;
+    if (expr instanceof LocalVariable localVar) {
       localVariableValues.remove(localVar);
-    } else if (expr instanceof FieldAccess) {
-      FieldAccess fieldAcc = (FieldAccess) expr;
+    } else if (expr instanceof FieldAccess fieldAcc) {
       fieldValues.remove(fieldAcc);
-    } else if (expr instanceof MethodCall) {
-      MethodCall method = (MethodCall) expr;
+    } else if (expr instanceof MethodCall method) {
       methodCallExpressions.remove(method);
-    } else if (expr instanceof ArrayAccess) {
-      ArrayAccess a = (ArrayAccess) expr;
+    } else if (expr instanceof ArrayAccess a) {
       arrayValues.remove(a);
-    } else if (expr instanceof ClassName) {
-      ClassName c = (ClassName) expr;
+    } else if (expr instanceof ClassName c) {
       classValues.remove(c);
     } else if (expr instanceof ThisReference) {
       thisValue = null;
@@ -796,22 +786,17 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    *     available
    */
   public @Nullable V getValue(JavaExpression expr) {
-    if (expr instanceof LocalVariable) {
-      LocalVariable localVar = (LocalVariable) expr;
+    if (expr instanceof LocalVariable localVar) {
       return localVariableValues.get(localVar);
     } else if (expr instanceof ThisReference || expr instanceof SuperReference) {
       return thisValue;
-    } else if (expr instanceof FieldAccess) {
-      FieldAccess fieldAcc = (FieldAccess) expr;
+    } else if (expr instanceof FieldAccess fieldAcc) {
       return fieldValues.get(fieldAcc);
-    } else if (expr instanceof MethodCall) {
-      MethodCall method = (MethodCall) expr;
+    } else if (expr instanceof MethodCall method) {
       return methodCallExpressions.get(method);
-    } else if (expr instanceof ArrayAccess) {
-      ArrayAccess a = (ArrayAccess) expr;
+    } else if (expr instanceof ArrayAccess a) {
       return arrayValues.get(a);
-    } else if (expr instanceof ClassName) {
-      ClassName c = (ClassName) expr;
+    } else if (expr instanceof ClassName c) {
       return classValues.get(c);
     } else {
       throw new BugInCF("Unexpected JavaExpression: " + expr + " (" + expr.getClass() + ")");

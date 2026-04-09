@@ -145,10 +145,9 @@ public class AnnotationFileUtil {
     }
 
     for (BodyDeclaration<?> member : type.getMembers()) {
-      if (!(member instanceof FieldDeclaration)) {
+      if (!(member instanceof FieldDeclaration decl)) {
         continue;
       }
-      FieldDeclaration decl = (FieldDeclaration) member;
       for (VariableDeclarator var : decl.getVariables()) {
         if (toString(var).equals(field.getSimpleName().toString())) {
           return decl;

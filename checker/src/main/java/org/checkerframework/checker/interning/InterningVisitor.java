@@ -348,8 +348,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
     // if the type on the class declaration is @Interned.
     if (tree instanceof MethodTree && TreeUtils.isConstructor((MethodTree) tree)) {
       return true;
-    } else if (tree instanceof NewClassTree) {
-      NewClassTree newClassTree = (NewClassTree) tree;
+    } else if (tree instanceof NewClassTree newClassTree) {
       TypeMirror typeMirror = TreeUtils.typeOf(newClassTree);
       AnnotationMirrorSet bounds = atypeFactory.getTypeDeclarationBounds(typeMirror);
       // Don't issue an invalid type warning for creations of objects of interned classes;
@@ -413,8 +412,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
   private @Nullable MethodTree equalsImplementation(ClassTree tree) {
     List<? extends Tree> members = tree.getMembers();
     for (Tree member : members) {
-      if (member instanceof MethodTree) {
-        MethodTree mTree = (MethodTree) member;
+      if (member instanceof MethodTree mTree) {
         ExecutableElement enclosing = TreeUtils.elementFromDeclaration(mTree);
         if (overrides(enclosing, Object.class, "equals")) {
           return mTree;
@@ -716,10 +714,9 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
             // Element argElt = TreeUtils.elementFromUse((IdentifierTree) arg);
 
             ExpressionTree exp = tree.getMethodSelect();
-            if (!(exp instanceof MemberSelectTree)) {
+            if (!(exp instanceof MemberSelectTree member)) {
               return false;
             }
-            MemberSelectTree member = (MemberSelectTree) exp;
             ExpressionTree receiver = member.getExpression();
             // Element refElt = TreeUtils.elementFromUse(receiver);
 
@@ -824,10 +821,9 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
             Element argElt = TreeUtils.elementFromUse(arg);
 
             ExpressionTree exp = tree.getMethodSelect();
-            if (!(exp instanceof MemberSelectTree)) {
+            if (!(exp instanceof MemberSelectTree member)) {
               return false;
             }
-            MemberSelectTree member = (MemberSelectTree) exp;
             if (!(member.getExpression() instanceof IdentifierTree)) {
               return false;
             }

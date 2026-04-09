@@ -791,10 +791,9 @@ public class ASTPathCriterion implements Criterion {
             && entry.getArgument() == 0
             && entry.childSelectorIs(ASTPath.BOUND);
       case METHOD: // nullary constructor? receiver?
-        if (!(node instanceof MethodTree)) {
+        if (!(node instanceof MethodTree method)) {
           return false;
         }
-        MethodTree method = (MethodTree) node;
         List<? extends VariableTree> params = method.getParameters();
         if ("<init>".equals(method.getName().toString())) {
           if (ix == last) {
@@ -824,10 +823,9 @@ public class ASTPathCriterion implements Criterion {
         }
         return false;
       case NEW_ARRAY:
-        if (!(node instanceof NewArrayTree)) {
+        if (!(node instanceof NewArrayTree newArray)) {
           return false;
         }
-        NewArrayTree newArray = (NewArrayTree) node;
         int arg = entry.getArgument();
         if (entry.childSelectorIs(ASTPath.TYPE)) {
           if (ix == last) {
@@ -863,8 +861,7 @@ public class ASTPathCriterion implements Criterion {
    * @return the array depth of the given tree
    */
   private static int arrayDepth(Tree tree) {
-    if (tree instanceof NewArrayTree) {
-      NewArrayTree newArray = (NewArrayTree) tree;
+    if (tree instanceof NewArrayTree newArray) {
       Tree type = newArray.getType();
       if (type != null) {
         return type.accept(

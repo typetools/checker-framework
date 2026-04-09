@@ -212,8 +212,7 @@ public abstract class Annotations {
           throw new IllegalArgumentException("annotation has no field value");
         }
 
-        if (fieldType instanceof ArrayAFT) {
-          ArrayAFT aFieldType = (ArrayAFT) fieldType;
+        if (fieldType instanceof ArrayAFT aFieldType) {
           ArrayBuilder arrb = ab.beginArrayField(fieldName, aFieldType);
           List<? extends Object> l = (List<? extends Object>) fieldValue;
           ScalarAFT nnElementType;

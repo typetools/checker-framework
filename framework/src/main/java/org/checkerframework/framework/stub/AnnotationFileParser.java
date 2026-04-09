@@ -1022,8 +1022,7 @@ public class AnnotationFileParser {
       return typeDeclTypeParameters;
     }
 
-    if (typeDecl instanceof RecordDeclaration) {
-      RecordDeclaration recordDecl = (RecordDeclaration) typeDecl;
+    if (typeDecl instanceof RecordDeclaration recordDecl) {
       NodeList<Parameter> recordMembers = recordDecl.getParameters();
       Map<String, RecordComponentStub> byName =
           ArrayMap.newArrayMapOrLinkedHashMap(recordMembers.size());
@@ -1916,8 +1915,7 @@ public class AnnotationFileParser {
           elementsToDecl, fakeOverrideDecls, typeElt, member, typeDecl.getNameAsString(), astNode);
     }
     // For an enum type declaration, also add the enum constants
-    if (typeDecl instanceof EnumDeclaration) {
-      EnumDeclaration enumDecl = (EnumDeclaration) typeDecl;
+    if (typeDecl instanceof EnumDeclaration enumDecl) {
       // getEntries() gives the list of enum constant declarations
       for (BodyDeclaration<?> member : enumDecl.getEntries()) {
         putNewElement(
@@ -1958,8 +1956,7 @@ public class AnnotationFileParser {
       BodyDeclaration<?> member,
       String typeDeclName,
       NodeWithRange<?> astNode) {
-    if (member instanceof MethodDeclaration) {
-      MethodDeclaration method = (MethodDeclaration) member;
+    if (member instanceof MethodDeclaration method) {
       Element elt = findElement(typeElt, method, /* noWarn= */ true);
       if (elt != null) {
         putIfAbsent(elementsToDecl, elt, method);
@@ -1979,8 +1976,7 @@ public class AnnotationFileParser {
       if (elt != null) {
         putIfAbsent(elementsToDecl, elt, member);
       }
-    } else if (member instanceof FieldDeclaration) {
-      FieldDeclaration fieldDecl = (FieldDeclaration) member;
+    } else if (member instanceof FieldDeclaration fieldDecl) {
       for (VariableDeclarator var : fieldDecl.getVariables()) {
         Element varelt = findElement(typeElt, var);
         if (varelt != null) {
@@ -2111,11 +2107,10 @@ public class AnnotationFileParser {
 
       case DECLARED:
       case TYPEVAR:
-        if (!(javaParserType instanceof ClassOrInterfaceType)) {
+        if (!(javaParserType instanceof ClassOrInterfaceType javaParserClassType)) {
           return false;
         }
         com.sun.tools.javac.code.Type javacTypeInternal = (com.sun.tools.javac.code.Type) javacType;
-        ClassOrInterfaceType javaParserClassType = (ClassOrInterfaceType) javaParserType;
 
         // Use asString() because toString() includes annotations.
         String javaParserString = javaParserClassType.asString();
@@ -2503,8 +2498,7 @@ public class AnnotationFileParser {
 
     if (annotation instanceof MarkerAnnotationExpr) {
       return AnnotationBuilder.fromName(elements, annoName);
-    } else if (annotation instanceof NormalAnnotationExpr) {
-      NormalAnnotationExpr nrmanno = (NormalAnnotationExpr) annotation;
+    } else if (annotation instanceof NormalAnnotationExpr nrmanno) {
       AnnotationBuilder builder = new AnnotationBuilder(processingEnv, annoName);
       List<MemberValuePair> pairs = nrmanno.getPairs();
       if (pairs != null) {
@@ -2526,8 +2520,7 @@ public class AnnotationFileParser {
         }
       }
       return builder.build();
-    } else if (annotation instanceof SingleMemberAnnotationExpr) {
-      SingleMemberAnnotationExpr sglanno = (SingleMemberAnnotationExpr) annotation;
+    } else if (annotation instanceof SingleMemberAnnotationExpr sglanno) {
       AnnotationBuilder builder = new AnnotationBuilder(processingEnv, annoName);
       Expression valExpr = sglanno.getMemberValue();
       try {
@@ -2609,8 +2602,7 @@ public class AnnotationFileParser {
               "unexpected Unary annotation expression: " + expr);
         }
       };
-    } else if (expr instanceof ClassExpr) {
-      ClassExpr classExpr = (ClassExpr) expr;
+    } else if (expr instanceof ClassExpr classExpr) {
       @SuppressWarnings("signature") // Type.toString(): @FullyQualifiedName
       @FullyQualifiedName String className = classExpr.getType().toString();
       if (importedTypes.containsKey(className)) {

@@ -1953,10 +1953,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       if (arrayAccessAssignNodeExpr instanceof ArrayAccessNode) {
         ((ArrayAccessNode) arrayAccessAssignNodeExpr).setArrayExpression(expression);
         ((ArrayAccessNode) arrayAccessAssignNodeExpr).setEnhancedForLoop(tree);
-      } else if (arrayAccessAssignNodeExpr instanceof MethodInvocationNode) {
+      } else if (arrayAccessAssignNodeExpr instanceof MethodInvocationNode boxingNode) {
         // If the array component type is a primitive, there may be a boxing or unboxing
         // conversion. Treat that as an iterator.
-        MethodInvocationNode boxingNode = (MethodInvocationNode) arrayAccessAssignNodeExpr;
         boxingNode.setIterableExpression(expression);
         boxingNode.setEnhancedForLoop(tree);
       }
@@ -2867,8 +2866,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    */
   private boolean hasExceptionalPath(Label target) {
     for (ExtendedNode node : nodeList) {
-      if (node instanceof NodeWithExceptionsHolder) {
-        NodeWithExceptionsHolder exceptionalNode = (NodeWithExceptionsHolder) node;
+      if (node instanceof NodeWithExceptionsHolder exceptionalNode) {
         for (Set<Label> labels : exceptionalNode.getExceptions().values()) {
           if (labels.contains(target)) {
             return true;
@@ -3474,9 +3472,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    */
   private Node getReceiver(ExpressionTree tree) {
     assert TreeUtils.isFieldAccess(tree) || TreeUtils.isMethodAccess(tree);
-    if (tree instanceof MemberSelectTree) {
+    if (tree instanceof MemberSelectTree mtree) {
       // `tree` has an explicit receiver.
-      MemberSelectTree mtree = (MemberSelectTree) tree;
       return scan(mtree.getExpression(), null);
     } else {
       // `tree` lacks an explicit reciever.

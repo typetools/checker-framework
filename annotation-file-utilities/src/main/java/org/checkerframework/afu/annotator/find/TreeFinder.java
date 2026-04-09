@@ -429,8 +429,7 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
 
     // structure stolen from javac's Pretty.java
     private int getDimsSize(JCExpression tree) {
-      if (tree instanceof JCNewArray) {
-        JCNewArray na = (JCNewArray) tree;
+      if (tree instanceof JCNewArray na) {
         if (!na.dims.isEmpty()) {
           // when not all dims are given, na.dims.size() gives wrong answer
           return arrayLevels(na.type);
@@ -511,8 +510,7 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
                 typeTree = ((ArrayTypeTree) typeTree).getType();
                 break;
               case MEMBER_SELECT:
-                if (typeTree instanceof JCTree.JCFieldAccess) {
-                  JCTree.JCFieldAccess jfa = (JCTree.JCFieldAccess) typeTree;
+                if (typeTree instanceof JCFieldAccess jfa) {
                   typeTree = jfa.getExpression();
                   // if just a qualifier, don't increment loop counter
                   if (jfa.sym.getKind() == ElementKind.PACKAGE) {
@@ -1146,9 +1144,8 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
         }
       }
 
-      if (i.getKind() == Insertion.Kind.RECEIVER && node instanceof MethodTree) {
+      if (i.getKind() == Insertion.Kind.RECEIVER && node instanceof MethodTree method) {
         ReceiverInsertion receiver = (ReceiverInsertion) i;
-        MethodTree method = (MethodTree) node;
         VariableTree rcv = method.getReceiverParameter();
 
         if (rcv == null) {
@@ -1156,9 +1153,8 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
         }
       }
 
-      if (i.getKind() == Insertion.Kind.NEW && node instanceof NewArrayTree) {
+      if (i.getKind() == Insertion.Kind.NEW && node instanceof NewArrayTree newArray) {
         NewInsertion neu = (NewInsertion) i;
-        NewArrayTree newArray = (NewArrayTree) node;
 
         if (newArray.toString().startsWith("{")) {
           addNewType(neu, newArray);
@@ -1334,18 +1330,16 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
         }
       }
 
-      if (i.getKind() == Insertion.Kind.RECEIVER && node instanceof MethodTree) {
+      if (i.getKind() == Insertion.Kind.RECEIVER && node instanceof MethodTree method) {
         ReceiverInsertion receiver = (ReceiverInsertion) i;
-        MethodTree method = (MethodTree) node;
 
         if (method.getReceiverParameter() == null) {
           addReceiverType(path, receiver, method);
         }
       }
 
-      if (i.getKind() == Insertion.Kind.NEW && node instanceof NewArrayTree) {
+      if (i.getKind() == Insertion.Kind.NEW && node instanceof NewArrayTree newArray) {
         NewInsertion neu = (NewInsertion) i;
-        NewArrayTree newArray = (NewArrayTree) node;
 
         if (newArray.toString().startsWith("{")) {
           addNewType(neu, newArray);
@@ -1603,8 +1597,7 @@ public class TreeFinder extends TreeScanner<Void, List<Insertion>> {
         } else if (n instanceof MethodTree) {
           alreadyPresent = ((MethodTree) n).getModifiers().getAnnotations();
           break;
-        } else if (n instanceof VariableTree) {
-          VariableTree vt = (VariableTree) n;
+        } else if (n instanceof VariableTree vt) {
           @SuppressWarnings("interning:not.interned") // reference equality check
           boolean foundChild = childExpression != null && vt.getInitializer() == childExpression;
           if (foundChild) {

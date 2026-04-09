@@ -656,8 +656,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
       reportInvalidBounds(type, tree);
     }
     AnnotatedTypeVariable useOfTypeVar = type.asUse();
-    if (tree instanceof TypeParameterTree) {
-      TypeParameterTree typeParameterTree = (TypeParameterTree) tree;
+    if (tree instanceof TypeParameterTree typeParameterTree) {
       visitedNodes.put(useOfTypeVar, defaultResult);
       visitTypeParameterBounds(useOfTypeVar, typeParameterTree);
       visitedNodes.put(useOfTypeVar, defaultResult);

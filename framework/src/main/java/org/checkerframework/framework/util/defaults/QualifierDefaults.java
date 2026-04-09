@@ -1193,8 +1193,7 @@ public class QualifierDefaults {
       }
 
     } else {
-      if (typeParamDecl instanceof TypeParameterTree) {
-        TypeParameterTree tptree = (TypeParameterTree) typeParamDecl;
+      if (typeParamDecl instanceof TypeParameterTree tptree) {
 
         List<? extends Tree> bnds = tptree.getBounds();
         if (bnds != null && !bnds.isEmpty()) {

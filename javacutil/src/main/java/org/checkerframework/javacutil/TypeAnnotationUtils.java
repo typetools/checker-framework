@@ -166,8 +166,8 @@ public class TypeAnnotationUtils {
       if (!types.isSameType(t1, t2)) {
         return false;
       }
-      Map<Symbol.MethodSymbol, Attribute> map1 = ((Attribute.Compound) a1).getElementValues();
-      Map<Symbol.MethodSymbol, Attribute> map2 = ((Attribute.Compound) a2).getElementValues();
+      Map<Symbol.MethodSymbol, Attribute> map1 = ac1.getElementValues();
+      Map<Symbol.MethodSymbol, Attribute> map2 = ac2.getElementValues();
       // Is this test, which uses equals() for the keys, too strict?
       if (!map1.keySet().equals(map2.keySet())) {
         return false;

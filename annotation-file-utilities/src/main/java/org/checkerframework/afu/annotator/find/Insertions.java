@@ -304,8 +304,7 @@ public class Insertions implements Iterable<Insertion> {
 
         if (ins instanceof TypedInsertion) {
           TypedInsertion tins = outerInsertions.get(rec);
-          if (ins instanceof NewInsertion) {
-            NewInsertion nins = (NewInsertion) ins;
+          if (ins instanceof NewInsertion nins) {
             if (entry.getTreeKind() == Tree.Kind.NEW_ARRAY && entry.childSelectorIs(ASTPath.TYPE)) {
               int a = entry.getArgument();
               List<TypePathEntry> loc0 = new ArrayList<>(a);
@@ -568,8 +567,7 @@ public class Insertions implements Iterable<Insertion> {
             }
             throw new RuntimeException();
           case RECEIVER:
-            if (node instanceof JCTree.JCMethodDecl) {
-              JCTree.JCMethodDecl jmd = (JCTree.JCMethodDecl) node;
+            if (node instanceof JCTree.JCMethodDecl jmd) {
               csym = (ClassSymbol) jmd.sym.owner;
               if ("<init>".equals(jmd.name.toString())) {
                 csym = (ClassSymbol) csym.owner;
@@ -1023,8 +1021,7 @@ public class Insertions implements Iterable<Insertion> {
           t = ((AnnotatedTypeTree) t).getUnderlyingType();
           break;
         case MEMBER_SELECT:
-          if (t instanceof JCTree.JCFieldAccess) {
-            JCTree.JCFieldAccess jfa = (JCTree.JCFieldAccess) t;
+          if (t instanceof JCTree.JCFieldAccess jfa) {
             if (jfa.sym.kind == Kinds.Kind.PCK) {
               t = jfa.getExpression();
               continue;
