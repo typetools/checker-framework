@@ -222,17 +222,22 @@ def build_checker_framework_release(
     print(f"Deleting target files in {DEV_SITE_DIR}")
     for source in dev_website_relative_dir.iterdir():
         target = Path(DEV_SITE_DIR) / source.name
-        if target.is_file():
-            target.unlink()
-        else:
-            shutil.rmtree(target)
+        try:
+            if not target.exists() and not target.is_symlink():
+                continue
+            if target.is_symlink() or target.is_file():
+                target.unlink()
+            else:
+                shutil.rmtree(target)
+        except OSError as e:
+            print(f"Error deleting {target} : {e.strerror}")
 
     print(f"Copying from: {dev_website_relative_dir}\n  to: {DEV_SITE_DIR}")
-    shutil.copytree(
-        str(dev_website_relative_dir),
-        str(DEV_SITE_DIR),
-        dirs_exist_ok=True,
+    cmd = (
+        "rsync --no-p --no-group --omit-dir-times --recursive --links --quiet"
+        f" {dev_website_relative_dir}/ {DEV_SITE_DIR}"
     )
+    execute(cmd)
 
 
 def commit_to_interm_projects(cf_version: str) -> None:
