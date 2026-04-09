@@ -19,6 +19,8 @@ interface Logger {
   void warn(Object message);
 
   void error(Object message);
+
+  void error(String message, Throwable throwable);
 }
 
 final class SimpleLogger implements Logger {
@@ -36,6 +38,9 @@ final class SimpleLogger implements Logger {
 
   @Override
   public void error(Object message) {}
+
+  @Override
+  public void error(String message, Throwable throwable) {}
 }
 
 final class LogManager {
@@ -108,5 +113,17 @@ class Log4j2ErrorObject implements Closeable {
   public void close() {
     resource.close();
     logger.error("after close");
+  }
+}
+
+class Log4j2ErrorWithThrowable implements Closeable {
+  private static final Logger logger = LogManager.getLogger();
+  private @Owning CloseableResource resource = new CloseableResource();
+
+  @Override
+  @EnsuresCalledMethods(value = "this.resource", methods = "close")
+  public void close() {
+    resource.close();
+    logger.error("after close", new RuntimeException());
   }
 }

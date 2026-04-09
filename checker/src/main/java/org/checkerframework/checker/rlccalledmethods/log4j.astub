@@ -24,6 +24,8 @@ class Logger {
 // Log4j 2.x API stubs (package org.apache.logging.log4j).
 package org.apache.logging.log4j;
 
+import org.apache.logging.log4j.message.Message;
+
 interface Logger {
   @SideEffectFree void trace(CharSequence message);
   @SideEffectFree void trace(CharSequence message, Throwable throwable);
