@@ -154,29 +154,18 @@ public class WholeProgramInferenceScenesStorage
 
   @Override
   public String getFileForElement(Element elt) {
-    String className;
-    switch (elt.getKind()) {
-      case CONSTRUCTOR:
-      case METHOD:
-        className = ElementUtils.getEnclosingClassName((ExecutableElement) elt);
-        break;
-      case LOCAL_VARIABLE:
-        className = getEnclosingClassName((LocalVariableNode) elt);
-        break;
-      case FIELD:
-      case ENUM_CONSTANT:
-        ClassSymbol enclosingClass = ((VarSymbol) elt).enclClass();
-        className = enclosingClass.flatname.toString();
-        break;
-      case CLASS:
-        className = ElementUtils.getBinaryName((TypeElement) elt);
-        break;
-      case PARAMETER:
-        className = ElementUtils.getEnclosingClassName((VariableElement) elt);
-        break;
-      default:
-        throw new BugInCF("What element? %s %s", elt.getKind(), elt);
-    }
+    String className =
+        switch (elt.getKind()) {
+          case CONSTRUCTOR, METHOD -> ElementUtils.getEnclosingClassName((ExecutableElement) elt);
+          case LOCAL_VARIABLE -> getEnclosingClassName((LocalVariableNode) elt);
+          case FIELD, ENUM_CONSTANT -> {
+            ClassSymbol enclosingClass = ((VarSymbol) elt).enclClass();
+            yield enclosingClass.flatname.toString();
+          }
+          case CLASS -> ElementUtils.getBinaryName((TypeElement) elt);
+          case PARAMETER -> ElementUtils.getEnclosingClassName((VariableElement) elt);
+          default -> throw new BugInCF("What element? %s %s", elt.getKind(), elt);
+        };
     String file = getJaifPath(className);
     return file;
   }
@@ -314,14 +303,13 @@ public class WholeProgramInferenceScenesStorage
       String expression,
       AnnotatedTypeMirror declaredType,
       AnnotatedTypeFactory atypeFactory) {
-    switch (preOrPost) {
-      case BEFORE:
-        return getPreconditionsForExpression(className, methodElement, expression, declaredType);
-      case AFTER:
-        return getPostconditionsForExpression(className, methodElement, expression, declaredType);
-      default:
-        throw new BugInCF("Unexpected " + preOrPost);
-    }
+    return switch (preOrPost) {
+      case BEFORE ->
+          getPreconditionsForExpression(className, methodElement, expression, declaredType);
+      case AFTER ->
+          getPostconditionsForExpression(className, methodElement, expression, declaredType);
+      default -> throw new BugInCF("Unexpected " + preOrPost);
+    };
   }
 
   /**

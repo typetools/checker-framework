@@ -570,26 +570,17 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
 
           @Override
           public String visit(PrimitiveType type, Void v) {
-            switch (type.getType()) {
-              case BOOLEAN:
-                return "Z";
-              case BYTE:
-                return "B";
-              case CHAR:
-                return "C";
-              case DOUBLE:
-                return "D";
-              case FLOAT:
-                return "F";
-              case INT:
-                return "I";
-              case LONG:
-                return "J";
-              case SHORT:
-                return "S";
-              default:
-                throw new BugInCF("unknown primitive type " + type);
-            }
+            return switch (type.getType()) {
+              case BOOLEAN -> "Z";
+              case BYTE -> "B";
+              case CHAR -> "C";
+              case DOUBLE -> "D";
+              case FLOAT -> "F";
+              case INT -> "I";
+              case LONG -> "J";
+              case SHORT -> "S";
+              default -> throw new BugInCF("unknown primitive type " + type);
+            };
           }
 
           @Override

@@ -87,29 +87,21 @@ public abstract class Annotations {
   }
 
   public static Annotation getRetentionPolicyMetaAnnotation(RetentionPolicy rp) {
-    switch (rp) {
-      case CLASS:
-        return aRetentionClass;
-      case RUNTIME:
-        return aRetentionRuntime;
-      case SOURCE:
-        return aRetentionSource;
-      default:
-        throw new Error("This can't happen");
-    }
+    return switch (rp) {
+      case CLASS -> aRetentionClass;
+      case RUNTIME -> aRetentionRuntime;
+      case SOURCE -> aRetentionSource;
+      default -> throw new Error("This can't happen");
+    };
   }
 
   public static Set<Annotation> getRetentionPolicyMetaAnnotationSet(RetentionPolicy rp) {
-    switch (rp) {
-      case CLASS:
-        return asRetentionClass;
-      case RUNTIME:
-        return asRetentionRuntime;
-      case SOURCE:
-        return asRetentionSource;
-      default:
-        throw new Error("This can't happen");
-    }
+    return switch (rp) {
+      case CLASS -> asRetentionClass;
+      case RUNTIME -> asRetentionRuntime;
+      case SOURCE -> asRetentionSource;
+      default -> throw new Error("This can't happen");
+    };
   }
 
   static {

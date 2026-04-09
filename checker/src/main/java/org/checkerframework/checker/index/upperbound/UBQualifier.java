@@ -59,29 +59,29 @@ public abstract class UBQualifier {
    */
   public static UBQualifier createUBQualifier(
       AnnotationMirror am, @Nullable String offset, UpperBoundChecker ubChecker) {
-    switch (AnnotationUtils.annotationName(am)) {
-      case "org.checkerframework.checker.index.qual.UpperBoundUnknown":
-        return UpperBoundUnknownQualifier.UNKNOWN;
-      case "org.checkerframework.checker.index.qual.UpperBoundBottom":
-        return UpperBoundBottomQualifier.BOTTOM;
-      case "org.checkerframework.checker.index.qual.UpperBoundLiteral":
+    return switch (AnnotationUtils.annotationName(am)) {
+      case "org.checkerframework.checker.index.qual.UpperBoundUnknown" ->
+          UpperBoundUnknownQualifier.UNKNOWN;
+      case "org.checkerframework.checker.index.qual.UpperBoundBottom" ->
+          UpperBoundBottomQualifier.BOTTOM;
+      case "org.checkerframework.checker.index.qual.UpperBoundLiteral" -> {
         int intValue =
             AnnotationUtils.getElementValueInt(am, ubChecker.upperBoundLiteralValueElement);
-        return UpperBoundLiteralQualifier.create(intValue);
-      case "org.checkerframework.checker.index.qual.LTLengthOf":
-        return parseLTLengthOf(am, offset, ubChecker);
-      case "org.checkerframework.checker.index.qual.SubstringIndexFor":
-        return parseSubstringIndexFor(am, offset, ubChecker);
-      case "org.checkerframework.checker.index.qual.LTEqLengthOf":
-        return parseLTEqLengthOf(am, offset, ubChecker);
-      case "org.checkerframework.checker.index.qual.LTOMLengthOf":
-        return parseLTOMLengthOf(am, offset, ubChecker);
-      case "org.checkerframework.checker.index.qual.PolyUpperBound":
-        // TODO:  Ignores offset.  Should we check that offset is not set?
-        return PolyQualifier.POLY;
-      default:
-        throw new TypeSystemError("createUBQualifier(%s, %s, ...)", am, offset);
-    }
+        yield UpperBoundLiteralQualifier.create(intValue);
+      }
+      case "org.checkerframework.checker.index.qual.LTLengthOf" ->
+          parseLTLengthOf(am, offset, ubChecker);
+      case "org.checkerframework.checker.index.qual.SubstringIndexFor" ->
+          parseSubstringIndexFor(am, offset, ubChecker);
+      case "org.checkerframework.checker.index.qual.LTEqLengthOf" ->
+          parseLTEqLengthOf(am, offset, ubChecker);
+      case "org.checkerframework.checker.index.qual.LTOMLengthOf" ->
+          parseLTOMLengthOf(am, offset, ubChecker);
+      case "org.checkerframework.checker.index.qual.PolyUpperBound" ->
+          // TODO:  Ignores offset.  Should we check that offset is not set?
+          PolyQualifier.POLY;
+      default -> throw new TypeSystemError("createUBQualifier(%s, %s, ...)", am, offset);
+    };
   }
 
   /** A cache for the {@link #nCopiesEmptyStringCache} method. */
@@ -1323,16 +1323,12 @@ public abstract class UBQualifier {
      * @return an UpperBoundLiteralQualifier
      */
     public static UpperBoundLiteralQualifier create(int value) {
-      switch (value) {
-        case -1:
-          return NEGATIVEONE;
-        case 0:
-          return ZERO;
-        case 1:
-          return ONE;
-        default:
-          return new UpperBoundLiteralQualifier(value);
-      }
+      return switch (value) {
+        case -1 -> NEGATIVEONE;
+        case 0 -> ZERO;
+        case 1 -> ONE;
+        default -> new UpperBoundLiteralQualifier(value);
+      };
     }
 
     /** The integer value. */

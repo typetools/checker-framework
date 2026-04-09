@@ -400,16 +400,15 @@ public class WholeProgramInferenceJavaParserStorage
       String expression,
       AnnotatedTypeMirror declaredType,
       AnnotatedTypeFactory atypeFactory) {
-    switch (preOrPost) {
-      case BEFORE:
-        return getPreconditionsForExpression(
-            className, methodElement, expression, declaredType, atypeFactory);
-      case AFTER:
-        return getPostconditionsForExpression(
-            className, methodElement, expression, declaredType, atypeFactory);
-      default:
-        throw new BugInCF("Unexpected " + preOrPost);
-    }
+    return switch (preOrPost) {
+      case BEFORE ->
+          getPreconditionsForExpression(
+              className, methodElement, expression, declaredType, atypeFactory);
+      case AFTER ->
+          getPostconditionsForExpression(
+              className, methodElement, expression, declaredType, atypeFactory);
+      default -> throw new BugInCF("Unexpected " + preOrPost);
+    };
   }
 
   /**

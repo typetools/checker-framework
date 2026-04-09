@@ -654,13 +654,10 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
    */
   private static String postconditionAnnotationFor(
       MustCallConsistencyAnalyzer.MethodExitKind exitKind) {
-    switch (exitKind) {
-      case NORMAL_RETURN:
-        return "@EnsuresCalledMethods";
-      case EXCEPTIONAL_EXIT:
-        return "@EnsuresCalledMethodsOnException";
-      default:
-        throw new UnsupportedOperationException(exitKind.toString());
-    }
+    return switch (exitKind) {
+      case NORMAL_RETURN -> "@EnsuresCalledMethods";
+      case EXCEPTIONAL_EXIT -> "@EnsuresCalledMethodsOnException";
+      default -> throw new UnsupportedOperationException(exitKind.toString());
+    };
   }
 }

@@ -135,21 +135,13 @@ public class NumberUtils {
     if (typeKind == null) {
       throw new UnsupportedOperationException(type.toString());
     }
-    switch (typeKind) {
-      case BYTE:
-        return range.byteRange();
-      case CHAR:
-        return range.charRange();
-      case SHORT:
-        return range.shortRange();
-      case INT:
-        return range.intRange();
-      case LONG:
-      case FLOAT:
-      case DOUBLE:
-        return range;
-      default:
-        throw new UnsupportedOperationException(typeKind + ": " + type);
-    }
+    return switch (typeKind) {
+      case BYTE -> range.byteRange();
+      case CHAR -> range.charRange();
+      case SHORT -> range.shortRange();
+      case INT -> range.intRange();
+      case LONG, FLOAT, DOUBLE -> range;
+      default -> throw new UnsupportedOperationException(typeKind + ": " + type);
+    };
   }
 }

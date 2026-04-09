@@ -154,24 +154,14 @@ public final class IndexFileParser {
   private void expectChar(char c) throws IOException, ParseException {
     if (!matchChar(c)) {
       // Alternately, could use st.toString().
-      String found;
-      switch (st.ttype) {
-        case StreamTokenizer.TT_WORD:
-          found = st.sval;
-          break;
-        case StreamTokenizer.TT_NUMBER:
-          found = String.valueOf(st.nval);
-          break;
-        case StreamTokenizer.TT_EOL:
-          found = "end of line";
-          break;
-        case StreamTokenizer.TT_EOF:
-          found = "end of file";
-          break;
-        default:
-          found = "'" + String.valueOf((char) st.ttype) + "'";
-          break;
-      }
+      String found =
+          switch (st.ttype) {
+            case StreamTokenizer.TT_WORD -> st.sval;
+            case StreamTokenizer.TT_NUMBER -> String.valueOf(st.nval);
+            case StreamTokenizer.TT_EOL -> "end of line";
+            case StreamTokenizer.TT_EOF -> "end of file";
+            default -> "'" + String.valueOf((char) st.ttype) + "'";
+          };
       throw new ParseException("Expected '" + c + "', found " + found);
     }
   }

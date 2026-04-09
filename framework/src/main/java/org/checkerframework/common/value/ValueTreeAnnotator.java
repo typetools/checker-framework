@@ -656,17 +656,14 @@ class ValueTreeAnnotator extends TreeAnnotator {
       return;
     }
 
-    Name id;
-    switch (tree.getKind()) {
-      case MEMBER_SELECT:
-        id = ((MemberSelectTree) tree).getIdentifier();
-        break;
-      case IDENTIFIER:
-        id = ((IdentifierTree) tree).getName();
-        break;
-      default:
-        throw new TypeSystemError("unexpected kind of enum constant use tree: " + tree.getKind());
-    }
+    Name id =
+        switch (tree.getKind()) {
+          case MEMBER_SELECT -> ((MemberSelectTree) tree).getIdentifier();
+          case IDENTIFIER -> ((IdentifierTree) tree).getName();
+          default ->
+              throw new TypeSystemError(
+                  "unexpected kind of enum constant use tree: " + tree.getKind());
+        };
     AnnotationMirror stringVal =
         atypeFactory.createStringAnnotation(Collections.singletonList(id.toString()));
     type.replaceAnnotation(stringVal);

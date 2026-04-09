@@ -1043,20 +1043,13 @@ public class Insertions implements Iterable<Insertion> {
   private static int kindLevel(Insertion i) {
     // Ordered so insertion that depends on another gets inserted after other.
     // TODO: could change to use natural order of the enumeration (reorder the enumeration).
-    switch (i.getKind()) {
-      case CONSTRUCTOR:
-        return 3;
-      case NEW:
-      case RECEIVER:
-        return 2;
-      case CAST:
-        return 1;
-      case ANNOTATION:
-      case CLOSE_PARENTHESIS:
-        return 0;
-      default:
-        throw new Error("unrecognized case");
-    }
+    return switch (i.getKind()) {
+      case CONSTRUCTOR -> 3;
+      case NEW, RECEIVER -> 2;
+      case CAST -> 1;
+      case ANNOTATION, CLOSE_PARENTHESIS -> 0;
+      default -> throw new Error("unrecognized case");
+    };
   }
 
   /** Compare by AstRecord, then by kind, then by string representation. */
@@ -1305,19 +1298,21 @@ public class Insertions implements Iterable<Insertion> {
      * type.
      */
     private static TypeTree addPrefix(final TypeTree t, final TypeTree prefix) {
-      switch (t.getKind()) {
-        case IDENTIFIER:
+      return switch (t.getKind()) {
+        case IDENTIFIER -> {
           IdentifierTT it = (IdentifierTT) t;
-          return new MemberSelectTT(prefix, it.getName());
-        case MEMBER_SELECT:
+          yield new MemberSelectTT(prefix, it.getName());
+        }
+        case MEMBER_SELECT -> {
           MemberSelectTT lt = (MemberSelectTT) t;
-          return new MemberSelectTT(addPrefix(lt.getExpression(), prefix), lt.getIdentifier());
-        case PARAMETERIZED_TYPE:
+          yield new MemberSelectTT(addPrefix(lt.getExpression(), prefix), lt.getIdentifier());
+        }
+        case PARAMETERIZED_TYPE -> {
           ParameterizedTypeTT pt = (ParameterizedTypeTT) t;
-          return new ParameterizedTypeTT(addPrefix(pt.getType(), prefix), pt.getTypeArguments());
-        default:
-          throw new IllegalArgumentException("unexpected type " + t);
-      }
+          yield new ParameterizedTypeTT(addPrefix(pt.getType(), prefix), pt.getTypeArguments());
+        }
+        default -> throw new IllegalArgumentException("unexpected type " + t);
+      };
     }
 
     static final class ArrayTT extends TypeTree implements ArrayTypeTree {
@@ -1450,28 +1445,19 @@ public class Insertions implements Iterable<Insertion> {
 
       @Override
       public String toString() {
-        switch (typeKind) {
-          case BOOLEAN:
-            return "boolean";
-          case BYTE:
-            return "byte";
-          case CHAR:
-            return "char";
-          case DOUBLE:
-            return "double";
-          case FLOAT:
-            return "float";
-          case INT:
-            return "int";
-          case LONG:
-            return "long";
-          case SHORT:
-            return "short";
+        return switch (typeKind) {
+          case BOOLEAN -> "boolean";
+          case BYTE -> "byte";
+          case CHAR -> "char";
+          case DOUBLE -> "double";
+          case FLOAT -> "float";
+          case INT -> "int";
+          case LONG -> "long";
+          case SHORT -> "short";
           // case VOID: return "void";
           // case WILDCARD: return "?";
-          default:
-            throw new IllegalArgumentException("unexpected type kind " + typeKind);
-        }
+          default -> throw new IllegalArgumentException("unexpected type kind " + typeKind);
+        };
       }
     }
 

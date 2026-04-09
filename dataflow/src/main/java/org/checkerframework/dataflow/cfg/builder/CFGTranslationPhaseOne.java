@@ -3514,32 +3514,20 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @return the Tree.Kind for the same operation without assignment
    */
   protected Tree.Kind withoutAssignment(Tree.Kind kind) {
-    switch (kind) {
-      case DIVIDE_ASSIGNMENT:
-        return Tree.Kind.DIVIDE;
-      case MULTIPLY_ASSIGNMENT:
-        return Tree.Kind.MULTIPLY;
-      case REMAINDER_ASSIGNMENT:
-        return Tree.Kind.REMAINDER;
-      case MINUS_ASSIGNMENT:
-        return Tree.Kind.MINUS;
-      case PLUS_ASSIGNMENT:
-        return Tree.Kind.PLUS;
-      case LEFT_SHIFT_ASSIGNMENT:
-        return Tree.Kind.LEFT_SHIFT;
-      case RIGHT_SHIFT_ASSIGNMENT:
-        return Tree.Kind.RIGHT_SHIFT;
-      case UNSIGNED_RIGHT_SHIFT_ASSIGNMENT:
-        return Tree.Kind.UNSIGNED_RIGHT_SHIFT;
-      case AND_ASSIGNMENT:
-        return Tree.Kind.AND;
-      case OR_ASSIGNMENT:
-        return Tree.Kind.OR;
-      case XOR_ASSIGNMENT:
-        return Tree.Kind.XOR;
-      default:
-        return Tree.Kind.ERRONEOUS;
-    }
+    return switch (kind) {
+      case DIVIDE_ASSIGNMENT -> Tree.Kind.DIVIDE;
+      case MULTIPLY_ASSIGNMENT -> Tree.Kind.MULTIPLY;
+      case REMAINDER_ASSIGNMENT -> Tree.Kind.REMAINDER;
+      case MINUS_ASSIGNMENT -> Tree.Kind.MINUS;
+      case PLUS_ASSIGNMENT -> Tree.Kind.PLUS;
+      case LEFT_SHIFT_ASSIGNMENT -> Tree.Kind.LEFT_SHIFT;
+      case RIGHT_SHIFT_ASSIGNMENT -> Tree.Kind.RIGHT_SHIFT;
+      case UNSIGNED_RIGHT_SHIFT_ASSIGNMENT -> Tree.Kind.UNSIGNED_RIGHT_SHIFT;
+      case AND_ASSIGNMENT -> Tree.Kind.AND;
+      case OR_ASSIGNMENT -> Tree.Kind.OR;
+      case XOR_ASSIGNMENT -> Tree.Kind.XOR;
+      default -> Tree.Kind.ERRONEOUS;
+    };
   }
 
   @Override
@@ -3770,19 +3758,13 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
           // TypeMirror exprType = InternalUtils.typeOf(tree);
 
-          switch (kind) {
-            case BITWISE_COMPLEMENT:
-              result = new BitwiseComplementNode(tree, expr);
-              break;
-            case UNARY_MINUS:
-              result = new NumericalMinusNode(tree, expr);
-              break;
-            case UNARY_PLUS:
-              result = new NumericalPlusNode(tree, expr);
-              break;
-            default:
-              throw new BugInCF("Unexpected unary tree kind: " + kind);
-          }
+          result =
+              switch (kind) {
+                case BITWISE_COMPLEMENT -> new BitwiseComplementNode(tree, expr);
+                case UNARY_MINUS -> new NumericalMinusNode(tree, expr);
+                case UNARY_PLUS -> new NumericalPlusNode(tree, expr);
+                default -> throw new BugInCF("Unexpected unary tree kind: " + kind);
+              };
           extendWithNode(result);
           return result;
         }
@@ -4339,35 +4321,18 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
   @Override
   public Node visitLiteral(LiteralTree tree, Void p) {
-    Node r;
-    switch (tree.getKind()) {
-      case BOOLEAN_LITERAL:
-        r = new BooleanLiteralNode(tree);
-        break;
-      case CHAR_LITERAL:
-        r = new CharacterLiteralNode(tree);
-        break;
-      case DOUBLE_LITERAL:
-        r = new DoubleLiteralNode(tree);
-        break;
-      case FLOAT_LITERAL:
-        r = new FloatLiteralNode(tree);
-        break;
-      case INT_LITERAL:
-        r = new IntegerLiteralNode(tree);
-        break;
-      case LONG_LITERAL:
-        r = new LongLiteralNode(tree);
-        break;
-      case NULL_LITERAL:
-        r = new NullLiteralNode(tree);
-        break;
-      case STRING_LITERAL:
-        r = new StringLiteralNode(tree);
-        break;
-      default:
-        throw new BugInCF("unexpected literal tree: " + tree);
-    }
+    Node r =
+        switch (tree.getKind()) {
+          case BOOLEAN_LITERAL -> new BooleanLiteralNode(tree);
+          case CHAR_LITERAL -> new CharacterLiteralNode(tree);
+          case DOUBLE_LITERAL -> new DoubleLiteralNode(tree);
+          case FLOAT_LITERAL -> new FloatLiteralNode(tree);
+          case INT_LITERAL -> new IntegerLiteralNode(tree);
+          case LONG_LITERAL -> new LongLiteralNode(tree);
+          case NULL_LITERAL -> new NullLiteralNode(tree);
+          case STRING_LITERAL -> new StringLiteralNode(tree);
+          default -> throw new BugInCF("unexpected literal tree: " + tree);
+        };
     extendWithNode(r);
     return r;
   }
