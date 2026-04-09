@@ -3159,9 +3159,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    *
    * <p>Because this method is not called for all pseudo-assignments, subclasses should only
    * override this, if the tree of the value expression is required; otherwise, override {@link
-   * #commonAssignmentCheck(AnnotatedTypeMirror, AnnotatedTypeMirror, Tree, String, Object...)}. If
-   * this method is overridden, then the first then should call {@link
-   * #shouldSkipUses(ExpressionTree)} and return if that method returns true.
+   * #commonAssignmentCheck(AnnotatedTypeMirror, AnnotatedTypeMirror, Tree, String, Object...)}.
+   *
+   * <p>Overrides to this method should first call {@link #shouldSkipUses(ExpressionTree)} and
+   * return if that method returns true.
    *
    * @param varType the annotated type for the lvalue (usually a variable)
    * @param valueExpTree the AST node for the rvalue (the new value)
@@ -3234,8 +3235,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * variableType} and emits an error message (through the compiler's messaging interface) if it is
    * not valid.
    *
-   * <p>Subclasses should override this method if in all cases unless the tree for the {@code
-   * varType} or {@code valueType} are needed.
+   * <p>Subclasses should override this method unless the tree for the {@code varType} or {@code
+   * valueType} are needed.
    *
    * @param varType the annotated type of the variable
    * @param valueType the annotated type of the value
@@ -4987,10 +4988,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
     Element elm = TreeUtils.elementFromTree(exprTree);
     boolean shouldSkipUses = checker.shouldSkipUses(elm);
-    if (showchecks) {
+    if (showchecks && shouldSkipUses) {
       TypeMirror exprTypeMirror = TreeUtils.typeOf(exprTree);
       System.out.printf(
-          "%s %s (at %s): actual tree = %s %s%n   expected: %s %s%n",
+          "%s %s (at %s): actual tree = %s %s%n   type of tree: %s %s%n",
           this.getClass().getSimpleName(),
           "skipping test whether actual is a subtype of expected"
               + " because shouldSkipUses() returned true",
