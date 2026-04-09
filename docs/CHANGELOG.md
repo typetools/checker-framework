@@ -3,6 +3,14 @@
 <!-- markdownlint-disable no-duplicate-heading -->
 <!-- pyml disable no-duplicate-heading -->
 
+## Version 4.0.1 (2026-05-01)
+
+### User-visible changes
+
+### Implementation details
+
+### Closed issues
+
 ## Version 4.0.0 (2026-04-07)
 
 ### User-visible changes
@@ -66,8 +74,6 @@ All previously-deprecated methods and classes have been removed.  If your
 project builds upon the Checker Framework, we suggest that you upgrade to
 version 3.55.1, resolve all the deprecation warnings, then upgrade to version
 4.0.0.
-
-### Closed issues
 
 ## Version 3.55.1 (2026-04-03)
 

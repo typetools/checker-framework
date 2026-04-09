@@ -49,6 +49,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.calledmethods.qual.CalledMethods;
 import org.checkerframework.checker.interning.qual.FindDistinct;
+import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.mustcall.CreatesMustCallForToJavaExpression;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.MustCallChecker;
@@ -628,10 +629,10 @@ public class MustCallConsistencyAnalyzer {
   private void updateObligationsForInvocation(
       Set<Obligation> obligations, Node node, @Nullable TypeMirror exceptionType) {
     removeObligationsAtOwnershipTransferToParameters(obligations, node, exceptionType);
-    if (node instanceof MethodInvocationNode
+    if (node instanceof MethodInvocationNode miNode
         && cmAtf.canCreateObligations()
-        && cmAtf.hasCreatesMustCallFor((MethodInvocationNode) node)) {
-      checkCreatesMustCallForInvocation(obligations, (MethodInvocationNode) node);
+        && cmAtf.hasCreatesMustCallFor(miNode)) {
+      checkCreatesMustCallForInvocation(obligations, miNode);
       // Count calls to @CreatesMustCallFor methods as creating new resources. Doing so could
       // result in slightly over-counting, because @CreatesMustCallFor doesn't guarantee that
       // a new resource is created: it just means that a new resource might have been created.
@@ -737,14 +738,14 @@ public class MustCallConsistencyAnalyzer {
    */
   private boolean isValidCreatesMustCallForExpression(
       Set<Obligation> obligations, JavaExpression expression, TreePath invocationPath) {
-    if (expression instanceof FieldAccess) {
-      Element elt = ((FieldAccess) expression).getField();
+    if (expression instanceof FieldAccess fa) {
+      Element elt = fa.getField();
       if (!noLightweightOwnership && cmAtf.hasOwning(elt)) {
         // The expression is an Owning field.  This satisfies case 1.
         return true;
       }
-    } else if (expression instanceof LocalVariable) {
-      Element elt = ((LocalVariable) expression).getElement();
+    } else if (expression instanceof LocalVariable lv) {
+      Element elt = lv.getElement();
       if (!noLightweightOwnership && cmAtf.hasOwning(elt)) {
         // The expression is an Owning formal parameter. Note that this cannot actually
         // be a local variable (despite expressions's type being LocalVariable) because
@@ -858,10 +859,9 @@ public class MustCallConsistencyAnalyzer {
     // position.
     List<Node> mustCallAliases = getMustCallAliasArgumentNodes(node);
     // If call returns @This, add the receiver to mustCallAliases.
-    if (node instanceof MethodInvocationNode && cmAtf.returnsThis((MethodInvocationTree) tree)) {
-      mustCallAliases.add(
-          removeCastsAndGetTmpVarIfPresent(
-              ((MethodInvocationNode) node).getTarget().getReceiver()));
+    if (node instanceof MethodInvocationNode miNode
+        && cmAtf.returnsThis((MethodInvocationTree) tree)) {
+      mustCallAliases.add(removeCastsAndGetTmpVarIfPresent(miNode.getTarget().getReceiver()));
     }
 
     if (mustCallAliases.isEmpty()) {
@@ -875,11 +875,10 @@ public class MustCallConsistencyAnalyzer {
           // Handling of @Owning fields is a completely separate check, and there is never
           // a need to track an alias of a non-@Owning field, as by definition such a
           // field does not have must-call obligations!
-        } else if (mustCallAlias instanceof LocalVariableNode) {
+        } else if (mustCallAlias instanceof LocalVariableNode lvn) {
           // If mustCallAlias is a local variable already being tracked, add
           // tmpVarAsResourceAlias to the set containing mustCallAlias.
-          Obligation obligationContainingMustCallAlias =
-              getObligationForVar(obligations, (LocalVariableNode) mustCallAlias);
+          Obligation obligationContainingMustCallAlias = getObligationForVar(obligations, lvn);
           if (obligationContainingMustCallAlias != null) {
             ResourceAlias tmpVarAsResourceAlias =
                 new ResourceAlias(
@@ -938,10 +937,9 @@ public class MustCallConsistencyAnalyzer {
   public boolean shouldTrackInvocationResult(
       Set<Obligation> obligations, Node node, boolean isMustCallInference) {
     Tree callTree = node.getTree();
-    if (callTree instanceof NewClassTree) {
+    if (callTree instanceof NewClassTree newClassTree) {
       // Constructor results from new expressions are tracked as long as the declared type has
       // a non-empty @MustCall annotation.
-      NewClassTree newClassTree = (NewClassTree) callTree;
       ExecutableElement executableElement = TreeUtils.elementFromUse(newClassTree);
       TypeElement typeElt = TypesUtils.getTypeElement(ElementUtils.getType(executableElement));
       return typeElt == null
@@ -964,8 +962,8 @@ public class MustCallConsistencyAnalyzer {
       // MustCallAlias constructor (because a this/super constructor call can only occur in
       // the body of another constructor).
       for (Node mustCallAliasArgument : mustCallAliasArguments) {
-        if (mustCallAliasArgument instanceof LocalVariableNode) {
-          removeObligationsContainingVar(obligations, (LocalVariableNode) mustCallAliasArgument);
+        if (mustCallAliasArgument instanceof LocalVariableNode lvn) {
+          removeObligationsContainingVar(obligations, lvn);
         }
       }
       return false;
@@ -1037,8 +1035,7 @@ public class MustCallConsistencyAnalyzer {
     }
     for (int i = 0; i < arguments.size(); i++) {
       Node n = removeCastsAndGetTmpVarIfPresent(arguments.get(i));
-      if (n instanceof LocalVariableNode) {
-        LocalVariableNode local = (LocalVariableNode) n;
+      if (n instanceof LocalVariableNode local) {
         if (varTrackedInObligations(obligations, local)) {
 
           // check if parameter has an @Owning annotation
@@ -1073,10 +1070,10 @@ public class MustCallConsistencyAnalyzer {
     if (isTransferOwnershipAtReturn(cfg)) {
       Node returnExpr = node.getResult();
       returnExpr = getTempVarOrNode(returnExpr);
-      if (returnExpr instanceof LocalVariableNode) {
+      if (returnExpr instanceof LocalVariableNode lvn) {
         removeObligationsContainingVar(
             obligations,
-            (LocalVariableNode) returnExpr,
+            lvn,
             MustCallAliasHandling.NO_SPECIAL_HANDLING,
             MethodExitKind.ONLY_NORMAL_RETURN);
       }
@@ -1113,10 +1110,10 @@ public class MustCallConsistencyAnalyzer {
     }
 
     UnderlyingAST underlyingAST = cfg.getUnderlyingAST();
-    if (underlyingAST instanceof UnderlyingAST.CFGMethod) {
+    if (underlyingAST instanceof UnderlyingAST.CFGMethod cfgMethod) {
       // TODO: lambdas? In that case false is returned below, which means that ownership will
       //  not be transferred.
-      MethodTree method = ((UnderlyingAST.CFGMethod) underlyingAST).getMethod();
+      MethodTree method = cfgMethod.getMethod();
       ExecutableElement executableElement = TreeUtils.elementFromDeclaration(method);
       return !cmAtf.hasNotOwning(executableElement);
     }
@@ -1209,8 +1206,7 @@ public class MustCallConsistencyAnalyzer {
               new ResourceAlias(JavaExpression.fromNode(lhs), lhsElement, lhs.getTree()));
         }
       }
-    } else if (lhs instanceof LocalVariableNode) {
-      LocalVariableNode lhsVar = (LocalVariableNode) lhs;
+    } else if (lhs instanceof LocalVariableNode lhsVar) {
       updateObligationsForPseudoAssignment(obligations, assignmentNode, lhsVar, rhs);
     }
   }
@@ -1382,9 +1378,7 @@ public class MustCallConsistencyAnalyzer {
       }
       // If rhs is a variable tracked in the Obligation's resource alias set, gen the lhs
       // by adding it to the resource alias set.
-      if (rhs instanceof LocalVariableNode
-          && obligation.canBeSatisfiedThrough((LocalVariableNode) rhs)) {
-        LocalVariableNode rhsVar = (LocalVariableNode) rhs;
+      if (rhs instanceof LocalVariableNode rhsVar && obligation.canBeSatisfiedThrough(rhsVar)) {
         if (newResourceAliasesForObligation == null) {
           newResourceAliasesForObligation = new LinkedHashSet<>(obligation.resourceAliases);
         }
@@ -1518,27 +1512,25 @@ public class MustCallConsistencyAnalyzer {
       Element enclosingClassElement =
           TreeUtils.elementFromDeclaration(enclosingMethodTree).getEnclosingElement();
       if (ElementUtils.isTypeElement(enclosingClassElement)) {
-        Element receiverElement = TypesUtils.getTypeElement(receiver.getType());
-        if (Objects.equals(enclosingClassElement, receiverElement)) {
+        Element receiverTypeElement = TypesUtils.getTypeElement(receiver.getType());
+        if (Objects.equals(enclosingClassElement, receiverTypeElement)) {
           return;
         }
       }
     } else if (TreeUtils.isConstructor(enclosingMethodTree)) {
       // If this assignment is the first write to the private field in this constructor,
       // then do not throw non-final owning field reassignment error.
+      // (If the field is not private, conservatively throw the owning file reassignment error.)
       ExecutableElement elementFromDeclaration =
           TreeUtils.elementFromDeclaration(enclosingMethodTree);
-      if (elementFromDeclaration != null) {
-        Element enclosingClassElement = elementFromDeclaration.getEnclosingElement();
-        Element receiverElement = TypesUtils.getTypeElement(receiver.getType());
-        if (Objects.equals(enclosingClassElement, receiverElement)) {
-          VariableElement lhsElement = lhs.getElement();
-          if (lhsElement.getModifiers().contains(Modifier.PRIVATE)
-              && isFirstWriteToFieldInConstructor(
-                  node.getTree(), lhsElement, enclosingMethodTree)) {
-            // Safe; first assignment in constructor.
-            return;
-          }
+      Element enclosingClassElement = elementFromDeclaration.getEnclosingElement();
+      Element receiverTypeElement = TypesUtils.getTypeElement(receiver.getType());
+      if (Objects.equals(enclosingClassElement, receiverTypeElement)) {
+        VariableElement lhsElement = lhs.getElement();
+        if (lhsElement.getModifiers().contains(Modifier.PRIVATE)
+            && isFirstWriteToFieldInConstructor(node.getTree(), lhsElement, enclosingMethodTree)) {
+          // Safe; first assignment in constructor.
+          return;
         }
       }
     }
@@ -1548,8 +1540,7 @@ public class MustCallConsistencyAnalyzer {
     // extend beyond the method's body (and which therefore could not be targeted by an
     // annotation on the method declaration), or 2) the rhs is a null literal (so there's
     // nothing to reset).
-    if (!(receiver instanceof LocalVariableNode
-            && varTrackedInObligations(obligations, (LocalVariableNode) receiver))
+    if (!(receiver instanceof LocalVariableNode lvn && varTrackedInObligations(obligations, lvn))
         && !(node.getExpression() instanceof NullLiteralNode)) {
       checkEnclosingMethodIsCreatesMustCallFor(node, enclosingMethodTree);
     }
@@ -1696,8 +1687,7 @@ public class MustCallConsistencyAnalyzer {
 
     for (Tree member : classTree.getMembers()) {
       // (1) Disallow non-null inline initializer on the same field declaration.
-      if (member instanceof VariableTree) {
-        VariableTree decl = (VariableTree) member;
+      if (member instanceof VariableTree decl) {
         VariableElement declElement = TreeUtils.elementFromDeclaration(decl);
         if (targetField == declElement
             && decl.getInitializer() != null
@@ -1707,8 +1697,7 @@ public class MustCallConsistencyAnalyzer {
         continue;
       }
       // (2) Disallow assignment in any instance initializer block.
-      if (member instanceof BlockTree) {
-        BlockTree initBlock = (BlockTree) member;
+      if (member instanceof BlockTree initBlock) {
         if (initBlock.isStatic()) {
           continue;
         }
@@ -1770,10 +1759,10 @@ public class MustCallConsistencyAnalyzer {
   private void checkEnclosingMethodIsCreatesMustCallFor(
       AssignmentNode node, MethodTree enclosingMethod) {
     Node lhs = node.getTarget();
-    if (!(lhs instanceof FieldAccessNode)) {
+    if (!(lhs instanceof FieldAccessNode fan)) {
       return;
     }
-    if (permitStaticOwning && ((FieldAccessNode) lhs).getReceiver() instanceof ClassNameNode) {
+    if (permitStaticOwning && fan.getReceiver() instanceof ClassNameNode) {
       return;
     }
 
@@ -1836,11 +1825,11 @@ public class MustCallConsistencyAnalyzer {
     if (receiver instanceof ThisNode) {
       return "this";
     }
-    if (receiver instanceof LocalVariableNode) {
-      return ((LocalVariableNode) receiver).getName();
+    if (receiver instanceof LocalVariableNode lvn) {
+      return lvn.getName();
     }
-    if (receiver instanceof ClassNameNode) {
-      return ((ClassNameNode) receiver).getElement().toString();
+    if (receiver instanceof ClassNameNode cnn) {
+      return cnn.getElement().toString();
     }
     if (receiver instanceof SuperNode) {
       return "super";
@@ -1876,10 +1865,8 @@ public class MustCallConsistencyAnalyzer {
     }
 
     // If none of the parameters were @MustCallAlias, it must be the receiver
-    if (result.isEmpty() && callNode instanceof MethodInvocationNode) {
-      result.add(
-          removeCastsAndGetTmpVarIfPresent(
-              ((MethodInvocationNode) callNode).getTarget().getReceiver()));
+    if (result.isEmpty() && callNode instanceof MethodInvocationNode min) {
+      result.add(removeCastsAndGetTmpVarIfPresent(min.getTarget().getReceiver()));
     }
 
     return result;
@@ -1907,11 +1894,10 @@ public class MustCallConsistencyAnalyzer {
    * @return the arguments, in order
    */
   /*package-private*/ List<Node> getArgumentsOfInvocation(Node node) {
-    if (node instanceof MethodInvocationNode) {
-      MethodInvocationNode invocationNode = (MethodInvocationNode) node;
+    if (node instanceof MethodInvocationNode invocationNode) {
       return invocationNode.getArguments();
-    } else if (node instanceof ObjectCreationNode) {
-      return ((ObjectCreationNode) node).getArguments();
+    } else if (node instanceof ObjectCreationNode ocn) {
+      return ocn.getArguments();
     } else {
       throw new TypeSystemError("unexpected node type " + node.getClass());
     }
@@ -1927,11 +1913,10 @@ public class MustCallConsistencyAnalyzer {
    */
   /*package-private*/ List<? extends VariableElement> getParametersOfInvocation(Node node) {
     ExecutableElement executableElement;
-    if (node instanceof MethodInvocationNode) {
-      MethodInvocationNode invocationNode = (MethodInvocationNode) node;
+    if (node instanceof MethodInvocationNode invocationNode) {
       executableElement = TreeUtils.elementFromUse(invocationNode.getTree());
-    } else if (node instanceof ObjectCreationNode) {
-      executableElement = TreeUtils.elementFromUse(((ObjectCreationNode) node).getTree());
+    } else if (node instanceof ObjectCreationNode ocn) {
+      executableElement = TreeUtils.elementFromUse(ocn.getTree());
     } else {
       throw new TypeSystemError("unexpected node type " + node.getClass());
     }
@@ -2069,10 +2054,10 @@ public class MustCallConsistencyAnalyzer {
       // successor block, but can vary slightly depending on the exception type.  There might
       // be some opportunities for optimization in this mostly-redundant work.
       for (Node node : currentBlock.getNodes()) {
-        if (node instanceof AssignmentNode) {
-          updateObligationsForAssignment(obligations, cfg, (AssignmentNode) node);
-        } else if (node instanceof ReturnNode) {
-          updateObligationsForOwningReturn(obligations, cfg, (ReturnNode) node);
+        if (node instanceof AssignmentNode assignmentNode) {
+          updateObligationsForAssignment(obligations, cfg, assignmentNode);
+        } else if (node instanceof ReturnNode returnNode) {
+          updateObligationsForOwningReturn(obligations, cfg, returnNode);
         } else if (node instanceof MethodInvocationNode || node instanceof ObjectCreationNode) {
           updateObligationsForInvocation(obligations, node, successorAndExceptionType.second);
         }
@@ -2331,10 +2316,9 @@ public class MustCallConsistencyAnalyzer {
    * @return true if node is a MethodInvocationNode of a method with a CreatesMustCallFor annotation
    */
   private boolean isInvocationOfCreatesMustCallForMethod(Node node) {
-    if (!(node instanceof MethodInvocationNode)) {
+    if (!(node instanceof MethodInvocationNode miNode)) {
       return false;
     }
-    MethodInvocationNode miNode = (MethodInvocationNode) node;
     return cmAtf.hasCreatesMustCallFor(miNode);
   }
 
@@ -2730,33 +2714,28 @@ public class MustCallConsistencyAnalyzer {
       VariableElement targetField,
       RLCCalledMethodsAnnotatedTypeFactory cmAtf) {
     for (StatementTree stmt : stmts) {
-      if (stmt instanceof BlockTree) {
+      if (stmt instanceof BlockTree blockTree) {
         // Nested blocks preserve source order, so scan them recursively.
         FirstWriteScanResult r =
-            scanForFirstWrite(
-                ((BlockTree) stmt).getStatements(), targetAssignment, targetField, cmAtf);
+            scanForFirstWrite(blockTree.getStatements(), targetAssignment, targetField, cmAtf);
         if (r != FirstWriteScanResult.UNASSIGNED) {
           return r;
         }
         continue;
       }
 
-      if (stmt instanceof ExpressionStatementTree) {
+      if (stmt instanceof ExpressionStatementTree est) {
         // Expression statements execute here in source order, so scan the expression subtree.
         FirstWriteScanResult res =
             ConstructorFirstWriteScanner.isFirstWrite(
-                ((ExpressionStatementTree) stmt).getExpression(),
-                targetAssignment,
-                targetField,
-                cmAtf);
+                est.getExpression(), targetAssignment, targetField, cmAtf);
         if (res != FirstWriteScanResult.UNASSIGNED) {
           return res;
         }
         continue;
       }
 
-      if (stmt instanceof VariableTree) {
-        VariableTree vt = (VariableTree) stmt;
+      if (stmt instanceof VariableTree vt) {
         ExpressionTree init = vt.getInitializer();
         if (init != null) {
           FirstWriteScanResult res =
@@ -2768,8 +2747,7 @@ public class MustCallConsistencyAnalyzer {
         continue;
       }
 
-      if (stmt instanceof TryTree) {
-        TryTree tryTree = (TryTree) stmt;
+      if (stmt instanceof TryTree tryTree) {
 
         // finally introduces ordering across try/catch that requires CFG reasoning
         if (tryTree.getFinallyBlock() != null) {
@@ -2788,7 +2766,7 @@ public class MustCallConsistencyAnalyzer {
           return FirstWriteScanResult.REASSIGNMENT;
         }
 
-        // Scan the try block body only (catch blocks are exceptional-path-only and not eligible).
+        // Scan the try block body only (catch blocks are handled above).
         FirstWriteScanResult res =
             scanForFirstWrite(
                 tryTree.getBlock().getStatements(), targetAssignment, targetField, cmAtf);
@@ -2859,12 +2837,12 @@ public class MustCallConsistencyAnalyzer {
       extends TreeScanner<FirstWriteScanResult, Void> {
 
     /** The assignment under test within the constructor. */
-    private final Tree targetAssignment;
+    private final @InternedDistinct Tree targetAssignment;
 
     /** The field assigned by {@code targetAssignment}. */
     private final VariableElement targetField;
 
-    /** The annotated type factory, used for a method's side-effect reasoning. */
+    /** The annotated type factory, used to determine whether a method has any side effects. */
     private final RLCCalledMethodsAnnotatedTypeFactory cmAtf;
 
     /**
@@ -2877,7 +2855,7 @@ public class MustCallConsistencyAnalyzer {
      * @param cmAtf the type factory for side-effect reasoning
      */
     private ConstructorFirstWriteScanner(
-        Tree targetAssignment,
+        @FindDistinct Tree targetAssignment,
         VariableElement targetField,
         RLCCalledMethodsAnnotatedTypeFactory cmAtf) {
       this.targetAssignment = targetAssignment;
@@ -2904,7 +2882,7 @@ public class MustCallConsistencyAnalyzer {
      */
     static FirstWriteScanResult isFirstWrite(
         ExpressionTree root,
-        Tree targetAssignment,
+        @FindDistinct Tree targetAssignment,
         VariableElement targetField,
         RLCCalledMethodsAnnotatedTypeFactory cmAtf) {
       FirstWriteScanResult r =
@@ -2920,17 +2898,17 @@ public class MustCallConsistencyAnalyzer {
         // Found an assignment to the same field:
         //   - current assignment → first write → FIRST_ASSIGNMENT
         //   - earlier assignment → not first → REASSIGNMENT
-        @SuppressWarnings("interning:not.interned")
-        boolean isTarget = node == targetAssignment;
-        return isTarget ? FirstWriteScanResult.FIRST_ASSIGNMENT : FirstWriteScanResult.REASSIGNMENT;
+        return node == targetAssignment
+            ? FirstWriteScanResult.FIRST_ASSIGNMENT
+            : FirstWriteScanResult.REASSIGNMENT;
       }
       return super.visitAssignment(node, p);
     }
 
     @Override
     public FirstWriteScanResult visitMethodInvocation(MethodInvocationTree node, Void p) {
-      // Treat any method call before the target assignment as side-effecting, unless it is
-      // side-effect-free method or a super(...) constructor call.
+      // Treat any method call before the target assignment as possibly assigning the field,
+      // unless it is a side-effect-free method or a super(...) constructor call.
       if (cmAtf.isSideEffectFree(TreeUtils.elementFromUse(node))
           || TreeUtils.isSuperConstructorCall(node)) {
         return super.visitMethodInvocation(node, p);
