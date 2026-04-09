@@ -49,6 +49,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.calledmethods.qual.CalledMethods;
 import org.checkerframework.checker.interning.qual.FindDistinct;
+import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.mustcall.CreatesMustCallForToJavaExpression;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.MustCallChecker;
@@ -858,7 +859,8 @@ public class MustCallConsistencyAnalyzer {
     // position.
     List<Node> mustCallAliases = getMustCallAliasArgumentNodes(node);
     // If call returns @This, add the receiver to mustCallAliases.
-    if (node instanceof MethodInvocationNode miNode && cmAtf.returnsThis(miNode)) {
+    if (node instanceof MethodInvocationNode miNode
+        && cmAtf.returnsThis((MethodInvocationTree) tree)) {
       mustCallAliases.add(removeCastsAndGetTmpVarIfPresent(miNode.getTarget().getReceiver()));
     }
 
@@ -2764,7 +2766,7 @@ public class MustCallConsistencyAnalyzer {
           return FirstWriteScanResult.REASSIGNMENT;
         }
 
-        // Scan the try block body only (catch blocks are exceptional-path-only and not eligible).
+        // Scan the try block body only (catch blocks are handled above).
         FirstWriteScanResult res =
             scanForFirstWrite(
                 tryTree.getBlock().getStatements(), targetAssignment, targetField, cmAtf);
@@ -2835,12 +2837,12 @@ public class MustCallConsistencyAnalyzer {
       extends TreeScanner<FirstWriteScanResult, Void> {
 
     /** The assignment under test within the constructor. */
-    private final @FindDistinct Tree targetAssignment;
+    private final @InternedDistinct Tree targetAssignment;
 
     /** The field assigned by {@code targetAssignment}. */
     private final VariableElement targetField;
 
-    /** The annotated type factory, used for a method's side-effect reasoning. */
+    /** The annotated type factory, used to determine whether a method has any side effects. */
     private final RLCCalledMethodsAnnotatedTypeFactory cmAtf;
 
     /**
@@ -2905,8 +2907,8 @@ public class MustCallConsistencyAnalyzer {
 
     @Override
     public FirstWriteScanResult visitMethodInvocation(MethodInvocationTree node, Void p) {
-      // Treat any method call before the target assignment as side-effecting, unless it is
-      // side-effect-free method or a super(...) constructor call.
+      // Treat any method call before the target assignment as possibly assigning the field,
+      // unless it is a side-effect-free method or a super(...) constructor call.
       if (cmAtf.isSideEffectFree(TreeUtils.elementFromUse(node))
           || TreeUtils.isSuperConstructorCall(node)) {
         return super.visitMethodInvocation(node, p);
