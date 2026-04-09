@@ -409,9 +409,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
     // IEEE 754 behavior and should not be flagged as an unsafe cast if the result
     // is the correctly-rounded representation.
     // When a float is cast to double, no precision is lost, so it is always safe.
-    if (castTypeKind != null
-        && exprTypeKind != null
-        && TypeKindUtils.isFloatingPoint(castTypeKind)
+    if (TypeKindUtils.isFloatingPoint(castTypeKind)
         && TypeKindUtils.isFloatingPoint(exprTypeKind)) {
       if (AnnotationUtils.areSameByName(castAnno, ValueAnnotatedTypeFactory.DOUBLEVAL_NAME)
           && AnnotationUtils.areSameByName(exprAnno, ValueAnnotatedTypeFactory.DOUBLEVAL_NAME)) {
