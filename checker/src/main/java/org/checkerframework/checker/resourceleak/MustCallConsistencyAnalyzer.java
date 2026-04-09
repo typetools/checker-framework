@@ -2835,7 +2835,7 @@ public class MustCallConsistencyAnalyzer {
       extends TreeScanner<FirstWriteScanResult, Void> {
 
     /** The assignment under test within the constructor. */
-    private final Tree targetAssignment;
+    private final @FindDistinct Tree targetAssignment;
 
     /** The field assigned by {@code targetAssignment}. */
     private final VariableElement targetField;
@@ -2853,7 +2853,7 @@ public class MustCallConsistencyAnalyzer {
      * @param cmAtf the type factory for side-effect reasoning
      */
     private ConstructorFirstWriteScanner(
-        Tree targetAssignment,
+        @FindDistinct Tree targetAssignment,
         VariableElement targetField,
         RLCCalledMethodsAnnotatedTypeFactory cmAtf) {
       this.targetAssignment = targetAssignment;
@@ -2880,7 +2880,7 @@ public class MustCallConsistencyAnalyzer {
      */
     static FirstWriteScanResult isFirstWrite(
         ExpressionTree root,
-        Tree targetAssignment,
+        @FindDistinct Tree targetAssignment,
         VariableElement targetField,
         RLCCalledMethodsAnnotatedTypeFactory cmAtf) {
       FirstWriteScanResult r =
@@ -2896,9 +2896,9 @@ public class MustCallConsistencyAnalyzer {
         // Found an assignment to the same field:
         //   - current assignment → first write → FIRST_ASSIGNMENT
         //   - earlier assignment → not first → REASSIGNMENT
-        @SuppressWarnings("interning:not.interned")
-        boolean isTarget = node == targetAssignment;
-        return isTarget ? FirstWriteScanResult.FIRST_ASSIGNMENT : FirstWriteScanResult.REASSIGNMENT;
+        return node == targetAssignment
+            ? FirstWriteScanResult.FIRST_ASSIGNMENT
+            : FirstWriteScanResult.REASSIGNMENT;
       }
       return super.visitAssignment(node, p);
     }
