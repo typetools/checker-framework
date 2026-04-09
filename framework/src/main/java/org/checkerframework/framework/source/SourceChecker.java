@@ -1228,7 +1228,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
 
       immediateSubcheckers = instantiateSubcheckers(checkerMap);
 
-      subcheckers = Collections.unmodifiableList(new ArrayList<>(checkerMap.values()));
+      subcheckers = List.copyOf(checkerMap.values());
     }
 
     return subcheckers;

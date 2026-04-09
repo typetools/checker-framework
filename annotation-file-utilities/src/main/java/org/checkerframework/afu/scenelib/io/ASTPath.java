@@ -272,12 +272,7 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
   }
 
   private static Comparator<ASTPath> comparator =
-      new Comparator<ASTPath>() {
-        @Override
-        public int compare(ASTPath p1, ASTPath p2) {
-          return p1 == null ? (p2 == null ? 0 : -1) : p1.compareTo(p2);
-        }
-      };
+      (p1, p2) -> p1 == null ? (p2 == null ? 0 : -1) : p1.compareTo(p2);
 
   ASTPath() {}
 

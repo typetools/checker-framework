@@ -967,11 +967,8 @@ public class WholeProgramInferenceScenesStorage
       // that should not be inserted in source code
       String firstKey = aTypeElementToString(typeToUpdate);
       IPair<String, TypeUseLocation> key = IPair.of(firstKey, defLoc);
-      Set<String> annosIgnored = annosToIgnore.get(key);
-      if (annosIgnored == null) {
-        annosIgnored = new HashSet<>(MapsP.mapCapacity(1));
-        annosToIgnore.put(key, annosIgnored);
-      }
+      Set<String> annosIgnored =
+          annosToIgnore.computeIfAbsent(key, k -> new HashSet<>(MapsP.mapCapacity(1)));
       annosIgnored.add(anno.def().toString());
     }
   }

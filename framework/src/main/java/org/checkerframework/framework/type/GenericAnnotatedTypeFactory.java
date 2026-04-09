@@ -2732,7 +2732,7 @@ public abstract class GenericAnnotatedTypeFactory<
           storage.atmFromStorageLocation(typeMirror, entry.getValue().type);
       result.addAll(getPreconditionAnnotations(entry.getKey(), inferredType, declaredType));
     }
-    Collections.sort(result, Ordering.usingToString());
+    result.sort(Ordering.usingToString());
     return result;
   }
 
@@ -2773,7 +2773,7 @@ public abstract class GenericAnnotatedTypeFactory<
       result.addAll(
           getPostconditionAnnotations(entry.getKey(), inferredType, declaredType, preconds));
     }
-    Collections.sort(result, Ordering.usingToString());
+    result.sort(Ordering.usingToString());
     return result;
   }
 
@@ -2813,7 +2813,7 @@ public abstract class GenericAnnotatedTypeFactory<
           getPreconditionAnnotations(
               entry.getKey(), entry.getValue().inferred, entry.getValue().declared));
     }
-    Collections.sort(result, Ordering.usingToString());
+    result.sort(Ordering.usingToString());
     return result;
   }
 
@@ -2837,7 +2837,7 @@ public abstract class GenericAnnotatedTypeFactory<
           getPostconditionAnnotations(
               entry.getKey(), entry.getValue().inferred, entry.getValue().declared, preconds));
     }
-    Collections.sort(result, Ordering.usingToString());
+    result.sort(Ordering.usingToString());
     return result;
   }
 

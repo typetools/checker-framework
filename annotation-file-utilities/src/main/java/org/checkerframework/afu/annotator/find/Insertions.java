@@ -155,17 +155,9 @@ public class Insertions implements Iterable<Insertion> {
       innerClass = innerClassName(icc.className);
     }
 
-    Map<String, Set<Insertion>> map = store.get(outerClass);
-    if (map == null) {
-      map = new HashMap<>();
-      store.put(outerClass, map);
-    }
+    Map<String, Set<Insertion>> map = store.computeIfAbsent(outerClass, k -> new HashMap<>());
 
-    Set<Insertion> set = map.get(innerClass);
-    if (set == null) {
-      set = new LinkedHashSet<>();
-      map.put(innerClass, set);
-    }
+    Set<Insertion> set = map.computeIfAbsent(innerClass, k -> new LinkedHashSet<>());
 
     size -= set.size();
     set.add(ins);
@@ -427,7 +419,7 @@ public class Insertions implements Iterable<Insertion> {
     if (Main.temporaryDebug) {
       System.out.printf("innerInsertionsList size (1) = %d%n", innerInsertionsList.size());
     }
-    Collections.sort(innerInsertionsList, byASTRecord);
+    innerInsertionsList.sort(byASTRecord);
     if (Main.temporaryDebug) {
       System.out.printf("innerInsertionsList size (2) = %d%n", innerInsertionsList.size());
     }
@@ -1051,40 +1043,37 @@ public class Insertions implements Iterable<Insertion> {
 
   /** Compare by AstRecord, then by kind, then by string representation. */
   private static final Comparator<Insertion> byASTRecord =
-      new Comparator<Insertion>() {
-        @Override
-        public int compare(Insertion o1, Insertion o2) {
-          Criteria crit1 = o1.getCriteria();
-          Criteria crit2 = o2.getCriteria();
-          ASTPath p1 = crit1.getASTPath();
-          ASTPath p2 = crit2.getASTPath();
-          ASTRecord r1 =
-              new ASTRecord(
-                  null,
-                  crit1.getClassName(),
-                  crit1.getMethodName(),
-                  crit1.getFieldName(),
-                  p1 == null ? ASTPath.empty() : p1);
-          ASTRecord r2 =
-              new ASTRecord(
-                  null,
-                  crit2.getClassName(),
-                  crit2.getMethodName(),
-                  crit2.getFieldName(),
-                  p2 == null ? ASTPath.empty() : p2);
-          int cmp;
-          cmp = r1.compareTo(r2);
-          if (cmp != 0) {
-            return cmp;
-          }
-          // cmp = o1.getKind().compareTo(o2.getKind());
-          cmp = Integer.compare(kindLevel(o2), kindLevel(o1)); // descending
-          if (cmp != 0) {
-            return cmp;
-          }
-          cmp = o1.toString().compareTo(o2.toString());
+      (o1, o2) -> {
+        Criteria crit1 = o1.getCriteria();
+        Criteria crit2 = o2.getCriteria();
+        ASTPath p1 = crit1.getASTPath();
+        ASTPath p2 = crit2.getASTPath();
+        ASTRecord r1 =
+            new ASTRecord(
+                null,
+                crit1.getClassName(),
+                crit1.getMethodName(),
+                crit1.getFieldName(),
+                p1 == null ? ASTPath.empty() : p1);
+        ASTRecord r2 =
+            new ASTRecord(
+                null,
+                crit2.getClassName(),
+                crit2.getMethodName(),
+                crit2.getFieldName(),
+                p2 == null ? ASTPath.empty() : p2);
+        int cmp;
+        cmp = r1.compareTo(r2);
+        if (cmp != 0) {
           return cmp;
         }
+        // cmp = o1.getKind().compareTo(o2.getKind());
+        cmp = Integer.compare(kindLevel(o2), kindLevel(o1)); // descending
+        if (cmp != 0) {
+          return cmp;
+        }
+        cmp = o1.toString().compareTo(o2.toString());
+        return cmp;
       };
 
   /**

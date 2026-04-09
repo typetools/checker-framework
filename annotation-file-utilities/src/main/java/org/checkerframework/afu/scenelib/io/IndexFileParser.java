@@ -682,11 +682,8 @@ public final class IndexFileParser {
       if (abbreviate) {
         int i = name.lastIndexOf('.');
         if (i >= 0) {
-          Set<String> importSet = scene.imports.get(annotationFullyQualifiedName);
-          if (importSet == null) {
-            importSet = new TreeSet<>();
-            scene.imports.put(annotationFullyQualifiedName, importSet);
-          }
+          Set<String> importSet =
+              scene.imports.computeIfAbsent(annotationFullyQualifiedName, k -> new TreeSet<>());
           importSet.add(name);
           String baseName = name.substring(i + 1);
           name = baseName;
