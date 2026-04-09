@@ -1526,6 +1526,7 @@ public class MustCallConsistencyAnalyzer {
     } else if (TreeUtils.isConstructor(enclosingMethodTree)) {
       // If this assignment is the first write to the private field in this constructor,
       // then do not throw non-final owning field reassignment error.
+      // (If the field is not private, conservatively throw the owning file reassignment error.)
       ExecutableElement elementFromDeclaration =
           TreeUtils.elementFromDeclaration(enclosingMethodTree);
       if (elementFromDeclaration != null) {
