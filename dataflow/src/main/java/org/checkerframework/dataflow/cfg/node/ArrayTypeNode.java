@@ -45,10 +45,9 @@ public class ArrayTypeNode extends Node {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof ArrayTypeNode)) {
+    if (!(obj instanceof ArrayTypeNode other)) {
       return false;
     }
-    ArrayTypeNode other = (ArrayTypeNode) obj;
     return types.isSameType(getType(), other.getType());
   }
 

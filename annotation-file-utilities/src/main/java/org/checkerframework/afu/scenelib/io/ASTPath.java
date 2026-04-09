@@ -254,7 +254,7 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
 
     @Override
     public boolean equals(Object o) {
-      return o instanceof ASTEntry && compareTo((ASTEntry) o) == 0;
+      return o instanceof ASTEntry other && compareTo(other) == 0;
     }
 
     @Override
@@ -1354,7 +1354,7 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
 
   @Override
   public boolean equals(Object o) {
-    return o instanceof ASTPath && equals((ASTPath) o);
+    return o instanceof ASTPath other && equals(other);
   }
 
   public boolean equals(ASTPath astPath) {
