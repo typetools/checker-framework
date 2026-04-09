@@ -318,12 +318,8 @@ public class InsertAjavaAnnotations {
           lineBreaksBeforeFirstImport = 0;
         }
 
-        String insertionContent = "";
-        // In Java 11, use String::repeat.
-        for (int i = 0; i < lineBreaksBeforeFirstImport; i++) {
-          insertionContent += lineSeparator;
-        }
-        insertionContent += String.join("", newImports);
+        String insertionContent =
+            lineSeparator.repeat(lineBreaksBeforeFirstImport) + String.join("", newImports);
 
         insertions.add(new Insertion(position, insertionContent));
       }

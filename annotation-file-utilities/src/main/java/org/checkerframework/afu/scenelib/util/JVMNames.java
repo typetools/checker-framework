@@ -1,6 +1,5 @@
 package org.checkerframework.afu.scenelib.util;
 
-import com.google.errorprone.annotations.InlineMe;
 import com.sun.source.tree.ArrayTypeTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
@@ -26,22 +25,6 @@ public class JVMNames {
   /** Do not instantiate. */
   private JVMNames() {
     throw new Error("Do not instantiate");
-  }
-
-  /**
-   * Converts a MethodTree into a JVML format method signature. There is probably an API to do this,
-   * but I couldn't find it.
-   *
-   * @param methodTree the tree to convert
-   * @return a String signature of methodTree in jvml format
-   * @deprecated use {@link #getJVMMethodSignature(MethodTree)}
-   */
-  @Deprecated
-  @InlineMe(
-      replacement = "JVMNames.getJVMMethodSignature(methodTree)",
-      imports = "org.checkerframework.afu.scenelib.util.JVMNames")
-  public static String getJVMMethodName(MethodTree methodTree) {
-    return getJVMMethodSignature(methodTree);
   }
 
   /**
@@ -83,22 +66,6 @@ public class JVMNames {
     builder.append(")");
     builder.append(returnTypeStr);
     return builder.toString();
-  }
-
-  /**
-   * Converts a method element into a JVML format method signature. There is probably an API to do
-   * this, but I couldn't find it.
-   *
-   * @param methodElement the method element to convert
-   * @return a String signature of methodElement in JVML format
-   * @deprecated use {@link #getJVMMethodSignature(ExecutableElement)}
-   */
-  @Deprecated
-  @InlineMe(
-      replacement = "JVMNames.getJVMMethodSignature(methodElement)",
-      imports = "org.checkerframework.afu.scenelib.util.JVMNames")
-  public static String getJVMMethodName(ExecutableElement methodElement) {
-    return getJVMMethodSignature(methodElement);
   }
 
   /**

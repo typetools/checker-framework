@@ -455,7 +455,7 @@ public class QualifierDefaults {
     Tree prev = null;
 
     for (Tree t : path) {
-      switch (TreeUtils.getKindRecordAsClass(t)) {
+      switch (t.getKind()) {
         case ANNOTATED_TYPE:
         case ANNOTATION:
           // If the tree is in an annotation, then there is no relevant scope.
@@ -484,7 +484,8 @@ public class QualifierDefaults {
           return TreeUtils.elementFromDeclaration((VariableTree) t);
         case METHOD:
           return TreeUtils.elementFromDeclaration((MethodTree) t);
-        case CLASS: // Including RECORD
+        case CLASS:
+        case RECORD:
         case ENUM:
         case INTERFACE:
         case ANNOTATION_TYPE:

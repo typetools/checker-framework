@@ -1342,8 +1342,9 @@ public abstract class GenericAnnotatedTypeFactory<
           members.sort(sortVariablesFirst);
         }
         for (Tree m : members) {
-          switch (TreeUtils.getKindRecordAsClass(m)) {
-            case CLASS: // Including RECORD
+          switch (m.getKind()) {
+            case CLASS:
+            case RECORD: // Including RECORD
             case ANNOTATION_TYPE:
             case INTERFACE:
             case ENUM:

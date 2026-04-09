@@ -26,6 +26,11 @@ jgit-version = "7.6.0.202603022253-r"
 #  * Uncomment "-Werror".
 error-prone-core = "com.google.errorprone:error_prone_core:2.48.0"
 
+# This line might need to be updated by hand, because sometimes the artifact
+# name itself changes (independently of the version number), such as from
+# org.apache.spark:spark-sql_2.12 to org.apache.spark:spark-sql_2.13.
+spark-sql = "org.apache.spark:spark-sql_2.13:4.1.1"
+
 asm = "org.ow2.asm:asm:9.9.1"
 
 auto-value = "com.google.auto.value:auto-value:1.11.1"
@@ -52,7 +57,7 @@ guava = "org.checkerframework.annotatedlib:guava:33.1.0.2-jre"
 
 hashmap-util = "org.plumelib:hashmap-util:0.0.1"
 
-javac = "com.google.errorprone:javac:9+181-r4173-1"
+javac-parse = "org.plumelib:javac-parse:0.9.0"
 
 javax-servlet-api = "javax.servlet:javax.servlet-api:4.0.1"
 
@@ -71,7 +76,5 @@ plume-util = "org.plumelib:plume-util:1.14.0"
 reflection-util = "org.plumelib:reflection-util:1.1.6"
 
 require-javadoc = "org.plumelib:require-javadoc:2.0.0"
-
-spark-sql = "org.apache.spark:spark-sql_2.12:3.5.8"
 
 stubparser = "org.checkerframework:stubparser:3.28.0"

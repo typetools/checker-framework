@@ -563,8 +563,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         checker.reportError(
             methodInvocationTree,
             "method.guarantee.violated",
-            seaOfEnclosingMethod.getNameOfSideEffectAnnotation(),
             enclosingMethodElement.getSimpleName(),
+            seaOfEnclosingMethod.getNameOfSideEffectAnnotation(),
             methodElement.getSimpleName(),
             seaOfInvokedMethod.getNameOfSideEffectAnnotation());
       }
