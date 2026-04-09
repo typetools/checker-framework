@@ -32,15 +32,7 @@ import org.plumelib.util.CollectionsPlume;
 public class IsSigMethodCriterion implements Criterion {
 
   // The context is used for determining the fully qualified name of methods.
-  private static class Context {
-    public final String packageName;
-    public final List<String> imports;
-
-    public Context(String packageName, List<String> imports) {
-      this.packageName = packageName;
-      this.imports = imports;
-    }
-  }
+  private record Context(String packageName, List<String> imports) {}
 
   /** Map from compilation unit to Context. */
   private static final Map<CompilationUnitTree, Context> contextCache = new HashMap<>();

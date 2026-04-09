@@ -452,7 +452,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       int count =
           ElementUtils.getEnumConstants((TypeElement) methodElt.getEnclosingElement()).size();
       AnnotationMirror am = createArrayLenAnnotation(Collections.singletonList(count));
-      superPair.executableType.getReturnType().replaceAnnotation(am);
+      superPair.executableType().getReturnType().replaceAnnotation(am);
     }
     return superPair;
   }

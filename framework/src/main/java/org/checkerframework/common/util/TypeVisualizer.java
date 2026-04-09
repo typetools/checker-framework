@@ -167,10 +167,10 @@ public class TypeVisualizer {
    * This is done to preserve the order types were traversed so that printing will occur in a
    * hierarchical order. However, since there is no LinkedIdentityHashMap, it was easiest to just
    * create a wrapper that performed referential equality on types and use a LinkedHashMap.
+   *
+   * @param type The delegate; that is, the wrapped value.
    */
-  private static class Node {
-    /** The delegate; that is, the wrapped value. */
-    private final @InternedDistinct AnnotatedTypeMirror type;
+  private record Node(@InternedDistinct AnnotatedTypeMirror type) {
 
     /**
      * Create a new Node that wraps the given type.
@@ -179,11 +179,6 @@ public class TypeVisualizer {
      */
     private Node(@FindDistinct AnnotatedTypeMirror type) {
       this.type = type;
-    }
-
-    @Override
-    public int hashCode() {
-      return type.hashCode();
     }
 
     @Override

@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.IntStream;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -818,16 +819,7 @@ public class AnnotationVerifier {
    * A ParameterDescription is a convenient class used to keep information about method parameters.
    * Parameters are equal if they have the same index, regardless of their description.
    */
-  private static class ParameterDescription {
-    public final int parameter;
-    public final String descriptor;
-    public final boolean visible;
-
-    public ParameterDescription(int parameter, String descriptor, boolean visible) {
-      this.parameter = parameter;
-      this.descriptor = descriptor;
-      this.visible = visible;
-    }
+  private record ParameterDescription(int parameter, String descriptor, boolean visible) {
 
     @Override
     public boolean equals(@Nullable Object o) {
@@ -839,7 +831,7 @@ public class AnnotationVerifier {
 
     @Override
     public int hashCode() {
-      return parameter * 17;
+      return Objects.hashCode(parameter);
     }
 
     @Override

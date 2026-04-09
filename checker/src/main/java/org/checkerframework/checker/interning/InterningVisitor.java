@@ -355,7 +355,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
       // instead, issue an interned.object.creation if required.
       if (atypeFactory.containsSameByClass(bounds, Interned.class)) {
         ParameterizedExecutableType fromUse = atypeFactory.constructorFromUse(newClassTree);
-        AnnotatedExecutableType constructor = fromUse.executableType;
+        AnnotatedExecutableType constructor = fromUse.executableType();
         if (!checkCreationOfInternedObject(newClassTree, constructor)) {
           return false;
         }
