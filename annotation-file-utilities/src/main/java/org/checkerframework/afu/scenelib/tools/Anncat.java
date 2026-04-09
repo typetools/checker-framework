@@ -2,12 +2,11 @@ package org.checkerframework.afu.scenelib.tools;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import org.checkerframework.afu.scenelib.el.AScene;
 import org.checkerframework.afu.scenelib.el.DefException;
 import org.checkerframework.afu.scenelib.io.IndexFileParser;
@@ -105,8 +104,7 @@ public class Anncat {
           idx++;
           usageAssert(idx == args.length);
           System.err.println("Writing index file to " + outfile + "...");
-          // In Java 11, use: new FileWriter(outfile, UTF_8)
-          try (Writer w = Files.newBufferedWriter(Paths.get(outfile), StandardCharsets.UTF_8)) {
+          try (Writer w = new FileWriter(outfile, StandardCharsets.UTF_8)) {
             IndexFileWriter.write(theScene, w);
           }
           System.err.println("Finished.");

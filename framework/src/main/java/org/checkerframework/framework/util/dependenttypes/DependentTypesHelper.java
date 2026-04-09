@@ -439,12 +439,8 @@ public class DependentTypesHelper {
       // If this is a synthetic created by dataflow, the path will be null.
       return;
     }
-    ElementKind variableKind = variableElt.getKind();
-    if (ElementUtils.isBindingVariable(variableElt)) {
-      // Treat binding variables the same as local variables.
-      variableKind = ElementKind.LOCAL_VARIABLE;
-    }
-    switch (variableKind) {
+
+    switch (variableElt.getKind()) {
       case PARAMETER:
         TreePath pathTillEnclTree =
             TreePathUtil.pathTillOfKind(pathToVariableDecl, METHOD_OR_LAMBDA);
@@ -489,7 +485,7 @@ public class DependentTypesHelper {
           convertAnnotatedTypeMirror(stringToJavaExpr, type);
         }
         break;
-
+      case BINDING_VARIABLE:
       case LOCAL_VARIABLE:
       case RESOURCE_VARIABLE:
       case EXCEPTION_PARAMETER:

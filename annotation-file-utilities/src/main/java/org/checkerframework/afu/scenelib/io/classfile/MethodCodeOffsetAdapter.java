@@ -157,13 +157,6 @@ class MethodCodeOffsetAdapter extends MethodVisitor {
     offset += 4 + 8 * readInt(offset);
   }
 
-  @Deprecated
-  @Override
-  public void visitMethodInsn(int opcode, String owner, String name, String descriptor) {
-    super.visitMethodInsn(opcode, owner, name, descriptor);
-    advance(opcode == Opcodes.INVOKEINTERFACE ? 5 : 3);
-  }
-
   @Override
   public void visitMethodInsn(
       int opcode, String owner, String name, String descriptor, boolean isInterface) {

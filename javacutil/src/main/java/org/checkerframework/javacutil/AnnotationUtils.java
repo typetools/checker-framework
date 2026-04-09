@@ -569,15 +569,11 @@ public class AnnotationUtils {
         return EnumSet.of(ElementKind.TYPE_PARAMETER);
       case TYPE_USE:
         return EnumSet.noneOf(ElementKind.class);
+      case MODULE:
+        return EnumSet.of(ElementKind.MODULE);
+      case RECORD_COMPONENT:
+        return EnumSet.of(ElementKind.RECORD_COMPONENT);
       default:
-        // TODO: Use MODULE enum constants directly instead of looking them up by name.
-        // (Java 11)
-        if (elementType.name().equals("MODULE")) {
-          return EnumSet.of(ElementKind.valueOf("MODULE"));
-        }
-        if (elementType.name().equals("RECORD_COMPONENT")) {
-          return EnumSet.of(ElementKind.valueOf("RECORD_COMPONENT"));
-        }
         throw new BugInCF("Unrecognized ElementType: " + elementType);
     }
   }
