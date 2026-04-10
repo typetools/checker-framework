@@ -14,7 +14,9 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
+import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -165,10 +167,37 @@ public class TypeVisualizer {
    * This is done to preserve the order types were traversed so that printing will occur in a
    * hierarchical order. However, since there is no LinkedIdentityHashMap, it was easiest to just
    * create a wrapper that performed referential equality on types and use a LinkedHashMap.
-   *
-   * @param type the delegate; that is, the wrapped value
    */
-  private record Node(@InternedDistinct AnnotatedTypeMirror type) {}
+  private static class Node {
+    /** The delegate; that is, the wrapped value. */
+    private final @InternedDistinct AnnotatedTypeMirror type;
+
+    /**
+     * Create a new Node that wraps the given type.
+     *
+     * @param type the type that the newly-constructed Node represents
+     */
+    private Node(@FindDistinct AnnotatedTypeMirror type) {
+      this.type = type;
+    }
+
+    @Override
+    public int hashCode() {
+      return type.hashCode();
+    }
+
+    @Override
+    public boolean equals(@Nullable Object obj) {
+      if (obj == null) {
+        return false;
+      }
+      if (obj instanceof Node) {
+        return ((Node) obj).type == this.type;
+      }
+
+      return false;
+    }
+  }
 
   /**
    * Drawing visits a type and writes a dot file to the location specified. It contains data
