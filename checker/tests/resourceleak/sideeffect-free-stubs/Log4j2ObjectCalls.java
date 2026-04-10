@@ -1,55 +1,12 @@
 // This test covers the Log4j 2.x API in package org.apache.logging.log4j.
-// The local Logger and LogManager declarations below are tiny stand-ins for the
-// real library API. The RLC-specific stub marks logging methods as @SideEffectFree,
-// so logging after a resource is closed should not wipe out the close fact.
-
-package org.apache.logging.log4j;
+// real library API. The RLC-specific stub marks logging methods as @SideEffectFree, so logging
+// after a resource is closed should not wipe out the close fact.
 
 import java.io.Closeable;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;
 import org.checkerframework.checker.mustcall.qual.Owning;
-
-interface Logger {
-  void debug(Object message);
-
-  void debug(String message, Object... params);
-
-  void info(Object message);
-
-  void warn(Object message);
-
-  void error(Object message);
-
-  void error(String message, Throwable throwable);
-}
-
-final class SimpleLogger implements Logger {
-  @Override
-  public void debug(Object message) {}
-
-  @Override
-  public void debug(String message, Object... params) {}
-
-  @Override
-  public void info(Object message) {}
-
-  @Override
-  public void warn(Object message) {}
-
-  @Override
-  public void error(Object message) {}
-
-  @Override
-  public void error(String message, Throwable throwable) {}
-}
-
-final class LogManager {
-  private LogManager() {}
-
-  static Logger getLogger() {
-    return new SimpleLogger();
-  }
-}
 
 final class CloseableResource implements Closeable {
   @Override

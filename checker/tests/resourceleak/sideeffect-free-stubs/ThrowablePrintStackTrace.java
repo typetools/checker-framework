@@ -9,11 +9,6 @@ import java.io.StringWriter;
 import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;
 import org.checkerframework.checker.mustcall.qual.Owning;
 
-final class CloseableResource implements Closeable {
-  @Override
-  public void close() {}
-}
-
 class ThrowablePrintStackTrace implements Closeable {
   private @Owning CloseableResource resource = new CloseableResource();
 

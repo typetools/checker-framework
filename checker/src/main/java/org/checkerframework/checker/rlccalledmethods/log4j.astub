@@ -3,9 +3,7 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
 // Log4j 1.x API stubs (package org.apache.log4j).
 package org.apache.log4j;
 
-class Logger {
-  @SideEffectFree public void trace(Object message);
-  @SideEffectFree public void trace(Object message, Throwable t);
+class Category {
   @SideEffectFree public void debug(Object message);
   @SideEffectFree public void debug(Object message, Throwable t);
   @SideEffectFree public void info(Object message);
@@ -21,6 +19,11 @@ class Logger {
   @SideEffectFree public void log(String callerFQCN, Priority level, Object message, Throwable t);
 }
 
+class Logger extends Category {
+    @SideEffectFree public void trace(Object message);
+    @SideEffectFree public void trace(Object message, Throwable t);
+}
+
 // Log4j 2.x API stubs (package org.apache.logging.log4j).
 package org.apache.logging.log4j;
 
@@ -33,6 +36,26 @@ interface Logger {
   @SideEffectFree void trace(Object message, Throwable throwable);
   @SideEffectFree void trace(String message);
   @SideEffectFree void trace(String message, Throwable throwable);
+  @SideEffectFree void trace(String message, Object p0);
+  @SideEffectFree void trace(String message, Object p0, Object p1);
+  @SideEffectFree void trace(String message, Object p0, Object p1, Object p2);
+  @SideEffectFree void trace(String message, Object p0, Object p1, Object p2, Object p3);
+  @SideEffectFree void trace(
+      String message, Object p0, Object p1, Object p2, Object p3, Object p4);
+  @SideEffectFree void trace(
+      String message, Object p0, Object p1, Object p2, Object p3, Object p4, Object p5);
+  @SideEffectFree void trace(
+      String message, Object p0, Object p1, Object p2, Object p3, Object p4, Object p5,
+      Object p6);
+  @SideEffectFree void trace(
+      String message, Object p0, Object p1, Object p2, Object p3, Object p4, Object p5,
+      Object p6, Object p7);
+  @SideEffectFree void trace(
+      String message, Object p0, Object p1, Object p2, Object p3, Object p4, Object p5,
+      Object p6, Object p7, Object p8);
+  @SideEffectFree void trace(
+      String message, Object p0, Object p1, Object p2, Object p3, Object p4, Object p5,
+      Object p6, Object p7, Object p8, Object p9);
   @SideEffectFree void trace(String message, Object... params);
   @SideEffectFree void trace(Message message);
   @SideEffectFree void trace(Message message, Throwable throwable);
@@ -43,6 +66,26 @@ interface Logger {
   @SideEffectFree void debug(Object message, Throwable throwable);
   @SideEffectFree void debug(String message);
   @SideEffectFree void debug(String message, Throwable throwable);
+  @SideEffectFree void debug(String message, Object p0);
+  @SideEffectFree void debug(String message, Object p0, Object p1);
+  @SideEffectFree void debug(String message, Object p0, Object p1, Object p2);
+  @SideEffectFree void debug(String message, Object p0, Object p1, Object p2, Object p3);
+  @SideEffectFree void debug(
+      String message, Object p0, Object p1, Object p2, Object p3, Object p4);
+  @SideEffectFree void debug(
+      String message, Object p0, Object p1, Object p2, Object p3, Object p4, Object p5);
+  @SideEffectFree void debug(
+      String message, Object p0, Object p1, Object p2, Object p3, Object p4, Object p5,
+      Object p6);
+  @SideEffectFree void debug(
+      String message, Object p0, Object p1, Object p2, Object p3, Object p4, Object p5,
+      Object p6, Object p7);
+  @SideEffectFree void debug(
+      String message, Object p0, Object p1, Object p2, Object p3, Object p4, Object p5,
+      Object p6, Object p7, Object p8);
+  @SideEffectFree void debug(
+      String message, Object p0, Object p1, Object p2, Object p3, Object p4, Object p5,
+      Object p6, Object p7, Object p8, Object p9);
   @SideEffectFree void debug(String message, Object... params);
   @SideEffectFree void debug(Message message);
   @SideEffectFree void debug(Message message, Throwable throwable);
@@ -53,6 +96,26 @@ interface Logger {
   @SideEffectFree void info(Object message, Throwable throwable);
   @SideEffectFree void info(String message);
   @SideEffectFree void info(String message, Throwable throwable);
+  @SideEffectFree void info(String message, Object p0);
+  @SideEffectFree void info(String message, Object p0, Object p1);
+  @SideEffectFree void info(String message, Object p0, Object p1, Object p2);
+  @SideEffectFree void info(String message, Object p0, Object p1, Object p2, Object p3);
+  @SideEffectFree void info(
+      String message, Object p0, Object p1, Object p2, Object p3, Object p4);
+  @SideEffectFree void info(
+      String message, Object p0, Object p1, Object p2, Object p3, Object p4, Object p5);
+  @SideEffectFree void info(
+      String message, Object p0, Object p1, Object p2, Object p3, Object p4, Object p5,
+      Object p6);
+  @SideEffectFree void info(
+      String message, Object p0, Object p1, Object p2, Object p3, Object p4, Object p5,
+      Object p6, Object p7);
+  @SideEffectFree void info(
+      String message, Object p0, Object p1, Object p2, Object p3, Object p4, Object p5,
+      Object p6, Object p7, Object p8);
+  @SideEffectFree void info(
+      String message, Object p0, Object p1, Object p2, Object p3, Object p4, Object p5,
+      Object p6, Object p7, Object p8, Object p9);
   @SideEffectFree void info(String message, Object... params);
   @SideEffectFree void info(Message message);
   @SideEffectFree void info(Message message, Throwable throwable);
@@ -63,6 +126,26 @@ interface Logger {
   @SideEffectFree void warn(Object message, Throwable throwable);
   @SideEffectFree void warn(String message);
   @SideEffectFree void warn(String message, Throwable throwable);
+  @SideEffectFree void warn(String message, Object p0);
+  @SideEffectFree void warn(String message, Object p0, Object p1);
+  @SideEffectFree void warn(String message, Object p0, Object p1, Object p2);
+  @SideEffectFree void warn(String message, Object p0, Object p1, Object p2, Object p3);
+  @SideEffectFree void warn(
+      String message, Object p0, Object p1, Object p2, Object p3, Object p4);
+  @SideEffectFree void warn(
+      String message, Object p0, Object p1, Object p2, Object p3, Object p4, Object p5);
+  @SideEffectFree void warn(
+      String message, Object p0, Object p1, Object p2, Object p3, Object p4, Object p5,
+      Object p6);
+  @SideEffectFree void warn(
+      String message, Object p0, Object p1, Object p2, Object p3, Object p4, Object p5,
+      Object p6, Object p7);
+  @SideEffectFree void warn(
+      String message, Object p0, Object p1, Object p2, Object p3, Object p4, Object p5,
+      Object p6, Object p7, Object p8);
+  @SideEffectFree void warn(
+      String message, Object p0, Object p1, Object p2, Object p3, Object p4, Object p5,
+      Object p6, Object p7, Object p8, Object p9);
   @SideEffectFree void warn(String message, Object... params);
   @SideEffectFree void warn(Message message);
   @SideEffectFree void warn(Message message, Throwable throwable);
@@ -73,6 +156,26 @@ interface Logger {
   @SideEffectFree void error(Object message, Throwable throwable);
   @SideEffectFree void error(String message);
   @SideEffectFree void error(String message, Throwable throwable);
+  @SideEffectFree void error(String message, Object p0);
+  @SideEffectFree void error(String message, Object p0, Object p1);
+  @SideEffectFree void error(String message, Object p0, Object p1, Object p2);
+  @SideEffectFree void error(String message, Object p0, Object p1, Object p2, Object p3);
+  @SideEffectFree void error(
+      String message, Object p0, Object p1, Object p2, Object p3, Object p4);
+  @SideEffectFree void error(
+      String message, Object p0, Object p1, Object p2, Object p3, Object p4, Object p5);
+  @SideEffectFree void error(
+      String message, Object p0, Object p1, Object p2, Object p3, Object p4, Object p5,
+      Object p6);
+  @SideEffectFree void error(
+      String message, Object p0, Object p1, Object p2, Object p3, Object p4, Object p5,
+      Object p6, Object p7);
+  @SideEffectFree void error(
+      String message, Object p0, Object p1, Object p2, Object p3, Object p4, Object p5,
+      Object p6, Object p7, Object p8);
+  @SideEffectFree void error(
+      String message, Object p0, Object p1, Object p2, Object p3, Object p4, Object p5,
+      Object p6, Object p7, Object p8, Object p9);
   @SideEffectFree void error(String message, Object... params);
   @SideEffectFree void error(Message message);
   @SideEffectFree void error(Message message, Throwable throwable);
@@ -83,6 +186,26 @@ interface Logger {
   @SideEffectFree void fatal(Object message, Throwable throwable);
   @SideEffectFree void fatal(String message);
   @SideEffectFree void fatal(String message, Throwable throwable);
+  @SideEffectFree void fatal(String message, Object p0);
+  @SideEffectFree void fatal(String message, Object p0, Object p1);
+  @SideEffectFree void fatal(String message, Object p0, Object p1, Object p2);
+  @SideEffectFree void fatal(String message, Object p0, Object p1, Object p2, Object p3);
+  @SideEffectFree void fatal(
+      String message, Object p0, Object p1, Object p2, Object p3, Object p4);
+  @SideEffectFree void fatal(
+      String message, Object p0, Object p1, Object p2, Object p3, Object p4, Object p5);
+  @SideEffectFree void fatal(
+      String message, Object p0, Object p1, Object p2, Object p3, Object p4, Object p5,
+      Object p6);
+  @SideEffectFree void fatal(
+      String message, Object p0, Object p1, Object p2, Object p3, Object p4, Object p5,
+      Object p6, Object p7);
+  @SideEffectFree void fatal(
+      String message, Object p0, Object p1, Object p2, Object p3, Object p4, Object p5,
+      Object p6, Object p7, Object p8);
+  @SideEffectFree void fatal(
+      String message, Object p0, Object p1, Object p2, Object p3, Object p4, Object p5,
+      Object p6, Object p7, Object p8, Object p9);
   @SideEffectFree void fatal(String message, Object... params);
   @SideEffectFree void fatal(Message message);
   @SideEffectFree void fatal(Message message, Throwable throwable);
