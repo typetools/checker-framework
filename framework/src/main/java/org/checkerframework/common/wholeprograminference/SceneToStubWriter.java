@@ -880,9 +880,7 @@ public final class SceneToStubWriter {
    * @return a string containing that many indents
    */
   private static String indents(int n) {
-    StringBuilder sb = new StringBuilder();
-    sb.append(INDENT.repeat(Math.max(0, n)));
-    return sb.toString();
+    return INDENT.repeat(Math.max(0, n));
   }
 
   /**

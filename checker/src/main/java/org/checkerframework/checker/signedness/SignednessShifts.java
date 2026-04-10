@@ -166,20 +166,21 @@ public class SignednessShifts {
     // Determine number of bits in the shift type, note shifts upcast to int.
     // Also determine the shift amount as it is dependent on the shift type.
     long shiftBits;
-    long shiftAmount =
-        switch (shiftTypeKind) {
-          case INT -> {
-            shiftBits = 32;
-            // When the LHS of the shift is an int, the 5 lower order bits of the RHS are used.
-            yield 0x1F & getLong(shiftAmountLit.getValue());
-          }
-          case LONG -> {
-            shiftBits = 64;
-            // When the LHS of the shift is a long, the 6 lower order bits of the RHS are used.
-            yield 0x3F & getLong(shiftAmountLit.getValue());
-          }
-          default -> throw new TypeSystemError("Invalid shift type");
-        };
+    long shiftAmount;
+    switch (shiftTypeKind) {
+      case INT:
+        shiftBits = 32;
+        // When the LHS of the shift is an int, the 5 lower order bits of the RHS are used.
+        shiftAmount = 0x1F & getLong(shiftAmountLit.getValue());
+        break;
+      case LONG:
+        shiftBits = 64;
+        // When the LHS of the shift is a long, the 6 lower order bits of the RHS are used.
+        shiftAmount = 0x3F & getLong(shiftAmountLit.getValue());
+        break;
+      default:
+        throw new TypeSystemError("Invalid shift type");
+    }
 
     // Determine number of bits in the cast type
     long castBits =
