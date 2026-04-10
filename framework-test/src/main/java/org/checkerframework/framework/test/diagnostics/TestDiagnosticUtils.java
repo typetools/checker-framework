@@ -297,7 +297,7 @@ public class TestDiagnosticUtils {
 
   /**
    * Given a category string that may be prepended with "fixable-", return the category enum that
-   * corresponds with the category and whether or not it is a isFixable error
+   * corresponds with the category and whether or not it is a isFixable error.
    *
    * @param category a category string that may be prepended with "fixable-"
    * @return a pair of the category and whether it was prepended with "fixable-"
