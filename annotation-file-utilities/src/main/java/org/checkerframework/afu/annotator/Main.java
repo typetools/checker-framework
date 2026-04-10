@@ -598,7 +598,7 @@ public class Main {
         }
         AScene scene = spec.getScene();
         parsedSpec.sort(
-            (i1, i2) -> {
+            (Insertion i1, Insertion i2) -> {
               ASTPath p1 = i1.getCriteria().getASTPath();
               ASTPath p2 = i2.getCriteria().getASTPath();
               return p1 == null ? p2 == null ? 0 : -1 : p2 == null ? 1 : p1.compareTo(p2);

@@ -1043,9 +1043,9 @@ public class Insertions implements Iterable<Insertion> {
 
   /** Compare by AstRecord, then by kind, then by string representation. */
   private static final Comparator<Insertion> byASTRecord =
-      (o1, o2) -> {
-        Criteria crit1 = o1.getCriteria();
-        Criteria crit2 = o2.getCriteria();
+      (Insertion i1, Insertion i2) -> {
+        Criteria crit1 = i1.getCriteria();
+        Criteria crit2 = i2.getCriteria();
         ASTPath p1 = crit1.getASTPath();
         ASTPath p2 = crit2.getASTPath();
         ASTRecord r1 =
@@ -1067,12 +1067,12 @@ public class Insertions implements Iterable<Insertion> {
         if (cmp != 0) {
           return cmp;
         }
-        // cmp = o1.getKind().compareTo(o2.getKind());
-        cmp = Integer.compare(kindLevel(o2), kindLevel(o1)); // descending
+        // cmp = i1.getKind().compareTo(i2.getKind());
+        cmp = Integer.compare(kindLevel(i2), kindLevel(i1)); // descending
         if (cmp != 0) {
           return cmp;
         }
-        cmp = o1.toString().compareTo(o2.toString());
+        cmp = i1.toString().compareTo(i2.toString());
         return cmp;
       };
 
