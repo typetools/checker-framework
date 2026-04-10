@@ -1,6 +1,5 @@
 package org.checkerframework.checker.rlccalledmethods;
 
-import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.VariableTree;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -421,8 +420,8 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
    * An obligation that must be satisfied by a destructor. Helper type for {@link
    * #checkOwningField(VariableElement)}.
    *
-   * @param mustCallMethod The method that must be called on the field.
-   * @param exitKind When the method must be called.
+   * @param mustCallMethod the method that must be called on the field
+   * @param exitKind when the method must be called.
    */
   private record DestructorObligation(String mustCallMethod, MethodExitKind exitKind) {}
 

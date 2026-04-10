@@ -2332,8 +2332,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   /**
    * The type for an instantiated generic method or constructor.
    *
-   * @param executableType The method's/constructor's type.
-   * @param typeArgs The types of the generic type arguments.
+   * @param executableType the method's/constructor's type.
+   * @param typeArgs the types of the generic type arguments.
    */
   public record ParameterizedExecutableType(
       AnnotatedExecutableType executableType, List<AnnotatedTypeMirror> typeArgs) {

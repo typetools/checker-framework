@@ -493,9 +493,9 @@ public abstract class UBQualifier {
     /**
      * A triple that is the return type of {@link #mapToSequencesAndOffsets}.
      *
-     * @param sequences List of sequences.
-     * @param offsets List of offsets.
-     * @param annoClass The class of the annotation to be built.
+     * @param sequences list of sequences
+     * @param offsets list of offsets
+     * @param annoClass the class of the annotation to be built
      */
     private record SequencesOffsetsAndClass(
         List<String> sequences, List<String> offsets, Class<? extends Annotation> annoClass) {}

@@ -3204,8 +3204,8 @@ public class AnnotationFileParser {
   /**
    * Represents a class: its package name and name (including outer class names if any).
    *
-   * @param packageName Name of the package being parsed, or null.
-   * @param className Name of the type being parsed. Includes outer class names if any. Null if the
+   * @param packageName name of the package being parsed, or null.
+   * @param className name of the type being parsed. Includes outer class names if any. Null if the
    *     parser has parsed a package declaration but has not yet gotten to a type declaration.
    */
   private record FqName(@Nullable String packageName, @Nullable String className) {

@@ -8,8 +8,8 @@ import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethodsOnExc
  *
  * <p>Instances of this class are plain old immutable data with no interesting behavior.
  *
- * @param expression The expression described by this postcondition.
- * @param method The method this postcondition promises to call.
+ * @param expression the expression described by this postcondition
+ * @param method the method this postcondition promises to call
  * @see EnsuresCalledMethodsOnException
  */
 public record EnsuresCalledMethodOnExceptionContract(String expression, String method) {}

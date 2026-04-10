@@ -115,8 +115,8 @@ public class FormatterTreeUtil {
    * A wrapper around a value of type E, plus an ExpressionTree location.
    *
    * @param <E> the type of the wrapped value
-   * @param value The wrapped value.
-   * @param location The location of the value.
+   * @param value the wrapped value
+   * @param location the location of the value
    */
   public record Result<E>(E value, ExpressionTree location) {}
 

@@ -1,8 +1,8 @@
 package org.checkerframework.common.util;
 
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.IOException;
+import java.io.file;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -167,7 +167,7 @@ public class TypeVisualizer {
    * hierarchical order. However, since there is no LinkedIdentityHashMap, it was easiest to just
    * create a wrapper that performed referential equality on types and use a LinkedHashMap.
    *
-   * @param type The delegate; that is, the wrapped value.
+   * @param type the delegate; that is, the wrapped value.
    */
   private record Node(@InternedDistinct AnnotatedTypeMirror type) {
 
