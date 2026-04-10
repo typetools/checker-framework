@@ -20,4 +20,10 @@ import java.lang.annotation.Target;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
-public @interface DoesNotUnrefineReceiver {}
+public @interface DoesNotUnrefineReceiver {
+  /**
+   * The name of the checker that this annotation affects. For example, "modifiability" or
+   * "nullness".
+   */
+  String[] value = {};
+}
