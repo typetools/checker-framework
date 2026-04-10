@@ -275,8 +275,7 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
       TreePath path = f.getPath(tree);
 
       // Only capture the type if this is not the left-hand side of an assignment.
-      if (path != null && path.getParentPath().getLeaf() instanceof AssignmentTree) {
-        AssignmentTree assignmentTree = (AssignmentTree) path.getParentPath().getLeaf();
+      if (path != null && path.getParentPath().getLeaf() instanceof AssignmentTree assignmentTree) {
         @SuppressWarnings("interning:not.interned") // Looking for exact object.
         boolean leftHandSide = assignmentTree.getExpression() != tree;
         if (leftHandSide) {

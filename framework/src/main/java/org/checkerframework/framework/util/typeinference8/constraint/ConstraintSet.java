@@ -268,11 +268,10 @@ public class ConstraintSet implements ReductionResult {
     // of every other considered constraint.
     List<Constraint> consideredConstraints = new ArrayList<>();
     for (Constraint constraint : c.list) {
-      if (!(constraint instanceof TypeConstraint)) {
+      if (!(constraint instanceof TypeConstraint typeConstraint)) {
         continue;
       }
 
-      TypeConstraint typeConstraint = (TypeConstraint) constraint;
       Set<Variable> newInputs = dependencies.get(typeConstraint.getInputVariables());
       Set<Variable> newOutputs = dependencies.get(typeConstraint.getOutputVariables());
       if (inputDependencies.isEmpty()

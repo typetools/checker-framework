@@ -155,17 +155,9 @@ public class Insertions implements Iterable<Insertion> {
       innerClass = innerClassName(icc.className);
     }
 
-    Map<String, Set<Insertion>> map = store.get(outerClass);
-    if (map == null) {
-      map = new HashMap<>();
-      store.put(outerClass, map);
-    }
+    Map<String, Set<Insertion>> map = store.computeIfAbsent(outerClass, k -> new HashMap<>());
 
-    Set<Insertion> set = map.get(innerClass);
-    if (set == null) {
-      set = new LinkedHashSet<>();
-      map.put(innerClass, set);
-    }
+    Set<Insertion> set = map.computeIfAbsent(innerClass, k -> new LinkedHashSet<>());
 
     size -= set.size();
     set.add(ins);
@@ -304,8 +296,7 @@ public class Insertions implements Iterable<Insertion> {
 
         if (ins instanceof TypedInsertion) {
           TypedInsertion tins = outerInsertions.get(rec);
-          if (ins instanceof NewInsertion) {
-            NewInsertion nins = (NewInsertion) ins;
+          if (ins instanceof NewInsertion nins) {
             if (entry.getTreeKind() == Tree.Kind.NEW_ARRAY && entry.childSelectorIs(ASTPath.TYPE)) {
               int a = entry.getArgument();
               List<TypePathEntry> loc0 = new ArrayList<>(a);
@@ -428,7 +419,7 @@ public class Insertions implements Iterable<Insertion> {
     if (Main.temporaryDebug) {
       System.out.printf("innerInsertionsList size (1) = %d%n", innerInsertionsList.size());
     }
-    Collections.sort(innerInsertionsList, byASTRecord);
+    innerInsertionsList.sort(byASTRecord);
     if (Main.temporaryDebug) {
       System.out.printf("innerInsertionsList size (2) = %d%n", innerInsertionsList.size());
     }
@@ -568,8 +559,7 @@ public class Insertions implements Iterable<Insertion> {
             }
             throw new RuntimeException();
           case RECEIVER:
-            if (node instanceof JCTree.JCMethodDecl) {
-              JCTree.JCMethodDecl jmd = (JCTree.JCMethodDecl) node;
+            if (node instanceof JCTree.JCMethodDecl jmd) {
               csym = (ClassSymbol) jmd.sym.owner;
               if ("<init>".equals(jmd.name.toString())) {
                 csym = (ClassSymbol) csym.owner;
@@ -1023,8 +1013,7 @@ public class Insertions implements Iterable<Insertion> {
           t = ((AnnotatedTypeTree) t).getUnderlyingType();
           break;
         case MEMBER_SELECT:
-          if (t instanceof JCTree.JCFieldAccess) {
-            JCTree.JCFieldAccess jfa = (JCTree.JCFieldAccess) t;
+          if (t instanceof JCTree.JCFieldAccess jfa) {
             if (jfa.sym.kind == Kinds.Kind.PCK) {
               t = jfa.getExpression();
               continue;
@@ -1043,58 +1032,48 @@ public class Insertions implements Iterable<Insertion> {
   private static int kindLevel(Insertion i) {
     // Ordered so insertion that depends on another gets inserted after other.
     // TODO: could change to use natural order of the enumeration (reorder the enumeration).
-    switch (i.getKind()) {
-      case CONSTRUCTOR:
-        return 3;
-      case NEW:
-      case RECEIVER:
-        return 2;
-      case CAST:
-        return 1;
-      case ANNOTATION:
-      case CLOSE_PARENTHESIS:
-        return 0;
-      default:
-        throw new Error("unrecognized case");
-    }
+    return switch (i.getKind()) {
+      case CONSTRUCTOR -> 3;
+      case NEW, RECEIVER -> 2;
+      case CAST -> 1;
+      case ANNOTATION, CLOSE_PARENTHESIS -> 0;
+      default -> throw new Error("unrecognized case");
+    };
   }
 
   /** Compare by AstRecord, then by kind, then by string representation. */
   private static final Comparator<Insertion> byASTRecord =
-      new Comparator<Insertion>() {
-        @Override
-        public int compare(Insertion o1, Insertion o2) {
-          Criteria crit1 = o1.getCriteria();
-          Criteria crit2 = o2.getCriteria();
-          ASTPath p1 = crit1.getASTPath();
-          ASTPath p2 = crit2.getASTPath();
-          ASTRecord r1 =
-              new ASTRecord(
-                  null,
-                  crit1.getClassName(),
-                  crit1.getMethodName(),
-                  crit1.getFieldName(),
-                  p1 == null ? ASTPath.empty() : p1);
-          ASTRecord r2 =
-              new ASTRecord(
-                  null,
-                  crit2.getClassName(),
-                  crit2.getMethodName(),
-                  crit2.getFieldName(),
-                  p2 == null ? ASTPath.empty() : p2);
-          int cmp;
-          cmp = r1.compareTo(r2);
-          if (cmp != 0) {
-            return cmp;
-          }
-          // cmp = o1.getKind().compareTo(o2.getKind());
-          cmp = Integer.compare(kindLevel(o2), kindLevel(o1)); // descending
-          if (cmp != 0) {
-            return cmp;
-          }
-          cmp = o1.toString().compareTo(o2.toString());
+      (Insertion i1, Insertion i2) -> {
+        Criteria crit1 = i1.getCriteria();
+        Criteria crit2 = i2.getCriteria();
+        ASTPath p1 = crit1.getASTPath();
+        ASTPath p2 = crit2.getASTPath();
+        ASTRecord r1 =
+            new ASTRecord(
+                null,
+                crit1.getClassName(),
+                crit1.getMethodName(),
+                crit1.getFieldName(),
+                p1 == null ? ASTPath.empty() : p1);
+        ASTRecord r2 =
+            new ASTRecord(
+                null,
+                crit2.getClassName(),
+                crit2.getMethodName(),
+                crit2.getFieldName(),
+                p2 == null ? ASTPath.empty() : p2);
+        int cmp;
+        cmp = r1.compareTo(r2);
+        if (cmp != 0) {
           return cmp;
         }
+        // cmp = i1.getKind().compareTo(i2.getKind());
+        cmp = Integer.compare(kindLevel(i2), kindLevel(i1)); // descending
+        if (cmp != 0) {
+          return cmp;
+        }
+        cmp = i1.toString().compareTo(i2.toString());
+        return cmp;
       };
 
   /**
@@ -1305,19 +1284,21 @@ public class Insertions implements Iterable<Insertion> {
      * type.
      */
     private static TypeTree addPrefix(final TypeTree t, final TypeTree prefix) {
-      switch (t.getKind()) {
-        case IDENTIFIER:
+      return switch (t.getKind()) {
+        case IDENTIFIER -> {
           IdentifierTT it = (IdentifierTT) t;
-          return new MemberSelectTT(prefix, it.getName());
-        case MEMBER_SELECT:
+          yield new MemberSelectTT(prefix, it.getName());
+        }
+        case MEMBER_SELECT -> {
           MemberSelectTT lt = (MemberSelectTT) t;
-          return new MemberSelectTT(addPrefix(lt.getExpression(), prefix), lt.getIdentifier());
-        case PARAMETERIZED_TYPE:
+          yield new MemberSelectTT(addPrefix(lt.getExpression(), prefix), lt.getIdentifier());
+        }
+        case PARAMETERIZED_TYPE -> {
           ParameterizedTypeTT pt = (ParameterizedTypeTT) t;
-          return new ParameterizedTypeTT(addPrefix(pt.getType(), prefix), pt.getTypeArguments());
-        default:
-          throw new IllegalArgumentException("unexpected type " + t);
-      }
+          yield new ParameterizedTypeTT(addPrefix(pt.getType(), prefix), pt.getTypeArguments());
+        }
+        default -> throw new IllegalArgumentException("unexpected type " + t);
+      };
     }
 
     static final class ArrayTT extends TypeTree implements ArrayTypeTree {
@@ -1450,28 +1431,19 @@ public class Insertions implements Iterable<Insertion> {
 
       @Override
       public String toString() {
-        switch (typeKind) {
-          case BOOLEAN:
-            return "boolean";
-          case BYTE:
-            return "byte";
-          case CHAR:
-            return "char";
-          case DOUBLE:
-            return "double";
-          case FLOAT:
-            return "float";
-          case INT:
-            return "int";
-          case LONG:
-            return "long";
-          case SHORT:
-            return "short";
+        return switch (typeKind) {
+          case BOOLEAN -> "boolean";
+          case BYTE -> "byte";
+          case CHAR -> "char";
+          case DOUBLE -> "double";
+          case FLOAT -> "float";
+          case INT -> "int";
+          case LONG -> "long";
+          case SHORT -> "short";
           // case VOID: return "void";
           // case WILDCARD: return "?";
-          default:
-            throw new IllegalArgumentException("unexpected type kind " + typeKind);
-        }
+          default -> throw new IllegalArgumentException("unexpected type kind " + typeKind);
+        };
       }
     }
 

@@ -68,8 +68,7 @@ public final class Annotation {
           classString += " " + elt.getClass();
         }
         classString += "}";
-      } else if (value instanceof Collection) {
-        Collection<?> coll = (Collection<?>) value;
+      } else if (value instanceof Collection<?> coll) {
         valueString = Arrays.toString(coll.toArray());
         classString += " {";
         for (Object elt : coll) {
@@ -131,8 +130,7 @@ public final class Annotation {
               vall.add(elt);
             }
             val = vall;
-          } else if (val instanceof Object[]) {
-            Object[] vala = (Object[]) val;
+          } else if (val instanceof Object[] vala) {
             List<Object> vall = new ArrayList<>(vala.length);
             for (Object elt : vala) {
               vall.add(elt.toString());

@@ -267,8 +267,7 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
     TypeVariable typeVar = type.getUnderlyingType();
     TypeParameterElement tpe = (TypeParameterElement) typeVar.asElement();
     Element elt = tpe.getGenericElement();
-    if (elt instanceof TypeElement) {
-      TypeElement typeElt = (TypeElement) elt;
+    if (elt instanceof TypeElement typeElt) {
       int idx = typeElt.getTypeParameters().indexOf(tpe);
       if (idx == -1) {
         idx = findIndex(typeElt.getTypeParameters(), tpe);
@@ -285,8 +284,7 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
       // of type parameter declarations (`TypeParameterTree`), so this call
       // will return a declaration ATV.  So change it to a use.
       return visitTypeParameter(cls.getTypeParameters().get(idx), f).asUse();
-    } else if (elt instanceof ExecutableElement) {
-      ExecutableElement exElt = (ExecutableElement) elt;
+    } else if (elt instanceof ExecutableElement exElt) {
       int idx = exElt.getTypeParameters().indexOf(tpe);
       if (idx == -1) {
         idx = findIndex(exElt.getTypeParameters(), tpe);

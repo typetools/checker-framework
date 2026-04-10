@@ -488,8 +488,7 @@ public class ClassAnnotationSceneReader extends CodeOffsetAdapter {
       annotationWriter.visitEnd();
       Annotation a = makeAnnotation();
 
-      if (a.def.isTypeAnnotation() && (aElement instanceof AMethod)) {
-        AMethod m = (AMethod) aElement;
+      if (a.def.isTypeAnnotation() && (aElement instanceof AMethod m)) {
         m.returnType.tlAnnotationsHere.add(a);
 
         // There is not currently a separate location for field/parameter
@@ -857,8 +856,7 @@ public class ClassAnnotationSceneReader extends CodeOffsetAdapter {
         if (strict) {
           System.err.println("Unhandled FIELD_COMPONENT annotation for " + aElement);
         }
-      } else if (aElement instanceof ATypeElement) {
-        ATypeElement aTypeElement = (ATypeElement) aElement;
+      } else if (aElement instanceof ATypeElement aTypeElement) {
         if (typePath == null) {
           aTypeElement.tlAnnotationsHere.add(makeAnnotation());
         } else {

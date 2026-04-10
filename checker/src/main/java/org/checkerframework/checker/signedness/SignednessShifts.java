@@ -49,11 +49,10 @@ public class SignednessShifts {
    * @return type of a primitive cast, or null if not a cast to a primitive
    */
   private static @Nullable PrimitiveTypeTree primitiveTypeCast(Tree tree) {
-    if (!(tree instanceof TypeCastTree)) {
+    if (!(tree instanceof TypeCastTree cast)) {
       return null;
     }
 
-    TypeCastTree cast = (TypeCastTree) tree;
     Tree castType = cast.getType();
 
     Tree underlyingType;
@@ -184,26 +183,15 @@ public class SignednessShifts {
     }
 
     // Determine number of bits in the cast type
-    long castBits;
-    switch (castTypeKind) {
-      case BYTE:
-        castBits = 8;
-        break;
-      case CHAR:
-        castBits = 8;
-        break;
-      case SHORT:
-        castBits = 16;
-        break;
-      case INT:
-        castBits = 32;
-        break;
-      case LONG:
-        castBits = 64;
-        break;
-      default:
-        throw new TypeSystemError("Invalid cast target");
-    }
+    long castBits =
+        switch (castTypeKind) {
+          case BYTE -> 8;
+          case CHAR -> 8;
+          case SHORT -> 16;
+          case INT -> 32;
+          case LONG -> 64;
+          default -> throw new TypeSystemError("Invalid cast target");
+        };
 
     long bitsDiscarded = shiftBits - castBits;
 

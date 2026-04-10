@@ -1311,24 +1311,18 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     if (rangeAnno == null) {
       return null;
     }
-    switch (AnnotationUtils.annotationName(rangeAnno)) {
-      case INTRANGE_FROMPOS_NAME:
-        return Range.create(1, Integer.MAX_VALUE);
-      case INTRANGE_FROMNONNEG_NAME:
-        return Range.create(0, Integer.MAX_VALUE);
-      case INTRANGE_FROMGTENEGONE_NAME:
-        return Range.create(-1, Integer.MAX_VALUE);
-      case INTVAL_NAME:
-        return ValueCheckerUtils.getRangeFromValues(getIntValues(rangeAnno));
-      case INTRANGE_NAME:
-        // Assume rangeAnno is well-formed, i.e., 'from' is less than or equal to 'to'.
-        return Range.create(getIntRangeFromValue(rangeAnno), getIntRangeToValue(rangeAnno));
-      case ARRAYLENRANGE_NAME:
-        return Range.create(
-            getArrayLenRangeFromValue(rangeAnno), getArrayLenRangeToValue(rangeAnno));
-      default:
-        return null;
-    }
+    return switch (AnnotationUtils.annotationName(rangeAnno)) {
+      case INTRANGE_FROMPOS_NAME -> Range.create(1, Integer.MAX_VALUE);
+      case INTRANGE_FROMNONNEG_NAME -> Range.create(0, Integer.MAX_VALUE);
+      case INTRANGE_FROMGTENEGONE_NAME -> Range.create(-1, Integer.MAX_VALUE);
+      case INTVAL_NAME -> ValueCheckerUtils.getRangeFromValues(getIntValues(rangeAnno));
+      case INTRANGE_NAME ->
+          // Assume rangeAnno is well-formed, i.e., 'from' is less than or equal to 'to'.
+          Range.create(getIntRangeFromValue(rangeAnno), getIntRangeToValue(rangeAnno));
+      case ARRAYLENRANGE_NAME ->
+          Range.create(getArrayLenRangeFromValue(rangeAnno), getArrayLenRangeToValue(rangeAnno));
+      default -> null;
+    };
   }
 
   /**
@@ -1564,17 +1558,13 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     if (annotation == null) {
       return null;
     }
-    switch (AnnotationUtils.annotationName(annotation)) {
-      case ARRAYLENRANGE_NAME:
-        return Long.valueOf(getRange(annotation).to).intValue();
-      case ARRAYLEN_NAME:
-        return Collections.max(getArrayLength(annotation));
-      case STRINGVAL_NAME:
-        return Collections.max(
-            ValueCheckerUtils.getLengthsForStringValues(getStringValues(annotation)));
-      default:
-        return null;
-    }
+    return switch (AnnotationUtils.annotationName(annotation)) {
+      case ARRAYLENRANGE_NAME -> Long.valueOf(getRange(annotation).to).intValue();
+      case ARRAYLEN_NAME -> Collections.max(getArrayLength(annotation));
+      case STRINGVAL_NAME ->
+          Collections.max(ValueCheckerUtils.getLengthsForStringValues(getStringValues(annotation)));
+      default -> null;
+    };
   }
 
   /**
@@ -1589,19 +1579,14 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     if (annotation == null) {
       return null;
     }
-    switch (AnnotationUtils.annotationName(annotation)) {
-      case MINLEN_NAME:
-        return getMinLenValueValue(annotation);
-      case ARRAYLENRANGE_NAME:
-        return Long.valueOf(getRange(annotation).from).intValue();
-      case ARRAYLEN_NAME:
-        return Collections.min(getArrayLength(annotation));
-      case STRINGVAL_NAME:
-        return Collections.min(
-            ValueCheckerUtils.getLengthsForStringValues(getStringValues(annotation)));
-      default:
-        return null;
-    }
+    return switch (AnnotationUtils.annotationName(annotation)) {
+      case MINLEN_NAME -> getMinLenValueValue(annotation);
+      case ARRAYLENRANGE_NAME -> Long.valueOf(getRange(annotation).from).intValue();
+      case ARRAYLEN_NAME -> Collections.min(getArrayLength(annotation));
+      case STRINGVAL_NAME ->
+          Collections.min(ValueCheckerUtils.getLengthsForStringValues(getStringValues(annotation)));
+      default -> null;
+    };
   }
 
   /**
@@ -1680,14 +1665,12 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       return 0;
     }
 
-    if (expressionObj instanceof ValueLiteral) {
-      ValueLiteral sequenceLiteral = (ValueLiteral) expressionObj;
+    if (expressionObj instanceof ValueLiteral sequenceLiteral) {
       Object sequenceLiteralValue = sequenceLiteral.getValue();
       if (sequenceLiteralValue instanceof String) {
         return ((String) sequenceLiteralValue).length();
       }
-    } else if (expressionObj instanceof ArrayCreation) {
-      ArrayCreation arrayCreation = (ArrayCreation) expressionObj;
+    } else if (expressionObj instanceof ArrayCreation arrayCreation) {
       // This is only expected to support array creations in varargs methods
       return arrayCreation.getInitializers().size();
     } else if (expressionObj instanceof ArrayAccess) {

@@ -193,12 +193,11 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
    */
   private Map<TypeMirror, AccumulationStore> makeExceptionalStores(
       MethodInvocationNode node, AccumulationStore inputStore) {
-    if (!(node.getBlock() instanceof ExceptionBlock)) {
+    if (!(node.getBlock() instanceof ExceptionBlock block)) {
       // This can happen in some weird (buggy?) cases:
       // see https://github.com/typetools/checker-framework/issues/3585
       return Collections.emptyMap();
     }
-    ExceptionBlock block = (ExceptionBlock) node.getBlock();
     Map<TypeMirror, AccumulationStore> result = new LinkedHashMap<>();
     block.getExceptionalSuccessors().forEach((tm, b) -> result.put(tm, inputStore.copy()));
     return result;
@@ -233,8 +232,7 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
     Node varArgActual = node.getArguments().get(varArgsPos);
     // In the CFG, explicit passing of multiple arguments in the varargs position is represented
     // via an ArrayCreationNode.  This is the only case we handle for now.
-    if (varArgActual instanceof ArrayCreationNode) {
-      ArrayCreationNode arrayCreationNode = (ArrayCreationNode) varArgActual;
+    if (varArgActual instanceof ArrayCreationNode arrayCreationNode) {
       // add in the called method to all the vararg arguments
       AccumulationStore thenStore = result.getThenStore();
       AccumulationStore elseStore = result.getElseStore();

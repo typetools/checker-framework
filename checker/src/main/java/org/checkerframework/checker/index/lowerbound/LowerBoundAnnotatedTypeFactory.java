@@ -446,8 +446,8 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
    *     arrLenTree is someArray.length
    */
   private @Nullable AnnotationMirror checkForMathRandomSpecialCase(Tree randTree, Tree arrLenTree) {
-    if (randTree instanceof MethodInvocationTree && TreeUtils.isArrayLengthAccess(arrLenTree)) {
-      MethodInvocationTree miTree = (MethodInvocationTree) randTree;
+    if (randTree instanceof MethodInvocationTree miTree
+        && TreeUtils.isArrayLengthAccess(arrLenTree)) {
 
       if (imf.isMathRandom(miTree, processingEnv)) {
         // This is Math.random() * array.length, which must be NonNegative

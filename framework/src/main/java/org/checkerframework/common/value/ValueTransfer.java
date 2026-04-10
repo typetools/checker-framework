@@ -818,44 +818,21 @@ public class ValueTransfer extends CFTransfer {
         && TypesUtils.isIntegralPrimitive(rightNode.getType())) {
       Range leftRange = getIntRange(leftNode, p);
       Range rightRange = getIntRange(rightNode, p);
-      Range resultRange;
-      switch (op) {
-        case ADDITION:
-          resultRange = leftRange.plus(rightRange);
-          break;
-        case SUBTRACTION:
-          resultRange = leftRange.minus(rightRange);
-          break;
-        case MULTIPLICATION:
-          resultRange = leftRange.times(rightRange);
-          break;
-        case DIVISION:
-          resultRange = leftRange.divide(rightRange);
-          break;
-        case REMAINDER:
-          resultRange = leftRange.remainder(rightRange);
-          break;
-        case SHIFT_LEFT:
-          resultRange = leftRange.shiftLeft(rightRange);
-          break;
-        case SIGNED_SHIFT_RIGHT:
-          resultRange = leftRange.signedShiftRight(rightRange);
-          break;
-        case UNSIGNED_SHIFT_RIGHT:
-          resultRange = leftRange.unsignedShiftRight(rightRange);
-          break;
-        case BITWISE_AND:
-          resultRange = leftRange.bitwiseAnd(rightRange);
-          break;
-        case BITWISE_OR:
-          resultRange = leftRange.bitwiseOr(rightRange);
-          break;
-        case BITWISE_XOR:
-          resultRange = leftRange.bitwiseXor(rightRange);
-          break;
-        default:
-          throw new TypeSystemError("ValueTransfer: unsupported operation: " + op);
-      }
+      Range resultRange =
+          switch (op) {
+            case ADDITION -> leftRange.plus(rightRange);
+            case SUBTRACTION -> leftRange.minus(rightRange);
+            case MULTIPLICATION -> leftRange.times(rightRange);
+            case DIVISION -> leftRange.divide(rightRange);
+            case REMAINDER -> leftRange.remainder(rightRange);
+            case SHIFT_LEFT -> leftRange.shiftLeft(rightRange);
+            case SIGNED_SHIFT_RIGHT -> leftRange.signedShiftRight(rightRange);
+            case UNSIGNED_SHIFT_RIGHT -> leftRange.unsignedShiftRight(rightRange);
+            case BITWISE_AND -> leftRange.bitwiseAnd(rightRange);
+            case BITWISE_OR -> leftRange.bitwiseOr(rightRange);
+            case BITWISE_XOR -> leftRange.bitwiseXor(rightRange);
+            default -> throw new TypeSystemError("ValueTransfer: unsupported operation: " + op);
+          };
       // Any integral type with less than 32 bits would be promoted to 32-bit int type during
       // operations.
       return leftNode.getType().getKind() == TypeKind.LONG
@@ -1095,20 +1072,13 @@ public class ValueTransfer extends CFTransfer {
       Node operand, NumericalUnaryOps op, TransferInput<CFValue, CFStore> p) {
     if (TypesUtils.isIntegralPrimitive(operand.getType())) {
       Range range = getIntRange(operand, p);
-      Range resultRange;
-      switch (op) {
-        case PLUS:
-          resultRange = range.unaryPlus();
-          break;
-        case MINUS:
-          resultRange = range.unaryMinus();
-          break;
-        case BITWISE_COMPLEMENT:
-          resultRange = range.bitwiseComplement();
-          break;
-        default:
-          throw new TypeSystemError("ValueTransfer: unsupported operation: " + op);
-      }
+      Range resultRange =
+          switch (op) {
+            case PLUS -> range.unaryPlus();
+            case MINUS -> range.unaryMinus();
+            case BITWISE_COMPLEMENT -> range.bitwiseComplement();
+            default -> throw new TypeSystemError("ValueTransfer: unsupported operation: " + op);
+          };
       // Any integral type with less than 32 bits would be promoted to 32-bit int type during
       // operations.
       return operand.getType().getKind() == TypeKind.LONG ? resultRange : resultRange.intRange();
@@ -1242,29 +1212,16 @@ public class ValueTransfer extends CFTransfer {
     for (Number left : lefts) {
       NumberMath<?> nmLeft = NumberMath.getNumberMath(left);
       for (Number right : rights) {
-        Boolean result;
-        switch (op) {
-          case EQUAL:
-            result = nmLeft.equalTo(right);
-            break;
-          case GREATER_THAN:
-            result = nmLeft.greaterThan(right);
-            break;
-          case GREATER_THAN_EQ:
-            result = nmLeft.greaterThanEq(right);
-            break;
-          case LESS_THAN:
-            result = nmLeft.lessThan(right);
-            break;
-          case LESS_THAN_EQ:
-            result = nmLeft.lessThanEq(right);
-            break;
-          case NOT_EQUAL:
-            result = nmLeft.notEqualTo(right);
-            break;
-          default:
-            throw new TypeSystemError("ValueTransfer: unsupported operation: " + op);
-        }
+        Boolean result =
+            switch (op) {
+              case EQUAL -> nmLeft.equalTo(right);
+              case GREATER_THAN -> nmLeft.greaterThan(right);
+              case GREATER_THAN_EQ -> nmLeft.greaterThanEq(right);
+              case LESS_THAN -> nmLeft.lessThan(right);
+              case LESS_THAN_EQ -> nmLeft.lessThanEq(right);
+              case NOT_EQUAL -> nmLeft.notEqualTo(right);
+              default -> throw new TypeSystemError("ValueTransfer: unsupported operation: " + op);
+            };
         resultValues.add(result);
         if (result) {
           thenLeftVals.add(left);
@@ -1454,8 +1411,7 @@ public class ValueTransfer extends CFTransfer {
 
       if (node instanceof FieldAccessNode) {
         refineArrayAtLengthAccess((FieldAccessNode) internal, store);
-      } else if (node instanceof MethodInvocationNode) {
-        MethodInvocationNode miNode = (MethodInvocationNode) node;
+      } else if (node instanceof MethodInvocationNode miNode) {
         refineAtLengthInvocation(miNode, store);
       }
     }
@@ -1639,25 +1595,25 @@ public class ValueTransfer extends CFTransfer {
     }
     // This list can contain duplicates.  It is deduplicated later by createBooleanAnnotation.
     List<Boolean> resultValues = new ArrayList<>(2);
-    switch (op) {
-      case NOT:
-        return CollectionsPlume.mapList((Boolean left) -> !left, lefts);
-      case OR:
+    return switch (op) {
+      case NOT -> CollectionsPlume.mapList((Boolean left) -> !left, lefts);
+      case OR -> {
         for (Boolean left : lefts) {
           for (Boolean right : rights) {
             resultValues.add(left || right);
           }
         }
-        return resultValues;
-      case AND:
+        yield resultValues;
+      }
+      case AND -> {
         for (Boolean left : lefts) {
           for (Boolean right : rights) {
             resultValues.add(left && right);
           }
         }
-        return resultValues;
-    }
-    throw new TypeSystemError("ValueTransfer: unsupported operation: " + op);
+        yield resultValues;
+      }
+    };
   }
 
   @Override

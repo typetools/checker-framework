@@ -78,20 +78,18 @@ public interface SetOfTypes {
    */
   @Pure
   static SetOfTypes union(SetOfTypes... typeSets) {
-    switch (typeSets.length) {
-      case 0:
-        return EMPTY;
-      case 1:
-        return typeSets[0];
-      default:
-        return (typeUtils, type) -> {
-          for (SetOfTypes set : typeSets) {
-            if (set.contains(typeUtils, type)) {
-              return true;
+    return switch (typeSets.length) {
+      case 0 -> EMPTY;
+      case 1 -> typeSets[0];
+      default ->
+          (typeUtils, type) -> {
+            for (SetOfTypes set : typeSets) {
+              if (set.contains(typeUtils, type)) {
+                return true;
+              }
             }
-          }
-          return false;
-        };
-    }
+            return false;
+          };
+    };
   }
 }

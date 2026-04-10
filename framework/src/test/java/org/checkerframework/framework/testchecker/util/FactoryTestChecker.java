@@ -230,8 +230,7 @@ public class FactoryTestChecker extends BaseTypeChecker {
 
     @Override
     public boolean equals(@Nullable Object o) {
-      if (o instanceof TreeSpec) {
-        TreeSpec other = (TreeSpec) o;
+      if (o instanceof TreeSpec other) {
         return treeString.equals(other.treeString) && lineNumber == other.lineNumber;
       }
       return false;

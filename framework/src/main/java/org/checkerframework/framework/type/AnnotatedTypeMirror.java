@@ -1313,10 +1313,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
      * @param params the parameter types, excluding the receiver
      */
     /*package-private*/ void setParameterTypes(List<? extends AnnotatedTypeMirror> params) {
-      paramTypes =
-          params.isEmpty()
-              ? Collections.emptyList()
-              : Collections.unmodifiableList(new ArrayList<>(params));
+      paramTypes = params.isEmpty() ? Collections.emptyList() : List.copyOf(params);
       paramTypesComputed = true;
     }
 
@@ -1439,10 +1436,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
      * @param thrownTypes the thrown types
      */
     /*package-private*/ void setThrownTypes(List<? extends AnnotatedTypeMirror> thrownTypes) {
-      this.thrownTypes =
-          thrownTypes.isEmpty()
-              ? Collections.emptyList()
-              : Collections.unmodifiableList(new ArrayList<>(thrownTypes));
+      this.thrownTypes = thrownTypes.isEmpty() ? Collections.emptyList() : List.copyOf(thrownTypes);
       thrownTypesComputed = true;
     }
 
@@ -1472,10 +1466,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
      * @param types the type variables of this executable type
      */
     /*package-private*/ void setTypeVariables(List<AnnotatedTypeVariable> types) {
-      typeVarTypes =
-          types.isEmpty()
-              ? Collections.emptyList()
-              : Collections.unmodifiableList(new ArrayList<>(types));
+      typeVarTypes = types.isEmpty() ? Collections.emptyList() : List.copyOf(types);
       typeVarTypesComputed = true;
     }
 

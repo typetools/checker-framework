@@ -400,16 +400,15 @@ public class WholeProgramInferenceJavaParserStorage
       String expression,
       AnnotatedTypeMirror declaredType,
       AnnotatedTypeFactory atypeFactory) {
-    switch (preOrPost) {
-      case BEFORE:
-        return getPreconditionsForExpression(
-            className, methodElement, expression, declaredType, atypeFactory);
-      case AFTER:
-        return getPostconditionsForExpression(
-            className, methodElement, expression, declaredType, atypeFactory);
-      default:
-        throw new BugInCF("Unexpected " + preOrPost);
-    }
+    return switch (preOrPost) {
+      case BEFORE ->
+          getPreconditionsForExpression(
+              className, methodElement, expression, declaredType, atypeFactory);
+      case AFTER ->
+          getPostconditionsForExpression(
+              className, methodElement, expression, declaredType, atypeFactory);
+      default -> throw new BugInCF("Unexpected " + preOrPost);
+    };
   }
 
   /**
@@ -1231,11 +1230,10 @@ public class WholeProgramInferenceJavaParserStorage
     }
 
     com.github.javaparser.ast.Node parent = methodDeclaration.getParentNode().get();
-    if (!(parent instanceof TypeDeclaration)) {
+    if (!(parent instanceof TypeDeclaration<?> parentDecl)) {
       return;
     }
 
-    TypeDeclaration<?> parentDecl = (TypeDeclaration<?>) parent;
     ClassOrInterfaceType receiver = new ClassOrInterfaceType();
     receiver.setName(parentDecl.getName());
     if (parentDecl.isClassOrInterfaceDeclaration()) {
@@ -1830,9 +1828,7 @@ public class WholeProgramInferenceJavaParserStorage
      * locations.
      */
     public void transferAnnotations() {
-      if (atypeFactory instanceof GenericAnnotatedTypeFactory<?, ?, ?, ?>) {
-        GenericAnnotatedTypeFactory<?, ?, ?, ?> genericAtf =
-            (GenericAnnotatedTypeFactory<?, ?, ?, ?>) atypeFactory;
+      if (atypeFactory instanceof GenericAnnotatedTypeFactory<?, ?, ?, ?> genericAtf) {
         for (AnnotationMirror contractAnno : genericAtf.getContractAnnotations(this)) {
           declaration.addAnnotation(
               AnnotationMirrorToAnnotationExprConversion.annotationMirrorToAnnotationExpr(
@@ -2029,8 +2025,7 @@ public class WholeProgramInferenceJavaParserStorage
         // because declaration annotations need to be attached to the FieldDeclaration
         // node instead.
         Node declParent = declaration.getParentNode().orElse(null);
-        if (declParent instanceof FieldDeclaration) {
-          FieldDeclaration decl = (FieldDeclaration) declParent;
+        if (declParent instanceof FieldDeclaration decl) {
           for (AnnotationMirror annotation : declarationAnnotations) {
             decl.addAnnotation(
                 AnnotationMirrorToAnnotationExprConversion.annotationMirrorToAnnotationExpr(

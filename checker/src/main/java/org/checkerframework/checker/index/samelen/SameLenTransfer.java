@@ -88,8 +88,7 @@ public class SameLenTransfer extends CFTransfer {
     Node recNode = node.getTarget();
 
     // Handle b = new T[a.length]
-    if (exprNode instanceof ArrayCreationNode) {
-      ArrayCreationNode acNode = (ArrayCreationNode) exprNode;
+    if (exprNode instanceof ArrayCreationNode acNode) {
       if (acNode.getDimensions().size() == 1) {
 
         Node lengthNode = acNode.getDimension(0);

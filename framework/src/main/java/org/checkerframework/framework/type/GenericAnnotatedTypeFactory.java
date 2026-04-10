@@ -1825,17 +1825,14 @@ public abstract class GenericAnnotatedTypeFactory<
     // Get the synthetic NewArray tree that dataflow creates as the last argument of a call to a
     // vararg method. Do this by getting the MethodInvocationNode to which "tree" maps. The last
     // argument node of the MethodInvocationNode stores the synthetic NewArray tree.
-    List<Node> args;
-    switch (tree.getKind()) {
-      case METHOD_INVOCATION:
-        args = getFirstNodeOfKindForTree(tree, MethodInvocationNode.class).getArguments();
-        break;
-      case NEW_CLASS:
-        args = getFirstNodeOfKindForTree(tree, ObjectCreationNode.class).getArguments();
-        break;
-      default:
-        throw new BugInCF("Unexpected kind of tree: " + tree);
-    }
+    List<Node> args =
+        switch (tree.getKind()) {
+          case METHOD_INVOCATION ->
+              getFirstNodeOfKindForTree(tree, MethodInvocationNode.class).getArguments();
+          case NEW_CLASS ->
+              getFirstNodeOfKindForTree(tree, ObjectCreationNode.class).getArguments();
+          default -> throw new BugInCF("Unexpected kind of tree: " + tree);
+        };
 
     assert !args.isEmpty() : "Arguments are empty";
     Node varargsArray = args.get(args.size() - 1);
@@ -2307,11 +2304,9 @@ public abstract class GenericAnnotatedTypeFactory<
   public <T extends GenericAnnotatedTypeFactory<?, ?, ?, ?>>
       @Nullable T getTypeFactoryOfSubcheckerOrNull(Class<? extends SourceChecker> subCheckerClass) {
     SourceChecker subSouceChecker = checker.getSubchecker(subCheckerClass);
-    if (subSouceChecker == null || !(subSouceChecker instanceof BaseTypeChecker)) {
+    if (subSouceChecker == null || !(subSouceChecker instanceof BaseTypeChecker subchecker)) {
       return null;
     }
-
-    BaseTypeChecker subchecker = (BaseTypeChecker) subSouceChecker;
 
     @SuppressWarnings(
         "unchecked" // This might not be safe, but the caller of the method should use the
@@ -2737,7 +2732,7 @@ public abstract class GenericAnnotatedTypeFactory<
           storage.atmFromStorageLocation(typeMirror, entry.getValue().type);
       result.addAll(getPreconditionAnnotations(entry.getKey(), inferredType, declaredType));
     }
-    Collections.sort(result, Ordering.usingToString());
+    result.sort(Ordering.usingToString());
     return result;
   }
 
@@ -2778,7 +2773,7 @@ public abstract class GenericAnnotatedTypeFactory<
       result.addAll(
           getPostconditionAnnotations(entry.getKey(), inferredType, declaredType, preconds));
     }
-    Collections.sort(result, Ordering.usingToString());
+    result.sort(Ordering.usingToString());
     return result;
   }
 
@@ -2818,7 +2813,7 @@ public abstract class GenericAnnotatedTypeFactory<
           getPreconditionAnnotations(
               entry.getKey(), entry.getValue().inferred, entry.getValue().declared));
     }
-    Collections.sort(result, Ordering.usingToString());
+    result.sort(Ordering.usingToString());
     return result;
   }
 
@@ -2842,7 +2837,7 @@ public abstract class GenericAnnotatedTypeFactory<
           getPostconditionAnnotations(
               entry.getKey(), entry.getValue().inferred, entry.getValue().declared, preconds));
     }
-    Collections.sort(result, Ordering.usingToString());
+    result.sort(Ordering.usingToString());
     return result;
   }
 

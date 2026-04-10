@@ -380,8 +380,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
       boolean offsetAddOne,
       TransferInput<CFValue, CFStore> in,
       CFStore store) {
-    if (gtNode instanceof NumericalSubtractionNode) {
-      NumericalSubtractionNode subtractionNode = (NumericalSubtractionNode) gtNode;
+    if (gtNode instanceof NumericalSubtractionNode subtractionNode) {
 
       Node minuend = subtractionNode.getLeftOperand();
       UBQualifier minuendQual = getUBQualifier(minuend, in);
@@ -458,8 +457,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     // If lengthAccess is "receiver.length - c" where c is an integer constant,
     // then lengthOffset is "c".
     int lengthOffset = 0;
-    if (lengthAccess instanceof NumericalSubtractionNode) {
-      NumericalSubtractionNode subtraction = (NumericalSubtractionNode) lengthAccess;
+    if (lengthAccess instanceof NumericalSubtractionNode subtraction) {
       Node offsetNode = subtraction.getRightOperand();
       Long offsetValue =
           ValueCheckerUtils.getExactValue(

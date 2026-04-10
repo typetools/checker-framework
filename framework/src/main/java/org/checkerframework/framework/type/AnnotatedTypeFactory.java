@@ -2190,8 +2190,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     if (enclosingTree == null) {
       // tree is inside an annotation, where "this" is not allowed. So, no self type exists.
       return null;
-    } else if (enclosingTree instanceof MethodTree) {
-      MethodTree enclosingMethod = (MethodTree) enclosingTree;
+    } else if (enclosingTree instanceof MethodTree enclosingMethod) {
       if (TreeUtils.isConstructor(enclosingMethod)) {
         return (AnnotatedDeclaredType) getAnnotatedType(enclosingMethod).getReturnType();
       } else {
@@ -3130,17 +3129,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       return exprType;
     }
 
-    switch (TypeKindUtils.getPrimitiveConversionKind(
+    return switch (TypeKindUtils.getPrimitiveConversionKind(
         exprPrimitiveType.getKind(), widenedType.getKind())) {
-      case WIDENING:
-        return getWidenedPrimitive(exprPrimitiveType, widenedType.getUnderlyingType());
-      case NARROWING:
-        return getNarrowedPrimitive(exprPrimitiveType, widenedType.getUnderlyingType());
-      case SAME:
-        return exprType;
-      default:
-        throw new BugInCF("unhandled PrimitiveConversionKind");
-    }
+      case WIDENING -> getWidenedPrimitive(exprPrimitiveType, widenedType.getUnderlyingType());
+      case NARROWING -> getNarrowedPrimitive(exprPrimitiveType, widenedType.getUnderlyingType());
+      case SAME -> exprType;
+      default -> throw new BugInCF("unhandled PrimitiveConversionKind");
+    };
   }
 
   /**
@@ -3668,28 +3663,25 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       return ((DetachedVarSymbol) elt).getDeclaration();
     }
 
-    // TODO: handle type parameter declarations?
-    Tree fromElt;
     // Prevent calling declarationFor on elements we know we don't have the tree for.
+    // TODO: handle type parameter declarations?
+    Tree fromElt =
+        switch (elt.getKind()) {
+          case CLASS,
+              RECORD,
+              ENUM,
+              INTERFACE,
+              ANNOTATION_TYPE,
+              FIELD,
+              ENUM_CONSTANT,
+              METHOD,
+              CONSTRUCTOR ->
+              trees.getTree(elt);
+          default ->
+              com.sun.tools.javac.tree.TreeInfo.declarationFor(
+                  (com.sun.tools.javac.code.Symbol) elt, (com.sun.tools.javac.tree.JCTree) root);
+        };
 
-    switch (elt.getKind()) {
-      case CLASS:
-      case RECORD:
-      case ENUM:
-      case INTERFACE:
-      case ANNOTATION_TYPE:
-      case FIELD:
-      case ENUM_CONSTANT:
-      case METHOD:
-      case CONSTRUCTOR:
-        fromElt = trees.getTree(elt);
-        break;
-      default:
-        fromElt =
-            com.sun.tools.javac.tree.TreeInfo.declarationFor(
-                (com.sun.tools.javac.code.Symbol) elt, (com.sun.tools.javac.tree.JCTree) root);
-        break;
-    }
     if (shouldCache) {
       elementToTreeCache.put(elt, fromElt);
     }
@@ -3871,14 +3863,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     if (type == null) {
       return false;
     }
-    switch (type.getKind()) {
-      case ERROR:
-      case OTHER:
-      case PACKAGE:
-        return false;
-      default:
-        return true;
-    }
+    return switch (type.getKind()) {
+      case ERROR, OTHER, PACKAGE -> false;
+      default -> true;
+    };
   }
 
   /**
@@ -4704,8 +4692,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 getPath(parentTree),
                 new HashSet<>(Arrays.asList(Tree.Kind.METHOD, Tree.Kind.LAMBDA_EXPRESSION)));
 
-        if (enclosing instanceof MethodTree) {
-          MethodTree enclosingMethod = (MethodTree) enclosing;
+        if (enclosing instanceof MethodTree enclosingMethod) {
           return getAnnotatedType(enclosingMethod.getReturnType());
         } else {
           LambdaExpressionTree enclosingLambda = (LambdaExpressionTree) enclosing;

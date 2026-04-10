@@ -241,9 +241,8 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
   // This cannot return a Name because filterKindToMethodName cannot.
   private @Nullable String filterTreeToMethodName(
       Tree filterTree, ValueAnnotatedTypeFactory valueATF) {
-    while (filterTree instanceof MethodInvocationTree) {
+    while (filterTree instanceof MethodInvocationTree filterTreeAsMethodInvocation) {
 
-      MethodInvocationTree filterTreeAsMethodInvocation = (MethodInvocationTree) filterTree;
       String filterMethodName = TreeUtils.methodName(filterTreeAsMethodInvocation).toString();
       if (filterMethodName.contentEquals("withName")
           && !filterTreeAsMethodInvocation.getArguments().isEmpty()) {
@@ -279,16 +278,11 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
    *     filterKind is "image-id"; null otherwise
    */
   private static @Nullable String filterKindToMethodName(String filterKind) {
-    switch (filterKind) {
-      case "owner":
-      case "owner-alias":
-      case "owner-id":
-        return "withOwners";
-      case "image-id":
-        return "withImageIds";
-      default:
-        return null;
-    }
+    return switch (filterKind) {
+      case "owner", "owner-alias", "owner-id" -> "withOwners";
+      case "image-id" -> "withImageIds";
+      default -> null;
+    };
   }
 
   /**
