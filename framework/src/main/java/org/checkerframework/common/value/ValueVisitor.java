@@ -78,7 +78,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
   protected boolean commonAssignmentCheck(
       AnnotatedTypeMirror varType,
       AnnotatedTypeMirror valueType,
-      Tree valueTree,
+      Tree errorLocation,
       @CompilerMessageKey String errorKey,
       Object... extraArgs) {
 
@@ -89,7 +89,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
       valueType.addAnnotation(getTypeFactory().createIntRangeAnnotation(Range.CHAR_EVERYTHING));
     }
 
-    return super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, extraArgs);
+    return super.commonAssignmentCheck(varType, valueType, errorLocation, errorKey, extraArgs);
   }
 
   /**
@@ -409,9 +409,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
     // IEEE 754 behavior and should not be flagged as an unsafe cast if the result
     // is the correctly-rounded representation.
     // When a float is cast to double, no precision is lost, so it is always safe.
-    if (castTypeKind != null
-        && exprTypeKind != null
-        && TypeKindUtils.isFloatingPoint(castTypeKind)
+    if (TypeKindUtils.isFloatingPoint(castTypeKind)
         && TypeKindUtils.isFloatingPoint(exprTypeKind)) {
       if (AnnotationUtils.areSameByName(castAnno, ValueAnnotatedTypeFactory.DOUBLEVAL_NAME)
           && AnnotationUtils.areSameByName(exprAnno, ValueAnnotatedTypeFactory.DOUBLEVAL_NAME)) {

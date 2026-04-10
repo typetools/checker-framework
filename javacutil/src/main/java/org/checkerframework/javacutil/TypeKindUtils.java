@@ -20,16 +20,10 @@ public final class TypeKindUtils {
    * @return true if typeKind is a primitive integral type kind
    */
   public static boolean isIntegral(TypeKind typeKind) {
-    switch (typeKind) {
-      case INT:
-      case SHORT:
-      case BYTE:
-      case CHAR:
-      case LONG:
-        return true;
-      default:
-        return false;
-    }
+    return switch (typeKind) {
+      case INT, SHORT, BYTE, CHAR, LONG -> true;
+      default -> false;
+    };
   }
 
   /**
@@ -40,15 +34,10 @@ public final class TypeKindUtils {
    *     as an integer
    */
   public static boolean isIntegralNumeric(TypeKind typeKind) {
-    switch (typeKind) {
-      case INT:
-      case SHORT:
-      case BYTE:
-      case LONG:
-        return true;
-      default:
-        return false;
-    }
+    return switch (typeKind) {
+      case INT, SHORT, BYTE, LONG -> true;
+      default -> false;
+    };
   }
 
   /**
@@ -58,13 +47,10 @@ public final class TypeKindUtils {
    * @return true if typeKind is a primitive floating point type kind
    */
   public static boolean isFloatingPoint(TypeKind typeKind) {
-    switch (typeKind) {
-      case FLOAT:
-      case DOUBLE:
-        return true;
-      default:
-        return false;
-    }
+    return switch (typeKind) {
+      case FLOAT, DOUBLE -> true;
+      default -> false;
+    };
   }
 
   /**
@@ -74,18 +60,10 @@ public final class TypeKindUtils {
    * @return true if the argument is a primitive numeric type kind
    */
   public static boolean isNumeric(TypeKind typeKind) {
-    switch (typeKind) {
-      case BYTE:
-      case CHAR:
-      case DOUBLE:
-      case FLOAT:
-      case INT:
-      case LONG:
-      case SHORT:
-        return true;
-      default:
-        return false;
-    }
+    return switch (typeKind) {
+      case BYTE, CHAR, DOUBLE, FLOAT, INT, LONG, SHORT -> true;
+      default -> false;
+    };
   }
 
   // Cannot create an overload that takes an AnnotatedTypeMirror because the javacutil
@@ -103,32 +81,23 @@ public final class TypeKindUtils {
       return typeKind;
     }
 
-    if (!(type instanceof DeclaredType)) {
+    if (!(type instanceof DeclaredType dt)) {
       return null;
     }
 
-    String typeString = TypesUtils.getQualifiedName((DeclaredType) type).toString();
+    String typeString = TypesUtils.getQualifiedName(dt).toString();
 
-    switch (typeString) {
-      case "java.lang.Byte":
-        return TypeKind.BYTE;
-      case "java.lang.Boolean":
-        return TypeKind.BOOLEAN;
-      case "java.lang.Character":
-        return TypeKind.CHAR;
-      case "java.lang.Double":
-        return TypeKind.DOUBLE;
-      case "java.lang.Float":
-        return TypeKind.FLOAT;
-      case "java.lang.Integer":
-        return TypeKind.INT;
-      case "java.lang.Long":
-        return TypeKind.LONG;
-      case "java.lang.Short":
-        return TypeKind.SHORT;
-      default:
-        return null;
-    }
+    return switch (typeString) {
+      case "java.lang.Byte" -> TypeKind.BYTE;
+      case "java.lang.Boolean" -> TypeKind.BOOLEAN;
+      case "java.lang.Character" -> TypeKind.CHAR;
+      case "java.lang.Double" -> TypeKind.DOUBLE;
+      case "java.lang.Float" -> TypeKind.FLOAT;
+      case "java.lang.Integer" -> TypeKind.INT;
+      case "java.lang.Long" -> TypeKind.LONG;
+      case "java.lang.Short" -> TypeKind.SHORT;
+      default -> null;
+    };
   }
 
   // No overload that takes AnnotatedTypeMirror because javacutil cannot depend on framework.

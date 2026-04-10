@@ -92,10 +92,9 @@ public class ArrayCreation extends JavaExpression {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof ArrayCreation)) {
+    if (!(obj instanceof ArrayCreation other)) {
       return false;
     }
-    ArrayCreation other = (ArrayCreation) obj;
     return this.dimensions.equals(other.getDimensions())
         && this.initializers.equals(other.getInitializers())
         // It might be better to use Types.isSameType(getType(), other.getType()), but I
@@ -105,10 +104,9 @@ public class ArrayCreation extends JavaExpression {
 
   @Override
   public boolean syntacticEquals(JavaExpression je) {
-    if (!(je instanceof ArrayCreation)) {
+    if (!(je instanceof ArrayCreation other)) {
       return false;
     }
-    ArrayCreation other = (ArrayCreation) je;
     return JavaExpression.syntacticEqualsList(this.dimensions, other.dimensions)
         && JavaExpression.syntacticEqualsList(this.initializers, other.initializers)
         && getType().toString().equals(other.getType().toString());

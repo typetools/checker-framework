@@ -65,10 +65,9 @@ public class ReachingDefinitionStore implements Store<ReachingDefinitionStore> {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof ReachingDefinitionStore)) {
+    if (!(obj instanceof ReachingDefinitionStore other)) {
       return false;
     }
-    ReachingDefinitionStore other = (ReachingDefinitionStore) obj;
     return other.reachingDefSet.equals(this.reachingDefSet);
   }
 

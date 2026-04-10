@@ -468,6 +468,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * @param type the AST Type node to inspect
    * @param elem destination type element
    */
+  @SuppressWarnings("NotJavadoc") // Error Prone flags Javadoc comments on local class methods.
   private static Void visitInnerTypes(Type type, ATypeElement elem) {
     return type.accept(
         new GenericVisitorAdapter<Void, List<TypePathEntry>>() {
