@@ -791,9 +791,9 @@ public class AnnotatedTypes {
   /**
    * Class representing type arguments for a method, constructor, or method reference expression.
    *
-   * @param typeArguments a mapping from {@link TypeVariable} to its annotated type argument.
-   * @param uncheckedConversion true if unchecked conversion was needed for inference.
-   * @param inferenceCrash true if type argument inference crashed.
+   * @param typeArguments a mapping from {@link TypeVariable} to its annotated type argument
+   * @param uncheckedConversion true if unchecked conversion was needed for inference
+   * @param inferenceCrash true if type argument inference crashed
    */
   public record TypeArguments(
       Map<TypeVariable, AnnotatedTypeMirror> typeArguments,

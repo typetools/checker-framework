@@ -68,7 +68,7 @@ public abstract class CFAbstractAnalysis<
    * initializer. The value of the initializer is {@code null} if the field does not have one.
    *
    * @param <V> type of value
-   * @param fieldDecl a field access that corresponds to the declaration of a field.
+   * @param fieldDecl a field access that corresponds to the declaration of a field
    * @param declared the value corresponding to the annotations on the declared type of the field
    * @param initializer the value of the initializer of the field, or null if no initializer exists
    */

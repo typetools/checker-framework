@@ -1279,8 +1279,8 @@ public class WholeProgramInferenceJavaParserStorage
    * Stores the JavaParser node for a compilation unit and the list of wrappers for the classes and
    * interfaces in that compilation unit.
    *
-   * @param compilationUnit compilation unit being wrapped.
-   * @param types wrappers for classes and interfaces in {@code compilationUnit}.
+   * @param compilationUnit compilation unit being wrapped
+   * @param types wrappers for classes and interfaces in {@code compilationUnit}
    */
   private record CompilationUnitAnnos(
       CompilationUnit compilationUnit, List<ClassOrInterfaceAnnos> types)
@@ -2056,8 +2056,8 @@ public class WholeProgramInferenceJavaParserStorage
   /**
    * A pair of two annotated types: an inferred type and a declared type.
    *
-   * @param inferred the inferred type.
-   * @param declared the declared type.
+   * @param inferred the inferred type
+   * @param declared the declared type
    */
   public record InferredDeclared(AnnotatedTypeMirror inferred, AnnotatedTypeMirror declared) {}
 }

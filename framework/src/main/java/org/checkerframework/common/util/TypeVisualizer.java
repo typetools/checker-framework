@@ -167,7 +167,7 @@ public class TypeVisualizer {
    * hierarchical order. However, since there is no LinkedIdentityHashMap, it was easiest to just
    * create a wrapper that performed referential equality on types and use a LinkedHashMap.
    *
-   * @param type the delegate; that is, the wrapped value.
+   * @param type the delegate; that is, the wrapped value
    */
   private record Node(@InternedDistinct AnnotatedTypeMirror type) {
 

@@ -422,7 +422,7 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
    * #checkOwningField(VariableElement)}.
    *
    * @param mustCallMethod the method that must be called on the field
-   * @param exitKind when the method must be called.
+   * @param exitKind when the method must be called
    */
   private record DestructorObligation(String mustCallMethod, MethodExitKind exitKind) {}
 

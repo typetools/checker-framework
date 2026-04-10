@@ -1362,7 +1362,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    *
    * @param booleanParam 0-based index of the parameter of the expression that is tested by the
    *     assert method. (Or -1 if this isn't an assert method.)
-   * @param exceptionType the type of the exception thrown by the assert method.
+   * @param exceptionType the type of the exception thrown by the assert method
    * @param isAssertFalse is this an assert false method?
    */
   /*package-private*/ record AssertMethodTuple(

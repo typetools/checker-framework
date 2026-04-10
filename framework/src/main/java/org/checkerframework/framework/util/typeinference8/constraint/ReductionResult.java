@@ -25,8 +25,8 @@ public interface ReductionResult {
   /**
    * A reduction result that contains a bound set and a constraint set.
    *
-   * @param constraintSet a constraint set.
-   * @param boundSet a bound set.
+   * @param constraintSet a constraint set
+   * @param boundSet a bound set
    */
   record ReductionResultPair(ConstraintSet constraintSet, BoundSet boundSet)
       implements ReductionResult {

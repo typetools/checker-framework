@@ -199,7 +199,7 @@ public class CaptureBound {
    * @param capturedTypeArg type argument in the right-hand side for the capture. For example {@code
    *     A1} in {@code G<a1, ..., an> = capture(G<A1, ..., An>)}.
    * @param bound upper bound of one of the type parameters of G that has been substituted using the
-   *     fresh inference variables.
+   *     fresh inference variables
    */
   private record CaptureTuple(
       CaptureVariable alpha, AbstractType capturedTypeArg, AbstractType bound) {
