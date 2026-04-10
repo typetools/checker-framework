@@ -1,8 +1,8 @@
 package org.checkerframework.common.util;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
-import java.io.file;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;

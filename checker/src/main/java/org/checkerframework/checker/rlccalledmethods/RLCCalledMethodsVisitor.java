@@ -1,5 +1,6 @@
 package org.checkerframework.checker.rlccalledmethods;
 
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.VariableTree;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
