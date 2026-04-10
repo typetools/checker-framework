@@ -186,7 +186,7 @@ public class SignednessShifts {
     long castBits =
         switch (castTypeKind) {
           case BYTE -> 8;
-          case CHAR -> 8;
+          case CHAR -> 16;
           case SHORT -> 16;
           case INT -> 32;
           case LONG -> 64;
