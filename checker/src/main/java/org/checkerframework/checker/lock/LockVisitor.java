@@ -343,7 +343,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
   protected boolean commonAssignmentCheck(
       AnnotatedTypeMirror varType,
       AnnotatedTypeMirror valueType,
-      Tree valueTree,
+      Tree errorLocation,
       @CompilerMessageKey String errorKey,
       Object... extraArgs) {
 
@@ -357,7 +357,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     boolean result = true;
     if (varType.hasPrimaryAnnotation(GuardSatisfied.class)) {
       if (valueType.hasPrimaryAnnotation(GuardedBy.class)) {
-        return checkLock(valueTree, valueType.getPrimaryAnnotation(GuardedBy.class));
+        return checkLock(errorLocation, valueType.getPrimaryAnnotation(GuardedBy.class));
       } else if (valueType.hasPrimaryAnnotation(GuardSatisfied.class)) {
         // TODO: Find a cleaner, non-abstraction-breaking way to know whether method actual
         // parameters are being assigned to formal parameters.
@@ -373,7 +373,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
           if (varTypeGuardSatisfiedIndex == -1 && valueTypeGuardSatisfiedIndex == -1) {
             checker.reportError(
-                valueTree, "guardsatisfied.assignment.disallowed", varType, valueType);
+                errorLocation, "guardsatisfied.assignment.disallowed", varType, valueType);
             result = false;
           }
         } else {
@@ -402,7 +402,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     }
 
     result =
-        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, extraArgs) && result;
+        super.commonAssignmentCheck(varType, valueType, errorLocation, errorKey, extraArgs)
+            && result;
     return result;
   }
 
