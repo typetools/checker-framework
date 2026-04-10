@@ -23,7 +23,7 @@ import java.lang.annotation.Target;
 public @interface DoesNotUnrefineReceiver {
   /**
    * The name of the checker that this annotation affects. For example, "modifiability" or
-   * "nullness".
+   * "nullness". Use the empty array to affect all checkers.
    */
-  String[] value = {};
+  String[] value();
 }
