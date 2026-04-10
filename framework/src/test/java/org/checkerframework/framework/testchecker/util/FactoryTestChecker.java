@@ -19,7 +19,6 @@ import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.tools.JavaFileObject;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.source.SourceChecker;
@@ -218,14 +217,6 @@ public class FactoryTestChecker extends BaseTypeChecker {
     private TreeSpec(String treeString, long lineNumber) {
       this.treeString = canonizeTreeString(treeString);
       this.lineNumber = lineNumber;
-    }
-
-    @Override
-    public boolean equals(@Nullable Object o) {
-      if (o instanceof TreeSpec other) {
-        return treeString.equals(other.treeString) && lineNumber == other.lineNumber;
-      }
-      return false;
     }
 
     @Override

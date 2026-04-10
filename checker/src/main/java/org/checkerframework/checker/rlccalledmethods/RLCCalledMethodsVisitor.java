@@ -424,20 +424,7 @@ public class RLCCalledMethodsVisitor extends CalledMethodsVisitor {
    * @param mustCallMethod The method that must be called on the field.
    * @param exitKind When the method must be called.
    */
-  private record DestructorObligation(String mustCallMethod, MethodExitKind exitKind) {
-
-    @Override
-    public boolean equals(Object o) {
-      if (this == o) {
-        return true;
-      }
-      if (o == null || getClass() != o.getClass()) {
-        return false;
-      }
-      DestructorObligation that = (DestructorObligation) o;
-      return mustCallMethod.equals(that.mustCallMethod) && exitKind == that.exitKind;
-    }
-  }
+  private record DestructorObligation(String mustCallMethod, MethodExitKind exitKind) {}
 
   /**
    * Checks validity of a field {@code field} with an {@code @}{@link Owning} annotation. Say the

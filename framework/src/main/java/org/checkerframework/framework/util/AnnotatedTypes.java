@@ -798,17 +798,7 @@ public class AnnotatedTypes {
   public record TypeArguments(
       Map<TypeVariable, AnnotatedTypeMirror> typeArguments,
       boolean uncheckedConversion,
-      boolean inferenceCrash) {
-
-    /**
-     * Creates a {@link TypeArguments} object.
-     *
-     * @param typeArguments a mapping from {@link TypeVariable} to its annotated type argument
-     * @param uncheckedConversion true if unchecked conversion was needed for inference
-     * @param inferenceCrash true if type argument inference crashed
-     */
-    public TypeArguments {}
-  }
+      boolean inferenceCrash) {}
 
   /**
    * Returns the lub of two annotated types.

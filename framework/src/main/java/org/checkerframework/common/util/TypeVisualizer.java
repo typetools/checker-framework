@@ -14,7 +14,6 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
-import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -171,15 +170,6 @@ public class TypeVisualizer {
    * @param type The delegate; that is, the wrapped value.
    */
   private record Node(@InternedDistinct AnnotatedTypeMirror type) {
-
-    /**
-     * Create a new Node that wraps the given type.
-     *
-     * @param type the type that the newly-constructed Node represents
-     */
-    private Node(@FindDistinct AnnotatedTypeMirror type) {
-      this.type = type;
-    }
 
     @Override
     public boolean equals(@Nullable Object obj) {

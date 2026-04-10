@@ -2059,11 +2059,5 @@ public class WholeProgramInferenceJavaParserStorage
    * @param inferred The inferred type.
    * @param declared The declared type.
    */
-  public record InferredDeclared(AnnotatedTypeMirror inferred, AnnotatedTypeMirror declared) {
-
-    @Override
-    public String toString() {
-      return "InferredDeclared(" + inferred + ", " + declared + ")";
-    }
-  }
+  public record InferredDeclared(AnnotatedTypeMirror inferred, AnnotatedTypeMirror declared) {}
 }
